@@ -107,6 +107,14 @@ def test_surface_label_masker_transform(surf_label_img, surf_img):
     assert signal.shape == (n_timepoints, n_labels)
 
 
+def test_warning_smoothing(surf_img, surf_label_img):
+    """Smooth during transform not implemented."""
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img, smoothing_fwhm=1)
+    masker = masker.fit()
+    with pytest.warns(UserWarning, match="not yet supported"):
+        masker.transform(surf_img())
+
+
 def test_surface_label_masker_transform_clean(surf_label_img, surf_img):
     """Smoke test for clean args."""
     masker = SurfaceLabelsMasker(
