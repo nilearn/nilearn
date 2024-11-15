@@ -7,7 +7,7 @@ from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs
+from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -19,6 +19,7 @@ from nilearn.maskers._utils import (
 from nilearn.surface import SurfaceImage
 
 
+@fill_doc
 class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
@@ -43,6 +44,30 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             This value must be consistent with label values
             and image provided.
 
+    %(smoothing_fwhm)s
+        This parameter is not implemented yet.
+
+    %(standardize_maskers)s
+
+    %(standardize_confounds)s
+
+    %(detrend)s
+
+    high_variance_confounds : :obj:`bool`, default=False
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out.
+
+    %(low_pass)s
+
+    %(high_pass)s
+
+    %(t_r)s
+
+    %(memory)s
+
+    %(memory_level1)s
+
     %(verbose0)s
 
     reports : :obj:`bool`, default=True
@@ -51,6 +76,11 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     %(cmap)s
         default="inferno"
         Only relevant for the report figures.
+
+    clean_args : :obj:`dict` or None, default=None
+        Keyword arguments to be passed
+        to :func:`nilearn.signal.clean`
+        called within the masker.
 
     Attributes
     ----------
