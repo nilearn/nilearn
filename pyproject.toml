@@ -169,6 +169,7 @@ select = [
     "PERF",
     "PTH",
     "PD",
+    "PGH",
     "PLR",
     "RUF",
     "SIM",
