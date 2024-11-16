@@ -318,7 +318,7 @@ def test_check_second_level_input(shape_4d_default):
         )
     ]
 
-    obj = lambda: None  # noqa : E731
+    obj = lambda: None  # noqa: E731
     obj.results_ = "foo"
     obj.labels_ = "bar"
 

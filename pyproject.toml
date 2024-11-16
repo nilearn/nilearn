@@ -171,6 +171,7 @@ select = [
     "PIE",
     "PTH",
     "PD",
+    "PGH",
     "PLR",
     "RUF",
     "SIM",

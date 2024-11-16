@@ -40,7 +40,7 @@ def test_import_plotting_should_raise_warning_if_matplotlib_not_installed():
             UserWarning, match="Some dependencies of nilearn.plotting"
         ),
     ):
-        from nilearn.plotting import cm  # noqa
+        from nilearn.plotting import cm  # noqa: F401
 
 
 @pytest.mark.skipif(
@@ -60,4 +60,4 @@ def test_import_reporting_should_raise_warning_if_matplotlib_not_installed():
             UserWarning, match="Some dependencies of nilearn.plotting"
         ),
     ):
-        from nilearn.reporting import make_glm_report  # noqa
+        from nilearn.reporting import make_glm_report  # noqa: F401
