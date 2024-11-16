@@ -859,18 +859,9 @@ def load_surf_data(surf_data):
                 surf_data, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS
             )
 
-            if (
-                surf_data.endswith("nii")
-                or surf_data.endswith("nii.gz")
-                or surf_data.endswith("mgz")
-            ):
+            if surf_data.endswith(("nii", "nii.gz", "mgz")):
                 data_part = np.squeeze(get_data(load(surf_data)))
-            elif (
-                surf_data.endswith("area")
-                or surf_data.endswith("curv")
-                or surf_data.endswith("sulc")
-                or surf_data.endswith("thickness")
-            ):
+            elif surf_data.endswith(("area", "curv", "sulc", "thickness")):
                 data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith("annot"):
                 data_part = fs.io.read_annot(surf_data)[0]
