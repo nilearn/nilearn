@@ -381,7 +381,7 @@ def test_plotly_surface_figure_import_error():
 
 @pytest.mark.skipif(
     not is_plotly_installed() or is_kaleido_installed(),
-    reason=("This test only runs if Plotly is " "installed, but not kaleido."),
+    reason=("This test only runs if Plotly is installed, but not kaleido."),
 )
 def test_plotly_surface_figure_savefig_error():
     """Test that an ImportError is raised when saving \
@@ -393,7 +393,7 @@ def test_plotly_surface_figure_savefig_error():
 
 @pytest.mark.skipif(
     not is_plotly_installed() or not is_kaleido_installed(),
-    reason=("Plotly and/or kaleido not installed; " "required for this test."),
+    reason=("Plotly and/or kaleido not installed; required for this test."),
 )
 def test_plotly_surface_figure():
     ps = PlotlySurfaceFigure()
@@ -407,9 +407,7 @@ def test_plotly_surface_figure():
 
 @pytest.mark.skipif(
     not is_plotly_installed() or not IPYTHON_INSTALLED,
-    reason=(
-        "Plotly and/or Ipython is not installed; " "required for this test."
-    ),
+    reason=("Plotly and/or Ipython is not installed; required for this test."),
 )
 @pytest.mark.parametrize("renderer", ["png", "jpeg", "svg"])
 def test_plotly_show(renderer):
@@ -427,7 +425,7 @@ def test_plotly_show(renderer):
 
 @pytest.mark.skipif(
     not is_plotly_installed() or not is_kaleido_installed(),
-    reason=("Plotly and/or kaleido not installed; " "required for this test."),
+    reason=("Plotly and/or kaleido not installed; required for this test."),
 )
 def test_plotly_savefig(tmp_path):
     import plotly.graph_objects as go
@@ -447,7 +445,7 @@ def test_plotly_savefig(tmp_path):
 def test_instantiation_error_plotly_surface_figure(input_obj):
     with pytest.raises(
         TypeError,
-        match=("`PlotlySurfaceFigure` accepts only " "plotly figure objects."),
+        match=("`PlotlySurfaceFigure` accepts only plotly figure objects."),
     ):
         PlotlySurfaceFigure(input_obj)
 
@@ -463,7 +461,7 @@ def test_value_error_get_faces_on_edge():
     mesh = generate_surf()
     figure = plot_surf(mesh, engine="plotly")
     with pytest.raises(
-        ValueError, match=("Vertices in parcellation do not " "form region.")
+        ValueError, match=("Vertices in parcellation do not form region.")
     ):
         figure._get_faces_on_edge([91])
 
