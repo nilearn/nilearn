@@ -780,8 +780,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             warnings.warn(
                 "After clustering and screening, the decoding model will "
                 f"be trained only on {n_final_features} features. "
-                + "Consider raising clustering_percentile or "
-                + "screening_percentile parameters.",
+                "Consider raising clustering_percentile or "
+                "screening_percentile parameters.",
                 UserWarning,
             )
 
