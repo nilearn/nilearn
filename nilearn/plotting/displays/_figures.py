@@ -378,7 +378,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                 for v in vs[remaining_vertices[shortest_idx]]:
                     for v2 in vs[current_vertex]:
                         shared += np.all(np.isclose(v, v2))
-                if not (shared >= 2):
+                if shared < 2:
                     # this does not share and edge, so try again
                     continue
                 for e in segments[current_vertex]:
