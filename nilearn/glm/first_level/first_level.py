@@ -901,8 +901,8 @@ class FirstLevelModel(BaseGLM):
             "p_value",
             "effect_size",
             "effect_variance",
+            "all",  # must be the final entry!
         ]
-        valid_types.append("all")  # ensuring 'all' is the final entry.
         if output_type not in valid_types:
             raise ValueError(f"output_type must be one of {valid_types}")
         contrast = compute_fixed_effect_contrast(
