@@ -158,7 +158,7 @@ def _default_param_grid(estimator, X, y):
 
     # validate estimator
     if isinstance(estimator, (DummyClassifier, DummyRegressor)):
-        if estimator.strategy in ["constant"]:
+        if estimator.strategy == "constant":
             message = (
                 "Dummy classification implemented only for strategies"
                 ' "most_frequent", "prior", "stratified"'
