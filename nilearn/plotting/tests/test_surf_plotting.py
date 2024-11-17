@@ -311,7 +311,6 @@ def test_get_view_plot_surf_plotly(full_view):
     from nilearn.plotting.surf_plotting import (
         _get_camera_view_from_elevation_and_azimut,
         _get_camera_view_from_string_view,
-        _get_view_plot_surf_plotly,
     )
 
     hemi, view_name, (elev, azim), expected_camera_view = full_view
@@ -347,16 +346,12 @@ def expected_view_matplotlib(hemi, view):
 @pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
 @pytest.mark.parametrize("view", VALID_VIEWS)
 def test_get_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
-    from nilearn.plotting.surf_plotting import _get_view_plot_surf_matplotlib
-
     assert (
         _get_view_plot_surf_matplotlib(hemi, view) == expected_view_matplotlib
     )
 
 
 def test_surface_figure():
-    from nilearn.plotting.displays import SurfaceFigure
-
     s = SurfaceFigure()
     assert s.output_file is None
     assert s.figure is None
@@ -696,11 +691,6 @@ def test_check_hemisphere_is_valid(hemi, is_valid):
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
-    from nilearn.plotting.surf_plotting import (
-        _get_view_plot_surf_matplotlib,
-        _get_view_plot_surf_plotly,
-    )
-
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
         _get_view_plot_surf_matplotlib(hemi, view)
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):

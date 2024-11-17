@@ -295,8 +295,6 @@ def _plot_surf_plotly(
     """
     if is_plotly_installed():
         import plotly.graph_objects as go
-
-        from nilearn.plotting.displays import PlotlySurfaceFigure
     else:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
         raise ImportError(msg)
