@@ -507,7 +507,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             return False
         t = (c1 * b2 - c2 * b1) / d
         u = (c1 * a2 - c2 * a1) / d
-        return t >= 0 and t <= 1 and u >= 0 and u <= 1
+        return 0 <= t <= 1 and 0 <= u <= 1
 
     @staticmethod
     def _transform_coord_to_plane(v, t0, t1, t2):

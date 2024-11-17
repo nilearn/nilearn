@@ -96,7 +96,7 @@ def get_colorbar_and_data_ranges(
 
     if symmetric_cbar == "auto":
         if (vmin is None) or (vmax is None):
-            symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
+            symmetric_cbar = stat_map_min < 0 < stat_map_max
         else:
             symmetric_cbar = np.isclose(vmin, -vmax)
 
