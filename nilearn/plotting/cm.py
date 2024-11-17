@@ -316,7 +316,7 @@ for k, v in _cmap_d.items():
 
 def dim_cmap(cmap, factor=0.3, to_white=True):
     """Dim a colormap to white, or to black."""
-    assert 0 <= factor <= 1, ValueError(
+    assert 0 <= factor <= 1, (
         "Dimming factor must be larger than 0 and smaller than 1, "
         f"{factor} was passed."
     )
@@ -344,13 +344,9 @@ def dim_cmap(cmap, factor=0.3, to_white=True):
 
 def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     """Replace a colormap by another inside a pair of values."""
-    assert vmin < vmax, ValueError("vmin must be smaller than vmax")
-    assert vmin >= 0, ValueError(
-        f"vmin must be larger than 0, {vmin} was passed."
-    )
-    assert vmax <= 1, ValueError(
-        f"vmax must be smaller than 1, {vmax} was passed."
-    )
+    assert vmin < vmax, "vmin must be smaller than vmax"
+    assert vmin >= 0, f"vmin must be larger than 0, {vmin} was passed."
+    assert vmax <= 1, f"vmax must be smaller than 1, {vmax} was passed."
     outer_cdict = outer_cmap._segmentdata.copy()
     inner_cdict = inner_cmap._segmentdata.copy()
 
