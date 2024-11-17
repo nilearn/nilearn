@@ -109,6 +109,7 @@ source = "vcs"
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html -n auto"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
+filterwarnings = ["error"]
 junit_family = "xunit2"
 log_cli_level = "INFO"
 minversion = "6.0"
