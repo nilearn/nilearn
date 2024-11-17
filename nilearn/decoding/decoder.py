@@ -1000,14 +1000,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.dummy_output_ = {}
         classes = self.classes_
 
-        for _, (
+        for (
             class_index,
             coef,
             intercept,
             params,
             scores,
             dummy_output,
-        ) in enumerate(parallel_fit_outputs):
+        ) in parallel_fit_outputs:
             coefs.setdefault(classes[class_index], []).append(coef)
             intercepts.setdefault(classes[class_index], []).append(intercept)
 

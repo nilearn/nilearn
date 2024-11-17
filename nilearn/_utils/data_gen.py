@@ -444,7 +444,7 @@ def generate_fake_fmri_data_and_design(
     fmri_data = []
     design_matrices = []
     rand_gen = np.random.default_rng(random_state)
-    for _, shape in enumerate(shapes):
+    for shape in shapes:
         data = rand_gen.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))

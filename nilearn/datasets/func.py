@@ -785,7 +785,7 @@ def fetch_localizer_contrasts(
     filenames = []
     for subject_id in subject_ids:
         for data_type in data_types:
-            for _, contrast in enumerate(contrasts_wrapped):
+            for contrast in contrasts_wrapped:
                 name_aux = f"{data_type}_{contrast}"
                 name_aux.replace(" ", "_")
                 file_path = Path(
