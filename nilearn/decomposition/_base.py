@@ -18,7 +18,8 @@ from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers import NiftiMapsMasker, SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin, cache
@@ -382,6 +383,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
+        # Does not support surface-based images yet; See #4756 for updates.
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)):
+            raise NotImplementedError(
+                "Surface-based images are not yet supported by this module."
+            )
+
     def fit(
         self,
         imgs,
@@ -434,6 +441,14 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 "Need one or more Niimg-like objects as input, "
                 "an empty list was given."
             )
+
+        # Does not support surface-based images yet; See #4756 for updates.
+        for img in imgs:
+            if isinstance(imgs, SurfaceImage):
+                raise NotImplementedError(
+                    "Surface images are not yet supported by this module."
+                )
+
         self.masker_ = check_embedded_masker(self)
 
         # Avoid warning with imgs != None
