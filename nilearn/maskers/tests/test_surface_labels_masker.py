@@ -2,6 +2,7 @@ import warnings
 
 import numpy as np
 import pytest
+from numpy.testing import assert_array_equal
 from sklearn import __version__ as sklearn_version
 
 from nilearn._utils import compare_version
@@ -108,15 +109,18 @@ def test_surface_label_masker_transform(surf_label_img, surf_img):
     assert signal.shape == (n_timepoints, n_labels)
 
 
-def test_surface_label_masker_transform_check_output(surf_mesh, surf_img):
+def test_surface_label_masker_transform_check_output(surf_mesh, surf_img, rng):
     """Check actual content of the transform.
 
-    Use a label mask with more than one label.
-    Check that output data is properly averaged.
+    - Use a label mask with more than one label.
+    - Use data with known content and expected mean.
+      and background label data has random value.
+    - Check that output data is properly averaged,
+      even when labels are spread across hemispheres.
     """
     labels = {
-        "left": np.asarray([2, 0, 1, 1]),
-        "right": np.asarray([10, 10, 20, 20, 0]),
+        "left": np.asarray([2, 0, 10, 1]),
+        "right": np.asarray([10, 1, 20, 20, 0]),
     }
     surf_label_img = SurfaceImage(surf_mesh(), labels)
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
@@ -133,23 +137,88 @@ def test_surface_label_masker_transform_check_output(surf_mesh, surf_img):
         "left": np.asarray(
             [
                 expected_mean_value["2"],
-                0,
-                expected_mean_value["1"],
+                rng.random(),
+                expected_mean_value["10"],
                 expected_mean_value["1"],
             ]
         ),
         "right": np.asarray(
             [
                 expected_mean_value["10"],
-                expected_mean_value["10"],
+                expected_mean_value["1"],
                 expected_mean_value["20"],
                 expected_mean_value["20"],
-                0,
+                rng.random(),
             ]
         ),
     }
     surf_img = SurfaceImage(surf_mesh(), data)
-    masker.transform(surf_img)
+    signal = masker.transform(surf_img)
+
+    n_labels = len(expected_mean_value)
+    assert signal.shape == (n_labels,)
+
+    expected_signal = np.asarray(
+        [
+            expected_mean_value["1"],
+            expected_mean_value["2"],
+            expected_mean_value["10"],
+            expected_mean_value["20"],
+        ]
+    )
+
+    assert_array_equal(signal, expected_signal)
+
+    # Now with 2 'time points'
+    data = {
+        "left": np.asarray(
+            [
+                [
+                    expected_mean_value["2"] - 1,
+                    rng.random(),
+                    expected_mean_value["10"] - 1,
+                    expected_mean_value["1"] - 1,
+                ],
+                [
+                    expected_mean_value["2"] + 1,
+                    rng.random(),
+                    expected_mean_value["10"] + 1,
+                    expected_mean_value["1"] + 1,
+                ],
+            ]
+        ),
+        "right": np.asarray(
+            [
+                [
+                    expected_mean_value["10"] - 1,
+                    expected_mean_value["1"] - 1,
+                    expected_mean_value["20"] - 1,
+                    expected_mean_value["20"] - 1,
+                    rng.random(),
+                ],
+                [
+                    expected_mean_value["10"] + 1,
+                    expected_mean_value["1"] + 1,
+                    expected_mean_value["20"] + 1,
+                    expected_mean_value["20"] + 1,
+                    rng.random(),
+                ],
+            ]
+        ),
+    }
+
+    assert signal.shape == (n_labels,)
+
+    expected_signal = np.asarray(
+        [
+            expected_mean_value["1"],
+            expected_mean_value["2"],
+            expected_mean_value["10"],
+            expected_mean_value["20"],
+        ]
+    )
+
+    assert_array_equal(signal, expected_signal)
 
 
 def test_warning_smoothing(surf_img, surf_label_img):
