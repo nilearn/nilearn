@@ -432,7 +432,7 @@ def test_pattern():
 
     assert str(pattern_0) == "Pattern(pattern='[0-9akqj]{5}$', flags=0)"
 
-    pattern_1 = neurovault.Pattern(r"[0-9akqj]{5}$", re.I)
+    pattern_1 = neurovault.Pattern(r"[0-9akqj]{5}$", re.IGNORECASE)
 
     assert pattern_0 == "ak05q"
     assert pattern_0 != "Ak05q"
