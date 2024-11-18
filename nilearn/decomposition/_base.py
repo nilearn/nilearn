@@ -437,16 +437,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             )
 
         # Does not support surface-based images yet; See #4756 for updates.
-        # check if the mask is a surface-based masker or surface image
-        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)):
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
+            isinstance(x, SurfaceImage) for x in imgs
+        ):
             raise NotImplementedError(
                 "Surface-based images are not yet supported by this module."
             )
-        # check if the images are surface-based images
-        if any(isinstance(x, SurfaceImage) for x in imgs):
-                raise NotImplementedError(
-                    "Surface images are not yet supported by this module."
-                )
 
         self.masker_ = check_embedded_masker(self)
 
