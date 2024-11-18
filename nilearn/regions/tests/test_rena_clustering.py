@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from joblib import Memory
+from numpy.testing import assert_array_equal
 from sklearn import __version__ as sklearn_version
 
 from nilearn._utils import compare_version
@@ -8,8 +9,13 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.conftest import _img_3d_mni
 from nilearn.image import get_data
-from nilearn.maskers import NiftiMasker
-from nilearn.regions.rena_clustering import ReNA
+from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.regions.rena_clustering import (
+    ReNA,
+    _make_edges_and_weights_surface,
+    _make_edges_surface,
+)
+from nilearn.surface import SurfaceImage
 
 extra_valid_checks = [
     "check_clusterer_compute_labels_predict",
@@ -105,3 +111,97 @@ def test_rena_clustering():
         assert n_clusters != rena.n_clusters_
 
     del n_voxels, X_red, X_compress
+
+
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.mark.parametrize("part", ["left", "right"])
+def test_make_edges_surface(surf_mask, part):
+    """Test if the edges and edge mask are correctly computed."""
+    faces = surf_mask().mesh.parts[part].faces
+    # the mask for left part has total 4 vertices out of which 2 are True
+    # and for right part it has total 5 vertices out of which 3 are True
+    mask = surf_mask().data.parts[part]
+    edges_unmasked, edges_mask = _make_edges_surface(faces, mask)
+
+    # only one edge remains after masking the left part (between 2 vertices)
+    if part == "left":
+        assert edges_unmasked[:, edges_mask].shape == (2, 1)
+    # three edges remain after masking the right part (between 3 vertices)
+    elif part == "right":
+        assert edges_unmasked[:, edges_mask].shape == (2, 3)
+
+
+def test_make_edges_and_weights_surface(surf_mesh, surf_img):
+    """Smoke test for _make_edges_and_weights_surface. Here we create a new
+    surface mask (relative to the one used in test_make_edges_surface) to make
+    sure overall edge and weight computation is robust.
+    """
+    # make a new mask for this test
+    # the mask for left part has total 4 vertices out of which 3 are True
+    # and for right part it has total 5 vertices out of which 3 are True
+    data = {
+        "left": np.array([False, True, True, True]),
+        "right": np.array([True, True, False, True, False]),
+    }
+    surf_mask = SurfaceImage(surf_mesh(), data)
+    # create a surface masker
+    masker = SurfaceMasker(surf_mask).fit()
+    # mask the surface image with 50 samples
+    X = masker.transform(surf_img((50,)))
+    # compute edges and weights
+    edges, weights = _make_edges_and_weights_surface(X, surf_mask)
+
+    # make sure edges and weights have two parts, left and right
+    assert len(edges) == 2
+    assert len(weights) == 2
+    for part in ["left", "right"]:
+        assert part in edges
+        assert part in weights
+
+    # make sure there are no overlapping indices between left and right parts
+    assert np.intersect1d(edges["left"], edges["right"]).size == 0
+
+    # three edges remain after masking the left part (between 3 vertices)
+    # these would be the edges between 0th and 1st, 1st and 2nd,
+    # and 0th and 2nd vertices of the adjacency matrix
+    assert_array_equal(edges["left"], np.array([[0, 1, 0], [1, 2, 2]]))
+    # three edges remain after masking the right part (between 3 vertices)
+    # these would be the edges between 3rd and 4th, 3rd and 5th,
+    # and 4th and 5th vertices of the adjacency matrix
+    assert_array_equal(edges["right"], np.array([[3, 3, 4], [4, 5, 5]]))
+
+    # weights are computed for each edge
+    assert len(weights["left"]) == 3
+    assert len(weights["right"]) == 3
+
+
+@pytest.mark.parametrize("mask_as", ["surface_image", "surface_masker"])
+@pytest.mark.parametrize("n_clusters", [2, 4, 5])
+def test_rena_clustering_input_mask_surface(
+    surf_img, surf_mask, mask_as, n_clusters
+):
+    """Test if ReNA clustering works in both cases when mask_img is either a
+    SurfaceImage or SurfaceMasker.
+    """
+    # create a surface masker
+    masker = SurfaceMasker(surf_mask()).fit()
+    # mask the surface image with 50 samples
+    X = masker.transform(surf_img((50,)))
+    if mask_as == "surface_image":
+        # instantiate ReNA with mask_img as a SurfaceImage
+        clustering = ReNA(mask_img=surf_mask(), n_clusters=n_clusters)
+    elif mask_as == "surface_masker":
+        # instantiate ReNA with mask_img as a SurfaceMasker
+        clustering = ReNA(mask_img=masker, n_clusters=n_clusters)
+    # fit and transform the data
+    X_transformed = clustering.fit_transform(X)
+    # inverse transform the transformed data
+    X_inverse = clustering.inverse_transform(X_transformed)
+
+    # make sure the n_features in transformed data were reduced to n_clusters
+    assert X_transformed.shape[1] == n_clusters
+
+    # make sure the inverse transformed data has the same shape as the original
+    assert X_inverse.shape == X.shape

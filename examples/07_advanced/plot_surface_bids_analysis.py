@@ -71,7 +71,7 @@ models, run_imgs, events, confounds = first_level_from_bids(
 # Note that those correspond spatially, as they are both in :term:`MNI` space.
 from pathlib import Path
 
-from nilearn.experimental.surface import load_fsaverage
+from nilearn.datasets import load_fsaverage
 from nilearn.surface import SurfaceImage
 
 fsaverage5 = load_fsaverage()
@@ -126,7 +126,7 @@ z_val_right = norm.isf(pval_right)
 
 # %%
 # Plot the resulting maps, at first on the left hemisphere.
-from nilearn.experimental.surface import load_fsaverage_data
+from nilearn.datasets import load_fsaverage_data
 from nilearn.plotting import plot_surf_stat_map, show
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")

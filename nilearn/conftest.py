@@ -31,8 +31,6 @@ else:
         [
             "plotting",
             "reporting",
-            "experimental/plotting",
-            "experimental/reporting",
         ]
     )
     matplotlib = None

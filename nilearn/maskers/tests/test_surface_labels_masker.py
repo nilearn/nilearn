@@ -3,9 +3,7 @@ import warnings
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
-from sklearn import __version__ as sklearn_version
 
-from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers import SurfaceLabelsMasker, SurfaceMasker
@@ -23,9 +21,6 @@ extra_valid_checks = [
     "check_mixin_order",
     "check_estimator_tags_renamed",
 ]
-# TODO remove when dropping support for sklearn_version < 1.5.0
-if compare_version(sklearn_version, "<", "1.5.0"):
-    extra_valid_checks.append("check_estimator_sparse_data")
 
 
 @pytest.mark.parametrize(

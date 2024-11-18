@@ -72,7 +72,8 @@ events = pd.read_table(events_file)
 # that contains both the mesh
 # (here we use the one from the fsaverage5 templates)
 # and the BOLD data that we project on the surface.
-from nilearn.experimental.surface import load_fsaverage
+
+from nilearn.datasets import load_fsaverage
 from nilearn.surface import SurfaceImage
 
 fsaverage5 = load_fsaverage()
@@ -178,7 +179,7 @@ contrasts = {
 
 # %%
 # Let's estimate the contrasts by iterating over them.
-from nilearn.experimental.surface import load_fsaverage_data
+from nilearn.datasets import load_fsaverage_data
 from nilearn.plotting import plot_surf_stat_map, show
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")

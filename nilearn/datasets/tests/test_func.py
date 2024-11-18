@@ -599,6 +599,12 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
     assert nki_data.description != ""
 
 
+def test_load_nki_error():
+    """Give incorrect mesh_type argument."""
+    with pytest.raises(ValueError, match="'mesh_type' must be one of"):
+        func.load_nki(mesh_type="foo")
+
+
 def _mock_participants_data(n_ids=5):
     """Maximum 8 ids are allowed to mock."""
     ids = [
