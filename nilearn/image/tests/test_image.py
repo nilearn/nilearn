@@ -1040,7 +1040,7 @@ def test_warning_copy_header_false(request, func, input_img):
     # Use the request fixture to get the actual fixture value
     actual_input_img = request.getfixturevalue(input_img)
     with pytest.warns(FutureWarning, match="From release 0.13.0 onwards*"):
-        if func == threshold_img:
+        if func is threshold_img:
             func(actual_input_img, threshold=0.5, copy_header=False)
         else:
             func(actual_input_img, copy_header=False)
