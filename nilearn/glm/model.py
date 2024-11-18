@@ -192,10 +192,10 @@ class LikelihoodModelResults:
         if matrix.ndim == 1:
             matrix = matrix[None]
         if matrix.size == 0:
-            raise ValueError("t contrasts cannot be empty: " f"got {matrix}")
+            raise ValueError(f"t contrasts cannot be empty: got {matrix}")
         if matrix.shape[0] != 1:
             raise ValueError(
-                "t contrasts should have only one row: " f"got {matrix}."
+                f"t contrasts should have only one row: got {matrix}."
             )
         matrix = pad_contrast(con_val=matrix, theta=self.theta, stat_type="t")
         store = set(store)

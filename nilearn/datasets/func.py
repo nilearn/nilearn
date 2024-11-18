@@ -722,13 +722,11 @@ def fetch_localizer_contrasts(
         "left button press (auditory cue)": "left auditory click",
         "left button press (visual cue)": "left visual click",
         "left button press": "left auditory&visual click",
-        "left vs right button press": "left auditory & visual click vs "
-        + "right auditory&visual click",
+        "left vs right button press": "left auditory & visual click vs right auditory&visual click",  # noqa: E501
         "right button press (auditory cue)": "right auditory click",
         "right button press (visual cue)": "right visual click",
         "right button press": "right auditory & visual click",
-        "right vs left button press": "right auditory & visual click "
-        + "vs left auditory&visual click",
+        "right vs left button press": "right auditory & visual click vs left auditory&visual click",  # noqa: E501
         "button press (auditory cue) vs sentence listening": "auditory click vs auditory sentences",  # noqa: E501
         "button press (visual cue) vs sentence reading": "visual click vs visual sentences",  # noqa: E501
         "button press vs calculation and sentence listening/reading": "auditory&visual motor vs cognitive processing",  # noqa: E501

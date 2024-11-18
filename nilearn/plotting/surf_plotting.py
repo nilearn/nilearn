@@ -1771,7 +1771,7 @@ def plot_img_on_surf(
     for arg in ("figure", "axes", "engine"):
         if arg in kwargs:
             raise ValueError(
-                "plot_img_on_surf does not accept " f"{arg} as an argument"
+                f"plot_img_on_surf does not accept {arg} as an argument"
             )
 
     stat_map = check_niimg_3d(stat_map, dtype="auto")
