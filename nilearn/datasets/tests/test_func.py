@@ -1011,8 +1011,7 @@ def test_fetch_spm_auditory(tmp_path):
 
 
 def _generate_spm_multimodal(subject_dir=None, n_sessions=2, n_vol=390):
-    files = []
-    files.append("sMRI/smri.img")
+    files = ["sMRI/smri.img"]
     for session in range(n_sessions):
         files.append(f"fMRI/trials_ses{int(session + 1)}.mat")
         files.extend(
