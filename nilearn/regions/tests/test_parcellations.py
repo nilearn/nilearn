@@ -8,7 +8,6 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.conftest import _affine_eye
-from nilearn.maskers import SurfaceMasker
 from nilearn.regions.parcellations import (
     Parcellations,
     _check_parameters_transform,
