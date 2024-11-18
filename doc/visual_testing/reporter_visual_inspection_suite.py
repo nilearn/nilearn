@@ -34,6 +34,7 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceLabelsMasker,
     SurfaceMasker,
 )
 from nilearn.reporting import make_glm_report
@@ -476,7 +477,7 @@ def report_surface_label_masker():
     )
     label_names = [x.decode("utf-8") for x in destrieux.labels]
 
-    labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
+    labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
     labels_masker_report_unfitted = labels_masker.generate_report()
     labels_masker_report_unfitted.save_as_html(
         REPORTS_DIR / "surface_label_masker_unfitted.html"

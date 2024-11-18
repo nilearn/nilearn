@@ -78,8 +78,8 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         mask = safe_get_data(mask_img)
         if not np.allclose(mask_img.affine, img.affine):
             raise ValueError(
-                f"Mask affine: \n{mask_img.affine}\n "
-                f"is different from img affine: \n{img.affine}"
+                f"Mask affine:\n{mask_img.affine}\n "
+                f"is different from img affine:\n{img.affine}"
             )
     else:
         mask = None

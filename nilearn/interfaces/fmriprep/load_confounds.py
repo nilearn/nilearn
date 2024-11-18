@@ -91,9 +91,9 @@ def _check_error(missing):
     if missing["confounds"] or missing["keywords"]:
         error_msg = (
             "The following keywords or parameters are missing: "
-            + f" {missing['confounds']}"
-            + f" {missing['keywords']}"
-            + ". You may want to try a different denoising strategy."
+            f" {missing['confounds']}"
+            f" {missing['keywords']}"
+            ". You may want to try a different denoising strategy."
         )
         raise ValueError(error_msg)
 

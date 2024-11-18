@@ -859,18 +859,9 @@ def load_surf_data(surf_data):
                 surf_data, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS
             )
 
-            if (
-                surf_data.endswith("nii")
-                or surf_data.endswith("nii.gz")
-                or surf_data.endswith("mgz")
-            ):
+            if surf_data.endswith(("nii", "nii.gz", "mgz")):
                 data_part = np.squeeze(get_data(load(surf_data)))
-            elif (
-                surf_data.endswith("area")
-                or surf_data.endswith("curv")
-                or surf_data.endswith("sulc")
-                or surf_data.endswith("thickness")
-            ):
+            elif surf_data.endswith(("area", "curv", "sulc", "thickness")):
                 data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith("annot"):
                 data_part = fs.io.read_annot(surf_data)[0]
@@ -1007,7 +998,7 @@ def load_surf_mesh(surf_mesh):
         if len(file_list) > 1:
             # empty list is handled inside resolve_globbing function
             raise ValueError(
-                f"More than one file matching path: {surf_mesh} \n"
+                f"More than one file matching path: {surf_mesh}\n"
                 "load_surf_mesh can only load one file at a time."
             )
         surf_mesh = str(file_list[0])
@@ -1636,7 +1627,7 @@ def _sanitize_filename(filename):
     if "hemi-L" in filename.stem and "hemi-R" in filename.stem:
         raise ValueError(
             "'filename' cannot contain both "
-            "'hemi-L' and 'hemi-R'. \n"
+            "'hemi-L' and 'hemi-R'.\n"
             f"Got: {filename}"
         )
     return filename

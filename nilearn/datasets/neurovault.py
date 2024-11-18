@@ -2694,14 +2694,17 @@ def fetch_neurovault(
     # Users may get confused if they write their image_filter function
     # and the default filters contained in image_terms still apply, so we
     # issue a warning.
-    if image_filter != _empty_filter and image_terms == basic_image_terms():
+    if (
+        image_filter is not _empty_filter
+        and image_terms == basic_image_terms()
+    ):
         warnings.warn(
             "You specified a value for `image_filter` but the "
             "default filters in `image_terms` still apply. "
             "If you want to disable them, pass `image_terms={}`"
         )
     if (
-        collection_filter != _empty_filter
+        collection_filter is not _empty_filter
         and collection_terms == basic_collection_terms()
     ):
         warnings.warn(

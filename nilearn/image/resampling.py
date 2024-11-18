@@ -339,7 +339,7 @@ def _check_force_resample(force_resample):
         warnings.warn(
             (
                 "'force_resample' will be set to 'True'"
-                " by default in Nilearn 0.13.0. \n"
+                " by default in Nilearn 0.13.0.\n"
                 "Use 'force_resample=True' to suppress this warning."
             ),
             FutureWarning,

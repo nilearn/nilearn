@@ -49,7 +49,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Move SurfaceMasker from experimental to :class:`nilearn.maskers.SurfaceMasker` (:gh:`4692` by `Rémi Gau`_).
+- :bdg-dark:`Code` Move SurfaceMasker and SurfaceLabelsMasker from experimental to :class:`nilearn.maskers.SurfaceMasker` and to :class:`nilearn.maskers.SurfaceLabelsMasker` (:gh:`4692` and :gh:`4714` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Move SurfaceImage and associated classes to from experimental to :mod:`nilearn.surface` (:gh:`4723` by `Rémi Gau`_).
 
