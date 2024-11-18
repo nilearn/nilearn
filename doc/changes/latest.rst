@@ -49,7 +49,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Add move :func:`nilearn.datasets.load_nki`, :func:`nilearn.datasets.load_fsaverage`  and :func:`nilearn.datasets.load_fsaverage_data` to that return SurfaceImage or PolyMesh instances to the stable API (:gh:`4693` by `Rémi Gau`_ based on original work by `Jerome Dockes`_).
+- :bdg-dark:`Code` Add to the stable API: :func:`nilearn.datasets.load_nki` that returns the NKI dataset as a list of :obj:`~nilearn.surface.SurfaceImage` instances, :func:`nilearn.datasets.load_fsaverage` that returns fsaverage meshes as a :obj:`dict` of :obj:`~nilearn.surface.PolyMesh` instances, and :func:`nilearn.datasets.load_fsaverage_data` that returns fsaverage data (thickness, curvature...) as :obj:`~nilearn.surface.SurfaceImage` instances (:gh:`4693` by `Rémi Gau`_ based on original work by `Jerome Dockes`_).
 
 - :bdg-dark:`Code` Move SurfaceMasker from experimental to :class:`nilearn.maskers.SurfaceMasker` (:gh:`4692` by `Rémi Gau`_).
 
