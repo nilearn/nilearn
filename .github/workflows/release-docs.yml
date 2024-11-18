@@ -113,7 +113,9 @@ jobs:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
 
         -   name: Install tox
-            run: python -m pip install pip tox
+            run: |
+                python -m pip install uv
+                uv tool install tox --with tox-uv
 
         -   name: Build docs
             # We let tox handle creating virtual env and install dependencies.

@@ -33,7 +33,9 @@ jobs:
                 allow-prereleases: false
 
         -   name: Install tox
-            run: python -m pip install --upgrade tox
+            run: |
+                python -m pip install uv
+                uv tool install tox --with tox-uv
 
         -   name: Run pre-commit via tox
             run: tox

@@ -69,7 +69,9 @@ jobs:
 
         -   name: Install tox
             if: steps.check-commit-msg.outputs.skip == 'false'
-            run: python -m pip install tox
+            run: |
+                python -m pip install uv
+                uv tool install tox --with tox-uv
 
         -   name: Run test suite
             if: steps.check-commit-msg.outputs.skip == 'false'
