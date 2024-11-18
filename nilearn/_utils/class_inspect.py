@@ -21,7 +21,7 @@ VALID_CHECKS = [
     "check_set_params",
 ]
 
-if compare_version(sklearn_version, ">=", "1.6.0"):
+if compare_version(sklearn_version, ">", "1.5.2"):
     VALID_CHECKS.append("check_valid_tag_types")
 else:
     VALID_CHECKS.append("check_estimator_get_tags_default_keys")
