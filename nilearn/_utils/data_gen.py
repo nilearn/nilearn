@@ -1045,7 +1045,7 @@ def _check_entities_and_labels(entities):
         # Won't be implemented until there is a need.
         raise ValueError("Only a single extra entity is supported for now.")
 
-    for key in entities:
+    for key, value in entities.items():
         if key not in [
             *bids_entities()["raw"],
             *bids_entities()["derivatives"],
@@ -1058,7 +1058,8 @@ def _check_entities_and_labels(entities):
                 f"Invalid entity: {key}. Allowed entities are: "
                 f"{allowed_entities}"
             )
-        [check_bids_label(label_) for label_ in entities[key]]
+        for label_ in value:
+            check_bids_label(label_)
 
 
 def _mock_bids_dataset(

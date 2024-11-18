@@ -128,7 +128,8 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
 
 def _rm_all_json_files_from_bids_dataset(bids_path):
     """Remove all json and make sure that get_bids_files does not find any."""
-    [x.unlink() for x in bids_path.glob("**/*.json")]
+    for x in bids_path.glob("**/*.json"):
+        x.unlink()
     selection = get_bids_files(bids_path, file_type="json", sub_folder=True)
     assert selection == []
     selection = get_bids_files(bids_path, file_type="json", sub_folder=False)
