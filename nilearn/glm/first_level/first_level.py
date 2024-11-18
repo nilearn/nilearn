@@ -2233,7 +2233,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
         elif run:
             if run in set(run_check_list):
                 raise ValueError(
-                    f"{msg_start}" f"for the same run {run}. " f"{msg_end}"
+                    f"{msg_start}for the same run {run}. {msg_end}"
                 )
             run_check_list.append(run)
 
@@ -2321,7 +2321,7 @@ def _check_bids_events_list(
         )
         if len(this_event) == 0:
             raise ValueError(
-                f"No events.tsv files " f"corresponding to {msg_suffix}"
+                f"No events.tsv files corresponding to {msg_suffix}"
             )
         if len(this_event) > 1:
             raise ValueError(
