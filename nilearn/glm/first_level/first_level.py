@@ -2206,8 +2206,8 @@ def _check_bids_image_list(imgs, sub_label, filters):
 
     for img_ in imgs:
         parsed_filename = parse_bids_filename(img_)
-        session = parsed_filename.get("ses", None)
-        run = parsed_filename.get("run", None)
+        session = parsed_filename.get("ses")
+        run = parsed_filename.get("run")
 
         if session and run:
             if (session, run) in set(run_check_list):
