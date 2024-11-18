@@ -1127,12 +1127,10 @@ def _check_events_file_uses_tab_separators(events_files):
         try:
             with Path(events_file_).open() as events_file_obj:
                 events_file_sample = events_file_obj.readline()
-            """
-            The following errors are not being handled here,
-            as they are handled elsewhere in the calling code.
-            Handling them here will beak the calling code,
-            and refactoring that is not straightforward.
-            """
+            # The following errors are not being handled here,
+            # as they are handled elsewhere in the calling code.
+            # Handling them here will break the calling code,
+            # and refactoring is not straightforward.
         except OSError:  # if invalid filepath.
             pass
         else:
