@@ -1439,6 +1439,21 @@ class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
             n_jobs=n_jobs,
         )
 
+    def _more_tags(self):
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
+            return {"multioutput": True}
+        tags = super().__sklearn_tags__()
+        tags.target_tags.required = True
+        return tags
+
 
 @fill_doc
 class FREMRegressor(_BaseDecoder):
