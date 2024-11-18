@@ -333,6 +333,6 @@ def test_parcellation_not_implemented_with_surface(
             )
         else:
             parcellate = Parcellations(
-                method=method, n_parcels=n_parcels, mask=masker
+                method=method, n_parcels=n_parcels, mask=None
             )
             parcellate.fit(surf_img((50,)))
