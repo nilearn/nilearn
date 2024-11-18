@@ -383,12 +383,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-        # Does not support surface-based images yet; See #4756 for updates.
-        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)):
-            raise NotImplementedError(
-                "Surface-based images are not yet supported by this module."
-            )
-
     def fit(
         self,
         imgs,
@@ -443,6 +437,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             )
 
         # Does not support surface-based images yet; See #4756 for updates.
+        # check if the mask is a surface-based masker or surface image
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)):
+            raise NotImplementedError(
+                "Surface-based images are not yet supported by this module."
+            )
+        # check if the images are surface-based images
         for img in imgs:
             if isinstance(img, SurfaceImage):
                 raise NotImplementedError(

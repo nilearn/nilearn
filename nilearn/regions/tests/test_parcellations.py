@@ -321,18 +321,23 @@ def test_parcellation_not_implemented_with_surface(
     """Raise NotImplementedError for surface data."""
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
+    # mask the surface image to give 2D array
+    X = masker.transform(surf_img((50,)))
     with pytest.raises(NotImplementedError):
         # if mask_as is surface_image, directly pass surf_mask
         if mask_as == "surface_image":
             parcellate = Parcellations(
                 method=method, n_parcels=n_parcels, mask=surf_mask()
             )
+            parcellate.fit_transform(X)
+        # if mask_as is surface_masker, pass masker
         elif mask_as == "surface_masker":
             parcellate = Parcellations(
                 method=method, n_parcels=n_parcels, mask=masker
             )
+            parcellate.fit_transform(X)
+        # if mask_as is None, do not pass mask (default mask is None)
+        # but would raise error if we fit_transform on surface images
         else:
-            parcellate = Parcellations(
-                method=method, n_parcels=n_parcels, mask=None
-            )
-            parcellate.fit(surf_img((50,)))
+            parcellate = Parcellations(method=method, n_parcels=n_parcels)
+            parcellate.fit_transform(surf_img((50,)))
