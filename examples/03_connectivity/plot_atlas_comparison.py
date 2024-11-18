@@ -167,7 +167,6 @@ plotting.show()
 # measure, which leads to an asymmetric connectivity matrix.
 # The plot_connectome function accepts both symmetric and asymmetric
 # matrices, but plot the latter as a directed graph.
-import numpy as np
 
 
 # Define a custom function to compute lag correlation on the time series
