@@ -16,7 +16,7 @@ from .helpers import stringify_path
 
 def _get_data(img):
     # copy-pasted from
-    # https://github.com/nipy/nibabel/blob/de44a105c1267b07ef9e28f6c35b31f851d5a005/nibabel/dataobj_images.py#L204 # noqa
+    # https://github.com/nipy/nibabel/blob/de44a10/nibabel/dataobj_images.py#L204
     #
     # get_data is removed from nibabel because:
     # see https://github.com/nipy/nibabel/wiki/BIAP8

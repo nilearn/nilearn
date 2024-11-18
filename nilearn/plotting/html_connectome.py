@@ -20,7 +20,7 @@ from .js_plotting_utils import (
 )
 
 
-class ConnectomeView(HTMLDocument):  # noqa E101
+class ConnectomeView(HTMLDocument):  # noqa: D101
     pass
 
 

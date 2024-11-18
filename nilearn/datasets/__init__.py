@@ -114,7 +114,6 @@ __all__ = [
     "fetch_neurovault_auditory_computation_task",
     "fetch_neurovault_ids",
     "fetch_neurovault_motor_task",
-    "fetch_openneuro_dataset_index",
     "fetch_openneuro_dataset",
     "fetch_spm_auditory",
     "fetch_spm_multimodal_fmri",

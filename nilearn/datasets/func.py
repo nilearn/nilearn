@@ -168,7 +168,7 @@ def fetch_haxby(
             url + f"subj{int(i)}-2010.01.14.tar.gz",
             {
                 "uncompress": True,
-                "md5sum": md5sums.get(f"subj{int(i)}-2010.01.14.tar.gz", None),
+                "md5sum": md5sums.get(f"subj{int(i)}-2010.01.14.tar.gz"),
             },
         )
         for i in subject_mask
@@ -699,8 +699,8 @@ def fetch_localizer_contrasts(
         "checkerboard": "checkerboard",
         "horizontal checkerboard": "horizontal checkerboard",
         "vertical checkerboard": "vertical checkerboard",
-        "horizontal vs vertical checkerboard": "horizontal vs vertical checkerboard",  # noqa 501
-        "vertical vs horizontal checkerboard": "vertical vs horizontal checkerboard",  # noqa 501
+        "horizontal vs vertical checkerboard": "horizontal vs vertical checkerboard",  # noqa: E501
+        "vertical vs horizontal checkerboard": "vertical vs horizontal checkerboard",  # noqa: E501
         # Sentences
         "sentence listening": "auditory sentences",
         "sentence reading": "visual sentences",
@@ -710,32 +710,30 @@ def fetch_localizer_contrasts(
         "calculation (auditory cue)": "auditory calculation",
         "calculation (visual cue)": "visual calculation",
         "calculation (auditory and visual cue)": "auditory&visual calculation",
-        "calculation (auditory cue) vs sentence listening": "auditory calculation vs auditory sentences",  # noqa 501
-        "calculation (visual cue) vs sentence reading": "visual calculation vs sentences",  # noqa 501
+        "calculation (auditory cue) vs sentence listening": "auditory calculation vs auditory sentences",  # noqa: E501
+        "calculation (visual cue) vs sentence reading": "visual calculation vs sentences",  # noqa: E501
         "calculation vs sentences": "auditory&visual calculation vs sentences",
         # Calculation + Sentences
-        "calculation (auditory cue) and sentence listening": "auditory processing",  # noqa 501
+        "calculation (auditory cue) and sentence listening": "auditory processing",  # noqa: E501
         "calculation (visual cue) and sentence reading": "visual processing",
         "calculation (visual cue) and sentence reading vs "
-        "calculation (auditory cue) and sentence listening": "visual processing vs auditory processing",  # noqa 501
+        "calculation (auditory cue) and sentence listening": "visual processing vs auditory processing",  # noqa: E501
         "calculation (auditory cue) and sentence listening vs "
-        "calculation (visual cue) and sentence reading": "auditory processing vs visual processing",  # noqa 501
-        "calculation (visual cue) and sentence reading vs checkerboard": "visual processing vs checkerboard",  # noqa 501
-        "calculation and sentence listening/reading vs button press": "cognitive processing vs motor",  # noqa 501
+        "calculation (visual cue) and sentence reading": "auditory processing vs visual processing",  # noqa: E501
+        "calculation (visual cue) and sentence reading vs checkerboard": "visual processing vs checkerboard",  # noqa: E501
+        "calculation and sentence listening/reading vs button press": "cognitive processing vs motor",  # noqa: E501
         # Button press
         "left button press (auditory cue)": "left auditory click",
         "left button press (visual cue)": "left visual click",
         "left button press": "left auditory&visual click",
-        "left vs right button press": "left auditory & visual click vs "
-        + "right auditory&visual click",
+        "left vs right button press": "left auditory & visual click vs right auditory&visual click",  # noqa: E501
         "right button press (auditory cue)": "right auditory click",
         "right button press (visual cue)": "right visual click",
         "right button press": "right auditory & visual click",
-        "right vs left button press": "right auditory & visual click "
-        + "vs left auditory&visual click",
-        "button press (auditory cue) vs sentence listening": "auditory click vs auditory sentences",  # noqa 501
-        "button press (visual cue) vs sentence reading": "visual click vs visual sentences",  # noqa 501
-        "button press vs calculation and sentence listening/reading": "auditory&visual motor vs cognitive processing",  # noqa 501
+        "right vs left button press": "right auditory & visual click vs left auditory&visual click",  # noqa: E501
+        "button press (auditory cue) vs sentence listening": "auditory click vs auditory sentences",  # noqa: E501
+        "button press (visual cue) vs sentence reading": "visual click vs visual sentences",  # noqa: E501
+        "button press vs calculation and sentence listening/reading": "auditory&visual motor vs cognitive processing",  # noqa: E501
     }
     allowed_contrasts = list(contrast_name_wrapper.values())
 
@@ -789,7 +787,7 @@ def fetch_localizer_contrasts(
     filenames = []
     for subject_id in subject_ids:
         for data_type in data_types:
-            for _, contrast in enumerate(contrasts_wrapped):
+            for contrast in contrasts_wrapped:
                 name_aux = f"{data_type}_{contrast}"
                 name_aux.replace(" ", "_")
                 file_path = Path(
@@ -2530,12 +2528,12 @@ def patch_openneuro_dataset(file_list):
     REPLACEMENTS = {
         "_T1w_brainmask": "_desc-brain_mask",
         "_T1w_preproc": "_desc-preproc_T1w",
-        "_T1w_space-MNI152NLin2009cAsym_brainmask": "_space-MNI152NLin2009cAsym_desc-brain_mask",  # noqa 501
-        "_T1w_space-MNI152NLin2009cAsym_class-": "_space-MNI152NLin2009cAsym_label-",  # noqa 501
-        "_T1w_space-MNI152NLin2009cAsym_preproc": "_space-MNI152NLin2009cAsym_desc-preproc_T1w",  # noqa 501
+        "_T1w_space-MNI152NLin2009cAsym_brainmask": "_space-MNI152NLin2009cAsym_desc-brain_mask",  # noqa: E501
+        "_T1w_space-MNI152NLin2009cAsym_class-": "_space-MNI152NLin2009cAsym_label-",  # noqa: E501
+        "_T1w_space-MNI152NLin2009cAsym_preproc": "_space-MNI152NLin2009cAsym_desc-preproc_T1w",  # noqa: E501
         "_bold_confounds": "_desc-confounds_regressors",
-        "_bold_space-MNI152NLin2009cAsym_brainmask": "_space-MNI152NLin2009cAsym_desc-brain_mask",  # noqa 501
-        "_bold_space-MNI152NLin2009cAsym_preproc": "_space-MNI152NLin2009cAsym_desc-preproc_bold",  # noqa 501
+        "_bold_space-MNI152NLin2009cAsym_brainmask": "_space-MNI152NLin2009cAsym_desc-brain_mask",  # noqa: E501
+        "_bold_space-MNI152NLin2009cAsym_preproc": "_space-MNI152NLin2009cAsym_desc-preproc_bold",  # noqa: E501
     }
 
     # Create a symlink if a file with the modified filename does not exist

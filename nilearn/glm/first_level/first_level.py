@@ -322,12 +322,14 @@ class FirstLevelModel(BaseGLM):
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
 
-    mask_img : Niimg-like, NiftiMasker, SurfaceImage, SurfaceMasker, False or \
-               None, default=None
+    mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
+             :obj:`~nilearn.maskers.SurfaceMasker`, False or \
+             None, default=None
         Mask to be used on data.
         If an instance of masker is passed, then its mask will be used.
         If None is passed, the mask will be computed automatically
-        by a NiftiMasker or SurfaceMasker with default parameters.
+        by a NiftiMasker
+        or :obj:`~nilearn.maskers.SurfaceMasker` with default parameters.
         If False is given then the data will not be masked.
         In the case of surface analysis, passing None or False will lead to
         no masking.
@@ -703,7 +705,8 @@ class FirstLevelModel(BaseGLM):
         run_imgs : Niimg-like object, \
                    :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
-                   or :obj:`list` or :obj:`tuple` of SurfaceImage
+                   or :obj:`list` or \
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Data on which the :term:`GLM` will be fitted.
             If this is a list, the affine is considered the same for all.
 
@@ -721,7 +724,8 @@ class FirstLevelModel(BaseGLM):
                 a ``SurfaceMasker`` or ``SurfaceImage`` instance,
                 then ``run_imgs`` must be a
                 ``SurfaceImage`` object, \
-                a :obj:`list` or a :obj:`tuple` of ``SurfaceImage`` objects.
+                a :obj:`list` or \
+                a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage` objects.
 
         events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
                  :class:`pandas.DataFrame` or :obj:`str`, default=None
@@ -897,8 +901,8 @@ class FirstLevelModel(BaseGLM):
             "p_value",
             "effect_size",
             "effect_variance",
+            "all",  # must be the final entry!
         ]
-        valid_types.append("all")  # ensuring 'all' is the final entry.
         if output_type not in valid_types:
             raise ValueError(f"output_type must be one of {valid_types}")
         contrast = compute_fixed_effect_contrast(
@@ -994,7 +998,7 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        run_img : Niimg-like object or SurfaceImage object
+        run_img : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
             Used for setting up the masker object.
         """
         # Local import to prevent circular imports
@@ -1123,12 +1127,10 @@ def _check_events_file_uses_tab_separators(events_files):
         try:
             with Path(events_file_).open() as events_file_obj:
                 events_file_sample = events_file_obj.readline()
-            """
-            The following errors are not being handled here,
-            as they are handled elsewhere in the calling code.
-            Handling them here will beak the calling code,
-            and refactoring that is not straightforward.
-            """
+            # The following errors are not being handled here,
+            # as they are handled elsewhere in the calling code.
+            # Handling them here will break the calling code,
+            # and refactoring is not straightforward.
         except OSError:  # if invalid filepath.
             pass
         else:
@@ -2204,8 +2206,8 @@ def _check_bids_image_list(imgs, sub_label, filters):
 
     for img_ in imgs:
         parsed_filename = parse_bids_filename(img_)
-        session = parsed_filename.get("ses", None)
-        run = parsed_filename.get("run", None)
+        session = parsed_filename.get("ses")
+        run = parsed_filename.get("run")
 
         if session and run:
             if (session, run) in set(run_check_list):
@@ -2229,7 +2231,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
         elif run:
             if run in set(run_check_list):
                 raise ValueError(
-                    f"{msg_start}" f"for the same run {run}. " f"{msg_end}"
+                    f"{msg_start}for the same run {run}. {msg_end}"
                 )
             run_check_list.append(run)
 
@@ -2317,7 +2319,7 @@ def _check_bids_events_list(
         )
         if len(this_event) == 0:
             raise ValueError(
-                f"No events.tsv files " f"corresponding to {msg_suffix}"
+                f"No events.tsv files corresponding to {msg_suffix}"
             )
         if len(this_event) > 1:
             raise ValueError(

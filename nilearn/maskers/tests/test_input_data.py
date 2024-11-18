@@ -22,4 +22,4 @@ def test_import_from_input_data_with_warning():
     # Importing privates doesn't work
     with pytest.raises(ImportError):
         from nilearn.input_data.nifti_masker import _filter_and_mask
-    from nilearn.maskers.nifti_masker import _filter_and_mask  # noqa
+    from nilearn.maskers.nifti_masker import _filter_and_mask  # noqa: F401

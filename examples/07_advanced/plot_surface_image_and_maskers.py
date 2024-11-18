@@ -140,8 +140,6 @@ show()
 # -------------------
 # Now using the appropriate masker we can use a `Decoder` on surface data just
 # as we do for volume images.
-import numpy as np
-
 from nilearn.decoding import Decoder
 
 img = load_nki()[0]
