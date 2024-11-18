@@ -483,7 +483,7 @@ def surf_label_img(surf_mesh):
         "right": np.asarray([1, 1, 0, 0, 0]),
     }
 
-    return SurfaceImage(surf_mesh, data)
+    return SurfaceImage(surf_mesh(), data)
 
 
 @pytest.fixture
