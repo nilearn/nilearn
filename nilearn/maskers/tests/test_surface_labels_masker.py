@@ -8,6 +8,7 @@ from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers import SurfaceLabelsMasker, SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 extra_valid_checks = [
     "check_no_attributes_set_in_init",
@@ -105,6 +106,50 @@ def test_surface_label_masker_transform(surf_label_img, surf_img):
 
     assert isinstance(signal, np.ndarray)
     assert signal.shape == (n_timepoints, n_labels)
+
+
+def test_surface_label_masker_transform_check_output(surf_mesh, surf_img):
+    """Check actual content of the transform.
+
+    Use a label mask with more than one label.
+    Check that output data is properly averaged.
+    """
+    labels = {
+        "left": np.asarray([2, 0, 1, 1]),
+        "right": np.asarray([10, 10, 20, 20, 0]),
+    }
+    surf_label_img = SurfaceImage(surf_mesh(), labels)
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
+    masker = masker.fit()
+
+    expected_mean_value = {
+        "1": 5,
+        "2": 6,
+        "10": 50,
+        "20": 60,
+    }
+
+    data = {
+        "left": np.asarray(
+            [
+                expected_mean_value["2"],
+                0,
+                expected_mean_value["1"],
+                expected_mean_value["1"],
+            ]
+        ),
+        "right": np.asarray(
+            [
+                expected_mean_value["10"],
+                expected_mean_value["10"],
+                expected_mean_value["20"],
+                expected_mean_value["20"],
+                0,
+            ]
+        ),
+    }
+    surf_img = SurfaceImage(surf_mesh(), data)
+    masker.transform(surf_img)
 
 
 def test_warning_smoothing(surf_img, surf_label_img):
