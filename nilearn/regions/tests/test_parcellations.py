@@ -321,11 +321,11 @@ def test_parcellation_all_methods_with_surface(
     """Test if all parcellation methods work on surface."""
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
-    # mask the surface image with 50 samples
+    # mask the surface image
     X = masker.transform(surf_img((50,)))
     parcellate = Parcellations(method=method, n_parcels=n_parcels)
     # fit and transform the data
-    X_transformed = parcellate.fit_transform(X)
+    X_transformed = parcellate.fit_transform(surf_img((50,)))
     # inverse transform the transformed data
     X_inverse = parcellate.inverse_transform(X_transformed)
 
