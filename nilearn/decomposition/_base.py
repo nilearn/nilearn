@@ -260,7 +260,9 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
 
-    mask : Niimg-like object or MultiNiftiMasker instance, optional
+    mask : Niimg-like object or MultiNiftiMasker instance or
+           :obj:`~nilearn.surface.SurfaceImage` or
+           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, it will be computed
         automatically by a MultiNiftiMasker with default parameters.
@@ -333,7 +335,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     Attributes
     ----------
-    mask_img_ : Niimg-like object
+    mask_img_ : Niimg-like object :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
@@ -393,7 +395,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        imgs : list of Niimg-like objects
+        imgs : list of Niimg-like objects or
+        list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
@@ -494,7 +497,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        imgs : iterable of Niimg-like objects
+        imgs : iterable of Niimg-like objects or
+        list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data to be projected
 
@@ -570,7 +574,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        imgs : iterable of Niimg-like objects
+        imgs : iterable of Niimg-like objects or
+        list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data to be scored
 
