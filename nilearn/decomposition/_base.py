@@ -444,7 +444,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         # Does not support surface-based images yet; See #4756 for updates.
         for img in imgs:
-            if isinstance(imgs, SurfaceImage):
+            if isinstance(img, SurfaceImage):
                 raise NotImplementedError(
                     "Surface images are not yet supported by this module."
                 )
