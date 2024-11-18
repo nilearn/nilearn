@@ -1177,9 +1177,9 @@ def test_decoder_tags_classification():
     # remove if block when bumping sklearn_version to > 1.5
     ver = parse(sklearn_version)
     if ver.release[1] < 6:
-        assert model._more_tags()["require_y"] is True
+        assert model.__sklearn_tags__()["require_y"] is True
     else:
-        assert model._more_tags().target_tags.required is True
+        assert model.__sklearn_tags__().target_tags.required is True
 
 
 def test_decoder_tags_regression():
@@ -1188,9 +1188,9 @@ def test_decoder_tags_regression():
     # remove if block when bumping sklearn_version to > 1.5
     ver = parse(sklearn_version)
     if ver.release[1] < 6:
-        assert model._more_tags()["multioutput"] is True
+        assert model.__sklearn_tags__()["multioutput"] is True
     else:
-        assert model._more_tags().target_tags.multi_output is True
+        assert model.__sklearn_tags__().target_tags.multi_output is True
 
 
 def test_decoder_decision_function(binary_classification_data):

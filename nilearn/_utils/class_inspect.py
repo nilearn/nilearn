@@ -1,14 +1,16 @@
 """Small utilities to inspect classes."""
 
+from sklearn import __version__ as sklearn_version
 from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
+
+from nilearn._utils import compare_version
 
 # List of sklearn estimators checks that are valid
 # for all nilearn estimators.
 VALID_CHECKS = [
     "check_estimator_cloneable",
-    "check_estimator_get_tags_default_keys",
     "check_estimators_partial_fit_n_features",
     "check_estimator_repr",
     "check_estimator_tags_renamed",
@@ -18,6 +20,11 @@ VALID_CHECKS = [
     "check_get_params_invariance",
     "check_set_params",
 ]
+
+if compare_version(sklearn_version, ">=", "1.6.0"):
+    VALID_CHECKS.append("check_valid_tag_types")
+else:
+    VALID_CHECKS.append("check_estimator_get_tags_default_keys")
 
 
 # TODO
