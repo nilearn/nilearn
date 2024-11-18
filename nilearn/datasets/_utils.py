@@ -25,6 +25,21 @@ _REQUESTS_TIMEOUT = (15.1, 61)
 PACKAGE_DIRECTORY = Path(__file__).absolute().parent
 
 
+ALLOWED_DATA_TYPES = (
+    "curvature",
+    "sulcal",
+    "thickness",
+)
+
+ALLOWED_MESH_TYPES = {
+    "pial",
+    "white_matter",
+    "inflated",
+    "sphere",
+    "flat",
+}
+
+
 def md5_hash(string):
     """Calculate the MD5 hash of a string."""
     m = hashlib.md5()

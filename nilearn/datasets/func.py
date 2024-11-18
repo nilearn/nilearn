@@ -19,11 +19,8 @@ from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, remove_parameters
-from nilearn.image import get_data
-from nilearn.interfaces.bids import get_bids_files
-
-from .._utils.numpy_conversions import csv_to_array
-from ._utils import (
+from nilearn.datasets._utils import (
+    ALLOWED_MESH_TYPES,
     PACKAGE_DIRECTORY,
     fetch_files,
     fetch_single_file,
@@ -34,6 +31,12 @@ from ._utils import (
     tree,
     uncompress_file,
 )
+from nilearn.datasets.struct import load_fsaverage
+from nilearn.image import get_data
+from nilearn.interfaces.bids import get_bids_files
+from nilearn.surface import SurfaceImage, load_surf_data
+
+from .._utils.numpy_conversions import csv_to_array
 
 
 @fill_doc
@@ -1797,6 +1800,87 @@ def fetch_surf_nki_enhanced(
         phenotypic=phenotypic,
         description=fdescr,
     )
+
+
+@fill_doc
+def load_nki(
+    mesh="fsaverage5",
+    mesh_type="pial",
+    n_subjects=1,
+    data_dir=None,
+    url=None,
+    resume=True,
+    verbose=1,
+):
+    """Load NKI enhanced surface data into a surface object.
+
+    Parameters
+    ----------
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
+
+    mesh_type : :obj:`str`, default='pial'
+        Must be one of:
+         - ``"pial"``
+         - ``"white_matter"``
+         - ``"inflated"``
+         - ``"sphere"``
+         - ``"flat"``
+
+    n_subjects : :obj:`int`, default=10
+        The number of subjects to load from maximum of 102 subjects.
+        By default, 10 subjects will be loaded. If None is given,
+        all 102 subjects will be loaded.
+
+    %(data_dir)s
+
+    %(url)s
+
+    %(resume)s
+
+    %(verbose)s
+
+    Returns
+    -------
+    list of SurfaceImage objects
+        One image per subject.
+    """
+    if mesh_type not in ALLOWED_MESH_TYPES:
+        raise ValueError(
+            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
+            f"Got: {mesh_type}."
+        )
+
+    fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
+
+    nki_dataset = fetch_surf_nki_enhanced(
+        n_subjects=n_subjects,
+        data_dir=data_dir,
+        url=url,
+        resume=resume,
+        verbose=verbose,
+    )
+
+    images = []
+    for i, (left, right) in enumerate(
+        zip(nki_dataset["func_left"], nki_dataset["func_right"]), start=1
+    ):
+        logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
+
+        left_data = load_surf_data(left).T
+        right_data = load_surf_data(right).T
+        img = SurfaceImage(
+            mesh=fsaverage[mesh_type],
+            data={
+                "left": left_data,
+                "right": right_data,
+            },
+        )
+        images.append(img)
+
+    return images
 
 
 @fill_doc

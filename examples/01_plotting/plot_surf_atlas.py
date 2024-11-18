@@ -16,8 +16,8 @@ See :ref:`plotting` for more details.
 # ------------
 # Retrieve destrieux parcellation in fsaverage5 space from nilearn
 # and create a :obj:`~nilearn.surface.SurfaceImage` instance with it.
-from nilearn.datasets import fetch_atlas_surf_destrieux
-from nilearn.experimental.surface import (
+from nilearn.datasets import (
+    fetch_atlas_surf_destrieux,
     load_fsaverage,
     load_fsaverage_data,
 )
