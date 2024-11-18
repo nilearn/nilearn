@@ -158,7 +158,7 @@ def _default_param_grid(estimator, X, y):
 
     # validate estimator
     if isinstance(estimator, (DummyClassifier, DummyRegressor)):
-        if estimator.strategy in ["constant"]:
+        if estimator.strategy == "constant":
             message = (
                 "Dummy classification implemented only for strategies"
                 ' "most_frequent", "prior", "stratified"'
@@ -611,7 +611,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : list of Niimg-like or SurfaceImage objects
+        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
@@ -638,7 +638,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
             The masker used to mask the data.
 
-        mask_img_ : Nifti1Image or SurfaceImage
+        mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
             Mask computed by the masker object.
 
         classes_ : numpy.ndarray
@@ -780,8 +780,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             warnings.warn(
                 "After clustering and screening, the decoding model will "
                 f"be trained only on {n_final_features} features. "
-                + "Consider raising clustering_percentile or "
-                + "screening_percentile parameters.",
+                "Consider raising clustering_percentile or "
+                "screening_percentile parameters.",
                 UserWarning,
             )
 
@@ -1000,14 +1000,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.dummy_output_ = {}
         classes = self.classes_
 
-        for _, (
+        for (
             class_index,
             coef,
             intercept,
             params,
             scores,
             dummy_output,
-        ) in enumerate(parallel_fit_outputs):
+        ) in parallel_fit_outputs:
             coefs.setdefault(classes[class_index], []).append(coef)
             intercepts.setdefault(classes[class_index], []).append(intercept)
 
@@ -1139,12 +1139,16 @@ class Decoder(_BaseDecoder):
         %(classifier_options)s
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
-          SurafaceImage or SurfaceMasker, optional
+           :obj:`~nilearn.surface.SurfaceImage` \
+           or :obj:`~nilearn.maskers.SurfaceMasker`, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
-        masker with default parameters. Refer to NiftiMasker or
-        MultiNiftiMasker to check for default parameters. Default None
+        masker with default parameters.
+        Refer to :obj:`~nilearn.maskers.NiftiMasker` or
+        :obj:`~nilearn.maskers.MultiNiftiMasker` or
+        :obj:`~nilearn.maskers.SurfaceMasker`
+        to check for default parameters.
 
     cv : cross-validation generator or int, default=10
         A cross-validation generator.
@@ -1155,7 +1159,7 @@ class Decoder(_BaseDecoder):
         is not set to custom CV splitter, default is
         :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
-    param_grid : dict of str to sequence, or sequence of such. Default None
+    param_grid : dict of str to sequence, or sequence of such, default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 

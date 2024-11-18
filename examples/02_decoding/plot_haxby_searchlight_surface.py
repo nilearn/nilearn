@@ -49,7 +49,6 @@ y, run = y[condition_mask], run[condition_mask]
 
 from sklearn import neighbors
 
-from nilearn import datasets
 from nilearn.experimental.surface import (
     load_fsaverage,
 )
