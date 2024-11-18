@@ -147,6 +147,7 @@ ignore = [
     "N803",
     "N806",
     "PERF203",
+    "PIE790",
     "PLR2004",
     "PTH207",
     "RUF012"
@@ -167,8 +168,10 @@ select = [
     "N",
     "NPY",
     "PERF",
+    "PIE",
     "PTH",
     "PD",
+    "PGH",
     "PLR",
     "RUF",
     "SIM",
