@@ -7,6 +7,7 @@ from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.input_data import NiftiMasker
+from nilearn.maskers import SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
     _adjust_small_clusters,
@@ -128,3 +129,26 @@ def test_hierarchical_k_means_clustering():
     assert_array_almost_equal(X_compress, X_compress_scaled)
 
     del X_red, X_compress, X_red_scaled, X_compress_scaled
+
+
+@pytest.mark.parametrize("n_clusters", [2, 4, 5])
+def test_hierarchical_k_means_clustering_surface(
+    surf_img, surf_mask, n_clusters
+):
+    """Test hierarchical k-means clustering on surface."""
+    # create a surface masker
+    masker = SurfaceMasker(surf_mask()).fit()
+    # mask the surface image with 50 samples
+    X = masker.transform(surf_img((50,))).T
+    # instantiate HierarchicalKMeans with n_clusters
+    clustering = HierarchicalKMeans(n_clusters=n_clusters)
+    # fit and transform the data
+    X_transformed = clustering.fit_transform(X)
+    # inverse transform the transformed data
+    X_inverse = clustering.inverse_transform(X_transformed)
+
+    # make sure the n_features in transformed data were reduced to n_clusters
+    assert X_transformed.shape[0] == n_clusters
+
+    # make sure the inverse transformed data has the same shape as the original
+    assert X_inverse.shape == X.shape

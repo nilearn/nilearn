@@ -73,6 +73,8 @@ Enhancements
 
 - :bdg-primary:`Doc` Adapt examples showing how to plot events and design matrices to show how to use parametric modulation. Also implement modulation of events in :func:`nilearn.plotting.plot_event` (:gh:`4436` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Allow :class:`nilearn.decoding.FREMClassifier` and :class:`nilearn.decoding.FREMRegressor` to work with surface objects (:gh:`4577` by `Yasmin Mzayek`_ and `Rémi Gau`_).
+
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 
 - :bdg-info:`Code` Improve plotting contours for :class:`nilearn.plotting.displays.PlotlySurfaceFigure` objects by adding :meth:`nilearn.plotting.displays.PlotlySurfaceFigure.add_contours` method that accepts arguments to adjust line aesthetics (:gh:`3949` by `Patrick Sadil`_).
