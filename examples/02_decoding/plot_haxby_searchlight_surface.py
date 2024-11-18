@@ -21,10 +21,10 @@ as described in :footcite:t:`Chen2011`.
 # ------------------
 import pandas as pd
 
-from nilearn import datasets
+from nilearn.datasets import fetch_haxby
 
 # We fetch 2nd subject from haxby datasets (which is default)
-haxby_dataset = datasets.fetch_haxby()
+haxby_dataset = fetch_haxby()
 
 fmri_filename = haxby_dataset.func[0]
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
@@ -49,9 +49,7 @@ y, run = y[condition_mask], run[condition_mask]
 
 from sklearn import neighbors
 
-from nilearn.experimental.surface import (
-    load_fsaverage,
-)
+from nilearn.datasets import load_fsaverage
 from nilearn.surface import SurfaceImage
 
 fsaverage = load_fsaverage()
@@ -113,7 +111,7 @@ for hemi in hemispheres_to_analyze:
 # %%
 # Visualization
 # -------------
-from nilearn.experimental.surface import load_fsaverage_data
+from nilearn.datasets import load_fsaverage_data
 from nilearn.plotting import plot_surf_stat_map, show
 
 fsaverage_data = load_fsaverage_data(mesh_type="inflated", data_type="sulcal")

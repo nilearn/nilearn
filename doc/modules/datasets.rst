@@ -23,6 +23,8 @@ Templates
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
    fetch_surf_fsaverage
+   load_fsaverage
+   load_fsaverage_data
    load_mni152_brain_mask
    load_mni152_gm_mask
    load_mni152_gm_template
@@ -121,6 +123,7 @@ Preprocessed datasets
    fetch_spm_auditory
    fetch_spm_multimodal_fmri
    fetch_surf_nki_enhanced
+   load_nki
 
 Datasets descriptions
 ^^^^^^^^^^^^^^^^^^^^^
