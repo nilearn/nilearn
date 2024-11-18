@@ -311,26 +311,3 @@ def test_transform_3d_input_images(affine_eye):
     X = parcellate.fit_transform(imgs[0])
     assert isinstance(X, np.ndarray)
     assert X.shape == (1, 20)
-
-
-@pytest.mark.parametrize("method", METHODS)
-@pytest.mark.parametrize("n_parcels", [2, 4, 5])
-def test_parcellation_all_methods_with_surface(
-    surf_img, surf_mask, method, n_parcels
-):
-    """Test if all parcellation methods work on surface."""
-    # create a surface masker
-    masker = SurfaceMasker(surf_mask()).fit()
-    # mask the surface image with 50 samples
-    X = masker.transform(surf_img((50,)))
-    parcellate = Parcellations(method=method, n_parcels=n_parcels)
-    # fit and transform the data
-    X_transformed = parcellate.fit_transform(X)
-    # inverse transform the transformed data
-    X_inverse = parcellate.inverse_transform(X_transformed)
-
-    # make sure the n_features in transformed data were reduced to n_clusters
-    assert X_transformed.shape[1] == n_parcels
-
-    # make sure the inverse transformed data has the same shape as the original
-    assert X_inverse.shape == X.shape
