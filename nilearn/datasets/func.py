@@ -32,10 +32,9 @@ from nilearn.datasets._utils import (
     uncompress_file,
 )
 from nilearn.datasets.struct import load_fsaverage
-from nilearn.experimental.surface._surface_image import SurfaceImage
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
-from nilearn.surface import load_surf_data
+from nilearn.surface import SurfaceImage, load_surf_data
 
 from .._utils.numpy_conversions import csv_to_array
 

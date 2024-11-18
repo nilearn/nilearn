@@ -65,7 +65,7 @@ from nilearn.datasets import (
     load_fsaverage,
     load_fsaverage_data,
 )
-from nilearn.experimental.surface import SurfaceLabelsMasker
+from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.surface import SurfaceImage
 
 fsaverage = load_fsaverage("fsaverage5")

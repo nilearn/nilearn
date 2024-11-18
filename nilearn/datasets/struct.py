@@ -18,13 +18,13 @@ from nilearn.datasets._utils import (
     get_dataset_descr,
     get_dataset_dir,
 )
-from nilearn.experimental.surface._surface_image import (
+from nilearn.image import get_data, new_img_like, resampling
+from nilearn.surface import (
     FileMesh,
     PolyMesh,
     SurfaceImage,
+    load_surf_data,
 )
-from nilearn.image import get_data, new_img_like, resampling
-from nilearn.surface import load_surf_data
 
 MNI152_FILE_PATH = (
     PACKAGE_DIRECTORY

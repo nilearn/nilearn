@@ -17,7 +17,7 @@ from nilearn.datasets.struct import (
     load_fsaverage_data,
 )
 from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
-from nilearn.experimental.surface._surface_image import PolyMesh, SurfaceImage
+from nilearn.surface import PolyMesh, SurfaceImage
 
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker):
