@@ -158,7 +158,7 @@ def _default_param_grid(estimator, X, y):
 
     # validate estimator
     if isinstance(estimator, (DummyClassifier, DummyRegressor)):
-        if estimator.strategy in ["constant"]:
+        if estimator.strategy == "constant":
             message = (
                 "Dummy classification implemented only for strategies"
                 ' "most_frequent", "prior", "stratified"'
@@ -780,8 +780,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             warnings.warn(
                 "After clustering and screening, the decoding model will "
                 f"be trained only on {n_final_features} features. "
-                + "Consider raising clustering_percentile or "
-                + "screening_percentile parameters.",
+                "Consider raising clustering_percentile or "
+                "screening_percentile parameters.",
                 UserWarning,
             )
 
@@ -1000,14 +1000,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.dummy_output_ = {}
         classes = self.classes_
 
-        for _, (
+        for (
             class_index,
             coef,
             intercept,
             params,
             scores,
             dummy_output,
-        ) in enumerate(parallel_fit_outputs):
+        ) in parallel_fit_outputs:
             coefs.setdefault(classes[class_index], []).append(coef)
             intercepts.setdefault(classes[class_index], []).append(intercept)
 

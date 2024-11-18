@@ -59,7 +59,7 @@ def _fast_svd(X, n_components, random_state=None):
     # Small problem, just call full PCA
     if max(X.shape) <= 500:
         svd_solver = "full"
-    elif n_components >= 1 and n_components < 0.8 * min(X.shape):
+    elif 1 <= n_components < 0.8 * min(X.shape):
         svd_solver = "randomized"
     # This is also the case of n_components in (0,1)
     else:

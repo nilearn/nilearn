@@ -260,7 +260,7 @@ def threshold_stats_img(
     ]
     if height_control not in height_control_methods:
         raise ValueError(
-            "height control should be one of {0}", height_control_methods
+            f"height control should be one of {height_control_methods}"
         )
 
     # if two-sided, correct alpha by a factor of 2
