@@ -20,9 +20,11 @@ from nilearn.surface import SurfaceImage
 extra_valid_checks = [
     "check_clusterer_compute_labels_predict",
     "check_complex_data",
+    "check_do_not_raise_errors_in_init_or_set_params",
     "check_estimators_empty_data_messages",
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
+    "check_estimators_unfitted",
     "check_fit2d_1sample",
     "check_fit2d_1feature",
     "check_fit1d",
@@ -30,15 +32,21 @@ extra_valid_checks = [
     "check_transformers_unfitted",
     "check_transformer_n_iter",
 ]
+
+
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.append("check_estimator_sparse_data")
 
 
+if compare_version(sklearn_version, ">", "1.5.2"):
+    extra_valid_checks.append("check_parameters_default_constructible")
+
+
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=ReNA(_img_3d_mni(), n_clusters=2),
+        estimator=ReNA(mask_img=_img_3d_mni(), n_clusters=2),
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -59,13 +67,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
-
-
-def test_tags():
-    """Smoke test to test private tag function."""
-    _, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
-    rena = ReNA(mask_img, n_clusters=10)
-    rena._more_tags()
 
 
 def test_rena_clustering():

@@ -62,7 +62,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, interest keys are:
 
         - "t1": str,
@@ -894,7 +894,7 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
          - 'area_left': Gifti file, left hemisphere area data
          - 'area_right': Gifti file, right hemisphere area data
@@ -1063,7 +1063,7 @@ def load_fsaverage(mesh="fsaverage5", data_dir=None):
 
     Returns
     -------
-    data : :obj:`sklearn.datasets.base.Bunch`
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
          - ``'description'``: description of the dataset
          - ``'pial'``: Polymesh for pial surface for left and right hemispheres

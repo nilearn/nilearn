@@ -70,7 +70,7 @@ def fetch_haxby(
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
         - 'anat': :obj:`list` of :obj:`str`. Paths to anatomic images.
@@ -281,7 +281,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
          - 'func': Paths to functional :term:`resting-state` images
@@ -1690,7 +1690,7 @@ def fetch_surf_nki_enhanced(
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
         - 'func_left': Paths to Gifti files containing resting state
@@ -2268,7 +2268,7 @@ def fetch_language_localizer_demo_dataset(
             Starting from version 0.13.0
             the ``legacy_ouput`` argument will be removed
             and the fetcher will always return
-            a ``sklearn.datasets.base.Bunch``.
+            a :obj:`sklearn.utils.Bunch`.
 
 
     Returns
@@ -2688,7 +2688,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, with the keys:
         epi_img: the input 4D image
         events: a csv file describing the paradigm
@@ -2765,7 +2765,7 @@ def fetch_spm_auditory(
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
         - 'anat': :obj:`list` of :obj:`str`. Path to anat image
         - 'func': :obj:`list` of :obj:`str`. Path to functional image
@@ -2967,7 +2967,7 @@ def fetch_spm_multimodal_fmri(
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
         - 'func1': string list. Paths to functional images for run 1
         - 'func2': string list. Paths to functional images for run 2
@@ -3009,7 +3009,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
 
         - 'design_matrix1': :obj:`str`.
