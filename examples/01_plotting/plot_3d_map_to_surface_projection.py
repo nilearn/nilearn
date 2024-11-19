@@ -22,7 +22,7 @@ stat_img = datasets.load_sample_motor_activation_image()
 # %%
 # Get a cortical mesh
 # -------------------
-from nilearn.experimental.surface import load_fsaverage, load_fsaverage_data
+from nilearn.datasets import load_fsaverage, load_fsaverage_data
 
 fsaverage_meshes = load_fsaverage()
 
@@ -42,7 +42,7 @@ curv_right_sign = np.sign(fsaverage_curvature.data.parts["right"])
 # %%
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
-from nilearn.experimental.surface import SurfaceImage
+from nilearn.surface import SurfaceImage
 
 img = SurfaceImage.from_volume(
     mesh=fsaverage_meshes["pial"],

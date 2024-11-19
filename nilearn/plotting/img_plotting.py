@@ -96,7 +96,7 @@ def get_colorbar_and_data_ranges(
 
     if symmetric_cbar == "auto":
         if (vmin is None) or (vmax is None):
-            symmetric_cbar = stat_map_min < 0 and stat_map_max > 0
+            symmetric_cbar = stat_map_min < 0 < stat_map_max
         else:
             symmetric_cbar = np.isclose(vmin, -vmax)
 
@@ -2041,7 +2041,7 @@ def plot_carpet(
     interval = max(
         (int(data.shape[0] + 1) // 10, int(data.shape[0] + 1) // 5, 1)
     )
-    xticks = list(range(0, data.shape[0])[::interval])
+    xticks = list(range(data.shape[0])[::interval])
     axes.set_xticks(xticks)
     axes.set_xlabel("time (s)")
 

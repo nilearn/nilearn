@@ -246,8 +246,6 @@ print(f"Covariance matrix has shape {matrix.shape}.")
 # We use `:func: nilearn.plotting.plot_matrix`
 # to visualize our correlation matrix
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
-from nilearn import plotting
-
 plotting.plot_matrix(
     matrix,
     vmin=-1.0,

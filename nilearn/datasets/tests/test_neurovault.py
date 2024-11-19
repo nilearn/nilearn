@@ -432,7 +432,7 @@ def test_pattern():
 
     assert str(pattern_0) == "Pattern(pattern='[0-9akqj]{5}$', flags=0)"
 
-    pattern_1 = neurovault.Pattern(r"[0-9akqj]{5}$", re.I)
+    pattern_1 = neurovault.Pattern(r"[0-9akqj]{5}$", re.IGNORECASE)
 
     assert pattern_0 == "ak05q"
     assert pattern_0 != "Ak05q"
@@ -582,7 +582,9 @@ def test_write_read_metadata(tmp_path):
     assert "relative_path" in written_metadata
     assert "absolute_path" not in written_metadata
 
-    read_metadata = neurovault._add_absolute_paths("tmp", written_metadata)
+    read_metadata = neurovault._add_absolute_paths(
+        Path("tmp"), written_metadata
+    )
 
     assert read_metadata["absolute_path"] == Path("tmp", "collection_1")
 

@@ -599,6 +599,12 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
     assert nki_data.description != ""
 
 
+def test_load_nki_error():
+    """Give incorrect mesh_type argument."""
+    with pytest.raises(ValueError, match="'mesh_type' must be one of"):
+        func.load_nki(mesh_type="foo")
+
+
 def _mock_participants_data(n_ids=5):
     """Maximum 8 ids are allowed to mock."""
     ids = [
@@ -867,12 +873,10 @@ def test_fetch_openneuro_dataset(tmp_path):
     data_prefix = (
         f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
     )
-    data_dir = Path(
-        get_dataset_dir(
-            data_prefix,
-            data_dir=tmp_path,
-            verbose=1,
-        )
+    data_dir = get_dataset_dir(
+        data_prefix,
+        data_dir=tmp_path,
+        verbose=1,
     )
     url_file = data_dir / "urls.json"
 
@@ -1013,8 +1017,7 @@ def test_fetch_spm_auditory(tmp_path):
 
 
 def _generate_spm_multimodal(subject_dir=None, n_sessions=2, n_vol=390):
-    files = []
-    files.append("sMRI/smri.img")
+    files = ["sMRI/smri.img"]
     for session in range(n_sessions):
         files.append(f"fMRI/trials_ses{int(session + 1)}.mat")
         files.extend(

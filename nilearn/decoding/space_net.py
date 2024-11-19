@@ -29,10 +29,10 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.experimental.surface import SurfaceImage
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
+from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin
@@ -245,7 +245,7 @@ class _EarlyStoppingCallback:
             message = "."
             if self.verbose > 1:
                 message = (
-                    f"Early stopping. \n" f"Test score: {score:.8f} {40 * '-'}"
+                    f"Early stopping.\nTest score: {score:.8f} {40 * '-'}"
                 )
             logger.log(message, verbose=self.verbose, stack_level=2)
             return True
@@ -1415,7 +1415,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias: bool, optional (default False)
+    debias : bool, optional (default False)
         If set, then the estimated weights maps will be debiased.
 
     Attributes

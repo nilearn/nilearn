@@ -255,10 +255,10 @@ def test_check_affine_first_level_models(affine_eye, shape_4d_default):
 
 
 def test_check_shape_first_level_models(shape_4d_default):
+    """Check all FirstLevelModel have the same shape."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
     )
-    """Check all FirstLevelModel have the same shape."""
     list_of_flm = [
         FirstLevelModel(mask_img=mask, subject_label=f"sub-{i}").fit(
             fmri_data[0], design_matrices=design_matrices[0]
@@ -316,7 +316,7 @@ def test_check_second_level_input(shape_4d_default):
         )
     ]
 
-    obj = lambda: None  # noqa : E731
+    obj = lambda: None  # noqa: E731
     obj.results_ = "foo"
     obj.labels_ = "bar"
 

@@ -5,7 +5,7 @@ from scipy import linalg
 from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
-from nilearn.experimental.surface import SurfaceImage
+from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import load_surf_data
 
 if is_plotly_installed():
@@ -378,7 +378,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                 for v in vs[remaining_vertices[shortest_idx]]:
                     for v2 in vs[current_vertex]:
                         shared += np.all(np.isclose(v, v2))
-                if not (shared >= 2):
+                if shared < 2:
                     # this does not share and edge, so try again
                     continue
                 for e in segments[current_vertex]:
@@ -507,7 +507,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             return False
         t = (c1 * b2 - c2 * b1) / d
         u = (c1 * a2 - c2 * a1) / d
-        return t >= 0 and t <= 1 and u >= 0 and u <= 1
+        return 0 <= t <= 1 and 0 <= u <= 1
 
     @staticmethod
     def _transform_coord_to_plane(v, t0, t1, t2):
