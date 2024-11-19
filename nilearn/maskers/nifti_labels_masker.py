@@ -1,5 +1,6 @@
 """Transformer for computing ROI signals."""
 
+from cProfile import label
 import warnings
 
 import numpy as np
@@ -11,6 +12,7 @@ from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+import pandas as pd
 
 
 class _ExtractionFunctor:
@@ -202,6 +204,21 @@ class NiftiLabelsMasker(BaseMasker):
 
         self.background_label = background_label
         self._original_region_ids = self._get_labels_values(self.labels_img)
+        self._region_id_name = None
+
+        # if the labels is a path, it is the path to tsv file, so read it
+        if isinstance(labels, str):
+            region_id_name = pd.read_csv(labels, sep='\t')
+            # Note that labels should include the background too
+            labels = region_id_name["region name"].tolist()
+            # create the _region_id_name dict based on the 
+            # provided tsv file
+            # it will include the background too
+            self._region_id_name = {
+                row['region id']: row['region name']
+                for _, row in region_id_name.iterrows()
+            }
+
         self.labels = self._sanitize_labels(labels)
         self._check_mismatch_labels_regions(
             self._original_region_ids, tolerant=True
@@ -553,25 +570,37 @@ class NiftiLabelsMasker(BaseMasker):
         logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
 
-        # create _region_id_name dictionary
-        # this dictionary will be used to store region names and
-        # the corresponding region ids as keys
-        self._region_id_name = None
-        if self.labels is not None:
-            known_backgrounds = {"background", "Background"}
-            initial_region_ids = [
+        # find the region ids existing in the self.labels_img_
+        initial_region_ids = [
+            region_id
+            for region_id in np.unique(
+                _utils.niimg.safe_get_data(self.labels_img_)
+            )
+            if region_id != self.background_label
+        ]
+        if self._region_id_name is not None:
+            # check if initial_region_ids all exist in self._region_id_name
+            missing_ids = [
                 region_id
-                for region_id in np.unique(
-                    _utils.niimg.safe_get_data(self.labels_img_)
-                )
-                if region_id != self.background_label
+                for region_id in initial_region_ids
+                if region_id not in self._region_id_name
             ]
+            if missing_ids:
+                raise ValueError(
+                    f"The following region ids are missing in the provided labels: {missing_ids}"
+                )
+        elif self.labels is not None:
+            # create _region_id_name dictionary if not already created
+            # from labels tsv file
+            # this dictionary will be used to store region names and
+            # the corresponding region ids as keys
+            # it will also include the background
+            known_backgrounds = {"background", "Background"}
             initial_region_names = [
                 region_name
                 for region_name in self.labels
                 if region_name not in known_backgrounds
             ]
-
             if len(initial_region_ids) != len(initial_region_names):
                 warnings.warn(
                     "Number of regions in the labels image "
@@ -586,6 +615,9 @@ class NiftiLabelsMasker(BaseMasker):
                     region_id: initial_region_names[i]
                     for i, region_id in enumerate(initial_region_ids)
                 }
+                # We want to have the background in the dict too
+                self._region_id_name = {self.background_label: "background", **self._region_id_name}
+        
 
         if self.mask_img is not None:
             repr = _utils._repr_niimgs(
