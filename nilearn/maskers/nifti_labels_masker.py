@@ -587,7 +587,8 @@ class NiftiLabelsMasker(BaseMasker):
             ]
             if missing_ids:
                 raise ValueError(
-                    f"The following region ids are missing in the provided labels: {missing_ids}"
+                    "The following region ids are missing "
+                    f"in the provided labels: {missing_ids}"
                 )
         elif self.labels is not None:
             # create _region_id_name dictionary if not already created
