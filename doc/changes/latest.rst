@@ -57,8 +57,6 @@ Enhancements
 
 - :bdg-dark:`Code` Move SurfaceImage and associated classes to from experimental to :mod:`nilearn.surface` (:gh:`4723` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Move SurfaceImage and associated classes to from experimental to :mod:`nilearn.surface` (:gh:`4723` by `Rémi Gau`_).
-
 - :bdg-dark:`Code` Improved SearchLight with NIfTI Support, Mask Handling, and Reusable Transform Method (:gh:`4652` by `Prakhar Jain`_).
 
 - :bdg-primary:`Doc` Add example showing how to compute hemisphere-wise connectivity for Yeo 17 networks (:gh:`4585` by `Victoria Shevchenko`_).
