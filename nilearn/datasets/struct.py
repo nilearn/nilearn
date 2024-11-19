@@ -1063,7 +1063,7 @@ def load_fsaverage(mesh="fsaverage5", data_dir=None):
 
     Returns
     -------
-    data : :obj:`sklearn.datasets.base.Bunch`
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
          - ``'description'``: description of the dataset
          - ``'pial'``: Polymesh for pial surface for left and right hemispheres
