@@ -412,9 +412,7 @@ class Parcellations(_MultiPCA):
         else:
             if isinstance(mask_img_, SurfaceImage):
                 # concatenate arrays stored in both parts of the mask data
-                mask_ = np.concatenate(mask_img_.data.parts.values()).astype(
-                    bool
-                )
+                mask_ = np.concatenate(mask_img_.data.parts.values())
             else:
                 mask_ = safe_get_data(mask_img_).astype(bool)
             shape = mask_.shape
