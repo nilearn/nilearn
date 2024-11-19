@@ -171,9 +171,9 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self.n_elements_ = len(self._labels_)
 
         if self.labels is None:
-            self._label_names_ = [str(label) for label in self._labels_]
+            self.label_names_ = [str(label) for label in self._labels_]
         else:
-            self._label_names_ = [self.labels[x] for x in self._labels_]
+            self.label_names_ = [self.labels[x] for x in self._labels_]
 
         if not self.reports:
             self._reporting_data = None
@@ -200,7 +200,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "relative size<br>(% vertices in hemisphere)": [],
             }
 
-            for i, label in enumerate(self._label_names_):
+            for i, label in enumerate(self.label_names_):
                 regions_summary["label value"].append(i)
                 regions_summary["region name"].append(label)
 
@@ -222,7 +222,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return {
             "labels_image": self.labels_img,
-            "label_names": [str(x) for x in self._label_names_],
+            "label_names": [str(x) for x in self.label_names_],
             "images": None,
         }
 
