@@ -8,6 +8,7 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 
 from nilearn.maskers import NiftiLabelsMasker
+from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger, stringify_path
 from .._utils.niimg import safe_get_data
@@ -409,7 +410,13 @@ class Parcellations(_MultiPCA):
             )
 
         else:
-            mask_ = safe_get_data(mask_img_).astype(bool)
+            if isinstance(mask_img_, SurfaceImage):
+                # concatenate arrays stored in both parts of the mask data
+                mask_ = np.concatenate(mask_img_.data.parts.values()).astype(
+                    bool
+                )
+            else:
+                mask_ = safe_get_data(mask_img_).astype(bool)
             shape = mask_.shape
             connectivity = image.grid_to_graph(
                 n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
