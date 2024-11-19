@@ -108,10 +108,12 @@ def _mask_and_reduce(
 
     Parameters
     ----------
-    masker : NiftiMasker or MultiNiftiMasker
+    masker : NiftiMasker or MultiNiftiMasker or
+    :obj:`~nilearn.maskers.SurfaceMasker`
         Instance used to mask provided data.
 
-    imgs : list of 4D Niimg-like objects
+    imgs : list of 4D Niimg-like objects or list of
+    :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
 
@@ -197,9 +199,17 @@ def _mask_and_reduce(
     subject_n_samples = [subject_data.shape[0] for subject_data in data_list]
 
     n_samples = np.sum(subject_n_samples)
-    n_voxels = int(np.sum(safe_get_data(masker.mask_img_)))
+    # n_features is the number of True vertices in the mask if it is a surface
+    if isinstance(masker, SurfaceMasker):
+        n_features = (
+            masker.mask_img_.data.parts["left"].sum()
+            + masker.mask_img_.data.parts["right"].sum()
+        )
+    # n_features is the number of True voxels in the mask if it is a volume
+    else:
+        n_features = int(np.sum(safe_get_data(masker.mask_img_)))
     dtype = np.float64 if data_list[0].dtype.type is np.float64 else np.float32
-    data = np.empty((n_samples, n_voxels), order="F", dtype=dtype)
+    data = np.empty((n_samples, n_features), order="F", dtype=dtype)
 
     current_position = 0
     for i, next_position in enumerate(np.cumsum(subject_n_samples)):
