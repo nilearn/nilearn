@@ -43,7 +43,7 @@ extra_valid_checks = [
 ]
 
 
-if compare_version(sklearn_version, ">=", "1.6.0"):
+if compare_version(sklearn_version, ">", "1.5.2"):
     extra_valid_checks.append("check_parameters_default_constructible")
 
 # TODO remove when dropping support for sklearn_version < 1.5.0
