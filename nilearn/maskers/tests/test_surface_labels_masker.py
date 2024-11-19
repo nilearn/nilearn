@@ -58,7 +58,7 @@ def test_surface_label_masker_fit(surf_label_img):
     masker = masker.fit()
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
-    assert masker._label_names_ == ["1"]
+    assert masker.label_names_ == ["1"]
     assert masker._reporting_data is not None
 
 
@@ -74,7 +74,7 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
     masker = masker.fit()
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
-    assert masker._label_names_ == ["bar"]
+    assert masker.label_names_ == ["bar"]
 
 
 def test_surface_label_masker_fit_no_report(surf_label_img):
