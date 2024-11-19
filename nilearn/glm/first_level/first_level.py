@@ -901,8 +901,8 @@ class FirstLevelModel(BaseGLM):
             "p_value",
             "effect_size",
             "effect_variance",
+            "all",  # must be the final entry!
         ]
-        valid_types.append("all")  # ensuring 'all' is the final entry.
         if output_type not in valid_types:
             raise ValueError(f"output_type must be one of {valid_types}")
         contrast = compute_fixed_effect_contrast(
@@ -1127,12 +1127,10 @@ def _check_events_file_uses_tab_separators(events_files):
         try:
             with Path(events_file_).open() as events_file_obj:
                 events_file_sample = events_file_obj.readline()
-            """
-            The following errors are not being handled here,
-            as they are handled elsewhere in the calling code.
-            Handling them here will beak the calling code,
-            and refactoring that is not straightforward.
-            """
+            # The following errors are not being handled here,
+            # as they are handled elsewhere in the calling code.
+            # Handling them here will break the calling code,
+            # and refactoring is not straightforward.
         except OSError:  # if invalid filepath.
             pass
         else:
@@ -2208,8 +2206,8 @@ def _check_bids_image_list(imgs, sub_label, filters):
 
     for img_ in imgs:
         parsed_filename = parse_bids_filename(img_)
-        session = parsed_filename.get("ses", None)
-        run = parsed_filename.get("run", None)
+        session = parsed_filename.get("ses")
+        run = parsed_filename.get("run")
 
         if session and run:
             if (session, run) in set(run_check_list):

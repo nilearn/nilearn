@@ -41,6 +41,16 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+def test_fit_list_surf_images(surf_img):
+    """Test fit on list of surface images.
+
+    resulting mask should have a single 'timepoint'.
+    """
+    masker = SurfaceMasker()
+    masker.fit([surf_img((3,)), surf_img((5,))])
+    assert masker.mask_img_.shape == (surf_img().shape[1],)
+
+
 # test with only one surface image and with 2 surface images (surface time
 # series)
 @pytest.mark.parametrize("shape", [(1,), (2,)])
@@ -70,14 +80,29 @@ def test_none_mask_img(surf_mask):
     SurfaceMasker(surf_mask()).fit(None)
 
 
+def test_transform_list_surf_images(surf_mask, surf_img):
+    """Test transform on list of surface images."""
+    masker = SurfaceMasker(surf_mask()).fit()
+    signals = masker.transform([surf_img((3,)), surf_img((4,))])
+    assert signals.shape == (7, masker.output_dimension_)
+
+
+def test_inverse_transform_list_surf_images(surf_mask, surf_img):
+    """Test inverse_transform on list of surface images."""
+    masker = SurfaceMasker(surf_mask()).fit()
+    signals = masker.transform([surf_img((3,)), surf_img((4,))])
+    img = masker.inverse_transform(signals)
+    assert img.shape == (7, surf_mask().mesh.n_vertices)
+
+
 def test_unfitted_masker(surf_mask):
-    masker = SurfaceMasker(surf_mask)
+    masker = SurfaceMasker(surf_mask())
     with pytest.raises(ValueError, match="fitted"):
-        masker.transform(surf_mask)
+        masker.transform(surf_mask())
 
 
 def test_check_is_fitted(surf_mask):
-    masker = SurfaceMasker(surf_mask)
+    masker = SurfaceMasker(surf_mask())
     assert not masker.__sklearn_is_fitted__()
 
 

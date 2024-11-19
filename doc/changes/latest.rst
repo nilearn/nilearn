@@ -49,7 +49,11 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Move SurfaceMasker from experimental to :class:`nilearn.maskers.SurfaceMasker` (:gh:`4692` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add to the stable API: :func:`nilearn.datasets.load_nki` that returns the NKI dataset as a list of :obj:`~nilearn.surface.SurfaceImage` instances, :func:`nilearn.datasets.load_fsaverage` that returns fsaverage meshes as a :obj:`dict` of :obj:`~nilearn.surface.PolyMesh` instances, and :func:`nilearn.datasets.load_fsaverage_data` that returns fsaverage data (thickness, curvature...) as :obj:`~nilearn.surface.SurfaceImage` instances (:gh:`4693` by `Rémi Gau`_ based on original work by `Jerome Dockes`_).
+
+- :bdg-dark:`Code` Move SurfaceMasker and SurfaceLabelsMasker from experimental to :class:`nilearn.maskers.SurfaceMasker` and to :class:`nilearn.maskers.SurfaceLabelsMasker` (:gh:`4692` and :gh:`4714` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Allow list of :obj:`~nilearn.surface.SurfaceImage` as input to :class:`~nilearn.maskers.SurfaceMasker` fit and transform methods (:gh:`4719` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Move SurfaceImage and associated classes to from experimental to :mod:`nilearn.surface` (:gh:`4723` by `Rémi Gau`_).
 
@@ -72,6 +76,8 @@ Enhancements
 - :bdg-primary:`Doc` Add example to demonstrate the use of the new ``copy_header_from`` parameter in :func:`nilearn.image.math_img` (:gh:`4392` by `Himanshu Aggarwal`_).
 
 - :bdg-primary:`Doc` Adapt examples showing how to plot events and design matrices to show how to use parametric modulation. Also implement modulation of events in :func:`nilearn.plotting.plot_event` (:gh:`4436` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Allow :class:`nilearn.decoding.FREMClassifier` and :class:`nilearn.decoding.FREMRegressor` to work with surface objects (:gh:`4577` by `Yasmin Mzayek`_ and `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 

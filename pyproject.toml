@@ -107,7 +107,7 @@ packages = ["nilearn"]
 source = "vcs"
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html -n auto"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
@@ -144,6 +144,7 @@ ignore = [
     "D301",
     "E741",
     "ERA001",
+    "FURB105",
     "N803",
     "N806",
     "PERF203",
@@ -164,6 +165,7 @@ select = [
     "ERA",
     "F",
     "FLY",
+    "FURB",
     "I",
     "N",
     "NPY",

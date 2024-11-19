@@ -334,3 +334,4 @@ def test_parcellation_all_methods_with_surface(
 
     # make sure the inverse transformed data has the same shape as the original
     assert X_inverse.shape == X.shape
+

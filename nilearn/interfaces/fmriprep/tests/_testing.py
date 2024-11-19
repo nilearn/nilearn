@@ -94,7 +94,7 @@ def create_tmp_filepath(
             }
         }
 
-    """Create test files in temporary directory."""
+    # create test files in temporary directory
     derivative = "regressors" if fmriprep_version == "1.2.x" else "timeseries"
 
     # confound files
