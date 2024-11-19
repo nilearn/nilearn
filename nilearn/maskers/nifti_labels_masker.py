@@ -1,9 +1,9 @@
 """Transformer for computing ROI signals."""
 
-from cProfile import label
 import warnings
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
 
@@ -12,7 +12,6 @@ from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
-import pandas as pd
 
 
 class _ExtractionFunctor:
@@ -208,14 +207,14 @@ class NiftiLabelsMasker(BaseMasker):
 
         # if the labels is a path, it is the path to tsv file, so read it
         if isinstance(labels, str):
-            region_id_name = pd.read_csv(labels, sep='\t')
+            region_id_name = pd.read_csv(labels, sep="\t")
             # Note that labels should include the background too
             labels = region_id_name["region name"].tolist()
-            # create the _region_id_name dict based on the 
+            # create the _region_id_name dict based on the
             # provided tsv file
             # it will include the background too
             self._region_id_name = {
-                row['region id']: row['region name']
+                row["region id"]: row["region name"]
                 for _, row in region_id_name.iterrows()
             }
 
@@ -616,8 +615,10 @@ class NiftiLabelsMasker(BaseMasker):
                     for i, region_id in enumerate(initial_region_ids)
                 }
                 # We want to have the background in the dict too
-                self._region_id_name = {self.background_label: "background", **self._region_id_name}
-        
+                self._region_id_name = {
+                    self.background_label: "background",
+                    **self._region_id_name,
+                }
 
         if self.mask_img is not None:
             repr = _utils._repr_niimgs(
