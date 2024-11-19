@@ -10,9 +10,7 @@ import warnings
 import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
-from packaging.version import parse
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
-from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
@@ -632,17 +630,6 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
-
-    def _more_tags(self):
-        # TODO
-        # rename method to '__sklearn_tags__'
-        # and get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        ver = parse(sklearn_version)
-        if ver.release[1] < 6:
-            return BaseEstimator._more_tags(self)
-        return self.__sklearn_tags__()
 
     def fit(
         self,

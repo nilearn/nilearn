@@ -19,6 +19,7 @@ extra_valid_checks = [
     "check_clustering",
     "check_complex_data",
     "check_dict_unchanged",
+    "check_do_not_raise_errors_in_init_or_set_params",
     "check_dont_overwrite_parameters",
     "check_dtype_object",
     "check_estimator_sparse_array",
@@ -27,6 +28,8 @@ extra_valid_checks = [
     "check_estimators_empty_data_messages",
     "check_estimators_fit_returns_self",
     "check_estimators_pickle",
+    "check_estimators_unfitted",
+    "check_f_contiguous_array_estimator",
     "check_fit2d_1sample",
     "check_fit2d_1feature",
     "check_fit_check_is_fitted",
@@ -34,9 +37,15 @@ extra_valid_checks = [
     "check_fit_score_takes_y",
     "check_no_attributes_set_in_init",
     "check_pipeline_consistency",
+    "check_readonly_memmap_input",
     "check_transformers_unfitted",
     "check_transformer_n_iter",
 ]
+
+
+if compare_version(sklearn_version, ">", "1.5.2"):
+    extra_valid_checks.append("check_parameters_default_constructible")
+
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.append("check_estimator_sparse_data")
