@@ -15,8 +15,6 @@ from sklearn.base import clone
 
 from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn.experimental.surface import SurfaceImage, SurfaceMasker
-from nilearn.experimental.surface.maskers import _compute_mean_image
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -28,8 +26,14 @@ from nilearn.glm.first_level.design_matrix import (
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image import mean_img
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers._utils import (
+    check_same_n_vertices,
+    compute_mean_surface_image,
+    concatenate_surface_images,
+)
 from nilearn.mass_univariate import permuted_ols
+from nilearn.surface import SurfaceImage
 
 
 def _check_second_level_input(
@@ -117,7 +121,7 @@ def _check_input_as_type(
     elif input_type == "nii_object":
         _check_input_as_nifti_images(second_level_input, none_design_matrix)
     elif input_type == "surf_img_object":
-        _check_input_as_surface_images(none_design_matrix)
+        _check_input_as_surface_images(second_level_input, none_design_matrix)
     else:
         _check_input_as_dataframe(second_level_input)
 
@@ -217,7 +221,11 @@ def _check_input_as_nifti_images(second_level_input, none_design_matrix):
         )
 
 
-def _check_input_as_surface_images(none_design_matrix):
+def _check_input_as_surface_images(second_level_input, none_design_matrix):
+    if isinstance(second_level_input, SurfaceImage):
+        second_level_input = [second_level_input]
+    for _, img in enumerate(second_level_input, start=1):
+        check_same_n_vertices(second_level_input[0].mesh, img.mesh)
     if none_design_matrix:
         raise ValueError(
             "List of SurfaceImage objects as second_level_input"
@@ -275,7 +283,8 @@ def _check_design_matrix(design_matrix):
         raise ValueError("design matrix must be a pandas DataFrame")
 
 
-def _check_effect_maps(effect_maps, design_matrix):
+def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix):
+    """Check design matrix and effect maps agree on number of rows."""
     if len(effect_maps) != design_matrix.shape[0]:
         raise ValueError(
             "design_matrix does not match the number of maps considered. "
@@ -331,10 +340,12 @@ def _infer_effect_maps(second_level_input, contrast_def):
     else:
         effect_maps = second_level_input
 
+    if isinstance(effect_maps[0], SurfaceImage):
+        return effect_maps
+
     # check niimgs
-    if not isinstance(effect_maps[0], SurfaceImage):
-        for niimg in effect_maps:
-            check_niimg(niimg, ensure_ndim=3)
+    for niimg in effect_maps:
+        check_niimg(niimg, ensure_ndim=3)
 
     return effect_maps
 
@@ -396,11 +407,10 @@ def _process_second_level_input_as_surface_image(second_level_input):
 
     All should have the same underlying meshes.
     """
-    second_level_input = [_compute_mean_image(x) for x in second_level_input]
-    sample_map = second_level_input[0]
-    for part in sample_map.data.parts:
-        tmp = [x.data.parts[part] for x in second_level_input]
-        sample_map.data.parts[part] = np.concatenate(tmp)
+    second_level_input = [
+        compute_mean_surface_image(x) for x in second_level_input
+    ]
+    sample_map = concatenate_surface_images(second_level_input)
     return sample_map, None
 
 
@@ -506,7 +516,7 @@ class SecondLevelModel(BaseGLM):
         ----------
         %(second_level_input)s
 
-        confounds : :class:`pandas.DataFrame`, optional
+        confounds : :class:`pandas.DataFrame`, default=None
             Must contain a ``subject_label`` column. All other columns are
             considered as confounds and included in the model. If
             ``design_matrix`` is provided then this argument is ignored.
@@ -515,7 +525,7 @@ class SecondLevelModel(BaseGLM):
             At least two columns are expected, ``subject_label`` and at
             least one confound.
 
-        design_matrix : :class:`pandas.DataFrame`, optional
+        design_matrix : :class:`pandas.DataFrame`, default=None
             Design matrix to fit the :term:`GLM`.
             The number of rows in the design matrix
             must agree with the number of maps
@@ -610,20 +620,23 @@ class SecondLevelModel(BaseGLM):
         Parameters
         ----------
         %(second_level_contrast)s
-        first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of\
-        shape (n_col) with respect to\
-        :class:`~nilearn.glm.first_level.FirstLevelModel`, optional
+
+        first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
+                            shape (n_col) with respect to \
+                            :class:`~nilearn.glm.first_level.FirstLevelModel`,
+                            default=None
 
             - In case a :obj:`list` of
               :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
               as ``second_level_input``,
-              we have to provide a :term:`contrast` to
-              apply to the first level models to get the corresponding list
-              of images desired, that would be tested at the second level.
-            - In case a :class:`~pandas.DataFrame` was provided as
-              ``second_level_input`` this is the map name to extract from the
-              :class:`~pandas.DataFrame` ``map_name`` column. It has to be
-              a 't' contrast.
+              we have to provide a :term:`contrast`
+              to apply to the first level models
+              to get the corresponding list of images desired,
+              that would be tested at the second level.
+            - In case a :class:`~pandas.DataFrame` was provided
+              as ``second_level_input`` this is the map name to extract
+              from the :class:`~pandas.DataFrame` ``map_name`` column.
+              It has to be a 't' contrast.
 
         second_level_stat_type : {'t', 'F'} or None, default=None
             Type of the second level contrast.
@@ -636,8 +649,10 @@ class SecondLevelModel(BaseGLM):
         Returns
         -------
         output_image : :class:`~nibabel.nifti1.Nifti1Image`
-            The desired output image(s). If ``output_type == 'all'``, then
-            the output is a dictionary of images, keyed by the type of image.
+            The desired output image(s).
+            If ``output_type == 'all'``,
+            then the output is a dictionary of images,
+            keyed by the type of image.
 
         """
         if self.second_level_input_ is None:
@@ -668,8 +683,8 @@ class SecondLevelModel(BaseGLM):
         effect_maps = _infer_effect_maps(
             self.second_level_input_, first_level_contrast
         )
-        # Check design matrix X and effect maps Y agree on number of rows
-        _check_effect_maps(effect_maps, self.design_matrix_)
+
+        _check_n_rows_desmat_vs_n_effect_maps(effect_maps, self.design_matrix_)
 
         # Fit an Ordinary Least Squares regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
@@ -1022,8 +1037,7 @@ def non_parametric_inference(
     # Get first-level effect_maps
     effect_maps = _infer_effect_maps(second_level_input, first_level_contrast)
 
-    # Check design matrix and effect maps agree on number of rows
-    _check_effect_maps(effect_maps, design_matrix)
+    _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix)
 
     # Obtain design matrix vars
     var_names = design_matrix.columns.tolist()

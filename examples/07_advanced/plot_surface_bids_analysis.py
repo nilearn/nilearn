@@ -47,21 +47,27 @@ data.data_dir
 # From the dataset directory we automatically obtain
 # the FirstLevelModel objects
 # with their subject_id filled from the :term:`BIDS` dataset.
-# Moreover, we obtain for each model
-# a dictionary with run_imgs, events and confounder regressors
-# since in this case a confounds.tsv file is available
-# in the :term:`BIDS` dataset.
+# Along, we also obtain:
+#
+#   - a list with the Nifti image associated with each run
+#
+#   - a list of events read from events.tsv in the the :term:`BIDS` dataset
+#
+#   - a list of confounder motion regressors
+#     since in this case a confounds.tsv file is available
+#     in the :term:`BIDS` dataset.
+#
 # To get the first level models we only have to specify the dataset directory
-# and the task_label as specified in the file names.
+# and the ``task_label`` as specified in the file names.
 from nilearn.glm.first_level import first_level_from_bids
 
-task_label = "languagelocalizer"
 models, run_imgs, events, confounds = first_level_from_bids(
-    data.data_dir,
-    task_label,
+    dataset_path=data.data_dir,
+    task_label="languagelocalizer",
     img_filters=[("desc", "preproc")],
+    sub_labels=["01", "02", "03"],
     hrf_model="glover + derivative",
-    n_jobs=2,
+    n_jobs=-1,
 )
 
 # %%
@@ -69,6 +75,15 @@ models, run_imgs, events, confounds = first_level_from_bids(
 #
 # The projection function simply takes the :term:`fMRI` data and the mesh.
 # Note that those correspond spatially, as they are both in :term:`MNI` space.
+#
+# .. warning::
+#
+#    Note that here we pass ALL the confounds when we fit the model.
+#    In this case we can do this because our regressors only include
+#    the motion realignment parameters.
+#    For most preprocessed BIDS dataset, you would have to carefully choose
+#    which confounds to include.
+#
 from pathlib import Path
 
 from nilearn.datasets import load_fsaverage
@@ -77,6 +92,7 @@ from nilearn.surface import SurfaceImage
 fsaverage5 = load_fsaverage()
 
 # Empty lists in which we are going to store activation values.
+z_scores = []
 z_scores_left = []
 z_scores_right = []
 for first_level_glm, fmri_img, confound, event in zip(
@@ -90,16 +106,15 @@ for first_level_glm, fmri_img, confound, event in zip(
     )
 
     # Fit GLM.
+    # Pass events and all confounds
     first_level_glm.fit(run_imgs=image, events=event[0], confounds=confound[0])
 
-    # Contrast specification
-    design_matrix = first_level_glm.design_matrices_[0]
-    contrast_values = (design_matrix.columns == "language") * 1.0 - (
-        design_matrix.columns == "string"
+    # Compute contrast between 'language' and 'string' events
+    z_scores.append(
+        first_level_glm.compute_contrast("language-string", stat_type="t")
     )
-    z_scores = first_level_glm.compute_contrast(contrast_values, stat_type="t")
-    z_scores_left.append(z_scores.data.parts["left"])
-    z_scores_right.append(z_scores.data.parts["right"])
+    z_scores_left.append(z_scores[-1].data.parts["left"])
+    z_scores_right.append(z_scores[-1].data.parts["right"])
 
 
 # %%
@@ -138,8 +153,24 @@ for hemi, stat_map in zip(["left", "right"], [z_val_left, z_val_right]):
         hemi=hemi,
         title=f"(language-string), {hemi} hemisphere",
         colorbar=True,
+        cmap="bwr",
         threshold=3.0,
         bg_map=fsaverage_data,
     )
 
 show()
+
+
+# %%
+# Use SecondLevel
+
+import pandas as pd
+
+from nilearn.glm.second_level import SecondLevelModel
+
+second_level_glm = SecondLevelModel()
+design_matrix = pd.DataFrame(
+    [1] * len(z_scores),
+    columns=["intercept"],
+)
+second_level_glm.fit(z_scores, design_matrix=design_matrix)

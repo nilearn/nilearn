@@ -6,15 +6,16 @@ from nilearn.maskers._utils import (
     concatenate_surface_images,
     get_min_max_surface_image,
 )
+from nilearn.surface.testing import assert_surface_image_equal
 
 
-def test_compute_mean_surface_image(surf_img, assert_surf_img_equal):
+def test_compute_mean_surface_image(surf_img):
     """Check that mean is properly computed over 'time points'."""
     # one 'time point' image returns same
     input_img = surf_img()
     img = compute_mean_surface_image(input_img)
 
-    assert_surf_img_equal(img, input_img)
+    assert_surface_image_equal(img, input_img)
 
     # image with left hemisphere
     # where timepoint 1 has all values == 0

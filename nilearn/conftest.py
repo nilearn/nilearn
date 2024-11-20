@@ -510,29 +510,6 @@ def flip_surf_img(flip_surf_img_parts):
 
 
 @pytest.fixture
-def assert_surf_img_equal():
-    """Check that 2 SurfaceImages are equal."""
-
-    def f(img_1, img_2):
-        assert set(img_1.data.parts.keys()) == set(img_2.data.parts.keys())
-        for key in img_1.data.parts:
-            assert np.array_equal(img_1.data.parts[key], img_2.data.parts[key])
-
-    return f
-
-
-@pytest.fixture
-def assert_surf_mesh_equal():
-    """Check that 2 meshes are equal."""
-
-    def f(mesh_1, mesh_2):
-        assert np.array_equal(mesh_1.coordinates, mesh_2.coordinates)
-        assert np.array_equal(mesh_1.faces, mesh_2.faces)
-
-    return f
-
-
-@pytest.fixture
 def drop_surf_img_part():
     """Remove one hemisphere from a SurfaceImage."""
 

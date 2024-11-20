@@ -51,6 +51,7 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.surface.testing import assert_polymesh_equal
 
 BASEDIR = Path(__file__).resolve().parent
 FUNCFILE = BASEDIR / "functional.nii.gz"
@@ -2252,6 +2253,7 @@ def test_flm_compute_contrast_with_surface_data(surface_glm_data):
     result = model.compute_contrast("c0")
 
     assert isinstance(result, SurfaceImage)
+    assert_polymesh_equal(img.mesh, result.mesh)
 
 
 def test_flm_get_voxelwise_model_attribute_with_surface_data(
