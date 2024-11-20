@@ -1242,15 +1242,15 @@ class PolyData:
 
     Parameters
     ----------
-    left : :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` or None,\
-           default = None
+    left : 2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
+           or None, default = None
 
-    right : :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` or None,\
-           default = None
+    right : 2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
+            or None, default = None
 
     Attributes
     ----------
-    parts : :obj:`dict` of :obj:`numpy.ndarray`
+    parts : :obj:`dict` of 2D :obj:`numpy.ndarray`
 
     shape : :obj:`tuple` of :obj:`int`
     """
@@ -1271,6 +1271,14 @@ class PolyData:
             if not isinstance(right, np.ndarray):
                 right = load_surf_data(right)
             parts["right"] = right
+
+        for hemi in ["left", "right"]:
+            if parts[hemi].ndim != 2:
+                raise ValueError(
+                    f"Data arrays for keys {hemi}"
+                    "must be a 2D array.\n"
+                    f"Got {parts[hemi].ndim}"
+                )
 
         if len(parts) == 1:
             self.parts = parts
