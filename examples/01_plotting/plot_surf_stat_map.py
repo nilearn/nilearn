@@ -92,6 +92,7 @@ print(f"Fsaverage5 sulcal curvature map: {fsaverage_curvature}")
 # %%
 # Extracting the seed time series
 # -------------------------------
+import numpy as np
 
 # Load resting state time series from nilearn
 timeseries = nki_dataset[0].data.parts[hemi].T
