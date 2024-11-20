@@ -256,6 +256,24 @@ def test_surface_label_masker_inverse_transform(surf_label_img, surf_img):
     masker.inverse_transform(signal)
 
 
+def test_transform_list_surf_images(surf_label_img, surf_img):
+    """Test transform on list of surface images."""
+    print()
+    masker = SurfaceLabelsMasker(surf_label_img).fit()
+    signals = masker.transform([surf_img(), surf_img(), surf_img()])
+    assert signals.shape == (3, masker.n_elements_)
+    signals = masker.transform([surf_img((5,)), surf_img((4,))])
+    assert signals.shape == (9, masker.n_elements_)
+
+
+def test_inverse_transform_list_surf_images(surf_label_img, surf_img):
+    """Test inverse_transform on list of surface images."""
+    masker = SurfaceLabelsMasker(surf_label_img).fit()
+    signals = masker.transform([surf_img((3,)), surf_img((4,))])
+    img = masker.inverse_transform(signals)
+    assert img.shape == (7, surf_label_img.mesh.n_vertices)
+
+
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",

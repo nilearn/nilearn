@@ -374,9 +374,14 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 dtype=masked_img.dtype,
             )
             for label_idx, label in enumerate(self._labels_):
-                data[part_name][..., labels_part == label] = masked_img[
-                    ..., label_idx
-                ]
+                if masked_img.ndim == 1:
+                    data[part_name][..., labels_part == label] = masked_img[
+                        ..., label_idx
+                    ]
+                else:
+                    data[part_name][..., labels_part == label] = masked_img[
+                        label_idx
+                    ]
         return SurfaceImage(mesh=self.labels_img.mesh, data=data)
 
     def generate_report(self):
