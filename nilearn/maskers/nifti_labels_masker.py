@@ -224,10 +224,10 @@ class NiftiLabelsMasker(BaseMasker):
                     "if a string is provided for 'labels'."
                     f"Labels could not be loaded: {e}",
                     stacklevel=2,
-                )            
+                )
                 # if labels is string and could not be loaded, set it to None
                 # since it is useless
-                labels = None 
+                labels = None
 
         self.labels = self._sanitize_labels(labels)
         self._check_mismatch_labels_regions(
