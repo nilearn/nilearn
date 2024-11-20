@@ -170,7 +170,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
         mask_data = {
-            part: np.ones(v.n_vertices, dtype=bool)
+            part: np.array([np.ones(v.n_vertices, dtype=bool)])
             for (part, v) in img.mesh.parts.items()
         }
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
@@ -248,9 +248,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        :class:`numpy.ndarray`
+        2D :class:`numpy.ndarray`
             Signal for each element.
-            shape: (img data shape, total number of vertices)
+            shape: (n samples, total number of vertices)
         """
         if self.smoothing_fwhm is not None:
             warnings.warn(
@@ -283,7 +283,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.reports:
             self._reporting_data["images"] = img
 
-        output = np.empty((*img.shape[:-1], self.output_dimension_))
+        output = np.empty((img.shape[0], self.output_dimension_))
         for part_name, (start, stop) in self.slices.items():
             mask = self.mask_img_.data.parts[part_name]
             output[..., start:stop] = img.data.parts[part_name][..., mask]
@@ -369,17 +369,17 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         self._check_fitted()
 
-        if masked_img.shape[-1] != self.output_dimension_:
+        if masked_img.shape[1] != self.output_dimension_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
                 f"Last dimension should be {self.output_dimension_}.\n"
-                f"Got {masked_img.shape[-1]}."
+                f"Got {masked_img.shape[1]}."
             )
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
             data[part_name] = np.zeros(
-                (*masked_img.shape[:-1], mask.shape[0]),
+                (masked_img.shape[0], mask.shape[1]),
                 dtype=masked_img.dtype,
             )
             start, stop = self.slices[part_name]

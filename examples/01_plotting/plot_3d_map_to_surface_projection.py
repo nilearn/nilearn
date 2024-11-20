@@ -147,8 +147,8 @@ destrieux = fetch_atlas_surf_destrieux()
 destrieux_atlas = SurfaceImage(
     mesh=fsaverage["inflated"],
     data={
-        "left": destrieux["map_left"],
-        "right": destrieux["map_right"],
+        "left": np.array([destrieux["map_left"]]),
+        "right": np.array([destrieux["map_right"]]),
     },
 )
 

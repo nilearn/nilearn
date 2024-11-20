@@ -859,7 +859,7 @@ def test_compare_file_and_inmemory_mesh(surf_mesh, tmp_path):
     assert np.array_equal(left.faces, left_loaded.faces)
 
 
-@pytest.mark.parametrize("shape", [(1,), (3,), (7, 3)])
+@pytest.mark.parametrize("shape", [(1,), (3,)])
 def test_surface_image_shape(surf_img, shape):
     assert surf_img(shape).shape == (*shape, 9)
 

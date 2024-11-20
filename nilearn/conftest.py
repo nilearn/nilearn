@@ -465,7 +465,7 @@ def surf_mask():
                 for i in range(n_zeros // 2):
                     data_part[..., i] = 0
                 data_part = data_part.astype(bool)
-                data[key] = data_part
+                data[key] = np.array([data_part])
             return SurfaceImage(mesh, data)
 
     return _make_surface_mask
@@ -477,8 +477,8 @@ def surf_label_img(surf_mesh):
     Has two regions with values 0 and 1 respectively.
     """
     data = {
-        "left": np.asarray([0, 0, 1, 1]),
-        "right": np.asarray([1, 1, 0, 0, 0]),
+        "left": np.asarray([[0, 0, 1, 1]]),
+        "right": np.asarray([[1, 1, 0, 0, 0]]),
     }
 
     return SurfaceImage(surf_mesh(), data)

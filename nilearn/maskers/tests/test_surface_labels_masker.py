@@ -114,8 +114,8 @@ def test_surface_label_masker_transform_check_output(surf_mesh, surf_img, rng):
       even when labels are spread across hemispheres.
     """
     labels = {
-        "left": np.asarray([2, 0, 10, 1]),
-        "right": np.asarray([10, 1, 20, 20, 0]),
+        "left": np.asarray([[2, 0, 10, 1]]),
+        "right": np.asarray([[10, 1, 20, 20, 0]]),
     }
     surf_label_img = SurfaceImage(surf_mesh(), labels)
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
@@ -131,19 +131,23 @@ def test_surface_label_masker_transform_check_output(surf_mesh, surf_img, rng):
     data = {
         "left": np.asarray(
             [
-                expected_mean_value["2"],
-                rng.random(),
-                expected_mean_value["10"],
-                expected_mean_value["1"],
+                [
+                    expected_mean_value["2"],
+                    rng.random(),
+                    expected_mean_value["10"],
+                    expected_mean_value["1"],
+                ]
             ]
         ),
         "right": np.asarray(
             [
-                expected_mean_value["10"],
-                expected_mean_value["1"],
-                expected_mean_value["20"],
-                expected_mean_value["20"],
-                rng.random(),
+                [
+                    expected_mean_value["10"],
+                    expected_mean_value["1"],
+                    expected_mean_value["20"],
+                    expected_mean_value["20"],
+                    rng.random(),
+                ]
             ]
         ),
     }
@@ -151,14 +155,16 @@ def test_surface_label_masker_transform_check_output(surf_mesh, surf_img, rng):
     signal = masker.transform(surf_img)
 
     n_labels = len(expected_mean_value)
-    assert signal.shape == (n_labels,)
+    assert signal.shape == (1, n_labels)
 
     expected_signal = np.asarray(
         [
-            expected_mean_value["1"],
-            expected_mean_value["2"],
-            expected_mean_value["10"],
-            expected_mean_value["20"],
+            [
+                expected_mean_value["1"],
+                expected_mean_value["2"],
+                expected_mean_value["10"],
+                expected_mean_value["20"],
+            ]
         ]
     )
 
@@ -202,14 +208,16 @@ def test_surface_label_masker_transform_check_output(surf_mesh, surf_img, rng):
         ),
     }
 
-    assert signal.shape == (n_labels,)
+    assert signal.shape == (1, n_labels)
 
     expected_signal = np.asarray(
         [
-            expected_mean_value["1"],
-            expected_mean_value["2"],
-            expected_mean_value["10"],
-            expected_mean_value["20"],
+            [
+                expected_mean_value["1"],
+                expected_mean_value["2"],
+                expected_mean_value["10"],
+                expected_mean_value["20"],
+            ]
         ]
     )
 

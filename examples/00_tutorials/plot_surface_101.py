@@ -103,8 +103,8 @@ mesh = PolyMesh(
 # For this example, let's create some random data for the vertices of the
 # :term:`mesh`:
 rng = np.random.default_rng(0)
-left_data = rng.random(mesh.parts["left"].n_vertices)
-right_data = rng.random(mesh.parts["right"].n_vertices)
+left_data = rng.random((1, mesh.parts["left"].n_vertices))
+right_data = rng.random((1, mesh.parts["right"].n_vertices))
 # put them together in a dictionary
 data = {"left": left_data, "right": right_data}
 

@@ -78,8 +78,8 @@ hemispheres_to_analyze = ["left"]
 # Let us initialize a result scores dictionary ,
 # to be able to create a SurfaceImage from it later.
 scores = {
-    "left": np.zeros(fmri_img_surf.mesh.parts["left"].n_vertices),
-    "right": np.zeros(fmri_img_surf.mesh.parts["right"].n_vertices),
+    "left": np.zeros((1, fmri_img_surf.mesh.parts["left"].n_vertices)),
+    "right": np.zeros((1, fmri_img_surf.mesh.parts["right"].n_vertices)),
 }
 
 for hemi in hemispheres_to_analyze:
@@ -104,8 +104,8 @@ for hemi in hemispheres_to_analyze:
     X = fmri_img_surf.data.parts[hemi]
 
     # Cross-validated search light
-    scores[hemi] = search_light(
-        X, y, estimator, adjacency, cv=cv, n_jobs=-1, verbose=1
+    scores[hemi] = np.array(
+        [search_light(X, y, estimator, adjacency, cv=cv, n_jobs=-1, verbose=1)]
     )
 
 # %%

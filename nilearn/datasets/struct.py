@@ -23,7 +23,6 @@ from nilearn.surface import (
     FileMesh,
     PolyMesh,
     SurfaceImage,
-    load_surf_data,
 )
 
 MNI152_FILE_PATH = (
@@ -1143,12 +1142,8 @@ def load_fsaverage_data(
     img = SurfaceImage(
         mesh=fsaverage[mesh_type],
         data={
-            "left": load_surf_data(
-                fsaverage_data[f"{renaming[data_type]}_left"]
-            ),
-            "right": load_surf_data(
-                fsaverage_data[f"{renaming[data_type]}_right"]
-            ),
+            "left": fsaverage_data[f"{renaming[data_type]}_left"],
+            "right": fsaverage_data[f"{renaming[data_type]}_right"],
         },
     )
 

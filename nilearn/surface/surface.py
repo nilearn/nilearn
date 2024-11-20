@@ -16,7 +16,7 @@ from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
-from nilearn import _utils, datasets
+from nilearn import _utils
 from nilearn._utils import stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
@@ -1124,7 +1124,10 @@ def check_mesh(mesh):
 
     """
     if isinstance(mesh, str):
-        return datasets.fetch_surf_fsaverage(mesh)
+        # avoid circular imports
+        from nilearn.datasets import fetch_surf_fsaverage
+
+        return fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, Mapping):
         raise TypeError(
             "The mesh should be a str or a dictionary, "
@@ -1266,17 +1269,20 @@ class PolyData:
         if left is not None:
             if not isinstance(left, np.ndarray):
                 left = load_surf_data(left)
+                if left.ndim == 1:
+                    left = np.array([left])
             parts["left"] = left
         if right is not None:
             if not isinstance(right, np.ndarray):
                 right = load_surf_data(right)
+                if right.ndim == 1:
+                    right = np.array([right])
             parts["right"] = right
 
-        for hemi in ["left", "right"]:
+        for hemi in parts:
             if parts[hemi].ndim != 2:
                 raise ValueError(
-                    f"Data arrays for keys {hemi}"
-                    "must be a 2D array.\n"
+                    f"Data arrays for keys '{hemi}' must be a 2D array.\n"
                     f"Got {parts[hemi].ndim}"
                 )
 
@@ -1752,14 +1758,21 @@ class SurfaceImage:
         texture_left = vol_to_surf(
             volume_img, mesh.parts["left"], **vol_to_surf_kwargs, **left_kwargs
         )
+        texture_left = texture_left.T
+        if texture_left.ndim == 1:
+            texture_left = np.array([texture_left])
+
         texture_right = vol_to_surf(
             volume_img,
             mesh.parts["right"],
             **vol_to_surf_kwargs,
             **right_kwargs,
         )
+        texture_right = texture_right.T
+        if texture_right.ndim == 1:
+            texture_right = np.array([texture_right])
 
-        data = PolyData(left=texture_left.T, right=texture_right.T)
+        data = PolyData(left=texture_left, right=texture_right)
 
         return cls(mesh=mesh, data=data)
 
