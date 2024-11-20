@@ -134,7 +134,7 @@ def test_mask_img_generate_report(surf_img, surf_mask):
     assert masker._reporting_data is not None
     assert masker._reporting_data["images"] is None
 
-    img = surf_img((5,))
+    img = surf_img()
     masker.transform(img)
 
     assert isinstance(masker._reporting_data["images"], SurfaceImage)
