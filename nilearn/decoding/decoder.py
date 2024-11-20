@@ -25,7 +25,12 @@ from joblib import Parallel, delayed
 from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
-from sklearn.base import BaseEstimator, MultiOutputMixin
+from sklearn.base import (
+    BaseEstimator,
+    ClassifierMixin,
+    MultiOutputMixin,
+    RegressorMixin,
+)
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LassoCV,
@@ -1125,7 +1130,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
 
 @fill_doc
-class Decoder(_BaseDecoder):
+class Decoder(ClassifierMixin, _BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1281,9 +1286,14 @@ class Decoder(_BaseDecoder):
             n_jobs=n_jobs,
         )
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        tags.estimator_type = "classifier"
+        return tags
+
 
 @fill_doc
-class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
+class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
     """A wrapper for popular regression strategies in neuroimaging.
 
     The `DecoderRegressor` object supports regression methods.
@@ -1451,6 +1461,7 @@ class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
         if ver.release[1] < 6:
             return {"multioutput": True}
         tags = super().__sklearn_tags__()
+        tags.estimator_type = "regressor"
         tags.target_tags.required = True
         return tags
 
