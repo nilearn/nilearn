@@ -1288,7 +1288,9 @@ class Decoder(ClassifierMixin, _BaseDecoder):
 
     def __sklearn_tags__(self):
         tags = super().__sklearn_tags__()
-        tags.estimator_type = "classifier"
+        ver = parse(sklearn_version)
+        if ver.release[1] >= 6:
+            tags.estimator_type = "classifier"
         return tags
 
 
@@ -1461,7 +1463,8 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         if ver.release[1] < 6:
             return {"multioutput": True}
         tags = super().__sklearn_tags__()
-        tags.estimator_type = "regressor"
+        if ver.release[1] >= 6:
+            tags.estimator_type = "regressor"
         tags.target_tags.required = True
         return tags
 
