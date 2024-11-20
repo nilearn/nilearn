@@ -258,7 +258,6 @@ def test_surface_label_masker_inverse_transform(surf_label_img, surf_img):
 
 def test_transform_list_surf_images(surf_label_img, surf_img):
     """Test transform on list of surface images."""
-    print()
     masker = SurfaceLabelsMasker(surf_label_img).fit()
     signals = masker.transform([surf_img(), surf_img(), surf_img()])
     assert signals.shape == (3, masker.n_elements_)
