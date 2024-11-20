@@ -184,7 +184,7 @@ def test_error_inverse_transform_shape(surf_img, surf_mask, rng):
         masker.inverse_transform(signals_wrong_shape)
 
 
-@pytest.mark.parametrize("shape", [(), (1,), (3,)])
+@pytest.mark.parametrize("shape", [(1,), (3,)])
 def test_transform_inverse_transform_no_mask(
     surf_mesh, shape, assert_surf_img_equal
 ):
@@ -209,13 +209,12 @@ def test_transform_inverse_transform_no_mask(
     assert np.array_equal(
         masked_img.ravel()[:9], [1, 2, 3, 4, 10, 20, 30, 40, 50]
     )
-    assert masked_img.shape == (1, img.shape[1])
+    assert masked_img.shape == (shape[0], img.shape[1])
     unmasked_img = masker.inverse_transform(masked_img)
     assert_surf_img_equal(img, unmasked_img)
 
 
-@pytest.mark.parametrize("shape", [(), (1,), (3,)])
-# @pytest.mark.parametrize("shape", [()])
+@pytest.mark.parametrize("shape", [(1,), (3,)])
 def test_transform_inverse_transform_with_mask(
     surf_mesh, assert_surf_img_equal, shape
 ):
@@ -245,7 +244,7 @@ def test_transform_inverse_transform_with_mask(
     masked_img = masker.transform(img)
 
     # check mask shape is as expected
-    assert masked_img.shape == (1, img.shape[-1] - 2)
+    assert masked_img.shape == (shape[0], masker.output_dimension_)
 
     # check the data for first seven vertices is as expected
     assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])

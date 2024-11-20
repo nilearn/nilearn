@@ -286,7 +286,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         output = np.empty((img.shape[0], self.output_dimension_))
         for part_name, (start, stop) in self.slices.items():
             mask = self.mask_img_.data.parts[part_name]
-            output[..., start:stop] = img.data.parts[part_name][..., mask]
+            output[..., start:stop] = img.data.parts[part_name][..., mask[0]]
 
         if self.memory is None:
             self.memory = Memory(location=None)
@@ -369,6 +369,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         self._check_fitted()
 
+        if masked_img.ndim == 1:
+            masked_img = np.array([masked_img])
+
         if masked_img.shape[1] != self.output_dimension_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
@@ -383,7 +386,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 dtype=masked_img.dtype,
             )
             start, stop = self.slices[part_name]
-            data[part_name][..., mask] = masked_img[..., start:stop]
+            data[part_name][..., mask[0]] = masked_img[..., start:stop]
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
