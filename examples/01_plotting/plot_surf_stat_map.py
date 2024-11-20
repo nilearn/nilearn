@@ -59,8 +59,8 @@ destrieux = fetch_atlas_surf_destrieux()
 destrieux_atlas = SurfaceImage(
     mesh=fsaverage["pial"],
     data={
-        "left": np.array([destrieux["map_left"]]),
-        "right": np.array([destrieux["map_right"]]),
+        "left": destrieux["map_left"],
+        "right": destrieux["map_right"],
     },
 )
 labels = [x.decode("utf-8") for x in destrieux.labels]
@@ -94,7 +94,6 @@ print(f"Fsaverage5 sulcal curvature map: {fsaverage_curvature}")
 # %%
 # Extracting the seed time series
 # -------------------------------
-import numpy as np
 
 # Load resting state time series from nilearn
 timeseries = nki_dataset[0].data.parts[hemi].T
