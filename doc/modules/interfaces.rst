@@ -14,7 +14,8 @@
    :no-members:
    :no-inherited-members:
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.interfaces.bids
 
@@ -33,7 +34,8 @@
    :no-members:
    :no-inherited-members:
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.interfaces.fmriprep
 
@@ -51,7 +53,8 @@
    :no-members:
    :no-inherited-members:
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.interfaces.fsl
 

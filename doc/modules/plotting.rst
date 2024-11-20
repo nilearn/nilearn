@@ -9,7 +9,8 @@
 
 .. No relevant user manual section yet.
 
-**Functions**:
+Functions
+---------
 
 .. currentmodule:: nilearn.plotting
 
@@ -58,18 +59,8 @@
 
 .. No relevant user manual section yet.
 
-**Functions**:
-
-.. currentmodule:: nilearn.plotting.displays
-
-.. autosummary::
-   :toctree: generated/
-   :template: function.rst
-
-    get_projector
-    get_slicer
-
-**Classes**:
+Classes
+^^^^^^^
 
 .. currentmodule:: nilearn.plotting.displays
 
@@ -105,3 +96,15 @@
    XSlicer
    YSlicer
    ZSlicer
+
+Functions
+^^^^^^^^^
+
+.. currentmodule:: nilearn.plotting.displays
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   get_projector
+   get_slicer
