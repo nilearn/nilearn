@@ -122,7 +122,7 @@ def test_make_edges_surface(surf_mask, part):
     faces = surf_mask().mesh.parts[part].faces
     # the mask for left part has total 4 vertices out of which 2 are True
     # and for right part it has total 5 vertices out of which 3 are True
-    mask = surf_mask().data.parts[part]
+    mask = surf_mask().data.parts[part][0]
     edges_unmasked, edges_mask = _make_edges_surface(faces, mask)
 
     # only one edge remains after masking the left part (between 2 vertices)
@@ -142,8 +142,8 @@ def test_make_edges_and_weights_surface(surf_mesh, surf_img):
     # the mask for left part has total 4 vertices out of which 3 are True
     # and for right part it has total 5 vertices out of which 3 are True
     data = {
-        "left": np.array([False, True, True, True]),
-        "right": np.array([True, True, False, True, False]),
+        "left": np.array([[False, True, True, True]]),
+        "right": np.array([[True, True, False, True, False]]),
     }
     surf_mask = SurfaceImage(surf_mesh(), data)
     # create a surface masker
