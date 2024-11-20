@@ -220,14 +220,34 @@ def test_check_surface_plotting_inputs_extract_mesh_and_data(
     """Extract mesh and data when a SurfaceImage is passed."""
     hemi = "left"
     out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img((10,)),
+        surf_map=surf_img(),
         surf_mesh=mesh,
         hemi=hemi,
         bg_map=bg_map,
     )
-    assert_array_equal(out_surf_map, surf_img((10,)).data.parts[hemi])
-    assert_surf_mesh_equal(out_surf_mesh, surf_img((10,)).mesh.parts[hemi])
+    assert_array_equal(out_surf_map, surf_img().data.parts[hemi][0])
+    assert_surf_mesh_equal(out_surf_mesh, surf_img().mesh.parts[hemi])
     assert bg_map == out_bg_map
+
+
+def test_check_surface_plotting_inputs_many_time_points(surf_img):
+    """Extract mesh and data when a SurfaceImage is passed."""
+    with pytest.raises(
+        TypeError, match="Input data has incompatible dimensionality"
+    ):
+        check_surface_plotting_inputs(
+            surf_map=surf_img((10,)),
+            surf_mesh=None,
+            hemi="left",
+            bg_map=None,
+        )
+
+
+def test_plot_surf_surface_image(surf_img):
+    """Smoke test some surface plotting functions accept a SurfaceImage."""
+    plot_surf(surf_map=surf_img())
+    plot_surf_stat_map(stat_map=surf_img())
+    plot_surf_roi(roi_map=surf_img())
 
 
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
@@ -237,12 +257,12 @@ def test_check_surface_plotting_inputs_extract_mesh_from_polymesh(
     """Extract mesh from Polymesh and data from SurfaceImage."""
     hemi = "left"
     out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img((10,)),
+        surf_map=surf_img(),
         surf_mesh=surf_mesh(),
         hemi=hemi,
         bg_map=bg_map,
     )
-    assert_array_equal(out_surf_map, surf_img((10,)).data.parts[hemi])
+    assert_array_equal(out_surf_map, surf_img().data.parts[hemi][0])
     assert_surf_mesh_equal(out_surf_mesh, surf_mesh().parts[hemi])
     assert bg_map == out_bg_map
 
@@ -253,12 +273,12 @@ def test_check_surface_plotting_inputs_extract_bg_map_data(
     """Extract background map data."""
     hemi = "left"
     _, _, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img((10,)),
+        surf_map=surf_img(),
         surf_mesh=surf_mesh(),
         hemi=hemi,
         bg_map=surf_img(),
     )
-    assert_array_equal(out_bg_map, surf_img().data.parts[hemi])
+    assert_array_equal(out_bg_map, surf_img().data.parts[hemi][0])
 
 
 @pytest.mark.parametrize(

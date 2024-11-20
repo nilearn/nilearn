@@ -18,10 +18,8 @@ def check_surface_plotting_inputs(
     Returns
     -------
     surf_map : numpy.ndarray
-        Description of the output.
 
     surf_mesh : numpy.ndarray
-        Description of the output.
 
     bg_map : str | pathlib.Path | numpy.ndarray | None
 
@@ -53,7 +51,13 @@ def check_surface_plotting_inputs(
     if isinstance(surf_map, SurfaceImage):
         if surf_mesh is None:
             surf_mesh = surf_map.mesh.parts[hemi]
-        surf_map = surf_map.data.parts[hemi]
+        if surf_map.shape[0] > 1:
+            raise TypeError(
+                "Input data has incompatible dimensionality. "
+                f"Expected dimension is (1,{surf_map.shape[1]}) "
+                f"and you provided a {surf_map.shape} surface image."
+            )
+        surf_map = surf_map.data.parts[hemi][0]
 
     bg_map = _check_bg_map(bg_map, hemi)
 
@@ -73,7 +77,7 @@ def _check_bg_map(bg_map, hemi):
     """
     if isinstance(bg_map, SurfaceImage):
         assert bg_map.data.parts[hemi] is not None
-        bg_map = bg_map.data.parts[hemi]
+        bg_map = bg_map.data.parts[hemi][0]
     return bg_map
 
 

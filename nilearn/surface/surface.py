@@ -1734,12 +1734,12 @@ class SurfaceImage:
         >>> vol_img = load_sample_motor_activation_image()
         >>> img = SurfaceImage.from_volume(fsavg["white_matter"], vol_img)
         >>> img
-        <SurfaceImage (20484,)>
+        <SurfaceImage (1, 20484)>
         >>> img = SurfaceImage.from_volume(
         ...     fsavg["white_matter"], vol_img, inner_mesh=fsavg["pial"]
         ... )
         >>> img
-        <SurfaceImage (20484,)>
+        <SurfaceImage (1, 20484)>
         """
         mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
         if inner_mesh is not None:
