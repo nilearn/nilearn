@@ -751,11 +751,12 @@ def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
         affine=affine_eye,
         n_regions=n_regions,
     )
-    with pytest.warns(UserWarning, match="'labels' must be a list."):
-        NiftiLabelsMasker(
-            labels_img,
-            labels="foo",
-        )
+    with pytest.warns(UserWarning, match="Expected a path to a tsv file containing region ids and region names. Labels could not be loaded:"):
+        with pytest.warns(UserWarning, match="'labels' must be a list."):
+            NiftiLabelsMasker(
+                labels_img,
+                labels="foo",
+            )
     with pytest.warns(
         UserWarning, match="All elements of 'labels' must be a string"
     ):

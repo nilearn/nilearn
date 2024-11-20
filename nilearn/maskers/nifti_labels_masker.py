@@ -207,16 +207,23 @@ class NiftiLabelsMasker(BaseMasker):
 
         # if the labels is a path, it is the path to tsv file, so read it
         if isinstance(labels, str):
-            region_id_name = pd.read_csv(labels, sep="\t")
-            # Note that labels should include the background too
-            labels = region_id_name["region name"].tolist()
-            # create the _region_id_name dict based on the
-            # provided tsv file
-            # it will include the background too
-            self._region_id_name = {
-                row["region id"]: row["region name"]
-                for _, row in region_id_name.iterrows()
-            }
+            try:
+                region_id_name = pd.read_csv(labels, sep="\t")
+                # Note that labels should include the background too
+                labels = region_id_name["region name"].tolist()
+                # create the _region_id_name dict based on the
+                # provided tsv file
+                # it will include the background too
+                self._region_id_name = {
+                    row["region id"]: row["region name"]
+                    for _, row in region_id_name.iterrows()
+                }
+            except Exception as e:
+                warnings.warn(
+                    f"Expected a path to a tsv file containing region ids and region names. "
+                    f"Labels could not be loaded: {e}",
+                    stacklevel=2,
+                )            
 
         self.labels = self._sanitize_labels(labels)
         self._check_mismatch_labels_regions(
