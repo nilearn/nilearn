@@ -223,7 +223,7 @@ class NiftiLabelsMasker(BaseMasker):
                     f"Expected a path to a tsv file containing region ids and region names. "
                     f"Labels could not be loaded: {e}",
                     stacklevel=2,
-                )            
+                )
 
         self.labels = self._sanitize_labels(labels)
         self._check_mismatch_labels_regions(
