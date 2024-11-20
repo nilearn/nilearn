@@ -1052,6 +1052,8 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
 def load_fsaverage(mesh="fsaverage5", data_dir=None):
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     mesh : :obj:`str`, default='fsaverage5'
@@ -1097,6 +1099,8 @@ def load_fsaverage_data(
     mesh="fsaverage5", mesh_type="pial", data_type="sulcal", data_dir=None
 ):
     """Return freesurfer data on an fsaverage mesh as a SurfaceImage.
+
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
