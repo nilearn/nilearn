@@ -73,8 +73,8 @@ destrieux = fetch_atlas_surf_destrieux()
 labels_img = SurfaceImage(
     mesh=fsaverage["pial"],
     data={
-        "left": np.array([destrieux["map_left"]]),
-        "right": np.array([destrieux["map_right"]]),
+        "left": destrieux["map_left"],
+        "right": destrieux["map_right"],
     },
 )
 label_names = [x.decode("utf-8") for x in destrieux.labels]
@@ -90,8 +90,8 @@ destrieux = fetch_atlas_surf_destrieux()
 labels_img = SurfaceImage(
     mesh=fsaverage["pial"],
     data={
-        "left": np.array([destrieux["map_left"]]),
-        "right": np.array([destrieux["map_right"]]),
+        "left": destrieux["map_left"],
+        "right": destrieux["map_right"],
     },
 )
 

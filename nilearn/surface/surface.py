@@ -1245,15 +1245,16 @@ class PolyData:
 
     Parameters
     ----------
-    left : 2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
+    left : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
            or None, default = None
+           1D arrays will be converted to
 
-    right : 2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
+    right : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
             or None, default = None
 
     Attributes
     ----------
-    parts : :obj:`dict` of 2D :obj:`numpy.ndarray`
+    parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_timepoints, n_vertices)
 
     shape : :obj:`tuple` of :obj:`int`
     """
@@ -1269,14 +1270,14 @@ class PolyData:
         if left is not None:
             if not isinstance(left, np.ndarray):
                 left = load_surf_data(left)
-                if left.ndim == 1:
-                    left = np.array([left])
+            if left.ndim == 1:
+                left = np.array([left])
             parts["left"] = left
         if right is not None:
             if not isinstance(right, np.ndarray):
                 right = load_surf_data(right)
-                if right.ndim == 1:
-                    right = np.array([right])
+            if right.ndim == 1:
+                right = np.array([right])
             parts["right"] = right
 
         for hemi in parts:
