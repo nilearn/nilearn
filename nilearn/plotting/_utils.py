@@ -77,6 +77,12 @@ def _check_bg_map(bg_map, hemi):
     """
     if isinstance(bg_map, SurfaceImage):
         assert bg_map.data.parts[hemi] is not None
+        if bg_map.shape[0] > 1:
+            raise TypeError(
+                "Input data has incompatible dimensionality. "
+                f"Expected dimension is (1,{bg_map.shape[1]}) "
+                f"and you provided a {bg_map.shape} surface image."
+            )
         bg_map = bg_map.data.parts[hemi][0]
     return bg_map
 
