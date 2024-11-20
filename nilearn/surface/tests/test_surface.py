@@ -975,6 +975,7 @@ def test_save_mesh_error_wrong_suffix(tmp_path, surf_img):
 def test_load_save_data(
     tmp_path, output_filename, expected_files, unexpected_files, use_path
 ):
+    """Load and save gifti does leaves them unchanged."""
     mesh_right = datasets.fetch_surf_fsaverage().pial_right
     mesh_left = datasets.fetch_surf_fsaverage().pial_left
     data_right = datasets.fetch_surf_fsaverage().sulc_right
@@ -990,6 +991,8 @@ def test_load_save_data(
             mesh={"left": mesh_left, "right": mesh_right},
             data={"left": data_left, "right": data_right},
         )
+
+    print(img.shape)
 
     if use_path:
         img.data.to_filename(tmp_path / output_filename)
@@ -1008,6 +1011,38 @@ def test_load_save_data(
         elif "hemi-R" in file:
             expected_data = load_surf_data(data_right)
         assert np.array_equal(data, expected_data)
+
+
+def test_load_save_data_1d(rng, tmp_path, surf_mesh):
+    """Load and save 1D gifti does leaves them unchanged."""
+    data = {}
+    for hemi in ["left", "right"]:
+        size = (surf_mesh().parts[hemi].n_vertices,)
+        data[hemi] = rng.random(size=size).astype(np.uint8)
+        darray = gifti.GiftiDataArray(
+            data=data[hemi], datatype="NIFTI_TYPE_UINT8"
+        )
+        gii = gifti.GiftiImage(darrays=[darray])
+        gii.to_filename(tmp_path / f"original_{hemi}.gii")
+
+    img = SurfaceImage(
+        mesh=surf_mesh(),
+        data={
+            "left": tmp_path / "original_left.gii",
+            "right": tmp_path / "original_right.gii",
+        },
+    )
+
+    img.data.to_filename(tmp_path / "nilearn.gii")
+
+    for hemi in ["left", "right"]:
+        original_surf_img = load(tmp_path / f"original_{hemi}.gii")
+        nilearn_surf_img = load(
+            tmp_path / f"nilearn_hemi-{hemi[0].upper()}.gii"
+        )
+        assert_array_equal(
+            original_surf_img.agg_data(), nilearn_surf_img.agg_data()
+        )
 
 
 @pytest.mark.parametrize(

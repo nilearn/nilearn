@@ -1266,19 +1266,20 @@ class PolyData:
                 "Either left or right (or both) must be provided."
             )
 
+        # to ensure that if 1D array are passed as input
+        # they will be saved as 1D array
+        self._squeeze_on_save = {"left": False, "right": False}
+
         parts = {}
-        if left is not None:
-            if not isinstance(left, np.ndarray):
-                left = load_surf_data(left)
-            if left.ndim == 1:
-                left = np.array([left])
-            parts["left"] = left
-        if right is not None:
-            if not isinstance(right, np.ndarray):
-                right = load_surf_data(right)
-            if right.ndim == 1:
-                right = np.array([right])
-            parts["right"] = right
+
+        for hemi, param in zip(["left", "right"], [left, right]):
+            if param is not None:
+                if not isinstance(param, np.ndarray):
+                    param = load_surf_data(param)
+                if param.ndim == 1:
+                    param = np.array([param])
+                    self._squeeze_on_save[hemi] = True
+                parts[hemi] = param
 
         for hemi in parts:
             if parts[hemi].ndim != 2:
@@ -1329,8 +1330,12 @@ class PolyData:
 
         if "hemi-L" in filename.stem:
             data = self.parts["left"]
+            if self._squeeze_on_save["left"]:
+                data = np.squeeze(data)
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
+            if self._squeeze_on_save["right"]:
+                data = np.squeeze(data)
 
         _data_to_gifti(data, filename)
 
