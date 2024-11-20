@@ -1760,8 +1760,6 @@ class SurfaceImage:
             volume_img, mesh.parts["left"], **vol_to_surf_kwargs, **left_kwargs
         )
         texture_left = texture_left.T
-        if texture_left.ndim == 1:
-            texture_left = np.array([texture_left])
 
         texture_right = vol_to_surf(
             volume_img,
@@ -1770,8 +1768,6 @@ class SurfaceImage:
             **right_kwargs,
         )
         texture_right = texture_right.T
-        if texture_right.ndim == 1:
-            texture_right = np.array([texture_right])
 
         data = PolyData(left=texture_left, right=texture_right)
 

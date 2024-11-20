@@ -33,8 +33,6 @@ See :ref:`plotting` for more details on plotting tools.
 # -------------------
 
 # NKI resting state data from nilearn
-import numpy as np
-
 from nilearn.datasets import (
     fetch_atlas_surf_destrieux,
     load_fsaverage,
