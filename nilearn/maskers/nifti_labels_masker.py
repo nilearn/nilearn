@@ -220,8 +220,8 @@ class NiftiLabelsMasker(BaseMasker):
                 }
             except Exception as e:
                 warnings.warn(
-                    "Expected a path to a tsv file containing region ids and region names "
-                    "if a string is provided for 'labels'."
+                    "Expected a path to a tsv file containing region ids and "
+                    "region names if a string is provided for 'labels'."
                     f"Labels could not be loaded: {e}",
                     stacklevel=2,
                 )
