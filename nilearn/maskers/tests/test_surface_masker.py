@@ -192,7 +192,6 @@ def test_error_inverse_transform_shape(surf_img, surf_mask, rng):
         masker.inverse_transform(signals_wrong_shape)
 
 
-
 @pytest.mark.parametrize("shape", [(1,), (3,)])
 def test_transform_inverse_transform_no_mask(
     surf_mesh, shape, assert_surf_img_equal
@@ -219,7 +218,6 @@ def test_transform_inverse_transform_no_mask(
     assert masked_img.shape == (shape[0], img.shape[1])
     unmasked_img = masker.inverse_transform(masked_img)
     assert_polydata_equal(img.data, unmasked_img.data)
-
 
 
 @pytest.mark.parametrize("shape", [(1,), (3,)])
