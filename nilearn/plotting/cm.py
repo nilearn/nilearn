@@ -54,40 +54,30 @@ def mix_colormaps(fg, bg):
 
 def _rotate_cmap(cmap, swap_order=("green", "red", "blue")):
     """Swap the colors of a colormap."""
-    orig_cdict = cmap._segmentdata.copy()
+    cdict = cmap._segmentdata.copy()
 
-    cdict = {}
-    cdict["green"] = list(orig_cdict[swap_order[0]])
-    cdict["blue"] = list(orig_cdict[swap_order[1]])
-    cdict["red"] = list(orig_cdict[swap_order[2]])
+    return {
+        "green": list(cdict[swap_order[0]]),
+        "blue": list(cdict[swap_order[1]]),
+        "red": list(cdict[swap_order[2]]),
+    }
 
-    return cdict
+
+def _fill_pigtailed_cmap(cdict, channel1, channel2):
+    return [
+        (0.5 * (1 - p), c1, c2) for (p, c1, c2) in reversed(cdict[channel1])
+    ] + [(0.5 * (1 + p), c1, c2) for (p, c1, c2) in cdict[channel2]]
 
 
 def _pigtailed_cmap(cmap, swap_order=("green", "red", "blue")):
     """Make a new colormap by concatenating a colormap with its reverse."""
-    orig_cdict = cmap._segmentdata.copy()
+    cdict = cmap._segmentdata.copy()
 
-    cdict = {}
-    cdict["green"] = [
-        (0.5 * (1 - p), c1, c2)
-        for (p, c1, c2) in reversed(orig_cdict[swap_order[0]])
-    ]
-    cdict["blue"] = [
-        (0.5 * (1 - p), c1, c2)
-        for (p, c1, c2) in reversed(orig_cdict[swap_order[1]])
-    ]
-    cdict["red"] = [
-        (0.5 * (1 - p), c1, c2)
-        for (p, c1, c2) in reversed(orig_cdict[swap_order[2]])
-    ]
-
-    for color in ("red", "green", "blue"):
-        cdict[color].extend(
-            [(0.5 * (1 + p), c1, c2) for (p, c1, c2) in orig_cdict[color]]
-        )
-
-    return cdict
+    return {
+        "green": _fill_pigtailed_cmap(cdict, swap_order[0], "green"),
+        "blue": _fill_pigtailed_cmap(cdict, swap_order[1], "blue"),
+        "red": _fill_pigtailed_cmap(cdict, swap_order[2], "red"),
+    }
 
 
 def _concat_cmap(cmap1, cmap2):
