@@ -319,7 +319,14 @@ def make_first_level_design_matrix(
         For the others keys a warning will be displayed.
         Particular attention should be given to the 'trial_type' key
         which defines the different conditions in the experimental paradigm.
+
+        .. warning::
+
+            Events with a duration of 0 seconds will be modelled
+            using a 'delta function'.
+
     %(hrf_model)s
+
     drift_model : {'cosine', 'polynomial', None}, default='cosine'
         Specifies the desired drift model.
 

@@ -104,7 +104,8 @@ print(f"The event information has been saved to {tsvfile}")
 # :func:`~nilearn.plotting.plot_event` function.
 from nilearn.plotting import plot_event, show
 
-plot_event(events, figsize=(15, 5))
+fig = plot_event(events, figsize=(15, 5))
+fig.suptitle("Events")
 show()
 
 # %%
@@ -146,9 +147,17 @@ modulated_events = pd.DataFrame(
     }
 )
 
-# Now lets plot the modulated and unmodulated events side by side.
-plot_event([events, modulated_events], figsize=(15, 5))
+# Now lets plot the modulated and unmodulated events.
+fig = plot_event([events, modulated_events], figsize=(15, 5))
+fig.suptitle("Events and modulated events")
 show()
+
+# %%
+#
+# ..  note::
+#
+#       See how the modulation affects the height og the events.
+#
 
 # %%
 # References
