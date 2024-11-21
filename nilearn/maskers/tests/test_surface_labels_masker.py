@@ -238,7 +238,8 @@ def test_surface_label_masker_transform_clean(surf_label_img, surf_img):
 def test_surface_label_masker_fit_transform(surf_label_img, surf_img):
     """Smoke test for fit_transform."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
-    masker.fit_transform(surf_img())
+    signal = masker.fit_transform(surf_img())
+    assert signal.shape == (1, masker.n_elements_)
 
 
 def test_error_transform_before_fit(surf_label_img, surf_img):
@@ -253,7 +254,8 @@ def test_surface_label_masker_inverse_transform(surf_label_img, surf_img):
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
     masker = masker.fit()
     signal = masker.transform(surf_img())
-    masker.inverse_transform(signal)
+    img = masker.inverse_transform(signal)
+    assert img.shape == surf_img().shape
 
 
 def test_transform_list_surf_images(surf_label_img, surf_img):
