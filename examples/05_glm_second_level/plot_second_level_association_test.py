@@ -41,7 +41,7 @@ tested_var = localizer_dataset.ext_vars["pseudo"]
 print(tested_var)
 
 # %%
-# It is worth to do a auality check and remove subjects with missing values.
+# It is worth to do a quality check and remove subjects with missing values.
 import numpy as np
 
 mask_quality_check = np.where(np.logical_not(np.isnan(tested_var)))[0]

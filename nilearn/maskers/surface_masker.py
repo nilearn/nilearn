@@ -30,7 +30,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     Parameters
     ----------
-    mask_img: :obj:`~nilearn.surface.SurfaceImage` or None, default=None
+    mask_img : :obj:`~nilearn.surface.SurfaceImage` or None, default=None
 
     %(smoothing_fwhm)s
         This parameter is not implemented yet.

@@ -23,6 +23,8 @@ from nilearn.surface import SurfaceImage
 class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     labels_img : :obj:`~nilearn.surface.SurfaceImage` object
