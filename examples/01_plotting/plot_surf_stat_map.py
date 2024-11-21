@@ -63,7 +63,7 @@ destrieux_atlas = SurfaceImage(
 )
 labels = [x.decode("utf-8") for x in destrieux.labels]
 
-parcellation = destrieux_atlas.data.parts[hemi]
+parcellation = destrieux_atlas.data.parts[hemi][0]
 
 # Fsaverage5 surface template
 fsaverage_meshes = load_fsaverage()
@@ -97,7 +97,7 @@ import numpy as np
 # Load resting state time series from nilearn
 timeseries = nki_dataset[0].data.parts[hemi].T
 
-# Coercing to float is required to avoid errors withj scipy >= 0.14.0
+# Coercing to float is required to avoid errors with scipy >= 0.14.0
 timeseries = timeseries.astype(float)
 
 # Extract seed region via label
@@ -127,8 +127,8 @@ stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
 from nilearn.plotting import plot_surf_roi, plot_surf_stat_map, show
 
 # Transform ROI indices in ROI map
-pcc_map = np.zeros(parcellation.shape[0], dtype=int)
-pcc_map[pcc_labels] = 1
+pcc_map = np.zeros((1, parcellation.shape[0]), dtype=int)
+pcc_map[0, pcc_labels] = 1
 
 plot_surf_roi(
     surf_mesh=nki_dataset[0].mesh,

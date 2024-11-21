@@ -2116,7 +2116,7 @@ def test_flm_fit_surface_image_default_mask_img(_make_surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (1, 9)
     assert isinstance(model.masker_, SurfaceMasker)
     sum_mask = (
         model.masker_.mask_img_.data.parts["left"].sum()
@@ -2132,7 +2132,7 @@ def test_flm_fit_surface_image(_make_surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (1, 9)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2157,7 +2157,7 @@ def test_flm_fit_surface_image_one_hemisphere(
     model.fit(mini_img_one_hemi, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (4,)
+    assert model.masker_.mask_img_.shape == (1, 4)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2168,7 +2168,7 @@ def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, surf_mask):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (1, 9)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2219,7 +2219,7 @@ def test_flm_with_surface_image_with_surface_masker(_make_surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (1, 9)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2231,7 +2231,7 @@ def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, surf_mask):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (1, 9)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
