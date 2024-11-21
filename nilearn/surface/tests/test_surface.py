@@ -993,7 +993,7 @@ def test_save_mesh_error_wrong_suffix(tmp_path, surf_img):
 def test_load_save_data(
     tmp_path, output_filename, expected_files, unexpected_files, use_path
 ):
-    """Load and save gifti does leaves them unchanged."""
+    """Load and save gifti leaves them unchanged."""
     mesh_right = datasets.fetch_surf_fsaverage().pial_right
     mesh_left = datasets.fetch_surf_fsaverage().pial_left
     data_right = datasets.fetch_surf_fsaverage().sulc_right
@@ -1009,8 +1009,6 @@ def test_load_save_data(
             mesh={"left": mesh_left, "right": mesh_right},
             data={"left": data_left, "right": data_right},
         )
-
-    print(img.shape)
 
     if use_path:
         img.data.to_filename(tmp_path / output_filename)
@@ -1032,7 +1030,7 @@ def test_load_save_data(
 
 
 def test_load_save_data_1d(rng, tmp_path, surf_mesh):
-    """Load and save 1D gifti does leaves them unchanged."""
+    """Load and save 1D gifti leaves them unchanged."""
     data = {}
     for hemi in ["left", "right"]:
         size = (surf_mesh().parts[hemi].n_vertices,)

@@ -1770,7 +1770,6 @@ class SurfaceImage:
         texture_left = vol_to_surf(
             volume_img, mesh.parts["left"], **vol_to_surf_kwargs, **left_kwargs
         )
-        texture_left = texture_left.T
 
         texture_right = vol_to_surf(
             volume_img,
@@ -1778,9 +1777,8 @@ class SurfaceImage:
             **vol_to_surf_kwargs,
             **right_kwargs,
         )
-        texture_right = texture_right.T
 
-        data = PolyData(left=texture_left, right=texture_right)
+        data = PolyData(left=texture_left.T, right=texture_right.T)
 
         return cls(mesh=mesh, data=data)
 

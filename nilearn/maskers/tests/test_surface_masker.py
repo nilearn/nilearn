@@ -197,8 +197,6 @@ def test_transform_inverse_transform_no_mask(
         data_part = (
             np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
         ) * 10**i
-        if data_part.ndim == 1:
-            data_part = np.array([data_part])
         img_data[key] = data_part
 
     img = SurfaceImage(mesh, img_data)
@@ -227,16 +225,14 @@ def test_transform_inverse_transform_with_mask(
         data_part = (
             np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
         ) * 10**i
-        if data_part.ndim == 1:
-            data_part = np.array([data_part])
         img_data[key] = data_part
     img = SurfaceImage(mesh, img_data)
 
     # make a mask that removes first vertex of each part
     # total 2 removed
     mask_data = {
-        "left": np.asarray([[False, True, True, True]]),
-        "right": np.asarray([[False, True, True, True, True]]),
+        "left": np.asarray([False, True, True, True]),
+        "right": np.asarray([False, True, True, True, True]),
     }
     mask = SurfaceImage(mesh, mask_data)
 
