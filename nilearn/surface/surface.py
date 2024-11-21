@@ -1252,6 +1252,14 @@ class PolyData:
     right : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
             or None, default = None
 
+    squeeze_on_save : :obj:`bool` or None, default=None
+            If ``True`` axes of length one from the data
+            in the left and right parts will be removed
+            before saving them to file.
+            If ``None`` is passed,
+            then the value will be set to ``True``
+            if ``left`` or ``right`` is one dimensional.
+
     Attributes
     ----------
     parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_timepoints, n_vertices)
@@ -1259,16 +1267,14 @@ class PolyData:
     shape : :obj:`tuple` of :obj:`int`
     """
 
-    def __init__(self, left=None, right=None):
+    def __init__(self, left=None, right=None, squeeze_on_save=None):
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyData. "
                 "Either left or right (or both) must be provided."
             )
 
-        # to ensure that if 1D array are passed as input
-        # they will be saved as 1D array
-        self._squeeze_on_save = {"left": False, "right": False}
+        self.squeeze_on_save = squeeze_on_save
 
         parts = {}
         for hemi, param in zip(["left", "right"], [left, right]):
@@ -1277,9 +1283,15 @@ class PolyData:
                     param = load_surf_data(param)
                 if param.ndim == 1:
                     param = np.array([param])
-                    self._squeeze_on_save[hemi] = True
+                    if self.squeeze_on_save is None:
+                        self.squeeze_on_save = True
                 parts[hemi] = param
         self.parts = parts
+
+        if self.squeeze_on_save is None:
+            self.squeeze_on_save = False
+
+        assert isinstance(self.squeeze_on_save, bool)
 
         self._check_parts()
 
@@ -1336,11 +1348,11 @@ class PolyData:
 
         if "hemi-L" in filename.stem:
             data = self.parts["left"]
-            if self._squeeze_on_save["left"]:
+            if self.squeeze_on_save:
                 data = np.squeeze(data)
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
-            if self._squeeze_on_save["right"]:
+            if self.squeeze_on_save:
                 data = np.squeeze(data)
 
         _data_to_gifti(data, filename)
@@ -1680,13 +1692,20 @@ class SurfaceImage:
            :obj:`pathlib.Path`
            Data for the both hemispheres.
 
+    squeeze_on_save : :obj:`bool` or None, default=None
+            If ``True`` axes of length one from the data
+            will be removed before saving them to file.
+            If ``None`` is passed,
+            then the value will be set to ``True``
+            if any of the data parts is one dimensional.
+
     Attributes
     ----------
     shape : (int, int)
         shape of the surface data array
     """
 
-    def __init__(self, mesh, data):
+    def __init__(self, mesh, data, squeeze_on_save=None):
         """Create a SurfaceImage instance."""
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
 
@@ -1700,7 +1719,7 @@ class SurfaceImage:
         if isinstance(data, PolyData):
             self.data = data
         elif isinstance(data, dict):
-            self.data = PolyData(**data)
+            self.data = PolyData(**data, squeeze_on_save=squeeze_on_save)
 
         _check_data_and_mesh_compat(self.mesh, self.data)
 

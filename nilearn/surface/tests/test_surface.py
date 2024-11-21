@@ -1061,6 +1061,34 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
         )
 
 
+def test_surface_image_squeeze_on_save(rng, tmp_path, surf_mesh):
+    """Test squeeze_on_save.
+
+    - intanciate surface images with 1D data with or without squeeze_on_save
+    - save them
+    - load out
+    - check that loaded contents differ by one dimension
+    - check that loaded contents still match
+    """
+    data = {}
+    for hemi in ["left", "right"]:
+        size = (surf_mesh().parts[hemi].n_vertices,)
+        data[hemi] = rng.random(size=size).astype(np.uint8)
+
+    img = SurfaceImage(mesh=surf_mesh(), data=data, squeeze_on_save=False)
+    img.data.to_filename(tmp_path / "unsqueezed.gii")
+
+    img_to_squeeze = SurfaceImage(
+        mesh=surf_mesh(), data=data, squeeze_on_save=True
+    )
+    img_to_squeeze.data.to_filename(tmp_path / "squeezed.gii")
+
+    for hemi in ["left", "right"]:
+        unsqueezed = load(tmp_path / f"unsqueezed_hemi-{hemi[0].upper()}.gii")
+        squeezed = load(tmp_path / f"squeezed_hemi-{hemi[0].upper()}.gii")
+        assert_array_equal(unsqueezed.agg_data()[0], squeezed.agg_data())
+
+
 @pytest.mark.parametrize(
     "dtype",
     [
