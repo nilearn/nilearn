@@ -1271,7 +1271,6 @@ class PolyData:
         self._squeeze_on_save = {"left": False, "right": False}
 
         parts = {}
-
         for hemi, param in zip(["left", "right"], [left, right]):
             if param is not None:
                 if not isinstance(param, np.ndarray):
@@ -1280,6 +1279,20 @@ class PolyData:
                     param = np.array([param])
                     self._squeeze_on_save[hemi] = True
                 parts[hemi] = param
+        self.parts = parts
+
+        self._check_parts()
+
+        if len(parts) == 1:
+            self.shape = next(iter(self.parts.values())).shape
+            return
+
+        first_shape = next(iter(self.parts.values())).shape
+        concat_dim = sum(p.shape[-1] for p in self.parts.values())
+        self.shape = (*first_shape[:-1], concat_dim)
+
+    def _check_parts(self):
+        parts = self.parts
 
         for hemi in parts:
             if parts[hemi].ndim != 2:
@@ -1289,8 +1302,6 @@ class PolyData:
                 )
 
         if len(parts) == 1:
-            self.parts = parts
-            self.shape = next(iter(self.parts.values())).shape
             return
 
         if parts["left"].shape[:-1] != parts["right"].shape[:-1]:
@@ -1299,11 +1310,6 @@ class PolyData:
                 "have incompatible shapes: "
                 f"{parts['left'].shape} and {parts['right'].shape}"
             )
-
-        self.parts = parts
-        first_shape = next(iter(parts.values())).shape
-        concat_dim = sum(p.shape[-1] for p in parts.values())
-        self.shape = (*first_shape[:-1], concat_dim)
 
     def to_filename(self, filename):
         """Save data to gifti.

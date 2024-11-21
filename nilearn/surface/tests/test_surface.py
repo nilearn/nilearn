@@ -822,6 +822,24 @@ def test_data_to_gifti(rng, tmp_path, dtype):
     load(tmp_path / "data.gii")
 
 
+def test_error_polydata_1d_check_parts():
+    """Throw error thrown if parts are not 2D.
+
+    - passing a 1D array at instantiation is fine:
+      they are convertd to 2D
+    - _check_parts can be used make sure parts are fine
+      if assigned after instantiation.
+    """
+    data = PolyData(left=np.ones((1,)), right=np.ones((2,)))
+
+    data.parts["left"] = np.ones((1,))
+
+    with pytest.raises(
+        ValueError, match="Data arrays for keys 'left' must be a 2D array."
+    ):
+        data._check_parts()
+
+
 def test_mesh_to_gifti(single_mesh, tmp_path):
     """Check saving mesh to gifti.
 
