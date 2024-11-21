@@ -1,5 +1,5 @@
 import numpy as np
-from numpy.testing import assert_array_almost_equal
+from numpy.testing import assert_array_equal
 
 from nilearn.maskers._utils import (
     compute_mean_surface_image,
@@ -26,9 +26,8 @@ def test_compute_mean_surface_image(surf_img):
 
     img = compute_mean_surface_image(two_time_points_img)
 
-    assert_array_almost_equal(
-        img.data.parts["left"], np.squeeze(np.ones(shape=(1, 4)) * 0.5)
-    )
+    assert_array_equal(img.data.parts["left"], np.ones(shape=(1, 4)) * 0.5)
+    assert img.shape == (1, img.mesh.n_vertices)
 
 
 def test_get_min_max_surface_image(surf_img):
@@ -48,3 +47,5 @@ def test_get_min_max_surface_image(surf_img):
 def test_concatenate_surface_images(surf_img):
     img = concatenate_surface_images([surf_img((3,)), surf_img((5,))])
     assert img.shape == (8, 9)
+    for value in img.data.parts.values():
+        assert value.ndim == 2

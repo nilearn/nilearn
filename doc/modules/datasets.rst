@@ -12,7 +12,8 @@
 Templates
 ---------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -48,7 +49,8 @@ Templates descriptions
 Atlases
 -------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -102,7 +104,8 @@ Atlases descriptions
 Preprocessed datasets
 ---------------------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -148,7 +151,8 @@ Datasets descriptions
 Statistical maps/derivatives
 ----------------------------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -178,7 +182,8 @@ Statistical maps/derivatives descriptions
 General functions
 -----------------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 

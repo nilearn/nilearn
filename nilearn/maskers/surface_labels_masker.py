@@ -23,6 +23,8 @@ from nilearn.surface import SurfaceImage
 class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     labels_img : :obj:`~nilearn.surface.SurfaceImage` object
@@ -144,7 +146,8 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     @property
     def _labels_data(self):
         """Return data of label image concatenated over hemispheres."""
-        return np.concatenate(list(self.labels_img.data.parts.values()))
+        all_labels = [x.ravel() for x in self.labels_img.data.parts.values()]
+        return np.concatenate(all_labels)
 
     def fit(self, img=None, y=None):
         """Prepare signal extraction from regions.
@@ -358,7 +361,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         data = {}
         for part_name, labels_part in self.labels_img.data.parts.items():
             data[part_name] = np.zeros(
-                (*masked_img.shape[:-1], labels_part.shape[0]),
+                (1, labels_part.shape[1]),
                 dtype=masked_img.dtype,
             )
             for label_idx, label in enumerate(self._labels_):

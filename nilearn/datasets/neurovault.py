@@ -85,7 +85,7 @@ class _SpecialValue:
     """
 
     def __eq__(self, other):
-        raise NotImplementedError("Use a derived class for _SpecialValue")
+        return NotImplemented
 
     def __req__(self, other):
         return self.__eq__(other)
