@@ -68,7 +68,7 @@ def compute_mean_surface_image(img):
 
     data = {}
     for part, value in img.data.parts.items():
-        data[part] = np.array([np.mean(value, axis=0).astype(float)])
+        data[part] = np.mean(value, axis=0).astype(float)
 
     return SurfaceImage(mesh=img.mesh, data=data)
 
