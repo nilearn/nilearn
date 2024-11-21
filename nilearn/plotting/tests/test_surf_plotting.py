@@ -242,6 +242,16 @@ def test_check_surface_plotting_inputs_many_time_points(surf_img):
             bg_map=None,
         )
 
+    with pytest.raises(
+        TypeError, match="Input data has incompatible dimensionality"
+    ):
+        check_surface_plotting_inputs(
+            surf_map=surf_img(),
+            surf_mesh=None,
+            hemi="left",
+            bg_map=surf_img((10,)),
+        )
+
 
 def test_plot_surf_surface_image(surf_img):
     """Smoke test some surface plotting functions accept a SurfaceImage."""
