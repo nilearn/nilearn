@@ -804,10 +804,10 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     if source == "Juelich":
         for idx, name in enumerate(names):
             if name.endswith("L"):
-                names[idx] = re.sub(r" L$", "", name)
+                name = re.sub(r" L$", "", name)
                 names[idx] = f"Left {name}"
             if name.endswith("R"):
-                names[idx] = re.sub(r" R$", "", name)
+                name = re.sub(r" R$", "", name)
                 names[idx] = f"Right {name}"
 
     new_label = 0
