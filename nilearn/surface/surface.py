@@ -998,7 +998,7 @@ def load_surf_mesh(surf_mesh):
         if len(file_list) > 1:
             # empty list is handled inside resolve_globbing function
             raise ValueError(
-                f"More than one file matching path: {surf_mesh} \n"
+                f"More than one file matching path: {surf_mesh}\n"
                 "load_surf_mesh can only load one file at a time."
             )
         surf_mesh = str(file_list[0])
@@ -1238,6 +1238,8 @@ class PolyData:
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     left : :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` or None,\
@@ -1322,6 +1324,8 @@ class SurfaceMesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles).
 
+    .. versionadded:: 0.11.0
+
     Attributes
     ----------
     n_vertices : int
@@ -1356,6 +1360,8 @@ class SurfaceMesh(abc.ABC):
 class InMemoryMesh(SurfaceMesh):
     """A surface mesh stored as in-memory numpy arrays.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     coordinates : :obj:`numpy.ndarray`
@@ -1382,6 +1388,8 @@ class InMemoryMesh(SurfaceMesh):
 
 class FileMesh(SurfaceMesh):
     """A surface mesh stored in a Gifti or Freesurfer file.
+
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1433,6 +1441,8 @@ class PolyMesh:
 
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
+
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1617,7 +1627,7 @@ def _sanitize_filename(filename):
     if "hemi-L" in filename.stem and "hemi-R" in filename.stem:
         raise ValueError(
             "'filename' cannot contain both "
-            "'hemi-L' and 'hemi-R'. \n"
+            "'hemi-L' and 'hemi-R'.\n"
             f"Got: {filename}"
         )
     return filename
@@ -1625,6 +1635,8 @@ def _sanitize_filename(filename):
 
 class SurfaceImage:
     """Surface image containing meshes & data for both hemispheres.
+
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1700,7 +1712,7 @@ class SurfaceImage:
         Examples
         --------
         >>> from nilearn.surface import SurfaceImage
-        >>> from nilearn.experimental.surface import load_fsaverage
+        >>> from nilearn.datasets import load_fsaverage
         >>> from nilearn.datasets import load_sample_motor_activation_image
 
         >>> fsavg = load_fsaverage()

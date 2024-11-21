@@ -311,7 +311,6 @@ def test_get_view_plot_surf_plotly(full_view):
     from nilearn.plotting.surf_plotting import (
         _get_camera_view_from_elevation_and_azimut,
         _get_camera_view_from_string_view,
-        _get_view_plot_surf_plotly,
     )
 
     hemi, view_name, (elev, azim), expected_camera_view = full_view
@@ -347,16 +346,12 @@ def expected_view_matplotlib(hemi, view):
 @pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
 @pytest.mark.parametrize("view", VALID_VIEWS)
 def test_get_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
-    from nilearn.plotting.surf_plotting import _get_view_plot_surf_matplotlib
-
     assert (
         _get_view_plot_surf_matplotlib(hemi, view) == expected_view_matplotlib
     )
 
 
 def test_surface_figure():
-    from nilearn.plotting.displays import SurfaceFigure
-
     s = SurfaceFigure()
     assert s.output_file is None
     assert s.figure is None
@@ -381,7 +376,7 @@ def test_plotly_surface_figure_import_error():
 
 @pytest.mark.skipif(
     not is_plotly_installed() or is_kaleido_installed(),
-    reason=("This test only runs if Plotly is " "installed, but not kaleido."),
+    reason=("This test only runs if Plotly is installed, but not kaleido."),
 )
 def test_plotly_surface_figure_savefig_error():
     """Test that an ImportError is raised when saving \
@@ -393,7 +388,7 @@ def test_plotly_surface_figure_savefig_error():
 
 @pytest.mark.skipif(
     not is_plotly_installed() or not is_kaleido_installed(),
-    reason=("Plotly and/or kaleido not installed; " "required for this test."),
+    reason=("Plotly and/or kaleido not installed; required for this test."),
 )
 def test_plotly_surface_figure():
     ps = PlotlySurfaceFigure()
@@ -407,9 +402,7 @@ def test_plotly_surface_figure():
 
 @pytest.mark.skipif(
     not is_plotly_installed() or not IPYTHON_INSTALLED,
-    reason=(
-        "Plotly and/or Ipython is not installed; " "required for this test."
-    ),
+    reason=("Plotly and/or Ipython is not installed; required for this test."),
 )
 @pytest.mark.parametrize("renderer", ["png", "jpeg", "svg"])
 def test_plotly_show(renderer):
@@ -427,7 +420,7 @@ def test_plotly_show(renderer):
 
 @pytest.mark.skipif(
     not is_plotly_installed() or not is_kaleido_installed(),
-    reason=("Plotly and/or kaleido not installed; " "required for this test."),
+    reason=("Plotly and/or kaleido not installed; required for this test."),
 )
 def test_plotly_savefig(tmp_path):
     import plotly.graph_objects as go
@@ -447,7 +440,7 @@ def test_plotly_savefig(tmp_path):
 def test_instantiation_error_plotly_surface_figure(input_obj):
     with pytest.raises(
         TypeError,
-        match=("`PlotlySurfaceFigure` accepts only " "plotly figure objects."),
+        match=("`PlotlySurfaceFigure` accepts only plotly figure objects."),
     ):
         PlotlySurfaceFigure(input_obj)
 
@@ -463,7 +456,7 @@ def test_value_error_get_faces_on_edge():
     mesh = generate_surf()
     figure = plot_surf(mesh, engine="plotly")
     with pytest.raises(
-        ValueError, match=("Vertices in parcellation do not " "form region.")
+        ValueError, match=("Vertices in parcellation do not form region.")
     ):
         figure._get_faces_on_edge([91])
 
@@ -696,11 +689,6 @@ def test_check_hemisphere_is_valid(hemi, is_valid):
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
-    from nilearn.plotting.surf_plotting import (
-        _get_view_plot_surf_matplotlib,
-        _get_view_plot_surf_plotly,
-    )
-
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
         _get_view_plot_surf_matplotlib(hemi, view)
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):

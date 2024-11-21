@@ -13,21 +13,24 @@ from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.experimental.surface._surface_image import SurfaceImage
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     compute_mean_surface_image,
+    concatenate_surface_images,
     get_min_max_surface_image,
 )
+from nilearn.surface import SurfaceImage
 
 
 @fill_doc
 class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
-    mask_img: :obj:`~nilearn.surface.SurfaceImage` object or None, default=None
+    mask_img: :obj:`~nilearn.surface.SurfaceImage` or None, default=None
 
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
@@ -145,7 +148,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : SurfaceImage object or None
+        img : SurfaceImage object or :obj:`list` of SurfaceImage or None
         """
         if self.mask_img is not None:
             if img is not None:
@@ -160,11 +163,15 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "or an img when calling fit()."
             )
 
+        if not isinstance(img, list):
+            img = [img]
+        img = concatenate_surface_images(img)
+
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
         mask_data = {
-            k: np.ones(v.n_vertices, dtype=bool)
-            for (k, v) in img.mesh.parts.items()
+            part: np.ones(v.n_vertices, dtype=bool)
+            for (part, v) in img.mesh.parts.items()
         }
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
@@ -173,12 +180,15 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object or None
+        img : :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage` or None, \
+              default = None
             Mesh and data for both hemispheres.
 
         y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+            This parameter is unused.
+            It is solely included for scikit-learn compatibility.
 
         Returns
         -------
@@ -218,7 +228,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object
+        img : :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres.
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
@@ -261,6 +273,10 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         parameters["clean_args"] = self.clean_args
 
         self._check_fitted()
+
+        if not isinstance(img, list):
+            img = [img]
+        img = concatenate_surface_images(img)
 
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
 
@@ -308,7 +324,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object
+        img : :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres.
 
         y : None
@@ -324,7 +342,6 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         sample_mask : None, or any type compatible with numpy-array indexing, \
                   or :obj:`list` of \
                   shape: (number of scans - number of volumes removed) \
-                  for explicit index, or (number of scans) for binary mask, \
                   default=None
             sample_mask to pass to :func:`nilearn.signal.clean`.
 

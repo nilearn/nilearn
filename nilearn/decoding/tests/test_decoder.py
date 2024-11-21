@@ -72,12 +72,19 @@ N_SAMPLES = 80
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
 
+extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
+]
+
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[DecoderRegressor()],
-        extra_valid_checks=["check_parameters_default_constructible"],
+        extra_valid_checks=[
+            *extra_valid_checks,
+            "check_parameters_default_constructible",
+        ],
     ),
 )
 def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG001
@@ -90,7 +97,10 @@ def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG
     "estimator, check, name",
     check_estimator(
         estimator=[DecoderRegressor()],
-        extra_valid_checks=["check_parameters_default_constructible"],
+        extra_valid_checks=[
+            *extra_valid_checks,
+            "check_parameters_default_constructible",
+        ],
         valid=False,
     ),
 )
@@ -103,6 +113,7 @@ def test_check_estimator_invalid_decoder_regressor(estimator, check, name):  # n
     "estimator, check, name",
     check_estimator(
         estimator=[FREMRegressor()],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
@@ -113,7 +124,11 @@ def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
 @pytest.mark.xfail(reason="invalid checks should fail")
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(estimator=[FREMRegressor()], valid=False),
+    check_estimator(
+        estimator=[FREMRegressor()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
 )
 def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -123,8 +138,9 @@ def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[_BaseDecoder(), Decoder()],
+        estimator=[Decoder()],
         extra_valid_checks=[
+            *extra_valid_checks,
             "check_no_attributes_set_in_init",
             "check_parameters_default_constructible",
         ],
@@ -139,8 +155,9 @@ def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[_BaseDecoder(), Decoder()],
+        estimator=[Decoder()],
         extra_valid_checks=[
+            *extra_valid_checks,
             "check_no_attributes_set_in_init",
             "check_parameters_default_constructible",
         ],
@@ -155,8 +172,45 @@ def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG00
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
+        estimator=[_BaseDecoder()],
+        extra_valid_checks=[
+            *extra_valid_checks,
+            "check_no_attributes_set_in_init",
+            "check_parameters_default_constructible",
+        ],
+    ),
+)
+def test_check_estimator_base_decoder(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_BaseDecoder()],
+        extra_valid_checks=[
+            *extra_valid_checks,
+            "check_no_attributes_set_in_init",
+            "check_parameters_default_constructible",
+        ],
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid_base_decoder(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
         estimator=[FREMClassifier()],
-        extra_valid_checks=["check_no_attributes_set_in_init"],
+        extra_valid_checks=[
+            *extra_valid_checks,
+            "check_no_attributes_set_in_init",
+        ],
     ),
 )
 def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG001
@@ -169,7 +223,10 @@ def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG00
     "estimator, check, name",
     check_estimator(
         estimator=[FREMClassifier()],
-        extra_valid_checks=["check_no_attributes_set_in_init"],
+        extra_valid_checks=[
+            *extra_valid_checks,
+            "check_no_attributes_set_in_init",
+        ],
         valid=False,
     ),
 )
@@ -1120,9 +1177,9 @@ def test_decoder_tags_classification():
     # remove if block when bumping sklearn_version to > 1.5
     ver = parse(sklearn_version)
     if ver.release[1] < 6:
-        assert model._more_tags()["require_y"] is True
+        assert model.__sklearn_tags__()["require_y"] is True
     else:
-        assert model._more_tags().target_tags.required is True
+        assert model.__sklearn_tags__().target_tags.required is True
 
 
 def test_decoder_tags_regression():
@@ -1131,9 +1188,9 @@ def test_decoder_tags_regression():
     # remove if block when bumping sklearn_version to > 1.5
     ver = parse(sklearn_version)
     if ver.release[1] < 6:
-        assert model._more_tags()["multioutput"] is True
+        assert model.__sklearn_tags__()["multioutput"] is True
     else:
-        assert model._more_tags().target_tags.multi_output is True
+        assert model.__sklearn_tags__().target_tags.multi_output is True
 
 
 def test_decoder_decision_function(binary_classification_data):
@@ -1388,6 +1445,9 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
 
 
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
+@pytest.mark.filterwarnings("ignore:divide by zero encountered in divide")
+@pytest.mark.filterwarnings("ignore:Liblinear failed to converge")
+@pytest.mark.filterwarnings("ignore:Solver terminated early")
 @pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
 def test_frem_decoder_fit_surface(
     frem,
@@ -1395,9 +1455,6 @@ def test_frem_decoder_fit_surface(
     surf_mask,
 ):
     """Test fit for using FREM decoding with surface image."""
-    with pytest.raises(
-        ValueError, match="The mask image should be a Niimg-like object."
-    ):
-        X, y = _make_surface_class_data
-        model = frem(mask=surf_mask(), clustering_percentile=90)
-        model.fit(X, y)
+    X, y = _make_surface_class_data
+    model = frem(mask=surf_mask(), clustering_percentile=90)
+    model.fit(X, y)

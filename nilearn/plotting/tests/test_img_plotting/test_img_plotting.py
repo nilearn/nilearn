@@ -123,14 +123,14 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
     data = 10 * np.ones((10, 10, 10), dtype="uint8")
     # Having a zero minimum value is important to reproduce
     # https://github.com/nilearn/nilearn/issues/762
-    if plot_func == plot_stat_map:
+    if plot_func is plot_stat_map:
         data[0, 0, 0] = 0
     else:
         data[0, 0] = 0
     img = Nifti1Image(data, affine_eye)
     threshold = np.array(5, dtype="uint8")
     kwargs = {"threshold": threshold, "display_mode": "z"}
-    if plot_func == plot_stat_map:
+    if plot_func is plot_stat_map:
         kwargs["bg_img"] = None
         kwargs["cut_coords"] = [0]
     display = plot_func(img, colorbar=True, **kwargs)
@@ -174,7 +174,7 @@ def test_invalid_cut_coords_with_display_mode(
     expected_error_message,
 ):
     """Tests for invalid combinations of cut_coords and display_mode."""
-    if plot_func == plot_glass_brain and display_mode != "ortho":
+    if plot_func is plot_glass_brain and display_mode != "ortho":
         return
     with pytest.raises(ValueError, match=expected_error_message):
         plot_func(
@@ -204,7 +204,7 @@ def test_plotting_functions_with_cmaps(plot_func, cmap):
 def test_plotting_functions_with_nans_in_bg_img(plot_func, img_3d_mni):
     """Smoke test for plotting functions with nans in background image."""
     bg_img = _add_nans_to_img(img_3d_mni)
-    if plot_func == plot_anat:
+    if plot_func is plot_anat:
         plot_func(bg_img)
     else:
         plot_func(img_3d_mni, bg_img=bg_img)
@@ -214,7 +214,7 @@ def test_plotting_functions_with_nans_in_bg_img(plot_func, img_3d_mni):
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_anat, plot_img])
 def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
     """Smoke test for plotting functions with tiled display mode."""
-    if plot_func == plot_anat:
+    if plot_func is plot_anat:
         plot_func(display_mode="tiled")
     else:
         plot_func(img_3d_mni, display_mode="tiled")

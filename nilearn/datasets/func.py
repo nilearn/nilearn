@@ -19,11 +19,8 @@ from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, remove_parameters
-from nilearn.image import get_data
-from nilearn.interfaces.bids import get_bids_files
-
-from .._utils.numpy_conversions import csv_to_array
-from ._utils import (
+from nilearn.datasets._utils import (
+    ALLOWED_MESH_TYPES,
     PACKAGE_DIRECTORY,
     fetch_files,
     fetch_single_file,
@@ -34,6 +31,12 @@ from ._utils import (
     tree,
     uncompress_file,
 )
+from nilearn.datasets.struct import load_fsaverage
+from nilearn.image import get_data
+from nilearn.interfaces.bids import get_bids_files
+from nilearn.surface import SurfaceImage, load_surf_data
+
+from .._utils.numpy_conversions import csv_to_array
 
 
 @fill_doc
@@ -67,7 +70,7 @@ def fetch_haxby(
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
         - 'anat': :obj:`list` of :obj:`str`. Paths to anatomic images.
@@ -164,7 +167,7 @@ def fetch_haxby(
             url + f"subj{int(i)}-2010.01.14.tar.gz",
             {
                 "uncompress": True,
-                "md5sum": md5sums.get(f"subj{int(i)}-2010.01.14.tar.gz", None),
+                "md5sum": md5sums.get(f"subj{int(i)}-2010.01.14.tar.gz"),
             },
         )
         for i in subject_mask
@@ -278,7 +281,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
          - 'func': Paths to functional :term:`resting-state` images
@@ -722,13 +725,11 @@ def fetch_localizer_contrasts(
         "left button press (auditory cue)": "left auditory click",
         "left button press (visual cue)": "left visual click",
         "left button press": "left auditory&visual click",
-        "left vs right button press": "left auditory & visual click vs "
-        + "right auditory&visual click",
+        "left vs right button press": "left auditory & visual click vs right auditory&visual click",  # noqa: E501
         "right button press (auditory cue)": "right auditory click",
         "right button press (visual cue)": "right visual click",
         "right button press": "right auditory & visual click",
-        "right vs left button press": "right auditory & visual click "
-        + "vs left auditory&visual click",
+        "right vs left button press": "right auditory & visual click vs left auditory&visual click",  # noqa: E501
         "button press (auditory cue) vs sentence listening": "auditory click vs auditory sentences",  # noqa: E501
         "button press (visual cue) vs sentence reading": "visual click vs visual sentences",  # noqa: E501
         "button press vs calculation and sentence listening/reading": "auditory&visual motor vs cognitive processing",  # noqa: E501
@@ -785,7 +786,7 @@ def fetch_localizer_contrasts(
     filenames = []
     for subject_id in subject_ids:
         for data_type in data_types:
-            for _, contrast in enumerate(contrasts_wrapped):
+            for contrast in contrasts_wrapped:
                 name_aux = f"{data_type}_{contrast}"
                 name_aux.replace(" ", "_")
                 file_path = Path(
@@ -1689,7 +1690,7 @@ def fetch_surf_nki_enhanced(
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
         - 'func_left': Paths to Gifti files containing resting state
@@ -1799,6 +1800,87 @@ def fetch_surf_nki_enhanced(
         phenotypic=phenotypic,
         description=fdescr,
     )
+
+
+@fill_doc
+def load_nki(
+    mesh="fsaverage5",
+    mesh_type="pial",
+    n_subjects=1,
+    data_dir=None,
+    url=None,
+    resume=True,
+    verbose=1,
+):
+    """Load NKI enhanced surface data into a surface object.
+
+    Parameters
+    ----------
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
+
+    mesh_type : :obj:`str`, default='pial'
+        Must be one of:
+         - ``"pial"``
+         - ``"white_matter"``
+         - ``"inflated"``
+         - ``"sphere"``
+         - ``"flat"``
+
+    n_subjects : :obj:`int`, default=10
+        The number of subjects to load from maximum of 102 subjects.
+        By default, 10 subjects will be loaded. If None is given,
+        all 102 subjects will be loaded.
+
+    %(data_dir)s
+
+    %(url)s
+
+    %(resume)s
+
+    %(verbose)s
+
+    Returns
+    -------
+    list of SurfaceImage objects
+        One image per subject.
+    """
+    if mesh_type not in ALLOWED_MESH_TYPES:
+        raise ValueError(
+            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
+            f"Got: {mesh_type}."
+        )
+
+    fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
+
+    nki_dataset = fetch_surf_nki_enhanced(
+        n_subjects=n_subjects,
+        data_dir=data_dir,
+        url=url,
+        resume=resume,
+        verbose=verbose,
+    )
+
+    images = []
+    for i, (left, right) in enumerate(
+        zip(nki_dataset["func_left"], nki_dataset["func_right"]), start=1
+    ):
+        logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
+
+        left_data = load_surf_data(left).T
+        right_data = load_surf_data(right).T
+        img = SurfaceImage(
+            mesh=fsaverage[mesh_type],
+            data={
+                "left": left_data,
+                "right": right_data,
+            },
+        )
+        images.append(img)
+
+    return images
 
 
 @fill_doc
@@ -2186,7 +2268,7 @@ def fetch_language_localizer_demo_dataset(
             Starting from version 0.13.0
             the ``legacy_ouput`` argument will be removed
             and the fetcher will always return
-            a ``sklearn.datasets.base.Bunch``.
+            a :obj:`sklearn.utils.Bunch`.
 
 
     Returns
@@ -2606,7 +2688,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, with the keys:
         epi_img: the input 4D image
         events: a csv file describing the paradigm
@@ -2683,7 +2765,7 @@ def fetch_spm_auditory(
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
         - 'anat': :obj:`list` of :obj:`str`. Path to anat image
         - 'func': :obj:`list` of :obj:`str`. Path to functional image
@@ -2885,7 +2967,7 @@ def fetch_spm_multimodal_fmri(
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
         - 'func1': string list. Paths to functional images for run 1
         - 'func2': string list. Paths to functional images for run 2
@@ -2927,7 +3009,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
 
         - 'design_matrix1': :obj:`str`.

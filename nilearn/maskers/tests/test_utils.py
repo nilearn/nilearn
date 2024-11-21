@@ -3,6 +3,7 @@ from numpy.testing import assert_array_almost_equal
 
 from nilearn.maskers._utils import (
     compute_mean_surface_image,
+    concatenate_surface_images,
     get_min_max_surface_image,
 )
 
@@ -41,3 +42,8 @@ def test_get_min_max_surface_image(surf_img):
 
     assert vmin == -3.5
     assert vmax == 10
+
+
+def test_concatenate_surface_images(surf_img):
+    img = concatenate_surface_images([surf_img((3,)), surf_img((5,))])
+    assert img.shape == (8, 9)

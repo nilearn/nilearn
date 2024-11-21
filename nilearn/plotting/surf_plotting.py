@@ -295,8 +295,6 @@ def _plot_surf_plotly(
     """
     if is_plotly_installed():
         import plotly.graph_objects as go
-
-        from nilearn.plotting.displays import PlotlySurfaceFigure
     else:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
         raise ImportError(msg)
@@ -1771,7 +1769,7 @@ def plot_img_on_surf(
     for arg in ("figure", "axes", "engine"):
         if arg in kwargs:
             raise ValueError(
-                "plot_img_on_surf does not accept " f"{arg} as an argument"
+                f"plot_img_on_surf does not accept {arg} as an argument"
             )
 
     stat_map = check_niimg_3d(stat_map, dtype="auto")
