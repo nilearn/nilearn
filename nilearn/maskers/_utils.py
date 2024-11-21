@@ -65,9 +65,12 @@ def compute_mean_surface_image(img):
     """
     if img.shape[0] < 2:
         return img
+
+    data = {}
     for part, value in img.data.parts.items():
-        img.data.parts[part] = np.squeeze(value.mean(axis=0)).astype(float)
-    return img
+        data[part] = np.array([np.mean(value, axis=0).astype(float)])
+
+    return SurfaceImage(mesh=img.mesh, data=data)
 
 
 def get_min_max_surface_image(img):
