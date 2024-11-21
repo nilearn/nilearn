@@ -104,7 +104,7 @@ def test_surface_label_masker_transform(surf_label_img, surf_img):
     assert signal.shape == (n_timepoints, n_labels)
 
 
-def test_surface_label_masker_check_output(surf_mesh, surf_img, rng):
+def test_surface_label_masker_check_output(surf_mesh, rng):
     """Check actual content of the transform and inverse_transform.
 
     - Use a label mask with more than one label.
