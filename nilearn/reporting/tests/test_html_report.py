@@ -11,7 +11,6 @@ from nilearn._utils.data_gen import (
     generate_maps,
     generate_random_img,
 )
-from nilearn.experimental.surface import SurfaceLabelsMasker
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -21,6 +20,7 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceLabelsMasker,
     SurfaceMasker,
 )
 
@@ -652,20 +652,25 @@ def test_surface_masker_report_no_report(surf_img):
 def test_surface_label_masker_report_unfitted(
     surf_label_img, label_names, reports
 ):
-    masker = SurfaceLabelsMasker(
-        surf_label_img(), label_names, reports=reports
-    )
+    masker = SurfaceLabelsMasker(surf_label_img, label_names, reports=reports)
     report = masker.generate_report()
 
     _check_html(report)
-    # contrary to other maskers information about the label image
-    # can be shown before fitting
-    assert "Make sure to run `fit`" not in str(report)
+    assert "Make sure to run `fit`" in str(report)
+
+
+def test_surface_label_masker_report(surf_label_img, surf_img, tmp_path):
+    """Test that a report can be generated and saved as html."""
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
+    masker = masker.fit()
+    masker.transform(surf_img())
+    report = masker.generate_report()
+    report.save_as_html(tmp_path / "surface_label_masker.html")
 
 
 def test_surface_label_masker_report_no_report(surf_label_img):
     """Check content of no report."""
-    masker = SurfaceLabelsMasker(surf_label_img(), reports=False)
+    masker = SurfaceLabelsMasker(surf_label_img, reports=False)
     report = masker.generate_report()
 
     _check_html(report)

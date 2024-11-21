@@ -72,8 +72,6 @@ discrete_atlas_img = image.new_img_like(atlas_img, discrete_version)
 # %%
 # Visualizing global patterns, separated by tissue type
 # -----------------------------------------------------
-from nilearn.plotting import plot_carpet
-
 fig, ax = plt.subplots(figsize=(10, 10))
 
 display = plot_carpet(

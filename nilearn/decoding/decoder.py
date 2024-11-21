@@ -25,7 +25,12 @@ from joblib import Parallel, delayed
 from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
-from sklearn.base import BaseEstimator, MultiOutputMixin
+from sklearn.base import (
+    BaseEstimator,
+    ClassifierMixin,
+    MultiOutputMixin,
+    RegressorMixin,
+)
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LassoCV,
@@ -158,7 +163,7 @@ def _default_param_grid(estimator, X, y):
 
     # validate estimator
     if isinstance(estimator, (DummyClassifier, DummyRegressor)):
-        if estimator.strategy in ["constant"]:
+        if estimator.strategy == "constant":
             message = (
                 "Dummy classification implemented only for strategies"
                 ' "most_frequent", "prior", "stratified"'
@@ -780,8 +785,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             warnings.warn(
                 "After clustering and screening, the decoding model will "
                 f"be trained only on {n_final_features} features. "
-                + "Consider raising clustering_percentile or "
-                + "screening_percentile parameters.",
+                "Consider raising clustering_percentile or "
+                "screening_percentile parameters.",
                 UserWarning,
             )
 
@@ -1000,14 +1005,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.dummy_output_ = {}
         classes = self.classes_
 
-        for _, (
+        for (
             class_index,
             coef,
             intercept,
             params,
             scores,
             dummy_output,
-        ) in enumerate(parallel_fit_outputs):
+        ) in parallel_fit_outputs:
             coefs.setdefault(classes[class_index], []).append(coef)
             intercepts.setdefault(classes[class_index], []).append(intercept)
 
@@ -1109,21 +1114,23 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         return scores.ravel() if scores.shape[1] == 1 else scores
 
     def _more_tags(self):
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
         # TODO
-        # rename method to '__sklearn_tags__'
-        # and get rid of if block
+        # get rid of if block
         # bumping sklearn_version > 1.5
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         ver = parse(sklearn_version)
         if ver.release[1] < 6:
             return {"require_y": True}
-        tags = self.__sklearn_tags__()
+        tags = super().__sklearn_tags__()
         tags.target_tags.required = True
         return tags
 
 
 @fill_doc
-class Decoder(_BaseDecoder):
+class Decoder(ClassifierMixin, _BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1279,9 +1286,16 @@ class Decoder(_BaseDecoder):
             n_jobs=n_jobs,
         )
 
+    def __sklearn_tags__(self):
+        tags = super().__sklearn_tags__()
+        ver = parse(sklearn_version)
+        if ver.release[1] >= 6:
+            tags.estimator_type = "classifier"
+        return tags
+
 
 @fill_doc
-class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
+class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
     """A wrapper for popular regression strategies in neuroimaging.
 
     The `DecoderRegressor` object supports regression methods.
@@ -1436,6 +1450,23 @@ class DecoderRegressor(MultiOutputMixin, _BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
+
+    def _more_tags(self):
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
+            return {"multioutput": True}
+        tags = super().__sklearn_tags__()
+        if ver.release[1] >= 6:
+            tags.estimator_type = "regressor"
+        tags.target_tags.required = True
+        return tags
 
 
 @fill_doc

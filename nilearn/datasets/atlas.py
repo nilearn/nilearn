@@ -4,9 +4,9 @@ import json
 import re
 import shutil
 import warnings
-import xml.etree.ElementTree
 from pathlib import Path
 from tempfile import mkdtemp
+from xml.etree import ElementTree
 
 import numpy as np
 import pandas as pd
@@ -719,10 +719,8 @@ def _get_atlas_data_and_labels(
     )
     # Reorder image to have positive affine diagonal
     atlas_img = reorder_img(atlas_file, copy_header=True)
-    names = {}
-    from xml.etree import ElementTree
+    names = {0: "Background"}
 
-    names[0] = "Background"
     all_labels = ElementTree.parse(label_file).findall(".//label")
     for label in all_labels:
         new_idx = int(label.get("index")) + 1
@@ -1319,7 +1317,7 @@ def fetch_atlas_aal(
     labels = []
     indices = []
     if version in ("SPM12", "3v2"):
-        xml_tree = xml.etree.ElementTree.parse(labels_file)
+        xml_tree = ElementTree.parse(labels_file)
         root = xml_tree.getroot()
         for label in root.iter("label"):
             indices.append(label.find("index").text)

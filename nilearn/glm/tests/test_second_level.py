@@ -45,10 +45,12 @@ if is_matplotlib_installed():
     from nilearn.reporting import get_clusters_table
 
 extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
     "check_transformers_unfitted",
     "check_transformer_n_iter",
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
+    "check_estimators_unfitted",
 ]
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
@@ -58,7 +60,7 @@ if compare_version(sklearn_version, "<", "1.5.0"):
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[FirstLevelModel(), SecondLevelModel()],
+        estimator=[SecondLevelModel()],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -71,7 +73,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[FirstLevelModel(), SecondLevelModel()],
+        estimator=[SecondLevelModel()],
         extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
@@ -255,10 +257,10 @@ def test_check_affine_first_level_models(affine_eye, shape_4d_default):
 
 
 def test_check_shape_first_level_models(shape_4d_default):
+    """Check all FirstLevelModel have the same shape."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
     )
-    """Check all FirstLevelModel have the same shape."""
     list_of_flm = [
         FirstLevelModel(mask_img=mask, subject_label=f"sub-{i}").fit(
             fmri_data[0], design_matrices=design_matrices[0]
@@ -316,7 +318,7 @@ def test_check_second_level_input(shape_4d_default):
         )
     ]
 
-    obj = lambda: None  # noqa : E731
+    obj = lambda: None  # noqa: E731
     obj.results_ = "foo"
     obj.labels_ = "bar"
 

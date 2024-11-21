@@ -31,8 +31,6 @@ else:
         [
             "plotting",
             "reporting",
-            "experimental/plotting",
-            "experimental/reporting",
         ]
     )
     matplotlib = None
@@ -475,21 +473,15 @@ def surf_mask():
 
 
 @pytest.fixture
-def surf_label_img():
+def surf_label_img(surf_mesh):
     """Return a sample surface label image using the sample mesh.
     Has two regions with values 0 and 1 respectively.
     """
-
-    def _surface_label_img():
-        mesh = _make_mesh()
-        data = {
-            "left": np.asarray([[0, 0, 1, 1]]),
-            "right": np.asarray([[1, 1, 0, 0, 0]]),
-        }
-
-        return SurfaceImage(mesh, data)
-
-    return _surface_label_img
+    data = {
+        "left": np.asarray([[0, 0, 1, 1]]),
+        "right": np.asarray([[1, 1, 0, 0, 0]]),
+    }
+    return SurfaceImage(surf_mesh(), data)
 
 
 @pytest.fixture

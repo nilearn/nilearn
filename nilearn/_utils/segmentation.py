@@ -61,7 +61,7 @@ def _compute_weights_3d(data, spacing, beta=130, eps=1.0e-6):
     # Weight calculation is main difference in multispectral version
     # Original gradient**2 replaced with sum of gradients ** 2
     gradients = 0
-    for channel in range(0, data.shape[-1]):
+    for channel in range(data.shape[-1]):
         gradients += _compute_gradients_3d(data[..., channel], spacing) ** 2
     # All channels considered together in this standard deviation
     beta /= 10 * data.std()

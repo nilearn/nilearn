@@ -1,3 +1,5 @@
+import numpy as np
+
 from nilearn import image
 from nilearn.surface import SurfaceImage
 
@@ -88,3 +90,39 @@ def get_min_max_surface_image(img):
     vmin = min(min(x.ravel()) for x in img.data.parts.values())
     vmax = max(max(x.ravel()) for x in img.data.parts.values())
     return vmin, vmax
+
+
+def concatenate_surface_images(imgs):
+    """Concatenate the data of a list or tuple of SurfaceImages.
+
+    Assumes all images have same meshes.
+
+    Parameters
+    ----------
+    imgs : :obj:`list` or :obj:`tuple` of SurfaceImage object
+
+    Returns
+    -------
+    SurfaceImage object
+    """
+    if not isinstance(imgs, (tuple, list)) or any(
+        not isinstance(x, SurfaceImage) for x in imgs
+    ):
+        raise TypeError(
+            "'imgs' must be a list or a tuple of SurfaceImage instances."
+        )
+
+    if len(imgs) == 1:
+        return imgs[0]
+
+    for img in imgs:
+        check_same_n_vertices(img.mesh, imgs[0].mesh)
+
+    output_data = {}
+    for part in imgs[0].data.parts:
+        tmp = [img.data.parts[part] for img in imgs]
+        output_data[part] = np.concatenate(tmp)
+
+    output = SurfaceImage(mesh=imgs[0].mesh, data=output_data)
+
+    return output
