@@ -147,7 +147,7 @@ def test_butterworth(data_butterworth_single_timeseries):
     )
 
     np.testing.assert_almost_equal(out_single, data)
-    np.testing.assert_(id(out_single) != id(data))
+    assert id(out_single) != id(data)
 
 
 def test_butterworth_multiple_timeseries(
@@ -172,7 +172,7 @@ def test_butterworth_multiple_timeseries(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=True
     )
     np.testing.assert_almost_equal(data, data_original)
-    np.testing.assert_(id(out1) != id(data_original))
+    assert id(out1) != id(data_original)
 
     # check that multiple- and single-timeseries filtering do the same thing.
     np.testing.assert_almost_equal(out1[:, 0], out_single)
@@ -190,7 +190,7 @@ def test_butterworth_multiple_timeseries(
         copy=True,  # Greater than nyq frequency
     )
     np.testing.assert_almost_equal(out1, out2)
-    np.testing.assert_(id(out1) != id(out2))
+    assert id(out1) != id(out2)
 
 
 def test_butterworth_warnings_critical_frequencies(
@@ -495,9 +495,7 @@ def test_clean_t_r(rng):
                     f"high_pass={high_cutoff} "
                     f"n_samples={n_samples}, n_features={n_features}"
                 )
-                np.testing.assert_(
-                    np.any(np.not_equal(det_one_tr, det_diff_tr)), msg
-                )
+                assert np.any(np.not_equal(det_one_tr, det_diff_tr)), msg
                 del det_one_tr, det_diff_tr
 
 
@@ -539,7 +537,7 @@ def test_clean_kwargs():
             **kwarg_set,
         )
         # Check that results are **not** the same.
-        np.testing.assert_(np.any(np.not_equal(base_filtered, test_filtered)))
+        assert np.any(np.not_equal(base_filtered, test_filtered))
 
 
 def test_clean_frequencies():

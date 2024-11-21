@@ -42,11 +42,9 @@ def test_flm_reporting(flm, height_control):
         alpha=0.01,
         threshold=2,
     )
-    """
-    catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-    in case certain unicode characters are mishandled,
-    like the greek alpha symbol.
-    """
+    # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
+    # in case certain unicode characters are mishandled,
+    # like the greek alpha symbol.
     report_flm.get_iframe()
 
 
