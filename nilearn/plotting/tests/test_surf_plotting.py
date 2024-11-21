@@ -34,7 +34,7 @@ from nilearn.surface import (
     load_surf_data,
     load_surf_mesh,
 )
-from nilearn.surface.testing import assert_surface_mesh_equal
+from nilearn.surface._testing import assert_surface_mesh_equal
 from nilearn.surface.tests._testing import generate_surf
 
 try:

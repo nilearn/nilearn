@@ -53,7 +53,7 @@ def test_fit_list_surf_images(surf_img):
     assert masker.mask_img_.shape == (1, surf_img().shape[1])
 
 
-from nilearn.surface.testing import (
+from nilearn.surface._testing import (
     assert_polydata_equal,
     assert_surface_image_equal,
 )
@@ -193,9 +193,7 @@ def test_error_inverse_transform_shape(surf_img, surf_mask, rng):
 
 
 @pytest.mark.parametrize("shape", [(1,), (3,)])
-def test_transform_inverse_transform_no_mask(
-    surf_mesh, shape, assert_surf_img_equal
-):
+def test_transform_inverse_transform_no_mask(surf_mesh, shape):
     # make a sample image with data on the first timepoint/sample 1-4 on
     # left part and 10-50 on right part
     mesh = surf_mesh()
@@ -221,9 +219,7 @@ def test_transform_inverse_transform_no_mask(
 
 
 @pytest.mark.parametrize("shape", [(1,), (3,)])
-def test_transform_inverse_transform_with_mask(
-    surf_mesh, assert_surf_img_equal, shape
-):
+def test_transform_inverse_transform_with_mask(surf_mesh, shape):
     # make a sample image with data on the first timepoint/sample 1-4 on
     # left part and 10-50 on right part
     mesh = surf_mesh()

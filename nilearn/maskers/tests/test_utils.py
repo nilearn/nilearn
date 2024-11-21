@@ -6,7 +6,7 @@ from nilearn.maskers._utils import (
     concatenate_surface_images,
     get_min_max_surface_image,
 )
-from nilearn.surface.testing import assert_surface_image_equal
+from nilearn.surface._testing import assert_surface_image_equal
 
 
 def test_compute_mean_surface_image(surf_img):

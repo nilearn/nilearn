@@ -51,7 +51,7 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
-from nilearn.surface.testing import assert_polymesh_equal
+from nilearn.surface._testing import assert_polymesh_equal
 
 BASEDIR = Path(__file__).resolve().parent
 FUNCFILE = BASEDIR / "functional.nii.gz"
@@ -2327,9 +2327,9 @@ def test_first_level_from_bids_subject_order_with_labels(tmp_path):
     assert returned_subjects == expected_subjects
 
 
-def test_fixed_effect_contrast_surface(_make_surface_glm_data):
+def test_fixed_effect_contrast_surface(surface_glm_data):
     """Smoke test of compute_fixed_effects with surface data."""
-    mini_img, _ = _make_surface_glm_data(5)
+    mini_img, _ = surface_glm_data(5)
     masker = SurfaceMasker().fit(mini_img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     events = basic_paradigm()
