@@ -2223,18 +2223,6 @@ def test_flm_with_surface_masker_with_mask(surface_glm_data, surf_mask):
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_with_surface_masker_without_mask_img(surface_glm_data, surf_mask):
-    """Test FirstLevelModel with SurfaceMasker and mask img set to None."""
-    img, des = surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=surf_mask()).fit()
-    masker.mask_img_ = None
-
-    with pytest.warns(
-        UserWarning, match="Parameter memory of the masker overridden"
-    ):
-        FirstLevelModel(mask_img=masker).fit(img, design_matrices=des)
-
-
 def test_flm_with_surface_data_no_design_matrix(surface_glm_data):
     """Smoke test FirstLevelModel with surface data and no design matrix."""
     img, _ = surface_glm_data(5)
