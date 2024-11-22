@@ -156,7 +156,7 @@ show()
 #
 # ..  note::
 #
-#       See how the modulation affects the height og the events.
+#       See how the modulation affects the height of the events.
 #
 
 # %%
