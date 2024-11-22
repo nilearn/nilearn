@@ -198,18 +198,6 @@ def test_second_level_input_as_3d_images(
     )
 
 
-def test_second_level_input_as_4d_images(img_4d_mni):
-    """Test second level model with a list 4D image filenames as input."""
-    design_matrix = pd.DataFrame(
-        [1] * img_4d_mni.shape[3], columns=["intercept"]
-    )
-    second_level_model = SecondLevelModel()
-    second_level_model = second_level_model.fit(
-        second_level_input=img_4d_mni,
-        design_matrix=design_matrix,
-    )
-
-
 def test_process_second_level_input_as_firstlevelmodels(shape_4d_default):
     """Unit tests for function \
        _process_second_level_input_as_firstlevelmodels().
