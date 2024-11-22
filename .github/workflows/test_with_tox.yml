@@ -31,7 +31,12 @@ jobs:
                 ref: ${{ github.event.pull_request.head.sha }}
         -   name: Print head git commit message
             id: get_head_commit_message
-            run: echo "::set-output name=headCommitMsg::$(git show -s --format=%s)"
+            run: |
+                headCommitMsg=$(git show -s --format=%s)
+                if [[ $headCommitMsg == *"[skip test]"* ]]; then
+                    echo "skipping tests"
+                    exit 1
+                fi
 
     test_and_coverage:
         needs: check_skip_flags
