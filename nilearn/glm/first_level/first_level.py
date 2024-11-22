@@ -721,18 +721,21 @@ class FirstLevelModel(BaseGLM):
                 Niimg-like object, \
                 a :obj:`list` or a :obj:`tuple` of Niimg-like objects.
                 If ``mask_img`` is
-                a ``SurfaceMasker`` or ``SurfaceImage`` instance,
+                a :obj:`~nilearn.maskers.SurfaceMasker`
+                or :obj:`~nilearn.surface.SurfaceImage` instance,
                 then ``run_imgs`` must be a
-                ``SurfaceImage`` object, \
+                :obj:`~nilearn.surface.SurfaceImage`, \
                 a :obj:`list` or \
-                a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage` objects.
+                a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`.
 
         events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
                  :class:`pandas.DataFrame` or :obj:`str`, default=None
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
-            If string, then a path to a csv file is expected.
+            If string, then a path to a csv or tsv file is expected.
+            See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
+            for details on the required content of the events files.
 
         confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
                     :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
@@ -829,7 +832,7 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        contrast_def : str or array of shape (n_col) or list of (string or
+        contrast_def : str or array of shape (n_col) or list of (string or\
                        array of shape (n_col))
 
             where ``n_col`` is the number of columns of the design matrix,
