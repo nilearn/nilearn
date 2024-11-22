@@ -370,31 +370,36 @@ hrf_model : :obj:`str`, function, list of functions, or None
     implemented in Nilearn.
     Valid names are:
 
-    - ``"spm"``: This is the :term:`HRF` model used in :term:`SPM`.
+    - ``"spm"``:
+        This is the :term:`HRF` model used in :term:`SPM`.
         See :func:`~nilearn.glm.first_level.spm_hrf`.
-    - ``"spm + derivative"``: SPM model plus its time derivative.
+    - ``"spm + derivative"``:
+        SPM model plus its time derivative.
         This gives 2 regressors.
         See :func:`~nilearn.glm.first_level.spm_hrf`, and
         :func:`~nilearn.glm.first_level.spm_time_derivative`.
-    - ``"spm + derivative + dispersion"``: same as above
-        plus dispersion derivative.
+    - ``"spm + derivative + dispersion"``:
+        Same as above plus dispersion derivative.
         This gives 3 regressors.
         See :func:`~nilearn.glm.first_level.spm_hrf`,
         :func:`nilearn.glm.first_level.spm_time_derivative`,
         and :func:`~nilearn.glm.first_level.spm_dispersion_derivative`.
-    - ``"glover"``: This corresponds to the Glover :term:`HRF`.
+    - ``"glover"``:
+        This corresponds to the Glover :term:`HRF`.
         See :func:`~nilearn.glm.first_level.glover_hrf`.
-    - ``"glover + derivative"``: The Glover :term:`HRF` + time derivative.
+    - ``"glover + derivative"``:
+        The Glover :term:`HRF` + time derivative.
         This gives 2 regressors.
         See :func:`~nilearn.glm.first_level.glover_hrf`, and
         :func:`~nilearn.glm.first_level.glover_time_derivative`.
     - ``"glover"+ derivative + dispersion"``:
-        Idem, plus dispersion derivative.
+        Same as above plus dispersion derivative.
         This gives 3 regressors.
         See :func:`~nilearn.glm.first_level.glover_hrf`,
         :func:`~nilearn.glm.first_level.glover_time_derivative`, and
         :func:`~nilearn.glm.first_level.glover_dispersion_derivative`.
-    - ``"fir"``: Finite impulse response basis.
+    - ``"fir"``:
+        Finite impulse response basis.
         This is a set of delayed dirac models.
 
     It can also be a custom model.
@@ -404,7 +409,7 @@ hrf_model : :obj:`str`, function, list of functions, or None
     and return a sample numpy array of appropriate shape.
 
     .. note::
-        It is expected that `"spm"` standard and `"glover"` models
+        It is expected that ``"spm"`` standard and ``"glover"`` models
         would not yield large differences in most cases.
 
     .. note::
