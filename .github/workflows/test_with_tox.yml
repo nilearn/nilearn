@@ -22,15 +22,12 @@ jobs:
     check_skip_flags:
         name: Check skip flags
         runs-on: ubuntu-latest
-        outputs:
-            head-commit-message: ${{ steps.get_head_commit_message.outputs.headCommitMsg }}
         steps:
         -   name: Get repo
             uses: actions/checkout@v3
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
-        -   name: Print head git commit message
-            id: get_head_commit_message
+        -   name: Check head git commit message
             run: |
                 headCommitMsg=$(git show -s --format=%s)
                 if [[ $headCommitMsg == *"[skip test]"* ]]; then
