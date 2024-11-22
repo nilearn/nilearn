@@ -605,7 +605,7 @@ def surface_image_roi():
     mesh = InMemoryMesh(coordinates=mesh[0], faces=mesh[1])
     surf_map = SurfaceImage(
         mesh={"left": mesh, "right": mesh},
-        data={"left": roi_map, "right": roi_map},
+        data={"left": roi_map.T, "right": roi_map.T},
     )
     return surf_map
 
