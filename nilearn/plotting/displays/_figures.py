@@ -146,7 +146,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
         Parameters
         ----------
         roi_map : :obj:`str` or :class:`numpy.ndarray` or :obj:`list` of \
-                  :class:`numpy.ndarray`
+                  :class:`numpy.ndarray` or\
+                  :obj:`~nilearn.surface.SurfaceImage`
             ROI map to be displayed on the surface
             mesh, can be a file (valid formats are .gii, .mgz, .nii,
             .nii.gz, or FreeSurfer specific files such as .annot or .label),
@@ -187,7 +188,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             faces (triangles).
         """
         if isinstance(roi_map, SurfaceImage):
-            roi_map = roi_map.data.parts[hemi]
+            roi_map = roi_map.data.parts[hemi][0]
 
         if levels is None:
             levels = np.unique(roi_map)

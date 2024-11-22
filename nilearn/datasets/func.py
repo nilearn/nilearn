@@ -1814,6 +1814,8 @@ def load_nki(
 ):
     """Load NKI enhanced surface data into a surface object.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     mesh : :obj:`str`, default='fsaverage5'

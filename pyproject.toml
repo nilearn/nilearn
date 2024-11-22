@@ -151,7 +151,25 @@ ignore = [
     "PIE790",
     "PLR2004",
     "PTH207",
-    "RUF012"
+    "RUF012",
+    "UP027",  # deprecated
+    "UP038",  # https://github.com/astral-sh/ruff/issues/7871
+    # Avoid linter rules conflicting with the formatter
+    # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "COM812",
+    "COM819",
+    "D206",
+    "D300",
+    "E111",
+    "E114",
+    "E117",
+    "ISC001",
+    "ISC002",
+    "Q000",
+    "Q001",
+    "Q002",
+    "Q003",
+    "W191"
 ]
 # List of all the ruff rules (includes why the rule matters)
 # https://docs.astral.sh/ruff/rules/

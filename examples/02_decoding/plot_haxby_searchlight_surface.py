@@ -134,8 +134,8 @@ for hemi in hemispheres_to_analyze:
     )
 show()
 
-# # %%
-# # References
-# # ----------
-# #
-# #  .. footbibliography::
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

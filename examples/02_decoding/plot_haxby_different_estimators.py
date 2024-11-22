@@ -149,10 +149,10 @@ plt.title(
 )
 
 # %%
-# We can see that for a fixed penalty the results are similar between the svc
-# and the logistic regression. The main difference relies on the penalty
-# ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in
-# an intra-subject setting.
+# We can see that for a fixed penalty the results are similar
+# between the svc and the logistic regression.
+# The main difference relies on the penalty l\ :sub:`1`\ and l\ :sub:`2`\).
+# The sparse penalty works better because we are in an intra-subject setting.
 
 # %%
 # Visualizing the face vs house map

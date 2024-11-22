@@ -253,7 +253,7 @@ def _make_edges_and_weights_surface(X, mask_img):
     len_previous_mask = 0
     for part in mask_img.mesh.parts:
         face_part = mask_img.mesh.parts[part].faces
-        mask_part = mask_img.data.parts[part]
+        mask_part = mask_img.data.parts[part][0]
 
         edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
 

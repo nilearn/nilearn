@@ -465,8 +465,6 @@ def report_surface_masker():
         mask.data.parts[part] = mask.data.parts[part] == 34
 
     masker = SurfaceMasker(mask)
-    img = load_nki(mesh_type="inflated")[0]
-
     masker.fit_transform(img)
     surface_masker_with_mask_report = masker.generate_report()
     surface_masker_with_mask_report.save_as_html(

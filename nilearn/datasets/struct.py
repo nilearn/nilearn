@@ -23,7 +23,6 @@ from nilearn.surface import (
     FileMesh,
     PolyMesh,
     SurfaceImage,
-    load_surf_data,
 )
 
 MNI152_FILE_PATH = (
@@ -1052,6 +1051,8 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
 def load_fsaverage(mesh="fsaverage5", data_dir=None):
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     mesh : :obj:`str`, default='fsaverage5'
@@ -1098,6 +1099,8 @@ def load_fsaverage_data(
 ):
     """Return freesurfer data on an fsaverage mesh as a SurfaceImage.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     mesh : :obj:`str`, default='fsaverage5'
@@ -1143,12 +1146,8 @@ def load_fsaverage_data(
     img = SurfaceImage(
         mesh=fsaverage[mesh_type],
         data={
-            "left": load_surf_data(
-                fsaverage_data[f"{renaming[data_type]}_left"]
-            ),
-            "right": load_surf_data(
-                fsaverage_data[f"{renaming[data_type]}_right"]
-            ),
+            "left": fsaverage_data[f"{renaming[data_type]}_left"],
+            "right": fsaverage_data[f"{renaming[data_type]}_right"],
         },
     )
 
