@@ -1262,7 +1262,7 @@ class PolyData:
 
     Attributes
     ----------
-    parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_timepoints, n_vertices)
+    parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_vertices, n_timepoints)
 
     shape : :obj:`tuple` of :obj:`int`
 
@@ -1306,7 +1306,7 @@ class PolyData:
                 if not isinstance(param, np.ndarray):
                     param = load_surf_data(param)
                 if param.ndim == 1:
-                    param = np.array([param])
+                    param = np.array([param]).T
                     if self.squeeze_on_save is None:
                         self.squeeze_on_save = True
                 parts[hemi] = param
@@ -1799,12 +1799,12 @@ class SurfaceImage:
         >>> vol_img = load_sample_motor_activation_image()
         >>> img = SurfaceImage.from_volume(fsavg["white_matter"], vol_img)
         >>> img
-        <SurfaceImage (1, 20484)>
+        <SurfaceImage (20484, 1)>
         >>> img = SurfaceImage.from_volume(
         ...     fsavg["white_matter"], vol_img, inner_mesh=fsavg["pial"]
         ... )
         >>> img
-        <SurfaceImage (1, 20484)>
+        <SurfaceImage (20484, 1)>
         """
         mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
         if inner_mesh is not None:

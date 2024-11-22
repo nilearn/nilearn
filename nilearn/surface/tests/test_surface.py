@@ -1086,7 +1086,9 @@ def test_surface_image_squeeze_on_save(rng, tmp_path, surf_mesh):
     for hemi in ["left", "right"]:
         unsqueezed = load(tmp_path / f"unsqueezed_hemi-{hemi[0].upper()}.gii")
         squeezed = load(tmp_path / f"squeezed_hemi-{hemi[0].upper()}.gii")
-        assert_array_equal(unsqueezed.agg_data()[0], squeezed.agg_data())
+        assert_array_equal(
+            np.squeeze(unsqueezed.agg_data()), squeezed.agg_data()
+        )
 
 
 @pytest.mark.parametrize(
