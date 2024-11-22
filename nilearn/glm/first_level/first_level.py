@@ -735,7 +735,7 @@ class FirstLevelModel(BaseGLM):
             Ignored in case designs is not None.
             If string, then a path to a csv or tsv file is expected.
             See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
-            for details on the required content of the events files.
+            for details on the required content of events files.
 
         confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
                     :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
