@@ -14,6 +14,7 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     compute_mean_surface_image,
+    concatenate_surface_images,
     get_min_max_surface_image,
 )
 from nilearn.surface import SurfaceImage
@@ -244,7 +245,9 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object
+        img : :obj:`~nilearn.surface.SurfaceImage` object or \
+              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres.
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
@@ -267,6 +270,15 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             shape: (img data shape, total number of vertices)
         """
         self._check_fitted()
+
+        # if img is a single image, convert it to a list
+        # to be able to concatenate it
+        if not isinstance(img, list):
+            img = [img]
+        img = concatenate_surface_images(img)
+        check_same_n_vertices(self.labels_img.mesh, img.mesh)
+        # concatenate data over hemispheres
+        img_data = np.concatenate(list(img.data.parts.values()), axis=-1)
 
         if self.smoothing_fwhm is not None:
             warnings.warn(
@@ -294,8 +306,6 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.memory is None:
             self.memory = Memory(location=None)
 
-        check_same_n_vertices(self.labels_img.mesh, img.mesh)
-        img_data = np.concatenate(list(img.data.parts.values()), axis=-1)
         output = np.empty((*img_data.shape[:-1], len(self._labels_)))
         for i, label in enumerate(self._labels_):
             output[..., i] = img_data[..., self._labels_data == label].mean(
@@ -329,7 +339,9 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object
+        img : :obj:`~nilearn.surface.SurfaceImage` object or \
+              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres.
 
         y : None
@@ -361,13 +373,13 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         data = {}
         for part_name, labels_part in self.labels_img.data.parts.items():
             data[part_name] = np.zeros(
-                (1, labels_part.shape[1]),
+                (masked_img.shape[0], labels_part.shape[1]),
                 dtype=masked_img.dtype,
             )
             for label_idx, label in enumerate(self._labels_):
-                data[part_name][..., labels_part == label] = masked_img[
-                    ..., label_idx
-                ]
+                data[part_name][..., labels_part[0] == label] = masked_img[
+                    :, label_idx
+                ].reshape(-1, 1)
         return SurfaceImage(mesh=self.labels_img.mesh, data=data)
 
     def generate_report(self):
