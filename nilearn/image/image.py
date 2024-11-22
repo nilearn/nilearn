@@ -1380,7 +1380,6 @@ def clean_img(
     """
     # Avoid circular import
     from .. import masking
-    from .image import new_img_like
 
     imgs_ = check_niimg_4d(imgs)
 
