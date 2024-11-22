@@ -59,13 +59,19 @@ data.data_dir
 #
 # To get the first level models we only have to specify the dataset directory
 # and the ``task_label`` as specified in the file names.
+#
+# .. note::
+#
+#       We are only using a subset of participants from the dataset
+#       to lower the run time of the example.
+#
 from nilearn.glm.first_level import first_level_from_bids
 
 models, run_imgs, events, confounds = first_level_from_bids(
     dataset_path=data.data_dir,
     task_label="languagelocalizer",
     img_filters=[("desc", "preproc")],
-    sub_labels=["01", "02", "03"],
+    sub_labels=["01", "02", "03", "04", "05"],  # comment to run all subjects
     hrf_model="glover + derivative",
     n_jobs=-1,
 )
@@ -81,8 +87,8 @@ models, run_imgs, events, confounds = first_level_from_bids(
 #    Note that here we pass ALL the confounds when we fit the model.
 #    In this case we can do this because our regressors only include
 #    the motion realignment parameters.
-#    For most preprocessed BIDS dataset, you would have to carefully choose
-#    which confounds to include.
+#    For most preprocessed BIDS dataset,
+#    you would have to carefully choose which confounds to include.
 #
 from pathlib import Path
 
@@ -151,14 +157,12 @@ for hemi, stat_map in zip(["left", "right"], [z_val_left, z_val_right]):
         surf_mesh=fsaverage5["inflated"],
         stat_map=stat_map,
         hemi=hemi,
-        title=f"(language-string), {hemi} hemisphere",
+        title=f"(language-string), {hemi} hemisphere ; scipy",
         colorbar=True,
         cmap="bwr",
-        threshold=3.0,
+        threshold=1,
         bg_map=fsaverage_data,
     )
-
-show()
 
 
 # %%
@@ -169,8 +173,20 @@ import pandas as pd
 from nilearn.glm.second_level import SecondLevelModel
 
 second_level_glm = SecondLevelModel()
-design_matrix = pd.DataFrame(
-    [1] * len(z_scores),
-    columns=["intercept"],
-)
-second_level_glm.fit(z_scores, design_matrix=design_matrix)
+design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
+second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
+results = second_level_glm.compute_contrast("intercept", output_type="z_score")
+
+for hemi in ["left", "right"]:
+    plot_surf_stat_map(
+        surf_mesh=fsaverage5["inflated"],
+        stat_map=results,
+        hemi=hemi,
+        title=f"(language-string), {hemi} hemisphere",
+        colorbar=True,
+        cmap="bwr",
+        threshold=1,
+        bg_map=fsaverage_data,
+    )
+
+show()

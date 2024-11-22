@@ -40,6 +40,7 @@ from nilearn.glm.second_level.second_level import (
 )
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
+from nilearn.surface._testing import assert_surface_image_equal
 
 if is_matplotlib_installed():
     from nilearn.reporting import get_clusters_table
@@ -130,8 +131,7 @@ def test_non_parametric_inference_with_flm_objects(shape_3d_default):
     second_level_input = [single_run_model, single_run_model]
 
     design_matrix = pd.DataFrame(
-        [1] * len(second_level_input),
-        columns=["intercept"],
+        [1] * len(second_level_input), columns=["intercept"]
     )
 
     non_parametric_inference(
@@ -187,8 +187,7 @@ def test_second_level_input_as_3d_images(
     )
     second_level_input = filenames
     design_matrix = pd.DataFrame(
-        [1] * len(second_level_input),
-        columns=["intercept"],
+        [1] * len(second_level_input), columns=["intercept"]
     )
 
     second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
@@ -1127,35 +1126,26 @@ def test_second_level_contrast_computation(tmp_path, rng):
 
     # smoke test for different contrasts in fixed effects
     model.compute_contrast(second_level_contrast=c1)
-    z_image = model.compute_contrast(
-        second_level_contrast=c1, output_type="z_score"
-    )
-    stat_image = model.compute_contrast(
-        second_level_contrast=c1, output_type="stat"
-    )
-    p_image = model.compute_contrast(
-        second_level_contrast=c1, output_type="p_value"
-    )
-    effect_image = model.compute_contrast(
-        second_level_contrast=c1, output_type="effect_size"
-    )
-    variance_image = model.compute_contrast(
-        second_level_contrast=c1, output_type="effect_variance"
-    )
 
     # Test output_type='all', and verify images are equivalent
     all_images = model.compute_contrast(
         second_level_contrast=c1, output_type="all"
     )
-    assert_array_equal(get_data(all_images["z_score"]), get_data(z_image))
-    assert_array_equal(get_data(all_images["stat"]), get_data(stat_image))
-    assert_array_equal(get_data(all_images["p_value"]), get_data(p_image))
-    assert_array_equal(
-        get_data(all_images["effect_size"]), get_data(effect_image)
-    )
-    assert_array_equal(
-        get_data(all_images["effect_variance"]), get_data(variance_image)
-    )
+    for key in [
+        "z_score",
+        "stat",
+        "p_value",
+        "effect_size",
+        "effect_variance",
+    ]:
+        assert_array_equal(
+            get_data(all_images[key]),
+            get_data(
+                model.compute_contrast(
+                    second_level_contrast=c1, output_type=key
+                )
+            ),
+        )
 
     # formula should work (passing variable name directly)
     model.compute_contrast("intercept")
@@ -1399,8 +1389,7 @@ def test_second_level_input_as_surface_image(surf_img):
     second_level_input = [surf_img() for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame(
-        [1] * len(second_level_input),
-        columns=["intercept"],
+        [1] * len(second_level_input), columns=["intercept"]
     )
 
     model = SecondLevelModel()
@@ -1413,8 +1402,7 @@ def test_second_level_input_as_surface_image_with_mask(surf_img, surf_mask):
     second_level_input = [surf_img() for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame(
-        [1] * len(second_level_input),
-        columns=["intercept"],
+        [1] * len(second_level_input), columns=["intercept"]
     )
 
     model = SecondLevelModel(mask_img=surf_mask())
@@ -1427,8 +1415,7 @@ def test_second_level_input_as_surface_image_warning_smoothing(surf_img):
     second_level_input = [surf_img() for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame(
-        [1] * len(second_level_input),
-        columns=["intercept"],
+        [1] * len(second_level_input), columns=["intercept"]
     )
 
     model = SecondLevelModel(smoothing_fwhm=8.0)
@@ -1448,8 +1435,7 @@ def test_second_level_input_as_flm_of_surface_image(surface_glm_data):
         second_level_input.append(model)
 
     design_matrix = pd.DataFrame(
-        [1] * len(second_level_input),
-        columns=["intercept"],
+        [1] * len(second_level_input), columns=["intercept"]
     )
 
     model = SecondLevelModel()
@@ -1461,8 +1447,7 @@ def test_second_level_surface_image_contrast_computation(surf_img):
     second_level_input = [surf_img() for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame(
-        [1] * len(second_level_input),
-        columns=["intercept"],
+        [1] * len(second_level_input), columns=["intercept"]
     )
 
     model = SecondLevelModel()
@@ -1480,35 +1465,21 @@ def test_second_level_surface_image_contrast_computation(surf_img):
     c1, _ = np.eye(ncol)[0, :], np.zeros(ncol)
     model.compute_contrast(second_level_contrast=c1)
 
-    z_image = model.compute_contrast(
-        second_level_contrast=c1, output_type="z_score"
-    )
-    stat_image = model.compute_contrast(
-        second_level_contrast=c1, output_type="stat"
-    )
-    p_image = model.compute_contrast(
-        second_level_contrast=c1, output_type="p_value"
-    )
-    effect_image = model.compute_contrast(
-        second_level_contrast=c1, output_type="effect_size"
-    )
-    variance_image = model.compute_contrast(
-        second_level_contrast=c1, output_type="effect_variance"
-    )
-
     # Test output_type='all', and verify images are equivalent
     all_images = model.compute_contrast(
         second_level_contrast=c1, output_type="all"
     )
-    assert_array_equal(get_data(all_images["z_score"]), get_data(z_image))
-    assert_array_equal(get_data(all_images["stat"]), get_data(stat_image))
-    assert_array_equal(get_data(all_images["p_value"]), get_data(p_image))
-    assert_array_equal(
-        get_data(all_images["effect_size"]), get_data(effect_image)
-    )
-    assert_array_equal(
-        get_data(all_images["effect_variance"]), get_data(variance_image)
-    )
+    for key in [
+        "z_score",
+        "stat",
+        "p_value",
+        "effect_size",
+        "effect_variance",
+    ]:
+        assert_surface_image_equal(
+            all_images[key],
+            model.compute_contrast(second_level_contrast=c1, output_type=key),
+        )
 
 
 # TODO
