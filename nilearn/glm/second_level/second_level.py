@@ -36,6 +36,19 @@ from nilearn.mass_univariate import permuted_ols
 from nilearn.surface import SurfaceImage
 
 
+def _input_type_error_message(second_level_input):
+    return (
+        "second_level_input must be either:\n"
+        "- a pandas DataFrame,\n"
+        "- a Niimg-like object\n"
+        "- a pandas Series of Niimg-like object\n"
+        "- a list of Niimg-like object\n"
+        "- a list of SurfaceImage object\n"
+        "- a list of FirstLevelModel objects.\n"
+        f"Got {_return_type(second_level_input)} instead."
+    )
+
+
 def _check_second_level_input(
     second_level_input, design_matrix, confounds=None
 ):
@@ -59,15 +72,7 @@ def _check_input_type(second_level_input):
         return "nii_object"
     if isinstance(second_level_input, list):
         return _check_input_type_when_list(second_level_input)
-    raise TypeError(
-        "second_level_input must be "
-        "either a pandas DataFrame, "
-        "a Niimg-like object, "
-        "a pandas Series of Niimg-like object, "
-        "a list of Niimg-like object or "
-        "a list of FirstLevelModel objects. "
-        f"Got {_return_type(second_level_input)} instead"
-    )
+    raise TypeError(_input_type_error_message(second_level_input))
 
 
 def _return_type(second_level_input):
@@ -91,14 +96,7 @@ def _check_input_type_when_list(second_level_input):
         return "flm_object"
     if all(isinstance(x, SurfaceImage) for x in second_level_input):
         return "surf_img_object"
-    raise TypeError(
-        "second_level_input must be "
-        "either a pandas DataFrame, "
-        "a Niimg-like object, "
-        "a list of Niimg-like object or "
-        "a list of FirstLevelModel objects. "
-        f"Got {_return_type(second_level_input)} instead"
-    )
+    raise TypeError(_input_type_error_message(second_level_input))
 
 
 def _check_all_elements_of_same_type(data):

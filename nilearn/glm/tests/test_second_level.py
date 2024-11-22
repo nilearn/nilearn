@@ -198,6 +198,18 @@ def test_second_level_input_as_3d_images(
     )
 
 
+def test_second_level_input_as_4d_images(img_4d_mni):
+    """Test second level model with a list 4D image filenames as input."""
+    design_matrix = pd.DataFrame(
+        [1] * img_4d_mni.shape[3], columns=["intercept"]
+    )
+    second_level_model = SecondLevelModel()
+    second_level_model = second_level_model.fit(
+        second_level_input=img_4d_mni,
+        design_matrix=design_matrix,
+    )
+
+
 def test_process_second_level_input_as_firstlevelmodels(shape_4d_default):
     """Unit tests for function \
        _process_second_level_input_as_firstlevelmodels().
@@ -1395,6 +1407,19 @@ def test_second_level_input_as_surface_image(surf_img):
 
     model = SecondLevelModel()
     model = model.fit(second_level_input, design_matrix=design_matrix)
+
+
+def test_second_level_input_as_surface_image_4d(surf_img):
+    """Test error with surface image with all subjects as timepoints."""
+    n_subjects = 10
+    second_level_input = surf_img((n_subjects,))
+
+    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
+
+    model = SecondLevelModel()
+
+    with pytest.raises(TypeError, match="second_level_input must be either"):
+        model.fit(second_level_input, design_matrix=design_matrix)
 
 
 def test_second_level_input_as_surface_image_with_mask(surf_img, surf_mask):
