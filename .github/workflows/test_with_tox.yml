@@ -19,7 +19,7 @@ env:
 
 jobs:
     test_and_coverage:
-        if: github.repository == 'nilearn/nilearn'
+        if: github.repository == 'nilearn/nilearn' && ${{ github.event.head_commit.message }}
         name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
         runs-on: ${{ matrix.os }}
         strategy:
@@ -43,6 +43,10 @@ jobs:
                     os: ubuntu-latest
                     env: test_plot_min
         steps:
+        -   name: Dump job context
+            env:
+                JOB_CONTEXT: ${{ toJson(job) }}
+            run: echo "$JOB_CONTEXT"
         -   uses: actions/checkout@v4
         -   name: Setup python
             uses: actions/setup-python@v5
