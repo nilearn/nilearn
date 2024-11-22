@@ -478,8 +478,8 @@ def surf_label_img(surf_mesh):
     Has two regions with values 0 and 1 respectively.
     """
     data = {
-        "left": np.asarray([[0, 0, 1, 1]]),
-        "right": np.asarray([[1, 1, 0, 0, 0]]),
+        "left": np.asarray([0, 0, 1, 1]),
+        "right": np.asarray([1, 1, 0, 0, 0]),
     }
     return SurfaceImage(surf_mesh(), data)
 
