@@ -1,4 +1,6 @@
 ---
+#
+#  Most of this workflow is skipped if "[skip test]" is in the commit message.
 name: test
 
 on:

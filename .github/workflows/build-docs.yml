@@ -6,6 +6,8 @@
 #  Full builds are always run on "main".
 #  This is done every time there is a push on "main" and every week.
 #
+#  Most of this workflow is skipped if "[skip doc]" is in the commit message.
+#
 #  Data is cached after the get_data job to be passed to the build_docs job.
 #  Data can be cached and restore across attempts of a run of this workflow.
 #  Data can be cached and restored across run of this workflow.
