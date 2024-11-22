@@ -423,7 +423,7 @@ class SecondLevelModel(BaseGLM):
     ----------
     mask_img : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or\
              :obj:`~nilearn.maskers.MultiNiftiMasker` or\
-             SurfaceMasker object or None,\
+             :obj:`~nilearn.maskers.SurfaceMasker` object or None,\
              default=None
         Mask to be used on data.
         If an instance of masker is passed,
@@ -431,7 +431,7 @@ class SecondLevelModel(BaseGLM):
         If no mask is given,
         it will be computed automatically
         by a :class:`~nilearn.maskers.NiftiMasker`,
-        or a SurfaceMasker
+        or a :obj:`~nilearn.maskers.SurfaceMasker`
         (depending on the type passed at fit time)
         with default parameters.
         Automatic mask computation assumes first level imgs
@@ -487,14 +487,11 @@ class SecondLevelModel(BaseGLM):
         n_jobs=1,
         minimize_memory=True,
     ):
-        if memory is None:
-            memory = Memory(None)
         self.mask_img = mask_img
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
-        memory = stringify_path(memory)
-        self.memory = Memory(memory) if isinstance(memory, str) else memory
+        self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -533,6 +530,12 @@ class SecondLevelModel(BaseGLM):
             Ensure that the order of maps given by a ``second_level_input``
             list of Niimgs matches the order of the rows in the design matrix.
         """
+        if self.memory is None:
+            self.memory = Memory(None)
+        self.memory = stringify_path(self.memory)
+        if isinstance(self.memory, str):
+            self.memory = Memory(self.memory)
+
         # check second_level_input
         _check_second_level_input(
             second_level_input, design_matrix, confounds=confounds

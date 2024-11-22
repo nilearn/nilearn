@@ -714,7 +714,7 @@ second_level_input : :obj:`list` of \
     :class:`~nilearn.glm.first_level.FirstLevelModel` objects or \
     :class:`pandas.DataFrame` or \
     :obj:`list` of Niimg-like objects or \
-    :obj:`list` of SurfaceImage objects or \
+    :obj:`list` of :class:`~nilearn.surface.SurfaceImage` objects or \
     :obj:`pandas.Series` of Niimg-like objects.
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
@@ -733,7 +733,8 @@ second_level_input : :obj:`list` of \
       when extracting the maps.
       So the rows of the automatically computed design matrix,
       if not provided, will correspond to the sorted `subject_label` column.
-    - If a :obj:`list` of Niimg-like objects or SurfaceImage objects
+    - If a :obj:`list` of Niimg-like objects
+      or :class:`~nilearn.surface.SurfaceImage` objects
       then this is taken literally as Y for the model fit
       and `design_matrix` must be provided.
 

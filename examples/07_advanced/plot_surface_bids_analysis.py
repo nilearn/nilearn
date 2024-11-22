@@ -160,7 +160,7 @@ for hemi, stat_map in zip(["left", "right"], [z_val_left, z_val_right]):
         title=f"(language-string), {hemi} hemisphere ; scipy",
         colorbar=True,
         cmap="bwr",
-        threshold=1,
+        threshold=1.96,
         bg_map=fsaverage_data,
     )
 
@@ -185,7 +185,7 @@ for hemi in ["left", "right"]:
         title=f"(language-string), {hemi} hemisphere",
         colorbar=True,
         cmap="bwr",
-        threshold=1,
+        threshold=1.96,
         bg_map=fsaverage_data,
     )
 

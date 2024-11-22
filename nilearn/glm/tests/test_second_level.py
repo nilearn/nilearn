@@ -52,6 +52,7 @@ extra_valid_checks = [
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
     "check_estimators_unfitted",
+    "check_parameters_default_constructible",
 ]
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
@@ -1480,8 +1481,3 @@ def test_second_level_surface_image_contrast_computation(surf_img):
             all_images[key],
             model.compute_contrast(second_level_contrast=c1, output_type=key),
         )
-
-
-# TODO
-# contrast with surface image
-# contrast with flm of surface image
