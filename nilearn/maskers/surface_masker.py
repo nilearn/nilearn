@@ -30,7 +30,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     Parameters
     ----------
-    mask_img: :obj:`~nilearn.surface.SurfaceImage` or None, default=None
+    mask_img : :obj:`~nilearn.surface.SurfaceImage` or None, default=None
 
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
@@ -202,7 +202,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
         mask_data = {
-            part: np.ones(v.n_vertices, dtype=bool)
+            part: np.ones((1, v.n_vertices), dtype=bool)
             for (part, v) in img.mesh.parts.items()
         }
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
@@ -280,9 +280,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        :class:`numpy.ndarray`
+        2D :class:`numpy.ndarray`
             Signal for each element.
-            shape: (img data shape, total number of vertices)
+            shape: (n samples, total number of vertices)
         """
         if self.smoothing_fwhm is not None:
             warnings.warn(
@@ -318,7 +318,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         output = np.empty((img.shape[1], self.output_dimension_))
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name]
-            output[start:stop, ...] = img.data.parts[part_name][mask]
+            output[start:stop, ...] = img.data.parts[part_name][mask[0]]
 
         if self.memory is None:
             self.memory = Memory(location=None)
@@ -401,7 +401,10 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         self._check_fitted()
 
-        if masked_img.shape[-1] != self.output_dimension_:
+        if masked_img.ndim == 1:
+            masked_img = np.array([masked_img])
+
+        if masked_img.shape[1] != self.output_dimension_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
                 f"Last dimension should be {self.output_dimension_}.\n"
@@ -414,8 +417,8 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 mask.shape,
                 dtype=masked_img.dtype,
             )
-            start, stop = self._slices[part_name]
-            data[part_name][mask] = np.moveaxis(
+            start, stop = self.slices[part_name]
+            data[part_name][mask[0]] = np.moveaxis(
                 masked_img[..., start:stop], -1, 0
             )
 

@@ -822,6 +822,24 @@ def test_data_to_gifti(rng, tmp_path, dtype):
     load(tmp_path / "data.gii")
 
 
+def test_error_polydata_1d_check_parts():
+    """Throw error thrown if parts are not 2D.
+
+    - passing a 1D array at instantiation is fine:
+      they are convertd to 2D
+    - _check_parts can be used make sure parts are fine
+      if assigned after instantiation.
+    """
+    data = PolyData(left=np.ones((1,)), right=np.ones((2,)))
+
+    data.parts["left"] = np.ones((1,))
+
+    with pytest.raises(
+        ValueError, match="Data arrays for keys 'left' must be a 2D array."
+    ):
+        data._check_parts()
+
+
 def test_mesh_to_gifti(single_mesh, tmp_path):
     """Check saving mesh to gifti.
 
@@ -975,6 +993,7 @@ def test_save_mesh_error_wrong_suffix(tmp_path, surf_img):
 def test_load_save_data(
     tmp_path, output_filename, expected_files, unexpected_files, use_path
 ):
+    """Load and save gifti leaves them unchanged."""
     mesh_right = datasets.fetch_surf_fsaverage().pial_right
     mesh_left = datasets.fetch_surf_fsaverage().pial_left
     data_right = datasets.fetch_surf_fsaverage().sulc_right
@@ -1008,6 +1027,66 @@ def test_load_save_data(
         elif "hemi-R" in file:
             expected_data = load_surf_data(data_right)
         assert np.array_equal(data, expected_data)
+
+
+def test_load_save_data_1d(rng, tmp_path, surf_mesh):
+    """Load and save 1D gifti leaves them unchanged."""
+    data = {}
+    for hemi in ["left", "right"]:
+        size = (surf_mesh().parts[hemi].n_vertices,)
+        data[hemi] = rng.random(size=size).astype(np.uint8)
+        darray = gifti.GiftiDataArray(
+            data=data[hemi], datatype="NIFTI_TYPE_UINT8"
+        )
+        gii = gifti.GiftiImage(darrays=[darray])
+        gii.to_filename(tmp_path / f"original_{hemi}.gii")
+
+    img = SurfaceImage(
+        mesh=surf_mesh(),
+        data={
+            "left": tmp_path / "original_left.gii",
+            "right": tmp_path / "original_right.gii",
+        },
+    )
+
+    img.data.to_filename(tmp_path / "nilearn.gii")
+
+    for hemi in ["left", "right"]:
+        original_surf_img = load(tmp_path / f"original_{hemi}.gii")
+        nilearn_surf_img = load(
+            tmp_path / f"nilearn_hemi-{hemi[0].upper()}.gii"
+        )
+        assert_array_equal(
+            original_surf_img.agg_data(), nilearn_surf_img.agg_data()
+        )
+
+
+def test_surface_image_squeeze_on_save(rng, tmp_path, surf_mesh):
+    """Test squeeze_on_save.
+
+    - intanciate surface images with 1D data with or without squeeze_on_save
+    - save them
+    - load out
+    - check that loaded contents differ by one dimension
+    - check that loaded contents still match
+    """
+    data = {}
+    for hemi in ["left", "right"]:
+        size = (surf_mesh().parts[hemi].n_vertices,)
+        data[hemi] = rng.random(size=size).astype(np.uint8)
+
+    img = SurfaceImage(mesh=surf_mesh(), data=data, squeeze_on_save=False)
+    img.data.to_filename(tmp_path / "unsqueezed.gii")
+
+    img_to_squeeze = SurfaceImage(
+        mesh=surf_mesh(), data=data, squeeze_on_save=True
+    )
+    img_to_squeeze.data.to_filename(tmp_path / "squeezed.gii")
+
+    for hemi in ["left", "right"]:
+        unsqueezed = load(tmp_path / f"unsqueezed_hemi-{hemi[0].upper()}.gii")
+        squeezed = load(tmp_path / f"squeezed_hemi-{hemi[0].upper()}.gii")
+        assert_array_equal(unsqueezed.agg_data()[0], squeezed.agg_data())
 
 
 @pytest.mark.parametrize(
