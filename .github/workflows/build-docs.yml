@@ -242,7 +242,7 @@ jobs:
             id: build-docs
             run: |
                 set -o pipefail;
-                PATTERN=$(cat pattern.txt)
+                export PATTERN=$(cat pattern.txt)
                 tox run \
                     --colored yes \
                     --list-dependencies \

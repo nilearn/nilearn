@@ -49,8 +49,8 @@ Templates descriptions
 Atlases
 -------
 
-Functions
-^^^^^^^^^
+Deterministic atlases
+^^^^^^^^^^^^^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -59,23 +59,36 @@ Functions
    :template: function.rst
 
    fetch_atlas_aal
-   fetch_atlas_allen_2011
    fetch_atlas_basc_multiscale_2015
-   fetch_atlas_craddock_2012
    fetch_atlas_destrieux_2009
-   fetch_atlas_difumo
    fetch_atlas_harvard_oxford
    fetch_atlas_juelich
-   fetch_atlas_msdl
    fetch_atlas_pauli_2017
    fetch_atlas_schaefer_2018
-   fetch_atlas_smith_2009
    fetch_atlas_surf_destrieux
    fetch_atlas_talairach
    fetch_atlas_yeo_2011
    fetch_coords_dosenbach_2010
    fetch_coords_power_2011
    fetch_coords_seitzman_2018
+
+Probabilistic atlases
+^^^^^^^^^^^^^^^^^^^^^
+
+.. currentmodule:: nilearn.datasets
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   fetch_atlas_allen_2011
+   fetch_atlas_craddock_2012
+   fetch_atlas_difumo
+   fetch_atlas_harvard_oxford
+   fetch_atlas_juelich
+   fetch_atlas_msdl
+   fetch_atlas_pauli_2017
+   fetch_atlas_smith_2009
 
 Atlases descriptions
 ^^^^^^^^^^^^^^^^^^^^

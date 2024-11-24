@@ -2261,8 +2261,10 @@ def fetch_language_localizer_demo_dataset(
     Parameters
     ----------
     %(data_dir)s
+
     %(verbose)s
-    legacy_output: bool, default=True
+
+    legacy_output : :obj:`bool`, default=True
 
         .. versionadded:: 0.10.3
         .. deprecated::0.10.3
@@ -2278,18 +2280,22 @@ def fetch_language_localizer_demo_dataset(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'data_dir': :obj:`str` Path to downloaded dataset.
-        - 'func': :obj:`list` of :obj:`str`,
-                  Absolute paths of downloaded files on disk
-        - 'description' : :obj:`str`, dataset description
+        - ``'data_dir'``: :obj:`str` Path to downloaded dataset.
 
-    Legacy output
-    -------------
-    data_dir : :obj:`str`
-        Path to downloaded dataset.
+        - ``'func'``: :obj:`list` of :obj:`str`,
+          Absolute paths of downloaded files on disk
 
-    downloaded_files : :obj:`list` of :obj:`str`
-        Absolute paths of downloaded files on disk
+        - ``'description'`` : :obj:`str`, dataset description
+
+    .. warning::
+
+        LEGACY OUTPUT:
+
+        **data_dir** : :obj:`str`
+            Path to downloaded dataset.
+
+        **downloaded_files** : :obj:`list` of :obj:`str`
+            Absolute paths of downloaded files on disk
 
     """
     url = "https://osf.io/3dj2a/download"
