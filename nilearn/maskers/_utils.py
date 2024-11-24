@@ -120,7 +120,7 @@ def concatenate_surface_images(imgs):
     output_data = {}
     for part in imgs[0].data.parts:
         tmp = [img.data.parts[part] for img in imgs]
-        output_data[part] = np.concatenate(tmp)
+        output_data[part] = np.concatenate(tmp, axis=1)
 
     output = SurfaceImage(mesh=imgs[0].mesh, data=output_data)
 

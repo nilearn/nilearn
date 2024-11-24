@@ -317,8 +317,8 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         output = np.empty((img.shape[1], self.output_dimension_))
         for part_name, (start, stop) in self._slices.items():
-            mask = self.mask_img_.data.parts[part_name]
-            output[..., start:stop] = img.data.parts[part_name][..., mask]
+            mask = self.mask_img_.data.parts[part_name].ravel()
+            output[:, start:stop] = img.data.parts[part_name][mask].T
 
         if self.memory is None:
             self.memory = Memory(location=None)
@@ -414,13 +414,11 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
             data[part_name] = np.zeros(
-                mask.shape,
+                (mask.shape[0], masked_img.shape[0]),
                 dtype=masked_img.dtype,
             )
             start, stop = self._slices[part_name]
-            data[part_name][mask.T[0]] = np.moveaxis(
-                masked_img[..., start:stop], -1, 0
-            )
+            data[part_name][mask.ravel()] = masked_img[:, start:stop].T
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
