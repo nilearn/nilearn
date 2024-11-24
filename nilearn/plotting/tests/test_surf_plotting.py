@@ -225,7 +225,7 @@ def test_check_surface_plotting_inputs_extract_mesh_and_data(
         hemi=hemi,
         bg_map=bg_map,
     )
-    assert_array_equal(out_surf_map, surf_img().data.parts[hemi][0])
+    assert_array_equal(out_surf_map, surf_img().data.parts[hemi][:, 0])
     assert_surf_mesh_equal(out_surf_mesh, surf_img().mesh.parts[hemi])
     assert bg_map == out_bg_map
 
@@ -236,7 +236,7 @@ def test_check_surface_plotting_inputs_many_time_points(surf_img):
         TypeError, match="Input data has incompatible dimensionality"
     ):
         check_surface_plotting_inputs(
-            surf_map=surf_img((10,)),
+            surf_map=surf_img(10),
             surf_mesh=None,
             hemi="left",
             bg_map=None,
@@ -249,7 +249,7 @@ def test_check_surface_plotting_inputs_many_time_points(surf_img):
             surf_map=surf_img(),
             surf_mesh=None,
             hemi="left",
-            bg_map=surf_img((10,)),
+            bg_map=surf_img(10),
         )
 
 
@@ -272,7 +272,7 @@ def test_check_surface_plotting_inputs_extract_mesh_from_polymesh(
         hemi=hemi,
         bg_map=bg_map,
     )
-    assert_array_equal(out_surf_map, surf_img().data.parts[hemi][0])
+    assert_array_equal(out_surf_map, surf_img().data.parts[hemi][:, 0])
     assert_surf_mesh_equal(out_surf_mesh, surf_mesh().parts[hemi])
     assert bg_map == out_bg_map
 
@@ -288,7 +288,7 @@ def test_check_surface_plotting_inputs_extract_bg_map_data(
         hemi=hemi,
         bg_map=surf_img(),
     )
-    assert_array_equal(out_bg_map, surf_img().data.parts[hemi][0])
+    assert_array_equal(out_bg_map, surf_img().data.parts[hemi][:, 0])
 
 
 @pytest.mark.parametrize(
