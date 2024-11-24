@@ -301,10 +301,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
 
-        if (
-            (self.target_shape is not None)
-            or (self.target_affine is not None)
-            and self.reports
+        if (self.target_shape is not None) or (
+            (self.target_affine is not None) and self.reports
         ):
             resampl_imgs = None
             if imgs is not None:

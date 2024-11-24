@@ -495,10 +495,8 @@ class NiftiMasker(BaseMasker):
 
         logger.log("Finished fit", verbose=self.verbose)
 
-        if (
-            (self.target_shape is not None)
-            or (self.target_affine is not None)
-            and self.reports
+        if (self.target_shape is not None) or (
+            (self.target_affine is not None) and self.reports
         ):
             if imgs is not None:
                 # TODO switch to force_resample=True
