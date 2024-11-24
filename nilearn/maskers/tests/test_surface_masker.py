@@ -49,13 +49,13 @@ def test_fit_list_surf_images(surf_img):
     resulting mask should have a single 'timepoint'.
     """
     masker = SurfaceMasker()
-    masker.fit([surf_img((3,)), surf_img((5,))])
+    masker.fit([surf_img(3), surf_img(5)])
     assert masker.mask_img_.shape == (surf_img().shape[0], 1)
 
 
 # test with only one surface image and with 2 surface images (surface time
 # series)
-@pytest.mark.parametrize("shape", [(1,), (2,)])
+@pytest.mark.parametrize("shape", [1, 2])
 def test_mask_img_fit_shape_mismatch(
     flip_surf_img, surf_mask, surf_img, shape, assert_surf_img_equal
 ):
@@ -85,14 +85,14 @@ def test_none_mask_img(surf_mask):
 def test_transform_list_surf_images(surf_mask, surf_img):
     """Test transform on list of surface images."""
     masker = SurfaceMasker(surf_mask()).fit()
-    signals = masker.transform([surf_img((3,)), surf_img((4,))])
+    signals = masker.transform([surf_img(3), surf_img(4)])
     assert signals.shape == (7, masker.output_dimension_)
 
 
 def test_inverse_transform_list_surf_images(surf_mask, surf_img):
     """Test inverse_transform on list of surface images."""
     masker = SurfaceMasker(surf_mask()).fit()
-    signals = masker.transform([surf_img((3,)), surf_img((4,))])
+    signals = masker.transform([surf_img(3), surf_img(4)])
     img = masker.inverse_transform(signals)
     assert img.shape == (surf_mask().mesh.n_vertices, 7)
 
@@ -124,7 +124,7 @@ def test_mask_img_transform_clean(surf_img, surf_mask):
         high_pass=1 / 128,
         clean_args={"filter": "cosine"},
     ).fit()
-    masker.transform(surf_img((50,)))
+    masker.transform(surf_img(50))
 
 
 def test_mask_img_generate_report(surf_img, surf_mask):
@@ -148,7 +148,7 @@ def test_mask_img_generate_no_report(surf_img, surf_mask):
 
     assert masker._reporting_data is None
 
-    img = surf_img((5,))
+    img = surf_img(5)
     masker.transform(img)
 
     masker.generate_report()

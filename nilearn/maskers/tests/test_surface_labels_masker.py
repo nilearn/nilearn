@@ -98,7 +98,7 @@ def test_surface_label_masker_transform(surf_label_img, surf_img):
 
     # 5 'timepoint'
     n_timepoints = 5
-    signal = masker.transform(surf_img((n_timepoints,)))
+    signal = masker.transform(surf_img(n_timepoints))
 
     assert isinstance(signal, np.ndarray)
     assert signal.shape == (n_timepoints, n_labels)
@@ -345,7 +345,7 @@ def test_surface_label_masker_transform_clean(surf_label_img, surf_img):
         high_pass=1 / 128,
         clean_args={"filter": "cosine"},
     ).fit()
-    masker.transform(surf_img((50,)))
+    masker.transform(surf_img(50))
 
 
 def test_surface_label_masker_fit_transform(surf_label_img, surf_img):
@@ -378,7 +378,7 @@ def test_surface_label_masker_transform_list_surf_images(
     masker = SurfaceLabelsMasker(surf_label_img).fit()
     signals = masker.transform([surf_img(), surf_img(), surf_img()])
     assert signals.shape == (3, masker.n_elements_)
-    signals = masker.transform([surf_img((5,)), surf_img((4,))])
+    signals = masker.transform([surf_img(5), surf_img(4)])
     assert signals.shape == (9, masker.n_elements_)
 
 
@@ -387,7 +387,7 @@ def test_surface_label_masker_inverse_transform_list_surf_images(
 ):
     """Test inverse_transform on list of surface images."""
     masker = SurfaceLabelsMasker(surf_label_img).fit()
-    signals = masker.transform([surf_img((3,)), surf_img((4,))])
+    signals = masker.transform([surf_img(3), surf_img(4)])
     img = masker.inverse_transform(signals)
     assert img.shape == (surf_label_img.mesh.n_vertices, 7)
 

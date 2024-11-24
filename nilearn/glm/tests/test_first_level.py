@@ -2104,7 +2104,7 @@ def _make_surface_glm_data(rng, surf_img):
         des = pd.DataFrame(
             rng.standard_normal((shape, 3)), columns=["", "", ""]
         )
-        return surf_img((shape,)), des
+        return surf_img(shape), des
 
     return _make_surface_img_and_design
 
@@ -2116,7 +2116,7 @@ def test_flm_fit_surface_image_default_mask_img(_make_surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 9)
+    assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
     sum_mask = (
         model.masker_.mask_img_.data.parts["left"].sum()
@@ -2127,18 +2127,18 @@ def test_flm_fit_surface_image_default_mask_img(_make_surface_glm_data):
 
 def test_flm_fit_surface_image(_make_surface_glm_data):
     """Test FirstLevelModel with surface image and mask_img set to False."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     model = FirstLevelModel(mask_img=False)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 9)
+    assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
 def test_warn_flm_smooth_surface_image(_make_surface_glm_data):
     """Test warning raised in FirstLevelModel with surface smoothing."""
-    mini_img, des = _make_surface_glm_data(5)
+    mini_img, des = _make_surface_glm_data(9)
     model = FirstLevelModel(mask_img=False, smoothing_fwhm=5)
     with pytest.warns(
         UserWarning,
@@ -2151,24 +2151,24 @@ def test_flm_fit_surface_image_one_hemisphere(
     _make_surface_glm_data, drop_surf_img_part
 ):
     """Test FirstLevelModel with surface image with one hemisphere."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     mini_img_one_hemi = drop_surf_img_part(img)
     model = FirstLevelModel(mask_img=False)
     model.fit(mini_img_one_hemi, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 4)
+    assert model.masker_.mask_img_.shape == (4, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
 def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, surf_mask):
     """Test FirstLevelModel with surface mask."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     model = FirstLevelModel(mask_img=surf_mask())
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 9)
+    assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2176,7 +2176,7 @@ def test_error_flm_surface_mask_volume_image(
     _make_surface_glm_data, surf_mask, img_4d_rand_eye
 ):
     """Test error is raised when mask is a surface and data is in volume."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     model = FirstLevelModel(mask_img=surf_mask())
     with pytest.raises(
         TypeError, match="Mask and images to fit must be of compatible types."
@@ -2196,7 +2196,7 @@ def test_error_flm_volume_mask_surface_image(_make_surface_glm_data):
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, _, _ = generate_fake_fmri_data_and_design(shapes, rk)
 
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     model = FirstLevelModel(mask_img=mask)
     with pytest.raises(
         TypeError, match="Mask and images to fit must be of compatible types."
@@ -2213,39 +2213,40 @@ def test_error_flm_volume_mask_surface_image(_make_surface_glm_data):
 
 def test_flm_with_surface_image_with_surface_masker(_make_surface_glm_data):
     """Test FirstLevelModel with SurfaceMasker."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 9)
+    assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
 def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, surf_mask):
     """Test FirstLevelModel with SurfaceMasker and mask image."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     masker = SurfaceMasker(mask_img=surf_mask()).fit(img)
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 9)
+    assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
 def test_flm_with_surface_data_no_design_matrix(_make_surface_glm_data):
     """Smoke test FirstLevelModel with surface data and no design matrix."""
-    img, _ = _make_surface_glm_data(5)
+    img, _ = _make_surface_glm_data(9)
     masker = SurfaceMasker().fit(img)
+    # breakpoint()
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     model.fit(img, events=basic_paradigm())
 
 
 def test_flm_compute_contrast_with_surface_data(_make_surface_glm_data):
     """Smoke test FirstLevelModel compute_contrast with surface data."""
-    img, _ = _make_surface_glm_data(5)
+    img, _ = _make_surface_glm_data(9)
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     events = basic_paradigm()
@@ -2306,7 +2307,7 @@ def test_first_level_from_bids_subject_order_with_labels(tmp_path):
 
 def test_fixed_effect_contrast_surface(_make_surface_glm_data):
     """Smoke test of compute_fixed_effects with surface data."""
-    mini_img, _ = _make_surface_glm_data(5)
+    mini_img, _ = _make_surface_glm_data(9)
     masker = SurfaceMasker().fit(mini_img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     events = basic_paradigm()
