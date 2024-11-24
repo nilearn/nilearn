@@ -44,7 +44,7 @@ def test_get_min_max_surface_image(surf_img):
 
 
 def test_concatenate_surface_images(surf_img):
-    img = concatenate_surface_images([surf_img((3,)), surf_img((5,))])
-    assert img.shape == (8, 9)
+    img = concatenate_surface_images([surf_img(3), surf_img(5)])
+    assert img.shape == (9, 8)
     for value in img.data.parts.values():
         assert value.ndim == 2
