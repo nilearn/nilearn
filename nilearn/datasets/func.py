@@ -1871,8 +1871,8 @@ def load_nki(
     ):
         logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
 
-        left_data = load_surf_data(left).T
-        right_data = load_surf_data(right).T
+        left_data = load_surf_data(left)
+        right_data = load_surf_data(right)
         img = SurfaceImage(
             mesh=fsaverage[mesh_type],
             data={
