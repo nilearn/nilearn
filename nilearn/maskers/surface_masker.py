@@ -76,38 +76,6 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         number of vertices included in mask
 
     mask_img_ : :obj:`~nilearn.surface.SurfaceImage` or None
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> from nilearn.surface import SurfaceImage
-    >>> from nilearn.maskers import SurfaceMasker
-    >>> from nilearn.experimental.surface._datasets import toy_mesh
-    >>> mesh = toy_mesh()
-    <PolyMesh with 6 vertices>
-    >>> data = {"left": np.ones((3, 2)), "right": np.ones((3, 2)) * 2}
-    >>> img = SurfaceImage(mesh=mesh, data=data)
-    >>> img
-    <SurfaceImage (6, 2)>
-    >>> masker = SurfaceMasker().fit(img)
-    >>> masker._slices
-    {'left': (0, np.int64(3)), 'right': (np.int64(3), np.int64(6))}
-    >>> masked_data = masker.transform(img)
-    array([[1., 1., 1., 2., 2., 2.],
-           [1., 1., 1., 2., 2., 2.]])
-    >>> unmasked = masker.inverse_transform(masked_data)
-    <SurfaceImage (6, 2)>
-    >>> unmasked.data
-    <PolyData (6, 2)>
-    >>> unmasked.data.parts["left"]
-    array([[1., 1.],
-           [1., 1.],
-           [1., 1.]])
-    >>> unmasked.data.parts["right"]
-    array([[2., 2.],
-           [2., 2.],
-           [2., 2.]])
-
     """
 
     def __init__(

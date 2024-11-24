@@ -188,7 +188,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             faces (triangles).
         """
         if isinstance(roi_map, SurfaceImage):
-            roi_map = roi_map.data.parts[hemi][0]
+            roi_map = roi_map.data.parts[hemi][:, 0]
 
         if levels is None:
             levels = np.unique(roi_map)
