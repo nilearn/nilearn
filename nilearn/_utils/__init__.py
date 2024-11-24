@@ -200,8 +200,8 @@ def all_classes(
 
 
 __all__ = [
-    "_repr_niimgs",
     "CacheMixin",
+    "_repr_niimgs",
     "all_classes",
     "all_functions",
     "as_ndarray",

@@ -48,12 +48,12 @@ from .surf_plotting import (
 __all__ = [
     "cm",  # cm not in API doc
     "find_cut_slices",
-    "find_xyz_cut_coords",
     "find_parcellation_cut_coords",
     "find_probabilistic_atlas_cut_coords",
+    "find_xyz_cut_coords",
     "plot_anat",
-    "plot_connectome",
     "plot_carpet",
+    "plot_connectome",
     "plot_contrast_matrix",
     "plot_design_matrix",
     "plot_design_matrix_correlation",
