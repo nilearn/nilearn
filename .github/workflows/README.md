@@ -1,14 +1,5 @@
 # GitHub Actions Specification
 
-## Skip CI
-
-You can decide to skip CI at any time by including the tag "[skip ci]" in your commit message.
-For more information, see: https://docs.github.com/en/actions/managing-workflow-runs/skipping-workflow-runs
-
-```bash
-$ git commit -m "[skip ci] commit message"
-```
-
 ## Automatically assign issue
 
 ### assign.yml
