@@ -4,8 +4,6 @@ import abc
 import gzip
 import pathlib
 import warnings
-from collections import namedtuple
-from collections.abc import Mapping
 from pathlib import Path
 
 import numpy as np
@@ -21,12 +19,6 @@ from nilearn._utils import stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.image import get_data, load_img, resampling
-
-# Create a namedtuple object for meshes
-Mesh = namedtuple("mesh", ["coordinates", "faces"])
-
-# Create a namedtuple object for surfaces
-Surface = namedtuple("surface", ["mesh", "data"])
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -563,13 +555,12 @@ def vol_to_surf(
     img : Niimg-like object, 3d or 4d.
         See :ref:`extracting_data`.
 
-    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, :obj:`numpy.ndarray`, or Mesh
+    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, :obj:`numpy.ndarray`, or
+                :obj:`SurfaceMesh`
         Either a file containing surface :term:`mesh` geometry
         (valid formats are .gii or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated)
-        or two Numpy arrays organized in a list,
-        tuple or a namedtuple with the fields "coordinates" and "faces", or
-        a Mesh object with "coordinates" and "faces" attributes.
+        or a SurfaceMesh object with "coordinates" and "faces" attributes.
 
     radius : :obj:`float`, default=3.0
         The size (in mm) of the neighbourhood from which samples are drawn
@@ -975,17 +966,17 @@ def load_surf_mesh(surf_mesh):
     Parameters
     ----------
     surf_mesh : :obj:`str`, :obj:`pathlib.Path`, or \
-        :obj:`numpy.ndarray` or Mesh
+        :obj:`numpy.ndarray` or SurfaceMesh
         Either a file containing surface :term:`mesh` geometry
         (valid formats are .gii .gii.gz or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated)
         or two Numpy arrays organized in a list,
         tuple or a namedtuple with the fields "coordinates" and "faces",
-        or a Mesh object with "coordinates" and "faces" attributes.
+        or a SurfaceMesh object with "coordinates" and "faces" attributes.
 
     Returns
     -------
-    mesh : Mesh
+    mesh : SurfaceMesh
         With the fields "coordinates" and "faces", each containing a
         :obj:`numpy.ndarray`
 
@@ -1010,14 +1001,14 @@ def load_surf_mesh(surf_mesh):
             # See https://github.com/nilearn/nilearn/pull/3235
             if "cras" in header:
                 coords += header["cras"]
-            mesh = Mesh(coordinates=coords, faces=faces)
+            mesh = SurfaceMesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith("gii"):
             coords, faces = _gifti_img_to_mesh(load(surf_mesh))
-            mesh = Mesh(coordinates=coords, faces=faces)
+            mesh = SurfaceMesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith("gii.gz"):
             gifti_img = _load_surf_files_gifti_gzip(surf_mesh)
             coords, faces = _gifti_img_to_mesh(gifti_img)
-            mesh = Mesh(coordinates=coords, faces=faces)
+            mesh = SurfaceMesh(coordinates=coords, faces=faces)
         else:
             raise ValueError(
                 "The input type is not recognized. "
@@ -1033,7 +1024,7 @@ def load_surf_mesh(surf_mesh):
     elif isinstance(surf_mesh, (list, tuple)):
         try:
             coords, faces = surf_mesh
-            mesh = Mesh(coordinates=coords, faces=faces)
+            mesh = SurfaceMesh(coordinates=coords, faces=faces)
         except Exception:
             raise ValueError(
                 "If a list or tuple is given as input, "
@@ -1046,7 +1037,7 @@ def load_surf_mesh(surf_mesh):
             )
     elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
-        mesh = Mesh(coordinates=coords, faces=faces)
+        mesh = SurfaceMesh(coordinates=coords, faces=faces)
 
     else:
         raise ValueError(
@@ -1061,178 +1052,6 @@ def load_surf_mesh(surf_mesh):
         )
 
     return mesh
-
-
-def load_surface(surface):
-    """Load a surface.
-
-    Parameters
-    ----------
-    surface : Surface-like (see description)
-        The surface to be loaded.
-        A surface can be:
-            - a nilearn.surface.Surface
-            - a sequence (mesh, data) where:
-                - :term:`mesh` can be:
-                    - a nilearn.surface.Mesh
-                    - a path to .gii or .gii.gz etc.
-                    - a sequence of two numpy arrays,
-                    the first containing :term:`vertex` coordinates
-                    and the second containing triangles.
-                - data can be:
-                    - a path to .gii or .gii.gz etc.
-                    - a numpy array with shape (n_vertices,)
-                    or (n_time_points, n_vertices)
-
-    Returns
-    -------
-    surface : Surface
-        With the fields "mesh" (Mesh object) and "data" (:obj:`numpy.ndarray`).
-
-    """
-    # Handle the case where we received a Surface
-    # object with mesh and data attributes
-    if hasattr(surface, "mesh") and hasattr(surface, "data"):
-        mesh = load_surf_mesh(surface.mesh)
-        data = load_surf_data(surface.data)
-    # Handle the case where we received a sequence
-    # (mesh, data)
-    elif isinstance(surface, (list, tuple, np.ndarray)):
-        if len(surface) != 2:
-            raise ValueError(
-                "`load_surface` accepts iterables "
-                "of length 2 to define a surface. "
-                f"You provided a {type(surface)} "
-                f"of length {len(surface)}."
-            )
-        mesh = load_surf_mesh(surface[0])
-        data = load_surf_data(surface[1])
-    else:
-        raise ValueError(
-            "Wrong parameter `surface` in `load_surface`. "
-            "Please refer to the documentation for more information."
-        )
-    return Surface(mesh, data)
-
-
-def check_mesh(mesh):
-    """Check that :term:`mesh` data is either a :obj:`str`, \
-        or a :obj:`dict` with sufficient entries.
-
-    Used by plotting.surf_plotting.plot_img_on_surf and
-    plotting.html_surface._full_brain_info
-
-    """
-    if isinstance(mesh, str):
-        # avoid circular imports
-        from nilearn.datasets import fetch_surf_fsaverage
-
-        return fetch_surf_fsaverage(mesh)
-    if not isinstance(mesh, Mapping):
-        raise TypeError(
-            "The mesh should be a str or a dictionary, "
-            f"you provided: {type(mesh).__name__}."
-        )
-    missing = {
-        "pial_left",
-        "pial_right",
-        "sulc_left",
-        "sulc_right",
-        "infl_left",
-        "infl_right",
-    }.difference(mesh.keys())
-    if missing:
-        raise ValueError(
-            f"{missing} {'are' if len(missing) > 1 else 'is'} "
-            "missing from the provided mesh dictionary"
-        )
-    return mesh
-
-
-def check_mesh_and_data(mesh, data):
-    """Load surface :term:`mesh` and data, \
-       check that they have compatible shapes.
-
-    Parameters
-    ----------
-    mesh : :obj:`str` or :obj:`numpy.ndarray` or Mesh
-        Either a file containing surface :term:`mesh` geometry (valid formats
-        are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or two Numpy arrays organized in a list,
-        tuple or a namedtuple with the fields "coordinates" and "faces", or a
-        Mesh object with "coordinates" and "faces" attributes.
-
-    data : :obj:`str` or :obj:`numpy.ndarray`
-        Either a file containing surface data (valid format are .gii,
-        .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
-        .thickness, .area, .curv, .sulc, .annot, .label),
-        lists of 1D data files are returned as 2D arrays,
-        or a Numpy array containing surface data.
-
-    Returns
-    -------
-    mesh : Mesh
-        Checked :term:`mesh`.
-
-    data : :obj:`numpy.ndarray`
-        Checked data.
-
-    """
-    mesh = load_surf_mesh(mesh)
-    data = load_surf_data(data)
-    # Check that mesh coordinates has a number of nodes
-    # equal to the size of the data.
-    if len(data) != len(mesh.coordinates):
-        raise ValueError(
-            "Mismatch between number of nodes "
-            f"in mesh ({len(mesh.coordinates)}) and "
-            f"size of surface data ({len(data)})"
-        )
-    # Check that the indices of faces are consistent with the
-    # mesh coordinates. That is, we shouldn't have an index
-    # larger or equal to the length of the coordinates array.
-    if mesh.faces.max() >= len(mesh.coordinates):
-        raise ValueError(
-            "Mismatch between the indices of faces and the number of nodes. "
-            f"Maximum face index is {mesh.faces.max()} "
-            f"while coordinates array has length {len(mesh.coordinates)}."
-        )
-    return mesh, data
-
-
-def check_surface(surface):
-    """Load a surface as a Surface object.
-
-    This function will make sure that the surfaces's
-    mesh and data have compatible shapes.
-
-    Parameters
-    ----------
-    surface : Surface-like (see description)
-        The surface to be loaded.
-        A surface can be:
-            - a nilearn.surface.Surface
-            - a sequence (:term:`mesh`, data) where:
-                - :term:`mesh` can be:
-                    - a nilearn.surface.Mesh
-                    - a path to .gii or .gii.gz etc.
-                    - a sequence of two numpy arrays,
-                    the first containing :term:`vertex` coordinates
-                    and the second containing triangles.
-                - data can be:
-                    - a path to .gii or .gii.gz etc.
-                    - a numpy array with shape (n_vertices,)
-                    or (n_time_points, n_vertices)
-
-    Returns
-    -------
-    surface : Surface
-        Checked surface object.
-
-    """
-    surface = load_surface(surface)
-    mesh, data = check_mesh_and_data(surface.mesh, surface.data)
-    return Surface(mesh, data)
 
 
 class PolyData:
@@ -1486,11 +1305,11 @@ class PolyMesh:
     ----------
     left : :obj:`str` or :obj:`pathlib.Path` \
                 or :obj:`nilearn.surface.SurfaceMesh` or None, default=None
-            Mesh for the left hemisphere.
+            SurfaceMesh for the left hemisphere.
 
     right : :obj:`str` or :obj:`pathlib.Path` \
                 or :obj:`nilearn.surface.SurfaceMesh` or None, default=None
-            Mesh for the right hemisphere.
+            SurfaceMesh for the right hemisphere.
 
     Attributes
     ----------
@@ -1657,7 +1476,7 @@ def _sanitize_filename(filename):
         filename = filename.with_suffix(".gii")
     if filename.suffix != ".gii":
         raise ValueError(
-            "Mesh / Data should be saved as gifti files "
+            "SurfaceMesh / Data should be saved as gifti files "
             "with the extension '.gii'.\n"
             f"Got '{filename.suffix}'."
         )
