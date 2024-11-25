@@ -194,18 +194,18 @@ def fetch_atlas_craddock_2012(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - ``'scorr_mean'``: obj:`str`, path to nifti file containing
+        - ``'scorr_mean'``: :obj:`str`, path to nifti file containing
             the group-mean :term:`parcellation`
             when emphasizing spatial homogeneity.
-        - ``'tcorr_mean'``: obj:`str`, path to nifti file containing
+        - ``'tcorr_mean'``: :obj:`str`, path to nifti file containing
             the group-mean parcellation when emphasizing temporal homogeneity.
-        - ``'scorr_2level'``: obj:`str`, path to nifti file containing
+        - ``'scorr_2level'``: :obj:`str`, path to nifti file containing
             the :term:`parcellation` obtained
             when emphasizing spatial homogeneity.
-        - ``'tcorr_2level'``: obj:`str`, path to nifti file containing
+        - ``'tcorr_2level'``: :obj:`str`, path to nifti file containing
             the :term:`parcellation` obtained
             when emphasizing temporal homogeneity.
-        - ``'random'``: obj:`str`, path to nifti file containing
+        - ``'random'``: :obj:`str`, path to nifti file containing
             the :term:`parcellation` obtained with random clustering.
         - ``'description'``: :obj:`str`, general description of the dataset.
 
