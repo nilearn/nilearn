@@ -32,18 +32,17 @@ avg_method : {"mean", "median", "min", "max", custom function, None}, \
              default=None
     How to average vertex values to derive the face value:
 
-        - `mean`: results in smooth boundaries
-        - `median`: results in sharp boundaries
-        - `min` or `max`: for sparse matrices
-        - `custom function`: You can also pass a custom function
-          which will be executed though :func:`numpy.apply_along_axis`.
-          Here is an example of a custom function:
+    - ``"mean"``: results in smooth boundaries
+    - ``"median"``: results in sharp boundaries
+    - ``"min"`` or ``"max"``: for sparse matrices
+    - `custom function`: You can also pass a custom function
+        which will be executed though :func:`numpy.apply_along_axis`.
+        Here is an example of a custom function:
 
-            .. code-block:: python
+        .. code-block:: python
 
-                def custom_function(vertices):
-                    return vertices[0] * vertices[1] * vertices[2]
-
+            def custom_function(vertices):
+                return vertices[0] * vertices[1] * vertices[2]
 """
 
 # ax
@@ -79,10 +78,9 @@ bg_on_data : :obj:`bool`, default=False
     (either because `surf_data` contains `nan`\s
     or because is was thresholded).
 
-        .. note::
-            This non-uniformly changes the surf_data values according
-            to e.g the sulcal depth.
-
+    .. note::
+        This non-uniformly changes the surf_data values according
+        to e.g the sulcal depth.
 """
 
 # black_bg
@@ -114,62 +112,63 @@ logistic = "Logistic regression"
 rc = "Ridge classifier"
 dc = "Dummy classifier with stratified strategy"
 
-docdict["classifier_options"] = f""" # noqa:E501
+docdict["classifier_options"] = f"""
 
-        - `svc`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
+    - ``"svc"``: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
 
-        .. code-block:: python
+    .. code-block:: python
 
-            svc = LinearSVC(penalty="l2", max_iter=1e4)
+        svc = LinearSVC(penalty="l2", max_iter=1e4)
 
-        - `svc_l2`: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
+    - ``"svc_l2"``: :class:`{svc} <sklearn.svm.LinearSVC>` with L2 penalty.
 
-        .. note::
-            Same as option `svc`.
+    .. note::
 
-        - `svc_l1`: :class:`{svc} <sklearn.svm.LinearSVC>` with L1 penalty.
+        Same as option `svc`.
 
-        .. code-block:: python
+    - ``"svc_l1"``: :class:`{svc} <sklearn.svm.LinearSVC>` with L1 penalty.
 
-            svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
+    .. code-block:: python
 
-        - `logistic`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
-            with L2 penalty.
+        svc_l1 = LinearSVC(penalty="l1", dual=False, max_iter=1e4)
 
-        .. code-block:: python
+    - ``"logistic"``: \
+        :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
+        with L2 penalty.
 
-            logistic = LogisticRegressionCV(penalty="l2", solver="liblinear")
+    .. code-block:: python
 
-        - `logistic_l1`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
-            with L1 penalty.
+        logistic = LogisticRegressionCV(penalty="l2", solver="liblinear")
 
-        .. code-block:: python
+    - ``"logistic_l1"``: \
+        :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
+        with L1 penalty.
 
-            logistic_l1 = LogisticRegressionCV(penalty="l1", solver="liblinear")
+    .. code-block:: python
 
-        - `logistic_l2`: \
-            :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
-            with L2 penalty
+        logistic_l1 = LogisticRegressionCV(penalty="l1", solver="liblinear")
 
-        .. note::
-            Same as option `logistic`.
+    - ``"logistic_l2"``: \
+        :class:`{logistic} <sklearn.linear_model.LogisticRegressionCV>` \
+        with L2 penalty
 
-        - `ridge_classifier`: \
-            :class:`{rc} <sklearn.linear_model.RidgeClassifierCV>`.
+    .. note::
 
-        .. code-block:: python
+        Same as option `logistic`.
 
-            ridge_classifier = RidgeClassifierCV()
+    - ``"ridge_classifier"``: \
+        :class:`{rc} <sklearn.linear_model.RidgeClassifierCV>`.
 
-        - `dummy_classifier`: :class:`{dc} <sklearn.dummy.DummyClassifier>`.
+    .. code-block:: python
 
-        .. code-block:: python
+        ridge_classifier = RidgeClassifierCV()
 
-            dummy = DummyClassifier(strategy="stratified", random_state=0)
+    - ``"dummy_classifier"``: :class:`{dc} <sklearn.dummy.DummyClassifier>`.
 
-"""  # noqa: E501
+    .. code-block:: python
+
+        dummy = DummyClassifier(strategy="stratified", random_state=0)
+"""
 
 # cmap
 docdict["cmap"] = """
@@ -204,22 +203,21 @@ docdict["cut_coords"] = """
 cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
     The MNI coordinates of the point where the cut is performed.
 
-        - If `display_mode` is `'ortho'` or `'tiled'`, this should
-          be a 3-tuple: `(x, y, z)`
-        - For `display_mode == "x"`, "y", or "z", then these are
-          the coordinates of each cut in the corresponding direction.
-        - If `None` is given, the cuts are calculated automatically.
-        - If `display_mode` is 'mosaic', and the number of cuts is the same
-          for all directions, `cut_coords` can be specified as an integer.
-          It can also be a length 3 tuple specifying the number of cuts for
-          every direction if these are different.
+    - If `display_mode` is `'ortho'` or `'tiled'`, this should
+        be a 3-tuple: `(x, y, z)`
+    - For `display_mode == "x"`, "y", or "z", then these are
+        the coordinates of each cut in the corresponding direction.
+    - If `None` is given, the cuts are calculated automatically.
+    - If `display_mode` is 'mosaic', and the number of cuts is the same
+        for all directions, `cut_coords` can be specified as an integer.
+        It can also be a length 3 tuple specifying the number of cuts for
+        every direction if these are different.
 
-        .. note::
+    .. note::
 
-            If `display_mode` is "x", "y" or "z",
-            `cut_coords` can be an integer,
-            in which case it specifies the number of cuts to perform.
-
+        If `display_mode` is "x", "y" or "z",
+        `cut_coords` can be an integer,
+        in which case it specifies the number of cuts to perform.
 """
 
 # darkness
@@ -227,10 +225,9 @@ docdict["darkness"] = """
 darkness : :obj:`float` between 0 and 1, optional
     Specifying the darkness of the background image:
 
-        - `1` indicates that the original values of the background are used
-        - `0.5` indicates that the background values
-          are reduced by half before being applied.
-
+    - `1` indicates that the original values of the background are used
+    - `0.5` indicates that the background values
+        are reduced by half before being applied.
 """
 
 # data_dir
@@ -266,14 +263,13 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
 "y", "z", "yx", "xz", "yz"}, default="ortho"
     Choose the direction of the cuts:
 
-        - `"x"`: sagittal
-        - `"y"`: coronal
-        - `"z"`: axial
-        - `"ortho"`: three cuts are performed in orthogonal directions
-        - `"tiled"`: three cuts are performed and arranged in a 2x2 grid
-        - `"mosaic"`: three cuts are performed along
-          multiple rows and columns
-
+    - ``"x"``: sagittal
+    - ``"y"``: coronal
+    - ``"z"``: axial
+    - ``"ortho"``: three cuts are performed in orthogonal directions
+    - ``"tiled"``: three cuts are performed and arranged in a 2x2 grid
+    - ``"mosaic"``: three cuts are performed along
+        multiple rows and columns
 """
 
 # draw_cross
@@ -288,19 +284,19 @@ docdict["extractor"] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
     This option can take two values:
 
-        - `"connected_components"`: each component/region in the image
-          is extracted automatically by labelling each region based
-          upon the presence of unique features in their respective regions.
+    - ``"connected_components"``: each component/region in the image
+        is extracted automatically by labelling each region based
+        upon the presence of unique features in their respective regions.
 
-        - `"local_regions"`: each component/region is extracted
-          based on their maximum peak value to define a seed marker
-          and then using random walker segmentation algorithm
-          on these markers for region separation.
-
+    - ``"local_regions"``: each component/region is extracted
+        based on their maximum peak value to define a seed marker
+        and then using random walker segmentation algorithm
+        on these markers for region separation.
 """
 docdict["extract_type"] = docdict["extractor"].replace(
     "extractor", "extract_type"
 )
+
 # figure
 docdict["figure"] = """
 figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
@@ -311,17 +307,17 @@ figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
 # fsaverage options
 docdict["fsaverage_options"] = """
 
-        - `"fsaverage3"`: the low-resolution fsaverage3 mesh (642 nodes)
-        - `"fsaverage4"`: the low-resolution fsaverage4 mesh (2562 nodes)
-        - `"fsaverage5"`: the low-resolution fsaverage5 mesh (10242 nodes)
-        - `"fsaverage6"`: the medium-resolution fsaverage6 mesh (40962 nodes)
-        - `"fsaverage7"`: same as `"fsaverage"`
-        - `"fsaverage"`: the high-resolution fsaverage mesh (163842 nodes)
+    - ``"fsaverage3"``: the low-resolution fsaverage3 mesh (642 nodes)
+    - ``"fsaverage4"``: the low-resolution fsaverage4 mesh (2562 nodes)
+    - ``"fsaverage5"``: the low-resolution fsaverage5 mesh (10242 nodes)
+    - ``"fsaverage6"``: the medium-resolution fsaverage6 mesh (40962 nodes)
+    - ``"fsaverage7"``: same as `"fsaverage"`
+    - ``"fsaverage"``: the high-resolution fsaverage mesh (163842 nodes)
 
-            .. note::
-                The high-resolution fsaverage will result in more computation
-                time and memory usage
+    .. note::
 
+        The high-resolution fsaverage will result in more computation
+        time and memory usage
 """
 
 # fwhm
@@ -331,22 +327,21 @@ or 'fast' or None, optional
     Smoothing strength, as a :term:`full-width at half maximum<FWHM>`,
     in millimeters:
 
-        - If a nonzero scalar is given, width is identical in all 3 directions.
-        - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
-          it must have 3 elements, giving the :term:`FWHM` along each axis.
-          If any of the elements is `0` or `None`,
-          smoothing is not performed along that axis.
-        - If `fwhm="fast"`, a fast smoothing will be performed with a filter
-          [0.2, 1, 0.2] in each direction and a normalisation to preserve the
-          local average value.
-        - If `fwhm` is `None`, no filtering is performed
-          (useful when just removal of non-finite values is needed).
+    - If a nonzero scalar is given, width is identical in all 3 directions.
+    - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
+        it must have 3 elements, giving the :term:`FWHM` along each axis.
+        If any of the elements is `0` or `None`,
+        smoothing is not performed along that axis.
+    - If `fwhm="fast"`, a fast smoothing will be performed with a filter
+        [0.2, 1, 0.2] in each direction and a normalisation to preserve the
+        local average value.
+    - If `fwhm` is `None`, no filtering is performed
+        (useful when just removal of non-finite values is needed).
 
     .. note::
 
         In corner case situations, `fwhm` is simply kept to `None`
         when `fwhm` is specified as `fwhm=0`.
-
 """
 
 # hemi
@@ -373,31 +368,37 @@ hrf_model : :obj:`str`, function, list of functions, or None
     - ``"spm"``:
         This is the :term:`HRF` model used in :term:`SPM`.
         See :func:`~nilearn.glm.first_level.spm_hrf`.
+
     - ``"spm + derivative"``:
         SPM model plus its time derivative.
         This gives 2 regressors.
         See :func:`~nilearn.glm.first_level.spm_hrf`, and
         :func:`~nilearn.glm.first_level.spm_time_derivative`.
+
     - ``"spm + derivative + dispersion"``:
         Same as above plus dispersion derivative.
         This gives 3 regressors.
         See :func:`~nilearn.glm.first_level.spm_hrf`,
-        :func:`nilearn.glm.first_level.spm_time_derivative`,
+        :func:`~nilearn.glm.first_level.spm_time_derivative`,
         and :func:`~nilearn.glm.first_level.spm_dispersion_derivative`.
+
     - ``"glover"``:
         This corresponds to the Glover :term:`HRF`.
         See :func:`~nilearn.glm.first_level.glover_hrf`.
+
     - ``"glover + derivative"``:
         The Glover :term:`HRF` + time derivative.
         This gives 2 regressors.
         See :func:`~nilearn.glm.first_level.glover_hrf`, and
         :func:`~nilearn.glm.first_level.glover_time_derivative`.
+
     - ``"glover"+ derivative + dispersion"``:
         Same as above plus dispersion derivative.
         This gives 3 regressors.
         See :func:`~nilearn.glm.first_level.glover_hrf`,
         :func:`~nilearn.glm.first_level.glover_time_derivative`, and
         :func:`~nilearn.glm.first_level.glover_dispersion_derivative`.
+
     - ``"fir"``:
         Finite impulse response basis.
         This is a set of delayed dirac models.
@@ -416,7 +417,6 @@ hrf_model : :obj:`str`, function, list of functions, or None
         In case of ``"glover"`` and ``"spm"`` models,
         the derived regressors are orthogonalized
         with respect to the main one.
-
 """
 
 # img
@@ -465,29 +465,31 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
 "gm-template", "wm-template"}, optional
     The strategy used to compute the mask:
 
-        - `"background"`: Use this option if your images present
-          a clear homogeneous background.
-        - `"epi"`: Use this option if your images are raw EPI images
-        - `"whole-brain-template"`: This will extract the whole-brain
-          part of your data by resampling the MNI152 brain mask for
-          your data's field of view.
+    - ``"background"``: Use this option if your images present
+        a clear homogeneous background.
+
+    - ``"epi"``: Use this option if your images are raw EPI images
+
+    - ``"whole-brain-template"``: This will extract the whole-brain
+        part of your data by resampling the MNI152 brain mask for
+        your data's field of view.
 
         .. note::
+
             This option is equivalent to the previous 'template' option
             which is now deprecated.
 
-        - `"gm-template"`: This will extract the gray matter part of your
-          data by resampling the corresponding MNI152 template for your
-          data's field of view.
+    - ``"gm-template"``: This will extract the gray matter part of your
+        data by resampling the corresponding MNI152 template for your
+        data's field of view.
 
-            .. versionadded:: 0.8.1
+        .. versionadded:: 0.8.1
 
-        - `"wm-template"`: This will extract the white matter part of your
-          data by resampling the corresponding MNI152 template for your
-          data's field of view.
+    - ``"wm-template"``: This will extract the white matter part of your
+        data by resampling the corresponding MNI152 template for your
+        data's field of view.
 
-            .. versionadded:: 0.8.1
-
+        .. versionadded:: 0.8.1
 """
 
 # mask_type
@@ -495,10 +497,9 @@ docdict["mask_type"] = """
 mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
     Type of mask to be computed:
 
-        - `"whole-brain"`: Computes the whole-brain mask.
-        - `"gm"`: Computes the grey-matter mask.
-        - `"wm"`: Computes the white-matter mask.
-
+    - ``"whole-brain"``: Computes the whole-brain mask.
+    - ``"gm"``: Computes the grey-matter mask.
+    - ``"wm"``: Computes the white-matter mask.
 """
 
 # keep_masked_labels
@@ -517,7 +518,6 @@ keep_masked_labels : :obj:`bool`, default=True
         The 'True' option for ``keep_masked_labels`` is deprecated.
         The default value will change to 'False' in 0.13,
         and the ``keep_masked_labels`` parameter will be removed in 0.15.
-
 """
 
 # keep_masked_maps
@@ -534,7 +534,6 @@ keep_masked_maps : :obj:`bool`, optional
         The 'True' option for ``keep_masked_maps`` is deprecated.
         The default value will change to 'False' in 0.13,
         and the ``keep_masked_maps`` parameter will be removed in 0.15.
-
 """
 
 # kwargs for Maskers
@@ -584,24 +583,24 @@ opening : :obj:`bool` or :obj:`int`, optional
     This step is useful to remove parts of the skull that might have been
     included. `opening` can be:
 
-        - A boolean : If `False`, no :term:`opening<Opening>` is performed.
-          If `True`, it is equivalent to `opening=1`.
-        - An integer `n`: The :term:`opening<Opening>` is performed via `n`
-          :term:`erosions<Erosion>` (see :func:`scipy.ndimage.binary_erosion`).
-          The largest connected component is then estimated
-          if `connected` is set to `True`,
-          and 2`n` :term:`dilation<Dilation>` operations are performed
-          (see :func:`scipy.ndimage.binary_dilation`)
-          followed by `n` :term:`erosions<Erosion>`.
-          This corresponds to 1 :term:`opening<Opening>` operation
-          of order `n` followed by a :term:`closing<Closing>` operator
-          of order `n`.
+    - A :obj:`bool` : If `False`, no :term:`opening<Opening>` is performed.
+        If `True`, it is equivalent to `opening=1`.
+
+    - An :obj:`int` `n`: The :term:`opening<Opening>` is performed via `n`
+        :term:`erosions<Erosion>` (see :func:`scipy.ndimage.binary_erosion`).
+        The largest connected component is then estimated
+        if `connected` is set to `True`,
+        and 2`n` :term:`dilation<Dilation>` operations are performed
+        (see :func:`scipy.ndimage.binary_dilation`)
+        followed by `n` :term:`erosions<Erosion>`.
+        This corresponds to 1 :term:`opening<Opening>` operation
+        of order `n` followed by a :term:`closing<Closing>` operator
+        of order `n`.
 
     .. note::
 
         Turning off :term:`opening<Opening>` (`opening=False`) will also
         prevent any smoothing applied to the image during the mask computation.
-
 """
 
 # output_file
@@ -630,45 +629,46 @@ random_state : :obj:`int` or RandomState, optional
 # regressor_options
 docdict["regressor_options"] = """
 
-        - `ridge`: \
-            :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
+    - ``ridge``: \
+        :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
 
-        .. code-block:: python
+    .. code-block:: python
 
-            ridge = RidgeCV()
+        ridge = RidgeCV()
 
-        - `ridge_regressor`: \
-            :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
+    - ``ridge_regressor``: \
+        :class:`{Ridge regression} <sklearn.linear_model.RidgeCV>`.
 
-        .. note::
-            Same option as `ridge`.
+    .. note::
 
-        - `svr`: :class:`{Support vector regression} <sklearn.svm.SVR>`.
+        Same option as `ridge`.
 
-        .. code-block:: python
+    - ``svr``: :class:`{Support vector regression} <sklearn.svm.SVR>`.
 
-            svr = SVR(kernel="linear", max_iter=1e4)
+    .. code-block:: python
 
-        - `lasso`: \
-            :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
+        svr = SVR(kernel="linear", max_iter=1e4)
 
-        .. code-block:: python
+    - ``lasso``: \
+        :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
 
-            lasso = LassoCV()
+    .. code-block:: python
 
-        - `lasso_regressor`: \
-            :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
+        lasso = LassoCV()
 
-        .. note::
-            Same option as `lasso`.
+    - ``lasso_regressor``: \
+        :class:`{Lasso regression} <sklearn.linear_model.LassoCV>`.
 
-        - `dummy_regressor`: \
-            :class:`{Dummy regressor} <sklearn.dummy.DummyRegressor>`.
+    .. note::
 
-        .. code-block:: python
+        Same option as `lasso`.
 
-            dummy = DummyRegressor(strategy="mean")
+    - ``dummy_regressor``: \
+        :class:`{Dummy regressor} <sklearn.dummy.DummyRegressor>`.
 
+    .. code-block:: python
+
+        dummy = DummyRegressor(strategy="mean")
 """
 
 # resampling_interpolation
@@ -677,13 +677,12 @@ resampling_interpolation : :obj:`str`, optional
     Interpolation to use when resampling the image to
     the destination space. Can be:
 
-        - `"continuous"`: use 3rd-order spline interpolation
-        - `"nearest"`: use nearest-neighbor mapping.
+    - ``"continuous"``: use 3rd-order spline interpolation
+    - ``"nearest"``: use nearest-neighbor mapping.
 
-            .. note::
+    .. note::
 
-                `"nearest"` is faster but can be noisier in some cases.
-
+        ``"nearest"`` is faster but can be noisier in some cases.
 """
 
 # resume
@@ -729,6 +728,7 @@ second_level_input : :obj:`list` of \
       :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`.
       Effect size images will be computed for each model
       to contrast at the second level.
+
     - If a :class:`~pandas.DataFrame`, then it has to contain
       `subject_label`, `map_name` and `effects_map_path`.
       It can contain multiple maps that would be selected
@@ -739,10 +739,10 @@ second_level_input : :obj:`list` of \
       when extracting the maps.
       So the rows of the automatically computed design matrix,
       if not provided, will correspond to the sorted `subject_label` column.
+
     - If a :obj:`list` of Niimg-like objects
       then this is taken literally as Y for the model fit
       and `design_matrix` must be provided.
-
 """
 
 # smoothing_fwhm
@@ -768,17 +768,20 @@ docdict["standardize_maskers"] = """
 standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
     Strategy to standardize the signal:
 
-        - 'zscore_sample': The signal is z-scored. Timeseries are shifted
-          to zero mean and scaled to unit variance. Uses sample std.
-        - 'zscore': The signal is z-scored. Timeseries are shifted
-          to zero mean and scaled to unit variance. Uses population std
-          by calling default :obj:`numpy.std` with N - ``ddof=0``.
-        - 'psc':  Timeseries are shifted to zero mean value and scaled
-          to percent signal change (as compared to original mean signal).
-        - True: The signal is z-scored (same as option `zscore`).
-          Timeseries are shifted to zero mean and scaled to unit variance.
-        - False: Do not standardize the data.
+    - ``'zscore_sample'``: The signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance. Uses sample std.
 
+    - ``'zscore'``: The signal is z-scored. Timeseries are shifted
+        to zero mean and scaled to unit variance. Uses population std
+        by calling default :obj:`numpy.std` with N - ``ddof=0``.
+
+    - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
+        to percent signal change (as compared to original mean signal).
+
+    - ``True``: The signal is z-scored (same as option `zscore`).
+        Timeseries are shifted to zero mean and scaled to unit variance.
+
+    - ``False``: Do not standardize the data.
 """
 
 # standardize_confounds
@@ -796,7 +799,7 @@ symmetric_cbar : :obj:`bool`, or "auto", default="auto"
     from `vmin` to `vmax`.
     Setting to `"auto"` (the default) will select the former if either
     `vmin` or `vmax` is `None` and the image has both positive and negative
-    values.
+    values.regre
 """
 
 # t_r
@@ -820,6 +823,7 @@ target_shape : :obj:`tuple` or :obj:`list`, default=None
     `len(target_shape)` must be equal to 3.
 
     .. note::
+
         If `target_shape` is specified, a `target_affine` of shape
         `(4, 4)` must also be given.
 """
