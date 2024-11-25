@@ -431,7 +431,7 @@ class NiftiMasker(BaseMasker):
         """
         # Load data (if filenames are given, load them)
         logger.log(
-            f"Loading data from {_utils._repr_niimgs(imgs, shorten=False)}",
+            f"Loading data from {_utils.repr_niimgs(imgs, shorten=False)}",
             verbose=self.verbose,
         )
 
@@ -495,10 +495,8 @@ class NiftiMasker(BaseMasker):
 
         logger.log("Finished fit", verbose=self.verbose)
 
-        if (
-            (self.target_shape is not None)
-            or (self.target_affine is not None)
-            and self.reports
+        if (self.target_shape is not None) or (
+            (self.target_affine is not None) and self.reports
         ):
             if imgs is not None:
                 # TODO switch to force_resample=True

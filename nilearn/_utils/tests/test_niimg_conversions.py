@@ -19,10 +19,10 @@ from numpy.testing import assert_array_equal
 
 import nilearn as ni
 from nilearn._utils import (
-    _repr_niimgs,
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
+    repr_niimgs,
 )
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.niimg_conversions import check_same_fov, iter_check_niimg
@@ -416,15 +416,15 @@ def test_iter_check_niimgs_memory(affine_eye):
 
 def test_repr_niimgs():
     # Tests with file path
-    assert _repr_niimgs("test") == "test"
-    assert _repr_niimgs("test", shorten=False) == "test"
+    assert repr_niimgs("test") == "test"
+    assert repr_niimgs("test", shorten=False) == "test"
 
     # Shortening long names by default
     long_name = "this-is-a-very-long-name-for-a-nifti-file.nii"
     short_name = "this-is-a-very-lon..."
-    assert _repr_niimgs(long_name) == short_name
+    assert repr_niimgs(long_name) == short_name
     # Explicit shortening of long names
-    assert _repr_niimgs(long_name, shorten=True) == short_name
+    assert repr_niimgs(long_name, shorten=True) == short_name
 
     # Lists of long names up to length 3
     list_of_size_3 = [
@@ -440,7 +440,7 @@ def test_repr_niimgs():
     )
 
     assert (
-        _repr_niimgs(list_of_size_3, shorten=True)
+        repr_niimgs(list_of_size_3, shorten=True)
         == shortened_rep_list_of_size_3
     )
 
@@ -450,7 +450,7 @@ def test_repr_niimgs():
     shortened_rep_long_list_small_names = "[test,\n         ...\n rereretest]"
 
     assert (
-        _repr_niimgs(long_list_small_names, shorten=True)
+        repr_niimgs(long_list_small_names, shorten=True)
         == shortened_rep_long_list_small_names
     )
 
@@ -464,7 +464,7 @@ def test_repr_niimgs():
     )
 
     assert (
-        _repr_niimgs(list_of_size_4, shorten=True)
+        repr_niimgs(list_of_size_4, shorten=True)
         == shortened_rep_long_list_long_names
     )
 
@@ -472,11 +472,11 @@ def test_repr_niimgs():
 def test_repr_niimgs_force_long_names():
     long_name = "this-is-a-very-long-name-for-a-nifti-file.nii"
     # Force long display of long names
-    assert _repr_niimgs(long_name, shorten=False) == long_name
+    assert repr_niimgs(long_name, shorten=False) == long_name
 
     # Tests with list of file paths
-    assert _repr_niimgs(["test", "retest"]) == "[test, retest]"
-    assert _repr_niimgs(["test", "retest"], shorten=False) == "[test, retest]"
+    assert repr_niimgs(["test", "retest"]) == "[test, retest]"
+    assert repr_niimgs(["test", "retest"], shorten=False) == "[test, retest]"
 
     # Force display, all 3 names are displayed
     list_of_size_3 = [
@@ -490,7 +490,7 @@ def test_repr_niimgs_force_long_names():
         " this-is-again-another-very-long-name-for-a-nifti-file.nii]"
     )
     assert (
-        _repr_niimgs(list_of_size_3, shorten=False) == long_rep_list_of_size_3
+        repr_niimgs(list_of_size_3, shorten=False) == long_rep_list_of_size_3
     )
 
     long_list_small_names = ["test", "retest", "reretest", "rereretest"]
@@ -499,7 +499,7 @@ def test_repr_niimgs_force_long_names():
     )
 
     assert (
-        _repr_niimgs(long_list_small_names, shorten=False)
+        repr_niimgs(long_list_small_names, shorten=False)
         == long_rep_long_list_small_names
     )
 
@@ -515,7 +515,7 @@ def test_repr_niimgs_force_long_names():
     )
 
     assert (
-        _repr_niimgs(list_of_size_4, shorten=False)
+        repr_niimgs(list_of_size_4, shorten=False)
         == long_rep_long_list_long_names
     )
 
@@ -525,16 +525,16 @@ def test_repr_niimgs_with_niimg_pathlib():
     # Case with very long path and small filename
     long_path = Path("/this/is/a/fake/long/path/to/file.nii")
     short_path = Path(".../path/to/file.nii")
-    assert _repr_niimgs(long_path, shorten=True) == str(short_path)
-    assert _repr_niimgs(long_path, shorten=False) == str(long_path)
+    assert repr_niimgs(long_path, shorten=True) == str(short_path)
+    assert repr_niimgs(long_path, shorten=False) == str(long_path)
 
     # Case with very long path but very long filename
     long_path_long_name = Path(
         "/this/is/a/fake/long/path/to/my_file_with_a_very_long_name.nii"
     )
     short_name = "my_file_with_a_ver..."
-    assert _repr_niimgs(long_path_long_name, shorten=True) == short_name
-    assert _repr_niimgs(long_path_long_name, shorten=False) == str(
+    assert repr_niimgs(long_path_long_name, shorten=True) == short_name
+    assert repr_niimgs(long_path_long_name, shorten=False) == str(
         long_path_long_name
     )
 
@@ -552,10 +552,10 @@ def test_repr_niimgs_with_niimg_pathlib():
         f" a-very-long-file-n...]"
     )
 
-    assert _repr_niimgs(list_of_paths, shorten=True) == shortened_list_of_paths
+    assert repr_niimgs(list_of_paths, shorten=True) == shortened_list_of_paths
     long_list_of_paths = ",\n ".join([str(_) for _ in list_of_paths])
     long_list_of_paths = f"[{long_list_of_paths}]"
-    assert _repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
+    assert repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
 
 
 @pytest.mark.parametrize("shorten", [True, False])
@@ -563,7 +563,7 @@ def test_repr_niimgs_with_niimg(
     shorten, tmp_path, affine_eye, img_3d_ones_eye, shape_3d_default
 ):
     # Shorten has no effect in this case
-    assert _repr_niimgs(img_3d_ones_eye, shorten=shorten).replace(
+    assert repr_niimgs(img_3d_ones_eye, shorten=shorten).replace(
         "10L", "10"
     ) == (
         f"{img_3d_ones_eye.__class__.__name__}(\nshape={shape_3d_default!r},\naffine={affine_eye!r}\n)"
@@ -576,10 +576,10 @@ def test_repr_niimgs_with_niimg(
     class_name = img_3d_ones_eye.__class__.__name__
     filename = Path(img_3d_ones_eye.get_filename())
     assert (
-        _repr_niimgs(img_3d_ones_eye, shorten=False)
+        repr_niimgs(img_3d_ones_eye, shorten=False)
         == f"{class_name}('{filename}')"
     )
     assert (
-        _repr_niimgs(img_3d_ones_eye, shorten=True)
+        repr_niimgs(img_3d_ones_eye, shorten=True)
         == f"{class_name}('{Path(filename).name[:18]}...')"
     )

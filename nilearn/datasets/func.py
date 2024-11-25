@@ -1763,16 +1763,16 @@ def fetch_surf_nki_enhanced(
     # Download subjects' datasets
     func_right = []
     func_left = []
-    for i in range(len(ids)):
-        archive = url + f"%i{os.sep}%s_%s_preprocessed_fsaverage5_fwhm6.gii"
+    for i, ids_i in enumerate(ids):
+        archive = f"{url}%i{os.sep}%s_%s_preprocessed_fsaverage5_fwhm6.gii"
         func = f"%s{os.sep}%s_%s_preprocessed_fwhm6.gii"
         rh = fetch_files(
             data_dir,
             [
                 (
-                    func % (ids[i], ids[i], "right"),
-                    archive % (nitrc_ids[2 * i + 1], ids[i], "rh"),
-                    {"move": func % (ids[i], ids[i], "right")},
+                    func % (ids_i, ids_i, "right"),
+                    archive % (nitrc_ids[2 * i + 1], ids_i, "rh"),
+                    {"move": func % (ids_i, ids_i, "right")},
                 )
             ],
             resume=resume,
@@ -1782,9 +1782,9 @@ def fetch_surf_nki_enhanced(
             data_dir,
             [
                 (
-                    func % (ids[i], ids[i], "left"),
-                    archive % (nitrc_ids[2 * i], ids[i], "lh"),
-                    {"move": func % (ids[i], ids[i], "left")},
+                    func % (ids_i, ids_i, "left"),
+                    archive % (nitrc_ids[2 * i], ids_i, "lh"),
+                    {"move": func % (ids_i, ids_i, "left")},
                 )
             ],
             resume=resume,

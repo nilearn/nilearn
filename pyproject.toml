@@ -152,7 +152,6 @@ ignore = [
     "PLR2004",
     "PTH207",
     "RUF012",
-    "UP027",  # deprecated
     "UP038",  # https://github.com/astral-sh/ruff/issues/7871
     # Avoid linter rules conflicting with the formatter
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
