@@ -57,7 +57,7 @@ def compute_mean_surface_image(img):
 
     Parameters
     ----------
-    img: SurfaceImage
+    img : SurfaceImage
 
     Returns
     -------
@@ -78,13 +78,13 @@ def get_min_max_surface_image(img):
 
     Parameters
     ----------
-    img: SurfaceImage
+    img : SurfaceImage
 
     Returns
     -------
-    vmin: float
+    vmin : float
 
-    vmax: float
+    vmax : float
     """
     vmin = min(min(x.ravel()) for x in img.data.parts.values())
     vmax = max(max(x.ravel()) for x in img.data.parts.values())

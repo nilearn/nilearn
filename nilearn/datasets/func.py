@@ -2698,9 +2698,12 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     -------
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, with the keys:
-        epi_img: the input 4D image
-        events: a csv file describing the paradigm
-        description: data description
+
+        - epi_img: the input 4D image
+
+        - events: a csv file describing the paradigm
+
+        - description: data description
 
     """
     url = "https://osf.io/2bqxn/download"

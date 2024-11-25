@@ -500,7 +500,7 @@ def compute_fixed_effects(
         when ``None``,
         it is assumed that the degrees of freedom are 100 per input.
 
-    return_z_score: :obj:`bool`, default=False
+    return_z_score : :obj:`bool`, default=False
         Whether ``fixed_fx_z_score_img`` should be output or not.
 
     Returns
