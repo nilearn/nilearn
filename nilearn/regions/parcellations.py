@@ -15,7 +15,10 @@ from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import iter_check_niimg
 from ..decomposition._multi_pca import _MultiPCA
 from .hierarchical_kmeans_clustering import HierarchicalKMeans
-from .rena_clustering import ReNA
+from .rena_clustering import (
+    ReNA,
+    _weighted_connectivity_graph,
+)
 
 
 def _estimator_fit(data, estimator, method=None):
@@ -411,14 +414,16 @@ class Parcellations(_MultiPCA):
 
         else:
             if isinstance(mask_img_, SurfaceImage):
-                # concatenate arrays stored in both parts of the mask data
-                mask_ = np.concatenate(mask_img_.data.parts.values())
+                connectivity = _weighted_connectivity_graph(data, mask_img_)
+                import pdb
+
+                pdb.set_trace()
             else:
                 mask_ = safe_get_data(mask_img_).astype(bool)
-            shape = mask_.shape
-            connectivity = image.grid_to_graph(
-                n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
-            )
+                shape = mask_.shape
+                connectivity = image.grid_to_graph(
+                    n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
+                )
 
             from sklearn.cluster import AgglomerativeClustering
 

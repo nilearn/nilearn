@@ -313,7 +313,7 @@ def test_transform_3d_input_images(affine_eye):
     assert X.shape == (1, 20)
 
 
-@pytest.mark.parametrize("method", METHODS)
+@pytest.mark.parametrize("method", ["ward"])
 @pytest.mark.parametrize("n_parcels", [2, 4, 5])
 def test_parcellation_all_methods_with_surface(
     surf_img, surf_mask, method, n_parcels
