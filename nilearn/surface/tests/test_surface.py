@@ -8,6 +8,7 @@ import pytest
 from nibabel import Nifti1Image, freesurfer, gifti, load, nifti1
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from scipy.stats import pearsonr
+from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import datasets, image
 from nilearn._utils import data_gen
@@ -15,20 +16,28 @@ from nilearn.image import resampling
 from nilearn.surface import (
     FileMesh,
     InMemoryMesh,
-    Mesh,
     PolyData,
     PolyMesh,
-    Surface,
     SurfaceImage,
     load_surf_data,
     load_surf_mesh,
-    surface,
+    vol_to_surf,
 )
 from nilearn.surface.surface import (
+    _choose_kind,
     _data_to_gifti,
     _gifti_img_to_mesh,
+    _interpolation_sampling,
     _load_surf_files_gifti_gzip,
+    _load_uniform_ball_cloud,
+    _masked_indices,
     _mesh_to_gifti,
+    _nearest_voxel_sampling,
+    _projection_matrix,
+    _sample_locations,
+    _sample_locations_between_surfaces,
+    _uniform_ball_cloud,
+    _vertex_outer_normals,
 )
 from nilearn.surface.tests._testing import (
     flat_mesh,
@@ -194,62 +203,6 @@ def test_load_surf_data_file_error(tmp_path, suffix):
     np.savetxt(filename_wrong, data)
     with pytest.raises(ValueError, match="input type is not recognized"):
         load_surf_data(filename_wrong)
-
-
-def test_load_surf_mesh():
-    coords, faces = generate_surf()
-    mesh = Mesh(coords, faces)
-    assert_array_equal(mesh.coordinates, coords)
-    assert_array_equal(mesh.faces, faces)
-    # Call load_surf_mesh with a Mesh as argument
-    loaded_mesh = load_surf_mesh(mesh)
-    assert isinstance(loaded_mesh, Mesh)
-    assert_array_equal(mesh.coordinates, loaded_mesh.coordinates)
-    assert_array_equal(mesh.faces, loaded_mesh.faces)
-
-    mesh_like = MeshLikeObject(coords, faces)
-    assert_array_equal(mesh_like.coordinates, coords)
-    assert_array_equal(mesh_like.faces, faces)
-    # Call load_surf_mesh with an object having
-    # coordinates and faces attributes
-    loaded_mesh = load_surf_mesh(mesh_like)
-    assert isinstance(loaded_mesh, Mesh)
-    assert_array_equal(mesh_like.coordinates, loaded_mesh.coordinates)
-    assert_array_equal(mesh_like.faces, loaded_mesh.faces)
-
-
-def test_load_surface():
-    coords, faces = generate_surf()
-    mesh = Mesh(coords, faces)
-    data = mesh[0][:, 0]
-    surf = Surface(mesh, data)
-    surf_like_obj = SurfaceLikeObject(mesh, data)
-    # Load the surface from:
-    #   - Surface-like objects having the right attributes
-    #   - a list of length 2 (mesh, data)
-    for loadings in [surf, surf_like_obj, [mesh, data]]:
-        s = surface.load_surface(loadings)
-        assert_array_equal(s.data, data)
-        assert_array_equal(s.data, surf.data)
-        assert_array_equal(s.mesh.coordinates, coords)
-        assert_array_equal(s.mesh.coordinates, surf.mesh.coordinates)
-        assert_array_equal(s.mesh.faces, surf.mesh.faces)
-    # Giving an iterable of length other than 2 will raise an error
-    # Length 3
-    with pytest.raises(
-        ValueError, match="`load_surface` accepts iterables of length 2"
-    ):
-        s = surface.load_surface([coords, faces, data])
-    # Length 1
-    with pytest.raises(
-        ValueError, match="`load_surface` accepts iterables of length 2"
-    ):
-        s = surface.load_surface([coords])
-    # Giving other objects will raise an error
-    with pytest.raises(
-        ValueError, match="Wrong parameter `surface` in `load_surface`"
-    ):
-        s = surface.load_surface("foo")
 
 
 def test_load_surf_mesh_list():
@@ -454,7 +407,7 @@ def test_flat_mesh(xy):
 def test_vertex_outer_normals():
     # compute normals for a flat horizontal mesh, they should all be (0, 0, 1)
     mesh = flat_mesh(5, 7)
-    computed_normals = surface._vertex_outer_normals(mesh)
+    computed_normals = _vertex_outer_normals(mesh)
     true_normals = np.zeros((len(mesh[0]), 3))
     true_normals[:, 2] = 1
     assert_array_almost_equal(computed_normals, true_normals)
@@ -468,14 +421,14 @@ def test_load_uniform_ball_cloud():
     # well spread inside the unit ball
     for n_points in [10, 20, 40, 80, 160]:
         with warnings.catch_warnings(record=True) as w:
-            points = surface._load_uniform_ball_cloud(n_points=n_points)
+            points = _load_uniform_ball_cloud(n_points=n_points)
             assert_array_equal(points.shape, (n_points, 3))
             assert len(w) == 0
-    with pytest.warns(surface.EfficiencyWarning):
-        surface._load_uniform_ball_cloud(n_points=3)
+    with pytest.warns(EfficiencyWarning):
+        _load_uniform_ball_cloud(n_points=3)
     for n_points in [3, 7]:
-        computed = surface._uniform_ball_cloud(n_points)
-        loaded = surface._load_uniform_ball_cloud(n_points)
+        computed = _uniform_ball_cloud(n_points)
+        loaded = _load_uniform_ball_cloud(n_points)
         assert_array_almost_equal(computed, loaded)
         assert (np.std(computed, axis=0) > 0.1).all()
         assert (np.linalg.norm(computed, axis=1) <= 1).all()
@@ -493,7 +446,7 @@ def test_sample_locations():
     ).T
     # compute by hand the true offsets in voxel space
     # (transformed by affine^-1)
-    ball_offsets = surface._load_uniform_ball_cloud(10)
+    ball_offsets = _load_uniform_ball_cloud(10)
     ball_offsets = np.asarray(
         resampling.coord_transform(*ball_offsets.T, affine=inv_affine)
     ).T
@@ -504,14 +457,14 @@ def test_sample_locations():
     ).T
     # check we get the same locations
     for kind, offsets in [("line", line_offsets), ("ball", ball_offsets)]:
-        locations = surface._sample_locations(
+        locations = _sample_locations(
             [vertices, mesh[1]], affine, 1.0, kind=kind, n_points=10
         )
         true_locations = np.asarray([vertex + offsets for vertex in mesh[0]])
         assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
     with pytest.raises(ValueError):
-        surface._sample_locations(mesh, affine, 1.0, kind="bad_kind")
+        _sample_locations(mesh, affine, 1.0, kind="bad_kind")
 
 
 @pytest.mark.parametrize("depth", [(0.0,), (-1.0,), (1.0,), (-1.0, 0.0, 0.5)])
@@ -519,7 +472,7 @@ def test_sample_locations():
 def test_sample_locations_depth(depth, n_points, affine_eye):
     mesh = flat_mesh(5, 7)
     radius = 8.0
-    locations = surface._sample_locations(
+    locations = _sample_locations(
         mesh, affine_eye, radius, n_points=n_points, depth=depth
     )
     offsets = np.asarray([[0.0, 0.0, -z * radius] for z in depth])
@@ -542,7 +495,7 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
     inner = flat_mesh(5, 7)
     outer = inner[0] + [0.0, 0.0, 1.0], inner[1]
 
-    locations = surface._sample_locations_between_surfaces(
+    locations = _sample_locations_between_surfaces(
         outer, inner, affine_eye, n_points=n_points, depth=depth
     )
 
@@ -568,7 +521,7 @@ def test_depth_ball_sampling():
     img, *_ = data_gen.generate_mni_space_img()
     mesh = load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
     with pytest.raises(ValueError, match=".*does not support.*"):
-        surface.vol_to_surf(img, mesh, kind="ball", depth=[0.5])
+        vol_to_surf(img, mesh, kind="ball", depth=[0.5])
 
 
 @pytest.mark.parametrize("kind", ["line", "ball"])
@@ -584,23 +537,21 @@ def test_vol_to_surf(kind, n_scans, use_mask):
     mesh = load_surf_mesh(fsaverage["pial_left"])
     inner_mesh = load_surf_mesh(fsaverage["white_left"])
     center_mesh = np.mean([mesh[0], inner_mesh[0]], axis=0), mesh[1]
-    proj = surface.vol_to_surf(
+    proj = vol_to_surf(
         img, mesh, kind="depth", inner_mesh=inner_mesh, mask_img=mask_img
     )
-    other_proj = surface.vol_to_surf(
-        img, center_mesh, kind=kind, mask_img=mask_img
-    )
+    other_proj = vol_to_surf(img, center_mesh, kind=kind, mask_img=mask_img)
     correlation = pearsonr(proj.ravel(), other_proj.ravel())[0]
     assert correlation > 0.99
     with pytest.raises(ValueError, match=".*interpolation.*"):
-        surface.vol_to_surf(img, mesh, interpolation="bad")
+        vol_to_surf(img, mesh, interpolation="bad")
 
 
 def test_masked_indices():
     mask = np.ones((4, 3, 8))
     mask[:, :, ::2] = 0
     locations = np.mgrid[:5, :3, :8].ravel().reshape((3, -1))
-    masked = surface._masked_indices(locations.T, mask.shape, mask)
+    masked = _masked_indices(locations.T, mask.shape, mask)
     # These elements are masked by the mask
     assert (masked[::2] == 1).all()
     # The last element of locations is one row beyond first image dimension
@@ -612,7 +563,7 @@ def test_masked_indices():
 def test_projection_matrix(affine_eye):
     mesh = flat_mesh(5, 7, 4)
     img = z_const_img(5, 7, 13)
-    proj = surface._projection_matrix(
+    proj = _projection_matrix(
         mesh, affine_eye, img.shape, radius=2.0, n_points=10
     )
     # proj matrix has shape (n_vertices, img_size)
@@ -621,13 +572,13 @@ def test_projection_matrix(affine_eye):
     values = proj.dot(img.ravel()).reshape((5, 7))
     assert_array_almost_equal(values, img[:, :, 0])
     mesh = flat_mesh(5, 7)
-    proj = surface._projection_matrix(
+    proj = _projection_matrix(
         mesh, affine_eye, (5, 7, 1), radius=0.1, n_points=10
     )
     assert_array_almost_equal(proj.toarray(), np.eye(proj.shape[0]))
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
-    proj = surface._projection_matrix(
+    proj = _projection_matrix(
         mesh, affine_eye, img.shape, radius=2.0, n_points=10, mask=mask
     )
     proj = proj.toarray()
@@ -636,7 +587,7 @@ def test_projection_matrix(affine_eye):
     assert_array_almost_equal(proj.sum(axis=1)[7:], np.ones(proj.shape[0] - 7))
     # mask and img should have the same shape
     with pytest.raises(ValueError):
-        surface._projection_matrix(
+        _projection_matrix(
             mesh, affine_eye, img.shape, mask=np.ones((3, 3, 2))
         )
 
@@ -649,11 +600,11 @@ def test_sampling_affine(affine_eye):
     mesh = [np.asarray(nodes), None]
     affine = 10 * affine_eye
     affine[-1, -1] = 1
-    texture = surface._nearest_voxel_sampling(
+    texture = _nearest_voxel_sampling(
         [img], mesh, affine=affine, radius=1, kind="ball"
     )
     assert_array_almost_equal(texture[0], [1.0, 2.0, 1.0], decimal=15)
-    texture = surface._interpolation_sampling(
+    texture = _interpolation_sampling(
         [img], mesh, affine=affine, radius=0, kind="ball"
     )
     assert_array_almost_equal(texture[0], [1.1, 2.0, 1.0], decimal=15)
@@ -668,8 +619,8 @@ def test_sampling(kind, use_inner_mesh, projection, affine_eye):
     mask = np.ones(img.shape, dtype=int)
     mask[0] = 0
     projector = {
-        "nearest": surface._nearest_voxel_sampling,
-        "linear": surface._interpolation_sampling,
+        "nearest": _nearest_voxel_sampling,
+        "linear": _interpolation_sampling,
     }[projection]
     inner_mesh = mesh if use_inner_mesh else None
     projection = projector(
@@ -692,8 +643,8 @@ def test_sampling(kind, use_inner_mesh, projection, affine_eye):
 @pytest.mark.parametrize("projection", ["linear", "nearest"])
 def test_sampling_between_surfaces(projection, affine_eye):
     projector = {
-        "nearest": surface._nearest_voxel_sampling,
-        "linear": surface._interpolation_sampling,
+        "nearest": _nearest_voxel_sampling,
+        "linear": _interpolation_sampling,
     }[projection]
     mesh = flat_mesh(13, 7, 3.0)
     inner_mesh = flat_mesh(13, 7, 1)
@@ -712,88 +663,16 @@ def test_sampling_between_surfaces(projection, affine_eye):
 
 
 def test_choose_kind():
-    kind = surface._choose_kind("abc", None)
+    kind = _choose_kind("abc", None)
     assert kind == "abc"
-    kind = surface._choose_kind("abc", "mesh")
+    kind = _choose_kind("abc", "mesh")
     assert kind == "abc"
-    kind = surface._choose_kind("auto", None)
+    kind = _choose_kind("auto", None)
     assert kind == "line"
-    kind = surface._choose_kind("auto", "mesh")
+    kind = _choose_kind("auto", "mesh")
     assert kind == "depth"
     with pytest.raises(TypeError, match=".*sampling strategy"):
-        kind = surface._choose_kind("depth", None)
-
-
-def test_check_mesh():
-    mesh = surface.check_mesh("fsaverage5")
-    assert mesh is surface.check_mesh(mesh)
-    with pytest.raises(ValueError):
-        surface.check_mesh("fsaverage2")
-    mesh.pop("pial_left")
-    with pytest.raises(ValueError):
-        surface.check_mesh(mesh)
-    with pytest.raises(TypeError):
-        surface.check_mesh(load_surf_mesh(mesh["pial_right"]))
-
-
-def test_check_mesh_and_data(rng):
-    coords, faces = generate_surf()
-    mesh = Mesh(coords, faces)
-    data = mesh[0][:, 0]
-    m, d = surface.check_mesh_and_data(mesh, data)
-    assert (m[0] == mesh[0]).all()
-    assert (m[1] == mesh[1]).all()
-    assert (d == data).all()
-    # Generate faces such that max index is larger than
-    # the length of coordinates array.
-    wrong_faces = rng.integers(coords.shape[0] + 1, size=(30, 3))
-    wrong_mesh = Mesh(coords, wrong_faces)
-    # Check that check_mesh_and_data raises an error
-    # with the resulting wrong mesh
-    with pytest.raises(
-        ValueError,
-        match="Mismatch between .* indices of faces .* number of nodes.",
-    ):
-        surface.check_mesh_and_data(wrong_mesh, data)
-    # Alter the data and check that an error is raised
-    data = mesh[0][::2, 0]
-    with pytest.raises(
-        ValueError, match="Mismatch between number of nodes in mesh"
-    ):
-        surface.check_mesh_and_data(mesh, data)
-
-
-def test_check_surface(rng):
-    coords, faces = generate_surf()
-    mesh = Mesh(coords, faces)
-    data = mesh[0][:, 0]
-    surf = Surface(mesh, data)
-    s = surface.check_surface(surf)
-    assert_array_equal(s.data, data)
-    assert_array_equal(s.data, surf.data)
-    assert_array_equal(s.mesh.coordinates, coords)
-    assert_array_equal(s.mesh.coordinates, mesh.coordinates)
-    assert_array_equal(s.mesh.faces, faces)
-    assert_array_equal(s.mesh.faces, mesh.faces)
-    # Generate faces such that max index is larger than
-    # the length of coordinates array.
-    wrong_faces = rng.integers(coords.shape[0] + 1, size=(30, 3))
-    wrong_mesh = Mesh(coords, wrong_faces)
-    wrong_surface = Surface(wrong_mesh, data)
-    # Check that check_mesh_and_data raises an error
-    # with the resulting wrong mesh
-    with pytest.raises(
-        ValueError,
-        match="Mismatch between .* indices of faces .* number of nodes.",
-    ):
-        surface.check_surface(wrong_surface)
-    # Alter the data and check that an error is raised
-    wrong_data = mesh[0][::2, 0]
-    wrong_surface = Surface(mesh, wrong_data)
-    with pytest.raises(
-        ValueError, match="Mismatch between number of nodes in mesh"
-    ):
-        surface.check_surface(wrong_surface)
+        kind = _choose_kind("depth", None)
 
 
 @pytest.mark.parametrize(
