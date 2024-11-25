@@ -447,7 +447,7 @@ def test_sample_locations():
     inv_affine = np.linalg.inv(affine)
     # transform vertices to world space
     vertices = np.asarray(
-        resampling.coord_transform(*mesh[0].T, affine=affine)
+        resampling.coord_transform(*mesh.coordinates.T, affine=affine)
     ).T
     # compute by hand the true offsets in voxel space
     # (transformed by affine^-1)
@@ -463,9 +463,11 @@ def test_sample_locations():
     # check we get the same locations
     for kind, offsets in [("line", line_offsets), ("ball", ball_offsets)]:
         locations = _sample_locations(
-            [vertices, mesh[1]], affine, 1.0, kind=kind, n_points=10
+            [vertices, mesh.faces], affine, 1.0, kind=kind, n_points=10
         )
-        true_locations = np.asarray([vertex + offsets for vertex in mesh[0]])
+        true_locations = np.asarray(
+            [vertex + offsets for vertex in mesh.coordinates]
+        )
         assert_array_equal(locations.shape, true_locations.shape)
         assert_array_almost_equal(true_locations, locations)
     with pytest.raises(ValueError):
