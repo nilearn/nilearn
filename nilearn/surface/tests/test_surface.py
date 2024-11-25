@@ -208,18 +208,19 @@ def test_load_surf_data_file_error(tmp_path, suffix):
 def test_load_surf_mesh_list():
     # test if correct list is returned
     mesh = generate_surf()
-    assert len(load_surf_mesh(mesh)) == 2
-    assert_array_equal(load_surf_mesh(mesh)[0], mesh[0])
-    assert_array_equal(load_surf_mesh(mesh)[1], mesh[1])
+    assert hasattr(load_surf_mesh(mesh), "coordinates")
+    assert hasattr(load_surf_mesh(mesh), "faces")
+    assert_array_equal(load_surf_mesh(mesh).coordinates, mesh.coordinates)
+    assert_array_equal(load_surf_mesh(mesh).faces, mesh.faces)
     # test if incorrect list, array or dict raises error
     with pytest.raises(ValueError, match="it must have two elements"):
         load_surf_mesh([])
     with pytest.raises(ValueError, match="it must have two elements"):
-        load_surf_mesh([mesh[0]])
+        load_surf_mesh([mesh.coordinates])
     with pytest.raises(ValueError, match="it must have two elements"):
-        load_surf_mesh([mesh[0], mesh[1], mesh[1]])
+        load_surf_mesh([mesh.coordinates, mesh.faces, mesh.faces])
     with pytest.raises(ValueError, match="input type is not recognized"):
-        load_surf_mesh(mesh[0])
+        load_surf_mesh(mesh.coordinates)
     with pytest.raises(ValueError, match="input type is not recognized"):
         load_surf_mesh({})
     del mesh
@@ -229,25 +230,27 @@ def test_gifti_img_to_mesh():
     mesh = generate_surf()
 
     coord_array = gifti.GiftiDataArray(
-        data=mesh[0], datatype="NIFTI_TYPE_FLOAT32"
+        data=mesh.coordinates, datatype="NIFTI_TYPE_FLOAT32"
     )
     coord_array.intent = nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
 
     face_array = gifti.GiftiDataArray(
-        data=mesh[1], datatype="NIFTI_TYPE_FLOAT32"
+        data=mesh.faces, datatype="NIFTI_TYPE_FLOAT32"
     )
     face_array.intent = nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
 
     gii = gifti.GiftiImage(darrays=[coord_array, face_array])
     coords, faces = _gifti_img_to_mesh(gii)
-    assert_array_equal(coords, mesh[0])
-    assert_array_equal(faces, mesh[1])
+    assert_array_equal(coords, mesh.coordinates)
+    assert_array_equal(faces, mesh.faces)
 
 
 def test_load_surf_mesh_file_gii_gz():
     # Test the loader `load_surf_mesh` with gzipped fsaverage5 files
     fsaverage = datasets.fetch_surf_fsaverage().pial_left
-    coords, faces = load_surf_mesh(fsaverage)
+    mesh = load_surf_mesh(fsaverage)
+    coords = mesh.coordinates
+    faces = mesh.faces
     assert isinstance(coords, np.ndarray)
     assert isinstance(faces, np.ndarray)
 
@@ -258,12 +261,12 @@ def test_load_surf_mesh_file_gii(tmp_path):
     mesh = generate_surf()
 
     coord_array = gifti.GiftiDataArray(
-        data=mesh[0],
+        data=mesh.coordinates,
         intent=nifti1.intent_codes["NIFTI_INTENT_POINTSET"],
         datatype="NIFTI_TYPE_FLOAT32",
     )
     face_array = gifti.GiftiDataArray(
-        data=mesh[1],
+        data=mesh.faces,
         intent=nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"],
         datatype="NIFTI_TYPE_FLOAT32",
     )
@@ -272,20 +275,24 @@ def test_load_surf_mesh_file_gii(tmp_path):
     filename_gii_mesh = tmp_path / "tmp.gii"
     gii.to_filename(filename_gii_mesh)
 
-    assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[0], mesh[0])
-    assert_array_almost_equal(load_surf_mesh(filename_gii_mesh)[1], mesh[1])
+    assert_array_almost_equal(
+        load_surf_mesh(filename_gii_mesh).coordinates, mesh.coordinates
+    )
+    assert_array_almost_equal(
+        load_surf_mesh(filename_gii_mesh).faces, mesh.faces
+    )
 
 
 def test_load_surf_mesh_file_gii_error(tmp_path):
     # test if incorrect gii raises error
     mesh = generate_surf()
     coord_array = gifti.GiftiDataArray(
-        data=mesh[0],
+        data=mesh.coordinates,
         intent=nifti1.intent_codes["NIFTI_INTENT_POINTSET"],
         datatype="NIFTI_TYPE_FLOAT32",
     )
     face_array = gifti.GiftiDataArray(
-        data=mesh[1],
+        data=mesh.faces,
         intent=nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"],
         datatype="NIFTI_TYPE_FLOAT32",
     )
@@ -329,7 +336,7 @@ def test_load_surf_mesh_file_error(suffix, tmp_path):
     # test if files with unexpected suffixes raise errors
     mesh = generate_surf()
     filename_wrong = tmp_path / f"tmp{suffix}"
-    freesurfer.write_geometry(filename_wrong, mesh[0], mesh[1])
+    freesurfer.write_geometry(filename_wrong, mesh.coordinates, mesh.faces)
 
     with pytest.raises(ValueError, match="input type is not recognized"):
         load_surf_mesh(filename_wrong)
@@ -339,18 +346,21 @@ def test_load_surf_mesh_file_glob(tmp_path):
     mesh = generate_surf()
 
     fname1 = tmp_path / "tmp1.pial"
-    freesurfer.write_geometry(fname1, mesh[0], mesh[1])
+    freesurfer.write_geometry(fname1, mesh.coordinates, mesh.faces)
 
     fname2 = tmp_path / "tmp2.pial"
-    freesurfer.write_geometry(fname2, mesh[0], mesh[1])
+    freesurfer.write_geometry(fname2, mesh.coordinates, mesh.faces)
 
     with pytest.raises(ValueError, match="More than one file matching path"):
         load_surf_mesh(tmp_path / "*.pial")
     with pytest.raises(ValueError, match="No files matching path"):
         load_surf_mesh(tmp_path / "*.unlikelysuffix")
-    assert len(load_surf_mesh(fname1)) == 2
-    assert_array_almost_equal(load_surf_mesh(fname1)[0], mesh[0])
-    assert_array_almost_equal(load_surf_mesh(fname1)[1], mesh[1])
+    assert hasattr(load_surf_mesh(fname1), "coordinates")
+    assert hasattr(load_surf_mesh(fname1), "faces")
+    assert_array_almost_equal(
+        load_surf_mesh(fname1).coordinates, mesh.coordinates
+    )
+    assert_array_almost_equal(load_surf_mesh(fname1).faces, mesh.faces)
 
 
 def test_load_surf_data_file_glob(tmp_path):
@@ -403,7 +413,9 @@ def test_load_surf_data_file_glob(tmp_path):
 
 @pytest.mark.parametrize("xy", [(10, 7), (5, 5), (3, 2)])
 def test_flat_mesh(xy):
-    points, triangles = flat_mesh(xy[0], xy[1])
+    mesh = flat_mesh(xy[0], xy[1])
+    points = mesh.coordinates
+    triangles = mesh.faces
     a, b, c = points[triangles[0]]
     n = np.cross(b - a, c - a)
     assert np.allclose(n, [0.0, 0.0, 1.0])
@@ -413,7 +425,7 @@ def test_vertex_outer_normals():
     # compute normals for a flat horizontal mesh, they should all be (0, 0, 1)
     mesh = flat_mesh(5, 7)
     computed_normals = _vertex_outer_normals(mesh)
-    true_normals = np.zeros((len(mesh[0]), 3))
+    true_normals = np.zeros((len(mesh.coordinates), 3))
     true_normals[:, 2] = 1
     assert_array_almost_equal(computed_normals, true_normals)
 
@@ -500,8 +512,12 @@ def test_sample_locations_depth(depth, n_points, affine_eye):
 )
 def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
     inner = flat_mesh(5, 7)
-    outer = inner[0] + [0.0, 0.0, 1.0], inner[1]
-
+    outer = InMemoryMesh(
+        coordinates=inner.coordinates + np.asarray([0.0, 0.0, 1.0]),
+        faces=inner.faces,
+    )
+    print(inner.coordinates)
+    print(outer.coordinates)
     locations = _sample_locations_between_surfaces(
         outer, inner, affine_eye, n_points=n_points, depth=depth
     )
@@ -510,16 +526,20 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
         expected = np.asarray(
             [
                 np.linspace(b, a, n_points)
-                for (a, b) in zip(inner[0].ravel(), outer[0].ravel())
+                for (a, b) in zip(
+                    inner.coordinates.ravel(), outer.coordinates.ravel()
+                )
             ]
         )
         expected = np.rollaxis(
-            expected.reshape((*outer[0].shape, n_points)), 2, 1
+            expected.reshape((*outer.coordinates.shape, n_points)), 2, 1
         )
 
     else:
         offsets = [[0.0, 0.0, -z] for z in depth]
-        expected = np.asarray([vertex + offsets for vertex in outer[0]])
+        expected = np.asarray(
+            [vertex + offsets for vertex in outer.coordinates]
+        )
 
     assert np.allclose(locations, expected)
 
