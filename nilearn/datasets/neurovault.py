@@ -1360,7 +1360,7 @@ def _json_from_file(file_name):
 
     Parameters
     ----------
-    file_name: str or pathlib.Path
+    file_name : str or pathlib.Path
     """
     with Path(file_name).open("rb") as dumped:
         loaded = json.loads(dumped.read().decode("utf-8"))
@@ -1372,8 +1372,9 @@ def _json_add_collection_dir(file_name, force=True):
 
     Parameters
     ----------
-    file_name: str or pathlib.Path
-    force: bool
+    file_name : str or pathlib.Path
+
+    force : bool
     """
     file_name = Path(file_name)
     loaded = _json_from_file(file_name)

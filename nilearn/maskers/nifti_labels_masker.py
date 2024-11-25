@@ -76,8 +76,10 @@ class NiftiLabelsMasker(BaseMasker):
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
-        Warning: This value must be consistent with label values and
-        image provided.
+
+        .. warning:::
+
+            This value must be consistent with label values and image provided.
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
@@ -307,11 +309,11 @@ class NiftiLabelsMasker(BaseMasker):
         ----------
         region_ids : :obj:`list` or numpy.array
 
-        tolerant: :obj:`bool`, default=True
+        tolerant : :obj:`bool`, default=True
                   If set to `True` this function will throw a warning,
                   and will throw an error otherwise.
 
-        resampling_done: :obj:`bool`, default=False
+        resampling_done : :obj:`bool`, default=False
                          Used to mention if this check is done
                          before or after the resampling has been done,
                          to adapt the message accordingly.

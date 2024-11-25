@@ -173,10 +173,10 @@ def _iter_signals_from_spheres(
         If a 3D niimg is provided, a singleton dimension will be added to
         the output to represent the single scan in the niimg.
 
-    radius: float
+    radius : float
         Indicates, in millimeters, the radius for the sphere around the seed.
 
-    allow_overlap: boolean
+    allow_overlap : boolean
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
 

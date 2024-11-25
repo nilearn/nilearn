@@ -33,19 +33,19 @@ def safe_get_data(img, ensure_finite=False, copy_data=False):
 
     Parameters
     ----------
-    img: Nifti image/object
+    img : Nifti image/object
         Image to get data.
 
-    ensure_finite: bool
+    ensure_finite : bool
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
-    copy_data: bool, default=False
+    copy_data : bool, default=False
         If true, the returned data is a copy of the img data.
 
     Returns
     -------
-    data: numpy array
+    data : numpy array
         nilearn.image.get_data return from Nifti image.
     """
     if copy_data:
@@ -74,10 +74,10 @@ def _get_target_dtype(dtype, target_dtype):
 
     Parameters
     ----------
-    dtype: dtype
+    dtype : dtype
         Data type of the original data
 
-    target_dtype: {None, dtype, "auto"}
+    target_dtype : {None, dtype, "auto"}
         If None, no conversion is required. If a type is provided, the
         function will check if a conversion is needed. The "auto" mode will
         automatically convert to int32 if dtype is discrete and float32 if it
@@ -85,7 +85,7 @@ def _get_target_dtype(dtype, target_dtype):
 
     Returns
     -------
-    dtype: dtype
+    dtype : dtype
         The data type toward which the original data should be converted.
     """
     if target_dtype is None:
@@ -102,18 +102,18 @@ def load_niimg(niimg, dtype=None):
 
     Parameters
     ----------
-    niimg: Niimg-like object
+    niimg : Niimg-like object
         See :ref:`extracting_data`.
         Image to load.
 
-    dtype: {dtype, "auto"}
+    dtype : {dtype, "auto"}
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
 
     Returns
     -------
-    img: image
+    img : image
         A loaded image object.
     """
     from ..image import new_img_like  # avoid circular imports
@@ -154,13 +154,13 @@ def is_binary_niimg(niimg):
 
     Parameters
     ----------
-    niimg: Niimg-like object
+    niimg : Niimg-like object
         See :ref:`extracting_data`.
         Image to test.
 
     Returns
     -------
-    is_binary: Boolean
+    is_binary : Boolean
         True if binary, False otherwise.
 
     """
@@ -177,17 +177,17 @@ def _repr_niimgs(niimgs, shorten=True):
 
     Parameters
     ----------
-    niimgs: image or collection of images
+    niimgs : image or collection of images
         nibabel SpatialImage to repr.
 
-    shorten: boolean, default=True
+    shorten : boolean, default=True
         If True, filenames with more than 20 characters will be
         truncated, and lists of more than 3 file names will be
         printed with only first and last element.
 
     Returns
     -------
-    repr: str
+    repr : str
         String representation of the image.
     """
     # Maximum number of elements to be displayed

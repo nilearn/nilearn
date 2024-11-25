@@ -1553,9 +1553,9 @@ class PolyMesh:
 def _check_data_and_mesh_compat(mesh, data):
     """Check that mesh and data have the same keys and that shapes match.
 
-    mesh: :obj:`nilearn.surface.PolyMesh`
+    mesh : :obj:`nilearn.surface.PolyMesh`
 
-    data: :obj:`nilearn.surface.PolyData`
+    data : :obj:`nilearn.surface.PolyData`
     """
     data_keys, mesh_keys = set(data.parts.keys()), set(mesh.parts.keys())
     if data_keys != mesh_keys:
@@ -1584,7 +1584,7 @@ def _mesh_to_gifti(coordinates, faces, gifti_file):
     faces : :obj:`numpy.ndarray`
         a Numpy array containing the indices (into coords) of the mesh faces.
 
-    gifti_file: :obj:`str` or :obj:`pathlib.Path`
+    gifti_file : :obj:`str` or :obj:`pathlib.Path`
         name for the output gifti file.
     """
     gifti_file = Path(gifti_file)
@@ -1613,7 +1613,7 @@ def _data_to_gifti(data, gifti_file):
         - NIFTI_TYPE_FLOAT32
         See https://github.com/nipy/nibabel/blob/master/nibabel/gifti/gifti.py
 
-    gifti_file: :obj:`str` or :obj:`pathlib.Path`
+    gifti_file : :obj:`str` or :obj:`pathlib.Path`
         name for the output gifti file.
     """
     if data.dtype in [np.uint16, np.uint32, np.uint64]:

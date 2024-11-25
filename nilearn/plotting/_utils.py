@@ -67,9 +67,9 @@ def check_surface_plotting_inputs(
 def _check_bg_map(bg_map, hemi):
     """Get the requested hemisphere if bg_map is a SurfaceImage.
 
-    bg_map: Any
+    bg_map : Any
 
-    hemi: str
+    hemi : str
 
     Returns
     -------

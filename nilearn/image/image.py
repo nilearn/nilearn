@@ -1657,12 +1657,12 @@ def copy_img(img):
 
     Parameters
     ----------
-    img: image
+    img : image
         nibabel SpatialImage object to copy.
 
     Returns
     -------
-    img_copy: image
+    img_copy : image
         copy of input (data, affine and header)
     """
     if not isinstance(img, spatialimages.SpatialImage):

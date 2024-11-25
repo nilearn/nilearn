@@ -318,7 +318,7 @@ def _coerce_to_dict(input_arg):
 
     Returns
     -------
-    input_args: Dict[str, np.array or str]
+    input_args : Dict[str, np.array or str]
 
     """
     if not isinstance(input_arg, dict):
