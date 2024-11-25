@@ -62,18 +62,18 @@ EXPAND_PATH_WILDCARDS = True
 
 # list all submodules available in nilearn and version
 __all__ = [
+    "__version__",
+    "connectome",
     "datasets",
     "decoding",
     "decomposition",
-    "connectome",
     "image",
+    "interfaces",
     "maskers",
     "masking",
-    "interfaces",
     "mass_univariate",
     "plotting",
     "regions",
     "signal",
     "surface",
-    "__version__",
 ]

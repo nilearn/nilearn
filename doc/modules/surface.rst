@@ -7,7 +7,8 @@
 
 .. No relevant user manual section yet.
 
-**Classes**:
+Classes
+-------
 
 .. currentmodule:: nilearn.surface
 
@@ -22,7 +23,8 @@
     SurfaceImage
     SurfaceMesh
 
-**Functions**:
+Functions
+---------
 
 .. currentmodule:: nilearn.surface
 

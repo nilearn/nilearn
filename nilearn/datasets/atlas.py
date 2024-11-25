@@ -719,9 +719,8 @@ def _get_atlas_data_and_labels(
     )
     # Reorder image to have positive affine diagonal
     atlas_img = reorder_img(atlas_file, copy_header=True)
-    names = {}
+    names = {0: "Background"}
 
-    names[0] = "Background"
     all_labels = ElementTree.parse(label_file).findall(".//label")
     for label in all_labels:
         new_idx = int(label.get("index")) + 1
@@ -805,10 +804,10 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     if source == "Juelich":
         for idx, name in enumerate(names):
             if name.endswith("L"):
-                names[idx] = re.sub(r" L$", "", name)
+                name = re.sub(r" L$", "", name)
                 names[idx] = f"Left {name}"
             if name.endswith("R"):
-                names[idx] = re.sub(r" R$", "", name)
+                name = re.sub(r" R$", "", name)
                 names[idx] = f"Right {name}"
 
     new_label = 0

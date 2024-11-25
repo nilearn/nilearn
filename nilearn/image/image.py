@@ -19,13 +19,13 @@ from scipy.stats import scoreatpercentile
 
 from .. import signal
 from .._utils import (
-    _repr_niimgs,
     as_ndarray,
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
     fill_doc,
     logger,
+    repr_niimgs,
 )
 from .._utils.exceptions import DimensionError
 from .._utils.helpers import (
@@ -483,7 +483,7 @@ def _pad_array(array, pad_sizes):
 def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     from . import resampling
 
-    input_repr = _repr_niimgs(imgs, shorten=True)
+    input_repr = repr_niimgs(imgs, shorten=True)
 
     imgs = check_niimg(imgs)
     mean_data = safe_get_data(imgs)
@@ -1380,7 +1380,6 @@ def clean_img(
     """
     # Avoid circular import
     from .. import masking
-    from .image import new_img_like
 
     imgs_ = check_niimg_4d(imgs)
 

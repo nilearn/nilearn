@@ -5,14 +5,13 @@ Fastclustering for approximation of structured signals
 
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
 
+import itertools
 import warnings
 
 import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
-from packaging.version import parse
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
-from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
@@ -197,6 +196,26 @@ def _compute_weights_surface(X, mask, edges):
     return weights
 
 
+def _circular_pairwise(iterable):
+    """Pairwise iterator with the first element reused as the last one.
+
+    Return successive overlapping pairs taken from the input `iterable`.
+    The number of 2-tuples in the `output` iterator will be the number of
+    inputs.
+
+    Parameters
+    ----------
+    iterable : iterable
+
+    Returns
+    -------
+    output : iterable
+
+    """
+    a, b = itertools.tee(iterable)
+    return itertools.zip_longest(a, b, fillvalue=next(b, None))
+
+
 def _make_edges_surface(faces, mask):
     """Create the edges set: Returns a list of edges for a surface mesh.
 
@@ -217,11 +236,11 @@ def _make_edges_surface(faces, mask):
         Edges corresponding to the mask with shape: (1, n_edges).
 
     """
-    mesh_edges = set()
-    for face in faces:
-        for i in range(len(face)):
-            edge = tuple(sorted([face[i], face[(i + 1) % len(face)]]))
-            mesh_edges.add(edge)
+    mesh_edges = {
+        tuple(sorted(pair))
+        for face in faces
+        for pair in _circular_pairwise(face)
+    }
     edges = np.array(list(mesh_edges))
     false_indices = np.where(~mask)[0]
     edges_masked = ~np.isin(edges, false_indices).any(axis=1)
@@ -255,7 +274,7 @@ def _make_edges_and_weights_surface(X, mask_img):
     len_previous_mask = 0
     for part in mask_img.mesh.parts:
         face_part = mask_img.mesh.parts[part].faces
-        mask_part = mask_img.data.parts[part]
+        mask_part = mask_img.data.parts[part][0]
 
         edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
 
@@ -632,17 +651,6 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
-
-    def _more_tags(self):
-        # TODO
-        # rename method to '__sklearn_tags__'
-        # and get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        ver = parse(sklearn_version)
-        if ver.release[1] < 6:
-            return BaseEstimator._more_tags(self)
-        return self.__sklearn_tags__()
 
     def fit(
         self,

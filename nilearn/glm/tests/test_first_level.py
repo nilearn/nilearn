@@ -15,8 +15,11 @@ from numpy.testing import (
     assert_array_equal,
     assert_array_less,
 )
+from sklearn import __version__ as sklearn_version
 from sklearn.cluster import KMeans
 
+from nilearn._utils import compare_version
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
     basic_paradigm,
@@ -51,6 +54,44 @@ from nilearn.surface import SurfaceImage
 
 BASEDIR = Path(__file__).resolve().parent
 FUNCFILE = BASEDIR / "functional.nii.gz"
+
+
+extra_valid_checks = [
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+    "check_estimator_sparse_array",
+    "check_estimator_sparse_matrix",
+    "check_estimators_unfitted",
+]
+# TODO remove when dropping support for sklearn_version < 1.5.0
+if compare_version(sklearn_version, "<", "1.5.0"):
+    extra_valid_checks.append("check_estimator_sparse_data")
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FirstLevelModel()],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[FirstLevelModel()],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_high_level_glm_one_run(shape_4d_default):
@@ -2075,7 +2116,7 @@ def test_flm_fit_surface_image_default_mask_img(_make_surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (1, 9)
     assert isinstance(model.masker_, SurfaceMasker)
     sum_mask = (
         model.masker_.mask_img_.data.parts["left"].sum()
@@ -2091,7 +2132,7 @@ def test_flm_fit_surface_image(_make_surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (1, 9)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2116,7 +2157,7 @@ def test_flm_fit_surface_image_one_hemisphere(
     model.fit(mini_img_one_hemi, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (4,)
+    assert model.masker_.mask_img_.shape == (1, 4)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2127,7 +2168,7 @@ def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, surf_mask):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (1, 9)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2178,7 +2219,7 @@ def test_flm_with_surface_image_with_surface_masker(_make_surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (1, 9)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2190,7 +2231,7 @@ def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, surf_mask):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (1, 9)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
