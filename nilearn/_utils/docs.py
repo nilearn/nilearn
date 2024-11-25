@@ -799,7 +799,7 @@ symmetric_cbar : :obj:`bool`, or "auto", default="auto"
     from `vmin` to `vmax`.
     Setting to `"auto"` (the default) will select the former if either
     `vmin` or `vmax` is `None` and the image has both positive and negative
-    values.regre
+    values.
 """
 
 # t_r
