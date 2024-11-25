@@ -312,11 +312,16 @@ def test_load_surf_mesh_file_freesurfer(suffix, tmp_path):
     mesh = generate_surf()
 
     filename_fs_mesh = tmp_path / f"tmp{suffix}"
-    freesurfer.write_geometry(filename_fs_mesh, mesh[0], mesh[1])
+    freesurfer.write_geometry(filename_fs_mesh, mesh.coordinates, mesh.faces)
 
-    assert len(load_surf_mesh(filename_fs_mesh)) == 2
-    assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[0], mesh[0])
-    assert_array_almost_equal(load_surf_mesh(filename_fs_mesh)[1], mesh[1])
+    assert hasattr(load_surf_mesh(filename_fs_mesh), "coordinates")
+    assert hasattr(load_surf_mesh(filename_fs_mesh), "faces")
+    assert_array_almost_equal(
+        load_surf_mesh(filename_fs_mesh).coordinates, mesh.coordinates
+    )
+    assert_array_almost_equal(
+        load_surf_mesh(filename_fs_mesh).faces, mesh.faces
+    )
 
 
 @pytest.mark.parametrize("suffix", [".vtk", ".obj", ".mnc", ".txt"])
