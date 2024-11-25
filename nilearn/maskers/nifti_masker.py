@@ -431,7 +431,7 @@ class NiftiMasker(BaseMasker):
         """
         # Load data (if filenames are given, load them)
         logger.log(
-            f"Loading data from {_utils._repr_niimgs(imgs, shorten=False)}",
+            f"Loading data from {_utils.repr_niimgs(imgs, shorten=False)}",
             verbose=self.verbose,
         )
 

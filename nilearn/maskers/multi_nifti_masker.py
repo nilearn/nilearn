@@ -14,10 +14,10 @@ from joblib import Memory, Parallel, delayed
 from nilearn import image, masking
 from nilearn._utils import (
     CacheMixin,
-    _repr_niimgs,
     check_niimg_3d,
     fill_doc,
     logger,
+    repr_niimgs,
     stringify_path,
 )
 from nilearn._utils.class_inspect import (
@@ -217,7 +217,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         """
         # Load data (if filenames are given, load them)
         logger.log(
-            f"Loading data from {_repr_niimgs(imgs, shorten=False)}.",
+            f"Loading data from {repr_niimgs(imgs, shorten=False)}.",
             self.verbose,
         )
 

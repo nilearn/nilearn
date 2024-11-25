@@ -126,7 +126,7 @@ def load_niimg(niimg, dtype=None):
         raise TypeError(
             "Data given cannot be loaded because it is"
             " not compatible with nibabel format:\n"
-            + _repr_niimgs(niimg, shorten=True)
+            + repr_niimgs(niimg, shorten=True)
         )
 
     dtype = _get_target_dtype(_get_data(niimg).dtype, dtype)
@@ -172,7 +172,7 @@ def is_binary_niimg(niimg):
     return sorted(unique_values) == [0, 1]
 
 
-def _repr_niimgs(niimgs, shorten=True):
+def repr_niimgs(niimgs, shorten=True):
     """Pretty printing of niimg or niimgs.
 
     Parameters
@@ -200,17 +200,17 @@ def _repr_niimgs(niimgs, shorten=True):
     if isinstance(niimgs, collections.abc.Iterable):
         if shorten and len(niimgs) > list_max_display:
             tmp = ",\n         ...\n ".join(
-                _repr_niimgs(niimg, shorten=shorten)
+                repr_niimgs(niimg, shorten=shorten)
                 for niimg in [niimgs[0], niimgs[-1]]
             )
             return f"[{tmp}]"
         elif len(niimgs) > list_max_display:
             tmp = ",\n ".join(
-                _repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
+                repr_niimgs(niimg, shorten=shorten) for niimg in niimgs
             )
             return f"[{tmp}]"
         else:
-            tmp = [_repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
+            tmp = [repr_niimgs(niimg, shorten=shorten) for niimg in niimgs]
             return f"[{', '.join(tmp)}]"
     # Nibabel objects have a 'get_filename'
     try:

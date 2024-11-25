@@ -394,7 +394,7 @@ class NiftiMapsMasker(BaseMasker):
             compatibility.
         """
         # Load images
-        repr = _utils._repr_niimgs(self.mask_img, shorten=(not self.verbose))
+        repr = _utils.repr_niimgs(self.mask_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
         self.maps_img_ = _utils.check_niimg(
@@ -408,7 +408,7 @@ class NiftiMapsMasker(BaseMasker):
         )
 
         if self.mask_img is not None:
-            repr = _utils._repr_niimgs(
+            repr = _utils.repr_niimgs(
                 self.mask_img, shorten=(not self.verbose)
             )
             msg = f"loading mask from {repr}"
