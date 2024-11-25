@@ -619,6 +619,24 @@ learn how to use those tools to build documentation.
 
 .. _git_repo:
 
+
+Continuous integration
+----------------------
+
+Please note that if one of the following markers appear in the latest commit message, the following actions are taken.
+
+============================ ===================
+Commit Message Marker        Action Taken by CI
+============================ ===================
+[skip ci]                    Gtihub CI is skipped completely. Several other options are also possible, see `github documentation <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs>`_).
+[skip test]                  Skip running the tests.
+[skip doc]                   Skip building the doc.
+[test nightly]               Run tests on the nightly build of Nilearn's dependencies.
+[full doc]                   Run a full build of the documentation (meaning that all examples will be run).
+[example] name_of_example.py Run partial documentation build but will run the requested example.
+[force download]             Force a download of all the dataset required for the build of the documentation.
+============================ ===================
+
 Setting up your environment
 ===========================
 
