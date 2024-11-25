@@ -298,28 +298,40 @@ def make_first_level_design_matrix(
     frame_times : array of shape (n_frames,)
         The timing of acquisition of the scans in seconds.
 
-    events : DataFrame instance or None, default=None
+    events : :obj:`pandas.DataFrame` instance or None, default=None
         Events data that describes the experimental paradigm.
-         The DataFrame instance might have these keys:
-            'onset': column to specify the start time of each events in
-                     seconds. An error is raised if this key is missing.
-            'trial_type': column to specify per-event experimental conditions
-                          identifier. If missing each event are labelled
-                          'dummy' and considered to form a unique condition.
-            'duration': column to specify the duration of each events in
-                        seconds. If missing the duration of each events is set
-                        to zero.
-            'modulation': column to specify the amplitude of each
-                          events. If missing the default is set to
-                          ones(n_events).
+        The DataFrame instance might have these keys:
 
-        An experimental paradigm is valid if it has an 'onset' key
-        and a 'duration' key.
+        - ``'onset'``: REQUIRED
+            Column to specify the start time of each events in seconds.
+            An error is raised if this key is missing.
+
+        - ``'duration'``: REQUIRED
+            Column to specify the duration of each events in seconds.
+
+            .. warning::
+
+                Events with a duration of 0 seconds will be modelled
+                using a 'delta function'.
+
+        - ``'trial_type'``: OPTIONAL
+            Column to specify per-event experimental conditions identifier.
+            If missing each event are labelled 'dummy'
+            and considered to form a unique condition.
+
+        - ``'modulation'``: OPTIONAL
+            Column to specify the amplitude of each events.
+            If missing the default is set to ones(n_events).
+
+        An experimental paradigm is valid if it has an ``'onset'`` key
+        and a ``'duration'`` key.
         If these keys are missing an error will be raised.
         For the others keys a warning will be displayed.
-        Particular attention should be given to the 'trial_type' key
+        Particular attention should be given to the ``'trial_type'`` key
         which defines the different conditions in the experimental paradigm.
+
     %(hrf_model)s
+
     drift_model : {'cosine', 'polynomial', None}, default='cosine'
         Specifies the desired drift model.
 
