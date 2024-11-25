@@ -536,7 +536,10 @@ def test_vol_to_surf(kind, n_scans, use_mask):
     fsaverage = datasets.fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_left"])
     inner_mesh = load_surf_mesh(fsaverage["white_left"])
-    center_mesh = np.mean([mesh[0], inner_mesh[0]], axis=0), mesh[1]
+    center_mesh = (
+        np.mean([mesh.coordinates, inner_mesh.coordinates], axis=0),
+        mesh.faces,
+    )
     proj = vol_to_surf(
         img, mesh, kind="depth", inner_mesh=inner_mesh, mask_img=mask_img
     )
