@@ -82,10 +82,8 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         or (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1)
         or arr.dtype == dtype
     ) and (
-        order == "F"
-        and arr.flags["F_CONTIGUOUS"]
-        or order == "C"
-        and arr.flags["C_CONTIGUOUS"]
+        (order == "F" and arr.flags["F_CONTIGUOUS"])
+        or (order == "C" and arr.flags["C_CONTIGUOUS"])
         or order in ("K", "A", None)
     ):
         ret = arr.view(dtype=dtype)

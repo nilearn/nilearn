@@ -62,7 +62,7 @@ def _filter_and_extract(
         copy = False
 
     logger.log(
-        f"Loading data from {_utils._repr_niimgs(imgs, shorten=False)}",
+        f"Loading data from {_utils.repr_niimgs(imgs, shorten=False)}",
         verbose=verbose,
         stack_level=2,
     )
