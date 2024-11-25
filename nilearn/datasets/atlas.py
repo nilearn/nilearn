@@ -1395,7 +1395,7 @@ def fetch_atlas_basc_multiscale_2015(
 
     %(verbose)s
 
-    resolution : :ob:`int`, optional
+    resolution : :obj:`int`, optional
         Number of networks in the dictionary.
         Valid resolutions  available are
         {7, 12, 20, 36, 64, 122, 197, 325, 444}
