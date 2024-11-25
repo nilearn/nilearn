@@ -2258,9 +2258,12 @@ def test_flm_get_voxelwise_model_attribute_with_surface_data(
     events = basic_paradigm()
     model.fit([img, img], events=[events, events])
 
-    model.residuals  # noqa: B018
-    model.predicted  # noqa: B018
-    model.r_square  # noqa: B018
+    assert len(model.residuals) == 2
+    assert model.residuals[0].shape == img.shape
+    assert len(model.predicted) == 2
+    assert model.predicted[0].shape == img.shape
+    assert len(model.r_square) == 2
+    assert model.r_square[0].shape == (1, img.mesh.n_vertices)
 
 
 # -----------------------bids tests----------------------- #
