@@ -57,7 +57,9 @@ def _face_outer_normals(mesh):
     rule) points outwards.
 
     """
-    vertices, faces = load_surf_mesh(mesh)
+    mesh = load_surf_mesh(mesh)
+    vertices = mesh.coordinates
+    faces = mesh.faces
     face_vertices = vertices[faces]
     # The right-hand rule gives the direction of the outer normal
     normals = np.cross(
@@ -74,7 +76,9 @@ def _surrounding_faces(mesh):
     i, j is set if node i is a vertex of triangle j.
 
     """
-    vertices, faces = load_surf_mesh(mesh)
+    mesh = load_surf_mesh(mesh)
+    vertices = mesh.coordinates
+    faces = mesh.faces
     n_faces = faces.shape[0]
     return sparse.csr_matrix(
         (
@@ -102,8 +106,8 @@ def _vertex_outer_normals(mesh):
 def _sample_locations_between_surfaces(
     mesh, inner_mesh, affine, n_points=10, depth=None
 ):
-    outer_vertices, _ = mesh
-    inner_vertices, _ = inner_mesh
+    outer_vertices = load_surf_mesh(mesh).coordinates
+    inner_vertices = load_surf_mesh(inner_mesh).coordinates
 
     if depth is None:
         steps = np.linspace(0, 1, n_points)[:, None, None]
@@ -170,7 +174,7 @@ def _ball_sample_locations(
             "the 'depth' parameter.\n"
             "To avoid this error with this strategy, set 'depth' to None."
         )
-    vertices, _ = mesh
+    vertices = load_surf_mesh(mesh).coordinates
     offsets_world_space = (
         _load_uniform_ball_cloud(n_points=n_points) * ball_radius
     )
@@ -232,7 +236,7 @@ def _line_sample_locations(
         z in voxel space.
 
     """
-    vertices, _ = mesh
+    vertices = load_surf_mesh(mesh).coordinates
     normals = _vertex_outer_normals(mesh)
     if depth is None:
         offsets = np.linspace(
@@ -1001,14 +1005,14 @@ def load_surf_mesh(surf_mesh):
             # See https://github.com/nilearn/nilearn/pull/3235
             if "cras" in header:
                 coords += header["cras"]
-            mesh = SurfaceMesh(coordinates=coords, faces=faces)
+            mesh = InMemoryMesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith("gii"):
             coords, faces = _gifti_img_to_mesh(load(surf_mesh))
-            mesh = SurfaceMesh(coordinates=coords, faces=faces)
+            mesh = InMemoryMesh(coordinates=coords, faces=faces)
         elif surf_mesh.endswith("gii.gz"):
             gifti_img = _load_surf_files_gifti_gzip(surf_mesh)
             coords, faces = _gifti_img_to_mesh(gifti_img)
-            mesh = SurfaceMesh(coordinates=coords, faces=faces)
+            mesh = InMemoryMesh(coordinates=coords, faces=faces)
         else:
             raise ValueError(
                 "The input type is not recognized. "
@@ -1024,7 +1028,7 @@ def load_surf_mesh(surf_mesh):
     elif isinstance(surf_mesh, (list, tuple)):
         try:
             coords, faces = surf_mesh
-            mesh = SurfaceMesh(coordinates=coords, faces=faces)
+            mesh = InMemoryMesh(coordinates=coords, faces=faces)
         except Exception:
             raise ValueError(
                 "If a list or tuple is given as input, "
@@ -1037,7 +1041,7 @@ def load_surf_mesh(surf_mesh):
             )
     elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
-        mesh = SurfaceMesh(coordinates=coords, faces=faces)
+        mesh = InMemoryMesh(coordinates=coords, faces=faces)
 
     else:
         raise ValueError(
