@@ -638,7 +638,7 @@ class FirstLevelModel(BaseGLM):
 
         for run_idx, run_img in enumerate(run_imgs):
             if isinstance(run_img, SurfaceImage):
-                n_scans = run_img.shape[0]
+                n_scans = run_img.shape[1]
             else:
                 run_img = check_niimg(run_img, ensure_ndim=4)
                 n_scans = get_data(run_img).shape[3]
