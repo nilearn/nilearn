@@ -117,56 +117,21 @@ for first_level_glm, fmri_img, confound, event in zip(
 
     # Compute contrast between 'language' and 'string' events
     z_scores.append(
-        first_level_glm.compute_contrast("language-string", stat_type="t")
+        first_level_glm.compute_contrast(
+            "language-string", stat_type="t", output_type="z_score"
+        )
     )
-    z_scores_left.append(z_scores[-1].data.parts["left"])
-    z_scores_right.append(z_scores[-1].data.parts["right"])
 
 
 # %%
 # Group study
 # -----------
 #
-# Individual activation maps have been accumulated
-# in the ``z_score_left`` and ``z_scores_right`` lists respectively.
+# Individual activation maps have been accumulated in the ``z_score``.
 # We can now use them in a group study (one-sample study).
+# We can now pass this to a second level model for a one-sample t-test
+# to fit and compute contrast on.
 #
-# Prepare figure for concurrent plot of individual maps
-# compute population-level maps for left and right hemisphere
-# We directly do that on the value arrays.
-import numpy as np
-from scipy.stats import norm, ttest_1samp
-
-_, pval_left = ttest_1samp(np.array(z_scores_left), 0)
-_, pval_right = ttest_1samp(np.array(z_scores_right), 0)
-
-# %%
-# What we have so far are p-values: we convert them to z-values for plotting.
-z_val_left = norm.isf(pval_left)
-z_val_right = norm.isf(pval_right)
-
-# %%
-# Plot the resulting maps, at first on the left hemisphere.
-from nilearn.datasets import load_fsaverage_data
-from nilearn.plotting import plot_surf_stat_map, show
-
-fsaverage_data = load_fsaverage_data(data_type="sulcal")
-
-for hemi, stat_map in zip(["left", "right"], [z_val_left, z_val_right]):
-    plot_surf_stat_map(
-        surf_mesh=fsaverage5["inflated"],
-        stat_map=stat_map,
-        hemi=hemi,
-        title=f"(language-string), {hemi} hemisphere ; scipy",
-        colorbar=True,
-        cmap="bwr",
-        threshold=1.96,
-        bg_map=fsaverage_data,
-    )
-
-
-# %%
-# Use SecondLevel
 
 import pandas as pd
 
@@ -176,6 +141,16 @@ second_level_glm = SecondLevelModel()
 design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
 second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
 results = second_level_glm.compute_contrast("intercept", output_type="z_score")
+
+# %%
+# Visualization
+# -------------
+# We can now plot
+# the computed population-level maps for left and right hemisphere
+from nilearn.datasets import load_fsaverage_data
+from nilearn.plotting import plot_surf_stat_map, show
+
+fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
 for hemi in ["left", "right"]:
     plot_surf_stat_map(
