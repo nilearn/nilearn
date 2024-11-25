@@ -481,7 +481,7 @@ def test_sample_locations_depth(depth, n_points, affine_eye):
         mesh, affine_eye, radius, n_points=n_points, depth=depth
     )
     offsets = np.asarray([[0.0, 0.0, -z * radius] for z in depth])
-    expected = np.asarray([vertex + offsets for vertex in mesh[0]])
+    expected = np.asarray([vertex + offsets for vertex in mesh.coordinates])
     assert np.allclose(locations, expected)
 
 
