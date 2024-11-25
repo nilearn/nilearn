@@ -51,7 +51,7 @@ data.data_dir
 #
 #   - a list with the Nifti image associated with each run
 #
-#   - a list of events read from events.tsv in the the :term:`BIDS` dataset
+#   - a list of events read from events.tsv in the :term:`BIDS` dataset
 #
 #   - a list of confounder motion regressors
 #     since in this case a confounds.tsv file is available
