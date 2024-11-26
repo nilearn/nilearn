@@ -57,7 +57,7 @@ def load_mask_img(mask_img, allow_empty=False):
     mask : :class:`numpy.ndarray`
         Boolean version of the mask.
 
-    mask_affine: None or (4,4) array-like
+    mask_affine : None or (4,4) array-like
         Affine of the mask.
     """
     mask_img = _utils.check_niimg_3d(mask_img)

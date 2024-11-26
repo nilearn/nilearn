@@ -638,7 +638,7 @@ class FirstLevelModel(BaseGLM):
 
         for run_idx, run_img in enumerate(run_imgs):
             if isinstance(run_img, SurfaceImage):
-                n_scans = run_img.shape[0]
+                n_scans = run_img.shape[1]
             else:
                 run_img = check_niimg(run_img, ensure_ndim=4)
                 n_scans = get_data(run_img).shape[3]
@@ -1014,7 +1014,7 @@ class FirstLevelModel(BaseGLM):
                 surf_data = {}
                 for part in run_img.mesh.parts:
                     surf_data[part] = np.ones(
-                        run_img.data.parts[part].shape[1], dtype=bool
+                        run_img.data.parts[part].shape[0], dtype=bool
                     )
                 self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
             else:

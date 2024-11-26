@@ -877,9 +877,9 @@ def test_compare_file_and_inmemory_mesh(surf_mesh, tmp_path):
     assert np.array_equal(left.faces, left_loaded.faces)
 
 
-@pytest.mark.parametrize("shape", [(1,), (3,)])
+@pytest.mark.parametrize("shape", [1, 3])
 def test_surface_image_shape(surf_img, shape):
-    assert surf_img(shape).shape == (*shape, 9)
+    assert surf_img(shape).shape == (9, shape)
 
 
 def test_data_shape_not_matching_mesh(surf_img, flip_surf_img_parts):
@@ -889,11 +889,11 @@ def test_data_shape_not_matching_mesh(surf_img, flip_surf_img_parts):
 
 def test_data_shape_inconsistent(surf_img):
     bad_data = {
-        "left": surf_img((7,)).data.parts["left"],
-        "right": surf_img((7,)).data.parts["right"][:4],
+        "left": surf_img(7).data.parts["left"],
+        "right": surf_img(7).data.parts["right"][0][:4],
     }
     with pytest.raises(ValueError, match="incompatible shapes"):
-        SurfaceImage(surf_img((7,)).mesh, bad_data)
+        SurfaceImage(surf_img(7).mesh, bad_data)
 
 
 def test_data_keys_not_matching_mesh(surf_img):
@@ -1086,7 +1086,9 @@ def test_surface_image_squeeze_on_save(rng, tmp_path, surf_mesh):
     for hemi in ["left", "right"]:
         unsqueezed = load(tmp_path / f"unsqueezed_hemi-{hemi[0].upper()}.gii")
         squeezed = load(tmp_path / f"squeezed_hemi-{hemi[0].upper()}.gii")
-        assert_array_equal(unsqueezed.agg_data()[0], squeezed.agg_data())
+        assert_array_equal(
+            np.squeeze(unsqueezed.agg_data()), squeezed.agg_data()
+        )
 
 
 @pytest.mark.parametrize(
@@ -1128,7 +1130,7 @@ def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
     img = SurfaceImage.from_volume(mesh=surf_mesh(), volume_img=img_4d_mni)
     # check that we have the correct number of time points
-    assert img.shape[0] == img_4d_mni.shape[3]
+    assert img.shape[1] == img_4d_mni.shape[3]
 
     img_4d_mni.to_filename(tmp_path / "tmp.nii.gz")
 

@@ -86,22 +86,22 @@ def _check_param_grid(estimator, X, y, param_grid=None):
 
     Parameters
     ----------
-    estimator: str
+    estimator : str
         The estimator to choose among:
         %(classifier_options)s
         %(regressor_options)s
 
-    X: list of Niimg-like objects
+    X : list of Niimg-like objects
         See :ref:`extracting_data`.
         Data on which model is to be fitted. If this is a list,
         the affine is considered the same for all.
 
-    y: array or list of shape (n_samples)
+    y : array or list of shape (n_samples)
         The dependent variable (age, sex, IQ, yes/no, etc.).
         Target variable to predict. Must have exactly as many elements as
         3D images in niimg.
 
-    param_grid: dict of str to sequence, or sequence of such. Default None
+    param_grid : dict of str to sequence, or sequence of such. Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -116,7 +116,7 @@ def _check_param_grid(estimator, X, y, param_grid=None):
 
     Returns
     -------
-    param_grid: dict of str to sequence, or sequence of such. Sensible default
+    param_grid : dict of str to sequence, or sequence of such. Sensible default
     dict has size 1 for linear models.
 
     """
@@ -139,24 +139,24 @@ def _default_param_grid(estimator, X, y):
 
     Parameters
     ----------
-    estimator: str
+    estimator : str
         The estimator to choose among:
         %(classifier_options)s
         %(regressor_options)s
 
-    X: list of Niimg-like objects
+    X : list of Niimg-like objects
         See :ref:`extracting_data`.
         Data on which model is to be fitted. If this is a list,
         the affine is considered the same for all.
 
-    y: array or list of shape (n_samples)
+    y : array or list of shape (n_samples)
         The dependent variable (age, sex, IQ, yes/no, etc.).
         Target variable to predict. Must have exactly as many elements as
         3D images in niimg.
 
     Returns
     -------
-    param_grid: dict of str to sequence, or sequence of such. Sensible default
+    param_grid : dict of str to sequence, or sequence of such. Sensible default
     dict has size 1 for linear models.
     """
     param_grid = {}
@@ -468,13 +468,13 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     Parameters
     ----------
-    estimator: str, default='svc'
+    estimator : str, default='svc'
         The estimator to use. For classification, choose among:
         %(classifier_options)s
         For regression, choose among:
         %(regressor_options)s
 
-    mask: filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, or\
+    mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, or\
           SurfaceMasker, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
@@ -483,11 +483,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         or SurfaceMasker to check for default parameters. For use with
         SurfaceImage data, a SurfaceMasker instance must be passed.
 
-    cv: cross-validation generator or int, default=10
+    cv : cross-validation generator or int, default=10
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html
 
-    param_grid: dict of str to sequence, or sequence of such, default=None
+    param_grid : dict of str to sequence, or sequence of such, default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -500,7 +500,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         For Dummy estimators, parameter grid defaults to empty dictionary.
 
-    clustering_percentile: int, float, in the [0, 100], default=100
+    clustering_percentile : int, float, in the [0, 100], default=100
         Percentile of features to keep after clustering. If it is lower
         than 100, a ReNA clustering is performed as a first step of fit
         to agglomerate similar features together. ReNA is typically efficient
@@ -508,7 +508,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         :class:`nilearn.decoding.FREMClassifier` and
         :class:`nilearn.decoding.FREMRegressor`.
 
-    screening_percentile: int, float, \
+    screening_percentile : int, float, \
                           in the closed interval [0, 100], \
                           default=20
         The percentage of brain volume that will be kept with respect to a full
@@ -517,7 +517,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         performed. A float according to a percentile of the highest
         scores. If None is passed, the percentile is set to 100.
 
-    scoring: str, callable or None,
+    scoring : str, callable or None,
              default=None
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -531,13 +531,21 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'. Defaults to 'roc_auc'.
+
     %(smoothing_fwhm)s
+
     %(standardize)s
+
     %(target_affine)s
+
     %(target_shape)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
+
     %(mask_strategy)s
 
         .. note::
@@ -550,9 +558,13 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             :func:`nilearn.masking.compute_brain_mask`.
 
         Default is 'background'.
+
     %(memory)s
+
     %(memory_level)s
+
     %(n_jobs)s
+
     %(verbose0)s
 
     See Also
@@ -704,7 +716,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         n_outputs_ : int
             Number of outputs (column-wise)
 
-        dummy_output_: ndarray, shape=(n_classes, 2) \
+        dummy_output_ : ndarray, shape=(n_classes, 2) \
                        or shape=(1, 1) for regression
             Contains dummy estimator attributes after class predictions
             using strategies of :class:`sklearn.dummy.DummyClassifier`
@@ -896,7 +908,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Returns
         -------
-        y_pred: :class:`numpy.ndarray`, shape (n_samples,)
+        y_pred : :class:`numpy.ndarray`, shape (n_samples,)
             Predicted class label per sample.
         """
         # for backwards compatibility - apply masker transform if X is

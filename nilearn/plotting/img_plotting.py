@@ -188,7 +188,7 @@ def _plot_img_with_bg(
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
 
-    kwargs:  extra keyword arguments, optional
+    kwargs :  extra keyword arguments, optional
         Extra keyword arguments passed
         to the display.add_overlay method (see below).
         Ultimately passed to `matplotlib.pyplot.imshow` via
@@ -357,33 +357,51 @@ def plot_img(
     Parameters
     ----------
     %(img)s
+
     %(cut_coords)s
+
     %(output_file)s
+
     %(display_mode)s
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(threshold)s
+
     %(annotate)s
+
     decimals : :obj:`int` or :obj:`bool`, default=False
         Number of decimal places on slice position annotation.
         If False (default),
         the slice position is integer without decimal point.
+
     %(draw_cross)s
+
     %(black_bg)s
         Default=False.
+
     %(colorbar)s
         Default=False.
-    cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
+
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
+
     %(resampling_interpolation)s
         Default='continuous'.
+
     %(bg_img)s
         If nothing is specified, no background image is plotted.
         Default=None.
+
     %(vmin)s
+
     %(vmax)s
+
     %(radiological)s
 
     kwargs : extra keyword arguments, optional
@@ -604,31 +622,48 @@ def plot_anat(
         See :ref:`extracting_data`.
         The anatomical image to be used as a background. If None is
         given, nilearn tries to find a T1 template.
+
     %(cut_coords)s
+
     %(output_file)s
+
     %(display_mode)s
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(annotate)s
+
     %(threshold)s
+
     %(draw_cross)s
+
     %(black_bg)s
         Default='auto'.
+
     %(dim)s
         Default='auto'.
+
     %(cmap)s
         Default=`plt.cm.gray`.
+
     colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
+
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
+
     %(radiological)s
+
     %(vmin)s
+
     %(vmax)s
 
-    kwargs: extra keyword arguments, optional
+    kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
         :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
@@ -707,28 +742,43 @@ def plot_epi(
     ----------
     epi_img : a Niimg-like object or None, default=None
         The :term:`EPI` (T2*) image.
+
     %(cut_coords)s
+
     %(output_file)s
+
     %(display_mode)s
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(annotate)s
+
     %(draw_cross)s
+
     %(black_bg)s
         Default=True.
+
     colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
+
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
+
     %(cmap)s
         Default=`plt.cm.nipy_spectral`.
+
     %(vmin)s
+
     %(vmax)s
+
     %(radiological)s
 
-    kwargs: extra keyword arguments, optional
+    kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
         :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
@@ -742,7 +792,6 @@ def plot_epi(
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
-
     """
     display = plot_img(
         epi_img,
@@ -856,49 +905,71 @@ def plot_roi(
         See :ref:`extracting_data`.
         The ROI/mask image, it could be binary mask or an atlas or ROIs
         with integer values.
+
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=None".
         Default=MNI152TEMPLATE.
+
     %(cut_coords)s
+
     %(output_file)s
+
     %(display_mode)s
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(annotate)s
+
     %(draw_cross)s
+
     %(black_bg)s
         Default='auto'.
+
     %(threshold)s
         Default=0.5.
+
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled
         contours.
+
     %(cmap)s
         Default=`plt.cm.gist_ncar`.
+
     %(dim)s
         Default='auto'.
+
     colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
-    cbar_tick_format: :obj:`str`, default="%%i"
+
+    cbar_tick_format : :obj:`str`, default="%%i"
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%.2g" to use scientific notation.
+
     %(vmin)s
+
     %(vmax)s
+
     %(resampling_interpolation)s
         Default='nearest'.
+
     view_type : {'continuous', 'contours'}, default='continuous'
         By default view_type == 'continuous',
         rois are shown as continuous colors.
         If view_type == 'contours', maps are shown as contours.
         For this type, label
         denoted as 0 is considered as background and not shown.
+
     %(linewidths)s
         Default=2.5.
+
     %(radiological)s
 
-    kwargs: extra keyword arguments, optional
+    kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
         :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
@@ -921,7 +992,6 @@ def plot_roi(
     --------
     nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
         (4D images)
-
     """
     valid_view_types = ["continuous", "contours"]
     if view_type not in valid_view_types:
@@ -1003,6 +1073,7 @@ def plot_prob_atlas(
     ----------
     maps_img : Niimg-like object or the filename
         4D image of the :term:`Probabilistic atlas` maps.
+
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
@@ -1041,31 +1112,47 @@ def plot_prob_atlas(
         directly to threshold the maps without any percentile calculation.
         If None, a very small threshold is applied to remove numerical
         noise from the maps background.
+
     %(linewidths)s
         Default=2.5.
+
     %(cut_coords)s
+
     %(output_file)s
+
     %(display_mode)s
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(annotate)s
+
     %(draw_cross)s
+
     %(black_bg)s
         Default='auto'.
+
     %(dim)s
         Default='auto'.
+
     %(cmap)s
         Default=`plt.cm.gist_rainbow`.
+
     %(colorbar)s
         Default=False.
+
     %(vmin)s
+
     %(vmax)s
+
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha sets the transparency of the color inside the filled contours.
     %(radiological)s
 
-    kwargs: extra keyword arguments, optional
+    kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
         :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
@@ -1079,7 +1166,6 @@ def plot_prob_atlas(
     See Also
     --------
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
-
     """
     display = plot_anat(
         bg_img,
@@ -1239,43 +1325,63 @@ def plot_stat_map(
     stat_map_img : Niimg-like object
         See :ref:`extracting_data`.
         The statistical map image
+
     %(bg_img)s
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=None".
         Default=MNI152TEMPLATE.
+
     %(cut_coords)s
+
     %(output_file)s
+
     %(display_mode)s
+
     %(colorbar)s
         Default=True.
-    cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
+
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(threshold)s
         Default=1e-6.
+
     %(annotate)s
+
     %(draw_cross)s
+
     %(black_bg)s
         Default='auto'.
+
     %(cmap)s
 
         .. note::
             The colormap *must* be symmetrical.
 
         Default=`plt.cm.cold_hot`.
+
     %(symmetric_cbar)s
+
     %(dim)s
         Default='auto'.
+
     %(vmin)s
+
     %(vmax)s
+
     %(resampling_interpolation)s
         Default='continuous'.
+
     %(radiological)s
 
-    kwargs: extra keyword arguments, optional
+    kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
         :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
@@ -1298,7 +1404,6 @@ def plot_stat_map(
     nilearn.plotting.plot_anat : To simply plot anatomical images
     nilearn.plotting.plot_epi : To simply plot raw EPI images
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
-
     """
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
@@ -1397,7 +1502,7 @@ def plot_glass_brain(
     %(colorbar)s
         Default=False.
 
-    cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 
@@ -1441,7 +1546,7 @@ def plot_glass_brain(
 
     %(radiological)s
 
-    kwargs: extra keyword arguments, optional
+    kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
         :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
@@ -1455,7 +1560,6 @@ def plot_glass_brain(
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
-
     """
     if cmap is None:
         cmap = cm.cold_hot if black_bg else cm.cold_white_hot

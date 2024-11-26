@@ -80,6 +80,7 @@ view: _build/html/index.html
 	$(BROWSER) _build/html/index.html
 
 no_jekyll:
+	mkdir -p $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 
 html: no_jekyll	sym_links sym_links_datasets glm_reports
