@@ -742,7 +742,7 @@ def test_warning_n_labels_not_equal_n_regions(
         NiftiLabelsMasker(
             labels_img,
             labels=region_names,
-        )
+        ).fit()
 
 
 def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
