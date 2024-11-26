@@ -9,17 +9,13 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
+from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.helpers import rename_parameters
+from nilearn.glm.contrasts import expression_to_contrast_vector
+from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 
-from .._utils import fill_doc
-
 VALID_TRI_VALUES = ("full", "lower", "diag")
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", FutureWarning)
-    from nilearn.glm.contrasts import expression_to_contrast_vector
-    from nilearn.glm.first_level import check_design_matrix
 
 
 def _fit_axes(axes):
@@ -77,17 +73,23 @@ def _sanitize_figure_and_axes(figure, axes):
     if figure is not None:
         if isinstance(figure, plt.Figure):
             fig = figure
+            if hasattr(fig, "set_layout_engine"):  # can be removed w/mpl 3.5
+                fig.set_layout_engine("constrained")
         else:
-            fig = plt.figure(figsize=figure)
+            fig = plt.figure(figsize=figure, **_constrained_layout_kwargs())
         axes = plt.gca()
         own_fig = True
+    elif axes is None:
+        fig, axes = plt.subplots(
+            1,
+            1,
+            figsize=(7, 5),
+            **_constrained_layout_kwargs(),
+        )
+        own_fig = True
     else:
-        if axes is None:
-            fig, axes = plt.subplots(1, 1, figsize=(7, 5))
-            own_fig = True
-        else:
-            fig = axes.figure
-            own_fig = False
+        fig = axes.figure
+        own_fig = False
     return fig, axes, own_fig
 
 
@@ -230,13 +232,13 @@ def plot_matrix(
         Matrix to be plotted.
     %(title)s
     labels : :obj:`list`, or :class:`numpy.ndarray` of :obj:`str`,\
-    or False, or None, optional
+    or False, or None, default=None
         The label of each row and column. Needs to be the same
         length as rows/columns of mat. If False, None, or an
         empty list, no labels are plotted.
 
     figure : :class:`matplotlib.figure.Figure`, figsize :obj:`tuple`,\
-    or None, optional
+    or None, default=None
         Sets the figure used. This argument can be either an existing
         figure, or a pair (width, height) that gives the size of a
         newly-created figure.
@@ -245,7 +247,7 @@ def plot_matrix(
 
             Specifying both axes and figure is not allowed.
 
-    axes : None or :class:`matplotlib.axes.Axes`, optional
+    axes : None or :class:`matplotlib.axes.Axes`, default=None
         Axes instance to be plotted on. Creates a new one if None.
 
         .. note::
@@ -314,23 +316,16 @@ def plot_matrix(
     if grid is not False:
         _configure_grid(axes, tri, len(mat))
     axes.set_ylim(ymin, ymax)
-    if auto_fit:
-        if labels:
-            _fit_axes(axes)
-        elif own_fig:
-            plt.tight_layout(
-                pad=0.1, rect=((0, 0, 0.95, 1) if colorbar else (0, 0, 1, 1))
-            )
+    if auto_fit and labels:
+        _fit_axes(axes)
     if colorbar:
         divider = make_axes_locatable(axes)
         cax = divider.append_axes("right", size="5%", pad=0.05)
 
-        plt.colorbar(display, cax=cax)
-        fig.tight_layout()
+        fig.colorbar(display, cax=cax)
 
     if title is not None:
         axes.set_title(title, size=16)
-        fig.tight_layout()
 
     return display
 
@@ -356,7 +351,7 @@ def plot_contrast_matrix(
         Design matrix to use.
     %(colorbar)s
         Default=False.
-    axes : :class:`matplotlib.axes.Axes`, optional
+    axes : :class:`matplotlib.axes.Axes` or None, default=None
         Axis on which to plot the figure.
         If None, a new figure will be created.
     %(output_file)s
@@ -368,20 +363,20 @@ def plot_contrast_matrix(
 
     """
     contrast_def = pad_contrast_matrix(contrast_def, design_matrix)
-    con_matrix = np.asmatrix(contrast_def)
+    con_matrix = np.array(contrast_def, ndmin=2)
 
     design_column_names = design_matrix.columns.tolist()
     max_len = np.max([len(str(name)) for name in design_column_names])
 
-    nb_columns_design_matrix = len(design_column_names)
+    n_columns_design_matrix = len(design_column_names)
     if axes is None:
-        plt.figure(
+        _, axes = plt.subplots(
             figsize=(
-                0.4 * nb_columns_design_matrix,
+                0.4 * n_columns_design_matrix,
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
-            )
+            ),
+            **_constrained_layout_kwargs(),
         )
-        axes = plt.gca()
 
     maxval = np.max(np.abs(contrast_def))
     mat = axes.matshow(
@@ -392,18 +387,16 @@ def plot_contrast_matrix(
     axes.set_ylabel("")
     axes.set_yticks(())
 
-    axes.xaxis.set(ticks=np.arange(nb_columns_design_matrix))
+    axes.xaxis.set(ticks=np.arange(n_columns_design_matrix))
     axes.set_xticklabels(design_column_names, rotation=50, ha="left")
 
+    fig = axes.figure
     if colorbar:
-        plt.colorbar(mat, fraction=0.025, pad=0.04)
-
-    plt.tight_layout()
-    plt.subplots_adjust(top=np.min([0.3 + 0.05 * con_matrix.shape[0], 0.55]))
+        fig.colorbar(mat, fraction=0.025, pad=0.04)
 
     if output_file is not None:
-        plt.savefig(output_file)
-        plt.close()
+        fig.savefig(output_file)
+        plt.close(fig=fig)
         axes = None
 
     return axes
@@ -431,13 +424,13 @@ def pad_contrast_matrix(contrast_def, design_matrix):
         contrast_def = expression_to_contrast_vector(
             contrast_def, design_column_names
         )
-    nb_columns_design_matrix = len(design_column_names)
-    nb_columns_contrast_def = (
+    n_columns_design_matrix = len(design_column_names)
+    n_columns_contrast_def = (
         contrast_def.shape[0]
         if contrast_def.ndim == 1
         else contrast_def.shape[1]
     )
-    horizontal_padding = nb_columns_design_matrix - nb_columns_contrast_def
+    horizontal_padding = n_columns_design_matrix - n_columns_contrast_def
     if horizontal_padding == 0:
         return contrast_def
     warnings.warn(
@@ -472,7 +465,7 @@ def plot_design_matrix(
     rescale : :obj:`bool`, default=True
         Rescale columns magnitude for visualization or not.
 
-    axes : :class:`matplotlib.axes.Axes`, optional
+    axes : :class:`matplotlib.axes.Axes` or None, default=None
         Handle to axes onto which we will draw the design matrix.
     %(output_file)s
 
@@ -485,9 +478,7 @@ def plot_design_matrix(
     # normalize the values per column for better visualization
     _, X, names = check_design_matrix(design_matrix)
     if rescale:
-        X = X / np.maximum(
-            1.0e-12, np.sqrt(np.sum(X**2, 0))
-        )  # pylint: disable=no-member
+        X = X / np.maximum(1.0e-12, np.sqrt(np.sum(X**2, 0)))
     if axes is None:
         max_len = np.max([len(str(name)) for name in names])
         fig_height = 1 + 0.1 * X.shape[0] + 0.04 * max_len
@@ -495,8 +486,10 @@ def plot_design_matrix(
             fig_height = 3
         elif fig_height > 10:
             fig_height = 10
-        plt.figure(figsize=(1 + 0.23 * len(names), fig_height))
-        axes = plt.subplot(1, 1, 1)
+        _, axes = plt.subplots(
+            figsize=(1 + 0.23 * len(names), fig_height),
+            **_constrained_layout_kwargs(),
+        )
 
     axes.imshow(X, interpolation="nearest", aspect="auto")
     axes.set_label("conditions")
@@ -508,10 +501,10 @@ def plot_design_matrix(
     # corresponding dataframe
     axes.xaxis.tick_top()
 
-    plt.tight_layout()
+    fig = axes.figure
     if output_file is not None:
-        plt.savefig(output_file)
-        plt.close()
+        fig.savefig(output_file)
+        plt.close(fig=fig)
         axes = None
     return axes
 
@@ -520,12 +513,19 @@ def plot_design_matrix(
 def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     """Create plot for event visualization.
 
+    .. warning::
+
+        Events with a duration of 0 seconds will be plotted
+        by a 'delta function'.
+
     Parameters
     ----------
     model_event : :class:`pandas.DataFrame` or :obj:`list`\
-    of :class:`pandas.DataFrame`
+                   of :class:`pandas.DataFrame`
         The :class:`pandas.DataFrame` must have three columns:
         ``trial_type`` with event name, ``onset`` and ``duration``.
+        See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
+        for details on the required content of events dataframes.
 
         .. note::
 
@@ -533,7 +533,9 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
             from :func:`nilearn.glm.first_level.first_level_from_bids`.
 
     %(cmap)s
+
     %(output_file)s
+
     **fig_kwargs : extra keyword arguments, optional
         Extra arguments passed to :func:`matplotlib.pyplot.subplots`.
 
@@ -551,6 +553,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         model_event[i] = event_copy
 
     n_runs = len(model_event)
+    if "layout" not in fig_kwargs and "constrained_layout" not in fig_kwargs:
+        fig_kwargs.update(**_constrained_layout_kwargs())
     figure, axes = plt.subplots(1, 1, **fig_kwargs)
 
     # input validation
@@ -565,7 +569,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     cmap_dictionary = {label: idx for idx, label in enumerate(event_labels)}
 
     if len(event_labels) > cmap.N:
-        plt.close()
+        plt.close(fig=figure)
         raise ValueError(
             "The number of event types is greater than "
             f" colors in colormap ({len(event_labels)} > {cmap.N}). "
@@ -575,7 +579,6 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     height = 0.5
     for idx_run, event_df in enumerate(model_event):
         for _, event in event_df.iterrows():
-
             modulation = 1.0
             if "modulation" in event:
                 modulation = event["modulation"]
@@ -619,10 +622,9 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     axes.set_yticks(np.arange(n_runs) + 0.5)
     axes.set_yticklabels(np.arange(n_runs) + 1)
 
-    plt.tight_layout()
     if output_file is not None:
-        plt.savefig(output_file)
-        plt.close()
+        figure.savefig(output_file)
+        plt.close(fig=figure)
         figure = None
 
     return figure
@@ -639,7 +641,7 @@ def plot_design_matrix_correlation(
 
     The drift and constant regressors are omitted from the plot.
 
-    .. versionadded:: 0.11.0.dev
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------

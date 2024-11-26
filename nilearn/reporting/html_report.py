@@ -154,7 +154,7 @@ def _update_template(
     )
 
     css_file_path = CSS_PATH / "masker_report.css"
-    with open(css_file_path, encoding="utf-8") as css_file:
+    with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
     body = tpl.substitute(
@@ -173,11 +173,11 @@ def _update_template(
 
     head_template_name = "report_head_template.html"
     head_template_path = HTML_TEMPLATE_PATH / head_template_name
-    with open(str(head_template_path)) as head_file:
+    with head_template_path.open() as head_file:
         head_tpl = Template(head_file.read())
 
     head_css_file_path = CSS_PATH / "head.css"
-    with open(head_css_file_path, encoding="utf-8") as head_css_file:
+    with head_css_file_path.open(encoding="utf-8") as head_css_file:
         head_css = head_css_file.read()
 
     return HTMLReport(
@@ -193,7 +193,8 @@ def _update_template(
 
 def _define_overlay(estimator):
     """Determine whether an overlay was provided and \
-    update the report text as appropriate."""
+    update the report text as appropriate.
+    """
     displays = estimator._reporting()
 
     if len(displays) == 1:  # set overlay to None
@@ -237,7 +238,7 @@ def generate_report(estimator):
 
     if estimator.reports is False:
         warning_messages.append(
-            "\nReport generation not enabled!\n" "No visual outputs created."
+            "\nReport generation not enabled!\nNo visual outputs created."
         )
 
     if (

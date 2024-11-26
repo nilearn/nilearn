@@ -24,10 +24,9 @@ is included in the model.
 
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 # %%
 import numpy as np
@@ -59,7 +58,7 @@ n_samples = mask_quality_check.size
 contrast_map_filenames = [
     localizer_dataset.cmaps[i] for i in mask_quality_check
 ]
-tested_var = tested_var[mask_quality_check].values.reshape((-1, 1))
+tested_var = tested_var[mask_quality_check].to_numpy().reshape((-1, 1))
 print(f"Actual number of subjects after quality check: {int(n_samples)}")
 
 # %%
@@ -115,6 +114,8 @@ neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
 
 # %%
 # Visualization
+import matplotlib.pyplot as plt
+
 from nilearn import plotting
 from nilearn.image import get_data
 

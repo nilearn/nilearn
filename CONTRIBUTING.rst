@@ -217,8 +217,7 @@ with the tools we use for development and deployment.
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Variables, functions, arguments have clear names  |
 |                    |               | - Easy to read, PEP8_ compliant                     |
-|                    |               | - Code formatted with black_                        |
-|                    |               | - Imports sorted with isort_                        |
+|                    |               | - Code formatted with ruff_                         |
 |                    |               | - Public functions have docstring (numpydoc_ format)|
 |                    |               | - Low redundancy                                    |
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
@@ -248,8 +247,7 @@ with the tools we use for development and deployment.
 
 .. _PEP8: https://www.python.org/dev/peps/pep-0008/
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
-.. _black: https://black.readthedocs.io/en/stable/getting_started.html#basic-usage
-.. _isort: https://pycqa.github.io/isort/index.html#using-isort
+.. _ruff: https://docs.astral.sh/ruff/
 
 PR Structure
 ------------
@@ -332,12 +330,7 @@ The main conventions we enforce are :
 - 2 empty lines between functions or classes
 
 You can check that any code you may have edited follows these conventions
-by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`__.
-
-Additionally, we use:
-
-- black_ to format our code,
-- isort_  to organize the import statements.
+by running `ruff <https://docs.astral.sh/ruff/>`__.
 
 Documentation style
 ^^^^^^^^^^^^^^^^^^^
@@ -626,6 +619,24 @@ learn how to use those tools to build documentation.
 
 .. _git_repo:
 
+
+Continuous integration
+----------------------
+
+Please note that if one of the following markers appear in the latest commit message, the following actions are taken.
+
+============================ ===================
+Commit Message Marker        Action Taken by CI
+============================ ===================
+[skip ci]                    Gtihub CI is skipped completely. Several other options are also possible, see `github documentation <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs>`_).
+[skip test]                  Skip running the tests.
+[skip doc]                   Skip building the doc.
+[test nightly]               Run tests on the nightly build of Nilearn's dependencies.
+[full doc]                   Run a full build of the documentation (meaning that all examples will be run).
+[example] name_of_example.py Run partial documentation build but will run the requested example.
+[force download]             Force a download of all the dataset required for the build of the documentation.
+============================ ===================
+
 Setting up your environment
 ===========================
 
@@ -732,23 +743,21 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 .. admonition:: Recommendation
 
     To lint your code and verify PEP8 compliance, you can run
-    `flake8 <https://flake8.pycqa.org/en/latest/>`__ locally on the
+    `ruff <https://docs.astral.sh/ruff/>`_ locally on the
     changes you have made.
 
     .. code-block:: bash
 
-        flake8 <path_to_edited_file>
+        ruff check --fix <path_to_edited_file>
 
-    To automatically format your code, you can run
-    `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
-    locally on the changes you have made.
+    To format your code, you can also use ruff and run:
 
     .. code-block:: bash
 
-        black <path_to_edited_file>
+        ruff format <path_to_edited_file>
 
     Note that if you installed pre-commit and the pre-commit hooks,
-    those 2 commands will be run automatically before each commit.
+    those commands will be run automatically before each commit.
 
 4. commit your changes on this branch (don't forget to write tests!)
 
@@ -800,7 +809,8 @@ or, if you do not have make install (for instance under Windows):
 
       python3 -m sphinx -b html -d _build/doctrees . _build/html
 
-if you don't need the plots, a quicker option is:
+The full build can take a very long time.
+So if you don't need the plots, a quicker option is:
 
 .. code-block:: bash
 

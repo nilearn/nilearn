@@ -33,10 +33,16 @@ Event-based
 -----------
 
 To create an event-based design matrix, information about the trial type, onset time and duration of the
-events in the experiment are necessary. This can be provided by the user, or be part of the dataset if
-using a :term:`BIDS`-compatible dataset or one of the nilearn dataset fetcher functions like
+events in the experiment are necessary.
+This can be provided by the user, or be part of the dataset
+if using a :term:`BIDS`-compatible dataset or one of the nilearn dataset fetcher functions like
 :func:`nilearn.datasets.fetch_spm_multimodal_fmri`,
-:func:`nilearn.datasets.fetch_language_localizer_demo_dataset`, etc.
+:func:`nilearn.datasets.fetch_language_localizer_demo_dataset`...
+
+.. note::
+
+    Events with a duration of 0 seconds will be modelled by a 'delta function'
+    of infinitesimal small duration.
 
 Refer to the examples below for usage under the different scenarios:
   * User-defined: :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_design_matrix.py`

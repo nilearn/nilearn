@@ -36,6 +36,8 @@
 
 .. _Anne-Sophie Kieslinger: https://github.com/askieslinger
 
+.. _Anupriya Kumari: https://github.com/anupriyakkumari
+
 .. _Ariel Rokem: http://arokem.org/
 
 .. _Arthur Mensch: https://www.amensch.fr/
@@ -110,6 +112,8 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Hande Gözükan: https://github.com/hndgzkn
+
 .. _Hao-Ting Wang: https://wanghaoting.com/
 
 .. _Himanshu Aggarwal: https://github.com/man-shu
@@ -123,6 +127,8 @@
 .. _Jaques Grobler: https://github.com/jaquesgrobler
 
 .. _Jason Gors: http://jgors.com/
+
+.. _Jason Kai: https://github.com/kaitj
 
 .. _Javier Rasero: https://jrasero.github.io/
 
@@ -194,6 +200,8 @@
 
 .. _Mia Zwally: https://github.com/MIZwally
 
+.. _Micha Burkhardt: https://github.com/mibur1
+
 .. _Michael Eickenberg: https://github.com/eickenberg
 
 .. _Michael Hanke: https://github.com/mih
@@ -244,6 +252,8 @@
 
 .. _Pradeep Reddy Raamana: https://github.com/raamana
 
+.. _Prakhar Jain: https://github.com/PrakharJain1509
+
 .. _Rahul Brito: https://github.com/Rahul-Brito
 
 .. _Raphael Meudec: https://github.com/RaphaelMeudec
@@ -290,11 +300,15 @@
 
 .. _Taylor Salo: https://tsalo.github.io/
 
+.. _Tharun K: https://github.com/tharun634
+
 .. _Thomas Bazeille: https://github.com/thomasbazeille
 
 .. _Tom Vanasse: https://github.com/tvanasse
 
 .. _Vasco Diogo: https://github.com/vascosa
+
+.. _Victoria Shevchenko: https://github.com/victoris93
 
 .. _Vincent Michel: https://github.com/vmichel
 

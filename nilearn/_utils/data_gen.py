@@ -337,7 +337,7 @@ def generate_fake_fmri(
     """
     if affine is None:
         affine = np.eye(4)
-    full_shape = shape + (length,)
+    full_shape = (*shape, length)
     fmri = np.zeros(full_shape)
     # Fill central voxels timeseries with random signals
     width = [s // 2 for s in shape]
@@ -345,9 +345,9 @@ def generate_fake_fmri(
 
     rand_gen = np.random.default_rng(random_state)
     if kind == "noise":
-        signals = rand_gen.integers(256, size=(width + [length]))
+        signals = rand_gen.integers(256, size=([*width, length]))
     elif kind == "step":
-        signals = np.ones(width + [length])
+        signals = np.ones([*width, length])
         signals[..., : length // 2] = 0.5
     else:
         raise ValueError("Unhandled value for parameter 'kind'")
@@ -444,7 +444,7 @@ def generate_fake_fmri_data_and_design(
     fmri_data = []
     design_matrices = []
     rand_gen = np.random.default_rng(random_state)
-    for _, shape in enumerate(shapes):
+    for shape in shapes:
         data = rand_gen.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
@@ -503,10 +503,7 @@ def write_fake_fmri_data_and_design(
     nilearn._utils.data_gen.generate_fake_fmri_data_and_design
 
     """
-    if file_path is None:
-        file_path = Path.cwd()
-    else:
-        file_path = Path(file_path)
+    file_path = Path.cwd() if file_path is None else Path(file_path)
 
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk, affine=affine, random_state=random_state
@@ -730,7 +727,7 @@ def generate_group_sparse_gaussian_graphs(
     topology = topology > 0
     assert np.all(topology == topology.T)
     logger.log(
-        f"Sparsity: {1.0 * topology.sum() / topology.shape[0] ** 2 :f}",
+        f"Sparsity: {1.0 * topology.sum() / topology.shape[0] ** 2:f}",
         verbose=verbose,
     )
 
@@ -858,7 +855,7 @@ def add_metadata_to_bids_dataset(bids_path, metadata, json_file=None):
     else:
         json_file = Path(bids_path) / json_file
 
-    with open(json_file, "w") as f:
+    with json_file.open("w") as f:
         json.dump(metadata, f)
 
     return json_file
@@ -1080,7 +1077,7 @@ def _check_entities_and_labels(entities):
         # Won't be implemented until there is a need.
         raise ValueError("Only a single extra entity is supported for now.")
 
-    for key in entities:
+    for key, value in entities.items():
         if key not in [
             *bids_entities()["raw"],
             *bids_entities()["derivatives"],
@@ -1093,7 +1090,8 @@ def _check_entities_and_labels(entities):
                 f"Invalid entity: {key}. Allowed entities are: "
                 f"{allowed_entities}"
             )
-        [check_bids_label(label_) for label_ in entities[key]]
+        for label_ in value:
+            check_bids_label(label_)
 
 
 def _mock_bids_dataset(
@@ -1110,7 +1108,7 @@ def _mock_bids_dataset(
 
     Parameters
     ----------
-    base_dir : :obj:`Path`
+    base_dir : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1205,7 +1203,7 @@ def _mock_bids_derivatives(
 
     Parameters
     ----------
-    base_dir : :obj:`Path`
+    base_dir : :obj:`pathlib.Path`
         Path where to create the fake :term:`BIDS` dataset.
 
     n_sub : :obj:`int`
@@ -1358,7 +1356,7 @@ def _write_bids_raw_anat(subses_dir, subject, session) -> None:
 
     Parameters
     ----------
-    subses_dir : :obj:`Path`
+    subses_dir : :obj:`pathlib.Path`
         Subject session directory
 
     subject : :obj:`str`
@@ -1387,7 +1385,7 @@ def _write_bids_raw_func(
 
     Parameters
     ----------
-    func_path : :obj:`Path`
+    func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
     file_id : :obj:`str`
@@ -1441,7 +1439,7 @@ def _write_bids_derivative_func(
 
     Parameters
     ----------
-    func_path : :obj:`Path`
+    func_path : :obj:`pathlib.Path`
         Path to a subject functional directory.
 
     file_id : :obj:`str`
@@ -1480,7 +1478,7 @@ def _write_bids_derivative_func(
         confounds.to_csv(
             confounds_path, sep="\t", index=None, encoding="utf-8"
         )
-        with open(confounds_path.with_suffix(".json"), "w") as f:
+        with confounds_path.with_suffix(".json").open("w") as f:
             json.dump(metadata, f)
 
     if spaces is None:

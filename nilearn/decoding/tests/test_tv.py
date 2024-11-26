@@ -25,9 +25,7 @@ def test_tvl1_from_gradient(rng, alpha, l1_ratio, size=5, n_samples=10):
         X, y, w.copy().ravel(), alpha, l1_ratio, mask
     ) == squared_loss(
         X, y, w.copy().ravel(), compute_grad=False
-    ) + alpha * _tvl1_objective_from_gradient(
-        gradid
-    )
+    ) + alpha * _tvl1_objective_from_gradient(gradid)
 
 
 def test_tvl1_objective_raises_value_error_if_invalid_loss():

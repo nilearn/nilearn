@@ -2,39 +2,44 @@
 Surface-based dataset first and second level analysis of a dataset
 ==================================================================
 
-Full step-by-step example of fitting a :term:`GLM` (first and second level
-analysis) in a 10-subjects dataset and visualizing the results.
+Full step-by-step example of fitting a :term:`GLM`
+(first and second level analysis) in a 10-subjects dataset
+and visualizing the results.
 
 More specifically:
 
-1. Download an :term:`fMRI` :term:`BIDS` dataset
-with two language conditions to contrast.
-2. Project the data to a standard mesh, fsaverage5,
-aka the Freesurfer template :term:`mesh` downsampled
-to about 10k nodes per hemisphere.
-3. Run the first level model objects.
-4. Fit a second level model on the fitted first level models.
+#. Download an :term:`fMRI` :term:`BIDS` dataset
+   with two language conditions to contrast.
 
-Notice that in this case the preprocessed :term:`bold<BOLD>`
-images were already normalized to the same :term:`MNI` space.
+#. Project the data to a standard mesh, fsaverage5,
+   also known as the Freesurfer template :term:`mesh`
+   downsampled to about 10k nodes per hemisphere.
+
+#. Run the first level model objects.
+
+#. Fit a second level model on the fitted first level models.
+
+Notice that in this case the preprocessed :term:`bold<BOLD>` images
+were already normalized to the same :term:`MNI` space.
 """
 
 # %%
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------
-# We download a simplified :term:`BIDS` dataset made available for illustrative
-# purposes. It contains only the necessary
-# information to run a statistical analysis using Nilearn. The raw data
-# subject folders only contain bold.json and events.tsv files, while the
-# derivatives folder includes the preprocessed files preproc.nii and the
-# confounds.tsv files.
+# We download a simplified :term:`BIDS` dataset
+# made available for illustrative purposes.
+# It contains only the necessary information
+# to run a statistical analysis using Nilearn.
+# The raw data subject folders only contain bold.json and events.tsv files,
+# while the derivatives folder includes the preprocessed files preproc.nii
+# and the confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
 data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 # %%
 # Here is the location of the dataset on disk.
-print(data.data_dir)
+data.data_dir
 
 # %%
 # Obtain automatically FirstLevelModel objects and fit arguments
@@ -42,8 +47,8 @@ print(data.data_dir)
 # From the dataset directory we automatically obtain
 # the FirstLevelModel objects
 # with their subject_id filled from the :term:`BIDS` dataset.
-# Moreover, we obtain
-# for each model a dictionary with run_imgs, events and confounder regressors
+# Moreover, we obtain for each model
+# a dictionary with run_imgs, events and confounder regressors
 # since in this case a confounds.tsv file is available
 # in the :term:`BIDS` dataset.
 # To get the first level models we only have to specify the dataset directory
@@ -51,101 +56,64 @@ print(data.data_dir)
 from nilearn.glm.first_level import first_level_from_bids
 
 task_label = "languagelocalizer"
-_, models_run_imgs, models_events, models_confounds = first_level_from_bids(
-    data.data_dir, task_label, img_filters=[("desc", "preproc")], n_jobs=2
+models, run_imgs, events, confounds = first_level_from_bids(
+    data.data_dir,
+    task_label,
+    img_filters=[("desc", "preproc")],
+    hrf_model="glover + derivative",
+    n_jobs=2,
 )
 
 # %%
-# We also need to get the :term:`TR` information.
-# For that we use the json sidecar file of the dataset's functional images.
-import json
-from pathlib import Path
-
-json_file = (
-    Path(data.data_dir)
-    / "derivatives"
-    / "sub-01"
-    / "func"
-    / "sub-01_task-languagelocalizer_desc-preproc_bold.json"
-)
-with open(json_file) as f:
-    t_r = json.load(f)["RepetitionTime"]
-
-# %%
-# Project :term:`fMRI` data to the surface: First get fsaverage5.
-from nilearn.datasets import fetch_surf_fsaverage
-
-fsaverage = fetch_surf_fsaverage(mesh="fsaverage5")
-
-# %%
+# Project :term:`fMRI` data to the surface and compute GLM and contrasts
+#
 # The projection function simply takes the :term:`fMRI` data and the mesh.
 # Note that those correspond spatially, as they are both in :term:`MNI` space.
-import numpy as np
+from pathlib import Path
 
-from nilearn import surface
-from nilearn.glm.contrasts import compute_contrast
-from nilearn.glm.first_level import make_first_level_design_matrix, run_glm
+from nilearn.datasets import load_fsaverage
+from nilearn.surface import SurfaceImage
 
-# %%
+fsaverage5 = load_fsaverage()
+
 # Empty lists in which we are going to store activation values.
-z_scores_right = []
 z_scores_left = []
-for fmri_img, confound, events in zip(
-    models_run_imgs, models_confounds, models_events
+z_scores_right = []
+for first_level_glm, fmri_img, confound, event in zip(
+    models, run_imgs, confounds, events
 ):
-    texture = surface.vol_to_surf(fmri_img[0], fsaverage.pial_right)
-    n_scans = texture.shape[1]
-    frame_times = t_r * (np.arange(n_scans) + 0.5)
+    print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 
-    # Create the design matrix
-    #
-    # We specify an hrf model containing Glover model and its time derivative.
-    # The drift model is implicitly a cosine basis with period cutoff 128s.
-    design_matrix = make_first_level_design_matrix(
-        frame_times,
-        events=events[0],
-        hrf_model="glover + derivative",
-        add_regs=confound[0],
+    image = SurfaceImage.from_volume(
+        mesh=fsaverage5["pial"],
+        volume_img=fmri_img[0],
     )
 
+    # Fit GLM.
+    first_level_glm.fit(run_imgs=image, events=event[0], confounds=confound[0])
+
     # Contrast specification
+    design_matrix = first_level_glm.design_matrices_[0]
     contrast_values = (design_matrix.columns == "language") * 1.0 - (
         design_matrix.columns == "string"
     )
+    z_scores = first_level_glm.compute_contrast(contrast_values, stat_type="t")
+    z_scores_left.append(z_scores.data.parts["left"])
+    z_scores_right.append(z_scores.data.parts["right"])
 
-    # Setup and fit GLM.
-    # Note that the output consists in 2 variables: `labels` and `fit`
-    # `labels` tags voxels according to noise autocorrelation.
-    # `estimates` contains the parameter estimates.
-    # We input them for contrast computation.
-    labels, estimates = run_glm(texture.T, design_matrix.values)
-    contrast = compute_contrast(
-        labels, estimates, contrast_values, stat_type="t"
-    )
-    # We present the Z-transform of the t map.
-    z_score = contrast.z_score()
-    z_scores_right.append(z_score)
-
-    # Do the left hemisphere exactly the same way.
-    texture = surface.vol_to_surf(fmri_img, fsaverage.pial_left)
-    labels, estimates = run_glm(texture.T, design_matrix.values)
-    contrast = compute_contrast(
-        labels, estimates, contrast_values, stat_type="t"
-    )
-    z_scores_left.append(contrast.z_score())
-
-# %%
-# Individual activation maps have been accumulated in the z_score_left
-# and az_scores_right lists respectively. We can now use them in a
-# group study (one-sample study).
 
 # %%
 # Group study
 # -----------
 #
+# Individual activation maps have been accumulated
+# in the ``z_score_left`` and ``z_scores_right`` lists respectively.
+# We can now use them in a group study (one-sample study).
+#
 # Prepare figure for concurrent plot of individual maps
 # compute population-level maps for left and right hemisphere
 # We directly do that on the value arrays.
+import numpy as np
 from scipy.stats import norm, ttest_1samp
 
 _, pval_left = ttest_1samp(np.array(z_scores_left), 0)
@@ -158,27 +126,20 @@ z_val_right = norm.isf(pval_right)
 
 # %%
 # Plot the resulting maps, at first on the left hemisphere.
-from nilearn import plotting
+from nilearn.datasets import load_fsaverage_data
+from nilearn.plotting import plot_surf_stat_map, show
 
-plotting.plot_surf_stat_map(
-    fsaverage.infl_left,
-    z_val_left,
-    hemi="left",
-    title="language-string, left hemisphere",
-    colorbar=True,
-    threshold=3.0,
-    bg_map=fsaverage.sulc_left,
-)
-# %%
-# Next, on the right hemisphere.
-plotting.plot_surf_stat_map(
-    fsaverage.infl_right,
-    z_val_right,
-    hemi="right",
-    title="language-string, right hemisphere",
-    colorbar=True,
-    threshold=3.0,
-    bg_map=fsaverage.sulc_right,
-)
+fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
-plotting.show()
+for hemi, stat_map in zip(["left", "right"], [z_val_left, z_val_right]):
+    plot_surf_stat_map(
+        surf_mesh=fsaverage5["inflated"],
+        stat_map=stat_map,
+        hemi=hemi,
+        title=f"(language-string), {hemi} hemisphere",
+        colorbar=True,
+        threshold=3.0,
+        bg_map=fsaverage_data,
+    )
+
+show()

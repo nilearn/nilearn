@@ -73,7 +73,7 @@ def from_matrix_vector(matrix, vector):
 
     Returns
     -------
-    xform: numpy.ndarray
+    xform : numpy.ndarray
         An (N+1, N+1) transform matrix.
 
     See Also
@@ -117,8 +117,10 @@ def coord_transform(x, y, z, affine):
     z : number or ndarray (same shape as input)
         The z coordinates in the output space.
 
-    Warning: The x, y and z have their output space (e.g. MNI) coordinate
-    ordering, not 3D numpy image ordering.
+    .. warning::
+
+        The x, y and z have their output space (e.g. MNI) coordinate ordering,
+        not 3D numpy image ordering.
 
     Examples
     --------
@@ -219,7 +221,9 @@ def get_mask_bounds(img):
 
     """
     img = _utils.check_niimg_3d(img)
-    mask = _utils.numpy_conversions._asarray(_get_data(img), dtype=bool)
+    mask = _utils.numpy_conversions.as_ndarray(
+        _get_data(img), dtype=bool, copy=False
+    )
     affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = find_objects(mask.astype(int))
@@ -289,7 +293,7 @@ def _resample_one_img(
 
     # If data is binary and interpolation is continuous or linear,
     # warn the user as this might be unintentional
-    if sorted(list(np.unique(data))) == [0, 1] and interpolation_order != 0:
+    if interpolation_order != 0 and np.array_equal(np.unique(data), [0, 1]):
         warnings.warn(
             "Resampling binary images with continuous or "
             "linear interpolation. This might lead to "
@@ -337,11 +341,11 @@ def _check_force_resample(force_resample):
         warnings.warn(
             (
                 "'force_resample' will be set to 'True'"
-                " by default in Nilearn 0.13.0. \n"
+                " by default in Nilearn 0.13.0.\n"
                 "Use 'force_resample=True' to suppress this warning."
             ),
             FutureWarning,
-            stacklevel=2,
+            stacklevel=3,
         )
     return force_resample
 
@@ -515,7 +519,7 @@ def resample_img(
     affine = img.affine
 
     # If later on we want to impute sform using qform add this condition
-    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771 # noqa:E501
+    # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771  # noqa: E501
     if hasattr(img, "get_sform"):  # NIfTI images only
         _, sform_code = img.get_sform(coded=True)
         if not sform_code:
@@ -781,7 +785,7 @@ def resample_to_img(
 
     Returns
     -------
-    resampled: nibabel.Nifti1Image
+    resampled : nibabel.Nifti1Image
         input image, resampled to have respectively target image shape and
         affine as shape and affine.
 

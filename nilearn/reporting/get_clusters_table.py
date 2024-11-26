@@ -264,9 +264,9 @@ def get_clusters_table(
 
     Returns
     -------
-    df : :obj:`pandas.DataFrame`
-        Table with peaks and subpeaks from thresholded ``stat_img``.
-        The columns in this table include:
+    result_table : :obj:`pandas.DataFrame`
+                   Table with peaks and subpeaks from thresholded ``stat_img``.
+                   The columns in this table include:
 
         ================== ====================================================
         Cluster ID         The cluster number. Subpeaks have letters after the
@@ -347,7 +347,7 @@ def get_clusters_table(
 
         # Now re-label and create table
         label_map = label(binarized, bin_struct)[0]
-        clust_ids = sorted(list(np.unique(label_map)[1:]))
+        clust_ids = sorted(np.unique(label_map)[1:])
         peak_vals = np.array(
             [np.max(temp_stat_map * (label_map == c)) for c in clust_ids]
         )
@@ -416,8 +416,8 @@ def get_clusters_table(
         no_clusters_found = False
 
     if no_clusters_found:
-        df = pd.DataFrame(columns=cols)
+        result_table = pd.DataFrame(columns=cols)
     else:
-        df = pd.DataFrame(columns=cols, data=rows)
+        result_table = pd.DataFrame(columns=cols, data=rows)
 
-    return (df, label_maps) if return_label_maps else df
+    return (result_table, label_maps) if return_label_maps else result_table

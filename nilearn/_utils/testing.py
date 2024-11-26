@@ -1,7 +1,6 @@
 """Utilities for testing nilearn."""
 
 # Author: Alexandre Abraham, Philippe Gervais
-import functools
 import gc
 import os
 import sys
@@ -32,7 +31,7 @@ try:
 
 except ImportError:
 
-    def with_memory_profiler(func):
+    def with_memory_profiler(func):  # noqa: ARG001
         """Use as a decorator to skip tests requiring memory_profiler."""
 
         def dummy_func():
@@ -46,18 +45,6 @@ except ImportError:
 def is_64bit() -> bool:
     """Return True if python is run on 64bits."""
     return sys.maxsize > 2**32
-
-
-def check_deprecation(func, match=None):
-    """Check if a function raises a deprecation warning."""
-
-    @functools.wraps(func)
-    def wrapped(*args, **kwargs):
-        with pytest.warns(DeprecationWarning, match=match):
-            result = func(*args, **kwargs)
-        return result
-
-    return wrapped
 
 
 def assert_memory_less_than(
@@ -150,8 +137,9 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
     invalid_keys = input_keys - valid_keys
     if len(invalid_keys) > 0:
         raise TypeError(
-            "%s: unexpected keyword argument(s): %s"
-            % (sys._getframe().f_code.co_name, " ".join(invalid_keys))
+            "{}: unexpected keyword argument(s): {}".format(
+                sys._getframe().f_code.co_name, " ".join(invalid_keys)
+            )
         )
     create_files = kwargs.get("create_files", True)
     use_wildcards = kwargs.get("use_wildcards", False)
@@ -184,7 +172,8 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
 
 def are_tests_running():
     """Return whether we are running the pytest test loader."""
-    return "PYTEST_CURRENT_TEST" in os.environ
+    # https://docs.pytest.org/en/stable/example/simple.html#detect-if-running-from-within-a-pytest-run
+    return os.environ.get("PYTEST_VERSION") is not None
 
 
 def skip_if_running_tests(msg=""):
@@ -197,4 +186,4 @@ def skip_if_running_tests(msg=""):
 
     """
     if are_tests_running():
-        pytest.skip(msg)
+        pytest.skip(msg, allow_module_level=True)

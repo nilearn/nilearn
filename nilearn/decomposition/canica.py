@@ -98,9 +98,10 @@ class CanICA(_MultiPCA):
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
@@ -212,7 +213,8 @@ class CanICA(_MultiPCA):
 
     def _unmix_components(self, components):
         """Core function of CanICA than rotate components_ to maximize \
-        independence."""
+        independence.
+        """
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)

@@ -32,7 +32,7 @@ class BaseAxes:
         self.ax = ax
         self.direction = direction
         self.coord = coord
-        self._object_bounds = list()
+        self._object_bounds = []
         self.shape = None
         self.radiological = radiological
 
@@ -116,7 +116,6 @@ class BaseAxes:
         annotation_on_left = "L"
         annotation_on_right = "R"
         if self.radiological:
-            ax.invert_xaxis()
             annotation_on_left = "R"
             annotation_on_right = "L"
         ax.text(
@@ -127,9 +126,12 @@ class BaseAxes:
             horizontalalignment="left",
             verticalalignment="top",
             size=size,
-            bbox=dict(
-                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
-            ),
+            bbox={
+                "boxstyle": "square,pad=0",
+                "ec": bg_color,
+                "fc": bg_color,
+                "alpha": 1,
+            },
             **kwargs,
         )
 
@@ -141,7 +143,7 @@ class BaseAxes:
             horizontalalignment="right",
             verticalalignment="top",
             size=size,
-            bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
+            bbox={"boxstyle": "square,pad=0", "ec": bg_color, "fc": bg_color},
             **kwargs,
         )
 
@@ -253,7 +255,8 @@ class BaseAxes:
 
     def draw_position(self, size, bg_color, **kwargs):
         """``draw_position`` is not implemented in base class and \
-        should be implemented in derived classes."""
+        should be implemented in derived classes.
+        """
         raise NotImplementedError(
             "'draw_position' should be implemented in derived classes"
         )
@@ -335,9 +338,12 @@ class CutAxes(BaseAxes):
             horizontalalignment="left",
             verticalalignment="bottom",
             size=size,
-            bbox=dict(
-                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
-            ),
+            bbox={
+                "boxstyle": "square,pad=0",
+                "ec": bg_color,
+                "fc": bg_color,
+                "alpha": 1,
+            },
             **kwargs,
         )
 
@@ -347,10 +353,7 @@ def _get_index_from_direction(direction):
     directions = ["x", "y", "z"]
     try:
         # l and r are subcases of x
-        if direction in "lr":
-            index = 0
-        else:
-            index = directions.index(direction)
+        index = 0 if direction in "lr" else directions.index(direction)
     except ValueError:
         message = (
             f"{direction} is not a valid direction. "
@@ -466,7 +469,8 @@ class GlassBrainAxes(BaseAxes):
     def draw_position(self, size, bg_color, **kwargs):
         """Not implemented as it does not make sense to draw crosses for \
         the position of the cuts \
-        since we are taking the max along one axis."""
+        since we are taking the max along one axis.
+        """
         pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
@@ -487,9 +491,9 @@ class GlassBrainAxes(BaseAxes):
             relevant_coords = []
             xcoords, ycoords, zcoords = marker_coords.T
             for cidx, xc in enumerate(xcoords):
-                if self.direction == "r" and xc >= 0:
-                    relevant_coords.append(cidx)
-                elif self.direction == "l" and xc <= 0:
+                if (self.direction == "r" and xc >= 0) or (
+                    self.direction == "l" and xc <= 0
+                ):
                     relevant_coords.append(cidx)
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
@@ -581,12 +585,14 @@ class GlassBrainAxes(BaseAxes):
         if self.direction in "lr":
             relevant_lines = []
             for lidx, line in enumerate(line_coords):
-                if self.direction == "r":
-                    if line[0, 0] >= 0 and line[1, 0] >= 0:
-                        relevant_lines.append(lidx)
-                elif self.direction == "l":
-                    if line[0, 0] < 0 and line[1, 0] < 0:
-                        relevant_lines.append(lidx)
+                if (
+                    self.direction == "r"
+                    and line[0, 0] >= 0
+                    and line[1, 0] >= 0
+                ) or (
+                    self.direction == "l" and line[0, 0] < 0 and line[1, 0] < 0
+                ):
+                    relevant_lines.append(lidx)
             line_coords = np.array(line_coords)[relevant_lines]
             line_values = line_values[relevant_lines]
 

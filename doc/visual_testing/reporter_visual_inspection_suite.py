@@ -13,8 +13,25 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from nilearn import datasets
-from nilearn.experimental import surface
+from nilearn.datasets import (
+    fetch_adhd,
+    fetch_atlas_difumo,
+    fetch_atlas_msdl,
+    fetch_atlas_schaefer_2018,
+    fetch_atlas_surf_destrieux,
+    fetch_atlas_yeo_2011,
+    fetch_development_fmri,
+    fetch_ds000030_urls,
+    fetch_fiac_first_level,
+    fetch_icbm152_2009,
+    fetch_icbm152_brain_gm_mask,
+    fetch_miyawaki2008,
+    fetch_oasis_vbm,
+    fetch_openneuro_dataset,
+    load_fsaverage,
+    load_nki,
+    select_from_index,
+)
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -30,8 +47,11 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceLabelsMasker,
+    SurfaceMasker,
 )
 from nilearn.reporting import make_glm_report
+from nilearn.surface import SurfaceImage
 
 REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
@@ -40,7 +60,6 @@ REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 # %%
 # Adapted from examples/04_glm_first_level/plot_adhd_dmn.py
 def report_flm_adhd_dmn():
-
     t_r = 2.0
     slice_time_ref = 0.0
     n_scans = 176
@@ -58,7 +77,7 @@ def report_flm_adhd_dmn():
         memory="nilearn_cache",
     )
 
-    adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+    adhd_dataset = fetch_adhd(n_subjects=1)
     seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 
     masker_report = seed_masker.generate_report()
@@ -99,7 +118,7 @@ def report_flm_adhd_dmn():
 # %%
 # Adapted from examples/04_glm_first_level/plot_bids_features.py
 def _fetch_bids_data():
-    _, urls = datasets.func.fetch_ds000030_urls()
+    _, urls = fetch_ds000030_urls()
 
     exclusion_patterns = [
         "*group*",
@@ -116,11 +135,11 @@ def _fetch_bids_data():
         "*task-scap*",
         "*task-task*",
     ]
-    urls = datasets.func.select_from_index(
+    urls = select_from_index(
         urls, exclusion_filters=exclusion_patterns, n_subjects=1
     )
 
-    data_dir, _ = datasets.func.fetch_openneuro_dataset(urls=urls)
+    data_dir, _ = fetch_openneuro_dataset(urls=urls)
     return data_dir
 
 
@@ -195,7 +214,7 @@ def report_flm_bids_features():
 # %%
 # adapted from examples/04_glm_first_level/plot_two_runs_model.py
 def report_flm_fiac():
-    data = datasets.func.fetch_fiac_first_level()
+    data = fetch_fiac_first_level()
     fmri_img = [data["func1"], data["func2"]]
 
     mean_img_ = mean_img(fmri_img[0], copy_header=True)
@@ -243,14 +262,15 @@ def _make_design_matrix_slm_oasis(oasis_dataset, n_subjects):
 def report_slm_oasis():
     # more subjects requires more memory
     n_subjects = 5
-    oasis_dataset = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
+    oasis_dataset = fetch_oasis_vbm(n_subjects=n_subjects)
 
     # Resample the images, since this mask has a different resolution
     mask_img = resample_to_img(
-        datasets.fetch_icbm152_brain_gm_mask(),
+        fetch_icbm152_brain_gm_mask(),
         oasis_dataset.gray_matter_maps[0],
         interpolation="nearest",
         copy_header=True,
+        force_resample=True,
     )
 
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)
@@ -273,7 +293,7 @@ def report_slm_oasis():
     report = make_glm_report(
         model=second_level_model,
         contrasts=contrast,
-        bg_img=datasets.fetch_icbm152_2009()["t1"],
+        bg_img=fetch_icbm152_2009()["t1"],
         height_control=None,
         plot_type="glass",
     )
@@ -284,11 +304,10 @@ def report_slm_oasis():
 # %%
 # Adapted from examples/03_connectivity/plot_probabilistic_atlas_extraction.py
 def report_nifti_maps_masker():
-
-    atlas = datasets.fetch_atlas_msdl()
+    atlas = fetch_atlas_msdl()
     atlas_filename = atlas["maps"]
 
-    data = datasets.fetch_development_fmri(n_subjects=1)
+    data = fetch_development_fmri(n_subjects=1)
 
     masker = NiftiMapsMasker(
         maps_img=atlas_filename,
@@ -307,8 +326,7 @@ def report_nifti_maps_masker():
 #  %%
 # Adapted from examples/06_manipulating_images/plot_nifti_labels_simple.py
 def report_nifti_labels_masker():
-
-    atlas = datasets.fetch_atlas_schaefer_2018()
+    atlas = fetch_atlas_schaefer_2018()
 
     atlas.labels = np.insert(atlas.labels, 0, "Background")
 
@@ -321,7 +339,7 @@ def report_nifti_labels_masker():
     report = masker.generate_report()
     report.save_as_html(REPORTS_DIR / "nifti_labels_masker_atlas.html")
 
-    data = datasets.fetch_development_fmri(n_subjects=1)
+    data = fetch_development_fmri(n_subjects=1)
     masker.fit(data.func[0])
     report = masker.generate_report()
     report.save_as_html(REPORTS_DIR / "nifti_labels_masker_fitted.html")
@@ -331,7 +349,6 @@ def report_nifti_labels_masker():
 #  %%
 # Adapted from examples/06_manipulating_images/plot_nifti_simple.py
 def report_nifti_masker():
-
     masker = NiftiMasker(
         standardize="zscore_sample",
         mask_strategy="epi",
@@ -341,7 +358,7 @@ def report_nifti_masker():
         cmap="gray",
     )
 
-    data = datasets.fetch_development_fmri(n_subjects=1)
+    data = fetch_development_fmri(n_subjects=1)
     masker.fit(data.func[0])
     report = masker.generate_report()
     report.save_as_html(REPORTS_DIR / "nifti_masker.html")
@@ -351,8 +368,7 @@ def report_nifti_masker():
 # %%
 # Adapted from examples/02_decoding/plot_miyawaki_encoding.py
 def report_multi_nifti_masker():
-
-    data = datasets.fetch_miyawaki2008()
+    data = fetch_miyawaki2008()
 
     masker = MultiNiftiMasker(
         mask_img=data.mask,
@@ -375,10 +391,9 @@ def report_multi_nifti_masker():
 #  %%
 #  Adapted from examples/03_connectivity/plot_atlas_comparison.py
 def report_multi_nifti_labels_masker():
+    yeo = fetch_atlas_yeo_2011()
 
-    yeo = datasets.fetch_atlas_yeo_2011()
-
-    data = datasets.fetch_development_fmri(n_subjects=2)
+    data = fetch_development_fmri(n_subjects=2)
 
     masker = MultiNiftiLabelsMasker(
         labels_img=yeo["thick_17"],
@@ -401,12 +416,11 @@ def report_multi_nifti_labels_masker():
 #  %%
 #  Adapted from examples/03_connectivity/plot_atlas_comparison.py
 def report_multi_nifti_maps_masker():
-
-    difumo = datasets.fetch_atlas_difumo(
+    difumo = fetch_atlas_difumo(
         dimension=64, resolution_mm=2, legacy_format=False
     )
 
-    data = datasets.fetch_development_fmri(n_subjects=2)
+    data = fetch_development_fmri(n_subjects=2)
 
     masker = MultiNiftiMapsMasker(
         maps_img=difumo.maps,
@@ -430,21 +444,27 @@ def report_multi_nifti_maps_masker():
 
 
 def report_surface_masker():
-
-    masker = surface.SurfaceMasker()
-    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    masker = SurfaceMasker()
+    img = load_nki(mesh_type="inflated")[0]
     masker.fit_transform(img)
     surface_masker_report = masker.generate_report()
     surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
 
-    labels_img, _ = surface.fetch_destrieux(mesh_type="inflated")
+    fsaverage = load_fsaverage("fsaverage5")
+    destrieux = fetch_atlas_surf_destrieux()
+    destrieux_atlas = SurfaceImage(
+        mesh=fsaverage["inflated"],
+        data={
+            "left": destrieux["map_left"],
+            "right": destrieux["map_right"],
+        },
+    )
 
-    mask = labels_img
+    mask = destrieux_atlas
     for part in mask.data.parts:
         mask.data.parts[part] = mask.data.parts[part] == 34
 
-    masker = surface.SurfaceMasker(mask)
-    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    masker = SurfaceMasker(mask)
     masker.fit_transform(img)
     surface_masker_with_mask_report = masker.generate_report()
     surface_masker_with_mask_report.save_as_html(
@@ -458,16 +478,24 @@ def report_surface_masker():
 
 
 def report_surface_label_masker():
+    fsaverage = load_fsaverage("fsaverage5")
+    destrieux = fetch_atlas_surf_destrieux()
+    labels_img = SurfaceImage(
+        mesh=fsaverage["inflated"],
+        data={
+            "left": destrieux["map_left"],
+            "right": destrieux["map_right"],
+        },
+    )
+    label_names = [x.decode("utf-8") for x in destrieux.labels]
 
-    labels_img, label_names = surface.fetch_destrieux(mesh_type="inflated")
-
-    labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
+    labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
     labels_masker_report_unfitted = labels_masker.generate_report()
     labels_masker_report_unfitted.save_as_html(
         REPORTS_DIR / "surface_label_masker_unfitted.html"
     )
 
-    img = surface.fetch_nki(mesh_type="inflated", n_subjects=1)[0]
+    img = load_nki(mesh_type="inflated")[0]
 
     labels_masker.transform(img)
     labels_masker_report = labels_masker.generate_report()
@@ -483,7 +511,6 @@ def report_surface_label_masker():
 
 # %%
 if __name__ == "__main__":
-
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 

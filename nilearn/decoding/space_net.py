@@ -29,9 +29,10 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.experimental.surface import SurfaceMasker
 from nilearn.image import get_data
+from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
+from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin
@@ -45,7 +46,8 @@ from .space_net_solvers import (
 
 def _crop_mask(mask):
     """Crops input mask to produce tighter (i.e smaller) bounding box \
-    with the same support (active voxels)."""
+    with the same support (active voxels).
+    """
     idx = np.where(mask)
     if idx[0].size == 0:
         raise ValueError(
@@ -77,10 +79,10 @@ def _univariate_feature_screening(
     y : ndarray, shape (n_samples,)
         Response Vector.
 
-    mask: ndarray or booleans, shape (nx, ny, nz)
+    mask : ndarray or booleans, shape (nx, ny, nz)
         Mask defining brain Rois.
 
-    is_classif: bool
+    is_classif : bool
         Flag telling whether the learning task is classification or regression.
 
     screening_percentile : float in the closed interval [0., 100.]
@@ -91,7 +93,7 @@ def _univariate_feature_screening(
 
     Returns
     -------
-    X_: ndarray, shape (n_samples, n_features_)
+    X_ : ndarray, shape (n_samples, n_features_)
         Reduced design matrix with only columns corresponding to the voxels
         retained after screening.
 
@@ -109,7 +111,8 @@ def _univariate_feature_screening(
         for sample in range(sX.shape[0]):
             sX[sample] = gaussian_filter(
                 unmask_from_to_3d_array(
-                    X[sample].copy(), mask  # avoid modifying X
+                    X[sample].copy(),  # avoid modifying X
+                    mask,
                 ),
                 (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm),
             )[mask]
@@ -223,7 +226,7 @@ class _EarlyStoppingCallback:
         """Perform callback."""
         # misc
         if not isinstance(variables, dict):
-            variables = dict(w=variables)
+            variables = {"w": variables}
         self.counter += 1
         w = variables["w"]
 
@@ -242,7 +245,7 @@ class _EarlyStoppingCallback:
             message = "."
             if self.verbose > 1:
                 message = (
-                    f"Early stopping. \n" f"Test score: {score:.8f} {40 * '-'}"
+                    f"Early stopping.\nTest score: {score:.8f} {40 * '-'}"
                 )
             logger.log(message, verbose=self.verbose, stack_level=2)
             return True
@@ -808,7 +811,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
     def _set_coef_and_intercept(self, w):
         """Set the loadings vector (coef) and the intercept of the fitted \
-        model."""
+        model.
+        """
         self.w_ = np.array(w)
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
@@ -836,6 +840,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self : `SpaceNet` object
             Model selection is via cross-validation with bagging.
         """
+        if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
+            raise NotImplementedError(
+                "Running space net on surface objects is not supported."
+            )
+
         # misc
         self.check_params()
         if self.memory is None or isinstance(self.memory, str):
@@ -847,10 +856,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
         tic = time.time()
 
-        masker_type = "nii"
-        if isinstance(self.mask, SurfaceMasker):
-            masker_type = "surface"
-        self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        self.masker_ = check_embedded_masker(self, masker_type="nii")
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(
@@ -898,11 +904,10 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                 solver = graph_net_squared_loss
             else:
                 solver = graph_net_logistic
+        elif not self.is_classif or loss == "mse":
+            solver = partial(tvl1_solver, loss="mse")
         else:
-            if not self.is_classif or loss == "mse":
-                solver = partial(tvl1_solver, loss="mse")
-            else:
-                solver = partial(tvl1_solver, loss="logistic")
+            solver = partial(tvl1_solver, loss="logistic")
 
         # generate fold indices
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
@@ -938,7 +943,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         )
 
         # main loop: loop on classes and folds
-        solver_params = dict(tol=self.tol, max_iter=self.max_iter)
+        solver_params = {"tol": self.tol, "max_iter": self.max_iter}
         self.best_model_params_ = []
         self.alpha_grids_ = []
         for (
@@ -1410,7 +1415,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias: bool, optional (default False)
+    debias : bool, optional (default False)
         If set, then the estimated weights maps will be debiased.
 
     Attributes
