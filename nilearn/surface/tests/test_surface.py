@@ -19,8 +19,6 @@ from nilearn.surface import (
     PolyData,
     PolyMesh,
     SurfaceImage,
-    check_mesh,
-    check_mesh_and_data,
     load_surf_data,
     load_surf_mesh,
     vol_to_surf,
@@ -40,6 +38,8 @@ from nilearn.surface.surface import (
     _sample_locations_between_surfaces,
     _uniform_ball_cloud,
     _vertex_outer_normals,
+    check_mesh,
+    check_mesh_and_data,
 )
 from nilearn.surface.tests._testing import (
     flat_mesh,
@@ -519,8 +519,6 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
         coordinates=inner.coordinates + np.asarray([0.0, 0.0, 1.0]),
         faces=inner.faces,
     )
-    print(inner.coordinates)
-    print(outer.coordinates)
     locations = _sample_locations_between_surfaces(
         outer, inner, affine_eye, n_points=n_points, depth=depth
     )
