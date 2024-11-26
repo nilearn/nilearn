@@ -1064,3 +1064,13 @@ def test_polydata_error():
 def test_polymesh_error():
     with pytest.raises(ValueError, match="Either left or right"):
         PolyMesh(left=None, right=None)
+
+
+def test_future_warning_to_fetch_mesh_coordinates_and_faces():
+    mesh = generate_surf()
+    with pytest.warns(FutureWarning, match="fetching coordinates with"):
+        mesh[0], mesh[1]
+
+    with pytest.warns(FutureWarning, match="iterating over a mesh to return"):
+        for part in mesh:
+            part  # noqa: B018
