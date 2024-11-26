@@ -373,8 +373,7 @@ def _process_second_level_input(second_level_input):
     elif (
         hasattr(second_level_input, "__iter__")
         and isinstance(second_level_input[0], SurfaceImage)
-        or isinstance(second_level_input, SurfaceImage)
-    ):
+    ) or isinstance(second_level_input, SurfaceImage):
         return _process_second_level_input_as_surface_image(second_level_input)
     else:
         return mean_img(second_level_input, copy_header=True), None
