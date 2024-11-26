@@ -1,6 +1,5 @@
 """Handle plotting of surfaces for html rendering."""
 
-import collections.abc
 import json
 from warnings import warn
 
@@ -8,7 +7,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-from nilearn import datasets, surface
+from nilearn import surface
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.plotting import cm
@@ -161,31 +160,6 @@ def one_mesh_info(
         vmax=vmax,
         vmin=vmin,
     )
-
-
-def check_mesh(mesh):
-    """Validate type and content of a mesh."""
-    if isinstance(mesh, str):
-        return datasets.fetch_surf_fsaverage(mesh)
-    if not isinstance(mesh, collections.abc.Mapping):
-        raise TypeError(
-            "The mesh should be a str or a dictionary, "
-            f"you provided: {type(mesh).__name__}."
-        )
-    missing = {
-        "pial_left",
-        "pial_right",
-        "sulc_left",
-        "sulc_right",
-        "infl_left",
-        "infl_right",
-    }.difference(mesh.keys())
-    if missing:
-        raise ValueError(
-            f"{missing} {('are' if len(missing) > 1 else 'is')} "
-            "missing from the provided mesh dictionary"
-        )
-    return mesh
 
 
 def _full_brain_info(

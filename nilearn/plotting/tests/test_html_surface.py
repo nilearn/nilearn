@@ -10,6 +10,7 @@ from nilearn.image import get_data
 from nilearn.plotting import html_surface
 from nilearn.plotting.html_surface import view_img_on_surf
 from nilearn.plotting.js_plotting_utils import decode
+from nilearn.surface.surface import check_mesh
 
 from .test_js_plotting_utils import check_colors, check_html
 
@@ -96,17 +97,17 @@ def test_get_vertexcolor():
 
 
 def test_check_mesh():
-    mesh = html_surface.check_mesh("fsaverage5")
-    assert mesh is html_surface.check_mesh(mesh)
+    mesh = check_mesh("fsaverage5")
+    assert mesh is check_mesh(mesh)
     with pytest.raises(ValueError):
-        html_surface.check_mesh("fsaverage2")
+        check_mesh("fsaverage2")
     mesh.pop("pial_left")
     with pytest.raises(ValueError):
-        html_surface.check_mesh(mesh)
+        check_mesh(mesh)
     with pytest.raises(TypeError):
-        html_surface.check_mesh(surface.load_surf_mesh(mesh["pial_right"]))
+        check_mesh(surface.load_surf_mesh(mesh["pial_right"]))
     mesh = datasets.fetch_surf_fsaverage()
-    assert mesh is html_surface.check_mesh(mesh)
+    assert mesh is check_mesh(mesh)
 
 
 def test_one_mesh_info():
