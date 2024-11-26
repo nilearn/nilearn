@@ -1,5 +1,6 @@
 """Transformer for computing ROI signals."""
 
+import pathlib
 import warnings
 
 import numpy as np
@@ -12,7 +13,6 @@ from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
-import pathlib
 
 
 class _ExtractionFunctor:
@@ -586,9 +586,13 @@ class NiftiLabelsMasker(BaseMasker):
             self._original_region_ids, tolerant=True
         )
 
-        # get the region ids existing in the self.labels_img_ 
+        # get the region ids existing in the self.labels_img_
         # from self._original_region_ids excluding the background
-        initial_region_ids = [region_id for region_id in self._original_region_ids if region_id != self.background_label]
+        initial_region_ids = [
+            region_id
+            for region_id in self._original_region_ids
+            if region_id != self.background_label
+        ]
         if self._region_id_name is not None:
             # check if initial_region_ids all exist in self._region_id_name
             missing_ids = set(initial_region_ids) - set(self._region_id_name)
