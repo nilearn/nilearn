@@ -148,7 +148,7 @@ def test_hierarchical_k_means_clustering_surface(
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
     # mask the surface image with 50 samples
-    X = masker.transform(surf_img((50,))).T
+    X = masker.transform(surf_img(50)).T
     # instantiate HierarchicalKMeans with n_clusters
     clustering = HierarchicalKMeans(n_clusters=n_clusters)
     # fit and transform the data

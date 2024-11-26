@@ -336,4 +336,4 @@ def test_parcellation_not_implemented_with_surface(
         # but would raise error if when we fit_transform on surface images
         else:
             parcellate = Parcellations(method=method, n_parcels=n_parcels)
-        parcellate.fit_transform(surf_img((50,)))
+        parcellate.fit_transform(surf_img(50))

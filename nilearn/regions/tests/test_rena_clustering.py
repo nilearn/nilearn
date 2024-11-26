@@ -122,7 +122,7 @@ def test_make_edges_surface(surf_mask, part):
     faces = surf_mask().mesh.parts[part].faces
     # the mask for left part has total 4 vertices out of which 2 are True
     # and for right part it has total 5 vertices out of which 3 are True
-    mask = surf_mask().data.parts[part][0]
+    mask = surf_mask().data.parts[part][:, 0]
     edges_unmasked, edges_mask = _make_edges_surface(faces, mask)
 
     # only one edge remains after masking the left part (between 2 vertices)
@@ -149,7 +149,7 @@ def test_make_edges_and_weights_surface(surf_mesh, surf_img):
     # create a surface masker
     masker = SurfaceMasker(surf_mask).fit()
     # mask the surface image with 50 samples
-    X = masker.transform(surf_img((50,)))
+    X = masker.transform(surf_img(50))
     # compute edges and weights
     edges, weights = _make_edges_and_weights_surface(X, surf_mask)
 
@@ -188,7 +188,7 @@ def test_rena_clustering_input_mask_surface(
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
     # mask the surface image with 50 samples
-    X = masker.transform(surf_img((50,)))
+    X = masker.transform(surf_img(50))
     if mask_as == "surface_image":
         # instantiate ReNA with mask_img as a SurfaceImage
         clustering = ReNA(mask_img=surf_mask(), n_clusters=n_clusters)
