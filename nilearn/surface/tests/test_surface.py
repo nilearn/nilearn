@@ -19,6 +19,8 @@ from nilearn.surface import (
     PolyData,
     PolyMesh,
     SurfaceImage,
+    check_mesh,
+    check_mesh_and_data,
     load_surf_data,
     load_surf_mesh,
     vol_to_surf,
@@ -84,6 +86,45 @@ class SurfaceLikeObject:
     @property
     def data(self):
         return self._data
+
+
+def test_check_mesh():
+    mesh = check_mesh("fsaverage5")
+    assert mesh is check_mesh(mesh)
+    with pytest.raises(ValueError):
+        check_mesh("fsaverage2")
+    mesh.pop("pial_left")
+    with pytest.raises(ValueError):
+        check_mesh(mesh)
+    with pytest.raises(TypeError):
+        check_mesh(load_surf_mesh(mesh["pial_right"]))
+
+
+def test_check_mesh_and_data(rng):
+    coords, faces = generate_surf()
+    mesh = InMemoryMesh(coords, faces)
+    data = mesh[0][:, 0]
+    m, d = check_mesh_and_data(mesh, data)
+    assert (m[0] == mesh[0]).all()
+    assert (m[1] == mesh[1]).all()
+    assert (d == data).all()
+    # Generate faces such that max index is larger than
+    # the length of coordinates array.
+    wrong_faces = rng.integers(coords.shape[0] + 1, size=(30, 3))
+    wrong_mesh = InMemoryMesh(coords, wrong_faces)
+    # Check that check_mesh_and_data raises an error
+    # with the resulting wrong mesh
+    with pytest.raises(
+        ValueError,
+        match="Mismatch between .* indices of faces .* number of nodes.",
+    ):
+        check_mesh_and_data(wrong_mesh, data)
+    # Alter the data and check that an error is raised
+    data = mesh[0][::2, 0]
+    with pytest.raises(
+        ValueError, match="Mismatch between number of nodes in mesh"
+    ):
+        check_mesh_and_data(mesh, data)
 
 
 def test_load_surf_data_numpy_gt_1pt23():
