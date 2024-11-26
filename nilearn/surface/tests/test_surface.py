@@ -50,44 +50,6 @@ from nilearn.surface.tests._testing import (
 datadir = Path(__file__).resolve().parent / "data"
 
 
-class MeshLikeObject:
-    """Class with attributes coordinates \
-       and faces to be used for testing purposes.
-    """
-
-    def __init__(self, coordinates, faces):
-        self._coordinates = coordinates
-        self._faces = faces
-
-    @property
-    def coordinates(self):
-        return self._coordinates
-
-    @property
-    def faces(self):
-        return self._faces
-
-
-class SurfaceLikeObject:
-    """Class with attributes mesh and data to be used for testing purposes."""
-
-    def __init__(self, mesh, data):
-        self._mesh = mesh
-        self._data = data
-
-    @classmethod
-    def fromarrays(cls, coordinates, faces, data):
-        return cls(MeshLikeObject(coordinates, faces), data)
-
-    @property
-    def mesh(self):
-        return self._mesh
-
-    @property
-    def data(self):
-        return self._data
-
-
 def test_check_mesh():
     mesh = check_mesh("fsaverage5")
     assert mesh is check_mesh(mesh)
