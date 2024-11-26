@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 
 from nilearn import image
@@ -149,10 +151,10 @@ def deconcatenate_surface_images(img):
 
     return [
         SurfaceImage(
-            mesh=mesh,
+            mesh=copy.deepcopy(mesh),
             data={
-                "left": img.data.parts["left"][..., i],
-                "right": img.data.parts["right"][..., i],
+                "left": img.data.parts["left"][..., i].copy(),
+                "right": img.data.parts["right"][..., i].copy(),
             },
         )
         for i in range(img.shape[1])
