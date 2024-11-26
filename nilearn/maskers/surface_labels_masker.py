@@ -375,7 +375,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 dtype=masked_img.dtype,
             )
             for label_idx, label in enumerate(self._labels_):
-                data[part_name][labels_part[:, 0] == label] = masked_img[
+                data[part_name][labels_part == label] = masked_img[
                     :, label_idx
                 ].T
         return SurfaceImage(mesh=self.labels_img.mesh, data=data)
