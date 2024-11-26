@@ -159,6 +159,7 @@ def permuted_ols_no_intercept(tested_var, target_var, n_perm, i):
         two_sided_test=False,
         random_state=i,
         output_type="dict",
+        verbose=1,
     )
     assert_equal(output["h0_max_t"].shape, (n_regressors, n_perm))
     return output["h0_max_t"]
@@ -173,6 +174,7 @@ def permuted_ols_with_intercept(tested_var, target_var, n_perm, i):
         two_sided_test=False,
         random_state=i,
         output_type="dict",
+        verbose=1,
     )
     # pval should not be significant
     assert_array_less(output["logp_max_t"], 1.0)
