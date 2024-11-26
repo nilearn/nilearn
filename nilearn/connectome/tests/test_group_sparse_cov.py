@@ -110,7 +110,7 @@ def test_group_sparse_covariance(rng):
 
     # These executions must hit the tolerance limit
     _, omega = group_sparse_covariance(
-        signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=0
+        signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=1
     )
     _, omega2 = group_sparse_covariance(
         signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=0
@@ -119,7 +119,8 @@ def test_group_sparse_covariance(rng):
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
 
-def test_group_sparse_covariance_with_probe_function(rng):
+@pytest.mark.parametrize("duality_gap", [True, False])
+def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
@@ -147,9 +148,22 @@ def test_group_sparse_covariance_with_probe_function(rng):
             omega_diff,  # noqa: ARG002
         ):
             if n >= 0:
-                _, objective = group_sparse_scores(
-                    omega, n_samples, emp_covs, alpha
-                )
+                if duality_gap:
+                    _, objective, _ = group_sparse_scores(
+                        omega,
+                        n_samples,
+                        emp_covs,
+                        alpha,
+                        duality_gap=duality_gap,
+                    )
+                else:
+                    _, objective = group_sparse_scores(
+                        omega,
+                        n_samples,
+                        emp_covs,
+                        alpha,
+                        duality_gap=duality_gap,
+                    )
                 self.objective.append(objective)
 
     # Use a probe to test for number of iterations and decreasing objective.
