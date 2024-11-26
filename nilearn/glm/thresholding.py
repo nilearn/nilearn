@@ -59,7 +59,7 @@ def _true_positive_fraction(z_vals, hommel_value, alpha):
     z_vals : array,
         A set of z-variates from which the FDR is computed.
 
-    hommel_value: :obj:`int`
+    hommel_value : :obj:`int`
         The Hommel value, used in the computations.
 
     alpha : :obj:`float`

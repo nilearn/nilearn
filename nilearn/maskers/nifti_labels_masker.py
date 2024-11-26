@@ -77,8 +77,10 @@ class NiftiLabelsMasker(BaseMasker):
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
-        Warning: This value must be consistent with label values and
-        image provided.
+
+        .. warning:::
+
+            This value must be consistent with label values and image provided.
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
@@ -334,11 +336,11 @@ class NiftiLabelsMasker(BaseMasker):
         ----------
         region_ids : :obj:`list` or numpy.array
 
-        tolerant: :obj:`bool`, default=True
+        tolerant : :obj:`bool`, default=True
                   If set to `True` this function will throw a warning,
                   and will throw an error otherwise.
 
-        resampling_done: :obj:`bool`, default=False
+        resampling_done : :obj:`bool`, default=False
                          Used to mention if this check is done
                          before or after the resampling has been done,
                          to adapt the message accordingly.
@@ -575,7 +577,7 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
-        repr = _utils._repr_niimgs(self.labels_img, shorten=(not self.verbose))
+        repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
@@ -633,7 +635,7 @@ class NiftiLabelsMasker(BaseMasker):
                 }
 
         if self.mask_img is not None:
-            repr = _utils._repr_niimgs(
+            repr = _utils.repr_niimgs(
                 self.mask_img, shorten=(not self.verbose)
             )
             msg = f"loading data from {repr}"

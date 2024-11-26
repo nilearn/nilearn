@@ -18,7 +18,8 @@ can plot, save and load them.
 # brain.
 #
 # Practically, this means that the main difference between the two is the basic
-# unit that holds the data. For volumetric images, that basic unit is a voxel,
+# unit that holds the data.
+# For volumetric images, that basic unit is a voxel,
 # while for surface images it is a :term:`vertex`.
 #
 # The goal of this tutorial is to show you how to work with surface images in
@@ -44,7 +45,8 @@ can plot, save and load them.
 #           representation.
 #
 # For brain surfaces we typically have two meshes: one for the left hemisphere
-# and one for the right hemisphere. Nilearn represents this as a
+# and one for the right hemisphere.
+# Nilearn represents this as a
 # :class:`~nilearn.surface.PolyMesh` object with two ``parts``:
 # ``left`` and ``right``.
 #
@@ -97,7 +99,8 @@ mesh = PolyMesh(
 # ----
 #
 # The data is the information stored at each :term:`vertex` of the
-# :term:`mesh`. This can be anything from the thickness of the cortex to the
+# :term:`mesh`.
+# This can be anything from the thickness of the cortex to the
 # activation level at that :term:`vertex`.
 #
 # For this example, let's create some random data for the vertices of the
@@ -123,7 +126,8 @@ surface_image = SurfaceImage(mesh=mesh, data=data)
 # --------------------------
 #
 # The surface image can be plotted using the different functions from the
-# :mod:`nilearn.plotting` module. Here we will show how to use the
+# :mod:`nilearn.plotting` module.
+# Here we will show how to use the
 # :func:`~nilearn.plotting.view_surf` function:
 from nilearn import plotting
 
@@ -163,7 +167,8 @@ surface_image.data.to_filename(output_dir / "surface_image_data.gii")
 
 # %%
 # You will see that this creates four files in total -- two for the
-# :term:`mesh` and two for the data. The files ending with ``_hemi-L.gii``
+# :term:`mesh` and two for the data.
+# The files ending with ``_hemi-L.gii``
 # correspond to the left part and those ending with ``_hemi-R.gii`` correspond
 # to the right part.
 
@@ -202,7 +207,8 @@ plotting.show()
 # ---------------
 #
 # Most things that can be done with volumetric images can also be done with
-# surface images. See following examples for more details:
+# surface images.
+# See following examples for more details:
 #
 # * For plotting statistical maps on the surface, see
 #   :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`

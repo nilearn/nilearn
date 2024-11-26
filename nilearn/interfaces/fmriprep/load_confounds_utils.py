@@ -488,7 +488,8 @@ class MissingConfoundError(Exception):
     Parameters
     ----------
     params : list of missing params, default=[]
-    keywords: list of missing keywords, default=[]
+
+    keywords : list of missing keywords, default=[]
     """
 
     def __init__(self, params=None, keywords=None):

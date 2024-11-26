@@ -9,7 +9,8 @@
 
 .. No relevant user manual section yet.
 
-**Classes**:
+Classes
+-------
 
 .. currentmodule:: nilearn.glm
 
@@ -26,7 +27,8 @@
     RegressionResults
     SimpleRegressionResults
 
-**Functions**:
+Functions
+---------
 
 .. currentmodule:: nilearn.glm
 
@@ -49,7 +51,8 @@
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+Classes
+^^^^^^^
 
 .. currentmodule:: nilearn.glm.first_level
 
@@ -59,7 +62,8 @@
 
    FirstLevelModel
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.glm.first_level
 
@@ -87,7 +91,8 @@
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+Classes
+^^^^^^^
 
 .. currentmodule:: nilearn.glm.second_level
 
@@ -97,7 +102,8 @@
 
    SecondLevelModel
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.glm.second_level
 

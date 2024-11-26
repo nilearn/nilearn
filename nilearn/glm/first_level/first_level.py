@@ -25,6 +25,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -638,7 +639,7 @@ class FirstLevelModel(BaseGLM):
 
         for run_idx, run_img in enumerate(run_imgs):
             if isinstance(run_img, SurfaceImage):
-                n_scans = run_img.shape[0]
+                n_scans = run_img.shape[1]
             else:
                 run_img = check_niimg(run_img, ensure_ndim=4)
                 n_scans = get_data(run_img).shape[3]
@@ -721,18 +722,21 @@ class FirstLevelModel(BaseGLM):
                 Niimg-like object, \
                 a :obj:`list` or a :obj:`tuple` of Niimg-like objects.
                 If ``mask_img`` is
-                a ``SurfaceMasker`` or ``SurfaceImage`` instance,
+                a :obj:`~nilearn.maskers.SurfaceMasker`
+                or :obj:`~nilearn.surface.SurfaceImage` instance,
                 then ``run_imgs`` must be a
-                ``SurfaceImage`` object, \
+                :obj:`~nilearn.surface.SurfaceImage`, \
                 a :obj:`list` or \
-                a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage` objects.
+                a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`.
 
         events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
                  :class:`pandas.DataFrame` or :obj:`str`, default=None
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
-            If string, then a path to a csv file is expected.
+            If string, then a path to a csv or tsv file is expected.
+            See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
+            for details on the required content of events files.
 
         confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
                     :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
@@ -829,7 +833,7 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        contrast_def : str or array of shape (n_col) or list of (string or
+        contrast_def : str or array of shape (n_col) or list of (string or\
                        array of shape (n_col))
 
             where ``n_col`` is the number of columns of the design matrix,
@@ -1011,7 +1015,7 @@ class FirstLevelModel(BaseGLM):
                 surf_data = {}
                 for part in run_img.mesh.parts:
                     surf_data[part] = np.ones(
-                        run_img.data.parts[part].shape[1], dtype=bool
+                        run_img.data.parts[part].shape[0], dtype=bool
                     )
                 self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
             else:
@@ -1299,6 +1303,8 @@ def first_level_from_bids(
     space_label : :obj:`str` or None, default=None
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like ``_space-<space_label>_``.
+        If "fsaverage5" is passed as a value
+        then the GLM will be run on pial surface data.
 
     sub_labels : :obj:`list` of :obj:`str`, default=None
         Specifies the subset of subject labels to model.
@@ -1440,6 +1446,8 @@ def first_level_from_bids(
             "Starting in version 0.12, slice_time_ref will default to None.",
             DeprecationWarning,
         )
+    if space_label is None:
+        space_label = "MNI152NLin2009cAsym"
 
     sub_labels = sub_labels or []
     img_filters = img_filters or []
@@ -1624,7 +1632,7 @@ def first_level_from_bids(
         )
         models.append(model)
 
-        imgs = _get_processed_imgs(
+        imgs, files_to_check = _get_processed_imgs(
             derivatives_path=derivatives_path,
             sub_label=sub_label_,
             task_label=task_label,
@@ -1639,7 +1647,7 @@ def first_level_from_bids(
             sub_label=sub_label_,
             task_label=task_label,
             img_filters=img_filters,
-            imgs=imgs,
+            imgs=files_to_check,
             verbose=verbose,
         )
         events = [
@@ -1652,7 +1660,7 @@ def first_level_from_bids(
             sub_label=sub_label_,
             task_label=task_label,
             img_filters=img_filters,
-            imgs=imgs,
+            imgs=files_to_check,
             verbose=verbose,
             kwargs_load_confounds=kwargs_load_confounds,
         )
@@ -1752,6 +1760,8 @@ def _get_processed_imgs(
     task_label : :obj:`str`
         Task label as specified in the file names like _task-<task_label>_.
 
+    space_label : None or :obj:`str`
+
     img_filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters are of the form (field, label).
         Only one filter per field allowed.
@@ -1761,9 +1771,16 @@ def _get_processed_imgs(
 
     Returns
     -------
-    imgs : :obj:`list` of :obj:`str`
+    imgs : :obj:`list` of :obj:`str`, \
+        or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
         List of fullpath to the imgs files
+        If fsaverage5 is passed then both hemisphere for each run
+        will be loaded into a single SurfaceImage.
 
+    files_to_check : : :obj:`list` of :obj:`str`
+        List of fullpath to imgs files.
+        Used for validation
+        when finding events or confounds associated with images.
     """
     filters = _make_bids_files_filter(
         task_label=task_label,
@@ -1773,23 +1790,74 @@ def _get_processed_imgs(
         extra_filter=img_filters,
         verbose=verbose,
     )
-    imgs = get_bids_files(
-        main_path=derivatives_path,
-        modality_folder="func",
-        file_tag="bold",
-        file_type="nii*",
-        sub_label=sub_label,
-        filters=filters,
-    )
+
+    if space_label is not None and space_label not in ("fsaverage5"):
+        imgs = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="nii*",
+            sub_label=sub_label,
+            filters=filters,
+        )
+        files_to_report = imgs
+        files_to_check = imgs
+
+    else:
+        tmp_filter = filters.copy()
+        tmp_filter.append(("hemi", "L"))
+        imgs_left = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="func.gii",
+            sub_label=sub_label,
+            filters=tmp_filter,
+        )
+        tmp_filter[-1] = ("hemi", "R")
+        imgs_right = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="func.gii",
+            sub_label=sub_label,
+            filters=tmp_filter,
+        )
+
+        # Sanity check to make sure we have the same number of files
+        # for each hemisphere
+        assert len(imgs_left) == len(imgs_right)
+
+        imgs = []
+        for data_left, data_right in zip(imgs_left, imgs_right):
+            # make sure that filenames only differ by hemisphere
+            assert (
+                Path(data_left).stem.replace("hemi-L", "hemi-R")
+                == Path(data_right).stem
+            )
+            # Assumption: we are loading the data on the pial surface.
+            imgs.append(
+                SurfaceImage(
+                    mesh=load_fsaverage()["pial"],
+                    data={"left": data_left, "right": data_right},
+                )
+            )
+
+        files_to_report = imgs_left + imgs_right
+
+        # Only check the left files
+        # as we know they have a right counterpart.
+        files_to_check = imgs_left
+
     _report_found_files(
-        files=imgs,
+        files=files_to_report,
         text="preprocessed BOLD",
         sub_label=sub_label,
         filters=filters,
         verbose=verbose,
     )
-    _check_bids_image_list(imgs, sub_label, filters)
-    return imgs
+    _check_bids_image_list(files_to_check, sub_label, filters)
+    return imgs, files_to_check
 
 
 def _get_events_files(
@@ -2313,7 +2381,7 @@ def _check_bids_events_list(
             filters=filters,
         )
         msg_suffix = (
-            f" bold file:\n{this_img}\nfilter:\n{filters})\n"
+            f"bold file:\n{this_img}\nfilter:\n{filters})\n"
             "Found all the following events files "
             f"for filter:\n{events}\n"
         )

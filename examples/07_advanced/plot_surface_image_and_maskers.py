@@ -54,7 +54,7 @@ for view, ax_row in zip(views, axes):
         )
 fig.set_size_inches(6, 8)
 
-show()
+# show()
 
 # %%
 # Connectivity with a surface atlas and `SurfaceLabelsMasker`
@@ -133,7 +133,7 @@ report.save_as_html(output_dir / "report.html")
 connectome = ConnectivityMeasure(kind="correlation").fit([masked_data]).mean_
 plot_matrix(connectome, labels=labels_masker.label_names_)
 
-show()
+# show()
 
 # %%
 # Using the `Decoder`
