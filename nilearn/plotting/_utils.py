@@ -51,13 +51,14 @@ def check_surface_plotting_inputs(
     if isinstance(surf_map, SurfaceImage):
         if surf_mesh is None:
             surf_mesh = surf_map.mesh.parts[hemi]
-        if surf_map.shape[1] > 1:
+        if len(surf_map.shape) > 1 and surf_map.shape[1] > 1:
             raise TypeError(
                 "Input data has incompatible dimensionality. "
-                f"Expected dimension is ({surf_map.shape[0], 1}) "
+                f"Expected dimension is ({surf_map.shape[0]},) "
+                f"or ({surf_map.shape[0]}, 1) "
                 f"and you provided a {surf_map.shape} surface image."
             )
-        surf_map = surf_map.data.parts[hemi].T[0]
+        surf_map = surf_map.data.parts[hemi].T
 
     bg_map = _check_bg_map(bg_map, hemi)
 
