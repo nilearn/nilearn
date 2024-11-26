@@ -1247,7 +1247,6 @@ class PolyData:
     ----------
     left : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
            or None, default = None
-           1D arrays will be converted to
 
     right : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
             or None, default = None
@@ -1265,13 +1264,12 @@ class PolyData:
     parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_vertices, n_timepoints)
 
     shape : :obj:`tuple` of :obj:`int`
+            The first dimension corresponds to the vertices:
+            the typical shape of the
+            data for a hemisphere is ``(n_vertices, n_time_points)``.
 
     Examples
     --------
-    The first dimension corresponds to the vertices:
-    the typical shape of the
-    data for a hemisphere is ``(n_vertices, n_time_points)``.
-
     >>> import numpy as np
     >>> from nilearn.surface import PolyData
     >>> n_time_points = 10
@@ -1284,7 +1282,6 @@ class PolyData:
     >>> PolyData(right=right)
     <PolyData (7, 10)>
 
-    It is not possible to create an empty ``PolyData``:
     >>> PolyData()
     Traceback (most recent call last):
         ...
