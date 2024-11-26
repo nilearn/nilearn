@@ -1252,14 +1252,6 @@ class PolyData:
     right : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
             or None, default = None
 
-    squeeze_on_save : :obj:`bool` or None, default=None
-            If ``True`` axes of length one from the data
-            in the left and right parts will be removed
-            before saving them to file.
-            If ``None`` is passed,
-            then the value will be set to ``True``
-            if ``left`` or ``right`` is one dimensional.
-
     Attributes
     ----------
     parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_vertices, n_timepoints)
@@ -1291,47 +1283,34 @@ class PolyData:
     ValueError: Cannot create an empty PolyData. ...
     """
 
-    def __init__(self, left=None, right=None, squeeze_on_save=None):
+    def __init__(self, left=None, right=None):
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyData. "
                 "Either left or right (or both) must be provided."
             )
 
-        self.squeeze_on_save = squeeze_on_save
-
         parts = {}
         for hemi, param in zip(["left", "right"], [left, right]):
             if param is not None:
                 if not isinstance(param, np.ndarray):
                     param = load_surf_data(param)
-                if param.ndim == 1:
-                    param = np.array([param]).T
-                    if self.squeeze_on_save is None:
-                        self.squeeze_on_save = True
                 parts[hemi] = param
         self.parts = parts
-
-        if self.squeeze_on_save is None:
-            self.squeeze_on_save = False
-        assert isinstance(self.squeeze_on_save, bool)
 
         self._check_parts()
 
     def _check_parts(self):
         parts = self.parts
 
-        for hemi in parts:
-            if parts[hemi].ndim != 2:
-                raise ValueError(
-                    f"Data arrays for keys '{hemi}' must be a 2D array.\n"
-                    f"Got {parts[hemi].ndim}"
-                )
-
         if len(parts) == 1:
             return
 
-        if parts["left"].shape[1] != parts["right"].shape[1]:
+        if len(parts["left"].shape) != len(parts["right"].shape) or (
+            len(parts["left"].shape) > 1
+            and len(parts["right"].shape) > 1
+            and parts["left"].shape[-1] != parts["right"].shape[-1]
+        ):
             raise ValueError(
                 f"Data arrays for keys 'left' and 'right' "
                 "have incompatible shapes: "
@@ -1376,12 +1355,8 @@ class PolyData:
 
         if "hemi-L" in filename.stem:
             data = self.parts["left"]
-            if self.squeeze_on_save:
-                data = np.squeeze(data)
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
-            if self.squeeze_on_save:
-                data = np.squeeze(data)
 
         _data_to_gifti(data, filename)
 
@@ -1734,7 +1709,7 @@ class SurfaceImage:
         shape of the surface data array
     """
 
-    def __init__(self, mesh, data, squeeze_on_save=None):
+    def __init__(self, mesh, data):
         """Create a SurfaceImage instance."""
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
 
@@ -1748,7 +1723,7 @@ class SurfaceImage:
         if isinstance(data, PolyData):
             self.data = data
         elif isinstance(data, dict):
-            self.data = PolyData(**data, squeeze_on_save=squeeze_on_save)
+            self.data = PolyData(**data)
 
         _check_data_and_mesh_compat(self.mesh, self.data)
 

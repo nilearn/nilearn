@@ -822,22 +822,19 @@ def test_data_to_gifti(rng, tmp_path, dtype):
     load(tmp_path / "data.gii")
 
 
-def test_error_polydata_1d_check_parts():
-    """Throw error thrown if parts are not 2D.
+def test_polydata_1d_check_parts():
+    """Smoke test for check parts.
 
     - passing a 1D array at instantiation is fine:
       they are convertd to 2D
     - _check_parts can be used make sure parts are fine
       if assigned after instantiation.
     """
-    data = PolyData(left=np.ones((1,)), right=np.ones((2,)))
+    data = PolyData(left=np.ones((7,)), right=np.ones((5,)))
 
     data.parts["left"] = np.ones((1,))
 
-    with pytest.raises(
-        ValueError, match="Data arrays for keys 'left' must be a 2D array."
-    ):
-        data._check_parts()
+    data._check_parts()
 
 
 def test_mesh_to_gifti(single_mesh, tmp_path):
@@ -1058,36 +1055,6 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
         )
         assert_array_equal(
             original_surf_img.agg_data(), nilearn_surf_img.agg_data()
-        )
-
-
-def test_surface_image_squeeze_on_save(rng, tmp_path, surf_mesh):
-    """Test squeeze_on_save.
-
-    - intanciate surface images with 1D data with or without squeeze_on_save
-    - save them
-    - load out
-    - check that loaded contents differ by one dimension
-    - check that loaded contents still match
-    """
-    data = {}
-    for hemi in ["left", "right"]:
-        size = (surf_mesh().parts[hemi].n_vertices,)
-        data[hemi] = rng.random(size=size).astype(np.uint8)
-
-    img = SurfaceImage(mesh=surf_mesh(), data=data, squeeze_on_save=False)
-    img.data.to_filename(tmp_path / "unsqueezed.gii")
-
-    img_to_squeeze = SurfaceImage(
-        mesh=surf_mesh(), data=data, squeeze_on_save=True
-    )
-    img_to_squeeze.data.to_filename(tmp_path / "squeezed.gii")
-
-    for hemi in ["left", "right"]:
-        unsqueezed = load(tmp_path / f"unsqueezed_hemi-{hemi[0].upper()}.gii")
-        squeezed = load(tmp_path / f"squeezed_hemi-{hemi[0].upper()}.gii")
-        assert_array_equal(
-            np.squeeze(unsqueezed.agg_data()), squeezed.agg_data()
         )
 
 
