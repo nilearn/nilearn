@@ -2373,7 +2373,7 @@ def test_fixed_effect_contrast_surface(_make_surface_glm_data):
 
 
 def test_first_level_from_bids_surface(tmp_path):
-    """Test finding and loading Sruface data in BIDS dataset."""
+    """Test finding and loading Surface data in BIDS dataset."""
     n_sub = 2
     tasks = ["main"]
     n_runs = [2]

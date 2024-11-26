@@ -1771,7 +1771,7 @@ def _get_processed_imgs(
 
     Returns
     -------
-    imgs : :obj:`list` of :obj:`str`, or :obj:`list` of :obj:`SurfaceImage`
+    imgs : :obj:`list` of :obj:`str`, or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
         List of fullpath to the imgs files
         If fsaverage5 is passed then both hemisphere for each run
         will be loaded into a single SurfaceImage.
