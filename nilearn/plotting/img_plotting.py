@@ -1383,7 +1383,9 @@ def plot_glass_brain(
         The statistical map image.
         It needs to be in :term:`MNI` space
         in order to align with the brain schematics.
+
     %(output_file)s
+
     display_mode : :obj:`str`, default='ortho'
         Choose the direction of the cuts: 'x' - sagittal, 'y' - coronal,
         'z' - axial, 'l' - sagittal left hemisphere only,
@@ -1391,25 +1393,38 @@ def plot_glass_brain(
         performed in orthogonal directions. Possible values are: 'ortho',
         'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r', 'lr', 'lzr', 'lyr',
         'lzry', 'lyrz'.
+
     %(colorbar)s
         Default=False.
+
     cbar_tick_format: :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
+
     %(figure)s
+
     %(axes)s
+
     %(title)s
+
     %(threshold)s
         Default='auto'.
+
     %(annotate)s
+
     %(black_bg)s
         Default=False.
+
     %(cmap)s
         Default=None.
+
     alpha : :obj:`float` between 0 and 1, default=0.7
         Alpha transparency for the brain schematics.
+
     %(vmin)s
+
     %(vmax)s
+
     plot_abs : :obj:`bool`, default=True
         If set to True maximum intensity projection of the
         absolute value will be used (rendering positive and negative
@@ -1418,16 +1433,18 @@ def plot_glass_brain(
         See
         :ref:`sphx_glr_auto_examples_01_plotting_plot_demo_glass_brain_extensive.py`
         for examples.
+
     %(symmetric_cbar)s
+
     %(resampling_interpolation)s
         Default='continuous'.
+
     %(radiological)s
 
     kwargs: extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
         :meth:`~nilearn.plotting.displays.BaseSlicer.add_overlay`.
-
 
     Returns
     -------

@@ -704,12 +704,17 @@ def compute_multi_brain_mask(
 
     threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
+
     %(connected)s
         Default=True.
+
     %(opening)s
         Default=2.
+
     %(mask_type)s
+
     %(memory)s
+
     %(verbose0)s
 
     .. note::

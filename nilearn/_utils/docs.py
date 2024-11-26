@@ -33,16 +33,20 @@ avg_method : {"mean", "median", "min", "max", custom function, None}, \
     How to average vertex values to derive the face value:
 
     - ``"mean"``: results in smooth boundaries
+
     - ``"median"``: results in sharp boundaries
+
     - ``"min"`` or ``"max"``: for sparse matrices
+
     - `custom function`: You can also pass a custom function
-        which will be executed though :func:`numpy.apply_along_axis`.
-        Here is an example of a custom function:
+      which will be executed though :func:`numpy.apply_along_axis`.
+      Here is an example of a custom function:
 
         .. code-block:: python
 
             def custom_function(vertices):
                 return vertices[0] * vertices[1] * vertices[2]
+
 """
 
 # ax
@@ -53,7 +57,7 @@ ax : :class:`~matplotlib.axes.Axes`
 
 # axes
 docdict["axes"] = """
-axes : :class:`matplotlib.axes.Axes`, or 4 tuple\
+axes : :class:`matplotlib.axes.Axes`, or 4 :obj:`tuple` \
 of :obj:`float`: (xmin, ymin, width, height), default=None
     The axes, or the coordinates, in matplotlib figure space,
     of the axes used to display the plot.
@@ -79,8 +83,10 @@ bg_on_data : :obj:`bool`, default=False
     or because is was thresholded).
 
     .. note::
+
         This non-uniformly changes the surf_data values according
         to e.g the sulcal depth.
+
 """
 
 # black_bg
@@ -168,6 +174,7 @@ docdict["classifier_options"] = f"""
     .. code-block:: python
 
         dummy = DummyClassifier(strategy="stratified", random_state=0)
+
 """
 
 # cmap
@@ -204,20 +211,25 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
     The MNI coordinates of the point where the cut is performed.
 
     - If `display_mode` is `'ortho'` or `'tiled'`, this should
-        be a 3-tuple: `(x, y, z)`
+      be a 3-tuple: `(x, y, z)`
+
     - For `display_mode == "x"`, "y", or "z", then these are
-        the coordinates of each cut in the corresponding direction.
+      the coordinates of each cut in the corresponding direction.
+
     - If `None` is given, the cuts are calculated automatically.
+
     - If `display_mode` is 'mosaic', and the number of cuts is the same
-        for all directions, `cut_coords` can be specified as an integer.
-        It can also be a length 3 tuple specifying the number of cuts for
-        every direction if these are different.
+      for all directions, `cut_coords` can be specified as an integer.
+      It can also be a length 3 :obj:`tuple`
+      specifying the number of cuts for
+      every direction if these are different.
 
     .. note::
 
         If `display_mode` is "x", "y" or "z",
         `cut_coords` can be an integer,
         in which case it specifies the number of cuts to perform.
+
 """
 
 # darkness
@@ -226,8 +238,10 @@ darkness : :obj:`float` between 0 and 1, optional
     Specifying the darkness of the background image:
 
     - `1` indicates that the original values of the background are used
+
     - `0.5` indicates that the background values
         are reduced by half before being applied.
+
 """
 
 # data_dir
@@ -269,7 +283,8 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
     - ``"ortho"``: three cuts are performed in orthogonal directions
     - ``"tiled"``: three cuts are performed and arranged in a 2x2 grid
     - ``"mosaic"``: three cuts are performed along
-        multiple rows and columns
+      multiple rows and columns
+
 """
 
 # draw_cross
@@ -285,13 +300,14 @@ extractor : {"local_regions", "connected_components"}, default="local_regions"
     This option can take two values:
 
     - ``"connected_components"``: each component/region in the image
-        is extracted automatically by labelling each region based
-        upon the presence of unique features in their respective regions.
+      is extracted automatically by labelling each region based
+      upon the presence of unique features in their respective regions.
 
     - ``"local_regions"``: each component/region is extracted
-        based on their maximum peak value to define a seed marker
-        and then using random walker segmentation algorithm
-        on these markers for region separation.
+      based on their maximum peak value to define a seed marker
+      and then using random walker segmentation algorithm
+      on these markers for region separation.
+
 """
 docdict["extract_type"] = docdict["extractor"].replace(
     "extractor", "extract_type"
@@ -318,6 +334,7 @@ docdict["fsaverage_options"] = """
 
         The high-resolution fsaverage will result in more computation
         time and memory usage
+
 """
 
 # fwhm
@@ -328,20 +345,24 @@ or 'fast' or None, optional
     in millimeters:
 
     - If a nonzero scalar is given, width is identical in all 3 directions.
+
     - If a :class:`numpy.ndarray`, :obj:`tuple`, or :obj:`list` is given,
-        it must have 3 elements, giving the :term:`FWHM` along each axis.
-        If any of the elements is `0` or `None`,
-        smoothing is not performed along that axis.
+      it must have 3 elements, giving the :term:`FWHM` along each axis.
+      If any of the elements is `0` or `None`,
+
+      smoothing is not performed along that axis.
     - If `fwhm="fast"`, a fast smoothing will be performed with a filter
-        [0.2, 1, 0.2] in each direction and a normalisation to preserve the
-        local average value.
+      [0.2, 1, 0.2] in each direction and a normalisation to preserve the
+      local average value.
+
     - If `fwhm` is `None`, no filtering is performed
-        (useful when just removal of non-finite values is needed).
+      (useful when just removal of non-finite values is needed).
 
     .. note::
 
         In corner case situations, `fwhm` is simply kept to `None`
         when `fwhm` is specified as `fwhm=0`.
+
 """
 
 # hemi
@@ -359,49 +380,49 @@ high_pass : :obj:`float`, default=None
 
 # hrf_model
 docdict["hrf_model"] = """
-hrf_model : :obj:`str`, function, list of functions, or None
+hrf_model : :obj:`str`, function, :obj:`list` of functions, or None
     This parameter defines the :term:`HRF` model to be used.
     It can be a string if you are passing the name of a model
     implemented in Nilearn.
     Valid names are:
 
     - ``"spm"``:
-        This is the :term:`HRF` model used in :term:`SPM`.
-        See :func:`~nilearn.glm.first_level.spm_hrf`.
+      This is the :term:`HRF` model used in :term:`SPM`.
+      See :func:`~nilearn.glm.first_level.spm_hrf`.
 
     - ``"spm + derivative"``:
-        SPM model plus its time derivative.
-        This gives 2 regressors.
-        See :func:`~nilearn.glm.first_level.spm_hrf`, and
-        :func:`~nilearn.glm.first_level.spm_time_derivative`.
+      SPM model plus its time derivative.
+      This gives 2 regressors.
+      See :func:`~nilearn.glm.first_level.spm_hrf`, and
+      :func:`~nilearn.glm.first_level.spm_time_derivative`.
 
     - ``"spm + derivative + dispersion"``:
-        Same as above plus dispersion derivative.
-        This gives 3 regressors.
-        See :func:`~nilearn.glm.first_level.spm_hrf`,
-        :func:`~nilearn.glm.first_level.spm_time_derivative`,
-        and :func:`~nilearn.glm.first_level.spm_dispersion_derivative`.
+      Same as above plus dispersion derivative.
+      This gives 3 regressors.
+      See :func:`~nilearn.glm.first_level.spm_hrf`,
+      :func:`~nilearn.glm.first_level.spm_time_derivative`,
+      and :func:`~nilearn.glm.first_level.spm_dispersion_derivative`.
 
     - ``"glover"``:
-        This corresponds to the Glover :term:`HRF`.
-        See :func:`~nilearn.glm.first_level.glover_hrf`.
+      This corresponds to the Glover :term:`HRF`.
+      See :func:`~nilearn.glm.first_level.glover_hrf`.
 
     - ``"glover + derivative"``:
-        The Glover :term:`HRF` + time derivative.
-        This gives 2 regressors.
-        See :func:`~nilearn.glm.first_level.glover_hrf`, and
-        :func:`~nilearn.glm.first_level.glover_time_derivative`.
+      The Glover :term:`HRF` + time derivative.
+      This gives 2 regressors.
+      See :func:`~nilearn.glm.first_level.glover_hrf`, and
+      :func:`~nilearn.glm.first_level.glover_time_derivative`.
 
     - ``"glover"+ derivative + dispersion"``:
-        Same as above plus dispersion derivative.
-        This gives 3 regressors.
-        See :func:`~nilearn.glm.first_level.glover_hrf`,
-        :func:`~nilearn.glm.first_level.glover_time_derivative`, and
-        :func:`~nilearn.glm.first_level.glover_dispersion_derivative`.
+      Same as above plus dispersion derivative.
+      This gives 3 regressors.
+      See :func:`~nilearn.glm.first_level.glover_hrf`,
+      :func:`~nilearn.glm.first_level.glover_time_derivative`, and
+      :func:`~nilearn.glm.first_level.glover_dispersion_derivative`.
 
     - ``"fir"``:
-        Finite impulse response basis.
-        This is a set of delayed dirac models.
+      Finite impulse response basis.
+      This is a set of delayed dirac models.
 
     It can also be a custom model.
     In this case, a function should be provided for each regressor.
@@ -410,13 +431,16 @@ hrf_model : :obj:`str`, function, list of functions, or None
     and return a sample numpy array of appropriate shape.
 
     .. note::
+
         It is expected that ``"spm"`` standard and ``"glover"`` models
         would not yield large differences in most cases.
 
     .. note::
+
         In case of ``"glover"`` and ``"spm"`` models,
         the derived regressors are orthogonalized
         with respect to the main one.
+
 """
 
 # img
@@ -466,30 +490,31 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
     The strategy used to compute the mask:
 
     - ``"background"``: Use this option if your images present
-        a clear homogeneous background.
+      a clear homogeneous background.
 
     - ``"epi"``: Use this option if your images are raw EPI images
 
     - ``"whole-brain-template"``: This will extract the whole-brain
-        part of your data by resampling the MNI152 brain mask for
-        your data's field of view.
+      part of your data by resampling the MNI152 brain mask for
+      your data's field of view.
 
-        .. note::
+      .. note::
 
-            This option is equivalent to the previous 'template' option
-            which is now deprecated.
+          This option is equivalent to the previous 'template' option
+          which is now deprecated.
 
     - ``"gm-template"``: This will extract the gray matter part of your
-        data by resampling the corresponding MNI152 template for your
-        data's field of view.
+      data by resampling the corresponding MNI152 template for your
+      data's field of view.
 
-        .. versionadded:: 0.8.1
+      .. versionadded:: 0.8.1
 
     - ``"wm-template"``: This will extract the white matter part of your
-        data by resampling the corresponding MNI152 template for your
-        data's field of view.
+      data by resampling the corresponding MNI152 template for your
+      data's field of view.
 
-        .. versionadded:: 0.8.1
+      .. versionadded:: 0.8.1
+
 """
 
 # mask_type
@@ -500,6 +525,7 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
     - ``"whole-brain"``: Computes the whole-brain mask.
     - ``"gm"``: Computes the grey-matter mask.
     - ``"wm"``: Computes the white-matter mask.
+
 """
 
 # keep_masked_labels
@@ -518,6 +544,7 @@ keep_masked_labels : :obj:`bool`, default=True
         The 'True' option for ``keep_masked_labels`` is deprecated.
         The default value will change to 'False' in 0.13,
         and the ``keep_masked_labels`` parameter will be removed in 0.15.
+
 """
 
 # keep_masked_maps
@@ -534,6 +561,7 @@ keep_masked_maps : :obj:`bool`, optional
         The 'True' option for ``keep_masked_maps`` is deprecated.
         The default value will change to 'False' in 0.13,
         and the ``keep_masked_maps`` parameter will be removed in 0.15.
+
 """
 
 # kwargs for Maskers
@@ -584,23 +612,24 @@ opening : :obj:`bool` or :obj:`int`, optional
     included. `opening` can be:
 
     - A :obj:`bool` : If `False`, no :term:`opening<Opening>` is performed.
-        If `True`, it is equivalent to `opening=1`.
+      If `True`, it is equivalent to `opening=1`.
 
     - An :obj:`int` `n`: The :term:`opening<Opening>` is performed via `n`
-        :term:`erosions<Erosion>` (see :func:`scipy.ndimage.binary_erosion`).
-        The largest connected component is then estimated
-        if `connected` is set to `True`,
-        and 2`n` :term:`dilation<Dilation>` operations are performed
-        (see :func:`scipy.ndimage.binary_dilation`)
-        followed by `n` :term:`erosions<Erosion>`.
-        This corresponds to 1 :term:`opening<Opening>` operation
-        of order `n` followed by a :term:`closing<Closing>` operator
-        of order `n`.
+      :term:`erosions<Erosion>` (see :func:`scipy.ndimage.binary_erosion`).
+      The largest connected component is then estimated
+      if `connected` is set to `True`,
+      and 2`n` :term:`dilation<Dilation>` operations are performed
+      (see :func:`scipy.ndimage.binary_dilation`)
+      followed by `n` :term:`erosions<Erosion>`.
+      This corresponds to 1 :term:`opening<Opening>` operation
+      of order `n` followed by a :term:`closing<Closing>` operator
+      of order `n`.
 
     .. note::
 
         Turning off :term:`opening<Opening>` (`opening=False`) will also
         prevent any smoothing applied to the image during the mask computation.
+
 """
 
 # output_file
@@ -669,6 +698,7 @@ docdict["regressor_options"] = """
     .. code-block:: python
 
         dummy = DummyRegressor(strategy="mean")
+
 """
 
 # resampling_interpolation
@@ -683,6 +713,7 @@ resampling_interpolation : :obj:`str`, optional
     .. note::
 
         ``"nearest"`` is faster but can be noisier in some cases.
+
 """
 
 # resume
@@ -743,6 +774,7 @@ second_level_input : :obj:`list` of \
     - If a :obj:`list` of Niimg-like objects
       then this is taken literally as Y for the model fit
       and `design_matrix` must be provided.
+
 """
 
 # smoothing_fwhm
@@ -769,19 +801,20 @@ standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
     Strategy to standardize the signal:
 
     - ``'zscore_sample'``: The signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance. Uses sample std.
+      to zero mean and scaled to unit variance. Uses sample std.
 
     - ``'zscore'``: The signal is z-scored. Timeseries are shifted
-        to zero mean and scaled to unit variance. Uses population std
-        by calling default :obj:`numpy.std` with N - ``ddof=0``.
+      to zero mean and scaled to unit variance. Uses population std
+      by calling default :obj:`numpy.std` with N - ``ddof=0``.
 
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
-        to percent signal change (as compared to original mean signal).
+      to percent signal change (as compared to original mean signal).
 
     - ``True``: The signal is z-scored (same as option `zscore`).
-        Timeseries are shifted to zero mean and scaled to unit variance.
+      Timeseries are shifted to zero mean and scaled to unit variance.
 
     - ``False``: Do not standardize the data.
+
 """
 
 # standardize_confounds
@@ -826,6 +859,7 @@ target_shape : :obj:`tuple` or :obj:`list`, default=None
 
         If `target_shape` is specified, a `target_affine` of shape
         `(4, 4)` must also be given.
+
 """
 
 # templateflow
@@ -878,7 +912,7 @@ docdict["verbose0"] = verbose.format(0)
 # view
 docdict["view"] = """
 view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"
-    If a string, must be in \
+    If a string, must be in
     {"lateral", "medial", "dorsal", "ventral", "anterior", "posterior"}.
     If a sequence, must be a pair (elev, azim) of :obj:`float` or :obj:`int`
     angles in degrees that will manually set a custom view.
