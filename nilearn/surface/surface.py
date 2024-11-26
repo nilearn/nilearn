@@ -4,6 +4,7 @@ import abc
 import gzip
 import pathlib
 import warnings
+from collections.abc import Mapping
 from pathlib import Path
 
 import numpy as np
@@ -961,6 +962,87 @@ def _gifti_img_to_mesh(gifti_img):
             )
         )
     return coords, faces
+
+
+def check_mesh(mesh):
+    """Check that :term:`mesh` data is either a :obj:`str`, or a :obj:`dict`
+    with sufficient entries.
+
+    Used by plotting.surf_plotting.plot_img_on_surf and
+    plotting.html_surface._full_brain_info.
+    """
+    if isinstance(mesh, str):
+        # avoid circular imports
+        from nilearn.datasets import fetch_surf_fsaverage
+
+        return fetch_surf_fsaverage(mesh)
+    if not isinstance(mesh, Mapping):
+        raise TypeError(
+            "The mesh should be a str or a dictionary, "
+            f"you provided: {type(mesh).__name__}."
+        )
+    missing = {
+        "pial_left",
+        "pial_right",
+        "sulc_left",
+        "sulc_right",
+        "infl_left",
+        "infl_right",
+    }.difference(mesh.keys())
+    if missing:
+        raise ValueError(
+            f"{missing} {'are' if len(missing) > 1 else 'is'} "
+            "missing from the provided mesh dictionary"
+        )
+    return mesh
+
+
+def check_mesh_and_data(mesh, data):
+    """Load surface :term:`mesh` and data, \
+       check that they have compatible shapes.
+
+    Parameters
+    ----------
+    mesh : :obj:`str` or :obj:`numpy.ndarray` or Mesh
+        Either a file containing surface :term:`mesh` geometry (valid formats
+        are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
+        .sphere, .white, .inflated) or two Numpy arrays organized in a list,
+        tuple or a namedtuple with the fields "coordinates" and "faces", or a
+        Mesh object with "coordinates" and "faces" attributes.
+    data : :obj:`str` or :obj:`numpy.ndarray`
+        Either a file containing surface data (valid format are .gii,
+        .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
+        .thickness, .area, .curv, .sulc, .annot, .label),
+        lists of 1D data files are returned as 2D arrays,
+        or a Numpy array containing surface data.
+
+    Returns
+    -------
+    mesh : Mesh
+        Checked :term:`mesh`.
+    data : :obj:`numpy.ndarray`
+        Checked data.
+    """
+    mesh = load_surf_mesh(mesh)
+    data = load_surf_data(data)
+    # Check that mesh coordinates has a number of nodes
+    # equal to the size of the data.
+    if len(data) != len(mesh.coordinates):
+        raise ValueError(
+            "Mismatch between number of nodes "
+            f"in mesh ({len(mesh.coordinates)}) and "
+            f"size of surface data ({len(data)})"
+        )
+    # Check that the indices of faces are consistent with the
+    # mesh coordinates. That is, we shouldn't have an index
+    # larger or equal to the length of the coordinates array.
+    if mesh.faces.max() >= len(mesh.coordinates):
+        raise ValueError(
+            "Mismatch between the indices of faces and the number of nodes. "
+            f"Maximum face index is {mesh.faces.max()} "
+            f"while coordinates array has length {len(mesh.coordinates)}."
+        )
+    return mesh, data
 
 
 # function to figure out datatype and load data
