@@ -73,7 +73,7 @@ models, run_imgs, events, confounds = first_level_from_bids(
     img_filters=[("desc", "preproc")],
     sub_labels=["01", "02", "03", "04", "05"],  # comment to run all subjects
     hrf_model="glover + derivative",
-    n_jobs=-1,
+    n_jobs=2,
 )
 
 # %%
