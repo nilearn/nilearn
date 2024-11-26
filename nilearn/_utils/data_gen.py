@@ -522,7 +522,9 @@ def write_fake_fmri_data_and_design(
     return mask_file, fmri_files, design_files
 
 
-def _write_fake_bold_gifti(file_path, shape, random_state=0):
+def _write_fake_bold_gifti(
+    file_path, n_time_points, n_vertices, random_state=0
+):
     """Generate a gifti image and write it to disk.
 
     Note this only generates an empty file
@@ -532,6 +534,10 @@ def _write_fake_bold_gifti(file_path, shape, random_state=0):
     ----------
     file_path : :obj:`str`
         Output file path.
+
+    n_time_points : :obj:`int`
+
+    n_vertices : :obj:`int`
 
     Returns
     -------
@@ -546,13 +552,8 @@ def _write_fake_bold_gifti(file_path, shape, random_state=0):
                    default=0
         Random number generator, or seed.
     """
-    if shape[0] == 0:
-        Path(file_path).parent.mkdir(parents=True, exist_ok=True)
-        Path(file_path).touch()
-        return file_path
-
     rand_gen = np.random.default_rng(random_state)
-    data = rand_gen.standard_normal(shape)
+    data = rand_gen.standard_normal((n_time_points, n_vertices))
     darray = gifti.GiftiDataArray(data=data, datatype="NIFTI_TYPE_FLOAT32")
     gii = gifti.GiftiImage(darrays=[darray])
     gii.to_filename(file_path)
@@ -1481,9 +1482,6 @@ def _write_bids_derivative_func(
         with confounds_path.with_suffix(".json").open("w") as f:
             json.dump(metadata, f)
 
-    if spaces is None:
-        spaces = ("MNI", "T1w")
-
     fields["suffix"] = "bold"
     fields["extension"] = "nii.gz"
 
@@ -1516,4 +1514,6 @@ def _write_bids_derivative_func(
         gifti_path = func_path / create_bids_filename(
             fields=fields, entities_to_include=entities_to_include
         )
-        _write_fake_bold_gifti(gifti_path, shape=(n_time_points, n_vertices))
+        _write_fake_bold_gifti(
+            gifti_path, n_time_points=n_time_points, n_vertices=n_vertices
+        )
