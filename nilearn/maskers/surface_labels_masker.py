@@ -306,7 +306,8 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.memory is None:
             self.memory = Memory(location=None)
 
-        output = np.empty((img_data.shape[1], len(self._labels_)))
+        n_time_points = 1 if len(img_data.shape) == 1 else img_data.shape[1]
+        output = np.empty((n_time_points, len(self._labels_)))
         for i, label in enumerate(self._labels_):
             output[:, i] = img_data[self._labels_data == label].mean(axis=0)
 
