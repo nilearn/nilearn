@@ -1243,14 +1243,14 @@ def test_decoder_decision_function_raises_value_error(
 
 
 @pytest.fixture()
-def _make_surface_class_data(rng, surf_img, shape=(50,)):
+def _make_surface_class_data(rng, surf_img, shape=50):
     """Create a surface image classification for testing."""
     y = rng.choice([0, 1], size=shape)
     return surf_img(shape), y
 
 
 @pytest.fixture()
-def _make_surface_reg_data(rng, surf_img, shape=(50,)):
+def _make_surface_reg_data(rng, surf_img, shape=50):
     """Create a surface image regression for testing."""
     y = rng.random(shape)
     return surf_img(shape), y
@@ -1263,7 +1263,7 @@ def test_decoder_apply_mask_surface(_make_surface_class_data):
     model = Decoder(mask=SurfaceMasker())
     X_masked = model._apply_mask(X)
 
-    assert X_masked.shape == X.shape
+    assert X_masked.shape == X.shape[::-1]
     assert type(model.mask_img_).__name__ == "SurfaceImage"
 
 

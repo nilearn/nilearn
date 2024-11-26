@@ -1262,9 +1262,33 @@ class PolyData:
 
     Attributes
     ----------
-    parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_timepoints, n_vertices)
+    parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_vertices, n_timepoints)
 
     shape : :obj:`tuple` of :obj:`int`
+
+    Examples
+    --------
+    The first dimension corresponds to the vertices:
+    the typical shape of the
+    data for a hemisphere is ``(n_vertices, n_time_points)``.
+
+    >>> import numpy as np
+    >>> from nilearn.surface import PolyData
+    >>> n_time_points = 10
+    >>> n_left_vertices = 5
+    >>> n_right_vertices = 7
+    >>> left = np.ones((n_left_vertices, n_time_points))
+    >>> right = np.ones((n_right_vertices, n_time_points))
+    >>> PolyData(left=left, right=right)
+    <PolyData (12, 10)>
+    >>> PolyData(right=right)
+    <PolyData (7, 10)>
+
+    It is not possible to create an empty ``PolyData``:
+    >>> PolyData()
+    Traceback (most recent call last):
+        ...
+    ValueError: Cannot create an empty PolyData. ...
     """
 
     def __init__(self, left=None, right=None, squeeze_on_save=None):
@@ -1282,7 +1306,7 @@ class PolyData:
                 if not isinstance(param, np.ndarray):
                     param = load_surf_data(param)
                 if param.ndim == 1:
-                    param = np.array([param])
+                    param = np.array([param]).T
                     if self.squeeze_on_save is None:
                         self.squeeze_on_save = True
                 parts[hemi] = param
@@ -1290,18 +1314,9 @@ class PolyData:
 
         if self.squeeze_on_save is None:
             self.squeeze_on_save = False
-
         assert isinstance(self.squeeze_on_save, bool)
 
         self._check_parts()
-
-        if len(parts) == 1:
-            self.shape = next(iter(self.parts.values())).shape
-            return
-
-        first_shape = next(iter(self.parts.values())).shape
-        concat_dim = sum(p.shape[-1] for p in self.parts.values())
-        self.shape = (*first_shape[:-1], concat_dim)
 
     def _check_parts(self):
         parts = self.parts
@@ -1316,12 +1331,25 @@ class PolyData:
         if len(parts) == 1:
             return
 
-        if parts["left"].shape[:-1] != parts["right"].shape[:-1]:
+        if parts["left"].shape[1] != parts["right"].shape[1]:
             raise ValueError(
                 f"Data arrays for keys 'left' and 'right' "
                 "have incompatible shapes: "
                 f"{parts['left'].shape} and {parts['right'].shape}"
             )
+
+    @property
+    def shape(self):
+        """Shape of the data."""
+        if len(self.parts) == 1:
+            return next(iter(self.parts.values())).shape
+
+        second_shape = next(iter(self.parts.values())).shape[1]
+        sum_vertices = sum(p.shape[0] for p in self.parts.values())
+        return (sum_vertices, second_shape)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} {self.shape}>"
 
     def to_filename(self, filename):
         """Save data to gifti.
@@ -1380,8 +1408,9 @@ class SurfaceMesh(abc.ABC):
 
     def __repr__(self):
         return (
-            f"<{self.__class__.__name__} "
-            f"with {getattr(self, 'n_vertices', '??')} vertices>"
+            f"<{self.__class__.__name__} with "
+            f"{self.n_vertices} vertices and "
+            f"{len(self.faces)} faces.>"
         )
 
     def to_gifti(self, gifti_file):
@@ -1565,7 +1594,7 @@ def _check_data_and_mesh_compat(mesh, data):
             f"Offending keys: {diff}"
         )
     for key in mesh_keys:
-        if data.parts[key].shape[-1] != mesh.parts[key].n_vertices:
+        if data.parts[key].shape[0] != mesh.parts[key].n_vertices:
             raise ValueError(
                 f"Data shape does not match number of vertices for '{key}':\n"
                 f"- data shape: {data.parts[key].shape}\n"
@@ -1723,7 +1752,13 @@ class SurfaceImage:
 
         _check_data_and_mesh_compat(self.mesh, self.data)
 
-        self.shape = self.data.shape
+    @property
+    def shape(self):
+        """Shape of the data."""
+        return self.data.shape
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {self.shape}>"
 
     @classmethod
     def from_volume(
@@ -1764,12 +1799,12 @@ class SurfaceImage:
         >>> vol_img = load_sample_motor_activation_image()
         >>> img = SurfaceImage.from_volume(fsavg["white_matter"], vol_img)
         >>> img
-        <SurfaceImage (1, 20484)>
+        <SurfaceImage (20484, 1)>
         >>> img = SurfaceImage.from_volume(
         ...     fsavg["white_matter"], vol_img, inner_mesh=fsavg["pial"]
         ... )
         >>> img
-        <SurfaceImage (1, 20484)>
+        <SurfaceImage (20484, 1)>
         """
         mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
         if inner_mesh is not None:
@@ -1797,9 +1832,6 @@ class SurfaceImage:
             **right_kwargs,
         )
 
-        data = PolyData(left=texture_left.T, right=texture_right.T)
+        data = PolyData(left=texture_left, right=texture_right)
 
         return cls(mesh=mesh, data=data)
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"
