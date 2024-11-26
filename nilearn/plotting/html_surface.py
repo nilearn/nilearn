@@ -21,6 +21,7 @@ from nilearn.plotting.js_plotting_utils import (
     to_color_strings,
 )
 from nilearn.surface import PolyMesh, SurfaceImage
+from nilearn.surface.surface import check_mesh_and_data
 
 
 class SurfaceView(HTMLDocument):  # noqa: D101
@@ -570,9 +571,9 @@ def view_surf(
     if surf_map is None:
         surf_map = np.ones(len(surf_mesh[0]))
     else:
-        surf_mesh, surf_map = surface.check_mesh_and_data(surf_mesh, surf_map)
+        surf_mesh, surf_map = check_mesh_and_data(surf_mesh, surf_map)
     if bg_map is not None:
-        _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
+        _, bg_map = check_mesh_and_data(surf_mesh, bg_map)
     info = _one_mesh_info(
         surf_map=surf_map,
         surf_mesh=surf_mesh,

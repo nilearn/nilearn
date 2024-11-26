@@ -200,7 +200,7 @@ def test_fill_html_template(tmp_path, mni152_template_res_2):
 def test_view_surf(tmp_path, rng):
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage["pial_right"])
-    surf_map = mesh[0][:, 0]
+    surf_map = mesh.coordinates[:, 0]
     html = html_surface.view_surf(
         fsaverage["pial_right"], surf_map, fsaverage["sulc_right"], "90%"
     )
@@ -216,7 +216,7 @@ def test_view_surf(tmp_path, rng):
     assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage["pial_right"])
     check_html(tmp_path, html)
-    atlas = rng.integers(0, 10, size=len(mesh[0]))
+    atlas = rng.integers(0, 10, size=len(mesh.coordinates))
     html = html_surface.view_surf(
         fsaverage["pial_left"], atlas, symmetric_cmap=False
     )
@@ -229,9 +229,11 @@ def test_view_surf(tmp_path, rng):
     )
     check_html(tmp_path, html)
     with pytest.raises(ValueError):
-        html_surface.view_surf(mesh, mesh[0][::2, 0])
+        html_surface.view_surf(mesh, mesh.coordinates[::2, 0])
     with pytest.raises(ValueError):
-        html_surface.view_surf(mesh, mesh[0][:, 0], bg_map=mesh[0][::2, 0])
+        html_surface.view_surf(
+            mesh, mesh.coordinates[:, 0], bg_map=mesh.coordinates[::2, 0]
+        )
 
 
 def test_view_img_on_surf(tmp_path, mni152_template_res_2):
