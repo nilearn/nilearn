@@ -19,13 +19,13 @@ from nibabel import Nifti1Image
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 
-from nilearn import datasets
 from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -1827,10 +1827,6 @@ def _get_processed_imgs(
         # for each hemisphere
         assert len(imgs_left) == len(imgs_right)
 
-        # Assumption: we are loading the data on the pial surface.
-        mesh_right = datasets.fetch_surf_fsaverage().pial_right
-        mesh_left = datasets.fetch_surf_fsaverage().pial_left
-
         imgs = []
         for data_left, data_right in zip(imgs_left, imgs_right):
             # make sure that filenames only differ by hemisphere
@@ -1838,9 +1834,10 @@ def _get_processed_imgs(
                 Path(data_left).stem.replace("hemi-L", "hemi-R")
                 == Path(data_right).stem
             )
+            # Assumption: we are loading the data on the pial surface.
             imgs.append(
                 SurfaceImage(
-                    mesh={"left": mesh_left, "right": mesh_right},
+                    mesh=load_fsaverage()["pial"],
                     data={"left": data_left, "right": data_right},
                 )
             )
