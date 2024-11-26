@@ -1323,9 +1323,14 @@ class PolyData:
         if len(self.parts) == 1:
             return next(iter(self.parts.values())).shape
 
-        second_shape = next(iter(self.parts.values())).shape[1]
+        tmp = next(iter(self.parts.values()))
+
         sum_vertices = sum(p.shape[0] for p in self.parts.values())
-        return (sum_vertices, second_shape)
+        return (
+            (sum_vertices, tmp.shape[1])
+            if len(tmp.shape) == 2
+            else (sum_vertices,)
+        )
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.shape}>"

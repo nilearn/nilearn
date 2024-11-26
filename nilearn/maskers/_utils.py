@@ -63,7 +63,7 @@ def compute_mean_surface_image(img):
     -------
     SurfaceImage
     """
-    if img.shape[0] < 2:
+    if len(img.shape) < 2 or img.shape[1] < 2:
         return img
 
     data = {}

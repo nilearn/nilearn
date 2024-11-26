@@ -822,6 +822,19 @@ def test_data_to_gifti(rng, tmp_path, dtype):
     load(tmp_path / "data.gii")
 
 
+@pytest.mark.parametrize("shape", [(5,), (5, 1), (5, 2)])
+def test_polydata_shape(shape):
+    data = PolyData(left=np.ones(shape), right=np.ones(shape))
+
+    assert len(data.shape) == len(shape)
+    assert data.shape[0] == shape[0] * 2
+
+    data = PolyData(left=np.ones(shape))
+
+    assert len(data.shape) == len(shape)
+    assert data.shape[0] == shape[0]
+
+
 def test_polydata_1d_check_parts():
     """Smoke test for check parts.
 
