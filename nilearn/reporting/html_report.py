@@ -314,36 +314,34 @@ class HTMLReport(HTMLDocument):
     Methods such as ``save_as_html``, or ``open_in_browser``
     are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
 
+    Parameters
+    ----------
+    head_tpl : Template
+        This is meant for display as a full page, eg writing on disk.
+        This is the Template object used to generate the HTML head
+        section of the report. The template should be filled with:
+
+            - title: The title of the HTML page.
+            - body: The full body of the HTML page. Provided through
+                the ``body`` input.
+
+    body : :obj:`str`
+        This parameter is used for embedding in the provided
+        ``head_tpl`` template. It contains the full body of the
+        HTML page.
+
+    head_values : :obj:`dict`, default=None
+        Additional substitutions in ``head_tpl``.
+        if ``None`` is passed, defaults to ``{}``
+
+        .. note::
+            This can be used to provide additional values
+            with custom templates.
+
     """
 
     def __init__(self, head_tpl, body, head_values=None):
-        """Construct the ``HTMLReport`` class.
-
-        Parameters
-        ----------
-        head_tpl : Template
-            This is meant for display as a full page, eg writing on disk.
-            This is the Template object used to generate the HTML head
-            section of the report. The template should be filled with:
-
-                - title: The title of the HTML page.
-                - body: The full body of the HTML page. Provided through
-                  the ``body`` input.
-
-        body : :obj:`str`
-            This parameter is used for embedding in the provided
-            ``head_tpl`` template. It contains the full body of the
-            HTML page.
-
-        head_values : :obj:`dict`, default=None
-            Additional substitutions in ``head_tpl``.
-            if ``None`` is passed, defaults to ``{}``
-
-            .. note::
-                This can be used to provide additional values
-                with custom templates.
-
-        """
+        """Construct the ``HTMLReport`` class."""
         if head_values is None:
             head_values = {}
         html = head_tpl.safe_substitute(body=body, **head_values)
