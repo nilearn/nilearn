@@ -57,14 +57,15 @@ def test_concatenate_surface_images(surf_img):
 
 
 def test_deconcatenate_surface_images(surf_img):
-    input = surf_img((5,))
+    input = surf_img(5)
     output = deconcatenate_surface_images(input)
 
     assert isinstance(output, list)
-    assert len(output) == input.shape[0]
+    assert len(output) == input.shape[1]
     assert all(isinstance(x, SurfaceImage) for x in output)
-    for i in range(input.shape[0]):
+    for i in range(input.shape[1]):
         assert_polymesh_equal(output[i].mesh, input.mesh)
         assert_array_equal(
-            output[i].data.parts["left"][0], input.data.parts["left"][i]
+            np.squeeze(output[i].data.parts["left"]),
+            input.data.parts["left"][..., i],
         )

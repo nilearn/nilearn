@@ -1415,7 +1415,7 @@ def test_second_level_input_as_surface_image(surf_img):
 def test_second_level_input_as_surface_image_3d(surf_img):
     """Fit with surface image with all subjects as timepoints."""
     n_subjects = 5
-    second_level_input = surf_img((n_subjects,))
+    second_level_input = surf_img(n_subjects)
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 

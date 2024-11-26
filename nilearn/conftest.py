@@ -531,6 +531,6 @@ def surface_glm_data(rng, surf_img):
         des = pd.DataFrame(
             rng.standard_normal((shape, 3)), columns=["", "", ""]
         )
-        return surf_img((shape,)), des
+        return surf_img(shape), des
 
     return _make_surface_img_and_design

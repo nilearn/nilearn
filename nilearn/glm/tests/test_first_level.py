@@ -2245,9 +2245,7 @@ def test_flm_compute_contrast_with_surface_data(surface_glm_data):
     assert_polymesh_equal(img.mesh, result.mesh)
 
 
-def test_flm_get_voxelwise_model_attribute_with_surface_data(
-    surface_glm_data,
-):
+def test_flm_get_voxelwise_model_attribute_with_surface_data(surface_glm_data):
     """Smoke test 'voxel wise' attribute with surface data.
 
     TODO: rename the private function _get_voxelwise_model_attribute
@@ -2264,7 +2262,7 @@ def test_flm_get_voxelwise_model_attribute_with_surface_data(
     assert len(model.predicted) == 2
     assert model.predicted[0].shape == img.shape
     assert len(model.r_square) == 2
-    assert model.r_square[0].shape == (1, img.mesh.n_vertices)
+    assert model.r_square[0].shape == (img.mesh.n_vertices, 1)
 
 
 # -----------------------bids tests----------------------- #

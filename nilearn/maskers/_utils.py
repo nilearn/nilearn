@@ -142,7 +142,7 @@ def deconcatenate_surface_images(img):
     if not isinstance(img, SurfaceImage):
         raise TypeError("Input must a be SurfaceImage.")
 
-    if img.shape[0] == 1:
+    if img.shape[1] < 2:
         return [img]
 
     mesh = img.mesh
@@ -151,9 +151,9 @@ def deconcatenate_surface_images(img):
         SurfaceImage(
             mesh=mesh,
             data={
-                "left": img.data.parts["left"][i],
-                "right": img.data.parts["right"][i],
+                "left": img.data.parts["left"][..., i],
+                "right": img.data.parts["right"][..., i],
             },
         )
-        for i in range(img.shape[0])
+        for i in range(img.shape[1])
     ]

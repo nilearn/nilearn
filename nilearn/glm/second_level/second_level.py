@@ -331,7 +331,9 @@ def _infer_effect_maps(second_level_input, contrast_def):
     """Deal with the different possibilities of second_level_input."""
     if isinstance(second_level_input, SurfaceImage):
         return deconcatenate_surface_images(second_level_input)
-    if isinstance(second_level_input[0], SurfaceImage):
+    if isinstance(second_level_input, list) and isinstance(
+        second_level_input[0], SurfaceImage
+    ):
         return second_level_input
 
     if isinstance(second_level_input, pd.DataFrame):
@@ -342,7 +344,9 @@ def _infer_effect_maps(second_level_input, contrast_def):
         is_con = second_level_input.apply(_is_contrast_def, axis=1)
         effect_maps = second_level_input[is_con]["effects_map_path"].tolist()
 
-    elif isinstance(second_level_input[0], FirstLevelModel):
+    elif isinstance(second_level_input, list) and isinstance(
+        second_level_input[0], FirstLevelModel
+    ):
         # Get the first level model maps
         effect_maps = []
         for model in second_level_input:
