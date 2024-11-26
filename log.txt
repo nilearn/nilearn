@@ -1,0 +1,126 @@
+[1m[35m.pkg:[0m[36m _optional_hooks[22m[2m>[0m python /home/remi/miniconda3/envs/3.9/lib/python3.9/site-packages/pyproject_api/_backend.py True hatchling.build[0m
+[1m[35m.pkg:[0m[36m get_requires_for_build_sdist[22m[2m>[0m python /home/remi/miniconda3/envs/3.9/lib/python3.9/site-packages/pyproject_api/_backend.py True hatchling.build[0m
+[1m[35m.pkg:[0m[36m freeze[22m[2m>[0m python -m pip freeze --all[0m
+[1m[35m.pkg:[0m[36m hatch-vcs==0.4.0,hatchling==1.26.3,packaging==24.2,pathspec==0.12.1,pip==24.2,pluggy==1.5.0,setuptools==75.2.0,setuptools-scm==8.1.0,tomli==2.1.0,trove-classifiers==2024.10.21.16,typing_extensions==4.12.2,wheel==0.44.0[0m
+[1m[35m.pkg:[0m[36m build_sdist[22m[2m>[0m python /home/remi/miniconda3/envs/3.9/lib/python3.9/site-packages/pyproject_api/_backend.py True hatchling.build[0m
+[1m[35mdoc:[0m[36m install_package[22m[2m>[0m python -I -m pip install --force-reinstall --no-deps /home/remi/github/nilearn/nilearn/.tox/.tmp/package/9/nilearn-0.10.5.dev251+g09420a9ae.d20241122.tar.gz[0m
+[1m[35mdoc:[0m[36m freeze[22m[2m>[0m python -m pip freeze --all[0m
+[1m[35mdoc:[0m[36m alabaster==0.7.16,babel==2.16.0,beautifulsoup4==4.12.3,certifi==2024.8.30,charset-normalizer==3.4.0,cycler==0.12.1,docutils==0.21.2,furo==2024.8.6,idna==3.10,imagesize==1.4.1,importlib_metadata==8.5.0,Jinja2==3.1.4,joblib==1.2.0,kaleido==0.2.1,kiwisolver==1.4.7,latexcodec==3.0.0,lxml==5.3.0,markdown-it-py==3.0.0,MarkupSafe==3.0.2,matplotlib==3.3.0,mdit-py-plugins==0.4.2,mdurl==0.1.2,memory-profiler==0.61.0,myst-parser==3.0.1,nibabel==5.2.0,nilearn @ file:///home/remi/github/nilearn/nilearn/.tox/.tmp/package/9/nilearn-0.10.5.dev251%2Bg09420a9ae.d20241122.tar.gz#sha256=9148010acbe167816dab4676131bd9143447cfeff114709e6259ddcb71ea3458,numpy==1.22.4,numpydoc==1.8.0,packaging==24.2,pandas==2.2.0,pillow==11.0.0,pip==24.2,plotly==5.24.1,psutil==6.1.0,pybtex==0.24.0,pybtex-docutils==1.0.3,Pygments==2.18.0,pyparsing==3.2.0,python-dateutil==2.9.0.post0,pytz==2024.2,PyYAML==6.0.2,requests==2.32.3,rich==13.9.4,ruamel.yaml==0.18.6,ruamel.yaml.clib==0.2.12,scikit-learn==1.4.0,scipy==1.8.0,setuptools==75.2.0,six==1.16.0,snowballstemmer==2.2.0,soupsieve==2.6,Sphinx==7.4.7,sphinx-basic-ng==1.0.0b2,sphinx-copybutton==0.5.2,sphinx-gallery==0.18.0,sphinx_design==0.6.1,sphinxcontrib-applehelp==2.0.0,sphinxcontrib-bibtex==2.6.3,sphinxcontrib-devhelp==2.0.0,sphinxcontrib-htmlhelp==2.1.0,sphinxcontrib-jsmath==1.0.1,sphinxcontrib-qthelp==2.0.0,sphinxcontrib-serializinghtml==2.0.0,sphinxext-opengraph==0.9.1,tabulate==0.9.0,tenacity==9.0.0,threadpoolctl==3.5.0,tomli==2.1.0,typing_extensions==4.12.2,tzdata==2024.2,urllib3==2.2.3,wheel==0.44.0,zipp==3.21.0[0m
+[1m[35mdoc:[0m[36m commands[0][22m[2m>[0m make -C doc clean[0m
+make: Entering directory '/home/remi/github/nilearn/nilearn/doc'
+rm -rf _build/*
+rm -rf auto_examples/
+rm -rf generated/*
+rm -rf modules/generated/*
+rm -rf ../examples/**/nilearn_cache
+rm -rf ../**/nilearn_cache
+rm -rf modules/description/
+make: Leaving directory '/home/remi/github/nilearn/nilearn/doc'
+[1m[35mdoc:[0m[36m commands[1][22m[2m>[0m python maint_tools/citation_cff_maint.py[0m
+Reading file: /home/remi/github/nilearn/nilearn/CITATION.cff
+ Sorting authors by given name
+Writing file: /home/remi/github/nilearn/nilearn/doc/changes/names.rst
+Reading file: /home/remi/github/nilearn/nilearn/AUTHORS.rst
+Writing file: /home/remi/github/nilearn/nilearn/AUTHORS.rst
+ Updating team section
+Writing file: /home/remi/github/nilearn/nilearn/CITATION.cff
+[1m[35mdoc:[0m[36m commands[2][22m[2m>[0m make -C doc html-modified-examples-only[0m
+make: Entering directory '/home/remi/github/nilearn/nilearn/doc'
+BUILD_DEV_HTML=1 sphinx-build -W --keep-going -D sphinx_gallery_conf.filename_pattern=\(plot_write_events_file.py\|plot_design_matrix.py\) -D sphinx_gallery_conf.run_stale_examples=True -b html -d _build/doctrees  -v --color . _build/html
+[01mRunning Sphinx v7.4.7[39;49;00m
+[01mloading translations [en]... [39;49;00mlocale_dir /home/remi/github/nilearn/nilearn/doc/locales/en/LC_MESSAGES does not exist
+locale_dir /home/remi/github/nilearn/nilearn/doc/locales/en/LC_MESSAGES does not exist
+done
+Adding copy buttons to code blocks...
+[01mmaking output directory... [39;49;00mdone
+Using Sphinx-Gallery to convert rst text blocks to markdown for .ipynb files.
+Converting `source_suffix = ['.rst', '.md']` to `source_suffix = {'.rst': 'restructuredtext', '.md': 'restructuredtext'}`.
+checking bibtex cache... out of date
+parsing bibtex file /home/remi/github/nilearn/nilearn/doc/references.bib... parsed 117 entries
+parsing bibtex file /home/remi/github/nilearn/nilearn/doc/soft_references.bib... parsed 13 entries
+locale_dir /home/remi/github/nilearn/nilearn/doc/locales/en/LC_MESSAGES does not exist
+[97mgenerating gallery...[39;49;00m
+[01mgenerating gallery for auto_examples... [39;49;00m
+[01mgenerating gallery for auto_examples/00_tutorials... [39;49;00m[ 17%] [32mplot_python_101.py[39;49;00m
+[01mgenerating gallery for auto_examples/00_tutorials... [39;49;00m[ 33%] [32mplot_3d_and_4d_niimg.py[39;49;00m
+[01mgenerating gallery for auto_examples/00_tutorials... [39;49;00m[ 50%] [32mplot_nilearn_101.py[39;49;00m
+[01mgenerating gallery for auto_examples/00_tutorials... [39;49;00m[ 67%] [32mplot_surface_101.py[39;49;00m
+[01mgenerating gallery for auto_examples/00_tutorials... [39;49;00m[ 83%] [32mplot_decoding_tutorial.py[39;49;00m
+[01mgenerating gallery for auto_examples/00_tutorials... [39;49;00m[100%] [32mplot_single_subject_single_run.py[39;49;00m
+
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[  6%] [32mplot_demo_glass_brain.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 11%] [32mplot_visualize_megatrawls_netmats.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 17%] [32mplot_prob_atlas.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 22%] [32mplot_atlas.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 28%] [32mplot_overlay.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 33%] [32mplot_dim_plotting.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 39%] [32mplot_multiscale_parcellations.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 44%] [32mplot_colormaps.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 50%] [32mplot_visualization.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 56%] [32mplot_carpet.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 61%] [32mplot_haxby_masks.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 67%] [32mplot_surface_projection_strategies.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 72%] [32mplot_demo_plotting.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 78%] [32mplot_surf_atlas.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 83%] [32mplot_demo_more_plotting.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 89%] [32mplot_demo_glass_brain_extensive.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[ 94%] [32mplot_surf_stat_map.py[39;49;00m
+[01mgenerating gallery for auto_examples/01_plotting... [39;49;00m[100%] [32mplot_3d_map_to_surface_projection.py[39;49;00m
+
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[  6%] [32mplot_haxby_stimuli.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 12%] [32mplot_mixed_gambles_frem.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 18%] [32mplot_oasis_vbm_space_net.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 24%] [32mplot_haxby_frem.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 29%] [32mplot_haxby_anova_svm.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 35%] [32mplot_haxby_multiclass.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 41%] [32mplot_haxby_searchlight_surface.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 47%] [32mplot_haxby_searchlight.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 53%] [32mplot_haxby_glm_decoding.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 59%] [32mplot_haxby_full_analysis.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 65%] [32mplot_haxby_grid_search.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 71%] [32mplot_oasis_vbm.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 76%] [32mplot_haxby_different_estimators.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 82%] [32mplot_haxby_understand_decoder.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 88%] [32mplot_simulated_data.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[ 94%] [32mplot_miyawaki_encoding.py[39;49;00m
+[01mgenerating gallery for auto_examples/02_decoding... [39;49;00m[100%] [32mplot_miyawaki_reconstruction.py[39;49;00m
+
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[  8%] [32mplot_inverse_covariance_connectome.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[ 17%] [32mplot_probabilistic_atlas_extraction.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[ 25%] [32mplot_simulated_connectome.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[ 33%] [32mplot_multi_subject_connectome.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[ 42%] [32mplot_compare_decomposition.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[ 50%] [32mplot_seed_to_voxel_correlation.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[ 58%] [32mplot_extract_regions_dictlearning_maps.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[ 67%] [32mplot_group_level_connectivity.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[ 75%] [32mplot_signal_extraction.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[ 83%] [32mplot_atlas_comparison.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[ 92%] [32mplot_sphere_based_connectome.py[39;49;00m
+[01mgenerating gallery for auto_examples/03_connectivity... [39;49;00m[100%] [32mplot_data_driven_parcellations.py[39;49;00m
+
+[01mgenerating gallery for auto_examples/04_glm_first_level... [39;49;00m[  9%] [32mplot_adhd_dmn.py[39;49;00m
+[01mgenerating gallery for auto_examples/04_glm_first_level... [39;49;00m[ 18%] [32mplot_fir_model.py[39;49;00m
+[01mgenerating gallery for auto_examples/04_glm_first_level... [39;49;00m[ 27%] [32mplot_write_events_file.py[39;49;00m
+[33mOutput from /home/remi/github/nilearn/nilearn/examples/04_glm_first_level/plot_write_events_file.py[39;49;00m
+/home/remi/github/nilearn/nilearn/examples/04_glm_first_level/plot_write_events_file.py:78: DeprecationWarning:
+Pyarrow will become a required dependency of pandas in the next major release of pandas (pandas 3.0),
+(to allow more performant data types, such as the Arrow string type, and better interoperability with other libraries)
+but was not found to be installed on your system.
+If this would cause problems for you,
+please provide us feedback at https://github.com/pandas-dev/pandas/issues/54466
+
+  import pandas as pd
+[33mOutput from /home/remi/github/nilearn/nilearn/examples/04_glm_first_level/plot_write_events_file.py[39;49;00m
+The event information has been saved to /home/remi/github/nilearn/nilearn/examples/04_glm_first_level/results/plot_write_events_file/localizer_events.tsv
+[33mOutput from /home/remi/github/nilearn/nilearn/examples/04_glm_first_level/plot_write_events_file.py[39;49;00m
+/home/remi/github/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/glm/first_level/experimental_paradigm.py:144: UserWarning: The following conditions contain events with null duration:
+right button press, auditory instructions, right button press, visual instructions, left button press, auditory instructions, left button press, visual instructions.
+  warnings.warn(
+[33mOutput from /home/remi/github/nilearn/nilearn/examples/04_glm_first_level/plot_write_events_file.py[39;49;00m
+/home/remi/github/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/glm/first_level/experimental_paradigm.py:144: UserWarning: The following conditions contain events with null duration:
+right button press, auditory instructions, right button press, visual instructions, left button press, auditory instructions, left button press, visual instructions.
+  warnings.warn(
+/home/remi/github/nilearn/nilearn/.tox/doc/lib/python3.9/site-packages/nilearn/glm/first_level/experimental_paradigm.py:144: UserWarning: The following conditions contain events with null duration:
+right button press, auditory instructions, right button press, visual instructions, left button press, auditory instructions, left button press, visual instructions.
+  warnings.warn(
+[check_events] A 'modulation' column was found in the given events data and is used.
