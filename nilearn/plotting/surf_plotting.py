@@ -895,8 +895,8 @@ def plot_surf(
     %(cbar_tick_format)s
         Default="auto" which will select:
 
-            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
-            - '.1f' (rounded floats) with ``plotly`` engine.
+        - '%%.2g' (scientific notation) with ``matplotlib`` engine.
+        - '.1f' (rounded floats) with ``plotly`` engine.
 
         .. versionadded:: 0.7.1
 
