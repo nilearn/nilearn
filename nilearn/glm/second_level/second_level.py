@@ -89,12 +89,15 @@ def _check_input_type_when_list(second_level_input):
             "A second level model requires a list with at"
             " least two first level models or niimgs or surface images."
         )
+
     _check_all_elements_of_same_type(second_level_input)
-    if all(isinstance(x, (str, Nifti1Image)) for x in second_level_input):
+
+    # Can now only check first element
+    if isinstance(second_level_input[0], (str, Nifti1Image)):
         return "nii_object"
-    if all(isinstance(x, FirstLevelModel) for x in second_level_input):
+    if isinstance(second_level_input[0], (FirstLevelModel)):
         return "flm_object"
-    if all(isinstance(x, SurfaceImage) for x in second_level_input):
+    if isinstance(second_level_input[0], (SurfaceImage)):
         return "surf_img_object"
     raise TypeError(_input_type_error_message(second_level_input))
 
@@ -154,10 +157,6 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
                 f"Model at idx {model_idx} does not provide it. "
                 "To set it, you can do first_level.subject_label = '01'"
             )
-
-        if isinstance(first_level.mask_img, (SurfaceImage, SurfaceMasker)):
-            # TODO run some checks on meshes ?
-            continue
 
         affine = None
         shape = None
@@ -229,7 +228,6 @@ def _check_input_as_surface_images(second_level_input, none_design_matrix):
             "List of SurfaceImage objects as second_level_input"
             " require a design matrix to be provided."
         )
-    # TODO: run some checks on meshes ?
 
 
 def _check_confounds(confounds):
@@ -601,7 +599,7 @@ class SecondLevelModel(BaseGLM):
         # Report progress
         logger.log(
             "\nComputation of second level model done in "
-            f"{time.time() - t0} seconds.\n",
+            f"{time.time() - t0 :0.2f} seconds.\n",
             verbose=self.verbose,
         )
 
