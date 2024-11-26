@@ -31,6 +31,7 @@ from nilearn.maskers._utils import (
     check_same_n_vertices,
     compute_mean_surface_image,
     concatenate_surface_images,
+    deconcatenate_surface_images,
 )
 from nilearn.mass_univariate import permuted_ols
 from nilearn.surface import SurfaceImage
@@ -42,8 +43,9 @@ def _input_type_error_message(second_level_input):
         "- a pandas DataFrame,\n"
         "- a Niimg-like object\n"
         "- a pandas Series of Niimg-like object\n"
-        "- a list of Niimg-like object\n"
-        "- a list of SurfaceImage object\n"
+        "- a list of Niimg-like objects\n"
+        "- a list of 2D SurfaceImage objects\n"
+        "- a 3D SurfaceImage object\n"
         "- a list of FirstLevelModel objects.\n"
         f"Got {_return_type(second_level_input)} instead."
     )
@@ -70,6 +72,8 @@ def _check_input_type(second_level_input):
         return "pd_series"
     if isinstance(second_level_input, (str, Nifti1Image)):
         return "nii_object"
+    if isinstance(second_level_input, SurfaceImage):
+        return "surf_img_object"
     if isinstance(second_level_input, list):
         return _check_input_type_when_list(second_level_input)
     raise TypeError(_input_type_error_message(second_level_input))
@@ -219,15 +223,24 @@ def _check_input_as_nifti_images(second_level_input, none_design_matrix):
 
 
 def _check_input_as_surface_images(second_level_input, none_design_matrix):
-    if isinstance(second_level_input, SurfaceImage):
-        second_level_input = [second_level_input]
-    for _, img in enumerate(second_level_input, start=1):
-        check_same_n_vertices(second_level_input[0].mesh, img.mesh)
-    if none_design_matrix:
-        raise ValueError(
-            "List of SurfaceImage objects as second_level_input"
-            " require a design matrix to be provided."
+    if (
+        isinstance(second_level_input, SurfaceImage)
+        and second_level_input.shape[0] == 1
+    ):
+        raise TypeError(
+            "If a single SurfaceImage object is passed "
+            "as second_level_input,"
+            "it must be a 3D SurfaceImage."
         )
+
+    if isinstance(second_level_input, list):
+        for _, img in enumerate(second_level_input, start=1):
+            check_same_n_vertices(second_level_input[0].mesh, img.mesh)
+        if none_design_matrix:
+            raise ValueError(
+                "List of SurfaceImage objects as second_level_input"
+                " require a design matrix to be provided."
+            )
 
 
 def _check_confounds(confounds):
@@ -316,7 +329,11 @@ def _get_con_val(second_level_contrast, design_matrix):
 
 def _infer_effect_maps(second_level_input, contrast_def):
     """Deal with the different possibilities of second_level_input."""
-    # Build the design matrix X and list of imgs Y for GLM fit
+    if isinstance(second_level_input, SurfaceImage):
+        return deconcatenate_surface_images(second_level_input)
+    if isinstance(second_level_input[0], SurfaceImage):
+        return second_level_input
+
     if isinstance(second_level_input, pd.DataFrame):
         # If a Dataframe was given, we expect contrast_def to be in map_name
         def _is_contrast_def(x):
@@ -336,9 +353,6 @@ def _infer_effect_maps(second_level_input, contrast_def):
     else:
         effect_maps = second_level_input
 
-    if isinstance(effect_maps[0], SurfaceImage):
-        return effect_maps
-
     # check niimgs
     for niimg in effect_maps:
         check_niimg(niimg, ensure_ndim=3)
@@ -356,8 +370,10 @@ def _process_second_level_input(second_level_input):
         return _process_second_level_input_as_firstlevelmodels(
             second_level_input
         )
-    elif hasattr(second_level_input, "__iter__") and isinstance(
-        second_level_input[0], SurfaceImage
+    elif (
+        hasattr(second_level_input, "__iter__")
+        and isinstance(second_level_input[0], SurfaceImage)
+        or isinstance(second_level_input, SurfaceImage)
     ):
         return _process_second_level_input_as_surface_image(second_level_input)
     else:
@@ -402,7 +418,16 @@ def _process_second_level_input_as_surface_image(second_level_input):
     """Compute mean image across sample maps.
 
     All should have the same underlying meshes.
+
+    Returns
+    -------
+    sample_map: SurfaceImage with 3 dimensions
+
+    None
     """
+    if isinstance(second_level_input, SurfaceImage):
+        return second_level_input, None
+
     second_level_input = [
         compute_mean_surface_image(x) for x in second_level_input
     ]

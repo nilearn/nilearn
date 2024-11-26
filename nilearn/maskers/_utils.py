@@ -63,8 +63,8 @@ def compute_mean_surface_image(img):
     -------
     SurfaceImage
     """
-    n_timpoints = img.shape[0]
-    if n_timpoints < 2:
+    n_time_points = img.shape[0]
+    if n_time_points < 2:
         return img
 
     data = {}
@@ -126,3 +126,34 @@ def concatenate_surface_images(imgs):
     output = SurfaceImage(mesh=imgs[0].mesh, data=output_data)
 
     return output
+
+
+def deconcatenate_surface_images(img):
+    """Deconcatenate a 3D Surface image into a a list of SurfaceImages.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    Returns
+    -------
+    :obj:`list` or :obj:`tuple` of SurfaceImage object
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+
+    if img.shape[0] == 1:
+        return [img]
+
+    mesh = img.mesh
+
+    return [
+        SurfaceImage(
+            mesh=mesh,
+            data={
+                "left": img.data.parts["left"][i],
+                "right": img.data.parts["right"][i],
+            },
+        )
+        for i in range(img.shape[0])
+    ]

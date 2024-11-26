@@ -4,9 +4,14 @@ from numpy.testing import assert_array_equal
 from nilearn.maskers._utils import (
     compute_mean_surface_image,
     concatenate_surface_images,
+    deconcatenate_surface_images,
     get_min_max_surface_image,
 )
-from nilearn.surface._testing import assert_surface_image_equal
+from nilearn.surface import SurfaceImage
+from nilearn.surface._testing import (
+    assert_polymesh_equal,
+    assert_surface_image_equal,
+)
 
 
 def test_compute_mean_surface_image(surf_img):
@@ -49,3 +54,17 @@ def test_concatenate_surface_images(surf_img):
     assert img.shape == (8, 9)
     for value in img.data.parts.values():
         assert value.ndim == 2
+
+
+def test_deconcatenate_surface_images(surf_img):
+    input = surf_img((5,))
+    output = deconcatenate_surface_images(input)
+
+    assert isinstance(output, list)
+    assert len(output) == input.shape[0]
+    assert all(isinstance(x, SurfaceImage) for x in output)
+    for i in range(input.shape[0]):
+        assert_polymesh_equal(output[i].mesh, input.mesh)
+        assert_array_equal(
+            output[i].data.parts["left"][0], input.data.parts["left"][i]
+        )
