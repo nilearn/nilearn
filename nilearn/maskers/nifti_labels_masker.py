@@ -12,6 +12,7 @@ from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+import pathlib
 
 
 class _ExtractionFunctor:
@@ -206,35 +207,7 @@ class NiftiLabelsMasker(BaseMasker):
         self.background_label = background_label
         self._original_region_ids = self._get_labels_values(self.labels_img)
         self._region_id_name = None
-
-        # if the labels is a path, it is the path to tsv file, so read it
-        if isinstance(labels, str):
-            try:
-                region_id_name = pd.read_csv(labels, sep="\t")
-                # Note that labels should include the background too
-                labels = region_id_name["region name"].tolist()
-                # create the _region_id_name dict based on the
-                # provided tsv file
-                # it will include the background too
-                self._region_id_name = {
-                    row["region id"]: row["region name"]
-                    for _, row in region_id_name.iterrows()
-                }
-            except Exception as e:
-                warnings.warn(
-                    "Expected a path to a tsv file containing region ids and "
-                    "region names if a string is provided for 'labels'."
-                    f"Labels could not be loaded: {e}",
-                    stacklevel=2,
-                )
-                # if labels is string and could not be loaded, set it to None
-                # since it is useless
-                labels = None
-
-        self.labels = self._sanitize_labels(labels)
-        self._check_mismatch_labels_regions(
-            self._original_region_ids, tolerant=True
-        )
+        self.labels = labels
 
         self.mask_img = mask_img
 
@@ -582,21 +555,43 @@ class NiftiLabelsMasker(BaseMasker):
         logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
 
-        # find the region ids existing in the self.labels_img_
-        initial_region_ids = [
-            region_id
-            for region_id in np.unique(
-                _utils.niimg.safe_get_data(self.labels_img_)
-            )
-            if region_id != self.background_label
-        ]
+        # validate self.labels
+        # if self.labels is a path, it is the path to tsv file, so read it
+        if isinstance(self.labels, (str, pathlib.Path)):
+            try:
+                region_id_name = pd.read_csv(self.labels, sep="\t")
+                # Note that self.labels should include the background too
+                self.labels = region_id_name["region name"].tolist()
+                # create the _region_id_name dict based on the
+                # provided tsv file
+                # it will include the background too
+                self._region_id_name = {
+                    row["region id"]: row["region name"]
+                    for _, row in region_id_name.iterrows()
+                }
+            except Exception as e:
+                warnings.warn(
+                    "Expected a path to a tsv file containing 'index' and "
+                    "'name' columns if a string or a Path is provided "
+                    "for 'labels'."
+                    f"Labels could not be loaded: {e}",
+                    stacklevel=2,
+                )
+                # if labels is string and could not be loaded, set it to None
+                # since it is useless
+                self.labels = None
+
+        self.labels = self._sanitize_labels(self.labels)
+        self._check_mismatch_labels_regions(
+            self._original_region_ids, tolerant=True
+        )
+
+        # get the region ids existing in the self.labels_img_ 
+        # from self._original_region_ids excluding the background
+        initial_region_ids = [region_id for region_id in self._original_region_ids if region_id != self.background_label]
         if self._region_id_name is not None:
             # check if initial_region_ids all exist in self._region_id_name
-            missing_ids = [
-                region_id
-                for region_id in initial_region_ids
-                if region_id not in self._region_id_name
-            ]
+            missing_ids = set(initial_region_ids) - set(self._region_id_name)
             if missing_ids:
                 raise ValueError(
                     "The following region ids are missing "
