@@ -19,10 +19,10 @@ from nilearn.glm.first_level.hemodynamic_models import (
 )
 
 __all__ = [
+    "FirstLevelModel",
     "check_design_matrix",
     "compute_regressor",
     "first_level_from_bids",
-    "FirstLevelModel",
     "glover_dispersion_derivative",
     "glover_hrf",
     "glover_time_derivative",

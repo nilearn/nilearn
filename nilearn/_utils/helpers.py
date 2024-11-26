@@ -233,8 +233,10 @@ VERSION_OPERATORS = {
 def compare_version(version_a, operator, version_b):
     """Compare two version strings via a user-specified operator.
 
-    Note: This function is inspired from MNE-Python.
-    See https://github.com/mne-tools/mne-python/blob/main/mne/fixes.py
+    .. note::
+
+        This function is inspired from MNE-Python.
+        See https://github.com/mne-tools/mne-python/blob/main/mne/fixes.py
 
     Parameters
     ----------

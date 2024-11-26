@@ -186,7 +186,7 @@ def load_mni152_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -250,7 +250,7 @@ def load_mni152_gm_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -306,7 +306,7 @@ def load_mni152_wm_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -360,7 +360,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -404,7 +404,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -412,7 +412,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
         Values of the grey-matter MNI152 template above this threshold will be
         included.
 
-    n_iter: int, default=2
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -457,7 +457,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -465,7 +465,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
         Values of the white-matter MNI152 template above this threshold will be
         included.
 
-    n_iter: int, default=2
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -513,12 +513,14 @@ def fetch_icbm152_brain_gm_mask(
     Parameters
     ----------
     %(data_dir)s
+
     threshold : float, default=0.2
         Values of the ICBM152 grey-matter template above this threshold will be
         included.
 
     %(resume)s
-    n_iter: int, default=2
+
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -1126,7 +1128,7 @@ def load_fsaverage_data(
 
     Returns
     -------
-    img: SurfaceImage
+    img : :obj:`~nilearn.surface.SurfaceImage`
         SurfaceImage with the freesurfer mesh and data.
     """
     if mesh_type not in ALLOWED_MESH_TYPES:

@@ -5,6 +5,7 @@ Fastclustering for approximation of structured signals
 
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
 
+import itertools
 import warnings
 
 import numpy as np
@@ -195,6 +196,26 @@ def _compute_weights_surface(X, mask, edges):
     return weights
 
 
+def _circular_pairwise(iterable):
+    """Pairwise iterator with the first element reused as the last one.
+
+    Return successive overlapping pairs taken from the input `iterable`.
+    The number of 2-tuples in the `output` iterator will be the number of
+    inputs.
+
+    Parameters
+    ----------
+    iterable : iterable
+
+    Returns
+    -------
+    output : iterable
+
+    """
+    a, b = itertools.tee(iterable)
+    return itertools.zip_longest(a, b, fillvalue=next(b, None))
+
+
 def _make_edges_surface(faces, mask):
     """Create the edges set: Returns a list of edges for a surface mesh.
 
@@ -215,11 +236,11 @@ def _make_edges_surface(faces, mask):
         Edges corresponding to the mask with shape: (1, n_edges).
 
     """
-    mesh_edges = set()
-    for face in faces:
-        for i in range(len(face)):
-            edge = tuple(sorted([face[i], face[(i + 1) % len(face)]]))
-            mesh_edges.add(edge)
+    mesh_edges = {
+        tuple(sorted(pair))
+        for face in faces
+        for pair in _circular_pairwise(face)
+    }
     edges = np.array(list(mesh_edges))
     false_indices = np.where(~mask)[0]
     edges_masked = ~np.isin(edges, false_indices).any(axis=1)

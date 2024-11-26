@@ -73,7 +73,7 @@ def from_matrix_vector(matrix, vector):
 
     Returns
     -------
-    xform: numpy.ndarray
+    xform : numpy.ndarray
         An (N+1, N+1) transform matrix.
 
     See Also
@@ -117,8 +117,10 @@ def coord_transform(x, y, z, affine):
     z : number or ndarray (same shape as input)
         The z coordinates in the output space.
 
-    Warning: The x, y and z have their output space (e.g. MNI) coordinate
-    ordering, not 3D numpy image ordering.
+    .. warning::
+
+        The x, y and z have their output space (e.g. MNI) coordinate ordering,
+        not 3D numpy image ordering.
 
     Examples
     --------
@@ -783,7 +785,7 @@ def resample_to_img(
 
     Returns
     -------
-    resampled: nibabel.Nifti1Image
+    resampled : nibabel.Nifti1Image
         input image, resampled to have respectively target image shape and
         affine as shape and affine.
 
