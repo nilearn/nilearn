@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 from numpy.testing import assert_array_equal
 
 from nilearn.maskers._utils import (
@@ -69,3 +70,21 @@ def test_deconcatenate_surface_images(surf_img):
             np.squeeze(output[i].data.parts["left"]),
             input.data.parts["left"][..., i],
         )
+
+
+def test_deconcatenate_surface_images_2d(surf_img):
+    """Retunn as is if surface image is 2D."""
+    input = surf_img(1)
+    output = deconcatenate_surface_images(input)
+
+    assert_surface_image_equal(output[0], input)
+
+    input = surf_img()
+    output = deconcatenate_surface_images(input)
+
+    assert_surface_image_equal(output[0], input)
+
+
+def test_deconcatenate_wrong_input():
+    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+        deconcatenate_surface_images(1)
