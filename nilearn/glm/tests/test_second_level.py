@@ -1469,7 +1469,7 @@ def test_second_level_input_as_surface_image_with_mask(surf_img, surf_mask):
 
 
 def test_second_level_input_as_surface_image_warning_smoothing(surf_img):
-    """Test slm with a list surface images as input."""
+    """Warn smoothing surface not implemented."""
     n_subjects = 5
     second_level_input = [surf_img() for _ in range(n_subjects)]
 
@@ -1478,9 +1478,8 @@ def test_second_level_input_as_surface_image_warning_smoothing(surf_img):
     )
 
     model = SecondLevelModel(smoothing_fwhm=8.0)
-    # TODO
-    # should throw warning that smoothing is not implemented
-    model = model.fit(second_level_input, design_matrix=design_matrix)
+    with pytest.warns(UserWarning, match="not yet supported"):
+        model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
 def test_second_level_input_as_flm_of_surface_image(surface_glm_data):

@@ -593,6 +593,17 @@ class SecondLevelModel(BaseGLM):
             )
         self.design_matrix_ = design_matrix
 
+        if (
+            isinstance(sample_map, SurfaceImage)
+            and self.smoothing_fwhm is not None
+        ):
+            warn(
+                "Parameter smoothing_fwhm is not "
+                "yet supported for surface data",
+                UserWarning,
+                stacklevel=2,
+            )
+
         # Learn the mask. Assume the first level imgs have been masked.
         if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):
             if isinstance(sample_map, SurfaceImage):
