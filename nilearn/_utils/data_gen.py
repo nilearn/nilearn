@@ -1516,4 +1516,4 @@ def _write_bids_derivative_func(
         gifti_path = func_path / create_bids_filename(
             fields=fields, entities_to_include=entities_to_include
         )
-        _write_fake_bold_gifti(gifti_path, shape=(n_vertices, n_time_points))
+        _write_fake_bold_gifti(gifti_path, shape=(n_time_points, n_vertices))
