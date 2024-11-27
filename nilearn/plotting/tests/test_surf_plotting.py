@@ -288,7 +288,7 @@ def test_check_surface_plotting_inputs_extract_bg_map_data(
         hemi=hemi,
         bg_map=surf_img(),
     )
-    assert_array_equal(out_bg_map, surf_img().data.parts[hemi][:, 0])
+    assert_array_equal(out_bg_map, surf_img().data.parts[hemi])
 
 
 @pytest.mark.parametrize(
