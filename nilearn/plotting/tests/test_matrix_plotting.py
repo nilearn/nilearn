@@ -378,8 +378,21 @@ def test_plot_design_matrix_correlation(tri, cmap, tmp_path):
     assert (tmp_path / "corr_mat.png").exists()
 
 
+def test_plot_design_matrix_correlation_smoke_path(tmp_path):
+    """Check that plot_design_matrix_correlation works with paths."""
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, events=design_with_null_durations()
+    )
+
+    dmtx.to_csv(tmp_path / "tmp.tsv", sep="\t", index=False)
+
+    plot_design_matrix_correlation(tmp_path / "tmp.tsv")
+    plot_design_matrix_correlation(str(tmp_path / "tmp.tsv"))
+
+
 def test_plot_design_matrix_correlation_errors(mat):
-    with pytest.raises(TypeError, match="must be a pandas dataframe"):
+    with pytest.raises(ValueError, match="table path foo could not be loaded"):
         plot_design_matrix_correlation("foo")
 
     with pytest.raises(ValueError, match="dataframe cannot be empty."):

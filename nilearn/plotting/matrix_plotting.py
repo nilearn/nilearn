@@ -687,11 +687,9 @@ def plot_design_matrix_correlation(
     display : :class:`matplotlib.axes.Axes`
         Axes image.
     """
-    if not isinstance(design_matrix, pd.DataFrame):
-        raise TypeError(
-            "'des_mat' must be a pandas dataframe instance.\n"
-            f"Got: {type(design_matrix)}"
-        )
+    if not isinstance(design_matrix, (list, tuple)):
+        design_matrix = [design_matrix]
+    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     if len(design_matrix.columns) == 0:
         raise ValueError("The design_matrix dataframe cannot be empty.")
