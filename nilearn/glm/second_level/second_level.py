@@ -223,9 +223,8 @@ def _check_input_as_nifti_images(second_level_input, none_design_matrix):
 
 
 def _check_input_as_surface_images(second_level_input, none_design_matrix):
-    if (
-        isinstance(second_level_input, SurfaceImage)
-        and second_level_input.shape[0] == 1
+    if isinstance(second_level_input, SurfaceImage) and (
+        len(second_level_input.shape) == 1 or second_level_input.shape[1] == 1
     ):
         raise TypeError(
             "If a single SurfaceImage object is passed "

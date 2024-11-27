@@ -1424,6 +1424,19 @@ def test_second_level_input_as_surface_image_3d(surf_img):
     model.fit(second_level_input, design_matrix=design_matrix)
 
 
+def test_second_level_input_error_surface_image_2d(surf_img):
+    """Err when passing a single 2D SurfaceImage with."""
+    n_subjects = 1
+    second_level_input = surf_img(n_subjects)
+
+    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
+
+    model = SecondLevelModel()
+
+    with pytest.raises(TypeError, match="must be a 3D SurfaceImage"):
+        model.fit(second_level_input, design_matrix=design_matrix)
+
+
 def test_second_level_input_as_surface_image_3d_same_as_list_2d(surf_img):
     """Fit all subjects as timepoints same as list of subject."""
     n_subjects = 5
