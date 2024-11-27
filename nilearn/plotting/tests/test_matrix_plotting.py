@@ -9,7 +9,7 @@ from nilearn._utils import _constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
-from nilearn.glm.tests._testing import design_with_null_durations
+from nilearn.glm.tests._testing import modulated_event_paradigm
 from nilearn.plotting.matrix_plotting import (
     pad_contrast_matrix,
     plot_contrast_matrix,
@@ -359,7 +359,7 @@ def test_pad_contrast_matrix():
 
 
 def test_show_event_plot_duration_0():
-    plot_event(design_with_null_durations())
+    plot_event(modulated_event_paradigm())
 
 
 @pytest.mark.parametrize("tri", ["full", "diag"])
@@ -368,7 +368,7 @@ def test_plot_design_matrix_correlation(tri, cmap, tmp_path):
     """Smoke test for the 'happy path'."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
-        frame_times, events=design_with_null_durations()
+        frame_times, events=modulated_event_paradigm()
     )
 
     plot_design_matrix_correlation(
@@ -382,7 +382,7 @@ def test_plot_design_matrix_correlation_smoke_path(tmp_path):
     """Check that plot_design_matrix_correlation works with paths."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
-        frame_times, events=design_with_null_durations()
+        frame_times, events=modulated_event_paradigm()
     )
 
     dmtx.to_csv(tmp_path / "tmp.tsv", sep="\t", index=False)

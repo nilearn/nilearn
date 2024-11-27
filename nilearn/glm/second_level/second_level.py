@@ -5,6 +5,7 @@ Author: Martin Perez-Guevara, 2016
 """
 
 import time
+from pathlib import Path
 from warnings import warn
 
 import numpy as np
@@ -24,6 +25,7 @@ from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
+from nilearn.glm.first_level.first_level import check_and_load_tables
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image import mean_img
 from nilearn.maskers import NiftiMasker
@@ -247,14 +249,6 @@ def _check_output_type(output_type, valid_types):
         raise ValueError(f"output_type must be one of {valid_types}")
 
 
-def _check_design_matrix(design_matrix):
-    """Check design_matrix type."""
-    if design_matrix is not None and not isinstance(
-        design_matrix, pd.DataFrame
-    ):
-        raise ValueError("design matrix must be a pandas DataFrame")
-
-
 def _check_effect_maps(effect_maps, design_matrix):
     if len(effect_maps) != design_matrix.shape[0]:
         raise ValueError(
@@ -447,7 +441,7 @@ class SecondLevelModel(BaseGLM):
         Parameters
         ----------
         %(second_level_input)s
-        confounds : :class:`pandas.DataFrame`, optional
+        confounds : :obj:`pandas.DataFrame`, optional
             Must contain a ``subject_label`` column. All other columns are
             considered as confounds and included in the model. If
             ``design_matrix`` is provided then this argument is ignored.
@@ -456,13 +450,14 @@ class SecondLevelModel(BaseGLM):
             At least two columns are expected, ``subject_label`` and at
             least one confound.
 
-        design_matrix : :class:`pandas.DataFrame`, optional
-            Design matrix to fit the :term:`GLM`. The number of rows
-            in the design matrix must agree with the number of maps derived
+        design_matrix : :obj:`pandas.DataFrame`, :obj:`str`, \
+                        or :obj:`pathlib.Path`, optional
+            Design matrix to fit the :term:`GLM`.
+            The number of rows in the design matrix
+            must agree with the number of maps derived
             from ``second_level_input``.
             Ensure that the order of maps given by a ``second_level_input``
             list of Niimgs matches the order of the rows in the design matrix.
-
         """
         # check second_level_input
         _check_second_level_input(
@@ -472,13 +467,12 @@ class SecondLevelModel(BaseGLM):
         # check confounds
         _check_confounds(confounds)
 
-        # check design matrix
-        _check_design_matrix(design_matrix)
-
         if isinstance(second_level_input, pd.DataFrame):
             second_level_input = _sort_input_dataframe(second_level_input)
         self.second_level_input_ = second_level_input
+
         self.confounds_ = confounds
+
         sample_map, subjects_label = _process_second_level_input(
             second_level_input
         )
@@ -494,6 +488,17 @@ class SecondLevelModel(BaseGLM):
         if design_matrix is None:
             design_matrix = make_second_level_design_matrix(
                 subjects_label, confounds
+            )
+        elif isinstance(design_matrix, (str, Path, pd.DataFrame)):
+            design_matrix = [design_matrix]
+            design_matrix = check_and_load_tables(
+                design_matrix, "design_matrix"
+            )[0]
+        else:
+            raise TypeError(
+                "'design_matrix' must be a "
+                "str, pathlib.Path or a pandas.DataFrame.\n"
+                f"Got {type(design_matrix)}"
             )
         self.design_matrix_ = design_matrix
 
@@ -914,7 +919,9 @@ def non_parametric_inference(
     """
     _check_second_level_input(second_level_input, design_matrix)
     _check_confounds(confounds)
-    _check_design_matrix(design_matrix)
+    if not isinstance(design_matrix, (list, tuple)):
+        design_matrix = [design_matrix]
+    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     if isinstance(second_level_input, pd.DataFrame):
         second_level_input = _sort_input_dataframe(second_level_input)

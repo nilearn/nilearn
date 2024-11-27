@@ -657,8 +657,9 @@ def plot_design_matrix_correlation(
 
     Parameters
     ----------
-    design_matrix : :class:`pandas.DataFrame`
-        _description_
+    design_matrix : :obj:`pandas.DataFrame`, :obj:`pandas.DataFrame` \
+                    :obj:`pathlib.Path`
+        Design matrix whose correlation matrix you want to plot.
 
     tri : {'full', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
@@ -691,8 +692,7 @@ def plot_design_matrix_correlation(
         design_matrix = [design_matrix]
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
-    if len(design_matrix.columns) == 0:
-        raise ValueError("The design_matrix dataframe cannot be empty.")
+    check_design_matrix(design_matrix)
 
     ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
     if cmap not in ALLOWED_CMAP:
@@ -709,7 +709,7 @@ def plot_design_matrix_correlation(
     if len(design_matrix.columns) == 0:
         raise ValueError(
             "Nothing left to plot after "
-            "removing drift and constant regrerssors."
+            "removing drift and constant regressors."
         )
 
     _sanitize_tri(tri, allowed_values=("full", "diag"))

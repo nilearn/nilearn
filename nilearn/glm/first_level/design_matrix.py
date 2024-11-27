@@ -446,7 +446,7 @@ def check_design_matrix(design_matrix):
 
     Parameters
     ----------
-    design matrix : pandas DataFrame,
+    design matrix : :obj:`pandas.DataFrame`
         Describes a design matrix.
 
     Returns
@@ -461,6 +461,8 @@ def check_design_matrix(design_matrix):
         Per-event onset time (in seconds)
 
     """
+    if len(design_matrix.columns) == 0:
+        raise ValueError("The design_matrix dataframe cannot be empty.")
     names = list(design_matrix.keys())
     frame_times = design_matrix.index
     matrix = design_matrix.to_numpy()
