@@ -212,6 +212,23 @@ def test_show_design_matrix(tmp_path):
     assert (tmp_path / "dmtx.pdf").exists()
 
 
+def test_show_design_matrix_path_str(tmp_path):
+    # test that the show code indeed (formally) runs
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3
+    )
+    dmtx.to_csv(tmp_path / "tmp.tsv", sep="\t", index=False)
+
+    ax = plot_design_matrix(tmp_path / "tmp.tsv")
+
+    assert ax is not None
+
+    ax = plot_design_matrix(str(tmp_path / "tmp.tsv"))
+
+    assert ax is not None
+
+
 def test_show_event_plot(tmp_path):
     # test that the show code indeed (formally) runs
     onset = np.linspace(0, 19.0, 20)
@@ -253,6 +270,30 @@ def test_show_event_plot(tmp_path):
     assert fig is None
     plot_event(model_event, output_file=tmp_path / "event.pdf")
     assert (tmp_path / "event.pdf").exists()
+
+
+def test_show_event_plot_path_tsv_csv(tmp_path):
+    """Test plot_events directly from file."""
+    onset = np.linspace(0, 19.0, 20)
+    duration = np.full(20, 0.5)
+    trial_idx = np.arange(20)
+    # This makes 11 events in order to test cmap error
+    trial_idx[11:] -= 10
+    condition_ids = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
+
+    trial_type = np.array([condition_ids[i] for i in trial_idx])
+
+    model_event = pd.DataFrame(
+        {
+            "onset": onset,
+            "duration": duration,
+            "trial_type": trial_type,
+        }
+    )
+    model_event.to_csv(tmp_path / "tmp.tsv", sep="\t", index=False)
+
+    plot_event(tmp_path / "tmp.tsv")
+    plot_event([tmp_path / "tmp.tsv", str(tmp_path / "tmp.tsv")])
 
 
 def test_show_contrast_matrix(tmp_path):

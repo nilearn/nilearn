@@ -14,6 +14,9 @@ from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
+from nilearn.glm.first_level.first_level import (
+    _check_and_load_tables,
+)
 
 VALID_TRI_VALUES = ("full", "lower", "diag")
 
@@ -455,11 +458,12 @@ def pad_contrast_matrix(contrast_def, design_matrix):
 def plot_design_matrix(
     design_matrix, rescale=True, axes=None, output_file=None
 ):
-    """Plot a design matrix provided as a :class:`pandas.DataFrame`.
+    """Plot a design matrix.
 
     Parameters
     ----------
-    design matrix : :class:`pandas.DataFrame`
+    design matrix : :class:`pandas.DataFrame` or \
+                    :obj:`str` or :obj:`pathlib.Path` to a TSV event file
         Describes a design matrix.
 
     rescale : :obj:`bool`, default=True
@@ -467,6 +471,7 @@ def plot_design_matrix(
 
     axes : :class:`matplotlib.axes.Axes` or None, default=None
         Handle to axes onto which we will draw the design matrix.
+
     %(output_file)s
 
     Returns
@@ -475,8 +480,12 @@ def plot_design_matrix(
         The axes used for plotting.
 
     """
-    # normalize the values per column for better visualization
+    if not isinstance(design_matrix, (list, tuple)):
+        design_matrix = [design_matrix]
+    design_matrix = _check_and_load_tables(design_matrix, "design_matrix")[0]
+
     _, X, names = check_design_matrix(design_matrix)
+    # normalize the values per column for better visualization
     if rescale:
         X = X / np.maximum(1.0e-12, np.sqrt(np.sum(X**2, 0)))
     if axes is None:
@@ -520,8 +529,11 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     Parameters
     ----------
-    model_event : :class:`pandas.DataFrame` or :obj:`list`\
-                   of :class:`pandas.DataFrame`
+    model_event : :class:`pandas.DataFrame`, \
+                  :obj:`str` or :obj:`pathlib.Path` to a TSV event file,
+                  or a :obj:`list` or  :obj:`tuple` \
+                  of :class:`pandas.DataFrame`,
+                  :obj:`str` or :obj:`pathlib.Path` to a TSV event file.
         The :class:`pandas.DataFrame` must have three columns:
         ``trial_type`` with event name, ``onset`` and ``duration``.
         See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
@@ -545,8 +557,10 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         Plot Figure object.
 
     """
-    if isinstance(model_event, pd.DataFrame):
+    if not isinstance(model_event, (list, tuple)):
         model_event = [model_event]
+
+    model_event = _check_and_load_tables(model_event, "model_event")
 
     for i, event in enumerate(model_event):
         event_copy = check_events(event)
