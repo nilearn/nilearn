@@ -750,7 +750,8 @@ docdict["second_level_input"] = """
 second_level_input : :obj:`list` of \
     :class:`~nilearn.glm.first_level.FirstLevelModel` objects or \
     :class:`pandas.DataFrame` or \
-    :obj:`list` of Niimg-like objects or \
+    :obj:`list` of 3D Niimg-like objects or \
+    4D Niimg-like objects or \
     :obj:`pandas.Series` of Niimg-like objects.
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
