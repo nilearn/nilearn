@@ -1431,6 +1431,41 @@ def test_first_level_from_bids(
     assert len(imgs[0]) == n_imgs_expected
 
 
+@pytest.mark.parametrize("slice_time_ref", [None, 0.0, 0.5, 1.0])
+def test_first_level_from_bids_slice_time_ref(bids_dataset, slice_time_ref):
+    """Test several valid values of slice_time_ref."""
+    n_sub, *_ = _inputs_for_new_bids_dataset()
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_dataset,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("run", "01"), ("desc", "preproc")],
+        slice_time_ref=slice_time_ref,
+    )
+
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
+def test_first_level_from_bids_space_none(tmp_path):
+    """Test behavior when no specific space is required .
+
+    Function should look for images with MNI152NLin2009cAsym.
+    """
+    n_sub = 1
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, spaces=["MNI152NLin2009cAsym"]
+    )
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label=None,
+        img_filters=[("run", "01"), ("desc", "preproc")],
+        slice_time_ref=None,
+    )
+
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
 def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
     n_sub, n_ses, *_ = _inputs_for_new_bids_dataset()
 
@@ -1519,14 +1554,22 @@ def _check_output_first_level_from_bids(
 ):
     assert len(models) == n_sub
     assert all(isinstance(model, FirstLevelModel) for model in models)
+
     assert len(models) == len(imgs)
     for img_ in imgs:
         assert isinstance(img_, list)
-        assert all(Path(x).exists() for x in img_)
+
+        # We should only get lists of valid paths or lists of SurfaceImages
+        if all(isinstance(x, str) for x in img_):
+            assert all(Path(x).exists() for x in img_)
+        else:
+            assert all(isinstance(x, SurfaceImage) for x in img_)
+
     assert len(models) == len(events)
     for event_ in events:
         assert isinstance(event_, list)
         assert all(isinstance(x, pd.DataFrame) for x in event_)
+
     assert len(models) == len(confounds)
     for confound_ in confounds:
         assert isinstance(confound_, list)
@@ -2324,6 +2367,10 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     events = basic_paradigm()
     model.fit([mini_img, mini_img], events=[events, events])
+    result = model.compute_contrast("c0")
+
+    assert isinstance(result, SurfaceImage)
+
     result = model.compute_contrast("c0", output_type="all")
     effect = result["effect_size"]
     variance = result["effect_variance"]
@@ -2335,3 +2382,27 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
         assert len(outputs) == 3
         for output in outputs:
             assert isinstance(output, SurfaceImage)
+
+
+def test_first_level_from_bids_surface(tmp_path):
+    """Test finding and loading Surface data in BIDS dataset."""
+    n_sub = 2
+    tasks = ["main"]
+    n_runs = [2]
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=0,
+        tasks=tasks,
+        n_runs=n_runs,
+        n_vertices=10242,
+    )
+
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="fsaverage5",
+    )
+
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
