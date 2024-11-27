@@ -664,8 +664,8 @@ def plot_design_matrix_correlation(
     tri : {'full', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
 
-            - 'diag': Plot the lower part with the diagonal
-            - 'full': Plot the full matrix
+        - 'diag': Plot the lower part with the diagonal
+        - 'full': Plot the full matrix
 
     %(cmap)s
         Default=`bwr`.
@@ -673,9 +673,9 @@ def plot_design_matrix_correlation(
         will be centered on 0.
         The allowed colormaps are:
 
-            - "bwr"
-            - "RdBu_r"
-            - "seismic_r"
+        - "bwr"
+        - "RdBu_r"
+        - "seismic_r"
 
     %(output_file)s
 

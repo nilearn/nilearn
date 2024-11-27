@@ -51,13 +51,7 @@ Fixes
 Enhancements
 ------------
 
-TODO
-- :bdg-dark:`Code` Allow
-   plot_design_matrix
-   plot_design_matrix_correlation
-   plot_event
-
-   (:gh:`????` by `Rémi Gau`_).
+- :bdg-dark:`Code` Allow pathlike type for ``design matrix`` in :obj:`~nilearn.plotting.plot_design_matrix` and :obj:`~nilearn.plotting.plot_design_matrix_correlation`, as well as for ``model_event`` in :obj:`~nilearn.plotting.plot_event` (:gh:`4807` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add to the stable API: :func:`nilearn.datasets.load_nki` that returns the NKI dataset as a list of :obj:`~nilearn.surface.SurfaceImage` instances, :func:`nilearn.datasets.load_fsaverage` that returns fsaverage meshes as a :obj:`dict` of :obj:`~nilearn.surface.PolyMesh` instances, and :func:`nilearn.datasets.load_fsaverage_data` that returns fsaverage data (thickness, curvature...) as :obj:`~nilearn.surface.SurfaceImage` instances (:gh:`4693` by `Rémi Gau`_ based on original work by `Jerome Dockes`_).
 
