@@ -1158,7 +1158,7 @@ def _check_run_tables(run_imgs, tables_, tables_name):
     if isinstance(tables_, (str, Path, pd.DataFrame, np.ndarray)):
         tables_ = [tables_]
     _check_list_length_match(run_imgs, tables_, "run_imgs", tables_name)
-    tables_ = _check_and_load_tables(tables_, tables_name)
+    tables_ = check_and_load_tables(tables_, tables_name)
     return tables_
 
 
@@ -1171,7 +1171,7 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
         )
 
 
-def _check_and_load_tables(tables_, var_name):
+def check_and_load_tables(tables_, var_name):
     """Check tables can be loaded in DataFrame to raise error if necessary."""
     tables = []
     for table_idx, table in enumerate(tables_):

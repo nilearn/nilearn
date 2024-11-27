@@ -14,9 +14,7 @@ from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
-from nilearn.glm.first_level.first_level import (
-    _check_and_load_tables,
-)
+from nilearn.glm.first_level.first_level import check_and_load_tables
 
 VALID_TRI_VALUES = ("full", "lower", "diag")
 
@@ -482,7 +480,7 @@ def plot_design_matrix(
     """
     if not isinstance(design_matrix, (list, tuple)):
         design_matrix = [design_matrix]
-    design_matrix = _check_and_load_tables(design_matrix, "design_matrix")[0]
+    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     _, X, names = check_design_matrix(design_matrix)
     # normalize the values per column for better visualization
@@ -560,7 +558,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     if not isinstance(model_event, (list, tuple)):
         model_event = [model_event]
 
-    model_event = _check_and_load_tables(model_event, "model_event")
+    model_event = check_and_load_tables(model_event, "model_event")
 
     for i, event in enumerate(model_event):
         event_copy = check_events(event)

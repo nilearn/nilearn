@@ -39,12 +39,12 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.first_level.first_level import (
-    _check_and_load_tables,
     _check_list_length_match,
     _check_run_tables,
     _check_trial_type,
     _list_valid_subjects,
     _yule_walker,
+    check_and_load_tables,
 )
 from nilearn.glm.regression import ARModel, OLSModel
 from nilearn.image import get_data
@@ -2126,14 +2126,14 @@ def test_img_table_checks():
 
     # check tables type and that can be loaded
     with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_and_load_tables([".csv", ".csv"], "")
+        check_and_load_tables([".csv", ".csv"], "")
     with pytest.raises(
         TypeError,
         match="can only be a pandas DataFrame, a Path object or a string",
     ):
-        _check_and_load_tables([[], pd.DataFrame()], "")
+        check_and_load_tables([[], pd.DataFrame()], "")
     with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_and_load_tables([".csv", pd.DataFrame()], "")
+        check_and_load_tables([".csv", pd.DataFrame()], "")
 
 
 # -----------------------surface tests--------------------------------------- #
