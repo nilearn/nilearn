@@ -35,7 +35,7 @@ from nilearn.surface import (
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
     check_extensions,
-    check_mesh,
+    check_mesh_is_fsaverage,
 )
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
@@ -1775,7 +1775,7 @@ def plot_img_on_surf(
     stat_map = check_niimg_3d(stat_map, dtype="auto")
     modes = _check_views(views)
     hemis = _check_hemispheres(hemispheres)
-    surf_mesh = check_mesh(surf_mesh)
+    surf_mesh = check_mesh_is_fsaverage(surf_mesh)
 
     mesh_prefix = "infl" if inflate else "pial"
     surf = {

@@ -964,9 +964,10 @@ def _gifti_img_to_mesh(gifti_img):
     return coords, faces
 
 
-def check_mesh(mesh):
+def check_mesh_is_fsaverage(mesh):
     """Check that :term:`mesh` data is either a :obj:`str`, or a :obj:`dict`
-    with sufficient entries.
+    with sufficient entries. Basically ensures that the mesh data is
+    Freesurfer-like fsaverage data.
 
     Used by plotting.surf_plotting.plot_img_on_surf and
     plotting.html_surface._full_brain_info.

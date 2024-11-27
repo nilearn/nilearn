@@ -185,7 +185,7 @@ def _full_brain_info(
     if vol_to_surf_kwargs is None:
         vol_to_surf_kwargs = {}
     info = {}
-    mesh = surface.surface.check_mesh(mesh)
+    mesh = surface.surface.check_mesh_is_fsaverage(mesh)
     surface_maps = {
         h: surface.vol_to_surf(
             volume_img,

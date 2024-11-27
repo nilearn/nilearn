@@ -38,8 +38,8 @@ from nilearn.surface.surface import (
     _sample_locations_between_surfaces,
     _uniform_ball_cloud,
     _vertex_outer_normals,
-    check_mesh,
     check_mesh_and_data,
+    check_mesh_is_fsaverage,
 )
 from nilearn.surface.tests._testing import (
     flat_mesh,
@@ -51,15 +51,15 @@ datadir = Path(__file__).resolve().parent / "data"
 
 
 def test_check_mesh():
-    mesh = check_mesh("fsaverage5")
-    assert mesh is check_mesh(mesh)
+    mesh = check_mesh_is_fsaverage("fsaverage5")
+    assert mesh is check_mesh_is_fsaverage(mesh)
     with pytest.raises(ValueError):
-        check_mesh("fsaverage2")
+        check_mesh_is_fsaverage("fsaverage2")
     mesh.pop("pial_left")
     with pytest.raises(ValueError):
-        check_mesh(mesh)
+        check_mesh_is_fsaverage(mesh)
     with pytest.raises(TypeError):
-        check_mesh(load_surf_mesh(mesh["pial_right"]))
+        check_mesh_is_fsaverage(load_surf_mesh(mesh["pial_right"]))
 
 
 def test_check_mesh_and_data(rng):
