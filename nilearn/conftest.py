@@ -428,19 +428,19 @@ def surf_mesh():
 def surf_img():
     """Create a sample surface image using the sample mesh.
     This will add some random data to the vertices of the mesh.
-    The shape of the data will be (n_samples, n_vertices).
+    The shape of the data will be (n_vertices, n_samples).
     n_samples by default is 1.
     """
 
-    def _make_surface_img(n_samples=(1,)):
+    def _make_surface_img(n_samples=1):
         mesh = _make_mesh()
         data = {}
         for i, (key, val) in enumerate(mesh.parts.items()):
-            data_shape = (*tuple(n_samples), val.n_vertices)
+            data_shape = (val.n_vertices, n_samples)
             data_part = (
-                np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
+                np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
             ) * 10**i
-            data[key] = data_part
+            data[key] = data_part.T
         return SurfaceImage(mesh, data)
 
     return _make_surface_img
@@ -461,9 +461,10 @@ def surf_mask():
             mesh = _make_mesh()
             data = {}
             for key, val in mesh.parts.items():
-                data_part = np.ones(val.n_vertices, dtype=int)
+                data_shape = (val.n_vertices, 1)
+                data_part = np.ones(data_shape, dtype=int)
                 for i in range(n_zeros // 2):
-                    data_part[..., i] = 0
+                    data_part[i, ...] = 0
                 data_part = data_part.astype(bool)
                 data[key] = data_part
             return SurfaceImage(mesh, data)
@@ -480,7 +481,6 @@ def surf_label_img(surf_mesh):
         "left": np.asarray([0, 0, 1, 1]),
         "right": np.asarray([1, 1, 0, 0, 0]),
     }
-
     return SurfaceImage(surf_mesh(), data)
 
 

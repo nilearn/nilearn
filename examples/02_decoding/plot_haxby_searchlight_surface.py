@@ -101,7 +101,7 @@ for hemi in hemispheres_to_analyze:
     # Define cross-validation scheme
     cv = KFold(n_splits=3, shuffle=False)
 
-    X = fmri_img_surf.data.parts[hemi]
+    X = fmri_img_surf.data.parts[hemi].T
 
     # Cross-validated search light
     scores[hemi] = search_light(

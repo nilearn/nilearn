@@ -85,4 +85,5 @@ jobs:
             uses: codecov/codecov-action@v5
             with:
                 flags: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.env }}
+                token: ${{ secrets.CODECOV_TOKEN }}
             if: success()
