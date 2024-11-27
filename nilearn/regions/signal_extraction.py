@@ -215,11 +215,7 @@ def check_reduction_strategy(strategy: str):
 
     Parameters
     ----------
-    strategy : :obj:`str`
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
-
+    %(strategy)s
     """
     available_reduction_strategies = {
         "mean",
@@ -279,10 +275,8 @@ def img_to_signals_labels(
     order : :obj:`str`, default="F"
         Ordering of output array ("C" or "F").
 
-    strategy : :obj:`str`, default="mean"
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
+    %(strategy)s
+
     %(keep_masked_labels)s
 
     return_masked_atlas : :obj:`bool`, default=False
