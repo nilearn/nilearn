@@ -73,7 +73,7 @@ def test_deconcatenate_surface_images(surf_img):
 
 
 def test_deconcatenate_surface_images_2d(surf_img):
-    """Retunn as is if surface image is 2D."""
+    """Return as is if surface image is 2D."""
     input = surf_img(1)
     output = deconcatenate_surface_images(input)
 
