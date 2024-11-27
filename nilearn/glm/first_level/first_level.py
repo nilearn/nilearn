@@ -623,8 +623,9 @@ class FirstLevelModel(BaseGLM):
 
         # We save memory if inspecting model details is not necessary
         if self.minimize_memory:
-            for key in results:
-                results[key] = SimpleRegressionResults(results[key])
+            results = {
+                k: SimpleRegressionResults(v) for k, v in results.items()
+            }
         self.results_.append(results)
         del Y
 

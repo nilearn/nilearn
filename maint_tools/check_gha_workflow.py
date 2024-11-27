@@ -357,8 +357,8 @@ def _update_jobs_data(
         content = _handle_request(run["jobs_url"], auth)
 
         for job in content.get("jobs", {}):
-            for key in jobs_data:
-                jobs_data[key].append(job[key])
+            for key, value in jobs_data.items():
+                value.append(job[key])
 
     return jobs_data
 
