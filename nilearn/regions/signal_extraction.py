@@ -210,7 +210,7 @@ def _get_labels_data(
     return labels, labels_data
 
 
-def _check_reduction_strategy(strategy: str):
+def check_reduction_strategy(strategy: str):
     """Check that the provided strategy is supported.
 
     Parameters
@@ -316,7 +316,7 @@ def img_to_signals_labels(
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
-    _check_reduction_strategy(strategy)
+    check_reduction_strategy(strategy)
 
     # TODO: Make a special case for list of strings
     # (load one image at a time).
