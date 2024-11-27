@@ -645,6 +645,24 @@ def test_fmri_inputs_design_matrices_tsv(tmp_path, shape_4d_default):
     FirstLevelModel(mask_img=mask).fit([func_img], design_matrices=des)
 
 
+def test_fmri_inputs_events_type(tmp_path):
+    """Check events can be dataframe or pathlike to CSV / TSV."""
+    n_timepoints = 10
+    shapes = ((3, 4, 5, n_timepoints),)
+    mask, func_img, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=tmp_path
+    )
+
+    events = basic_paradigm()
+    FirstLevelModel(mask_img=mask, t_r=2.0).fit(func_img[0], events=events)
+
+    events_file = tmp_path / "tmp.tsv"
+    events.to_csv(events_file, index=False, sep="\t")
+    FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img[0], events=events_file
+    )
+
+
 def test_fmri_inputs_with_confounds(tmp_path):
     """Test with confounds and, events or design matrix."""
     n_timepoints = 10

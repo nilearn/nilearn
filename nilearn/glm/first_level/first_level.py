@@ -730,8 +730,12 @@ class FirstLevelModel(BaseGLM):
                 a :obj:`list` or \
                 a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`.
 
-        events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
-                 :class:`pandas.DataFrame` or :obj:`str`, default=None
+        events : :obj:`pandas.DataFrame` or :obj:`str` or \
+                 :obj:`pathlib.Path` to a TSV file, or \
+                 :obj:`list` of \
+                 :obj:`pandas.DataFrame`, :obj:`str` or \
+                 :obj:`pathlib.Path` to a TSV file, \
+                 or None, default=None
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
@@ -761,7 +765,7 @@ class FirstLevelModel(BaseGLM):
                           :obj:`list` of \
                           :obj:`pandas.DataFrame`, :obj:`str` or \
                           :obj:`pathlib.Path` to a CSV or TSV file, \
-                          or None,default=None
+                          or None, default=None
             Design matrices that will be used to fit the GLM.
             If given it takes precedence over events and confounds.
 
