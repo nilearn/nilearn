@@ -97,7 +97,7 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 def test_high_level_glm_one_run(shape_4d_default):
     rk = 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[shape_4d_default], rk=3
+        shapes=[shape_4d_default], rk=rk
     )
 
     # Give an unfitted NiftiMasker as mask_img and check that we get an error
@@ -631,6 +631,18 @@ def test_fmri_inputs_shape(tmp_path, shape_4d_default):
     FirstLevelModel(mask_img=mask).fit(
         (func_img, func_img), design_matrices=(des, des)
     )
+
+
+def test_fmri_inputs_design_matrices_tsv(tmp_path, shape_4d_default):
+    # Test processing of FMRI inputs
+    mask, func_img, des = write_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], file_path=tmp_path
+    )
+    func_img = func_img[0]
+    des = des[0]
+    pd.read_csv(des).to_csv(des, sep="\t", index=False)
+
+    FirstLevelModel(mask_img=mask).fit([func_img], design_matrices=des)
 
 
 def test_fmri_inputs_with_confounds(tmp_path):

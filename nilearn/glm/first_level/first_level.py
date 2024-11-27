@@ -756,10 +756,14 @@ class FirstLevelModel(BaseGLM):
 
             .. versionadded:: 0.9.2
 
-        design_matrices : :class:`pandas.DataFrame` or :obj:`list` of \
-                          :class:`pandas.DataFrame`, default=None
-            Design matrices that will be used to fit the GLM. If given it
-            takes precedence over events and confounds.
+        design_matrices : :obj:`pandas.DataFrame` or :obj:`str` or \
+                          :obj:`pathlib.Path` to a CSV or TSV file, or \
+                          :obj:`list` of \
+                          :obj:`pandas.DataFrame`, :obj:`str` or \
+                          :obj:`pathlib.Path` to a CSV or TSV file, \
+                          or None,default=None
+            Design matrices that will be used to fit the GLM.
+            If given it takes precedence over events and confounds.
 
         bins : :obj:`int`, default=100
             Maximum number of discrete bins for the AR coef histogram.
