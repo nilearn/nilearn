@@ -15,6 +15,7 @@ from nibabel import Nifti1Image
 from sklearn.base import clone
 
 from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -25,7 +26,6 @@ from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
-from nilearn.glm.first_level.first_level import check_and_load_tables
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image import mean_img
 from nilearn.maskers import NiftiMasker

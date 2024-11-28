@@ -20,6 +20,7 @@ from sklearn.base import clone
 from sklearn.cluster import KMeans
 
 from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -1177,57 +1178,6 @@ def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
             f"len({var_name_1}) {len(list_1)} does not match "
             f"len({var_name_2}) {len(list_2)}"
         )
-
-
-def check_and_load_tables(tables_, var_name):
-    """Check tables can be loaded in DataFrame to raise error if necessary."""
-    tables = []
-    for table_idx, table in enumerate(tables_):
-        table = stringify_path(table)
-        if isinstance(table, str):
-            loaded = _read_events_table(table)
-            tables.append(loaded)
-        elif isinstance(table, pd.DataFrame):
-            tables.append(table)
-        elif isinstance(table, np.ndarray):
-            pass
-        else:
-            raise TypeError(
-                f"{var_name} can only be a pandas DataFrame, "
-                "a Path object or a string. "
-                f"A {type(table)} was provided at idx {table_idx}"
-            )
-    return tables
-
-
-def _read_events_table(table):
-    """Accept the path to en event.tsv file \
-    and loads it as a Pandas Dataframe.
-
-    Raises an error if loading fails.
-
-    Parameters
-    ----------
-    table : :obj:`str`, :obj:`pathlib.Path`
-        Accepts the path to an events file.
-
-    Returns
-    -------
-    loaded : pandas.Dataframe object
-        Pandas Dataframe with e events data.
-
-    """
-    try:
-        # kept for historical reasons, a lot of tests use csv with index column
-        loaded = pd.read_csv(table, index_col=0)
-    except:  # noqa: E722
-        raise ValueError(f"table path {table} could not be loaded")
-    if loaded.empty:
-        try:
-            loaded = pd.read_csv(table, sep="\t")
-        except:  # noqa: E722
-            raise ValueError(f"table path {table} could not be loaded")
-    return loaded
 
 
 def _check_repetition_time(t_r):

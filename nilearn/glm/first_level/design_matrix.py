@@ -39,6 +39,7 @@ import numpy as np
 import pandas as pd
 
 from nilearn._utils import fill_doc
+from nilearn._utils.glm import check_and_load_tables
 from nilearn.glm._utils import full_rank
 from nilearn.glm.first_level.experimental_paradigm import (
     check_events,
@@ -298,9 +299,11 @@ def make_first_level_design_matrix(
     frame_times : array of shape (n_frames,)
         The timing of acquisition of the scans in seconds.
 
-    events : :obj:`pandas.DataFrame` instance or None, default=None
+    events : :obj:`pandas.DataFrame` instance, \
+             or :obj:`str` or :obj:`pathlib.Path` to a CSV or TSV file, \
+             or None, default=None
         Events data that describes the experimental paradigm.
-        The DataFrame instance might have these keys:
+        The resulting DataFrame instance must/may have these keys:
 
         - ``'onset'``: REQUIRED
             Column to specify the start time of each events in seconds.
@@ -406,6 +409,9 @@ def make_first_level_design_matrix(
 
     # step 1: events-related regressors
     if events is not None:
+        if not isinstance(events, (list, tuple)):
+            events = [events]
+        events = check_and_load_tables(events, "events")[0]
         # create the condition-related regressors
         if isinstance(hrf_model, str):
             hrf_model = hrf_model.lower()
