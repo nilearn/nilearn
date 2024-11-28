@@ -223,7 +223,7 @@ Funding
 `Mehdi Rahim`_, `Philippe Gervais`_ were paid by the
 :inria:`NiConnect <parietal/research/spatial_patterns/niconnect/>`.
 project, funded by the French `Investissement d'Avenir
-<https://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
+<https://www.info.gouv.fr/organisation/secretariat-general-pour-l-investissement-sgpi>`_.
 
 `Kshitij Chawla`_ was paid by `INRIA <https://www.inria.fr/en>`_.
 

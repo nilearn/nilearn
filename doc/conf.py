@@ -168,6 +168,9 @@ linkcheck_allowed_redirects = {
     # Issue redirect to PR
     r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
     r"https://osf.io/.*/download": r"https://files.osf.io/.*",
+    "https://doi.org/": r"https://.*",
+    # "https://doi.org/": r"https://www.(jneurosci|frontiersin|biorxiv|science|nature|linkinghub\.elsevier).*",
+    # "https://doi.org/": r"https://(journals\.plos|journals\.physiology|academic\.oup|ieeexplore\.ieee|pnas).*",
 }
 
 linkcheck_ignore = [
@@ -228,7 +231,7 @@ html_theme_options = {
         },
         {
             "name": "Twitter",
-            "url": "https://twitter.com/nilearn",
+            "url": "https://x.com/nilearn",
             "html": "",
             "class": "fa-brands fa-solid fa-twitter fa-2x",
         },

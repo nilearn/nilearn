@@ -259,7 +259,7 @@ Finding help
 On top of this guide, there is a lot of content available outside of ``nilearn``
 that could be of interest to new-comers:
 
-1. `An introduction to fMRI <https://www.cs.mtsu.edu/~xyang/fMRIHandBook.pdf>`_ by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
+1. `An introduction to fMRI <https://doi.org/10.1017/CBO9780511895029>`_ by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
 
 2. The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.  While not specific to neuroimaging, it is often a recommended read.
 

@@ -18,7 +18,7 @@
     :target: https://doi.org/10.5281/zenodo.8397156
 
 .. image:: http://img.shields.io/twitter/follow/nilearn.svg
-    :target: https://twitter.com/nilearn
+    :target: https://x.com/nilearn
     :alt: Twitter
 
 .. image:: https://img.shields.io/mastodon/follow/109669703955432270?domain=https%3A%2F%2Ffosstodon.org%2F

@@ -701,7 +701,7 @@ def fetch_oasis_vbm(
     dedicated to making brain imaging data openly available to the public.
     Using data available through the OASIS project requires agreeing with
     the Data Usage Agreement that can be found at
-    https://www.oasis-brains.org/#access
+    https://sites.wustl.edu/oasisbrains/
 
     """
     # check number of subjects

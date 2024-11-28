@@ -11,8 +11,8 @@ How to get help?
 
 If you have issues when using Nilearn, or if you have questions on how to use it, please don't hesitate to reach out!
 
-There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly `drop-in hours <https://tinyurl.com/nilearn-drop-in-hour>`_, usually **every Wednesday from 4pm to 5pm UTC**.
-We post on our `X account <https://twitter.com/nilearn>`_ in advance to let you know if the drop-in hours are happening that week.
+There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_, usually **every Wednesday from 4pm to 5pm UTC**.
+We post on our `X account <https://x.com/nilearn>`_ in advance to let you know if the drop-in hours are happening that week.
 
 If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during the drop-in hours or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
 Asking questions or reporting issues is always valuable because it will help other users having the same problem. So, please don't hold onto a burning question!
@@ -245,7 +245,7 @@ with the tools we use for development and deployment.
 |                    |               | - Doesn't include code                              |
 +--------------------+---------------+-----------------------------------------------------+
 
-.. _PEP8: https://www.python.org/dev/peps/pep-0008/
+.. _PEP8: https://peps.python.org/pep-0008/
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
 .. _ruff: https://docs.astral.sh/ruff/
 
