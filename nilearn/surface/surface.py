@@ -560,12 +560,13 @@ def vol_to_surf(
     img : Niimg-like object, 3d or 4d.
         See :ref:`extracting_data`.
 
-    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, :obj:`numpy.ndarray`, or
-                :obj:`SurfaceMesh`
+    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, :obj:`numpy.ndarray`, or \
+                :obj:`~nilearn.surface.InMemoryMesh`
         Either a file containing surface :term:`mesh` geometry
         (valid formats are .gii or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated)
-        or a SurfaceMesh object with "coordinates" and "faces" attributes.
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
+        and "faces" attributes.
 
     radius : :obj:`float`, default=3.0
         The size (in mm) of the neighbourhood from which samples are drawn
