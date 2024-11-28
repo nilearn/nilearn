@@ -1053,18 +1053,18 @@ def load_surf_mesh(surf_mesh):
     Parameters
     ----------
     surf_mesh : :obj:`str`, :obj:`pathlib.Path`, or \
-        :obj:`numpy.ndarray` or SurfaceMesh
+        :obj:`numpy.ndarray` or InMemoryMesh
         Either a file containing surface :term:`mesh` geometry
         (valid formats are .gii .gii.gz or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated)
         or two Numpy arrays organized in a list,
         tuple or a namedtuple with the fields "coordinates" and "faces",
-        or a SurfaceMesh object with "coordinates" and "faces" attributes.
+        or an InMemoryMesh object with "coordinates" and "faces" attributes.
 
     Returns
     -------
-    mesh : SurfaceMesh
-        With the fields "coordinates" and "faces", each containing a
+    mesh : InMemoryMesh
+        With the attributes "coordinates" and "faces", each containing a
         :obj:`numpy.ndarray`
 
     """
