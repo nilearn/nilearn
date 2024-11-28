@@ -56,8 +56,25 @@ jobs:
             with:
                 args: --validate
 
+    check_skip_flags:
+        name: Check skip flags
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Get repo
+            uses: actions/checkout@v4
+            with:
+                ref: ${{ github.event.pull_request.head.sha }}
+        -   name: Check head git commit message
+            run: |
+                headCommitMsg=$(git show -s --format=%s)
+                if [[ $headCommitMsg == *"[skip doc]"* ]]; then
+                    echo "skipping tests"
+                    exit 1
+                fi
+
     # check the links in the doc
     linkcheck:
+        needs: [check_skip_flags, validate_cff]
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
@@ -79,22 +96,6 @@ jobs:
             with:
                 name: linkcheck_output.json
                 path: doc/_build/linkcheck/output.json
-
-    check_skip_flags:
-        name: Check skip flags
-        runs-on: ubuntu-latest
-        steps:
-        -   name: Get repo
-            uses: actions/checkout@v4
-            with:
-                ref: ${{ github.event.pull_request.head.sha }}
-        -   name: Check head git commit message
-            run: |
-                headCommitMsg=$(git show -s --format=%s)
-                if [[ $headCommitMsg == *"[skip doc]"* ]]; then
-                    echo "skipping tests"
-                    exit 1
-                fi
 
     get_data:
         # This prevents this workflow from running on a fork.

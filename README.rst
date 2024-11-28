@@ -17,7 +17,7 @@
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8397156.svg
     :target: https://doi.org/10.5281/zenodo.8397156
 
-.. image:: http://img.shields.io/twitter/follow/nilearn.svg
+.. image:: https://img.shields.io/twitter/follow/nilearn.svg
     :target: https://x.com/nilearn
     :alt: Twitter
 

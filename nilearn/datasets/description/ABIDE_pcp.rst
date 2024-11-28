@@ -35,7 +35,7 @@ For more information about this dataset's structure:
 
 http://preprocessed-connectomes-project.github.io
 
-http://www.childmind.org/en/healthy-brain-network/abide/
+https://childmind.org/science/global-open-science/healthy-brain-network/
 
 License
 -------

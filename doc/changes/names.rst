@@ -58,7 +58,7 @@
 
 .. _Chris Markiewicz: https://github.com/effigies
 
-.. _Christian Horea: http://chymera.eu/
+.. _Christian Horea: https://chymera.eu/
 
 .. _Christian Gerloff: https://github.com/ChristianGerloff
 

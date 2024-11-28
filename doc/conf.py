@@ -167,20 +167,28 @@ suppress_warnings = ["image.not_readable", "config.cache"]
 linkcheck_allowed_redirects = {
     # Issue redirect to PR
     r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
+    # OSF downloads
     r"https://osf.io/.*/download": r"https://files.osf.io/.*",
+    # doi redirect
     "https://doi.org/": r"https://.*",
-    # "https://doi.org/": r"https://www.(jneurosci|frontiersin|biorxiv|science|nature|linkinghub\.elsevier).*",
-    # "https://doi.org/": r"https://(journals\.plos|journals\.physiology|academic\.oup|ieeexplore\.ieee|pnas).*",
 }
 
 linkcheck_ignore = [
     # r"../.*",
     # r"auto_examples/.*",
-    # r"https://doi.org/.*",
     # r"https://github.com/.*",
     # r"https://www.sciencedirect.com/.*",
-    # r"https://www.pnas.org/.*",
+    "https://pkgs.org/search/.*",
+    # below are publishers that do not like doi redirects
+    # and give a 403 Client Error: Forbidden for url
+    r"https://pnas.org/doi.*",
+    r"https://onlinelibrary.wiley.com/doi.*",
+    r"https://direct.mit.edu.*",
+    r"https://www.science.org/doi.*",
+    r"https://journals.physiology.org/doi.*",
+    r"https://www.tandfonline.com/doi.*",
 ]
+
 
 # -- Options for HTML output -------------------------------------------------
 
