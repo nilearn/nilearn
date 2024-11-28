@@ -26,6 +26,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Allow single 4D nifti as input to fit for SecondLevelModel (:gh:`4806` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Make sure that radiological view is applied when requested and not only when figures are annotated (:gh:`4556` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).

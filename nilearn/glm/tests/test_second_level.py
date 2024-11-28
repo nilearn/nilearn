@@ -527,6 +527,19 @@ def test_high_level_glm_with_paths(affine_eye, tmp_path):
     assert_array_equal(z_image.affine, target_affine)
 
 
+def test_slm_4d_image(img_4d_mni):
+    """Compute contrast with 4D images as input.
+
+    See https://github.com/nilearn/nilearn/issues/3058
+    """
+    model = SecondLevelModel()
+    Y = img_4d_mni
+    X = pd.DataFrame([[1]] * img_4d_mni.shape[3], columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+    c1 = np.eye(len(model.design_matrix_.columns))[0]
+    model.compute_contrast(c1, output_type="z_score")
+
+
 def test_high_level_glm_with_paths_errors(tmp_path):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
