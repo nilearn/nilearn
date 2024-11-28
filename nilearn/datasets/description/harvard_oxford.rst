@@ -36,4 +36,4 @@ References
 
 License
 -------
-See https://fsl.fmrib.ox.ac.uk/fsl/docs/#/license
+See https://fsl.fmrib.ox.ac.uk/fsl/docs/#/license?id=fsl-license

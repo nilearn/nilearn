@@ -779,7 +779,8 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 
 8. check that all continuous integration tests pass
 
-For more details about the Fork Clone Push workflows, read `here <https://guides.github.com/activities/forking/>`_.
+For more details about the Fork Clone Push workflows,
+read `here <https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project#about-forking>`_.
 
 
 Building documentation

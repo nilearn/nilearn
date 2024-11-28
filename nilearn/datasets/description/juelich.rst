@@ -34,4 +34,4 @@ please cite :footcite:t:`Amunts2020`.
 
 License
 -------
-See https://fsl.fmrib.ox.ac.uk/fsl/docs/#/license
+See https://fsl.fmrib.ox.ac.uk/fsl/docs/#/license?id=fsl-license

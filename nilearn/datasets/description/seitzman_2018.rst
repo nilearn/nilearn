@@ -31,7 +31,7 @@ References
 .. footbibliography::
 
 For more information see:
-https://greenelab.wustl.edu/data_software
+https://greenelab.ucsd.edu/data_software
 
 ROI coordinates downloaded from:
 https://wustl.box.com/s/twpyb1pflj6vrlxgh3rohyqanxbdpelw

@@ -170,11 +170,12 @@ linkcheck_allowed_redirects = {
 }
 
 linkcheck_ignore = [
-    # The crawler gets "Anchor not found" for GitHub anchors
-    r"../.*",
-    r"auto_examples/.*" r"https://doi.org/.*" r"https://github.com/.*",
-    r"https://www.sciencedirect.com/.*",
-    r"https://www.pnas.org/.*",
+    # r"../.*",
+    # r"auto_examples/.*",
+    # r"https://doi.org/.*",
+    # r"https://github.com/.*",
+    # r"https://www.sciencedirect.com/.*",
+    # r"https://www.pnas.org/.*",
 ]
 
 # -- Options for HTML output -------------------------------------------------

@@ -188,10 +188,7 @@ class BaseAxes:
 
         loc : :obj:`int`, default=4
             Location of this scale bar. Valid location codes are documented
-            `here <https://matplotlib.org/mpl_toolkits/axes_grid/\
-            api/anchored_artists_api.html#mpl_toolkits.axes_grid1.\
-            anchored_artists.AnchoredSizeBar>`__.
-
+            in :class:`matplotlib.axes_grid1.anchored_artists.AnchoredSizeBar`
 
         pad : :obj:`int` or :obj:`float`, default=0.1
             Padding around the label and scale bar, in fraction of the font
