@@ -53,6 +53,8 @@ Enhancements
 
 - :bdg-dark:`Code` Allow pathlike type for ``design matrix`` in :obj:`~nilearn.plotting.plot_design_matrix` and :obj:`~nilearn.plotting.plot_design_matrix_correlation`, as well as for ``model_event`` in :obj:`~nilearn.plotting.plot_event` (:gh:`4807` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Ensure that ``design matrix`` and / or ``events`` can be pathlike objects in :meth:`nilearn.glm.first_level.FirstLevelModel.fit`, :meth:`nilearn.glm.second_level.SecondLevelModel.fit`, :meth:`~nilearn.glm.first_level.make_first_level_design_matrix`  (:gh:`4807` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Add to the stable API: :func:`nilearn.datasets.load_nki` that returns the NKI dataset as a list of :obj:`~nilearn.surface.SurfaceImage` instances, :func:`nilearn.datasets.load_fsaverage` that returns fsaverage meshes as a :obj:`dict` of :obj:`~nilearn.surface.PolyMesh` instances, and :func:`nilearn.datasets.load_fsaverage_data` that returns fsaverage data (thickness, curvature...) as :obj:`~nilearn.surface.SurfaceImage` instances (:gh:`4693` by `Rémi Gau`_ based on original work by `Jerome Dockes`_).
 
 - :bdg-dark:`Code` Move SurfaceMasker and SurfaceLabelsMasker from experimental to :class:`nilearn.maskers.SurfaceMasker` and to :class:`nilearn.maskers.SurfaceLabelsMasker` (:gh:`4692` and :gh:`4714` by `Rémi Gau`_).
