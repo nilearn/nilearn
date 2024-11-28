@@ -77,8 +77,7 @@ authors:
   - given-names: Alexandre
     family-names: Cionca
     website: https://github.com/acionca
-    affiliation:
-      Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
+    affiliation: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
     orcid: https://orcid.org/0000-0002-1910-9650
   - given-names: Alexandre
     family-names: Sayal
@@ -103,8 +102,7 @@ authors:
   - given-names: Anand
     family-names: Joshi
     website: https://github.com/ajoshiusc
-    affiliation:
-      University of Southern California, Los Angeles, California, United States
+    affiliation: University of Southern California, Los Angeles, California, United States
   - given-names: Andrés Hoyos
     family-names: Idrobo
     website: https://github.com/ahoyosid
@@ -112,9 +110,7 @@ authors:
   - given-names: Anne-Sophie
     family-names: Kieslinger
     website: https://github.com/askieslinger
-    affiliation:
-      Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig,
-      Germnay
+    affiliation: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
   - given-names: Anupriya
     family-names: Kumari
     website: https://github.com/anupriyakkumari
@@ -123,8 +119,7 @@ authors:
   - given-names: Ariel
     family-names: Rokem
     website: https://arokem.org/
-    affiliation:
-      University of Washington, Psychology, Seattle, Washington, 98107, USA
+    affiliation: University of Washington, Psychology, Seattle, Washington, 98107, USA
     email: arokem@uw.edu
     orcid: https://orcid.org/0000-0003-0679-1985
   - given-names: Arthur
@@ -179,9 +174,7 @@ authors:
     website: https://github.com/ChristianGerloff
   - given-names: Christina
     family-names: Roßmanith
-    affiliation:
-      Dept. of Neurology, Medical Faculty Mannheim, University of Heidelberg,
-      Germany
+    affiliation: Dept. of Neurology, Medical Faculty Mannheim, University of Heidelberg, Germany
     email: christina.rossmanith@medma.uni-heidelberg.de
     website: https://github.com/crossmanith
   - given-names: Colin
@@ -201,9 +194,7 @@ authors:
   - given-names: Dan
     family-names: Gale
     website: https://danjgale.github.io/
-    affiliation:
-      Centre for Neuroscience Studie, Queen University, Kingston, Ontario,
-      Canada
+    affiliation: Centre for Neuroscience Studie, Queen University, Kingston, Ontario, Canada
   - given-names: Daniel
     family-names: Gomez
     website: https://github.com/dangom
@@ -244,9 +235,7 @@ authors:
   - given-names: Eric
     family-names: Larson
     website: https://larsoner.com/
-    affiliation:
-      Institute for Learning and Brain Sciences, University of Washington,
-      Washington, USA
+    affiliation: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
   - given-names: Evan
     family-names: Edmond
     website: https://evan.science/
@@ -255,7 +244,7 @@ authors:
   - given-names: Fabian
     family-names: Pedregosa
     website: https://github.com/fabianp
-    affiliation: "@google, Geneva, Switzerland"
+    affiliation: '@google, Geneva, Switzerland'
     orcid: https://orcid.org/0000-0003-4025-3953
   - given-names: Florent
     family-names: Pollet
@@ -322,8 +311,7 @@ authors:
     family-names: Vogel
     website: https://github.com/illdopejake
     email: jacobwvogel@gmail.com
-    affiliation:
-      Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
+    affiliation: Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
   - given-names: Jan
     family-names: Margeta
     website: https://github.com/jmargeta
@@ -381,9 +369,7 @@ authors:
   - given-names: Jon Haitz Legarreta
     family-names: Gorrono
     website: https://github.com/jhlegarreta
-    affiliation:
-      Brigham and Women's Hospital, Mass General Brigham/Harvard Medical School,
-      Boston, Massachusetts, USA
+    affiliation: Brigham and Women's Hospital, Mass General Brigham/Harvard Medical School, Boston, Massachusetts, USA
   - given-names: Jona
     family-names: Sassenhagen
     website: https://github.com/jona-sassenhagen
@@ -509,8 +495,7 @@ authors:
     family-names: Hanke
     website: https://github.com/mih
     email: michael.hanke@gmail.com
-    affiliation:
-      Psychoinformatics, Forschungszentrum Jülich GmbH, Jülich, Germany
+    affiliation: Psychoinformatics, Forschungszentrum Jülich GmbH, Jülich, Germany
     orcid: https://orcid.org/0000-0001-6398-6370
   - given-names: Michael
     family-names: Notter
@@ -545,7 +530,7 @@ authors:
   - given-names: Natasha
     family-names: Clarke
     website: https://github.com/clarkenj
-    affiliation: "@SIMEXP, Montréal, Canada"
+    affiliation: '@SIMEXP, Montréal, Canada'
   - given-names: Neelay
     family-names: Shah
     website: https://github.com/NeelayS
@@ -568,15 +553,12 @@ authors:
   - given-names: Oscar
     family-names: Esteban
     website: https://github.com/oesteban
-    affiliation:
-      Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
+    affiliation: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
     orcid: https://orcid.org/0000-0001-8435-6191
   - given-names: Patrick
     family-names: Sadil
     website: https://psadil.github.io/psadil
-    affiliation:
-      Department of Biostatistics, Johns Hopkins Bloomberg School of Public
-      Health, USA
+    affiliation: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
     orcid: https://orcid.org/0000-0003-4141-1343
   - given-names: Paul
     family-names: Bogdan
@@ -584,8 +566,7 @@ authors:
   - given-names: Paul
     family-names: Reiners
     website: https://github.com/paul-reiners
-    affiliation:
-      Masonic Institute for the Developing Brain, University of Minnesota, USA
+    affiliation: Masonic Institute for the Developing Brain, University of Minnesota, USA
     orcid: https://orcid.org/0000-0002-6167-5007
   - given-names: Paula
     family-names: Sanz-Leon
@@ -610,14 +591,11 @@ authors:
   - given-names: Pierre
     family-names: Glaser
     website: https://pierreglaser.github.io/
-    affiliation:
-      Gatsby Computational Neuroscience Unit, University College London, London,
-      UK
+    affiliation: Gatsby Computational Neuroscience Unit, University College London, London, UK
   - given-names: Pierre-Olivier
     family-names: Quirion
     website: https://github.com/poquirion
-    affiliation:
-      Canadian Center for Computational Genomics / Calcul, Québec, Canada
+    affiliation: Canadian Center for Computational Genomics / Calcul, Québec, Canada
     email: po.quirion@mcgill.ca
     orcid: https://orcid.org/0000-0003-2270-0000
   - given-names: Pradeep Reddy
@@ -640,7 +618,7 @@ authors:
   - given-names: Robert
     family-names: Luke
     website: https://github.com/rob-luke
-    affiliation: "@agencyenterprise, Melbourne, Australia"
+    affiliation: '@agencyenterprise, Melbourne, Australia'
     orcid: https://orcid.org/0000-0002-4930-8351
   - given-names: Robert
     family-names: Williamson
@@ -648,8 +626,7 @@ authors:
   - given-names: Roberto
     family-names: Guidotti
     website: https://github.com/robbisg
-    affiliation:
-      University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
+    affiliation: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
   - given-names: Ronald
     family-names: Phlypo
     website: https://github.com/rphlypo
@@ -687,24 +664,19 @@ authors:
     family-names: Steinkamp
     website: https://github.com/SRSteinkamp
     orcid: https://orcid.org/0000-0002-6437-0700
-    affiliation:
-      Danish Research Centre for Magnetic Resonance, Copenhagen University
-      Hospital Amager & Hvidovre, Copenhagen, Denmark.
+    affiliation: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
   - given-names: Sin
     family-names: Kim
     website: https://github.com/kimsin98
     orcid: https://orcid.org/0000-0003-4652-3758
-    affiliation:
-      "Korea Advanced Institute of Science and Technology: Daejeon, KR"
+    affiliation: 'Korea Advanced Institute of Science and Technology: Daejeon, KR'
   - given-names: Sourav
     family-names: Singh
     website: https://github.com/souravsingh
   - given-names: Steven
     family-names: Meisler
     website: https://www.stevenmeisler.com
-    affiliation:
-      Harvard-MIT Division of Health Sciences and Technology, Cambridge,
-      Massachusetts, USA
+    affiliation: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
     email: smeisler@g.harvard.edu
     orcid: https://orcid.org/0000-0002-8888-1572
   - given-names: Suramya
@@ -718,8 +690,7 @@ authors:
   - given-names: Sylvain
     family-names: Takerkart
     website: https://github.com/SylvainTakerkart
-    affiliation:
-      CNRS, Institut des Neurosciences de la Timone, Marseille, France
+    affiliation: CNRS, Institut des Neurosciences de la Timone, Marseille, France
     orcid: https://orcid.org/0000-0001-8410-0962
   - given-names: Tamer
     family-names: Gezici
@@ -734,9 +705,7 @@ authors:
   - given-names: Taylor
     family-names: Salo
     website: https://tsalo.github.io/
-    affiliation:
-      Lifespan Informatics & Neuroimaging Center, University of Pennsylvania,
-      USA
+    affiliation: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
     email: salot@pennmedicine.upenn.edu
     orcid: https://orcid.org/0000-0001-9813-3167
   - given-names: Tharun

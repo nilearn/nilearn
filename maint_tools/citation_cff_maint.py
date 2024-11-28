@@ -9,6 +9,7 @@ import ruamel.yaml
 
 yaml = ruamel.yaml.YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
+yaml.width = 4096
 
 CORE_DEVS = [
     "Alexis Thual",
