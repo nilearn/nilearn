@@ -245,7 +245,7 @@ def test_fit_transform(method, n_parcel, test_image_2):
 
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_fit_transform_with_condounds(method, n_parcel, test_image_2, rng):
+def test_fit_transform_with_confounds(method, n_parcel, test_image_2, rng):
     fmri_imgs = [test_image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds] * 3
