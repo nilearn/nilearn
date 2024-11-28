@@ -224,7 +224,7 @@ def test_view_surf(tmp_path, rng):
         fsaverage["pial_right"],
         fsaverage["sulc_right"],
         threshold=None,
-        cmap="Grays",
+        cmap="Greys",
     )
     check_html(tmp_path, html)
     with pytest.raises(ValueError):

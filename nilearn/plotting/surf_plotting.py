@@ -336,7 +336,7 @@ def _plot_surf_plotly(
     else:
         if bg_data is None:
             bg_data = np.zeros(coords.shape[0])
-        colors = colorscale("Grays", bg_data, symmetric_cmap=False)
+        colors = colorscale("Greys", bg_data, symmetric_cmap=False)
         vertexcolor = get_vertexcolor(
             bg_data,
             colors["cmap"],

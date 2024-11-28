@@ -117,7 +117,7 @@ def _threshold_data(data, threshold=None):
 
 
 def _save_sprite(
-    data, output_sprite, vmax, vmin, mask=None, cmap="Grays", format="png"
+    data, output_sprite, vmax, vmin, mask=None, cmap="Greys", format="png"
 ):
     """Generate a sprite from a 3D Niimg-like object.
 
