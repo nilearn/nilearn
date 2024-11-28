@@ -793,6 +793,16 @@ def test_secondlevelmodel_design_matrix_path(img_3d_mni, tmp_path):
         second_level_input=second_level_input, design_matrix=str(des_fname)
     )
 
+    des_fname = tmp_path / "design.tsv"
+    des.to_csv(des_fname, sep="\t")
+
+    SecondLevelModel().fit(
+        second_level_input=second_level_input, design_matrix=des_fname
+    )
+    SecondLevelModel().fit(
+        second_level_input=second_level_input, design_matrix=str(des_fname)
+    )
+
 
 @pytest.mark.parametrize("design_matrix", ["foo", Path("foo")])
 def test_secondlevelmodel_design_matrix_error_path(img_3d_mni, design_matrix):

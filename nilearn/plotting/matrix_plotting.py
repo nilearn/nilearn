@@ -528,9 +528,9 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     Parameters
     ----------
     model_event : :class:`pandas.DataFrame`, \
-                  :obj:`str` or :obj:`pathlib.Path` to a TSV event file,
+                  :obj:`str` or :obj:`pathlib.Path` to a TSV event file, \
                   or a :obj:`list` or  :obj:`tuple` \
-                  of :class:`pandas.DataFrame`,
+                  of :class:`pandas.DataFrame`, \
                   :obj:`str` or :obj:`pathlib.Path` to a TSV event file.
         The :class:`pandas.DataFrame` must have three columns:
         ``trial_type`` with event name, ``onset`` and ``duration``.
@@ -642,6 +642,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     return figure
 
 
+@fill_doc
 def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
@@ -661,21 +662,22 @@ def plot_design_matrix_correlation(
                     :obj:`pathlib.Path`
         Design matrix whose correlation matrix you want to plot.
 
-    tri : {'full', 'diag'}, default='full'
+    tri : {"full", "diag"}, default="full"
         Which triangular part of the matrix to plot:
 
-        - 'diag': Plot the lower part with the diagonal
-        - 'full': Plot the full matrix
+        - ``"diag"``: Plot the lower part with the diagonal
+        - ``"full"``: Plot the full matrix
 
     %(cmap)s
-        Default=`bwr`.
+        Default="bwr".
+
         This must be a diverging colormap as the correlation matrix
         will be centered on 0.
         The allowed colormaps are:
 
-        - "bwr"
-        - "RdBu_r"
-        - "seismic_r"
+        - ``"bwr"``
+        - ``"RdBu_r"``
+        - ``"seismic_r"``
 
     %(output_file)s
 

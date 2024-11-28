@@ -441,7 +441,8 @@ class SecondLevelModel(BaseGLM):
         Parameters
         ----------
         %(second_level_input)s
-        confounds : :obj:`pandas.DataFrame`, optional
+
+        confounds : :obj:`pandas.DataFrame` or None, default=None
             Must contain a ``subject_label`` column. All other columns are
             considered as confounds and included in the model. If
             ``design_matrix`` is provided then this argument is ignored.
@@ -450,8 +451,9 @@ class SecondLevelModel(BaseGLM):
             At least two columns are expected, ``subject_label`` and at
             least one confound.
 
-        design_matrix : :obj:`pandas.DataFrame`, :obj:`str`, \
-                        or :obj:`pathlib.Path`, optional
+        design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
+                        or :obj:`pathlib.Path` to a CSV or TSV file, \
+                        or None, default=None
             Design matrix to fit the :term:`GLM`.
             The number of rows in the design matrix
             must agree with the number of maps derived
