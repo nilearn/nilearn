@@ -25,6 +25,17 @@ from ._utils import (
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
 
+class Atlas(Bunch):
+    """Atlas class."""
+
+    def __init__(self, description, atlas_type, **kwargs):
+        assert atlas_type in ["deterministic", "probabilistic"]
+
+        super().__init__(
+            description=description, atlas_type=atlas_type, **kwargs
+        )
+
+
 @fill_doc
 def fetch_atlas_difumo(
     dimension=64,
