@@ -11,7 +11,7 @@
     :alt: Github Actions Build Status
 
 .. image:: https://codecov.io/gh/nilearn/nilearn/graph/badge.svg?token=KpYArSdyXv
-    :target: https://codecov.io/gh/nilearn/nilearn
+    :target: https://app.codecov.io/gh/nilearn/nilearn
     :alt: Coverage Status
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8397156.svg
@@ -26,7 +26,7 @@
     :alt: Mastodon
 
 .. image:: https://img.shields.io/discord/711993354929569843
-    :target: https://discord.gg/SsQABEJHkZ
+    :target: https://discord.com/invite/SsQABEJHkZ
     :alt: Discord
 
 

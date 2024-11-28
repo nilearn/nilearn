@@ -796,7 +796,7 @@ If you wish to build documentation:
       pip install '.[doc]'
 
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
-   using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
+   using `reStructuredText files <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
 
 3. You can now go to ``nilearn/doc`` and build the examples locally:
 

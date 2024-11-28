@@ -36,7 +36,7 @@ References
 .. footbibliography::
 
 For more information on this dataset's structure,
-see http://www.nitrc.org/projects/cluster_roi/
+see https://www.nitrc.org/projects/cluster_roi/
 
 License
 -------

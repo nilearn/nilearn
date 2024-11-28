@@ -272,7 +272,7 @@
 
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
 
-.. _Sage Hahn: https://www.sagehahn.com/
+.. _Sage Hahn: https://sagehahn.com/
 
 .. _Salma Bougacha: https://github.com/salma1601
 

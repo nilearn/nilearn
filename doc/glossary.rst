@@ -404,7 +404,7 @@ References
     https://en.wikipedia.org/wiki/Predictive_modelling
 
 .. _`Recursive nearest agglomeration`:
-    https://hal.archives-ouvertes.fr/hal-01366651/
+    https://hal.science/hal-01366651/
 
 .. _`receiver operating characteristic curve`:
     https://en.wikipedia.org/wiki/Receiver_operating_characteristic

@@ -261,11 +261,9 @@ that could be of interest to new-comers:
 
 1. `An introduction to fMRI <https://www.cs.mtsu.edu/~xyang/fMRIHandBook.pdf>`_ by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
 
-2. (For French readers) `An introduction to cognitive neuroscience <https://psy3018.github.io/intro.html>`_ given at the University of Montréal.
+2. The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.  While not specific to neuroimaging, it is often a recommended read.
 
-3. The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.  While not specific to neuroimaging, it is often a recommended read.
-
-4. (For Python beginners) A quick and gentle introduction to scientific computing with Python with the `scientififc Python lectures <https://lectures.scientific-python.org/>`_.
+3. (For Python beginners) A quick and gentle introduction to scientific computing with Python with the `scientififc Python lectures <https://lectures.scientific-python.org/>`_.
 Moreover, you can use ``nilearn`` with `Jupyter <https://jupyter.org/>`_ notebooks or
 `IPython <https://ipython.org/>`_ sessions. They provide an interactive
 environment that greatly facilitates debugging and visualisation.

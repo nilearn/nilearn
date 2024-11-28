@@ -167,6 +167,7 @@ suppress_warnings = ["image.not_readable", "config.cache"]
 linkcheck_allowed_redirects = {
     # Issue redirect to PR
     r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
+    r"https://osf.io/.*/download": r"https://files.osf.io/.*",
 }
 
 linkcheck_ignore = [
@@ -245,7 +246,7 @@ html_theme_options = {
         },
         {
             "name": "Discord",
-            "url": "https://discord.gg/SsQABEJHkZ",
+            "url": "https://discord.com/invite/SsQABEJHkZ",
             "html": "",
             "class": "fa-brands fa-solid fa-discord fa-2x",
         },
