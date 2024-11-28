@@ -84,11 +84,11 @@ stimuli = [
 # Let's take a look at some of these binary images:
 plt.figure(figsize=(8, 4))
 plt.subplot(1, 2, 1)
-plt.imshow(stimuli[0][124], interpolation="nearest", cmap="gray")
+plt.imshow(stimuli[0][124], interpolation="nearest", cmap="grey")
 plt.axis("off")
 plt.title(f"Run {1}, Stimulus {125}")
 plt.subplot(1, 2, 2)
-plt.imshow(stimuli[2][101], interpolation="nearest", cmap="gray")
+plt.imshow(stimuli[2][101], interpolation="nearest", cmap="grey")
 plt.axis("off")
 plt.title(f"Run {3}, Stimulus {102}")
 plt.subplots_adjust(wspace=0.5)
@@ -252,7 +252,7 @@ for i, index in enumerate([1780, 1951, 2131]):
     # we reshape the coefficients into the form of the original images
     rf = lasso.named_steps["lassolarscv"].coef_.reshape((10, 10))
     # add a black background
-    ax.imshow(np.zeros_like(rf), vmin=0.0, vmax=1.0, cmap="gray")
+    ax.imshow(np.zeros_like(rf), vmin=0.0, vmax=1.0, cmap="grey")
     ax_im = ax.imshow(
         np.ma.masked_less(rf, 0.1),
         interpolation="nearest",
@@ -281,7 +281,7 @@ ax = plt.subplot(gs1[1, 1])
 lasso.fit(stimuli, fmri_data[:, 1935])
 # we reshape the coefficients into the form of the original images
 rf = lasso.named_steps["lassolarscv"].coef_.reshape((10, 10))
-ax.imshow(np.zeros_like(rf), vmin=0.0, vmax=1.0, cmap="gray")
+ax.imshow(np.zeros_like(rf), vmin=0.0, vmax=1.0, cmap="grey")
 ax_im = ax.imshow(
     np.ma.masked_less(rf, 0.1),
     interpolation="nearest",

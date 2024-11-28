@@ -193,20 +193,20 @@ def _configure_grid(axes, tri, size):
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="gray")
-            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="grey")
+            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="grey")
     elif tri == "diag":
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="gray")
-            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="gray")
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="grey")
+            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="grey")
     else:
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="gray")
-            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="grey")
+            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="grey")
 
 
 @fill_doc
@@ -380,7 +380,7 @@ def plot_contrast_matrix(
 
     maxval = np.max(np.abs(contrast_def))
     mat = axes.matshow(
-        con_matrix, aspect="equal", cmap="gray", vmin=-maxval, vmax=maxval
+        con_matrix, aspect="equal", cmap="grey", vmin=-maxval, vmax=maxval
     )
 
     axes.set_label("conditions")

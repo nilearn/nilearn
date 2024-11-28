@@ -80,7 +80,7 @@ display = plot_carpet(
     t_r=t_r,
     mask_labels=map_labels,
     axes=ax,
-    cmap="gray",
+    cmap="grey",
     standardize="zscore_sample",
     title="global patterns over time separated by tissue type",
 )

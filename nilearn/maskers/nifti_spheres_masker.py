@@ -513,7 +513,7 @@ class NiftiSpheresMasker(BaseMasker):
             )
             regions_summary["relative size (in %)"].append("not implemented")
             if idx in spheres_to_be_displayed:
-                display = plotting.plot_img(img, cut_coords=seed, cmap="gray")
+                display = plotting.plot_img(img, cut_coords=seed, cmap="grey")
                 display.add_markers(
                     marker_coords=[seed],
                     marker_color="g",
