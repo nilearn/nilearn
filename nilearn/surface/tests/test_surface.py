@@ -63,8 +63,7 @@ def test_check_mesh():
 
 
 def test_check_mesh_and_data(rng):
-    coords, faces = generate_surf()
-    mesh = InMemoryMesh(coords, faces)
+    mesh = generate_surf()
     data = mesh[0][:, 0]
     m, d = check_mesh_and_data(mesh, data)
     assert (m[0] == mesh[0]).all()
@@ -72,8 +71,8 @@ def test_check_mesh_and_data(rng):
     assert (d == data).all()
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    wrong_faces = rng.integers(coords.shape[0] + 1, size=(30, 3))
-    wrong_mesh = InMemoryMesh(coords, wrong_faces)
+    wrong_faces = rng.integers(mesh[0].shape[0] + 1, size=(30, 3))
+    wrong_mesh = InMemoryMesh(mesh[0], wrong_faces)
     # Check that check_mesh_and_data raises an error
     # with the resulting wrong mesh
     with pytest.raises(
