@@ -1356,16 +1356,6 @@ class InMemoryMesh(SurfaceMesh):
         self.n_vertices = coordinates.shape[0]
 
     def __getitem__(self, index):
-        warning_message = (
-            "From release 0.13.0 onwards, fetching coordinates with `[0]` "
-            "and faces with `[1]` will be deprecated. Users will need to "
-            "explicitly specify the data to be returned.\n"
-            "Meaning, to return the coordinates and faces of the mesh, "
-            " use `mesh.coordinates` and `mesh.faces`."
-        )
-        warnings.warn(
-            category=FutureWarning, message=warning_message, stacklevel=3
-        )
         if index == 0:
             return self.coordinates
         elif index == 1:
@@ -1376,16 +1366,6 @@ class InMemoryMesh(SurfaceMesh):
             )
 
     def __iter__(self):
-        warning_message = (
-            "From release 0.13.0 onwards, iterating over a mesh to return "
-            "coordinates and faces will be deprecated. Users will need to "
-            "explicitly specify the data to be returned.\n"
-            "Meaning, to return the coordinates and faces of the `mesh`, "
-            " use `mesh.coordinates` and `mesh.faces`."
-        )
-        warnings.warn(
-            category=FutureWarning, message=warning_message, stacklevel=3
-        )
         return iter([self.coordinates, self.faces])
 
 
