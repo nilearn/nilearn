@@ -16,8 +16,8 @@ See :ref:`plotting` for more details.
 # ------------
 # Retrieve destrieux parcellation in fsaverage5 space from nilearn
 # and create a :obj:`~nilearn.surface.SurfaceImage` instance with it.
-from nilearn.datasets import fetch_atlas_surf_destrieux
-from nilearn.experimental.surface import (
+from nilearn.datasets import (
+    fetch_atlas_surf_destrieux,
     load_fsaverage,
     load_fsaverage_data,
 )
@@ -118,7 +118,7 @@ from nilearn.plotting import plot_connectome, view_connectome
 
 coordinates = []
 for hemi in ["left", "right"]:
-    vert = destrieux_atlas.data.parts[hemi]
+    vert = destrieux_atlas.data.parts[hemi][..., 0]
     rr, _ = surface.load_surf_mesh(fsaverage_meshes["pial"].parts[hemi])
     coordinates.extend(
         np.mean(rr[vert == k], axis=0)

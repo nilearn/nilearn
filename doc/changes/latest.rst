@@ -26,6 +26,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Allow single 4D nifti as input to fit for SecondLevelModel (:gh:`4806` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Make sure that radiological view is applied when requested and not only when figures are annotated (:gh:`4556` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).
@@ -35,6 +37,8 @@ Fixes
 - :bdg-dark:`Code` Fix previous Glover HRF implementation to fit the original paper (Glover, 1999) (:gh:`4452` by `Kun CHEN`_).
 
 - :bdg-dark:`Code` :func:`nilearn.image.binarize_img` explicitly cast images to ``int8`` to avoid warnings about ``int64`` when working with ``float64`` images (:gh:`4498` by `Patrick Sadil`_).
+
+- :bdg-dark:`Code` :func:`nilearn.glm.first_level.first_level_from_bids` will look for images in ``MNI152NLin2009cAsym`` space if no space is provided (:gh:`4507` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix bug that would lead ``compute_contrast`` to return 4D images even for one dimensional contrasts (:gh:`4413` by `Bertrand Thirion`_ and `Rémi Gau`_).
 
@@ -49,7 +53,11 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Move SurfaceMasker from experimental to :class:`nilearn.maskers.SurfaceMasker` (:gh:`4692` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add to the stable API: :func:`nilearn.datasets.load_nki` that returns the NKI dataset as a list of :obj:`~nilearn.surface.SurfaceImage` instances, :func:`nilearn.datasets.load_fsaverage` that returns fsaverage meshes as a :obj:`dict` of :obj:`~nilearn.surface.PolyMesh` instances, and :func:`nilearn.datasets.load_fsaverage_data` that returns fsaverage data (thickness, curvature...) as :obj:`~nilearn.surface.SurfaceImage` instances (:gh:`4693` by `Rémi Gau`_ based on original work by `Jerome Dockes`_).
+
+- :bdg-dark:`Code` Move SurfaceMasker and SurfaceLabelsMasker from experimental to :class:`nilearn.maskers.SurfaceMasker` and to :class:`nilearn.maskers.SurfaceLabelsMasker` (:gh:`4692` and :gh:`4714` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Allow list of :obj:`~nilearn.surface.SurfaceImage` as input to :class:`~nilearn.maskers.SurfaceMasker` fit and transform methods (:gh:`4719` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Move SurfaceImage and associated classes to from experimental to :mod:`nilearn.surface` (:gh:`4723` by `Rémi Gau`_).
 
@@ -73,11 +81,16 @@ Enhancements
 
 - :bdg-primary:`Doc` Adapt examples showing how to plot events and design matrices to show how to use parametric modulation. Also implement modulation of events in :func:`nilearn.plotting.plot_event` (:gh:`4436` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Allow :class:`nilearn.decoding.FREMClassifier` and :class:`nilearn.decoding.FREMRegressor` to work with surface objects (:gh:`4577` by `Yasmin Mzayek`_ and `Rémi Gau`_).
+
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Improve :func:`nilearn.glm.first_level.first_level_from_bids` to look for and load ``fsaverage5`` data to easily run GLM on surface data (:gh:`4507` by `Rémi Gau`_).
 
 - :bdg-info:`Code` Improve plotting contours for :class:`nilearn.plotting.displays.PlotlySurfaceFigure` objects by adding :meth:`nilearn.plotting.displays.PlotlySurfaceFigure.add_contours` method that accepts arguments to adjust line aesthetics (:gh:`3949` by `Patrick Sadil`_).
 
 - :bdg-primary:`Doc` Add example to provide a clear understanding of the :class:`nilearn.decoding.Decoder` object by demonstrating underlying steps via a Scikit-Learn pipeline. (:gh:`4437` by `Himanshu Aggarwal`_).
+
 
 Changes
 -------

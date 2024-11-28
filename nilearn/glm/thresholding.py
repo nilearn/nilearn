@@ -59,7 +59,7 @@ def _true_positive_fraction(z_vals, hommel_value, alpha):
     z_vals : array,
         A set of z-variates from which the FDR is computed.
 
-    hommel_value: :obj:`int`
+    hommel_value : :obj:`int`
         The Hommel value, used in the computations.
 
     alpha : :obj:`float`
@@ -260,7 +260,7 @@ def threshold_stats_img(
     ]
     if height_control not in height_control_methods:
         raise ValueError(
-            "height control should be one of {0}", height_control_methods
+            f"height control should be one of {height_control_methods}"
         )
 
     # if two-sided, correct alpha by a factor of 2

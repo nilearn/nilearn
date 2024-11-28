@@ -22,7 +22,7 @@ stat_img = datasets.load_sample_motor_activation_image()
 # %%
 # Get a cortical mesh
 # -------------------
-from nilearn.experimental.surface import load_fsaverage, load_fsaverage_data
+from nilearn.datasets import load_fsaverage, load_fsaverage_data
 
 fsaverage_meshes = load_fsaverage()
 
@@ -221,7 +221,7 @@ elif engine == "plotly":
 big_fsaverage_meshes = load_fsaverage("fsaverage")
 
 big_fsaverage_sulcal = load_fsaverage_data(
-    mesh_name="fsaverage", data_type="sulcal", mesh_type="inflated"
+    mesh="fsaverage", data_type="sulcal", mesh_type="inflated"
 )
 
 big_img = SurfaceImage.from_volume(

@@ -1,6 +1,7 @@
 import numpy as np
 
 from nilearn import image
+from nilearn.surface import SurfaceImage
 
 
 def _check_dims(imgs):
@@ -56,7 +57,7 @@ def compute_mean_surface_image(img):
 
     Parameters
     ----------
-    img: SurfaceImage
+    img : SurfaceImage
 
     Returns
     -------
@@ -64,9 +65,12 @@ def compute_mean_surface_image(img):
     """
     if img.shape[0] < 2:
         return img
+
+    data = {}
     for part, value in img.data.parts.items():
-        img.data.parts[part] = np.squeeze(value.mean(axis=0)).astype(float)
-    return img
+        data[part] = np.mean(value, axis=1).astype(float)
+
+    return SurfaceImage(mesh=img.mesh, data=data)
 
 
 def get_min_max_surface_image(img):
@@ -74,14 +78,50 @@ def get_min_max_surface_image(img):
 
     Parameters
     ----------
-    img: SurfaceImage
+    img : SurfaceImage
 
     Returns
     -------
-    vmin: float
+    vmin : float
 
-    vmax: float
+    vmax : float
     """
     vmin = min(min(x.ravel()) for x in img.data.parts.values())
     vmax = max(max(x.ravel()) for x in img.data.parts.values())
     return vmin, vmax
+
+
+def concatenate_surface_images(imgs):
+    """Concatenate the data of a list or tuple of SurfaceImages.
+
+    Assumes all images have same meshes.
+
+    Parameters
+    ----------
+    imgs : :obj:`list` or :obj:`tuple` of SurfaceImage object
+
+    Returns
+    -------
+    SurfaceImage object
+    """
+    if not isinstance(imgs, (tuple, list)) or any(
+        not isinstance(x, SurfaceImage) for x in imgs
+    ):
+        raise TypeError(
+            "'imgs' must be a list or a tuple of SurfaceImage instances."
+        )
+
+    if len(imgs) == 1:
+        return imgs[0]
+
+    for img in imgs:
+        check_same_n_vertices(img.mesh, imgs[0].mesh)
+
+    output_data = {}
+    for part in imgs[0].data.parts:
+        tmp = [img.data.parts[part] for img in imgs]
+        output_data[part] = np.concatenate(tmp, axis=1)
+
+    output = SurfaceImage(mesh=imgs[0].mesh, data=output_data)
+
+    return output

@@ -20,7 +20,7 @@ from .js_plotting_utils import (
 )
 
 
-class ConnectomeView(HTMLDocument):  # noqa E101
+class ConnectomeView(HTMLDocument):  # noqa: D101
     pass
 
 
@@ -100,7 +100,7 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
 
     Returns
     -------
-    markers_colors: :obj:`list`
+    markers_colors : :obj:`list`
         List of `number_of_nodes` colors as hexadecimal values
     """
     if isinstance(marker_color, str) and marker_color == "auto":

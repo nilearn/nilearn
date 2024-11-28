@@ -318,7 +318,7 @@ def _coerce_to_dict(input_arg):
 
     Returns
     -------
-    input_args: Dict[str, np.array or str]
+    input_args : Dict[str, np.array or str]
 
     """
     if not isinstance(input_arg, dict):
@@ -878,13 +878,11 @@ def _clustering_params_to_dataframe(
     threshold = np.around(threshold, 3)
     if height_control:
         table_details.update({"Height control": height_control})
-        """
-        HTMLDocument.get_iframe() invoked in Python2 Jupyter Notebooks
-        mishandles certain unicode characters
-        & raises error due to greek alpha symbol.
-        This is simpler than overloading the class using inheritance,
-        especially given limited Python2 use at time of release.
-        """
+        # HTMLDocument.get_iframe() invoked in Python2 Jupyter Notebooks
+        # mishandles certain unicode characters
+        # & raises error due to greek alpha symbol.
+        # This is simpler than overloading the class using inheritance,
+        # especially given limited Python2 use at time of release.
         if alpha < 0.001:
             alpha = f"{Decimal(alpha):.2E}"
         if os.sys.version_info.major == 2:

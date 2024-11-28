@@ -21,10 +21,10 @@ as described in :footcite:t:`Chen2011`.
 # ------------------
 import pandas as pd
 
-from nilearn import datasets
+from nilearn.datasets import fetch_haxby
 
 # We fetch 2nd subject from haxby datasets (which is default)
-haxby_dataset = datasets.fetch_haxby()
+haxby_dataset = fetch_haxby()
 
 fmri_filename = haxby_dataset.func[0]
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
@@ -49,10 +49,7 @@ y, run = y[condition_mask], run[condition_mask]
 
 from sklearn import neighbors
 
-from nilearn import datasets
-from nilearn.experimental.surface import (
-    load_fsaverage,
-)
+from nilearn.datasets import load_fsaverage
 from nilearn.surface import SurfaceImage
 
 fsaverage = load_fsaverage()
@@ -104,7 +101,7 @@ for hemi in hemispheres_to_analyze:
     # Define cross-validation scheme
     cv = KFold(n_splits=3, shuffle=False)
 
-    X = fmri_img_surf.data.parts[hemi]
+    X = fmri_img_surf.data.parts[hemi].T
 
     # Cross-validated search light
     scores[hemi] = search_light(
@@ -114,7 +111,7 @@ for hemi in hemispheres_to_analyze:
 # %%
 # Visualization
 # -------------
-from nilearn.experimental.surface import load_fsaverage_data
+from nilearn.datasets import load_fsaverage_data
 from nilearn.plotting import plot_surf_stat_map, show
 
 fsaverage_data = load_fsaverage_data(mesh_type="inflated", data_type="sulcal")
@@ -137,8 +134,8 @@ for hemi in hemispheres_to_analyze:
     )
 show()
 
-# # %%
-# # References
-# # ----------
-# #
-# #  .. footbibliography::
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

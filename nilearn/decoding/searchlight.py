@@ -15,7 +15,7 @@ import warnings
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
 from sklearn import svm
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
 
@@ -237,7 +237,7 @@ def _group_iter_search_light(
 # Class for search_light #####################################################
 ##############################################################################
 @fill_doc
-class SearchLight(BaseEstimator):
+class SearchLight(TransformerMixin, BaseEstimator):
     """Implement search_light analysis using an arbitrary type of classifier.
 
     Parameters

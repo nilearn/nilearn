@@ -168,7 +168,9 @@ def _bytes_io_to_base64(handle_io):
 
     Also closes the file.
 
-    Returns: data
+    Returns
+    -------
+    data
     """
     handle_io.seek(0)
     data = b64encode(handle_io.read()).decode("utf-8")
@@ -191,7 +193,15 @@ class StatMapView(HTMLDocument):  # noqa: D101
 def _mask_stat_map(stat_map_img, threshold=None):
     """Load a stat map and apply a threshold.
 
-    Returns: mask_img, stat_map_img, data, threshold
+    Returns
+    -------
+    mask_img
+
+    stat_map_img
+
+    data
+
+    threshold
     """
     # Load stat map
     stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
@@ -212,8 +222,15 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
     """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
 
-    Returns: bg_img, bg_min, bg_max, black_bg
+    Returns
+    -------
+    bg_img
 
+    bg_min
+
+    bg_max
+
+    black_bg
     """
     if bg_img is None or bg_img is False:
         if black_bg == "auto":
@@ -243,8 +260,11 @@ def _resample_stat_map(
 ):
     """Resample the stat map and mask to the background.
 
-    Returns: stat_map_img, mask_img
+    Returns
+    -------
+    stat_map_img
 
+    mask_img
     """
     stat_map_img = resample_to_img(
         stat_map_img,
@@ -281,8 +301,9 @@ def _json_view_params(
 ):
     """Create a dictionary with all the brainsprite parameters.
 
-    Returns: params
-
+    Returns
+    -------
+    params
     """
     # Set color parameters
     if black_bg:
@@ -329,8 +350,11 @@ def _json_view_params(
 def _json_view_size(params, width_view=600):
     """Define the size of the viewer.
 
-    Returns: width_view, height_view
+    Returns
+    -------
+    width_view
 
+    height_view
     """
     # slices_width = sagittal_width (y) + coronal_width (x) + axial_width (x)
     slices_width = params["nbSlice"]["Y"] + 2 * params["nbSlice"]["X"]
@@ -372,8 +396,9 @@ def _json_view_data(
 ):
     """Create a json-like viewer object, and populate with base64 data.
 
-    Returns: json_view
-
+    Returns
+    -------
+    json_view
     """
     # Initialize brainsprite data structure
     json_view = dict.fromkeys(
@@ -423,8 +448,9 @@ def _json_view_data(
 def _json_view_to_html(json_view, width_view=600):
     """Fill a brainsprite html template with relevant parameters and data.
 
-    Returns: html_view
-
+    Returns
+    -------
+    html_view
     """
     # Fix the size of the viewer
     width, height = _json_view_size(json_view["params"], width_view)

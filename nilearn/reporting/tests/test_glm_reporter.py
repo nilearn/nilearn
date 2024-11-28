@@ -42,11 +42,9 @@ def test_flm_reporting(flm, height_control):
         alpha=0.01,
         threshold=2,
     )
-    """
-    catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-    in case certain unicode characters are mishandled,
-    like the greek alpha symbol.
-    """
+    # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
+    # in case certain unicode characters are mishandled,
+    # like the greek alpha symbol.
     report_flm.get_iframe()
 
 
@@ -308,7 +306,7 @@ def test_flm_generate_report_error_with_surface_data(surf_mask, surf_img):
     """Raise NotImplementedError when generate report is called on surface."""
     model = FirstLevelModel(mask_img=surf_mask(), t_r=2.0)
     events = basic_paradigm()
-    model.fit(surf_img((5,)), events=events)
+    model.fit(surf_img(9), events=events)
 
     with pytest.raises(NotImplementedError):
         model.generate_report("c0")

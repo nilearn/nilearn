@@ -147,7 +147,7 @@ def test_butterworth(data_butterworth_single_timeseries):
     )
 
     np.testing.assert_almost_equal(out_single, data)
-    np.testing.assert_(id(out_single) != id(data))
+    assert id(out_single) != id(data)
 
 
 def test_butterworth_multiple_timeseries(
@@ -172,7 +172,7 @@ def test_butterworth_multiple_timeseries(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=True
     )
     np.testing.assert_almost_equal(data, data_original)
-    np.testing.assert_(id(out1) != id(data_original))
+    assert id(out1) != id(data_original)
 
     # check that multiple- and single-timeseries filtering do the same thing.
     np.testing.assert_almost_equal(out1[:, 0], out_single)
@@ -190,7 +190,7 @@ def test_butterworth_multiple_timeseries(
         copy=True,  # Greater than nyq frequency
     )
     np.testing.assert_almost_equal(out1, out2)
-    np.testing.assert_(id(out1) != id(out2))
+    assert id(out1) != id(out2)
 
 
 def test_butterworth_warnings_critical_frequencies(
@@ -495,9 +495,7 @@ def test_clean_t_r(rng):
                     f"high_pass={high_cutoff} "
                     f"n_samples={n_samples}, n_features={n_features}"
                 )
-                np.testing.assert_(
-                    np.any(np.not_equal(det_one_tr, det_diff_tr)), msg
-                )
+                assert np.any(np.not_equal(det_one_tr, det_diff_tr)), msg
                 del det_one_tr, det_diff_tr
 
 
@@ -539,7 +537,7 @@ def test_clean_kwargs():
             **kwarg_set,
         )
         # Check that results are **not** the same.
-        np.testing.assert_(np.any(np.not_equal(base_filtered, test_filtered)))
+        assert np.any(np.not_equal(base_filtered, test_filtered))
 
 
 def test_clean_frequencies():
@@ -831,6 +829,37 @@ def test_clean_frequencies_using_power_spectrum_density():
     assert np.sum(Pxx_den_low[f >= low_pass * 2.0]) <= 1e-4
     assert np.sum(Pxx_den_high[f <= high_pass / 2.0]) <= 1e-4
     assert np.sum(Pxx_den_cos[f <= high_pass / 2.0]) <= 1e-4
+
+
+@pytest.mark.parametrize("t_r", [1, 1.0])
+@pytest.mark.parametrize("high_pass", [1, 1.0])
+def test_clean_t_r_highpass_float_int(t_r, high_pass):
+    """Make sure t_r and high_pass can be int.
+
+    Regression test for: https://github.com/nilearn/nilearn/issues/4803
+    """
+    # Create signal
+    sx = np.array(
+        [
+            np.sin(np.linspace(0, 100, 100) * 1.5),
+            np.sin(np.linspace(0, 100, 100) * 3.0),
+            np.sin(np.linspace(0, 100, 100) / 8.0),
+        ]
+    ).T
+
+    # Create confound
+    _, _, confounds = generate_signals(
+        n_features=10, n_confounds=10, length=100
+    )
+    clean(
+        sx,
+        detrend=False,
+        standardize=False,
+        filter="cosine",
+        low_pass=None,
+        high_pass=high_pass,
+        t_r=t_r,
+    )
 
 
 def test_clean_finite_no_inplace_mod():

@@ -25,7 +25,11 @@ def _check_html(html_view, title=None):
 def _simulate_img(affine=None):
     """Simulate data with one "spot".
 
-    Returns: img, data
+    Returns
+    -------
+    img
+
+    data
     """
     if affine is None:
         affine = np.eye(4)

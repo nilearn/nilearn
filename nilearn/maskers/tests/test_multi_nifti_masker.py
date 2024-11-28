@@ -9,7 +9,9 @@ import pytest
 from joblib import Memory
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
+from sklearn import __version__ as sklearn_version
 
+from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
@@ -17,9 +19,14 @@ from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 
 extra_valid_checks = [
+    "check_estimators_unfitted",
+    "check_get_params_invariance",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
 ]
+
+if compare_version(sklearn_version, ">=", "1.6"):
+    extra_valid_checks.append("check_estimator_sparse_array")
 
 
 @pytest.mark.parametrize(

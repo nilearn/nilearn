@@ -57,7 +57,7 @@ def load_mask_img(mask_img, allow_empty=False):
     mask : :class:`numpy.ndarray`
         Boolean version of the mask.
 
-    mask_affine: None or (4,4) array-like
+    mask_affine : None or (4,4) array-like
         Affine of the mask.
     """
     mask_img = _utils.check_niimg_3d(mask_img)
@@ -704,12 +704,17 @@ def compute_multi_brain_mask(
 
     threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
+
     %(connected)s
         Default=True.
+
     %(opening)s
         Default=2.
+
     %(mask_type)s
+
     %(memory)s
+
     %(verbose0)s
 
     .. note::
@@ -833,7 +838,7 @@ def apply_mask_fmri(
 
     if not np.allclose(mask_affine, imgs_img.affine):
         raise ValueError(
-            f"Mask affine: \n{mask_affine}\n is different from img affine:"
+            f"Mask affine:\n{mask_affine}\n is different from img affine:"
             "\n{imgs_img.affine}"
         )
 

@@ -175,7 +175,7 @@ def plot_brain_schematics(ax, direction, **kwargs):
 
     json_filename, transform = _get_json_and_transform(direction)
     with json_filename.open() as json_file:
-        json_content = json.loads(json_file.read())
+        json_content = json.load(json_file)
 
     mpl_patches = _get_mpl_patches(
         json_content,

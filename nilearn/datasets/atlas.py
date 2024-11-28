@@ -4,9 +4,9 @@ import json
 import re
 import shutil
 import warnings
-import xml.etree.ElementTree
 from pathlib import Path
 from tempfile import mkdtemp
+from xml.etree import ElementTree
 
 import numpy as np
 import pandas as pd
@@ -175,12 +175,16 @@ def fetch_atlas_craddock_2012(
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
-    homogeneity: :obj:`str`, optional
+
+    homogeneity : :obj:`str`, optional
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
-    grp_mean: :obj:`bool`, default=True
+    grp_mean : :obj:`bool`, default=True
         The choice of the :term:`parcellation` (with group_mean or without)
         Default=True.
 
@@ -190,20 +194,20 @@ def fetch_atlas_craddock_2012(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-            - 'scorr_mean': obj:`str`, path to nifti file containing the
-              group-mean :term:`parcellation`
-              when emphasizing spatial homogeneity.
-            - 'tcorr_mean': obj:`str`, path to nifti file containing the
-              group-mean parcellation when emphasizing temporal homogeneity.
-            - 'scorr_2level': obj:`str`, path to nifti file containing the
-              :term:`parcellation` obtained
-              when emphasizing spatial homogeneity.
-            - 'tcorr_2level': obj:`str`, path to nifti file containing the
-              :term:`parcellation` obtained
-              when emphasizing temporal homogeneity.
-            - 'random': obj:`str`, path to nifti file containing the
-              :term:`parcellation` obtained with random clustering.
-            - 'description': :obj:`str`, general description of the dataset.
+        - ``'scorr_mean'``: :obj:`str`, path to nifti file containing
+            the group-mean :term:`parcellation`
+            when emphasizing spatial homogeneity.
+        - ``'tcorr_mean'``: :obj:`str`, path to nifti file containing
+            the group-mean parcellation when emphasizing temporal homogeneity.
+        - ``'scorr_2level'``: :obj:`str`, path to nifti file containing
+            the :term:`parcellation` obtained
+            when emphasizing spatial homogeneity.
+        - ``'tcorr_2level'``: :obj:`str`, path to nifti file containing
+            the :term:`parcellation` obtained
+            when emphasizing temporal homogeneity.
+        - ``'random'``: :obj:`str`, path to nifti file containing
+            the :term:`parcellation` obtained with random clustering.
+        - ``'description'``: :obj:`str`, general description of the dataset.
 
     Warns
     -----
@@ -719,10 +723,8 @@ def _get_atlas_data_and_labels(
     )
     # Reorder image to have positive affine diagonal
     atlas_img = reorder_img(atlas_file, copy_header=True)
-    names = {}
-    from xml.etree import ElementTree
+    names = {0: "Background"}
 
-    names[0] = "Background"
     all_labels = ElementTree.parse(label_file).findall(".//label")
     for label in all_labels:
         new_idx = int(label.get("index")) + 1
@@ -806,10 +808,10 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     if source == "Juelich":
         for idx, name in enumerate(names):
             if name.endswith("L"):
-                names[idx] = re.sub(r" L$", "", name)
+                name = re.sub(r" L$", "", name)
                 names[idx] = f"Left {name}"
             if name.endswith("R"):
-                names[idx] = re.sub(r" R$", "", name)
+                name = re.sub(r" R$", "", name)
                 names[idx] = f"Right {name}"
 
     new_label = 0
@@ -965,16 +967,22 @@ def fetch_atlas_smith_2009(
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
+
     mirror : :obj:`str`, default='origin'
         By default, the dataset is downloaded from the original website of the
         atlas. Specifying "nitrc" will force download from a mirror, with
         potentially higher bandwidth.
-    dimension: :obj:`int`, optional
+
+    dimension : :obj:`int`, optional
         Number of dimensions in the dictionary. Valid resolutions
         available are {10, 20, 70}.
+
     resting : :obj:`bool`, default=True
         Either to fetch the resting-:term:`fMRI` or BrainMap components
 
@@ -983,27 +991,27 @@ def fetch_atlas_smith_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-            - 'rsn20': :obj:`str`, path to nifti file containing the
-              20-dimensional :term:`ICA`, resting-:term:`fMRI` components.
-              The shape of the image is ``(91, 109, 91, 20)``.
-            - 'rsn10': :obj:`str`, path to nifti file containing the
-              10 well-matched maps from the 20 maps obtained as for 'rsn20',
-              as shown in :footcite:t:`Smith2009b`. The shape of the
-              image is ``(91, 109, 91, 10)``.
-            - 'bm20': :obj:`str`, path to nifti file containing the
-              20-dimensional :term:`ICA`, BrainMap components.
-              The shape of the image is ``(91, 109, 91, 20)``.
-            - 'bm10': :obj:`str`, path to nifti file containing the
-              10 well-matched maps from the 20 maps obtained as for 'bm20',
-              as shown in :footcite:t:`Smith2009b`. The shape of the
-              image is ``(91, 109, 91, 10)``.
-            - 'rsn70': :obj:`str`, path to nifti file containing the
-              70-dimensional :term:`ICA`, resting-:term:`fMRI` components.
-              The shape of the image is ``(91, 109, 91, 70)``.
-            - 'bm70': :obj:`str`, path to nifti file containing the
-              70-dimensional :term:`ICA`, BrainMap components.
-              The shape of the image is ``(91, 109, 91, 70)``.
-            - 'description': :obj:`str`, description of the atlas.
+        - ``'rsn20'``: :obj:`str`, path to nifti file containing
+            the 20-dimensional :term:`ICA`, resting-:term:`fMRI` components.
+            The shape of the image is ``(91, 109, 91, 20)``.
+        - ``'rsn10'``: :obj:`str`, path to nifti file containing
+            the 10 well-matched maps from the 20 maps obtained as for 'rsn20',
+            as shown in :footcite:t:`Smith2009b`.
+            The shape of the image is ``(91, 109, 91, 10)``.
+        - ``'bm20'``: :obj:`str`, path to nifti file containing
+            the 20-dimensional :term:`ICA`, BrainMap components.
+            The shape of the image is ``(91, 109, 91, 20)``.
+        - ``'bm10'``: :obj:`str`, path to nifti file containing
+            the 10 well-matched maps from the 20 maps obtained as for 'bm20',
+            as shown in :footcite:t:`Smith2009b`.
+            The shape of the image is ``(91, 109, 91, 10)``.
+        - ``'rsn70'``: :obj:`str`, path to nifti file containing
+            the 70-dimensional :term:`ICA`, resting-:term:`fMRI` components.
+            The shape of the image is ``(91, 109, 91, 70)``.
+        - ``'bm70'``: :obj:`str`, path to nifti file containing
+            the 70-dimensional :term:`ICA`, BrainMap components.
+            The shape of the image is ``(91, 109, 91, 70)``.
+        - ``'description'``: :obj:`str`, description of the atlas.
 
     Warns
     -----
@@ -1319,7 +1327,7 @@ def fetch_atlas_aal(
     labels = []
     indices = []
     if version in ("SPM12", "3v2"):
-        xml_tree = xml.etree.ElementTree.parse(labels_file)
+        xml_tree = ElementTree.parse(labels_file)
         root = xml_tree.getroot()
         for label in root.iter("label"):
             indices.append(label.find("index").text)
@@ -1380,15 +1388,22 @@ def fetch_atlas_basc_multiscale_2015(
     Parameters
     ----------
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
-    resolution: :ob:`int`, optional
-        Number of networks in the dictionary. Valid resolutions
-        available are {7, 12, 20, 36, 64, 122, 197, 325, 444}
+
+    resolution : :obj:`int`, optional
+        Number of networks in the dictionary.
+        Valid resolutions  available are
+        {7, 12, 20, 36, 64, 122, 197, 325, 444}
+
     version : {'sym', 'asym'}, default='sym'
-        Available versions are 'sym' or 'asym'. By default all scales of
-        brain parcellations of version 'sym' will be returned.
+        Available versions are 'sym' or 'asym'.
+        By default all scales of brain parcellations of version 'sym'
+        will be returned.
 
     Returns
     -------

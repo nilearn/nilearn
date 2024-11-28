@@ -9,13 +9,20 @@ import pandas as pd
 from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
-from .._utils import check_niimg, fill_doc
-from ..image import get_data, new_img_like, resampling
-from ._utils import (
+from nilearn._utils import check_niimg, fill_doc
+from nilearn.datasets._utils import (
+    ALLOWED_DATA_TYPES,
+    ALLOWED_MESH_TYPES,
     PACKAGE_DIRECTORY,
     fetch_files,
     get_dataset_descr,
     get_dataset_dir,
+)
+from nilearn.image import get_data, new_img_like, resampling
+from nilearn.surface import (
+    FileMesh,
+    PolyMesh,
+    SurfaceImage,
 )
 
 MNI152_FILE_PATH = (
@@ -54,7 +61,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, interest keys are:
 
         - "t1": str,
@@ -179,7 +186,7 @@ def load_mni152_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -243,7 +250,7 @@ def load_mni152_gm_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -299,7 +306,7 @@ def load_mni152_wm_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -353,7 +360,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -397,7 +404,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -405,7 +412,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
         Values of the grey-matter MNI152 template above this threshold will be
         included.
 
-    n_iter: int, default=2
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -450,7 +457,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -458,7 +465,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
         Values of the white-matter MNI152 template above this threshold will be
         included.
 
-    n_iter: int, default=2
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -506,12 +513,14 @@ def fetch_icbm152_brain_gm_mask(
     Parameters
     ----------
     %(data_dir)s
+
     threshold : float, default=0.2
         Values of the ICBM152 grey-matter template above this threshold will be
         included.
 
     %(resume)s
-    n_iter: int, default=2
+
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -877,15 +886,16 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
 
     Parameters
     ----------
-    mesh : str, default='fsaverage5'
+    mesh : :obj:`str`, default='fsaverage5'
         Which :term:`mesh` to fetch.
         Should be one of the following values:
         %(fsaverage_options)s
+
     %(data_dir)s
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
          - 'area_left': Gifti file, left hemisphere area data
          - 'area_right': Gifti file, right hemisphere area data
@@ -912,6 +922,10 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
          - 'white_right': Gifti file, right hemisphere*
            white surface :term:`mesh`
 
+         See load_fsaverage and load_fsaverage_data
+         to access fsaverage data as SurfaceImages.
+
+
     References
     ----------
     .. footbibliography::
@@ -926,6 +940,12 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
         "fsaverage",
     )
 
+    if mesh not in available_meshes:
+        raise ValueError(
+            f"'mesh' should be one of {available_meshes}; "
+            f"{mesh!r} was provided"
+        )
+
     # Call a dataset loader depending on the value of mesh
     if mesh in (
         "fsaverage3",
@@ -938,15 +958,11 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
         # regardless of whether mesh equals "fsaverage" or "fsaverage7"
         if mesh == "fsaverage7":
             mesh = "fsaverage"
-
-        return _fetch_surf_fsaverage(mesh, data_dir=data_dir)
+        bunch = _fetch_surf_fsaverage(mesh, data_dir=data_dir)
     elif mesh == "fsaverage5":
-        return _fetch_surf_fsaverage5()
-    else:
-        raise ValueError(
-            f"'mesh' should be one of {available_meshes}; "
-            f"{mesh!r} was provided"
-        )
+        bunch = _fetch_surf_fsaverage5()
+
+    return bunch
 
 
 def _fetch_surf_fsaverage5():
@@ -1031,3 +1047,110 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     result["description"] = str(get_dataset_descr(dataset_name))
 
     return Bunch(**result)
+
+
+@fill_doc
+def load_fsaverage(mesh="fsaverage5", data_dir=None):
+    """Load fsaverage for both hemispheres as PolyMesh objects.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
+
+    %(data_dir)s
+
+    Returns
+    -------
+    data : :obj:`sklearn.utils.Bunch`
+        Dictionary-like object, the interest attributes are :
+         - ``'description'``: description of the dataset
+         - ``'pial'``: Polymesh for pial surface for left and right hemispheres
+         - ``'white_matter'``: Polymesh for white matter surface
+                               for left and right hemispheres
+         - ``'inflated'``: Polymesh for inglated surface
+                           for left and right hemispheres
+         - ``'sphere'``: Polymesh for spherical surface
+                         for left and right hemispheres
+         - ``'flat'``: Polymesh for flattened surface
+                       for left and right hemispheres
+    """
+    fsaverage = fetch_surf_fsaverage(mesh, data_dir=data_dir)
+    renaming = {
+        "pial": "pial",
+        "white": "white_matter",
+        "infl": "inflated",
+        "sphere": "sphere",
+        "flat": "flat",
+    }
+    meshes = {"description": fsaverage.description}
+    for key, value in renaming.items():
+        left = FileMesh(fsaverage[f"{key}_left"])
+        right = FileMesh(fsaverage[f"{key}_right"])
+        meshes[value] = PolyMesh(left=left, right=right)
+    return Bunch(**meshes)
+
+
+@fill_doc
+def load_fsaverage_data(
+    mesh="fsaverage5", mesh_type="pial", data_type="sulcal", data_dir=None
+):
+    """Return freesurfer data on an fsaverage mesh as a SurfaceImage.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
+
+    mesh_type : :obj:`str`, default='pial'
+        Must be one of:
+         - ``"pial"``
+         - ``"white_matter"``
+         - ``"inflated"``
+         - ``"sphere"``
+         - ``"flat"``
+
+    data_type : :obj:`str`, default='sulcal'
+        Must be one of:
+            - ``"curvature"``,
+            - ``"sulcal"``,
+            - ``"thickness"``,
+
+    %(data_dir)s
+
+    Returns
+    -------
+    img : :obj:`~nilearn.surface.SurfaceImage`
+        SurfaceImage with the freesurfer mesh and data.
+    """
+    if mesh_type not in ALLOWED_MESH_TYPES:
+        raise ValueError(
+            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
+            f"Got: {mesh_type=}."
+        )
+    if data_type not in ALLOWED_DATA_TYPES:
+        raise ValueError(
+            f"'data_type' must be one of {ALLOWED_DATA_TYPES}.\n"
+            f"Got: {data_type=}."
+        )
+
+    fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
+    fsaverage_data = fetch_surf_fsaverage(mesh=mesh, data_dir=data_dir)
+    renaming = {"curvature": "curv", "sulcal": "sulc", "thickness": "thick"}
+    img = SurfaceImage(
+        mesh=fsaverage[mesh_type],
+        data={
+            "left": fsaverage_data[f"{renaming[data_type]}_left"],
+            "right": fsaverage_data[f"{renaming[data_type]}_right"],
+        },
+    )
+
+    return img

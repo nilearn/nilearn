@@ -513,12 +513,19 @@ def plot_design_matrix(
 def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     """Create plot for event visualization.
 
+    .. warning::
+
+        Events with a duration of 0 seconds will be plotted
+        by a 'delta function'.
+
     Parameters
     ----------
     model_event : :class:`pandas.DataFrame` or :obj:`list`\
-    of :class:`pandas.DataFrame`
+                   of :class:`pandas.DataFrame`
         The :class:`pandas.DataFrame` must have three columns:
         ``trial_type`` with event name, ``onset`` and ``duration``.
+        See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
+        for details on the required content of events dataframes.
 
         .. note::
 
@@ -526,7 +533,9 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
             from :func:`nilearn.glm.first_level.first_level_from_bids`.
 
     %(cmap)s
+
     %(output_file)s
+
     **fig_kwargs : extra keyword arguments, optional
         Extra arguments passed to :func:`matplotlib.pyplot.subplots`.
 

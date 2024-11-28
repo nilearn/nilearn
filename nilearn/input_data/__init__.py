@@ -32,9 +32,9 @@ from .nifti_spheres_masker import NiftiSpheresMasker
 
 __all__ = [
     "BaseMasker",
+    "MultiNiftiMasker",
     "NiftiLabelsMasker",
     "NiftiMapsMasker",
     "NiftiMasker",
-    "MultiNiftiMasker",
     "NiftiSpheresMasker",
 ]

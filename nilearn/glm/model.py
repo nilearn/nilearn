@@ -21,6 +21,35 @@ class LikelihoodModelResults:
     can be implemented as methods, not computed in, say,
     the fit method of OLSModel.
 
+    Parameters
+    ----------
+    theta : ndarray
+        Parameter estimates from estimated model.
+
+    Y : ndarray
+        Data.
+
+    model : ``LikelihoodModel`` instance
+        Model used to generate fit.
+
+    cov : None or ndarray, optional
+        Covariance of thetas.
+
+    dispersion : scalar, default=1
+        Multiplicative factor in front of `cov`.
+
+    nuisance : None of ndarray, optional
+        Parameter estimates needed to compute logL.
+
+    Notes
+    -----
+    The covariance of thetas is given by:
+
+        dispersion * cov
+
+    For (some subset of models) `dispersion` will typically be the mean
+    square error from the estimated model (sigma^2)
+
     """
 
     def __init__(
@@ -32,38 +61,6 @@ class LikelihoodModelResults:
         dispersion=1.0,
         nuisance=None,
     ):
-        """Set up results structure.
-
-        Parameters
-        ----------
-        theta : ndarray
-            Parameter estimates from estimated model.
-
-        Y : ndarray
-            Data.
-
-        model : ``LikelihoodModel`` instance
-            Model used to generate fit.
-
-        cov : None or ndarray, optional
-            Covariance of thetas.
-
-        dispersion : scalar, default=1
-            Multiplicative factor in front of `cov`.
-
-        nuisance : None of ndarray, optional
-            Parameter estimates needed to compute logL.
-
-        Notes
-        -----
-        The covariance of thetas is given by:
-
-            dispersion * cov
-
-        For (some subset of models) `dispersion` will typically be the mean
-        square error from the estimated model (sigma^2)
-
-        """
         self.theta = theta
         self.Y = Y
         self.model = model
@@ -192,10 +189,10 @@ class LikelihoodModelResults:
         if matrix.ndim == 1:
             matrix = matrix[None]
         if matrix.size == 0:
-            raise ValueError("t contrasts cannot be empty: " f"got {matrix}")
+            raise ValueError(f"t contrasts cannot be empty: got {matrix}")
         if matrix.shape[0] != 1:
             raise ValueError(
-                "t contrasts should have only one row: " f"got {matrix}."
+                f"t contrasts should have only one row: got {matrix}."
             )
         matrix = pad_contrast(con_val=matrix, theta=self.theta, stat_type="t")
         store = set(store)

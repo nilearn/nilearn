@@ -16,7 +16,7 @@ from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
-from nilearn import _utils, datasets
+from nilearn import _utils
 from nilearn._utils import stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
@@ -859,18 +859,9 @@ def load_surf_data(surf_data):
                 surf_data, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS
             )
 
-            if (
-                surf_data.endswith("nii")
-                or surf_data.endswith("nii.gz")
-                or surf_data.endswith("mgz")
-            ):
+            if surf_data.endswith(("nii", "nii.gz", "mgz")):
                 data_part = np.squeeze(get_data(load(surf_data)))
-            elif (
-                surf_data.endswith("area")
-                or surf_data.endswith("curv")
-                or surf_data.endswith("sulc")
-                or surf_data.endswith("thickness")
-            ):
+            elif surf_data.endswith(("area", "curv", "sulc", "thickness")):
                 data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith("annot"):
                 data_part = fs.io.read_annot(surf_data)[0]
@@ -1007,7 +998,7 @@ def load_surf_mesh(surf_mesh):
         if len(file_list) > 1:
             # empty list is handled inside resolve_globbing function
             raise ValueError(
-                f"More than one file matching path: {surf_mesh} \n"
+                f"More than one file matching path: {surf_mesh}\n"
                 "load_surf_mesh can only load one file at a time."
             )
         surf_mesh = str(file_list[0])
@@ -1133,7 +1124,10 @@ def check_mesh(mesh):
 
     """
     if isinstance(mesh, str):
-        return datasets.fetch_surf_fsaverage(mesh)
+        # avoid circular imports
+        from nilearn.datasets import fetch_surf_fsaverage
+
+        return fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, Mapping):
         raise TypeError(
             "The mesh should be a str or a dictionary, "
@@ -1247,54 +1241,112 @@ class PolyData:
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
-    left : :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` or None,\
-           default = None
+    left : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
+           or None, default = None
 
-    right : :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` or None,\
-           default = None
+    right : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
+            or None, default = None
+
+    squeeze_on_save : :obj:`bool` or None, default=None
+            If ``True`` axes of length one from the data
+            in the left and right parts will be removed
+            before saving them to file.
+            If ``None`` is passed,
+            then the value will be set to ``True``
+            if ``left`` or ``right`` is one dimensional.
 
     Attributes
     ----------
-    parts : :obj:`dict` of :obj:`numpy.ndarray`
+    parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_vertices, n_timepoints)
 
     shape : :obj:`tuple` of :obj:`int`
+            The first dimension corresponds to the vertices:
+            the typical shape of the
+            data for a hemisphere is ``(n_vertices, n_time_points)``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.surface import PolyData
+    >>> n_time_points = 10
+    >>> n_left_vertices = 5
+    >>> n_right_vertices = 7
+    >>> left = np.ones((n_left_vertices, n_time_points))
+    >>> right = np.ones((n_right_vertices, n_time_points))
+    >>> PolyData(left=left, right=right)
+    <PolyData (12, 10)>
+    >>> PolyData(right=right)
+    <PolyData (7, 10)>
+
+    >>> PolyData()
+    Traceback (most recent call last):
+        ...
+    ValueError: Cannot create an empty PolyData. ...
     """
 
-    def __init__(self, left=None, right=None):
+    def __init__(self, left=None, right=None, squeeze_on_save=None):
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyData. "
                 "Either left or right (or both) must be provided."
             )
 
+        self.squeeze_on_save = squeeze_on_save
+
         parts = {}
-        if left is not None:
-            if not isinstance(left, np.ndarray):
-                left = load_surf_data(left)
-            parts["left"] = left
-        if right is not None:
-            if not isinstance(right, np.ndarray):
-                right = load_surf_data(right)
-            parts["right"] = right
+        for hemi, param in zip(["left", "right"], [left, right]):
+            if param is not None:
+                if not isinstance(param, np.ndarray):
+                    param = load_surf_data(param)
+                if param.ndim == 1:
+                    param = np.array([param]).T
+                    if self.squeeze_on_save is None:
+                        self.squeeze_on_save = True
+                parts[hemi] = param
+        self.parts = parts
+
+        if self.squeeze_on_save is None:
+            self.squeeze_on_save = False
+        assert isinstance(self.squeeze_on_save, bool)
+
+        self._check_parts()
+
+    def _check_parts(self):
+        parts = self.parts
+
+        for hemi in parts:
+            if parts[hemi].ndim != 2:
+                raise ValueError(
+                    f"Data arrays for keys '{hemi}' must be a 2D array.\n"
+                    f"Got {parts[hemi].ndim}"
+                )
 
         if len(parts) == 1:
-            self.parts = parts
-            self.shape = next(iter(self.parts.values())).shape
             return
 
-        if parts["left"].shape[:-1] != parts["right"].shape[:-1]:
+        if parts["left"].shape[1] != parts["right"].shape[1]:
             raise ValueError(
                 f"Data arrays for keys 'left' and 'right' "
                 "have incompatible shapes: "
                 f"{parts['left'].shape} and {parts['right'].shape}"
             )
 
-        self.parts = parts
-        first_shape = next(iter(parts.values())).shape
-        concat_dim = sum(p.shape[-1] for p in parts.values())
-        self.shape = (*first_shape[:-1], concat_dim)
+    @property
+    def shape(self):
+        """Shape of the data."""
+        if len(self.parts) == 1:
+            return next(iter(self.parts.values())).shape
+
+        second_shape = next(iter(self.parts.values())).shape[1]
+        sum_vertices = sum(p.shape[0] for p in self.parts.values())
+        return (sum_vertices, second_shape)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} {self.shape}>"
 
     def to_filename(self, filename):
         """Save data to gifti.
@@ -1321,8 +1373,12 @@ class PolyData:
 
         if "hemi-L" in filename.stem:
             data = self.parts["left"]
+            if self.squeeze_on_save:
+                data = np.squeeze(data)
         if "hemi-R" in filename.stem:
             data = self.parts["right"]
+            if self.squeeze_on_save:
+                data = np.squeeze(data)
 
         _data_to_gifti(data, filename)
 
@@ -1330,6 +1386,8 @@ class PolyData:
 class SurfaceMesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles).
+
+    .. versionadded:: 0.11.0
 
     Attributes
     ----------
@@ -1347,8 +1405,9 @@ class SurfaceMesh(abc.ABC):
 
     def __repr__(self):
         return (
-            f"<{self.__class__.__name__} "
-            f"with {getattr(self, 'n_vertices', '??')} vertices>"
+            f"<{self.__class__.__name__} with "
+            f"{self.n_vertices} vertices and "
+            f"{len(self.faces)} faces.>"
         )
 
     def to_gifti(self, gifti_file):
@@ -1364,6 +1423,8 @@ class SurfaceMesh(abc.ABC):
 
 class InMemoryMesh(SurfaceMesh):
     """A surface mesh stored as in-memory numpy arrays.
+
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1391,6 +1452,8 @@ class InMemoryMesh(SurfaceMesh):
 
 class FileMesh(SurfaceMesh):
     """A surface mesh stored in a Gifti or Freesurfer file.
+
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1442,6 +1505,8 @@ class PolyMesh:
 
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
+
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1514,9 +1579,9 @@ class PolyMesh:
 def _check_data_and_mesh_compat(mesh, data):
     """Check that mesh and data have the same keys and that shapes match.
 
-    mesh: :obj:`nilearn.surface.PolyMesh`
+    mesh : :obj:`nilearn.surface.PolyMesh`
 
-    data: :obj:`nilearn.surface.PolyData`
+    data : :obj:`nilearn.surface.PolyData`
     """
     data_keys, mesh_keys = set(data.parts.keys()), set(mesh.parts.keys())
     if data_keys != mesh_keys:
@@ -1526,7 +1591,7 @@ def _check_data_and_mesh_compat(mesh, data):
             f"Offending keys: {diff}"
         )
     for key in mesh_keys:
-        if data.parts[key].shape[-1] != mesh.parts[key].n_vertices:
+        if data.parts[key].shape[0] != mesh.parts[key].n_vertices:
             raise ValueError(
                 f"Data shape does not match number of vertices for '{key}':\n"
                 f"- data shape: {data.parts[key].shape}\n"
@@ -1545,7 +1610,7 @@ def _mesh_to_gifti(coordinates, faces, gifti_file):
     faces : :obj:`numpy.ndarray`
         a Numpy array containing the indices (into coords) of the mesh faces.
 
-    gifti_file: :obj:`str` or :obj:`pathlib.Path`
+    gifti_file : :obj:`str` or :obj:`pathlib.Path`
         name for the output gifti file.
     """
     gifti_file = Path(gifti_file)
@@ -1574,7 +1639,7 @@ def _data_to_gifti(data, gifti_file):
         - NIFTI_TYPE_FLOAT32
         See https://github.com/nipy/nibabel/blob/master/nibabel/gifti/gifti.py
 
-    gifti_file: :obj:`str` or :obj:`pathlib.Path`
+    gifti_file : :obj:`str` or :obj:`pathlib.Path`
         name for the output gifti file.
     """
     if data.dtype in [np.uint16, np.uint32, np.uint64]:
@@ -1626,7 +1691,7 @@ def _sanitize_filename(filename):
     if "hemi-L" in filename.stem and "hemi-R" in filename.stem:
         raise ValueError(
             "'filename' cannot contain both "
-            "'hemi-L' and 'hemi-R'. \n"
+            "'hemi-L' and 'hemi-R'.\n"
             f"Got: {filename}"
         )
     return filename
@@ -1634,6 +1699,8 @@ def _sanitize_filename(filename):
 
 class SurfaceImage:
     """Surface image containing meshes & data for both hemispheres.
+
+    .. versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1651,13 +1718,20 @@ class SurfaceImage:
            :obj:`pathlib.Path`
            Data for the both hemispheres.
 
+    squeeze_on_save : :obj:`bool` or None, default=None
+            If ``True`` axes of length one from the data
+            will be removed before saving them to file.
+            If ``None`` is passed,
+            then the value will be set to ``True``
+            if any of the data parts is one dimensional.
+
     Attributes
     ----------
     shape : (int, int)
         shape of the surface data array
     """
 
-    def __init__(self, mesh, data):
+    def __init__(self, mesh, data, squeeze_on_save=None):
         """Create a SurfaceImage instance."""
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
 
@@ -1671,11 +1745,17 @@ class SurfaceImage:
         if isinstance(data, PolyData):
             self.data = data
         elif isinstance(data, dict):
-            self.data = PolyData(**data)
+            self.data = PolyData(**data, squeeze_on_save=squeeze_on_save)
 
         _check_data_and_mesh_compat(self.mesh, self.data)
 
-        self.shape = self.data.shape
+    @property
+    def shape(self):
+        """Shape of the data."""
+        return self.data.shape
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {self.shape}>"
 
     @classmethod
     def from_volume(
@@ -1709,19 +1789,19 @@ class SurfaceImage:
         Examples
         --------
         >>> from nilearn.surface import SurfaceImage
-        >>> from nilearn.experimental.surface import load_fsaverage
+        >>> from nilearn.datasets import load_fsaverage
         >>> from nilearn.datasets import load_sample_motor_activation_image
 
         >>> fsavg = load_fsaverage()
         >>> vol_img = load_sample_motor_activation_image()
         >>> img = SurfaceImage.from_volume(fsavg["white_matter"], vol_img)
         >>> img
-        <SurfaceImage (20484,)>
+        <SurfaceImage (20484, 1)>
         >>> img = SurfaceImage.from_volume(
         ...     fsavg["white_matter"], vol_img, inner_mesh=fsavg["pial"]
         ... )
         >>> img
-        <SurfaceImage (20484,)>
+        <SurfaceImage (20484, 1)>
         """
         mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
         if inner_mesh is not None:
@@ -1741,6 +1821,7 @@ class SurfaceImage:
         texture_left = vol_to_surf(
             volume_img, mesh.parts["left"], **vol_to_surf_kwargs, **left_kwargs
         )
+
         texture_right = vol_to_surf(
             volume_img,
             mesh.parts["right"],
@@ -1748,9 +1829,6 @@ class SurfaceImage:
             **right_kwargs,
         )
 
-        data = PolyData(left=texture_left.T, right=texture_right.T)
+        data = PolyData(left=texture_left, right=texture_right)
 
         return cls(mesh=mesh, data=data)
-
-    def __repr__(self) -> str:
-        return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"

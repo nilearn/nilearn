@@ -295,8 +295,6 @@ def _plot_surf_plotly(
     """
     if is_plotly_installed():
         import plotly.graph_objects as go
-
-        from nilearn.plotting.displays import PlotlySurfaceFigure
     else:
         msg = "Using engine='plotly' requires that ``plotly`` is installed."
         raise ImportError(msg)
@@ -897,8 +895,8 @@ def plot_surf(
     %(cbar_tick_format)s
         Default="auto" which will select:
 
-            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
-            - '.1f' (rounded floats) with ``plotly`` engine.
+        - '%%.2g' (scientific notation) with ``matplotlib`` engine.
+        - '.1f' (rounded floats) with ``plotly`` engine.
 
         .. versionadded:: 0.7.1
 
@@ -1167,7 +1165,7 @@ def plot_surf_contours(
 
     %(output_file)s
 
-    kwargs: extra keyword arguments, optional
+    kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to
         :func:`~nilearn.plotting.plot_surf`.
 
@@ -1570,12 +1568,12 @@ def _check_view_is_valid(view) -> bool:
 
     Parameters
     ----------
-    view: :obj:`str` in {"anterior", "posterior", "medial", "lateral",
+    view : :obj:`str` in {"anterior", "posterior", "medial", "lateral",
         "dorsal", "ventral" or pair of floats (elev, azim).
 
     Returns
     -------
-    valid: True if view is valid, False otherwise.
+    valid : True if view is valid, False otherwise.
     """
     if isinstance(view, str) and (view in VALID_VIEWS):
         return True
@@ -1597,7 +1595,7 @@ def _check_views(views) -> list:
 
     Returns
     -------
-    views: :obj:`list`
+    views : :obj:`list`
         Views given as inputs.
     """
     invalid_views = [not _check_view_is_valid(view) for view in views]
@@ -1771,7 +1769,7 @@ def plot_img_on_surf(
     for arg in ("figure", "axes", "engine"):
         if arg in kwargs:
             raise ValueError(
-                "plot_img_on_surf does not accept " f"{arg} as an argument"
+                f"plot_img_on_surf does not accept {arg} as an argument"
             )
 
     stat_map = check_niimg_3d(stat_map, dtype="auto")

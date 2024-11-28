@@ -141,9 +141,16 @@ def _check_null_duration(events):
         events["duration"] == 0
     ].unique()
     if len(conditions_with_null_duration) > 0:
+        ordered_list = [
+            f"- '{x}'\n" for x in sorted(conditions_with_null_duration)
+        ]
+        ordered_list = "".join(ordered_list)
         warnings.warn(
-            "The following conditions contain events with null duration:\n"
-            f"{', '.join(conditions_with_null_duration)}."
+            (
+                "The following conditions contain events with null duration:\n"
+                f"{ordered_list}"
+            ),
+            stacklevel=4,
         )
 
 

@@ -66,16 +66,6 @@ class OLSModel:
     """
 
     def __init__(self, design):
-        """Construct instance.
-
-        Parameters
-        ----------
-        design : array-like
-            This is your design matrix.
-            Data are assumed to be column ordered with
-            observations in rows.
-
-        """
         super().__init__()
         self.initialize(design)
 
@@ -226,22 +216,19 @@ class ARModel(OLSModel):
     and sigma, a scalar nuisance parameter that
     shows up as multiplier in front of the AR(p) covariance.
 
+    Parameters
+    ----------
+    design : ndarray
+        2D array with design matrix.
+
+    rho : int or array-like
+        If int, gives order of model, and initializes rho to zeros.  If
+        ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
+        1) != ARModel(X, 1.0)``.
+
     """
 
     def __init__(self, design, rho):
-        """Initialize AR model instance.
-
-        Parameters
-        ----------
-        design : ndarray
-            2D array with design matrix.
-
-        rho : int or array-like
-            If int, gives order of model, and initializes rho to zeros.  If
-            ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
-            1) != ARModel(X, 1.0)``.
-
-        """
         if isinstance(rho, int):
             self.order = rho
             self.rho = np.zeros(self.order, np.float64)
