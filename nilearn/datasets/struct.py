@@ -120,7 +120,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Symmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSym
 
-    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSAsym
+    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cAsym
 
 
     """

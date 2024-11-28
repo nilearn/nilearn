@@ -164,6 +164,19 @@ pygments_dark_style = "stata-dark"
 # A list of warning types to suppress arbitrary warning messages
 suppress_warnings = ["image.not_readable", "config.cache"]
 
+linkcheck_allowed_redirects = {
+    # Issue redirect to PR
+    r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
+}
+
+linkcheck_ignore = [
+    # The crawler gets "Anchor not found" for GitHub anchors
+    r"../.*",
+    r"auto_examples/.*" r"https://doi.org/.*" r"https://github.com/.*",
+    r"https://www.sciencedirect.com/.*",
+    r"https://www.pnas.org/.*",
+]
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with

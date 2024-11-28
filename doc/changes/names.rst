@@ -38,7 +38,7 @@
 
 .. _Anupriya Kumari: https://github.com/anupriyakkumari
 
-.. _Ariel Rokem: http://arokem.org/
+.. _Ariel Rokem: https://arokem.org/
 
 .. _Arthur Mensch: https://www.amensch.fr/
 
@@ -86,7 +86,7 @@
 
 .. _Dimitri Papadopoulos Orfanos: https://github.com/DimitriPapadopoulos
 
-.. _Elizabeth DuPre: https://elizabeth-dupre.com/#/
+.. _Elizabeth DuPre: https://elizabeth-dupre.com
 
 .. _Elvis Dohmatob: https://dohmatob.github.io/
 

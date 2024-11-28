@@ -120,7 +120,7 @@ authors:
     email: anupriyakkumari@gmail.com
   - given-names: Ariel
     family-names: Rokem
-    website: http://arokem.org/
+    website: https://arokem.org/
     affiliation: University of Washington, Psychology, Seattle, Washington, 98107,
       USA
     email: arokem@uw.edu
@@ -230,7 +230,7 @@ authors:
     orcid: https://orcid.org/0000-0002-1242-8990
   - given-names: Elizabeth
     family-names: DuPre
-    website: https://elizabeth-dupre.com/#/
+    website: https://elizabeth-dupre.com/
     affiliation: Stanford University, Stanford, California, USA
     orcid: https://orcid.org/0000-0003-1358-196X
   - given-names: Elvis
