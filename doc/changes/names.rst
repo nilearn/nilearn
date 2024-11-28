@@ -86,7 +86,7 @@
 
 .. _Dimitri Papadopoulos Orfanos: https://github.com/DimitriPapadopoulos
 
-.. _Elizabeth DuPre: https://elizabeth-dupre.com
+.. _Elizabeth DuPre: https://elizabeth-dupre.com/
 
 .. _Elvis Dohmatob: https://dohmatob.github.io/
 
