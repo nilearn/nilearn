@@ -11,6 +11,7 @@ import numpy as np
 import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
+from nibabel.funcs import four_to_three
 from sklearn.base import clone
 
 from nilearn._utils import fill_doc, logger, stringify_path
@@ -477,6 +478,9 @@ class SecondLevelModel(BaseGLM):
 
         if isinstance(second_level_input, pd.DataFrame):
             second_level_input = _sort_input_dataframe(second_level_input)
+        if isinstance(second_level_input, Nifti1Image):
+            check_niimg(second_level_input, ensure_ndim=4)
+            second_level_input = four_to_three(second_level_input)
         self.second_level_input_ = second_level_input
         self.confounds_ = confounds
         sample_map, subjects_label = _process_second_level_input(
