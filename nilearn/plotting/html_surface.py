@@ -441,14 +441,16 @@ def view_surf(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`, \
-                or a Mesh, or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.InMemoryMesh`, \
+                or a :obj:`~nilearn.surface.PolyMesh`, or None
         Surface :term:`mesh` geometry, can be a file
         (valid formats are .gii or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
         of the :term:`mesh` vertices, the second containing the indices
         (into coords) of the :term:`mesh` :term:`faces`.
-        or a Mesh object with "coordinates" and "faces" attributes,
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with
+        "coordinates" and "faces" attributes,
         or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``surf_map``

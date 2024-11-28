@@ -44,8 +44,8 @@ def check_surface_plotting_inputs(
     if isinstance(surf_mesh, SurfaceImage):
         raise TypeError(
             "'surf_mesh' cannot be a SurfaceImage instance. ",
-            "Accepted types are: str, list of two numpy.ndarray, Mesh, "
-            "PolyMesh, or None.",
+            "Accepted types are: str, list of two numpy.ndarray, "
+            "InMemoryMesh, PolyMesh, or None.",
         )
 
     if isinstance(surf_map, SurfaceImage):

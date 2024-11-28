@@ -1004,12 +1004,14 @@ def check_mesh_and_data(mesh, data):
 
     Parameters
     ----------
-    mesh : :obj:`str` or :obj:`numpy.ndarray` or Mesh
+    mesh : :obj:`str` or :obj:`numpy.ndarray` or \
+           :obj:`~nilearn.surface.InMemoryMesh`
         Either a file containing surface :term:`mesh` geometry (valid formats
         are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
         tuple or a namedtuple with the fields "coordinates" and "faces", or a
-        Mesh object with "coordinates" and "faces" attributes.
+        :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates" and
+        "faces" attributes.
     data : :obj:`str` or :obj:`numpy.ndarray`
         Either a file containing surface data (valid format are .gii,
         .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
@@ -1019,7 +1021,7 @@ def check_mesh_and_data(mesh, data):
 
     Returns
     -------
-    mesh : Mesh
+    mesh : :obj:`~nilearn.surface.InMemoryMesh`
         Checked :term:`mesh`.
     data : :obj:`numpy.ndarray`
         Checked data.
@@ -1053,17 +1055,18 @@ def load_surf_mesh(surf_mesh):
     Parameters
     ----------
     surf_mesh : :obj:`str`, :obj:`pathlib.Path`, or \
-        :obj:`numpy.ndarray` or InMemoryMesh
+        :obj:`numpy.ndarray` or :obj:`~nilearn.surface.InMemoryMesh`
         Either a file containing surface :term:`mesh` geometry
         (valid formats are .gii .gii.gz or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated)
         or two Numpy arrays organized in a list,
         tuple or a namedtuple with the fields "coordinates" and "faces",
-        or an InMemoryMesh object with "coordinates" and "faces" attributes.
+        or an :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
+        and "faces" attributes.
 
     Returns
     -------
-    mesh : InMemoryMesh
+    mesh : :obj:`~nilearn.surface.InMemoryMesh`
         With the attributes "coordinates" and "faces", each containing a
         :obj:`numpy.ndarray`
 
