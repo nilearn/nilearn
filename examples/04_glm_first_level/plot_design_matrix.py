@@ -112,7 +112,7 @@ X3 = make_first_level_design_matrix(
 #
 # .. note::
 #
-#     The events with a duration of 0 seconds are be modelled
+#     The events with a duration of 0 seconds are be modeled
 #     using a 'delta function' in the event-related design matrix.
 #
 import matplotlib.pyplot as plt
