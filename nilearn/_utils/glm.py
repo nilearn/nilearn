@@ -5,7 +5,14 @@ from nilearn._utils import stringify_path
 
 
 def check_and_load_tables(tables_, var_name):
-    """Check tables can be loaded in DataFrame to raise error if necessary."""
+    """Check tables can be loaded in DataFrame to raise error if necessary.
+
+    tables_ : list of str or pathlib.Path to a TSV or CSV \
+              or pd.DataFrame or np.ndarray
+
+    var_name : str
+               name of the `tables_` passed, to print in the error message
+    """
     tables = []
     for table_idx, table in enumerate(tables_):
         table = stringify_path(table)
@@ -19,7 +26,7 @@ def check_and_load_tables(tables_, var_name):
         else:
             raise TypeError(
                 f"{var_name} can only be a pandas DataFrame, "
-                "a Path object or a string. "
+                "a Path object or a string, or a numpy array. "
                 f"A {type(table)} was provided at idx {table_idx}"
             )
     return tables
