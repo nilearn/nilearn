@@ -1066,3 +1066,11 @@ def test_polydata_error():
 def test_polymesh_error():
     with pytest.raises(ValueError, match="Either left or right"):
         PolyMesh(left=None, right=None)
+
+
+def test_inmemorymesh_index_error():
+    mesh = generate_surf()
+    with pytest.raises(
+        IndexError, match="Use 0 for coordinates and 1 for faces"
+    ):
+        mesh[2]
