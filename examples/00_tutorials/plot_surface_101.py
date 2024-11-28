@@ -217,5 +217,7 @@ plotting.show()
 #   format, see
 #   :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`
 #
-# * For performing first-level GLM analysis on surface data, see `this \
-#   example <../04_glm_first_level/plot_localizer_surface_analysis.html>`_.
+# * For performing first-level GLM analysis on surface data,
+#   see this example
+#   :ref:`sphx_glr_auto_examples_04_glm_first_level\
+#   _plot_localizer_surface_analysis.py`.

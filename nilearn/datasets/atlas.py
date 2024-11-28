@@ -1711,7 +1711,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     -----
     Licence : unknown
 
-    See http://mialab.mrn.org/data/index.html for more information
+    See https://trendscenter.org/data/ for more information
     on this dataset.
 
     """

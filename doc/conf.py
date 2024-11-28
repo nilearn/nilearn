@@ -165,38 +165,38 @@ pygments_dark_style = "stata-dark"
 suppress_warnings = ["image.not_readable", "config.cache"]
 
 linkcheck_allowed_redirects = {
+    "https://db.humanconnectome.org/": r"https://db.humanconnectome.org/app/template/.*",
+    r"http://humanconnectome.org/.*": r"https://store.humanconnectome.org/.*",
     # Issue redirect to PR
     r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
     # OSF downloads
     r"https://osf.io/.*/download": r"https://files.osf.io/.*",
     # doi redirect
     "https://doi.org/": r"https://.*",
-    "https://db.humanconnectome.org/": r"https://db.humanconnectome.org/app/template/.*",
-    r"http://humanconnectome.org/.*": r"https://store.humanconnectome.org/.*",
 }
 
 linkcheck_ignore = [
-    # r"../.*",
-    # r"auto_examples/.*",
-    "https://pkgs.org/search/.*",
-    "https://pages.saclay.inria.fr/bertrand.thirion/",
     r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
-    "https://fcon_1000.projects.nitrc.org/fcpClassic/FcpTable.html",
+    r"https://fcon_1000.projects.nitrc.org/.*",
     "http://brainomics.cea.fr/localizer/",
     "https://github.com/nilearn/nilearn/issues/new/choose",
-    "https://fcon_1000.projects.nitrc.org/indi/enhanced/",
+    "https://pages.saclay.inria.fr/bertrand.thirion/",
+    "https://pages.stern.nyu.edu/²~wgreene/Text/econometricanalysis.htm",
+    # those are needed because figure cannot take sphinx gallery reference
+    # as target
+    r"../auto_examples/.*html",
+    r"auto_examples/.*html",
+    "https://pkgs.org/search/.*",
     # below are publishers that do not like doi redirects
     # and give a 403 Client Error: Forbidden for url
-    r"https://pnas.org/doi.*",
-    r"https://doi.org/10.1073/.*" r"https://onlinelibrary.wiley.com/doi/.*",
-    r"https://doi.org/10.1111/.*" r"https://doi.org/10.1002/.*",
-    r"https://direct.mit.edu/.*",
-    r"https://www.science.org/doi/.*",
-    r"https://journals.physiology.org/doi/.*",
-    r"https://doi.org/10.1126/.*",
-    r"https://www.tandfonline.com/doi/.*",
+    r"https://doi.org/10.1002/.*",
+    r"https://doi.org/10.1073/.*",
     r"https://doi.org/10.1080/.*",
-    r"https://.*academic.oup.com.*",
+    r"https://doi.org/10.1093/.*",
+    r"https://doi.org/10.1111/.*",
+    r"https://doi.org/10.1126/.*",
+    r"https://doi.org/10.1152/.*",
+    r"https://doi.org/10.1162/.*",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]

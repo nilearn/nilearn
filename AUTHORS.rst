@@ -230,7 +230,7 @@ project, funded by the French `Investissement d'Avenir
 `Yasmin Mzayek`_ and `Nicolas Gensollen`_ were paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
 |HBP logo|.
 
-NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
+NiLearn is also supported by `DigiCosme <https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/>`_
 |digicosme logo| and `DataIA <https://www.dataia.eu/en>`_ |dataia_logo|.
 
 .. _citing:
