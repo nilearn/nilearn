@@ -171,24 +171,39 @@ linkcheck_allowed_redirects = {
     r"https://osf.io/.*/download": r"https://files.osf.io/.*",
     # doi redirect
     "https://doi.org/": r"https://.*",
+    "https://db.humanconnectome.org/": r"https://db.humanconnectome.org/app/template/.*",
+    r"http://humanconnectome.org/.*": r"https://store.humanconnectome.org/.*",
 }
 
 linkcheck_ignore = [
     # r"../.*",
     # r"auto_examples/.*",
-    # r"https://github.com/.*",
-    # r"https://www.sciencedirect.com/.*",
     "https://pkgs.org/search/.*",
+    "https://pages.saclay.inria.fr/bertrand.thirion/",
+    r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
+    "https://fcon_1000.projects.nitrc.org/fcpClassic/FcpTable.html",
+    "http://brainomics.cea.fr/localizer/",
+    "https://github.com/nilearn/nilearn/issues/new/choose",
+    "https://fcon_1000.projects.nitrc.org/indi/enhanced/",
     # below are publishers that do not like doi redirects
     # and give a 403 Client Error: Forbidden for url
     r"https://pnas.org/doi.*",
-    r"https://onlinelibrary.wiley.com/doi.*",
-    r"https://direct.mit.edu.*",
-    r"https://www.science.org/doi.*",
-    r"https://journals.physiology.org/doi.*",
-    r"https://www.tandfonline.com/doi.*",
+    r"https://doi.org/10.1073/.*" r"https://onlinelibrary.wiley.com/doi/.*",
+    r"https://doi.org/10.1111/.*" r"https://doi.org/10.1002/.*",
+    r"https://direct.mit.edu/.*",
+    r"https://www.science.org/doi/.*",
+    r"https://journals.physiology.org/doi/.*",
+    r"https://doi.org/10.1126/.*",
+    r"https://www.tandfonline.com/doi/.*",
+    r"https://doi.org/10.1080/.*",
+    r"https://.*academic.oup.com.*",
 ]
 
+linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
+
+linkcheck_allow_unauthorized = True
+
+linkcheck_report_timeouts_as_broken = False
 
 # -- Options for HTML output -------------------------------------------------
 

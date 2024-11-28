@@ -231,7 +231,7 @@ project, funded by the French `Investissement d'Avenir
 |HBP logo|.
 
 NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
-|digicosme logo| and `DataIA <https://dataia.eu/en>`_ |dataia_logo|.
+|digicosme logo| and `DataIA <https://www.dataia.eu/en>`_ |dataia_logo|.
 
 .. _citing:
 

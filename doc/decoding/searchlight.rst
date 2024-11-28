@@ -81,8 +81,8 @@ cross-validation is used.
 
 Cross-validation can be defined using the "cv" argument. As it
 is computationally costly, *K*-Fold cross validation with *K* = 3 is set as the
-default. A :sklearn:`scikit-learn cross-validation generator
-<modules/classes.html#splitter-classes>` can also
+default.
+A :sklearn:`scikit-learn cross-validation generator <api/sklearn.model_selection.html#splitters>` can also
 be passed to set a specific type of cross-validation.
 
 Leave-one-run-out cross-validation (LOROCV) is a common approach for searchlights.

@@ -380,7 +380,7 @@ References
     https://fmriprep.org/en/stable/
 
 .. _`FREM`:
-    https://www.sciencedirect.com/science/article/abs/pii/S1053811917308182
+    https://doi.org/10.1016/j.neuroimage.2017.10.005
 
 .. _`FWHM`:
     https://en.wikipedia.org/wiki/Full_width_at_half_maximum

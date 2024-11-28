@@ -26,7 +26,6 @@
 
 .. _Alisha Kodibagkar: https://github.com/alishakodibagkar/
 
-.. _Amadeus Kanaan: https://github.com/amadeuskanaan
 
 .. _Ana Luisa Pinho: https://github.com/alpinho
 
@@ -40,7 +39,7 @@
 
 .. _Ariel Rokem: https://arokem.org/
 
-.. _Arthur Mensch: https://www.amensch.fr/
+.. _Arthur Mensch: https://github.com/arthurmensch
 
 .. _Aswin Vijayan: https://github.com/vaswin0
 
@@ -50,7 +49,7 @@
 
 .. _Bertrand Thirion: https://pages.saclay.inria.fr/bertrand.thirion/
 
-.. _Binh Nguyen: https://www.imo.universite-paris-saclay.fr/~tbnguyen/
+.. _Binh Nguyen: https://tbng.github.io/
 
 .. _Caglar Cakan: https://github.com/caglorithm
 
@@ -72,7 +71,7 @@
 
 .. _Céline Delettre: https://github.com/celinede
 
-.. _Dan Gale: https://danjgale.github.io/
+.. _Dan Gale: https://github.com/danjgale
 
 .. _Daniel Gomez: https://github.com/dangom
 
@@ -296,7 +295,7 @@
 
 .. _Tamer Gezici: https://github.com/TamerGezici
 
-.. _Tarun Samanta: https://github.com/tarunsamanta2k20
+.. _Tarun Samanta: https://github.com/SamantaTarun
 
 .. _Taylor Salo: https://tsalo.github.io/
 

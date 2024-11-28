@@ -55,7 +55,7 @@ References
 .. footbibliography::
 
 For more information on this dataset's structure, see
-http://www.gin.cnrs.fr/AAL-217?lang=en
+https://www.gin.cnrs.fr/en/tools/aal/
 
 License
 -------

@@ -94,7 +94,6 @@ authors:
     orcid: https://orcid.org/0000-0002-0951-242X
   - given-names: Amadeus
     family-names: Kanaan
-    website: https://github.com/amadeuskanaan
   - given-names: Ana Luisa
     family-names: Pinho
     website: https://github.com/alpinho
@@ -124,7 +123,7 @@ authors:
     orcid: https://orcid.org/0000-0003-0679-1985
   - given-names: Arthur
     family-names: Mensch
-    website: https://www.amensch.fr/
+    website: https://github.com/arthurmensch
     orcid: https://orcid.org/0000-0001-7866-0461
   - given-names: Aswin
     family-names: Vijayan
@@ -145,7 +144,7 @@ authors:
     orcid: https://orcid.org/0000-0001-5018-7895
   - given-names: Binh
     family-names: Nguyen
-    website: https://www.imo.universite-paris-saclay.fr/~tbnguyen/
+    website: https://tbng.github.io/
   - given-names: Caglar
     family-names: Cakan
     website: https://github.com/caglorithm
@@ -193,7 +192,7 @@ authors:
     website: https://github.com/celinede
   - given-names: Dan
     family-names: Gale
-    website: https://danjgale.github.io/
+    website: https://github.com/danjgale
     affiliation: Centre for Neuroscience Studie, Queen University, Kingston, Ontario, Canada
   - given-names: Daniel
     family-names: Gomez
@@ -698,7 +697,7 @@ authors:
     affiliation: Bilkent University
   - given-names: Tarun
     family-names: Samanta
-    website: https://github.com/tarunsamanta2k20
+    website: https://github.com/SamantaTarun
     affiliation: Acharya Prafulla Chandra College
     email: tarunsamanta77@gmail.com
     orcid: https://orcid.org/0000-0003-1630-8993
