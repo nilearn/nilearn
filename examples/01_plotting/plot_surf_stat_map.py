@@ -120,7 +120,7 @@ for i in range(timeseries.shape[0]):
     stat_map[i] = stats.pearsonr(seed_timeseries, timeseries[i])[0]
 
 # Re-mask previously masked nodes (medial wall)
-medial_wall_vertices = np.where(np.mean(timeseries, axis=1) == 0)
+medial_wall_vertices = np.mean(timeseries, axis=1) == 0
 stat_map[medial_wall_vertices] = 0
 
 # %%
