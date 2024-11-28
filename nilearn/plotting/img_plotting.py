@@ -1944,7 +1944,7 @@ def plot_carpet(
     vmin=None,
     vmax=None,
     title=None,
-    cmap="grey",
+    cmap="gray",
     cmap_labels=plt.cm.gist_ncar,
     standardize=True,
 ):
