@@ -7,7 +7,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-from nilearn import surface
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.plotting import cm
@@ -20,7 +19,17 @@ from nilearn.plotting.js_plotting_utils import (
     mesh_to_plotly,
     to_color_strings,
 )
-from nilearn.surface import PolyMesh, SurfaceImage
+from nilearn.surface import (
+    PolyMesh,
+    SurfaceImage,
+    load_surf_data,
+    load_surf_mesh,
+    vol_to_surf,
+)
+from nilearn.surface.surface import (
+    check_mesh_and_data,
+    check_mesh_is_fsaverage,
+)
 
 
 class SurfaceView(HTMLDocument):  # noqa: D101
@@ -41,7 +50,7 @@ def get_vertexcolor(
         bg_data = np.ones(len(surf_map)) * 0.5
         bg_vmin, bg_vmax = 0, 1
     else:
-        bg_data = np.copy(surface.load_surf_data(bg_map))
+        bg_data = np.copy(load_surf_data(bg_map))
 
     # scale background map if need be
     bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
@@ -185,9 +194,9 @@ def _full_brain_info(
     if vol_to_surf_kwargs is None:
         vol_to_surf_kwargs = {}
     info = {}
-    mesh = surface.surface.check_mesh_is_fsaverage(mesh)
+    mesh = check_mesh_is_fsaverage(mesh)
     surface_maps = {
-        h: surface.vol_to_surf(
+        h: vol_to_surf(
             volume_img,
             mesh[f"pial_{h}"],
             inner_mesh=mesh.get(f"white_{h}", None),
@@ -205,7 +214,7 @@ def _full_brain_info(
     )
 
     for hemi, surf_map in surface_maps.items():
-        curv_map = surface.load_surf_data(mesh[f"curv_{hemi}"])
+        curv_map = load_surf_data(mesh[f"curv_{hemi}"])
         bg_map = np.sign(curv_map)
 
         info[f"pial_{hemi}"] = mesh_to_plotly(mesh[f"pial_{hemi}"])
@@ -566,15 +575,13 @@ def view_surf(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
     )
 
-    surf_mesh = surface.load_surf_mesh(surf_mesh)
+    surf_mesh = load_surf_mesh(surf_mesh)
     if surf_map is None:
         surf_map = np.ones(len(surf_mesh[0]))
     else:
-        surf_mesh, surf_map = surface.surface.check_mesh_and_data(
-            surf_mesh, surf_map
-        )
+        surf_mesh, surf_map = check_mesh_and_data(surf_mesh, surf_map)
     if bg_map is not None:
-        _, bg_map = surface.surface.check_mesh_and_data(surf_mesh, bg_map)
+        _, bg_map = check_mesh_and_data(surf_mesh, bg_map)
     info = _one_mesh_info(
         surf_map=surf_map,
         surf_mesh=surf_mesh,
