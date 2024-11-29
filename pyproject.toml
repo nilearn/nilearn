@@ -97,6 +97,22 @@ Homepage = "https://nilearn.github.io"
 ignore-words = ".github/codespell_ignore_words.txt"
 skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results"
 
+[tool.doc8]
+allow-long-titles = true
+ignore = [
+    "D000",
+    "D003"
+]
+ignore-path = [
+    "*/templates/class.rst",
+    "*/*changes/*.rst",
+    "*/modules/generated/*",
+    "AUTHORS.rst",
+    "/*_build/*",
+    "*/modules/description/*"
+]
+max-line-length = 120
+
 [tool.hatch.build.hooks.vcs]
 version-file = "nilearn/_version.py"
 

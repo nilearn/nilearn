@@ -10,7 +10,8 @@ The SpaceNet decoder
 :class:`nilearn.decoding.SpaceNetRegressor` and :class:`nilearn.decoding.SpaceNetClassifier`
 implements spatial penalties which improve brain decoding power as well as decoder maps:
 
-* penalty="tvl1": priors inspired from TV (Total Variation) [:footcite:t:`Michel2011`], TV-L1 [:footcite:t:`Baldassarre2012`], [:footcite:t:`Gramfort2013`].
+* penalty="tvl1": priors inspired from TV (Total Variation)
+[:footcite:t:`Michel2011`], TV-L1 [:footcite:t:`Baldassarre2012`], [:footcite:t:`Gramfort2013`].
 
 * penalty="graph-net": GraphNet prior [:footcite:t:`Grosenick2013`].
 
@@ -34,7 +35,8 @@ Under the hood, a few heuristics are used to make things a bit faster. These inc
   for the next regularization (smaller) value on the regularization
   grid.
 
-**Implementation:** See [:footcite:t:`Dohmatob2015`] and [:footcite:t:`Dohmatob2014`] for technical details regarding the implementation of SpaceNet.
+**Implementation:** See [:footcite:t:`Dohmatob2015`] and [:footcite:t:`Dohmatob2014`]
+for technical details regarding the implementation of SpaceNet.
 
 Related example
 ===============

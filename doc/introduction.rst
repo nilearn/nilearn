@@ -5,7 +5,8 @@ Introduction
 What is ``nilearn``?
 ====================
 
-``nilearn`` is a package that makes it easy to use advanced machine learning techniques to analyze data acquired with MRI machines.
+``nilearn`` is a package that makes it easy to use advanced machine learning techniques
+to analyze data acquired with MRI machines.
 In particular, underlying machine learning problems include
 :ref:`decoding brain data <decoding>`,
 computing :ref:`brain parcellations <parcellating_brain>`,
@@ -259,16 +260,17 @@ Finding help
 On top of this guide, there is a lot of content available outside of ``nilearn``
 that could be of interest to new-comers:
 
-1. `An introduction to fMRI <https://www.cs.mtsu.edu/~xyang/fMRIHandBook.pdf>`_ by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
+1.  `An introduction to fMRI <https://www.cs.mtsu.edu/~xyang/fMRIHandBook.pdf>`_
+    by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
 
-2. (For French readers) `An introduction to cognitive neuroscience <https://psy3018.github.io/intro.html>`_ given at the University of Montréal.
+2.  The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.
+    While not specific to neuroimaging, it is often a recommended read.
 
-3. The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.  While not specific to neuroimaging, it is often a recommended read.
-
-4. (For Python beginners) A quick and gentle introduction to scientific computing with Python with the `scientififc Python lectures <https://lectures.scientific-python.org/>`_.
-Moreover, you can use ``nilearn`` with `Jupyter <https://jupyter.org/>`_ notebooks or
-`IPython <https://ipython.org/>`_ sessions. They provide an interactive
-environment that greatly facilitates debugging and visualisation.
+3.  (For Python beginners) A quick and gentle introduction to scientific computing
+    with Python with the `scientififc Python lectures <https://lectures.scientific-python.org/>`_.
+    Moreover, you can use ``nilearn`` with `Jupyter <https://jupyter.org/>`_ notebooks or
+    `IPython <https://ipython.org/>`_ sessions. They provide an interactive
+    environment that greatly facilitates debugging and visualisation.
 
 
 Besides, you can find help on :neurostars:`neurostars <>` for questions

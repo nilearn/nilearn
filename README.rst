@@ -35,9 +35,13 @@
 nilearn
 =======
 
-Nilearn enables approachable and versatile analyses of brain volumes. It provides statistical and machine-learning tools, with instructive documentation & friendly community.
+Nilearn enables approachable and versatile analyses of brain volumes.
+It provides statistical and machine-learning tools, with instructive documentation & friendly community.
 
-It supports general linear model (GLM) based analysis and leverages the `scikit-learn <https://scikit-learn.org>`_ Python toolbox for multivariate statistics with applications such as predictive modelling, classification, decoding, or connectivity analysis.
+It supports general linear model (GLM) based analysis
+and leverages the `scikit-learn <https://scikit-learn.org>`_ Python toolbox
+for multivariate statistics with applications
+such as predictive modelling, classification, decoding, or connectivity analysis.
 
 Important links
 ===============
@@ -65,7 +69,8 @@ With ``venv``:
     python3 -m venv /<path_to_new_env>
     source /<path_to_new_env>/bin/activate
 
-Windows users should change the last line to ``\<path_to_new_env>\Scripts\activate.bat`` in order to activate their virtual environment.
+Windows users should change the last line to ``\<path_to_new_env>\Scripts\activate.bat``
+in order to activate their virtual environment.
 
 With ``conda``:
 

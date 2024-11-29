@@ -82,3 +82,10 @@ repos:
         args: [--fix, --show-fixes]
     # Run the formatter.
     -   id: ruff-format
+
+
+-   repo: https://github.com/PyCQA/doc8
+    rev: v1.0.0
+    hooks:
+    -   id: doc8
+        args: [--config=pyproject.toml, nilearn]

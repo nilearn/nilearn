@@ -237,9 +237,14 @@ information.
 Linking total and direct interactions at the group level
 ========================================================
 
-Individual connectivity patterns reflect both on covariances and inverse covariances, but in different ways. For multiple subjects, mean covariance (or correlation) and group sparse inverse covariance provide different insights into the connectivity at the group level.
+Individual connectivity patterns reflect both on covariances and inverse covariances, but in different ways.
+For multiple subjects, mean covariance (or correlation)
+and group sparse inverse covariance provide different insights into the connectivity at the group level.
 
-We can go one step further by coupling the information from total (pairwise) and direct interactions in a unique group connectome. This can be done through a geometrical framework allowing to measure interactions in a common space called **tangent space** `[Varoquaux et al, MICCAI 2010] <https://hal.inria.fr/inria-00512417/>`_.
+We can go one step further by coupling the information from total (pairwise)
+and direct interactions in a unique group connectome.
+This can be done through a geometrical framework allowing to measure interactions
+in a common space called **tangent space** `[Varoquaux et al, MICCAI 2010] <https://hal.inria.fr/inria-00512417/>`_.
 
 In nilearn, this is implemented in
 :class:`nilearn.connectome.ConnectivityMeasure`:
@@ -256,7 +261,10 @@ The group connectivity is computed using all the subjects timeseries.:
      connectivities = measure.fit([time_series_1, time_series_2, ...])
      group_connectivity = measure.mean_
 
-Deviations from this mean in the tangent space are provided in the connectivities array and can be used to compare different groups/runs. In practice, the tangent measure can outperform the correlation and partial correlation measures, especially for noisy or heterogeneous data.
+Deviations from this mean in the tangent space are provided in the connectivities array
+and can be used to compare different groups/runs.
+In practice, the tangent measure can outperform the correlation
+and partial correlation measures, especially for noisy or heterogeneous data.
 
 
 .. topic:: **Full example**
