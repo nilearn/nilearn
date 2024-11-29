@@ -44,12 +44,12 @@ a time series of positive real number representing the MRI signal, sampled at th
   are registered to a standard 'template' brain image (its voxels).
   One often used standard template is the MNI152 template from the Montreal Neurological Institute.
   Once this is done, the coordinates of a :term:`voxel`
-   are in the same space as the template and can be used to estimate its brain location
-   using brain atlases based on that same template.
-   As previously mentioned, the nilearn package does not perform spatial preprocessing;
-   it only does statistical analyses on the voxel time series.
-   For preprocessing functions, users are referred to `Nipype <https://nipype.readthedocs.io/en/latest/>`_
-   or `fMRIPrep <https://fmriprep.readthedocs.io/en/stable/>`_.
+  are in the same space as the template and can be used to estimate its brain location
+  using brain atlases based on that same template.
+  As previously mentioned, the nilearn package does not perform spatial preprocessing;
+  it only does statistical analyses on the voxel time series.
+  For preprocessing functions, users are referred to `Nipype <https://nipype.readthedocs.io/en/latest/>`_
+  or `fMRIPrep <https://fmriprep.readthedocs.io/en/stable/>`_.
 
 fMRI data modelling
 -------------------

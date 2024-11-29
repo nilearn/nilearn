@@ -200,7 +200,8 @@ The repository should be checked and updated in preparation for the release.
 One thing that **must** be done before the release is made is
 to update ``deprecated``, ``versionchanged`` and ``versionadded`` directives
 from the current ``[x.y.z].dev`` tag to the new version number.
-These directives are added in a function's docstring to indicate the version number, when, say, a new parameter is added or deprecated.
+These directives are added in a function's docstring to indicate the version number,
+when, say, a new parameter is added or deprecated.
 
 For example, if a parameter ``param2`` was added in version ``x.y.z``, the docstring should be updated to:
 
@@ -472,7 +473,8 @@ Post-release
 At this point, the release has been made.
 
 We also need to create a new file ``doc/changes/latest.rst`` with a title
-and the usual ``New``, ``Enhancements``, ``Bug Fixes``, and ``Changes`` sections for the version currently under development:
+and the usual ``New``, ``Enhancements``, ``Bug Fixes``, and ``Changes``
+sections for the version currently under development:
 
 .. code-block:: RST
 

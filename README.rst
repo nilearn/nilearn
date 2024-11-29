@@ -120,12 +120,14 @@ For more information and ways to engage with the Nilearn team see
 Dependencies
 ============
 
-The required dependencies to use the software are listed in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
+The required dependencies to use the software are listed
+in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
 
 If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.3.0 is required.
 
 Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
-In order to use the plotly engine in these functions, you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
+In order to use the plotly engine in these functions,
+you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
 
 If you want to run the tests, you need pytest >= 6.0.0 and pytest-cov for coverage reporting.
 

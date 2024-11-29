@@ -19,7 +19,8 @@ HRF models
 Nilearn offers a few different :term:`HRF` models including the commonly used double-gamma :term:`SPM` model ('spm')
 and the model shape proposed by G. Glover ('glover'), both allowing the option of adding time and
 dispersion derivatives. The addition of these derivatives allows to better model any uncertainty in
-timing information. In addition, an :term:`FIR` (finite impulse response, 'fir') model of the :term:`HRF` is also available.
+timing information.
+In addition, an :term:`FIR` (finite impulse response, 'fir') model of the :term:`HRF` is also available.
 
 In order to visualize the predicted regressor prior to plugging it into the linear model, use the
 function :func:`nilearn.glm.first_level.compute_regressor`, or explore the :term:`HRF` plotting

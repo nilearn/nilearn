@@ -11,7 +11,7 @@ The SpaceNet decoder
 implements spatial penalties which improve brain decoding power as well as decoder maps:
 
 * penalty="tvl1": priors inspired from TV (Total Variation)
-[:footcite:t:`Michel2011`], TV-L1 [:footcite:t:`Baldassarre2012`], [:footcite:t:`Gramfort2013`].
+  [:footcite:t:`Michel2011`], TV-L1 [:footcite:t:`Baldassarre2012`], [:footcite:t:`Gramfort2013`].
 
 * penalty="graph-net": GraphNet prior [:footcite:t:`Grosenick2013`].
 
@@ -21,7 +21,8 @@ sparse (i.e regression coefficients are zero everywhere, except at
 predictive :term:`voxels<voxel>`) and structured (blobby). The superiority of TV-L1
 over methods without structured priors like the Lasso, :term:`SVM`, :term:`ANOVA`,
 Ridge, etc. for yielding more interpretable maps and improved
-prediction scores is now well established [:footcite:t:`Baldassarre2012`], [:footcite:t:`Gramfort2013`], [:footcite:t:`Grosenick2013`].
+prediction scores is now well established [:footcite:t:`Baldassarre2012`],
+[:footcite:t:`Gramfort2013`], [:footcite:t:`Grosenick2013`].
 
 Note that TV-L1 prior leads to a difficult optimization problem, and so can be slow to run.
 Under the hood, a few heuristics are used to make things a bit faster. These include:

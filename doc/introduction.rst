@@ -43,14 +43,14 @@ First steps with nilearn
 At this stage, you should have :ref:`installed <quickstart>` ``nilearn`` and opened a Jupyter notebook
 or an IPython / Python session.  First, load ``nilearn`` with
 
-.. code-block:: default
+.. code-block:: python
 
     import nilearn
 
 ``nilearn`` comes in with some data that are commonly used in neuroimaging.
 For instance, it comes with volumic template images of brains such as MNI:
 
-.. code-block:: default
+.. code-block:: python
 
     print(nilearn.datasets.MNI152_FILE_PATH)
 
@@ -63,7 +63,7 @@ Output:
 
 Let's have a look at this image:
 
-.. code-block:: default
+.. code-block:: python
 
     nilearn.plotting.plot_img(nilearn.datasets.MNI152_FILE_PATH)
 

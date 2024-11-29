@@ -72,8 +72,8 @@ This can put a heavy burden on :ref:`core_devs` when a lot of
 :nilearn-gh:`pull requests <pulls>` are opened at the same time.
 We welcome help in reviewing :nilearn-gh:`pull requests <pulls>` from any
 community member.
-We do not expect community members to be experts in all changes included in
-:nilearn-gh:`pull requests <pulls>`, and we encourage you to concentrate on those code changes that you feel comfortable with.
+We do not expect community members to be experts in all changes included in :nilearn-gh:`pull requests <pulls>`,
+and we encourage you to concentrate on those code changes that you feel comfortable with.
 As always, more eyes on a code change means that the code is more likely to work in a wide variety of contexts!
 
 Contribute code

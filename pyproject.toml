@@ -99,17 +99,13 @@ skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv
 
 [tool.doc8]
 allow-long-titles = true
-ignore = [
-    "D000",
-    "D003"
-]
 ignore-path = [
-    "*/templates/class.rst",
-    "*/*changes/*.rst",
+    "*/changes/*.rst",
     "*/modules/generated/*",
-    "AUTHORS.rst",
-    "/*_build/*",
-    "*/modules/description/*"
+    "*/templates/*.rst",
+    "doc/includes/*",
+    "doc/authors.rst",
+    "AUTHORS.rst"
 ]
 max-line-length = 120
 

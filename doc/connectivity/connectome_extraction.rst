@@ -45,7 +45,7 @@ estimator** is necessary. The GraphicalLasso, implemented in scikit-learn's
 estimator :class:`sklearn.covariance.GraphicalLassoCV` is a good, simple
 solution. To use it, you need to create an estimator object:
 
-.. code-block:: default
+.. code-block:: python
 
      from sklearn.covariance import GraphicalLassoCV
      estimator = GraphicalLassoCV()
@@ -53,7 +53,7 @@ solution. To use it, you need to create an estimator object:
 And then you can fit it on the activation time series, for instance
 extracted in :ref:`the previous section <functional_connectomes>`:
 
-.. code-block:: default
+.. code-block:: python
 
      estimator.fit(time_series)
 
@@ -61,7 +61,7 @@ The covariance matrix and inverse-covariance matrix (precision matrix)
 can be found respectively in the ``covariance_`` and ``precision_`` attribute
 of the estimator:
 
-.. code-block:: default
+.. code-block:: python
 
      estimator.covariance_
      estimator.precision_
@@ -127,14 +127,14 @@ For this, nilearn provides the
 estimator. Its usage is similar to the GraphicalLassoCV object, but it takes
 a list of time series:
 
-.. code-block:: default
+.. code-block:: python
 
      estimator.fit([time_series_1, time_series_2, ...])
 
 And it provides one estimated covariance and inverse-covariance
 (precision) matrix per time-series: for the first one:
 
-.. code-block:: default
+.. code-block:: python
 
      estimator.covariances_[0]
      estimator.precisions_[0]
@@ -249,14 +249,14 @@ in a common space called **tangent space** `[Varoquaux et al, MICCAI 2010] <http
 In nilearn, this is implemented in
 :class:`nilearn.connectome.ConnectivityMeasure`:
 
-.. code-block:: default
+.. code-block:: python
 
      measure = ConnectivityMeasure(kind='tangent')
 
 The group connectivity is computed using all the subjects timeseries.:
 
 
-.. code-block:: default
+.. code-block:: python
 
      connectivities = measure.fit([time_series_1, time_series_2, ...])
      group_connectivity = measure.mean_
