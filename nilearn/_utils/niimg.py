@@ -239,6 +239,10 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
     path_to_niimg = Path(niimg_rep)
     if not shorten:
         return str(path_to_niimg)
+    # If the name of the file itself    
+    # is larger than truncate,
+    # then shorten the name only
+    # else add some folder structure if available
     if len(path_to_niimg.name) > truncate:
         return f"{path_to_niimg.name[: (truncate - 2)]}..."
     rep = path_to_niimg.name
