@@ -137,9 +137,8 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
     invalid_keys = input_keys - valid_keys
     if len(invalid_keys) > 0:
         raise TypeError(
-            "{}: unexpected keyword argument(s): {}".format(
-                sys._getframe().f_code.co_name, " ".join(invalid_keys)
-            )
+            f"{sys._getframe().f_code.co_name}: "
+            f"unexpected keyword argument(s): {' '.join(invalid_keys)}"
         )
     create_files = kwargs.get("create_files", True)
     use_wildcards = kwargs.get("use_wildcards", False)
