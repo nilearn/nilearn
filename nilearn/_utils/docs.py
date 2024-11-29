@@ -752,6 +752,7 @@ second_level_input : :obj:`list` of \
     :class:`pandas.DataFrame` or \
     :obj:`list` of 3D Niimg-like objects or \
     4D Niimg-like objects or \
+    :obj:`list` of :class:`~nilearn.surface.SurfaceImage` objects or \
     :obj:`pandas.Series` of Niimg-like objects.
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
@@ -773,6 +774,7 @@ second_level_input : :obj:`list` of \
       if not provided, will correspond to the sorted `subject_label` column.
 
     - If a :obj:`list` of Niimg-like objects
+      or :class:`~nilearn.surface.SurfaceImage` objects
       then this is taken literally as Y for the model fit
       and `design_matrix` must be provided.
 
