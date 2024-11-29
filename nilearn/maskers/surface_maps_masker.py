@@ -148,12 +148,6 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             "summary": {},
         }
 
-    @property
-    def _maps_data(self):
-        """Return data of maps image concatenated over hemispheres."""
-        all_maps = [x.ravel() for x in self.maps_img.data.parts.values()]
-        return np.concatenate(all_maps)
-
     def fit(self, img=None, y=None):
         """Prepare signal extraction from regions.
 
