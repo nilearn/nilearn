@@ -23,13 +23,13 @@ from .rena_clustering import (
 
 
 def _connectivity_surface(mask_img):
-    """Compute connectivity matrix for surface data, to be used for
-    Agglomerative Clustering method.
+    """Compute connectivity matrix for surface data, used for Agglomerative
+    Clustering method.
 
     Based on surface part of
     :func:`~nilearn.regions.rena_clustering._weighted_connectivity_graph`.
     The difference is that this function returns a non-weighted connectivity
-    matrix with diagonal set to 1.
+    matrix with diagonal set to 1 (because that's what use with volumes).
 
     Parameters
     ----------
@@ -42,14 +42,34 @@ def _connectivity_surface(mask_img):
         Connectivity or adjacency matrix for the mask.
 
     """
-    n_vertices = mask_img.mesh.n_vertices
+    # total True vertices in the mask
+    n_vertices = (
+        mask_img.data.parts["left"].sum() + mask_img.data.parts["right"].sum()
+    )
     connectivity = coo_matrix((n_vertices, n_vertices))
+    len_previous_mask = 0
     for part in mask_img.mesh.parts:
         face_part = mask_img.mesh.parts[part].faces
-        mask_part = mask_img.data.parts[part][0]
-        edges, _ = _make_edges_surface(face_part, mask_part)
+        mask_part = mask_img.data.parts[part][:, 0]
+        edges, edge_mask = _make_edges_surface(face_part, mask_part)
+        # keep only the edges that are in the mask
+        edges = edges[:, edge_mask]
+        # Reorder the indices of the graph
+        max_index = edges.max()
+        order = np.searchsorted(
+            np.unique(edges.ravel()), np.arange(max_index + 1)
+        )
+        # increasing the order by the number of vertices in the previous mask
+        # to avoid overlapping indices
+        order += len_previous_mask
+        # reorder the edges such that the first True edge in the mask is the
+        # is the first edge in the matrix (even if it is not the first edge in
+        # the mask) and so on...
+        edges = order[edges]
+        len_previous_mask += mask_part.sum()
+        # update the connectivity matrix
         conn_temp = coo_matrix(
-            (np.ones((edges.shape[1])), edges.T),
+            (np.ones((edges.shape[1])), edges),
             (n_vertices, n_vertices),
         ).tocsr()
         connectivity += conn_temp
