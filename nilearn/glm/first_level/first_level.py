@@ -1792,7 +1792,9 @@ def _get_processed_imgs(
         verbose=verbose,
     )
 
-    if space_label is not None and space_label not in ("fsaverage5"):
+    if space_label is not None and (
+        space_label == "" or space_label not in ("fsaverage5")
+    ):
         imgs = get_bids_files(
             main_path=derivatives_path,
             modality_folder="func",

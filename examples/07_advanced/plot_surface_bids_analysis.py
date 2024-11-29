@@ -59,6 +59,7 @@ task_label = "languagelocalizer"
 models, run_imgs, events, confounds = first_level_from_bids(
     data.data_dir,
     task_label,
+    space_label="",
     img_filters=[("desc", "preproc")],
     hrf_model="glover + derivative",
     n_jobs=2,
