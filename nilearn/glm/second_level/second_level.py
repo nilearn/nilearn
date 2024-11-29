@@ -972,7 +972,7 @@ def non_parametric_inference(
     var_names = [var for var, mask in zip(var_names, column_mask) if not mask]
 
     # Obtain confounding vars
-    if len(var_names) == 0:
+    if not var_names:
         # No other vars in design matrix
         confounding_vars = None
     else:
