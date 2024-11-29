@@ -126,7 +126,7 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
         except csv.Error as e:
             raise TypeError(
                 f"Could not read CSV file [{csv_path}]: {e.args[0]}"
-            )
+            ) from e
 
         array = np.genfromtxt(
             csv_path, delimiter=dialect.delimiter, encoding=None, **kwargs

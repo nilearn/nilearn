@@ -304,8 +304,7 @@ class Template:
             try:
                 value = eval(code, self.default_namespace, ns)
             except SyntaxError as e:
-                raise SyntaxError(
-                    'invalid syntax in expression: %s' % code)
+                raise SyntaxError('invalid syntax in expression: %s' % code) from e
             return value
         except:
             exc_info = sys.exc_info()
@@ -372,7 +371,8 @@ class Template:
                         e.object,
                         e.start,
                         e.end,
-                        e.reason + ' in string %r' % value)
+                        e.reason + ' in string %r' % value,
+                    ) from e
             elif not self._unicode and is_unicode(value):
                 if not self.default_encoding:
                     raise UnicodeEncodeError(
@@ -412,8 +412,8 @@ class bunch(dict):
     def __getattr__(self, name):
         try:
             return self[name]
-        except KeyError:
-            raise AttributeError(name)
+        except KeyError as e:
+            raise AttributeError(name) from e
 
     def __getitem__(self, key):
         if 'default' in self:

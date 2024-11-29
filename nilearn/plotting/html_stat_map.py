@@ -490,18 +490,18 @@ def _get_cut_slices(stat_map_img, cut_coords=None, threshold=None):
         cut_slices = apply_affine(
             np.linalg.inv(stat_map_img.affine), cut_coords
         )
-    except ValueError:
+    except ValueError as e:
         raise ValueError(
             "The input given for display_mode='ortho' "
             "needs to be a list of 3d world coordinates in (x, y, z). "
             f"You provided cut_coords={cut_coords}"
-        )
-    except IndexError:
+        ) from e
+    except IndexError as e:
         raise ValueError(
             "The input given for display_mode='ortho' "
             "needs to be a list of 3d world coordinates in (x, y, z). "
             f"You provided single cut, cut_coords={cut_coords}"
-        )
+        ) from e
 
     return cut_slices
 

@@ -300,14 +300,14 @@ def load_confounds_json(confounds_json, flag_acompcor):
     try:
         with Path(confounds_json).open("rb") as f:
             confounds_json = json.load(f)
-    except OSError:
+    except OSError as e:
         if flag_acompcor:
             raise ValueError(
                 f"Could not find associated json file {confounds_json}."
                 "This is necessary for anatomical CompCor."
                 "The CompCor component is only supported for fMRIprep "
                 "version >= 1.4.0."
-            )
+            ) from e
     return confounds_json
 
 

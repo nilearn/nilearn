@@ -436,8 +436,8 @@ def _compute_surf_map_faces_matplotlib(
     if isinstance(avg_method, str):
         try:
             avg_method = getattr(np, avg_method)
-        except AttributeError:
-            raise ValueError(error_message)
+        except AttributeError as e:
+            raise ValueError(error_message) from e
         surf_map_faces = avg_method(surf_map_data[faces], axis=1)
     elif callable(avg_method):
         surf_map_faces = np.apply_along_axis(
@@ -1248,11 +1248,11 @@ def plot_surf_contours(
     else:
         try:
             colors = [to_rgba(color, alpha=1.0) for color in colors]
-        except ValueError:
+        except ValueError as e:
             raise ValueError(
                 "All elements of colors need to be either a"
                 " matplotlib color string or RGBA values."
-            )
+            ) from e
 
     if labels is None:
         labels = [None] * len(levels)

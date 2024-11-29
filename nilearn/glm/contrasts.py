@@ -44,13 +44,13 @@ def expression_to_contrast_vector(expression, design_columns):
         contrast_vector = eye_design.eval(
             expression, engine="python"
         ).to_numpy()
-    except Exception:
+    except Exception as e:
         raise ValueError(
             f"The expression ({expression}) is not valid. "
             "This could be due to "
             "defining the contrasts using design matrix columns that are "
             "invalid python identifiers."
-        )
+        ) from e
 
     return contrast_vector
 

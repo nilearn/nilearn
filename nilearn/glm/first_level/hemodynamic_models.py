@@ -677,8 +677,8 @@ def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
     elif callable(hrf_model):
         try:
             hkernel = [hrf_model(t_r, oversampling)]
-        except TypeError:
-            raise ValueError(error_msg)
+        except TypeError as e:
+            raise ValueError(error_msg) from e
     elif isinstance(hrf_model, Iterable) and all(
         callable(_) for _ in hrf_model
     ):

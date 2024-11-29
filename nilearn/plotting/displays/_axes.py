@@ -354,12 +354,12 @@ def _get_index_from_direction(direction):
     try:
         # l and r are subcases of x
         index = 0 if direction in "lr" else directions.index(direction)
-    except ValueError:
+    except ValueError as e:
         message = (
             f"{direction} is not a valid direction. "
             "Allowed values are 'l', 'r', 'x', 'y' and 'z'"
         )
-        raise ValueError(message)
+        raise ValueError(message) from e
     return index
 
 
