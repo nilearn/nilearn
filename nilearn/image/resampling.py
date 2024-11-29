@@ -677,12 +677,10 @@ def resample_img(
             for off, dim_b in zip(offsets[:3], b[:3])
         ]
 
-        # If image are not fully overlapping, place only portion of image.
-        slices = []
-        for dimsize, index in zip(resampled_data.shape, indices):
-            slices.append(
-                slice(np.max((0, index[0])), np.min((dimsize, index[1])))
-            )
+        slices = [
+            slice(np.max((0, index[0])), np.min((dimsize, index[1])))
+            for dimsize, index in zip(resampled_data.shape, indices)
+        ]
         slices = tuple(slices)
 
         # ensure the source image being placed isn't larger than the dest
