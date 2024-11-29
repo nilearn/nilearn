@@ -26,10 +26,6 @@ HIGHLIGHTS
 
 -   This version includes a new "surface" API that allow to represent surface meshes and data.
 
--   Single hemisphere meshes can be instantiated with
-    :class:`~nilearn.surface.SurfaceMesh`, :class:`~nilearn.surface.InMemoryMesh` or :class:`~nilearn.surface.FileMesh`.
-    :class:`~nilearn.surface.SurfaceMesh`
-
 -   :class:`~nilearn.surface.PolyMesh` (and :class:`~nilearn.surface.PolyData`)
     can be used to instantiate mesh (and respectively data) objects with both hemisphere.
 
@@ -96,6 +92,8 @@ Enhancements
 - :bdg-dark:`Code` Allow :class:`~nilearn.decoding.FREMClassifier` and :class:`~nilearn.decoding.FREMRegressor` to work with surface objects (:gh:`4577` by `Yasmin Mzayek`_ and `Rémi Gau`_).
 
 - :bdg-dark:`Code` Improve :func:`~nilearn.glm.first_level.first_level_from_bids` to look for and load ``fsaverage5`` data to easily run GLM on surface data (:gh:`4507` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Improve :class:`~nilearn.glm.first_level.FirstLevelModel` and :class:`~nilearn.glm.second_level.SecondLevelModel` to accept :obj:`~nilearn.maskers.SurfaceMasker` and to fit directly :obj:`~nilearn.surface.SurfaceImage` (:gh:`4126`, :gh:`4715` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Improved SearchLight with NIfTI Support, Mask Handling, and Reusable Transform Method (:gh:`4652` by `Prakhar Jain`_).
 
