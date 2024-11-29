@@ -34,7 +34,7 @@ from nilearn.datasets._utils import (
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
-from nilearn.surface import SurfaceImage, load_surf_data
+from nilearn.surface import SurfaceImage
 
 from .._utils.numpy_conversions import csv_to_array
 
@@ -1871,13 +1871,11 @@ def load_nki(
     ):
         logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
 
-        left_data = load_surf_data(left)
-        right_data = load_surf_data(right)
         img = SurfaceImage(
             mesh=fsaverage[mesh_type],
             data={
-                "left": left_data,
-                "right": right_data,
+                "left": left,
+                "right": right,
             },
         )
         images.append(img)

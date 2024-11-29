@@ -118,7 +118,7 @@ from nilearn.plotting import plot_connectome, view_connectome
 
 coordinates = []
 for hemi in ["left", "right"]:
-    vert = destrieux_atlas.data.parts[hemi][..., 0]
+    vert = destrieux_atlas.data.parts[hemi].T
     rr, _ = surface.load_surf_mesh(fsaverage_meshes["pial"].parts[hemi])
     coordinates.extend(
         np.mean(rr[vert == k], axis=0)
