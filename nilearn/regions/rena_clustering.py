@@ -340,6 +340,7 @@ def _weighted_connectivity_graph(X, mask_img):
         connectivity = coo_matrix(
             (weight, edges), (n_features, n_features)
         ).tocsr()
+
     # Making it symmetrical
     connectivity = (connectivity + connectivity.T) / 2
     return connectivity
