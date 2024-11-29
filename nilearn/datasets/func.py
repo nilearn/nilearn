@@ -1831,10 +1831,10 @@ def load_nki(
          - ``"sphere"``
          - ``"flat"``
 
-    n_subjects : :obj:`int`, default=10
+    n_subjects : :obj:`int`, default=1
         The number of subjects to load from maximum of 102 subjects.
-        By default, 10 subjects will be loaded. If None is given,
-        all 102 subjects will be loaded.
+        By default, 1 subjects will be loaded.
+        If None is given, all 102 subjects will be loaded.
 
     %(data_dir)s
 

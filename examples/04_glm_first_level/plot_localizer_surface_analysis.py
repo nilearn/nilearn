@@ -96,7 +96,7 @@ image = SurfaceImage.from_volume(
 from nilearn.glm.first_level import FirstLevelModel
 
 glm = FirstLevelModel(
-    t_r,
+    t_r=t_r,
     slice_time_ref=slice_time_ref,
     hrf_model="glover + derivative",
 ).fit(image, events)
