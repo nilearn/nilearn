@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
+from scipy.sparse import coo_matrix
 from sklearn.base import clone
 from sklearn.feature_extraction import image
 
@@ -17,8 +18,46 @@ from ..decomposition._multi_pca import _MultiPCA
 from .hierarchical_kmeans_clustering import HierarchicalKMeans
 from .rena_clustering import (
     ReNA,
-    _weighted_connectivity_graph,
+    _make_edges_surface,
 )
+
+
+def _connectivity_surface(mask_img):
+    """Compute connectivity matrix for surface data, to be used for
+    Agglomerative Clustering method.
+
+    Based on surface part of
+    :func:`~nilearn.regions.rena_clustering._weighted_connectivity_graph`.
+    The difference is that this function returns a non-weighted connectivity
+    matrix with diagonal set to 1.
+
+    Parameters
+    ----------
+    mask_img : :class:`~nilearn.surface.SurfaceImage` object
+        Mask image provided to the Parcellation object.
+
+    Returns
+    -------
+    connectivity : a sparse matrix
+        Connectivity or adjacency matrix for the mask.
+
+    """
+    n_vertices = mask_img.mesh.n_vertices
+    connectivity = coo_matrix((n_vertices, n_vertices))
+    for part in mask_img.mesh.parts:
+        face_part = mask_img.mesh.parts[part].faces
+        mask_part = mask_img.data.parts[part][0]
+        edges, _ = _make_edges_surface(face_part, mask_part)
+        conn_temp = coo_matrix(
+            (np.ones((edges.shape[1])), edges.T),
+            (n_vertices, n_vertices),
+        ).tocsr()
+        connectivity += conn_temp
+    # make symmetric
+    connectivity = connectivity + connectivity.T
+    # set diagonal to 1 for connectivity matrix
+    connectivity[np.diag_indices_from(connectivity)] = 1
+    return connectivity
 
 
 def _estimator_fit(data, estimator, method=None):
@@ -414,7 +453,7 @@ class Parcellations(_MultiPCA):
 
         else:
             if isinstance(mask_img_, SurfaceImage):
-                connectivity = _weighted_connectivity_graph(data, mask_img_)
+                connectivity = _connectivity_surface(mask_img_)
                 import pdb
 
                 pdb.set_trace()
@@ -424,7 +463,6 @@ class Parcellations(_MultiPCA):
                 connectivity = image.grid_to_graph(
                     n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
                 )
-
             from sklearn.cluster import AgglomerativeClustering
 
             agglomerative = AgglomerativeClustering(
