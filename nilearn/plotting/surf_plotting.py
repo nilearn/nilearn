@@ -35,7 +35,7 @@ from nilearn.surface import (
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
     check_extensions,
-    check_mesh,
+    check_mesh_is_fsaverage,
 )
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
@@ -766,7 +766,8 @@ def plot_surf(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a Mesh, or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.InMemoryMesh`, \
+                or a :obj:`~nilearn.surface.PolyMesh`, or None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -774,7 +775,8 @@ def plot_surf(
         of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes,
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with
+        "coordinates" and "faces" attributes,
         or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``surf_map``
@@ -895,8 +897,8 @@ def plot_surf(
     %(cbar_tick_format)s
         Default="auto" which will select:
 
-            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
-            - '.1f' (rounded floats) with ``plotly`` engine.
+        - '%%.2g' (scientific notation) with ``matplotlib`` engine.
+        - '.1f' (rounded floats) with ``plotly`` engine.
 
         .. versionadded:: 0.7.1
 
@@ -1092,7 +1094,8 @@ def plot_surf_contours(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a Mesh, or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.InMemoryMesh`, \
+                or a :obj:`~nilearn.surface.PolyMesh`, or None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1100,7 +1103,8 @@ def plot_surf_contours(
         of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes,
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
+        and "faces" attributes,
         or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``roi_map``
@@ -1165,7 +1169,7 @@ def plot_surf_contours(
 
     %(output_file)s
 
-    kwargs: extra keyword arguments, optional
+    kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to
         :func:`~nilearn.plotting.plot_surf`.
 
@@ -1330,7 +1334,8 @@ def plot_surf_stat_map(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a Mesh, or a PolyMesh, or None
+                or a :obj:`~nilearn.surface.InMemoryMesh`, \
+                or a :obj:`~nilearn.surface.PolyMesh`, or None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1338,8 +1343,8 @@ def plot_surf_stat_map(
         coordinates of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes,
-        or a PolyMesh object,
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
+        and "faces" attributes, or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``surf_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
@@ -1568,12 +1573,12 @@ def _check_view_is_valid(view) -> bool:
 
     Parameters
     ----------
-    view: :obj:`str` in {"anterior", "posterior", "medial", "lateral",
+    view : :obj:`str` in {"anterior", "posterior", "medial", "lateral",
         "dorsal", "ventral" or pair of floats (elev, azim).
 
     Returns
     -------
-    valid: True if view is valid, False otherwise.
+    valid : True if view is valid, False otherwise.
     """
     if isinstance(view, str) and (view in VALID_VIEWS):
         return True
@@ -1595,7 +1600,7 @@ def _check_views(views) -> list:
 
     Returns
     -------
-    views: :obj:`list`
+    views : :obj:`list`
         Views given as inputs.
     """
     invalid_views = [not _check_view_is_valid(view) for view in views]
@@ -1775,7 +1780,7 @@ def plot_img_on_surf(
     stat_map = check_niimg_3d(stat_map, dtype="auto")
     modes = _check_views(views)
     hemis = _check_hemispheres(hemispheres)
-    surf_mesh = check_mesh(surf_mesh)
+    surf_mesh = check_mesh_is_fsaverage(surf_mesh)
 
     mesh_prefix = "infl" if inflate else "pial"
     surf = {
@@ -1918,7 +1923,8 @@ def plot_surf_roi(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a Mesh, or a PolyMesh, or None
+                or a :obj:`~nilearn.surface.InMemoryMesh`, \
+                or a :obj:`~nilearn.surface.PolyMesh`, or None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1926,8 +1932,8 @@ def plot_surf_roi(
         of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes,
-        or a PolyMesh object,
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
+        and "faces" attributes, or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``surf_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance

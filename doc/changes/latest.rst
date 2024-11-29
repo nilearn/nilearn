@@ -26,6 +26,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Allow single 4D nifti as input to fit for SecondLevelModel (:gh:`4806` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Make sure that radiological view is applied when requested and not only when figures are annotated (:gh:`4556` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix failing test in ``test_nilearn_standardize`` on MacOS 14 by adding trend in simulated data (:gh:`4411` by `Hao-Ting Wang`_).
@@ -35,6 +37,8 @@ Fixes
 - :bdg-dark:`Code` Fix previous Glover HRF implementation to fit the original paper (Glover, 1999) (:gh:`4452` by `Kun CHEN`_).
 
 - :bdg-dark:`Code` :func:`nilearn.image.binarize_img` explicitly cast images to ``int8`` to avoid warnings about ``int64`` when working with ``float64`` images (:gh:`4498` by `Patrick Sadil`_).
+
+- :bdg-dark:`Code` :func:`nilearn.glm.first_level.first_level_from_bids` will look for images in ``MNI152NLin2009cAsym`` space if no space is provided (:gh:`4507` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fix bug that would lead ``compute_contrast`` to return 4D images even for one dimensional contrasts (:gh:`4413` by `Bertrand Thirion`_ and `Rémi Gau`_).
 
@@ -81,9 +85,12 @@ Enhancements
 
 - :bdg-dark:`Code` Add footer to masker reports (:gh:`4307` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Improve :func:`nilearn.glm.first_level.first_level_from_bids` to look for and load ``fsaverage5`` data to easily run GLM on surface data (:gh:`4507` by `Rémi Gau`_).
+
 - :bdg-info:`Code` Improve plotting contours for :class:`nilearn.plotting.displays.PlotlySurfaceFigure` objects by adding :meth:`nilearn.plotting.displays.PlotlySurfaceFigure.add_contours` method that accepts arguments to adjust line aesthetics (:gh:`3949` by `Patrick Sadil`_).
 
 - :bdg-primary:`Doc` Add example to provide a clear understanding of the :class:`nilearn.decoding.Decoder` object by demonstrating underlying steps via a Scikit-Learn pipeline. (:gh:`4437` by `Himanshu Aggarwal`_).
+
 
 Changes
 -------

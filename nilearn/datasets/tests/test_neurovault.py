@@ -114,10 +114,10 @@ def _parse_query(query):
 def _neurovault_collections(parts, query):
     """Mock the Neurovault API behind the `/api/collections/` path.
 
-    parts: the parts of the URL path after "collections"
+    parts : the parts of the URL path after "collections"
      ie [], ["<somecollectionid>"], or ["<somecollectionid>", "images"]
 
-    query: the parsed query string, e.g. {"offset": "15", "limit": "5"}
+    query : the parsed query string, e.g. {"offset": "15", "limit": "5"}
 
     returns a dictionary of API results
 
@@ -136,7 +136,7 @@ def _neurovault_one_collection(parts):
     """Mock Neurovault API \
        behind the `/api/collections/<somecollectionid>` path.
 
-    parts: parts of the URL path after "collections",
+    parts : parts of the URL path after "collections",
       ie ["<somecollectionid>"] or ["<somecollectionid>", "images"]
 
     returns a dictionary of API results
@@ -162,10 +162,10 @@ def _neurovault_one_collection(parts):
 def _neurovault_images(parts, query):
     """Mock the Neurovault API behind the `/api/images/` path.
 
-    parts: parts of the URL path after "images",
+    parts : parts of the URL path after "images",
       ie [] or ["<someimageid>"]
 
-    query: the parsed query string, e.g. {"offset": "15", "limit": "5"}
+    query : the parsed query string, e.g. {"offset": "15", "limit": "5"}
 
     returns a dictionary of API results
 

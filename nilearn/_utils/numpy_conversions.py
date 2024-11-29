@@ -25,8 +25,31 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     Caveat: this function does not copy during bool to/from 1-byte dtype
     conversions. This can lead to some surprising results in some rare cases.
 
-    Example:
+    Parameters
+    ----------
+    arr : array-like
+        input array. Any value accepted by numpy.asarray is valid.
 
+    copy : bool
+        if True, force a copy of the array. Always True when arr is a memmap.
+
+    dtype : any numpy dtype
+        dtype of the returned array. Performing copy and type conversion at the
+        same time can in some cases avoid an additional copy.
+
+    order : :obj:`str`, default='K'
+        gives the order of the returned array.
+        Valid values are: "C", "F", "A", "K", None.
+        See ndarray.copy() for more information.
+
+    Returns
+    -------
+    ret : numpy.ndarray
+        Numpy array containing the same data as arr, always of class
+        numpy.ndarray, and with no link to any underlying file.
+
+    Examples
+    --------
     >>> import numpy
     >>> a = numpy.asarray([0, 1, 2], dtype=numpy.int8)
     >>> b = as_ndarray(a, dtype=bool)
@@ -39,29 +62,6 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     The usually expected result for the last line would be array([0, 1, 1])
     because True evaluates to 1. Since there is no copy made here, the original
     array is recovered.
-
-    Parameters
-    ----------
-    arr: array-like
-        input array. Any value accepted by numpy.asarray is valid.
-
-    copy: bool
-        if True, force a copy of the array. Always True when arr is a memmap.
-
-    dtype: any numpy dtype
-        dtype of the returned array. Performing copy and type conversion at the
-        same time can in some cases avoid an additional copy.
-
-    order: :obj:`str`, default='K'
-        gives the order of the returned array.
-        Valid values are: "C", "F", "A", "K", None.
-        See ndarray.copy() for more information.
-
-    Returns
-    -------
-    ret: numpy.ndarray
-        Numpy array containing the same data as arr, always of class
-        numpy.ndarray, and with no link to any underlying file.
     """
     if order not in ("C", "F", "A", "K", None):
         raise ValueError(f"Invalid value for 'order': {order!s}")
@@ -97,20 +97,20 @@ def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
 
     Parameters
     ----------
-    csv_path: string or pathlib.Path
+    csv_path : string or pathlib.Path
         Path of the CSV file to load.
 
-    delimiters: string
+    delimiters : string
         Each character of the delimiters string is a potential delimiters for
         the CSV file.
 
-    kwargs: keyword arguments
+    kwargs : keyword arguments
         The additional keyword arguments are passed to numpy.genfromtxt when
         loading the CSV.
 
     Returns
     -------
-    array: numpy.ndarray
+    array : numpy.ndarray
         An array containing the data loaded from the CSV file.
     """
     try:

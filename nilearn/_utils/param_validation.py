@@ -151,7 +151,7 @@ def adjust_screening_percentile(
 
     Returns
     -------
-    screening_percentile: float in the interval [0, 100]
+    screening_percentile : float in the interval [0, 100]
         Percentile value for ANOVA univariate feature selection.
 
     """

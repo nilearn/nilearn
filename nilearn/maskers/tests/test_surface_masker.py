@@ -49,13 +49,13 @@ def test_fit_list_surf_images(surf_img):
     resulting mask should have a single 'timepoint'.
     """
     masker = SurfaceMasker()
-    masker.fit([surf_img((3,)), surf_img((5,))])
-    assert masker.mask_img_.shape == (1, surf_img().shape[1])
+    masker.fit([surf_img(3), surf_img(5)])
+    assert masker.mask_img_.shape == (surf_img().shape[0], 1)
 
 
 # test with only one surface image and with 2 surface images (surface time
 # series)
-@pytest.mark.parametrize("shape", [(1,), (2,)])
+@pytest.mark.parametrize("shape", [1, 2])
 def test_mask_img_fit_shape_mismatch(
     flip_surf_img, surf_mask, surf_img, shape, assert_surf_img_equal
 ):
@@ -85,16 +85,16 @@ def test_none_mask_img(surf_mask):
 def test_transform_list_surf_images(surf_mask, surf_img):
     """Test transform on list of surface images."""
     masker = SurfaceMasker(surf_mask()).fit()
-    signals = masker.transform([surf_img((3,)), surf_img((4,))])
+    signals = masker.transform([surf_img(3), surf_img(4)])
     assert signals.shape == (7, masker.output_dimension_)
 
 
 def test_inverse_transform_list_surf_images(surf_mask, surf_img):
     """Test inverse_transform on list of surface images."""
     masker = SurfaceMasker(surf_mask()).fit()
-    signals = masker.transform([surf_img((3,)), surf_img((4,))])
+    signals = masker.transform([surf_img(3), surf_img(4)])
     img = masker.inverse_transform(signals)
-    assert img.shape == (7, surf_mask().mesh.n_vertices)
+    assert img.shape == (surf_mask().mesh.n_vertices, 7)
 
 
 def test_unfitted_masker(surf_mask):
@@ -124,7 +124,7 @@ def test_mask_img_transform_clean(surf_img, surf_mask):
         high_pass=1 / 128,
         clean_args={"filter": "cosine"},
     ).fit()
-    masker.transform(surf_img((50,)))
+    masker.transform(surf_img(50))
 
 
 def test_mask_img_generate_report(surf_img, surf_mask):
@@ -148,7 +148,7 @@ def test_mask_img_generate_no_report(surf_img, surf_mask):
 
     assert masker._reporting_data is None
 
-    img = surf_img((5,))
+    img = surf_img(5)
     masker.transform(img)
 
     masker.generate_report()
@@ -184,48 +184,46 @@ def test_error_inverse_transform_shape(surf_img, surf_mask, rng):
         masker.inverse_transform(signals_wrong_shape)
 
 
-@pytest.mark.parametrize("shape", [(1,), (3,)])
+@pytest.mark.parametrize("n_timepoints", [3])
 def test_transform_inverse_transform_no_mask(
-    surf_mesh, shape, assert_surf_img_equal
+    surf_mesh, n_timepoints, assert_surf_img_equal
 ):
     # make a sample image with data on the first timepoint/sample 1-4 on
     # left part and 10-50 on right part
     mesh = surf_mesh()
     img_data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
-        data_shape = (*shape, val.n_vertices)
+        data_shape = (val.n_vertices, n_timepoints)
         data_part = (
-            np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
+            np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
         ) * 10**i
-        img_data[key] = data_part
+        img_data[key] = data_part.T
 
     img = SurfaceImage(mesh, img_data)
     masker = SurfaceMasker().fit(img)
     masked_img = masker.transform(img)
 
     # make sure none of the data has been removed
-    assert np.array_equal(
-        masked_img.ravel()[:9], [1, 2, 3, 4, 10, 20, 30, 40, 50]
-    )
-    assert masked_img.shape == (shape[0], img.shape[1])
+    assert masked_img.shape == (n_timepoints, img.shape[0])
+    assert np.array_equal(masked_img[0], [1, 2, 3, 4, 10, 20, 30, 40, 50])
     unmasked_img = masker.inverse_transform(masked_img)
     assert_surf_img_equal(img, unmasked_img)
 
 
-@pytest.mark.parametrize("shape", [(1,), (3,)])
+@pytest.mark.parametrize("n_timepoints", [1, 3])
 def test_transform_inverse_transform_with_mask(
-    surf_mesh, assert_surf_img_equal, shape
+    surf_mesh, assert_surf_img_equal, n_timepoints
 ):
     # make a sample image with data on the first timepoint/sample 1-4 on
     # left part and 10-50 on right part
     mesh = surf_mesh()
     img_data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
-        data_shape = (*shape, val.n_vertices)
+        data_shape = (val.n_vertices, n_timepoints)
         data_part = (
-            np.arange(np.prod(data_shape)).reshape(data_shape) + 1.0
+            np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
         ) * 10**i
-        img_data[key] = data_part
+        img_data[key] = data_part.T
     img = SurfaceImage(mesh, img_data)
 
     # make a mask that removes first vertex of each part
@@ -240,7 +238,7 @@ def test_transform_inverse_transform_with_mask(
     masked_img = masker.transform(img)
 
     # check mask shape is as expected
-    assert masked_img.shape == (shape[0], masker.output_dimension_)
+    assert masked_img.shape == (n_timepoints, masker.output_dimension_)
 
     # check the data for first seven vertices is as expected
     assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])
@@ -250,7 +248,7 @@ def test_transform_inverse_transform_with_mask(
     # recreate data that we expect after unmasking
     expected_data = {k: v.copy() for (k, v) in img.data.parts.items()}
     for v in expected_data.values():
-        v[..., 0] = 0.0
+        v[0] = 0.0
     expected_img = SurfaceImage(img.mesh, expected_data)
     assert_surf_img_equal(expected_img, unmasked_img)
 

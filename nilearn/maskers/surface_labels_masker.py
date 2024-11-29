@@ -278,7 +278,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         img = concatenate_surface_images(img)
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
         # concatenate data over hemispheres
-        img_data = np.concatenate(list(img.data.parts.values()), axis=-1)
+        img_data = np.concatenate(list(img.data.parts.values()), axis=0)
 
         if self.smoothing_fwhm is not None:
             warnings.warn(
@@ -306,11 +306,10 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.memory is None:
             self.memory = Memory(location=None)
 
-        output = np.empty((*img_data.shape[:-1], len(self._labels_)))
+        n_time_points = 1 if len(img_data.shape) == 1 else img_data.shape[1]
+        output = np.empty((n_time_points, len(self._labels_)))
         for i, label in enumerate(self._labels_):
-            output[..., i] = img_data[..., self._labels_data == label].mean(
-                axis=-1
-            )
+            output[:, i] = img_data[self._labels_data == label].mean(axis=0)
 
         # signal cleaning here
         output = cache(
@@ -373,13 +372,13 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         data = {}
         for part_name, labels_part in self.labels_img.data.parts.items():
             data[part_name] = np.zeros(
-                (masked_img.shape[0], labels_part.shape[1]),
+                (labels_part.shape[0], masked_img.shape[0]),
                 dtype=masked_img.dtype,
             )
             for label_idx, label in enumerate(self._labels_):
-                data[part_name][..., labels_part[0] == label] = masked_img[
+                data[part_name][labels_part == label] = masked_img[
                     :, label_idx
-                ].reshape(-1, 1)
+                ].T
         return SurfaceImage(mesh=self.labels_img.mesh, data=data)
 
     def generate_report(self):

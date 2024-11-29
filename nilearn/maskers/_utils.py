@@ -57,18 +57,18 @@ def compute_mean_surface_image(img):
 
     Parameters
     ----------
-    img: SurfaceImage
+    img : SurfaceImage
 
     Returns
     -------
     SurfaceImage
     """
-    if img.shape[0] < 2:
+    if len(img.shape) < 2 or img.shape[1] < 2:
         return img
 
     data = {}
     for part, value in img.data.parts.items():
-        data[part] = np.mean(value, axis=0).astype(float)
+        data[part] = np.mean(value, axis=1).astype(float)
 
     return SurfaceImage(mesh=img.mesh, data=data)
 
@@ -78,13 +78,13 @@ def get_min_max_surface_image(img):
 
     Parameters
     ----------
-    img: SurfaceImage
+    img : SurfaceImage
 
     Returns
     -------
-    vmin: float
+    vmin : float
 
-    vmax: float
+    vmax : float
     """
     vmin = min(min(x.ravel()) for x in img.data.parts.values())
     vmax = max(max(x.ravel()) for x in img.data.parts.values())
@@ -120,7 +120,7 @@ def concatenate_surface_images(imgs):
     output_data = {}
     for part in imgs[0].data.parts:
         tmp = [img.data.parts[part] for img in imgs]
-        output_data[part] = np.concatenate(tmp)
+        output_data[part] = np.concatenate(tmp, axis=1)
 
     output = SurfaceImage(mesh=imgs[0].mesh, data=output_data)
 

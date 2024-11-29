@@ -1190,8 +1190,8 @@ def test_first_level_residuals(shape_4d_default):
         shapes=[shape_4d_default]
     )
 
-    for i in range(len(design_matrices)):
-        design_matrices[i][design_matrices[i].columns[0]] = 1
+    for design_matrix in design_matrices:
+        design_matrix[design_matrix.columns[0]] = 1
 
     model = FirstLevelModel(
         mask_img=mask, minimize_memory=False, noise_model="ols"
@@ -1211,8 +1211,8 @@ def test_first_level_residuals_errors(shape_4d_default):
         shapes=[shape_4d_default]
     )
 
-    for i in range(len(design_matrices)):
-        design_matrices[i][design_matrices[i].columns[0]] = 1
+    for design_matrix in design_matrices:
+        design_matrix[design_matrix.columns[0]] = 1
 
     # Check that voxelwise model attributes
     # cannot be accessed if minimize_memory is set to True
@@ -1254,8 +1254,8 @@ def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(
         shapes
     )
 
-    for i in range(len(design_matrices)):
-        design_matrices[i][design_matrices[i].columns[0]] = 1
+    for design_matrix in design_matrices:
+        design_matrix[design_matrix.columns[0]] = 1
 
     model = FirstLevelModel(
         mask_img=mask, minimize_memory=False, noise_model="ols"
@@ -1274,8 +1274,8 @@ def test_first_level_predictions_r_square(shape_4d_default):
         shapes=[shape_4d_default]
     )
 
-    for i in range(len(design_matrices)):
-        design_matrices[i][design_matrices[i].columns[0]] = 1
+    for design_matrix in design_matrices:
+        design_matrix[design_matrix.columns[0]] = 1
 
     model = FirstLevelModel(
         mask_img=mask,
@@ -1430,6 +1430,41 @@ def test_first_level_from_bids(
     assert len(imgs[0]) == n_imgs_expected
 
 
+@pytest.mark.parametrize("slice_time_ref", [None, 0.0, 0.5, 1.0])
+def test_first_level_from_bids_slice_time_ref(bids_dataset, slice_time_ref):
+    """Test several valid values of slice_time_ref."""
+    n_sub, *_ = _inputs_for_new_bids_dataset()
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_dataset,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("run", "01"), ("desc", "preproc")],
+        slice_time_ref=slice_time_ref,
+    )
+
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
+def test_first_level_from_bids_space_none(tmp_path):
+    """Test behavior when no specific space is required .
+
+    Function should look for images with MNI152NLin2009cAsym.
+    """
+    n_sub = 1
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path, n_sub=n_sub, spaces=["MNI152NLin2009cAsym"]
+    )
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label=None,
+        img_filters=[("run", "01"), ("desc", "preproc")],
+        slice_time_ref=None,
+    )
+
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
 def test_first_level_from_bids_select_one_run_per_session(bids_dataset):
     n_sub, n_ses, *_ = _inputs_for_new_bids_dataset()
 
@@ -1518,14 +1553,22 @@ def _check_output_first_level_from_bids(
 ):
     assert len(models) == n_sub
     assert all(isinstance(model, FirstLevelModel) for model in models)
+
     assert len(models) == len(imgs)
     for img_ in imgs:
         assert isinstance(img_, list)
-        assert all(Path(x).exists() for x in img_)
+
+        # We should only get lists of valid paths or lists of SurfaceImages
+        if all(isinstance(x, str) for x in img_):
+            assert all(Path(x).exists() for x in img_)
+        else:
+            assert all(isinstance(x, SurfaceImage) for x in img_)
+
     assert len(models) == len(events)
     for event_ in events:
         assert isinstance(event_, list)
         assert all(isinstance(x, pd.DataFrame) for x in event_)
+
     assert len(models) == len(confounds)
     for confound_ in confounds:
         assert isinstance(confound_, list)
@@ -2104,7 +2147,7 @@ def _make_surface_glm_data(rng, surf_img):
         des = pd.DataFrame(
             rng.standard_normal((shape, 3)), columns=["", "", ""]
         )
-        return surf_img((shape,)), des
+        return surf_img(shape), des
 
     return _make_surface_img_and_design
 
@@ -2116,7 +2159,7 @@ def test_flm_fit_surface_image_default_mask_img(_make_surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 9)
+    assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
     sum_mask = (
         model.masker_.mask_img_.data.parts["left"].sum()
@@ -2127,18 +2170,18 @@ def test_flm_fit_surface_image_default_mask_img(_make_surface_glm_data):
 
 def test_flm_fit_surface_image(_make_surface_glm_data):
     """Test FirstLevelModel with surface image and mask_img set to False."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     model = FirstLevelModel(mask_img=False)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 9)
+    assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
 def test_warn_flm_smooth_surface_image(_make_surface_glm_data):
     """Test warning raised in FirstLevelModel with surface smoothing."""
-    mini_img, des = _make_surface_glm_data(5)
+    mini_img, des = _make_surface_glm_data(9)
     model = FirstLevelModel(mask_img=False, smoothing_fwhm=5)
     with pytest.warns(
         UserWarning,
@@ -2151,24 +2194,24 @@ def test_flm_fit_surface_image_one_hemisphere(
     _make_surface_glm_data, drop_surf_img_part
 ):
     """Test FirstLevelModel with surface image with one hemisphere."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     mini_img_one_hemi = drop_surf_img_part(img)
     model = FirstLevelModel(mask_img=False)
     model.fit(mini_img_one_hemi, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 4)
+    assert model.masker_.mask_img_.shape == (4,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
 def test_flm_fit_surface_image_with_mask(_make_surface_glm_data, surf_mask):
     """Test FirstLevelModel with surface mask."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     model = FirstLevelModel(mask_img=surf_mask())
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 9)
+    assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2176,7 +2219,7 @@ def test_error_flm_surface_mask_volume_image(
     _make_surface_glm_data, surf_mask, img_4d_rand_eye
 ):
     """Test error is raised when mask is a surface and data is in volume."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     model = FirstLevelModel(mask_img=surf_mask())
     with pytest.raises(
         TypeError, match="Mask and images to fit must be of compatible types."
@@ -2196,7 +2239,7 @@ def test_error_flm_volume_mask_surface_image(_make_surface_glm_data):
     shapes, rk = [(7, 8, 9, 15)], 3
     mask, _, _ = generate_fake_fmri_data_and_design(shapes, rk)
 
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     model = FirstLevelModel(mask_img=mask)
     with pytest.raises(
         TypeError, match="Mask and images to fit must be of compatible types."
@@ -2213,39 +2256,40 @@ def test_error_flm_volume_mask_surface_image(_make_surface_glm_data):
 
 def test_flm_with_surface_image_with_surface_masker(_make_surface_glm_data):
     """Test FirstLevelModel with SurfaceMasker."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 9)
+    assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
 def test_flm_with_surface_masker_with_mask(_make_surface_glm_data, surf_mask):
     """Test FirstLevelModel with SurfaceMasker and mask image."""
-    img, des = _make_surface_glm_data(5)
+    img, des = _make_surface_glm_data(9)
     masker = SurfaceMasker(mask_img=surf_mask()).fit(img)
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (1, 9)
+    assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
 def test_flm_with_surface_data_no_design_matrix(_make_surface_glm_data):
     """Smoke test FirstLevelModel with surface data and no design matrix."""
-    img, _ = _make_surface_glm_data(5)
+    img, _ = _make_surface_glm_data(9)
     masker = SurfaceMasker().fit(img)
+    # breakpoint()
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     model.fit(img, events=basic_paradigm())
 
 
 def test_flm_compute_contrast_with_surface_data(_make_surface_glm_data):
     """Smoke test FirstLevelModel compute_contrast with surface data."""
-    img, _ = _make_surface_glm_data(5)
+    img, _ = _make_surface_glm_data(9)
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     events = basic_paradigm()
@@ -2306,11 +2350,15 @@ def test_first_level_from_bids_subject_order_with_labels(tmp_path):
 
 def test_fixed_effect_contrast_surface(_make_surface_glm_data):
     """Smoke test of compute_fixed_effects with surface data."""
-    mini_img, _ = _make_surface_glm_data(5)
+    mini_img, _ = _make_surface_glm_data(9)
     masker = SurfaceMasker().fit(mini_img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     events = basic_paradigm()
     model.fit([mini_img, mini_img], events=[events, events])
+    result = model.compute_contrast("c0")
+
+    assert isinstance(result, SurfaceImage)
+
     result = model.compute_contrast("c0", output_type="all")
     effect = result["effect_size"]
     variance = result["effect_variance"]
@@ -2322,3 +2370,27 @@ def test_fixed_effect_contrast_surface(_make_surface_glm_data):
         assert len(outputs) == 3
         for output in outputs:
             assert isinstance(output, SurfaceImage)
+
+
+def test_first_level_from_bids_surface(tmp_path):
+    """Test finding and loading Surface data in BIDS dataset."""
+    n_sub = 2
+    tasks = ["main"]
+    n_runs = [2]
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=0,
+        tasks=tasks,
+        n_runs=n_runs,
+        n_vertices=10242,
+    )
+
+    models, imgs, events, confounds = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="fsaverage5",
+    )
+
+    _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)

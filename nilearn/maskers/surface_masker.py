@@ -170,7 +170,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
         mask_data = {
-            part: np.ones((1, v.n_vertices), dtype=bool)
+            part: np.ones((v.n_vertices, 1), dtype=bool)
             for (part, v) in img.mesh.parts.items()
         }
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
@@ -199,10 +199,10 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         assert self.mask_img_ is not None
 
         start, stop = 0, 0
-        self.slices = {}
+        self._slices = {}
         for part_name, mask in self.mask_img_.data.parts.items():
             stop = start + mask.sum()
-            self.slices[part_name] = start, stop
+            self._slices[part_name] = start, stop
             start = stop
         self.output_dimension_ = stop
 
@@ -283,10 +283,10 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.reports:
             self._reporting_data["images"] = img
 
-        output = np.empty((img.shape[0], self.output_dimension_))
-        for part_name, (start, stop) in self.slices.items():
-            mask = self.mask_img_.data.parts[part_name]
-            output[..., start:stop] = img.data.parts[part_name][..., mask[0]]
+        output = np.empty((img.shape[1], self.output_dimension_))
+        for part_name, (start, stop) in self._slices.items():
+            mask = self.mask_img_.data.parts[part_name].ravel()
+            output[:, start:stop] = img.data.parts[part_name][mask].T
 
         if self.memory is None:
             self.memory = Memory(location=None)
@@ -382,11 +382,11 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
             data[part_name] = np.zeros(
-                (masked_img.shape[0], mask.shape[1]),
+                (mask.shape[0], masked_img.shape[0]),
                 dtype=masked_img.dtype,
             )
-            start, stop = self.slices[part_name]
-            data[part_name][..., mask[0]] = masked_img[..., start:stop]
+            start, stop = self._slices[part_name]
+            data[part_name][mask.ravel()] = masked_img[:, start:stop].T
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 

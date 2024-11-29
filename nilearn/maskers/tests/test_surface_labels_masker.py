@@ -98,7 +98,7 @@ def test_surface_label_masker_transform(surf_label_img, surf_img):
 
     # 5 'timepoint'
     n_timepoints = 5
-    signal = masker.transform(surf_img((n_timepoints,)))
+    signal = masker.transform(surf_img(n_timepoints))
 
     assert isinstance(signal, np.ndarray)
     assert signal.shape == (n_timepoints, n_labels)
@@ -150,7 +150,7 @@ def test_surface_label_masker_check_output(surf_mesh, rng):
     surf_img = SurfaceImage(surf_mesh(), data)
     signal = masker.transform(surf_img)
 
-    assert signal.shape == (surf_img.shape[0], masker.n_elements_)
+    assert signal.shape == (1, masker.n_elements_)
 
     expected_signal = np.asarray(
         [
@@ -167,7 +167,7 @@ def test_surface_label_masker_check_output(surf_mesh, rng):
 
     # also check the output of inverse_transform
     img = masker.inverse_transform(signal)
-    assert img.shape == surf_img.shape
+    assert img.shape[0] == surf_img.shape[0]
     # expected inverse data is the same as the input data
     # but with the random value replaced by zeros
     expected_inverse_data = {
@@ -180,7 +180,7 @@ def test_surface_label_masker_check_output(surf_mesh, rng):
                     expected_mean_value["1"],
                 ]
             ]
-        ),
+        ).T,
         "right": np.asarray(
             [
                 [
@@ -191,7 +191,7 @@ def test_surface_label_masker_check_output(surf_mesh, rng):
                     0.0,
                 ]
             ]
-        ),
+        ).T,
     }
 
     assert_array_equal(img.data.parts["left"], expected_inverse_data["left"])
@@ -240,7 +240,7 @@ def test_surface_label_masker_check_output_with_timepoints(surf_mesh, rng):
                     expected_mean_value["1"] + 1,
                 ],
             ]
-        ),
+        ).T,
         "right": np.asarray(
             [
                 [
@@ -258,13 +258,13 @@ def test_surface_label_masker_check_output_with_timepoints(surf_mesh, rng):
                     rng.random(),
                 ],
             ]
-        ),
+        ).T,
     }
 
     surf_img = SurfaceImage(surf_mesh(), data)
     signal = masker.transform(surf_img)
 
-    assert signal.shape == (surf_img.shape[0], masker.n_elements_)
+    assert signal.shape == (surf_img.shape[1], masker.n_elements_)
 
     expected_signal = np.asarray(
         [
@@ -286,7 +286,7 @@ def test_surface_label_masker_check_output_with_timepoints(surf_mesh, rng):
 
     # also check the output of inverse_transform
     img = masker.inverse_transform(signal)
-    assert img.shape == surf_img.shape
+    assert img.shape[0] == surf_img.shape[0]
     # expected inverse data is the same as the input data
     # but with the random values replaced by zeros
     expected_inverse_data = {
@@ -305,7 +305,7 @@ def test_surface_label_masker_check_output_with_timepoints(surf_mesh, rng):
                     expected_mean_value["1"] + 1,
                 ],
             ]
-        ),
+        ).T,
         "right": np.asarray(
             [
                 [
@@ -323,7 +323,7 @@ def test_surface_label_masker_check_output_with_timepoints(surf_mesh, rng):
                     0.0,
                 ],
             ]
-        ),
+        ).T,
     }
     assert_array_equal(img.data.parts["left"], expected_inverse_data["left"])
     assert_array_equal(img.data.parts["right"], expected_inverse_data["right"])
@@ -345,7 +345,7 @@ def test_surface_label_masker_transform_clean(surf_label_img, surf_img):
         high_pass=1 / 128,
         clean_args={"filter": "cosine"},
     ).fit()
-    masker.transform(surf_img((50,)))
+    masker.transform(surf_img(50))
 
 
 def test_surface_label_masker_fit_transform(surf_label_img, surf_img):
@@ -378,7 +378,7 @@ def test_surface_label_masker_transform_list_surf_images(
     masker = SurfaceLabelsMasker(surf_label_img).fit()
     signals = masker.transform([surf_img(), surf_img(), surf_img()])
     assert signals.shape == (3, masker.n_elements_)
-    signals = masker.transform([surf_img((5,)), surf_img((4,))])
+    signals = masker.transform([surf_img(5), surf_img(4)])
     assert signals.shape == (9, masker.n_elements_)
 
 
@@ -387,9 +387,9 @@ def test_surface_label_masker_inverse_transform_list_surf_images(
 ):
     """Test inverse_transform on list of surface images."""
     masker = SurfaceLabelsMasker(surf_label_img).fit()
-    signals = masker.transform([surf_img((3,)), surf_img((4,))])
+    signals = masker.transform([surf_img(3), surf_img(4)])
     img = masker.inverse_transform(signals)
-    assert img.shape == (7, surf_label_img.mesh.n_vertices)
+    assert img.shape == (surf_label_img.mesh.n_vertices, 7)
 
 
 def test_surface_label_masker_list_inverse_transform_output(surf_mesh):
