@@ -474,9 +474,6 @@ class Parcellations(_MultiPCA):
         else:
             if isinstance(mask_img_, SurfaceImage):
                 connectivity = _connectivity_surface(mask_img_)
-                import pdb
-
-                pdb.set_trace()
             else:
                 mask_ = safe_get_data(mask_img_).astype(bool)
                 shape = mask_.shape
