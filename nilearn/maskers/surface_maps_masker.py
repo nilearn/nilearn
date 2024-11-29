@@ -256,23 +256,23 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # apply mask if provided
         # and then extract signal via least square regression
         if self.mask_img_ is not None:
-            output = linalg.lstsq(
+            region_signals = linalg.lstsq(
                 self.maps_img_[self.mask_img_.flatten(), :],
                 img_data[self.mask_img_.flatten(), :],
             )[0].T
-        # if no mask, extract signal via least square regression
+        # if no mask, directly extract signal
         else:
-            output = linalg.lstsq(self.maps_img_, img_data)[0].T
+            region_signals = linalg.lstsq(self.maps_img_, img_data)[0].T
 
         # signal cleaning here
-        output = cache(
+        region_signals = cache(
             signal.clean,
             memory=self.memory,
             func_memory_level=2,
             memory_level=self.memory_level,
             shelve=self._shelving,
         )(
-            output,
+            region_signals,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],
             standardize_confounds=parameters["standardize_confounds"],
@@ -284,7 +284,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             **parameters["clean_args"],
         )
 
-        return output
+        return region_signals
 
     def fit_transform(self, img, y=None):
         """Prepare and perform signal extraction from regions.
