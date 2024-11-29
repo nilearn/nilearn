@@ -190,14 +190,14 @@ def repr_niimgs(niimgs, shorten=True):
     repr : str
         String representation of the image.
     """
-    # Maximum number of elements to be displayed
-    # Note: should be >= 3 to make sense...
-    list_max_display = 3
     # Simple string case
     if isinstance(niimgs, (str, Path)):
         return _short_repr(niimgs, shorten=shorten)
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
+        # Maximum number of elements to be displayed
+        # Note: should be >= 3 to make sense...
+        list_max_display = 3
         if shorten and len(niimgs) > list_max_display:
             tmp = ",\n         ...\n ".join(
                 repr_niimgs(niimg, shorten=shorten)

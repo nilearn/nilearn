@@ -501,8 +501,8 @@ def plot_design_matrix(
     # corresponding dataframe
     axes.xaxis.tick_top()
 
-    fig = axes.figure
     if output_file is not None:
+        fig = axes.figure
         fig.savefig(output_file)
         plt.close(fig=fig)
         axes = None
