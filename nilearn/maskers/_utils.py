@@ -151,10 +151,19 @@ def deconcatenate_surface_images(img):
     return [
         SurfaceImage(
             mesh=copy.deepcopy(mesh),
-            data={
-                "left": img.data.parts["left"][..., i].copy(),
-                "right": img.data.parts["right"][..., i].copy(),
-            },
+            data=_extract_surface_image_data(img, i),
         )
         for i in range(img.shape[1])
     ]
+
+
+def _extract_surface_image_data(surface_image, index):
+    mesh = surface_image.mesh
+    data = surface_image.data
+
+    return {
+        hemi: data.parts[hemi][..., index]
+        .copy()
+        .reshape(mesh.parts[hemi].n_vertices, 1)
+        for hemi in data.parts
+    }
