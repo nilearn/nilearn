@@ -111,8 +111,10 @@ def colorscale(
     rgb = our_cmap(x, bytes=True)[:, :3]
     rgb = np.array(rgb, dtype=int)
     colors = []
-    for i, col in zip(x, rgb):
-        colors.append([np.round(i, 3), f"rgb({col[0]}, {col[1]}, {col[2]})"])
+    colors.extend(
+        [np.round(i, 3), f"rgb({col[0]}, {col[1]}, {col[2]})"]
+        for i, col in zip(x, rgb)
+    )
     return {
         "colors": colors,
         "vmin": vmin,
