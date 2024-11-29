@@ -70,6 +70,7 @@ from nilearn.glm.first_level import first_level_from_bids
 models, run_imgs, events, confounds = first_level_from_bids(
     dataset_path=data.data_dir,
     task_label="languagelocalizer",
+    space_label="",
     img_filters=[("desc", "preproc")],
     sub_labels=["01", "02", "03", "04", "05"],  # comment to run all subjects
     hrf_model="glover + derivative",
