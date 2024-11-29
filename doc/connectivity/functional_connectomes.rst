@@ -174,7 +174,7 @@ The ``fit_transform`` method turns filenames or `NiftiImage objects
 
     time_series = masker.fit_transform(frmi_files, confounds=csv_file)
 
-The procedure is the same as with :ref:`brain parcellations <parcellation_time_series>`_
+The procedure is the same as with :ref:`brain parcellations <parcellation_time_series>`
 but using the :class:`NiftiMapsMasker`, and
 the same considerations on using confounds regressors apply.
 

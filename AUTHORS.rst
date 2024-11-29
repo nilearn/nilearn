@@ -59,7 +59,7 @@ Some other past or present contributors are:
 * `Alexandre Sayal`_: CIBIT, University of Coimbra, Portugal
 * `Alexis Thual`_: Inria, Saclay, France
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
-* `Amadeus Kanaan`_
+* Amadeus Kanaan
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
 * `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrés Hoyos Idrobo`_: Rakuten, France
