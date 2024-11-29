@@ -102,6 +102,7 @@ allow-long-titles = true
 ignore-path = [
     "*/changes/*.rst",
     "*/modules/generated/*",
+    "*/modules/generated_reports/*",
     "*/templates/*.rst",
     "doc/includes/*",
     "doc/authors.rst",
