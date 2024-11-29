@@ -857,9 +857,12 @@ class FirstLevelModel(BaseGLM):
 
         Returns
         -------
-        output : Nifti1Image, or :obj:`dict`
-            The desired output image(s). If ``output_type == 'all'``, then
-            the output is a dictionary of images, keyed by the type of image.
+        output : Nifti1Image, :obj:`~nilearn.surface.SurfaceImage`, \
+                 or :obj:`dict`
+            The desired output image(s).
+            If ``output_type == 'all'``,
+            then the output is a dictionary of images,
+            keyed by the type of image.
 
         """
         if self.labels_ is None or self.results_ is None:
@@ -1792,7 +1795,9 @@ def _get_processed_imgs(
         verbose=verbose,
     )
 
-    if space_label is not None and space_label not in ("fsaverage5"):
+    if space_label is not None and (
+        space_label == "" or space_label not in ("fsaverage5")
+    ):
         imgs = get_bids_files(
             main_path=derivatives_path,
             modality_folder="func",

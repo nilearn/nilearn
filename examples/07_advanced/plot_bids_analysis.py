@@ -17,6 +17,11 @@ More specifically:
 3. Fit a second level model on the fitted first level models.
    Notice that in this case the preprocessed :term:`bold<BOLD>`
    images were already normalized to the same :term:`MNI` space.
+
+.. note::
+
+      We are only using a subset of participants from the dataset
+      to lower the run time of the example.
 """
 
 from nilearn import plotting
@@ -59,7 +64,12 @@ task_label = "languagelocalizer"
     models_events,
     models_confounds,
 ) = first_level_from_bids(
-    data.data_dir, task_label, img_filters=[("desc", "preproc")], n_jobs=2
+    data.data_dir,
+    task_label,
+    img_filters=[("desc", "preproc")],
+    n_jobs=2,
+    space_label="",
+    sub_labels=["01", "02", "03", "04"],  # comment to run all subjects
 )
 
 # %%
@@ -103,9 +113,16 @@ p001_unc = norm.isf(0.001)
 
 # %%
 # Prepare figure for concurrent plot of individual maps.
-import matplotlib.pyplot as plt
+from math import ceil
 
-fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(8, 4.5))
+import matplotlib.pyplot as plt
+import numpy as np
+
+ncols = 3
+nrows = ceil(len(models) / ncols)
+
+fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 4.5))
+axes = np.atleast_2d(axes)
 model_and_args = zip(models, models_run_imgs, models_events, models_confounds)
 for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     # fit the GLM
@@ -117,9 +134,10 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
         colorbar=False,
         threshold=p001_unc,
         title=f"sub-{model.subject_label}",
-        axes=axes[int(midx / 5), int(midx % 5)],
+        axes=axes[int(midx / ncols), int(midx % ncols)],
         plot_abs=False,
         display_mode="x",
+        cmap="bwr",
     )
 fig.suptitle("subjects z_map language network (unc p<0.001)")
 plotting.show()
@@ -160,5 +178,6 @@ plotting.plot_glass_brain(
     plot_abs=False,
     display_mode="x",
     figure=plt.figure(figsize=(5, 4)),
+    cmap="bwr",
 )
 plotting.show()
