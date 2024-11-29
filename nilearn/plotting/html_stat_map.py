@@ -100,14 +100,11 @@ def _threshold_data(data, threshold=None):
         threshold, data, percentile_func=fast_abs_percentile, name="threshold"
     )
 
-    # Mask data
     if threshold == 0:
         mask = data == 0
-        data = data * np.logical_not(mask)
     else:
         mask = (data >= -threshold) & (data <= threshold)
-        data = data * np.logical_not(mask)
-
+    data = data * np.logical_not(mask)
     if not np.any(mask):
         warnings.warn(
             f"Threshold given was {threshold}, "
