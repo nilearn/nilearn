@@ -159,10 +159,9 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
 
             if use_wildcards:
                 return str(file_path / f"{prefix}*{suffix}")
-            else:
-                if len(filenames) == 1:
-                    return filenames[0]
-                return filenames
+            if len(filenames) == 1:
+                return filenames[0]
+            return filenames
 
     else:  # No-op
         if len(imgs) == 1:

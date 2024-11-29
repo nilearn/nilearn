@@ -301,9 +301,8 @@ class BaseSlicer:
             raise ValueError(
                 "This figure already has an overlay with a colorbar."
             )
-        else:
-            self._colorbar = colorbar
-            self._cbar_tick_format = cbar_tick_format
+        self._colorbar = colorbar
+        self._cbar_tick_format = cbar_tick_format
 
         img = check_niimg_3d(img)
 
