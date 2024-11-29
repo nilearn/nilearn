@@ -63,7 +63,7 @@ destrieux_atlas = SurfaceImage(
 )
 labels = [x.decode("utf-8") for x in destrieux.labels]
 
-parcellation = destrieux_atlas.data.parts[hemi][0]
+parcellation = destrieux_atlas.data.parts[hemi]
 
 # Fsaverage5 surface template
 fsaverage_meshes = load_fsaverage()
@@ -95,7 +95,7 @@ print(f"Fsaverage5 sulcal curvature map: {fsaverage_curvature}")
 import numpy as np
 
 # Load resting state time series from nilearn
-timeseries = nki_dataset[0].data.parts[hemi].T
+timeseries = nki_dataset[0].data.parts[hemi]
 
 # Coercing to float is required to avoid errors with scipy >= 0.14.0
 timeseries = timeseries.astype(float)
@@ -120,7 +120,8 @@ for i in range(timeseries.shape[0]):
     stat_map[i] = stats.pearsonr(seed_timeseries, timeseries[i])[0]
 
 # Re-mask previously masked nodes (medial wall)
-stat_map[np.where(np.mean(timeseries, axis=1) == 0)] = 0
+medial_wall_vertices = np.mean(timeseries, axis=1) == 0
+stat_map[medial_wall_vertices] = 0
 
 # %%
 # Display ROI on surface
@@ -190,7 +191,7 @@ plot_surf_stat_map(
     colorbar=True,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    cmap="Spectral",
+    cmap="bwr",
     threshold=0.5,
     title="Threshold and colormap",
 )
@@ -209,7 +210,7 @@ plot_surf_stat_map(
     hemi=hemi,
     view="lateral",
     colorbar=True,
-    cmap="Spectral",
+    cmap="bwr",
     threshold=0.5,
     title="Plotting without background",
 )
@@ -234,9 +235,8 @@ plot_surf_stat_map(
     threshold=0.5,
     colorbar=True,
     output_file=output_dir / "plot_surf_stat_map.png",
+    cmap="bwr",
 )
-
-show()
 
 # %%
 # References

@@ -227,8 +227,9 @@ def test_check_surface_plotting_inputs_extract_mesh_and_data(
         bg_map=bg_map,
     )
 
-    assert_array_equal(out_surf_map, surf_img().data.parts[hemi][:, 0])
+    assert_array_equal(out_surf_map, surf_img().data.parts[hemi].T)
     assert_surface_mesh_equal(out_surf_mesh, surf_img().mesh.parts[hemi])
+
     assert bg_map == out_bg_map
 
 
@@ -274,7 +275,7 @@ def test_check_surface_plotting_inputs_extract_mesh_from_polymesh(
         hemi=hemi,
         bg_map=bg_map,
     )
-    assert_array_equal(out_surf_map, surf_img().data.parts[hemi][:, 0])
+    assert_array_equal(out_surf_map, surf_img().data.parts[hemi].T)
     assert_surface_mesh_equal(out_surf_mesh, surf_mesh().parts[hemi])
     assert bg_map == out_bg_map
 
@@ -290,7 +291,7 @@ def test_check_surface_plotting_inputs_extract_bg_map_data(
         hemi=hemi,
         bg_map=surf_img(),
     )
-    assert_array_equal(out_bg_map, surf_img().data.parts[hemi][:, 0])
+    assert_array_equal(out_bg_map, surf_img().data.parts[hemi])
 
 
 @pytest.mark.parametrize(

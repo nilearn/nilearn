@@ -11,7 +11,10 @@ check_matplotlib()
 import matplotlib.pyplot as plt
 import numpy as np
 
-from nilearn.datasets import load_nki
+from nilearn.datasets import (
+    load_fsaverage_data,
+    load_nki,
+)
 from nilearn.maskers import SurfaceMasker
 from nilearn.plotting import plot_matrix, plot_surf, plot_surf_roi, show
 
@@ -30,6 +33,9 @@ print(f"Image mean: {mean_img}")
 views = ["lateral", "medial", "dorsal", "ventral", "anterior", "posterior"]
 hemispheres = ["left", "right"]
 
+# for our plots we will be using the fsaverage sulcal data as background map
+fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+
 fig, axes = plt.subplots(
     len(views),
     len(hemispheres),
@@ -37,6 +43,9 @@ fig, axes = plt.subplots(
     figsize=(4 * len(hemispheres), 4),
 )
 axes = np.atleast_2d(axes)
+
+vmin = min(min(x.ravel()) for x in mean_img.data.parts.values())
+vmax = max(max(x.ravel()) for x in mean_img.data.parts.values())
 
 for view, ax_row in zip(views, axes):
     for ax, hemi in zip(ax_row, hemispheres):
@@ -51,10 +60,13 @@ for view, ax_row in zip(views, axes):
             cmap="bwr",
             symmetric_cmap=True,
             bg_on_data=True,
+            vmin=vmin,
+            vmax=vmax,
+            bg_map=fsaverage_sulcal,
         )
 fig.set_size_inches(6, 8)
 
-# show()
+show()
 
 # %%
 # Connectivity with a surface atlas and `SurfaceLabelsMasker`
@@ -63,7 +75,6 @@ from nilearn.connectome import ConnectivityMeasure
 from nilearn.datasets import (
     fetch_atlas_surf_destrieux,
     load_fsaverage,
-    load_fsaverage_data,
 )
 from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.surface import SurfaceImage
@@ -78,12 +89,6 @@ labels_img = SurfaceImage(
     },
 )
 label_names = [x.decode("utf-8") for x in destrieux.labels]
-
-# for our plots we will be using the fsaverage sulcal data as background map
-fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
-
-img = load_nki()[0]
-print(f"NKI image: {img}")
 
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
@@ -133,7 +138,7 @@ report.save_as_html(output_dir / "report.html")
 connectome = ConnectivityMeasure(kind="correlation").fit([masked_data]).mean_
 plot_matrix(connectome, labels=labels_masker.label_names_)
 
-# show()
+show()
 
 # %%
 # Using the `Decoder`
@@ -142,11 +147,9 @@ plot_matrix(connectome, labels=labels_masker.label_names_)
 # as we do for volume images.
 from nilearn.decoding import Decoder
 
-img = load_nki()[0]
-
 # create some random labels
 rng = np.random.RandomState(0)
-y = rng.choice([0, 1], replace=True, size=img.shape[0])
+y = rng.choice([0, 1], replace=True, size=img.shape[1])
 
 decoder = Decoder(
     mask=SurfaceMasker(),
@@ -173,9 +176,6 @@ show()
 # ---------------------------------------
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
-img = load_nki()[0]
-y = rng.normal(size=img.shape[0])
-
 decoder = pipeline.make_pipeline(
     SurfaceMasker(),
     preprocessing.StandardScaler(),
@@ -191,7 +191,7 @@ coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 vmax = max(np.absolute(dp).max() for dp in coef_img.data.parts.values())
 plot_surf(
     surf_map=coef_img,
-    cmap="cold_hot",
+    cmap="bwr",
     vmin=-vmax,
     vmax=vmax,
     threshold=1e-6,

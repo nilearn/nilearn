@@ -171,13 +171,10 @@ suppress_warnings = ["image.not_readable", "config.cache"]
 html_theme = "furo"
 
 # Add custom css instructions from themes/custom.css
-font_awesome = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/"
+font_awesome = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/"
 html_css_files = [
     "custom.css",
-    (
-        "https://cdnjs.cloudflare.com/ajax/libs/"
-        "font-awesome/5.15.4/css/all.min.css"
-    ),
+    f"{font_awesome}all.min.css",
     f"{font_awesome}fontawesome.min.css",
     f"{font_awesome}solid.min.css",
     f"{font_awesome}brands.min.css",
@@ -219,6 +216,12 @@ html_theme_options = {
             "url": "https://twitter.com/nilearn",
             "html": "",
             "class": "fa-brands fa-solid fa-twitter fa-2x",
+        },
+        {
+            "name": "Bluesky",
+            "url": "https://bsky.app/profile/nilearn.bsky.social",
+            "html": "",
+            "class": "fa-brands fa-solid fa-bluesky fa-2x",
         },
         {
             "name": "Mastodon",

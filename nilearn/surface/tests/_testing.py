@@ -4,6 +4,7 @@ import numpy as np
 from scipy.spatial import Delaunay
 
 from nilearn.conftest import _rng
+from nilearn.surface import InMemoryMesh
 
 
 def generate_surf():
@@ -15,7 +16,7 @@ def generate_surf():
     rng = _rng()
     coords = rng.random((20, 3))
     faces = rng.integers(coords.shape[0], size=(30, 3))
-    return [coords, faces]
+    return InMemoryMesh(coordinates=coords, faces=faces)
 
 
 def flat_mesh(x_s, y_s, z=0):
@@ -25,8 +26,7 @@ def flat_mesh(x_s, y_s, z=0):
     z = np.ones(len(x)) * z
     vertices = np.asarray([x, y, z]).T
     triangulation = Delaunay(vertices[:, :2]).simplices
-    mesh = [vertices, triangulation]
-    return mesh
+    return InMemoryMesh(coordinates=vertices, faces=triangulation)
 
 
 def z_const_img(x_s, y_s, z_s):

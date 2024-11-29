@@ -32,8 +32,8 @@ def test_compute_mean_surface_image(surf_img):
 
     img = compute_mean_surface_image(two_time_points_img)
 
-    assert_array_equal(img.data.parts["left"], np.ones(shape=(4, 1)) * 0.5)
-    assert img.shape == (img.mesh.n_vertices, 1)
+    assert_array_equal(img.data.parts["left"], np.ones(shape=(4,)) * 0.5)
+    assert img.shape == (img.mesh.n_vertices,)
 
 
 def test_get_min_max_surface_image(surf_img):

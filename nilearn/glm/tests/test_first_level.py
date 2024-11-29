@@ -1191,8 +1191,8 @@ def test_first_level_residuals(shape_4d_default):
         shapes=[shape_4d_default]
     )
 
-    for i in range(len(design_matrices)):
-        design_matrices[i][design_matrices[i].columns[0]] = 1
+    for design_matrix in design_matrices:
+        design_matrix[design_matrix.columns[0]] = 1
 
     model = FirstLevelModel(
         mask_img=mask, minimize_memory=False, noise_model="ols"
@@ -1212,8 +1212,8 @@ def test_first_level_residuals_errors(shape_4d_default):
         shapes=[shape_4d_default]
     )
 
-    for i in range(len(design_matrices)):
-        design_matrices[i][design_matrices[i].columns[0]] = 1
+    for design_matrix in design_matrices:
+        design_matrix[design_matrix.columns[0]] = 1
 
     # Check that voxelwise model attributes
     # cannot be accessed if minimize_memory is set to True
@@ -1255,8 +1255,8 @@ def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(
         shapes
     )
 
-    for i in range(len(design_matrices)):
-        design_matrices[i][design_matrices[i].columns[0]] = 1
+    for design_matrix in design_matrices:
+        design_matrix[design_matrix.columns[0]] = 1
 
     model = FirstLevelModel(
         mask_img=mask, minimize_memory=False, noise_model="ols"
@@ -1275,8 +1275,8 @@ def test_first_level_predictions_r_square(shape_4d_default):
         shapes=[shape_4d_default]
     )
 
-    for i in range(len(design_matrices)):
-        design_matrices[i][design_matrices[i].columns[0]] = 1
+    for design_matrix in design_matrices:
+        design_matrix[design_matrix.columns[0]] = 1
 
     model = FirstLevelModel(
         mask_img=mask,
@@ -2163,7 +2163,7 @@ def test_flm_fit_surface_image(surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9, 1)
+    assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2188,7 +2188,7 @@ def test_flm_fit_surface_image_one_hemisphere(
     model.fit(mini_img_one_hemi, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (4, 1)
+    assert model.masker_.mask_img_.shape == (4,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
