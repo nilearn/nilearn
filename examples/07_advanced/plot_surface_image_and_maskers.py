@@ -1,6 +1,19 @@
 """
 A short demo of the surface images & maskers
 ============================================
+
+This example shows some more 'advanced' features
+to work with surface images.
+
+This shows:
+
+-   how to use :class:`~nilearn.masker.SurfaceMasker`
+    and to plot :class:`~nilearn.surface.SurfaceImage`
+
+-   how to use :class:`~nilearn.masker.SurfaceLabelsMasker`
+    and to compute a connectome with surface data.
+
+-   how to use run some decoding directly on surface data.
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -8,6 +21,13 @@ from nilearn._utils.helpers import check_matplotlib
 check_matplotlib()
 
 # %%
+# Masking and plotting surface images
+# -----------------------------------
+# Here we load the NKI dataset
+# as a list of :class:`~nilearn.surface.SurfaceImage`.
+# Then we extract data with a masker and
+# compute the mean image across time points for the first subject.
+# We then plot the the mean image.
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -16,7 +36,7 @@ from nilearn.datasets import (
     load_nki,
 )
 from nilearn.maskers import SurfaceMasker
-from nilearn.plotting import plot_matrix, plot_surf, plot_surf_roi, show
+from nilearn.plotting import plot_matrix, plot_surf, show
 
 img = load_nki()[0]
 print(f"NKI image: {img}")
@@ -30,22 +50,34 @@ mean_img = masker.inverse_transform(mean_data)
 print(f"Image mean: {mean_img}")
 
 # let's create a figure with all the views for both hemispheres
-views = ["lateral", "medial", "dorsal", "ventral", "anterior", "posterior"]
-hemispheres = ["left", "right"]
+views = [
+    "lateral",
+    "medial",
+    "dorsal",
+    "ventral",
+    "anterior",
+    "posterior",
+]
+hemispheres = [
+    "left",
+    "right",
+]
 
 # for our plots we will be using the fsaverage sulcal data as background map
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 
 fig, axes = plt.subplots(
-    len(views),
-    len(hemispheres),
+    nrows=len(views),
+    ncols=len(hemispheres),
     subplot_kw={"projection": "3d"},
     figsize=(4 * len(hemispheres), 4),
 )
 axes = np.atleast_2d(axes)
 
-vmin = min(min(x.ravel()) for x in mean_img.data.parts.values())
-vmax = max(max(x.ravel()) for x in mean_img.data.parts.values())
+# Let's ensure that we have the same range
+# centered on 0 for all subplots.
+vmax = max(np.absolute(hemi).max() for hemi in mean_img.data.parts.values())
+vmin = -vmax
 
 for view, ax_row in zip(views, axes):
     for ax, hemi in zip(ax_row, hemispheres):
@@ -81,17 +113,9 @@ from nilearn.surface import SurfaceImage
 
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
-labels_img = SurfaceImage(
-    mesh=fsaverage["pial"],
-    data={
-        "left": destrieux["map_left"],
-        "right": destrieux["map_right"],
-    },
-)
-label_names = [x.decode("utf-8") for x in destrieux.labels]
 
-fsaverage = load_fsaverage("fsaverage5")
-destrieux = fetch_atlas_surf_destrieux()
+# Let's create a surface image
+# for this atlas.
 labels_img = SurfaceImage(
     mesh=fsaverage["pial"],
     data={
@@ -104,18 +128,10 @@ labels_img = SurfaceImage(
 # For convenience we decode them to string.
 label_names = [x.decode("utf-8") for x in destrieux.labels]
 
-print(f"Destrieux image: {labels_img}")
-plot_surf_roi(
-    roi_map=labels_img,
-    avg_method="median",
-    view="lateral",
-    bg_on_data=True,
-    bg_map=fsaverage_sulcal,
-    darkness=0.5,
-    title="Destrieux atlas",
-)
-
-labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
+labels_masker = SurfaceLabelsMasker(
+    labels_img=labels_img,
+    labels=label_names,
+).fit()
 
 report = labels_masker.generate_report()
 # This report can be viewed in a notebook
@@ -136,20 +152,39 @@ report.save_as_html(output_dir / "report.html")
 
 # %%
 connectome = ConnectivityMeasure(kind="correlation").fit([masked_data]).mean_
-plot_matrix(connectome, labels=labels_masker.label_names_)
+vmax = np.absolute(connectome).max()
+vmin = -vmax
+plot_matrix(
+    connectome,
+    labels=labels_masker.label_names_,
+    vmax=vmax,
+    vmin=vmin,
+)
 
 show()
 
 # %%
 # Using the `Decoder`
 # -------------------
-# Now using the appropriate masker we can use a `Decoder` on surface data just
-# as we do for volume images.
+# Now using the appropriate masker
+# we can use a `Decoder` on surface data
+# just as we do for volume images.
+#
+# .. note::
+#
+#   Here we are given dummy 0 or 1 labels
+#   to each time point of the time series.
+#   We then decode at each time points.
+#   In this sense,
+#   the results do not show anything meaningful
+#   in a biological sense.
+#
 from nilearn.decoding import Decoder
 
 # create some random labels
 rng = np.random.RandomState(0)
-y = rng.choice([0, 1], replace=True, size=img.shape[1])
+n_time_points = img.shape[1]
+y = rng.choice([0, 1], replace=True, size=n_time_points)
 
 decoder = Decoder(
     mask=SurfaceMasker(),
@@ -188,11 +223,12 @@ decoder.fit(img, y)
 
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
-vmax = max(np.absolute(dp).max() for dp in coef_img.data.parts.values())
+vmax = max(np.absolute(hemi).max() for hemi in coef_img.data.parts.values())
+vmin = -vmax
 plot_surf(
     surf_map=coef_img,
     cmap="bwr",
-    vmin=-vmax,
+    vmin=vmin,
     vmax=vmax,
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
