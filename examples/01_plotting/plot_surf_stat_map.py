@@ -2,25 +2,20 @@
 Seed-based connectivity on the surface
 ======================================
 
-The dataset that is a subset of the enhanced NKI Rockland sample
-(https://fcon_1000.projects.nitrc.org/indi/enhanced/, :footcite:t:`Nooner2012`
-see :ref:`nki_dataset`)
-
-Resting state :term:`fMRI` scans (TR=645ms) of 102 subjects were preprocessed
-(https://github.com/fliem/nki_nilearn)
-and projected onto the Freesurfer fsaverage5 template
-(:footcite:t:`Dale1999` and  :footcite:t:`Fischl1999b`).
-For this example we use the time series of a single subject's left hemisphere.
-
-The Destrieux parcellation (:footcite:t:`Destrieux2010`)
-in fsaverage5 space as distributed with Freesurfer
-is used to select a seed region in the posterior cingulate cortex.
-
-Functional connectivity of the seed region to all other cortical nodes
-in the same hemisphere is calculated
+In this example we compute
+the functional connectivity
+of a seed region to all other cortical nodes
+in the same hemisphere
 using Pearson product-moment correlation coefficient.
 
-The :func:`nilearn.plotting.plot_surf_stat_map` function is used
+This example use the resting state time series
+of a single subject's left hemisphere
+the :ref:`nki_dataset`.
+
+The :ref:`destrieux_atlas` in fsaverage5 space
+is used to select a seed region in the posterior cingulate cortex.
+
+The :func:`~nilearn.plotting.plot_surf_stat_map` function is used
 to plot the resulting statistical map on the (inflated) pial surface.
 
 See also :ref:`for a similar example but using volumetric input data
@@ -41,16 +36,14 @@ from nilearn.datasets import (
 )
 from nilearn.surface import SurfaceImage
 
-nki_dataset = load_nki()
-
-# For this example we will only work on the data
-# from the left hemisphere
-hemi = "left"
-
 # The nki list contains a SurfaceImage instance
 # for the data of each subject along with fsaverage pial meshes.
+surf_img_nki = load_nki(
+    mesh_type="pial",
+    n_subjects=1,
+)[0]
 
-# Destrieux parcellation for left hemisphere in fsaverage5 space
+# Destrieux parcellation for hemisphere in fsaverage5 space
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
 
@@ -63,77 +56,92 @@ destrieux_atlas = SurfaceImage(
 )
 labels = [x.decode("utf-8") for x in destrieux.labels]
 
-parcellation = destrieux_atlas.data.parts[hemi]
-
 # Fsaverage5 surface template
 fsaverage_meshes = load_fsaverage()
 
-# The fsaverage meshes contains the FileMesh objects:
-print(
-    "Fsaverage5 pial surface of left hemisphere is: "
-    f"{fsaverage_meshes['pial'].parts[hemi]}"
-)
-print(
-    "Fsaverage5 inflated surface of left hemisphere is: "
-    f"{fsaverage_meshes['flat'].parts[hemi]}"
-)
-print(
-    "Fsaverage5 inflated surface of left hemisphere is: "
-    f"{fsaverage_meshes['inflated'].parts[hemi]}"
-)
+# The fsaverage meshes contains FileMesh objects:
+print(f"{fsaverage_meshes['pial'].parts["left"]=}")
+print(f"{fsaverage_meshes['flat'].parts["left"]=}")
+print(f"{fsaverage_meshes['inflated'].parts["left"]=}")
 
 # The fsaverage data contains SurfaceImage instances with meshes and data
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
-print(f"Fsaverage5 sulcal depth map: {fsaverage_sulcal}")
+print(f"{fsaverage_sulcal=}")
 
 fsaverage_curvature = load_fsaverage_data(data_type="curvature")
-print(f"Fsaverage5 sulcal curvature map: {fsaverage_curvature}")
+print(f"{fsaverage_curvature=}")
+
 
 # %%
-# Extracting the seed time series
-# -------------------------------
+# Extracting the seed time series with masker
+# -------------------------------------------
+# We do this using the :class:`~nilearn.maskers.SurfaceLabelsMasker`.
 import numpy as np
 
-# Load resting state time series from nilearn
-timeseries = nki_dataset[0].data.parts[hemi]
-
-# Coercing to float is required to avoid errors with scipy >= 0.14.0
-timeseries = timeseries.astype(float)
+from nilearn.maskers import SurfaceLabelsMasker
 
 # Extract seed region via label
-pcc_region = "G_cingul-Post-dorsal"
+name_seed_region = "G_cingul-Post-dorsal"
+label_seed_region = labels.index(name_seed_region)
 
-pcc_labels = np.where(parcellation == labels.index(pcc_region))[0]
+# Here we create a surface image
+# that has 0 for all vertices
+# except for those of the seed region.
+mask_data = {}
+for hemi in destrieux_atlas.data.parts:
+    n_vertices = destrieux_atlas.mesh.parts[hemi].n_vertices
+    mask_data[hemi] = np.zeros(n_vertices)
+    seed_vertices = destrieux_atlas.data.parts[hemi] == label_seed_region
+    mask_data[hemi][seed_vertices] = label_seed_region
 
-# Extract time series from seed region
-seed_timeseries = np.mean(timeseries[pcc_labels], axis=0)
+pcc_mask = SurfaceImage(
+    mesh=destrieux_atlas.mesh,
+    data=mask_data,
+)
+
+masker = SurfaceLabelsMasker(labels_img=pcc_mask).fit()
+seed_timeseries = masker.transform(surf_img_nki).squeeze()
 
 # %%
 # Calculating seed-based functional connectivity
 # ----------------------------------------------
+# Calculate Pearson product-moment correlation coefficient
+# between seed time series
+# and timeseries of all cortical nodes
+# We also 're-mask' previously masked nodes
+# background, medial wall...
 from scipy import stats
 
-# Calculate Pearson product-moment correlation coefficient between seed
-# time series and timeseries of all cortical nodes of the hemisphere
-stat_map = np.zeros(timeseries.shape[0])
-for i in range(timeseries.shape[0]):
-    stat_map[i] = stats.pearsonr(seed_timeseries, timeseries[i])[0]
+label_background = labels.index("Unknown")
 
-# Re-mask previously masked nodes (medial wall)
-medial_wall_vertices = np.mean(timeseries, axis=1) == 0
-stat_map[medial_wall_vertices] = 0
+timeseries_data = {}
+for hemi in surf_img_nki.data.parts:
+    n_vertices = surf_img_nki.mesh.parts[hemi].n_vertices
+    timeseries_data[hemi] = np.zeros(n_vertices)
+    for i in range(n_vertices):
+        timeseries_data[hemi][i] = stats.pearsonr(
+            seed_timeseries, surf_img_nki.data.parts[hemi][i]
+        )[0]
+
+    medial_wall_vertices = destrieux_atlas.data.parts[hemi] == label_background
+    timeseries_data[hemi][medial_wall_vertices] = 0
+
+stat_map_surf = SurfaceImage(
+    mesh=destrieux_atlas.mesh,
+    data=timeseries_data,
+)
+
 
 # %%
 # Display ROI on surface
 from nilearn.plotting import plot_surf_roi, plot_surf_stat_map, show
 
-# Transform ROI indices in ROI map
-pcc_map = np.zeros((1, parcellation.shape[0]), dtype=int)
-pcc_map[0, pcc_labels] = 1
+# For this example we will only show the data
+# from the left hemisphere
+hemi = "left"
 
 plot_surf_roi(
-    surf_mesh=nki_dataset[0].mesh,
-    roi_map=pcc_map,
+    roi_map=pcc_mask,
     hemi=hemi,
     view="medial",
     bg_map=fsaverage_sulcal,
@@ -141,9 +149,6 @@ plot_surf_roi(
     title="PCC Seed",
 )
 
-show()
-
-# %%
 # Using a flat :term:`mesh` can be useful in order to easily locate the area
 # of interest on the cortex.
 # To make this plot easier to read,
@@ -156,19 +161,20 @@ bg_map_rescaled = (bg_map + 1) / 4 + 0.25
 
 plot_surf_roi(
     surf_mesh=fsaverage_meshes["flat"],
-    roi_map=pcc_map,
+    roi_map=pcc_mask,
     hemi=hemi,
     view="dorsal",
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    title="PCC Seed",
+    title="PCC Seed on flat map",
 )
+
+show()
 
 # %%
 # Display unthresholded stat map with a slightly dimmed background
 plot_surf_stat_map(
-    surf_mesh=nki_dataset[0].mesh,
-    stat_map=stat_map,
+    stat_map=stat_map_surf,
     hemi=hemi,
     view="medial",
     colorbar=True,
@@ -178,14 +184,15 @@ plot_surf_stat_map(
     title="Correlation map",
 )
 
+
 show()
 
 # %%
-# Many different options are available for plotting, for example thresholding,
+# Many different options are available for plotting,
+# for example thresholding,
 # or using custom colormaps
 plot_surf_stat_map(
-    surf_mesh=nki_dataset[0].mesh,
-    stat_map=stat_map,
+    stat_map=stat_map_surf,
     hemi=hemi,
     view="medial",
     colorbar=True,
@@ -205,8 +212,7 @@ show()
 # Note that you can also control the transparency
 # with a background map using the alpha parameter.
 plot_surf_stat_map(
-    surf_mesh=nki_dataset[0].mesh,
-    stat_map=stat_map,
+    stat_map=stat_map_surf,
     hemi=hemi,
     view="lateral",
     colorbar=True,
@@ -228,7 +234,7 @@ print(f"Output will be saved to: {output_dir}")
 
 plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
-    stat_map=stat_map,
+    stat_map=stat_map_surf,
     hemi=hemi,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
