@@ -251,7 +251,7 @@ plot_surf_stat_map(
 # Plot multiple views of the 3D volume on a surface
 # -------------------------------------------------
 # :func:`~nilearn.plotting.plot_img_on_surf`
-# takes a niftistatistical map
+# takes a nifti statistical map
 # and projects it onto a surface.
 # It supports multiple choices of orientations,
 # and can plot either one or both hemispheres.
