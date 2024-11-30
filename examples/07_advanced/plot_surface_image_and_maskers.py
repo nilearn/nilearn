@@ -38,11 +38,11 @@ from nilearn.datasets import (
 from nilearn.maskers import SurfaceMasker
 from nilearn.plotting import plot_matrix, plot_surf, show
 
-img = load_nki()[0]
-print(f"NKI image: {img}")
+surf_img_nki = load_nki()[0]
+print(f"NKI image: {surf_img_nki}")
 
 masker = SurfaceMasker()
-masked_data = masker.fit_transform(img)
+masked_data = masker.fit_transform(surf_img_nki)
 print(f"Masked data shape: {masked_data.shape}")
 
 mean_data = masked_data.mean(axis=0)
@@ -101,8 +101,13 @@ fig.set_size_inches(6, 8)
 show()
 
 # %%
-# Connectivity with a surface atlas and `SurfaceLabelsMasker`
-# -----------------------------------------------------------
+# Connectivity with a surface atlas and SurfaceLabelsMasker
+# ---------------------------------------------------------
+# Here we first get the mean time serie
+# for each label of the destrieux atlas
+# for our NKI data.
+# We then compute and
+# plot the connectome of these time series.
 from nilearn.connectome import ConnectivityMeasure
 from nilearn.datasets import (
     fetch_atlas_surf_destrieux,
@@ -133,29 +138,16 @@ labels_masker = SurfaceLabelsMasker(
     labels=label_names,
 ).fit()
 
-report = labels_masker.generate_report()
-# This report can be viewed in a notebook
-report
-
-# We have several ways to access the report:
-# report.open_in_browser()
-
-masked_data = labels_masker.transform(img)
+masked_data = labels_masker.transform(surf_img_nki)
 print(f"Masked data shape: {masked_data.shape}")
 
-# or we can save as an html file
-from pathlib import Path
-
-output_dir = Path.cwd() / "results" / "plot_surface_image_and_maskers"
-output_dir.mkdir(exist_ok=True, parents=True)
-report.save_as_html(output_dir / "report.html")
-
 # %%
-connectome = ConnectivityMeasure(kind="correlation").fit([masked_data]).mean_
-vmax = np.absolute(connectome).max()
+connectome_measure = ConnectivityMeasure(kind="correlation")
+connectome = connectome_measure.fit([masked_data])
+vmax = np.absolute(connectome.mean_).max()
 vmin = -vmax
 plot_matrix(
-    connectome,
+    connectome.mean_,
     labels=labels_masker.label_names_,
     vmax=vmax,
     vmin=vmin,
@@ -183,8 +175,12 @@ from nilearn.decoding import Decoder
 
 # create some random labels
 rng = np.random.RandomState(0)
-n_time_points = img.shape[1]
-y = rng.choice([0, 1], replace=True, size=n_time_points)
+n_time_points = surf_img_nki.shape[1]
+y = rng.choice(
+    [0, 1],
+    replace=True,
+    size=n_time_points,
+)
 
 decoder = Decoder(
     mask=SurfaceMasker(),
@@ -192,7 +188,7 @@ decoder = Decoder(
     cv=3,
     screening_percentile=1,
 )
-decoder.fit(img, y)
+decoder.fit(surf_img_nki, y)
 print("CV scores:", decoder.cv_scores_)
 
 plot_surf(
@@ -219,7 +215,7 @@ decoder = pipeline.make_pipeline(
     ),
     linear_model.Ridge(),
 )
-decoder.fit(img, y)
+decoder.fit(surf_img_nki, y)
 
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
