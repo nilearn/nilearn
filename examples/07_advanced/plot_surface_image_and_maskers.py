@@ -174,7 +174,7 @@ show()
 #
 #   Here we are given dummy 0 or 1 labels
 #   to each time point of the time series.
-#   We then decode at each time points.
+#   We then decode at each time point.
 #   In this sense,
 #   the results do not show anything meaningful
 #   in a biological sense.
