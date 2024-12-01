@@ -49,13 +49,13 @@ data.data_dir
 # with their subject_id filled from the :term:`BIDS` dataset.
 # Along, we also obtain:
 #
-#   - a list with the Nifti image associated with each run
+# - a list with the Nifti image associated with each run
 #
-#   - a list of events read from events.tsv in the :term:`BIDS` dataset
+# - a list of events read from events.tsv in the :term:`BIDS` dataset
 #
-#   - a list of confounder motion regressors
-#     since in this case a confounds.tsv file is available
-#     in the :term:`BIDS` dataset.
+# - a list of confounder motion regressors
+#   since in this case a confounds.tsv file is available
+#   in the :term:`BIDS` dataset.
 #
 # To get the first level models we only have to specify the dataset directory
 # and the ``task_label`` as specified in the file names.
@@ -122,7 +122,11 @@ for first_level_glm, fmri_img, confound, event in zip(
 
     # Fit GLM.
     # Pass events and all confounds
-    first_level_glm.fit(run_imgs=image, events=event[0], confounds=confound[0])
+    first_level_glm.fit(
+        run_imgs=image,
+        events=event[0],
+        confounds=confound[0],
+    )
 
     # Compute contrast between 'language' and 'string' events
     z_scores.append(
@@ -138,7 +142,8 @@ for first_level_glm, fmri_img, confound, event in zip(
 #
 # Individual activation maps have been accumulated in the ``z_score``.
 # We can now use them in a one-sample t-test at the group level model
-# by passing them as input to :obj:`nilearn.glm.second_level.SecondLevelModel`.
+# by passing them as input
+# to :class:`~nilearn.glm.second_level.SecondLevelModel`.
 #
 
 import pandas as pd
