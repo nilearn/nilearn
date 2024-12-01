@@ -43,19 +43,10 @@ t_r = 2.4
 slice_time_ref = 0.5
 
 # %%
-# Prepare the data.
-# First, the volume-based :term:`fMRI` data.
+# Fetch the data.
 from nilearn.datasets import fetch_localizer_first_level
 
 data = fetch_localizer_first_level()
-fmri_img = data.epi_img
-
-# %%
-# Second, the experimental paradigm.
-import pandas as pd
-
-events_file = data.events
-events = pd.read_table(events_file)
 
 # %%
 # Project the :term:`fMRI` image to the surface
@@ -77,9 +68,9 @@ from nilearn.datasets import load_fsaverage
 from nilearn.surface import SurfaceImage
 
 fsaverage5 = load_fsaverage()
-image = SurfaceImage.from_volume(
+surface_image = SurfaceImage.from_volume(
     mesh=fsaverage5["pial"],
-    volume_img=fmri_img,
+    volume_img=data.epi_img,
 )
 
 # %%
@@ -99,7 +90,7 @@ glm = FirstLevelModel(
     t_r=t_r,
     slice_time_ref=slice_time_ref,
     hrf_model="glover + derivative",
-).fit(image, events)
+).fit(run_imgs=surface_image, events=data.events)
 
 # %%
 # Estimate contrasts
