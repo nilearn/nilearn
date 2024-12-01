@@ -560,7 +560,7 @@ def test_fetch_files_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    assert fil.read_text() == ""
+    assert not fil.read_text()
 
     # Modify content
     fil.write_text("some content")
@@ -589,7 +589,7 @@ def test_fetch_files_overwrite(
 
     assert request_mocker.url_count == 2
     assert fil.exists()
-    assert fil.read_text() == ""
+    assert not fil.read_text()
 
 
 def test_naive_ftp_adapter():
