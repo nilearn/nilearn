@@ -64,7 +64,7 @@ destrieux_atlas = SurfaceImage(
 labels = [x.decode("utf-8") for x in destrieux.labels]
 
 # The fsaverage meshes contains FileMesh objects:
-print(f"{fsaverage_meshes['pial'].parts["left"]=}")
+print(f"{fsaverage_meshes['pial'].parts['left']=}")
 
 # The fsaverage data contains SurfaceImage instances with meshes and data
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
