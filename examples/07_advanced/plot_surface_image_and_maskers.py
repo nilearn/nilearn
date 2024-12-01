@@ -7,10 +7,10 @@ to work with surface images.
 
 This shows:
 
--   how to use :class:`~nilearn.masker.SurfaceMasker`
+-   how to use :class:`~nilearn.maskers.SurfaceMasker`
     and to plot :class:`~nilearn.surface.SurfaceImage`
 
--   how to use :class:`~nilearn.masker.SurfaceLabelsMasker`
+-   how to use :class:`~nilearn.maskers.SurfaceLabelsMasker`
     and to compute a connectome with surface data.
 
 -   how to use run some decoding directly on surface data.
