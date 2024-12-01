@@ -12,39 +12,26 @@ and add contours of regions of interest using
 """
 
 # %%
-# Get a statistical map
-# ---------------------
-from nilearn import datasets
-
-stat_img = datasets.load_sample_motor_activation_image()
-
-
-# %%
-# Get a cortical mesh
-# -------------------
-from nilearn.datasets import load_fsaverage, load_fsaverage_data
-
-fsaverage_meshes = load_fsaverage()
-
-# %%
-# Here, we load the curvature map of the hemisphere under study,
-# and define a surface map whose value for a given :term:`vertex`
-# is 1 if the curvature is positive,
-# -1 if the curvature is negative.
-import numpy as np
-
-# In this example we will only plot the right hemisphere
-hemi = "right"
-
-fsaverage_curvature = load_fsaverage_data(data_type="curvature")
-curv_right_sign = np.sign(fsaverage_curvature.data.parts[hemi])
-
-# %%
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
 # You can create a :obj:`~nilearn.surface.SurfaceImage` object
 # from a nifti image by using the ``from_volume`` class method.
 # that will call indirectly :func:`~nilearn.surface.vol_to_surf`.
+
+# %%
+# Get a statistical map as nifti
+from nilearn.datasets import load_sample_motor_activation_image
+
+stat_img = load_sample_motor_activation_image()
+
+# %%
+# Get a cortical mesh
+from nilearn.datasets import load_fsaverage
+
+fsaverage_meshes = load_fsaverage()
+
+# %%
+# Construct a surface image from a volume.
 from nilearn.surface import SurfaceImage
 
 surface_image = SurfaceImage.from_volume(
@@ -53,12 +40,29 @@ surface_image = SurfaceImage.from_volume(
 )
 
 # %%
-# Plot the result
-# ---------------
-# You can visualize the texture on the surface using the function
+# Here, we load the curvature map
+# to use as background map some plots.
+# We define a surface map whose value for a given :term:`vertex`
+# is 1 if the curvature is positive,
+# -1 if the curvature is negative.
+import numpy as np
+
+from nilearn.datasets import load_fsaverage_data
+
+curv_sign = load_fsaverage_data(data_type="curvature")
+for hemi, data in curv_sign.data.parts.items():
+    curv_sign.data.parts[hemi] = np.sign(data)
+
+# %%
+# Plot the surface image
+# ----------------------
+# You can visualize the surface image using the function
 # :func:`~nilearn.plotting.plot_surf_stat_map` which uses ``matplotlib``
 # as the default plotting engine.
 from nilearn.plotting import plot_surf_stat_map
+
+# In this example we will only plot the right hemisphere
+hemi = "right"
 
 fig = plot_surf_stat_map(
     stat_map=surface_image,
@@ -67,7 +71,7 @@ fig = plot_surf_stat_map(
     title="Surface with matplotlib",
     colorbar=True,
     threshold=1.0,
-    bg_map=curv_right_sign,
+    bg_map=curv_sign,
 )
 fig.show()
 
@@ -96,7 +100,7 @@ figure = plot_surf_stat_map(
     title=f"Surface with {engine}",
     colorbar=True,
     threshold=1.0,
-    bg_map=curv_right_sign,
+    bg_map=curv_sign,
     bg_on_data=True,
     engine=engine,  # Specify the plotting engine here
 )
@@ -247,7 +251,7 @@ plot_surf_stat_map(
     threshold=1.0,
     bg_map=big_fsaverage_sulcal,
 )
-
+show()
 
 # %%
 # Plot multiple views of the 3D volume on a surface
@@ -267,7 +271,6 @@ plot_img_on_surf(
     views=["lateral", "medial"],
     hemispheres=["left", "right"],
     colorbar=True,
-    cmap="bwr",
     title="multiple views of the 3D volume",
     bg_on_data=True,
 )
@@ -316,8 +319,9 @@ view
 # for example if you are viewing a volumetric atlas,
 # you would want to avoid averaging the labels between neighboring regions.
 # Using nearest-neighbor interpolation with zero radius will achieve this.
+from nilearn.datasets import fetch_atlas_destrieux_2009
 
-destrieux = datasets.fetch_atlas_destrieux_2009(legacy_format=False)
+destrieux = fetch_atlas_destrieux_2009(legacy_format=False)
 
 view = view_img_on_surf(
     stat_map_img=destrieux.maps,
