@@ -101,7 +101,9 @@ figure = plot_surf_stat_map(
     engine=engine,  # Specify the plotting engine here
 )
 
-figure.show()
+# Uncomment the line below
+# to view the figure in browser.
+# figure.show()
 
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
