@@ -87,7 +87,7 @@ image = SurfaceImage.from_volume(
 # ----------------------------
 #
 # We can now simply run a GLM by directly passing
-# our :class:`nilearn.surface.SurfaceImage` instance
+# our :class:`~nilearn.surface.SurfaceImage` instance
 # as input to FirstLevelModel.fit
 #
 # Here we use an :term:`HRF` model
@@ -153,12 +153,12 @@ basic_contrasts["sentences"] = (
 # %%
 # Finally, we create a dictionary of more relevant contrasts
 #
-# * 'left - right button press': probes motor activity
+# * ``'left - right button press'``: probes motor activity
 #   in left versus right button presses.
-# * 'audio - visual': probes the difference of activity between listening
+# * ``'audio - visual'``: probes the difference of activity between listening
 #   to some content or reading the same type of content
 #   (instructions, stories).
-# * 'computation - sentences': looks at the activity
+# * ``'computation - sentences'``: looks at the activity
 #   when performing a mental computation task  versus simply reading sentences.
 #
 # Of course, we could define other contrasts,
@@ -184,7 +184,7 @@ from nilearn.plotting import plot_surf_stat_map, show
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
-for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
+for contrast_id, contrast_val in contrasts.items():
     # compute contrast-related statistics
     z_score = glm.compute_contrast(contrast_val, stat_type="t")
 
@@ -192,16 +192,13 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
     # together with a suitable background to give an impression
     # of the cortex folding.
     for hemi in ["left", "right"]:
-        print(
-            f"  Contrast {index + 1:1} out of {len(contrasts)}: "
-            f"{contrast_id}, {hemi} hemisphere"
-        )
         plot_surf_stat_map(
             surf_mesh=fsaverage5["inflated"],
             stat_map=z_score,
             hemi=hemi,
             title=contrast_id,
             colorbar=True,
+            cmap="bwr",
             threshold=3.0,
             bg_map=fsaverage_data,
         )
