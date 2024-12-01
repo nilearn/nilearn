@@ -137,7 +137,7 @@ plt.show()
 # This is important to check as highly correlated regressors can affect
 # the effficieny of
 # `your design <https://imaging.mrc-cbu.cam.ac.uk/imaging/\
-#  DesignEfficiency#Correlation_between_regressors>`_.
+# DesignEfficiency#Correlation_between_regressors>`_.
 #
 from nilearn.plotting import plot_design_matrix_correlation
 
