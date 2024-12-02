@@ -329,7 +329,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         Returns
         -------
         vertex_signals: :obj:`~nilearn.surface.SurfaceImage`
-            Signal for each vertex projected on the mesh of the input image.
+            Signal for each vertex projected on the mesh of the `maps_img`.
             The data for each hemisphere is of shape
             (n_vertices/2, n_timepoints).
         """
@@ -345,12 +345,13 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         vertex_signals = np.dot(region_signals, self.maps_img_.T)
 
         # split the signal back to hemispheres
-        vertex_signals = np.split(vertex_signals, 2, axis=1)
-
-        # data
         vertex_signals = {
-            "left": vertex_signals[0],
-            "right": vertex_signals[1],
+            "left": vertex_signals[
+                :, : self.maps_img.data.parts["left"].shape[0]
+            ],
+            "right": vertex_signals[
+                :, : self.maps_img.data.parts["right"].shape[0]
+            ],
         }
 
-        return SurfaceImage(mesh=self.img, data=vertex_signals)
+        return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
