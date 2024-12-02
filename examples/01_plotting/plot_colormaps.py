@@ -72,7 +72,15 @@ def remove_reversed_map(color_map_names):
 # %%
 # Nilearn sequential color maps
 # -----------------------------
+# Sequential: change in lightness and often saturation of color incrementally,
+# often using a single hue;
+# should be used for representing information that has ordering.
+#
 # Compared to the perceptually uniform colormaps of matplotlib.
+#
+# See also:
+# - https://matplotlib.org/stable/users/explain/colors/colormaps.html#sequential
+# - https://matplotlib.org/stable/users/explain/colors/colormaps.html#sequential2
 category = "Nilearn sequential"
 color_map_names = [
     "black_blue",
@@ -113,6 +121,13 @@ show()
 # %%
 # Nilearn diverging color maps
 # ----------------------------
+# Diverging: change in lightness
+# and possibly saturation of two different colors
+# that meet in the middle at an unsaturated color;
+# should be used when the information being plotted
+# has a critical middle value,
+# such as topography or when the data deviates around zero.
+#
 # Also compared to those of matplotlib.
 
 category = "Nilearn diverging"
