@@ -68,10 +68,10 @@ def compute_mean_surface_image(img):
     if len(img.shape) < 2 or img.shape[1] < 2:
         return img
 
-    data = {}
-    for part, value in img.data.parts.items():
-        data[part] = np.mean(value, axis=1).astype(float)
-
+    data = {
+        part: np.mean(value, axis=1).astype(float)
+        for part, value in img.data.parts.items()
+    }
     return SurfaceImage(mesh=img.mesh, data=data)
 
 
