@@ -190,6 +190,7 @@ check:
 install: sym_links_datasets glm_reports
 	@echo $(VERSIONTAG)
 	rm -rf _build/doctrees _build/nilearn.github.io
+	mkdir _build
 	# first clone the nilearn.github.io repo because it may ask
 	# for password and we don't want to delay this long build in
 	# the middle of it
