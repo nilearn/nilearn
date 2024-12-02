@@ -152,6 +152,8 @@ view_surf(
     hemi="left",
 )
 
+show()
+
 # %%
 # Plot the right part
 view_surf(
