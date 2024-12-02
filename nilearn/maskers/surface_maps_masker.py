@@ -344,13 +344,17 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # project region signals back to vertices
         vertex_signals = np.dot(region_signals, self.maps_img_.T)
 
-        # split the signal back to hemispheres
+        # we need the data to be of shape (n_vertices, n_timepoints)
+        # because the SurfaceImage object expects it
+        vertex_signals = vertex_signals.T
+
+        # split the signal into hemispheres
         vertex_signals = {
             "left": vertex_signals[
-                :, : self.maps_img.data.parts["left"].shape[0]
+                : self.maps_img.data.parts["left"].shape[0], :
             ],
             "right": vertex_signals[
-                :, : self.maps_img.data.parts["right"].shape[0]
+                : self.maps_img.data.parts["right"].shape[0], :
             ],
         }
 
