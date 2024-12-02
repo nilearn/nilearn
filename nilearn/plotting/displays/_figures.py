@@ -367,8 +367,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
                     centroids[remaining_vertices[shortest_idx]],
                     *vs[current_vertex],
                 )
-                if not any(
-                    v in idxs[current_vertex]
+                if all(
+                    v not in idxs[current_vertex]
                     for v in idxs[remaining_vertices[shortest_idx]]
                 ):
                     # this does not share vertex, so try again
