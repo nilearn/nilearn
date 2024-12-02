@@ -199,11 +199,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
             lines = [None] * len(levels)
         elif len(lines) == 1 and len(levels) > 1:
             lines *= len(levels)
-        if not (len(levels) == len(labels)):
+        if len(levels) != len(labels):
             raise ValueError(
                 "levels and labels need to be either the same length or None."
             )
-        if not (len(levels) == len(lines)):
+        if len(levels) != len(lines):
             raise ValueError(
                 "levels and lines need to be either the same length or None."
             )
