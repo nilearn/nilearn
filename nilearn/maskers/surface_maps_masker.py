@@ -17,6 +17,7 @@ from nilearn.maskers._utils import (
     check_same_n_vertices,
     concatenate_surface_images,
 )
+from nilearn.surface import SurfaceImage
 
 
 @fill_doc
@@ -28,15 +29,15 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     Parameters
     ----------
-        maps_img : :obj:`~nilearn.surface.SurfaceImage` object with data shape\
-                    (n_vertices, n_regions)
+        maps_img : :obj:`~nilearn.surface.SurfaceImage`
             Set of maps that define the regions. representative time course \
-            per map is extracted using least square regression.
+            per map is extracted using least square regression. The data for \
+            each hemisphere is of shape (n_vertices/2, n_regions).
 
-        mask_img : :obj:`~nilearn.surface.SurfaceImage` object with data shape\
-                    (n_vertices), optional
+        mask_img : :obj:`~nilearn.surface.SurfaceImage`, optional, default=None
             Mask to apply to regions before extracting signals. Defines the \
-            overall area of the brain to consider.
+            overall area of the brain to consider. The data for each \
+            hemisphere is of shape (n_vertices/2, n_regions).
 
         allow_overlap : :obj:`bool`, default=True
             If False, an error is raised if the maps overlaps (ie at least two
@@ -82,13 +83,18 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     Attributes
     ----------
-        maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
-            The maps mask of the data.
+        maps_img_ : :obj:`~numpy.ndarray`
+            The maps image converted to a numpy array by concatenating the \
+            data of both hemispheres/parts.
+            shape: (n_vertices, n_regions)
+
+        mask_img_ : :obj:`~numpy.ndarray` or None
+            The mask image converted to a numpy array by concatenating the \
+            `mask_img` data of both hemispheres/parts.
+            shape: (n_vertices,)
 
         n_elements_ : :obj:`int`
-            The number of discrete values in the mask.
-            This is equivalent to the number of unique values in the mask \
-            image, ignoring the background value.
+            The number of regions in the maps image.
 
     See Also
     --------
@@ -201,7 +207,8 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         img : :obj:`~nilearn.surface.SurfaceImage` object or \
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
-            Mesh and data for both hemispheres.
+            Mesh and data for both hemispheres/parts. The data for each \
+            hemisphere is of shape (n_vertices/2, n_timepoints).
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
                     :class:`pathlib.Path`, \
@@ -294,7 +301,8 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         img : :obj:`~nilearn.surface.SurfaceImage` object or \
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
-            Mesh and data for both hemispheres.
+            Mesh and data for both hemispheres. The data for each hemisphere \
+            is of shape (n_vertices/2, n_timepoints).
 
         y : None
             This parameter is unused.
@@ -302,9 +310,47 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        :obj:`numpy.ndarray`
-            Signal for each element.
-            shape: (img data shape, total number of vertices)
+        region_signals: :obj:`numpy.ndarray`
+            Signal for each region as provided in the maps (via `maps_img`).
+            shape: (n_timepoints, n_regions)
         """
         del y
         return self.fit().transform(img)
+
+    def inverse_transform(self, region_signals):
+        """Compute :term:`vertex` signals from region signals.
+
+        Parameters
+        ----------
+        region_signals: :obj:`numpy.ndarray`
+            Signal for each region as provided in the maps (via `maps_img`).
+            shape: (n_timepoints, n_regions)
+
+        Returns
+        -------
+        vertex_signals: :obj:`~nilearn.surface.SurfaceImage`
+            Signal for each vertex projected on the mesh of the input image.
+            The data for each hemisphere is of shape
+            (n_vertices/2, n_timepoints).
+        """
+        self._check_fitted()
+
+        if region_signals.shape[1] != self.n_elements_:
+            raise ValueError(
+                f"Expected {self.n_elements_} regions, "
+                f"but got {region_signals.shape[1]}."
+            )
+
+        # project region signals back to vertices
+        vertex_signals = np.dot(region_signals, self.maps_img_.T)
+
+        # split the signal back to hemispheres
+        vertex_signals = np.split(vertex_signals, 2, axis=1)
+
+        # data
+        vertex_signals = {
+            "left": vertex_signals[0],
+            "right": vertex_signals[1],
+        }
+
+        return SurfaceImage(mesh=self.img, data=vertex_signals)
