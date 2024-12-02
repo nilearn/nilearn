@@ -190,18 +190,18 @@ check:
 install: sym_links_datasets glm_reports
 	@echo $(VERSIONTAG)
 	rm -rf _build/doctrees _build/nilearn.github.io
-	mkdir _build
+	mkdir ~/_build
 	# first clone the nilearn.github.io repo because it may ask
 	# for password and we don't want to delay this long build in
 	# the middle of it
 	# --depth 1 is a speed optimization since we don't need the
 	# history prior to the last commit
-	git clone --depth 1 git@github.com:nilearn/nilearn.github.io.git _build/nilearn.github.io
-	touch _build/nilearn.github.io/.nojekyll
-	rm -Rf _build/nilearn.github.io/stable;
-	mkdir _build/nilearn.github.io/stable;
+	git clone --depth 1 git@github.com:nilearn/nilearn.github.io.git ~/_build/nilearn.github.io
+	touch ~/_build/nilearn.github.io/.nojekyll
+	rm -Rf ~/_build/nilearn.github.io/stable;
+	mkdir ~/_build/nilearn.github.io/stable;
 	make html
-	cd _build/ && \
+	cd ~/_build/ && \
 	cp -r html/* nilearn.github.io/stable/ && \
 	cd nilearn.github.io && \
 	git add -A && \
