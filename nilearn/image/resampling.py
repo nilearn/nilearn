@@ -649,8 +649,6 @@ def resample_img(
         dtype=resampled_data_dtype,
     )
 
-    all_img = (slice(None),) * 3
-
     # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
     # all(b == integers):
     if (
@@ -692,6 +690,8 @@ def resample_img(
         # better algorithm.
         if np.all(np.diag(np.diag(A)) == A):
             A = np.diag(A)
+        all_img = (slice(None),) * 3
+
         # Iterate over a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the
         # computational cost

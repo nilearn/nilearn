@@ -143,11 +143,11 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
     create_files = kwargs.get("create_files", True)
     use_wildcards = kwargs.get("use_wildcards", False)
 
-    prefix = "nilearn_"
-    suffix = ".nii"
-
     if create_files:
         filenames = []
+        prefix = "nilearn_"
+        suffix = ".nii"
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             for i, img in enumerate(imgs):
