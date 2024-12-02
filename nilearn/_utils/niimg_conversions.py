@@ -61,7 +61,7 @@ def check_same_fov(*args, **kwargs):
             errors.append((a_name, b_name, "shape"))
         if not np.allclose(a_img.affine, b_img.affine):
             errors.append((a_name, b_name, "affine"))
-    if len(errors) > 0 and raise_error:
+    if errors and raise_error:
         raise ValueError(
             "Following field of view errors were detected:\n"
             + "\n".join(
@@ -71,7 +71,7 @@ def check_same_fov(*args, **kwargs):
                 ]
             )
         )
-    return len(errors) == 0
+    return not errors
 
 
 def _index_img(img, index):
