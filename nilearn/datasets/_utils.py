@@ -359,7 +359,7 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
 
             if file_.suffix == ".tgz":
                 filename = filename.with_suffix(".tar")
-            elif file_.suffix == "":
+            elif not file_.suffix:
                 # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, f"{file_}.gz")
                 file_ = file_.with_suffix(".gz")
