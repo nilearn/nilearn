@@ -15,6 +15,11 @@ import numpy as np
 from nilearn.plotting import show
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 
+try:
+    matplotlib_maps = mpl.colormaps
+except AttributeError:
+    matplotlib_maps = plt.cm.datad
+
 cmaps = {}
 
 gradient = np.linspace(0, 1, 256)
@@ -89,10 +94,16 @@ plot_color_gradients(
 cmaps[category] = color_map_names
 
 category = "Matplotlib perceptually uniform sequential"
-color_map_names = ["viridis", "plasma", "inferno", "magma", "cividis"]
+color_map_names = [
+    "viridis",
+    "plasma",
+    "inferno",
+    "magma",
+    "cividis",
+]
 plot_color_gradients(
     category=category,
-    color_maps=mpl.colormaps,
+    color_maps=matplotlib_maps,
     color_map_names=color_map_names,
 )
 cmaps[category] = color_map_names
@@ -106,17 +117,6 @@ show()
 
 category = "Nilearn diverging"
 color_map_names = [
-    "cold_hot",
-    "cold_white_hot",
-    "brown_blue",
-    "cyan_copper",
-    "cyan_orange",
-    "blue_red",
-    "brown_cyan",
-    "purple_green",
-    "blue_orange",
-    "hot_white_bone",
-    "hot_black_bone",
     "bwr",
 ]
 plot_color_gradients(
@@ -143,7 +143,60 @@ color_map_names = [
 ]
 plot_color_gradients(
     category=category,
+    color_maps=matplotlib_maps,
+    color_map_names=color_map_names,
+)
+cmaps[category] = color_map_names
+
+show()
+
+# %%
+# Nilearn cyclic color maps
+# -------------------------
+# Also compared to those of matplotlib.
+
+category = "Nilearn cyclic"
+color_map_names = [
+    "cold_hot",
+    "cold_white_hot",
+    "hot_white_bone",
+    "brown_blue",
+    "hot_black_bone",
+]
+plot_color_gradients(
+    category=category,
+    color_maps=nilearn_cmaps,
+    color_map_names=color_map_names,
+)
+cmaps[category] = color_map_names
+
+category = "Matplotlib cyclic"
+# hsv not included
+color_map_names = ["twilight", "twilight_shifted"]
+plot_color_gradients(
+    category=category,
     color_maps=mpl.colormaps,
+    color_map_names=color_map_names,
+)
+cmaps[category] = color_map_names
+
+show()
+
+# %%
+# Nilearn other color maps
+# ------------------------------
+category = "Nilearn other"
+color_map_names = [
+    "cyan_orange",
+    "blue_red",
+    "brown_cyan",
+    "purple_green",
+    "blue_orange",
+    "cyan_copper",
+]
+plot_color_gradients(
+    category=category,
+    color_maps=nilearn_cmaps,
     color_map_names=color_map_names,
 )
 cmaps[category] = color_map_names
@@ -167,10 +220,10 @@ plot_color_gradients(
 )
 cmaps[category] = color_map_names
 
-show()
+# show()
 
 # %%
-# Lightness of Nilearn colormaps
+# Lightness of Nilearn colormapsmatplotlib_maps
 # ------------------------------
 # Here we examine the lightness values of the matplotlib colormaps.
 # Also compared to those of matplotlib.
@@ -181,13 +234,15 @@ mpl.rcParams.update({"font.size": 12})
 
 # Number of colormap per subplot for particular cmap categories
 _DSUBS = {
-    "Nilearn sequential": 0,
-    "Matplotlib perceptually uniform sequential": 0,
-    "Nilearn diverging": 0,
-    "Matplotlib diverging": 0,
+    "Nilearn sequential": 6,
+    "Matplotlib perceptually uniform sequential": 5,
+    "Nilearn diverging": 1,
+    "Matplotlib diverging": 4,
+    "Nilearn cyclic": 5,
+    "Matplotlib cyclic": 2,
+    "Nilearn other": 3,
+    "Nilearn misc": 3,
 }
-for k in _DSUBS:
-    _DSUBS[k] = len(cmaps[k])
 
 # Spacing between the colormaps of a subplot
 _DC = {
@@ -195,6 +250,10 @@ _DC = {
     "Matplotlib perceptually uniform sequential": 1.4,
     "Nilearn diverging": 1.4,
     "Matplotlib diverging": 1.4,
+    "Nilearn cyclic": 1.4,
+    "Matplotlib cyclic": 1.4,
+    "Nilearn other": 1.4,
+    "Nilearn misc": 1.4,
 }
 
 
@@ -238,10 +297,11 @@ for cmap_category, cmap_list in cmaps.items():
 
             # Store locations for colormap labels
             if cmap_category in (
-                "Matplotlib perceptually uniform sequential",
                 "Nilearn sequential",
-                "Matplotlib diverging",
+                "Matplotlib perceptually uniform sequential",
                 "Nilearn diverging",
+                "Nilearn cyclic",
+                "Matplotlib diverging",
             ):
                 locs.append(x[-1] + j * dc)
             # elif cmap_category in (
