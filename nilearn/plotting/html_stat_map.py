@@ -397,7 +397,7 @@ def _json_view_data(
     -------
     json_view
     """
-    # Initialise brainsprite data structure
+    # Initialize brainsprite data structure
     json_view = dict.fromkeys(
         [
             "bg_base64",

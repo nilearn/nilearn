@@ -709,7 +709,7 @@ def resample_img(
 
     if clip:
         # force resampled data to have a range contained in the original data
-        # preventing ringing artefact
+        # preventing ringing artifact
         # We need to add zero as a value considered for clipping, as it
         # appears in padding images.
         vmin = min(np.nanmin(data), 0)

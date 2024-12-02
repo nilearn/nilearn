@@ -220,8 +220,8 @@ If you wish to add a missing term, please
         parcels with no overlap between individual regions or "soft" probabilistic
         parcels with a non-zero probability of overlap.
 
-    predictive modelling
-        `Predictive modelling`_ uses statistics to predict outcomes.
+    predictive modeling
+        `Predictive modeling`_ uses statistics to predict outcomes.
 
     Probabilistic atlas
         Probabilistic atlases define soft parcellations of the brain in which
@@ -400,7 +400,7 @@ References
 .. _`Opening`:
     https://en.wikipedia.org/wiki/Opening_(morphology)
 
-.. _`Predictive modelling`:
+.. _`Predictive modeling`:
     https://en.wikipedia.org/wiki/Predictive_modelling
 
 .. _`Recursive nearest agglomeration`:
