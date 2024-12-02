@@ -8,49 +8,268 @@ which can be used for plotting brain images on surface.
 See :ref:`surface-plotting` for surface plotting details.
 """
 
-# %%
-# Plot color maps
-# ---------------
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn.plotting import show
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 
-nmaps = len(nilearn_cmaps)
-a = np.outer(np.arange(0, 1, 0.01), np.ones(10))
+cmaps = {}
 
-# Initialize the figure
-import matplotlib.pyplot as plt
+gradient = np.linspace(0, 1, 256)
+gradient = np.vstack((gradient, gradient))
 
-plt.figure(figsize=(10, 4.2))
-plt.subplots_adjust(top=0.4, bottom=0.05, left=0.01, right=0.99)
 
-for index, cmap in enumerate(nilearn_cmaps):
-    plt.subplot(1, nmaps + 1, index + 1)
-    plt.imshow(a, cmap=nilearn_cmaps[cmap])
-    plt.axis("off")
-    plt.title(cmap, fontsize=10, va="bottom", rotation=90)
+def plot_color_gradients(
+    category, color_maps, color_map_names=None, sort=False
+):
+    """Create figure and adjust figure height to number of colormaps.
+
+    Adapted from the matplolib documentation.
+    """
+    if color_map_names is None:
+        color_map_names = color_maps.keys()
+    # remove reversed maps
+    color_map_names = remove_reversed_map(color_map_names)
+    if sort:
+        color_map_names = sorted(color_map_names)
+
+    nrows = len(color_map_names)
+    figh = 0.35 + 0.15 + (nrows + (nrows - 1) * 0.1) * 0.22
+    fig, axs = plt.subplots(nrows=nrows + 1, figsize=(6.4, figh))
+    fig.subplots_adjust(
+        top=1 - 0.35 / figh, bottom=0.15 / figh, left=0.2, right=0.99
+    )
+    axs[0].set_title(f"{category} colormaps", fontsize=14)
+
+    for ax, name in zip(axs, color_map_names):
+        ax.imshow(gradient, aspect="auto", cmap=color_maps[name])
+        ax.text(
+            -0.01,
+            0.5,
+            name,
+            va="center",
+            ha="right",
+            fontsize=10,
+            transform=ax.transAxes,
+        )
+
+    # Turn off *all* ticks & spines, not just the ones with colormaps.
+    for ax in axs:
+        ax.set_axis_off()
+
+
+def remove_reversed_map(color_map_names):
+    return [x for x in color_map_names if not x.endswith("_r")]
+
 
 # %%
-# Plot matplotlib color maps
-# --------------------------
-
-plt.figure(figsize=(10, 5))
-plt.subplots_adjust(top=0.8, bottom=0.05, left=0.01, right=0.99)
-deprecated_cmaps = ["Vega10", "Vega20", "Vega20b", "Vega20c", "spectral"]
-m_cmaps = [
-    m
-    for m in plt.cm.datad
-    if not m.endswith("_r") and m not in deprecated_cmaps
+# Nilearn sequential color maps
+# -----------------------------
+# Compared to the perceptually uniform colormaps of matplotlib.
+category = "Nilearn sequential"
+color_map_names = [
+    "black_blue",
+    "black_purple",
+    "black_pink",
+    "black_red",
+    "red_transparent",
+    "green_transparent",
+    "blue_transparent",
+    "red_transparent_full_alpha_range",
+    "green_transparent_full_alpha_range",
+    "blue_transparent_full_alpha_range",
 ]
-m_cmaps.sort()
+plot_color_gradients(
+    category=category,
+    color_maps=nilearn_cmaps,
+    color_map_names=color_map_names,
+)
+cmaps[category] = color_map_names
 
-for index, cmap in enumerate(m_cmaps):
-    plt.subplot(1, len(m_cmaps) + 1, index + 1)
-    plt.imshow(a, cmap=plt.get_cmap(cmap), aspect="auto")
-    plt.axis("off")
-    plt.title(cmap, fontsize=10, va="bottom", rotation=90)
+category = "Matplotlib perceptually uniform sequential"
+color_map_names = ["viridis", "plasma", "inferno", "magma", "cividis"]
+plot_color_gradients(
+    category=category,
+    color_maps=mpl.colormaps,
+    color_map_names=color_map_names,
+)
+cmaps[category] = color_map_names
 
 show()
+
+# %%
+# Nilearn diverging color maps
+# ----------------------------
+# Also compared to those of matplotlib.
+
+category = "Nilearn diverging"
+color_map_names = [
+    "cold_hot",
+    "cold_white_hot",
+    "brown_blue",
+    "cyan_copper",
+    "cyan_orange",
+    "blue_red",
+    "brown_cyan",
+    "purple_green",
+    "blue_orange",
+    "hot_white_bone",
+    "hot_black_bone",
+    "bwr",
+]
+plot_color_gradients(
+    category=category,
+    color_maps=nilearn_cmaps,
+    color_map_names=color_map_names,
+)
+cmaps[category] = color_map_names
+
+category = "Matplotlib diverging"
+color_map_names = [
+    "PiYG",
+    "PRGn",
+    "BrBG",
+    "PuOr",
+    "RdGy",
+    "RdBu",
+    "RdYlBu",
+    "RdYlGn",
+    "Spectral",
+    "coolwarm",
+    "bwr",
+    "seismic",
+]
+plot_color_gradients(
+    category=category,
+    color_maps=mpl.colormaps,
+    color_map_names=color_map_names,
+)
+cmaps[category] = color_map_names
+
+show()
+
+# %%
+# Nilearn misc color maps
+# -----------------------
+
+category = "Nilearn misc"
+color_map_names = [
+    "roy_big_bl",
+    "videen_style",
+    "ocean_hot",
+]
+plot_color_gradients(
+    category=category,
+    color_maps=nilearn_cmaps,
+    color_map_names=color_map_names,
+)
+cmaps[category] = color_map_names
+
+show()
+
+# %%
+# Lightness of Nilearn colormaps
+# ------------------------------
+# Here we examine the lightness values of the matplotlib colormaps.
+# Also compared to those of matplotlib.
+
+from colorspacious import cspace_converter
+
+mpl.rcParams.update({"font.size": 12})
+
+# Number of colormap per subplot for particular cmap categories
+_DSUBS = {
+    "Nilearn sequential": 0,
+    "Matplotlib perceptually uniform sequential": 0,
+    "Nilearn diverging": 0,
+    "Matplotlib diverging": 0,
+}
+for k in _DSUBS:
+    _DSUBS[k] = len(cmaps[k])
+
+# Spacing between the colormaps of a subplot
+_DC = {
+    "Nilearn sequential": 1.4,
+    "Matplotlib perceptually uniform sequential": 1.4,
+    "Nilearn diverging": 1.4,
+    "Matplotlib diverging": 1.4,
+}
+
+
+# Indices to step through colormap
+x = np.linspace(0.0, 1.0, 100)
+
+# Do plot
+for cmap_category, cmap_list in cmaps.items():
+    # Do subplots so that colormaps have enough space.
+    # Default is 6 colormaps per subplot.
+    dsub = _DSUBS.get(cmap_category, 6)
+    nsubplots = int(np.ceil(len(cmap_list) / dsub))
+
+    # squeeze=False to handle similarly the case of a single subplot
+    fig, axs = plt.subplots(
+        nrows=nsubplots,
+        squeeze=False,
+        figsize=(7, 3 * nsubplots),
+    )
+
+    for i, ax in enumerate(axs.flat):
+        locs = []  # locations for text labels
+
+        for j, cmap in enumerate(cmap_list[i * dsub : (i + 1) * dsub]):
+            # Get RGB values for colormap
+            # and convert the colormap in # CAM02-UCS colorspace.
+            # lab[0, :, 0] is the lightness.
+            rgb = mpl.colormaps[cmap](x)[np.newaxis, :, :3]
+            lab = cspace_converter("sRGB1", "CAM02-UCS")(rgb)
+
+            # Plot colormap L values.
+            # Do separately for each category so each plot can be pretty.
+            # To make scatter markers change color along plot:
+            # https://stackoverflow.com/q/8202605/
+
+            y_ = lab[0, :, 0]
+            c_ = x
+
+            dc = _DC.get(cmap_category, 1.4)  # cmaps horizontal spacing
+            ax.scatter(x + j * dc, y_, c=c_, cmap=cmap, s=300, linewidths=0.0)
+
+            # Store locations for colormap labels
+            if cmap_category in (
+                "Matplotlib perceptually uniform sequential",
+                "Nilearn sequential",
+                "Matplotlib diverging",
+                "Nilearn diverging",
+            ):
+                locs.append(x[-1] + j * dc)
+            # elif cmap_category in (
+            #     "Matplotlib diverging",
+            #     "Nilearn diverging",
+            # ):
+            #     locs.append(x[int(x.size / 2.0)] + j * dc)
+
+        # Set up the axis limits:
+        #   * the 1st subplot is used as a reference for the x-axis limits
+        #   * lightness values goes from 0 to 100 (y-axis limits)
+        ax.set_xlim(axs[0, 0].get_xlim())
+        ax.set_ylim(0.0, 100.0)
+
+        # Set up labels for colormaps
+        ax.xaxis.set_ticks_position("top")
+        ticker = mpl.ticker.FixedLocator(locs)
+        ax.xaxis.set_major_locator(ticker)
+        formatter = mpl.ticker.FixedFormatter(
+            cmap_list[i * dsub : (i + 1) * dsub]
+        )
+        ax.xaxis.set_major_formatter(formatter)
+        ax.xaxis.set_tick_params(rotation=50)
+        ax.set_ylabel("Lightness $L^*$", fontsize=12)
+
+    ax.set_xlabel(f"{cmap_category} colormaps", fontsize=14)
+
+    fig.tight_layout(h_pad=0.0, pad=1.5)
+    plt.show()
 
 # sphinx_gallery_dummy_images=2

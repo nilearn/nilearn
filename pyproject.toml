@@ -50,6 +50,7 @@ dev = [
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
+    "colorspacious",
     "furo",
     "memory_profiler",  # measuring memory during docs building
     "myst-parser",
