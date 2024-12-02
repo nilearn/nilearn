@@ -239,21 +239,21 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
     path_to_niimg = Path(niimg_rep)
     if not shorten:
         return str(path_to_niimg)
-    # If the name of the file itself is larger than
-    # truncate, then shorten the name only
+    # If the name of the file itself
+    # is larger than truncate,
+    # then shorten the name only
+    # else add some folder structure if available
     if len(path_to_niimg.name) > truncate:
         return f"{path_to_niimg.name[: (truncate - 2)]}..."
-    # Else add some folder structure if available
-    else:
-        rep = path_to_niimg.name
-        if len(path_to_niimg.parts) > 1:
-            for p in path_to_niimg.parts[::-1][1:]:
-                if len(rep) + len(p) < truncate - 3:
-                    rep = str(Path(p, rep))
-                else:
-                    rep = str(Path("...", rep))
-                    break
-        return rep
+    rep = path_to_niimg.name
+    if len(path_to_niimg.parts) > 1:
+        for p in path_to_niimg.parts[::-1][1:]:
+            if len(rep) + len(p) < truncate - 3:
+                rep = str(Path(p, rep))
+            else:
+                rep = str(Path("...", rep))
+                break
+    return rep
 
 
 def img_data_dtype(niimg):

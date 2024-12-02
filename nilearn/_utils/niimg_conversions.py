@@ -155,28 +155,7 @@ def iter_check_niimg(
                     resample_to_first_img = True
 
             if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
-                if target_fov is not None:
-                    from nilearn import image  # we avoid a circular import
-
-                    if resample_to_first_img:
-                        warnings.warn(
-                            "Affine is different across subjects."
-                            " Realignement on first subject "
-                            "affine forced"
-                        )
-                    niimg = cache(
-                        image.resample_img,
-                        memory,
-                        func_memory_level=2,
-                        memory_level=memory_level,
-                    )(
-                        niimg,
-                        target_affine=ref_fov[0],
-                        target_shape=ref_fov[1],
-                        copy_header=True,
-                        force_resample=False,  # TODO update to True in 0.13.0
-                    )
-                else:
+                if target_fov is None:
                     raise ValueError(
                         f"Field of view of image #{i} is different from "
                         "reference FOV.\n"
@@ -185,6 +164,26 @@ def iter_check_niimg(
                         f"Reference shape:\n{ref_fov[1]!r}\n"
                         f"Image shape:\n{niimg.shape!r}\n"
                     )
+                from nilearn import image  # we avoid a circular import
+
+                if resample_to_first_img:
+                    warnings.warn(
+                        "Affine is different across subjects."
+                        " Realignement on first subject "
+                        "affine forced"
+                    )
+                niimg = cache(
+                    image.resample_img,
+                    memory,
+                    func_memory_level=2,
+                    memory_level=memory_level,
+                )(
+                    niimg,
+                    target_affine=ref_fov[0],
+                    target_shape=ref_fov[1],
+                    copy_header=True,
+                    force_resample=False,  # TODO update to True in 0.13.0
+                )
             yield niimg
         except DimensionError as exc:
             # Keep track of the additional dimension in the error

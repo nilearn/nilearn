@@ -724,12 +724,10 @@ def _plot_surf_matplotlib(
 
     if title is not None:
         axes.set_title(title)
-    # save figure if output file is given
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close()
-    else:
+    if output_file is None:
         return figure
+    figure.savefig(output_file)
+    plt.close()
 
 
 @fill_doc
@@ -1293,12 +1291,10 @@ def plot_surf_contours(
         title = figure._suptitle._text
     if title:
         axes.set_title(title)
-    # save figure if output file is given
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-    else:
+    if output_file is None:
         return figure
+    figure.savefig(output_file)
+    plt.close(figure)
 
 
 @fill_doc
@@ -1885,11 +1881,10 @@ def plot_img_on_surf(
     if title is not None:
         fig.suptitle(title, y=1.0 - title_h / sum(height_ratios), va="bottom")
 
-    if output_file is not None:
-        fig.savefig(output_file, bbox_inches="tight")
-        plt.close(fig)
-    else:
+    if output_file is None:
         return fig, axes
+    fig.savefig(output_file, bbox_inches="tight")
+    plt.close(fig)
 
 
 @fill_doc
