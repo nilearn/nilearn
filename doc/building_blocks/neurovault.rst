@@ -30,7 +30,7 @@ collection's webpage, you can click 'Details' to see its id
 (and more). You can then download it using
 :func:`nilearn.datasets.fetch_neurovault_ids` :
 
-.. code-block:: default
+.. code-block:: python
 
   from nilearn.datasets import fetch_neurovault_ids
   brainpedia = fetch_neurovault_ids(collection_ids=[1952])
@@ -38,7 +38,7 @@ collection's webpage, you can click 'Details' to see its id
 Or if you want some images in particular, rather than whole
 collections :
 
-.. code-block:: default
+.. code-block:: python
 
   brainpedia_subset = fetch_neurovault_ids(image_ids=[32015, 32016])
 
@@ -64,7 +64,7 @@ For example, many images on Neurovault have a "modality" field in their
 metadata.  :term:`BOLD` images should have it set to "fMRI-BOLD".
 We can ask for :term:`BOLD` images only :
 
-.. code-block:: default
+.. code-block:: python
 
   bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, max_images=7)
 
@@ -87,7 +87,7 @@ Extra keyword arguments are treated as additional image filters, so if we want
 to keep the default filters, and add the requirement that the modality should
 be "fMRI-BOLD", we can write:
 
-.. code-block:: default
+.. code-block:: python
 
   bold = fetch_neurovault(modality='fMRI-BOLD', max_images=7)
 
@@ -96,7 +96,7 @@ comparison to a single value. For example, we may also be interested
 in CBF and CBV images. In ``nilearn``, the ``dataset.neurovault`` module
 provides ``IsIn`` which makes this easy :
 
-.. code-block:: default
+.. code-block:: python
 
   from nilearn.datasets import neurovault
   fmri = fetch_neurovault(modality=neurovault.IsIn('fMRI-BOLD', 'fMRI-CBF', 'fMRI-CBV'),
@@ -104,13 +104,13 @@ provides ``IsIn`` which makes this easy :
 
 We could also have used ``Contains`` :
 
-.. code-block:: default
+.. code-block:: python
 
   fmri = fetch_neurovault(modality=neurovault.Contains('fMRI'), max_images=7)
 
 If we need regular expressions, we can also use ``Pattern`` :
 
-.. code-block:: default
+.. code-block:: python
 
   fmri = fetch_neurovault(
     modality=neurovault.Pattern('fmri(-.*)?', neurovault.re.IGNORECASE),
@@ -136,7 +136,7 @@ job for images. The default values for these parameters don't filter out
 anything.
 Using a filter rather than a dictionary, the first example becomes:
 
-.. code-block:: default
+.. code-block:: python
 
   bold = fetch_neurovault(image_filter=lambda meta: meta.get('modality') == 'fMRI-BOLD',
                           image_terms={}, max_images=7)
@@ -157,7 +157,7 @@ many metadata fields - say, an image should only be kept if its metadata has
 less than 50 fields.  This cannot be done by simply comparing each key in a
 metadata dictionary to a required value, so we need to write our own filter:
 
-.. code-block:: default
+.. code-block:: python
 
   small_meta_images = fetch_neurovault(image_filter=lambda meta: len(meta) < 50,
                                        max_images=7)
