@@ -10,12 +10,15 @@ from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
-from nilearn._utils import fill_doc
+from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import (
     check_same_n_vertices,
+    compute_mean_surface_image,
     concatenate_surface_images,
+    get_min_max_surface_image,
 )
 from nilearn.surface import SurfaceImage
 
@@ -187,6 +190,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         else:
             self.mask_img_ = None
 
+        # initialize reporting content and data
         if not self.reports:
             self._reporting_data = None
             return self
@@ -197,46 +201,13 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 self.maps_img.mesh.parts[part].n_vertices
             )
 
-        self._reporting_data = self._generate_reporting_data()
+        self._reporting_data = {
+            "maps_image": self.maps_img,
+            "mask": self.mask_img,
+            "images": None,  # we will add image in transform
+        }
 
         return self
-
-    def _generate_reporting_data(self):
-        for part in self.maps_img.data.parts:
-            size = []
-            relative_size = []
-            regions_summary = {
-                "label value": [],
-                "region name": [],
-                "size<br>(number of vertices)": [],
-                "relative size<br>(% vertices in hemisphere)": [],
-            }
-
-            for i, label in enumerate(self.label_names_):
-                regions_summary["label value"].append(i)
-                regions_summary["region name"].append(label)
-
-                n_vertices = self.maps_img.data.parts[part] == i
-                size.append(n_vertices.sum())
-                tmp = (
-                    n_vertices.sum()
-                    / self.maps_img.mesh.parts[part].n_vertices
-                    * 100
-                )
-                relative_size.append(f"{tmp :.2}")
-
-            regions_summary["size<br>(number of vertices)"] = size
-            regions_summary["relative size<br>(% vertices in hemisphere)"] = (
-                relative_size
-            )
-
-            self._report_content["summary"][part] = regions_summary
-
-        return {
-            "labels_image": self.maps_img,
-            "label_names": [str(x) for x in self.label_names_],
-            "images": None,
-        }
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
@@ -297,6 +268,10 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 stacklevel=2,
             )
             self.smoothing_fwhm = None
+
+        # add the image to the reporting data
+        if self.reports:
+            self._reporting_data["images"] = img
 
         parameters = get_params(
             self.__class__,
@@ -408,3 +383,98 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         }
 
         return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+
+    def generate_report(self):
+        """Generate a report."""
+        if not is_matplotlib_installed():
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib is not imported! "
+                    "No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                return [None]
+
+        from nilearn.reporting.html_report import generate_report
+
+        return generate_report(self)
+
+    def _reporting(self):
+        """Load displays needed for report.
+
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+        """
+        import matplotlib.pyplot as plt
+
+        from nilearn.reporting.utils import figure_to_png_base64
+
+        # Handle the edge case where this function is
+        # called with a masker having report capabilities disabled
+        if self._reporting_data is None:
+            return [None]
+
+        fig = self._create_figure_for_report()
+
+        plt.close()
+
+        init_display = figure_to_png_base64(fig)
+
+        return [init_display]
+
+    def _create_figure_for_report(self):
+        """Create a figure of the contours of label image.
+
+        If transform() was applied to an image,
+        this image is used as background
+        on which the contours are drawn.
+        """
+        import matplotlib.pyplot as plt
+
+        from nilearn.plotting import plot_surf, plot_surf_contours
+
+        maps_img = self._reporting_data["maps_img"]
+
+        img = self._reporting_data["images"]
+        if img:
+            img = compute_mean_surface_image(img)
+            vmin, vmax = get_min_max_surface_image(img)
+
+        # TODO: possibly allow to generate a report with other views
+        views = ["lateral", "medial"]
+        hemispheres = ["left", "right"]
+
+        fig, axes = plt.subplots(
+            len(views),
+            len(hemispheres),
+            subplot_kw={"projection": "3d"},
+            figsize=(20, 20),
+            **_constrained_layout_kwargs(),
+        )
+        axes = np.atleast_2d(axes)
+
+        for ax_row, view in zip(axes, views):
+            for ax, hemi in zip(ax_row, hemispheres):
+                if img:
+                    plot_surf(
+                        surf_map=img,
+                        hemi=hemi,
+                        view=view,
+                        figure=fig,
+                        axes=ax,
+                        cmap=self.cmap,
+                        vmin=vmin,
+                        vmax=vmax,
+                    )
+                plot_surf_contours(
+                    roi_map=maps_img,
+                    hemi=hemi,
+                    view=view,
+                    figure=fig,
+                    axes=ax,
+                )
+
+        return fig
