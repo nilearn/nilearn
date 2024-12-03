@@ -609,59 +609,21 @@ def permuted_ols(
     """
     _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
 
+    n_jobs, output_type, target_vars, tested_vars = (
+        _sanitize_inputs_permuted_ols(
+            n_jobs, output_type, tfce, threshold, target_vars
+        )
+    )
+
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
 
-    # check n_jobs (number of CPUs)
-
-    if n_jobs < 0:
-        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
-    else:
-        n_jobs = min(n_jobs, joblib.cpu_count())
-
-    # Resolve the output_type as well
-    if tfce and output_type == "legacy":
-        warnings.warn(
-            'If "tfce" is set to True, "output_type" must be set to "dict". '
-            "Overriding."
-        )
-        output_type = "dict"
-
-    if (threshold is not None) and (output_type == "legacy"):
-        warnings.warn(
-            'If "threshold" is not None, "output_type" must be set to "dict". '
-            "Overriding."
-        )
-        output_type = "dict"
-
-    if output_type == "legacy":
-        warnings.warn(
-            category=DeprecationWarning,
-            message=(
-                'The "legacy" output structure for "permuted_ols" is '
-                "deprecated. "
-                'The default output structure will be changed to "dict" '
-                "in version 0.13."
-            ),
-            stacklevel=3,
-        )
-
-    target_vars = np.asfortranarray(target_vars)  # efficient for chunking
     n_descriptors = target_vars.shape[1]
-    if np.any(np.all(target_vars == 0, axis=0)):
-        warnings.warn(
-            "Some descriptors in 'target_vars' have zeros across all samples. "
-            "These descriptors will be ignored during null distribution "
-            "generation."
-        )
-
-    # check explanatory variates' dimensions
-    if tested_vars.ndim == 1:
-        tested_vars = np.atleast_2d(tested_vars).T
 
     n_samples, n_regressors = tested_vars.shape
 
     intercept_test = n_regressors == np.unique(tested_vars).size == 1
+
     # check if confounding vars contains an intercept
     if confounding_vars is not None:
         # Search for all constant columns
@@ -1011,3 +973,55 @@ def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
             "'target_vars' should be a 2D array. "
             f"An array with {target_vars.ndim} dimension(s) was passed."
         )
+
+
+def _sanitize_inputs_permuted_ols(
+    n_jobs, output_type, tfce, threshold, target_vars, tested_vars
+):
+    # check n_jobs (number of CPUs)
+    if n_jobs < 0:
+        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
+    else:
+        n_jobs = min(n_jobs, joblib.cpu_count())
+
+    # Resolve the output_type as well
+    if tfce and output_type == "legacy":
+        warnings.warn(
+            'If "tfce" is set to True, "output_type" must be set to "dict". '
+            "Overriding."
+        )
+        output_type = "dict"
+
+    if (threshold is not None) and (output_type == "legacy"):
+        warnings.warn(
+            'If "threshold" is not None, "output_type" must be set to "dict". '
+            "Overriding."
+        )
+        output_type = "dict"
+
+    if output_type == "legacy":
+        warnings.warn(
+            category=DeprecationWarning,
+            message=(
+                'The "legacy" output structure for "permuted_ols" is '
+                "deprecated. "
+                'The default output structure will be changed to "dict" '
+                "in version 0.13."
+            ),
+            stacklevel=3,
+        )
+
+    target_vars = np.asfortranarray(target_vars)  # efficient for chunking
+
+    if np.any(np.all(target_vars == 0, axis=0)):
+        warnings.warn(
+            "Some descriptors in 'target_vars' have zeros across all samples. "
+            "These descriptors will be ignored during null distribution "
+            "generation."
+        )
+
+    # check explanatory variates' dimensions
+    if tested_vars.ndim == 1:
+        tested_vars = np.atleast_2d(tested_vars).T
+
+    return n_jobs, output_type, target_vars, tested_vars
