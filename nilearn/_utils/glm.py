@@ -5,12 +5,14 @@ from nilearn._utils import stringify_path
 
 
 def check_and_load_tables(tables_to_check, var_name):
-    """Check each element in `tables_` either to be a pandas.DataFrame, \
+    """Check each element in `tables_`.
+
+       Those can be ither to be a pandas.DataFrame, a numpy.ndarray, \
        or a CSV or TSV file that can be loaded to a pandas.DataFrame.
 
-       Load to pandas.DataFrame in the case of file path.
-
-    tables_to_check : list of str or pathlib.Path to a TSV or CSV \
+    tables_to_check : str or pathlib.Path to a TSV or CSV \
+              or pandas.DataFrame or numpy.ndarray or, \
+              a list of str or pathlib.Path to a TSV or CSV \
               or pandas.DataFrame or numpy.ndarray
               In the case of CSV file,
               the first column is considered to be index column.
