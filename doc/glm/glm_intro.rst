@@ -103,7 +103,7 @@ Generally, however, the maps presented in the papers report the significance of 
 at each :term:`voxel`, using T, Z or p values for the null hypothesis test of no correlation (see below).
 For example, the following figure displays a Z-map showing voxels responding to auditory events.
 Large (positive or negative) values are unlikely to be due to chance alone.
-The map is thresholded so that only voxels with a p-value less than 1/1000 are coloured.
+The map is thresholded so that only voxels with a p-value less than 1/1000 are colored.
 
 .. note::
 

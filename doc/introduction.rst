@@ -270,7 +270,7 @@ that could be of interest to new-comers:
     with Python with the `scientififc Python lectures <https://lectures.scientific-python.org/>`_.
     Moreover, you can use ``nilearn`` with `Jupyter <https://jupyter.org/>`_ notebooks or
     `IPython <https://ipython.org/>`_ sessions. They provide an interactive
-    environment that greatly facilitates debugging and visualisation.
+    environment that greatly facilitates debugging and visualization.
 
 Besides, you can find help on :neurostars:`neurostars <>` for questions
 related to ``nilearn`` and to computational neuroscience in general.
