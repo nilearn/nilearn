@@ -5,13 +5,25 @@ from nilearn._utils import stringify_path
 
 
 def check_and_load_tables(tables_, var_name):
-    """Check tables can be loaded in DataFrame to raise error if necessary.
+    """Check each element in `tables_` either to be a pandas.DataFrame, or a CSV or TSV file that can be loaded to a pandas.DataFrame; load to pandas.DataFrame in the case of file path.
 
     tables_ : list of str or pathlib.Path to a TSV or CSV \
-              or pd.DataFrame or np.ndarray
+              or pandas.DataFrame or numpy.ndarray
+              In the case of CSV file, the first column is considered to be index column.
 
     var_name : str
                name of the `tables_` passed, to print in the error message
+Returns
+-----------
+list of pandas.DataFrame
+
+Raises
+---------
+TypeError
+    If any of the elements in `tables_` does not have a correct type.
+ValueError
+    If a specified path in `tables_` can not be loaded to a pandas.DataFrame. 
+
     """
     tables = []
     for table_idx, table in enumerate(tables_):
@@ -32,22 +44,24 @@ def check_and_load_tables(tables_, var_name):
     return tables
 
 
-def _read_events_table(table):
-    """Accept the path to en event.tsv file \
-    and loads it as a Pandas Dataframe.
+def _read_events_table(table_path):
+    """Load the contents of the event file specified by `table_path` to a pandas.DataFrame.
 
-    Raises an error if loading fails.
 
     Parameters
     ----------
-    table : :obj:`str`, :obj:`pathlib.Path`
-        Accepts the path to an events file.
+    table_path : :obj:`str`, :obj:`pathlib.Path`
+        Path to a TSV or CSV file. In the case of CSV file, the first column is considered to be index column.
 
     Returns
     -------
-    loaded : pandas.Dataframe object
-        Pandas Dataframe with e events data.
+  pandas.Dataframe 
+        Pandas Dataframe with events data loaded from file.
 
+Raises
+---------
+ValueError
+    If file loading fails.
     """
     try:
         # kept for historical reasons, a lot of tests use csv with index column
