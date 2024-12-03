@@ -27,8 +27,6 @@ from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.glm.second_level.second_level import (
     _check_confounds,
-    _check_effect_maps,
-    _check_design_matrix,
     _check_first_level_contrast,
     _check_input_as_first_level_model,
     _check_n_rows_desmat_vs_n_effect_maps,

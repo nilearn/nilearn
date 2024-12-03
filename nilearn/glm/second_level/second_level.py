@@ -553,7 +553,7 @@ class SecondLevelModel(BaseGLM):
                         or None, default=None
             Design matrix to fit the :term:`GLM`.
             The number of rows in the design matrix
-            must agree with the number of maps 
+            must agree with the number of maps
             derived from ``second_level_input``.
             Ensure that the order of maps given by a ``second_level_input``
             list of Niimgs matches the order of the rows in the design matrix.

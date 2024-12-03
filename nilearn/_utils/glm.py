@@ -13,16 +13,17 @@ def check_and_load_tables(tables_, var_name):
 
     var_name : str
                name of the `tables_` passed, to print in the error message
-Returns
------------
-list of pandas.DataFrame
 
-Raises
----------
-TypeError
+    Returns
+    -------
+    list of pandas.DataFrame
+
+    Raises
+    ------
+    TypeError
     If any of the elements in `tables_` does not have a correct type.
-ValueError
-    If a specified path in `tables_` can not be loaded to a pandas.DataFrame. 
+    ValueError
+    If a specified path in `tables_` can not be loaded to a pandas.DataFrame.
 
     """
     tables = []
@@ -55,12 +56,12 @@ def _read_events_table(table_path):
 
     Returns
     -------
-  pandas.Dataframe 
+    pandas.Dataframe
         Pandas Dataframe with events data loaded from file.
 
-Raises
----------
-ValueError
+    Raises
+    ------
+    ValueError
     If file loading fails.
     """
     try:
