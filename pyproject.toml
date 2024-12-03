@@ -193,7 +193,6 @@ select = [
     "PD",
     "PGH",
     "PLR",
-    "RUF",
     "SIM",
     "UP",
     "W"
