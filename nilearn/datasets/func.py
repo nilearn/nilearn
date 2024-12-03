@@ -34,7 +34,7 @@ from nilearn.datasets._utils import (
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
-from nilearn.surface import SurfaceImage, load_surf_data
+from nilearn.surface import SurfaceImage
 
 from .._utils.numpy_conversions import csv_to_array
 
@@ -868,7 +868,7 @@ def fetch_localizer_contrasts(
         opts = {"move": participants_file}
         filenames.append((participants_file, file_url, opts))
 
-    # Fetch behavioural
+    # Fetch behavioral
     behavioural_file = Path("brainomics_data", "phenotype", "behavioural.tsv")
 
     path = "/localizer/phenotype/behavioural.tsv"
@@ -1433,7 +1433,7 @@ def fetch_megatrawls_netmats(
     from MegaTrawls release in HCP.
 
     This data can be used to predict relationships between imaging data and
-    non-imaging behavioural measures such as age, sex, education, etc.
+    non-imaging behavioral measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
@@ -1831,10 +1831,10 @@ def load_nki(
          - ``"sphere"``
          - ``"flat"``
 
-    n_subjects : :obj:`int`, default=10
+    n_subjects : :obj:`int`, default=1
         The number of subjects to load from maximum of 102 subjects.
-        By default, 10 subjects will be loaded. If None is given,
-        all 102 subjects will be loaded.
+        By default, 1 subjects will be loaded.
+        If None is given, all 102 subjects will be loaded.
 
     %(data_dir)s
 
@@ -1871,13 +1871,11 @@ def load_nki(
     ):
         logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
 
-        left_data = load_surf_data(left)
-        right_data = load_surf_data(right)
         img = SurfaceImage(
             mesh=fsaverage[mesh_type],
             data={
-                "left": left_data,
-                "right": right_data,
+                "left": left,
+                "right": right,
             },
         )
         images.append(img)

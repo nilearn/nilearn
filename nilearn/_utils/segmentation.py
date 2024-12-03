@@ -60,9 +60,10 @@ def _make_graph_edges_3d(n_x, n_y, n_z):
 def _compute_weights_3d(data, spacing, beta=130, eps=1.0e-6):
     # Weight calculation is main difference in multispectral version
     # Original gradient**2 replaced with sum of gradients ** 2
-    gradients = 0
-    for channel in range(data.shape[-1]):
-        gradients += _compute_gradients_3d(data[..., channel], spacing) ** 2
+    gradients = sum(
+        _compute_gradients_3d(data[..., channel], spacing) ** 2
+        for channel in range(data.shape[-1])
+    )
     # All channels considered together in this standard deviation
     beta /= 10 * data.std()
     gradients *= beta

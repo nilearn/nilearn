@@ -301,9 +301,8 @@ class BaseSlicer:
             raise ValueError(
                 "This figure already has an overlay with a colorbar."
             )
-        else:
-            self._colorbar = colorbar
-            self._cbar_tick_format = cbar_tick_format
+        self._colorbar = colorbar
+        self._cbar_tick_format = cbar_tick_format
 
         img = check_niimg_3d(img)
 
@@ -1927,9 +1926,6 @@ class MosaicSlicer(BaseSlicer):
             cut_coords, numbers.Number
         ):
             cut_coords = [cut_coords] * 3
-            cut_coords = cls._find_cut_coords(
-                img, cut_coords, cls._cut_displayed
-            )
         else:
             if len(cut_coords) != len(cls._cut_displayed):
                 raise ValueError(
@@ -1940,9 +1936,7 @@ class MosaicSlicer(BaseSlicer):
             cut_coords = [
                 cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
             ]
-            cut_coords = cls._find_cut_coords(
-                img, cut_coords, cls._cut_displayed
-            )
+        cut_coords = cls._find_cut_coords(img, cut_coords, cls._cut_displayed)
         return cut_coords
 
     @staticmethod

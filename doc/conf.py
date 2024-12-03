@@ -152,11 +152,9 @@ add_function_parentheses = False
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-# pygments_style = 'friendly'
-# pygments_style = 'manni'
+# https://pygments.org/styles/
 pygments_style = "sas"
-pygments_dark_style = "stata-dark"
-
+pygments_dark_style = "monokai"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []

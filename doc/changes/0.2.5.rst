@@ -49,7 +49,7 @@ New
 
 - :bdg-success:`API` New function :func:`~datasets.load_mni152_brain_mask` to load canonical brain mask image in :term:`MNI` template space.
 
-- :bdg-success:`API` New function :func:`~datasets.fetch_icbm152_brain_gm_mask` to load brain grey matter mask image.
+- :bdg-success:`API` New function :func:`~datasets.fetch_icbm152_brain_gm_mask` to load brain gray matter mask image.
 
 - :bdg-success:`API` New function :func:`~image.load_img` loads data from a filename or a list of filenames.
 

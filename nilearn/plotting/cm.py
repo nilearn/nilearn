@@ -194,9 +194,10 @@ _cmaps_data["bwr"] = _colors.LinearSegmentedColormap.from_list(
 
 # backported and adapted from matplotlib since it's deprecated in 3.2
 def _revcmap(data):
-    data_r = {}
-    for key, val in data.items():
-        data_r[key] = [(1.0 - x, y1, y0) for x, y0, y1 in reversed(val)]
+    data_r = {
+        key: [(1.0 - x, y1, y0) for x, y0, y1 in reversed(val)]
+        for key, val in data.items()
+    }
     return data_r
 
 

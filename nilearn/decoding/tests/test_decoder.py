@@ -659,13 +659,13 @@ def test_decoder_param_grid_sequence(binary_classification_data):
         {
             "penalty": ["l2"],
             "C": [100, 1000],
-            "random_state": [42],  # fix the seed for consistent behaviour
+            "random_state": [42],  # fix the seed for consistent behavior
         },
         {
             "penalty": ["l1"],
             "dual": [False],  # "dual" is not in the first dict
             "C": [100, 10],
-            "random_state": [42],  # fix the seed for consistent behaviour
+            "random_state": [42],  # fix the seed for consistent behavior
         },
     ]
 

@@ -79,7 +79,7 @@ mask_img = resample_to_img(
 )
 
 # %%
-# Analyse data
+# Analyze data
 # ------------
 # First, we create an adequate design matrix with three columns: 'age', 'sex',
 # and 'intercept'.

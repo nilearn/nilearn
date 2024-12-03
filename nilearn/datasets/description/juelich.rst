@@ -16,7 +16,8 @@ both cortical and subcortical brain regions.
 Notably, these probability maps account for the brain's inter-individual variability
 by analyzing data from multiple post-mortem samples.
 For a whole-brain parcellation, the available probability maps are combined
-into a maximum probability map by considering for each :term:`voxel` the probability of all cytoarchitectonic brain regions,
+into a maximum probability map by considering
+for each :term:`voxel` the probability of all cytoarchitectonic brain regions,
 and determining the most probable assignment.
 
 For more details: https://fsl.fmrib.ox.ac.uk/fsl/docs/#/other/datasets
