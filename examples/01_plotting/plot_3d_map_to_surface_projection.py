@@ -11,6 +11,7 @@ and add contours of regions of interest using
 :func:`~nilearn.plotting.plot_surf_contours`.
 """
 
+
 # %%
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
@@ -75,22 +76,10 @@ fig = plot_surf_stat_map(
 )
 fig.show()
 
-# %%
-# Interactive plotting with Plotly
-# --------------------------------
-#
-# If you have a recent version of Nilearn (>=0.8.2), and if you have
-# ``plotly`` installed, you can easily configure
-# :func:`~nilearn.plotting.plot_surf_stat_map` to use ``plotly``
-# instead of ``matplotlib``:
-
-engine = "plotly"
 # If plotly is not installed, use matplotlib
 from nilearn._utils.helpers import is_plotly_installed
 
-if not is_plotly_installed():
-    engine = "matplotlib"
-
+engine = "plotly" if is_plotly_installed() else "matplotlib"
 print(f"Using plotting engine {engine}.")
 
 figure = plot_surf_stat_map(
