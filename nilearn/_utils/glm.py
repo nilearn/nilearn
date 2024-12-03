@@ -4,13 +4,13 @@ import pandas as pd
 from nilearn._utils import stringify_path
 
 
-def check_and_load_tables(tables_, var_name):
+def check_and_load_tables(tables_to_check, var_name):
     """Check each element in `tables_` either to be a pandas.DataFrame, \
        or a CSV or TSV file that can be loaded to a pandas.DataFrame.
 
        Load to pandas.DataFrame in the case of file path.
 
-    tables_ : list of str or pathlib.Path to a TSV or CSV \
+    tables_to_check : list of str or pathlib.Path to a TSV or CSV \
               or pandas.DataFrame or numpy.ndarray
               In the case of CSV file,
               the first column is considered to be index column.
@@ -30,8 +30,10 @@ def check_and_load_tables(tables_, var_name):
     If a specified path in `tables_` can not be loaded to a pandas.DataFrame.
 
     """
+    if not isinstance(tables_to_check, list):
+        tables_to_check = [tables_to_check]
     tables = []
-    for table_idx, table in enumerate(tables_):
+    for table_idx, table in enumerate(tables_to_check):
         table = stringify_path(table)
         if isinstance(table, str):
             loaded = _read_events_table(table)

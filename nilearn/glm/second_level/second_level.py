@@ -1053,8 +1053,6 @@ def non_parametric_inference(
     """
     _check_second_level_input(second_level_input, design_matrix)
     _check_confounds(confounds)
-    if not isinstance(design_matrix, (list, tuple)):
-        design_matrix = [design_matrix]
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     if isinstance(second_level_input, pd.DataFrame):

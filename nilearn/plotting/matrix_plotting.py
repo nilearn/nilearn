@@ -478,8 +478,6 @@ def plot_design_matrix(
         The axes used for plotting.
 
     """
-    if not isinstance(design_matrix, (list, tuple)):
-        design_matrix = [design_matrix]
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     _, X, names = check_design_matrix(design_matrix)
@@ -555,9 +553,6 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         Plot Figure object.
 
     """
-    if not isinstance(model_event, (list, tuple)):
-        model_event = [model_event]
-
     model_event = check_and_load_tables(model_event, "model_event")
 
     for i, event in enumerate(model_event):
@@ -690,8 +685,6 @@ def plot_design_matrix_correlation(
     display : :class:`matplotlib.axes.Axes`
         Axes image.
     """
-    if not isinstance(design_matrix, (list, tuple)):
-        design_matrix = [design_matrix]
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     check_design_matrix(design_matrix)

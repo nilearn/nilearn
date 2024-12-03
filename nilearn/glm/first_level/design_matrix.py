@@ -409,8 +409,6 @@ def make_first_level_design_matrix(
 
     # step 1: events-related regressors
     if events is not None:
-        if not isinstance(events, (list, tuple)):
-            events = [events]
         events = check_and_load_tables(events, "events")[0]
         # create the condition-related regressors
         if isinstance(hrf_model, str):
