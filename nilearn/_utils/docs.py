@@ -9,6 +9,8 @@ source: Eric Larson and MNE-python team.
 https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 """
 
+# sourcery skip: merge-dict-assign
+
 import sys
 
 ##############################################################################
