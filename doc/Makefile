@@ -187,9 +187,8 @@ check:
 	rm -rf $(BUILDDIR)/html/_images
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
-install: sym_links_datasets glm_reports
+install: clean sym_links_datasets glm_reports
 	@echo $(VERSIONTAG)
-	rm -rf _build/doctrees _build/nilearn.github.io
 	mkdir ~/_build
 	# first clone the nilearn.github.io repo because it may ask
 	# for password and we don't want to delay this long build in
