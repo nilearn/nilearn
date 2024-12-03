@@ -481,7 +481,7 @@ def resample_img(
             " be specified too."
         )
 
-    if target_shape is not None and not len(target_shape) == 3:
+    if target_shape is not None and len(target_shape) != 3:
         raise ValueError(
             "The shape specified should be the shape of "
             "the 3D grid, and thus of length 3. "
@@ -649,8 +649,6 @@ def resample_img(
         dtype=resampled_data_dtype,
     )
 
-    all_img = (slice(None),) * 3
-
     # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
     # all(b == integers):
     if (
@@ -678,11 +676,10 @@ def resample_img(
         ]
 
         # If image are not fully overlapping, place only portion of image.
-        slices = []
-        slices.extend(
+        slices = [
             slice(np.max((0, index[0])), np.min((dimsize, index[1])))
             for dimsize, index in zip(resampled_data.shape, indices)
-        )
+        ]
         slices = tuple(slices)
 
         # ensure the source image being placed isn't larger than the dest
@@ -693,6 +690,8 @@ def resample_img(
         # better algorithm.
         if np.all(np.diag(np.diag(A)) == A):
             A = np.diag(A)
+        all_img = (slice(None),) * 3
+
         # Iterate over a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the
         # computational cost
@@ -710,7 +709,7 @@ def resample_img(
 
     if clip:
         # force resampled data to have a range contained in the original data
-        # preventing ringing artefact
+        # preventing ringing artifact
         # We need to add zero as a value considered for clipping, as it
         # appears in padding images.
         vmin = min(np.nanmin(data), 0)

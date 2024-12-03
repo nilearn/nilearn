@@ -584,8 +584,7 @@ class GlassBrainAxes(BaseAxes):
 
         # Allow lines only in their respective hemisphere when appropriate
         if self.direction in "lr":
-            relevant_lines = []
-            relevant_lines.extend(
+            relevant_lines = [
                 lidx
                 for lidx, line in enumerate(line_coords)
                 if (
@@ -596,7 +595,7 @@ class GlassBrainAxes(BaseAxes):
                 or (
                     self.direction == "l" and line[0, 0] < 0 and line[1, 0] < 0
                 )
-            )
+            ]
             line_coords = np.array(line_coords)[relevant_lines]
             line_values = line_values[relevant_lines]
 

@@ -28,7 +28,7 @@ a time series of positive real number representing the MRI signal, sampled at th
 
   Before :term:`fMRI` images can be used to do meaningful comparisons, they must be processed to ensure that the voxels that are being compared represent the same brain regions, irrespective of the variability in size and shape of the brain and its microarchitecture across different subjects in the experiment. The process is called spatial registration or spatial normalization. During this procedure, the voxels of all the brain images are 'registered' to correspond to the same region of the brain. Usually, the images (their voxels) are registered to a standard 'template' brain image (its voxels). One often used standard template is the MNI152 template from the Montreal Neurological Institute. Once this is done, the coordinates of a :term:`voxel` are in the same space as the template and can be used to estimate its brain location using brain atlases based on that same template. As previously mentioned, the nilearn package does not perform spatial preprocessing; it only does statistical analyses on the voxel time series. For preprocessing functions, users are referred to `Nipype <https://nipype.readthedocs.io/en/latest/>`_ or `fMRIPrep <https://fmriprep.readthedocs.io/en/stable/>`_.
 
-fMRI data modelling
+fMRI data modeling
 -------------------
 
 One way to analyze times series consists in comparing them to a *model* built from our knowledge of the events that occurred during the functional run.
@@ -53,7 +53,7 @@ Using our knowledge of the haemodynamic response, we can build a predicted time 
 
 .. figure:: ../images/time-course-and-model-fit-in-a-voxel.png
 
-Correlations are computed separately at each :term:`voxel` and a correlation map can be produced displaying  the values of correlations (real numbers between -1 and +1) at each :term:`voxel`. Generally, however, the maps presented in the papers report the significance of the correlations at each :term:`voxel`, using T, Z or p values for the null hypothesis test of no correlation (see below). For example, the following figure displays a Z-map showing voxels responding to auditory events. Large (positive or negative) values are unlikely to be due to chance alone. The map is thresholded so that only voxels with a p-value less than 1/1000 are coloured.
+Correlations are computed separately at each :term:`voxel` and a correlation map can be produced displaying  the values of correlations (real numbers between -1 and +1) at each :term:`voxel`. Generally, however, the maps presented in the papers report the significance of the correlations at each :term:`voxel`, using T, Z or p values for the null hypothesis test of no correlation (see below). For example, the following figure displays a Z-map showing voxels responding to auditory events. Large (positive or negative) values are unlikely to be due to chance alone. The map is thresholded so that only voxels with a p-value less than 1/1000 are colored.
 
 
 .. note::
@@ -101,7 +101,7 @@ However, if we assume that the noise is Gaussian and that the model is correctly
 then we know that ``t`` should follow a Student distribution with ``dof`` degrees of freedom,
 where ``dof`` is the number of free parameters in the model:
 in practice, the number of observations (i.e. the number of time points), ``n_scans``
-minus the number of effects modelled (i.e. the number of columns ``n_columns``) of the design matrix:
+minus the number of effects modeled (i.e. the number of columns ``n_columns``) of the design matrix:
 
  :math:`dof = n\_scans - n\_columns`
 

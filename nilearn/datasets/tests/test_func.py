@@ -1028,14 +1028,13 @@ def _generate_spm_multimodal(subject_dir=None, n_sessions=2, n_vol=390):
             ]
         )
 
-    if subject_dir is not None:
-        for file_ in files:
-            file_ = subject_dir / file_
-            file_.parent.mkdir(parents=True, exist_ok=True)
-            file_.touch()
-        return
-    else:
+    if subject_dir is None:
         return list_to_archive(files, archive_format="zip")
+    for file_ in files:
+        file_ = subject_dir / file_
+        file_.parent.mkdir(parents=True, exist_ok=True)
+        file_.touch()
+    return
 
 
 def test_fetch_spm_multimodal(tmp_path):

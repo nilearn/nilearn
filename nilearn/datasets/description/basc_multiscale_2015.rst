@@ -41,7 +41,7 @@ homotopic regions simply consists of flipping the x-axis of the template.
 
 Preprocessing
 -------------
-The datasets were analysed using
+The datasets were analyzed using
 the NeuroImaging Analysis Kit (`NIAK <https://github.com/SIMEXP/niak>`_) version 0.12.14,
 under CentOS version 6.3
 with `Octave <https://octave.org>`_ version 3.8.1

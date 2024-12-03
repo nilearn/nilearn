@@ -199,11 +199,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
             lines = [None] * len(levels)
         elif len(lines) == 1 and len(levels) > 1:
             lines *= len(levels)
-        if not (len(levels) == len(labels)):
+        if len(levels) != len(labels):
             raise ValueError(
                 "levels and labels need to be either the same length or None."
             )
-        if not (len(levels) == len(lines)):
+        if len(levels) != len(lines):
             raise ValueError(
                 "levels and lines need to be either the same length or None."
             )
@@ -367,8 +367,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
                     centroids[remaining_vertices[shortest_idx]],
                     *vs[current_vertex],
                 )
-                if not any(
-                    v in idxs[current_vertex]
+                if all(
+                    v not in idxs[current_vertex]
                     for v in idxs[remaining_vertices[shortest_idx]]
                 ):
                     # this does not share vertex, so try again
