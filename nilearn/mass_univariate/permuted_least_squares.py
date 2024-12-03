@@ -607,30 +607,17 @@ def permuted_ols(
     .. footbibliography::
 
     """
+    _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
+
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
 
     # check n_jobs (number of CPUs)
-    if n_jobs == 0:  # invalid according to joblib's conventions
-        raise ValueError(
-            "'n_jobs == 0' is not a valid choice. "
-            "Please provide a positive number of CPUs, or -1 for all CPUs, "
-            "or a negative number (-i) for 'all but (i-1)' CPUs "
-            "(joblib conventions)."
-        )
-    elif n_jobs < 0:
+
+    if n_jobs < 0:
         n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
     else:
         n_jobs = min(n_jobs, joblib.cpu_count())
-
-    # check that masker is provided if it is needed
-    if tfce and not masker:
-        raise ValueError("A masker must be provided if tfce is True.")
-
-    if (threshold is not None) and (masker is None):
-        raise ValueError(
-            'If "threshold" is not None, masker must be defined as well.'
-        )
 
     # Resolve the output_type as well
     if tfce and output_type == "legacy":
@@ -657,13 +644,6 @@ def permuted_ols(
                 "in version 0.13."
             ),
             stacklevel=3,
-        )
-
-    # make target_vars F-ordered to speed-up computation
-    if target_vars.ndim != 2:
-        raise ValueError(
-            "'target_vars' should be a 2D array. "
-            f"An array with {target_vars.ndim} dimension(s) was passed."
         )
 
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
@@ -1004,3 +984,29 @@ def permuted_ols(
         outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
+
+
+def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
+    if n_jobs == 0:  # invalid according to joblib's conventions
+        raise ValueError(
+            "'n_jobs == 0' is not a valid choice. "
+            "Please provide a positive number of CPUs, "
+            "or -1 for all CPUs, "
+            "or a negative number (-i) for 'all but (i-1)' CPUs "
+            "(joblib conventions)."
+        )
+    # check that masker is provided if it is needed
+    if tfce and not masker:
+        raise ValueError("A masker must be provided if tfce is True.")
+
+    if (threshold is not None) and (masker is None):
+        raise ValueError(
+            'If "threshold" is not None, masker must be defined as well.'
+        )
+
+    # make target_vars F-ordered to speed-up computation
+    if target_vars.ndim != 2:
+        raise ValueError(
+            "'target_vars' should be a 2D array. "
+            f"An array with {target_vars.ndim} dimension(s) was passed."
+        )
