@@ -175,6 +175,15 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         del img, y
 
+        # check maps_img data is 2D
+        for part in self.maps_img.data.parts:
+            if self.maps_img.data.parts[part].ndim != 2:
+                raise ValueError(
+                    "Data in maps_img should be 2D "
+                    "of shape (n_vertices, n_regions), "
+                    f"but got {self.maps_img.data.parts[part].ndim}."
+                )
+
         self.maps_img_ = np.concatenate(
             list(self.maps_img.data.parts.values()), axis=0
         )
@@ -184,6 +193,14 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # check mask has the same number of vertices as the maps
         if self.mask_img is not None:
             check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
+            # also check mask data is 1D
+            for part in self.mask_img.data.parts:
+                if self.mask_img.data.parts[part].ndim != 1:
+                    raise ValueError(
+                        "Data in mask_img should be 1D "
+                        "of shape (n_vertices,), "
+                        f"but got {self.mask_img.data.parts[part].ndim}."
+                    )
             self.mask_img_ = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
             )
