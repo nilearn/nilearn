@@ -988,26 +988,25 @@ def permuted_ols(
                 )
 
     if output_type == "legacy":
-        outputs = (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
+        return (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
 
-    else:
-        outputs = {
-            "t": scores_original_data.T,
-            "logp_max_t": -np.log10(vfwe_pvals),
-            "h0_max_t": vfwe_h0,
-        }
+    outputs = {
+        "t": scores_original_data.T,
+        "logp_max_t": -np.log10(vfwe_pvals),
+        "h0_max_t": vfwe_h0,
+    }
 
-        if tfce:
-            outputs["tfce"] = tfce_original_data.T
-            outputs["logp_max_tfce"] = neg_log10_tfce_pvals
-            outputs["h0_max_tfce"] = h0_tfcemax
+    if tfce:
+        outputs["tfce"] = tfce_original_data.T
+        outputs["logp_max_tfce"] = neg_log10_tfce_pvals
+        outputs["h0_max_tfce"] = h0_tfcemax
 
-        if threshold is not None:
-            outputs["size"] = cluster_dict["size"]
-            outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
-            outputs["h0_max_size"] = cluster_dict["size_h0"]
-            outputs["mass"] = cluster_dict["mass"]
-            outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
-            outputs["h0_max_mass"] = cluster_dict["mass_h0"]
+    if threshold is not None:
+        outputs["size"] = cluster_dict["size"]
+        outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
+        outputs["h0_max_size"] = cluster_dict["size_h0"]
+        outputs["mass"] = cluster_dict["mass"]
+        outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
+        outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
