@@ -611,7 +611,7 @@ def permuted_ols(
 
     n_jobs, output_type, target_vars, tested_vars = (
         _sanitize_inputs_permuted_ols(
-            n_jobs, output_type, tfce, threshold, target_vars
+            n_jobs, output_type, tfce, threshold, target_vars, tested_vars
         )
     )
 
@@ -988,14 +988,16 @@ def _sanitize_inputs_permuted_ols(
     if tfce and output_type == "legacy":
         warnings.warn(
             'If "tfce" is set to True, "output_type" must be set to "dict". '
-            "Overriding."
+            "Overriding.",
+            stacklevel=4,
         )
         output_type = "dict"
 
     if (threshold is not None) and (output_type == "legacy"):
         warnings.warn(
             'If "threshold" is not None, "output_type" must be set to "dict". '
-            "Overriding."
+            "Overriding.",
+            stacklevel=4,
         )
         output_type = "dict"
 
@@ -1008,7 +1010,7 @@ def _sanitize_inputs_permuted_ols(
                 'The default output structure will be changed to "dict" '
                 "in version 0.13."
             ),
-            stacklevel=3,
+            stacklevel=4,
         )
 
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
@@ -1016,8 +1018,9 @@ def _sanitize_inputs_permuted_ols(
     if np.any(np.all(target_vars == 0, axis=0)):
         warnings.warn(
             "Some descriptors in 'target_vars' have zeros across all samples. "
-            "These descriptors will be ignored during null distribution "
-            "generation."
+            "These descriptors will be ignored "
+            "during null distribution generation.",
+            stacklevel=4,
         )
 
     # check explanatory variates' dimensions
