@@ -404,10 +404,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
             # vertex is very far away
             if remaining_distances[0, next_index] > last_distance * 3:
                 # close the current contour
-                sorted_vertices.append(centroids[prev_first])
                 # add triple of None, which is parsed by plotly
                 # as a signal to start a new closed contour
-                sorted_vertices.append(np.array([None] * 3))
+                sorted_vertices.extend(
+                    (centroids[prev_first], np.array([None] * 3))
+                )
                 # start the new contour
                 prev_first = closest_vertex
 

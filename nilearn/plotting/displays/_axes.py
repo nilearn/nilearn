@@ -490,11 +490,12 @@ class GlassBrainAxes(BaseAxes):
                 marker_color = np.asarray(marker_color)
             relevant_coords = []
             xcoords, ycoords, zcoords = marker_coords.T
-            for cidx, xc in enumerate(xcoords):
-                if (self.direction == "r" and xc >= 0) or (
-                    self.direction == "l" and xc <= 0
-                ):
-                    relevant_coords.append(cidx)
+            relevant_coords.extend(
+                cidx
+                for cidx, xc in enumerate(xcoords)
+                if (self.direction == "r" and xc >= 0)
+                or (self.direction == "l" and xc <= 0)
+            )
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
             # if marker_color is string for example 'red' or 'blue', then
