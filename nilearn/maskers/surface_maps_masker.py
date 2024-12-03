@@ -187,7 +187,56 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         else:
             self.mask_img_ = None
 
+        if not self.reports:
+            self._reporting_data = None
+            return self
+
+        self._report_content["number_of_regions"] = self.n_elements_
+        for part in self.maps_img.data.parts:
+            self._report_content["n_vertices"][part] = (
+                self.maps_img.mesh.parts[part].n_vertices
+            )
+
+        self._reporting_data = self._generate_reporting_data()
+
         return self
+
+    def _generate_reporting_data(self):
+        for part in self.maps_img.data.parts:
+            size = []
+            relative_size = []
+            regions_summary = {
+                "label value": [],
+                "region name": [],
+                "size<br>(number of vertices)": [],
+                "relative size<br>(% vertices in hemisphere)": [],
+            }
+
+            for i, label in enumerate(self.label_names_):
+                regions_summary["label value"].append(i)
+                regions_summary["region name"].append(label)
+
+                n_vertices = self.maps_img.data.parts[part] == i
+                size.append(n_vertices.sum())
+                tmp = (
+                    n_vertices.sum()
+                    / self.maps_img.mesh.parts[part].n_vertices
+                    * 100
+                )
+                relative_size.append(f"{tmp :.2}")
+
+            regions_summary["size<br>(number of vertices)"] = size
+            regions_summary["relative size<br>(% vertices in hemisphere)"] = (
+                relative_size
+            )
+
+            self._report_content["summary"][part] = regions_summary
+
+        return {
+            "labels_image": self.maps_img,
+            "label_names": [str(x) for x in self.label_names_],
+            "images": None,
+        }
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
