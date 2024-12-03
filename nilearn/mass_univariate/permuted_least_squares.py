@@ -177,17 +177,15 @@ def _permuted_ols_on_chunk(
 
     # Preallocate null arrays for optional outputs
     # Any unselected outputs will just return a None
+    h0_tfce_part, tfce_scores_as_ranks_part = None, None
     if tfce:
         h0_tfce_part = np.empty((n_regressors, n_perm_chunk))
         tfce_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
-    else:
-        h0_tfce_part, tfce_scores_as_ranks_part = None, None
 
+    h0_csfwe_part, h0_cmfwe_part = None, None
     if threshold is not None:
         h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
         h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
-    else:
-        h0_csfwe_part, h0_cmfwe_part = None, None
 
     for i_perm in range(n_perm_chunk):
         if intercept_test:
@@ -797,6 +795,7 @@ def permuted_ols(
     # Define connectivity for TFCE and/or cluster measures
     bin_struct = generate_binary_structure(3, 1)
 
+    tfce_original_data = None
     if tfce:
         scores_4d = masker.inverse_transform(
             scores_original_data.T
@@ -815,18 +814,13 @@ def permuted_ols(
             masker.mask_img_,
         ).T
 
-    else:
-        tfce_original_data = None
-
+    threshold_t = None
     if threshold is not None:
         # determine t-statistic threshold
         dof = n_samples - (n_regressors + n_covars)
+        threshold_t = stats.t.isf(threshold, df=dof)
         if two_sided_test:
             threshold_t = stats.t.isf(threshold / 2, df=dof)
-        else:
-            threshold_t = stats.t.isf(threshold, df=dof)
-    else:
-        threshold_t = None
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
