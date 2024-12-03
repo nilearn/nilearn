@@ -683,11 +683,7 @@ def permuted_ols(
 
     n_samples, n_regressors = tested_vars.shape
 
-    # check if explanatory variates contain an intercept (constant) or not
-    intercept_test = False
-    if n_regressors == np.unique(tested_vars).size == 1:
-        intercept_test = True
-
+    intercept_test = n_regressors == np.unique(tested_vars).size == 1
     # check if confounding vars contains an intercept
     if confounding_vars is not None:
         # Search for all constant columns
