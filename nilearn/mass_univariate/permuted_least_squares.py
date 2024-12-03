@@ -987,7 +987,8 @@ def permuted_ols(
 
 
 def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
-    if n_jobs == 0:  # invalid according to joblib's conventions
+    # invalid according to joblib's conventions
+    if n_jobs == 0:
         raise ValueError(
             "'n_jobs == 0' is not a valid choice. "
             "Please provide a positive number of CPUs, "
