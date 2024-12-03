@@ -62,7 +62,7 @@ def test_open_in_browser_file(tmp_path, monkeypatch):
 
 
 def _open_views():
-    return [html_document.HTMLDocument("") for i in range(12)]
+    return [html_document.HTMLDocument("") for _ in range(12)]
 
 
 def _open_one_view():

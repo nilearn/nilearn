@@ -794,7 +794,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                 f"{self.SUPPORTED_PENALTIES}. "
                 f"Got {self.penalty}."
             )
-        if not (self.loss is None or self.loss in self.SUPPORTED_LOSSES):
+        if self.loss is not None and self.loss not in self.SUPPORTED_LOSSES:
             raise ValueError(
                 f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
                 f"Got {self.loss}."

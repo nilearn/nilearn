@@ -188,7 +188,7 @@ def test_multi_nifti_labels_masker_reduction_strategies():
     """Tests strategies of MultiNiftiLabelsMasker.
 
     1. whether the usage of different reduction strategies work
-    2. whether unrecognised strategies raise a ValueError
+    2. whether unrecognized strategies raise a ValueError
     3. whether the default option is backwards compatible (calls "mean")
     """
     test_values = [-2.0, -1.0, 0.0, 1.0, 2]

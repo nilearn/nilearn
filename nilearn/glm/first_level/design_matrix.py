@@ -314,12 +314,12 @@ def make_first_level_design_matrix(
 
             .. warning::
 
-                Events with a duration of 0 seconds will be modelled
+                Events with a duration of 0 seconds will be modeled
                 using a 'delta function'.
 
         - ``'trial_type'``: OPTIONAL
             Column to specify per-event experimental conditions identifier.
-            If missing each event are labelled 'dummy'
+            If missing each event are labeled 'dummy'
             and considered to form a unique condition.
 
         - ``'modulation'``: OPTIONAL
