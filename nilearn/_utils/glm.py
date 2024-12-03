@@ -5,11 +5,15 @@ from nilearn._utils import stringify_path
 
 
 def check_and_load_tables(tables_, var_name):
-    """Check each element in `tables_` either to be a pandas.DataFrame, or a CSV or TSV file that can be loaded to a pandas.DataFrame; load to pandas.DataFrame in the case of file path.
+    """Check each element in `tables_` either to be a pandas.DataFrame, \
+       or a CSV or TSV file that can be loaded to a pandas.DataFrame.
+
+       Load to pandas.DataFrame in the case of file path.
 
     tables_ : list of str or pathlib.Path to a TSV or CSV \
               or pandas.DataFrame or numpy.ndarray
-              In the case of CSV file, the first column is considered to be index column.
+              In the case of CSV file,
+              the first column is considered to be index column.
 
     var_name : str
                name of the `tables_` passed, to print in the error message
@@ -46,13 +50,15 @@ def check_and_load_tables(tables_, var_name):
 
 
 def _read_events_table(table_path):
-    """Load the contents of the event file specified by `table_path` to a pandas.DataFrame.
+    """Load the contents of the event file specified by `table_path`\
+       to a pandas.DataFrame.
 
 
     Parameters
     ----------
     table_path : :obj:`str`, :obj:`pathlib.Path`
-        Path to a TSV or CSV file. In the case of CSV file, the first column is considered to be index column.
+        Path to a TSV or CSV file. In the case of CSV file,
+        the first column is considered to be index column.
 
     Returns
     -------
@@ -66,12 +72,12 @@ def _read_events_table(table_path):
     """
     try:
         # kept for historical reasons, a lot of tests use csv with index column
-        loaded = pd.read_csv(table, index_col=0)
+        loaded = pd.read_csv(table_path, index_col=0)
     except:  # noqa: E722
-        raise ValueError(f"table path {table} could not be loaded")
+        raise ValueError(f"table path {table_path} could not be loaded")
     if loaded.empty:
         try:
-            loaded = pd.read_csv(table, sep="\t")
+            loaded = pd.read_csv(table_path, sep="\t")
         except:  # noqa: E722
-            raise ValueError(f"table path {table} could not be loaded")
+            raise ValueError(f"table path {table_path} could not be loaded")
     return loaded
