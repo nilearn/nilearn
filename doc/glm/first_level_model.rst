@@ -42,7 +42,7 @@ if using a :term:`BIDS`-compatible dataset or one of the nilearn dataset fetcher
 
 .. note::
 
-    Events with a duration of 0 seconds will be modelled by a 'delta function'
+    Events with a duration of 0 seconds will be modeled by a 'delta function'
     of infinitesimal small duration.
 
 Refer to the examples below for usage under the different scenarios:

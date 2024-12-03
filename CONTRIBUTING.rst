@@ -106,7 +106,7 @@ Scope of the project
 Nilearn is an Open-source Python package for visualizing and analyzing human
 brain MRI data.
 It provides statistical and machine-learning tools for brain mapping,
-connectivity estimation and predictive modelling.
+connectivity estimation and predictive modeling.
 It brings visualization tools with instructive documentation & open community.
 
 Nilearn targets ease of use, but as Python code.

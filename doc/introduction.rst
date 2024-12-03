@@ -11,7 +11,7 @@ In particular, underlying machine learning problems include
 :ref:`decoding brain data <decoding>`,
 computing :ref:`brain parcellations <parcellating_brain>`,
 analyzing :ref:`functional connectivity <functional_connectomes>` and :ref:`connectomes <functional_connectomes>`,
-doing multi-voxel pattern analysis (MVPA) or :ref:`predictive modelling <decoding>`.
+doing multi-voxel pattern analysis (MVPA) or :ref:`predictive modeling <decoding>`.
 
 ``nilearn`` can readily be used on :ref:`task fMRI <decoding_intro>`,
 :ref:`resting-state <functional_connectomes>`, or
@@ -271,7 +271,6 @@ that could be of interest to new-comers:
     Moreover, you can use ``nilearn`` with `Jupyter <https://jupyter.org/>`_ notebooks or
     `IPython <https://ipython.org/>`_ sessions. They provide an interactive
     environment that greatly facilitates debugging and visualisation.
-
 
 Besides, you can find help on :neurostars:`neurostars <>` for questions
 related to ``nilearn`` and to computational neuroscience in general.

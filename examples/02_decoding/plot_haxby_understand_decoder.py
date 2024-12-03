@@ -129,7 +129,7 @@ for col in range(y_binary_.shape[1]):
 fig, (ax_binary, ax_multi) = plt.subplots(
     2, gridspec_kw={"height_ratios": [10, 1.5]}, figsize=(12, 2)
 )
-cmap = ListedColormap(["white"] + list(plt.cm.tab10.colors)[0:n_labels])
+cmap = ListedColormap(["white"] + list(plt.cm.tab10.colors)[:n_labels])
 binary_plt = ax_binary.imshow(
     y_binary_.T,
     aspect="auto",
@@ -145,7 +145,7 @@ ax_binary.set_ylabel("One-vs-Others")
 label_multi = LabelEncoder()
 y_multi = label_multi.fit_transform(y)
 y_multi = y_multi.reshape(1, -1)
-cmap = ListedColormap(list(plt.cm.tab10.colors)[0:n_labels])
+cmap = ListedColormap(list(plt.cm.tab10.colors)[:n_labels])
 multi_plt = ax_multi.imshow(
     y_multi,
     aspect="auto",
@@ -328,5 +328,5 @@ print("Scikit-Learn mean AU-ROC score", np.mean(scores_sklearn))
 # The advantage of using Nilearn's :class:`nilearn.decoding.Decoder` is
 # that it does all these steps under the hood and provides a simple interface
 # to train, cross-validate and predict on new data, while also parallelizing
-# the computations to make the cross-validation faster. It also organises the
-# results in a structured way that can be easily accessed and analysed.
+# the computations to make the cross-validation faster. It also organizes the
+# results in a structured way that can be easily accessed and analyzed.

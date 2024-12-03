@@ -51,7 +51,7 @@ a time series of positive real number representing the MRI signal, sampled at th
   For preprocessing functions, users are referred to `Nipype <https://nipype.readthedocs.io/en/latest/>`_
   or `fMRIPrep <https://fmriprep.readthedocs.io/en/stable/>`_.
 
-fMRI data modelling
+fMRI data modeling
 -------------------
 
 One way to analyze times series consists in comparing them to a *model* built
@@ -164,7 +164,7 @@ However, if we assume that the noise is Gaussian and that the model is correctly
 then we know that ``t`` should follow a Student distribution with ``dof`` degrees of freedom,
 where ``dof`` is the number of free parameters in the model:
 in practice, the number of observations (i.e. the number of time points), ``n_scans``
-minus the number of effects modelled (i.e. the number of columns ``n_columns``) of the design matrix:
+minus the number of effects modeled (i.e. the number of columns ``n_columns``) of the design matrix:
 
  :math:`dof = n\_scans - n\_columns`
 

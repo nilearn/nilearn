@@ -9,12 +9,12 @@ Connectome extraction: inverse covariance for direct connections
    Given a set of time-series (eg as extracted in the previous section)
    A *functional connectome* is a set of connections representing brain
    interactions between regions. Here we show the use of sparse-inverse
-   covariance to extract functional connectomes focussing only on direct
+   covariance to extract functional connectomes focusing only on direct
    interactions between regions.
 
 .. topic:: **References**
 
-   * Network modelling methods for FMRI :footcite:p:`Smith2011`
+   * Network modeling methods for FMRI :footcite:p:`Smith2011`
 
    * Learning and comparing functional connectomes across subjects :footcite:p:`Varoquaux2013`
 

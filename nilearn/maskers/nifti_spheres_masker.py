@@ -495,12 +495,11 @@ class NiftiSpheresMasker(BaseMasker):
             "relative size (in %)",
         ]
         regions_summary = {c: [] for c in columns}
-        embeded_images = []
         radius = 1.0 if self.radius is None else self.radius
         display = plotting.plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embeded_images.append(_embed_img(display))
+        embeded_images = [_embed_img(display)]
         display.close()
         for idx, seed in enumerate(seeds):
             regions_summary["seed number"].append(idx)
