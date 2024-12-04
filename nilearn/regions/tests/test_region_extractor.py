@@ -308,7 +308,7 @@ def test_remove_small_regions(affine_eye):
             [[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 1.0]],
         ]
     )
-    # To remove small regions, data should be labelled
+    # To remove small regions, data should be labeled
     label_map, n_labels = label(data)
     sum_label_data = np.sum(label_map)
 

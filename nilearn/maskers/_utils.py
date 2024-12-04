@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 
 from nilearn import image
@@ -10,10 +12,7 @@ def _check_dims(imgs):
         im = imgs[0]
         dim = image.load_img(im).shape
         # in case of 4D (timeseries) + 1D (subjects) return first subject
-        if len(dim) == 4:
-            return im, (*dim, 1)
-        else:
-            return imgs, (*dim, 1)
+        return (im, (*dim, 1)) if len(dim) == 4 else (imgs, (*dim, 1))
     else:
         dim = image.load_img(imgs).shape
         return imgs, dim
@@ -66,10 +65,10 @@ def compute_mean_surface_image(img):
     if len(img.shape) < 2 or img.shape[1] < 2:
         return img
 
-    data = {}
-    for part, value in img.data.parts.items():
-        data[part] = np.mean(value, axis=1).astype(float)
-
+    data = {
+        part: np.mean(value, axis=1).astype(float)
+        for part, value in img.data.parts.items()
+    }
     return SurfaceImage(mesh=img.mesh, data=data)
 
 
@@ -154,3 +153,43 @@ def check_surface_data_ndims(img, dim, var_name="img"):
             f"{[f"ndims in {part}: {img.data.parts[part].ndim}"
             for part in img.data.parts]}"
         )
+
+
+ def deconcatenate_surface_images(img):
+    """Deconcatenate a 3D Surface image into a a list of SurfaceImages.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    Returns
+    -------
+    :obj:`list` or :obj:`tuple` of SurfaceImage object
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+
+    if img.shape[1] < 2:
+        return [img]
+
+    mesh = img.mesh
+
+    return [
+        SurfaceImage(
+            mesh=copy.deepcopy(mesh),
+            data=_extract_surface_image_data(img, i),
+        )
+        for i in range(img.shape[1])
+    ]
+
+
+def _extract_surface_image_data(surface_image, index):
+    mesh = surface_image.mesh
+    data = surface_image.data
+
+    return {
+        hemi: data.parts[hemi][..., index]
+        .copy()
+        .reshape(mesh.parts[hemi].n_vertices, 1)
+        for hemi in data.parts
+    }

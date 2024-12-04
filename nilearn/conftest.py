@@ -4,6 +4,7 @@ import warnings
 
 import nibabel
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
@@ -459,17 +460,16 @@ def surf_mask():
     def _make_surface_mask(n_zeros=4, empty=False):
         if empty:
             return None
-        else:
-            mesh = _make_mesh()
-            data = {}
-            for key, val in mesh.parts.items():
-                data_shape = (val.n_vertices, 1)
-                data_part = np.ones(data_shape, dtype=int)
-                for i in range(n_zeros // 2):
-                    data_part[i, ...] = 0
-                data_part = data_part.astype(bool)
-                data[key] = data_part
-            return SurfaceImage(mesh, data)
+        mesh = _make_mesh()
+        data = {}
+        for key, val in mesh.parts.items():
+            data_shape = (val.n_vertices, 1)
+            data_part = np.ones(data_shape, dtype=int)
+            for i in range(n_zeros // 2):
+                data_part[i, ...] = 0
+            data_part = data_part.astype(bool)
+            data[key] = data_part
+        return SurfaceImage(mesh, data)
 
     return _make_surface_mask
 
@@ -538,29 +538,6 @@ def flip_surf_img(flip_surf_img_parts):
 
 
 @pytest.fixture
-def assert_surf_img_equal():
-    """Check that 2 SurfaceImages are equal."""
-
-    def f(img_1, img_2):
-        assert set(img_1.data.parts.keys()) == set(img_2.data.parts.keys())
-        for key in img_1.data.parts:
-            assert np.array_equal(img_1.data.parts[key], img_2.data.parts[key])
-
-    return f
-
-
-@pytest.fixture
-def assert_surf_mesh_equal():
-    """Check that 2 meshes are equal."""
-
-    def f(mesh_1, mesh_2):
-        assert np.array_equal(mesh_1.coordinates, mesh_2.coordinates)
-        assert np.array_equal(mesh_1.faces, mesh_2.faces)
-
-    return f
-
-
-@pytest.fixture
 def drop_surf_img_part():
     """Remove one hemisphere from a SurfaceImage."""
 
@@ -572,3 +549,16 @@ def drop_surf_img_part():
         return SurfaceImage(mesh_parts, data_parts)
 
     return f
+
+
+@pytest.fixture()
+def surface_glm_data(rng, surf_img):
+    """Create a surface image and design matrix for testing."""
+
+    def _make_surface_img_and_design(shape=5):
+        des = pd.DataFrame(
+            rng.standard_normal((shape, 3)), columns=["", "", ""]
+        )
+        return surf_img(shape), des
+
+    return _make_surface_img_and_design
