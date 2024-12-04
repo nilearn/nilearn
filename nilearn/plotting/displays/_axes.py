@@ -414,11 +414,9 @@ class GlassBrainAxes(BaseAxes):
             The affine of the volume.
 
         """
-        if self.direction in "xlr":
-            max_axis = 0
-        else:
-            max_axis = ".yz".index(self.direction)
-
+        max_axis = (
+            0 if self.direction in "xlr" else ".yz".index(self.direction)
+        )
         # set unselected brain hemisphere activations to 0
         if self.direction == "l":
             x_center, _, _, _ = np.dot(
