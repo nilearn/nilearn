@@ -1185,9 +1185,7 @@ def _check_and_load_tables(tables_, var_name):
             tables.append(loaded)
         elif isinstance(table, pd.DataFrame):
             tables.append(table)
-        elif isinstance(table, np.ndarray):
-            pass
-        else:
+        elif not isinstance(table, np.ndarray):
             raise TypeError(
                 f"{var_name} can only be a pandas DataFrame, "
                 "a Path object or a string. "
