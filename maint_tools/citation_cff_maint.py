@@ -145,7 +145,10 @@ Some other past or present contributors are:
 """
     )
     for author_ in authors:
-        f.write(f"* `{author_['given-names']} {author_['family-names']}`_")
+        if "website" in author_:
+            f.write(f"* `{author_['given-names']} {author_['family-names']}`_")
+        else:
+            f.write(f"* {author_['given-names']} {author_['family-names']}")
         if author_.get("affiliation"):
             f.write(f": {author_['affiliation']}")
         f.write("\n")
