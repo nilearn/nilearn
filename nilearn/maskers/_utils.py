@@ -150,7 +150,7 @@ def check_surface_data_ndims(img, dim, var_name="img"):
         raise ValueError(
             f"Data for each hemisphere of {var_name} should have {dim} "
             "dimensions,\n but found: "
-            f"{[f"ndims in {part}: {img.data.parts[part].ndim}"
+            f"{[f"ndims in {part}: {img.data.parts[part].ndim}."
             for part in img.data.parts]}"
         )
 
