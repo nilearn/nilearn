@@ -28,6 +28,7 @@ def _filter_and_extract(
     sample_mask=None,
     copy=True,
     dtype=None,
+    filter=None,
 ):
     """Extract representative time series using given function.
 
@@ -43,6 +44,9 @@ def _filter_and_extract(
         returning a second value is needed.
         If any other parameter is needed, a functor or a partial
         function must be provided.
+
+    filter : {'butterworth', 'cosine', None}, optional
+    Type of filter to apply during signal cleaning.
 
     For all other parameters refer to NiftiMasker documentation
 
@@ -149,6 +153,7 @@ def _filter_and_extract(
         confounds=confounds,
         sample_mask=sample_mask,
         runs=runs,
+        filter=filter,
         **parameters["clean_kwargs"],
     )
 
