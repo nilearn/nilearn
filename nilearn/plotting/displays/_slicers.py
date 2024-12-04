@@ -322,7 +322,7 @@ class BaseSlicer:
         plt.draw_if_interactive()
 
     @fill_doc
-    def add_contours(self, img, threshold=1e-6, filled=False, **kwargs):
+    def add_contours(self, img, threshold=1e-6, colorbar=False, cbar_tick_format="%.2g", cbar_vmin=None, cbar_vmax=None, filled=False, **kwargs):
         """Contour a 3D map in all the views.
 
         Parameters
@@ -338,7 +338,12 @@ class BaseSlicer:
                   values below the threshold (in absolute value) are plotted
                   as transparent.
 
+        cbar_tick_format: str, default="%%.2g" (scientific notation)
+            Controls how to format the tick labels of the colorbar.
+            Ex: use "%%i" to display as integers.
 
+        colorbar : :obj:`bool`, default=False
+            If ``True``, display a colorbar on the right of the plots.
 
         filled : :obj:`bool`, default=False
             If ``filled=True``, contours are displayed with color fillings.
@@ -353,6 +358,14 @@ class BaseSlicer:
             fillings (if ``filled=True``), and
             "colors", which is one color or a list of colors for
             these contours.
+        
+        cbar_vmin : :obj:`float`, optional
+            Minimal value for the colorbar. If None, the minimal value
+            is computed based on the data.
+
+        cbar_vmax : :obj:`float`, optional
+            Maximal value for the colorbar. If None, the maximal value
+            is computed based on the data.
 
         Notes
         -----
@@ -360,10 +373,24 @@ class BaseSlicer:
         (from matplotlib) for contours and contour_fillings can be
         different.
 
+        There is not point at using the parameters colorbar and levels at the same time.
+        Then, if one does so, it will raise an error. 
+        It is possible to use add_contours with parameter levels and without colorbar,
+        and then use it again with parameter colorbar and without levels,
+        but it is not relevant and it will display something that doesn't make sense.
+
         """
+        if colorbar and self._colorbar:
+            raise ValueError(
+                "This figure already has an overlay with a colorbar."
+            )
+        else:
+            self._colorbar = colorbar
+            self._cbar_tick_format = cbar_tick_format
+        
         if not filled:
             threshold = None
-        self._map_show(img, type="contour", threshold=threshold, **kwargs)
+        ims = self._map_show(img, type="contour", threshold=threshold, **kwargs)
         if filled:
             if "levels" in kwargs:
                 levels = kwargs["levels"]
@@ -372,8 +399,19 @@ class BaseSlicer:
                     # should be given as (lower, upper).
                     levels.append(np.inf)
 
-            self._map_show(img, type="contourf", threshold=threshold, **kwargs)
+            ims = self._map_show(img, type="contourf", threshold=threshold, **kwargs)
 
+        if colorbar and ims:
+            if "levels" in kwargs or "colors" in kwargs:
+                #self._colorbar = False
+                raise ValueError(
+                    "no point in printing a colorbar with levels or colors."
+                )
+            else :
+                self._show_colorbar(
+                    ims[0].cmap, ims[0].norm, cbar_vmin, cbar_vmax, threshold
+                )
+        
         plt.draw_if_interactive()
 
     def _map_show(
