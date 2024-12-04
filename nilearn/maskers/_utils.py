@@ -155,7 +155,7 @@ def check_surface_data_ndims(img, dim, var_name="img"):
         )
 
 
- def deconcatenate_surface_images(img):
+def deconcatenate_surface_images(img):
     """Deconcatenate a 3D Surface image into a a list of SurfaceImages.
 
     Parameters
