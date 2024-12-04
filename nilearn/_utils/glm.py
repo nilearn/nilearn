@@ -7,7 +7,7 @@ from nilearn._utils import stringify_path
 def check_and_load_tables(tables_to_check, var_name):
     """Check each element in `tables_`.
 
-       Those can be ither to be a pandas.DataFrame, a numpy.ndarray, \
+       Those can be either a pandas.DataFrame, a numpy.ndarray, \
        or a CSV or TSV file that can be loaded to a pandas.DataFrame.
 
     tables_to_check : str or pathlib.Path to a TSV or CSV \
