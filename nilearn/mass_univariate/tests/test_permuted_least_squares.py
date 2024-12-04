@@ -945,6 +945,14 @@ def test_permuted_ols_target_vars_error(dummy_design):
         )
 
 
+def test_permuted_ols_type_n_perm(dummy_design):
+    """Checks type n_perm."""
+    target_var, tested_var, *_ = dummy_design
+
+    with pytest.raises(TypeError, match="must be an int"):
+        permuted_ols(tested_var, target_var, n_perm=0.1)
+
+
 def test_tfce_no_masker_error():
     target_var, tested_var, *_ = _tfce_design()
 
