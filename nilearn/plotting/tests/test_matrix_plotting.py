@@ -9,7 +9,7 @@ from nilearn._utils import _constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
-from nilearn.glm.tests._testing import modulated_event_paradigm
+from nilearn.glm.tests._testing import block_paradigm, modulated_event_paradigm
 from nilearn.plotting.matrix_plotting import (
     pad_contrast_matrix,
     plot_contrast_matrix,
@@ -212,19 +212,21 @@ def test_show_design_matrix(tmp_path):
     assert (tmp_path / "dmtx.pdf").exists()
 
 
-def test_show_design_matrix_path_str(tmp_path):
+@pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
+def test_plot_design_matrix_path_str(tmp_path, suffix, sep):
     # test that the show code indeed (formally) runs
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, drift_model="polynomial", drift_order=3
     )
-    dmtx.to_csv(tmp_path / "tmp.tsv", sep="\t", index=False)
+    filename = (tmp_path / "tmp").with_suffix(suffix)
+    dmtx.to_csv(filename, sep=sep, index=False)
 
-    ax = plot_design_matrix(tmp_path / "tmp.tsv")
+    ax = plot_design_matrix(filename)
 
     assert ax is not None
 
-    ax = plot_design_matrix(str(tmp_path / "tmp.tsv"))
+    ax = plot_design_matrix(str(filename))
 
     assert ax is not None
 
@@ -272,28 +274,15 @@ def test_show_event_plot(tmp_path):
     assert (tmp_path / "event.pdf").exists()
 
 
-def test_show_event_plot_path_tsv_csv(tmp_path):
+@pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
+def test_plot_event_path_tsv_csv(tmp_path, suffix, sep):
     """Test plot_events directly from file."""
-    onset = np.linspace(0, 19.0, 20)
-    duration = np.full(20, 0.5)
-    trial_idx = np.arange(20)
-    # This makes 11 events in order to test cmap error
-    trial_idx[11:] -= 10
-    condition_ids = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"]
+    model_event = block_paradigm()
+    filename = (tmp_path / "tmp").with_suffix(suffix)
+    model_event.to_csv(filename, sep=sep, index=False)
 
-    trial_type = np.array([condition_ids[i] for i in trial_idx])
-
-    model_event = pd.DataFrame(
-        {
-            "onset": onset,
-            "duration": duration,
-            "trial_type": trial_type,
-        }
-    )
-    model_event.to_csv(tmp_path / "tmp.tsv", sep="\t", index=False)
-
-    plot_event(tmp_path / "tmp.tsv")
-    plot_event([tmp_path / "tmp.tsv", str(tmp_path / "tmp.tsv")])
+    plot_event(filename)
+    plot_event([filename, str(filename)])
 
 
 def test_show_contrast_matrix(tmp_path):
