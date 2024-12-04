@@ -193,7 +193,6 @@ def _permuted_ols_on_chunk(
             target_vars = target_vars * (
                 rng.randint(2, size=(n_samples, 1)) * 2 - 1
             )
-
         else:
             # shuffle data
             # Regarding computation costs, we choose to shuffle testvars
@@ -666,6 +665,7 @@ def permuted_ols(
             confounding_vars = np.ones((n_samples, 1))
 
     # OLS regression on original data
+    covars_orthonormalized = None
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
         covars_orthonormalized = orthonormalize_matrix(confounding_vars)
@@ -706,13 +706,9 @@ def permuted_ols(
             testedvars_resid_covars, axis=1
         ).T.copy()
 
-        n_covars = confounding_vars.shape[1]
-
     else:
         targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
         testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
-        covars_orthonormalized = None
-        n_covars = 0
 
     # check arrays contiguousity (for the sake of code efficiency)
     if not targetvars_resid_covars.flags["C_CONTIGUOUS"]:
@@ -756,13 +752,15 @@ def permuted_ols(
             masker.mask_img_,
         ).T
 
-    threshold_t = None
-    if threshold is not None:
-        # determine t-statistic threshold
-        dof = n_samples - (n_regressors + n_covars)
-        threshold_t = stats.t.isf(threshold, df=dof)
-        if two_sided_test:
-            threshold_t = stats.t.isf(threshold / 2, df=dof)
+    # 0 or negative number of permutations => original data scores only
+    if n_perm <= 0:
+        if output_type == "legacy":
+            return np.asarray([]), scores_original_data.T, np.asarray([])
+
+        out = {"t": scores_original_data.T}
+        if tfce:
+            out["tfce"] = tfce_original_data.T
+        return out
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
@@ -770,24 +768,18 @@ def permuted_ols(
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
 
-    elif n_perm > 0:
-        warnings.warn(
-            f"The specified number of permutations is {n_perm} and the number "
-            f"of jobs to be performed in parallel has set to {n_jobs}. "
-            f"This is incompatible so only {n_perm} jobs will be running. "
-            "You may want to perform more permutations in order to take the "
-            "most of the available computing resources."
-        )
-        n_perm_chunks = np.ones(n_perm, dtype=int)
-    else:  # 0 or negative number of permutations => original data scores only
-        if output_type == "legacy":
-            return np.asarray([]), scores_original_data.T, np.asarray([])
+    threshold_t = _compute_t_stat_threshold(
+        threshold, two_sided_test, tested_vars, confounding_vars
+    )
 
-        out = {"t": scores_original_data.T}
-        if tfce:
-            out["tfce"] = tfce_original_data.T
-
-        return out
+    warnings.warn(
+        f"The specified number of permutations is {n_perm} and the number "
+        f"of jobs to be performed in parallel has set to {n_jobs}. "
+        f"This is incompatible so only {n_perm} jobs will be running. "
+        "You may want to perform more permutations in order to take the "
+        "most of the available computing resources."
+    )
+    n_perm_chunks = np.ones(n_perm, dtype=int)
 
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
@@ -946,6 +938,22 @@ def permuted_ols(
         outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
+
+
+def _compute_t_stat_threshold(
+    threshold, two_sided_test, tested_vars, confounding_vars
+):
+    if threshold is None:
+        return None
+    n_samples, n_regressors = tested_vars.shape
+    n_covars = 0 if confounding_vars is None else confounding_vars.shape[1]
+    # determine t-statistic threshold
+    dof = n_samples - (n_regressors + n_covars)
+    return (
+        stats.t.isf(threshold / 2, df=dof)
+        if two_sided_test
+        else stats.t.isf(threshold, df=dof)
+    )
 
 
 def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
