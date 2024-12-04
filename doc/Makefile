@@ -84,16 +84,14 @@ no_jekyll:
 	touch $(BUILDDIR)/html/.nojekyll
 
 html: no_jekyll	sym_links sym_links_datasets
-    python visual_testing/reporter_visual_inspection_suite.py full
-	# These two lines make the build a bit more lengthy, and the
-	# the embedding of images more robust
 	rm -rf $(BUILDDIR)/html/_images
+	python visual_testing/reporter_visual_inspection_suite.py full
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
 html-strict: no_jekyll sym_links sym_links_datasets
-    python visual_testing/reporter_visual_inspection_suite.py full
+	python visual_testing/reporter_visual_inspection_suite.py full
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
 	make check
