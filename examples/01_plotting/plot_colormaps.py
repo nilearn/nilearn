@@ -130,17 +130,6 @@ show()
 #
 # Also compared to those of matplotlib.
 
-category = "Nilearn diverging"
-color_map_names = [
-    "bwr",
-]
-plot_color_gradients(
-    category=category,
-    color_maps=nilearn_cmaps,
-    color_map_names=color_map_names,
-)
-cmaps[category] = color_map_names
-
 category = "Matplotlib diverging"
 color_map_names = [
     "PiYG",
