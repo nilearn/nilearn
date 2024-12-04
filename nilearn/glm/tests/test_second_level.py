@@ -21,7 +21,6 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
-from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.conftest import _shape_3d_default
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
@@ -43,10 +42,8 @@ from nilearn.maskers import NiftiMasker
 from nilearn.maskers._utils import (
     concatenate_surface_images,
 )
+from nilearn.reporting import get_clusters_table
 from nilearn.surface._testing import assert_surface_image_equal
-
-if is_matplotlib_installed():
-    from nilearn.reporting import get_clusters_table
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
@@ -1040,10 +1037,6 @@ def test_non_parametric_inference_cluster_level(tmp_path):
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 def test_non_parametric_inference_cluster_level_with_covariates(
     shape_3d_default,
     tmp_path,
@@ -1102,10 +1095,6 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     assert logp_unc_cluster_sizes == logp_max_cluster_sizes
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 def test_non_parametric_inference_cluster_level_with_single_covariates(
     shape_3d_default,
     tmp_path,
