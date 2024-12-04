@@ -1667,6 +1667,16 @@ class SurfaceImage:
         """Shape of the data."""
         return self.data.shape
 
+    @property
+    def max(self):
+        """Maximum of the data across hemispheres."""
+        return self.data.max
+
+    @property
+    def min(self):
+        """Minimum of the data across hemispheres."""
+        return self.data.min
+
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.shape}>"
 

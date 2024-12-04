@@ -745,6 +745,7 @@ def test_polydata_shape(shape):
 
 
 def test_polydata_min_max():
+    """Smoke test for min and max property of polydata."""
     data = PolyData(left=np.ones((5,)), right=np.zeros((5,)))
     assert data.max == 1
     assert data.min == 0
@@ -805,6 +806,11 @@ def test_compare_file_and_inmemory_mesh(surf_mesh, tmp_path):
 @pytest.mark.parametrize("shape", [1, 3])
 def test_surface_image_shape(surf_img, shape):
     assert surf_img(shape).shape == (9, shape)
+
+
+def test_surface_image_min_max(surf_img):
+    assert surf_img().max == 50.0
+    assert surf_img().min == 1.0
 
 
 def test_data_shape_not_matching_mesh(surf_img, flip_surf_img_parts):
