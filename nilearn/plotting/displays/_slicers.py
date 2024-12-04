@@ -321,7 +321,17 @@ class BaseSlicer:
         plt.draw_if_interactive()
 
     @fill_doc
-    def add_contours(self, img, threshold=1e-6, colorbar=False, cbar_tick_format="%.2g", cbar_vmin=None, cbar_vmax=None, filled=False, **kwargs):
+    def add_contours(
+        self,
+        img,
+        threshold=1e-6,
+        colorbar=False,
+        cbar_tick_format="%.2g",
+        cbar_vmin=None,
+        cbar_vmax=None,
+        filled=False,
+        **kwargs,
+    ):
         """Contour a 3D map in all the views.
 
         Parameters
@@ -357,7 +367,7 @@ class BaseSlicer:
             fillings (if ``filled=True``), and
             "colors", which is one color or a list of colors for
             these contours.
-        
+
         cbar_vmin : :obj:`float`, optional
             Minimal value for the colorbar. If None, the minimal value
             is computed based on the data.
@@ -373,7 +383,7 @@ class BaseSlicer:
         different.
 
         There is not point at using the parameters colorbar and levels at the same time.
-        Then, if one does so, it will raise an error. 
+        Then, if one does so, it will raise an error.
         It is possible to use add_contours with parameter levels and without colorbar,
         and then use it again with parameter colorbar and without levels,
         but it is not relevant and it will display something that doesn't make sense.
@@ -386,10 +396,12 @@ class BaseSlicer:
         else:
             self._colorbar = colorbar
             self._cbar_tick_format = cbar_tick_format
-        
+
         if not filled:
             threshold = None
-        ims = self._map_show(img, type="contour", threshold=threshold, **kwargs)
+        ims = self._map_show(
+            img, type="contour", threshold=threshold, **kwargs
+        )
         if filled:
             if "levels" in kwargs:
                 levels = kwargs["levels"]
@@ -398,18 +410,20 @@ class BaseSlicer:
                     # should be given as (lower, upper).
                     levels.append(np.inf)
 
-            ims = self._map_show(img, type="contourf", threshold=threshold, **kwargs)
+            ims = self._map_show(
+                img, type="contourf", threshold=threshold, **kwargs
+            )
 
         if colorbar and ims:
             if "levels" in kwargs or "colors" in kwargs:
                 raise ValueError(
                     "no point in printing a colorbar with levels or colors."
                 )
-            else :
+            else:
                 self._show_colorbar(
                     ims[0].cmap, ims[0].norm, cbar_vmin, cbar_vmax, threshold
                 )
-        
+
         plt.draw_if_interactive()
 
     def _map_show(
