@@ -60,9 +60,10 @@ def _make_graph_edges_3d(n_x, n_y, n_z):
 def _compute_weights_3d(data, spacing, beta=130, eps=1.0e-6):
     # Weight calculation is main difference in multispectral version
     # Original gradient**2 replaced with sum of gradients ** 2
-    gradients = 0
-    for channel in range(data.shape[-1]):
-        gradients += _compute_gradients_3d(data[..., channel], spacing) ** 2
+    gradients = sum(
+        _compute_gradients_3d(data[..., channel], spacing) ** 2
+        for channel in range(data.shape[-1])
+    )
     # All channels considered together in this standard deviation
     beta /= 10 * data.std()
     gradients *= beta
@@ -280,10 +281,9 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     if spacing is None:
         spacing = np.asarray((1.0,) * 3)
     elif len(spacing) == len(dims):
-        if len(spacing) == 2:  # Need a dummy spacing for singleton 3rd dim
-            spacing = np.r_[spacing, 1.0]
-        else:  # Convert to array
-            spacing = np.asarray(spacing)
+        spacing = (
+            np.r_[spacing, 1.0] if len(spacing) == 2 else np.asarray(spacing)
+        )
     else:
         raise ValueError(
             "Input argument `spacing` incorrect, should be an "
@@ -357,16 +357,15 @@ def _solve_cg(lap_sparse, B, tol):
     For each pixel, the label i corresponding to the maximal X_i is returned.
     """
     lap_sparse = lap_sparse.tocsc()
-    X = []
-    for i in range(len(B)):
+    X = [
+        cg(lap_sparse, -b_i.todense(), rtol=tol, atol=0)[0]
         # TODO
         # when support scipy to >= 1.12
         # See https://github.com/nilearn/nilearn/pull/4394
-        if compare_version(__version__, ">=", "1.12"):
-            x0 = cg(lap_sparse, -B[i].todense(), rtol=tol, atol=0)[0]
-        else:
-            x0 = cg(lap_sparse, -B[i].todense(), tol=tol, atol="legacy")[0]
-        X.append(x0)
+        if compare_version(__version__, ">=", "1.12")
+        else cg(lap_sparse, -b_i.todense(), tol=tol, atol="legacy")[0]
+        for b_i in B
+    ]
 
     X = np.array(X)
     X = np.argmax(X, axis=0)

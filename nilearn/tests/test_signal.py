@@ -459,7 +459,7 @@ def test_clean_detrending():
     x_undetrended = nisignal.clean(
         x, standardize=False, detrend=False, low_pass=None, high_pass=None
     )
-    assert not abs(x_undetrended - signals).max() < 0.06
+    assert abs(x_undetrended - signals).max() >= 0.06
     # clean should not modify inputs
     assert np.array_equal(x_orig, x)
 
@@ -578,7 +578,7 @@ def test_clean_runs():
     x_orig = x.copy()
     # Create run info
     runs = np.ones(n_samples)
-    runs[0 : n_samples // 2] = 0
+    runs[: n_samples // 2] = 0
     x_detrended = nisignal.clean(
         x,
         confounds=confounds,
@@ -829,6 +829,37 @@ def test_clean_frequencies_using_power_spectrum_density():
     assert np.sum(Pxx_den_low[f >= low_pass * 2.0]) <= 1e-4
     assert np.sum(Pxx_den_high[f <= high_pass / 2.0]) <= 1e-4
     assert np.sum(Pxx_den_cos[f <= high_pass / 2.0]) <= 1e-4
+
+
+@pytest.mark.parametrize("t_r", [1, 1.0])
+@pytest.mark.parametrize("high_pass", [1, 1.0])
+def test_clean_t_r_highpass_float_int(t_r, high_pass):
+    """Make sure t_r and high_pass can be int.
+
+    Regression test for: https://github.com/nilearn/nilearn/issues/4803
+    """
+    # Create signal
+    sx = np.array(
+        [
+            np.sin(np.linspace(0, 100, 100) * 1.5),
+            np.sin(np.linspace(0, 100, 100) * 3.0),
+            np.sin(np.linspace(0, 100, 100) / 8.0),
+        ]
+    ).T
+
+    # Create confound
+    _, _, confounds = generate_signals(
+        n_features=10, n_confounds=10, length=100
+    )
+    clean(
+        sx,
+        detrend=False,
+        standardize=False,
+        filter="cosine",
+        low_pass=None,
+        high_pass=high_pass,
+        t_r=t_r,
+    )
 
 
 def test_clean_finite_no_inplace_mod():

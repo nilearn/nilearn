@@ -101,7 +101,7 @@ for hemi in hemispheres_to_analyze:
     # Define cross-validation scheme
     cv = KFold(n_splits=3, shuffle=False)
 
-    X = fmri_img_surf.data.parts[hemi]
+    X = fmri_img_surf.data.parts[hemi].T
 
     # Cross-validated search light
     scores[hemi] = search_light(
@@ -131,11 +131,12 @@ for hemi in hemispheres_to_analyze:
         threshold=0.1,
         bg_map=fsaverage_data,
         title=f"Accuracy map, {hemi} hemisphere",
+        cmap="bwr",
     )
 show()
 
-# # %%
-# # References
-# # ----------
-# #
-# #  .. footbibliography::
+# %%
+# References
+# ----------
+#
+#  .. footbibliography::

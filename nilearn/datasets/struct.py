@@ -23,7 +23,6 @@ from nilearn.surface import (
     FileMesh,
     PolyMesh,
     SurfaceImage,
-    load_surf_data,
 )
 
 MNI152_FILE_PATH = (
@@ -74,7 +73,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         - "pd": str,
           Path to the proton density weighted anatomical image
         - "gm": str,
-          Path to grey matter segmented image
+          Path to gray matter segmented image
         - "wm": str,
           Path to white matter segmented image
         - "csf": str,
@@ -90,7 +89,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     --------
     nilearn.datasets.load_mni152_template: to load MNI152 T1 template.
 
-    nilearn.datasets.load_mni152_gm_template: to load MNI152 grey matter
+    nilearn.datasets.load_mni152_gm_template: to load MNI152 gray matter
         template.
 
     nilearn.datasets.load_mni152_wm_template: to load MNI152 white matter
@@ -98,11 +97,11 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     nilearn.datasets.load_mni152_brain_mask: to load MNI152 whole brain mask.
 
-    nilearn.datasets.load_mni152_gm_mask: to load MNI152 grey matter mask.
+    nilearn.datasets.load_mni152_gm_mask: to load MNI152 gray matter mask.
 
     nilearn.datasets.load_mni152_wm_mask: to load MNI152 white matter mask.
 
-    nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM grey
+    nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM gray
         matter mask.
 
     References
@@ -187,7 +186,7 @@ def load_mni152_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -251,7 +250,7 @@ def load_mni152_gm_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -307,7 +306,7 @@ def load_mni152_wm_template(resolution=None):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -361,7 +360,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -405,7 +404,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -413,7 +412,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
         Values of the grey-matter MNI152 template above this threshold will be
         included.
 
-    n_iter: int, default=2
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -458,7 +457,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution: int, default=1
+    resolution : :obj:`int`, default=1
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -466,7 +465,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
         Values of the white-matter MNI152 template above this threshold will be
         included.
 
-    n_iter: int, default=2
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -514,12 +513,14 @@ def fetch_icbm152_brain_gm_mask(
     Parameters
     ----------
     %(data_dir)s
+
     threshold : float, default=0.2
         Values of the ICBM152 grey-matter template above this threshold will be
         included.
 
     %(resume)s
-    n_iter: int, default=2
+
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -530,13 +531,13 @@ def fetch_icbm152_brain_gm_mask(
 
     Returns
     -------
-    gm_mask_img : Nifti1Image, image corresponding to the brain grey matter
+    gm_mask_img : Nifti1Image, image corresponding to the brain gray matter
         from ICBM152 template.
 
     Notes
     -----
     This function relies on ICBM152 templates where we particularly pick
-    grey matter template and threshold the template at .2 to take one fifth
+    gray matter template and threshold the template at .2 to take one fifth
     of the values. Then, do a bit post processing such as binary closing
     operation to more compact mask image.
 
@@ -552,7 +553,7 @@ def fetch_icbm152_brain_gm_mask(
         template and related.
 
     """
-    # Fetching ICBM152 grey matter mask image
+    # Fetching ICBM152 gray matter mask image
     icbm = fetch_icbm152_2009(
         data_dir=data_dir, resume=resume, verbose=verbose
     )
@@ -1052,6 +1053,8 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
 def load_fsaverage(mesh="fsaverage5", data_dir=None):
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     mesh : :obj:`str`, default='fsaverage5'
@@ -1098,6 +1101,8 @@ def load_fsaverage_data(
 ):
     """Return freesurfer data on an fsaverage mesh as a SurfaceImage.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     mesh : :obj:`str`, default='fsaverage5'
@@ -1123,7 +1128,7 @@ def load_fsaverage_data(
 
     Returns
     -------
-    img: SurfaceImage
+    img : :obj:`~nilearn.surface.SurfaceImage`
         SurfaceImage with the freesurfer mesh and data.
     """
     if mesh_type not in ALLOWED_MESH_TYPES:
@@ -1143,12 +1148,8 @@ def load_fsaverage_data(
     img = SurfaceImage(
         mesh=fsaverage[mesh_type],
         data={
-            "left": load_surf_data(
-                fsaverage_data[f"{renaming[data_type]}_left"]
-            ),
-            "right": load_surf_data(
-                fsaverage_data[f"{renaming[data_type]}_right"]
-            ),
+            "left": fsaverage_data[f"{renaming[data_type]}_left"],
+            "right": fsaverage_data[f"{renaming[data_type]}_right"],
         },
     )
 

@@ -85,7 +85,7 @@ class _SpecialValue:
     """
 
     def __eq__(self, other):
-        raise NotImplementedError("Use a derived class for _SpecialValue")
+        return NotImplemented
 
     def __req__(self, other):
         return self.__eq__(other)
@@ -1262,7 +1262,7 @@ def _remove_none_strings(metadata):
     Some collections and images in Neurovault, for some fields, use the
     string "None", "None / Other", or "null", instead of having ``null``
     in the json file; we replace these strings with ``None`` so that
-    they are consistent with the rest and for correct behaviour when we
+    they are consistent with the rest and for correct behavior when we
     want to select or filter out null values.
 
     Parameters
@@ -1360,7 +1360,7 @@ def _json_from_file(file_name):
 
     Parameters
     ----------
-    file_name: str or pathlib.Path
+    file_name : str or pathlib.Path
     """
     with Path(file_name).open("rb") as dumped:
         loaded = json.loads(dumped.read().decode("utf-8"))
@@ -1372,8 +1372,9 @@ def _json_add_collection_dir(file_name, force=True):
 
     Parameters
     ----------
-    file_name: str or pathlib.Path
-    force: bool
+    file_name : str or pathlib.Path
+
+    force : bool
     """
     file_name = Path(file_name)
     loaded = _json_from_file(file_name)

@@ -19,13 +19,13 @@ from scipy.stats import scoreatpercentile
 
 from .. import signal
 from .._utils import (
-    _repr_niimgs,
     as_ndarray,
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
     fill_doc,
     logger,
+    repr_niimgs,
 )
 from .._utils.exceptions import DimensionError
 from .._utils.helpers import (
@@ -138,7 +138,7 @@ def _fast_smooth_array(arr):
 
     Only the first three dimensions of the array will be smoothed. The
     filter uses [0.2, 1, 0.2] weights in each direction and use a
-    normalisation to preserve the local average value.
+    normalization to preserve the local average value.
 
     Parameters
     ----------
@@ -483,7 +483,7 @@ def _pad_array(array, pad_sizes):
 def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     from . import resampling
 
-    input_repr = _repr_niimgs(imgs, shorten=True)
+    input_repr = repr_niimgs(imgs, shorten=True)
 
     imgs = check_niimg(imgs)
     mean_data = safe_get_data(imgs)
@@ -787,8 +787,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         Data to be stored in the image. If data dtype is a boolean, then data
         is cast to 'uint8' by default.
 
-    .. versionchanged:: 0.9.2
-        Changed default dtype casting of booleans from 'int8' to 'uint8'.
+        .. versionchanged:: 0.9.2
+            Changed default dtype casting of booleans from 'int8' to 'uint8'.
 
     affine : 4x4 :class:`numpy.ndarray`, optional
         Transformation matrix.
@@ -1157,20 +1157,18 @@ def math_img(formula, copy_header_from=None, **imgs):
         )
         raise
 
-    # check whether to copy header from one of the input images
-    if copy_header_from is not None:
-        niimg = check_niimg(imgs[copy_header_from])
-        # only copy the header if the result and the input image to copy the
-        # header from have the same shape
-        if result.ndim != niimg.ndim:
-            raise ValueError(
-                "Cannot copy the header. "
-                "The result of the formula has a different number of "
-                "dimensions than the image to copy the header from."
-            )
-        return new_img_like(niimg, result, niimg.affine, copy_header=True)
-    else:
+    if copy_header_from is None:
         return new_img_like(niimg, result, niimg.affine)
+    niimg = check_niimg(imgs[copy_header_from])
+    # only copy the header if the result and the input image to copy the
+    # header from have the same shape
+    if result.ndim != niimg.ndim:
+        raise ValueError(
+            "Cannot copy the header. "
+            "The result of the formula has a different number of "
+            "dimensions than the image to copy the header from."
+        )
+    return new_img_like(niimg, result, niimg.affine, copy_header=True)
 
 
 def binarize_img(
@@ -1380,7 +1378,6 @@ def clean_img(
     """
     # Avoid circular import
     from .. import masking
-    from .image import new_img_like
 
     imgs_ = check_niimg_4d(imgs)
 
@@ -1658,12 +1655,12 @@ def copy_img(img):
 
     Parameters
     ----------
-    img: image
+    img : image
         nibabel SpatialImage object to copy.
 
     Returns
     -------
-    img_copy: image
+    img_copy : image
         copy of input (data, affine and header)
     """
     if not isinstance(img, spatialimages.SpatialImage):

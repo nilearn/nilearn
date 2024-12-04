@@ -34,7 +34,7 @@ from nilearn.datasets._utils import (
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
-from nilearn.surface import SurfaceImage, load_surf_data
+from nilearn.surface import SurfaceImage
 
 from .._utils.numpy_conversions import csv_to_array
 
@@ -868,7 +868,7 @@ def fetch_localizer_contrasts(
         opts = {"move": participants_file}
         filenames.append((participants_file, file_url, opts))
 
-    # Fetch behavioural
+    # Fetch behavioral
     behavioural_file = Path("brainomics_data", "phenotype", "behavioural.tsv")
 
     path = "/localizer/phenotype/behavioural.tsv"
@@ -1433,7 +1433,7 @@ def fetch_megatrawls_netmats(
     from MegaTrawls release in HCP.
 
     This data can be used to predict relationships between imaging data and
-    non-imaging behavioural measures such as age, sex, education, etc.
+    non-imaging behavioral measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 
@@ -1763,16 +1763,16 @@ def fetch_surf_nki_enhanced(
     # Download subjects' datasets
     func_right = []
     func_left = []
-    for i in range(len(ids)):
-        archive = url + f"%i{os.sep}%s_%s_preprocessed_fsaverage5_fwhm6.gii"
+    for i, ids_i in enumerate(ids):
+        archive = f"{url}%i{os.sep}%s_%s_preprocessed_fsaverage5_fwhm6.gii"
         func = f"%s{os.sep}%s_%s_preprocessed_fwhm6.gii"
         rh = fetch_files(
             data_dir,
             [
                 (
-                    func % (ids[i], ids[i], "right"),
-                    archive % (nitrc_ids[2 * i + 1], ids[i], "rh"),
-                    {"move": func % (ids[i], ids[i], "right")},
+                    func % (ids_i, ids_i, "right"),
+                    archive % (nitrc_ids[2 * i + 1], ids_i, "rh"),
+                    {"move": func % (ids_i, ids_i, "right")},
                 )
             ],
             resume=resume,
@@ -1782,9 +1782,9 @@ def fetch_surf_nki_enhanced(
             data_dir,
             [
                 (
-                    func % (ids[i], ids[i], "left"),
-                    archive % (nitrc_ids[2 * i], ids[i], "lh"),
-                    {"move": func % (ids[i], ids[i], "left")},
+                    func % (ids_i, ids_i, "left"),
+                    archive % (nitrc_ids[2 * i], ids_i, "lh"),
+                    {"move": func % (ids_i, ids_i, "left")},
                 )
             ],
             resume=resume,
@@ -1814,6 +1814,8 @@ def load_nki(
 ):
     """Load NKI enhanced surface data into a surface object.
 
+    .. versionadded:: 0.11.0
+
     Parameters
     ----------
     mesh : :obj:`str`, default='fsaverage5'
@@ -1829,10 +1831,10 @@ def load_nki(
          - ``"sphere"``
          - ``"flat"``
 
-    n_subjects : :obj:`int`, default=10
+    n_subjects : :obj:`int`, default=1
         The number of subjects to load from maximum of 102 subjects.
-        By default, 10 subjects will be loaded. If None is given,
-        all 102 subjects will be loaded.
+        By default, 1 subjects will be loaded.
+        If None is given, all 102 subjects will be loaded.
 
     %(data_dir)s
 
@@ -1869,13 +1871,11 @@ def load_nki(
     ):
         logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
 
-        left_data = load_surf_data(left).T
-        right_data = load_surf_data(right).T
         img = SurfaceImage(
             mesh=fsaverage[mesh_type],
             data={
-                "left": left_data,
-                "right": right_data,
+                "left": left,
+                "right": right,
             },
         )
         images.append(img)
@@ -2259,8 +2259,10 @@ def fetch_language_localizer_demo_dataset(
     Parameters
     ----------
     %(data_dir)s
+
     %(verbose)s
-    legacy_output: bool, default=True
+
+    legacy_output : :obj:`bool`, default=True
 
         .. versionadded:: 0.10.3
         .. deprecated::0.10.3
@@ -2276,18 +2278,22 @@ def fetch_language_localizer_demo_dataset(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'data_dir': :obj:`str` Path to downloaded dataset.
-        - 'func': :obj:`list` of :obj:`str`,
-                  Absolute paths of downloaded files on disk
-        - 'description' : :obj:`str`, dataset description
+        - ``'data_dir'``: :obj:`str` Path to downloaded dataset.
 
-    Legacy output
-    -------------
-    data_dir : :obj:`str`
-        Path to downloaded dataset.
+        - ``'func'``: :obj:`list` of :obj:`str`,
+          Absolute paths of downloaded files on disk
 
-    downloaded_files : :obj:`list` of :obj:`str`
-        Absolute paths of downloaded files on disk
+        - ``'description'`` : :obj:`str`, dataset description
+
+    .. warning::
+
+        LEGACY OUTPUT:
+
+        **data_dir** : :obj:`str`
+            Path to downloaded dataset.
+
+        **downloaded_files** : :obj:`list` of :obj:`str`
+            Absolute paths of downloaded files on disk
 
     """
     url = "https://osf.io/3dj2a/download"
@@ -2690,9 +2696,12 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     -------
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, with the keys:
-        epi_img: the input 4D image
-        events: a csv file describing the paradigm
-        description: data description
+
+        - epi_img: the input 4D image
+
+        - events: a csv file describing the paradigm
+
+        - description: data description
 
     """
     url = "https://osf.io/2bqxn/download"

@@ -94,8 +94,22 @@ Discussions = "https://neurostars.org/tag/nilearn"
 Homepage = "https://nilearn.github.io"
 
 [tool.codespell]
+builtin = "clear,rare,en-GB_to_en-US"
 ignore-words = ".github/codespell_ignore_words.txt"
-skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results"
+skip = "./.git,*.cff,*.bib,*/tmp,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
+
+[tool.doc8]
+allow-long-titles = true
+ignore-path = [
+    "*/changes/*.rst",
+    "*/modules/generated/*",
+    "*/modules/generated_reports/*",
+    "*/templates/*.rst",
+    "doc/includes/*",
+    "doc/authors.rst",
+    "AUTHORS.rst"
+]
+max-line-length = 120
 
 [tool.hatch.build.hooks.vcs]
 version-file = "nilearn/_version.py"
@@ -151,7 +165,24 @@ ignore = [
     "PIE790",
     "PLR2004",
     "PTH207",
-    "RUF012"
+    "RUF012",
+    "UP038",  # https://github.com/astral-sh/ruff/issues/7871
+    # Avoid linter rules conflicting with the formatter
+    # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "COM812",
+    "COM819",
+    "D206",
+    "D300",
+    "E111",
+    "E114",
+    "E117",
+    "ISC001",
+    "ISC002",
+    "Q000",
+    "Q001",
+    "Q002",
+    "Q003",
+    "W191"
 ]
 # List of all the ruff rules (includes why the rule matters)
 # https://docs.astral.sh/ruff/rules/
@@ -183,7 +214,7 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 41
+max-complexity = 35
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
@@ -198,8 +229,8 @@ convention = "numpy"
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 26
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
-max-branches = 48
+max-branches = 35
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 151
+max-statements = 121

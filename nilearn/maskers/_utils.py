@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 
 from nilearn import image
@@ -10,10 +12,7 @@ def _check_dims(imgs):
         im = imgs[0]
         dim = image.load_img(im).shape
         # in case of 4D (timeseries) + 1D (subjects) return first subject
-        if len(dim) == 4:
-            return im, (*dim, 1)
-        else:
-            return imgs, (*dim, 1)
+        return (im, (*dim, 1)) if len(dim) == 4 else (imgs, (*dim, 1))
     else:
         dim = image.load_img(imgs).shape
         return imgs, dim
@@ -57,17 +56,20 @@ def compute_mean_surface_image(img):
 
     Parameters
     ----------
-    img: SurfaceImage
+    img : SurfaceImage
 
     Returns
     -------
     SurfaceImage
     """
-    if img.shape[0] < 2:
+    if len(img.shape) < 2 or img.shape[1] < 2:
         return img
-    for part, value in img.data.parts.items():
-        img.data.parts[part] = np.squeeze(value.mean(axis=0)).astype(float)
-    return img
+
+    data = {
+        part: np.mean(value, axis=1).astype(float)
+        for part, value in img.data.parts.items()
+    }
+    return SurfaceImage(mesh=img.mesh, data=data)
 
 
 def get_min_max_surface_image(img):
@@ -75,13 +77,13 @@ def get_min_max_surface_image(img):
 
     Parameters
     ----------
-    img: SurfaceImage
+    img : SurfaceImage
 
     Returns
     -------
-    vmin: float
+    vmin : float
 
-    vmax: float
+    vmax : float
     """
     vmin = min(min(x.ravel()) for x in img.data.parts.values())
     vmax = max(max(x.ravel()) for x in img.data.parts.values())
@@ -117,8 +119,48 @@ def concatenate_surface_images(imgs):
     output_data = {}
     for part in imgs[0].data.parts:
         tmp = [img.data.parts[part] for img in imgs]
-        output_data[part] = np.concatenate(tmp)
+        output_data[part] = np.concatenate(tmp, axis=1)
 
     output = SurfaceImage(mesh=imgs[0].mesh, data=output_data)
 
     return output
+
+
+def deconcatenate_surface_images(img):
+    """Deconcatenate a 3D Surface image into a a list of SurfaceImages.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    Returns
+    -------
+    :obj:`list` or :obj:`tuple` of SurfaceImage object
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+
+    if img.shape[1] < 2:
+        return [img]
+
+    mesh = img.mesh
+
+    return [
+        SurfaceImage(
+            mesh=copy.deepcopy(mesh),
+            data=_extract_surface_image_data(img, i),
+        )
+        for i in range(img.shape[1])
+    ]
+
+
+def _extract_surface_image_data(surface_image, index):
+    mesh = surface_image.mesh
+    data = surface_image.data
+
+    return {
+        hemi: data.parts[hemi][..., index]
+        .copy()
+        .reshape(mesh.parts[hemi].n_vertices, 1)
+        for hemi in data.parts
+    }

@@ -171,7 +171,7 @@ def test_compute_epi_mask(affine_eye):
     mean_image[3:-2, 3:-2, :] = 10
     mean_image[5, 5, :] = 11
     mean_image = Nifti1Image(mean_image, affine_eye)
-    mask1 = compute_epi_mask(mean_image, opening=False)
+    mask1 = compute_epi_mask(mean_image, opening=False, verbose=1)
     mask2 = compute_epi_mask(mean_image, exclude_zeros=True, opening=False)
     # With an array with no zeros, exclude_zeros should not make
     # any difference
@@ -210,7 +210,7 @@ def test_compute_background_mask(affine_eye):
         mean_image[3:-3, 3:-3, 3:-3] = 1
         mask = mean_image == 1
         mean_image = Nifti1Image(mean_image, affine_eye)
-        mask1 = compute_background_mask(mean_image, opening=False)
+        mask1 = compute_background_mask(mean_image, opening=False, verbose=1)
         np.testing.assert_array_equal(get_data(mask1), mask.astype(np.int8))
 
     # Check that we get a ValueError for incorrect shape
@@ -230,7 +230,7 @@ def test_compute_background_mask(affine_eye):
 
 def test_compute_brain_mask():
     img, _ = data_gen.generate_mni_space_img(res=8, random_state=0)
-    brain_mask = compute_brain_mask(img, threshold=0.2)
+    brain_mask = compute_brain_mask(img, threshold=0.2, verbose=1)
     gm_mask = compute_brain_mask(img, threshold=0.2, mask_type="gm")
     wm_mask = compute_brain_mask(img, threshold=0.2, mask_type="wm")
     brain_data, gm_data, wm_data = map(
@@ -570,6 +570,7 @@ def test_compute_multi_epi_mask(affine_eye):
         opening=0,
         target_affine=affine_eye,
         target_shape=(4, 4, 1),
+        verbose=1,
     )
     assert_array_equal(mask_ab, get_data(mask_ab_))
 
@@ -595,7 +596,7 @@ def test_compute_multi_brain_mask():
         data_gen.generate_mni_space_img(res=9, random_state=2)[0],
         data_gen.generate_mni_space_img(res=9, random_state=3)[0],
     ]
-    mask1 = compute_multi_brain_mask(imgs1, threshold=0.2)
+    mask1 = compute_multi_brain_mask(imgs1, threshold=0.2, verbose=1)
     mask2 = compute_multi_brain_mask(imgs2, threshold=0.2)
     assert_array_equal(get_data(mask1), get_data(mask2))
 

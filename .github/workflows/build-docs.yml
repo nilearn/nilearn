@@ -6,6 +6,8 @@
 #  Full builds are always run on "main".
 #  This is done every time there is a push on "main" and every week.
 #
+#  Most of this workflow is skipped if "[skip doc]" is in the commit message.
+#
 #  Data is cached after the get_data job to be passed to the build_docs job.
 #  Data can be cached and restore across attempts of a run of this workflow.
 #  Data can be cached and restored across run of this workflow.
@@ -56,10 +58,27 @@ jobs:
             with:
                 args: --validate
 
+    check_skip_flags:
+        name: Check skip flags
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Get repo
+            uses: actions/checkout@v4
+            with:
+                ref: ${{ github.event.pull_request.head.sha }}
+        -   name: Check head git commit message
+            run: |
+                headCommitMsg=$(git show -s --format=%s)
+                if [[ $headCommitMsg == *"[skip doc]"* ]]; then
+                    echo "skipping tests"
+                    exit 1
+                fi
+
     get_data:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
         if: github.repository == 'nilearn/nilearn'
+        needs: [check_skip_flags]
         runs-on: ubuntu-latest
         defaults:
             run:
@@ -242,7 +261,7 @@ jobs:
             id: build-docs
             run: |
                 set -o pipefail;
-                PATTERN=$(cat pattern.txt)
+                export PATTERN=$(cat pattern.txt)
                 tox run \
                     --colored yes \
                     --list-dependencies \
