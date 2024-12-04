@@ -182,6 +182,7 @@ linkcheck_ignore = [
     "https://github.com/nilearn/nilearn/issues/new/choose",
     "https://pages.saclay.inria.fr/bertrand.thirion/",
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
+    "http://brainomics.cea.fr/localizer/",
     # those are needed because figure cannot take sphinx gallery reference
     # as target
     r"../auto_examples/.*html",
@@ -197,6 +198,7 @@ linkcheck_ignore = [
     r"https://doi.org/10.1126/.*",
     r"https://doi.org/10.1152/.*",
     r"https://doi.org/10.1162/.*",
+    r"https://doi.org/10.3389/.*",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
