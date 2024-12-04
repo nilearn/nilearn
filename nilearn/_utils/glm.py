@@ -5,9 +5,10 @@ from nilearn._utils import stringify_path
 
 
 def check_and_load_tables(tables_to_check, var_name):
-    """Check each element in `tables_`.
+    """Load tables.
 
-       Those can be either a pandas.DataFrame, a numpy.ndarray, \
+       Tables will be 'loaded'
+       if they are pandas.DataFrame, \
        or a CSV or TSV file that can be loaded to a pandas.DataFrame.
 
     tables_to_check : str or pathlib.Path to a TSV or CSV \
@@ -16,9 +17,11 @@ def check_and_load_tables(tables_to_check, var_name):
               or pandas.DataFrame or numpy.ndarray
               In the case of CSV file,
               the first column is considered to be index column.
+              numpy.ndarray will not be appended to the output.
 
     var_name : str
-               name of the `tables_` passed, to print in the error message
+               name of the `tables_to_check` passed,
+               to print in the error message
 
     Returns
     -------
@@ -27,22 +30,26 @@ def check_and_load_tables(tables_to_check, var_name):
     Raises
     ------
     TypeError
-    If any of the elements in `tables_` does not have a correct type.
+    If any of the elements in `tables_to_check` does not have a correct type.
     ValueError
-    If a specified path in `tables_` can not be loaded to a pandas.DataFrame.
+    If a specified path in `tables_to_check`
+    cannot be loaded to a pandas.DataFrame.
 
     """
     if not isinstance(tables_to_check, list):
         tables_to_check = [tables_to_check]
+
     tables = []
     for table_idx, table in enumerate(tables_to_check):
         table = stringify_path(table)
+
         if not isinstance(table, (str, pd.DataFrame, np.ndarray)):
             raise TypeError(
                 f"{var_name} can only be a pandas DataFrame, "
                 "a Path object or a string, or a numpy array. "
                 f"A {type(table)} was provided at idx {table_idx}"
             )
+
         if isinstance(table, str):
             loaded = _read_events_table(table)
             tables.append(loaded)
