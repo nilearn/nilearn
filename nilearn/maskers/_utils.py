@@ -125,3 +125,32 @@ def concatenate_surface_images(imgs):
     output = SurfaceImage(mesh=imgs[0].mesh, data=output_data)
 
     return output
+
+
+def check_surface_data_ndims(img, dim, var_name="img"):
+    """Check if the data of a SurfaceImage is of a given dimension,
+    raise error if not.
+
+    Parameters
+    ----------
+    img : :obj:`~nilearn.surface.SurfaceImage`
+        SurfaceImage to check.
+
+    dim : int
+        Dimensions the data should have.
+
+    var_name : str, optional
+        Name of the variable to include in the error message.
+
+    Returns
+    -------
+    raise ValueError if the data of the SurfaceImage is not of the given
+    dimension.
+    """
+    if not all(x.ndim == dim for x in img.data.parts.values()):
+        raise ValueError(
+            f"Data for each hemisphere of {var_name} should have {dim} "
+            "dimensions,\n but found: "
+            f"{[f"ndims in {part}: {img.data.parts[part].ndim}"
+            for part in img.data.parts]}"
+        )

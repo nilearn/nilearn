@@ -16,6 +16,7 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import (
     check_same_n_vertices,
+    check_surface_data_ndims,
     compute_mean_surface_image,
     concatenate_surface_images,
     get_min_max_surface_image,
@@ -176,31 +177,16 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del img, y
 
         # check maps_img data is 2D
-        for part in self.maps_img.data.parts:
-            if self.maps_img.data.parts[part].ndim != 2:
-                raise ValueError(
-                    "Data in maps_img should be 2D "
-                    "of shape (n_vertices, n_regions), "
-                    f"but got {self.maps_img.data.parts[part].ndim}."
-                )
+        check_surface_data_ndims(self.maps_img, 2, "maps_img")
 
         self.maps_img_ = np.concatenate(
             list(self.maps_img.data.parts.values()), axis=0
         )
         self.n_elements_ = self.maps_img_.shape[1]
 
-        # if mask is provided,
-        # check mask has the same number of vertices as the maps
         if self.mask_img is not None:
             check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
-            # also check mask data is 1D
-            for part in self.mask_img.data.parts:
-                if self.mask_img.data.parts[part].ndim != 1:
-                    raise ValueError(
-                        "Data in mask_img should be 1D "
-                        "of shape (n_vertices,), "
-                        f"but got {self.mask_img.data.parts[part].ndim}."
-                    )
+            check_surface_data_ndims(self.mask_img, 1, "mask_img")
             self.mask_img_ = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
             )
@@ -273,6 +259,8 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if not isinstance(img, list):
             img = [img]
         img = concatenate_surface_images(img)
+        # check img data is 2D
+        check_surface_data_ndims(img, 2, "img")
         check_same_n_vertices(self.maps_img.mesh, img.mesh)
         # concatenate data over hemispheres
         img_data = np.concatenate(list(img.data.parts.values()), axis=0)
