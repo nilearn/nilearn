@@ -72,8 +72,8 @@ Score function
 --------------
 
 Metrics can be specified by the "scoring" argument to the :class:`SearchLight`, as
-detailed in the :sklearn:`scikit-learn documentation
-<modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`
+detailed in the
+:sklearn:`scikit-learn documentation <modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`
 
 Cross validation
 ----------------
@@ -94,8 +94,9 @@ This approach is a specific use-case of grouped cross-validation, where the
 cross-validation folds are determined by the acquisition runs. The held-out fold
 in a given iteration of cross-validation consist of data from a separate run,
 which keeps training and validation sets properly independent. For this reason,
-LOROCV is often recommended. This can be performed by using :sklearn:`LeaveOneGroupOut
-<modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`,
+LOROCV is often recommended.
+This can be performed by using
+:sklearn:`LeaveOneGroupOut <modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`,
 and then setting the group/run labels when fitting the estimator.
 
 Sphere radius

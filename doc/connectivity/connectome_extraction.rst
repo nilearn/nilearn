@@ -90,8 +90,8 @@ of the estimator:
 
 .. topic:: **Parameter selection**
 
-    The parameter controlling the sparsity is set by `cross-validation
-    <https://scikit-learn.org/stable/modules/cross_validation.html>`_
+    The parameter controlling the sparsity is set by
+    :sklearn:`cross-validation <modules/cross_validation.html>`
     scheme. If you want to specify it manually, use the estimator
     :class:`sklearn.covariance.GraphicalLasso`.
 

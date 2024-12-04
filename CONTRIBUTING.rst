@@ -414,7 +414,7 @@ would be stored in a ``coef_`` attribute after ``fit`` has been called.
 
 The estimated attributes are expected to be overridden when you call ``fit`` a second time.
 
-This follows the `scikit-learn convention <https://scikit-learn.org/stable/developers/develop.html#estimated-attributes>`_.
+This follows the :sklearn:`scikit-learn convention <developers/develop.html#estimated-attributes>`.
 
 .. _private_functions:
 
