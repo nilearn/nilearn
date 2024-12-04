@@ -107,7 +107,7 @@ plot_glass_brain(
 
 # %%
 # Here we set ``vmin`` to the threshold to use the full color range instead of
-# losing colours due to the thresholding.
+# losing colors due to the thresholding.
 plot_glass_brain(
     stat_img,
     colorbar=True,
@@ -179,7 +179,7 @@ plot_glass_brain(
 #
 # The display objects returned by :func:`~nilearn.plotting.plot_glass_brain`
 # all inherit from the :class:`~nilearn.plotting.displays.OrthoProjector`
-# and enable further customisation of the figures.
+# and enable further customization of the figures.
 #
 # In this example, we focus on using methods
 # :meth:`~nilearn.plotting.displays.OrthoProjector.add_contours` and

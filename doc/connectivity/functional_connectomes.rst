@@ -84,7 +84,7 @@ For data processed by :term:`fMRIPrep`,
 :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` can help you
 retrieve confound variables.
 :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` selects confounds
-based on past literature with limited parameters for customisation.
+based on past literature with limited parameters for customization.
 For more freedoms of confounds selection,
 :func:`~nilearn.interfaces.fmriprep.load_confounds` groups confound variables as
 sets of noise components and one can fine tune each of the parameters.
@@ -240,7 +240,7 @@ can be computed for each region on hard :term:`parcellation` or probabilistic at
    :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
    See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`:
 
-   .. code-block:: default
+   .. code-block:: python
 
            from nilearn import plotting
            atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename)

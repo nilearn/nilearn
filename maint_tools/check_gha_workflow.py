@@ -322,10 +322,7 @@ def _get_runs(
     if event_type:
         runs = [run for run in runs if run["event"] in event_type]
 
-    conclusion = ["success"]
-    if include_failed_runs:
-        conclusion = ["success", "failure"]
-
+    conclusion = ["success", "failure"] if include_failed_runs else ["success"]
     return [run for run in runs if run["conclusion"] in conclusion]
 
 

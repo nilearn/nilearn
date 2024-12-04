@@ -221,7 +221,7 @@ def test_process_second_level_input_as_firstlevelmodels(shape_4d_default):
 
     assert subjects_label == [f"sub-{i}" for i in range(3)]
     assert isinstance(sample_map, Nifti1Image)
-    assert sample_map.shape == shape_4d_default[0:3]
+    assert sample_map.shape == shape_4d_default[:3]
 
 
 def test_check_affine_first_level_models(affine_eye, shape_4d_default):
@@ -970,7 +970,7 @@ def test_second_level_residuals():
     model.compute_contrast()
 
     assert isinstance(model.residuals, Nifti1Image)
-    assert model.residuals.shape == (*SHAPE[0:3], n_subject)
+    assert model.residuals.shape == (*SHAPE[:3], n_subject)
     mean_residuals = model.masker_.transform(model.residuals).mean(0)
     assert_array_almost_equal(mean_residuals, 0)
 

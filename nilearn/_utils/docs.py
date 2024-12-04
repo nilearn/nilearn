@@ -9,6 +9,8 @@ source: Eric Larson and MNE-python team.
 https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 """
 
+# sourcery skip: merge-dict-assign
+
 import sys
 
 ##############################################################################
@@ -300,7 +302,7 @@ extractor : {"local_regions", "connected_components"}, default="local_regions"
     This option can take two values:
 
     - ``"connected_components"``: each component/region in the image
-      is extracted automatically by labelling each region based
+      is extracted automatically by labeling each region based
       upon the presence of unique features in their respective regions.
 
     - ``"local_regions"``: each component/region is extracted
@@ -352,7 +354,7 @@ or 'fast' or None, optional
 
       smoothing is not performed along that axis.
     - If `fwhm="fast"`, a fast smoothing will be performed with a filter
-      [0.2, 1, 0.2] in each direction and a normalisation to preserve the
+      [0.2, 1, 0.2] in each direction and a normalization to preserve the
       local average value.
 
     - If `fwhm` is `None`, no filtering is performed

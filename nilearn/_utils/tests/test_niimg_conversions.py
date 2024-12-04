@@ -368,7 +368,7 @@ def test_check_niimg_wildcards_no_expand_wildcards(
 def test_iter_check_niimgs_error():
     no_file_matching = "No files matching path: %s"
 
-    for empty in ((), [], (i for i in ())):
+    for empty in ((), [], iter(())):
         with pytest.raises(ValueError, match="Input niimgs list is empty."):
             list(iter_check_niimg(empty))
 

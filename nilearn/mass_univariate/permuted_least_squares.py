@@ -177,17 +177,15 @@ def _permuted_ols_on_chunk(
 
     # Preallocate null arrays for optional outputs
     # Any unselected outputs will just return a None
+    h0_tfce_part, tfce_scores_as_ranks_part = None, None
     if tfce:
         h0_tfce_part = np.empty((n_regressors, n_perm_chunk))
         tfce_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
-    else:
-        h0_tfce_part, tfce_scores_as_ranks_part = None, None
 
+    h0_csfwe_part, h0_cmfwe_part = None, None
     if threshold is not None:
         h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
         h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
-    else:
-        h0_csfwe_part, h0_cmfwe_part = None, None
 
     for i_perm in range(n_perm_chunk):
         if intercept_test:
@@ -609,84 +607,22 @@ def permuted_ols(
     .. footbibliography::
 
     """
+    _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
+
+    n_jobs, output_type, target_vars, tested_vars = (
+        _sanitize_inputs_permuted_ols(
+            n_jobs, output_type, tfce, threshold, target_vars, tested_vars
+        )
+    )
+
     # initialize the seed of the random generator
     rng = check_random_state(random_state)
 
-    # check n_jobs (number of CPUs)
-    if n_jobs == 0:  # invalid according to joblib's conventions
-        raise ValueError(
-            "'n_jobs == 0' is not a valid choice. "
-            "Please provide a positive number of CPUs, or -1 for all CPUs, "
-            "or a negative number (-i) for 'all but (i-1)' CPUs "
-            "(joblib conventions)."
-        )
-    elif n_jobs < 0:
-        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
-    else:
-        n_jobs = min(n_jobs, joblib.cpu_count())
-
-    # check that masker is provided if it is needed
-    if tfce and not masker:
-        raise ValueError("A masker must be provided if tfce is True.")
-
-    if (threshold is not None) and (masker is None):
-        raise ValueError(
-            'If "threshold" is not None, masker must be defined as well.'
-        )
-
-    # Resolve the output_type as well
-    if tfce and output_type == "legacy":
-        warnings.warn(
-            'If "tfce" is set to True, "output_type" must be set to "dict". '
-            "Overriding."
-        )
-        output_type = "dict"
-
-    if (threshold is not None) and (output_type == "legacy"):
-        warnings.warn(
-            'If "threshold" is not None, "output_type" must be set to "dict". '
-            "Overriding."
-        )
-        output_type = "dict"
-
-    if output_type == "legacy":
-        warnings.warn(
-            category=DeprecationWarning,
-            message=(
-                'The "legacy" output structure for "permuted_ols" is '
-                "deprecated. "
-                'The default output structure will be changed to "dict" '
-                "in version 0.13."
-            ),
-            stacklevel=3,
-        )
-
-    # make target_vars F-ordered to speed-up computation
-    if target_vars.ndim != 2:
-        raise ValueError(
-            "'target_vars' should be a 2D array. "
-            f"An array with {target_vars.ndim} dimension(s) was passed."
-        )
-
-    target_vars = np.asfortranarray(target_vars)  # efficient for chunking
     n_descriptors = target_vars.shape[1]
-    if np.any(np.all(target_vars == 0, axis=0)):
-        warnings.warn(
-            "Some descriptors in 'target_vars' have zeros across all samples. "
-            "These descriptors will be ignored during null distribution "
-            "generation."
-        )
-
-    # check explanatory variates' dimensions
-    if tested_vars.ndim == 1:
-        tested_vars = np.atleast_2d(tested_vars).T
 
     n_samples, n_regressors = tested_vars.shape
 
-    # check if explanatory variates contain an intercept (constant) or not
-    intercept_test = False
-    if n_regressors == np.unique(tested_vars).size == 1:
-        intercept_test = True
+    intercept_test = n_regressors == np.unique(tested_vars).size == 1
 
     # check if confounding vars contains an intercept
     if confounding_vars is not None:
@@ -801,6 +737,7 @@ def permuted_ols(
     # Define connectivity for TFCE and/or cluster measures
     bin_struct = generate_binary_structure(3, 1)
 
+    tfce_original_data = None
     if tfce:
         scores_4d = masker.inverse_transform(
             scores_original_data.T
@@ -819,18 +756,13 @@ def permuted_ols(
             masker.mask_img_,
         ).T
 
-    else:
-        tfce_original_data = None
-
+    threshold_t = None
     if threshold is not None:
         # determine t-statistic threshold
         dof = n_samples - (n_regressors + n_covars)
+        threshold_t = stats.t.isf(threshold, df=dof)
         if two_sided_test:
             threshold_t = stats.t.isf(threshold / 2, df=dof)
-        else:
-            threshold_t = stats.t.isf(threshold, df=dof)
-    else:
-        threshold_t = None
 
     # Permutations
     # parallel computing units perform a reduced number of permutations each
@@ -992,26 +924,107 @@ def permuted_ols(
                 )
 
     if output_type == "legacy":
-        outputs = (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
+        return (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
 
-    else:
-        outputs = {
-            "t": scores_original_data.T,
-            "logp_max_t": -np.log10(vfwe_pvals),
-            "h0_max_t": vfwe_h0,
-        }
+    outputs = {
+        "t": scores_original_data.T,
+        "logp_max_t": -np.log10(vfwe_pvals),
+        "h0_max_t": vfwe_h0,
+    }
 
-        if tfce:
-            outputs["tfce"] = tfce_original_data.T
-            outputs["logp_max_tfce"] = neg_log10_tfce_pvals
-            outputs["h0_max_tfce"] = h0_tfcemax
+    if tfce:
+        outputs["tfce"] = tfce_original_data.T
+        outputs["logp_max_tfce"] = neg_log10_tfce_pvals
+        outputs["h0_max_tfce"] = h0_tfcemax
 
-        if threshold is not None:
-            outputs["size"] = cluster_dict["size"]
-            outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
-            outputs["h0_max_size"] = cluster_dict["size_h0"]
-            outputs["mass"] = cluster_dict["mass"]
-            outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
-            outputs["h0_max_mass"] = cluster_dict["mass_h0"]
+    if threshold is not None:
+        outputs["size"] = cluster_dict["size"]
+        outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
+        outputs["h0_max_size"] = cluster_dict["size_h0"]
+        outputs["mass"] = cluster_dict["mass"]
+        outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
+        outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
+
+
+def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
+    # invalid according to joblib's conventions
+    if n_jobs == 0:
+        raise ValueError(
+            "'n_jobs == 0' is not a valid choice. "
+            "Please provide a positive number of CPUs, "
+            "or -1 for all CPUs, "
+            "or a negative number (-i) for 'all but (i-1)' CPUs "
+            "(joblib conventions)."
+        )
+    # check that masker is provided if it is needed
+    if tfce and not masker:
+        raise ValueError("A masker must be provided if tfce is True.")
+
+    if (threshold is not None) and (masker is None):
+        raise ValueError(
+            'If "threshold" is not None, masker must be defined as well.'
+        )
+
+    # make target_vars F-ordered to speed-up computation
+    if target_vars.ndim != 2:
+        raise ValueError(
+            "'target_vars' should be a 2D array. "
+            f"An array with {target_vars.ndim} dimension(s) was passed."
+        )
+
+
+def _sanitize_inputs_permuted_ols(
+    n_jobs, output_type, tfce, threshold, target_vars, tested_vars
+):
+    # check n_jobs (number of CPUs)
+    if n_jobs < 0:
+        n_jobs = max(1, joblib.cpu_count() - int(n_jobs) + 1)
+    else:
+        n_jobs = min(n_jobs, joblib.cpu_count())
+
+    # Resolve the output_type as well
+    if tfce and output_type == "legacy":
+        warnings.warn(
+            'If "tfce" is set to True, "output_type" must be set to "dict". '
+            "Overriding.",
+            stacklevel=4,
+        )
+        output_type = "dict"
+
+    if (threshold is not None) and (output_type == "legacy"):
+        warnings.warn(
+            'If "threshold" is not None, "output_type" must be set to "dict". '
+            "Overriding.",
+            stacklevel=4,
+        )
+        output_type = "dict"
+
+    if output_type == "legacy":
+        warnings.warn(
+            category=DeprecationWarning,
+            message=(
+                'The "legacy" output structure for "permuted_ols" is '
+                "deprecated. "
+                'The default output structure will be changed to "dict" '
+                "in version 0.13."
+            ),
+            stacklevel=4,
+        )
+
+    target_vars = np.asfortranarray(target_vars)  # efficient for chunking
+
+    if np.any(np.all(target_vars == 0, axis=0)):
+        warnings.warn(
+            "Some descriptors in 'target_vars' have zeros across all samples. "
+            "These descriptors will be ignored "
+            "during null distribution generation.",
+            stacklevel=4,
+        )
+
+    # check explanatory variates' dimensions
+    if tested_vars.ndim == 1:
+        tested_vars = np.atleast_2d(tested_vars).T
+
+    return n_jobs, output_type, target_vars, tested_vars

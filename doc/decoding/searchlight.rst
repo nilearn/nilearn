@@ -12,10 +12,14 @@ in nilearn with the :class:`SearchLight` estimator.
 Principle of the Searchlight
 ============================
 
-:class:`SearchLight` analysis was introduced in [:footcite:t:`Kriegeskorte2006`], and consists of scanning the brain with a *searchlight*.
-Briefly, a ball of given radius is scanned across the brain volume and the prediction accuracy of a classifier trained on the corresponding :term:`voxels<voxel>` is measured.
+:class:`SearchLight` analysis was introduced in [:footcite:t:`Kriegeskorte2006`],
+and consists of scanning the brain with a *searchlight*.
+Briefly, a ball of given radius is scanned across the brain volume and the prediction accuracy
+of a classifier trained on the corresponding :term:`voxels<voxel>` is measured.
 
-Searchlights are also not limited to :term:`classification`; :term:`regression` (e.g., [:footcite:t:`Kahnt2011`]) and representational similarity analysis (e.g., [:footcite:t:`Clarke2014`]) are other uses of searchlights.
+Searchlights are also not limited
+to :term:`classification`; :term:`regression` (e.g., [:footcite:t:`Kahnt2011`])
+and representational similarity analysis (e.g., [:footcite:t:`Clarke2014`]) are other uses of searchlights.
 Currently, only :term:`classification` and :term:`regression` are supported in nilearn.
 
 .. topic:: **Further Reading**

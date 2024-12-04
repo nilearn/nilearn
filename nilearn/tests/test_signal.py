@@ -459,7 +459,7 @@ def test_clean_detrending():
     x_undetrended = nisignal.clean(
         x, standardize=False, detrend=False, low_pass=None, high_pass=None
     )
-    assert not abs(x_undetrended - signals).max() < 0.06
+    assert abs(x_undetrended - signals).max() >= 0.06
     # clean should not modify inputs
     assert np.array_equal(x_orig, x)
 
@@ -578,7 +578,7 @@ def test_clean_runs():
     x_orig = x.copy()
     # Create run info
     runs = np.ones(n_samples)
-    runs[0 : n_samples // 2] = 0
+    runs[: n_samples // 2] = 0
     x_detrended = nisignal.clean(
         x,
         confounds=confounds,

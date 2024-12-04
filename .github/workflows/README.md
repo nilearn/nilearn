@@ -95,7 +95,7 @@ Pings github API to collect information about:
 - how long each run of the test suite lasted,
 - how long the build of the doc lasted.
 
-Plots the results and saves it as an artefact to download and manually inspect
+Plots the results and saves it as an artifact to download and manually inspect
 to see if there is a trend in tests taking longer.
 
 ## Style checks

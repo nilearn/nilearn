@@ -161,7 +161,7 @@ def test_get_dataset_dir_write_access(tmp_path):
         "test", default_paths=[no_write], verbose=0
     )
 
-    # Non writeable dir is returned because dataset may be in there.
+    # Non writable dir is returned because dataset may be in there.
     assert data_dir == no_write
     assert data_dir.exists()
 
@@ -560,7 +560,7 @@ def test_fetch_files_overwrite(
 
     assert request_mocker.url_count == 1
     assert fil.exists()
-    assert fil.read_text() == ""
+    assert not fil.read_text()
 
     # Modify content
     fil.write_text("some content")
@@ -589,7 +589,7 @@ def test_fetch_files_overwrite(
 
     assert request_mocker.url_count == 2
     assert fil.exists()
-    assert fil.read_text() == ""
+    assert not fil.read_text()
 
 
 def test_naive_ftp_adapter():

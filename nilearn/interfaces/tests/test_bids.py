@@ -329,7 +329,7 @@ def test_get_bids_files_no_space_entity(tmp_path):
     )
 
     assert selection
-    assert not any("sub-01" in file for file in selection)
+    assert all("sub-01" not in file for file in selection)
 
     selection = get_bids_files(
         bids_path / "derivatives",
@@ -339,7 +339,7 @@ def test_get_bids_files_no_space_entity(tmp_path):
     )
 
     assert selection
-    assert not any("sub-02" in file for file in selection)
+    assert all("sub-02" not in file for file in selection)
 
 
 def test_parse_bids_filename():

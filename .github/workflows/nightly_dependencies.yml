@@ -77,6 +77,13 @@ jobs:
             continue-on-error: true
             run: tox run -e test_nightly -- nilearn
 
+        -   name: Upload test report
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: nightly_report.html
+                path: report.html
+
         -   name: Create issue
             # Do not open issues when on a PR
             # because the result will be visible in the PR CI report

@@ -79,10 +79,9 @@ def _load_high_pass(confounds_raw):
         If not present in file, return an empty DataFrame.
     """
     high_pass_params = find_confounds(confounds_raw, ["cosine"])
-    if high_pass_params:
-        return confounds_raw[high_pass_params]
-    else:
-        return pd.DataFrame()
+    return (
+        confounds_raw[high_pass_params] if high_pass_params else pd.DataFrame()
+    )
 
 
 def _load_wm_csf(confounds_raw, wm_csf):
@@ -289,7 +288,4 @@ def _load_non_steady_state(confounds_raw):
         If none were found, return an empty DataFrame.
     """
     nss_outliers = find_confounds(confounds_raw, ["non_steady_state"])
-    if nss_outliers:
-        return confounds_raw[nss_outliers]
-    else:
-        return pd.DataFrame()
+    return confounds_raw[nss_outliers] if nss_outliers else pd.DataFrame()

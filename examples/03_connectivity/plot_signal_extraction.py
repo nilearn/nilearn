@@ -169,7 +169,7 @@ plotting.plot_matrix(
 # With a scrubbing-based strategy,
 # :func:`~nilearn.interfaces.fmriprep.load_confounds` returns a `sample_mask`
 # that removes the index of volumes exceeding the framewise displacement and
-# standardised DVARS threshold, and all the continuous segment with less than
+# standardized DVARS threshold, and all the continuous segment with less than
 # five volumes. Before applying scrubbing, it's important to access the
 # percentage of volumns scrubbed. Scrubbing is not a suitable strategy for
 # datasets with too many high motion subjects.
@@ -251,7 +251,7 @@ plotting.plot_matrix(
 # %%
 # Using predefined strategies
 # ---------------------------
-# Instead of customising the strategy through
+# Instead of customizing the strategy through
 # :func:`nilearn.interfaces.fmriprep.load_confounds`, one can use a predefined
 # strategy with :func:`nilearn.interfaces.fmriprep.load_confounds_strategy`.
 # Based on the confound variables generated through :term:`fMRIPrep`, and past

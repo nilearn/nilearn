@@ -1198,7 +1198,7 @@ def test_clean_img_sample_mask(img_4d_rand_eye, shape_4d_default):
         confounds=confounds,
         clean__sample_mask=sample_mask,
     )
-    assert img.shape == (*shape_4d_default[0:3], length - 1)
+    assert img.shape == (*shape_4d_default[:3], length - 1)
 
 
 def test_clean_img_sample_mask_mask_img(shape_3d_default):

@@ -495,12 +495,11 @@ class NiftiSpheresMasker(BaseMasker):
             "relative size (in %)",
         ]
         regions_summary = {c: [] for c in columns}
-        embeded_images = []
         radius = 1.0 if self.radius is None else self.radius
         display = plotting.plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embeded_images.append(_embed_img(display))
+        embeded_images = [_embed_img(display)]
         display.close()
         for idx, seed in enumerate(seeds):
             regions_summary["seed number"].append(idx)
@@ -548,8 +547,8 @@ class NiftiSpheresMasker(BaseMasker):
         else:
             self.mask_img_ = None
 
-        if self.reports:
-            if X is not None:
+        if X is not None:
+            if self.reports:
                 if self.mask_img_ is not None:
                     # TODO switch to force_resample=True
                     # when bumping to version > 0.13
@@ -565,8 +564,8 @@ class NiftiSpheresMasker(BaseMasker):
                     resampl_imgs = X
                 # Store 1 timepoint to pass to reporter
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
-            else:  # imgs not provided to fit
-                resampl_imgs = None
+        elif self.reports:  # imgs not provided to fit
+            resampl_imgs = None
 
         if not hasattr(self.seeds, "__iter__"):
             raise ValueError(
@@ -583,12 +582,9 @@ class NiftiSpheresMasker(BaseMasker):
                     f"It is of type {type(seed)}."
                 )
             # Convert to list because it is easier to process
-            if isinstance(seed, np.ndarray):
-                seed = seed.tolist()
-            else:
-                # in case of tuple
-                seed = list(seed)
-
+            seed = (
+                seed.tolist() if isinstance(seed, np.ndarray) else list(seed)
+            )
             # Check the length
             if len(seed) != 3:
                 raise ValueError(

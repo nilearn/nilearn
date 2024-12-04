@@ -185,14 +185,14 @@ two lines. The additional ``standardize=True`` argument adds a normalization
 of images signal to a zero mean and unit variance, which will improve
 performance of most estimators.
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn.decoding import Decoder
      decoder = Decoder(estimator='svc', mask=mask_filename)
 
 Then we can fit it on the images and the conditions we chose before.
 
-.. code-block:: default
+.. code-block:: python
 
      decoder.fit(fmri_niimgs, conditions)
 
@@ -230,7 +230,7 @@ During the ``fit``, :class:`nilearn.decoding.Decoder` object implicitly used a
 cross-validation: Stratified K-fold by default. You can easily inspect
 the prediction "score" it got in each fold.
 
-.. code-block:: default
+.. code-block:: python
 
      print(decoder.cv_scores_)
 

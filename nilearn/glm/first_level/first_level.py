@@ -1016,11 +1016,12 @@ class FirstLevelModel(BaseGLM):
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
             if isinstance(run_img, SurfaceImage):
-                surf_data = {}
-                for part in run_img.mesh.parts:
-                    surf_data[part] = np.ones(
+                surf_data = {
+                    part: np.ones(
                         run_img.data.parts[part].shape[0], dtype=bool
                     )
+                    for part in run_img.mesh.parts
+                }
                 self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
             else:
                 ref_img = check_niimg(run_img)

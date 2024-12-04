@@ -56,7 +56,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     Use preset strategy to load confounds from :term:`fMRIPrep`.
 
     `load_confounds_strategy` provides an interface to select confounds
-    based on past literature with limited parameters for user customisation.
+    based on past literature with limited parameters for user customization.
 
     .. versionadded:: 0.9.0
 
@@ -145,7 +145,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     Notes
     -----
     1. The following table details the default options of each preset
-       strategies. Parameters with `*` denote customisable parameters. Please
+       strategies. Parameters with `*` denote customizable parameters. Please
        see :func:`nilearn.interfaces.fmriprep.load_confounds`.
 
         ========= ========= ====== ====== ============= ===== ============ \

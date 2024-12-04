@@ -458,17 +458,16 @@ def surf_mask():
     def _make_surface_mask(n_zeros=4, empty=False):
         if empty:
             return None
-        else:
-            mesh = _make_mesh()
-            data = {}
-            for key, val in mesh.parts.items():
-                data_shape = (val.n_vertices, 1)
-                data_part = np.ones(data_shape, dtype=int)
-                for i in range(n_zeros // 2):
-                    data_part[i, ...] = 0
-                data_part = data_part.astype(bool)
-                data[key] = data_part
-            return SurfaceImage(mesh, data)
+        mesh = _make_mesh()
+        data = {}
+        for key, val in mesh.parts.items():
+            data_shape = (val.n_vertices, 1)
+            data_part = np.ones(data_shape, dtype=int)
+            for i in range(n_zeros // 2):
+                data_part[i, ...] = 0
+            data_part = data_part.astype(bool)
+            data[key] = data_part
+        return SurfaceImage(mesh, data)
 
     return _make_surface_mask
 
