@@ -188,7 +188,7 @@ show()
 
 # %%
 # Nilearn other color maps
-# ------------------------------
+# ------------------------
 category = "Nilearn other"
 color_map_names = [
     "cyan_orange",
@@ -227,7 +227,7 @@ cmaps[category] = color_map_names
 # show()
 
 # %%
-# Lightness of Nilearn colormapsmatplotlib_maps
+# Lightness of Nilearn colormaps
 # ------------------------------
 # Here we examine the lightness values of the matplotlib colormaps.
 # Also compared to those of matplotlib.
