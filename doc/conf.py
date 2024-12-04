@@ -176,6 +176,8 @@ linkcheck_allowed_redirects = {
 linkcheck_ignore = [
     r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
     r"https://fcon_1000.projects.nitrc.org/.*",
+    r"https://www.cambridge.org/be/universitypress/.*",
+    r"https://sites.wustl.edu/oasisbrains/.*"
     "http://brainomics.cea.fr/localizer/",
     "https://github.com/nilearn/nilearn/issues/new/choose",
     "https://pages.saclay.inria.fr/bertrand.thirion/",
