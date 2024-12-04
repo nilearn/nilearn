@@ -598,7 +598,6 @@ class SecondLevelModel(BaseGLM):
                 subjects_label, confounds
             )
         elif isinstance(design_matrix, (str, Path, pd.DataFrame)):
-            design_matrix = [design_matrix]
             design_matrix = check_and_load_tables(
                 design_matrix, "design_matrix"
             )[0]

@@ -37,19 +37,18 @@ def check_and_load_tables(tables_to_check, var_name):
     tables = []
     for table_idx, table in enumerate(tables_to_check):
         table = stringify_path(table)
-        if isinstance(table, str):
-            loaded = _read_events_table(table)
-            tables.append(loaded)
-        elif isinstance(table, pd.DataFrame):
-            tables.append(table)
-        elif isinstance(table, np.ndarray):
-            pass
-        else:
+        if not isinstance(table, (str, pd.DataFrame, np.ndarray)):
             raise TypeError(
                 f"{var_name} can only be a pandas DataFrame, "
                 "a Path object or a string, or a numpy array. "
                 f"A {type(table)} was provided at idx {table_idx}"
             )
+        if isinstance(table, str):
+            loaded = _read_events_table(table)
+            tables.append(loaded)
+        elif isinstance(table, pd.DataFrame):
+            tables.append(table)
+
     return tables
 
 
