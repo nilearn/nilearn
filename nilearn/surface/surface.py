@@ -1239,6 +1239,16 @@ class PolyData:
             else (sum_vertices,)
         )
 
+    @property
+    def max(self):
+        """Maximum of the data across all parts."""
+        return max(x.ravel().max() for x in self.parts.values())
+
+    @property
+    def min(self):
+        """Minimum of the data across all parts."""
+        return min(x.ravel().min() for x in self.parts.values())
+
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.shape}>"
 

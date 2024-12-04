@@ -744,6 +744,12 @@ def test_polydata_shape(shape):
     assert data.shape[0] == shape[0]
 
 
+def test_polydata_min_max():
+    data = PolyData(left=np.ones((5,)), right=np.zeros((5,)))
+    assert data.max == 1
+    assert data.min == 0
+
+
 def test_polydata_1d_check_parts():
     """Smoke test for check parts.
 
