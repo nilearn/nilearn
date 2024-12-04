@@ -710,16 +710,9 @@ def permuted_ols(
         targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
         testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
 
-    # check arrays contiguousity (for the sake of code efficiency)
-    if not targetvars_resid_covars.flags["C_CONTIGUOUS"]:
-        # useful to developer
-        warnings.warn("Target variates not C_CONTIGUOUS.")
-        targetvars_resid_covars = np.ascontiguousarray(targetvars_resid_covars)
-
-    if not testedvars_resid_covars.flags["C_CONTIGUOUS"]:
-        # useful to developer
-        warnings.warn("Tested variates not C_CONTIGUOUS.")
-        testedvars_resid_covars = np.ascontiguousarray(testedvars_resid_covars)
+    # check arrays contiguousity for the sake of code efficiency
+    targetvars_resid_covars = _make_array_contiguous(targetvars_resid_covars)
+    testedvars_resid_covars = _make_array_contiguous(testedvars_resid_covars)
 
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
@@ -938,6 +931,15 @@ def permuted_ols(
         outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
+
+
+def _make_array_contiguous(array):
+    """Make arrays contiguous for code efficiency."""
+    if not array.flags["C_CONTIGUOUS"]:
+        # useful to developer
+        warnings.warn("Target variates not C_CONTIGUOUS.")
+        array = np.ascontiguousarray(array)
+    return array
 
 
 def _compute_t_stat_threshold(
