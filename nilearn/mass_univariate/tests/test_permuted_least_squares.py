@@ -137,10 +137,14 @@ def run_permutations(tested_var, target_var, model_intercept):
 
     for i, n_perm in enumerate(np.repeat(PERM_RANGES, 10)):
         if model_intercept:
-            h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
+            h0 = permuted_ols_with_intercept(
+                tested_var, target_var, int(n_perm), i
+            )
             dof = N_SAMPLES - 2
         else:
-            h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
+            h0 = permuted_ols_no_intercept(
+                tested_var, target_var, int(n_perm), i
+            )
             dof = N_SAMPLES - 1
 
         h0_intercept = h0[0, :]
