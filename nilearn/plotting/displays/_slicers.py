@@ -403,7 +403,6 @@ class BaseSlicer:
 
         if colorbar and ims:
             if "levels" in kwargs or "colors" in kwargs:
-                #self._colorbar = False
                 raise ValueError(
                     "no point in printing a colorbar with levels or colors."
                 )
