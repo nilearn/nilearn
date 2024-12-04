@@ -455,7 +455,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     <http://brainliner.jp/restrictedProject.atr>`_
 
     See `additional information
-    <http://www.cns.atr.jp/dni/en/downloads/
+    <https://bicr.atr.jp//dni/en/downloads/\
     fmri-data-set-for-visual-image-reconstruction/>`_
 
     """

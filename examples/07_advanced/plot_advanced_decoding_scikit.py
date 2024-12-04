@@ -62,7 +62,7 @@ run_label = behavioral["chunks"][condition_mask]
 # decoding pipelines. They are all used with the same `fit()` and `predict()`
 # functions.
 # Let's define a Support Vector Classifier
-# (or `SVC <https://scikit-learn.org/stable/modules/svm.html >`_).
+# (or `SVC <https://scikit-learn.org/stable/modules/svm.html>`_).
 
 from sklearn.svm import SVC
 

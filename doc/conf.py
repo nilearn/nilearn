@@ -179,7 +179,7 @@ linkcheck_ignore = [
     "http://brainomics.cea.fr/localizer/",
     "https://github.com/nilearn/nilearn/issues/new/choose",
     "https://pages.saclay.inria.fr/bertrand.thirion/",
-    "https://pages.stern.nyu.edu/²~wgreene/Text/econometricanalysis.htm",
+    "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
     # those are needed because figure cannot take sphinx gallery reference
     # as target
     r"../auto_examples/.*html",
