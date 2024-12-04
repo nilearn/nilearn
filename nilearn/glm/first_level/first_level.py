@@ -1168,13 +1168,17 @@ def _check_events_file_uses_tab_separators(events_files):
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary."""
-    _check_list_length_match(run_imgs, tables_, "run_imgs", tables_name)
+    _check_length_match(run_imgs, tables_, "run_imgs", tables_name)
     tables_ = check_and_load_tables(tables_, tables_name)
     return tables_
 
 
-def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
-    """Check length match of two given lists to raise error if necessary."""
+def _check_length_match(list_1, list_2, var_name_1, var_name_2):
+    """Check length match of two given inputs to raise error if necessary."""
+    if not isinstance(list_1, list):
+        list_1 = [list_1]
+    if not isinstance(list_2, list):
+        list_2 = [list_2]
     if len(list_1) != len(list_2):
         raise ValueError(
             f"len({var_name_1}) {len(list_1)} does not match "

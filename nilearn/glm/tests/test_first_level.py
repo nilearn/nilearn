@@ -39,7 +39,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.first_level.first_level import (
-    _check_list_length_match,
+    _check_length_match,
     _check_run_tables,
     _check_trial_type,
     _list_valid_subjects,
@@ -627,9 +627,6 @@ def test_fmri_inputs_shape(tmp_path, shape_4d_default):
 
     FirstLevelModel(mask_img=mask).fit(
         [func_img, func_img], design_matrices=[des, des]
-    )
-    FirstLevelModel(mask_img=mask).fit(
-        (func_img, func_img), design_matrices=(des, des)
     )
 
 
@@ -2152,7 +2149,7 @@ def test_check_run_tables_errors():
 def test_img_table_checks():
     # check matching lengths
     with pytest.raises(ValueError, match="len.* does not match len.*"):
-        _check_list_length_match([""] * 2, [""], "", "")
+        _check_length_match([""] * 2, [""], "", "")
 
 
 # -----------------------surface tests--------------------------------------- #
