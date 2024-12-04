@@ -72,24 +72,6 @@ def compute_mean_surface_image(img):
     return SurfaceImage(mesh=img.mesh, data=data)
 
 
-def get_min_max_surface_image(img):
-    """Get min and max across hemisphere for a SurfaceImage.
-
-    Parameters
-    ----------
-    img : SurfaceImage
-
-    Returns
-    -------
-    vmin : float
-
-    vmax : float
-    """
-    vmin = min(min(x.ravel()) for x in img.data.parts.values())
-    vmax = max(max(x.ravel()) for x in img.data.parts.values())
-    return vmin, vmax
-
-
 def concatenate_surface_images(imgs):
     """Concatenate the data of a list or tuple of SurfaceImages.
 
