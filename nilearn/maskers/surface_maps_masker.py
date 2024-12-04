@@ -207,7 +207,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self._reporting_data = {
             "maps_image": self.maps_img,
             "mask": self.mask_img,
-            "images": None,  # we will add image in transform
+            "images": None,  # we will update image in transform
         }
 
         return self
@@ -246,11 +246,12 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                   default=None
             sample_mask to pass to :func:`nilearn.signal.clean`.
 
+
         Returns
         -------
-        output : :obj:`numpy.ndarray`
-            Signal for each element.
-            shape: (img data shape, total number of vertices)
+        region_signals: :obj:`numpy.ndarray`
+            Signal for each region as provided in the maps (via `maps_img`).
+            shape: (n_timepoints, n_regions)
         """
         self._check_fitted()
 
@@ -322,7 +323,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return region_signals
 
-    def fit_transform(self, img, y=None):
+    def fit_transform(self, img, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -337,6 +338,20 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             This parameter is unused.
             It is solely included for scikit-learn compatibility.
 
+        confounds : :class:`numpy.ndarray`, :obj:`str`,\
+                    :class:`pathlib.Path`, \
+                    :class:`pandas.DataFrame` \
+                    or :obj:`list` of confounds timeseries, default=None
+            Confounds to pass to :func:`nilearn.signal.clean`.
+
+        sample_mask : None, Any type compatible with numpy-array indexing, \
+                  or :obj:`list` of \
+                  shape: (number of scans - number of volumes removed) \
+                  for explicit index, or (number of scans) for binary mask, \
+                  default=None
+            sample_mask to pass to :func:`nilearn.signal.clean`.
+
+
         Returns
         -------
         region_signals: :obj:`numpy.ndarray`
@@ -344,7 +359,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             shape: (n_timepoints, n_regions)
         """
         del y
-        return self.fit().transform(img)
+        return self.fit().transform(img, confounds, sample_mask)
 
     def inverse_transform(self, region_signals):
         """Compute :term:`vertex` signals from region signals.
