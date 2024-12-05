@@ -19,7 +19,7 @@ from nilearn.maskers._utils import (
     check_surface_data_ndims,
     compute_mean_surface_image,
     concatenate_surface_images,
-    get_min_max_surface_image,
+    deconcatenate_surface_images,
 )
 from nilearn.surface import SurfaceImage
 
@@ -148,10 +148,9 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # content to inject in the HTML template
         self._report_content = {
             "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
+                "This report shows the input surface image "
+                "(if provided via img) overlaid with the regions provided via "
+                "maps_img."
             ),
             "n_vertices": {},
             "number_of_regions": 0,
@@ -205,7 +204,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
 
         self._reporting_data = {
-            "maps_image": self.maps_img,
+            "maps_img": self.maps_img,
             "mask": self.mask_img,
             "images": None,  # we will update image in transform
         }
@@ -264,7 +263,9 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         check_surface_data_ndims(img, 2, "img")
         check_same_n_vertices(self.maps_img.mesh, img.mesh)
         # concatenate data over hemispheres
-        img_data = np.concatenate(list(img.data.parts.values()), axis=0)
+        img_data = np.concatenate(
+            list(img.data.parts.values()), axis=0
+        ).astype(np.float32)
 
         if self.smoothing_fwhm is not None:
             warnings.warn(
@@ -404,7 +405,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
 
-    def generate_report(self):
+    def generate_report(self, displayed_maps=10):
         """Generate a report."""
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
@@ -416,6 +417,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 return [None]
 
+        self.displayed_maps = displayed_maps
         from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)
@@ -432,21 +434,33 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         from nilearn.reporting.utils import figure_to_png_base64
 
+        maps_img = self._reporting_data["maps_img"]
+        maps_img = deconcatenate_surface_images(maps_img)
+
+        img = self._reporting_data["images"]
+        if img:
+            img = compute_mean_surface_image(img)
+
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
         if self._reporting_data is None:
             return [None]
 
-        fig = self._create_figure_for_report()
+        n_maps = self.maps_img_.shape[1]
+        self._report_content["number_of_maps"] = n_maps
+        self._report_content["displayed_maps"] = list(
+            range(self.displayed_maps)
+        )
+        embeded_images = []
+        for roi in maps_img[: self.displayed_maps]:
+            fig = self._create_figure_for_report(roi=roi, bg_img=img)
+            embeded_images.append(figure_to_png_base64(fig))
+            plt.close()
 
-        plt.close()
+        return embeded_images
 
-        init_display = figure_to_png_base64(fig)
-
-        return [init_display]
-
-    def _create_figure_for_report(self):
-        """Create a figure of the contours of label image.
+    def _create_figure_for_report(self, roi, bg_img):
+        """Create a figure of the contours of maps image.
 
         If transform() was applied to an image,
         this image is used as background
@@ -454,14 +468,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         import matplotlib.pyplot as plt
 
-        from nilearn.plotting import plot_surf, plot_surf_contours
-
-        maps_img = self._reporting_data["maps_img"]
-
-        img = self._reporting_data["images"]
-        if img:
-            img = compute_mean_surface_image(img)
-            vmin, vmax = get_min_max_surface_image(img)
+        from nilearn.plotting import plot_surf
 
         # TODO: possibly allow to generate a report with other views
         views = ["lateral", "medial"]
@@ -478,23 +485,18 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         for ax_row, view in zip(axes, views):
             for ax, hemi in zip(ax_row, hemispheres):
-                if img:
-                    plot_surf(
-                        surf_map=img,
-                        hemi=hemi,
-                        view=view,
-                        figure=fig,
-                        axes=ax,
-                        cmap=self.cmap,
-                        vmin=vmin,
-                        vmax=vmax,
-                    )
-                plot_surf_contours(
-                    roi_map=maps_img,
+                # very low threshold to only make 0 values transparent
+                threshold = 0.00000001
+                plot_surf(
+                    surf_map=roi,
+                    bg_map=bg_img,
                     hemi=hemi,
                     view=view,
                     figure=fig,
                     axes=ax,
+                    cmap=self.cmap,
+                    colorbar=False,
+                    threshold=threshold,
+                    bg_on_data=True,
                 )
-
         return fig
