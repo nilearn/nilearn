@@ -812,6 +812,9 @@ def test_surface_image_min_max(surf_img):
     assert surf_img().max == 50.0
     assert surf_img().min == 1.0
 
+    assert surf_img(2).max == 100.0
+    assert surf_img(2).min == 1.0
+
 
 def test_data_shape_not_matching_mesh(surf_img, flip_surf_img_parts):
     with pytest.raises(ValueError, match="shape.*vertices"):
