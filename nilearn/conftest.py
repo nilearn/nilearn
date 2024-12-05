@@ -487,7 +487,7 @@ def surf_label_img(surf_mesh):
 @pytest.fixture
 def surf_maps_img(surf_mesh):
     """Return a sample surface map image using the sample mesh.
-    Has 4 different overlapping regions per hemisphere.
+    Has 4 different overlapping regions in left and 5 in right hemisphere.
     """
     data = {
         "left": np.asarray(
@@ -500,11 +500,11 @@ def surf_maps_img(surf_mesh):
         ),
         "right": np.asarray(
             [
-                [1, 0, 0, 1],
-                [1, 1, 0, 1],
-                [0, 1, 1, 0],
-                [1, 1, 1, 0],
-                [0, 0, 1, 1],
+                [1, 0, 0, 1, 1],
+                [1, 1, 0, 1, 1],
+                [0, 1, 1, 0, 1],
+                [1, 1, 1, 0, 0],
+                [0, 0, 1, 1, 0],
             ]
         ),
     }
