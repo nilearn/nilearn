@@ -100,7 +100,7 @@ def test_surface_maps_masker_1d_maps_img(surf_img):
 
     with pytest.raises(
         ValueError,
-        match="each hemisphere of maps_img should have 2 dimensions",
+        match="maps_img should be 2D",
     ):
         SurfaceMapsMasker(maps_img=surf_maps_img_1d).fit()
 
@@ -113,7 +113,7 @@ def test_surface_maps_masker_1d_img(surf_maps_img, surf_img):
 
     with pytest.raises(
         ValueError,
-        match="each hemisphere of img should have 2 dimensions",
+        match="img should be 2D",
     ):
         masker = SurfaceMapsMasker(maps_img=surf_maps_img).fit()
         masker.transform(surf_img_1d)
