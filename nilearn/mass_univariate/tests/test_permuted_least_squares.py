@@ -137,10 +137,14 @@ def run_permutations(tested_var, target_var, model_intercept):
 
     for i, n_perm in enumerate(np.repeat(PERM_RANGES, 10)):
         if model_intercept:
-            h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
+            h0 = permuted_ols_with_intercept(
+                tested_var, target_var, int(n_perm), i
+            )
             dof = N_SAMPLES - 2
         else:
-            h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
+            h0 = permuted_ols_no_intercept(
+                tested_var, target_var, int(n_perm), i
+            )
             dof = N_SAMPLES - 1
 
         h0_intercept = h0[0, :]
@@ -943,6 +947,14 @@ def test_permuted_ols_target_vars_error(dummy_design):
             tested_var,
             target_var.ravel(),  # must be 2D
         )
+
+
+def test_permuted_ols_type_n_perm(dummy_design):
+    """Checks type n_perm."""
+    target_var, tested_var, *_ = dummy_design
+
+    with pytest.raises(TypeError, match="must be an int"):
+        permuted_ols(tested_var, target_var, n_perm=0.1)
 
 
 def test_tfce_no_masker_error():
