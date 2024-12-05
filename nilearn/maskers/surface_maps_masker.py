@@ -391,9 +391,6 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             vertex_signals[:, self.mask_img_.flatten()] = np.dot(
                 region_signals, self.maps_img_[self.mask_img_.flatten(), :].T
             )
-            import pdb
-
-            pdb.set_trace()
         else:
             vertex_signals = np.dot(region_signals, self.maps_img_.T)
 
