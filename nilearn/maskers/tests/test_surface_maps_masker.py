@@ -14,8 +14,11 @@ def test_surface_maps_masker_fit_transform_shape(
 
     masker = SurfaceMapsMasker(surf_maps_img, surf_mask).fit()
     region_signals = masker.transform(surf_img(50))
+    # surf_img has shape (n_vertices, n_timepoints) = (9, 50)
+    # surf_maps_img has shape (n_vertices, n_regions) = (9, 6)
+    # region_signals should have shape (n_timepoints, n_regions) = (50, 6)
     assert region_signals.shape == (
-        surf_img(50).shape[0],
+        surf_img(50).shape[-1],
         surf_maps_img.shape[-1],
     )
 
