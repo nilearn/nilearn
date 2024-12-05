@@ -88,16 +88,16 @@ def test_surface_maps_masker_inverse_transform_shape(
 
 
 def test_surface_maps_masker_inverse_transform_wrong_region_signals_shape(
-    surf_maps_img, surf_img, surf_mask
+    surf_maps_img, surf_img
 ):
     """Test that an error is raised when the region_signals shape is wrong."""
-    masker = SurfaceMapsMasker(surf_maps_img, surf_mask).fit()
+    masker = SurfaceMapsMasker(surf_maps_img).fit()
     region_signals = masker.fit_transform(surf_img(50))
     wrong_region_signals = region_signals[:, :-1]
 
     with pytest.raises(
         ValueError,
-        match="Expected 10 regions, but got 9",
+        match="Expected 6 regions, but got 5",
     ):
         masker.inverse_transform(wrong_region_signals)
 
@@ -134,11 +134,11 @@ def test_surface_maps_masker_1d_img(surf_maps_img, surf_img):
         masker.transform(surf_img_1d)
 
 
-def test_surface_maps_masker_not_fitted_error():
+def test_surface_maps_masker_not_fitted_error(surf_maps_img):
     """Test that an error is raised when transform or inverse_transform is
     called before fit.
     """
-    masker = SurfaceMapsMasker()
+    masker = SurfaceMapsMasker(surf_maps_img)
     with pytest.raises(
         ValueError,
         match="SurfaceMapsMasker has not been fitted",
@@ -155,10 +155,7 @@ def test_surface_maps_masker_smoothing_not_supported_error(
     surf_maps_img, surf_img
 ):
     """Test that an error is raised when smoothing_fwhm is not None."""
-    masker = SurfaceMapsMasker(maps_img=surf_maps_img).fit()
-    with pytest.raises(
-        ValueError,
-        match="Smoothing is not supported",
-    ):
-        masker.transform(smoothing_fwhm=1, img=surf_img(50))
+    masker = SurfaceMapsMasker(maps_img=surf_maps_img, smoothing_fwhm=1).fit()
+    with pytest.warns(match="smoothing_fwhm is not yet supported"):
+        masker.transform(surf_img(50))
         assert masker.smoothing_fwhm is None

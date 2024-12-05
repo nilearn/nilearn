@@ -173,7 +173,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del img, y
 
         logger.log(
-            msg=f"loading regions from {self.maps_img.repr}",
+            msg=f"loading regions from {self.maps_img.__repr__()}",
             verbose=self.verbose,
         )
         # check maps_img data is 2D
@@ -186,7 +186,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         if self.mask_img is not None:
             logger.log(
-                msg=f"loading regions from {self.mask_img.repr}",
+                msg=f"loading regions from {self.mask_img.__repr__()}",
                 verbose=self.verbose,
             )
             check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
