@@ -636,9 +636,8 @@ def test_fmri_inputs_design_matrices_tsv(tmp_path, shape_4d_default):
         shapes=[shape_4d_default], file_path=tmp_path
     )
     func_img = func_img[0]
-    des = des[0]
-    pd.read_csv(des).to_csv(des, sep="\t", index=False)
-
+    des = Path(des[0])
+    pd.read_csv(des, sep="\t").to_csv(des.with_suffix(".csv"), index=False)
     FirstLevelModel(mask_img=mask).fit([func_img], design_matrices=des)
 
 

@@ -616,7 +616,7 @@ def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
 
     for design_file, design in zip(design_files, design_matrices):
         assert_frame_equal(
-            pd.read_csv(design_file, index_col=0), design, check_exact=False
+            pd.read_csv(design_file, sep="\t"), design, check_exact=False
         )
 
 
