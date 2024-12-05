@@ -1,6 +1,8 @@
+import numpy as np
 import pytest
 
 from nilearn.maskers import SurfaceMapsMasker
+from nilearn.surface import SurfaceImage
 
 
 def test_surface_maps_masker_fit_transform_shape(
@@ -21,6 +23,51 @@ def test_surface_maps_masker_fit_transform_shape(
         surf_img(50).shape[-1],
         surf_maps_img.shape[-1],
     )
+
+
+def test_surface_maps_masker_fit_transform_mask_vs_no_mask(
+    surf_maps_img, surf_img, surf_mask
+):
+    """Test that fit_transform returns the different results when a mask is
+    used vs. when no mask is used.
+    """
+    # TODO: remove after #4897 is merged
+    surf_mask = surf_mask()
+    surf_mask.data.parts["left"] = surf_mask.data.parts["left"].squeeze()
+    surf_mask.data.parts["right"] = surf_mask.data.parts["right"].squeeze()
+
+    masker_with_mask = SurfaceMapsMasker(surf_maps_img, surf_mask).fit()
+    region_signals_with_mask = masker_with_mask.transform(surf_img(50))
+
+    masker_no_mask = SurfaceMapsMasker(surf_maps_img).fit()
+    region_signals_no_mask = masker_no_mask.transform(surf_img(50))
+
+    assert not (region_signals_with_mask == region_signals_no_mask).all()
+
+
+def test_surface_maps_masker_fit_transform_actual_output(surf_mesh, rng):
+    """Test that fit_transform returns the expected output.
+    Meaning that the SurfaceMapsMasker gives the solution to equation Ax = B,
+    where A is the maps_img, x is the region_signals, and B is the img.
+    """
+    # create a maps_img with 9 vertices and 2 regions
+    A = rng.random((9, 2))
+    maps_data = {"left": A[:4, :], "right": A[4:, :]}
+    surf_maps_img = SurfaceImage(surf_mesh(), maps_data)
+
+    # random region signals x
+    expected_region_signals = rng.random((50, 2))
+
+    # create an img with 9 vertices and 50 timepoints as B = A @ x
+    B = np.dot(A, expected_region_signals.T)
+    img_data = {"left": B[:4, :], "right": B[4:, :]}
+    surf_img = SurfaceImage(surf_mesh(), img_data)
+
+    # get the region signals x using the SurfaceMapsMasker
+    region_signals = SurfaceMapsMasker(surf_maps_img).fit_transform(surf_img)
+
+    assert region_signals.shape == expected_region_signals.shape
+    assert np.allclose(region_signals, expected_region_signals)
 
 
 def test_surface_maps_masker_inverse_transform_shape(
