@@ -146,11 +146,12 @@ def check_surface_data_ndims(img, dim, var_name="img"):
     raise ValueError if the data of the SurfaceImage is not of the given
     dimension.
     """
-    if not all(x.ndim == dim for x in img.data.parts.values()):
+    n_dim_left = img.data.parts["left"].ndim
+    n_dim_right = img.data.parts["right"].ndim
+    if not all(x == dim for x in [n_dim_left, n_dim_right]):
         raise ValueError(
-            f"Data for each hemisphere of {var_name} should have {dim} "
-            f"dimensions, but found {img.data.parts["left"].ndim} for left "
-            f"and {img.data.parts["right"].ndim} for right."
+            f"Data for each hemisphere of {var_name} should be {dim}D, "
+            f"but found {n_dim_left}D for left and {n_dim_right}D for right."
         )
 
 
