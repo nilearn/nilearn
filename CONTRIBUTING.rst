@@ -14,9 +14,9 @@ please don't hesitate to reach out!
 
 There are currently three ways to interact with the Nilearn team:
 through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues,
-and through our weekly `drop-in hours <https://tinyurl.com/nilearn-drop-in-hour>`_,
+and through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
 usually **every Wednesday from 4pm to 5pm UTC**.
-We post on our `X account <https://twitter.com/nilearn>`_ in advance to let you know
+We post on our `X account <https://x.com/nilearn>`_ in advance to let you know
 if the drop-in hours are happening that week.
 
 If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn,
@@ -261,7 +261,7 @@ with the tools we use for development and deployment.
 |                    |               | - Doesn't include code                              |
 +--------------------+---------------+-----------------------------------------------------+
 
-.. _PEP8: https://www.python.org/dev/peps/pep-0008/
+.. _PEP8: https://peps.python.org/pep-0008/
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
 .. _ruff: https://docs.astral.sh/ruff/
 
@@ -414,7 +414,7 @@ would be stored in a ``coef_`` attribute after ``fit`` has been called.
 
 The estimated attributes are expected to be overridden when you call ``fit`` a second time.
 
-This follows the `scikit-learn convention <https://scikit-learn.org/stable/developers/develop.html#estimated-attributes>`_.
+This follows the :sklearn:`scikit-learn convention <developers/develop.html#estimated-attributes>`.
 
 .. _private_functions:
 
@@ -795,7 +795,8 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 
 8. check that all continuous integration tests pass
 
-For more details about the Fork Clone Push workflows, read `here <https://guides.github.com/activities/forking/>`_.
+For more details about the Fork Clone Push workflows,
+read `here <https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project#about-forking>`_.
 
 
 Building documentation
@@ -811,7 +812,7 @@ If you wish to build documentation:
       pip install '.[doc]'
 
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
-   using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
+   using `reStructuredText files <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
 
 3. You can now go to ``nilearn/doc`` and build the examples locally:
 

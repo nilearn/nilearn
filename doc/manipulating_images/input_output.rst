@@ -219,7 +219,7 @@ with ``get_affine()`` and ``get_header()``.
 
     - a big 4D matrix representing (3D MRI + 1D for time), stored in a single
       Nifti file.
-      `FSL <https://fsl.fmrib.ox.ac.uk/fsl/>`_ users tend to
+      `FSL <https://fsl.fmrib.ox.ac.uk/fsl/docs/>`_ users tend to
       prefer this format.
     - several 3D matrices representing each time point (single 3D volume) of the
       run, stored in set of 3D Nifti or analyze files.

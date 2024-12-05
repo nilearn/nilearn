@@ -33,7 +33,7 @@ References
 .. footbibliography::
 
 For more information on this dataset's structure, see
-http://www.cns.atr.jp/dni/en/downloads/fmri-data-set-for-visual-image-reconstruction
+https://bicr.atr.jp/dni/en/downloads/fmri-data-set-for-visual-image-reconstruction/
 
 
 License
