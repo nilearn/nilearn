@@ -214,7 +214,7 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 35
+max-complexity = 32
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
@@ -233,4 +233,4 @@ max-branches = 35
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 121
+max-statements = 116
