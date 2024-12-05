@@ -10,7 +10,7 @@ from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
-from nilearn._utils import fill_doc
+from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
 from nilearn.maskers._utils import (
@@ -172,6 +172,10 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         del img, y
 
+        logger.log(
+            msg=f"loading regions from {self.maps_img.repr}",
+            verbose=self.verbose,
+        )
         # check maps_img data is 2D
         check_surface_data_ndims(self.maps_img, 2, "maps_img")
 
@@ -181,6 +185,10 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self.n_elements_ = self.maps_img_.shape[1]
 
         if self.mask_img is not None:
+            logger.log(
+                msg=f"loading regions from {self.mask_img.repr}",
+                verbose=self.verbose,
+            )
             check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
             check_surface_data_ndims(self.mask_img, 1, "mask_img")
             self.mask_img_ = np.concatenate(
@@ -270,13 +278,25 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # apply mask if provided
         # and then extract signal via least square regression
         if self.mask_img_ is not None:
-            region_signals = linalg.lstsq(
+            region_signals = cache(
+                linalg.lstsq,
+                memory=self.memory,
+                func_memory_level=2,
+                memory_level=self.memory_level,
+                shelve=self._shelving,
+            )(
                 self.maps_img_[self.mask_img_.flatten(), :],
                 img_data[self.mask_img_.flatten(), :],
             )[0].T
         # if no mask, directly extract signal
         else:
-            region_signals = linalg.lstsq(self.maps_img_, img_data)[0].T
+            region_signals = cache(
+                linalg.lstsq,
+                memory=self.memory,
+                func_memory_level=2,
+                memory_level=self.memory_level,
+                shelve=self._shelving,
+            )(self.maps_img_, img_data)[0].T
 
         # signal cleaning here
         region_signals = cache(
@@ -361,7 +381,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 f"Expected {self.n_elements_} regions, "
                 f"but got {region_signals.shape[1]}."
             )
-
+        logger.log("computing image from signals", verbose=self.verbose)
         # project region signals back to vertices
         vertex_signals = np.dot(region_signals, self.maps_img_.T)
 
