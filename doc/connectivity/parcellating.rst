@@ -53,15 +53,16 @@ Applying clustering
       spatial smoothing, that will be better balanced than with Kmeans.
 
     All these algorithms are showcased in a full code example :
-    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`. Below, we focus on explaining the principle of Ward.
+    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`.
+    Below, we focus on explaining the principle of Ward.
 
 |
 
 **Compute a connectivity matrix**
 Before applying Ward's method, we compute a spatial neighborhood matrix,
 aka connectivity matrix. This is useful to constrain clusters to form
-contiguous parcels (see `the scikit-learn documentation
-<https://scikit-learn.org/stable/modules/clustering.html#adding-connectivity-constraints>`_)
+contiguous parcels
+(see :sklearn:`the scikit-learn documentation <modules/clustering.html#adding-connectivity-constraints>`)
 
 This is done from the mask computed by the masker: a niimg from which we
 extract a numpy array and then the connectivity matrix.

@@ -11,14 +11,14 @@
     :alt: Github Actions Build Status
 
 .. image:: https://codecov.io/gh/nilearn/nilearn/graph/badge.svg?token=KpYArSdyXv
-    :target: https://codecov.io/gh/nilearn/nilearn
+    :target: https://app.codecov.io/gh/nilearn/nilearn
     :alt: Coverage Status
 
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8397156.svg
     :target: https://doi.org/10.5281/zenodo.8397156
 
-.. image:: http://img.shields.io/twitter/follow/nilearn.svg
-    :target: https://twitter.com/nilearn
+.. image:: https://img.shields.io/twitter/follow/nilearn.svg
+    :target: https://x.com/nilearn
     :alt: Twitter
 
 .. image:: https://img.shields.io/mastodon/follow/109669703955432270?domain=https%3A%2F%2Ffosstodon.org%2F
@@ -26,11 +26,8 @@
     :alt: Mastodon
 
 .. image:: https://img.shields.io/discord/711993354929569843
-    :target: https://discord.gg/SsQABEJHkZ
+    :target: https://discord.com/invite/SsQABEJHkZ
     :alt: Discord
-
-
-
 
 nilearn
 =======
