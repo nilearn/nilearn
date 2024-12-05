@@ -10,16 +10,13 @@ from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs, fill_doc
+from nilearn._utils import fill_doc
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     check_surface_data_ndims,
-    compute_mean_surface_image,
     concatenate_surface_images,
-    deconcatenate_surface_images,
 )
 from nilearn.surface import SurfaceImage
 
@@ -192,23 +189,6 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         else:
             self.mask_img_ = None
 
-        # initialize reporting content and data
-        if not self.reports:
-            self._reporting_data = None
-            return self
-
-        self._report_content["number_of_regions"] = self.n_elements_
-        for part in self.maps_img.data.parts:
-            self._report_content["n_vertices"][part] = (
-                self.maps_img.mesh.parts[part].n_vertices
-            )
-
-        self._reporting_data = {
-            "maps_img": self.maps_img,
-            "mask": self.mask_img,
-            "images": None,  # we will update image in transform
-        }
-
         return self
 
     def __sklearn_is_fitted__(self):
@@ -275,10 +255,6 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 stacklevel=2,
             )
             self.smoothing_fwhm = None
-
-        # add the image to the reporting data
-        if self.reports:
-            self._reporting_data["images"] = img
 
         parameters = get_params(
             self.__class__,
@@ -404,193 +380,3 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         }
 
         return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
-
-    def generate_report(self, displayed_maps=10):
-        """Generate an HTML report for the current ``SurfaceMapsMasker``
-        object.
-
-        .. note::
-            This functionality requires to have ``Matplotlib`` installed.
-
-        Parameters
-        ----------
-        displayed_maps : :obj:`int`, or :obj:`list`, \
-                         or :class:`~numpy.ndarray`, or "all", default=10
-            Indicates which maps will be displayed in the HTML report.
-
-                - If "all": All maps will be displayed in the report.
-
-                .. code-block:: python
-
-                    masker.generate_report("all")
-
-                .. warning:
-                    If there are too many maps, this might be time and
-                    memory consuming, and will result in very heavy
-                    reports.
-
-                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                  the indices of the maps to be displayed in the report. For
-                  example, the following code will generate a report with maps
-                  6, 3, and 12, displayed in this specific order:
-
-                .. code-block:: python
-
-                    masker.generate_report([6, 3, 12])
-
-                - If an :obj:`int`: This will only display the first n maps,
-                  n being the value of the parameter. By default, the report
-                  will only contain the first 10 maps. Example to display the
-                  first 16 maps:
-
-                .. code-block:: python
-
-                    masker.generate_report(16)
-
-        Returns
-        -------
-        report : `nilearn.reporting.html_report.HTMLReport`
-            HTML report for the masker.
-        """
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
-
-        incorrect_type = not isinstance(
-            displayed_maps, (list, np.ndarray, int, str)
-        )
-        incorrect_string = (
-            isinstance(displayed_maps, str) and displayed_maps != "all"
-        )
-        not_integer = (
-            not isinstance(displayed_maps, str)
-            and np.array(displayed_maps).dtype != int
-        )
-        if incorrect_type or incorrect_string or not_integer:
-            raise TypeError(
-                "Parameter ``displayed_maps`` of "
-                "``generate_report()`` should be either 'all' or "
-                "an int, or a list/array of ints. You provided a "
-                f"{type(displayed_maps)}"
-            )
-
-        self.displayed_maps = displayed_maps
-        from nilearn.reporting.html_report import generate_report
-
-        return generate_report(self)
-
-    def _reporting(self):
-        """Load displays needed for report.
-
-        Returns
-        -------
-        displays : list
-            A list of all displays to be rendered.
-        """
-        import matplotlib.pyplot as plt
-
-        from nilearn.reporting.utils import figure_to_png_base64
-
-        maps_img = self._reporting_data["maps_img"]
-        maps_img = deconcatenate_surface_images(maps_img)
-
-        img = self._reporting_data["images"]
-        if img:
-            img = compute_mean_surface_image(img)
-
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
-
-        n_maps = self.maps_img_.shape[1]
-        maps_to_be_displayed = range(n_maps)
-        if isinstance(self.displayed_maps, int):
-            if n_maps < self.displayed_maps:
-                msg = (
-                    "`generate_report()` received "
-                    f"{self.displayed_maps} to be displayed. "
-                    f"But masker only has {n_maps} maps."
-                    f"Setting number of displayed maps to {n_maps}."
-                )
-                warnings.warn(category=UserWarning, message=msg, stacklevel=6)
-                self.displayed_maps = n_maps
-            maps_to_be_displayed = range(self.displayed_maps)
-
-        elif isinstance(self.displayed_maps, (list, np.ndarray)):
-            if max(self.displayed_maps) > n_maps:
-                raise ValueError(
-                    "Report cannot display the following maps "
-                    f"{self.displayed_maps} because "
-                    f"masker only has {n_maps} maps."
-                )
-            maps_to_be_displayed = self.displayed_maps
-
-        self._report_content["number_of_maps"] = n_maps
-        self._report_content["displayed_maps"] = list(maps_to_be_displayed)
-
-        embeded_images = []
-
-        if img is None:
-            msg = (
-                "SurfaceMapsMasker has not been transformed (via transform() "
-                "method) on any image yet. Plotting only maps for reporting."
-            )
-            warnings.warn(msg, stacklevel=6)
-
-        for roi in maps_img[: self.displayed_maps]:
-            fig = self._create_figure_for_report(roi=roi, bg_img=img)
-            embeded_images.append(figure_to_png_base64(fig))
-            plt.close()
-
-        return embeded_images
-
-    def _create_figure_for_report(self, roi, bg_img):
-        """Create a figure of maps image, one region at a time.
-
-        If transform() was applied to an image,
-        this image is used as background
-        on which the maps are plotted.
-        """
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_surf
-
-        # TODO: possibly allow to generate a report with other views
-        views = ["lateral", "medial"]
-        hemispheres = ["left", "right"]
-
-        fig, axes = plt.subplots(
-            len(views),
-            len(hemispheres),
-            subplot_kw={"projection": "3d"},
-            figsize=(20, 20),
-            **_constrained_layout_kwargs(),
-        )
-
-        axes = np.atleast_2d(axes)
-
-        for ax_row, view in zip(axes, views):
-            for ax, hemi in zip(ax_row, hemispheres):
-                # very low threshold to only make 0 values transparent
-                threshold = 0.00000001
-                plot_surf(
-                    surf_map=roi,
-                    bg_map=bg_img,
-                    hemi=hemi,
-                    view=view,
-                    figure=fig,
-                    axes=ax,
-                    cmap=self.cmap,
-                    colorbar=False,
-                    threshold=threshold,
-                    bg_on_data=True,
-                )
-                plt.subplots_adjust(hspace=0, wspace=0)
-        return fig
