@@ -82,8 +82,13 @@ def _read_events_table(table_path):
     ValueError
     If file loading fails.
     """
-    if Path(table_path).suffix == ".tsv":
+    table_path = Path(table_path)
+    if table_path.suffix == ".tsv":
         loaded = pd.read_csv(table_path, sep="\t")
-    elif Path(table_path).suffix == ".csv":
+    elif table_path.suffix == ".csv":
         loaded = pd.read_csv(table_path)
+    else:
+        raise ValueError(
+            f"Tables to load can only be TSV or CSV.\nGot {table_path}"
+        )
     return loaded

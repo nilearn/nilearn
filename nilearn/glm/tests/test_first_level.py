@@ -2135,14 +2135,18 @@ def test_check_run_tables_errors():
     # check high level wrapper keeps behavior
     with pytest.raises(ValueError, match="len.* does not match len.*"):
         _check_run_tables([""] * 2, [""], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         _check_run_tables([""] * 2, [".csv", ".csv"], "")
     with pytest.raises(
         TypeError,
         match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
 
 

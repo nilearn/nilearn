@@ -839,7 +839,9 @@ def test_secondlevelmodel_design_matrix_path(img_3d_mni, tmp_path):
 @pytest.mark.parametrize("design_matrix", ["foo", Path("foo")])
 def test_secondlevelmodel_design_matrix_error_path(img_3d_mni, design_matrix):
     second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
-    with pytest.raises(ValueError, match="table path foo could not be loaded"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         SecondLevelModel().fit(
             second_level_input=second_level_input, design_matrix=design_matrix
         )
