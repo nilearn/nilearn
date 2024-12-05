@@ -387,10 +387,13 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             # vertices that are not in the mask will have a signal of 0
             vertex_signals = np.zeros(
                 (self.maps_img.mesh.n_vertices, region_signals.shape[0])
+            ).T
+            vertex_signals[:, self.mask_img_.flatten()] = np.dot(
+                region_signals, self.maps_img_[self.mask_img_.flatten(), :].T
             )
-            vertex_signals[self.mask_img_.flatten(), :] = np.dot(
-                region_signals, self.maps_img_[self.mask_img_.flatten(), :]
-            )
+            import pdb
+
+            pdb.set_trace()
         else:
             vertex_signals = np.dot(region_signals, self.maps_img_.T)
 
