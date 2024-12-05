@@ -149,9 +149,8 @@ def check_surface_data_ndims(img, dim, var_name="img"):
     if not all(x.ndim == dim for x in img.data.parts.values()):
         raise ValueError(
             f"Data for each hemisphere of {var_name} should have {dim} "
-            "dimensions,\n but found: "
-            f"{[f"ndims in {part}: {img.data.parts[part].ndim}."
-            for part in img.data.parts]}"
+            f"dimensions, but found {img.data.parts["left"].ndim} for left "
+            f"and {img.data.parts["right"].ndim} for right."
         )
 
 
