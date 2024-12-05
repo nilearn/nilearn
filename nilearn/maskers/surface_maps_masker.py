@@ -383,7 +383,16 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
         logger.log("computing image from signals", verbose=self.verbose)
         # project region signals back to vertices
-        vertex_signals = np.dot(region_signals, self.maps_img_.T)
+        if self.mask_img_ is not None:
+            # vertices that are not in the mask will have a signal of 0
+            vertex_signals = np.zeros(
+                (self.maps_img.mesh.n_vertices, region_signals.shape[0])
+            )
+            vertex_signals[self.mask_img_.flatten(), :] = np.dot(
+                region_signals, self.maps_img_[self.mask_img_.flatten(), :]
+            )
+        else:
+            vertex_signals = np.dot(region_signals, self.maps_img_.T)
 
         # we need the data to be of shape (n_vertices, n_timepoints)
         # because the SurfaceImage object expects it

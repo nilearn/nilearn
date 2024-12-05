@@ -122,6 +122,7 @@ def test_surface_maps_masker_1d_maps_img(surf_img):
 
 def test_surface_maps_masker_1d_img(surf_maps_img, surf_img):
     """Test that an error is raised when img has 1D data."""
+    # TODO: remove after #4897 is merged
     surf_img_1d = surf_img()
     surf_img_1d.data.parts["left"] = surf_img_1d.data.parts["left"].squeeze()
     surf_img_1d.data.parts["right"] = surf_img_1d.data.parts["right"].squeeze()
