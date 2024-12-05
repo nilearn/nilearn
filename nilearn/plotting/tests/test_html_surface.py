@@ -10,6 +10,7 @@ from nilearn.image import get_data
 from nilearn.plotting import html_surface
 from nilearn.plotting.html_surface import view_img_on_surf
 from nilearn.plotting.js_plotting_utils import decode
+from nilearn.surface.surface import check_mesh_is_fsaverage
 
 from .test_js_plotting_utils import check_colors, check_html
 
@@ -96,17 +97,17 @@ def test_get_vertexcolor():
 
 
 def test_check_mesh():
-    mesh = html_surface.check_mesh("fsaverage5")
-    assert mesh is html_surface.check_mesh(mesh)
+    mesh = check_mesh_is_fsaverage("fsaverage5")
+    assert mesh is check_mesh_is_fsaverage(mesh)
     with pytest.raises(ValueError):
-        html_surface.check_mesh("fsaverage2")
+        check_mesh_is_fsaverage("fsaverage2")
     mesh.pop("pial_left")
     with pytest.raises(ValueError):
-        html_surface.check_mesh(mesh)
+        check_mesh_is_fsaverage(mesh)
     with pytest.raises(TypeError):
-        html_surface.check_mesh(surface.load_surf_mesh(mesh["pial_right"]))
+        check_mesh_is_fsaverage(surface.load_surf_mesh(mesh["pial_right"]))
     mesh = datasets.fetch_surf_fsaverage()
-    assert mesh is html_surface.check_mesh(mesh)
+    assert mesh is check_mesh_is_fsaverage(mesh)
 
 
 def test_one_mesh_info():
@@ -174,7 +175,7 @@ def test_full_brain_info(mni152_template_res_2):
         html_surface.full_brain_info(mni152_template_res_2)
 
 
-def test_fill_html_template(mni152_template_res_2):
+def test_fill_html_template(tmp_path, mni152_template_res_2):
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh[0][:, 0]
@@ -187,23 +188,23 @@ def test_fill_html_template(mni152_template_res_2):
     )
     info["title"] = None
     html = html_surface._fill_html_template(info, embed_js=False)
-    check_html(html)
+    check_html(tmp_path, html)
     assert "jquery.min.js" in html.html
     info = html_surface._full_brain_info(mni152_template_res_2)
     info["title"] = None
     html = html_surface._fill_html_template(info)
-    check_html(html)
+    check_html(tmp_path, html)
     assert "* plotly.js (gl3d - minified) v1." in html.html
 
 
-def test_view_surf(rng):
+def test_view_surf(tmp_path, rng):
     fsaverage = fetch_surf_fsaverage()
     mesh = surface.load_surf_mesh(fsaverage["pial_right"])
-    surf_map = mesh[0][:, 0]
+    surf_map = mesh.coordinates[:, 0]
     html = html_surface.view_surf(
         fsaverage["pial_right"], surf_map, fsaverage["sulc_right"], "90%"
     )
-    check_html(html, title="Surface plot")
+    check_html(tmp_path, html, title="Surface plot")
     html = html_surface.view_surf(
         fsaverage["pial_right"],
         surf_map,
@@ -211,48 +212,50 @@ def test_view_surf(rng):
         0.3,
         title="SOME_TITLE",
     )
-    check_html(html, title="SOME_TITLE")
+    check_html(tmp_path, html, title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
     html = html_surface.view_surf(fsaverage["pial_right"])
-    check_html(html)
-    atlas = rng.integers(0, 10, size=len(mesh[0]))
+    check_html(tmp_path, html)
+    atlas = rng.integers(0, 10, size=len(mesh.coordinates))
     html = html_surface.view_surf(
         fsaverage["pial_left"], atlas, symmetric_cmap=False
     )
-    check_html(html)
+    check_html(tmp_path, html)
     html = html_surface.view_surf(
         fsaverage["pial_right"],
         fsaverage["sulc_right"],
         threshold=None,
         cmap="Greys",
     )
-    check_html(html)
+    check_html(tmp_path, html)
     with pytest.raises(ValueError):
-        html_surface.view_surf(mesh, mesh[0][::2, 0])
+        html_surface.view_surf(mesh, mesh.coordinates[::2, 0])
     with pytest.raises(ValueError):
-        html_surface.view_surf(mesh, mesh[0][:, 0], bg_map=mesh[0][::2, 0])
+        html_surface.view_surf(
+            mesh, mesh.coordinates[:, 0], bg_map=mesh.coordinates[::2, 0]
+        )
 
 
-def test_view_img_on_surf(mni152_template_res_2):
+def test_view_img_on_surf(tmp_path, mni152_template_res_2):
     html = view_img_on_surf(mni152_template_res_2, threshold="92.3%")
-    check_html(html)
+    check_html(tmp_path, html)
 
     surfaces = datasets.fetch_surf_fsaverage()
     html = view_img_on_surf(
         mni152_template_res_2, threshold=0, surf_mesh=surfaces
     )
-    check_html(html)
+    check_html(tmp_path, html)
 
     html = view_img_on_surf(
         mni152_template_res_2, threshold=0.4, title="SOME_TITLE"
     )
     assert "SOME_TITLE" in html.html
-    check_html(html)
+    check_html(tmp_path, html)
 
     html = view_img_on_surf(
         mni152_template_res_2, threshold=0.4, cmap="hot", black_bg=True
     )
-    check_html(html)
+    check_html(tmp_path, html)
 
     img_4d = image.new_img_like(
         mni152_template_res_2,
@@ -267,7 +270,7 @@ def test_view_img_on_surf(mni152_template_res_2):
         out=get_data(mni152_template_res_2),
     )
     html = view_img_on_surf(mni152_template_res_2, symmetric_cmap=False)
-    check_html(html)
+    check_html(tmp_path, html)
 
     html = view_img_on_surf(
         mni152_template_res_2,
@@ -278,7 +281,7 @@ def test_view_img_on_surf(mni152_template_res_2):
             "interpolation": "nearest",
         },
     )
-    check_html(html)
+    check_html(tmp_path, html)
 
 
 def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):

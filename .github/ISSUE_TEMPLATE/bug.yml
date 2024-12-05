@@ -50,11 +50,11 @@ body:
         label: Python version
         description: What python version are you using?
         options:
+        -   label: '3.13'
         -   label: '3.12'
         -   label: '3.11'
         -   label: '3.10'
         -   label: '3.9'
-        -   label: '3.8'
 
 -   type: textarea
     attributes:

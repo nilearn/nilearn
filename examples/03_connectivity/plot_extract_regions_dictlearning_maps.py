@@ -99,9 +99,8 @@ n_regions_extracted = regions_extracted_img.shape[-1]
 
 # Visualization of region extraction results
 title = (
-    "%d regions are extracted from %d components."
-    "\nEach separate color of region indicates extracted region"
-    % (n_regions_extracted, 8)
+    f"{n_regions_extracted} regions are extracted from 8 components.\n"
+    "Each separate color of region indicates extracted region"
 )
 plotting.plot_prob_atlas(
     regions_extracted_img, view_type="filled_contours", title=title

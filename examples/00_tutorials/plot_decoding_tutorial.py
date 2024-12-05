@@ -123,8 +123,7 @@ fmri_niimgs = index_img(fmri_filename, condition_mask)
 # %%
 # We apply the same mask to the targets
 conditions = conditions[condition_mask]
-# Convert to numpy array
-conditions = conditions.values
+conditions = conditions.to_numpy()
 print(conditions.shape)
 
 # %%
@@ -239,8 +238,8 @@ decoder.fit(fmri_niimgs, conditions)
 
 # %%
 # Cross-validation pipeline can also be implemented manually. More details can
-# be found on `scikit-learn website
-# <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html>`_.
+# be found on :sklearn:`scikit-learn website
+# <modules/generated/sklearn.model_selection.cross_val_score.html>`.
 #
 # Then we can check the best performing parameters per fold.
 print(decoder.cv_params_["face"])
@@ -353,6 +352,9 @@ print(dummy_decoder.cv_scores_)
 # --------
 #
 # * The :ref:`section of the documentation on decoding <decoding>`
+#
+# * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_understand_decoder.py`
+#   For a more in-depth understanding of the :class:`nilearn.decoding.Decoder`
 #
 # * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
 #   For decoding without a precomputed mask

@@ -94,6 +94,8 @@ report
 # -------------------
 import matplotlib.pyplot as plt
 
+plt.figure(constrained_layout=True)
+
 for time_serie, label in zip(time_series.T, labels):
     plt.plot(time_serie, label=label)
 
@@ -101,7 +103,6 @@ plt.title("Default Mode Network Time Series")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
 plt.legend()
-plt.tight_layout()
 
 # %%
 # Compute partial correlation matrix
@@ -225,11 +226,7 @@ print(f"time series has {timeseries.shape[0]} samples")
 # %%
 # in which situation the graphical lasso **sparse inverse covariance**
 # estimator captures well the covariance **structure**.
-try:
-    from sklearn.covariance import GraphicalLassoCV
-except ImportError:
-    # for Scitkit-Learn < v0.20.0
-    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
+from sklearn.covariance import GraphicalLassoCV
 
 covariance_estimator = GraphicalLassoCV(cv=3, verbose=1)
 
@@ -249,8 +246,6 @@ print(f"Covariance matrix has shape {matrix.shape}.")
 # We use `:func: nilearn.plotting.plot_matrix`
 # to visualize our correlation matrix
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
-from nilearn import plotting
-
 plotting.plot_matrix(
     matrix,
     vmin=-1.0,
@@ -432,6 +427,7 @@ plotting.show()
 #
 #   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #
-#   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py` # noqa
+#   * :ref:`sphx_glr_auto_examples_03_connectivity\
+#     _plot_multi_subject_connectome.py`
 
 # sphinx_gallery_dummy_images=7

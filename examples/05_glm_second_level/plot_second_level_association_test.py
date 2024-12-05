@@ -41,7 +41,7 @@ tested_var = localizer_dataset.ext_vars["pseudo"]
 print(tested_var)
 
 # %%
-# It is worth to do a auality check and remove subjects with missing values.
+# It is worth to do a quality check and remove subjects with missing values.
 import numpy as np
 
 mask_quality_check = np.where(np.logical_not(np.isnan(tested_var)))[0]
@@ -49,7 +49,7 @@ n_samples = mask_quality_check.size
 contrast_map_filenames = [
     localizer_dataset.cmaps[i] for i in mask_quality_check
 ]
-tested_var = tested_var[mask_quality_check].values.reshape((-1, 1))
+tested_var = tested_var[mask_quality_check].to_numpy().reshape((-1, 1))
 print(f"Actual number of subjects after quality check: {int(n_samples)}")
 
 # %%
@@ -105,7 +105,7 @@ p_val = model.compute_contrast("fluency", output_type="p_value")
 n_voxels = np.sum(get_data(model.masker_.mask_img_))
 # Correcting the p-values for multiple testing and taking negative logarithm
 neg_log_pval = math_img(
-    f"-np.log10(np.minimum(1, img * {str(n_voxels)}))", img=p_val
+    f"-np.log10(np.minimum(1, img * {n_voxels!s}))", img=p_val
 )
 
 # %%

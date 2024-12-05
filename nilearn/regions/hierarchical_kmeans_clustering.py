@@ -24,7 +24,8 @@ def _remove_empty_labels(labels):
 def _adjust_small_clusters(array, n_clusters):
     """Take a ndarray of floats summing to n_clusters \
     and try to round it while enforcing rounded array still sum \
-    to n_clusters and every element is at least 1."""
+    to n_clusters and every element is at least 1.
+    """
     array_round = np.rint(array).astype(int)
     array_round = np.maximum(array_round, 1)
 
@@ -62,10 +63,10 @@ def hierarchical_k_means(
 
     Parameters
     ----------
-    X: ndarray (n_samples, n_features)
+    X : ndarray (n_samples, n_features)
         Data to cluster
 
-    n_clusters: int,
+    n_clusters : int,
         The number of clusters to find.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
@@ -139,7 +140,7 @@ def hierarchical_k_means(
     return _remove_empty_labels(fine_labels)
 
 
-class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
+class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     """Hierarchical KMeans.
 
     First clusterize the samples into big clusters. Then clusterize the samples
@@ -147,7 +148,7 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
     Parameters
     ----------
-    n_clusters: int
+    n_clusters : int
         The number of clusters to find.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
@@ -181,13 +182,13 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
 
-    scaling: bool, optional (default False)
+    scaling : bool, optional (default False)
         If scaling is True, each cluster is scaled by the square root of its
         size during transform(), preserving the l2-norm of the image.
         inverse_transform() will apply inversed scaling to yield an image with
         same l2-norm as input.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
     Attributes
@@ -220,14 +221,18 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         self.random_state = random_state
         self.scaling = scaling
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Compute clustering of the data.
 
         Parameters
         ----------
-        X: ndarray, shape = [n_features, n_samples]
+        X : ndarray, shape = [n_features, n_samples]
             Training data.
-        y: Ignored
+        y : Ignored
 
         Returns
         -------
@@ -266,17 +271,21 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
         self.n_clusters = len(sizes)
         return self
 
-    def transform(self, X, y=None):
+    def transform(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters
         ----------
-        X: ndarray, shape = [n_features, n_samples]
+        X : ndarray, shape = [n_features, n_samples]
             Data to transform with the fitted clustering.
 
         Returns
         -------
-        X_red: ndarray, shape = [n_clusters, n_samples]
+        X_red : ndarray, shape = [n_clusters, n_samples]
             Data reduced with agglomerated signal for each cluster
         """
         check_is_fitted(self, "labels_")
@@ -301,12 +310,12 @@ class HierarchicalKMeans(BaseEstimator, ClusterMixin, TransformerMixin):
 
         Parameters
         ----------
-        X_red: ndarray , shape = [n_clusters, n_samples]
+        X_red : ndarray , shape = [n_clusters, n_samples]
             Data reduced with agglomerated signal for each cluster
 
         Returns
         -------
-        X_inv: ndarray, shape = [n_features, n_samples]
+        X_inv : ndarray, shape = [n_features, n_samples]
             Data reduced expanded to the original feature space
         """
         check_is_fitted(self, "labels_")

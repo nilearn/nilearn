@@ -47,7 +47,7 @@ def test_open_in_browser_timeout(monkeypatch):
 def test_open_in_browser_deprecation_warning(monkeypatch):
     monkeypatch.setattr(webbrowser, "open", Get())
     doc = html_document.HTMLDocument("hello")
-    with pytest.warns(DeprecationWarning, match="temp_file_lifetime"):
+    with pytest.deprecated_call(match="temp_file_lifetime"):
         doc.open_in_browser(temp_file_lifetime=30.0)
 
 
@@ -62,7 +62,7 @@ def test_open_in_browser_file(tmp_path, monkeypatch):
 
 
 def _open_views():
-    return [html_document.HTMLDocument("") for i in range(12)]
+    return [html_document.HTMLDocument("") for _ in range(12)]
 
 
 def _open_one_view():

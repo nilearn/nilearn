@@ -6,6 +6,7 @@ Utilities for masking and dimension reduction of group data
 import glob
 import itertools
 from math import ceil
+from pathlib import Path
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -17,12 +18,13 @@ from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers import NiftiMapsMasker, SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin, cache
 from .._utils.niimg import safe_get_data
-from .._utils.niimg_conversions import resolve_globbing
+from .._utils.path_finding import resolve_globbing
 from ..signal import row_sum_of_squares
 
 
@@ -57,7 +59,7 @@ def _fast_svd(X, n_components, random_state=None):
     # Small problem, just call full PCA
     if max(X.shape) <= 500:
         svd_solver = "full"
-    elif n_components >= 1 and n_components < 0.8 * min(X.shape):
+    elif 1 <= n_components < 0.8 * min(X.shape):
         svd_solver = "randomized"
     # This is also the case of n_components in (0,1)
     else:
@@ -243,7 +245,7 @@ def _mask_and_reduce_single(
 
 
 @fill_doc
-class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
+class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     """Base class for matrix factorization based decomposition estimators.
 
     Handles mask logic, provides transform and inverse_transform methods
@@ -307,9 +309,10 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     memory : instance of joblib.Memory or str, default=None
         Used to cache the masking process.
@@ -380,7 +383,12 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
-    def fit(self, imgs, y=None, confounds=None):
+    def fit(
+        self,
+        imgs,
+        y=None,  # noqa: ARG002
+        confounds=None,
+    ):
         """Compute the mask and the components across subjects.
 
         Parameters
@@ -412,7 +420,7 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
         ):
             imgs = resolve_globbing(imgs)
 
-        if isinstance(imgs, str) or not hasattr(imgs, "__iter__"):
+        if isinstance(imgs, (str, Path)) or not hasattr(imgs, "__iter__"):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.
@@ -427,6 +435,15 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
                 "Need one or more Niimg-like objects as input, "
                 "an empty list was given."
             )
+
+        # Does not support surface-based images yet; See #4756 for updates.
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
+            isinstance(x, SurfaceImage) for x in imgs
+        ):
+            raise NotImplementedError(
+                "Surface-based images are not yet supported by this module."
+            )
+
         self.masker_ = check_embedded_masker(self)
 
         # Avoid warning with imgs != None
@@ -534,7 +551,8 @@ class _BaseDecomposition(BaseEstimator, CacheMixin, TransformerMixin):
 
     def _sort_by_score(self, data):
         """Sort components on the explained variance over data of estimator \
-        components_."""
+        components_.
+        """
         components_score = self._raw_score(data, per_component=True)
         order = np.argsort(components_score)[::-1]
         self.components_ = self.components_[order]

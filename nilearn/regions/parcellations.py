@@ -28,7 +28,7 @@ def _estimator_fit(data, estimator, method=None):
     estimator : instance of estimator from sklearn
         MiniBatchKMeans or AgglomerativeClustering.
 
-    method: str,
+    method : str,
     {'kmeans', 'ward', 'complete', 'average', 'rena', 'hierarchical_kmeans'},
     optional
 
@@ -213,9 +213,10 @@ class Parcellations(_MultiPCA):
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     scaling : :obj:`bool`, default=False
         Used only when the method selected is 'rena'. If scaling is True, each
@@ -441,7 +442,9 @@ class Parcellations(_MultiPCA):
             warnings.warn(
                 message=n_parcels_warning, category=UserWarning, stacklevel=3
             )
-        self.labels_img_ = self.masker_.inverse_transform(labels)
+        self.labels_img_ = self.masker_.inverse_transform(
+            labels.astype(np.int32)
+        )
 
         return self
 

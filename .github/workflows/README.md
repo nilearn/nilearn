@@ -1,14 +1,5 @@
 # GitHub Actions Specification
 
-## Skip CI
-
-You can decide to skip CI at any time by including the tag "[skip ci]" in your commit message.
-For more information, see: https://docs.github.com/en/actions/managing-workflow-runs/skipping-workflow-runs
-
-```bash
-$ git commit -m "[skip ci] commit message"
-```
-
 ## Automatically assign issue
 
 ### assign.yml
@@ -27,7 +18,7 @@ Automatically comments on a newly open pull request to provide some guidelines, 
 
 #### Full and partial doc builds
 
-This workflow configuration is based on what is done in [scikit-learn](https://github.com/scikit-learn/scikit-learn).
+This original workflow derived from on what is done in [scikit-learn](https://github.com/scikit-learn/scikit-learn).
 
 On Pull Requests, Actions run "partial builds" by default which render all the rst files,
 but only build examples modified in the Pull Request.
@@ -55,7 +46,7 @@ $ git commit -m "[example] plot_nilearn_101.py"
 
 However for quick checks to do yourself you should always opt for local builds following the instructions here: [building-documentation](https://nilearn.github.io/stable/development.html#building-documentation).
 
-Note: setuptools needs to be installed to run the doc build with python 3.12.
+Note: setuptools needs to be installed to run the doc build with python >=3.12.
 
 Upon a successful build of the doc, it is zipped and uploaded as an artifact.
 A circle-ci workflow is then triggered. See below.
@@ -104,7 +95,7 @@ Pings github API to collect information about:
 - how long each run of the test suite lasted,
 - how long the build of the doc lasted.
 
-Plots the results and saves it as an artefact to download and manually inspect
+Plots the results and saves it as an artifact to download and manually inspect
 to see if there is a trend in tests taking longer.
 
 ## Style checks
@@ -136,15 +127,9 @@ using this issue [template](../nightly_failure.md).
 
 Tries to install Nilearn from wheel & check installation on all operating systems.
 
-### detect_test_pollution.yml
-
-Runs once a month.
-Use pytest with the pytest-random-order plugin to run all tests in a random order.
-This aims to detect tests that are not properly isolated from each other (test pollution).
-
 ### testing_minimum.yml
 
-Runs once a month.
+This workflow is triggered when a new commit is pushed to the main branch (or when a pull request is merged) and is also automatically run once a month.
 
 Checks that installing the minimum version of a given dependency of Nilearn
 along with the latest version of all the other dependencies leads to a successful run of all the tests.
