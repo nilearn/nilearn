@@ -281,10 +281,9 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     if spacing is None:
         spacing = np.asarray((1.0,) * 3)
     elif len(spacing) == len(dims):
-        if len(spacing) == 2:  # Need a dummy spacing for singleton 3rd dim
-            spacing = np.r_[spacing, 1.0]
-        else:  # Convert to array
-            spacing = np.asarray(spacing)
+        spacing = (
+            np.r_[spacing, 1.0] if len(spacing) == 2 else np.asarray(spacing)
+        )
     else:
         raise ValueError(
             "Input argument `spacing` incorrect, should be an "
