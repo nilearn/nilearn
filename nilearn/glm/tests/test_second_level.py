@@ -27,7 +27,6 @@ from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.glm.second_level.second_level import (
     _check_confounds,
-    _check_design_matrix,
     _check_first_level_contrast,
     _check_input_as_first_level_model,
     _check_n_rows_desmat_vs_n_effect_maps,
@@ -430,15 +429,6 @@ def test_check_output_type():
         _check_output_type("foo", [str, int, float])
 
 
-def test_check_design_matrix():
-    _check_design_matrix(None)  # Should not do anything
-    _check_design_matrix(pd.DataFrame())
-    with pytest.raises(
-        ValueError, match="design matrix must be a pandas DataFrame"
-    ):
-        _check_design_matrix("foo")
-
-
 def test_check_confounds():
     _check_confounds(None)  # Should not do anything
     with pytest.raises(
@@ -787,8 +777,6 @@ def test_secondlevelmodel_fit_inputs_errors(
     func_img = load(FUNCFILE)
     n_samples = func_img.shape[-1]
     des = pd.DataFrame(np.ones((n_samples, 1)), columns=["a"])
-    des_fname = str(tmp_path / "design.csv")
-    des.to_csv(des_fname)
 
     # prepare correct input first level models
     flm = FirstLevelModel(subject_label="01").fit(
@@ -817,11 +805,53 @@ def test_secondlevelmodel_fit_inputs_errors(
         SecondLevelModel().fit(
             second_level_input=flms, confounds=confounds["conf1"]
         )
-    with pytest.raises(
-        ValueError, match="design matrix must be a pandas DataFrame"
-    ):
+
+
+def test_secondlevelmodel_design_matrix_path(img_3d_mni, tmp_path):
+    second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
+    des = pd.DataFrame(np.ones((len(second_level_input), 1)), columns=["a"])
+
+    SecondLevelModel().fit(
+        second_level_input=second_level_input, design_matrix=des
+    )
+
+    des_fname = tmp_path / "design.csv"
+    des.to_csv(des_fname)
+
+    SecondLevelModel().fit(
+        second_level_input=second_level_input, design_matrix=des_fname
+    )
+    SecondLevelModel().fit(
+        second_level_input=second_level_input, design_matrix=str(des_fname)
+    )
+
+    des_fname = tmp_path / "design.tsv"
+    des.to_csv(des_fname, sep="\t")
+
+    SecondLevelModel().fit(
+        second_level_input=second_level_input, design_matrix=des_fname
+    )
+    SecondLevelModel().fit(
+        second_level_input=second_level_input, design_matrix=str(des_fname)
+    )
+
+
+@pytest.mark.parametrize("design_matrix", ["foo", Path("foo")])
+def test_secondlevelmodel_design_matrix_error_path(img_3d_mni, design_matrix):
+    second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
+    with pytest.raises(ValueError, match="table path foo could not be loaded"):
         SecondLevelModel().fit(
-            second_level_input=flms, confounds=None, design_matrix=[]
+            second_level_input=second_level_input, design_matrix=design_matrix
+        )
+
+
+@pytest.mark.parametrize("design_matrix", [1, ["foo"]])
+def test_secondlevelmodel_design_matrix_error_type(img_3d_mni, design_matrix):
+    second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
+
+    with pytest.raises(TypeError, match="'design_matrix' must be "):
+        SecondLevelModel().fit(
+            second_level_input=second_level_input, design_matrix=design_matrix
         )
 
 
