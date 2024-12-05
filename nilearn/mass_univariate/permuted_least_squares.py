@@ -947,7 +947,7 @@ def _make_array_contiguous(array):
 def _compute_t_stat_threshold(
     threshold, two_sided_test, tested_vars, confounding_vars
 ):
-    """Compute t-stat threshold if needed based degrees of freedom."""
+    """Compute t-stat threshold if needed based on degrees of freedom."""
     if threshold is None:
         return None
     n_samples, n_regressors = tested_vars.shape
