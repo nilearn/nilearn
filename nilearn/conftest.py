@@ -455,7 +455,7 @@ def surf_img_1d():
     """
     img = _make_surface_img(n_samples=1)
     img.data.parts["left"] = np.squeeze(img.data.parts["left"])
-    img.data.parts["riht"] = np.squeeze(img.data.parts["riht"])
+    img.data.parts["right"] = np.squeeze(img.data.parts["right"])
     return img
 
 
