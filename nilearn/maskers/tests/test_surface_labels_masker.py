@@ -370,7 +370,7 @@ def test_surface_label_masker_inverse_transform(surf_label_img, surf_img_1d):
     masker = masker.fit()
     signal = masker.transform(surf_img_1d)
     img = masker.inverse_transform(signal)
-    assert img.shape == surf_img_1d.shape
+    assert img.shape == (surf_img_1d.shape[0], 1)
 
 
 def test_surface_label_masker_transform_list_surf_images(

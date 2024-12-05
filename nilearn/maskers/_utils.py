@@ -4,6 +4,7 @@ import numpy as np
 
 from nilearn import image
 from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import surface_at_least_2d
 
 
 def _check_dims(imgs):
@@ -113,8 +114,9 @@ def concatenate_surface_images(imgs):
     if len(imgs) == 1:
         return imgs[0]
 
-    for img in imgs:
+    for i, img in enumerate(imgs):
         check_same_n_vertices(img.mesh, imgs[0].mesh)
+        imgs[i] = surface_at_least_2d(img)
 
     output_data = {}
     for part in imgs[0].data.parts:
