@@ -333,7 +333,7 @@ def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     )
     FirstLevelModel(mask_img=mask).fit(func_img[0], design_matrices=des[0])
     FirstLevelModel(mask_img=mask).fit(
-        func_img[0], design_matrices=[pd.read_csv(des[0])]
+        func_img[0], design_matrices=[pd.read_csv(des[0], sep="\t")]
     )
     FirstLevelModel(mask_img=mask).fit(
         func_img[0], design_matrices=[Path(des[0])]

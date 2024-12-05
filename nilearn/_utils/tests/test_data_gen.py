@@ -583,9 +583,9 @@ def test_generate_fake_fmri_error(rng):
 @pytest.mark.parametrize(
     "shapes", [[(2, 3, 5, 7)], [(5, 5, 5, 3), (5, 5, 5, 5)]]
 )
-@pytest.mark.parametrize("rk", [1, 3])
+@pytest.mark.parametrize("rk", [1, 2])
 @pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
-def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
+def test_fake_fmri_data_and_design_generate(shapes, rk, affine):
     # test generate
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk, affine=affine, random_state=42
@@ -600,7 +600,16 @@ def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
     for design, shape in zip(design_matrices, shapes):
         assert design.shape == (shape[3], rk)
 
-    # test write
+
+@pytest.mark.parametrize(
+    "shapes", [[(2, 3, 5, 7)], [(5, 5, 5, 3), (5, 5, 5, 5)]]
+)
+@pytest.mark.parametrize("rk", [1, 2])
+@pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
+def test_fake_fmri_data_and_design_write(tmp_path, shapes, rk, affine):
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rk, affine=affine, random_state=42
+    )
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
         shapes, rk=rk, affine=affine, random_state=42, file_path=tmp_path
     )
