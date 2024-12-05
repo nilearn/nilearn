@@ -37,7 +37,7 @@ print(
 # Region signals extraction
 # -------------------------
 # To extract regions time series, we instantiate a
-# :class:`nilearn.maskers.NiftiMapsMasker` object and pass the atlas the
+# :class:`~nilearn.maskers.NiftiMapsMasker` object and pass the atlas the
 # file name to it, as well as filtering band-width and detrending option.
 from nilearn.maskers import NiftiMapsMasker
 
@@ -77,7 +77,7 @@ print(f"Data has {len(children)} children.")
 # -----------------------------------
 # The simpler and most commonly used kind of connectivity is correlation. It
 # models the full (marginal) connectivity between pairwise ROIs. We can
-# estimate it using :class:`nilearn.connectome.ConnectivityMeasure`.
+# estimate it using :class:`~nilearn.connectome.ConnectivityMeasure`.
 from nilearn.connectome import ConnectivityMeasure
 
 correlation_measure = ConnectivityMeasure(

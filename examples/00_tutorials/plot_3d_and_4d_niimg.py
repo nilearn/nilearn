@@ -126,7 +126,7 @@ plotting.show()
 # given in the documentation section: :ref:`loading_data`.
 #
 # Functions accept either 3D or 4D images, and we need to use on the one
-# hand :func:`nilearn.image.index_img` or :func:`nilearn.image.iter_img`
+# hand :func:`~nilearn.image.index_img` or :func:`~nilearn.image.iter_img`
 # to break down 4D images into 3D images, and on the other hand
-# :func:`nilearn.image.concat_imgs` to group a list of 3D images into a 4D
+# :func:`~nilearn.image.concat_imgs` to group a list of 3D images into a 4D
 # image.

@@ -54,7 +54,7 @@ print(confound_filename)
 pcc_coords = [(0, -52, 18)]
 
 # %%
-# We use :class:`nilearn.maskers.NiftiSpheresMasker` to extract the
+# We use :class:`~nilearn.maskers.NiftiSpheresMasker` to extract the
 # **time series from the functional imaging within the sphere**. The
 # sphere is centered at pcc_coords and will have the radius we pass the
 # NiftiSpheresMasker function (here 8 mm).
@@ -87,7 +87,7 @@ seed_time_series = seed_masker.fit_transform(
 
 # %%
 # Next, we can proceed similarly for the **brain-wide voxel-wise time
-# series**, using :class:`nilearn.maskers.NiftiMasker` with the same input
+# series**, using :class:`~nilearn.maskers.NiftiMasker` with the same input
 # arguments as in the seed_masker in addition to smoothing with a 6 mm kernel
 from nilearn.maskers import NiftiMasker
 

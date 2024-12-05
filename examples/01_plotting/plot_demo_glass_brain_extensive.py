@@ -13,7 +13,7 @@ See :ref:`plotting` for more plotting functionalities and
 :ref:`Section 4.3 <display_modules>` for more details about display objects
 in Nilearn.
 
-Also, see :func:`nilearn.datasets.fetch_neurovault_motor_task` for details
+Also, see :func:`~nilearn.datasets.fetch_neurovault_motor_task` for details
 about the plotting data and associated meta-data.
 """
 
