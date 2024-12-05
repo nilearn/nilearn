@@ -1213,11 +1213,7 @@ class PolyData:
         if len(parts) == 1:
             return
 
-        if len(parts["left"].shape) != len(parts["right"].shape) or (
-            len(parts["left"].shape) > 1
-            and len(parts["right"].shape) > 1
-            and parts["left"].shape[-1] != parts["right"].shape[-1]
-        ):
+        if len(parts["left"].shape) != len(parts["right"].shape):
             raise ValueError(
                 f"Data arrays for keys 'left' and 'right' "
                 "have incompatible shapes: "
