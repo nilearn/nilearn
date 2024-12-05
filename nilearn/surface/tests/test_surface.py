@@ -731,6 +731,14 @@ def test_data_to_gifti(rng, tmp_path, dtype):
     load(tmp_path / "data.gii")
 
 
+@pytest.mark.parametrize("dtype", [np.complex64, np.complex128])
+def test_data_to_gifti_unsupported_dtype(rng, tmp_path, dtype):
+    """Check saving unsupported data type raises an error."""
+    data = rng.random((5, 6)).astype(dtype)
+    with pytest.raises(ValueError, match="supports uint8, int32 and float32"):
+        _data_to_gifti(data=data, gifti_file=tmp_path / "data.gii")
+
+
 @pytest.mark.parametrize("shape", [(5,), (5, 1), (5, 2)])
 def test_polydata_shape(shape):
     data = PolyData(left=np.ones(shape), right=np.ones(shape))
