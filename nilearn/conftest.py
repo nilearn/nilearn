@@ -442,8 +442,6 @@ def surf_img():
                 np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
             ) * 10**i
             data[key] = data_part.T
-            if n_samples == 1:
-                data[key] = data[key].squeeze()
         return SurfaceImage(mesh, data)
 
     return _make_surface_img
