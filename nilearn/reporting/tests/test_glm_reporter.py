@@ -20,8 +20,9 @@ from nilearn.reporting import make_glm_report
 @pytest.fixture()
 def flm(tmp_path):
     """Generate first level model."""
+    shapes, rk = ((7, 7, 7, 5),), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
-        shapes=((7, 7, 7, 5),), rk=3, file_path=tmp_path
+        shapes, rk, file_path=tmp_path
     )
     return FirstLevelModel(mask_img=mask).fit(
         fmri_data, design_matrices=design_matrices
@@ -275,8 +276,9 @@ def test_masking_first_level_model(tmp_path):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
     """
+    shapes, rk = ((7, 7, 7, 5),), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
-        shapes=((7, 7, 7, 5),), rk=3, file_path=tmp_path
+        shapes, rk, file_path=tmp_path
     )
     masker = NiftiMasker(mask_img=mask)
     masker.fit(fmri_data)
