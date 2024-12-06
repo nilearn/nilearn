@@ -1243,17 +1243,17 @@ def test_decoder_decision_function_raises_value_error(
 
 
 @pytest.fixture()
-def _make_surface_class_data(rng, surf_img, shape=50):
+def _make_surface_class_data(rng, surf_img_2d, shape=50):
     """Create a surface image classification for testing."""
     y = rng.choice([0, 1], size=shape)
-    return surf_img(shape), y
+    return surf_img_2d(shape), y
 
 
 @pytest.fixture()
-def _make_surface_reg_data(rng, surf_img, shape=50):
+def _make_surface_reg_data(rng, surf_img_2d, shape=50):
     """Create a surface image regression for testing."""
     y = rng.random(shape)
-    return surf_img(shape), y
+    return surf_img_2d(shape), y
 
 
 @pytest.mark.filterwarnings("ignore:Overriding provided")

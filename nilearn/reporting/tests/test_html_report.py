@@ -622,11 +622,11 @@ def test_surface_masker_minimal_report_no_fit(surf_mask, empty_mask, reports):
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("empty_mask", [True, False])
 def test_surface_masker_minimal_report_fit(
-    surf_mask, empty_mask, surf_img, reports
+    surf_mask, empty_mask, surf_img_1d, reports
 ):
     """Test minimal report generation with fit."""
     masker = SurfaceMasker(surf_mask(empty=empty_mask), reports=reports)
-    masker.fit_transform(surf_img())
+    masker.fit_transform(surf_img_1d)
     report = masker.generate_report()
 
     _check_html(report)
@@ -636,10 +636,10 @@ def test_surface_masker_minimal_report_fit(
         assert 'src="data:image/svg+xml;base64,"' in str(report)
 
 
-def test_surface_masker_report_no_report(surf_img):
+def test_surface_masker_report_no_report(surf_img_1d):
     """Check content of no report."""
     masker = SurfaceMasker(reports=False)
-    masker.fit_transform(surf_img())
+    masker.fit_transform(surf_img_1d)
     report = masker.generate_report()
 
     _check_html(report)
@@ -659,11 +659,11 @@ def test_surface_label_masker_report_unfitted(
     assert "Make sure to run `fit`" in str(report)
 
 
-def test_surface_label_masker_report(surf_label_img, surf_img, tmp_path):
+def test_surface_label_masker_report(surf_label_img, surf_img_1d, tmp_path):
     """Test that a report can be generated and saved as html."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
     masker = masker.fit()
-    masker.transform(surf_img())
+    masker.transform(surf_img_1d)
     report = masker.generate_report()
     report.save_as_html(tmp_path / "surface_label_masker.html")
 

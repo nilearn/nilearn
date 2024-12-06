@@ -145,13 +145,13 @@ def test_hierarchical_k_means_clustering():
 
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
 def test_hierarchical_k_means_clustering_surface(
-    surf_img, surf_mask, n_clusters
+    surf_img_2d, surf_mask, n_clusters
 ):
     """Test hierarchical k-means clustering on surface."""
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
     # mask the surface image with 50 samples
-    X = masker.transform(surf_img(50)).T
+    X = masker.transform(surf_img_2d(50)).T
     # instantiate HierarchicalKMeans with n_clusters
     clustering = HierarchicalKMeans(n_clusters=n_clusters)
     # fit and transform the data
