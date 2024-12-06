@@ -741,10 +741,7 @@ def compute_multi_brain_mask(
         )
 
     # Check images in the list have the same FOV without loading them in memory
-    imgs_generator = _utils.check_niimg(target_imgs, return_iterator=True)
-    for _ in imgs_generator:
-        pass
-
+    _ = (x for x in _utils.check_niimg(target_imgs, return_iterator=True))
     mask = compute_brain_mask(
         target_imgs[0],
         threshold=threshold,
