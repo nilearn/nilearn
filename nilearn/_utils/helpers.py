@@ -6,7 +6,7 @@ import warnings
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
 
-def _set_mpl_backend(warning):
+def _set_mpl_backend(message):
     """Check if matplotlib is installed.
 
     If not installed, raise error and display warning to install necessary
@@ -20,15 +20,15 @@ def _set_mpl_backend(warning):
 
     Parameters
     ----------
-    warning: str
-        Warning to display to the user if matplotlib is not installed or the
-    installed version is not supported.
+    message: str
+        Warning message to display to the user if matplotlib is not installed
+    or the installed version is not supported.
     """
     # We are doing local imports here to avoid polluting our namespace
     try:
         import matplotlib
     except ImportError:
-        warnings.warn(warning)
+        warnings.warn(message)
         raise
     else:
         # When matplotlib was successfully imported we need to check
