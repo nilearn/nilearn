@@ -87,6 +87,34 @@ def test_surface_maps_masker_inverse_transform_shape(
     assert X_inverse_transformed.shape == surf_img(50).shape
 
 
+def test_surface_maps_masker_inverse_transform_actual_output(surf_mesh, rng):
+    """Test that inverse_transform returns the expected output."""
+    # create a maps_img with 9 vertices and 2 regions
+    A = rng.random((9, 2))
+    maps_data = {"left": A[:4, :], "right": A[4:, :]}
+    surf_maps_img = SurfaceImage(surf_mesh(), maps_data)
+
+    # random region signals x
+    expected_region_signals = rng.random((50, 2))
+
+    # create an img with 9 vertices and 50 timepoints as B = A @ x
+    B = np.dot(A, expected_region_signals.T)
+    img_data = {"left": B[:4, :], "right": B[4:, :]}
+    surf_img = SurfaceImage(surf_mesh(), img_data)
+
+    # get the region signals x using the SurfaceMapsMasker
+    masker = SurfaceMapsMasker(surf_maps_img).fit()
+    region_signals = masker.fit_transform(surf_img)
+    X_inverse_transformed = masker.inverse_transform(region_signals)
+
+    assert np.allclose(
+        X_inverse_transformed.data.parts["left"], img_data["left"]
+    )
+    assert np.allclose(
+        X_inverse_transformed.data.parts["right"], img_data["right"]
+    )
+
+
 def test_surface_maps_masker_inverse_transform_wrong_region_signals_shape(
     surf_maps_img, surf_img
 ):

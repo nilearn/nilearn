@@ -408,7 +408,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 : self.maps_img.data.parts["left"].shape[0], :
             ],
             "right": vertex_signals[
-                : self.maps_img.data.parts["right"].shape[0], :
+                self.maps_img.data.parts["left"].shape[0] :, :
             ],
         }
 
