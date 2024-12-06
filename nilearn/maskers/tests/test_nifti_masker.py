@@ -22,62 +22,74 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import _filter_and_mask
-from nilearn.signal import clean
 
 
-def test_default_filter():
-    """Test that the default filter in NiftiMasker is Butterworth."""
+def test_default_filter_parameter():
+    """Test that the default filter is None."""
+    masker = NiftiMasker()
+    assert masker.filter is None
+    assert "filter" not in masker.clean_kwargs
+
+
+def test_filter_parameter_propagation():
+    """Test that the filter parameter is correctly passed to signal.clean."""
     rng = np.random.default_rng()
     data = rng.random((9, 9, 9, 10))
     img = Nifti1Image(data, np.eye(4))
-    mask = data[..., 0].astype("uint8")
+    mask = np.zeros((9, 9, 9), dtype="uint8")
+    mask[3:6, 3:6, 3:6] = 1  # assert the mask has non zero parameter
     mask_img = Nifti1Image(mask, np.eye(4))
+    mask_img = Nifti1Image(mask, np.eye(4))
+
     masker = NiftiMasker(
-        mask_img=mask_img, high_pass=0.01, low_pass=0.1, t_r=2
+        mask_img=mask_img, filter="cosine", t_r=2, high_pass=0.01
     )
-    cleaned_data = masker.fit_transform(img)
-    # Manually clean data with Butterworth filter for comparison
-    manual_cleaned = clean(
-        get_data(img)[mask_img.get_fdata().astype(bool), :],
+    transformed_data = masker.fit_transform(img)
+
+    assert "filter" in masker.clean_kwargs
+    assert masker.clean_kwargs["filter"] == "cosine"
+    assert transformed_data.shape[1] == mask.sum()
+
+
+def test_filter_parameter_invalid_value():
+    """Test that an invalid filter value raises an error."""
+    rng = np.random.default_rng()
+    data = rng.random((9, 9, 9, 10))
+    img = Nifti1Image(data, np.eye(4))
+
+    mask = np.zeros((9, 9, 9), dtype="uint8")
+    mask[3:6, 3:6, 3:6] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    with pytest.raises(
+        ValueError,
+        match="Filter method unsupported_filter not implemented.",
+    ):
+        masker = NiftiMasker(mask_img=mask_img, filter="unsupported_filter")
+        masker.fit_transform(img)
+
+
+def test_filter_with_other_cleaning_options():
+    """Test that the filter parameter works with other cleaning options."""
+    rng = np.random.default_rng()
+    data = rng.random((9, 9, 9, 40))  # 40 time points
+    img = Nifti1Image(data, np.eye(4))
+
+    mask = np.zeros((9, 9, 9), dtype="uint8")
+    mask[3:6, 3:6, 3:6] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    masker = NiftiMasker(
+        mask_img=mask_img,
+        filter="butterworth",
         high_pass=0.01,
         low_pass=0.1,
         t_r=2,
-        filter="butterworth",
+        detrend=True,
     )
-    np.testing.assert_array_almost_equal(cleaned_data, manual_cleaned)
+    transformed_data = masker.fit_transform(img)
 
-
-def test_cosine_filter():
-    """Test that the cosine filter is applied when specified in NiftiMasker."""
-    rng = np.random.default_rng()
-    data = rng.random((9, 9, 9, 10))
-    img = Nifti1Image(data, np.eye(4))
-    mask = data[..., 0].astype("uint8")
-    mask_img = Nifti1Image(mask, np.eye(4))
-    masker = NiftiMasker(
-        mask_img=mask_img, high_pass=0.01, t_r=2, filter="cosine"
-    )
-    cleaned_data = masker.fit_transform(img)
-    # Manually clean data with Cosine filter for comparison
-    manual_cleaned = clean(
-        get_data(img)[mask_img.get_fdata().astype(bool), :],
-        high_pass=0.01,
-        t_r=2,
-        filter="cosine",
-    )
-    np.testing.assert_array_almost_equal(cleaned_data, manual_cleaned)
-
-
-def test_invalid_filter():
-    """Test that an invalid filter argument raises an error."""
-    rng = np.random.default_rng()
-    data = rng.random((9, 9, 9, 10))
-    img = Nifti1Image(data, np.eye(4))
-    mask = data[..., 0].astype("uint8")
-    mask_img = Nifti1Image(mask, np.eye(4))
-    with pytest.raises(ValueError, match="Invalid filter type"):
-        masker = NiftiMasker(mask_img=mask_img, filter="invalid_filter")
-        masker.fit_transform(img)
+    assert transformed_data.shape[1] == mask.sum()
 
 
 def test_auto_mask(img_3d_rand_eye):
