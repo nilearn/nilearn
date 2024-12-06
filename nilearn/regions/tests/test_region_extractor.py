@@ -53,10 +53,6 @@ def labels_img():
 
 @pytest.fixture
 def maps(window, negative_regions):
-    if window is None:
-        window = "boxcar"
-    if negative_regions is None:
-        negative_regions = False
     return generate_maps(
         shape=MAP_SHAPE,
         n_regions=N_REGIONS,
