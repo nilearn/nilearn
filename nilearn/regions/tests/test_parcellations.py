@@ -245,7 +245,7 @@ def test_fit_transform(method, n_parcel, test_image_2):
 
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_fit_transform_with_condounds(method, n_parcel, test_image_2, rng):
+def test_fit_transform_with_confounds(method, n_parcel, test_image_2, rng):
     fmri_imgs = [test_image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds] * 3
@@ -313,27 +313,24 @@ def test_transform_3d_input_images(affine_eye):
     assert X.shape == (1, 20)
 
 
-@pytest.mark.parametrize("mask_as", ["surface_image", "surface_masker", None])
 @pytest.mark.parametrize("method", METHODS)
-def test_parcellation_not_implemented_with_surface(
-    surf_img, surf_mask, mask_as, method, n_parcels=2
+@pytest.mark.parametrize("n_parcels", [2, 4, 5])
+def test_parcellation_all_methods_with_surface(
+    surf_img, surf_mask, method, n_parcels
 ):
-    """Raise NotImplementedError for surface data."""
+    """Test if all parcellation methods work on surface."""
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
-    with pytest.raises(NotImplementedError):
-        # if mask_as is surface_image, directly pass surf_mask
-        if mask_as == "surface_image":
-            parcellate = Parcellations(
-                method=method, n_parcels=n_parcels, mask=surf_mask()
-            )
-        # if mask_as is surface_masker, pass masker
-        elif mask_as == "surface_masker":
-            parcellate = Parcellations(
-                method=method, n_parcels=n_parcels, mask=masker
-            )
-        # if mask_as is None, do not pass mask (default mask is None)
-        # but would raise error if when we fit_transform on surface images
-        else:
-            parcellate = Parcellations(method=method, n_parcels=n_parcels)
-        parcellate.fit_transform(surf_img(50))
+    # mask the surface image
+    X = masker.transform(surf_img(50))
+    parcellate = Parcellations(method=method, n_parcels=n_parcels, mask=masker)
+    # fit and transform the data
+    X_transformed = parcellate.fit_transform(surf_img(50))
+    # inverse transform the transformed data
+    X_inverse = parcellate.inverse_transform(X_transformed)
+
+    # make sure the n_features in transformed data were reduced to n_clusters
+    assert X_transformed.shape[1] == n_parcels
+
+    # make sure the inverse transformed data has the same shape as the original
+    assert X_inverse.shape == X.shape
