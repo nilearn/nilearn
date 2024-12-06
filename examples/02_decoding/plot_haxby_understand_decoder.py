@@ -292,7 +292,7 @@ for klass in range(n_labels):
 
 # %%
 # Decode via the :class:`~nilearn.decoding.Decoder`
-# ------------------------------------------------
+# -------------------------------------------------
 #
 # All these steps can be done in a few lines and made faster via parallel
 # processing using the ``n_jobs`` parameter in
