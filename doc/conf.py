@@ -183,6 +183,7 @@ linkcheck_ignore = [
     "https://pages.saclay.inria.fr/bertrand.thirion/",
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
     "http://brainomics.cea.fr/localizer/",
+    "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
     # those are needed because figure cannot take sphinx gallery reference
     # as target
     r"../auto_examples/.*html",
