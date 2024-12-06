@@ -106,7 +106,7 @@ def test_surface_label_masker_transform(
     assert signal.shape == (n_timepoints, n_labels)
 
 
-def test_surface_label_masker_check_output(surf_mesh, rng):
+def test_surface_label_masker_check_output_1d(surf_mesh, rng):
     """Check actual content of the transform and inverse_transform.
 
     - Use a label mask with more than one label.
@@ -149,8 +149,8 @@ def test_surface_label_masker_check_output(surf_mesh, rng):
             ]
         ),
     }
-    surf_img_2d = SurfaceImage(surf_mesh(), data)
-    signal = masker.transform(surf_img_2d)
+    surf_img_1d = SurfaceImage(surf_mesh(), data)
+    signal = masker.transform(surf_img_1d)
 
     assert signal.shape == (1, masker.n_elements_)
 
@@ -169,7 +169,7 @@ def test_surface_label_masker_check_output(surf_mesh, rng):
 
     # also check the output of inverse_transform
     img = masker.inverse_transform(signal)
-    assert img.shape[0] == surf_img_2d.shape[0]
+    assert img.shape[0] == surf_img_1d.shape[0]
     # expected inverse data is the same as the input data
     # but with the random value replaced by zeros
     expected_inverse_data = {
@@ -200,7 +200,7 @@ def test_surface_label_masker_check_output(surf_mesh, rng):
     assert_array_equal(img.data.parts["right"], expected_inverse_data["right"])
 
 
-def test_surface_label_masker_check_output_with_timepoints(surf_mesh, rng):
+def test_surface_label_masker_check_output_2d(surf_mesh, rng):
     """Check actual content of the transform and inverse_transform when
     we have multiple timepoints.
 
@@ -392,10 +392,6 @@ def test_surface_label_masker_inverse_transform_list_surf_images(
     signals = masker.transform([surf_img_2d(3), surf_img_2d(4)])
     img = masker.inverse_transform(signals)
     assert img.shape == (surf_label_img.mesh.n_vertices, 7)
-
-
-def test_surface_label_masker_list_inverse_transform_output(surf_mesh):
-    """Test inverse_transform output is as expected."""
 
 
 @pytest.mark.skipif(
