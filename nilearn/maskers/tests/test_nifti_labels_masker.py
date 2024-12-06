@@ -742,7 +742,7 @@ def test_warning_n_labels_not_equal_n_regions(
         NiftiLabelsMasker(
             labels_img,
             labels=region_names,
-        )
+        ).fit()
 
 
 def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
@@ -751,18 +751,21 @@ def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
         affine=affine_eye,
         n_regions=n_regions,
     )
-    with pytest.warns(UserWarning, match="'labels' must be a list."):
+    with pytest.warns(
+        UserWarning,
+        match="Expected a path to a tsv file containing 'index' and",
+    ):
         NiftiLabelsMasker(
             labels_img,
             labels="foo",
-        )
+        ).fit()
     with pytest.warns(
         UserWarning, match="All elements of 'labels' must be a string"
     ):
         NiftiLabelsMasker(
             labels_img,
             labels=[1, 2, 3],
-        )
+        ).fit()
 
 
 @pytest.mark.parametrize(
