@@ -21,7 +21,9 @@ from nilearn.surface import SurfaceImage
 
 
 @fill_doc
-class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class SurfaceLabelsMasker(
+    TransformerMixin, CacheMixin, BaseEstimator, auto_wrap_output_keys=None
+):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
     .. versionadded:: 0.11.0

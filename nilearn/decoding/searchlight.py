@@ -237,7 +237,7 @@ def _group_iter_search_light(
 # Class for search_light #####################################################
 ##############################################################################
 @fill_doc
-class SearchLight(TransformerMixin, BaseEstimator):
+class SearchLight(TransformerMixin, BaseEstimator, auto_wrap_output_keys=None):
     """Implement search_light analysis using an arbitrary type of classifier.
 
     Parameters

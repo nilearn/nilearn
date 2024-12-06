@@ -23,7 +23,9 @@ from nilearn.surface import SurfaceImage
 
 
 @fill_doc
-class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class SurfaceMasker(
+    TransformerMixin, CacheMixin, BaseEstimator, auto_wrap_output_keys=None
+):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
     .. versionadded:: 0.11.0

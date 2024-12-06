@@ -4,7 +4,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from nilearn._utils import CacheMixin
 
 
-class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
+class BaseGLM(
+    TransformerMixin, CacheMixin, BaseEstimator, auto_wrap_output_keys=None
+):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
     """

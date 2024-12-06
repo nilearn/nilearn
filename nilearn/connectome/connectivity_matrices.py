@@ -370,7 +370,9 @@ def prec_to_partial(precision):
 
 
 @fill_doc
-class ConnectivityMeasure(BaseEstimator, TransformerMixin):
+class ConnectivityMeasure(
+    TransformerMixin, BaseEstimator, auto_wrap_output_keys=None
+):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 
