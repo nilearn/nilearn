@@ -25,11 +25,6 @@ MAP_SHAPE = (30, 30, 30)
 
 
 @pytest.fixture
-def window():
-    return "boxcar"
-
-
-@pytest.fixture
 def negative_regions():
     return False
 
@@ -52,12 +47,11 @@ def labels_img():
 
 
 @pytest.fixture
-def maps(window, negative_regions):
+def maps(negative_regions):
     return generate_maps(
         shape=MAP_SHAPE,
         n_regions=N_REGIONS,
         random_state=42,
-        window=window,
         negative_regions=negative_regions,
     )[0]
 
@@ -242,7 +236,6 @@ def test_region_extractor_strategy_ratio_n_voxels(maps):
     assert extract_ratio.regions_img_.shape[-1] >= N_REGIONS
 
 
-@pytest.mark.parametrize("window", ["taylor"])
 @pytest.mark.parametrize("negative_regions", [True])
 def test_region_extractor_two_sided(maps):
     threshold = 0.4
