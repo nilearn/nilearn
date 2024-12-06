@@ -3,7 +3,7 @@ import operator
 import os
 import warnings
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
+OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.5.0"
 
 
 def _set_mpl_backend():
