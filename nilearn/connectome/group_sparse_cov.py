@@ -451,7 +451,7 @@ def _group_sparse_covariance(
         omega_old = abs(omega_old)
         max_norm = omega_old.max()
 
-        tolerance_reached = _check_if_tolearance_reached(
+        tolerance_reached = _check_if_tolerance_reached(
             tol, max_norm, verbose, n
         )
         if tolerance_reached:
@@ -521,7 +521,7 @@ def _update_w_and_w_inv(omega, debug, W, W_inv, n_subjects, p, h, v):
             )
 
 
-def _check_if_tolearance_reached(tol, max_norm, verbose, n):
+def _check_if_tolerance_reached(tol, max_norm, verbose, n):
     tolerance_reached = tol is not None and max_norm < tol
     if tolerance_reached:
         logger.log(
