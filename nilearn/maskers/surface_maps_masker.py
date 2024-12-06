@@ -84,15 +84,9 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     Attributes
     ----------
-        maps_img_ : :obj:`~numpy.ndarray`
-            The maps image converted to a numpy array by concatenating the \
-            data of both hemispheres/parts.
-            shape: (n_vertices, n_regions)
-
-        mask_img_ : :obj:`~numpy.ndarray` or None
-            The mask image converted to a numpy array by concatenating the \
-            `mask_img` data of both hemispheres/parts.
-            shape: (n_vertices,)
+        maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
+            The same as the input `maps_img`, kept solely for consistency
+            across maskers.
 
         n_elements_ : :obj:`int`
             The number of regions in the maps image.
@@ -178,11 +172,9 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
         # check maps_img data is 2D
         check_surface_data_ndims(self.maps_img, 2, "maps_img")
+        self.maps_img_ = self.maps_img.copy()
 
-        self.maps_img_ = np.concatenate(
-            list(self.maps_img.data.parts.values()), axis=0
-        )
-        self.n_elements_ = self.maps_img_.shape[1]
+        self.n_elements_ = self.maps_img.shape[1]
 
         if self.mask_img is not None:
             logger.log(
@@ -191,11 +183,6 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
             check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
             check_surface_data_ndims(self.mask_img, 1, "mask_img")
-            self.mask_img_ = np.concatenate(
-                list(self.mask_img.data.parts.values()), axis=0
-            )
-        else:
-            self.mask_img_ = None
 
         return self
 
@@ -208,6 +195,25 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 f"It seems that {self.__class__.__name__} "
                 "has not been fitted."
             )
+
+    @property
+    def _get_concatenated_maps_and_mask(self):
+        """Return data from maps_img, mask_img concatenated over
+        hemispheres as numpy arrays.
+        """
+        concat_data = {}
+        for key, input_img in [
+            ("maps", self.maps_img),
+            ("mask", self.mask_img),
+        ]:
+            if input_img is not None:
+                concat_data[key] = np.concatenate(
+                    list(input_img.data.parts.values()), axis=0
+                )
+            else:
+                concat_data[key] = None
+
+        return concat_data["maps"], concat_data["mask"]
 
     def transform(self, img, confounds=None, sample_mask=None):
         """Extract signals from surface object.
@@ -250,10 +256,12 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # check img data is 2D
         check_surface_data_ndims(img, 2, "img")
         check_same_n_vertices(self.maps_img.mesh, img.mesh)
-        # concatenate data over hemispheres
         img_data = np.concatenate(
             list(img.data.parts.values()), axis=0
         ).astype(np.float32)
+
+        # get concatenated hemispheres/parts data from maps_img and mask_img
+        maps_data, mask_data = self._get_concatenated_maps_and_mask
 
         if self.smoothing_fwhm is not None:
             warnings.warn(
@@ -277,7 +285,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         # apply mask if provided
         # and then extract signal via least square regression
-        if self.mask_img_ is not None:
+        if mask_data is not None:
             region_signals = cache(
                 linalg.lstsq,
                 memory=self.memory,
@@ -285,8 +293,8 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 memory_level=self.memory_level,
                 shelve=self._shelving,
             )(
-                self.maps_img_[self.mask_img_.flatten(), :],
-                img_data[self.mask_img_.flatten(), :],
+                maps_data[mask_data.flatten(), :],
+                img_data[mask_data.flatten(), :],
             )[0].T
         # if no mask, directly extract signal
         else:
@@ -296,7 +304,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 func_memory_level=2,
                 memory_level=self.memory_level,
                 shelve=self._shelving,
-            )(self.maps_img_, img_data)[0].T
+            )(maps_data, img_data)[0].T
 
         # signal cleaning here
         region_signals = cache(
@@ -376,6 +384,9 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         self._check_fitted()
 
+        # get concatenated hemispheres/parts data from maps_img and mask_img
+        maps_data, mask_data = self._get_concatenated_maps_and_mask
+
         if region_signals.shape[1] != self.n_elements_:
             raise ValueError(
                 f"Expected {self.n_elements_} regions, "
@@ -383,7 +394,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
         logger.log("computing image from signals", verbose=self.verbose)
         # project region signals back to vertices
-        if self.mask_img_ is not None:
+        if mask_data is not None:
             # vertices that are not in the mask will have a signal of 0
             # so we initialize the vertex signals with 0
             # and shape (n_timepoints, n_vertices)
@@ -392,11 +403,11 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
             # dot product between (n_timepoints, n_regions) and
             # (n_regions, n_vertices)
-            vertex_signals[:, self.mask_img_.flatten()] = np.dot(
-                region_signals, self.maps_img_[self.mask_img_.flatten(), :].T
+            vertex_signals[:, mask_data.flatten()] = np.dot(
+                region_signals, maps_data[mask_data.flatten(), :].T
             )
         else:
-            vertex_signals = np.dot(region_signals, self.maps_img_.T)
+            vertex_signals = np.dot(region_signals, maps_data.T)
 
         # we need the data to be of shape (n_vertices, n_timepoints)
         # because the SurfaceImage object expects it
