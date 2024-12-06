@@ -73,10 +73,7 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     if isinstance(arr, (np.memmap, list, tuple)) or (
         isinstance(arr, np.ndarray) and copy
     ):
-        ret = np.array(arr, copy=True, dtype=dtype, order=order)
-    # if the order does not change and dtype does not change or
-    # bool to/from 1-byte dtype,
-    # no need to create a copy
+        return np.array(arr, copy=True, dtype=dtype, order=order)
     elif (
         (arr.itemsize == 1 and dtype in (bool, np.bool_))
         or (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1)
@@ -86,10 +83,9 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         or (order == "C" and arr.flags["C_CONTIGUOUS"])
         or order in ("K", "A", None)
     ):
-        ret = arr.view(dtype=dtype)
+        return arr.view(dtype=dtype)
     else:
-        ret = np.asarray(arr, dtype=dtype, order=order)
-    return ret
+        return np.asarray(arr, dtype=dtype, order=order)
 
 
 def csv_to_array(csv_path, delimiters=" \t,;", **kwargs):
