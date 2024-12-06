@@ -1574,7 +1574,8 @@ def _data_to_gifti(data, gifti_file):
         datatype = "NIFTI_TYPE_INT32"
     elif data.dtype == np.float32:
         datatype = "NIFTI_TYPE_FLOAT32"
-
+    else:
+        datatype = None
     darray = gifti.GiftiDataArray(data=data, datatype=datatype)
 
     gii = gifti.GiftiImage(darrays=[darray])
