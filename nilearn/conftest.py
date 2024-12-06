@@ -22,7 +22,11 @@ from nilearn.surface import (
     SurfaceImage,
 )
 
-collect_ignore = ["datasets/data/convert_templates.py"]
+collect_ignore = ["datasets/data/convert_templates.py"
+                  "reporting/glm_reporter.py",
+                  "reporting/html_report.py",
+                  "reporting/tests/test_glm_reporter.py",
+                  "reporting/tests/test_html_report.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
 
 if is_matplotlib_installed():
@@ -31,7 +35,6 @@ else:
     collect_ignore.extend(
         [
             "plotting",
-            "reporting",
         ]
     )
     matplotlib = None
