@@ -1411,9 +1411,7 @@ def test_plot_img_on_surf_surf_mesh(img_3d_mni):
         surf_mesh=fetch_surf_fsaverage(),
     )
     # regression test for: https://github.com/nilearn/nilearn/issues/4900
-    plot_img_on_surf(
-        img_3d_mni, threshold=3, alpha=.1
-    )
+    plot_img_on_surf(img_3d_mni, threshold=3, alpha=0.1)
 
 
 def test_plot_img_on_surf_with_invalid_orientation(img_3d_mni):
