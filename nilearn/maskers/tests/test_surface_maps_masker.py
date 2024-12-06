@@ -5,6 +5,37 @@ from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
 
 
+@pytest.fixture
+def surf_maps_img(surf_mesh, rng):
+    """Return a sample surface map image using the sample mesh.
+    Has 6 regions in total: 3 in both, 1 only in left and 2 only in right.
+    Later we multiply the data with random "probability" values to make it
+    more realistic.
+    """
+    data = {
+        "left": np.asarray(
+            [
+                [1, 1, 0, 1, 0, 0],
+                [0, 1, 1, 1, 0, 0],
+                [1, 0, 1, 1, 0, 0],
+                [1, 1, 1, 0, 0, 0],
+            ]
+        ),
+        "right": np.asarray(
+            [
+                [1, 0, 0, 0, 1, 1],
+                [1, 1, 0, 0, 1, 1],
+                [0, 1, 1, 0, 1, 1],
+                [1, 1, 1, 0, 0, 1],
+                [0, 0, 1, 0, 0, 1],
+            ]
+        ),
+    }
+    # multiply with random "probability" values
+    data = {part: data[part] * rng.random(data[part].shape) for part in data}
+    return SurfaceImage(surf_mesh(), data)
+
+
 def test_surface_maps_masker_fit_transform_shape(
     surf_maps_img, surf_img, surf_mask
 ):
