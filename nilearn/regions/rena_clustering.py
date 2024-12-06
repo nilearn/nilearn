@@ -590,7 +590,9 @@ def recursive_neighbor_agglomeration(
 
 
 @fill_doc
-class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
+class ReNA(
+    ClusterMixin, TransformerMixin, BaseEstimator, auto_wrap_output_keys=None
+):
     """Recursive Neighbor Agglomeration (:term:`ReNA`).
 
     Recursively merges the pair of clusters according to 1-nearest neighbors
