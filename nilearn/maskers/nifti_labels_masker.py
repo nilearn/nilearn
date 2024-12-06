@@ -11,6 +11,7 @@ from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn.regions.signal_extraction import check_reduction_strategy
 
 
 class _ExtractionFunctor:
@@ -110,13 +111,15 @@ class NiftiLabelsMasker(BaseMasker):
         if shapes and affines do not match, a ValueError is raised.
 
     %(memory)s
+
     %(memory_level1)s
+
     %(verbose0)s
-    strategy : :obj:`str`, default='mean'
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
+
+    %(strategy)s
+
     %(keep_masked_labels)s
+
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
@@ -243,21 +246,6 @@ class NiftiLabelsMasker(BaseMasker):
             "warning_message": None,
         }
 
-        available_reduction_strategies = {
-            "mean",
-            "median",
-            "sum",
-            "minimum",
-            "maximum",
-            "standard_deviation",
-            "variance",
-        }
-
-        if strategy not in available_reduction_strategies:
-            raise ValueError(
-                f"Invalid strategy '{strategy}'. "
-                f"Valid strategies are {available_reduction_strategies}."
-            )
         self.strategy = strategy
 
         if resampling_target not in ("labels", "data", None):
@@ -550,6 +538,8 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        check_reduction_strategy(self.strategy)
+
         repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
