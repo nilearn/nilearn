@@ -314,7 +314,7 @@ class RegionExtractor(NiftiMapsMasker):
     two_sided : :obj:`bool`, default=False
         Whether the thresholding should yield both positive and negative
         part of the maps.
-        
+
     %(extractor)s
     %(smoothing_fwhm)s
         Use this parameter to smooth an image
