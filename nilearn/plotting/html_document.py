@@ -59,10 +59,10 @@ def _open_in_browser(content):
     webbrowser.open(url)
     try:
         queue.get(timeout=BROWSER_TIMEOUT_SECONDS)
-    except Empty:
+    except Empty as e:
         raise RuntimeError(
             "Failed to open nilearn plot or report in a web browser."
-        )
+        ) from e
     server.shutdown()
     server_thread.join()
 

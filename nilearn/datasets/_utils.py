@@ -407,8 +407,8 @@ def _filter_column(array, col, criteria):
     # test it across all possible types (pandas, recarray...)
     try:
         array[col]
-    except Exception:
-        raise KeyError(f"Filtering criterion {col} does not exist")
+    except Exception as e:
+        raise KeyError(f"Filtering criterion {col} does not exist") from e
 
     if (
         not isinstance(criteria, str)
@@ -482,7 +482,7 @@ class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
         try:
             data = urllib.request.urlopen(request.url, timeout=timeout)
         except Exception as e:
-            raise requests.RequestException(e.reason)
+            raise requests.RequestException(e.reason) from e
         data.release_conn = data.close
         resp = requests.Response()
         resp.url = data.geturl()
