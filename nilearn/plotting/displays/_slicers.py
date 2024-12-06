@@ -382,11 +382,15 @@ class BaseSlicer:
         (from matplotlib) for contours and contour_fillings can be
         different.
 
-        There is not point at using the parameters colorbar and levels at the same time.
+        There is not point at using the parameters colorbar
+        and levels at the same time.
         Then, if one does so, it will raise an error.
-        It is possible to use add_contours with parameter levels and without colorbar,
-        and then use it again with parameter colorbar and without levels,
-        but it is not relevant and it will display something that doesn't make sense.
+        It is possible to use add_contours
+        with parameter levels and without colorbar,
+        and then use it again
+        with parameter colorbar and without levels,
+        but it is not relevant
+        and it will display something that doesn't make sense.
 
         """
         if colorbar and self._colorbar:
