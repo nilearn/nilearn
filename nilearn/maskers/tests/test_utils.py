@@ -35,14 +35,15 @@ def test_compute_mean_surface_image(surf_img_1d, surf_img_2d):
     assert img.shape == (img.mesh.n_vertices,)
 
 
-def test_get_min_max_surface_image(surf_img_1d):
+def test_get_min_max_surface_image(surf_img_2d):
     """Make sure we get the min and max across hemispheres."""
-    surf_img_1d.data.parts["left"][:, 0] = np.zeros(shape=(4))
-    surf_img_1d.data.parts["left"][0][0] = 10
-    surf_img_1d.data.parts["right"][:, 0] = np.zeros(shape=(5))
-    surf_img_1d.data.parts["right"][0][0] = -3.5
+    img = surf_img_2d()
+    img.data.parts["left"][:, 0] = np.zeros(shape=(4))
+    img.data.parts["left"][0][0] = 10
+    img.data.parts["right"][:, 0] = np.zeros(shape=(5))
+    img.data.parts["right"][0][0] = -3.5
 
-    vmin, vmax = get_min_max_surface_image(surf_img_1d)
+    vmin, vmax = get_min_max_surface_image(img)
 
     assert vmin == -3.5
     assert vmax == 10
