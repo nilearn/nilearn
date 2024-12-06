@@ -14,7 +14,7 @@ try:
         "requires 'matplotlib' to be installed."
         "\nIt can be installed with:\n"
         " pip install 'matplotlib'"
-        )
+    )
     _set_mpl_backend(WARNING)
 
     from nilearn.reporting.glm_reporter import make_glm_report
