@@ -385,9 +385,13 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # project region signals back to vertices
         if self.mask_img_ is not None:
             # vertices that are not in the mask will have a signal of 0
+            # so we initialize the vertex signals with 0
+            # and shape (n_timepoints, n_vertices)
             vertex_signals = np.zeros(
-                (self.maps_img.mesh.n_vertices, region_signals.shape[0])
-            ).T
+                (region_signals.shape[0], self.maps_img.mesh.n_vertices)
+            )
+            # dot product between (n_timepoints, n_regions) and
+            # (n_regions, n_vertices)
             vertex_signals[:, self.mask_img_.flatten()] = np.dot(
                 region_signals, self.maps_img_[self.mask_img_.flatten(), :].T
             )
