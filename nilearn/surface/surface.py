@@ -688,7 +688,7 @@ def vol_to_surf(
 
     The 3d image then needs to be interpolated at each of the remaining points.
     Two options are available: 'nearest' selects the value of the nearest
-    voxel, and 'linear' performs trilinear interpolation of neighbouring
+    voxel, and 'linear' performs trilinear interpolation of neighboring
     voxels. 'linear' may give better results - for example, the projected
     values are more stable when resampling the 3d image or applying affine
     transformations to it. For one image, the speed difference is small,
@@ -1558,7 +1558,8 @@ def _data_to_gifti(data, gifti_file):
         datatype = "NIFTI_TYPE_INT32"
     elif data.dtype == np.float32:
         datatype = "NIFTI_TYPE_FLOAT32"
-
+    else:
+        datatype = None
     darray = gifti.GiftiDataArray(data=data, datatype=datatype)
 
     gii = gifti.GiftiImage(darrays=[darray])

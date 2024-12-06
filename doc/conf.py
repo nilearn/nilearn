@@ -152,17 +152,60 @@ add_function_parentheses = False
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-# pygments_style = 'friendly'
-# pygments_style = 'manni'
+# https://pygments.org/styles/
 pygments_style = "sas"
-pygments_dark_style = "stata-dark"
-
+pygments_dark_style = "monokai"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
 
 # A list of warning types to suppress arbitrary warning messages
 suppress_warnings = ["image.not_readable", "config.cache"]
+
+linkcheck_allowed_redirects = {
+    "https://db.humanconnectome.org/": r"https://db.humanconnectome.org/app/template/.*",
+    r"http://humanconnectome.org/.*": r"https://store.humanconnectome.org/.*",
+    # Issue redirect to PR
+    r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
+    # OSF downloads
+    r"https://osf.io/.*/download": r"https://files.osf.io/.*",
+    # doi redirect
+    "https://doi.org/": r"https://.*",
+}
+
+linkcheck_ignore = [
+    r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
+    r"https://fcon_1000.projects.nitrc.org/.*",
+    r"https://www.cambridge.org/be/universitypress/.*",
+    r"https://sites.wustl.edu/oasisbrains/.*"
+    "http://brainomics.cea.fr/localizer/",
+    "https://github.com/nilearn/nilearn/issues/new/choose",
+    "https://pages.saclay.inria.fr/bertrand.thirion/",
+    "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
+    "http://brainomics.cea.fr/localizer/",
+    # those are needed because figure cannot take sphinx gallery reference
+    # as target
+    r"../auto_examples/.*html",
+    r"auto_examples/.*html",
+    "https://pkgs.org/search/.*",
+    # below are publishers that do not like doi redirects
+    # and give a 403 Client Error: Forbidden for url
+    r"https://doi.org/10.1002/.*",
+    r"https://doi.org/10.1073/.*",
+    r"https://doi.org/10.1080/.*",
+    r"https://doi.org/10.1093/.*",
+    r"https://doi.org/10.1111/.*",
+    r"https://doi.org/10.1126/.*",
+    r"https://doi.org/10.1152/.*",
+    r"https://doi.org/10.1162/.*",
+    r"https://doi.org/10.3389/.*",
+]
+
+linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
+
+linkcheck_allow_unauthorized = True
+
+linkcheck_report_timeouts_as_broken = False
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -213,7 +256,7 @@ html_theme_options = {
         },
         {
             "name": "Twitter",
-            "url": "https://twitter.com/nilearn",
+            "url": "https://x.com/nilearn",
             "html": "",
             "class": "fa-brands fa-solid fa-twitter fa-2x",
         },
@@ -231,7 +274,7 @@ html_theme_options = {
         },
         {
             "name": "Discord",
-            "url": "https://discord.gg/SsQABEJHkZ",
+            "url": "https://discord.com/invite/SsQABEJHkZ",
             "html": "",
             "class": "fa-brands fa-solid fa-discord fa-2x",
         },

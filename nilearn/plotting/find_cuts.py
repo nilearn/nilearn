@@ -228,9 +228,7 @@ def _transform_cut_coords(cut_coords, direction, affine):
     """
     # make kwargs
     axis = "xyz".index(direction)
-    kwargs = {}
-    for name in "xyz":
-        kwargs[name] = np.zeros(len(cut_coords))
+    kwargs = {name: np.zeros(len(cut_coords)) for name in "xyz"}
     kwargs[direction] = cut_coords
     kwargs["affine"] = affine
 

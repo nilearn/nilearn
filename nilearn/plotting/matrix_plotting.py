@@ -10,6 +10,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
 from nilearn._utils import _constrained_layout_kwargs, fill_doc
+from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
@@ -193,20 +194,20 @@ def _configure_grid(axes, tri, size):
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="grey")
-            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="grey")
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="gray")
+            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
     elif tri == "diag":
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="grey")
-            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="grey")
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="gray")
+            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="gray")
     else:
         for i in range(size):
             # Correct for weird mis-sizing
             i = 1.001 * i
-            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="grey")
-            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="grey")
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="gray")
+            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
 
 
 @fill_doc
@@ -455,11 +456,12 @@ def pad_contrast_matrix(contrast_def, design_matrix):
 def plot_design_matrix(
     design_matrix, rescale=True, axes=None, output_file=None
 ):
-    """Plot a design matrix provided as a :class:`pandas.DataFrame`.
+    """Plot a design matrix.
 
     Parameters
     ----------
-    design matrix : :class:`pandas.DataFrame`
+    design matrix : :class:`pandas.DataFrame` or \
+                    :obj:`str` or :obj:`pathlib.Path` to a TSV event file
         Describes a design matrix.
 
     rescale : :obj:`bool`, default=True
@@ -467,6 +469,7 @@ def plot_design_matrix(
 
     axes : :class:`matplotlib.axes.Axes` or None, default=None
         Handle to axes onto which we will draw the design matrix.
+
     %(output_file)s
 
     Returns
@@ -475,8 +478,10 @@ def plot_design_matrix(
         The axes used for plotting.
 
     """
-    # normalize the values per column for better visualization
+    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
+
     _, X, names = check_design_matrix(design_matrix)
+    # normalize the values per column for better visualization
     if rescale:
         X = X / np.maximum(1.0e-12, np.sqrt(np.sum(X**2, 0)))
     if axes is None:
@@ -501,8 +506,8 @@ def plot_design_matrix(
     # corresponding dataframe
     axes.xaxis.tick_top()
 
-    fig = axes.figure
     if output_file is not None:
+        fig = axes.figure
         fig.savefig(output_file)
         plt.close(fig=fig)
         axes = None
@@ -520,8 +525,11 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     Parameters
     ----------
-    model_event : :class:`pandas.DataFrame` or :obj:`list`\
-                   of :class:`pandas.DataFrame`
+    model_event : :class:`pandas.DataFrame`, \
+                  :obj:`str` or :obj:`pathlib.Path` to a TSV event file, \
+                  or a :obj:`list` or  :obj:`tuple` \
+                  of :class:`pandas.DataFrame`, \
+                  :obj:`str` or :obj:`pathlib.Path` to a TSV event file.
         The :class:`pandas.DataFrame` must have three columns:
         ``trial_type`` with event name, ``onset`` and ``duration``.
         See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
@@ -545,8 +553,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         Plot Figure object.
 
     """
-    if isinstance(model_event, pd.DataFrame):
-        model_event = [model_event]
+    model_event = check_and_load_tables(model_event, "model_event")
 
     for i, event in enumerate(model_event):
         event_copy = check_events(event)
@@ -630,6 +637,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     return figure
 
 
+@fill_doc
 def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
@@ -645,24 +653,26 @@ def plot_design_matrix_correlation(
 
     Parameters
     ----------
-    design_matrix : :class:`pandas.DataFrame`
-        _description_
+    design_matrix : :obj:`pandas.DataFrame`, :obj:`pandas.DataFrame` \
+                    :obj:`pathlib.Path`
+        Design matrix whose correlation matrix you want to plot.
 
-    tri : {'full', 'diag'}, default='full'
+    tri : {"full", "diag"}, default="full"
         Which triangular part of the matrix to plot:
 
-            - 'diag': Plot the lower part with the diagonal
-            - 'full': Plot the full matrix
+        - ``"diag"``: Plot the lower part with the diagonal
+        - ``"full"``: Plot the full matrix
 
     %(cmap)s
-        Default=`bwr`.
+        Default="bwr".
+
         This must be a diverging colormap as the correlation matrix
         will be centered on 0.
         The allowed colormaps are:
 
-            - "bwr"
-            - "RdBu_r"
-            - "seismic_r"
+        - ``"bwr"``
+        - ``"RdBu_r"``
+        - ``"seismic_r"``
 
     %(output_file)s
 
@@ -675,14 +685,9 @@ def plot_design_matrix_correlation(
     display : :class:`matplotlib.axes.Axes`
         Axes image.
     """
-    if not isinstance(design_matrix, pd.DataFrame):
-        raise TypeError(
-            "'des_mat' must be a pandas dataframe instance.\n"
-            f"Got: {type(design_matrix)}"
-        )
+    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
-    if len(design_matrix.columns) == 0:
-        raise ValueError("The design_matrix dataframe cannot be empty.")
+    check_design_matrix(design_matrix)
 
     ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
     if cmap not in ALLOWED_CMAP:
@@ -699,7 +704,7 @@ def plot_design_matrix_correlation(
     if len(design_matrix.columns) == 0:
         raise ValueError(
             "Nothing left to plot after "
-            "removing drift and constant regrerssors."
+            "removing drift and constant regressors."
         )
 
     _sanitize_tri(tri, allowed_values=("full", "diag"))

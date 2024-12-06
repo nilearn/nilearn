@@ -452,10 +452,10 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     Notes
     -----
     This dataset is available on the `brainliner website
-    <http://brainliner.jp/data/brainliner-admin/Reconstruct>`_
+    <http://brainliner.jp/restrictedProject.atr>`_
 
     See `additional information
-    <http://www.cns.atr.jp/dni/en/downloads/
+    <https://bicr.atr.jp//dni/en/downloads/\
     fmri-data-set-for-visual-image-reconstruction/>`_
 
     """
@@ -868,7 +868,7 @@ def fetch_localizer_contrasts(
         opts = {"move": participants_file}
         filenames.append((participants_file, file_url, opts))
 
-    # Fetch behavioural
+    # Fetch behavioral
     behavioural_file = Path("brainomics_data", "phenotype", "behavioural.tsv")
 
     path = "/localizer/phenotype/behavioural.tsv"
@@ -1159,7 +1159,7 @@ def fetch_abide_pcp(
     Notes
     -----
     Code and description of preprocessing pipelines are provided on the
-    `PCP website <http://preprocessed-connectomes-project.github.io/>`_.
+    `PCP website <http://preprocessed-connectomes-project.org/>`_.
 
     References
     ----------
@@ -1433,7 +1433,7 @@ def fetch_megatrawls_netmats(
     from MegaTrawls release in HCP.
 
     This data can be used to predict relationships between imaging data and
-    non-imaging behavioural measures such as age, sex, education, etc.
+    non-imaging behavioral measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
     datasets of 461 subjects. Full technical details in references.
 

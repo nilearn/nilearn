@@ -9,12 +9,12 @@ Connectome extraction: inverse covariance for direct connections
    Given a set of time-series (eg as extracted in the previous section)
    A *functional connectome* is a set of connections representing brain
    interactions between regions. Here we show the use of sparse-inverse
-   covariance to extract functional connectomes focussing only on direct
+   covariance to extract functional connectomes focusing only on direct
    interactions between regions.
 
 .. topic:: **References**
 
-   * Network modelling methods for FMRI :footcite:p:`Smith2011`
+   * Network modeling methods for FMRI :footcite:p:`Smith2011`
 
    * Learning and comparing functional connectomes across subjects :footcite:p:`Varoquaux2013`
 
@@ -45,7 +45,7 @@ estimator** is necessary. The GraphicalLasso, implemented in scikit-learn's
 estimator :class:`sklearn.covariance.GraphicalLassoCV` is a good, simple
 solution. To use it, you need to create an estimator object:
 
-.. code-block:: default
+.. code-block:: python
 
      from sklearn.covariance import GraphicalLassoCV
      estimator = GraphicalLassoCV()
@@ -53,7 +53,7 @@ solution. To use it, you need to create an estimator object:
 And then you can fit it on the activation time series, for instance
 extracted in :ref:`the previous section <functional_connectomes>`:
 
-.. code-block:: default
+.. code-block:: python
 
      estimator.fit(time_series)
 
@@ -61,7 +61,7 @@ The covariance matrix and inverse-covariance matrix (precision matrix)
 can be found respectively in the ``covariance_`` and ``precision_`` attribute
 of the estimator:
 
-.. code-block:: default
+.. code-block:: python
 
      estimator.covariance_
      estimator.precision_
@@ -90,8 +90,8 @@ of the estimator:
 
 .. topic:: **Parameter selection**
 
-    The parameter controlling the sparsity is set by `cross-validation
-    <https://scikit-learn.org/stable/modules/cross_validation.html>`_
+    The parameter controlling the sparsity is set by
+    :sklearn:`cross-validation <modules/cross_validation.html>`
     scheme. If you want to specify it manually, use the estimator
     :class:`sklearn.covariance.GraphicalLasso`.
 
@@ -127,14 +127,14 @@ For this, nilearn provides the
 estimator. Its usage is similar to the GraphicalLassoCV object, but it takes
 a list of time series:
 
-.. code-block:: default
+.. code-block:: python
 
      estimator.fit([time_series_1, time_series_2, ...])
 
 And it provides one estimated covariance and inverse-covariance
 (precision) matrix per time-series: for the first one:
 
-.. code-block:: default
+.. code-block:: python
 
      estimator.covariances_[0]
      estimator.precisions_[0]
@@ -237,26 +237,34 @@ information.
 Linking total and direct interactions at the group level
 ========================================================
 
-Individual connectivity patterns reflect both on covariances and inverse covariances, but in different ways. For multiple subjects, mean covariance (or correlation) and group sparse inverse covariance provide different insights into the connectivity at the group level.
+Individual connectivity patterns reflect both on covariances and inverse covariances, but in different ways.
+For multiple subjects, mean covariance (or correlation)
+and group sparse inverse covariance provide different insights into the connectivity at the group level.
 
-We can go one step further by coupling the information from total (pairwise) and direct interactions in a unique group connectome. This can be done through a geometrical framework allowing to measure interactions in a common space called **tangent space** `[Varoquaux et al, MICCAI 2010] <https://hal.inria.fr/inria-00512417/>`_.
+We can go one step further by coupling the information from total (pairwise)
+and direct interactions in a unique group connectome.
+This can be done through a geometrical framework allowing to measure interactions
+in a common space called **tangent space** `[Varoquaux et al, MICCAI 2010] <https://inria.hal.science/inria-00512417/>`_.
 
 In nilearn, this is implemented in
 :class:`nilearn.connectome.ConnectivityMeasure`:
 
-.. code-block:: default
+.. code-block:: python
 
      measure = ConnectivityMeasure(kind='tangent')
 
 The group connectivity is computed using all the subjects timeseries.:
 
 
-.. code-block:: default
+.. code-block:: python
 
      connectivities = measure.fit([time_series_1, time_series_2, ...])
      group_connectivity = measure.mean_
 
-Deviations from this mean in the tangent space are provided in the connectivities array and can be used to compare different groups/runs. In practice, the tangent measure can outperform the correlation and partial correlation measures, especially for noisy or heterogeneous data.
+Deviations from this mean in the tangent space are provided in the connectivities array
+and can be used to compare different groups/runs.
+In practice, the tangent measure can outperform the correlation
+and partial correlation measures, especially for noisy or heterogeneous data.
 
 
 .. topic:: **Full example**

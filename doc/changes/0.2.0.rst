@@ -39,14 +39,14 @@ Enhancements
 
 - :bdg-primary:`Doc` Documentation about class :class:`maskers.NiftiSpheresMasker`.
 
-- :bdg-secondary:`Maint` Making website a bit elaborated & modernise by using ``sphinx-gallery``.
+- :bdg-secondary:`Maint` Making website a bit elaborated & modernize by using ``sphinx-gallery``.
 
 - :bdg-secondary:`Maint` Documentation enhancement by integrating ``sphinx-gallery`` notebook style examples.
 
 Bug fixes
 ---------
 
-- :bdg-dark:`Code` Fixed bug to control the behaviour when ``cut_coords=0`` in function :func:`~plotting.plot_stat_map` in :mod:`nilearn.plotting` (See :gh:`784`).
+- :bdg-dark:`Code` Fixed bug to control the behavior when ``cut_coords=0`` in function :func:`~plotting.plot_stat_map` in :mod:`nilearn.plotting` (See :gh:`784`).
 
 - :bdg-dark:`Code` Fixed bug in function :func:`~image.copy_img` occurred while caching the Nifti images (See :gh:`793`).
 

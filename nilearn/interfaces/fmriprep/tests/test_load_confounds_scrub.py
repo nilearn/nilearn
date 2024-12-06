@@ -25,7 +25,7 @@ from nilearn.interfaces.fmriprep.load_confounds_scrub import (
         ([96], np.array([96, 97, 98, 99])),  # tail volumes
         ([5], np.array([5])),
     ],
-)  # no optimisation needed
+)  # no optimization needed
 def test_optimize_scrub(original_motion_outliers_index, expected_optimal):
     """Check the segment removal is acting correctly."""
     # simulated labels with 100 time frames and remove any segment under

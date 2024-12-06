@@ -84,7 +84,7 @@ For data processed by :term:`fMRIPrep`,
 :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` can help you
 retrieve confound variables.
 :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` selects confounds
-based on past literature with limited parameters for customisation.
+based on past literature with limited parameters for customization.
 For more freedoms of confounds selection,
 :func:`~nilearn.interfaces.fmriprep.load_confounds` groups confound variables as
 sets of noise components and one can fine tune each of the parameters.
@@ -142,7 +142,7 @@ better our imperfect knowledge of boundaries in brain images (notably
 because of inter-subject registration errors). One example of such an
 atlas well suited to :term:`resting-state` or naturalistic-stimuli data analysis is
 the `MSDL atlas
-<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
 (:func:`nilearn.datasets.fetch_atlas_msdl`).
 
 Probabilistic atlases are represented as a set of continuous maps, in a
@@ -174,8 +174,8 @@ The ``fit_transform`` method turns filenames or `NiftiImage objects
 
     time_series = masker.fit_transform(frmi_files, confounds=csv_file)
 
-The procedure is the same as with `brain parcellations
-<parcellation_time_series>`_ but using the :class:`NiftiMapsMasker`, and
+The procedure is the same as with :ref:`brain parcellations <parcellation_time_series>`
+but using the :class:`NiftiMapsMasker`, and
 the same considerations on using confounds regressors apply.
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_001.png
@@ -240,7 +240,7 @@ can be computed for each region on hard :term:`parcellation` or probabilistic at
    :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
    See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`:
 
-   .. code-block:: default
+   .. code-block:: python
 
            from nilearn import plotting
            atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename)
