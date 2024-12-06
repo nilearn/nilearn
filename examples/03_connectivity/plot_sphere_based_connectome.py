@@ -49,7 +49,7 @@ labels = [
 #
 # We can compute the mean signal within **spheres** of a fixed radius
 # around a sequence of (x, y, z) coordinates with the object
-# :class:`nilearn.maskers.NiftiSpheresMasker`.
+# :class:`~nilearn.maskers.NiftiSpheresMasker`.
 # The resulting signal is then prepared by the masker object: Detrended,
 # band-pass filtered and **standardized to 1 variance**.
 
@@ -107,7 +107,7 @@ plt.legend()
 # %%
 # Compute partial correlation matrix
 # -----------------------------------
-# Using object :class:`nilearn.connectome.ConnectivityMeasure`:
+# Using object :class:`~nilearn.connectome.ConnectivityMeasure`:
 # its default covariance estimator is Ledoit-Wolf,
 # allowing to obtain accurate partial correlations.
 
@@ -148,8 +148,8 @@ plotting.show()
 # %%
 # 3D visualization in a web browser
 # ---------------------------------
-# An alternative to :func:`nilearn.plotting.plot_connectome` is to use
-# :func:`nilearn.plotting.view_connectome`, which gives more interactive
+# An alternative to :func:`~nilearn.plotting.plot_connectome` is to use
+# :func:`~nilearn.plotting.view_connectome`, which gives more interactive
 # visualizations in a web browser. See :ref:`interactive-connectome-plotting`
 # for more details.
 
@@ -183,7 +183,7 @@ print(f"Power atlas comes with {power.keys()}.")
 #
 #     You can retrieve the coordinates for any atlas, including atlases
 #     not included in nilearn, using
-#     :func:`nilearn.plotting.find_parcellation_cut_coords`.
+#     :func:`~nilearn.plotting.find_parcellation_cut_coords`.
 
 # %%
 # Compute within spheres averaged time-series

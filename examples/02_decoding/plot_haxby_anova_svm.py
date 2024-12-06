@@ -43,8 +43,8 @@ print(conditions.unique())
 run_label = behavioral["chunks"][condition_mask]
 
 # %%
-# :term:`ANOVA` pipeline with :class:`nilearn.decoding.Decoder` object
-# --------------------------------------------------------------------
+# :term:`ANOVA` pipeline with :class:`~nilearn.decoding.Decoder` object
+# ---------------------------------------------------------------------
 #
 # Nilearn Decoder object aims to provide smooth user experience by acting as a
 # pipeline of several tasks: preprocessing with NiftiMasker, reducing dimension
@@ -103,7 +103,7 @@ print(decoder.cv_scores_["face"])
 # Visualize the results
 # ---------------------
 # Look at the SVC's discriminating weights using
-# :class:`nilearn.plotting.plot_stat_map`
+# :class:`~nilearn.plotting.plot_stat_map`
 weight_img = decoder.coef_img_["face"]
 from nilearn.plotting import plot_stat_map, show
 
@@ -111,7 +111,7 @@ plot_stat_map(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights")
 
 show()
 # %%
-# Or we can plot the weights using :class:`nilearn.plotting.view_img` as a
+# Or we can plot the weights using :class:`~nilearn.plotting.view_img` as a
 # dynamic html viewer
 from nilearn.plotting import view_img
 

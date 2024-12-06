@@ -14,7 +14,7 @@ returned, as well as how many cuts will be shown for example.
 As we will see in the first part of this example, depending on the values of
 the parameters ``display_mode`` and ``cut_coords``, plotting functions return
 different display objects, all subclasses of
-:class:`nilearn.plotting.displays.OrthoSlicer`.
+:class:`~nilearn.plotting.displays.OrthoSlicer`.
 
 These objects implement various methods to interact with the figures. In the
 second part of this example, we show how to use these methods to further
@@ -287,7 +287,7 @@ mean_haxby_img = image.mean_img(haxby_func_filename, copy_header=True)
 # coregistration by overlaying anatomical image as edges (red) on top of
 # mean functional image (background), both being of same subject.
 #
-# First, we call the :func:`nilearn.plotting.plot_anat` plotting function,
+# First, we call the :func:`~nilearn.plotting.plot_anat` plotting function,
 # with a background image as first argument, in this case the mean
 # :term:`fMRI` image.
 #
@@ -400,7 +400,7 @@ display.annotate(scalebar=True, scale_size=25, scale_units="mm")
 # Finally, we can save a plot to file in two different ways:
 #
 # First, we can save the :term:`contrast` maps plotted with the function
-# :func:`nilearn.plotting.plot_stat_map` using the built-in parameter
+# :func:`~nilearn.plotting.plot_stat_map` using the built-in parameter
 # ``output_file``. We provide the filename and the file extension as
 # a string (supported extensions are .png, .pdf, .svg).
 from pathlib import Path

@@ -140,7 +140,7 @@ surface_image = SurfaceImage(mesh=mesh, data=data)
 # --------------------------
 #
 # The surface image can be plotted using the different functions
-# from the :mod:`nilearn.plotting` module.
+# from the :mod:`~nilearn.plotting` module.
 # Here we will show how to use the
 # :func:`~nilearn.plotting.view_surf` function:
 from nilearn.plotting import view_surf
