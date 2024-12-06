@@ -1239,6 +1239,16 @@ class PolyData:
             else (sum_vertices,)
         )
 
+    @property
+    def max(self):
+        """Maximum of the data across all parts."""
+        return max(x.max() for x in self.parts.values())
+
+    @property
+    def min(self):
+        """Minimum of the data across all parts."""
+        return min(x.min() for x in self.parts.values())
+
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.shape}>"
 
@@ -1657,6 +1667,16 @@ class SurfaceImage:
     def shape(self):
         """Shape of the data."""
         return self.data.shape
+
+    @property
+    def max(self):
+        """Maximum of the data across hemispheres."""
+        return self.data.max
+
+    @property
+    def min(self):
+        """Minimum of the data across hemispheres."""
+        return self.data.min
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {self.shape}>"
