@@ -22,7 +22,7 @@ from nilearn.surface import (
     SurfaceImage,
 )
 
-collect_ignore = ["datasets/data/convert_templates.py"
+collect_ignore = ["datasets/data/convert_templates.py",
                   "reporting/glm_reporter.py",
                   "reporting/html_report.py",
                   "reporting/tests/test_glm_reporter.py",
