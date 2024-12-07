@@ -333,7 +333,7 @@ def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     )
     FirstLevelModel(mask_img=mask).fit(func_img[0], design_matrices=des[0])
     FirstLevelModel(mask_img=mask).fit(
-        func_img[0], design_matrices=[pd.read_csv(des[0])]
+        func_img[0], design_matrices=[pd.read_csv(des[0], sep="\t")]
     )
     FirstLevelModel(mask_img=mask).fit(
         func_img[0], design_matrices=[Path(des[0])]
@@ -636,9 +636,8 @@ def test_fmri_inputs_design_matrices_tsv(tmp_path, shape_4d_default):
         shapes=[shape_4d_default], file_path=tmp_path
     )
     func_img = func_img[0]
-    des = des[0]
-    pd.read_csv(des).to_csv(des, sep="\t", index=False)
-
+    des = Path(des[0])
+    pd.read_csv(des, sep="\t").to_csv(des.with_suffix(".csv"), index=False)
     FirstLevelModel(mask_img=mask).fit([func_img], design_matrices=des)
 
 
@@ -2135,14 +2134,18 @@ def test_check_run_tables_errors():
     # check high level wrapper keeps behavior
     with pytest.raises(ValueError, match="len.* does not match len.*"):
         _check_run_tables([""] * 2, [""], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         _check_run_tables([""] * 2, [".csv", ".csv"], "")
     with pytest.raises(
         TypeError,
         match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
 
 
