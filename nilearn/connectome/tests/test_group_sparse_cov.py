@@ -54,11 +54,7 @@ def test_check_estimator_invalid_group_sparse_covariance_cv(
     (
         check_estimator(
             estimator=[GroupSparseCovariance()],
-            extra_valid_checks=[
-                "check_no_attributes_set_in_init",
-                "check_estimators_unfitted",
-                "check_do_not_raise_errors_in_init_or_set_params",
-            ],
+            extra_valid_checks=extra_valid_checks,
         )
     ),
 )
@@ -77,11 +73,7 @@ def test_check_estimator_group_sparse_covariance(
     check_estimator(
         estimator=[GroupSparseCovariance()],
         valid=False,
-        extra_valid_checks=[
-            "check_no_attributes_set_in_init",
-            "check_estimators_unfitted",
-            "check_do_not_raise_errors_in_init_or_set_params",
-        ],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid_group_sparse_covariance(
