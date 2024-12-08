@@ -670,6 +670,18 @@ class FirstLevelModel(BaseGLM):
 
         return design
 
+    def __sklearn_is_fitted__(self):
+        return (
+            hasattr(self, "labels_")
+            and hasattr(self, "results_")
+            and self.labels_ is not None
+            and self.results_ is not None
+        )
+
+    def _check_fitted(self):
+        if not self.__sklearn_is_fitted__():
+            raise ValueError("The model has not been fit yet.")
+
     def fit(
         self,
         run_imgs,
@@ -883,8 +895,7 @@ class FirstLevelModel(BaseGLM):
             keyed by the type of image.
 
         """
-        if self.labels_ is None or self.results_ is None:
-            raise ValueError("The model has not been fit yet.")
+        self._check_fitted()
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -994,8 +1005,7 @@ class FirstLevelModel(BaseGLM):
                 "when initializing the `FirstLevelModel`-object."
             )
 
-        if self.labels_ is None or self.results_ is None:
-            raise ValueError("The model has not been fit yet.")
+        self._check_fitted()
 
         output = []
 
