@@ -12,6 +12,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_random_img,
@@ -31,6 +32,48 @@ def n_regions():
 @pytest.fixture
 def length():
     return 93
+
+
+def _labels_img():
+    return generate_labeled_regions(
+        shape=(7, 8, 9),
+        affine=np.eye(4),
+        n_regions=9,
+    )
+
+
+extra_valid_checks = [
+    "check_parameters_default_constructible",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+    "check_estimators_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiLabelsMasker(labels_img=_labels_img())],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiLabelsMasker(labels_img=_labels_img())],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
