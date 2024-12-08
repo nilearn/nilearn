@@ -415,9 +415,11 @@ def test_nifti_maps_masker_2():
 
     # Test error checking
     with pytest.raises(ValueError):
-        NiftiMapsMasker(maps33_img, resampling_target="mask")
+        masker = NiftiMapsMasker(maps33_img, resampling_target="mask")
+        masker.fit()
     with pytest.raises(ValueError):
-        NiftiMapsMasker(maps33_img, resampling_target="invalid")
+        masker = NiftiMapsMasker(maps33_img, resampling_target="invalid")
+        masker.fit()
 
     # Target: mask
     masker = NiftiMapsMasker(
