@@ -62,6 +62,9 @@ extra_valid_checks = [
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
     "check_estimators_unfitted",
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_no_attributes_set_in_init",
+    "check_parameters_default_constructible",
 ]
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
