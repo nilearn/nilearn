@@ -3,7 +3,8 @@ from unittest.mock import patch
 
 import pytest
 
-from nilearn.plotting import _set_mpl_backend
+from nilearn.plotting import WARNING
+from nilearn._utils.helpers import _set_mpl_backend
 
 
 @patch("matplotlib.use")
@@ -12,7 +13,7 @@ def test_should_raise_warning_if_backend_changes(*_):
     # The backend values returned by matplotlib.get_backend are different.
     # Warning should be raised to inform user of the backend switch.
     with pytest.warns(UserWarning, match="Backend changed to backend_2..."):
-        _set_mpl_backend()
+        _set_mpl_backend(WARNING)
 
 
 @patch("matplotlib.use")
@@ -22,7 +23,7 @@ def test_should_not_raise_warning_if_backend_is_not_changed(*_):
     # Warning should not be raised.
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        _set_mpl_backend()
+        _set_mpl_backend(WARNING)
 
 
 @patch(
@@ -31,7 +32,7 @@ def test_should_not_raise_warning_if_backend_is_not_changed(*_):
 def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
     # First call to `matplotlib.use` raises an exception, hence the default Agg
     # backend should be triggered
-    _set_mpl_backend()
+    _set_mpl_backend(WARNING)
 
     assert use_mock.call_count == 2
     # Check that the most recent call to `matplotlib.use` has arg `Agg`
@@ -41,4 +42,4 @@ def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
 @patch("matplotlib.__version__", "0.0.0")
 def test_should_raise_import_error_for_version_check():
     with pytest.raises(ImportError, match="A matplotlib version of at least"):
-        _set_mpl_backend()
+        _set_mpl_backend(WARNING)
