@@ -3,8 +3,8 @@ from unittest.mock import patch
 
 import pytest
 
-from nilearn.plotting import WARNING
 from nilearn._utils.helpers import _set_mpl_backend
+from nilearn.plotting import WARNING
 
 
 @patch("matplotlib.use")
