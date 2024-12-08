@@ -9,7 +9,7 @@ import itertools
 import warnings
 from functools import partial
 
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 
 from nilearn import image, masking
 from nilearn._utils import (
@@ -167,8 +167,6 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         verbose=0,
         **kwargs,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             # Mask is provided or computed
             mask_img=mask_img,
@@ -185,9 +183,6 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             mask_strategy=mask_strategy,
             mask_args=mask_args,
             dtype=dtype,
-            clean_kwargs={
-                k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-            },
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
