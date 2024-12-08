@@ -15,6 +15,7 @@ extra_valid_checks = [
     "check_estimators_unfitted",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
+    "check_parameters_default_constructible",
 ]
 
 
@@ -221,12 +222,14 @@ def test_multi_nifti_maps_masker_resampling():
 
     # Test error checking
     with pytest.raises(ValueError):
-        MultiNiftiMapsMasker(maps33_img, resampling_target="mask")
+        masker = MultiNiftiMapsMasker(maps33_img, resampling_target="mask")
+        masker.fit()
     with pytest.raises(ValueError):
-        MultiNiftiMapsMasker(
+        masker = MultiNiftiMapsMasker(
             maps33_img,
             resampling_target="invalid",
         )
+        masker.fit()
 
     # Target: mask
     masker = MultiNiftiMapsMasker(
