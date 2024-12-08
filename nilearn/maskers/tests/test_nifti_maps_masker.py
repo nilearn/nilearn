@@ -13,10 +13,50 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
+from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.data_gen import generate_maps
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
+
+extra_valid_checks = [
+    "check_parameters_default_constructible",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+    "check_estimators_unfitted",
+]
+
+
+@pytest.mark.parametrize
+def simple_map():
+    return generate_maps(shape=(5, 6, 7), n_regions=2, affine=np.eye(4))[0]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiMapsMasker(maps_img=simple_map)],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiMapsMasker(maps_img=simple_map)],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_nifti_maps_masker(tmp_path):
