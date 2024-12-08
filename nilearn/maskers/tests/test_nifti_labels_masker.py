@@ -430,7 +430,8 @@ def test_nifti_labels_masker_reduction_strategies_error(affine_eye):
     labels = Nifti1Image(labels_data, affine_eye)
 
     with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
-        NiftiLabelsMasker(labels, strategy="TESTRAISE")
+        masker = NiftiLabelsMasker(labels, strategy="TESTRAISE")
+        masker.fit()
 
 
 def test_nifti_labels_masker_resampling_errors(
@@ -447,16 +448,18 @@ def test_nifti_labels_masker_resampling_errors(
         ValueError,
         match="invalid value for 'resampling_target' parameter: mask",
     ):
-        NiftiLabelsMasker(labels_img, resampling_target="mask")
+        masker = NiftiLabelsMasker(labels_img, resampling_target="mask")
+        masker.fit()
 
     with pytest.raises(
         ValueError,
         match="invalid value for 'resampling_target' parameter: invalid",
     ):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             resampling_target="invalid",
         )
+        masker.fit()
 
 
 def test_nifti_labels_masker_resampling_to_data(
@@ -782,10 +785,11 @@ def test_warning_n_labels_not_equal_n_regions(
     with pytest.warns(
         UserWarning, match="Mismatch between the number of provided labels"
     ):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             labels=region_names,
         )
+        masker.fit()
 
 
 def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
@@ -795,17 +799,19 @@ def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
         n_regions=n_regions,
     )
     with pytest.warns(UserWarning, match="'labels' must be a list."):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             labels="foo",
         )
+        masker.fit()
     with pytest.warns(
         UserWarning, match="All elements of 'labels' must be a string"
     ):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             labels=[1, 2, 3],
         )
+        masker.fit()
 
 
 @pytest.mark.parametrize(
