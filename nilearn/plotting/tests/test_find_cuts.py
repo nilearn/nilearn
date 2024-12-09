@@ -13,7 +13,7 @@ from nilearn.plotting.find_cuts import (
 )
 
 
-def test_find_cut_coords(affine_eye, rng):
+def test_find_cut_coords(affine_eye):
     data = np.zeros((100, 100, 100))
     x_map, y_map, z_map = 50, 10, 40
     data[
@@ -91,22 +91,26 @@ def test_find_cut_coords(affine_eye, rng):
         )
     assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
 
-    # regression test (cf. #922)
-    # pseudo-4D images as input (i.e., X, Y, Z, 1)
-    # previously raised "ValueError: too many values to unpack"
-    data_3d = rng.standard_normal(size=(10, 10, 10))
+
+def test_pseudo_4d_image(rng, shape_3d_default, affine_eye):
+    """Check pseudo-4D images as input (i.e., X, Y, Z, 1).
+
+    Previously raised "ValueError: too many values to unpack"
+    regression test
+    https://github.com/nilearn/nilearn/issues/922
+    """
+    data_3d = rng.standard_normal(size=shape_3d_default)
     data_4d = data_3d[..., np.newaxis]
     img_3d = Nifti1Image(data_3d, affine_eye)
     img_4d = Nifti1Image(data_4d, affine_eye)
     assert find_xyz_cut_coords(img_3d) == find_xyz_cut_coords(img_4d)
 
-    # test passing empty image returns coordinates pointing to AC-PC line
-    data = np.zeros((20, 30, 40))
-    img = Nifti1Image(data, affine_eye)
-    cut_coords = find_xyz_cut_coords(img)
+
+def test_empty_image_ac_pc_line(img_3d_zeros_eye):
+    """Pass empty image returns coordinates pointing to AC-PC line."""
+    with pytest.warns(UserWarning, match="Given img is empty."):
+        cut_coords = find_xyz_cut_coords(img_3d_zeros_eye)
     assert cut_coords == [0.0, 0.0, 0.0]
-    with pytest.warns(UserWarning):
-        cut_coords = find_xyz_cut_coords(img)
 
 
 def test_find_cut_slices(affine_eye):
