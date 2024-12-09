@@ -19,10 +19,10 @@ is included in the model.
 
 # %%
 # At first, we need to load the Localizer contrasts.
-from nilearn import datasets
+from nilearn.datasets import fetch_localizer_contrasts
 
 n_samples = 94
-localizer_dataset = datasets.fetch_localizer_contrasts(
+localizer_dataset = fetch_localizer_contrasts(
     ["left button press (auditory cue)"],
     n_subjects=n_samples,
     legacy_format=False,
@@ -84,9 +84,9 @@ _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 
 # %%
 # Let us plot the second level :term:`contrast` at the computed thresholds.
-from nilearn import plotting
+from nilearn.plotting import plot_stat_map, show
 
-plotting.plot_stat_map(
+plot_stat_map(
     z_map,
     threshold=threshold,
     colorbar=True,
@@ -94,7 +94,7 @@ plotting.plot_stat_map(
     "and reading fluency (fdr=0.05)",
 )
 
-plotting.show()
+show()
 
 # %%
 # Computing the (corrected) p-values with parametric test to compare with
@@ -121,14 +121,14 @@ title = (
     "Group-level association between motor activity and reading: \n"
     "neg-log of parametric corrected p-values (FWER < 10%)"
 )
-plotting.plot_stat_map(
+plot_stat_map(
     neg_log_pval,
     colorbar=True,
     cut_coords=cut_coords,
     threshold=threshold,
     title=title,
 )
-plotting.show()
+show()
 
 # %%
 # Computing the (corrected) negative log p-values with permutation test
@@ -152,14 +152,14 @@ title = (
     "Group-level association between motor activity and reading: \n"
     "neg-log of non-parametric corrected p-values (FWER < 10%)"
 )
-plotting.plot_stat_map(
+plot_stat_map(
     neg_log_pvals_permuted_ols_unmasked,
     colorbar=True,
     cut_coords=cut_coords,
     threshold=threshold,
     title=title,
 )
-plotting.show()
+show()
 
 # The neg-log p-values obtained with non parametric testing are capped at 3
 # since the number of permutations is 1e3.

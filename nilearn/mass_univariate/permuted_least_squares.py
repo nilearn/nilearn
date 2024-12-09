@@ -762,19 +762,22 @@ def permuted_ols(
     if n_perm > n_jobs:
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
+    elif n_perm > 0:
+        warnings.warn(
+            f"The specified number of permutations is {n_perm} "
+            "and the number of jobs to be performed in parallel "
+            f"has set to {n_jobs}. "
+            f"This is incompatible so only {n_perm} jobs will be running. "
+            "You may want to perform more permutations "
+            "in order to take the most of the available computing resources.",
+            UserWarning,
+            stacklevel=2,
+        )
+        n_perm_chunks = np.ones(n_perm, dtype=int)
 
     threshold_t = _compute_t_stat_threshold(
         threshold, two_sided_test, tested_vars, confounding_vars
     )
-
-    warnings.warn(
-        f"The specified number of permutations is {n_perm} and the number "
-        f"of jobs to be performed in parallel has set to {n_jobs}. "
-        f"This is incompatible so only {n_perm} jobs will be running. "
-        "You may want to perform more permutations in order to take the "
-        "most of the available computing resources."
-    )
-    n_perm_chunks = np.ones(n_perm, dtype=int)
 
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
