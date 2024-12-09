@@ -436,7 +436,7 @@ def test_clean_detrending():
     y[15, 14] = np.inf
     y_orig = y.copy()
 
-    y_clean = nisignal.clean(y, ensure_finite=True)
+    y_clean = clean(y, ensure_finite=True)
     assert np.any(np.isfinite(y_clean)), True
     # clean should not modify inputs
     # using assert_almost_equal instead of array_equal due to NaNs
@@ -444,12 +444,12 @@ def test_clean_detrending():
 
     # test boolean is not given to signal.clean
     with pytest.raises(TypeError):
-        nisignal.clean(x, low_pass=False)
+        clean(x, low_pass=False)
     with pytest.raises(TypeError):
-        nisignal.clean(x, high_pass=False)
+        clean(x, high_pass=False)
 
     # This should remove trends
-    x_detrended = nisignal.clean(
+    x_detrended = clean(
         x, standardize=False, detrend=True, low_pass=None, high_pass=None
     )
     assert_almost_equal(x_detrended, signals, decimal=13)
@@ -457,7 +457,7 @@ def test_clean_detrending():
     assert np.array_equal(x_orig, x)
 
     # This should do nothing
-    x_undetrended = nisignal.clean(
+    x_undetrended = clean(
         x, standardize=False, detrend=False, low_pass=None, high_pass=None
     )
     assert abs(x_undetrended - signals).max() >= 0.06
@@ -481,10 +481,10 @@ def test_clean_t_r(rng):
         for low_cutoff, high_cutoff in zip(
             low_pass_freq_list, high_pass_freq_list
         ):
-            det_one_tr = nisignal.clean(
+            det_one_tr = clean(
                 x_orig, t_r=tr1, low_pass=low_cutoff, high_pass=high_cutoff
             )
-            det_diff_tr = nisignal.clean(
+            det_diff_tr = clean(
                 x_orig, t_r=tr2, low_pass=low_cutoff, high_pass=high_cutoff
             )
 
@@ -526,11 +526,11 @@ def test_clean_kwargs():
     ]
     # Base result
     t_r, high_pass, low_pass = 0.8, 0.01, 0.08
-    base_filtered = nisignal.clean(
+    base_filtered = clean(
         x_orig, t_r=t_r, low_pass=low_pass, high_pass=high_pass
     )
     for kwarg_set in kwargs:
-        test_filtered = nisignal.clean(
+        test_filtered = clean(
             x_orig,
             t_r=t_r,
             low_pass=low_pass,
@@ -580,7 +580,7 @@ def test_clean_runs():
     # Create run info
     runs = np.ones(n_samples)
     runs[: n_samples // 2] = 0
-    x_detrended = nisignal.clean(
+    x_detrended = clean(
         x,
         confounds=confounds,
         standardize=False,
@@ -593,7 +593,7 @@ def test_clean_runs():
     assert np.array_equal(x_orig, x)
 
     # check the runs are individually cleaned
-    x_run1 = nisignal.clean(
+    x_run1 = clean(
         x[0 : n_samples // 2, :],
         confounds=confounds[0 : n_samples // 2, :],
         standardize=False,
@@ -611,7 +611,7 @@ def test_clean_confounds():
     # No signal: output must be zero.
     eps = np.finfo(np.float64).eps
     noises1 = noises.copy()
-    cleaned_signals = nisignal.clean(
+    cleaned_signals = clean(
         noises, confounds=confounds, detrend=True, standardize=False
     )
     assert abs(cleaned_signals).max() < 100.0 * eps
@@ -619,14 +619,14 @@ def test_clean_confounds():
     assert np.array_equal(noises, noises1)
 
     # With signal: output must be orthogonal to confounds
-    cleaned_signals = nisignal.clean(
+    cleaned_signals = clean(
         signals + noises, confounds=confounds, detrend=False, standardize=True
     )
     assert abs(np.dot(confounds.T, cleaned_signals)).max() < 1000.0 * eps
 
     # Same output when a constant confound is added
     confounds1 = np.hstack((np.ones((45, 1)), confounds))
-    cleaned_signals1 = nisignal.clean(
+    cleaned_signals1 = clean(
         signals + noises, confounds=confounds1, detrend=False, standardize=True
     )
     assert_almost_equal(cleaned_signals1, cleaned_signals)
@@ -636,7 +636,7 @@ def test_clean_confounds():
     temp = confounds.T
     temp += np.arange(confounds.shape[0])
 
-    cleaned_signals = nisignal.clean(
+    cleaned_signals = clean(
         signals + noises, confounds=confounds, detrend=False, standardize=False
     )
     coeffs = np.polyfit(
@@ -644,7 +644,7 @@ def test_clean_confounds():
     )
     assert (abs(coeffs) > 1e-3).any()  # trends remain
 
-    cleaned_signals = nisignal.clean(
+    cleaned_signals = clean(
         signals + noises, confounds=confounds, detrend=True, standardize=False
     )
     coeffs = np.polyfit(
@@ -654,14 +654,10 @@ def test_clean_confounds():
 
     # Test no-op
     input_signals = 10 * signals
-    cleaned_signals = nisignal.clean(
-        input_signals, detrend=False, standardize=False
-    )
+    cleaned_signals = clean(input_signals, detrend=False, standardize=False)
     assert_almost_equal(cleaned_signals, input_signals)
 
-    cleaned_signals = nisignal.clean(
-        input_signals, detrend=False, standardize=True
-    )
+    cleaned_signals = clean(input_signals, detrend=False, standardize=True)
     assert_almost_equal(
         cleaned_signals.var(axis=0), np.ones(cleaned_signals.shape[1])
     )
@@ -676,34 +672,26 @@ def test_clean_confounds():
     filename1 = current_dir / "data" / "spm_confounds.txt"
     filename2 = current_dir / "data" / "confounds_with_header.csv"
 
-    nisignal.clean(
-        signals, detrend=False, standardize=False, confounds=filename1
-    )
-    nisignal.clean(
-        signals, detrend=False, standardize=False, confounds=filename2
-    )
-    nisignal.clean(
-        signals, detrend=False, standardize=False, confounds=confounds[:, 1]
-    )
+    clean(signals, detrend=False, standardize=False, confounds=filename1)
+    clean(signals, detrend=False, standardize=False, confounds=filename2)
+    clean(signals, detrend=False, standardize=False, confounds=confounds[:, 1])
 
     # test with confounds as a pandas DataFrame
     confounds_df = read_csv(filename2, sep="\t")
-    nisignal.clean(
+    clean(
         signals,
         detrend=False,
         standardize=False,
         confounds=confounds_df.values,
     )
-    nisignal.clean(
-        signals, detrend=False, standardize=False, confounds=confounds_df
-    )
+    clean(signals, detrend=False, standardize=False, confounds=confounds_df)
 
     # test array-like signals
     list_signal = signals.tolist()
-    nisignal.clean(list_signal)
+    clean(list_signal)
 
     # Use a list containing two filenames, a 2D array and a 1D array
-    nisignal.clean(
+    clean(
         signals,
         detrend=False,
         standardize=False,
@@ -712,30 +700,30 @@ def test_clean_confounds():
 
     # Test error handling
     with pytest.raises(TypeError):
-        nisignal.clean(signals, confounds=1)
+        clean(signals, confounds=1)
     with pytest.raises(ValueError):
-        nisignal.clean(signals, confounds=np.zeros(2))
+        clean(signals, confounds=np.zeros(2))
     with pytest.raises(ValueError):
-        nisignal.clean(signals, confounds=np.zeros((2, 2)))
+        clean(signals, confounds=np.zeros((2, 2)))
     with pytest.raises(ValueError):
-        nisignal.clean(signals, confounds=np.zeros((2, 3, 4)))
+        clean(signals, confounds=np.zeros((2, 3, 4)))
     with pytest.raises(ValueError):
-        nisignal.clean(signals[:-1, :], confounds=filename1)
+        clean(signals[:-1, :], confounds=filename1)
     with pytest.raises(TypeError):
-        nisignal.clean(signals, confounds=[None])
+        clean(signals, confounds=[None])
     with pytest.raises(ValueError, match="t_r='None'"):
-        nisignal.clean(signals, filter="cosine", t_r=None, high_pass=0.008)
+        clean(signals, filter="cosine", t_r=None, high_pass=0.008)
     with pytest.raises(ValueError):
         # using butterworth filter here
-        nisignal.clean(signals, t_r=None, low_pass=0.01)
+        clean(signals, t_r=None, low_pass=0.01)
     with pytest.raises(ValueError):
-        nisignal.clean(signals, filter="not_implemented")
+        clean(signals, filter="not_implemented")
     with pytest.raises(ValueError):
-        nisignal.clean(signals, ensure_finite=None)
+        clean(signals, ensure_finite=None)
     # Check warning message when no confound methods were specified,
     # but cutoff frequency provided.
     with pytest.warns(UserWarning, match="not perform filtering"):
-        nisignal.clean(signals, t_r=2.5, filter=False, low_pass=0.01)
+        clean(signals, t_r=2.5, filter=False, low_pass=0.01)
 
     # Test without standardizing that constant parts of confounds are
     # accounted for
@@ -743,7 +731,7 @@ def test_clean_confounds():
     warning_message = r"must perform detrend and/or standardize confounds"
     with pytest.warns(UserWarning, match=warning_message):
         assert_almost_equal(
-            nisignal.clean(
+            clean(
                 np.ones((20, 2)),
                 standardize=False,
                 confounds=np.ones(20),
@@ -758,7 +746,7 @@ def test_clean_confounds():
     # This did not happen originally due to a different order in which
     # these operations were being applied to the data and confounders
     # (it thus solves issue # 2730).
-    signals_clean = nisignal.clean(
+    signals_clean = clean(
         signals,
         detrend=True,
         high_pass=0.01,
@@ -766,7 +754,7 @@ def test_clean_confounds():
         standardize=True,
         confounds=confounds,
     )
-    confounds_clean = nisignal.clean(
+    confounds_clean = clean(
         confounds, detrend=True, high_pass=0.01, standardize=True
     )
     assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * eps
