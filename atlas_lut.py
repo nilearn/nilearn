@@ -64,6 +64,13 @@ def _generate_atlas_look_up_table(function, labels, index=None):
         index = list(range(len(labels)))
     elif function.__name__ in ["fetch_atlas_basc_multiscale_2015"]:
         index = list(range(labels))
+    elif function.__name__ in [
+        "fetch_atlas_schaefer_2018",
+        "fetch_atlas_pauli_2017",
+    ]:
+        index = list(range(1, len(labels) + 1))
+
+    lut = pd.DataFrame({"index": index, "name": name})
 
     if function.__name__ in [
         "fetch_atlas_harvard_oxford",
@@ -72,27 +79,15 @@ def _generate_atlas_look_up_table(function, labels, index=None):
         "fetch_atlas_aal",
         "fetch_atlas_basc_multiscale_2015",
     ]:
-        return pd.DataFrame({"index": index, "name": name})
+        return lut
 
     elif function.__name__ == "fetch_atlas_surf_destrieux":
-        lut = pd.DataFrame(
-            {
-                "index": index,
-                "name": name,
-            }
-        )
         return lut.replace("Unknown", "Background")
 
     elif function.__name__ in [
         "fetch_atlas_schaefer_2018",
         "fetch_atlas_pauli_2017",
     ]:
-        lut = pd.DataFrame(
-            {
-                "index": list(range(1, len(name) + 1)),
-                "name": name,
-            }
-        )
         return pd.concat(
             [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
             ignore_index=True,
