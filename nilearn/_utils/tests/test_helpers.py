@@ -4,8 +4,11 @@ from pathlib import Path
 import pytest
 from unittest.mock import patch
 
-from nilearn._utils import helpers
-from nilearn._utils.helpers import _set_mpl_backend, is_matplotlib_installed
+from nilearn._utils.helpers import (
+    _set_mpl_backend, is_matplotlib_installed, rename_parameters,
+    _transfer_deprecated_param_vals, _warn_deprecated_params, compare_version,
+    is_plotly_installed, is_kaleido_installed, stringify_path
+)
 
 WARNING = "matplotlib is not installed"
 
@@ -117,7 +120,7 @@ def test_rename_parameters():
         ),
     ]
 
-    @helpers.rename_parameters(
+    @rename_parameters(
         replacement_params,
         "0.6.1rc",
         "other_lib",
@@ -165,7 +168,7 @@ def test_transfer_deprecated_param_vals():
         "replacement_param_1": "deprecated_param_1_val",
         "unchanged_param_1": "unchanged_param_1_val",
     }
-    actual_ouput = helpers._transfer_deprecated_param_vals(
+    actual_ouput = _transfer_deprecated_param_vals(
         replacement_params,
         mock_input,
     )
@@ -188,7 +191,7 @@ def test_future_warn_deprecated_params():
         ),
     ]
     with warnings.catch_warnings(record=True) as raised_warnings:
-        helpers._warn_deprecated_params(
+        _warn_deprecated_params(
             replacement_params,
             end_version="sometime",
             lib_name="somelib",
@@ -214,7 +217,7 @@ def test_future_warn_deprecated_params():
     ],
 )
 def test_compare_version(version_a, operator, version_b):
-    assert helpers.compare_version(version_a, operator, version_b)
+    assert compare_version(version_a, operator, version_b)
 
 
 def test_compare_version_error():
@@ -222,17 +225,17 @@ def test_compare_version_error():
         ValueError,
         match="'compare_version' received an unexpected operator <>.",
     ):
-        helpers.compare_version("0.1.0", "<>", "1.1.0")
+        compare_version("0.1.0", "<>", "1.1.0")
 
 
 def test_is_plotly_installed():
-    helpers.is_plotly_installed()
+    is_plotly_installed()
 
 
 def test_is_kaleido_installed():
-    helpers.is_kaleido_installed()
+    is_kaleido_installed()
 
 
 def test_stringify_path():
-    assert isinstance(helpers.stringify_path(Path("foo") / "bar"), str)
-    assert helpers.stringify_path([]) == []
+    assert isinstance(stringify_path(Path("foo") / "bar"), str)
+    assert stringify_path([]) == []
