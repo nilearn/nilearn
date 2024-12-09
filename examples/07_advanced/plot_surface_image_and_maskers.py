@@ -76,7 +76,7 @@ axes = np.atleast_2d(axes)
 
 # Let's ensure that we have the same range
 # centered on 0 for all subplots.
-vmax = max(np.absolute(hemi).max() for hemi in mean_img.data.parts.values())
+vmax = np.absolute([mean_img.max, mean_img.min]).max()
 vmin = -vmax
 
 for view, ax_row in zip(views, axes):
@@ -219,7 +219,7 @@ decoder.fit(surf_img_nki, y)
 
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
-vmax = max(np.absolute(hemi).max() for hemi in coef_img.data.parts.values())
+vmax = np.absolute([coef_img.max, coef_img.min]).max()
 vmin = -vmax
 plot_surf(
     surf_map=coef_img,

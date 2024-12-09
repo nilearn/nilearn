@@ -17,7 +17,6 @@ from nilearn.maskers._utils import (
     check_same_n_vertices,
     compute_mean_surface_image,
     concatenate_surface_images,
-    get_min_max_surface_image,
 )
 from nilearn.surface import SurfaceImage
 
@@ -466,7 +465,8 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self._reporting_data["images"]:
             background_data = self._reporting_data["images"]
             background_data = compute_mean_surface_image(background_data)
-            vmin, vmax = get_min_max_surface_image(background_data)
+            vmin = background_data.min
+            vmax = background_data.max
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
