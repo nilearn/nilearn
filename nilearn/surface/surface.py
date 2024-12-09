@@ -1273,6 +1273,22 @@ class PolyData:
         _data_to_gifti(data, filename)
 
 
+def at_least_2d(input):
+    """Force surface image or polydata to be 2d."""
+    if len(input.shape) == 2:
+        return input
+
+    if isinstance(input, SurfaceImage):
+        input.data = at_least_2d(input.data)
+        return input
+
+    if len(input.shape) == 1:
+        for k, v in input.parts.items():
+            input.parts[k] = v.reshape((v.shape[0], 1))
+
+    return input
+
+
 class SurfaceMesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles).
