@@ -6,7 +6,7 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.maskers import SurfaceLabelsMasker, SurfaceMasker
+from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.surface import SurfaceImage
 
 extra_valid_checks = [
@@ -26,7 +26,8 @@ extra_valid_checks = [
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceMasker()], extra_valid_checks=extra_valid_checks
+        estimator=[SurfaceLabelsMasker()],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -38,7 +39,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceMasker()],
+        estimator=[SurfaceLabelsMasker()],
         valid=False,
         extra_valid_checks=extra_valid_checks,
     ),
