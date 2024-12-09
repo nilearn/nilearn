@@ -91,7 +91,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
     %(detrend)s
 
-    %(low_pass)
+    %(low_pass)s
 
     %(high_pass)s
 
