@@ -1,8 +1,10 @@
 """Transformer for computing ROI signals."""
 
+import pathlib
 import warnings
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
 
@@ -204,10 +206,8 @@ class NiftiLabelsMasker(BaseMasker):
 
         self.background_label = background_label
         self._original_region_ids = self._get_labels_values(self.labels_img)
-        self.labels = self._sanitize_labels(labels)
-        self._check_mismatch_labels_regions(
-            self._original_region_ids, tolerant=True
-        )
+        self._region_id_name = None
+        self.labels = labels
 
         self.mask_img = mask_img
 
@@ -555,25 +555,64 @@ class NiftiLabelsMasker(BaseMasker):
         logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
 
-        # create _region_id_name dictionary
-        # this dictionary will be used to store region names and
-        # the corresponding region ids as keys
-        self._region_id_name = None
-        if self.labels is not None:
-            known_backgrounds = {"background", "Background"}
-            initial_region_ids = [
-                region_id
-                for region_id in np.unique(
-                    _utils.niimg.safe_get_data(self.labels_img_)
+        # validate self.labels
+        # if self.labels is a path, it is the path to tsv file, so read it
+        if isinstance(self.labels, (str, pathlib.Path)):
+            try:
+                region_id_name = pd.read_csv(self.labels, sep="\t")
+                # Note that self.labels should include the background too
+                self.labels = region_id_name["region name"].tolist()
+                # create the _region_id_name dict based on the
+                # provided tsv file
+                # it will include the background too
+                self._region_id_name = {
+                    row["region id"]: row["region name"]
+                    for _, row in region_id_name.iterrows()
+                }
+            except Exception as e:
+                warnings.warn(
+                    "Expected a path to a tsv file containing 'index' and "
+                    "'name' columns if a string or a Path is provided "
+                    "for 'labels'."
+                    f"Labels could not be loaded: {e}",
+                    stacklevel=2,
                 )
-                if region_id != self.background_label
-            ]
+                # if labels is string and could not be loaded, set it to None
+                # since it is useless
+                self.labels = None
+
+        self.labels = self._sanitize_labels(self.labels)
+        self._check_mismatch_labels_regions(
+            self._original_region_ids, tolerant=True
+        )
+
+        # get the region ids existing in the self.labels_img_
+        # from self._original_region_ids excluding the background
+        initial_region_ids = [
+            region_id
+            for region_id in self._original_region_ids
+            if region_id != self.background_label
+        ]
+        if self._region_id_name is not None:
+            # check if initial_region_ids all exist in self._region_id_name
+            missing_ids = set(initial_region_ids) - set(self._region_id_name)
+            if missing_ids:
+                raise ValueError(
+                    "The following region ids are missing "
+                    f"in the provided labels: {missing_ids}"
+                )
+        elif self.labels is not None:
+            # create _region_id_name dictionary if not already created
+            # from labels tsv file
+            # this dictionary will be used to store region names and
+            # the corresponding region ids as keys
+            # it will also include the background
+            known_backgrounds = {"background", "Background"}
             initial_region_names = [
                 region_name
                 for region_name in self.labels
                 if region_name not in known_backgrounds
             ]
-
             if len(initial_region_ids) != len(initial_region_names):
                 warnings.warn(
                     "Number of regions in the labels image "
@@ -587,6 +626,11 @@ class NiftiLabelsMasker(BaseMasker):
                 self._region_id_name = {
                     region_id: initial_region_names[i]
                     for i, region_id in enumerate(initial_region_ids)
+                }
+                # We want to have the background in the dict too
+                self._region_id_name = {
+                    self.background_label: "background",
+                    **self._region_id_name,
                 }
 
         if self.mask_img is not None:
