@@ -40,15 +40,15 @@ from nilearn import plotting
 # The coordinates of all plots are selected automatically by itself
 # We manually change the colormap of our choice
 plotting.plot_roi(
-    networks_64, cmap=plotting.cm.bwr, title="64 regions of brain clusters"
+    networks_64, cmap="bwr", title="64 regions of brain clusters"
 )
 
 plotting.plot_roi(
-    networks_197, cmap=plotting.cm.bwr, title="197 regions of brain clusters"
+    networks_197, cmap="bwr", title="197 regions of brain clusters"
 )
 
 plotting.plot_roi(
-    networks_444, cmap=plotting.cm.bwr_r, title="444 regions of brain clusters"
+    networks_444, cmap="bwr_r", title="444 regions of brain clusters"
 )
 
 plotting.show()

@@ -50,6 +50,7 @@ dev = [
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
+    "colorspacious",
     "furo",
     "memory_profiler",  # measuring memory during docs building
     "myst-parser",
@@ -68,7 +69,7 @@ plotly = ["nilearn[plotting]"]
 # Kaleido version is pinned for windows due to bug
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
-    "matplotlib>=3.3.0",
+    "matplotlib>=3.5.0",
     "plotly",
     "kaleido ; platform_system != 'Windows'",
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
