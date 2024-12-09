@@ -100,7 +100,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     def __init__(
         self,
-        maps_img,
+        maps_img=None,
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
@@ -135,18 +135,6 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        self._shelving = False
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image "
-                "(if provided via img) overlaid with the regions provided via "
-                "maps_img."
-            ),
-            "n_vertices": {},
-            "number_of_regions": 0,
-            "summary": {},
-        }
 
     def fit(self, img=None, y=None):
         """Prepare signal extraction from regions.
@@ -184,6 +172,20 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
             check_surface_data_ndims(self.mask_img, 1, "mask_img")
 
+        self._shelving = False
+        # content to inject in the HTML template
+        self._report_content = (
+            {
+                "description": (
+                    "This report shows the input surface image "
+                    "(if provided via img) overlaid with the regions provided "
+                    "via maps_img."
+                ),
+                "n_vertices": {},
+                "number_of_regions": 0,
+                "summary": {},
+            },
+        )
         return self
 
     def __sklearn_is_fitted__(self):
