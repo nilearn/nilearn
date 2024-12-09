@@ -95,7 +95,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     def __init__(
         self,
-        labels_img,
+        labels_img=None,
         labels=None,
         background_label=0,
         smoothing_fwhm=None,
@@ -167,6 +167,12 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         SurfaceLabelsMasker object
         """
         del img, y
+
+        if self.labels_img is None:
+            raise ValueError(
+                "Please provide a labels_img to the masker. For example, "
+                "masker = SurfaceLabelsMasker(labels_img=labels_img)"
+            )
 
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)
