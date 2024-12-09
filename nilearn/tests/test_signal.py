@@ -607,6 +607,38 @@ def test_clean_runs():
     assert array_equal(x_run1, x_detrended[0 : n_samples // 2, :])
 
 
+@pytest.fixture
+def signals():
+    return generate_signals(n_features=41, n_confounds=5, length=45)[0]
+
+
+def test_clean_confounds_errros(signals):
+    # Test error handling
+    with pytest.raises(TypeError):
+        clean(signals, confounds=1)
+    with pytest.raises(ValueError):
+        clean(signals, confounds=np.zeros(2))
+    with pytest.raises(ValueError):
+        clean(signals, confounds=np.zeros((2, 2)))
+    with pytest.raises(ValueError):
+        clean(signals, confounds=np.zeros((2, 3, 4)))
+    with pytest.raises(ValueError):
+        current_dir = Path(__file__).parent
+        filename1 = current_dir / "data" / "spm_confounds.txt"
+        clean(signals[:-1, :], confounds=filename1)
+    with pytest.raises(TypeError):
+        clean(signals, confounds=[None])
+    with pytest.raises(ValueError, match="t_r='None'"):
+        clean(signals, filter="cosine", t_r=None, high_pass=0.008)
+    with pytest.raises(ValueError):
+        # using butterworth filter here
+        clean(signals, t_r=None, low_pass=0.01)
+    with pytest.raises(ValueError):
+        clean(signals, filter="not_implemented")
+    with pytest.raises(ValueError):
+        clean(signals, ensure_finite=None)
+
+
 def test_clean_confounds():
     signals, noises, confounds = generate_signals(
         n_features=41, n_confounds=5, length=45
@@ -701,28 +733,6 @@ def test_clean_confounds():
         confounds=[filename1, confounds[:, 0:2], filename2, confounds[:, 2]],
     )
 
-    # Test error handling
-    with pytest.raises(TypeError):
-        clean(signals, confounds=1)
-    with pytest.raises(ValueError):
-        clean(signals, confounds=np.zeros(2))
-    with pytest.raises(ValueError):
-        clean(signals, confounds=np.zeros((2, 2)))
-    with pytest.raises(ValueError):
-        clean(signals, confounds=np.zeros((2, 3, 4)))
-    with pytest.raises(ValueError):
-        clean(signals[:-1, :], confounds=filename1)
-    with pytest.raises(TypeError):
-        clean(signals, confounds=[None])
-    with pytest.raises(ValueError, match="t_r='None'"):
-        clean(signals, filter="cosine", t_r=None, high_pass=0.008)
-    with pytest.raises(ValueError):
-        # using butterworth filter here
-        clean(signals, t_r=None, low_pass=0.01)
-    with pytest.raises(ValueError):
-        clean(signals, filter="not_implemented")
-    with pytest.raises(ValueError):
-        clean(signals, ensure_finite=None)
     # Check warning message when no confound methods were specified,
     # but cutoff frequency provided.
     with pytest.warns(UserWarning, match="not perform filtering"):
