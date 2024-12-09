@@ -769,7 +769,7 @@ def test_sanitize_inputs_permuted_ols(design):
 
 
 def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
-    """Check that proper warning are thrown dependning on n_job VS n_perm."""
+    """Check that proper warning are thrown depending on n_job VS n_perm."""
     target_var, tested_var = cluster_level_design
 
     # n_perm > n_job --> no warning
@@ -785,7 +785,7 @@ def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
         "perform more permutations" in str(x.message) for x in record
     )
 
-    # n_perm <= n_job  and n_job > 0 --> no warning
+    # n_perm <= n_job  and n_job > 0 -->  warning
     with pytest.warns(
         UserWarning,
         match="perform more permutations",
