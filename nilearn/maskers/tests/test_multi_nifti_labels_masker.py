@@ -25,12 +25,12 @@ extra_valid_checks = [
     check_estimator(
         estimator=[
             MultiNiftiLabelsMasker(
-                data_gen.generate_labeled_regions(
+                labels_img=data_gen.generate_labeled_regions(
                     _shape_3d_default(), affine=_affine_eye(), n_regions=9
                 )
             ),
             NiftiLabelsMasker(
-                data_gen.generate_labeled_regions(
+                labels_img=data_gen.generate_labeled_regions(
                     _shape_3d_default(), affine=_affine_eye(), n_regions=9
                 )
             ),
