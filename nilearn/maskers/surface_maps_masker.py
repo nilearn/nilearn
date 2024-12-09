@@ -172,7 +172,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
         # check maps_img data is 2D
         check_surface_data_ndims(self.maps_img, 2, "maps_img")
-        self.maps_img_ = self.maps_img.copy()
+        self.maps_img_ = self.maps_img
 
         self.n_elements_ = self.maps_img.shape[1]
 
