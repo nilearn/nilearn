@@ -4,7 +4,6 @@ import collections.abc
 import numbers
 
 import numpy as np
-from joblib import Memory
 from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
@@ -401,8 +400,6 @@ class RegionExtractor(NiftiMapsMasker):
         memory_level=0,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             maps_img=maps_img,
             mask_img=mask_img,
