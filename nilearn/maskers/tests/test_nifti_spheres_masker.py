@@ -25,7 +25,13 @@ extra_valid_checks = [
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiSpheresMasker([(1, 1, 1)])],
+        estimator=[
+            NiftiSpheresMasker(
+                seeds=[
+                    (1, 1, 1),
+                ]
+            )
+        ],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -38,7 +44,13 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiSpheresMasker([(1, 1, 1)])],
+        estimator=[
+            NiftiSpheresMasker(
+                seeds=[
+                    (1, 1, 1),
+                ]
+            )
+        ],
         extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
