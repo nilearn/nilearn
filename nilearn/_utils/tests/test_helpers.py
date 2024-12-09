@@ -28,6 +28,20 @@ def _mock_args_for_testing_replace_parameter():
 
 
 @pytest.mark.skipif(
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
+)
+def test_should_raise_warning_if_mpl_not_installed():
+    with (
+            pytest.warns(UserWarning, match="matplotlib is not installed"),
+            pytest.raises(
+                ModuleNotFoundError, match="No module named 'matplotlib'"
+            ),
+    ):
+        _set_mpl_backend(WARNING)
+
+
+@pytest.mark.skipif(
     not is_matplotlib_installed(),
     reason="Test requires matplotlib to be installed.",
 )
