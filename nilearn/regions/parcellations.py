@@ -8,7 +8,7 @@ from scipy.sparse import coo_matrix
 from sklearn.base import clone
 from sklearn.feature_extraction import image
 
-from nilearn.maskers import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger, stringify_path
@@ -50,7 +50,7 @@ def _connectivity_surface(mask_img):
     len_previous_mask = 0
     for part in mask_img.mesh.parts:
         face_part = mask_img.mesh.parts[part].faces
-        mask_part = mask_img.data.parts[part][:, 0]
+        mask_part = mask_img.data.parts[part]
         edges, edge_mask = _make_edges_surface(face_part, mask_part)
         # keep only the edges that are in the mask
         edges = edges[:, edge_mask]
@@ -553,24 +553,39 @@ class Parcellations(_MultiPCA):
         imgs, confounds, single_subject = _check_parameters_transform(
             imgs, confounds
         )
-        # Requires for special cases like extracting signals on list of
-        # 3D images
-        imgs_list = iter_check_niimg(imgs, atleast_4d=True)
 
-        masker = NiftiLabelsMasker(
-            self.labels_img_,
-            mask_img=self.masker_.mask_img_,
-            smoothing_fwhm=self.smoothing_fwhm,
-            standardize=self.standardize,
-            detrend=self.detrend,
-            low_pass=self.low_pass,
-            high_pass=self.high_pass,
-            t_r=self.t_r,
-            resampling_target="data",
-            memory=self.memory,
-            memory_level=self.memory_level,
-            verbose=self.verbose,
-        )
+        if isinstance(self.masker_.mask_img_, SurfaceImage):
+            imgs_list = imgs.copy()
+            masker = SurfaceLabelsMasker(
+                self.labels_img_,
+                smoothing_fwhm=self.smoothing_fwhm,
+                standardize=self.standardize,
+                detrend=self.detrend,
+                low_pass=self.low_pass,
+                high_pass=self.high_pass,
+                t_r=self.t_r,
+                memory=self.memory,
+                memory_level=self.memory_level,
+                verbose=self.verbose,
+            )
+        else:
+            # Requires for special cases like extracting signals on list of
+            # 3D images
+            imgs_list = iter_check_niimg(imgs, atleast_4d=True)
+            masker = NiftiLabelsMasker(
+                self.labels_img_,
+                mask_img=self.masker_.mask_img_,
+                smoothing_fwhm=self.smoothing_fwhm,
+                standardize=self.standardize,
+                detrend=self.detrend,
+                low_pass=self.low_pass,
+                high_pass=self.high_pass,
+                t_r=self.t_r,
+                resampling_target="data",
+                memory=self.memory,
+                memory_level=self.memory_level,
+                verbose=self.verbose,
+            )
 
         region_signals = Parallel(n_jobs=self.n_jobs)(
             delayed(
