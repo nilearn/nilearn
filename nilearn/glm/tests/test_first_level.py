@@ -62,6 +62,9 @@ extra_valid_checks = [
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
     "check_estimators_unfitted",
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_no_attributes_set_in_init",
+    "check_parameters_default_constructible",
 ]
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
@@ -1179,12 +1182,6 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     In particular, that derived theta are correct for a
     constant design matrix with a single valued fmri image
     """
-    # Check error with invalid signal_scaling values
-    with pytest.raises(ValueError, match="signal_scaling must be"):
-        FirstLevelModel(
-            mask_img=False, noise_model="ols", signal_scaling="foo"
-        )
-
     shapes, rk = [(3, 1, 1, 2)], 1
     design_matrices = [
         pd.DataFrame(
@@ -1193,6 +1190,14 @@ def test_first_level_with_no_signal_scaling(affine_eye):
         )
     ]
     fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye)]
+
+    # Check error with invalid signal_scaling values
+    with pytest.raises(ValueError, match="signal_scaling must be"):
+        flm = FirstLevelModel(
+            mask_img=False, noise_model="ols", signal_scaling="foo"
+        )
+        flm.fit(fmri_data, design_matrices=design_matrices)
+
     first_level = FirstLevelModel(
         mask_img=False, noise_model="ols", signal_scaling=False
     )
