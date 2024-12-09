@@ -146,12 +146,13 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-def test_threshold_bound_error():
+def test_threshold_bound_error(canica_data):
     """Test that an error is raised when the threshold is higher \
     than the number of components.
     """
     with pytest.raises(ValueError, match="Threshold must not be higher"):
-        CanICA(n_components=4, threshold=5.0)
+        canica = CanICA(n_components=4, threshold=5.0)
+        canica.fit(canica_data)
 
 
 def test_transform_and_fit_errors(canica_data, mask_img):
