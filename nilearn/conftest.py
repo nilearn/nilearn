@@ -538,10 +538,10 @@ def drop_surf_img_part():
 def surface_glm_data(rng, surf_img_2d):
     """Create a surface image and design matrix for testing."""
 
-    def _make_surface_img_and_design(shape=5):
+    def _make_surface_img_and_design(n_samples=5):
         des = pd.DataFrame(
-            rng.standard_normal((shape, 3)), columns=["", "", ""]
+            rng.standard_normal((n_samples, 3)), columns=["", "", ""]
         )
-        return surf_img_2d(shape), des
+        return surf_img_2d(n_samples), des
 
     return _make_surface_img_and_design
