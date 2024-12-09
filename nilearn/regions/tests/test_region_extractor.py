@@ -5,6 +5,7 @@ import pytest
 from nibabel import Nifti1Image
 from scipy.ndimage import label
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.exceptions import DimensionError
 from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_default
@@ -57,6 +58,53 @@ def maps_and_mask():
 def map_img_3d(rng):
     map_img = np.zeros(MAP_SHAPE) + 0.1 * rng.standard_normal(size=MAP_SHAPE)
     return Nifti1Image(map_img, affine=_affine_eye())
+
+
+extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_parameters_default_constructible",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+    "check_estimators_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            RegionExtractor(
+                maps_img=generate_maps(
+                    shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+                )
+            )
+        ],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            RegionExtractor(
+                maps_img=generate_maps(
+                    shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+                )
+            )
+        ],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize("invalid_threshold", ["80%", "auto", -1.0])
