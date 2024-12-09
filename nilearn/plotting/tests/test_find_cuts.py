@@ -46,13 +46,20 @@ def test_find_cut_coords(affine_eye):
         rtol=6e-2,
     )
 
-    # regression test (cf. #473)
-    # test case: no data exceeds the activation threshold
-    # Cut coords should be the center of mass rather than
-    # the center of the image (10, 10, 10).
+
+def test_no_data_exceeds_activation_threshold(affine_eye):
+    """Test when no data exceeds the activation threshold.
+
+    Cut coords should be the center of mass rather than
+    the center of the image (10, 10, 10).
+
+    regression test
+    https://github.com/nilearn/nilearn/issues/473
+    """
     data = np.ones((36, 43, 36))
     img = Nifti1Image(data, affine_eye)
-    x, y, z = find_xyz_cut_coords(img, activation_threshold=1.1)
+    with pytest.warns(UserWarning, match="All voxels were masked."):
+        x, y, z = find_xyz_cut_coords(img, activation_threshold=1.1)
     assert_array_equal([x, y, z], [17.5, 21.0, 17.5])
 
     data = np.zeros((20, 20, 20))
@@ -63,22 +70,42 @@ def test_find_cut_coords(affine_eye):
     cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
     assert_array_equal(cut_coords, [9.0, 9.0, 9.0])
 
-    # Check that a warning is given when all values are masked
-    # and that the center of mass is returned
+
+def test_warning_all_voxels_masked(affine_eye):
+    """Warning when all values are masked.
+
+    And that the center of mass is returned.
+    """
+    data = np.zeros((20, 20, 20))
+    data[4:6, 4:6, 4:6] = 1000
     img = Nifti1Image(data, affine_eye)
+
+    mask_data = np.ones((20, 20, 20), dtype="uint8")
     mask_data[np.argwhere(data == 1000)] = 0
     mask_img = Nifti1Image(mask_data, affine_eye)
+
     with pytest.warns(
         UserWarning,
         match=("Could not determine cut coords: All values were masked."),
     ):
         cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
+
     assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
 
-    # Check that a warning is given when all values are masked
-    # due to thresholding and that the center of mass is returned
+
+def test_warning_all_voxels_masked_thresholding(affine_eye):
+    """Warn when all values are masked due to thresholding.
+
+    Also return the center of mass is returned.
+    """
+    data = np.zeros((20, 20, 20))
+    data[4:6, 4:6, 4:6] = 1000
+    img = Nifti1Image(data, affine_eye)
+
     mask_data = np.ones((20, 20, 20), dtype="uint8")
+
     mask_img = Nifti1Image(mask_data, affine_eye)
+
     with pytest.warns(
         UserWarning,
         match=(
