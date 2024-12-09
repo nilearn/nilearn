@@ -1095,10 +1095,10 @@ class FirstLevelModel(BaseGLM):
                         warn(
                             f"Parameter {param_name} of the masker overridden"
                         )
-                    if isinstance(self.masker_, SurfaceMasker):
-                        if param_name not in ["target_affine", "target_shape"]:
-                            setattr(self.masker_, param_name, our_param)
-                    else:
+                    if (
+                        isinstance(self.masker_, SurfaceMasker)
+                        and param_name not in ["target_affine", "target_shape"]
+                    ) or not isinstance(self.masker_, SurfaceMasker):
                         setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_img)
             else:
