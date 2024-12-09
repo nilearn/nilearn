@@ -168,6 +168,12 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         del img, y
 
+        if self.labels_img is None:
+            raise ValueError(
+                "Please provide a labels_img to the masker. For example, "
+                "masker = SurfaceLabelsMasker(labels_img=labels_img)"
+            )
+
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)
         self._labels_ = list(all_labels)
