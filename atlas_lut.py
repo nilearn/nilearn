@@ -38,6 +38,70 @@ def rgb_to_hex_lookup(
     return rr + gg + bb
 
 
+def _generate_atlas_look_up_table(function, labels, indices=None):
+    if function.__name__ in [
+        "fetch_atlas_aal",
+        "fetch_atlas_talairach",
+        "fetch_atlas_pauli_2017",
+        "fetch_atlas_harvard_oxford",
+        "fetch_atlas_juelich",
+    ]:
+        name = labels
+
+    if function.__name__ == "fetch_atlas_aal":
+        return pd.DataFrame({"index": indices, "name": name})
+
+    elif function.__name__ == "fetch_atlas_surf_destrieux":
+        lut = pd.DataFrame(
+            {
+                "index": list(range(len(labels))),
+                "name": [x.decode() for x in labels],
+            }
+        )
+        return lut.replace("Unknown", "Background")
+
+    elif function.__name__ == "fetch_atlas_talairach":
+        return pd.DataFrame({"index": list(range(len(labels))), "name": name})
+
+    elif function.__name__ == "fetch_atlas_schaefer_2018":
+        lut = pd.DataFrame(
+            {
+                "index": list(range(1, len(labels) + 1)),
+                "name": [x.decode() for x in labels],
+            }
+        )
+        return pd.concat(
+            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
+            ignore_index=True,
+        )
+
+    elif function.__name__ == "fetch_atlas_pauli_2017":
+        lut = pd.DataFrame(
+            {
+                "index": list(range(1, len(labels) + 1)),
+                "name": labels,
+            }
+        )
+        return pd.concat(
+            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
+            ignore_index=True,
+        )
+
+    elif function.__name__ in [
+        "fetch_atlas_harvard_oxford",
+        "fetch_atlas_juelich",
+    ]:
+        return pd.DataFrame({"index": list(range(len(labels))), "name": name})
+
+    elif function.__name__ == "fetch_atlas_basc_multiscale_2015":
+        return pd.DataFrame(
+            {
+                "index": list(range(labels)),
+                "name": [str(x) for x in range(labels)],
+            }
+        )
+
+
 # %%
 atlas = fetch_atlas_destrieux_2009()
 print(atlas.labels)
@@ -62,92 +126,60 @@ print(lut)
 #  %%
 # TODO try all versions
 atlas = fetch_atlas_aal()
-lut = pd.DataFrame({"index": atlas.indices, "name": atlas.labels})
+lut = _generate_atlas_look_up_table(
+    fetch_atlas_aal, indices=atlas.indices, labels=atlas.labels
+)
 print(lut)
 
 # %%
 
 atlas = fetch_atlas_surf_destrieux()
-lut = pd.DataFrame(
-    {
-        "index": list(range(len(atlas.labels))),
-        "name": [x.decode() for x in atlas.labels],
-    }
+lut = _generate_atlas_look_up_table(
+    fetch_atlas_surf_destrieux, labels=atlas.labels
 )
-lut = lut.replace("Unknown", "Background")
 print(lut)
 
 # %%
 # TODO try all level_name
 atlas = fetch_atlas_talairach(level_name="ba")
-lut = pd.DataFrame(
-    {"index": list(range(len(atlas.labels))), "name": atlas.labels}
-)
+lut = _generate_atlas_look_up_table(fetch_atlas_talairach, labels=atlas.labels)
 print(lut)
+
 
 # %%
 # TODO: try all n_rois and yeos
 atlas = fetch_atlas_schaefer_2018()
-lut = pd.DataFrame(
-    {
-        "index": list(range(1, len(atlas.labels) + 1)),
-        "name": [x.decode() for x in atlas.labels],
-    }
-)
-lut = pd.concat(
-    [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
-    ignore_index=True,
+lut = _generate_atlas_look_up_table(
+    fetch_atlas_schaefer_2018, labels=atlas.labels
 )
 print(lut)
 
 
 # %%
 atlas = fetch_atlas_pauli_2017(version="det")
-lut = pd.DataFrame(
-    {
-        "index": list(range(1, len(atlas.labels) + 1)),
-        "name": atlas.labels,
-    }
-)
-lut = pd.concat(
-    [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
-    ignore_index=True,
+lut = _generate_atlas_look_up_table(
+    fetch_atlas_pauli_2017, labels=atlas.labels
 )
 print(lut)
 
 
 # %%
 atlas = fetch_atlas_harvard_oxford(atlas_name="cort-maxprob-thr0-1mm")
-lut = pd.DataFrame(
-    {"index": list(range(len(atlas.labels))), "name": atlas.labels}
+lut = _generate_atlas_look_up_table(
+    fetch_atlas_pauli_2017, labels=atlas.labels
 )
 print(lut)
-
-atlas = fetch_atlas_harvard_oxford(atlas_name="cortl-maxprob-thr0-1mm")
-lut = pd.DataFrame(
-    {"index": list(range(len(atlas.labels))), "name": atlas.labels}
-)
-print(lut)
-
-atlas = fetch_atlas_harvard_oxford(atlas_name="sub-maxprob-thr0-1mm")
-lut = pd.DataFrame(
-    {"index": list(range(len(atlas.labels))), "name": atlas.labels}
-)
-print(lut)
-
 
 #  %%
 atlas = fetch_atlas_juelich(atlas_name="maxprob-thr50-2mm")
-lut = pd.DataFrame(
-    {"index": list(range(len(atlas.labels))), "name": atlas.labels}
-)
+lut = _generate_atlas_look_up_table(fetch_atlas_juelich, labels=atlas.labels)
 print(lut)
 
 
 # %%
-
-atlas = fetch_atlas_basc_multiscale_2015(resolution=444)
-lut = pd.DataFrame(
-    {"index": list(range(len(atlas.labels))), "name": atlas.labels}
+resolution = 444
+atlas = fetch_atlas_basc_multiscale_2015(resolution=resolution)
+lut = _generate_atlas_look_up_table(
+    fetch_atlas_basc_multiscale_2015, labels=resolution
 )
-print(atlas)
+print(lut)
