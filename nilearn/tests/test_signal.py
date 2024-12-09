@@ -28,6 +28,8 @@ from nilearn.signal import (
     standardize_signal,
 )
 
+EPS = np.finfo(np.float64).eps
+
 
 def generate_signals(
     n_features=17, n_confounds=5, length=41, same_variance=True, order="C"
@@ -612,6 +614,11 @@ def signals():
     return generate_signals(n_features=41, n_confounds=5, length=45)[0]
 
 
+@pytest.fixture
+def confounds():
+    return generate_signals(n_features=41, n_confounds=5, length=45)[2]
+
+
 def test_clean_confounds_errros(signals):
     """Test error handling."""
     with pytest.raises(
@@ -725,13 +732,15 @@ def test_clean_confounds():
         cleaned_signals.var(axis=0), np.ones(cleaned_signals.shape[1])
     )
 
-    # Test with confounds read from a file. Smoke test only (result has
-    # no meaning).
-    current_dir = Path(__file__).parent
 
+def test_clean_confounds_inputs():
+    """Check several types of supported inputs."""
     signals, _, confounds = generate_signals(
         n_features=41, n_confounds=3, length=20
     )
+    # Test with confounds read from a file.
+    # Smoke test only (result has no meaning).
+    current_dir = Path(__file__).parent
     filename1 = current_dir / "data" / "spm_confounds.txt"
     filename2 = current_dir / "data" / "confounds_with_header.csv"
 
@@ -761,6 +770,9 @@ def test_clean_confounds():
         confounds=[filename1, confounds[:, 0:2], filename2, confounds[:, 2]],
     )
 
+
+def test_clean_warning(signals):
+    """Check warnings are thrown."""
     # Check warning message when no confound methods were specified,
     # but cutoff frequency provided.
     with pytest.warns(UserWarning, match="not perform filtering"):
@@ -782,11 +794,16 @@ def test_clean_confounds():
             np.zeros((20, 2)),
         )
 
-    # Test to check that confounders effects are effectively removed from
-    # the signals when having a detrending and filtering operation together.
-    # This did not happen originally due to a different order in which
-    # these operations were being applied to the data and confounders
-    # (it thus solves issue # 2730).
+
+def test_clean_confounds_are_removed(signals, confounds):
+    """Check that confounders effects are effectively removed.
+
+    Check that confounders effects are effectively removed from
+    the signals when having a detrending and filtering operation together.
+    This did not happen originally due to a different order in which
+    these operations were being applied to the data and confounders.
+    see https://github.com/nilearn/nilearn/issues/2730
+    """
     signals_clean = clean(
         signals,
         detrend=True,
@@ -798,7 +815,7 @@ def test_clean_confounds():
     confounds_clean = clean(
         confounds, detrend=True, high_pass=0.01, standardize=True
     )
-    assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * eps
+    assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * EPS
 
 
 def test_clean_frequencies_using_power_spectrum_density():
