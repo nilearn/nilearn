@@ -1,13 +1,19 @@
 import warnings
 from pathlib import Path
-
-import pytest
 from unittest.mock import patch
 
+import pytest
+
 from nilearn._utils.helpers import (
-    _set_mpl_backend, is_matplotlib_installed, rename_parameters,
-    _transfer_deprecated_param_vals, _warn_deprecated_params, compare_version,
-    is_plotly_installed, is_kaleido_installed, stringify_path
+    _set_mpl_backend,
+    _transfer_deprecated_param_vals,
+    _warn_deprecated_params,
+    compare_version,
+    is_kaleido_installed,
+    is_matplotlib_installed,
+    is_plotly_installed,
+    rename_parameters,
+    stringify_path,
 )
 
 WARNING = "matplotlib is not installed"
@@ -36,10 +42,10 @@ def _mock_args_for_testing_replace_parameter():
 )
 def test_should_raise_warning_if_mpl_not_installed():
     with (
-            pytest.warns(UserWarning, match="matplotlib is not installed"),
-            pytest.raises(
-                ModuleNotFoundError, match="No module named 'matplotlib'"
-            ),
+        pytest.warns(UserWarning, match="matplotlib is not installed"),
+        pytest.raises(
+            ModuleNotFoundError, match="No module named 'matplotlib'"
+        ),
     ):
         _set_mpl_backend(WARNING)
 
