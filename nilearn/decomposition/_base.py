@@ -18,7 +18,7 @@ from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.maskers import NiftiMapsMasker, SurfaceMasker
+from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger
@@ -482,15 +482,21 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         )
         self._raw_fit(data)
 
-        # Create and fit NiftiMapsMasker for transform
+        # Create and fit appropriate MapsMasker for transform
         # and inverse_transform
-        self.nifti_maps_masker_ = NiftiMapsMasker(
-            self.components_img_,
-            self.masker_.mask_img_,
-            resampling_target="maps",
-        )
+        if isinstance(self.masker_, SurfaceMasker):
+            self.surface_maps_masker_ = SurfaceMapsMasker(
+                self.components_img_, self.masker_.mask_img_
+            )
+            self.surface_maps_masker_.fit()
+        else:
+            self.nifti_maps_masker_ = NiftiMapsMasker(
+                self.components_img_,
+                self.masker_.mask_img_,
+                resampling_target="maps",
+            )
 
-        self.nifti_maps_masker_.fit()
+            self.nifti_maps_masker_.fit()
 
         return self
 
