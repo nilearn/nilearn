@@ -38,7 +38,7 @@ def rgb_to_hex_lookup(
     return rr + gg + bb
 
 
-def _generate_atlas_look_up_table(function, labels, indices=None):
+def _generate_atlas_look_up_table(function, labels, index=None):
     if function.__name__ in [
         "fetch_atlas_aal",
         "fetch_atlas_talairach",
@@ -47,6 +47,13 @@ def _generate_atlas_look_up_table(function, labels, indices=None):
         "fetch_atlas_juelich",
     ]:
         name = labels
+    elif function.__name__ in [
+        "fetch_atlas_surf_destrieux",
+        "fetch_atlas_schaefer_2018",
+    ]:
+        name = [x.decode() for x in labels]
+    elif function.__name__ in ["fetch_atlas_basc_multiscale_2015"]:
+        name = [str(x) for x in range(labels)]
 
     if function.__name__ in [
         "fetch_atlas_surf_destrieux",
@@ -55,58 +62,40 @@ def _generate_atlas_look_up_table(function, labels, indices=None):
         "fetch_atlas_juelich",
     ]:
         index = list(range(len(labels)))
+    elif function.__name__ in ["fetch_atlas_basc_multiscale_2015"]:
+        index = list(range(labels))
 
-    if function.__name__ == "fetch_atlas_aal":
-        return pd.DataFrame({"index": indices, "name": name})
+    if function.__name__ in [
+        "fetch_atlas_harvard_oxford",
+        "fetch_atlas_juelich",
+        "fetch_atlas_talairach",
+        "fetch_atlas_aal",
+        "fetch_atlas_basc_multiscale_2015",
+    ]:
+        return pd.DataFrame({"index": index, "name": name})
 
     elif function.__name__ == "fetch_atlas_surf_destrieux":
         lut = pd.DataFrame(
             {
                 "index": index,
-                "name": [x.decode() for x in labels],
+                "name": name,
             }
         )
         return lut.replace("Unknown", "Background")
 
-    elif function.__name__ == "fetch_atlas_talairach":
-        return pd.DataFrame({"index": index, "name": name})
-
-    elif function.__name__ == "fetch_atlas_schaefer_2018":
-        lut = pd.DataFrame(
-            {
-                "index": list(range(1, len(labels) + 1)),
-                "name": [x.decode() for x in labels],
-            }
-        )
-        return pd.concat(
-            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
-            ignore_index=True,
-        )
-
-    elif function.__name__ == "fetch_atlas_pauli_2017":
-        lut = pd.DataFrame(
-            {
-                "index": list(range(1, len(labels) + 1)),
-                "name": labels,
-            }
-        )
-        return pd.concat(
-            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
-            ignore_index=True,
-        )
-
     elif function.__name__ in [
-        "fetch_atlas_harvard_oxford",
-        "fetch_atlas_juelich",
+        "fetch_atlas_schaefer_2018",
+        "fetch_atlas_pauli_2017",
     ]:
-        return pd.DataFrame({"index": index, "name": name})
-
-    elif function.__name__ == "fetch_atlas_basc_multiscale_2015":
-        return pd.DataFrame(
+        lut = pd.DataFrame(
             {
-                "index": list(range(labels)),
-                "name": [str(x) for x in range(labels)],
+                "index": list(range(1, len(name) + 1)),
+                "name": name,
             }
+        )
+        return pd.concat(
+            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
+            ignore_index=True,
         )
 
 
@@ -135,7 +124,7 @@ print(lut)
 # TODO try all versions
 atlas = fetch_atlas_aal()
 lut = _generate_atlas_look_up_table(
-    fetch_atlas_aal, indices=atlas.indices, labels=atlas.labels
+    fetch_atlas_aal, index=atlas.index, labels=atlas.labels
 )
 print(lut)
 
