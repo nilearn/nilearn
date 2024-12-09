@@ -3,7 +3,13 @@
 # Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
 from nilearn._utils.helpers import _set_mpl_backend
 
-_set_mpl_backend()
+WARNING = (
+    "Some dependencies of nilearn.plotting package seem to be missing."
+    "\nThey can be installed with:\n"
+    " pip install 'nilearn[plotting]'"
+)
+
+_set_mpl_backend(WARNING)
 
 ###############################################################################
 from . import cm
