@@ -201,7 +201,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
-            cmap=cmap**kwargs,
+            cmap=cmap,
+            **kwargs,
         )
         self.n_jobs = n_jobs
         self._shelving = False
