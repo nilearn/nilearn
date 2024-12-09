@@ -77,17 +77,26 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         Mask of the data. If not given, a mask is computed in the fit step.
         Optional parameters can be set using mask_args and mask_strategy to
         fine tune the mask extraction.
+
     %(smoothing_fwhm)s
+
     %(standardize_maskers)s
+
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
+
     %(detrend)s
-    %(low_pass)s
+
+    %(low_pass)
+
     %(high_pass)s
+
     %(t_r)s
+
     target_affine : 3x3 or 4x4 :obj:`numpy.ndarray`, optional
         This parameter is passed to image.resample_img. Please see the
         related documentation for details.
@@ -117,10 +126,15 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
+
     %(memory)s
+
     %(memory_level)s
+
     %(n_jobs)s
+
     %(verbose0)s
+
     %(masker_kwargs)s
 
     Attributes
@@ -165,6 +179,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        cmap="CMRmap_r",
         **kwargs,
     ):
         super().__init__(
@@ -186,7 +201,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
-            **kwargs,
+            cmap=cmap**kwargs,
         )
         self.n_jobs = n_jobs
         self._shelving = False
