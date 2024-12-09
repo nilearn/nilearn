@@ -7,6 +7,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 import scipy.signal
+from numpy.testing import assert_almost_equal
 from pandas import read_csv
 
 # Use nisignal here to avoid name collisions (using nilearn.signal is
@@ -140,13 +141,13 @@ def test_butterworth(data_butterworth_single_timeseries):
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=True
     )
 
-    np.testing.assert_almost_equal(data, data_original)
+    assert_almost_equal(data, data_original)
 
     nisignal.butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=False
     )
 
-    np.testing.assert_almost_equal(out_single, data)
+    assert_almost_equal(out_single, data)
     assert id(out_single) != id(data)
 
 
@@ -171,15 +172,15 @@ def test_butterworth_multiple_timeseries(
     out1 = nisignal.butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=True
     )
-    np.testing.assert_almost_equal(data, data_original)
+    assert_almost_equal(data, data_original)
     assert id(out1) != id(data_original)
 
     # check that multiple- and single-timeseries filtering do the same thing.
-    np.testing.assert_almost_equal(out1[:, 0], out_single)
+    assert_almost_equal(out1[:, 0], out_single)
     nisignal.butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=False
     )
-    np.testing.assert_almost_equal(out1, data)
+    assert_almost_equal(out1, data)
 
     # Test nyquist frequency clipping, issue #482
     out1 = nisignal.butterworth(data, sampling, low_pass=50.0, copy=True)
@@ -189,7 +190,7 @@ def test_butterworth_multiple_timeseries(
         low_pass=80.0,
         copy=True,  # Greater than nyq frequency
     )
-    np.testing.assert_almost_equal(out1, out2)
+    assert_almost_equal(out1, out2)
     assert id(out1) != id(out2)
 
 
@@ -318,18 +319,18 @@ def test_standardize(rng):
     # Without trend removal
     b = nisignal.standardize_signal(a, standardize="zscore_sample")
     stds = np.std(b)
-    np.testing.assert_almost_equal(stds, np.ones(n_features), decimal=1)
-    np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
+    assert_almost_equal(stds, np.ones(n_features), decimal=1)
+    assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2.0, n_features)).T
     b = nisignal.standardize_signal(a, detrend=True, standardize=False)
-    np.testing.assert_almost_equal(b, np.zeros(b.shape))
+    assert_almost_equal(b, np.zeros(b.shape))
 
     b = nisignal.standardize_signal(
         a, detrend=True, standardize="zscore_sample"
     )
-    np.testing.assert_almost_equal(b, np.zeros(b.shape))
+    assert_almost_equal(b, np.zeros(b.shape))
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2.0, n_features))
     np.testing.assert_array_equal(
@@ -360,18 +361,18 @@ def test_detrend():
     detrended_scipy = scipy.signal.detrend(x, axis=0)
 
     # "x" must be left untouched
-    np.testing.assert_almost_equal(original, x, decimal=14)
+    assert_almost_equal(original, x, decimal=14)
     assert abs(detrended.mean(axis=0)).max() < 15.0 * np.finfo(np.float64).eps
-    np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
+    assert_almost_equal(detrended_scipy, detrended, decimal=14)
     # for this to work, there must be no trends at all in "signals"
-    np.testing.assert_almost_equal(detrended, signals, decimal=14)
+    assert_almost_equal(detrended, signals, decimal=14)
 
     # inplace detrending
     nisignal._detrend(x, inplace=True)
     assert abs(x.mean(axis=0)).max() < 15.0 * np.finfo(np.float64).eps
     # for this to work, there must be no trends at all in "signals"
-    np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
-    np.testing.assert_almost_equal(x, signals, decimal=14)
+    assert_almost_equal(detrended_scipy, detrended, decimal=14)
+    assert_almost_equal(x, signals, decimal=14)
 
     length_1_signal = x[0]
     length_1_signal = length_1_signal[np.newaxis, :]
@@ -400,7 +401,7 @@ def test_mean_of_squares():
 
     var2 = nisignal._mean_of_squares(signals)
 
-    np.testing.assert_almost_equal(var1, var2)
+    assert_almost_equal(var1, var2)
 
 
 def test_row_sum_of_squares():
@@ -416,7 +417,7 @@ def test_row_sum_of_squares():
 
     var2 = nisignal.row_sum_of_squares(signals)
 
-    np.testing.assert_almost_equal(var1, var2)
+    assert_almost_equal(var1, var2)
 
 
 # This test is inspired from Scipy docstring of detrend function
@@ -439,7 +440,7 @@ def test_clean_detrending():
     assert np.any(np.isfinite(y_clean)), True
     # clean should not modify inputs
     # using assert_almost_equal instead of array_equal due to NaNs
-    np.testing.assert_almost_equal(y_orig, y, decimal=13)
+    assert_almost_equal(y_orig, y, decimal=13)
 
     # test boolean is not given to signal.clean
     with pytest.raises(TypeError):
@@ -451,7 +452,7 @@ def test_clean_detrending():
     x_detrended = nisignal.clean(
         x, standardize=False, detrend=True, low_pass=None, high_pass=None
     )
-    np.testing.assert_almost_equal(x_detrended, signals, decimal=13)
+    assert_almost_equal(x_detrended, signals, decimal=13)
     # clean should not modify inputs
     assert np.array_equal(x_orig, x)
 
@@ -628,7 +629,7 @@ def test_clean_confounds():
     cleaned_signals1 = nisignal.clean(
         signals + noises, confounds=confounds1, detrend=False, standardize=True
     )
-    np.testing.assert_almost_equal(cleaned_signals1, cleaned_signals)
+    assert_almost_equal(cleaned_signals1, cleaned_signals)
 
     # Test detrending. No trend should exist in the output.
     # Use confounds with a trend.
@@ -656,12 +657,12 @@ def test_clean_confounds():
     cleaned_signals = nisignal.clean(
         input_signals, detrend=False, standardize=False
     )
-    np.testing.assert_almost_equal(cleaned_signals, input_signals)
+    assert_almost_equal(cleaned_signals, input_signals)
 
     cleaned_signals = nisignal.clean(
         input_signals, detrend=False, standardize=True
     )
-    np.testing.assert_almost_equal(
+    assert_almost_equal(
         cleaned_signals.var(axis=0), np.ones(cleaned_signals.shape[1])
     )
 
@@ -741,7 +742,7 @@ def test_clean_confounds():
     # passing standardize_confounds=False, detrend=False should raise warning
     warning_message = r"must perform detrend and/or standardize confounds"
     with pytest.warns(UserWarning, match=warning_message):
-        np.testing.assert_almost_equal(
+        assert_almost_equal(
             nisignal.clean(
                 np.ones((20, 2)),
                 standardize=False,
@@ -898,21 +899,21 @@ def test_high_variance_confounds():
         n_features=n_features, length=length, order="F"
     )
 
-    np.testing.assert_almost_equal(seriesC, seriesF, decimal=13)
+    assert_almost_equal(seriesC, seriesF, decimal=13)
     outC = nisignal.high_variance_confounds(
         seriesC, n_confounds=n_confounds, detrend=False
     )
     outF = nisignal.high_variance_confounds(
         seriesF, n_confounds=n_confounds, detrend=False
     )
-    np.testing.assert_almost_equal(outC, outF, decimal=13)
+    assert_almost_equal(outC, outF, decimal=13)
 
     # Result must not be influenced by global scaling
     seriesG = 2 * seriesC
     outG = nisignal.high_variance_confounds(
         seriesG, n_confounds=n_confounds, detrend=False
     )
-    np.testing.assert_almost_equal(outC, outG, decimal=13)
+    assert_almost_equal(outC, outG, decimal=13)
     assert outG.shape == (length, n_confounds)
 
     # Changing percentile changes the result
@@ -921,7 +922,7 @@ def test_high_variance_confounds():
         seriesG, percentile=1.0, n_confounds=n_confounds, detrend=False
     )
     with pytest.raises(AssertionError):
-        np.testing.assert_almost_equal(outC, outG, decimal=13)
+        assert_almost_equal(outC, outG, decimal=13)
     assert outG.shape == (length, n_confounds)
 
     # Check shape of output
@@ -944,11 +945,11 @@ def test_high_variance_confounds():
     # Since sign flips could occur, we look at the absolute values of the
     # covariance, rather than the absolute difference, and compare this to
     # the identity matrix
-    np.testing.assert_almost_equal(
+    assert_almost_equal(
         np.abs(outG.T.dot(outG)), np.identity(outG.shape[1]), decimal=13
     )
     # Control for sign flips by taking the min of both possibilities
-    np.testing.assert_almost_equal(
+    assert_almost_equal(
         np.min(np.abs(np.dstack([outG - outGt, outG + outGt])), axis=2),
         np.zeros(outG.shape),
     )
@@ -958,7 +959,7 @@ def test_high_variance_confounds():
     out1 = nisignal.high_variance_confounds(seriesG, n_confounds=n_confounds)
     seriesG[:, 0] = np.nan
     out2 = nisignal.high_variance_confounds(seriesG, n_confounds=n_confounds)
-    np.testing.assert_almost_equal(out1, out2, decimal=13)
+    assert_almost_equal(out1, out2, decimal=13)
 
 
 def test_clean_standardize_false():
@@ -968,7 +969,7 @@ def test_clean_standardize_false():
 
     signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
     cleaned_signals = clean(signals, standardize=False, detrend=False)
-    np.testing.assert_almost_equal(cleaned_signals, signals)
+    assert_almost_equal(cleaned_signals, signals)
 
     # these show return the same results
     cleaned_butterworth_signals = clean(
@@ -1008,13 +1009,13 @@ def test_clean_psc(rng):
         ss_signals = nisignal.standardize_signal(
             s, detrend=False, standardize="psc"
         )
-        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-        np.testing.assert_almost_equal(cleaned_signals, ss_signals)
+        assert_almost_equal(cleaned_signals.mean(0), 0)
+        assert_almost_equal(cleaned_signals, ss_signals)
 
         # psc signal should correlate with z score, since it's just difference
         # in scaling
         z_signals = clean(s, standardize="zscore_sample", detrend=False)
-        np.testing.assert_almost_equal(
+        assert_almost_equal(
             np.corrcoef(z_signals[:, 0], cleaned_signals[:, 0])[0, 1],
             0.99999,
             decimal=5,
@@ -1022,8 +1023,8 @@ def test_clean_psc(rng):
 
         cleaned_signals = clean(s, standardize="psc", detrend=True)
         z_signals = clean(s, standardize="zscore_sample", detrend=True)
-        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-        np.testing.assert_almost_equal(
+        assert_almost_equal(cleaned_signals.mean(0), 0)
+        assert_almost_equal(
             np.corrcoef(z_signals[:, 0], cleaned_signals[:, 0])[0, 1],
             0.99999,
             decimal=5,
@@ -1046,8 +1047,8 @@ def test_clean_psc(rng):
             t_r=2,
             standardize="zscore_sample",
         )
-        np.testing.assert_almost_equal(hp_butterworth_signals.mean(0), 0)
-        np.testing.assert_almost_equal(
+        assert_almost_equal(hp_butterworth_signals.mean(0), 0)
+        assert_almost_equal(
             np.corrcoef(
                 z_butterworth_signals[:, 0], hp_butterworth_signals[:, 0]
             )[0, 1],
@@ -1074,13 +1075,13 @@ def test_clean_zscore(rng):
 
     signals += rng.standard_normal(size=(1, n_features))
     cleaned_signals_ = clean(signals, standardize="zscore")
-    np.testing.assert_almost_equal(cleaned_signals_.mean(0), 0)
-    np.testing.assert_almost_equal(cleaned_signals_.std(0), 1)
+    assert_almost_equal(cleaned_signals_.mean(0), 0)
+    assert_almost_equal(cleaned_signals_.std(0), 1)
 
     # Repeating test above but for new correct strategy
     cleaned_signals = clean(signals, standardize="zscore_sample")
-    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-    np.testing.assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
+    assert_almost_equal(cleaned_signals.mean(0), 0)
+    assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
 
     # Show outcome from two zscore strategies is not equal
     with pytest.raises(AssertionError):
@@ -1105,15 +1106,13 @@ def test_create_cosine_drift_terms():
     cosine_confounds = nisignal._create_cosine_drift_terms(
         signals, confounds, high_pass, t_r
     )
-    np.testing.assert_almost_equal(
-        cosine_confounds, np.hstack((confounds, cosine_drift))
-    )
+    assert_almost_equal(cosine_confounds, np.hstack((confounds, cosine_drift)))
 
     # Not passing confounds it will return drift terms only
     drift_terms_only = nisignal._create_cosine_drift_terms(
         signals, None, high_pass, t_r
     )
-    np.testing.assert_almost_equal(drift_terms_only, cosine_drift)
+    assert_almost_equal(drift_terms_only, cosine_drift)
 
     # drift terms in confounds will create warning and no change to confounds
     with pytest.warns(UserWarning, match="user supplied confounds"):
