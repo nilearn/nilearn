@@ -1444,10 +1444,10 @@ def test_second_lvl_dataframe_computation(tmp_path, shape_3d_default):
 # -----------------------surface tests----------------------- #
 
 
-def test_second_level_input_as_surface_image(surf_img):
+def test_second_level_input_as_surface_image(surf_img_1d):
     """Test slm with a list surface images as input."""
     n_subjects = 5
-    second_level_input = [surf_img() for _ in range(n_subjects)]
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame(
         [1] * len(second_level_input), columns=["intercept"]
@@ -1457,10 +1457,10 @@ def test_second_level_input_as_surface_image(surf_img):
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
-def test_second_level_input_as_surface_image_3d(surf_img):
+def test_second_level_input_as_surface_image_3d(surf_img_2d):
     """Fit with surface image with all subjects as timepoints."""
     n_subjects = 5
-    second_level_input = surf_img(n_subjects)
+    second_level_input = surf_img_2d(n_subjects)
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
@@ -1469,10 +1469,10 @@ def test_second_level_input_as_surface_image_3d(surf_img):
     model.fit(second_level_input, design_matrix=design_matrix)
 
 
-def test_second_level_input_error_surface_image_2d(surf_img):
+def test_second_level_input_error_surface_image_2d(surf_img_2d):
     """Err when passing a single 2D SurfaceImage with."""
     n_subjects = 1
-    second_level_input = surf_img(n_subjects)
+    second_level_input = surf_img_2d(n_subjects)
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
@@ -1482,10 +1482,10 @@ def test_second_level_input_error_surface_image_2d(surf_img):
         model.fit(second_level_input, design_matrix=design_matrix)
 
 
-def test_second_level_input_as_surface_image_3d_same_as_list_2d(surf_img):
+def test_second_level_input_as_surface_image_3d_same_as_list_2d(surf_img_1d):
     """Fit all subjects as timepoints same as list of subject."""
     n_subjects = 5
-    second_level_input = [surf_img() for _ in range(n_subjects)]
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
@@ -1500,10 +1500,10 @@ def test_second_level_input_as_surface_image_3d_same_as_list_2d(surf_img):
     assert_surface_image_equal(result_2d, result_3d)
 
 
-def test_second_level_input_as_surface_no_design_matrix(surf_img):
+def test_second_level_input_as_surface_no_design_matrix(surf_img_1d):
     """Raise error when design matrix is missing."""
     n_subjects = 5
-    second_level_input = [surf_img() for _ in range(n_subjects)]
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
     model = SecondLevelModel()
 
@@ -1513,10 +1513,10 @@ def test_second_level_input_as_surface_no_design_matrix(surf_img):
         model.fit(second_level_input, design_matrix=None)
 
 
-def test_second_level_input_as_surface_image_with_mask(surf_img, surf_mask):
+def test_second_level_input_as_surface_image_with_mask(surf_img_1d, surf_mask):
     """Test slm with surface mask and a list surface images as input."""
     n_subjects = 5
-    second_level_input = [surf_img() for _ in range(n_subjects)]
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame(
         [1] * len(second_level_input), columns=["intercept"]
@@ -1526,10 +1526,10 @@ def test_second_level_input_as_surface_image_with_mask(surf_img, surf_mask):
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
-def test_second_level_input_as_surface_image_warning_smoothing(surf_img):
+def test_second_level_input_as_surface_image_warning_smoothing(surf_img_1d):
     """Warn smoothing surface not implemented."""
     n_subjects = 5
-    second_level_input = [surf_img() for _ in range(n_subjects)]
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame(
         [1] * len(second_level_input), columns=["intercept"]
@@ -1558,9 +1558,9 @@ def test_second_level_input_as_flm_of_surface_image(surface_glm_data):
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
-def test_second_level_surface_image_contrast_computation(surf_img):
+def test_second_level_surface_image_contrast_computation(surf_img_1d):
     n_subjects = 5
-    second_level_input = [surf_img() for _ in range(n_subjects)]
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
     design_matrix = pd.DataFrame(
         [1] * len(second_level_input), columns=["intercept"]
