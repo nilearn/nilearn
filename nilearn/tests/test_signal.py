@@ -613,29 +613,57 @@ def signals():
 
 
 def test_clean_confounds_errros(signals):
-    # Test error handling
-    with pytest.raises(TypeError):
+    """Test error handling."""
+    with pytest.raises(
+        TypeError, match="confounds keyword has an unhandled type"
+    ):
         clean(signals, confounds=1)
-    with pytest.raises(ValueError):
+
+    with pytest.raises(TypeError, match="confound has an unhandled type"):
+        clean(signals, confounds=[None])
+
+    with pytest.raises(
+        ValueError, match="Confound signal has an incorrect length"
+    ):
         clean(signals, confounds=np.zeros(2))
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Confound signal has an incorrect length"
+    ):
         clean(signals, confounds=np.zeros((2, 2)))
-    with pytest.raises(ValueError):
-        clean(signals, confounds=np.zeros((2, 3, 4)))
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="Confound signal has an incorrect length."
+    ):
         current_dir = Path(__file__).parent
         filename1 = current_dir / "data" / "spm_confounds.txt"
         clean(signals[:-1, :], confounds=filename1)
-    with pytest.raises(TypeError):
-        clean(signals, confounds=[None])
-    with pytest.raises(ValueError, match="t_r='None'"):
+
+    with pytest.raises(
+        ValueError,
+        match="confound array has an incorrect number of dimensions",
+    ):
+        clean(signals, confounds=np.zeros((2, 3, 4)))
+
+    with pytest.raises(
+        ValueError,
+        match="Repetition time .* and low cutoff frequency .*",
+    ):
         clean(signals, filter="cosine", t_r=None, high_pass=0.008)
-    with pytest.raises(ValueError):
+
+    with pytest.raises(
+        ValueError,
+        match="Repetition time .* must be specified for butterworth.",
+    ):
         # using butterworth filter here
         clean(signals, t_r=None, low_pass=0.01)
-    with pytest.raises(ValueError):
+
+    with pytest.raises(
+        ValueError, match="Filter method not_implemented not implemented."
+    ):
         clean(signals, filter="not_implemented")
-    with pytest.raises(ValueError):
+
+    with pytest.raises(
+        ValueError, match="'ensure_finite' must be boolean type True or False"
+    ):
         clean(signals, ensure_finite=None)
 
 
