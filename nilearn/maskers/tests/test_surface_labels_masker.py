@@ -393,10 +393,6 @@ def test_surface_label_masker_inverse_transform_list_surf_images(
     assert img.shape == (surf_label_img.mesh.n_vertices, 7)
 
 
-def test_surface_label_masker_list_inverse_transform_output(surf_mesh):
-    """Test inverse_transform output is as expected."""
-
-
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
