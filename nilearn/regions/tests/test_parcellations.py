@@ -319,8 +319,13 @@ def test_parcellation_all_methods_with_surface(
     surf_img, surf_mask, method, n_parcels
 ):
     """Test if all parcellation methods work on surface."""
+    # TODO: remove after #4897 is merged
+    surf_mask = surf_mask()
+    surf_mask.data.parts["left"] = surf_mask.data.parts["left"].squeeze()
+    surf_mask.data.parts["right"] = surf_mask.data.parts["right"].squeeze()
+
     # create a surface masker
-    masker = SurfaceMasker(surf_mask()).fit()
+    masker = SurfaceMasker(surf_mask).fit()
     # mask the surface image
     X = masker.transform(surf_img(50))
     parcellate = Parcellations(method=method, n_parcels=n_parcels, mask=masker)
