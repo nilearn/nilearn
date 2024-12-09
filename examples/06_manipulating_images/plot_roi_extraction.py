@@ -88,10 +88,10 @@ haxby_labels = run_target["labels"]
 # spatial filtering kernel on the data. Such data smoothing is usually applied
 # using a Gaussian function with 4mm to 12mm
 # :term:`full-width at half-maximum<FWHM>` (this is where the :term:`FWHM`
-# comes from). The function :func:`nilearn.image.smooth_img` accounts for
+# comes from). The function :func:`~nilearn.image.smooth_img` accounts for
 # potential anisotropy in the image affine (i.e., non-indentical
 # :term:`voxel` size in all the three dimensions). Analogous to the
-# majority of nilearn functions, :func:`nilearn.image.smooth_img` can
+# majority of nilearn functions, :func:`~nilearn.image.smooth_img` can
 # also use file names as input parameters.
 
 # Smooth the data using image processing module from nilearn
