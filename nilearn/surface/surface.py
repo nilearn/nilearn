@@ -1273,13 +1273,13 @@ class PolyData:
         _data_to_gifti(data, filename)
 
 
-def surface_at_least_2d(input):
+def at_least_2d(input):
     """Force surface image or polydata to be 2d."""
     if len(input.shape) == 2:
         return input
 
     if isinstance(input, SurfaceImage):
-        input.data = surface_at_least_2d(input.data)
+        input.data = at_least_2d(input.data)
         return input
 
     if len(input.shape) == 1:
