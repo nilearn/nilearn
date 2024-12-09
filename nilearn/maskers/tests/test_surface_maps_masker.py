@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
 
@@ -34,6 +35,47 @@ def surf_maps_img(surf_mesh, rng):
     # multiply with random "probability" values
     data = {part: data[part] * rng.random(data[part].shape) for part in data}
     return SurfaceImage(surf_mesh(), data)
+
+
+# tests for scikit-learn compatibility
+extra_valid_checks = [
+    "check_no_attributes_set_in_init",
+    "check_parameters_default_constructible",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+    "check_estimator_repr",
+    "check_estimator_cloneable",
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_estimators_unfitted",
+    "check_mixin_order",
+    "check_estimator_tags_renamed",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[SurfaceMapsMasker(surf_maps_img)],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[SurfaceMapsMasker(surf_maps_img)],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_surface_maps_masker_fit_transform_shape(
