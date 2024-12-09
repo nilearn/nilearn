@@ -154,6 +154,12 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         del img, y
 
+        if self.maps_img is None:
+            raise ValueError(
+                "Please provide a maps_img during initialization. "
+                "For example, masker = SurfaceMapsMasker(maps_img=maps_img)"
+            )
+
         logger.log(
             msg=f"loading regions from {self.maps_img.__repr__()}",
             verbose=self.verbose,
