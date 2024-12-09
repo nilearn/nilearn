@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_allclose, assert_array_equal
 
 from nilearn.masking import compute_epi_mask
 from nilearn.plotting.find_cuts import (
@@ -24,7 +25,7 @@ def test_find_cut_coords(affine_eye, rng):
     mask_img = compute_epi_mask(img)
     x, y, z = find_xyz_cut_coords(img, mask_img=mask_img)
 
-    np.testing.assert_allclose(
+    assert_allclose(
         (x, y, z),
         (x_map, y_map, z_map),
         # Need such a high tolerance for the test to
@@ -37,7 +38,7 @@ def test_find_cut_coords(affine_eye, rng):
     img = Nifti1Image(data, affine)
     mask_img = compute_epi_mask(img)
     x, y, z = find_xyz_cut_coords(img, mask_img=mask_img)
-    np.testing.assert_allclose(
+    assert_allclose(
         (x, y, z),
         (x_map / 2.0, y_map / 3.0, z_map / 4.0),
         # Need such a high tolerance for the test to
@@ -52,7 +53,7 @@ def test_find_cut_coords(affine_eye, rng):
     data = np.ones((36, 43, 36))
     img = Nifti1Image(data, affine_eye)
     x, y, z = find_xyz_cut_coords(img, activation_threshold=1.1)
-    np.testing.assert_array_equal([x, y, z], [17.5, 21.0, 17.5])
+    assert_array_equal([x, y, z], [17.5, 21.0, 17.5])
 
     data = np.zeros((20, 20, 20))
     data[4:6, 4:6, 4:6] = 1000
@@ -60,7 +61,7 @@ def test_find_cut_coords(affine_eye, rng):
     mask_data = np.ones((20, 20, 20), dtype="uint8")
     mask_img = Nifti1Image(mask_data, 2 * affine_eye)
     cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
-    np.testing.assert_array_equal(cut_coords, [9.0, 9.0, 9.0])
+    assert_array_equal(cut_coords, [9.0, 9.0, 9.0])
 
     # Check that a warning is given when all values are masked
     # and that the center of mass is returned
@@ -72,7 +73,7 @@ def test_find_cut_coords(affine_eye, rng):
         match=("Could not determine cut coords: All values were masked."),
     ):
         cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
-    np.testing.assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
+    assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
 
     # Check that a warning is given when all values are masked
     # due to thresholding and that the center of mass is returned
@@ -88,7 +89,7 @@ def test_find_cut_coords(affine_eye, rng):
         cut_coords = find_xyz_cut_coords(
             img, mask_img=mask_img, activation_threshold=10**3
         )
-    np.testing.assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
+    assert_array_equal(cut_coords, [4.5, 4.5, 4.5])
 
     # regression test (cf. #922)
     # pseudo-4D images as input (i.e., X, Y, Z, 1)
@@ -206,7 +207,7 @@ def test_passing_of_ncuts_in_find_cut_slices(affine_eye):
     for n_cuts in (1, 5.0, 0.9999999, 2.000000004):
         cut1 = find_cut_slices(img, direction="x", n_cuts=n_cuts)
         cut2 = find_cut_slices(img, direction="x", n_cuts=round(n_cuts))
-        np.testing.assert_array_equal(cut1, cut2)
+        assert_array_equal(cut1, cut2)
 
 
 def test_singleton_ax_dim(affine_eye):
@@ -239,7 +240,7 @@ def test_find_cuts_empty_mask_no_crash(affine_eye):
     mask_img = compute_epi_mask(img)
     with pytest.warns(UserWarning):
         cut_coords = find_xyz_cut_coords(img, mask_img=mask_img)
-    np.testing.assert_array_equal(cut_coords, [0.5, 0.5, 0.5])
+    assert_array_equal(cut_coords, [0.5, 0.5, 0.5])
 
 
 def test_fast_abs_percentile_no_index_error_find_cuts(affine_eye):
@@ -290,17 +291,17 @@ def test_find_parcellation_cut_coords(affine_eye):
     assert list(labels) == labels_list
 
     # Match with the number of non-overlapping labels
-    np.testing.assert_allclose(
+    assert_allclose(
         (coords[0][0], coords[0][1], coords[0][2]),
         (x_map_a, y_map_a, z_map_a),
         rtol=6e-2,
     )
-    np.testing.assert_allclose(
+    assert_allclose(
         (coords[1][0], coords[1][1], coords[1][2]),
         (x_map_b, y_map_b, z_map_b),
         rtol=6e-2,
     )
-    np.testing.assert_allclose(
+    assert_allclose(
         (coords[2][0], coords[2][1], coords[2][2]),
         (x_map_c, y_map_c, z_map_c),
         rtol=6e-2,
@@ -311,17 +312,17 @@ def test_find_parcellation_cut_coords(affine_eye):
     img = Nifti1Image(data, affine)
     coords = find_parcellation_cut_coords(img)
     assert (n_labels, 3) == coords.shape
-    np.testing.assert_allclose(
+    assert_allclose(
         (coords[0][0], coords[0][1], coords[0][2]),
         (x_map_a / 2.0, y_map_a / 3.0, z_map_a / 4.0),
         rtol=6e-2,
     )
-    np.testing.assert_allclose(
+    assert_allclose(
         (coords[1][0], coords[1][1], coords[1][2]),
         (x_map_b / 2.0, y_map_b / 3.0, z_map_b / 4.0),
         rtol=6e-2,
     )
-    np.testing.assert_allclose(
+    assert_allclose(
         (coords[2][0], coords[2][1], coords[2][2]),
         (x_map_c / 2.0, y_map_c / 3.0, z_map_c / 4.0),
         rtol=6e-2,
@@ -393,12 +394,12 @@ def test_find_probabilistic_atlas_cut_coords(affine_eye):
     # Check outputs
     assert (n_maps, 3) == coords.shape
 
-    np.testing.assert_allclose(
+    assert_allclose(
         (coords[0][0], coords[0][1], coords[0][2]),
         (x_map_a, y_map_a, z_map_a),
         rtol=6e-2,
     )
-    np.testing.assert_allclose(
+    assert_allclose(
         (coords[2][0], coords[2][1], coords[2][2]),
         (x_map_b - 0.5, y_map_b - 0.5, z_map_b - 0.5),
         rtol=6e-2,
@@ -410,12 +411,12 @@ def test_find_probabilistic_atlas_cut_coords(affine_eye):
     coords = find_probabilistic_atlas_cut_coords(img)
     # Check outputs
     assert (n_maps, 3) == coords.shape
-    np.testing.assert_allclose(
+    assert_allclose(
         (coords[0][0], coords[0][1], coords[0][2]),
         (x_map_a / 2.0, y_map_a / 3.0, z_map_a / 4.0),
         rtol=6e-2,
     )
-    np.testing.assert_allclose(
+    assert_allclose(
         (coords[2][0], coords[2][1], coords[2][2]),
         (x_map_b / 2.0, y_map_b / 3.0, z_map_b / 4.0),
         rtol=6e-2,
