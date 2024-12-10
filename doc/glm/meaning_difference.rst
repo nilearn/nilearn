@@ -6,7 +6,7 @@ Difference in meanings between different toolboxes
 
 .. topic:: **Page summary**
 
-	* SPM has the same meaning of analysis levels, compared to nilearn's models
+	* SPM has the same meaning of analysis levels, compared to Nilearn's models
 		* First-level: analyze across runs
 		* Second-level: group-level analysis
 	* FSL has a different meaning
