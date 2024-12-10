@@ -817,15 +817,29 @@ def permuted_ols(
 
     vfwe_pvals = (n_perm + 1 - vfwe_scores_as_ranks) / float(1 + n_perm)
 
+    if output_type == "legacy":
+        return (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
+
+    outputs = {
+        "t": scores_original_data.T,
+        "logp_max_t": -np.log10(vfwe_pvals),
+        "h0_max_t": vfwe_h0,
+    }
+
     if tfce:
+        outputs["tfce"] = tfce_original_data.T
+
         # We can use the same approach for TFCE that we use for vFWE
         h0_tfcemax = np.hstack(h0_tfce_parts)
+        outputs["h0_max_tfce"] = h0_tfcemax
+
         tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
         for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
             tfce_scores_as_ranks += tfce_scores_as_ranks_part
 
         tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
         neg_log10_tfce_pvals = -np.log10(tfce_pvals)
+        outputs["logp_max_tfce"] = neg_log10_tfce_pvals
 
     if threshold is not None:
         # Cluster-size and cluster-mass FWE
@@ -910,21 +924,6 @@ def permuted_ols(
                     )
                 )
 
-    if output_type == "legacy":
-        return (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
-
-    outputs = {
-        "t": scores_original_data.T,
-        "logp_max_t": -np.log10(vfwe_pvals),
-        "h0_max_t": vfwe_h0,
-    }
-
-    if tfce:
-        outputs["tfce"] = tfce_original_data.T
-        outputs["logp_max_tfce"] = neg_log10_tfce_pvals
-        outputs["h0_max_tfce"] = h0_tfcemax
-
-    if threshold is not None:
         outputs["size"] = cluster_dict["size"]
         outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
         outputs["h0_max_size"] = cluster_dict["size_h0"]
