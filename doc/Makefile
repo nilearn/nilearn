@@ -55,7 +55,7 @@ clean:
 	-rm -rf modules/description/
 
 glm_reports:
-	python visual_testing/reporter_visual_inspection_suite.py
+	python visual_testing/reporter_visual_inspection_suite.py partial
 
 sym_links_datasets:
 	# copy datasets RST from nilearn package to doc folder
@@ -67,7 +67,7 @@ sym_links:
 	# The following find command selects all the depth-one
 	# subdirectories of ../examples/ and creates a sym-link to
 	# ../examples/nilearn_cache/
-	-find ../examples/ -type d -mindepth 1 -maxdepth 1 -not -path "../examples/nilearn_cache" -exec ln -sf ../nilearn_cache "{}/nilearn_cache" \;
+	-find ../examples/ -mindepth 1 -maxdepth 1 -type d -not -path "../examples/nilearn_cache" -exec ln -sf ../nilearn_cache "{}/nilearn_cache" \;
 	-mkdir -p ../examples/nilearn_cache/joblib
 
 force_html: force html
@@ -83,15 +83,15 @@ no_jekyll:
 	mkdir -p $(BUILDDIR)/html
 	touch $(BUILDDIR)/html/.nojekyll
 
-html: no_jekyll	sym_links sym_links_datasets glm_reports
-	# These two lines make the build a bit more lengthy, and the
-	# the embedding of images more robust
+html: no_jekyll	sym_links sym_links_datasets
 	rm -rf $(BUILDDIR)/html/_images
+	python visual_testing/reporter_visual_inspection_suite.py full
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict: no_jekyll sym_links sym_links_datasets glm_reports
+html-strict: no_jekyll sym_links sym_links_datasets
+	python visual_testing/reporter_visual_inspection_suite.py full
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
 	make check
@@ -103,13 +103,14 @@ html-modified-examples-only: sym_links sym_links_datasets glm_reports
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot: no_jekyll sym_links_datasets glm_reports
+html-noplot: no_jekyll sym_links_datasets
+	python visual_testing/reporter_visual_inspection_suite.py full
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot-noreport: sym_links_datasets
-	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+html-noplot-noreport: sym_links_datasets glm_reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
@@ -166,8 +167,8 @@ changes:
 	@echo
 	@echo "The overview file is in $(BUILDDIR)/changes."
 
-linkcheck:
-	$(SPHINXBUILD) -b linkcheck $(ALLSPHINXOPTS) $(BUILDDIR)/linkcheck
+linkcheck: sym_links sym_links_datasets glm_reports
+	$(SPHINXBUILD) -D plot_gallery=0 -b linkcheck $(ALLSPHINXOPTS) $(BUILDDIR)/linkcheck
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \
 	      "or in $(BUILDDIR)/linkcheck/output.txt."
@@ -187,7 +188,7 @@ check:
 	rm -rf $(BUILDDIR)/html/_images
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 
-install: clean sym_links_datasets glm_reports
+install: clean sym_links_datasets
 	@echo $(VERSIONTAG)
 	# first clone the nilearn.github.io repo because it may ask
 	# for password and we don't want to delay this long build in

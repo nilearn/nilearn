@@ -120,7 +120,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Symmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSym
 
-    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSAsym
+    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cAsym
 
 
     """
@@ -701,7 +701,7 @@ def fetch_oasis_vbm(
     dedicated to making brain imaging data openly available to the public.
     Using data available through the OASIS project requires agreeing with
     the Data Usage Agreement that can be found at
-    https://www.oasis-brains.org/#access
+    https://sites.wustl.edu/oasisbrains/
 
     """
     # check number of subjects

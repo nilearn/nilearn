@@ -82,10 +82,9 @@ of the preprocessings and validate them.
 
 .. topic:: **Advanced: scikit-learn Pipelines**
 
-    :class:`NiftiMasker` is a `scikit-learn
-    <https://scikit-learn.org>`_ compliant
-    transformer so that you can directly plug it into a `scikit-learn
-    pipeline <https://scikit-learn.org/stable/modules/pipeline.html>`_.
+    :class:`NiftiMasker` is a `scikit-learn <https://scikit-learn.org>`_ compliant
+    transformer so that you can directly plug it
+    into a :sklearn:`scikit-learn pipeline </modules/pipeline.html>`.
 
 
 Custom data loading: loading only the first 100 time points

@@ -142,7 +142,7 @@ better our imperfect knowledge of boundaries in brain images (notably
 because of inter-subject registration errors). One example of such an
 atlas well suited to :term:`resting-state` or naturalistic-stimuli data analysis is
 the `MSDL atlas
-<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
 (:func:`nilearn.datasets.fetch_atlas_msdl`).
 
 Probabilistic atlases are represented as a set of continuous maps, in a
@@ -174,8 +174,8 @@ The ``fit_transform`` method turns filenames or `NiftiImage objects
 
     time_series = masker.fit_transform(frmi_files, confounds=csv_file)
 
-The procedure is the same as with `brain parcellations
-<parcellation_time_series>`_ but using the :class:`NiftiMapsMasker`, and
+The procedure is the same as with :ref:`brain parcellations <parcellation_time_series>`
+but using the :class:`NiftiMapsMasker`, and
 the same considerations on using confounds regressors apply.
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_001.png
