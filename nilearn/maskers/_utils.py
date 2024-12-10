@@ -157,6 +157,23 @@ def check_surface_data_ndims(img, dim, var_name="img"):
         )
 
 
+def concat_extract_surface_data_parts(img):
+    """Concatenate the data of a SurfaceImage across hemispheres and return
+    as a numpy array.
+
+    Parameters
+    ----------
+    img : :obj:`~nilearn.surface.SurfaceImage` object
+        SurfaceImage whose data to concatenate and extract.
+
+    Returns
+    -------
+    :obj:`~numpy.ndarray`
+        Concatenated data across hemispheres.
+    """
+    return np.concatenate(list(img.data.parts.values()), axis=0)
+
+
 def deconcatenate_surface_images(img):
     """Deconcatenate a 3D Surface image into a a list of SurfaceImages.
 

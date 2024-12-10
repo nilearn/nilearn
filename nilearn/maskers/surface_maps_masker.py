@@ -16,6 +16,7 @@ from nilearn._utils.class_inspect import get_params
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     check_surface_data_ndims,
+    concat_extract_surface_data_parts,
     concatenate_surface_images,
 )
 from nilearn.surface import SurfaceImage
@@ -204,25 +205,6 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "has not been fitted."
             )
 
-    @property
-    def _get_concatenated_maps_and_mask(self):
-        """Return data from maps_img, mask_img concatenated over
-        hemispheres as numpy arrays.
-        """
-        concat_data = {}
-        for key, input_img in [
-            ("maps", self.maps_img),
-            ("mask", self.mask_img),
-        ]:
-            if input_img is not None:
-                concat_data[key] = np.concatenate(
-                    list(input_img.data.parts.values()), axis=0
-                )
-            else:
-                concat_data[key] = None
-
-        return concat_data["maps"], concat_data["mask"]
-
     def transform(self, img, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
@@ -269,7 +251,11 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data, mask_data = self._get_concatenated_maps_and_mask
+        maps_data = concat_extract_surface_data_parts(self.maps_img)
+        if self.mask_img is not None:
+            mask_data = concat_extract_surface_data_parts(self.mask_img)
+        else:
+            mask_data = None
 
         if self.smoothing_fwhm is not None:
             warnings.warn(
@@ -393,7 +379,11 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self._check_fitted()
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data, mask_data = self._get_concatenated_maps_and_mask
+        maps_data = concat_extract_surface_data_parts(self.maps_img)
+        if self.mask_img is not None:
+            mask_data = concat_extract_surface_data_parts(self.mask_img)
+        else:
+            mask_data = None
 
         if region_signals.shape[1] != self.n_elements_:
             raise ValueError(
