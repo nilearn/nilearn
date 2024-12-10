@@ -425,26 +425,38 @@ def surf_mesh():
     return _make_mesh
 
 
+def _make_surface_img(n_samples=1):
+    mesh = _make_mesh()
+    data = {}
+    for i, (key, val) in enumerate(mesh.parts.items()):
+        data_shape = (val.n_vertices, n_samples)
+        data_part = (
+            np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
+        ) * 10**i
+        data[key] = data_part.T
+    return SurfaceImage(mesh, data)
+
+
 @pytest.fixture
-def surf_img():
+def surf_img_2d():
     """Create a sample surface image using the sample mesh.
     This will add some random data to the vertices of the mesh.
     The shape of the data will be (n_vertices, n_samples).
     n_samples by default is 1.
     """
-
-    def _make_surface_img(n_samples=1):
-        mesh = _make_mesh()
-        data = {}
-        for i, (key, val) in enumerate(mesh.parts.items()):
-            data_shape = (val.n_vertices, n_samples)
-            data_part = (
-                np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
-            ) * 10**i
-            data[key] = data_part.T
-        return SurfaceImage(mesh, data)
-
     return _make_surface_img
+
+
+@pytest.fixture
+def surf_img_1d():
+    """Create a sample surface image using the sample mesh.
+    This will add some random data to the vertices of the mesh.
+    The shape of the data will be (n_vertices,).
+    """
+    img = _make_surface_img(n_samples=1)
+    img.data.parts["left"] = np.squeeze(img.data.parts["left"])
+    img.data.parts["right"] = np.squeeze(img.data.parts["right"])
+    return img
 
 
 @pytest.fixture
@@ -523,13 +535,13 @@ def drop_surf_img_part():
 
 
 @pytest.fixture()
-def surface_glm_data(rng, surf_img):
+def surface_glm_data(rng, surf_img_2d):
     """Create a surface image and design matrix for testing."""
 
-    def _make_surface_img_and_design(shape=5):
+    def _make_surface_img_and_design(n_samples=5):
         des = pd.DataFrame(
-            rng.standard_normal((shape, 3)), columns=["", "", ""]
+            rng.standard_normal((n_samples, 3)), columns=["", "", ""]
         )
-        return surf_img(shape), des
+        return surf_img_2d(n_samples), des
 
     return _make_surface_img_and_design
