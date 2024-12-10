@@ -395,6 +395,15 @@ def test_surface_label_masker_inverse_transform_list_surf_images(
     assert img.shape == (surf_label_img.mesh.n_vertices, 7)
 
 
+def test_surface_label_masker_labels_img_none():
+    """Test that an error is raised when labels_img is None."""
+    with pytest.raises(
+        ValueError,
+        match="provide a labels_img to the masker",
+    ):
+        SurfaceLabelsMasker(labels_img=None).fit()
+
+
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
