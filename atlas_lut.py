@@ -38,37 +38,23 @@ def rgb_to_hex_lookup(
     return rr + gg + bb
 
 
-def _generate_atlas_look_up_table(function, labels, index=None):
+def _generate_atlas_look_up_table(function, name, index=None):
     if function.__name__ in [
-        "fetch_atlas_aal",
-        "fetch_atlas_talairach",
-        "fetch_atlas_pauli_2017",
-        "fetch_atlas_harvard_oxford",
-        "fetch_atlas_juelich",
-    ]:
-        name = labels
-    elif function.__name__ in [
         "fetch_atlas_surf_destrieux",
         "fetch_atlas_schaefer_2018",
     ]:
-        name = [x.decode() for x in labels]
+        name = [x.decode() for x in name]
     elif function.__name__ in ["fetch_atlas_basc_multiscale_2015"]:
-        name = [str(x) for x in range(labels)]
+        name = [str(x) for x in range(name)]
 
-    if function.__name__ in [
-        "fetch_atlas_surf_destrieux",
-        "fetch_atlas_talairach",
-        "fetch_atlas_harvard_oxford",
-        "fetch_atlas_juelich",
-    ]:
-        index = list(range(len(labels)))
-    elif function.__name__ in ["fetch_atlas_basc_multiscale_2015"]:
-        index = list(range(labels))
+    index = list(range(len(name)))
+    if function.__name__ in ["fetch_atlas_basc_multiscale_2015"]:
+        index = [int(x) for x in name]
     elif function.__name__ in [
         "fetch_atlas_schaefer_2018",
         "fetch_atlas_pauli_2017",
     ]:
-        index = list(range(1, len(labels) + 1))
+        index = list(range(1, len(name) + 1))
 
     lut = pd.DataFrame({"index": index, "name": name})
 
@@ -101,6 +87,10 @@ print(atlas.labels)
 # %%
 # TODO do also 17 networks
 atlas = fetch_atlas_yeo_2011()
+lut = _generate_atlas_look_up_table(
+    fetch_atlas_aal, index=atlas.indices, name=atlas.labels
+)
+print(lut)
 lut = pd.read_csv(
     atlas.colors_7,
     sep="\\s+",
@@ -119,7 +109,7 @@ print(lut)
 # TODO try all versions
 atlas = fetch_atlas_aal()
 lut = _generate_atlas_look_up_table(
-    fetch_atlas_aal, index=atlas.index, labels=atlas.labels
+    fetch_atlas_aal, index=atlas.indices, name=atlas.labels
 )
 print(lut)
 
@@ -127,14 +117,14 @@ print(lut)
 
 atlas = fetch_atlas_surf_destrieux()
 lut = _generate_atlas_look_up_table(
-    fetch_atlas_surf_destrieux, labels=atlas.labels
+    fetch_atlas_surf_destrieux, name=atlas.labels
 )
 print(lut)
 
 # %%
 # TODO try all level_name
 atlas = fetch_atlas_talairach(level_name="ba")
-lut = _generate_atlas_look_up_table(fetch_atlas_talairach, labels=atlas.labels)
+lut = _generate_atlas_look_up_table(fetch_atlas_talairach, name=atlas.labels)
 print(lut)
 
 
@@ -142,29 +132,25 @@ print(lut)
 # TODO: try all n_rois and yeos
 atlas = fetch_atlas_schaefer_2018()
 lut = _generate_atlas_look_up_table(
-    fetch_atlas_schaefer_2018, labels=atlas.labels
+    fetch_atlas_schaefer_2018, name=atlas.labels
 )
 print(lut)
 
 
 # %%
 atlas = fetch_atlas_pauli_2017(version="det")
-lut = _generate_atlas_look_up_table(
-    fetch_atlas_pauli_2017, labels=atlas.labels
-)
+lut = _generate_atlas_look_up_table(fetch_atlas_pauli_2017, name=atlas.labels)
 print(lut)
 
 
 # %%
 atlas = fetch_atlas_harvard_oxford(atlas_name="cort-maxprob-thr0-1mm")
-lut = _generate_atlas_look_up_table(
-    fetch_atlas_pauli_2017, labels=atlas.labels
-)
+lut = _generate_atlas_look_up_table(fetch_atlas_pauli_2017, name=atlas.labels)
 print(lut)
 
 #  %%
 atlas = fetch_atlas_juelich(atlas_name="maxprob-thr50-2mm")
-lut = _generate_atlas_look_up_table(fetch_atlas_juelich, labels=atlas.labels)
+lut = _generate_atlas_look_up_table(fetch_atlas_juelich, name=atlas.labels)
 print(lut)
 
 
@@ -172,6 +158,6 @@ print(lut)
 resolution = 444
 atlas = fetch_atlas_basc_multiscale_2015(resolution=resolution)
 lut = _generate_atlas_look_up_table(
-    fetch_atlas_basc_multiscale_2015, labels=resolution
+    fetch_atlas_basc_multiscale_2015, name=resolution
 )
 print(lut)
