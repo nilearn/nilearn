@@ -13,7 +13,7 @@ import pandas as pd
 from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
-from .._utils import check_niimg, fill_doc, logger
+from .._utils import check_niimg, fill_doc, logger, rename_parameters
 from ..image import get_data, new_img_like, reorder_img
 from ._utils import (
     PACKAGE_DIRECTORY,
@@ -1961,8 +1961,11 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
 
+@rename_parameters(
+    replacement_params={"version": "atlas_type"}
+)
 @fill_doc
-def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
+def fetch_atlas_pauli_2017(atlas_type="prob", data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas.
 
     This atlas has 12 subcortical nodes in total. See
@@ -1970,8 +1973,8 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
 
     Parameters
     ----------
-    version : {'prob', 'det'}, default='prob'
-        Which version of the atlas should be download. This can be
+    atlas_type : {'prob', 'det'}, default='prob'
+        Which type of the atlas should be download. This can be
         'prob' for the :term:`Probabilistic atlas`, or 'det' for the
         :term:`Deterministic atlas`.
     %(data_dir)s
@@ -1983,17 +1986,17 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
-              :class:`~nibabel.nifti1.Nifti1Image`. If ``version='prob'``,
-              the image shape is ``(193, 229, 193, 16)``. If ``version='det'``
-              the image shape is ``(198, 263, 212)``, and values are indices
-              in the list of labels (integers from 0 to 16).
+              :class:`~nibabel.nifti1.Nifti1Image`. If ``atlas_type='prob'``,
+              the image shape is ``(193, 229, 193, 16)``. If
+              ``atlas_type='det'`` the image shape is ``(198, 263, 212)``, and
+              values are indices in the list of labels (integers from 0 to 16).
             - 'labels': :obj:`list` of :obj:`str`. List of region names. The
               list contains 16 values for both
               :term:`probabilitic<Probabilistic atlas>` and
-              :term:`deterministic<Deterministic atlas>` versions.
+              :term:`deterministic<Deterministic atlas>` types.
 
                 .. warning::
-                    For the :term:`deterministic<Deterministic atlas>` version,
+                    For the :term:`deterministic<Deterministic atlas>` type,
                     'Background' is not included in the list of labels.
                     To have proper indexing, you should either manually add
                     'Background' to the list of labels:
@@ -2020,15 +2023,15 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
     .. footbibliography::
 
     """
-    if version == "prob":
+    if atlas_type == "prob":
         url_maps = "https://osf.io/w8zq2/download"
         filename = "pauli_2017_prob.nii.gz"
-    elif version == "det":
+    elif atlas_type == "det":
         url_maps = "https://osf.io/5mqfx/download"
         filename = "pauli_2017_det.nii.gz"
     else:
         raise NotImplementedError(
-            f"{version} is no valid version for the Pauli atlas"
+            f"{atlas_type} is not a valid type for the Pauli atlas"
         )
 
     url_labels = "https://osf.io/6qrcb/download"
