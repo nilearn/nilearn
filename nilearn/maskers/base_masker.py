@@ -155,7 +155,9 @@ def _filter_and_extract(
     return region_signals, aux
 
 
-class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class BaseMasker(
+    TransformerMixin, CacheMixin, BaseEstimator, auto_wrap_output_keys=None
+):
     """Base class for NiftiMaskers."""
 
     @abc.abstractmethod

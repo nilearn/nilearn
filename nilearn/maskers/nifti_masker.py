@@ -146,7 +146,7 @@ def _filter_and_mask(
 
 
 @_utils.fill_doc
-class NiftiMasker(BaseMasker):
+class NiftiMasker(BaseMasker, auto_wrap_output_keys=None):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,

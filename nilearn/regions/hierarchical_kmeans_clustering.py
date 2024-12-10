@@ -140,7 +140,9 @@ def hierarchical_k_means(
     return _remove_empty_labels(fine_labels)
 
 
-class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
+class HierarchicalKMeans(
+    ClusterMixin, TransformerMixin, BaseEstimator, auto_wrap_output_keys=None
+):
     """Hierarchical KMeans.
 
     First clusterize the samples into big clusters. Then clusterize the samples

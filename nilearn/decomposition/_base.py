@@ -245,7 +245,9 @@ def _mask_and_reduce_single(
 
 
 @fill_doc
-class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
+class _BaseDecomposition(
+    CacheMixin, TransformerMixin, BaseEstimator, auto_wrap_output_keys=None
+):
     """Base class for matrix factorization based decomposition estimators.
 
     Handles mask logic, provides transform and inverse_transform methods
