@@ -24,10 +24,6 @@ from nilearn.surface import (
 
 collect_ignore = [
     "datasets/data/convert_templates.py",
-    "reporting/glm_reporter.py",
-    "reporting/html_report.py",
-    "reporting/tests/test_glm_reporter.py",
-    "reporting/tests/test_html_report.py",
 ]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
 
@@ -37,6 +33,10 @@ else:
     collect_ignore.extend(
         [
             "plotting",
+            "reporting/glm_reporter.py",
+            "reporting/html_report.py",
+            "reporting/tests/test_glm_reporter.py",
+            "reporting/tests/test_html_report.py",
         ]
     )
     matplotlib = None
