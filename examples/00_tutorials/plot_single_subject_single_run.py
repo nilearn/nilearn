@@ -220,7 +220,7 @@ show()
 # %%
 # .. note::
 #
-#   Notice how the visualisations above shows both 'activated' voxels
+#   Notice how the visualizations above shows both 'activated' voxels
 #   with Z > 3,
 #   as well as 'deactivated' voxels with Z < -3.
 #   In the rest of this example we will show only the activate voxels

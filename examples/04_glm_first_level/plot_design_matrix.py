@@ -112,7 +112,7 @@ X3 = make_first_level_design_matrix(
 #
 # .. note::
 #
-#     The events with a duration of 0 seconds are be modelled
+#     The events with a duration of 0 seconds are be modeled
 #     using a 'delta function' in the event-related design matrix.
 #
 import matplotlib.pyplot as plt
@@ -136,7 +136,7 @@ plt.show()
 # We can plot the correlation between the regressors of our design matrix.
 # This is important to check as highly correlated regressors can affect
 # the effficieny of
-# `your design <https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency#Correlation_between_regressors>`_. # noqa: E501
+# `your design <https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency>`_.
 #
 from nilearn.plotting import plot_design_matrix_correlation
 

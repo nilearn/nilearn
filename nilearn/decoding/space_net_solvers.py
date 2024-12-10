@@ -573,10 +573,11 @@ def tvl1_solver(
             return np.append(unmask_from_to_3d_array(w[:-1], mask), w[-1])
 
     def maskvec(w):
-        if loss == "mse":
-            return w[flat_mask]
-        else:
-            return np.append(w[:-1][flat_mask], w[-1])
+        return (
+            w[flat_mask]
+            if loss == "mse"
+            else np.append(w[:-1][flat_mask], w[-1])
+        )
 
     # function to compute derivative of f1
     def f1_grad(w):

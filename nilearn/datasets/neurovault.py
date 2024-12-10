@@ -1262,7 +1262,7 @@ def _remove_none_strings(metadata):
     Some collections and images in Neurovault, for some fields, use the
     string "None", "None / Other", or "null", instead of having ``null``
     in the json file; we replace these strings with ``None`` so that
-    they are consistent with the rest and for correct behaviour when we
+    they are consistent with the rest and for correct behavior when we
     want to select or filter out null values.
 
     Parameters

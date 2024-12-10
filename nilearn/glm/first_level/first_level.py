@@ -20,6 +20,7 @@ from sklearn.base import clone
 from sklearn.cluster import KMeans
 
 from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -730,8 +731,12 @@ class FirstLevelModel(BaseGLM):
                 a :obj:`list` or \
                 a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`.
 
-        events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
-                 :class:`pandas.DataFrame` or :obj:`str`, default=None
+        events : :obj:`pandas.DataFrame` or :obj:`str` or \
+                 :obj:`pathlib.Path` to a TSV file, or \
+                 :obj:`list` of \
+                 :obj:`pandas.DataFrame`, :obj:`str` or \
+                 :obj:`pathlib.Path` to a TSV file, \
+                 or None, default=None
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
@@ -756,10 +761,14 @@ class FirstLevelModel(BaseGLM):
 
             .. versionadded:: 0.9.2
 
-        design_matrices : :class:`pandas.DataFrame` or :obj:`list` of \
-                          :class:`pandas.DataFrame`, default=None
-            Design matrices that will be used to fit the GLM. If given it
-            takes precedence over events and confounds.
+        design_matrices : :obj:`pandas.DataFrame` or :obj:`str` or \
+                          :obj:`pathlib.Path` to a CSV or TSV file, or \
+                          :obj:`list` of \
+                          :obj:`pandas.DataFrame`, :obj:`str` or \
+                          :obj:`pathlib.Path` to a CSV or TSV file, \
+                          or None, default=None
+            Design matrices that will be used to fit the GLM.
+            If given it takes precedence over events and confounds.
 
         bins : :obj:`int`, default=100
             Maximum number of discrete bins for the AR coef histogram.
@@ -857,9 +866,12 @@ class FirstLevelModel(BaseGLM):
 
         Returns
         -------
-        output : Nifti1Image, or :obj:`dict`
-            The desired output image(s). If ``output_type == 'all'``, then
-            the output is a dictionary of images, keyed by the type of image.
+        output : Nifti1Image, :obj:`~nilearn.surface.SurfaceImage`, \
+                 or :obj:`dict`
+            The desired output image(s).
+            If ``output_type == 'all'``,
+            then the output is a dictionary of images,
+            keyed by the type of image.
 
         """
         if self.labels_ is None or self.results_ is None:
@@ -1013,11 +1025,12 @@ class FirstLevelModel(BaseGLM):
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
             if isinstance(run_img, SurfaceImage):
-                surf_data = {}
-                for part in run_img.mesh.parts:
-                    surf_data[part] = np.ones(
+                surf_data = {
+                    part: np.ones(
                         run_img.data.parts[part].shape[0], dtype=bool
                     )
+                    for part in run_img.mesh.parts
+                }
                 self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
             else:
                 ref_img = check_niimg(run_img)
@@ -1082,10 +1095,10 @@ class FirstLevelModel(BaseGLM):
                         warn(
                             f"Parameter {param_name} of the masker overridden"
                         )
-                    if isinstance(self.masker_, SurfaceMasker):
-                        if param_name not in ["target_affine", "target_shape"]:
-                            setattr(self.masker_, param_name, our_param)
-                    else:
+                    if (
+                        isinstance(self.masker_, SurfaceMasker)
+                        and param_name not in ["target_affine", "target_shape"]
+                    ) or not isinstance(self.masker_, SurfaceMasker):
                         setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_img)
             else:
@@ -1155,71 +1168,22 @@ def _check_events_file_uses_tab_separators(events_files):
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary."""
-    if isinstance(tables_, (str, pd.DataFrame, np.ndarray)):
-        tables_ = [tables_]
-    _check_list_length_match(run_imgs, tables_, "run_imgs", tables_name)
-    tables_ = _check_and_load_tables(tables_, tables_name)
+    _check_length_match(run_imgs, tables_, "run_imgs", tables_name)
+    tables_ = check_and_load_tables(tables_, tables_name)
     return tables_
 
 
-def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
-    """Check length match of two given lists to raise error if necessary."""
+def _check_length_match(list_1, list_2, var_name_1, var_name_2):
+    """Check length match of two given inputs to raise error if necessary."""
+    if not isinstance(list_1, list):
+        list_1 = [list_1]
+    if not isinstance(list_2, list):
+        list_2 = [list_2]
     if len(list_1) != len(list_2):
         raise ValueError(
             f"len({var_name_1}) {len(list_1)} does not match "
             f"len({var_name_2}) {len(list_2)}"
         )
-
-
-def _check_and_load_tables(tables_, var_name):
-    """Check tables can be loaded in DataFrame to raise error if necessary."""
-    tables = []
-    for table_idx, table in enumerate(tables_):
-        table = stringify_path(table)
-        if isinstance(table, str):
-            loaded = _read_events_table(table)
-            tables.append(loaded)
-        elif isinstance(table, pd.DataFrame):
-            tables.append(table)
-        elif isinstance(table, np.ndarray):
-            pass
-        else:
-            raise TypeError(
-                f"{var_name} can only be a pandas DataFrame, "
-                "a Path object or a string. "
-                f"A {type(table)} was provided at idx {table_idx}"
-            )
-    return tables
-
-
-def _read_events_table(table):
-    """Accept the path to en event.tsv file \
-    and loads it as a Pandas Dataframe.
-
-    Raises an error if loading fails.
-
-    Parameters
-    ----------
-    table : :obj:`str`, :obj:`pathlib.Path`
-        Accepts the path to an events file.
-
-    Returns
-    -------
-    loaded : pandas.Dataframe object
-        Pandas Dataframe with e events data.
-
-    """
-    try:
-        # kept for historical reasons, a lot of tests use csv with index column
-        loaded = pd.read_csv(table, index_col=0)
-    except:  # noqa: E722
-        raise ValueError(f"table path {table} could not be loaded")
-    if loaded.empty:
-        try:
-            loaded = pd.read_csv(table, sep="\t")
-        except:  # noqa: E722
-            raise ValueError(f"table path {table} could not be loaded")
-    return loaded
 
 
 def _check_repetition_time(t_r):
@@ -1792,7 +1756,9 @@ def _get_processed_imgs(
         verbose=verbose,
     )
 
-    if space_label is not None and space_label not in ("fsaverage5"):
+    if space_label is not None and (
+        space_label == "" or space_label not in ("fsaverage5")
+    ):
         imgs = get_bids_files(
             main_path=derivatives_path,
             modality_folder="func",

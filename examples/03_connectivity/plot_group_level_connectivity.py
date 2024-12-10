@@ -101,18 +101,23 @@ print(
 mean_correlation_matrix = correlation_measure.mean_
 print(f"Mean correlation has shape {mean_correlation_matrix.shape}.")
 
-from matplotlib import pyplot as plt
 
 # %%
 # We display the connectome matrices of the first 3 children
+import numpy as np
+from matplotlib import pyplot as plt
+
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
+vmax = np.absolute(correlation_matrices).max()
 for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
     plotting.plot_matrix(
         matrix,
         tri="lower",
-        colorbar=False,
+        colorbar=True,
         axes=ax,
         title=f"correlation, child {i}",
+        vmax=vmax,
+        vmin=-vmax,
     )
 # %%
 # The blocks structure that reflect functional networks are visible.
@@ -142,13 +147,16 @@ partial_correlation_matrices = partial_correlation_measure.fit_transform(
 # Most of direct connections are weaker than full connections.
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
+vmax = np.absolute(partial_correlation_matrices).max()
 for i, (matrix, ax) in enumerate(zip(partial_correlation_matrices, axes)):
     plotting.plot_matrix(
         matrix,
         tri="lower",
-        colorbar=False,
+        colorbar=True,
         axes=ax,
         title=f"partial correlation, child {i}",
+        vmax=vmax,
+        vmin=-vmax,
     )
 # %%
 plotting.plot_connectome(
@@ -185,7 +193,7 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
     plotting.plot_matrix(
         matrix,
         tri="lower",
-        colorbar=False,
+        colorbar=True,
         axes=ax,
         title=f"tangent offset, child {i}",
     )
@@ -204,7 +212,6 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
 # We use random splits of the subjects into training/testing sets.
 # StratifiedShuffleSplit allows preserving the proportion of children in the
 # test set.
-import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.svm import LinearSVC

@@ -88,7 +88,11 @@ def test_colorscale_no_threshold():
 def expected_abs_threshold(threshold):
     """Return the expected absolute threshold."""
     expected = {"0%": 1.5, "50%": 7.55, "99%": 13}
-    return expected[threshold] if threshold in expected else abs(threshold)
+    return (
+        expected.get(threshold)
+        if isinstance(threshold, str)
+        else abs(threshold)
+    )
 
 
 @pytest.mark.parametrize("threshold", ["0%", "50%", "99%", 0.5, 7.25])
