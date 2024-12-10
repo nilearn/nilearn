@@ -31,7 +31,7 @@ extra_valid_checks = [
 if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.append("check_estimator_sparse_data")
 
-if compare_version(sklearn_version, ">", "1.6"):
+if compare_version(sklearn_version, ">", "1.5.2"):
     extra_valid_checks.append("check_positive_only_tag_during_fit")
 
 
