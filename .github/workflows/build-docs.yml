@@ -46,8 +46,6 @@ jobs:
     # Make citation metadata from CITATION.cff is valid.
     # as it is used in the documentation build.
     validate_cff:
-        # This prevents this workflow from running on a fork.
-        # To test this workflow on a fork, uncomment the following line.
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
@@ -73,6 +71,24 @@ jobs:
                     echo "skipping tests"
                     exit 1
                 fi
+
+    # check the links in the doc
+    linkcheck:
+        needs: [check_skip_flags, validate_cff]
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+            with:
+                ref: ${{ github.event.pull_request.head.sha }}
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.13'
+        -   name: Install packages
+            run: python -m pip install tox
+        -   name: check links
+            run: tox run -e linkcheck
 
     get_data:
         # This prevents this workflow from running on a fork.
