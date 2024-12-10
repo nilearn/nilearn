@@ -1961,9 +1961,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
 
-@rename_parameters(
-    replacement_params={"version": "atlas_type"}
-)
+@rename_parameters(replacement_params={"version": "atlas_type"})
 @fill_doc
 def fetch_atlas_pauli_2017(atlas_type="prob", data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas.
