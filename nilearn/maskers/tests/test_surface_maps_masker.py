@@ -258,3 +258,12 @@ def test_surface_maps_masker_transform_clean(surf_maps_img, surf_img_2d):
         clean_args={"filter": "cosine"},
     ).fit()
     masker.transform(surf_img_2d(50))
+
+
+def test_surface_maps_masker_labels_img_none():
+    """Test that an error is raised when maps_img is None."""
+    with pytest.raises(
+        ValueError,
+        match="provide a labels_img to the masker",
+    ):
+        SurfaceMapsMasker(maps_img=None).fit()
