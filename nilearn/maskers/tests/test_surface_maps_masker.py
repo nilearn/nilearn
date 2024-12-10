@@ -82,6 +82,11 @@ def test_surface_maps_masker_fit_transform_shape(
     surf_maps_img, surf_img_2d, surf_mask
 ):
     """Test that the fit_transform method returns the expected shape."""
+    # TODO: squeeze surf_mask to 1D
+    surf_mask = surf_mask()
+    surf_mask.data.parts["left"] = surf_mask.data.parts["left"].squeeze()
+    surf_mask.data.parts["right"] = surf_mask.data.parts["right"].squeeze()
+
     masker = SurfaceMapsMasker(surf_maps_img, surf_mask).fit()
     region_signals = masker.transform(surf_img_2d(50))
     # surf_img_2d has shape (n_vertices, n_timepoints) = (9, 50)
@@ -99,6 +104,11 @@ def test_surface_maps_masker_fit_transform_mask_vs_no_mask(
     """Test that fit_transform returns the different results when a mask is
     used vs. when no mask is used.
     """
+    # TODO: squeeze surf_mask to 1D
+    surf_mask = surf_mask()
+    surf_mask.data.parts["left"] = surf_mask.data.parts["left"].squeeze()
+    surf_mask.data.parts["right"] = surf_mask.data.parts["right"].squeeze()
+
     masker_with_mask = SurfaceMapsMasker(surf_maps_img, surf_mask).fit()
     region_signals_with_mask = masker_with_mask.transform(surf_img_2d(50))
 
@@ -139,6 +149,11 @@ def test_surface_maps_masker_inverse_transform_shape(
     """Test that inverse_transform returns an image with the same shape as the
     input.
     """
+    # TODO: squeeze surf_mask to 1D
+    surf_mask = surf_mask()
+    surf_mask.data.parts["left"] = surf_mask.data.parts["left"].squeeze()
+    surf_mask.data.parts["right"] = surf_mask.data.parts["right"].squeeze()
+
     masker = SurfaceMapsMasker(surf_maps_img, surf_mask).fit()
     region_signals = masker.fit_transform(surf_img_2d(50))
     X_inverse_transformed = masker.inverse_transform(region_signals)
