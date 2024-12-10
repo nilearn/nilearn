@@ -3,9 +3,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 from scipy import linalg
-from sklearn import __version__ as sklearn_version
 
-from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn.conftest import _affine_eye, _img_3d_ones, _rng
 from nilearn.decomposition._base import (
@@ -22,9 +20,8 @@ extra_valid_checks = [
     "check_no_attributes_set_in_init",
     "check_transformers_unfitted",
     "check_transformer_n_iter",
+    "check_parameters_default_constructible",
 ]
-if compare_version(sklearn_version, ">=", "1.6"):
-    extra_valid_checks.append("check_estimator_sparse_array")
 
 
 @pytest.mark.parametrize(
