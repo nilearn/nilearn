@@ -32,7 +32,7 @@ These differences can be put in the table below:
 Statistical Parametric Mapping (SPM)
 ====================================
 
-SPM uses the same notation as nilearn for analysis levels, with a note that a session still refers to an imaging session or a run, and within a run there could be multiple conditions (e.g., congruent and incongruent).
+SPM uses the same notation as Nilearn for analysis levels, with a note that a session still refers to an imaging session or a run, and within a run there could be multiple conditions (e.g., congruent and incongruent).
 In this case, `SPM`_ provided `tutorials`_ and documentation, including `lectures`_, which one could learn to analyze their own fMRI data with the meaning of analysis levels being as follows:
 
 	* `First-level analysis in SPM`_: Analyze across sessions for a subject (i.e., more than one session of one subject)
