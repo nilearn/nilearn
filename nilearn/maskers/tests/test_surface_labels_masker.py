@@ -9,6 +9,19 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.surface import SurfaceImage
 
+
+@pytest.fixture
+def _sklearn_surf_label_img(surf_mesh):
+    """Create a sample surface label image using the sample mesh, just to use
+    for scikit-learn checks.
+    """
+    labels = {
+        "left": np.asarray([1, 2, 3]),
+        "right": np.asarray([4, 5, 6]),
+    }
+    return SurfaceImage(surf_mesh(), labels)
+
+
 extra_valid_checks = [
     "check_no_attributes_set_in_init",
     "check_parameters_default_constructible",
@@ -26,7 +39,7 @@ extra_valid_checks = [
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceLabelsMasker()],
+        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img)],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -39,7 +52,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceLabelsMasker()],
+        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img)],
         valid=False,
         extra_valid_checks=extra_valid_checks,
     ),
