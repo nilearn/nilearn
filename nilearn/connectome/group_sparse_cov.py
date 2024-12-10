@@ -589,8 +589,6 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         memory=None,
         memory_level=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         self.alpha = alpha
         self.tol = tol
         self.max_iter = max_iter
@@ -620,6 +618,9 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
             the object itself. Useful for chaining operations.
 
         """
+        if self.memory is None:
+            self.memory = Memory(location=None)
+
         logger.log("Computing covariance matrices", verbose=self.verbose)
         self.covariances_, n_samples = empirical_covariances(
             subjects, assume_centered=False
