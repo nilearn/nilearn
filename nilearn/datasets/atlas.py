@@ -14,6 +14,7 @@ from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, rename_parameters
+
 from ..image import get_data, new_img_like, reorder_img
 from ._utils import (
     PACKAGE_DIRECTORY,
