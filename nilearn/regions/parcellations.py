@@ -558,6 +558,7 @@ class Parcellations(_MultiPCA):
             imgs_list = imgs.copy()
             masker = SurfaceLabelsMasker(
                 self.labels_img_,
+                mask_img=self.masker_.mask_img_,
                 smoothing_fwhm=self.smoothing_fwhm,
                 standardize=self.standardize,
                 detrend=self.detrend,
