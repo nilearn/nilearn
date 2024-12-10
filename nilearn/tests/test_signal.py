@@ -11,13 +11,11 @@ from numpy import array_equal
 from numpy.testing import assert_almost_equal
 from pandas import read_csv
 
-# Use nisignal here to avoid name collisions (using nilearn.signal is
-# not possible)
-from nilearn import signal as nisignal
 from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn.conftest import _rng
 from nilearn.signal import (
     _censor_signals,
+    _create_cosine_drift_terms,
     _detrend,
     _handle_scrubbed_volumes,
     _mean_of_squares,
@@ -1145,20 +1143,20 @@ def test_create_cosine_drift_terms():
     cosine_drift = create_cosine_drift(high_pass, frame_times)[:, :-1]
     confounds_with_drift = np.hstack((confounds, cosine_drift))
 
-    cosine_confounds = nisignal._create_cosine_drift_terms(
+    cosine_confounds = _create_cosine_drift_terms(
         signals, confounds, high_pass, t_r
     )
     assert_almost_equal(cosine_confounds, np.hstack((confounds, cosine_drift)))
 
     # Not passing confounds it will return drift terms only
-    drift_terms_only = nisignal._create_cosine_drift_terms(
+    drift_terms_only = _create_cosine_drift_terms(
         signals, None, high_pass, t_r
     )
     assert_almost_equal(drift_terms_only, cosine_drift)
 
     # drift terms in confounds will create warning and no change to confounds
     with pytest.warns(UserWarning, match="user supplied confounds"):
-        cosine_confounds = nisignal._create_cosine_drift_terms(
+        cosine_confounds = _create_cosine_drift_terms(
             signals, confounds_with_drift, high_pass, t_r
         )
     np.testing.assert_array_equal(cosine_confounds, confounds_with_drift)
@@ -1166,7 +1164,7 @@ def test_create_cosine_drift_terms():
     # raise warning if cosine drift term is not created
     high_pass_fail = 0.002
     with pytest.warns(UserWarning, match="Cosine filter was not created"):
-        cosine_confounds = nisignal._create_cosine_drift_terms(
+        cosine_confounds = _create_cosine_drift_terms(
             signals, confounds, high_pass_fail, t_r
         )
     np.testing.assert_array_equal(cosine_confounds, confounds)
