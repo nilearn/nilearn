@@ -394,6 +394,28 @@ def test_surface_label_masker_inverse_transform_list_surf_images(
     assert img.shape == (surf_label_img.mesh.n_vertices, 7)
 
 
+def test_surface_labels_masker_confounds_to_fit_transform(
+    surf_label_img, surf_img_2d
+):
+    """Test fit_transform with confounds."""
+    masker = SurfaceLabelsMasker(surf_label_img)
+    signals = masker.fit_transform(surf_img_2d(5), confounds=np.ones((5, 3)))
+    assert signals.shape == (5, masker.n_elements_)
+
+
+def test_surface_labels_masker_sample_mask_to_fit_transform(
+    surf_label_img, surf_img_2d
+):
+    """Test transform with sample_mask."""
+    masker = SurfaceLabelsMasker(surf_label_img)
+    masker = masker.fit()
+    signals = masker.transform(
+        surf_img_2d(5), sample_mask=[True, False, True, False, True]
+    )
+    # we remove two samples via sample_mask so we should have 3 samples
+    assert signals.shape == (3, masker.n_elements_)
+
+
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
