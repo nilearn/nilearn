@@ -80,9 +80,7 @@ y_pred = decoder.predict(func_img)
 # leave a run out scheme, then pass the cross-validator object
 # to the cv parameter of decoder.leave-one-session-out.
 # For more details please take a look at:
-# `Measuring prediction scores using cross-validation\
-# <../00_tutorials/plot_decoding_tutorial.html\
-# #measuring-prediction-scores-using-cross-validation>`_
+# :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`.
 from sklearn.model_selection import LeaveOneGroupOut
 
 cv = LeaveOneGroupOut()

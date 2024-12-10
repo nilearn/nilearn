@@ -152,4 +152,4 @@ CPUs.
 .. seealso::
 
    `The scikit-learn documentation on choosing estimators and their parameters
-   selection <https://scikit-learn.org/stable/tutorial/statistical_inference/model_selection.html>`_
+   selection <https://scikit-learn.org/stable/auto_examples/model_selection/index.html>`_

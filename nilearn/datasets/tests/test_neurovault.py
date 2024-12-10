@@ -527,7 +527,7 @@ def test_result_filter_combinations():
 
 def test_simple_download(tmp_path):
     downloaded_file = neurovault._simple_download(
-        "http://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz",
+        "https://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz",
         tmp_path / "image_35.nii.gz",
         tmp_path,
     )

@@ -370,8 +370,8 @@ def view_markers(
     marker_color : :class:`numpy.ndarray` of shape=(n_nodes,) or \
         'auto', default='auto'
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
-        triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
-        https://matplotlib.org/users/colors.html#specifying-colors)
+        triplets, or rgba triplets (see `formats accepted by matplotlib \
+        <https://matplotlib.org/stable/users/explain/colors/colors.html>`)
 
     marker_size : :obj:`float` or array-like, default=5.0
         Size of the markers showing the seeds in pixels.

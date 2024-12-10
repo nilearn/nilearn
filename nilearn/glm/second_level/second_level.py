@@ -5,6 +5,7 @@ Author: Martin Perez-Guevara, 2016
 """
 
 import time
+from pathlib import Path
 from warnings import warn
 
 import numpy as np
@@ -15,6 +16,7 @@ from nibabel.funcs import four_to_three
 from sklearn.base import clone
 
 from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -149,7 +151,7 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
     ref_shape = None
 
     for model_idx, first_level in enumerate(second_level_input):
-        if first_level.labels_ is None or first_level.results_ is None:
+        if not first_level.__sklearn_is_fitted__():
             raise ValueError(
                 f"Model {first_level.subject_label} "
                 f"at index {model_idx} has not been fit yet."
@@ -537,7 +539,7 @@ class SecondLevelModel(BaseGLM):
         ----------
         %(second_level_input)s
 
-        confounds : :class:`pandas.DataFrame`, default=None
+        confounds : :obj:`pandas.DataFrame` or None, default=None
             Must contain a ``subject_label`` column. All other columns are
             considered as confounds and included in the model. If
             ``design_matrix`` is provided then this argument is ignored.
@@ -546,7 +548,9 @@ class SecondLevelModel(BaseGLM):
             At least two columns are expected, ``subject_label`` and at
             least one confound.
 
-        design_matrix : :class:`pandas.DataFrame`, default=None
+        design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
+                        or :obj:`pathlib.Path` to a CSV or TSV file, \
+                        or None, default=None
             Design matrix to fit the :term:`GLM`.
             The number of rows in the design matrix
             must agree with the number of maps
@@ -568,16 +572,15 @@ class SecondLevelModel(BaseGLM):
         # check confounds
         _check_confounds(confounds)
 
-        # check design matrix
-        _check_design_matrix(design_matrix)
-
         if isinstance(second_level_input, pd.DataFrame):
             second_level_input = _sort_input_dataframe(second_level_input)
         if isinstance(second_level_input, Nifti1Image):
             check_niimg(second_level_input, ensure_ndim=4)
             second_level_input = four_to_three(second_level_input)
         self.second_level_input_ = second_level_input
+
         self.confounds_ = confounds
+
         sample_map, subjects_label = _process_second_level_input(
             second_level_input
         )
@@ -593,6 +596,16 @@ class SecondLevelModel(BaseGLM):
         if design_matrix is None:
             design_matrix = make_second_level_design_matrix(
                 subjects_label, confounds
+            )
+        elif isinstance(design_matrix, (str, Path, pd.DataFrame)):
+            design_matrix = check_and_load_tables(
+                design_matrix, "design_matrix"
+            )[0]
+        else:
+            raise TypeError(
+                "'design_matrix' must be a "
+                "str, pathlib.Path or a pandas.DataFrame.\n"
+                f"Got {type(design_matrix)}"
             )
         self.design_matrix_ = design_matrix
 
@@ -1039,7 +1052,7 @@ def non_parametric_inference(
     """
     _check_second_level_input(second_level_input, design_matrix)
     _check_confounds(confounds)
-    _check_design_matrix(design_matrix)
+    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     if isinstance(second_level_input, pd.DataFrame):
         second_level_input = _sort_input_dataframe(second_level_input)

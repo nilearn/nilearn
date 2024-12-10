@@ -49,7 +49,7 @@ a time series of positive real number representing the MRI signal, sampled at th
   As previously mentioned, the nilearn package does not perform spatial preprocessing;
   it only does statistical analyses on the voxel time series.
   For preprocessing functions, users are referred to `Nipype <https://nipype.readthedocs.io/en/latest/>`_
-  or `fMRIPrep <https://fmriprep.readthedocs.io/en/stable/>`_.
+  or `fMRIPrep <https://fmriprep.org/en/stable/>`_.
 
 fMRI data modeling
 -------------------

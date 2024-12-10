@@ -39,8 +39,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.first_level.first_level import (
-    _check_and_load_tables,
-    _check_list_length_match,
+    _check_length_match,
     _check_run_tables,
     _check_trial_type,
     _list_valid_subjects,
@@ -63,6 +62,9 @@ extra_valid_checks = [
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
     "check_estimators_unfitted",
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_no_attributes_set_in_init",
+    "check_parameters_default_constructible",
 ]
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
@@ -98,7 +100,7 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 def test_high_level_glm_one_run(shape_4d_default):
     rk = 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[shape_4d_default], rk=3
+        shapes=[shape_4d_default], rk=rk
     )
 
     # Give an unfitted NiftiMasker as mask_img and check that we get an error
@@ -334,7 +336,7 @@ def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     )
     FirstLevelModel(mask_img=mask).fit(func_img[0], design_matrices=des[0])
     FirstLevelModel(mask_img=mask).fit(
-        func_img[0], design_matrices=[pd.read_csv(des[0])]
+        func_img[0], design_matrices=[pd.read_csv(des[0], sep="\t")]
     )
     FirstLevelModel(mask_img=mask).fit(
         func_img[0], design_matrices=[Path(des[0])]
@@ -629,8 +631,34 @@ def test_fmri_inputs_shape(tmp_path, shape_4d_default):
     FirstLevelModel(mask_img=mask).fit(
         [func_img, func_img], design_matrices=[des, des]
     )
-    FirstLevelModel(mask_img=mask).fit(
-        (func_img, func_img), design_matrices=(des, des)
+
+
+def test_fmri_inputs_design_matrices_tsv(tmp_path, shape_4d_default):
+    # Test processing of FMRI inputs
+    mask, func_img, des = write_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], file_path=tmp_path
+    )
+    func_img = func_img[0]
+    des = Path(des[0])
+    pd.read_csv(des, sep="\t").to_csv(des.with_suffix(".csv"), index=False)
+    FirstLevelModel(mask_img=mask).fit([func_img], design_matrices=des)
+
+
+def test_fmri_inputs_events_type(tmp_path):
+    """Check events can be dataframe or pathlike to CSV / TSV."""
+    n_timepoints = 10
+    shapes = ((3, 4, 5, n_timepoints),)
+    mask, func_img, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=tmp_path
+    )
+
+    events = basic_paradigm()
+    FirstLevelModel(mask_img=mask, t_r=2.0).fit(func_img[0], events=events)
+
+    events_file = tmp_path / "tmp.tsv"
+    events.to_csv(events_file, index=False, sep="\t")
+    FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img[0], events=events_file
     )
 
 
@@ -1154,12 +1182,6 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     In particular, that derived theta are correct for a
     constant design matrix with a single valued fmri image
     """
-    # Check error with invalid signal_scaling values
-    with pytest.raises(ValueError, match="signal_scaling must be"):
-        FirstLevelModel(
-            mask_img=False, noise_model="ols", signal_scaling="foo"
-        )
-
     shapes, rk = [(3, 1, 1, 2)], 1
     design_matrices = [
         pd.DataFrame(
@@ -1168,6 +1190,14 @@ def test_first_level_with_no_signal_scaling(affine_eye):
         )
     ]
     fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye)]
+
+    # Check error with invalid signal_scaling values
+    with pytest.raises(ValueError, match="signal_scaling must be"):
+        flm = FirstLevelModel(
+            mask_img=False, noise_model="ols", signal_scaling="foo"
+        )
+        flm.fit(fmri_data, design_matrices=design_matrices)
+
     first_level = FirstLevelModel(
         mask_img=False, noise_model="ols", signal_scaling=False
     )
@@ -2109,32 +2139,25 @@ def test_check_run_tables_errors():
     # check high level wrapper keeps behavior
     with pytest.raises(ValueError, match="len.* does not match len.*"):
         _check_run_tables([""] * 2, [""], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         _check_run_tables([""] * 2, [".csv", ".csv"], "")
     with pytest.raises(
         TypeError,
         match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
 
 
 def test_img_table_checks():
     # check matching lengths
     with pytest.raises(ValueError, match="len.* does not match len.*"):
-        _check_list_length_match([""] * 2, [""], "", "")
-
-    # check tables type and that can be loaded
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_and_load_tables([".csv", ".csv"], "")
-    with pytest.raises(
-        TypeError,
-        match="can only be a pandas DataFrame, a Path object or a string",
-    ):
-        _check_and_load_tables([[], pd.DataFrame()], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_and_load_tables([".csv", pd.DataFrame()], "")
+        _check_length_match([""] * 2, [""], "", "")
 
 
 # -----------------------surface tests--------------------------------------- #

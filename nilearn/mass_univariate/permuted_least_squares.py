@@ -193,7 +193,6 @@ def _permuted_ols_on_chunk(
             target_vars = target_vars * (
                 rng.randint(2, size=(n_samples, 1)) * 2 - 1
             )
-
         else:
             # shuffle data
             # Regarding computation costs, we choose to shuffle testvars
@@ -282,7 +281,7 @@ def _permuted_ols_on_chunk(
 
                 logger.log(
                     f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
-                    f"permutations ({percent:0.2f}%, {remaining} seconds "
+                    f"permutations ({percent:0.2f}%, {remaining:0.2f} seconds "
                     f"remaining){crlf}",
                     stack_level=2,
                 )
@@ -607,7 +606,9 @@ def permuted_ols(
     .. footbibliography::
 
     """
-    _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
+    _check_inputs_permuted_ols(
+        n_jobs, n_perm, tfce, masker, threshold, target_vars
+    )
 
     n_jobs, output_type, target_vars, tested_vars = (
         _sanitize_inputs_permuted_ols(
@@ -666,6 +667,7 @@ def permuted_ols(
             confounding_vars = np.ones((n_samples, 1))
 
     # OLS regression on original data
+    covars_orthonormalized = None
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
         covars_orthonormalized = orthonormalize_matrix(confounding_vars)
@@ -706,24 +708,13 @@ def permuted_ols(
             testedvars_resid_covars, axis=1
         ).T.copy()
 
-        n_covars = confounding_vars.shape[1]
-
     else:
         targetvars_resid_covars = normalize_matrix_on_axis(target_vars).T
         testedvars_resid_covars = normalize_matrix_on_axis(tested_vars).copy()
-        covars_orthonormalized = None
-        n_covars = 0
 
-    # check arrays contiguousity (for the sake of code efficiency)
-    if not targetvars_resid_covars.flags["C_CONTIGUOUS"]:
-        # useful to developer
-        warnings.warn("Target variates not C_CONTIGUOUS.")
-        targetvars_resid_covars = np.ascontiguousarray(targetvars_resid_covars)
-
-    if not testedvars_resid_covars.flags["C_CONTIGUOUS"]:
-        # useful to developer
-        warnings.warn("Tested variates not C_CONTIGUOUS.")
-        testedvars_resid_covars = np.ascontiguousarray(testedvars_resid_covars)
+    # check arrays contiguousity for the sake of code efficiency
+    targetvars_resid_covars = _make_array_contiguous(targetvars_resid_covars)
+    testedvars_resid_covars = _make_array_contiguous(testedvars_resid_covars)
 
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
@@ -756,38 +747,37 @@ def permuted_ols(
             masker.mask_img_,
         ).T
 
-    threshold_t = None
-    if threshold is not None:
-        # determine t-statistic threshold
-        dof = n_samples - (n_regressors + n_covars)
-        threshold_t = stats.t.isf(threshold, df=dof)
-        if two_sided_test:
-            threshold_t = stats.t.isf(threshold / 2, df=dof)
-
-    # Permutations
-    # parallel computing units perform a reduced number of permutations each
-    if n_perm > n_jobs:
-        n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
-        n_perm_chunks[-1] += n_perm % n_jobs
-
-    elif n_perm > 0:
-        warnings.warn(
-            f"The specified number of permutations is {n_perm} and the number "
-            f"of jobs to be performed in parallel has set to {n_jobs}. "
-            f"This is incompatible so only {n_perm} jobs will be running. "
-            "You may want to perform more permutations in order to take the "
-            "most of the available computing resources."
-        )
-        n_perm_chunks = np.ones(n_perm, dtype=int)
-    else:  # 0 or negative number of permutations => original data scores only
+    # 0 or negative number of permutations => original data scores only
+    if n_perm <= 0:
         if output_type == "legacy":
             return np.asarray([]), scores_original_data.T, np.asarray([])
 
         out = {"t": scores_original_data.T}
         if tfce:
             out["tfce"] = tfce_original_data.T
-
         return out
+
+    # Permutations
+    # parallel computing units perform a reduced number of permutations each
+    if n_perm > n_jobs:
+        n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
+        n_perm_chunks[-1] += n_perm % n_jobs
+    elif n_perm > 0:
+        warnings.warn(
+            f"The specified number of permutations is {n_perm} "
+            "and the number of jobs to be performed in parallel "
+            f"has set to {n_jobs}. "
+            f"This is incompatible so only {n_perm} jobs will be running. "
+            "You may want to perform more permutations "
+            "in order to take the most of the available computing resources.",
+            UserWarning,
+            stacklevel=2,
+        )
+        n_perm_chunks = np.ones(n_perm, dtype=int)
+
+    threshold_t = _compute_t_stat_threshold(
+        threshold, two_sided_test, tested_vars, confounding_vars
+    )
 
     # actual permutations, seeded from a random integer between 0 and maximum
     # value represented by np.int32 (to have a large entropy).
@@ -830,15 +820,29 @@ def permuted_ols(
 
     vfwe_pvals = (n_perm + 1 - vfwe_scores_as_ranks) / float(1 + n_perm)
 
+    if output_type == "legacy":
+        return (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
+
+    outputs = {
+        "t": scores_original_data.T,
+        "logp_max_t": -np.log10(vfwe_pvals),
+        "h0_max_t": vfwe_h0,
+    }
+
     if tfce:
+        outputs["tfce"] = tfce_original_data.T
+
         # We can use the same approach for TFCE that we use for vFWE
         h0_tfcemax = np.hstack(h0_tfce_parts)
+        outputs["h0_max_tfce"] = h0_tfcemax
+
         tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
         for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
             tfce_scores_as_ranks += tfce_scores_as_ranks_part
 
         tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
         neg_log10_tfce_pvals = -np.log10(tfce_pvals)
+        outputs["logp_max_tfce"] = neg_log10_tfce_pvals
 
     if threshold is not None:
         # Cluster-size and cluster-mass FWE
@@ -923,21 +927,6 @@ def permuted_ols(
                     )
                 )
 
-    if output_type == "legacy":
-        return (-np.log10(vfwe_pvals), scores_original_data.T, vfwe_h0)
-
-    outputs = {
-        "t": scores_original_data.T,
-        "logp_max_t": -np.log10(vfwe_pvals),
-        "h0_max_t": vfwe_h0,
-    }
-
-    if tfce:
-        outputs["tfce"] = tfce_original_data.T
-        outputs["logp_max_tfce"] = neg_log10_tfce_pvals
-        outputs["h0_max_tfce"] = h0_tfcemax
-
-    if threshold is not None:
         outputs["size"] = cluster_dict["size"]
         outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
         outputs["h0_max_size"] = cluster_dict["size_h0"]
@@ -948,7 +937,37 @@ def permuted_ols(
     return outputs
 
 
-def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
+def _make_array_contiguous(array):
+    """Make arrays contiguous for code efficiency."""
+    if not array.flags["C_CONTIGUOUS"]:
+        # useful to developer
+        warnings.warn("Target variates not C_CONTIGUOUS.")
+        array = np.ascontiguousarray(array)
+    return array
+
+
+def _compute_t_stat_threshold(
+    threshold, two_sided_test, tested_vars, confounding_vars
+):
+    """Compute t-stat threshold if needed based on degrees of freedom."""
+    if threshold is None:
+        return None
+    n_samples, n_regressors = tested_vars.shape
+    n_covars = 0 if confounding_vars is None else confounding_vars.shape[1]
+    # determine t-statistic threshold
+    degrees_of_freedom = n_samples - (n_regressors + n_covars)
+    return (
+        stats.t.isf(threshold / 2, df=degrees_of_freedom)
+        if two_sided_test
+        else stats.t.isf(threshold, df=degrees_of_freedom)
+    )
+
+
+def _check_inputs_permuted_ols(
+    n_jobs, n_perm, tfce, masker, threshold, target_vars
+):
+    if not isinstance(n_perm, int):
+        raise TypeError("'n_perm' must be an int. " f"Got {type(n_perm)=}")
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(
