@@ -473,8 +473,7 @@ def surf_mask():
         mesh = _make_mesh()
         data = {}
         for key, val in mesh.parts.items():
-            data_shape = (val.n_vertices, 1)
-            data_part = np.ones(data_shape, dtype=int)
+            data_part = np.ones(val.n_vertices, dtype=int)
             for i in range(n_zeros // 2):
                 data_part[i, ...] = 0
             data_part = data_part.astype(bool)
