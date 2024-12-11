@@ -63,6 +63,9 @@ jobs:
 
         -   name: Checkout nilearn
             uses: actions/checkout@v4
+            with:
+                # If pull request, checkout HEAD commit with all commit history
+                ref: ${{ github.event.pull_request.head.sha }}
 
         -   name: For PRs check if commit message contains [test min]
             id: check-commit-msg
