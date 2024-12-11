@@ -4,6 +4,7 @@
 
 ci:
     autoupdate_commit_msg: 'chore: update pre-commit hooks'
+    autofix_prs: false
 
 #  Files that should not be checked
 exclude: |
