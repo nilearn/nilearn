@@ -741,7 +741,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
     data_dir = str(tmp_path / "pauli_2017")
 
-    data = atlas.fetch_atlas_pauli_2017("det", data_dir)
+    data = atlas.fetch_atlas_pauli_2017("deterministic", data_dir)
 
     assert isinstance(data, Bunch)
 
@@ -753,7 +753,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
 
     assert len(np.unique(values)) == 17
 
-    data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
+    data = atlas.fetch_atlas_pauli_2017("probabilistic", data_dir)
 
     assert load(data.maps).shape[-1] == 16
 
