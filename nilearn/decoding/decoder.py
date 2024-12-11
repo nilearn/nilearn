@@ -1135,11 +1135,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         ver = parse(sklearn_version)
         if ver.release[1] < 6:
-            from nilearn._utils.class_inspect import tags
+            from nilearn._utils.tags import tags
 
             return tags(require_y=True)
 
-        from nilearn._utils.class_inspect import InputTags
+        from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
         tags.target_tags.required = True
@@ -1482,11 +1482,11 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         ver = parse(sklearn_version)
         if ver.release[1] < 6:
-            from nilearn._utils.class_inspect import tags
+            from nilearn._utils.tags import tags
 
             return tags(multioutput=True)
 
-        from nilearn._utils.class_inspect import InputTags
+        from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
         tags.estimator_type = "regressor"

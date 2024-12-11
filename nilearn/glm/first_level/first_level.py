@@ -693,11 +693,11 @@ class FirstLevelModel(BaseGLM):
         # bumping sklearn_version > 1.5
         ver = parse(sklearn_version)
         if ver.release[1] < 6:
-            from nilearn._utils.class_inspect import tags
+            from nilearn._utils.tags import tags
 
             return tags(niimg_like=True, surf_img=True)
 
-        from nilearn._utils.class_inspect import InputTags
+        from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(niimg_like=True, surf_img=True)
