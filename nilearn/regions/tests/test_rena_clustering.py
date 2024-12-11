@@ -122,7 +122,7 @@ def test_make_edges_surface(surf_mask_1d, part):
     faces = surf_mask_1d.mesh.parts[part].faces
     # the mask for left part has total 4 vertices out of which 2 are True
     # and for right part it has total 5 vertices out of which 3 are True
-    mask = surf_mask_1d.data.parts[part][:, 0]
+    mask = surf_mask_1d.data.parts[part]
     edges_unmasked, edges_mask = _make_edges_surface(faces, mask)
 
     # only one edge remains after masking the left part (between 2 vertices)
