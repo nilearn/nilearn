@@ -1988,10 +1988,11 @@ def fetch_atlas_pauli_2017(
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
-              :class:`~nibabel.nifti1.Nifti1Image`. If ``atlas_type='probabilistic'``,
-              the image shape is ``(193, 229, 193, 16)``. If
-              ``atlas_type='deterministic'`` the image shape is ``(198, 263, 212)``, and
-              values are indices in the list of labels (integers from 0 to 16).
+              :class:`~nibabel.nifti1.Nifti1Image`. If
+              ``atlas_type='probabilistic'``, the image shape is ``(193, 229,
+              193, 16)``. If ``atlas_type='deterministic'`` the image shape is
+              ``(198, 263, 212)``, and values are indices in the list of labels
+              (integers from 0 to 16).
             - 'labels': :obj:`list` of :obj:`str`. List of region names. The
               list contains 16 values for both
               :term:`probabilitic<Probabilistic atlas>` and
@@ -2034,7 +2035,7 @@ def fetch_atlas_pauli_2017(
 
     """
     # TODO: remove this part after release 0.13.0
-    if atlas_type == "prob" or atlas_type == "det":
+    if atlas_type in ("prob", "det"):
         atlas_type_values = (
             "The possible values for atlas_type are currently 'prob' and"
             " 'det'. From release 0.13.0 onwards, atlas_type will accept only"
