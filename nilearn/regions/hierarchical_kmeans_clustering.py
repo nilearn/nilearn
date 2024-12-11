@@ -3,6 +3,8 @@
 import warnings
 
 import numpy as np
+from packaging.version import parse
+from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
@@ -220,6 +222,25 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         self.verbose = verbose
         self.random_state = random_state
         self.scaling = scaling
+
+    def _more_tags(self):
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
+            from nilearn._utils.class_inspect import tags
+
+            return tags()
+
+        from nilearn._utils.class_inspect import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags()
+        return tags
 
     def fit(
         self,

@@ -6,6 +6,8 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+from packaging.version import parse
+from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
@@ -142,6 +144,25 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "This masker has not been fitted.\n"
                 "Call fit before calling transform."
             )
+
+    def _more_tags(self):
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
+            from nilearn._utils.class_inspect import tags
+
+            return tags(surf_img=True, niimg_like=False)
+
+        from nilearn._utils.class_inspect import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
+        return tags
 
     def _fit_mask_img(self, img):
         """Get mask passed during init or compute one from input image.

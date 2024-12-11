@@ -10,7 +10,9 @@ from pathlib import Path
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
+from packaging.version import parse
 from scipy import linalg
+from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
@@ -380,6 +382,25 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
+
+    def _more_tags(self):
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
+            from nilearn._utils.class_inspect import tags
+
+            return tags()
+
+        from nilearn._utils.class_inspect import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags()
+        return tags
 
     def fit(
         self,

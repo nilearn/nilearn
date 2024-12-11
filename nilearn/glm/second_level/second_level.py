@@ -13,6 +13,8 @@ import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
 from nibabel.funcs import four_to_three
+from packaging.version import parse
+from sklearn import __version__ as sklearn_version
 from sklearn.base import clone
 
 from nilearn._utils import fill_doc, logger, stringify_path
@@ -526,6 +528,25 @@ class SecondLevelModel(BaseGLM):
         self.confounds_ = None
         self.labels_ = None
         self.results_ = None
+
+    def _more_tags(self):
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
+            from nilearn._utils.class_inspect import tags
+
+            return tags(surf_img=True, niimg_like=True)
+
+        from nilearn._utils.class_inspect import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=True)
+        return tags
 
     @fill_doc
     def fit(self, second_level_input, confounds=None, design_matrix=None):

@@ -15,10 +15,8 @@ from numpy.testing import (
     assert_array_equal,
     assert_array_less,
 )
-from sklearn import __version__ as sklearn_version
 from sklearn.cluster import KMeans
 
-from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
@@ -59,16 +57,11 @@ FUNCFILE = BASEDIR / "functional.nii.gz"
 extra_valid_checks = [
     "check_transformers_unfitted",
     "check_transformer_n_iter",
-    "check_estimator_sparse_array",
-    "check_estimator_sparse_matrix",
     "check_estimators_unfitted",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_no_attributes_set_in_init",
     "check_parameters_default_constructible",
 ]
-# TODO remove when dropping support for sklearn_version < 1.5.0
-if compare_version(sklearn_version, "<", "1.5.0"):
-    extra_valid_checks.append("check_estimator_sparse_data")
 
 
 @pytest.mark.parametrize(

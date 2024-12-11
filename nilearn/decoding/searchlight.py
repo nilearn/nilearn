@@ -14,6 +14,8 @@ import warnings
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
+from packaging.version import parse
+from sklearn import __version__ as sklearn_version
 from sklearn import svm
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
@@ -327,6 +329,25 @@ class SearchLight(TransformerMixin, BaseEstimator):
         self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
+
+    def _more_tags(self):
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        ver = parse(sklearn_version)
+        if ver.release[1] < 6:
+            from nilearn._utils.class_inspect import tags
+
+            return tags()
+
+        from nilearn._utils.class_inspect import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags()
+        return tags
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
