@@ -283,7 +283,7 @@ Other metrics, such as the :term:`AUC` (Area Under the Curve, for the
 
 .. seealso::
   the `list of scoring options
-  <https://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
+  <https://scikit-learn.org/stable/modules/model_evaluation.html>`_
 
 Prediction accuracy at chance using simple strategies
 .....................................................
