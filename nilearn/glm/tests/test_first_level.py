@@ -2215,10 +2215,10 @@ def test_flm_fit_surface_image_one_hemisphere(
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_fit_surface_image_with_mask(surface_glm_data, surf_mask):
+def test_flm_fit_surface_image_with_mask(surface_glm_data, surf_mask_1d):
     """Test FirstLevelModel with surface mask."""
     img, des = surface_glm_data(5)
-    model = FirstLevelModel(mask_img=surf_mask())
+    model = FirstLevelModel(mask_img=surf_mask_1d)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
@@ -2227,11 +2227,11 @@ def test_flm_fit_surface_image_with_mask(surface_glm_data, surf_mask):
 
 
 def test_error_flm_surface_mask_volume_image(
-    surface_glm_data, surf_mask, img_4d_rand_eye
+    surface_glm_data, surf_mask_1d, img_4d_rand_eye
 ):
     """Test error is raised when mask is a surface and data is in volume."""
     img, des = surface_glm_data(5)
-    model = FirstLevelModel(mask_img=surf_mask())
+    model = FirstLevelModel(mask_img=surf_mask_1d)
     with pytest.raises(
         TypeError, match="Mask and images to fit must be of compatible types."
     ):
@@ -2277,10 +2277,10 @@ def test_flm_with_surface_image_with_surface_masker(surface_glm_data):
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_with_surface_masker_with_mask(surface_glm_data, surf_mask):
+def test_flm_with_surface_masker_with_mask(surface_glm_data, surf_mask_1d):
     """Test FirstLevelModel with SurfaceMasker and mask image."""
     img, des = surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=surf_mask()).fit(img)
+    masker = SurfaceMasker(mask_img=surf_mask_1d).fit(img)
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 

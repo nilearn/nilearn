@@ -117,12 +117,12 @@ def test_rena_clustering():
 
 
 @pytest.mark.parametrize("part", ["left", "right"])
-def test_make_edges_surface(surf_mask, part):
+def test_make_edges_surface(surf_mask_1d, part):
     """Test if the edges and edge mask are correctly computed."""
-    faces = surf_mask().mesh.parts[part].faces
+    faces = surf_mask_1d.mesh.parts[part].faces
     # the mask for left part has total 4 vertices out of which 2 are True
     # and for right part it has total 5 vertices out of which 3 are True
-    mask = surf_mask().data.parts[part][:, 0]
+    mask = surf_mask_1d.data.parts[part][:, 0]
     edges_unmasked, edges_mask = _make_edges_surface(faces, mask)
 
     # only one edge remains after masking the left part (between 2 vertices)
@@ -145,13 +145,13 @@ def test_make_edges_and_weights_surface(surf_mesh, surf_img_2d):
         "left": np.array([False, True, True, True]),
         "right": np.array([True, True, False, True, False]),
     }
-    surf_mask = SurfaceImage(surf_mesh(), data)
+    surf_mask_1d = SurfaceImage(surf_mesh(), data)
     # create a surface masker
-    masker = SurfaceMasker(surf_mask).fit()
+    masker = SurfaceMasker(surf_mask_1d).fit()
     # mask the surface image with 50 samples
     X = masker.transform(surf_img_2d(50))
     # compute edges and weights
-    edges, weights = _make_edges_and_weights_surface(X, surf_mask)
+    edges, weights = _make_edges_and_weights_surface(X, surf_mask_1d)
 
     # make sure edges and weights have two parts, left and right
     assert len(edges) == 2
@@ -180,18 +180,18 @@ def test_make_edges_and_weights_surface(surf_mesh, surf_img_2d):
 @pytest.mark.parametrize("mask_as", ["surface_image", "surface_masker"])
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
 def test_rena_clustering_input_mask_surface(
-    surf_img_2d, surf_mask, mask_as, n_clusters
+    surf_img_2d, surf_mask_1d, mask_as, n_clusters
 ):
     """Test if ReNA clustering works in both cases when mask_img is either a
     SurfaceImage or SurfaceMasker.
     """
     # create a surface masker
-    masker = SurfaceMasker(surf_mask()).fit()
+    masker = SurfaceMasker(surf_mask_1d).fit()
     # mask the surface image with 50 samples
     X = masker.transform(surf_img_2d(50))
     if mask_as == "surface_image":
         # instantiate ReNA with mask_img as a SurfaceImage
-        clustering = ReNA(mask_img=surf_mask(), n_clusters=n_clusters)
+        clustering = ReNA(mask_img=surf_mask_1d, n_clusters=n_clusters)
     elif mask_as == "surface_masker":
         # instantiate ReNA with mask_img as a SurfaceMasker
         clustering = ReNA(mask_img=masker, n_clusters=n_clusters)

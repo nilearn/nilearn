@@ -610,9 +610,11 @@ def test_multi_nifti_maps_masker_report_warning(
 
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("empty_mask", [True, False])
-def test_surface_masker_minimal_report_no_fit(surf_mask, empty_mask, reports):
+def test_surface_masker_minimal_report_no_fit(
+    surf_mask_1d, empty_mask, reports
+):
     """Test minimal report generation with no fit."""
-    masker = SurfaceMasker(surf_mask(empty=empty_mask), reports=reports)
+    masker = SurfaceMasker(surf_mask_1d(empty=empty_mask), reports=reports)
     report = masker.generate_report()
 
     _check_html(report)
@@ -622,10 +624,10 @@ def test_surface_masker_minimal_report_no_fit(surf_mask, empty_mask, reports):
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("empty_mask", [True, False])
 def test_surface_masker_minimal_report_fit(
-    surf_mask, empty_mask, surf_img_1d, reports
+    surf_mask_1d, empty_mask, surf_img_1d, reports
 ):
     """Test minimal report generation with fit."""
-    masker = SurfaceMasker(surf_mask(empty=empty_mask), reports=reports)
+    masker = SurfaceMasker(surf_mask_1d(empty=empty_mask), reports=reports)
     masker.fit_transform(surf_img_1d)
     report = masker.generate_report()
 
