@@ -15,13 +15,13 @@ from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, rename_parameters
 
-from ..image import get_data, new_img_like, reorder_img
-from ._utils import (
+from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
     get_dataset_descr,
     get_dataset_dir,
 )
+from nilearn.image import get_data, new_img_like, reorder_img
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
