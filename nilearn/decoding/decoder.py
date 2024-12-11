@@ -1138,6 +1138,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             from nilearn._utils.class_inspect import tags
 
             return tags(require_y=True)
+
         from nilearn._utils.class_inspect import InputTags
 
         tags = super().__sklearn_tags__()
