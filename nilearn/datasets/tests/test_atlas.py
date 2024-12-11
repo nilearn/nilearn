@@ -775,26 +775,36 @@ def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
     request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
     data_dir = str(tmp_path / "pauli_2017")
 
-    data = atlas.fetch_atlas_pauli_2017("det", data_dir)
+    with pytest.warns(
+            DeprecationWarning, match="The possible values for atlas_type"
+    ):
+        data = atlas.fetch_atlas_pauli_2017("det", data_dir)
 
-    assert isinstance(data, Bunch)
+        assert isinstance(data, Bunch)
 
-    assert data.description != ""
+        assert data.description != ""
 
-    assert len(data.labels) == 16
+        assert len(data.labels) == 16
 
-    values = get_data(load(data.maps))
+    with pytest.warns(
+            DeprecationWarning, match="The possible values for atlas_type"
+    ):
+        data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
 
-    assert len(np.unique(values)) == 17
+        assert load(data.maps).shape[-1] == 16
 
-    data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
+        assert data.description != ""
 
-    assert load(data.maps).shape[-1] == 16
+    with pytest.warns(
+            DeprecationWarning, match='The parameter "version"'
+    ):
+        data = atlas.fetch_atlas_pauli_2017(
+            version="probabilistic", data_dir=data_dir
+        )
 
-    assert data.description != ""
+        assert load(data.maps).shape[-1] == 16
 
-    with pytest.raises(NotImplementedError):
-        atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)
+        assert data.description != ""
 
 
 def _schaefer_labels(match, requests):  # noqa: ARG001
