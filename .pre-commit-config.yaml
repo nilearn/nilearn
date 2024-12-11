@@ -4,6 +4,7 @@
 
 ci:
     autoupdate_commit_msg: 'chore: update pre-commit hooks'
+    autofix_prs: false
 
 #  Files that should not be checked
 exclude: |
@@ -64,7 +65,7 @@ repos:
     # Check formatting of CSS and HTML
     # prettier: https://prettier.io/
 -   repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.4.1
+    rev: v3.4.2
     hooks:
     -   id: prettier
         types_or: [css, html]
@@ -74,7 +75,7 @@ repos:
             )$
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.8.1
+    rev: v0.8.2
     hooks:
     # Run the linter.
     -   id: ruff
@@ -85,7 +86,7 @@ repos:
 
 
 -   repo: https://github.com/PyCQA/doc8
-    rev: v1.0.0
+    rev: v1.1.2
     hooks:
     -   id: doc8
         args: [--config=pyproject.toml, nilearn]
