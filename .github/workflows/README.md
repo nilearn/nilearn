@@ -1,14 +1,5 @@
 # GitHub Actions Specification
 
-## Skip CI
-
-You can decide to skip CI at any time by including the tag "[skip ci]" in your commit message.
-For more information, see: https://docs.github.com/en/actions/managing-workflow-runs/skipping-workflow-runs
-
-```bash
-$ git commit -m "[skip ci] commit message"
-```
-
 ## Automatically assign issue
 
 ### assign.yml
@@ -104,7 +95,7 @@ Pings github API to collect information about:
 - how long each run of the test suite lasted,
 - how long the build of the doc lasted.
 
-Plots the results and saves it as an artefact to download and manually inspect
+Plots the results and saves it as an artifact to download and manually inspect
 to see if there is a trend in tests taking longer.
 
 ## Running unit tests

@@ -79,10 +79,10 @@ def _univariate_feature_screening(
     y : ndarray, shape (n_samples,)
         Response Vector.
 
-    mask: ndarray or booleans, shape (nx, ny, nz)
+    mask : ndarray or booleans, shape (nx, ny, nz)
         Mask defining brain Rois.
 
-    is_classif: bool
+    is_classif : bool
         Flag telling whether the learning task is classification or regression.
 
     screening_percentile : float in the closed interval [0., 100.]
@@ -93,7 +93,7 @@ def _univariate_feature_screening(
 
     Returns
     -------
-    X_: ndarray, shape (n_samples, n_features_)
+    X_ : ndarray, shape (n_samples, n_features_)
         Reduced design matrix with only columns corresponding to the voxels
         retained after screening.
 
@@ -543,7 +543,7 @@ def path_scores(
 
 
 @fill_doc
-class BaseSpaceNet(LinearRegression, CacheMixin):
+class BaseSpaceNet(CacheMixin, LinearRegression):
     """Regression and classification learners with sparsity and spatial priors.
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /
@@ -794,7 +794,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                 f"{self.SUPPORTED_PENALTIES}. "
                 f"Got {self.penalty}."
             )
-        if not (self.loss is None or self.loss in self.SUPPORTED_LOSSES):
+        if self.loss is not None and self.loss not in self.SUPPORTED_LOSSES:
             raise ValueError(
                 f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
                 f"Got {self.loss}."

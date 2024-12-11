@@ -49,7 +49,7 @@ def _squared_loss_and_spatial_grad(X, y, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight: float
+    grad_weight : float
         l1_ratio * alpha.
 
     Returns
@@ -82,7 +82,7 @@ def _squared_loss_and_spatial_grad_derivative(X, y, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight: float
+    grad_weight : float
         l1_ratio * alpha
 
     Returns
@@ -116,7 +116,7 @@ def _graph_net_data_function(X, w, mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight: float
+    grad_weight : float
         l1_ratio * alpha.
 
     Returns
@@ -156,7 +156,7 @@ def _graph_net_adjoint_data_function(X, w, adjoint_mask, grad_weight):
     w : ndarray shape (n_features,)
         Unmasked, ravelized weights map.
 
-    grad_weight: float
+    grad_weight : float
         l1_ratio * alpha.
 
     Returns
@@ -436,7 +436,7 @@ def _tvl1_objective_from_gradient(gradient):
 
     Parameters
     ----------
-    gradient: ndarray, shape (4, nx, ny, nz)
+    gradient : ndarray, shape (4, nx, ny, nz)
        precomputed "gradient + id" array
 
     Returns
@@ -549,7 +549,7 @@ def tvl1_solver(
     objective : array of floats
         Objective function (fval) computed on every iteration.
 
-    solver_info: float
+    solver_info : float
         Solver information, for warm start.
 
     """
@@ -573,10 +573,11 @@ def tvl1_solver(
             return np.append(unmask_from_to_3d_array(w[:-1], mask), w[-1])
 
     def maskvec(w):
-        if loss == "mse":
-            return w[flat_mask]
-        else:
-            return np.append(w[:-1][flat_mask], w[-1])
+        return (
+            w[flat_mask]
+            if loss == "mse"
+            else np.append(w[:-1][flat_mask], w[-1])
+        )
 
     # function to compute derivative of f1
     def f1_grad(w):

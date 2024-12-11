@@ -64,8 +64,8 @@ repos:
 
     # Check formatting of CSS and HTML
     # prettier: https://prettier.io/
--   repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v4.0.0-alpha.8
+-   repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.4.2
     hooks:
     -   id: prettier
         types_or: [css, html]
@@ -75,7 +75,7 @@ repos:
             )$
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.7.2
+    rev: v0.8.2
     hooks:
     # Run the linter.
     -   id: ruff
@@ -83,3 +83,10 @@ repos:
         args: [--fix, --show-fixes]
     # Run the formatter.
     -   id: ruff-format
+
+
+-   repo: https://github.com/PyCQA/doc8
+    rev: v1.1.2
+    hooks:
+    -   id: doc8
+        args: [--config=pyproject.toml, nilearn]

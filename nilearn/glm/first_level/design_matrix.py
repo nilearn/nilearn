@@ -39,6 +39,7 @@ import numpy as np
 import pandas as pd
 
 from nilearn._utils import fill_doc
+from nilearn._utils.glm import check_and_load_tables
 from nilearn.glm._utils import full_rank
 from nilearn.glm.first_level.experimental_paradigm import (
     check_events,
@@ -298,28 +299,42 @@ def make_first_level_design_matrix(
     frame_times : array of shape (n_frames,)
         The timing of acquisition of the scans in seconds.
 
-    events : DataFrame instance or None, default=None
+    events : :obj:`pandas.DataFrame` instance, \
+             or :obj:`str` or :obj:`pathlib.Path` to a CSV or TSV file, \
+             or None, default=None
         Events data that describes the experimental paradigm.
-         The DataFrame instance might have these keys:
-            'onset': column to specify the start time of each events in
-                     seconds. An error is raised if this key is missing.
-            'trial_type': column to specify per-event experimental conditions
-                          identifier. If missing each event are labelled
-                          'dummy' and considered to form a unique condition.
-            'duration': column to specify the duration of each events in
-                        seconds. If missing the duration of each events is set
-                        to zero.
-            'modulation': column to specify the amplitude of each
-                          events. If missing the default is set to
-                          ones(n_events).
+        The resulting DataFrame instance must/may have these keys:
 
-        An experimental paradigm is valid if it has an 'onset' key
-        and a 'duration' key.
+        - ``'onset'``: REQUIRED
+            Column to specify the start time of each events in seconds.
+            An error is raised if this key is missing.
+
+        - ``'duration'``: REQUIRED
+            Column to specify the duration of each events in seconds.
+
+            .. warning::
+
+                Events with a duration of 0 seconds will be modeled
+                using a 'delta function'.
+
+        - ``'trial_type'``: OPTIONAL
+            Column to specify per-event experimental conditions identifier.
+            If missing each event are labeled 'dummy'
+            and considered to form a unique condition.
+
+        - ``'modulation'``: OPTIONAL
+            Column to specify the amplitude of each events.
+            If missing the default is set to ones(n_events).
+
+        An experimental paradigm is valid if it has an ``'onset'`` key
+        and a ``'duration'`` key.
         If these keys are missing an error will be raised.
         For the others keys a warning will be displayed.
-        Particular attention should be given to the 'trial_type' key
+        Particular attention should be given to the ``'trial_type'`` key
         which defines the different conditions in the experimental paradigm.
+
     %(hrf_model)s
+
     drift_model : {'cosine', 'polynomial', None}, default='cosine'
         Specifies the desired drift model.
 
@@ -373,7 +388,7 @@ def make_first_level_design_matrix(
         else:
             add_regs_ = np.atleast_2d(add_regs)
         n_add_regs = add_regs_.shape[1]
-        assert add_regs_.shape[0] == np.size(frame_times), ValueError(
+        assert add_regs_.shape[0] == np.size(frame_times), (
             "Incorrect specification of additional regressors: "
             f"length of regressors provided: {add_regs_.shape[0]}, number of "
             f"time-frames: {np.size(frame_times)}."
@@ -394,6 +409,7 @@ def make_first_level_design_matrix(
 
     # step 1: events-related regressors
     if events is not None:
+        events = check_and_load_tables(events, "events")[0]
         # create the condition-related regressors
         if isinstance(hrf_model, str):
             hrf_model = hrf_model.lower()
@@ -434,7 +450,7 @@ def check_design_matrix(design_matrix):
 
     Parameters
     ----------
-    design matrix : pandas DataFrame,
+    design matrix : :obj:`pandas.DataFrame`
         Describes a design matrix.
 
     Returns
@@ -449,6 +465,8 @@ def check_design_matrix(design_matrix):
         Per-event onset time (in seconds)
 
     """
+    if len(design_matrix.columns) == 0:
+        raise ValueError("The design_matrix dataframe cannot be empty.")
     names = list(design_matrix.keys())
     frame_times = design_matrix.index
     matrix = design_matrix.to_numpy()

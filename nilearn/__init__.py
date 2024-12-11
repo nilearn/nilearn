@@ -24,7 +24,7 @@ datasets                --- Utilities to download NeuroImaging datasets
 decoding                --- Decoding tools and algorithms
 decomposition           --- Includes a subject level variant of the ICA
                             algorithm called Canonical ICA
-glm                     --- Analysing fMRI data using GLMs
+glm                     --- Analyzing fMRI data using GLMs
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
 maskers                 --- Includes scikit-learn transformers.
@@ -62,18 +62,18 @@ EXPAND_PATH_WILDCARDS = True
 
 # list all submodules available in nilearn and version
 __all__ = [
+    "__version__",
+    "connectome",
     "datasets",
     "decoding",
     "decomposition",
-    "connectome",
     "image",
+    "interfaces",
     "maskers",
     "masking",
-    "interfaces",
     "mass_univariate",
     "plotting",
     "regions",
     "signal",
     "surface",
-    "__version__",
 ]

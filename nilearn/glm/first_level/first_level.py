@@ -20,11 +20,13 @@ from sklearn.base import clone
 from sklearn.cluster import KMeans
 
 from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -437,16 +439,8 @@ class FirstLevelModel(BaseGLM):
         subject_label=None,
         random_state=None,
     ):
-        if fir_delays is None:
-            fir_delays = [0]
-        if memory is None:
-            memory = Memory(None)
         # design matrix parameters
-        if t_r is not None:
-            _check_repetition_time(t_r)
         self.t_r = t_r
-        if slice_time_ref is not None:
-            _check_slice_time_ref(slice_time_ref)
         self.slice_time_ref = slice_time_ref
         self.hrf_model = hrf_model
         self.drift_model = drift_model
@@ -454,32 +448,23 @@ class FirstLevelModel(BaseGLM):
         self.drift_order = drift_order
         self.fir_delays = fir_delays
         self.min_onset = min_onset
+
         # glm parameters
         self.mask_img = mask_img
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
-        memory = stringify_path(memory)
-        self.memory = Memory(memory) if isinstance(memory, str) else memory
+        self.memory = memory
         self.memory_level = memory_level
         self.standardize = standardize
-        if signal_scaling is False:
-            self.signal_scaling = signal_scaling
-        elif signal_scaling in [0, 1, (0, 1)]:
-            self.signal_scaling = signal_scaling
-            self.standardize = False
-        else:
-            raise ValueError(
-                'signal_scaling must be "False", "0", "1" or "(0, 1)"'
-            )
+        self.signal_scaling = signal_scaling
 
         self.noise_model = noise_model
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
+
         # attributes
-        self.labels_ = None
-        self.results_ = None
         self.subject_label = subject_label
         self.random_state = random_state
 
@@ -622,8 +607,9 @@ class FirstLevelModel(BaseGLM):
 
         # We save memory if inspecting model details is not necessary
         if self.minimize_memory:
-            for key in results:
-                results[key] = SimpleRegressionResults(results[key])
+            results = {
+                k: SimpleRegressionResults(v) for k, v in results.items()
+            }
         self.results_.append(results)
         del Y
 
@@ -638,7 +624,7 @@ class FirstLevelModel(BaseGLM):
 
         for run_idx, run_img in enumerate(run_imgs):
             if isinstance(run_img, SurfaceImage):
-                n_scans = run_img.shape[0]
+                n_scans = run_img.shape[1]
             else:
                 run_img = check_niimg(run_img, ensure_ndim=4)
                 n_scans = get_data(run_img).shape[3]
@@ -684,6 +670,18 @@ class FirstLevelModel(BaseGLM):
 
         return design
 
+    def __sklearn_is_fitted__(self):
+        return (
+            hasattr(self, "labels_")
+            and hasattr(self, "results_")
+            and self.labels_ is not None
+            and self.results_ is not None
+        )
+
+    def _check_fitted(self):
+        if not self.__sklearn_is_fitted__():
+            raise ValueError("The model has not been fit yet.")
+
     def fit(
         self,
         run_imgs,
@@ -721,18 +719,25 @@ class FirstLevelModel(BaseGLM):
                 Niimg-like object, \
                 a :obj:`list` or a :obj:`tuple` of Niimg-like objects.
                 If ``mask_img`` is
-                a ``SurfaceMasker`` or ``SurfaceImage`` instance,
+                a :obj:`~nilearn.maskers.SurfaceMasker`
+                or :obj:`~nilearn.surface.SurfaceImage` instance,
                 then ``run_imgs`` must be a
-                ``SurfaceImage`` object, \
+                :obj:`~nilearn.surface.SurfaceImage`, \
                 a :obj:`list` or \
-                a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage` objects.
+                a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`.
 
-        events : :class:`pandas.DataFrame` or :obj:`str` or :obj:`list` of \
-                 :class:`pandas.DataFrame` or :obj:`str`, default=None
+        events : :obj:`pandas.DataFrame` or :obj:`str` or \
+                 :obj:`pathlib.Path` to a TSV file, or \
+                 :obj:`list` of \
+                 :obj:`pandas.DataFrame`, :obj:`str` or \
+                 :obj:`pathlib.Path` to a TSV file, \
+                 or None, default=None
             :term:`fMRI` events used to build design matrices.
             One events object expected per run_img.
             Ignored in case designs is not None.
-            If string, then a path to a csv file is expected.
+            If string, then a path to a csv or tsv file is expected.
+            See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
+            for details on the required content of events files.
 
         confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
                     :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
@@ -751,10 +756,14 @@ class FirstLevelModel(BaseGLM):
 
             .. versionadded:: 0.9.2
 
-        design_matrices : :class:`pandas.DataFrame` or :obj:`list` of \
-                          :class:`pandas.DataFrame`, default=None
-            Design matrices that will be used to fit the GLM. If given it
-            takes precedence over events and confounds.
+        design_matrices : :obj:`pandas.DataFrame` or :obj:`str` or \
+                          :obj:`pathlib.Path` to a CSV or TSV file, or \
+                          :obj:`list` of \
+                          :obj:`pandas.DataFrame`, :obj:`str` or \
+                          :obj:`pathlib.Path` to a CSV or TSV file, \
+                          or None, default=None
+            Design matrices that will be used to fit the GLM.
+            If given it takes precedence over events and confounds.
 
         bins : :obj:`int`, default=100
             Maximum number of discrete bins for the AR coef histogram.
@@ -763,6 +772,29 @@ class FirstLevelModel(BaseGLM):
             will be clustered via K-means with `bins` number of clusters.
 
         """
+        #  check attributes passed at construction
+        if self.t_r is not None:
+            _check_repetition_time(self.t_r)
+
+        if self.slice_time_ref is not None:
+            _check_slice_time_ref(self.slice_time_ref)
+
+        if self.fir_delays is None:
+            self.fir_delays = [0]
+
+        self.memory = stringify_path(self.memory)
+        if self.memory is None:
+            self.memory = Memory(None)
+        if isinstance(self.memory, str):
+            self.memory = Memory(self.memory)
+
+        if self.signal_scaling not in {False, 1, (0, 1)}:
+            raise ValueError(
+                'signal_scaling must be "False", "0", "1" or "(0, 1)"'
+            )
+        if self.signal_scaling in [0, 1, (0, 1)]:
+            self.standardize = False
+
         if not isinstance(
             run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
         ) or (
@@ -784,6 +816,9 @@ class FirstLevelModel(BaseGLM):
                 "- SurfaceImage\n"
                 f"Got: {input_type}"
             )
+
+        self.labels_ = None
+        self.results_ = None
 
         run_imgs, events, confounds, sample_masks, design_matrices = (
             self._check_fit_inputs(
@@ -829,7 +864,7 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        contrast_def : str or array of shape (n_col) or list of (string or
+        contrast_def : str or array of shape (n_col) or list of (string or\
                        array of shape (n_col))
 
             where ``n_col`` is the number of columns of the design matrix,
@@ -852,13 +887,15 @@ class FirstLevelModel(BaseGLM):
 
         Returns
         -------
-        output : Nifti1Image, or :obj:`dict`
-            The desired output image(s). If ``output_type == 'all'``, then
-            the output is a dictionary of images, keyed by the type of image.
+        output : Nifti1Image, :obj:`~nilearn.surface.SurfaceImage`, \
+                 or :obj:`dict`
+            The desired output image(s).
+            If ``output_type == 'all'``,
+            then the output is a dictionary of images,
+            keyed by the type of image.
 
         """
-        if self.labels_ is None or self.results_ is None:
-            raise ValueError("The model has not been fit yet.")
+        self._check_fitted()
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -968,8 +1005,7 @@ class FirstLevelModel(BaseGLM):
                 "when initializing the `FirstLevelModel`-object."
             )
 
-        if self.labels_ is None or self.results_ is None:
-            raise ValueError("The model has not been fit yet.")
+        self._check_fitted()
 
         output = []
 
@@ -1008,11 +1044,12 @@ class FirstLevelModel(BaseGLM):
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
             if isinstance(run_img, SurfaceImage):
-                surf_data = {}
-                for part in run_img.mesh.parts:
-                    surf_data[part] = np.ones(
-                        run_img.data.parts[part].shape[1], dtype=bool
+                surf_data = {
+                    part: np.ones(
+                        run_img.data.parts[part].shape[0], dtype=bool
                     )
+                    for part in run_img.mesh.parts
+                }
                 self.mask_img = SurfaceImage(mesh=run_img.mesh, data=surf_data)
             else:
                 ref_img = check_niimg(run_img)
@@ -1077,10 +1114,10 @@ class FirstLevelModel(BaseGLM):
                         warn(
                             f"Parameter {param_name} of the masker overridden"
                         )
-                    if isinstance(self.masker_, SurfaceMasker):
-                        if param_name not in ["target_affine", "target_shape"]:
-                            setattr(self.masker_, param_name, our_param)
-                    else:
+                    if (
+                        isinstance(self.masker_, SurfaceMasker)
+                        and param_name not in ["target_affine", "target_shape"]
+                    ) or not isinstance(self.masker_, SurfaceMasker):
                         setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_img)
             else:
@@ -1150,71 +1187,22 @@ def _check_events_file_uses_tab_separators(events_files):
 
 def _check_run_tables(run_imgs, tables_, tables_name):
     """Check fMRI runs and corresponding tables to raise error if necessary."""
-    if isinstance(tables_, (str, pd.DataFrame, np.ndarray)):
-        tables_ = [tables_]
-    _check_list_length_match(run_imgs, tables_, "run_imgs", tables_name)
-    tables_ = _check_and_load_tables(tables_, tables_name)
+    _check_length_match(run_imgs, tables_, "run_imgs", tables_name)
+    tables_ = check_and_load_tables(tables_, tables_name)
     return tables_
 
 
-def _check_list_length_match(list_1, list_2, var_name_1, var_name_2):
-    """Check length match of two given lists to raise error if necessary."""
+def _check_length_match(list_1, list_2, var_name_1, var_name_2):
+    """Check length match of two given inputs to raise error if necessary."""
+    if not isinstance(list_1, list):
+        list_1 = [list_1]
+    if not isinstance(list_2, list):
+        list_2 = [list_2]
     if len(list_1) != len(list_2):
         raise ValueError(
             f"len({var_name_1}) {len(list_1)} does not match "
             f"len({var_name_2}) {len(list_2)}"
         )
-
-
-def _check_and_load_tables(tables_, var_name):
-    """Check tables can be loaded in DataFrame to raise error if necessary."""
-    tables = []
-    for table_idx, table in enumerate(tables_):
-        table = stringify_path(table)
-        if isinstance(table, str):
-            loaded = _read_events_table(table)
-            tables.append(loaded)
-        elif isinstance(table, pd.DataFrame):
-            tables.append(table)
-        elif isinstance(table, np.ndarray):
-            pass
-        else:
-            raise TypeError(
-                f"{var_name} can only be a pandas DataFrame, "
-                "a Path object or a string. "
-                f"A {type(table)} was provided at idx {table_idx}"
-            )
-    return tables
-
-
-def _read_events_table(table):
-    """Accept the path to en event.tsv file \
-    and loads it as a Pandas Dataframe.
-
-    Raises an error if loading fails.
-
-    Parameters
-    ----------
-    table : :obj:`str`, :obj:`pathlib.Path`
-        Accepts the path to an events file.
-
-    Returns
-    -------
-    loaded : pandas.Dataframe object
-        Pandas Dataframe with e events data.
-
-    """
-    try:
-        # kept for historical reasons, a lot of tests use csv with index column
-        loaded = pd.read_csv(table, index_col=0)
-    except:  # noqa: E722
-        raise ValueError(f"table path {table} could not be loaded")
-    if loaded.empty:
-        try:
-            loaded = pd.read_csv(table, sep="\t")
-        except:  # noqa: E722
-            raise ValueError(f"table path {table} could not be loaded")
-    return loaded
 
 
 def _check_repetition_time(t_r):
@@ -1299,6 +1287,8 @@ def first_level_from_bids(
     space_label : :obj:`str` or None, default=None
         Specifies the space label of the preprocessed bold.nii images.
         As they are specified in the file names like ``_space-<space_label>_``.
+        If "fsaverage5" is passed as a value
+        then the GLM will be run on pial surface data.
 
     sub_labels : :obj:`list` of :obj:`str`, default=None
         Specifies the subset of subject labels to model.
@@ -1440,6 +1430,8 @@ def first_level_from_bids(
             "Starting in version 0.12, slice_time_ref will default to None.",
             DeprecationWarning,
         )
+    if space_label is None:
+        space_label = "MNI152NLin2009cAsym"
 
     sub_labels = sub_labels or []
     img_filters = img_filters or []
@@ -1624,7 +1616,7 @@ def first_level_from_bids(
         )
         models.append(model)
 
-        imgs = _get_processed_imgs(
+        imgs, files_to_check = _get_processed_imgs(
             derivatives_path=derivatives_path,
             sub_label=sub_label_,
             task_label=task_label,
@@ -1639,7 +1631,7 @@ def first_level_from_bids(
             sub_label=sub_label_,
             task_label=task_label,
             img_filters=img_filters,
-            imgs=imgs,
+            imgs=files_to_check,
             verbose=verbose,
         )
         events = [
@@ -1652,7 +1644,7 @@ def first_level_from_bids(
             sub_label=sub_label_,
             task_label=task_label,
             img_filters=img_filters,
-            imgs=imgs,
+            imgs=files_to_check,
             verbose=verbose,
             kwargs_load_confounds=kwargs_load_confounds,
         )
@@ -1752,6 +1744,8 @@ def _get_processed_imgs(
     task_label : :obj:`str`
         Task label as specified in the file names like _task-<task_label>_.
 
+    space_label : None or :obj:`str`
+
     img_filters : :obj:`list` of :obj:`tuple` (str, str)
         Filters are of the form (field, label).
         Only one filter per field allowed.
@@ -1761,9 +1755,16 @@ def _get_processed_imgs(
 
     Returns
     -------
-    imgs : :obj:`list` of :obj:`str`
+    imgs : :obj:`list` of :obj:`str`, \
+        or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
         List of fullpath to the imgs files
+        If fsaverage5 is passed then both hemisphere for each run
+        will be loaded into a single SurfaceImage.
 
+    files_to_check : : :obj:`list` of :obj:`str`
+        List of fullpath to imgs files.
+        Used for validation
+        when finding events or confounds associated with images.
     """
     filters = _make_bids_files_filter(
         task_label=task_label,
@@ -1773,23 +1774,76 @@ def _get_processed_imgs(
         extra_filter=img_filters,
         verbose=verbose,
     )
-    imgs = get_bids_files(
-        main_path=derivatives_path,
-        modality_folder="func",
-        file_tag="bold",
-        file_type="nii*",
-        sub_label=sub_label,
-        filters=filters,
-    )
+
+    if space_label is not None and (
+        space_label == "" or space_label not in ("fsaverage5")
+    ):
+        imgs = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="nii*",
+            sub_label=sub_label,
+            filters=filters,
+        )
+        files_to_report = imgs
+        files_to_check = imgs
+
+    else:
+        tmp_filter = filters.copy()
+        tmp_filter.append(("hemi", "L"))
+        imgs_left = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="func.gii",
+            sub_label=sub_label,
+            filters=tmp_filter,
+        )
+        tmp_filter[-1] = ("hemi", "R")
+        imgs_right = get_bids_files(
+            main_path=derivatives_path,
+            modality_folder="func",
+            file_tag="bold",
+            file_type="func.gii",
+            sub_label=sub_label,
+            filters=tmp_filter,
+        )
+
+        # Sanity check to make sure we have the same number of files
+        # for each hemisphere
+        assert len(imgs_left) == len(imgs_right)
+
+        imgs = []
+        for data_left, data_right in zip(imgs_left, imgs_right):
+            # make sure that filenames only differ by hemisphere
+            assert (
+                Path(data_left).stem.replace("hemi-L", "hemi-R")
+                == Path(data_right).stem
+            )
+            # Assumption: we are loading the data on the pial surface.
+            imgs.append(
+                SurfaceImage(
+                    mesh=load_fsaverage()["pial"],
+                    data={"left": data_left, "right": data_right},
+                )
+            )
+
+        files_to_report = imgs_left + imgs_right
+
+        # Only check the left files
+        # as we know they have a right counterpart.
+        files_to_check = imgs_left
+
     _report_found_files(
-        files=imgs,
+        files=files_to_report,
         text="preprocessed BOLD",
         sub_label=sub_label,
         filters=filters,
         verbose=verbose,
     )
-    _check_bids_image_list(imgs, sub_label, filters)
-    return imgs
+    _check_bids_image_list(files_to_check, sub_label, filters)
+    return imgs, files_to_check
 
 
 def _get_events_files(
@@ -2313,7 +2367,7 @@ def _check_bids_events_list(
             filters=filters,
         )
         msg_suffix = (
-            f" bold file:\n{this_img}\nfilter:\n{filters})\n"
+            f"bold file:\n{this_img}\nfilter:\n{filters})\n"
             "Found all the following events files "
             f"for filter:\n{events}\n"
         )

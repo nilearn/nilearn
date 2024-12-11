@@ -57,7 +57,7 @@ def load_mask_img(mask_img, allow_empty=False):
     mask : :class:`numpy.ndarray`
         Boolean version of the mask.
 
-    mask_affine: None or (4,4) array-like
+    mask_affine : None or (4,4) array-like
         Affine of the mask.
     """
     mask_img = _utils.check_niimg_3d(mask_img)
@@ -704,12 +704,17 @@ def compute_multi_brain_mask(
 
     threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
+
     %(connected)s
         Default=True.
+
     %(opening)s
         Default=2.
+
     %(mask_type)s
+
     %(memory)s
+
     %(verbose0)s
 
     .. note::
@@ -736,9 +741,7 @@ def compute_multi_brain_mask(
         )
 
     # Check images in the list have the same FOV without loading them in memory
-    imgs_generator = _utils.check_niimg(target_imgs, return_iterator=True)
-    for _ in imgs_generator:
-        pass
+    _ = list(_utils.check_niimg(target_imgs, return_iterator=True))
 
     mask = compute_brain_mask(
         target_imgs[0],

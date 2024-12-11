@@ -322,10 +322,7 @@ def _get_runs(
     if event_type:
         runs = [run for run in runs if run["event"] in event_type]
 
-    conclusion = ["success"]
-    if include_failed_runs:
-        conclusion = ["success", "failure"]
-
+    conclusion = ["success", "failure"] if include_failed_runs else ["success"]
     return [run for run in runs if run["conclusion"] in conclusion]
 
 
@@ -357,8 +354,8 @@ def _update_jobs_data(
         content = _handle_request(run["jobs_url"], auth)
 
         for job in content.get("jobs", {}):
-            for key in jobs_data:
-                jobs_data[key].append(job[key])
+            for key, value in jobs_data.items():
+                value.append(job[key])
 
     return jobs_data
 

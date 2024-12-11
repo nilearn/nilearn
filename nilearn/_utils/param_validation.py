@@ -106,14 +106,13 @@ def _get_mask_extent(mask_img):
     if hasattr(mask_img, "affine"):
         affine = mask_img.affine
         prod_vox_dims = 1.0 * np.abs(np.linalg.det(affine[:3, :3]))
-        mask_extent = prod_vox_dims * _get_data(mask_img).astype(bool).sum()
+        return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
     else:
         # sum number of True values in both hemispheres
-        mask_extent = (
+        return (
             mask_img.data.parts["left"].sum()
             + mask_img.data.parts["right"].sum()
         )
-    return mask_extent
 
 
 def adjust_screening_percentile(
@@ -151,7 +150,7 @@ def adjust_screening_percentile(
 
     Returns
     -------
-    screening_percentile: float in the interval [0, 100]
+    screening_percentile : float in the interval [0, 100]
         Percentile value for ANOVA univariate feature selection.
 
     """

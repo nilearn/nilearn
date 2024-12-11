@@ -238,8 +238,8 @@ decoder.fit(fmri_niimgs, conditions)
 
 # %%
 # Cross-validation pipeline can also be implemented manually. More details can
-# be found on `scikit-learn website
-# <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html>`_.
+# be found on :sklearn:`scikit-learn website
+# <modules/generated/sklearn.model_selection.cross_val_score.html>`.
 #
 # Then we can check the best performing parameters per fold.
 print(decoder.cv_params_["face"])

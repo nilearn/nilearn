@@ -370,7 +370,7 @@ def prec_to_partial(precision):
 
 
 @fill_doc
-class ConnectivityMeasure(BaseEstimator, TransformerMixin):
+class ConnectivityMeasure(TransformerMixin, BaseEstimator):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 
@@ -437,8 +437,6 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         discard_diagonal=False,
         standardize=True,
     ):
-        if cov_estimator is None:
-            cov_estimator = LedoitWolf(store_precision=False)
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
@@ -506,7 +504,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self, X, do_transform=False, do_fit=False, confounds=None
     ):
         """Avoid duplication of computation."""
+        if self.cov_estimator is None:
+            self.cov_estimator = LedoitWolf(store_precision=False)
+
         self._check_input(X, confounds=confounds)
+
         if do_fit:
             self.cov_estimator_ = clone(self.cov_estimator)
 
@@ -670,8 +672,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self._check_fitted()
         return self._fit_transform(X, do_transform=True, confounds=confounds)
 
+    def __sklearn_is_fitted__(self):
+        return not hasattr(self, "cov_estimator_")
+
     def _check_fitted(self):
-        if not hasattr(self, "cov_estimator_"):
+        if self.__sklearn_is_fitted__():
             raise ValueError(
                 f"It seems that {self.__class__.__name__} "
                 "has not been fitted. "

@@ -427,6 +427,7 @@ plotting.show()
 #
 #   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #
-#   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py` # noqa: E501
+#   * :ref:`sphx_glr_auto_examples_03_connectivity\
+#     _plot_multi_subject_connectome.py`
 
 # sphinx_gallery_dummy_images=7

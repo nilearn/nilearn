@@ -146,7 +146,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
         Parameters
         ----------
         roi_map : :obj:`str` or :class:`numpy.ndarray` or :obj:`list` of \
-                  :class:`numpy.ndarray`
+                  :class:`numpy.ndarray` or\
+                  :obj:`~nilearn.surface.SurfaceImage`
             ROI map to be displayed on the surface
             mesh, can be a file (valid formats are .gii, .mgz, .nii,
             .nii.gz, or FreeSurfer specific files such as .annot or .label),
@@ -187,6 +188,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             faces (triangles).
         """
         if isinstance(roi_map, SurfaceImage):
+            assert len(roi_map.shape) == 1 or roi_map.shape[1] == 1
             roi_map = roi_map.data.parts[hemi]
 
         if levels is None:
@@ -197,11 +199,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
             lines = [None] * len(levels)
         elif len(lines) == 1 and len(levels) > 1:
             lines *= len(levels)
-        if not (len(levels) == len(labels)):
+        if len(levels) != len(labels):
             raise ValueError(
                 "levels and labels need to be either the same length or None."
             )
-        if not (len(levels) == len(lines)):
+        if len(levels) != len(lines):
             raise ValueError(
                 "levels and lines need to be either the same length or None."
             )
@@ -365,8 +367,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
                     centroids[remaining_vertices[shortest_idx]],
                     *vs[current_vertex],
                 )
-                if not any(
-                    v in idxs[current_vertex]
+                if all(
+                    v not in idxs[current_vertex]
                     for v in idxs[remaining_vertices[shortest_idx]]
                 ):
                     # this does not share vertex, so try again
@@ -402,10 +404,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
             # vertex is very far away
             if remaining_distances[0, next_index] > last_distance * 3:
                 # close the current contour
-                sorted_vertices.append(centroids[prev_first])
                 # add triple of None, which is parsed by plotly
                 # as a signal to start a new closed contour
-                sorted_vertices.append(np.array([None] * 3))
+                sorted_vertices.extend(
+                    (centroids[prev_first], np.array([None] * 3))
+                )
                 # start the new contour
                 prev_first = closest_vertex
 

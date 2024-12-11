@@ -1082,8 +1082,8 @@ def _sanitize_confound_dtype(n_signal, confound):
             confound = csv_to_array(filename, skip_header=1)
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect "
-                f"lengthSignal length: {n_signal}; "
+                "Confound signal has an incorrect length.\n"
+                f"Signal length: {n_signal}; "
                 f"confound length: {confound.shape[0]}"
             )
     elif isinstance(confound, np.ndarray):
@@ -1111,7 +1111,9 @@ def _sanitize_confound_dtype(n_signal, confound):
 def _check_filter_parameters(filter, low_pass, high_pass, t_r):
     """Check all filter related parameters are set correctly."""
     if not filter:
-        if any(isinstance(item, float) for item in [low_pass, high_pass]):
+        if any(
+            isinstance(item, (float, int)) for item in [low_pass, high_pass]
+        ):
             warnings.warn(
                 "No filter type selected but cutoff frequency provided."
                 "Will not perform filtering."
@@ -1119,7 +1121,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
         return False
     elif filter in availiable_filters:
         if filter == "cosine" and not all(
-            isinstance(item, float) for item in [t_r, high_pass]
+            isinstance(item, (float, int)) for item in [t_r, high_pass]
         ):
             raise ValueError(
                 "Repetition time (t_r) and low cutoff frequency (high_pass) "

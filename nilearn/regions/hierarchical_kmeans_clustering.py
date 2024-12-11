@@ -63,10 +63,10 @@ def hierarchical_k_means(
 
     Parameters
     ----------
-    X: ndarray (n_samples, n_features)
+    X : ndarray (n_samples, n_features)
         Data to cluster
 
-    n_clusters: int,
+    n_clusters : int,
         The number of clusters to find.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
@@ -148,7 +148,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-    n_clusters: int
+    n_clusters : int
         The number of clusters to find.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
@@ -182,13 +182,13 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
 
-    scaling: bool, optional (default False)
+    scaling : bool, optional (default False)
         If scaling is True, each cluster is scaled by the square root of its
         size during transform(), preserving the l2-norm of the image.
         inverse_transform() will apply inversed scaling to yield an image with
         same l2-norm as input.
 
-    verbose: int, optional (default 0)
+    verbose : int, optional (default 0)
         Verbosity level.
 
     Attributes
@@ -230,9 +230,9 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X: ndarray, shape = [n_features, n_samples]
+        X : ndarray, shape = [n_features, n_samples]
             Training data.
-        y: Ignored
+        y : Ignored
 
         Returns
         -------
@@ -280,12 +280,12 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X: ndarray, shape = [n_features, n_samples]
+        X : ndarray, shape = [n_features, n_samples]
             Data to transform with the fitted clustering.
 
         Returns
         -------
-        X_red: ndarray, shape = [n_clusters, n_samples]
+        X_red : ndarray, shape = [n_clusters, n_samples]
             Data reduced with agglomerated signal for each cluster
         """
         check_is_fitted(self, "labels_")
@@ -310,12 +310,12 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X_red: ndarray , shape = [n_clusters, n_samples]
+        X_red : ndarray , shape = [n_clusters, n_samples]
             Data reduced with agglomerated signal for each cluster
 
         Returns
         -------
-        X_inv: ndarray, shape = [n_features, n_samples]
+        X_inv : ndarray, shape = [n_features, n_samples]
             Data reduced expanded to the original feature space
         """
         check_is_fitted(self, "labels_")
