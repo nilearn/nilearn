@@ -53,7 +53,7 @@ except ImportError:
 
 
 def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
-    """Return a valid or invalid scikit-learn estimators check.
+    """Yield a valid or invalid scikit-learn estimators check.
 
     As some of Nilearn estimators do not comply
     with sklearn recommendations
@@ -61,13 +61,16 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
     we cannot directly use
     sklearn.utils.estimator_checks.check_estimator.
 
-    So this is a home made implementation that yields an estimator instance
+    So this is a home made generator that yields an estimator instance
     along with a
     - valid check from sklearn: those should stay valid
     - or an invalid check that is known to fail.
 
     If new 'valid' checks are added to scikit-learn,
     then tests marked as xfail will start passing.
+
+    If estimator have some nilearn specific tags
+    then some checks will skipped rather than yielded.
 
     See this section rolling-your-own-estimator in
     the scikit-learn doc for more info:
