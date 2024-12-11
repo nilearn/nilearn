@@ -31,8 +31,9 @@ else:
 
 
 CHECKS_TO_SKIP_IF_NIIMG_INPUT = {
-    "check_estimator_sparse_matrix",
     "check_estimator_sparse_array",
+    "check_estimator_sparse_data",
+    "check_estimator_sparse_matrix",
     "check_f_contiguous_array_estimator",
     "check_fit1d",
     "check_fit2d_1feature",

@@ -597,12 +597,6 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def _more_tags(self):
-        return super()._more_tags()
-
-    def __sklearn_tags__(self):
-        return super().__sklearn_tags__()
-
     def fit(
         self,
         subjects,
@@ -1075,12 +1069,6 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
         self.n_jobs = n_jobs
         self.debug = debug
         self.early_stopping = early_stopping
-
-    def _more_tags(self):
-        return super()._more_tags()
-
-    def __sklearn_tags__(self):
-        return super().__sklearn_tags__()
 
     def fit(
         self,

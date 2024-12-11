@@ -477,13 +477,6 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 f"You provided {confounds.__class__}"
             )
 
-    def _more_tags(self):
-        return super()._more_tags()
-
-    def __sklearn_tags__(self):
-        tags = super().__sklearn_tags__()
-        return tags
-
     def fit(
         self,
         X,
