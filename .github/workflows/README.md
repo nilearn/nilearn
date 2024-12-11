@@ -98,13 +98,6 @@ Pings github API to collect information about:
 Plots the results and saves it as an artifact to download and manually inspect
 to see if there is a trend in tests taking longer.
 
-## Style checks
-
-### check_style_guide.yml
-
-Relies on pre-commit to run a series of check on the content of the repositories.
-See the config [`.pre-commit-config.yaml`](../../.pre-commit-config.yaml).
-
 ## Running unit tests
 
 ### test_with_tox.yml
@@ -129,18 +122,10 @@ Tries to install Nilearn from wheel & check installation on all operating system
 
 ### testing_minimum.yml
 
-Runs on `main` (by a push or on manual trigger from the `Action` tab)
-or from a PR if commit message includes `[test min]`,
-and is also automatically run once a month.
+This workflow is triggered when a new commit is pushed to the main branch (or when a pull request is merged) and is also automatically run once a month.
 
 Checks that installing the minimum version of a given dependency of Nilearn
 along with the latest version of all the other dependencies leads to a successful run of all the tests.
-
-## Update precommit hooks
-
-### update_precommit_hooks.yml
-
-Runs weekly to check for updates in versions of precommit hooks and creates a pull request automatically to apply updates.
 
 ## Update authors
 
