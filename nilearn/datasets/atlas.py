@@ -2021,7 +2021,6 @@ def fetch_atlas_pauli_2017(
             - 'description': :obj:`str`, short description of the atlas and
               some references.
 
-    TODO: remove this part after release 0.13.0
     Warns
     -----
     DeprecationWarning
