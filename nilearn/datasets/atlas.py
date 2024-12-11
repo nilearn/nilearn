@@ -1973,7 +1973,7 @@ def fetch_atlas_pauli_2017(atlas_type="probabilistic", data_dir=None, verbose=1)
 
     Parameters
     ----------
-    atlas_type : {'probabilistic', 'deterministic'}, default='probabilistic
+    atlas_type : {'probabilistic', 'deterministic'}, default='probabilistic'
         Which type of the atlas should be download. This can be
         'probabilistic' for the :term:`Probabilistic atlas`, or 'deterministic'
         for the :term:`Deterministic atlas`.
@@ -2018,11 +2018,33 @@ def fetch_atlas_pauli_2017(atlas_type="probabilistic", data_dir=None, verbose=1)
             - 'description': :obj:`str`, short description of the atlas and
               some references.
 
+    TODO: remove this part after release 0.13.0
+    Warns
+    -----
+    DeprecationWarning
+        The possible values for atlas_type are currently 'prob' and 'det'. From
+    release 0.13.0 onwards, atlas_type will accept only 'probabilistic' or
+    'deterministic' as value.
+
     References
     ----------
     .. footbibliography::
 
     """
+    # TODO: remove this part after release 0.13.0
+    if atlas_type == "prob" or atlas_type == "det":
+        atlas_type_values = (
+            "The possible values for atlas_type are currently 'prob' and"
+            " 'det'. From release 0.13.0 onwards, atlas_type will accept only"
+            " 'probabilistic' or 'deterministic' as value."
+        )
+        warnings.warn(
+            category=DeprecationWarning,
+            message=atlas_type_values,
+            stacklevel=2
+        )
+        atlas_type = 'probabilistic' if atlas_type == 'prob' else 'deterministic'
+
     if atlas_type == "probabilistic":
         url_maps = "https://osf.io/w8zq2/download"
         filename = "pauli_2017_prob.nii.gz"
