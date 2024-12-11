@@ -54,7 +54,7 @@ def maps_and_mask():
 
 
 @pytest.fixture
-def map_img_3D(rng):
+def map_img_3d(rng):
     map_img = np.zeros(MAP_SHAPE) + 0.1 * rng.standard_normal(size=MAP_SHAPE)
     return Nifti1Image(map_img, affine=_affine_eye())
 
@@ -95,10 +95,10 @@ def test_threshold_maps_ratio(maps):
     assert thr_maps.shape[-1] == maps.shape[-1]
 
 
-def test_threshold_maps_ratio_3D(map_img_3D):
+def test_threshold_maps_ratio_3d(map_img_3d):
     """Check size is the same for 3D image before and after thresholding."""
-    thr_maps_3d = _threshold_maps_ratio(map_img_3D, threshold=0.5)
-    assert map_img_3D.shape == thr_maps_3d.shape
+    thr_maps_3d = _threshold_maps_ratio(map_img_3d, threshold=0.5)
+    assert map_img_3d.shape == thr_maps_3d.shape
 
 
 @pytest.mark.parametrize("invalid_extract_type", ["spam", 1])
@@ -114,7 +114,7 @@ def test_invalids_extract_types_in_connected_regions(
 @pytest.mark.parametrize(
     "extract_type", ["connected_components", "local_regions"]
 )
-def test_connected_regions_4D(maps, extract_type):
+def test_connected_regions_4d(maps, extract_type):
     """Regions extracted should be equal or more than already present."""
     connected_extraction_img, index = connected_regions(
         maps, min_region_size=10, extract_type=extract_type
@@ -126,10 +126,10 @@ def test_connected_regions_4D(maps, extract_type):
 @pytest.mark.parametrize(
     "extract_type", ["connected_components", "local_regions"]
 )
-def test_connected_regions_3D(map_img_3D, extract_type):
+def test_connected_regions_3d(map_img_3d, extract_type):
     """For 3D images regions extracted should be more than equal to 1."""
     connected_extraction_3d_img, _ = connected_regions(
-        maps_img=map_img_3D, min_region_size=10, extract_type=extract_type
+        maps_img=map_img_3d, min_region_size=10, extract_type=extract_type
     )
     assert connected_extraction_3d_img.shape[-1] >= 1
 
@@ -308,7 +308,7 @@ def test_remove_small_regions(affine_eye):
             [[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 1.0]],
         ]
     )
-    # To remove small regions, data should be labelled
+    # To remove small regions, data should be labeled
     label_map, n_labels = label(data)
     sum_label_data = np.sum(label_map)
 
@@ -357,7 +357,8 @@ def test_connected_label_regions_connect_diag_false(labels_img):
 
 def test_connected_label_regions_return_empty_for_large_min_size(labels_img):
     """If min_size is large and if all the regions are removed \
-    then empty image will be returned."""
+    then empty image will be returned.
+    """
     extract_reg_min_size_large = connected_label_regions(
         labels_img, min_size=500
     )
@@ -444,7 +445,7 @@ def test_connected_label_regions_unknonw_labels(
 
     # If labels_img provided is 4D Nifti image, then test whether error is
     # raised or not. Since this function accepts only 3D image.
-    labels_4d_data = np.zeros((shape_3d_default) + (2,))
+    labels_4d_data = np.zeros((*shape_3d_default, 2))
     labels_data[h0:, h1:, :h2] = 0
     labels_data[h0:, h1:, h2:] = 0
     labels_4d_data[..., 0] = labels_data
@@ -459,7 +460,8 @@ def test_connected_label_regions_check_labels_string_without_list(
     labels_img, affine_eye, shape_3d_default
 ):
     """If labels (or names to regions) given is a string without a list \
-    we expect it to be split to regions extracted and returned as list."""
+    we expect it to be split to regions extracted and returned as list.
+    """
     labels_in_str = "region_a"
     labels_img_in_str = generate_labeled_regions(
         shape=shape_3d_default, affine=affine_eye, n_regions=1

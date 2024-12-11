@@ -1,14 +1,83 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
+from sklearn import __version__ as sklearn_version
 
+from nilearn._utils import compare_version
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.input_data import NiftiMasker
+from nilearn.maskers import SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
     _adjust_small_clusters,
     hierarchical_k_means,
 )
+
+extra_valid_checks = [
+    "check_clusterer_compute_labels_predict",
+    "check_clustering",
+    "check_complex_data",
+    "check_dict_unchanged",
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_dont_overwrite_parameters",
+    "check_dtype_object",
+    "check_estimator_sparse_array",
+    "check_estimator_sparse_matrix",
+    "check_estimators_dtypes",
+    "check_estimators_empty_data_messages",
+    "check_estimators_fit_returns_self",
+    "check_estimators_pickle",
+    "check_estimators_unfitted",
+    "check_f_contiguous_array_estimator",
+    "check_fit2d_1sample",
+    "check_fit2d_1feature",
+    "check_fit_check_is_fitted",
+    "check_fit1d",
+    "check_fit_score_takes_y",
+    "check_no_attributes_set_in_init",
+    "check_pipeline_consistency",
+    "check_readonly_memmap_input",
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+]
+
+
+if compare_version(sklearn_version, ">", "1.5.2"):
+    extra_valid_checks.append("check_parameters_default_constructible")
+
+# TODO remove when dropping support for sklearn_version < 1.5.0
+if compare_version(sklearn_version, "<", "1.5.0"):
+    extra_valid_checks.append("check_estimator_sparse_data")
+
+if compare_version(sklearn_version, ">=", "1.6"):
+    extra_valid_checks.append("check_positive_only_tag_during_fit")
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[HierarchicalKMeans(n_clusters=8)],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[HierarchicalKMeans(n_clusters=8)],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(
@@ -72,3 +141,26 @@ def test_hierarchical_k_means_clustering():
     assert_array_almost_equal(X_compress, X_compress_scaled)
 
     del X_red, X_compress, X_red_scaled, X_compress_scaled
+
+
+@pytest.mark.parametrize("n_clusters", [2, 4, 5])
+def test_hierarchical_k_means_clustering_surface(
+    surf_img_2d, surf_mask, n_clusters
+):
+    """Test hierarchical k-means clustering on surface."""
+    # create a surface masker
+    masker = SurfaceMasker(surf_mask()).fit()
+    # mask the surface image with 50 samples
+    X = masker.transform(surf_img_2d(50)).T
+    # instantiate HierarchicalKMeans with n_clusters
+    clustering = HierarchicalKMeans(n_clusters=n_clusters)
+    # fit and transform the data
+    X_transformed = clustering.fit_transform(X)
+    # inverse transform the transformed data
+    X_inverse = clustering.inverse_transform(X_transformed)
+
+    # make sure the n_features in transformed data were reduced to n_clusters
+    assert X_transformed.shape[0] == n_clusters
+
+    # make sure the inverse transformed data has the same shape as the original
+    assert X_inverse.shape == X.shape

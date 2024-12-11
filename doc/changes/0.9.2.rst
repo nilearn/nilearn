@@ -92,7 +92,7 @@ Changes
 
 - :bdg-danger:`Deprecation` Classes :class:`~glm.regression.RegressionResults`, :class:`~glm.regression.SimpleRegressionResults`, :class:`~glm.regression.OLSModel`, and :class:`~glm.model.LikelihoodModelResults` no longer support deprecated shortened attribute names, including ``df_resid``, ``wdesign``, ``wresid``, ``norm_resid``, ``resid``, and ``wY`` (:gh:`3229` by `Taylor Salo`_).
 
-- :bdg-danger:`Deprecation` Function :func:`~datasets.fetch_openneuro_dataset_index` is now deprecated in favor of the new :func:`~datasets.fetch_ds000030_urls` function (:gh:`3216` by `Taylor Salo`_).
+- :bdg-danger:`Deprecation` Function ``fetch_openneuro_dataset_index`` is now deprecated in favor of the new :func:`~datasets.fetch_ds000030_urls` function (:gh:`3216` by `Taylor Salo`_).
 
 - :bdg-danger:`Deprecation` The current behavior of maskers' ``transform`` on 3D niimg inputs, in which a 2D array is returned, is deprecated, and 1D arrays will be returned starting in version ``0.12`` (:gh:`3322` by `Taylor Salo`_).
 
@@ -104,4 +104,4 @@ Changes
 
 - :bdg-secondary:`Maint` Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography (:gh:`3302` by `Ahmad Chamma`_).
 
-- :bdg-info:`Plotting` Function :func:`~plotting.plot_carpet` argument ``cmap`` now respects behaviour specified by docs and changes the color of the carpet_plot. Changing the label colors is now delegated to a new variable ``cmap_labels`` (:gh:`3209` by `Daniel Gomez`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_carpet` argument ``cmap`` now respects behavior specified by docs and changes the color of the carpet_plot. Changing the label colors is now delegated to a new variable ``cmap_labels`` (:gh:`3209` by `Daniel Gomez`_).

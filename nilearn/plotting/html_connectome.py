@@ -20,7 +20,7 @@ from .js_plotting_utils import (
 )
 
 
-class ConnectomeView(HTMLDocument):  # noqa E101
+class ConnectomeView(HTMLDocument):  # noqa: D101
     pass
 
 
@@ -29,16 +29,16 @@ def _encode_coordinates(coords, prefix):
 
     Parameters
     ----------
-    coords : ndarray, shape=(n_nodes, 3)
+    coords : :class:`numpy.ndarray` of shape=(n_nodes, 3)
         The coordinates of the nodes in MNI space.
 
-    prefix : str
+    prefix : :obj:`str`
         Prefix for the key value in the returned dict.
         Schema is {prefix}{x|y|z}
 
     Returns
     -------
-    coordinates : dict
+    coordinates : :obj:`dict`
         Dictionary containing base64 values for each axis
     """
     coordinates = {}
@@ -95,12 +95,12 @@ def _prepare_colors_for_markers(marker_color, number_of_nodes):
     marker_color : color or sequence of colors, default='auto'
         Color(s) of the nodes.
 
-    number_of_nodes : int
+    number_of_nodes : :obj:`int`
         Number of nodes in the view
 
     Returns
     -------
-    markers_colors: list
+    markers_colors : :obj:`list`
         List of `number_of_nodes` colors as hexadecimal values
     """
     if isinstance(marker_color, str) and marker_color == "auto":
@@ -120,13 +120,13 @@ def _prepare_lines_metadata(
 
     Parameters
     ----------
-    adjacency_matrix : ndarray, shape=(n_nodes, n_nodes)
+    adjacency_matrix : :class:`np.ndarray`, shape=(n_nodes, n_nodes)
         The weights of the edges.
 
-    coords : ndarray, shape=(n_nodes, 3)
+    coords : :class:`np.ndarray`, shape=(n_nodes, 3)
         The coordinates of the nodes in MNI space.
 
-    threshold : str, number or None, optional
+    threshold : :obj:`str`, number or None, optional
         If None, no thresholding.
         If it is a number only connections of amplitude greater
         than threshold will be shown.
@@ -134,19 +134,17 @@ def _prepare_lines_metadata(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    cmap : str or matplotlib colormap, default=cm.bwr
+    cmap : :obj:`str` or matplotlib colormap, default=cm.bwr
         Colormap to use.
 
-    symmetric_cmap : bool, default=True
+    symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
 
     Returns
     -------
-    coordinates : dict
+    coordinates : :obj:`dict`
         Dictionary containing base64 values for each axis
     """
-    lines_metadata = {}
-
     adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
     colors = colorscale(
         cmap,
@@ -154,9 +152,11 @@ def _prepare_lines_metadata(
         threshold=threshold,
         symmetric_cmap=symmetric_cmap,
     )
-    lines_metadata["line_colorscale"] = colors["colors"]
-    lines_metadata["line_cmin"] = float(colors["vmin"])
-    lines_metadata["line_cmax"] = float(colors["vmax"])
+    lines_metadata = {
+        "line_colorscale": colors["colors"],
+        "line_cmin": float(colors["vmin"]),
+        "line_cmax": float(colors["vmax"]),
+    }
     if threshold is not None:
         adjacency_matrix[
             np.abs(adjacency_matrix) <= colors["abs_threshold"]
@@ -265,16 +265,16 @@ def view_connectome(
 
     Parameters
     ----------
-    adjacency_matrix : ndarray, shape=(n_nodes, n_nodes)
+    adjacency_matrix : :class:`numpy.ndarray` of shape=(n_nodes, n_nodes)
         The weights of the edges.
 
-    node_coords : ndarray, shape=(n_nodes, 3)
+    node_coords : :class:`numpy.ndarray` of shape=(n_nodes, 3)
         The coordinates of the nodes in :term:`MNI` space.
 
     node_color : color or sequence of colors, default='auto'
         Color(s) of the nodes.
 
-    edge_threshold : str, number or None, optional
+    edge_threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
         If it is a number only connections of amplitude greater
         than threshold will be shown.
@@ -282,31 +282,31 @@ def view_connectome(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    edge_cmap : str or matplotlib colormap, default=cm.bwr
+    edge_cmap : :obj:`str` or matplotlib colormap, default=cm.bwr
         Colormap to use.
 
-    symmetric_cmap : bool, default=True
+    symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
 
-    linewidth : float, default=6.0
+    linewidth : :obj:`float`, default=6.0
         Width of the lines that show connections.
 
-    node_size : float, default=3.0
+    node_size : :obj:`float`, default=3.0
         Size of the markers showing the seeds in pixels.
 
-    colorbar : bool, default=True
+    colorbar : :obj:`bool`, default=True
         Add a colorbar.
 
-    colorbar_height : float, default=0.5
+    colorbar_height : :obj:`float`, default=0.5
         Height of the colorbar, relative to the figure height.
 
-    colorbar_fontsize : int, default=25
+    colorbar_fontsize : :obj:`int`, default=25
         Fontsize of the colorbar tick labels.
 
-    title : str, optional
+    title : :obj:`str` or None, default=None
         Title for the plot.
 
-    title_fontsize : int, default=25
+    title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
     Returns
@@ -364,24 +364,26 @@ def view_markers(
 
     Parameters
     ----------
-    marker_coords : ndarray, shape=(n_nodes, 3)
+    marker_coords : :class:`numpy.ndarray` of shape=(n_nodes, 3)
         The coordinates of the nodes in :term:`MNI` space.
 
-    marker_color : ndarray, shape=(n_nodes,), optional
+    marker_color : :class:`numpy.ndarray` of shape=(n_nodes,) or \
+        'auto', default='auto'
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
-        triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
-        https://matplotlib.org/users/colors.html#specifying-colors)
+        triplets, or rgba triplets (see `formats accepted by matplotlib \
+        <https://matplotlib.org/stable/users/explain/colors/colors.html>`)
 
-    marker_size : float or array-like, default=5.0
+    marker_size : :obj:`float` or array-like, default=5.0
         Size of the markers showing the seeds in pixels.
 
-    marker_labels : list of str, shape=(n_nodes), optional
+    marker_labels : :obj:`list` of :obj:`str` of shape=(n_nodes)\
+                     or None, default=None
         Labels for the markers: list of strings
 
-    title : str, optional
+    title : :obj:`str` or None, default=None
         Title for the plot.
 
-    title_fontsize : int, default=25
+    title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
     Returns

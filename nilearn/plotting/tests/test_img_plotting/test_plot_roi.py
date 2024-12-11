@@ -24,7 +24,7 @@ def demo_plot_roi(**kwargs):
         int(z_map) - 10 : int(z_map) + 10,
     ] = 1
     img = Nifti1Image(data, _affine_mni())
-    return plot_roi(img, title="Broca's area", **kwargs)
+    plot_roi(img, title="Broca's area", **kwargs)
 
 
 @pytest.mark.parametrize("view_type", ["contours", "continuous"])
@@ -42,7 +42,7 @@ def test_plot_roi_view_types(
     Tests different combinations of parameters `view_type`, `black_bg`,
     `threshold`, and `alpha`.
     """
-    kwargs = dict()
+    kwargs = {}
     if view_type == "contours":
         kwargs["linewidth"] = 2.0
     demo_plot_roi(
@@ -57,6 +57,15 @@ def test_plot_roi_view_types(
     plt.close()
 
 
+def test_plot_roi_no_int_64_warning(recwarn):
+    """Make sure that no int64 warning is thrown."""
+    demo_plot_roi()
+    for _ in range(len(recwarn)):
+        x = recwarn.pop()
+        if issubclass(x.category, UserWarning):
+            assert "image contains 64-bit ints" not in str(x.message)
+
+
 def test_plot_roi_view_type_error():
     """Test error message for invalid view_type."""
     with pytest.raises(ValueError, match="Unknown view type:"):
@@ -66,7 +75,7 @@ def test_plot_roi_view_type_error():
 def test_demo_plot_roi_output_file(tmp_path):
     """Tests plot_roi file saving capabilities."""
     filename = tmp_path / "test.png"
-    with open(filename, "wb") as fp:
+    with filename.open("wb") as fp:
         out = demo_plot_roi(output_file=fp)
     assert out is None
 
@@ -84,10 +93,6 @@ def test_cmap_with_one_level(shape_3d_default, affine_eye):
 
     clust_ids = list(np.unique(img.get_fdata())[1:])
 
-    try:
-        cmap = plt.colormaps["tab20"].resampled(len(clust_ids))
-    except TypeError:
-        # for older versions of matplotlib
-        cmap = plt.cm.get_cmap("tab20", len(clust_ids))
+    cmap = plt.get_cmap("tab20", len(clust_ids))
 
     plot_roi(img, alpha=0.8, colorbar=True, cmap=cmap)

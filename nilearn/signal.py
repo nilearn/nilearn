@@ -8,14 +8,17 @@ features
 # Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
 
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy import linalg, signal as sp_signal
+from scipy import linalg
+from scipy import signal as sp_signal
 from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
 from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import check_run_sample_masks
 
@@ -300,8 +303,9 @@ def _check_wn(btype, freq, nyq):
     we force the critical frequencies to be slightly less than the Nyquist
     frequency, and slightly more than zero.
     """
+    EPS = np.finfo(np.float32).eps
     if freq >= nyq:
-        freq = nyq - (nyq * 10 * np.finfo(1.0).eps)
+        freq = nyq - (nyq * 10 * EPS)
         warnings.warn(
             f"The frequency specified for the {btype} pass filter is "
             "too high to be handled by a digital filter "
@@ -310,11 +314,11 @@ def _check_wn(btype, freq, nyq):
         )
 
     elif freq < 0.0:  # equal to 0.0 is okay
-        freq = nyq * np.finfo(1.0).eps
+        freq = nyq * EPS
         warnings.warn(
             f"The frequency specified for the {btype} pass filter is too "
             "low to be handled by a digital filter (must be non-negative). "
-            f"It has been set to eps: {freq}"
+            f"It has been set to eps: {freq}."
         )
 
     return freq
@@ -414,19 +418,18 @@ def butterworth(
     else:
         critical_freq = critical_freq[0]
 
-    b, a = sp_signal.butter(
-        order,
-        critical_freq,
+    sos = sp_signal.butter(
+        N=order,
+        Wn=critical_freq,
         btype=btype,
-        output="ba",
+        output="sos",
         fs=sampling_rate,
     )
     if signals.ndim == 1:
         # 1D case
-        output = sp_signal.filtfilt(
-            b,
-            a,
-            signals,
+        output = sp_signal.sosfiltfilt(
+            sos,
+            x=signals,
             padtype=padtype,
             padlen=padlen,
         )
@@ -437,10 +440,9 @@ def butterworth(
     elif copy:
         # No way to save memory when a copy has been requested,
         # because filtfilt does out-of-place processing
-        signals = sp_signal.filtfilt(
-            b,
-            a,
-            signals,
+        signals = sp_signal.sosfiltfilt(
+            sos,
+            x=signals,
             axis=0,
             padtype=padtype,
             padlen=padlen,
@@ -448,10 +450,9 @@ def butterworth(
     else:
         # Lesser memory consumption, slower.
         for timeseries in signals.T:
-            timeseries[:] = sp_signal.filtfilt(
-                b,
-                a,
-                timeseries,
+            timeseries[:] = sp_signal.sosfiltfilt(
+                sos,
+                x=timeseries,
                 padtype=padtype,
                 padlen=padlen,
             )
@@ -747,7 +748,7 @@ def clean(
     # Detrend and filtering should apply to confounds, if confound presents
     # keep filters orthogonal (according to Lindquist et al. (2018))
     # Restrict the signal to the orthogonal of the confounds
-    mean_signals = signals.mean(axis=0)
+    original_mean_signals = signals.mean(axis=0)
     if detrend:
         signals = standardize_signal(
             signals, standardize=False, detrend=detrend
@@ -807,12 +808,25 @@ def clean(
         signals -= Q.dot(Q.T).dot(signals)
 
     # Standardize
-    if (detrend and standardize == "psc") or (filter_type == "butterworth"):
-        # If the signal is detrended or filtered,
-        # the mean signal will be zero or close to zero. In this case,
-        # we have to know the original mean signal to calculate the psc.
+    if not standardize:
+        return signals
+
+    # detect if mean is close to zero; This can obscure the scale of the signal
+    # with percent signal change standardization. This should happen when the
+    # data was 1. detrended 2. high pass filtered.
+    filtered_mean_check = (
+        np.abs(signals.mean(0)).mean() / np.abs(original_mean_signals).mean()
+        < 1e-1
+    )
+    if standardize == "psc" and filtered_mean_check:
+        # If the signal is detrended, the mean signal will be zero or close to
+        # zero. If signal is high pass filtered with butterworth, the constant
+        # (mean) will be removed. This is detected through checking the scale
+        # difference of the original mean and filtered mean signal. When the
+        # mean is too small, we have to know the original mean signal to
+        # calculate the psc to avoid weird scaling.
         signals = standardize_signal(
-            signals + mean_signals,
+            signals + original_mean_signals,
             standardize=standardize,
             detrend=False,
         )
@@ -831,6 +845,8 @@ def _handle_scrubbed_volumes(
     """Interpolate or censor scrubbed volumes."""
     if sample_mask is None:
         return signals, confounds, sample_mask
+    elif sample_mask.size == 0:
+        raise AllVolumesRemovedError()
 
     if filter_type == "butterworth":
         signals = _interpolate_volumes(signals, sample_mask, t_r, extrapolate)
@@ -1043,7 +1059,8 @@ def _check_sample_mask_index(i, n_runs, runs, current_mask):
 
 def _sanitize_runs(n_time, runs):
     """Check runs are supplied in the correct format \
-    and detect the number of unique runs."""
+    and detect the number of unique runs.
+    """
     if runs is not None and len(runs) != n_time:
         raise ValueError(
             f"The length of the run vector ({len(runs)}) "
@@ -1056,8 +1073,8 @@ def _sanitize_runs(n_time, runs):
 def _sanitize_confound_dtype(n_signal, confound):
     """Check confound is the correct datatype."""
     if isinstance(confound, pd.DataFrame):
-        confound = confound.values
-    if isinstance(confound, str):
+        confound = confound.to_numpy()
+    if isinstance(confound, (str, Path)):
         filename = confound
         confound = csv_to_array(filename)
         if np.isnan(confound.flat[0]):
@@ -1065,8 +1082,8 @@ def _sanitize_confound_dtype(n_signal, confound):
             confound = csv_to_array(filename, skip_header=1)
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect "
-                f"lengthSignal length: {n_signal}; "
+                "Confound signal has an incorrect length.\n"
+                f"Signal length: {n_signal}; "
                 f"confound length: {confound.shape[0]}"
             )
     elif isinstance(confound, np.ndarray):
@@ -1094,7 +1111,9 @@ def _sanitize_confound_dtype(n_signal, confound):
 def _check_filter_parameters(filter, low_pass, high_pass, t_r):
     """Check all filter related parameters are set correctly."""
     if not filter:
-        if any(isinstance(item, float) for item in [low_pass, high_pass]):
+        if any(
+            isinstance(item, (float, int)) for item in [low_pass, high_pass]
+        ):
             warnings.warn(
                 "No filter type selected but cutoff frequency provided."
                 "Will not perform filtering."
@@ -1102,7 +1121,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
         return False
     elif filter in availiable_filters:
         if filter == "cosine" and not all(
-            isinstance(item, float) for item in [t_r, high_pass]
+            isinstance(item, (float, int)) for item in [t_r, high_pass]
         ):
             raise ValueError(
                 "Repetition time (t_r) and low cutoff frequency (high_pass) "

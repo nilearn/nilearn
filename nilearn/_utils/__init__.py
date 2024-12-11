@@ -6,7 +6,8 @@ import warnings
 from importlib import import_module
 from pathlib import Path
 
-from nilearn._utils.helpers import (
+from nilearn._utils.helpers import (  # noqa: F401
+    _constrained_layout_kwargs,
     compare_version,
     remove_parameters,
     rename_parameters,
@@ -16,7 +17,7 @@ from nilearn._utils.helpers import (
 from .cache_mixin import CacheMixin
 from .docs import fill_doc
 from .logger import compose_err_msg
-from .niimg import _repr_niimgs, load_niimg
+from .niimg import load_niimg, repr_niimgs
 from .niimg_conversions import check_niimg, check_niimg_3d, check_niimg_4d
 from .numpy_conversions import as_ndarray
 
@@ -199,7 +200,6 @@ def all_classes(
 
 
 __all__ = [
-    "_repr_niimgs",
     "CacheMixin",
     "all_classes",
     "all_functions",
@@ -213,5 +213,6 @@ __all__ = [
     "load_niimg",
     "remove_parameters",
     "rename_parameters",
+    "repr_niimgs",
     "stringify_path",
 ]

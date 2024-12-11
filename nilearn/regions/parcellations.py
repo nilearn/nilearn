@@ -9,7 +9,7 @@ from sklearn.feature_extraction import image
 
 from nilearn.maskers import NiftiLabelsMasker
 
-from .._utils import fill_doc, stringify_path
+from .._utils import fill_doc, logger, stringify_path
 from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import iter_check_niimg
 from ..decomposition._multi_pca import _MultiPCA
@@ -28,7 +28,7 @@ def _estimator_fit(data, estimator, method=None):
     estimator : instance of estimator from sklearn
         MiniBatchKMeans or AgglomerativeClustering.
 
-    method: str,
+    method : str,
     {'kmeans', 'ward', 'complete', 'average', 'rena', 'hierarchical_kmeans'},
     optional
 
@@ -213,9 +213,10 @@ class Parcellations(_MultiPCA):
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     scaling : :obj:`bool`, default=False
         Used only when the method selected is 'rena'. If scaling is True, each
@@ -359,8 +360,10 @@ class Parcellations(_MultiPCA):
         components = _MultiPCA._raw_fit(self, data)
 
         mask_img_ = self.masker_.mask_img_
-        if self.verbose:
-            print(f"[{self.__class__.__name__}] computing {self.method}")
+
+        logger.log(
+            f"computing {self.method}", verbose=self.verbose, stack_level=3
+        )
 
         if self.method == "kmeans":
             from sklearn.cluster import MiniBatchKMeans
@@ -439,7 +442,9 @@ class Parcellations(_MultiPCA):
             warnings.warn(
                 message=n_parcels_warning, category=UserWarning, stacklevel=3
             )
-        self.labels_img_ = self.masker_.inverse_transform(labels)
+        self.labels_img_ = self.masker_.inverse_transform(
+            labels.astype(np.int32)
+        )
 
         return self
 

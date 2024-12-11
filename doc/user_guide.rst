@@ -5,7 +5,7 @@ User guide
 ==========
 
 .. note::
-  You can download the `user guide and examples <https://github.com/nilearn/nilearn.github.io/archive/master.zip>`_
+  You can download the `user guide and examples <https://codeload.github.com/nilearn/nilearn.github.io/zip/refs/heads/main>`_
   for offline viewing.
 
 This user guide is especially directed towards grad students

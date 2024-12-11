@@ -38,7 +38,7 @@ def test_request_mocking_autoused_urllib():
 
 
 def test_temp_nilearn_home_autoused():
-    home_dir = Path(os.path.expanduser("~"))
+    home_dir = Path("~").expanduser()
 
     assert home_dir.name.startswith("temp_nilearn_home")
 
@@ -63,6 +63,6 @@ def check_doctest_fixture():
     """Check doctest fixtures.
 
     >>> import requests
-    >>> assert requests.get('https://example.com').is_mock
+    >>> assert requests.get("https://example.com").is_mock
     """
     pass

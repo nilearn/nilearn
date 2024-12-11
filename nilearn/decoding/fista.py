@@ -16,6 +16,8 @@ from math import sqrt
 import numpy as np
 from scipy import linalg
 
+from nilearn._utils import logger
+
 
 def _check_lipschitz_continuous(
     f, ndim, lipschitz_constant, n_trials=10, random_state=42
@@ -178,7 +180,7 @@ def mfista(
     ista_step = False
     best_z = z.copy()
     best_t = t
-    prox_info = dict(converged=True)
+    prox_info = {"converged": True}
     stepsize = 1.0 / lipschitz_constant
     history = []
     w_old = w.copy()
@@ -189,16 +191,15 @@ def mfista(
         w_old[:] = w
 
         # invoke callback
-        if verbose:
-            print(
-                f"mFISTA: Iteration {i + 1: 2}/{max_iter:2}: "
-                f"E = {old_energy:7.4e}, dE {energy_delta: 4.4e}"
-            )
+        logger.log(
+            f"mFISTA: Iteration {i + 1: 2}/{max_iter:2}: "
+            f"E = {old_energy:7.4e}, dE {energy_delta: 4.4e}",
+            verbose,
+        )
         if callback and callback(locals()):
             break
         if np.abs(energy_delta) < tol:
-            if verbose:
-                print(f"\tConverged (|dE| < {tol:g})")
+            logger.log(f"\tConverged (|dE| < {tol:g})", verbose)
             break
 
         # forward (gradient) step
@@ -226,8 +227,7 @@ def mfista(
             # tolerance.
             dgap_factor *= 0.2
 
-            if verbose:
-                print("decreased dgap_tol")
+            logger.log("decreased dgap_tol", verbose)
         # energy house-keeping
         energy_delta = old_energy - energy
         old_energy = energy
@@ -238,8 +238,7 @@ def mfista(
             z[:] = w_old
             w[:] = w_old
             ista_step = True
-            if verbose:
-                print("Monotonous FISTA: Switching to ISTA")
+            logger.log("Monotonous FISTA: Switching to ISTA", verbose)
         else:
             if ista_step:
                 z = w
@@ -271,11 +270,11 @@ def mfista(
             best_t = t
             best_dgap_tol = dgap_tol
 
-    init = dict(
-        w=best_w.copy(),
-        z=best_z,
-        t=best_t,
-        dgap_tol=best_dgap_tol,
-        stepsize=stepsize,
-    )
+    init = {
+        "w": best_w.copy(),
+        "z": best_z,
+        "t": best_t,
+        "dgap_tol": best_dgap_tol,
+        "stepsize": stepsize,
+    }
     return best_w, history, init

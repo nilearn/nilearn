@@ -8,6 +8,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.conftest import _affine_eye
+from nilearn.maskers import SurfaceMasker
 from nilearn.regions.parcellations import (
     Parcellations,
     _check_parameters_transform,
@@ -89,7 +90,16 @@ def test_parcellations_no_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
     with warnings.catch_warnings(record=True) as record:
         parcellator.fit(img_4d_zeros_eye)
-    assert all([r.category is not UserWarning for r in record])
+    assert all(r.category is not UserWarning for r in record)
+
+
+def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
+    parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
+    with warnings.catch_warnings(record=True) as record:
+        parcellator.fit(img_4d_zeros_eye)
+    for r in record:
+        if issubclass(r.category, UserWarning):
+            assert "image contains 64-bit ints" not in str(r.message)
 
 
 @pytest.mark.parametrize("method", METHODS)
@@ -118,7 +128,8 @@ def test_parcellations_transform_single_nifti_image(
     method, n_parcel, test_image_2
 ):
     """Test with NiftiLabelsMasker extraction of timeseries data \
-       after building a parcellations image."""
+       after building a parcellations image.
+    """
     parcellator = Parcellations(method=method, n_parcels=n_parcel, verbose=0)
     parcellator.fit(test_image_2)
     # transform to signals
@@ -300,3 +311,29 @@ def test_transform_3d_input_images(affine_eye):
     X = parcellate.fit_transform(imgs[0])
     assert isinstance(X, np.ndarray)
     assert X.shape == (1, 20)
+
+
+@pytest.mark.parametrize("mask_as", ["surface_image", "surface_masker", None])
+@pytest.mark.parametrize("method", METHODS)
+def test_parcellation_not_implemented_with_surface(
+    surf_img_2d, surf_mask, mask_as, method, n_parcels=2
+):
+    """Raise NotImplementedError for surface data."""
+    # create a surface masker
+    masker = SurfaceMasker(surf_mask()).fit()
+    with pytest.raises(NotImplementedError):
+        # if mask_as is surface_image, directly pass surf_mask
+        if mask_as == "surface_image":
+            parcellate = Parcellations(
+                method=method, n_parcels=n_parcels, mask=surf_mask()
+            )
+        # if mask_as is surface_masker, pass masker
+        elif mask_as == "surface_masker":
+            parcellate = Parcellations(
+                method=method, n_parcels=n_parcels, mask=masker
+            )
+        # if mask_as is None, do not pass mask (default mask is None)
+        # but would raise error if when we fit_transform on surface images
+        else:
+            parcellate = Parcellations(method=method, n_parcels=n_parcels)
+        parcellate.fit_transform(surf_img_2d(50))

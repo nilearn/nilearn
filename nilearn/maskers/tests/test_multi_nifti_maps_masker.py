@@ -1,12 +1,61 @@
 """Test the multi_nifti_maps_masker module."""
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
+from nilearn.conftest import _shape_3d_default
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
+
+extra_valid_checks = [
+    "check_get_params_invariance",
+    "check_estimators_unfitted",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            MultiNiftiMapsMasker(
+                data_gen.generate_maps(_shape_3d_default(), n_regions=9)[0]
+            ),
+            NiftiMapsMasker(
+                data_gen.generate_maps(_shape_3d_default(), n_regions=9)[0]
+            ),
+        ],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            MultiNiftiMapsMasker(
+                data_gen.generate_maps(_shape_3d_default(), n_regions=9)[0]
+            ),
+            NiftiMapsMasker(
+                data_gen.generate_maps(_shape_3d_default(), n_regions=9)[0]
+            ),
+        ],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_multi_nifti_maps_masker(tmp_path):
@@ -153,7 +202,7 @@ def test_multi_nifti_maps_masker_resampling():
 
     maps33_img, _ = data_gen.generate_maps(shape3, n_regions, affine=affine)
 
-    mask_img_4d = nibabel.Nifti1Image(
+    mask_img_4d = Nifti1Image(
         np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
     )
 

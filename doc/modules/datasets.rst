@@ -12,7 +12,8 @@
 Templates
 ---------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -23,6 +24,8 @@ Templates
    fetch_icbm152_2009
    fetch_icbm152_brain_gm_mask
    fetch_surf_fsaverage
+   load_fsaverage
+   load_fsaverage_data
    load_mni152_brain_mask
    load_mni152_gm_mask
    load_mni152_gm_template
@@ -46,7 +49,8 @@ Templates descriptions
 Atlases
 -------
 
-**Functions**:
+Deterministic atlases
+^^^^^^^^^^^^^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -55,17 +59,12 @@ Atlases
    :template: function.rst
 
    fetch_atlas_aal
-   fetch_atlas_allen_2011
    fetch_atlas_basc_multiscale_2015
-   fetch_atlas_craddock_2012
    fetch_atlas_destrieux_2009
-   fetch_atlas_difumo
    fetch_atlas_harvard_oxford
    fetch_atlas_juelich
-   fetch_atlas_msdl
    fetch_atlas_pauli_2017
    fetch_atlas_schaefer_2018
-   fetch_atlas_smith_2009
    fetch_atlas_surf_destrieux
    fetch_atlas_talairach
    fetch_atlas_yeo_2011
@@ -73,13 +72,31 @@ Atlases
    fetch_coords_power_2011
    fetch_coords_seitzman_2018
 
+Probabilistic atlases
+^^^^^^^^^^^^^^^^^^^^^
+
+.. currentmodule:: nilearn.datasets
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   fetch_atlas_allen_2011
+   fetch_atlas_craddock_2012
+   fetch_atlas_difumo
+   fetch_atlas_harvard_oxford
+   fetch_atlas_juelich
+   fetch_atlas_msdl
+   fetch_atlas_pauli_2017
+   fetch_atlas_smith_2009
+
 Atlases descriptions
 ^^^^^^^^^^^^^^^^^^^^
 
 .. toctree::
     :titlesonly:
 
-    description/aal_SPM12.rst
+    description/aal.rst
     description/allen_rsn_2011.rst
     description/basc_multiscale_2015.rst
     description/craddock_2012.rst
@@ -100,7 +117,8 @@ Atlases descriptions
 Preprocessed datasets
 ---------------------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -118,10 +136,10 @@ Preprocessed datasets
    fetch_language_localizer_demo_dataset
    fetch_localizer_first_level
    fetch_miyawaki2008
-   fetch_openneuro_dataset_index
    fetch_spm_auditory
    fetch_spm_multimodal_fmri
    fetch_surf_nki_enhanced
+   load_nki
 
 Datasets descriptions
 ^^^^^^^^^^^^^^^^^^^^^
@@ -146,7 +164,8 @@ Datasets descriptions
 Statistical maps/derivatives
 ----------------------------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 
@@ -176,7 +195,8 @@ Statistical maps/derivatives descriptions
 General functions
 -----------------
 
-**Functions**:
+Functions
+^^^^^^^^^
 
 .. currentmodule:: nilearn.datasets
 

@@ -19,7 +19,8 @@ from .._utils.extmath import fast_abs_percentile
 
 def _orientation_kernel(t):
     """Structure elements for calculating the value of neighbors in several \
-    directions."""
+    directions.
+    """
     sin = np.sin
     pi = np.pi
     t = pi * t
@@ -81,7 +82,7 @@ def _edge_detect(image, high_threshold=0.75, low_threshold=0.4):
     img /= img.max()
     grad_x = sobel(img, mode="constant", axis=0)
     grad_y = sobel(img, mode="constant", axis=1)
-    grad_mag = np.sqrt(grad_x**2 + grad_y**2)
+    grad_mag = np.hypot(grad_x, grad_y)
     grad_angle = np.arctan2(grad_y, grad_x)
     # Scale the angles in the range [0, 2]
     grad_angle = (grad_angle + np.pi) / np.pi

@@ -118,7 +118,7 @@ for classifier_name in sorted(classifiers):
 # Then we make a rudimentary diagram
 import matplotlib.pyplot as plt
 
-plt.figure(figsize=(8, 6))
+plt.subplots(figsize=(8, 6), constrained_layout=True)
 
 all_categories = np.sort(np.hstack([categories, "AVERAGE"]))
 tick_position = np.arange(len(all_categories))
@@ -147,13 +147,12 @@ plt.legend(ncol=1, bbox_to_anchor=(1.3, 0.2))
 plt.title(
     "Category-specific classification accuracy for different classifiers"
 )
-plt.tight_layout()
 
 # %%
-# We can see that for a fixed penalty the results are similar between the svc
-# and the logistic regression. The main difference relies on the penalty
-# ($\ell_1$ and $\ell_2$). The sparse penalty works better because we are in
-# an intra-subject setting.
+# We can see that for a fixed penalty the results are similar
+# between the svc and the logistic regression.
+# The main difference relies on the penalty l\ :sub:`1`\ and l\ :sub:`2`\).
+# The sparse penalty works better because we are in an intra-subject setting.
 
 # %%
 # Visualizing the face vs house map

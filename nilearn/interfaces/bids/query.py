@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import glob
 import json
-import os
 from pathlib import Path
 from warnings import warn
 
@@ -40,7 +39,7 @@ def _get_metadata_from_bids(
         assert isinstance(json_files, list) and isinstance(
             json_files[0], (Path, str)
         )
-        with open(json_files[0]) as f:
+        with Path(json_files[0]).open() as f:
             specs = json.load(f)
         value = specs.get(field)
         if value is not None:
@@ -182,7 +181,7 @@ def get_bids_files(
 
     Parameters
     ----------
-    main_path : :obj:`str`
+    main_path : :obj:`str` or :obj:`pathlib.Path`
         Directory of the :term:`BIDS` dataset.
 
     file_tag : :obj:`str` accepted by glob, default='*'
@@ -225,24 +224,25 @@ def get_bids_files(
         List of file paths found.
 
     """
+    main_path = Path(main_path)
     if sub_folder:
         ses_level = ""
-        files = os.path.join(main_path, "sub-*", "ses-*")
-        session_folder_exists = glob.glob(files)
+        files = main_path / "sub-*" / "ses-*"
+        session_folder_exists = glob.glob(str(files))
         if session_folder_exists:
             ses_level = "ses-*"
 
-        files = os.path.join(
-            main_path,
-            f"sub-{sub_label}",
-            ses_level,
-            modality_folder,
-            f"sub-{sub_label}*_{file_tag}.{file_type}",
+        files = (
+            main_path
+            / f"sub-{sub_label}"
+            / ses_level
+            / modality_folder
+            / f"sub-{sub_label}*_{file_tag}.{file_type}"
         )
     else:
-        files = os.path.join(main_path, f"*{file_tag}.{file_type}")
+        files = main_path / f"*{file_tag}.{file_type}"
 
-    files = glob.glob(files)
+    files = glob.glob(str(files))
     files.sort()
 
     filters = filters or []
@@ -252,7 +252,8 @@ def get_bids_files(
             files = [
                 file_
                 for file_ in files
-                if (key in file_ and file_[key] == value)
+                if (key not in file_ and value == "")
+                or (key in file_ and file_[key] == value)
             ]
         return [ref_file["file_path"] for ref_file in files]
 
@@ -286,7 +287,7 @@ def parse_bids_filename(img_path):
     """
     reference = {
         "file_path": img_path,
-        "file_basename": os.path.basename(img_path),
+        "file_basename": Path(img_path).name,
     }
     parts = reference["file_basename"].split("_")
     tag, type_ = parts[-1].split(".", 1)
