@@ -410,7 +410,8 @@ def test_surface_labels_masker_sample_mask_to_fit_transform(
     masker = SurfaceLabelsMasker(surf_label_img)
     masker = masker.fit()
     signals = masker.transform(
-        surf_img_2d(5), sample_mask=[True, False, True, False, True]
+        surf_img_2d(5),
+        sample_mask=np.asarray([True, False, True, False, True]),
     )
     # we remove two samples via sample_mask so we should have 3 samples
     assert signals.shape == (3, masker.n_elements_)
