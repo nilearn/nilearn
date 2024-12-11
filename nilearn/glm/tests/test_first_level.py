@@ -2222,7 +2222,7 @@ def test_flm_fit_surface_image_with_mask(surface_glm_data, surf_mask_1d):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9, 1)
+    assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2285,7 +2285,7 @@ def test_flm_with_surface_masker_with_mask(surface_glm_data, surf_mask_1d):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9, 1)
+    assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
