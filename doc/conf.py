@@ -205,6 +205,8 @@ linkcheck_ignore = [
     r"https://doi.org/10.1152/.*",
     r"https://doi.org/10.1162/.*",
     r"https://doi.org/10.3389/.*",
+    # do not check download links for OSF
+    r"https://osf.io/.*/download",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
