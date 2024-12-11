@@ -1965,7 +1965,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     replacement_params={"version": "atlas_type"}, end_version="0.13.1"
 )
 @fill_doc
-def fetch_atlas_pauli_2017(atlas_type="prob", data_dir=None, verbose=1):
+def fetch_atlas_pauli_2017(atlas_type="probabilistic", data_dir=None, verbose=1):
     """Download the Pauli et al. (2017) atlas.
 
     This atlas has 12 subcortical nodes in total. See
@@ -1973,10 +1973,10 @@ def fetch_atlas_pauli_2017(atlas_type="prob", data_dir=None, verbose=1):
 
     Parameters
     ----------
-    atlas_type : {'prob', 'det'}, default='prob'
+    atlas_type : {'probabilistic', 'deterministic'}, default='probabilistic
         Which type of the atlas should be download. This can be
-        'prob' for the :term:`Probabilistic atlas`, or 'det' for the
-        :term:`Deterministic atlas`.
+        'probabilistic' for the :term:`Probabilistic atlas`, or 'deterministic'
+        for the :term:`Deterministic atlas`.
     %(data_dir)s
     %(verbose)s
 
@@ -1986,9 +1986,9 @@ def fetch_atlas_pauli_2017(atlas_type="prob", data_dir=None, verbose=1):
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
-              :class:`~nibabel.nifti1.Nifti1Image`. If ``atlas_type='prob'``,
+              :class:`~nibabel.nifti1.Nifti1Image`. If ``atlas_type='probabilistic'``,
               the image shape is ``(193, 229, 193, 16)``. If
-              ``atlas_type='det'`` the image shape is ``(198, 263, 212)``, and
+              ``atlas_type='deterministic'`` the image shape is ``(198, 263, 212)``, and
               values are indices in the list of labels (integers from 0 to 16).
             - 'labels': :obj:`list` of :obj:`str`. List of region names. The
               list contains 16 values for both
@@ -2023,10 +2023,10 @@ def fetch_atlas_pauli_2017(atlas_type="prob", data_dir=None, verbose=1):
     .. footbibliography::
 
     """
-    if atlas_type == "prob":
+    if atlas_type == "probabilistic":
         url_maps = "https://osf.io/w8zq2/download"
         filename = "pauli_2017_prob.nii.gz"
-    elif atlas_type == "det":
+    elif atlas_type == "deterministic":
         url_maps = "https://osf.io/5mqfx/download"
         filename = "pauli_2017_det.nii.gz"
     else:
