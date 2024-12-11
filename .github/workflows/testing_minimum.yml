@@ -28,6 +28,11 @@ on:
     # Run first day of the month at midnight UTC
     -   cron: 0 0 1 * *
 
+    # commits message must include "[test min]" to trigger the workflow on PR
+    pull_request:
+        branches:
+        -   '*'
+
     # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
@@ -41,8 +46,11 @@ env:
 
 jobs:
     test_min_install:
+
         if: github.repository == 'nilearn/nilearn'
+
         runs-on: ${{ matrix.os }}
+
         strategy:
             fail-fast: false
             matrix:
@@ -50,18 +58,44 @@ jobs:
                 python-version: ['3.9']
                 min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.3.0]
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
+
         steps:
+
         -   name: Checkout nilearn
             uses: actions/checkout@v4
+
+        -   name: For PRs check if commit message contains [test min]
+            id: check-commit-msg
+            run: |
+                set -e -x
+                commit_msg=$(git log -2 --format=oneline);
+                if [ "$GITHUB_REF_NAME" == "main" ]; then
+                    echo "run test on minimum nilearn dependencies"
+                    echo "skip=false" >> $GITHUB_OUTPUT
+                else
+                    if [[ $commit_msg == *"[test min]"* ]]; then
+                        echo "run test on minimum nilearn dependencies"
+                        echo "skip=false" >> $GITHUB_OUTPUT
+                    else
+                        echo "skip test on minimum nilearn dependencies"
+                        echo "skip=true" >> $GITHUB_OUTPUT
+                    fi;
+                fi;
+
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
                 python-version: ${{ matrix.python-version }}
+
         -   name: Install dependencies for building Nilearn
             run: |
                 python -m pip install --upgrade pip setuptools
                 pip install ${{ matrix.min_dep }}
+
         -   name: Install nilearn
+            if: steps.check-commit-msg.outputs.skip == 'false'
             run: pip install .[plotting,plotly,test]
+
         -   name: Run tests
+            if: steps.check-commit-msg.outputs.skip == 'false'
             run: pytest --pyargs nilearn --cov=nilearn

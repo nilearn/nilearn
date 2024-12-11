@@ -129,7 +129,9 @@ Tries to install Nilearn from wheel & check installation on all operating system
 
 ### testing_minimum.yml
 
-This workflow is triggered when a new commit is pushed to the main branch (or when a pull request is merged) and is also automatically run once a month.
+Runs on `main` (by a push or on manual trigger from the `Action` tab)
+or from a PR if commit message includes `[test min]`,
+and is also automatically run once a month.
 
 Checks that installing the minimum version of a given dependency of Nilearn
 along with the latest version of all the other dependencies leads to a successful run of all the tests.
