@@ -177,7 +177,12 @@ _cmaps_data = {
 _cmaps_data["ocean_hot"] = _concat_cmap(_cm.ocean, _cm.hot_r)
 _cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
 _cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
-_cmaps_data["bwr"] = _cm.bwr
+
+# Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
+_bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
+_cmaps_data["bwr"] = _colors.LinearSegmentedColormap.from_list(
+    "bwr", _bwr_data
+)._segmentdata.copy()
 
 
 ###############################################################################
