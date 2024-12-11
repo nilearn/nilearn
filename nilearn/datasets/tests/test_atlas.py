@@ -776,7 +776,7 @@ def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
     data_dir = str(tmp_path / "pauli_2017")
 
     with pytest.warns(
-            DeprecationWarning, match="The possible values for atlas_type"
+        DeprecationWarning, match="The possible values for atlas_type"
     ):
         data = atlas.fetch_atlas_pauli_2017("det", data_dir)
 
@@ -787,7 +787,7 @@ def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
         assert len(data.labels) == 16
 
     with pytest.warns(
-            DeprecationWarning, match="The possible values for atlas_type"
+        DeprecationWarning, match="The possible values for atlas_type"
     ):
         data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
 
@@ -795,9 +795,7 @@ def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
 
         assert data.description != ""
 
-    with pytest.warns(
-            DeprecationWarning, match='The parameter "version"'
-    ):
+    with pytest.warns(DeprecationWarning, match='The parameter "version"'):
         data = atlas.fetch_atlas_pauli_2017(
             version="probabilistic", data_dir=data_dir
         )
