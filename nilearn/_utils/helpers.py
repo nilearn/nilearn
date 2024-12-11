@@ -6,7 +6,7 @@ import warnings
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
 
-def _set_mpl_backend(message):
+def _set_mpl_backend(message=None):
     """Check if matplotlib is installed.
 
     If not installed, raise error and display warning to install necessary
@@ -20,15 +20,22 @@ def _set_mpl_backend(message):
 
     Parameters
     ----------
-    message: str
-        Warning message to display to the user if matplotlib is not installed
-    or the installed version is not supported.
+    message: str, default=None
+        Message to be prepended to standard warning when matplotlib is not
+    installed.
     """
     # We are doing local imports here to avoid polluting our namespace
     try:
         import matplotlib
     except ImportError:
-        warnings.warn(message)
+        warning = (
+            "Some dependencies of nilearn.plotting package seem to be missing."
+            "\nThey can be installed with:\n"
+            " pip install 'nilearn[plotting]'"
+        )
+        if message is not None:
+            warning = f"{message}\n{warning}"
+        warnings.warn(warning)
         raise
     else:
         # When matplotlib was successfully imported we need to check

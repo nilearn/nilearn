@@ -9,13 +9,11 @@ from nilearn._utils.helpers import _set_mpl_backend
 from nilearn.reporting.get_clusters_table import get_clusters_table
 
 try:
-    WARNING = (
-        "nilearn.reporting.make_glm_report and nilearn.reporting.HTMLReport "
-        "requires 'matplotlib' to be installed."
-        "\nIt can be installed with:\n"
-        " pip install 'matplotlib'"
+    warning = (
+        "nilearn.reporting.glm_reporter and nilearn.reporting.html_report "
+        "requires nilearn.plotting."
     )
-    _set_mpl_backend(WARNING)
+    _set_mpl_backend(warning)
 
     from nilearn.reporting.glm_reporter import make_glm_report
     from nilearn.reporting.html_report import HTMLReport
