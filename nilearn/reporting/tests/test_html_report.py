@@ -614,7 +614,8 @@ def test_surface_masker_minimal_report_no_fit(
     surf_mask_1d, empty_mask, reports
 ):
     """Test minimal report generation with no fit."""
-    masker = SurfaceMasker(surf_mask_1d(empty=empty_mask), reports=reports)
+    mask = None if empty_mask else surf_mask_1d
+    masker = SurfaceMasker(mask_img=mask, reports=reports)
     report = masker.generate_report()
 
     _check_html(report)
@@ -627,7 +628,8 @@ def test_surface_masker_minimal_report_fit(
     surf_mask_1d, empty_mask, surf_img_1d, reports
 ):
     """Test minimal report generation with fit."""
-    masker = SurfaceMasker(surf_mask_1d(empty=empty_mask), reports=reports)
+    mask = None if empty_mask else surf_mask_1d
+    masker = SurfaceMasker(mask_img=mask, reports=reports)
     masker.fit_transform(surf_img_1d)
     report = masker.generate_report()
 
