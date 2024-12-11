@@ -1965,7 +1965,9 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     replacement_params={"version": "atlas_type"}, end_version="0.13.1"
 )
 @fill_doc
-def fetch_atlas_pauli_2017(atlas_type="probabilistic", data_dir=None, verbose=1):
+def fetch_atlas_pauli_2017(
+    atlas_type="probabilistic", data_dir=None, verbose=1
+):
     """Download the Pauli et al. (2017) atlas.
 
     This atlas has 12 subcortical nodes in total. See
@@ -2041,9 +2043,11 @@ def fetch_atlas_pauli_2017(atlas_type="probabilistic", data_dir=None, verbose=1)
         warnings.warn(
             category=DeprecationWarning,
             message=atlas_type_values,
-            stacklevel=2
+            stacklevel=2,
         )
-        atlas_type = 'probabilistic' if atlas_type == 'prob' else 'deterministic'
+        atlas_type = (
+            "probabilistic" if atlas_type == "prob" else "deterministic"
+        )
 
     if atlas_type == "probabilistic":
         url_maps = "https://osf.io/w8zq2/download"
