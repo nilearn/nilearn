@@ -763,6 +763,40 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
         atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)
 
 
+def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
+    # TODO: remove this test after release 0.13.0
+    labels = pd.DataFrame({"label": [f"label_{i}" for i in range(16)]}).to_csv(
+        sep="\t", header=False
+    )
+    det_atlas = data_gen.generate_labeled_regions((7, 6, 5), 16)
+    prob_atlas, _ = data_gen.generate_maps((7, 6, 5), 16)
+    request_mocker.url_mapping["*osf.io/6qrcb/*"] = labels
+    request_mocker.url_mapping["*osf.io/5mqfx/*"] = det_atlas
+    request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
+    data_dir = str(tmp_path / "pauli_2017")
+
+    data = atlas.fetch_atlas_pauli_2017("det", data_dir)
+
+    assert isinstance(data, Bunch)
+
+    assert data.description != ""
+
+    assert len(data.labels) == 16
+
+    values = get_data(load(data.maps))
+
+    assert len(np.unique(values)) == 17
+
+    data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
+
+    assert load(data.maps).shape[-1] == 16
+
+    assert data.description != ""
+
+    with pytest.raises(NotImplementedError):
+        atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)
+
+
 def _schaefer_labels(match, requests):  # noqa: ARG001
     # fails if requests is not passed
     info = match.groupdict()
