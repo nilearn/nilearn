@@ -14,7 +14,6 @@ from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, rename_parameters
-
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
