@@ -52,7 +52,7 @@ to help users analyze their own fMRI data with the meaning of analysis levels be
     is that the typical first level workflow in SPM
     will create a single design matrix for all runs
     and thus run a single model at the subject level
-    (see this `example in Andy's tutorial <First level analysis in SPM>`_).
+    (see `First level analysis in SPM`_).
     Nilearn will instead create one design matrix per run,
     and run one model per run
     (see for example :ref:`this report with 2 runs <two_runs_glm>`).
