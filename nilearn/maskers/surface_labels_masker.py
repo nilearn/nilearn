@@ -328,6 +328,8 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # concatenate data over hemispheres
         img_data = np.concatenate(list(img.data.parts.values()), axis=0)
 
+        labels_data = self._labels_data
+        labels = self._labels_
         if self.mask_img is not None:
             mask_data = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
@@ -335,9 +337,6 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             labels_data, labels = _apply_mask(
                 self, mask_data, self._labels_data
             )
-        else:
-            labels_data = self._labels_data
-            labels = self._labels_
 
         if self.smoothing_fwhm is not None:
             warnings.warn(
