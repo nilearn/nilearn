@@ -437,13 +437,12 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # we will only get the data back according to the mask that was applied
         # so if some labels were removed, we will only get the data for the
         # remaining labels, the vertices that were masked out will be set to 0
+        labels = self._labels_
         if self.mask_img is not None:
             mask_data = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
             )
-            _, labels = _apply_mask(self, mask_data, self._labels_data)
-        else:
-            labels = self._labels_
+            _, labels = _apply_mask(self, mask_data, self._labels_data) 
 
         data = {}
         for part_name, labels_part in self.labels_img.data.parts.items():
