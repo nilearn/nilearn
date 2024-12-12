@@ -1,4 +1,19 @@
-"""Nilearn tags for estimators."""
+"""Nilearn tags for estimators.
+
+These tags override or extends some of the sklearn tags.
+
+With those tags we can specify if one of Nilearn's 'estimator'
+(those include our maskers)
+has certain characteristics or expected behavior.
+For example if the estimator can accept nifti and / or surface images
+during fitting.
+
+This is mostly used internally to run some checks on our API
+and its behavior.
+
+See the sklearn documentation for more details on tags
+https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+"""
 
 from dataclasses import dataclass
 

@@ -152,9 +152,18 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         return np.concatenate(all_labels)
 
     def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
         return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
         # TODO
         # get rid of if block
         # bumping sklearn_version > 1.5

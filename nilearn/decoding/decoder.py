@@ -1125,9 +1125,18 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         return scores.ravel() if scores.shape[1] == 1 else scores
 
     def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
         return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
         # TODO
         # get rid of if block
         # bumping sklearn_version > 1.5
@@ -1303,9 +1312,18 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         )
 
     def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
         return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
         tags = super()._more_tags()
         if SKLEARN_LT_1_6:
             return tags
@@ -1471,9 +1489,18 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         )
 
     def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
         return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
         # TODO
         # get rid of if block
         # bumping sklearn_version > 1.5
