@@ -1513,7 +1513,9 @@ def test_second_level_input_as_surface_no_design_matrix(surf_img_1d):
         model.fit(second_level_input, design_matrix=None)
 
 
-def test_second_level_input_as_surface_image_with_mask(surf_img_1d, surf_mask):
+def test_second_level_input_as_surface_image_with_mask(
+    surf_img_1d, surf_mask_1d
+):
     """Test slm with surface mask and a list surface images as input."""
     n_subjects = 5
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
@@ -1522,7 +1524,7 @@ def test_second_level_input_as_surface_image_with_mask(surf_img_1d, surf_mask):
         [1] * len(second_level_input), columns=["intercept"]
     )
 
-    model = SecondLevelModel(mask_img=surf_mask())
+    model = SecondLevelModel(mask_img=surf_mask_1d)
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
