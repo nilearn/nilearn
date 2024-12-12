@@ -55,7 +55,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     ----------
     labels_img : :obj:`~nilearn.surface.SurfaceImage` object
         Region definitions, as one image of labels. The data for \
-        each hemisphere is of shape (n_vertices/2, n_regions).
+        each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
     labels : :obj:`list` of :obj:`str`, default=None
         Full labels corresponding to the labels image.
@@ -76,7 +76,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     mask_img : :obj:`~nilearn.surface.SurfaceImage` object, optional
         Mask to apply to labels_img before extracting signals. Defines the \
         overall area of the brain to consider. The data for each \
-        hemisphere is of shape (n_vertices/2, n_regions).
+        hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
