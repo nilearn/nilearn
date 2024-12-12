@@ -90,8 +90,8 @@ with the `terminology meaning`_ as follows:
   on the averaged contrast estimates for all subjects within the group
   (meaning more than one subject with one or more runs per subject)
 
-.. _FEAT: https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FEAT/UserGuide#Appendix_A:_Brief_Overview_of_GLM_Analysis
-.. _terminology meaning: https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FEAT/UserGuide#First-level_or_Higher-level_Analysis.3F
+.. _FEAT: https://fsl.fmrib.ox.ac.uk/fsl/docs/#/task_fmri/feat/overview_of_glm_analysis
+.. _terminology meaning: https://fsl.fmrib.ox.ac.uk/fsl/docs/#/task_fmri/feat/user_guide?id=feat-user-guide
 .. _First level analysis in FSL: https://andysbrainbook.readthedocs.io/en/latest/fMRI_Short_Course/Statistics/06_Stats_Running_1stLevel_Analysis.html
 .. _Second level analysis in FSL: https://andysbrainbook.readthedocs.io/en/latest/fMRI_Short_Course/fMRI_07_2ndLevelAnalysis.html
 .. _Third level analysis in FSL: https://andysbrainbook.readthedocs.io/en/latest/fMRI_Short_Course/fMRI_08_3rdLevelAnalysis.html
