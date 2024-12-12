@@ -8,6 +8,8 @@
 Fixes
 -----
 
+- :bdg-dark:`Code` Allow using ``confounds`` and ``sample_mask`` via ``.fit_transform`` in :obj:`~nilearn.maskers.SurfaceLabelsMasker` (:gh:`4926` by `Himanshu Aggarwal`_).
+
 Enhancements
 ------------
 
