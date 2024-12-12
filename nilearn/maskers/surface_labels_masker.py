@@ -212,8 +212,6 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             self._reporting_data = None
             return self
 
-        self._report_content["number_of_regions"] = self.n_elements_
-
         self._shelving = False
         # content to inject in the HTML template
         self._report_content = {
@@ -442,7 +440,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             mask_data = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
             )
-            _, labels = _apply_mask(self, mask_data, self._labels_data) 
+            _, labels = _apply_mask(self, mask_data, self._labels_data)
 
         data = {}
         for part_name, labels_part in self.labels_img.data.parts.items():
