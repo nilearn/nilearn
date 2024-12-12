@@ -30,7 +30,6 @@ from .._utils import (
 from .._utils.exceptions import DimensionError
 from .._utils.helpers import (
     check_copy_header,
-    rename_parameters,
     stringify_path,
 )
 from .._utils.niimg import _get_data, safe_get_data
@@ -1254,7 +1253,6 @@ def binarize_img(
     )
 
 
-@rename_parameters({"sessions": "runs"}, "0.10.0")
 def clean_img(
     imgs,
     runs=None,
