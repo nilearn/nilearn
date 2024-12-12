@@ -112,9 +112,13 @@ def test_hierarchical_k_means():
 
 
 def test_hierarchical_k_means_clustering():
-    data_img, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=15)
+    n_samples = 15
+    n_features = 150
+    data_img, mask_img = generate_fake_fmri(
+        shape=(10, 11, 12), length=n_samples
+    )
     masker = NiftiMasker(mask_img=mask_img).fit()
-    X = masker.transform(data_img).T
+    X = masker.transform(data_img)
 
     with pytest.raises(
         ValueError,
@@ -123,13 +127,19 @@ def test_hierarchical_k_means_clustering():
     ):
         HierarchicalKMeans(n_clusters=-2).fit(X)
 
-    hkmeans = HierarchicalKMeans(n_clusters=8)
+    n_clusters = 8
+    hkmeans = HierarchicalKMeans(n_clusters=n_clusters)
     X_red = hkmeans.fit_transform(X)
+
+    # make sure the n_features in transformed data were reduced to n_clusters
+    assert X_red.shape[0] == n_clusters
+
     X_compress = hkmeans.inverse_transform(X_red)
 
     assert_array_almost_equal(X.shape, X_compress.shape)
+    assert_array_almost_equal(X_compress.shape, (n_features, n_samples))
 
-    hkmeans_scaled = HierarchicalKMeans(n_clusters=8, scaling=True)
+    hkmeans_scaled = HierarchicalKMeans(n_clusters=n_clusters, scaling=True)
     X_red_scaled = hkmeans_scaled.fit_transform(X)
     sizes = hkmeans_scaled.sizes_
     X_compress_scaled = hkmeans_scaled.inverse_transform(X_red_scaled)
@@ -151,7 +161,7 @@ def test_hierarchical_k_means_clustering_surface(
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
     # mask the surface image with 50 samples
-    X = masker.transform(surf_img_2d(50)).T
+    X = masker.transform(surf_img_2d(50))
     # instantiate HierarchicalKMeans with n_clusters
     clustering = HierarchicalKMeans(n_clusters=n_clusters)
     # fit and transform the data
