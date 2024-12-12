@@ -263,7 +263,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         sample_mask : None, Any type compatible with numpy-array indexing, \
                   or :obj:`list` of \
-                  shape: (number of scans - number of volumes removed) \
+                  shape: (total number of scans - number of scans removed) \
                   for explicit index, or (number of scans) for binary mask, \
                   default=None
             sample_mask to pass to :func:`nilearn.signal.clean`.
@@ -338,7 +338,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return output
 
-    def fit_transform(self, img, y=None):
+    def fit_transform(self, img, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -352,6 +352,19 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             This parameter is unused.
             It is solely included for scikit-learn compatibility.
 
+        confounds : :class:`numpy.ndarray`, :obj:`str`,\
+                    :class:`pathlib.Path`, \
+                    :class:`pandas.DataFrame` \
+                    or :obj:`list` of confounds timeseries, default=None
+            Confounds to pass to :func:`nilearn.signal.clean`.
+
+        sample_mask : None, Any type compatible with numpy-array indexing, \
+                  or :obj:`list` of \
+                  shape: (total number of scans - number of scans removed) \
+                  for explicit index, or (number of scans) for binary mask, \
+                  default=None
+            sample_mask to pass to :func:`nilearn.signal.clean`.
+
         Returns
         -------
         :obj:`numpy.ndarray`
@@ -359,7 +372,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             shape: (img data shape, total number of vertices)
         """
         del y
-        return self.fit().transform(img)
+        return self.fit().transform(img, confounds, sample_mask)
 
     def inverse_transform(self, masked_img):
         """Transform extracted signal back to surface object.
