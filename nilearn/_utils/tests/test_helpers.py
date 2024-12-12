@@ -52,6 +52,10 @@ def test_should_raise_custom_warning_if_mpl_not_installed():
         _set_mpl_backend(warning)
 
 
+@pytest.mark.skipif(
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
+)
 def test_should_raise_warning_if_mpl_not_installed():
     """Tests if default warning is displayed when no custom message is
     specified.
