@@ -767,7 +767,8 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
 def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
     """Tests nilearn.datasets.atlas.fetch_atlas_pauli_2017 to receive
     DepricationWarning upon use of deprecated version parameter and its
-    possible values "prob" and "det"."""
+    possible values "prob" and "det".
+    """
     labels = pd.DataFrame({"label": [f"label_{i}" for i in range(16)]}).to_csv(
         sep="\t", header=False
     )
