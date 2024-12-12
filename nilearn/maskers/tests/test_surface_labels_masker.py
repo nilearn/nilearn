@@ -458,6 +458,13 @@ def test_surface_label_masker_inverse_transform_with_mask(
         assert np.all(img_inverted.data.parts["right"][2:, :] == 0)
 
 
+def test_surface_label_masker_inverse_transform_before_fit(surf_label_img):
+    """Test inverse_transform requires masker to be fitted."""
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
+    with pytest.raises(ValueError, match="has not been fitted"):
+        masker.inverse_transform(np.zeros((1, 1)))
+
+
 def test_surface_label_masker_transform_list_surf_images(
     surf_label_img, surf_img_1d, surf_img_2d
 ):
