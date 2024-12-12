@@ -95,7 +95,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     def __init__(
         self,
-        labels_img,
+        labels_img=None,
         labels=None,
         background_label=0,
         smoothing_fwhm=None,
@@ -130,19 +130,6 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        self._shelving = False
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            "number_of_regions": 0,
-            "summary": {},
-        }
 
     @property
     def _labels_data(self):
@@ -168,6 +155,12 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         del img, y
 
+        if self.labels_img is None:
+            raise ValueError(
+                "Please provide a labels_img to the masker. For example, "
+                "masker = SurfaceLabelsMasker(labels_img=labels_img)"
+            )
+
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)
         self._labels_ = list(all_labels)
@@ -179,15 +172,27 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         else:
             self.label_names_ = [self.labels[x] for x in self._labels_]
 
-        if not self.reports:
-            self._reporting_data = None
-            return self
-
-        self._report_content["number_of_regions"] = self.n_elements_
+        self._shelving = False
+        # content to inject in the HTML template
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image overlaid "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "n_vertices": {},
+            "number_of_regions": self.n_elements_,
+            "summary": {},
+        }
         for part in self.labels_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.labels_img.mesh.parts[part].n_vertices
             )
+
+        if not self.reports:
+            self._reporting_data = None
+            return self
 
         self._reporting_data = self._generate_reporting_data()
 
@@ -258,7 +263,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         sample_mask : None, Any type compatible with numpy-array indexing, \
                   or :obj:`list` of \
-                  shape: (number of scans - number of volumes removed) \
+                  shape: (total number of scans - number of scans removed) \
                   for explicit index, or (number of scans) for binary mask, \
                   default=None
             sample_mask to pass to :func:`nilearn.signal.clean`.
@@ -333,7 +338,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return output
 
-    def fit_transform(self, img, y=None):
+    def fit_transform(self, img, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -347,6 +352,19 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             This parameter is unused.
             It is solely included for scikit-learn compatibility.
 
+        confounds : :class:`numpy.ndarray`, :obj:`str`,\
+                    :class:`pathlib.Path`, \
+                    :class:`pandas.DataFrame` \
+                    or :obj:`list` of confounds timeseries, default=None
+            Confounds to pass to :func:`nilearn.signal.clean`.
+
+        sample_mask : None, Any type compatible with numpy-array indexing, \
+                  or :obj:`list` of \
+                  shape: (total number of scans - number of scans removed) \
+                  for explicit index, or (number of scans) for binary mask, \
+                  default=None
+            sample_mask to pass to :func:`nilearn.signal.clean`.
+
         Returns
         -------
         :obj:`numpy.ndarray`
@@ -354,7 +372,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             shape: (img data shape, total number of vertices)
         """
         del y
-        return self.fit().transform(img)
+        return self.fit().transform(img, confounds, sample_mask)
 
     def inverse_transform(self, masked_img):
         """Transform extracted signal back to surface object.

@@ -302,9 +302,11 @@ def test_masking_first_level_model(tmp_path):
 # -----------------------surface tests--------------------------------------- #
 
 
-def test_flm_generate_report_error_with_surface_data(surf_mask, surf_img_2d):
+def test_flm_generate_report_error_with_surface_data(
+    surf_mask_1d, surf_img_2d
+):
     """Raise NotImplementedError when generate report is called on surface."""
-    model = FirstLevelModel(mask_img=surf_mask(), t_r=2.0)
+    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0)
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
 
