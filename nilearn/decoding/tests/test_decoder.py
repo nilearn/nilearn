@@ -1294,9 +1294,12 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
         assert model.screening_percentile_ == perc
 
 
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
 def test_decoder_adjust_screening_lessthan_mask_surface(
-    surf_mask,
+    surf_mask_dim,
+    surf_mask_1d,
+    surf_mask_2d,
     _make_surface_class_data,
     screening_percentile=30,
 ):
@@ -1304,12 +1307,13 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
     the mesh size, it is adjusted to the ratio of mesh to mask.
     """
     img, y = _make_surface_class_data
-    mask_n_vertices = _get_mask_extent(surf_mask())
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+    mask_n_vertices = _get_mask_extent(surf_mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
     assert screening_percentile <= mask_to_mesh_ratio
     decoder = Decoder(
-        mask=surf_mask(),
+        mask=surf_mask,
         param_grid={"C": [0.01, 0.1]},
         cv=3,
         screening_percentile=screening_percentile,
@@ -1321,9 +1325,12 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
     )
 
 
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
 def test_decoder_adjust_screening_greaterthan_mask_surface(
-    surf_mask,
+    surf_mask_dim,
+    surf_mask_1d,
+    surf_mask_2d,
     _make_surface_class_data,
     screening_percentile=80,
 ):
@@ -1331,12 +1338,13 @@ def test_decoder_adjust_screening_greaterthan_mask_surface(
     size, it is changed to 100% of mask.
     """
     img, y = _make_surface_class_data
-    mask_n_vertices = _get_mask_extent(surf_mask())
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+    mask_n_vertices = _get_mask_extent(surf_mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
     assert screening_percentile > mask_to_mesh_ratio
     decoder = Decoder(
-        mask=surf_mask(),
+        mask=surf_mask_1d,
         param_grid={"C": [0.01, 0.1]},
         cv=3,
         screening_percentile=screening_percentile,
@@ -1359,14 +1367,20 @@ def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
 
 
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_fit_surface_with_mask_image(
-    _make_surface_class_data, decoder, surf_mask
+    _make_surface_class_data,
+    decoder,
+    surf_mask_dim,
+    surf_mask_1d,
+    surf_mask_2d,
 ):
     """Test fit for surface image."""
     warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data
-    model = decoder(mask=surf_mask())
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+    model = decoder(mask=surf_mask)
     model.fit(X, y)
 
     assert model.coef_ is not None
@@ -1375,11 +1389,11 @@ def test_decoder_fit_surface_with_mask_image(
 @pytest.mark.filterwarnings("ignore:Overriding provided")
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_error_incompatible_surface_mask_and_volume_data(
-    decoder, surf_mask, tiny_binary_classification_data
+    decoder, surf_mask_1d, tiny_binary_classification_data
 ):
     """Test error when fitting volume data with a surface mask."""
     data_volume, y, _ = tiny_binary_classification_data
-    model = decoder(mask=surf_mask())
+    model = decoder(mask=surf_mask_1d)
 
     with pytest.raises(
         TypeError, match="Mask and images to fit must be of compatible types."
@@ -1449,9 +1463,9 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
 def test_frem_decoder_fit_surface(
     frem,
     _make_surface_class_data,
-    surf_mask,
+    surf_mask_1d,
 ):
     """Test fit for using FREM decoding with surface image."""
     X, y = _make_surface_class_data
-    model = frem(mask=surf_mask(), clustering_percentile=90)
+    model = frem(mask=surf_mask_1d, clustering_percentile=90)
     model.fit(X, y)
