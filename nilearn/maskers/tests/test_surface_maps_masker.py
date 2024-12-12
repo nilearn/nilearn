@@ -264,6 +264,6 @@ def test_surface_maps_masker_labels_img_none():
     """Test that an error is raised when maps_img is None."""
     with pytest.raises(
         ValueError,
-        match="provide a maps_img to the masker",
+        match="provide a maps_img during initialization",
     ):
         SurfaceMapsMasker(maps_img=None).fit()
