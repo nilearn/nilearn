@@ -2215,14 +2215,21 @@ def test_flm_fit_surface_image_one_hemisphere(
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_fit_surface_image_with_mask(surface_glm_data, surf_mask_1d):
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
+def test_flm_fit_surface_image_with_mask(
+    surface_glm_data, surf_mask_dim, surf_mask_1d, surf_mask_2d
+):
     """Test FirstLevelModel with surface mask."""
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     img, des = surface_glm_data(5)
-    model = FirstLevelModel(mask_img=surf_mask_1d)
+    model = FirstLevelModel(mask_img=surf_mask)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    if surf_mask_dim == 1:
+        assert model.masker_.mask_img_.shape == (9,)
+    else:
+        assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2277,15 +2284,22 @@ def test_flm_with_surface_image_with_surface_masker(surface_glm_data):
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_with_surface_masker_with_mask(surface_glm_data, surf_mask_1d):
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
+def test_flm_with_surface_masker_with_mask(
+    surface_glm_data, surf_mask_dim, surf_mask_1d, surf_mask_2d
+):
     """Test FirstLevelModel with SurfaceMasker and mask image."""
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     img, des = surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=surf_mask_1d).fit(img)
+    masker = SurfaceMasker(mask_img=surf_mask).fit(img)
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9,)
+    if surf_mask_dim == 1:
+        assert model.masker_.mask_img_.shape == (9,)
+    else:
+        assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
