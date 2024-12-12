@@ -147,8 +147,6 @@ def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
         match="the following labels were removed",
     ):
         signal = masker.transform(surf_img_2d(n_timepoints))
-    signal = masker.transform(surf_img_2d(n_timepoints))
-
     assert isinstance(signal, np.ndarray)
     assert signal.shape == (n_timepoints, 2)
 
