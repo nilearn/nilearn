@@ -88,21 +88,33 @@ def test_none_mask_img(surf_mask_1d):
     SurfaceMasker(surf_mask_1d).fit(None)
 
 
-def test_transform_list_surf_images(surf_mask_1d, surf_img_1d, surf_img_2d):
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
+def test_transform_list_surf_images(
+    surf_mask_dim,
+    surf_mask_1d,
+    surf_mask_2d,
+    surf_img_1d,
+    surf_img_2d,
+):
     """Test transform on list of surface images."""
-    masker = SurfaceMasker(surf_mask_1d).fit()
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+    masker = SurfaceMasker(surf_mask).fit()
     signals = masker.transform([surf_img_1d, surf_img_1d, surf_img_1d])
     assert signals.shape == (3, masker.output_dimension_)
     signals = masker.transform([surf_img_2d(5), surf_img_2d(4)])
     assert signals.shape == (9, masker.output_dimension_)
 
 
-def test_inverse_transform_list_surf_images(surf_mask_1d, surf_img_2d):
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
+def test_inverse_transform_list_surf_images(
+    surf_mask_dim, surf_mask_1d, surf_mask_2d, surf_img_2d
+):
     """Test inverse_transform on list of surface images."""
-    masker = SurfaceMasker(surf_mask_1d).fit()
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+    masker = SurfaceMasker(surf_mask).fit()
     signals = masker.transform([surf_img_2d(3), surf_img_2d(4)])
     img = masker.inverse_transform(signals)
-    assert img.shape == (surf_mask_1d.mesh.n_vertices, 7)
+    assert img.shape == (surf_mask.mesh.n_vertices, 7)
 
 
 def test_unfitted_masker(surf_mask_1d):
