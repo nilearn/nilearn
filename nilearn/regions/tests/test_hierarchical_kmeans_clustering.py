@@ -133,6 +133,7 @@ def test_hierarchical_k_means_clustering():
 
     # make sure the n_features in transformed data were reduced to n_clusters
     assert X_red.shape[0] == n_clusters
+    assert hkmeans.n_clusters == n_clusters
 
     X_compress = hkmeans.inverse_transform(X_red)
 
@@ -150,8 +151,6 @@ def test_hierarchical_k_means_clustering():
     )
     assert_array_almost_equal(X_compress, X_compress_scaled)
 
-    del X_red, X_compress, X_red_scaled, X_compress_scaled
-
 
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
 def test_hierarchical_k_means_clustering_surface(
@@ -161,16 +160,17 @@ def test_hierarchical_k_means_clustering_surface(
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
     # mask the surface image with 50 samples
-    X = masker.transform(surf_img_2d(50))
+    X = masker.transform(surf_img_2d(100))
     # instantiate HierarchicalKMeans with n_clusters
-    clustering = HierarchicalKMeans(n_clusters=n_clusters)
+    hkmeans = HierarchicalKMeans(n_clusters=n_clusters)
     # fit and transform the data
-    X_transformed = clustering.fit_transform(X)
+    X_transformed = hkmeans.fit_transform(X)
     # inverse transform the transformed data
-    X_inverse = clustering.inverse_transform(X_transformed)
+    X_inverse = hkmeans.inverse_transform(X_transformed)
 
     # make sure the n_features in transformed data were reduced to n_clusters
     assert X_transformed.shape[0] == n_clusters
+    assert hkmeans.n_clusters == n_clusters
 
     # make sure the inverse transformed data has the same shape as the original
     assert X_inverse.shape == X.shape
