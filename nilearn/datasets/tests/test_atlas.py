@@ -763,8 +763,11 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
         atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)
 
 
+# TODO: remove this test after release 0.13.0
 def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
-    # TODO: remove this test after release 0.13.0
+    """Tests nilearn.datasets.atlas.fetch_atlas_pauli_2017 to receive
+    DepricationWarning upon use of deprecated version parameter and its
+    possible values "prob" and "det"."""
     labels = pd.DataFrame({"label": [f"label_{i}" for i in range(16)]}).to_csv(
         sep="\t", header=False
     )
@@ -774,6 +777,15 @@ def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
     request_mocker.url_mapping["*osf.io/5mqfx/*"] = det_atlas
     request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
     data_dir = str(tmp_path / "pauli_2017")
+
+    with pytest.warns(DeprecationWarning, match='The parameter "version"'):
+        data = atlas.fetch_atlas_pauli_2017(
+            version="probabilistic", data_dir=data_dir
+        )
+
+        assert load(data.maps).shape[-1] == 16
+
+        assert data.description != ""
 
     with pytest.warns(
         DeprecationWarning, match="The possible values for atlas_type"
@@ -790,15 +802,6 @@ def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
         DeprecationWarning, match="The possible values for atlas_type"
     ):
         data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
-
-        assert load(data.maps).shape[-1] == 16
-
-        assert data.description != ""
-
-    with pytest.warns(DeprecationWarning, match='The parameter "version"'):
-        data = atlas.fetch_atlas_pauli_2017(
-            version="probabilistic", data_dir=data_dir
-        )
 
         assert load(data.maps).shape[-1] == 16
 
