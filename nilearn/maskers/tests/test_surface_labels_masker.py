@@ -1,4 +1,6 @@
 import warnings
+from os.path import join
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -408,13 +410,25 @@ def test_surface_label_masker_inverse_transform_list_surf_images(
     assert img.shape == (surf_label_img.mesh.n_vertices, 7)
 
 
+@pytest.mark.parametrize("confounds", [None, np.ones((20, 3)), "str", "Path"])
 def test_surface_labels_masker_confounds_to_fit_transform(
-    surf_label_img, surf_img_2d
+    surf_label_img, surf_img_2d, confounds
 ):
     """Test fit_transform with confounds."""
     masker = SurfaceLabelsMasker(surf_label_img)
-    signals = masker.fit_transform(surf_img_2d(5), confounds=np.ones((5, 3)))
-    assert signals.shape == (5, masker.n_elements_)
+    if isinstance(confounds, str) and confounds == "Path":
+        nilearn_dir = Path(__file__).parent.parent.parent
+        confounds = nilearn_dir / "tests" / "data" / "spm_confounds.txt"
+    elif isinstance(confounds, str) and confounds == "str":
+        # we need confound to be a string so using os.path.join
+        confounds = join(  # noqa: PTH118
+            Path(__file__).parent.parent.parent,
+            "tests",
+            "data",
+            "spm_confounds.txt",
+        )
+    signals = masker.fit_transform(surf_img_2d(20), confounds=confounds)
+    assert signals.shape == (20, masker.n_elements_)
 
 
 def test_surface_labels_masker_sample_mask_to_fit_transform(
@@ -430,7 +444,7 @@ def test_surface_labels_masker_sample_mask_to_fit_transform(
     # we remove two samples via sample_mask so we should have 3 samples
     assert signals.shape == (3, masker.n_elements_)
 
-    
+
 def test_surface_label_masker_labels_img_none():
     """Test that an error is raised when labels_img is None."""
     with pytest.raises(
