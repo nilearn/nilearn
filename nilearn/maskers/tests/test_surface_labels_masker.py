@@ -122,6 +122,37 @@ def test_surface_label_masker_transform(
     assert signal.shape == (n_timepoints, n_labels)
 
 
+def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
+    """Test transform extract signals with a mask and check warning."""
+    # create a labels image
+    labels_data = {
+        "left": np.asarray([1, 1, 1, 2]),
+        "right": np.asarray([3, 3, 2, 2, 2]),
+    }
+    surf_label_img = SurfaceImage(surf_mesh(), labels_data)
+
+    # create a mask image
+    # we are keeping labels 1 and 2 out of 3
+    # so we should only get signals for labels 1 and 2
+    # plus masker should throw a warning that label 3 is being removed due to
+    # mask
+    mask_data = {
+        "left": np.asarray([1, 1, 1, 1]),
+        "right": np.asarray([0, 0, 1, 1, 1]),
+    }
+    surf_mask = SurfaceImage(surf_mesh(), mask_data)
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img, mask_img=surf_mask)
+    masker = masker.fit()
+    n_timepoints = 5
+    with pytest.warns(
+        UserWarning,
+        match="the following labels were removed",
+    ):
+        signal = masker.transform(surf_img_2d(n_timepoints))
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape == (n_timepoints, 2)
+
+
 def test_surface_label_masker_check_output_1d(surf_mesh, rng):
     """Check actual content of the transform and inverse_transform.
 
@@ -387,6 +418,51 @@ def test_surface_label_masker_inverse_transform(surf_label_img, surf_img_1d):
     signal = masker.transform(surf_img_1d)
     img = masker.inverse_transform(signal)
     assert img.shape == (surf_img_1d.shape[0], 1)
+
+
+def test_surface_label_masker_inverse_transform_with_mask(
+    surf_mesh, surf_img_2d
+):
+    """Test inverse_transform with mask: inverted image's shape, warning if
+    mask removes labels and data corresponding to removed labels is zeros.
+    """
+    # create a labels image
+    labels_data = {
+        "left": np.asarray([1, 1, 1, 2]),
+        "right": np.asarray([3, 3, 2, 2, 2]),
+    }
+    surf_label_img = SurfaceImage(surf_mesh(), labels_data)
+
+    # create a mask image
+    # we are keeping labels 1 and 3 out of 3
+    # so we should only get signals for labels 1 and 3
+    # plus masker should throw a warning that label 2 is being removed due to
+    # mask
+    mask_data = {
+        "left": np.asarray([1, 1, 1, 0]),
+        "right": np.asarray([1, 1, 0, 0, 0]),
+    }
+    surf_mask = SurfaceImage(surf_mesh(), mask_data)
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img, mask_img=surf_mask)
+    masker = masker.fit()
+    n_timepoints = 5
+    with pytest.warns(
+        UserWarning,
+        match="the following labels were removed",
+    ):
+        signal = masker.transform(surf_img_2d(n_timepoints))
+        img_inverted = masker.inverse_transform(signal)
+        assert img_inverted.shape == surf_img_2d(n_timepoints).shape
+        # the data for label 2 should be zeros
+        assert np.all(img_inverted.data.parts["left"][-1, :] == 0)
+        assert np.all(img_inverted.data.parts["right"][2:, :] == 0)
+
+
+def test_surface_label_masker_inverse_transform_before_fit(surf_label_img):
+    """Test inverse_transform requires masker to be fitted."""
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
+    with pytest.raises(ValueError, match="has not been fitted"):
+        masker.inverse_transform(np.zeros((1, 1)))
 
 
 def test_surface_label_masker_transform_list_surf_images(
