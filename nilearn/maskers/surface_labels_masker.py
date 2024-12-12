@@ -403,29 +403,45 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del y
         return self.fit().transform(img)
 
-    def inverse_transform(self, masked_img):
-        """Transform extracted signal back to surface object.
+    def inverse_transform(self, signals):
+        """Transform extracted signal back to surface image.
 
         Parameters
         ----------
-        masked_img : :obj:`numpy.ndarray`
-            Extracted signal.
+        signals : :obj:`numpy.ndarray`
+            Extracted signal for each region.
+            If a 1D array is provided, then the shape of each hemisphere's data
+            should be (number of elements,) in the returned surface image.
+            If a 2D array is provided, then it would be
+            (number of scans, number of elements).
+
 
         Returns
         -------
         :obj:`~nilearn.surface.SurfaceImage` object
             Mesh and data for both hemispheres.
         """
+        self._check_fitted()
+
+        # we will only get the data back according to the mask that was applied
+        # so if some labels were removed, we will only get the data for the
+        # remaining labels
+        if self.mask_img is not None:
+            mask_data = np.concatenate(
+                list(self.mask_img.data.parts.values()), axis=0
+            )
+            _, labels = _apply_mask(self, mask_data, self._labels_data)
+        else:
+            labels = self._labels_
+
         data = {}
         for part_name, labels_part in self.labels_img.data.parts.items():
             data[part_name] = np.zeros(
-                (labels_part.shape[0], masked_img.shape[0]),
-                dtype=masked_img.dtype,
+                (labels_part.shape[0], signals.shape[0]),
+                dtype=signals.dtype,
             )
-            for label_idx, label in enumerate(self._labels_):
-                data[part_name][labels_part == label] = masked_img[
-                    :, label_idx
-                ].T
+            for label_idx, label in enumerate(labels):
+                data[part_name][labels_part == label] = signals[:, label_idx].T
         return SurfaceImage(mesh=self.labels_img.mesh, data=data)
 
     def generate_report(self):
