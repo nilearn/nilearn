@@ -53,11 +53,9 @@ def test_import_plotting_should_raise_warning_if_matplotlib_not_installed():
 )
 def test_import_reporting_should_raise_warning_if_matplotlib_not_installed():
     with (
+        pytest.warns(UserWarning, match="nilearn.reporting.glm_reporter and"),
         pytest.raises(
-            ModuleNotFoundError, match="No module named 'matplotlib'"
-        ),
-        pytest.warns(
-            UserWarning, match="Some dependencies of nilearn.plotting"
+            ImportError, match="cannot import name 'make_glm_report'"
         ),
     ):
         from nilearn.reporting import make_glm_report  # noqa: F401
