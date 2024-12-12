@@ -6,7 +6,7 @@ This example extracts the signal on regions defined via a probabilistic
 atlas, to construct a functional connectome.
 
 We use the `MSDL atlas
-<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
 of functional regions in movie-watching.
 
 The key to extract signals is to use the

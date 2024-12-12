@@ -316,7 +316,7 @@ def test_transform_3d_input_images(affine_eye):
 @pytest.mark.parametrize("mask_as", ["surface_image", "surface_masker", None])
 @pytest.mark.parametrize("method", METHODS)
 def test_parcellation_not_implemented_with_surface(
-    surf_img, surf_mask, mask_as, method, n_parcels=2
+    surf_img_2d, surf_mask, mask_as, method, n_parcels=2
 ):
     """Raise NotImplementedError for surface data."""
     # create a surface masker
@@ -336,4 +336,4 @@ def test_parcellation_not_implemented_with_surface(
         # but would raise error if when we fit_transform on surface images
         else:
             parcellate = Parcellations(method=method, n_parcels=n_parcels)
-        parcellate.fit_transform(surf_img(50))
+        parcellate.fit_transform(surf_img_2d(50))

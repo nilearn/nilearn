@@ -151,7 +151,7 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
     ref_shape = None
 
     for model_idx, first_level in enumerate(second_level_input):
-        if first_level.labels_ is None or first_level.results_ is None:
+        if not first_level.__sklearn_is_fitted__():
             raise ValueError(
                 f"Model {first_level.subject_label} "
                 f"at index {model_idx} has not been fit yet."

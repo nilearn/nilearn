@@ -5,7 +5,7 @@ Voxel-Based Morphometry on Oasis dataset
 This example uses Voxel-Based Morphometry (:term:`VBM`)
 to study the relationship between aging and gray matter density.
 
-The data come from the `OASIS <https://www.oasis-brains.org/>`_ project.
+The data come from the `OASIS <https://sites.wustl.edu/oasisbrains/>`_ project.
 If you use it, you need to agree with the data usage agreement available
 on the website.
 
@@ -56,7 +56,7 @@ ____
 # %%
 import numpy as np
 
-from nilearn import datasets
+from nilearn.datasets import fetch_oasis_vbm
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker
 
@@ -65,9 +65,7 @@ n_subjects = 100  # more subjects requires more memory
 # %%
 # Load Oasis dataset
 # ------------------
-oasis_dataset = datasets.fetch_oasis_vbm(
-    n_subjects=n_subjects, legacy_format=False
-)
+oasis_dataset = fetch_oasis_vbm(n_subjects=n_subjects, legacy_format=False)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars["age"].to_numpy()
 

@@ -9,6 +9,7 @@ import ruamel.yaml
 
 yaml = ruamel.yaml.YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
+yaml.width = 4096
 
 CORE_DEVS = [
     "Alexis Thual",
@@ -71,11 +72,12 @@ def write_names_rst(citation: list[dict[str, str]]) -> None:
         print(header, file=f)
 
         for i, author in enumerate(citation["authors"]):
-            line = (
-                f'.. _{author["given-names"]} {author["family-names"]}: '
-                f'{author["website"]}'
-            )
-            print(line, file=f)
+            if "website" in author:
+                line = (
+                    f'.. _{author["given-names"]} {author["family-names"]}: '
+                    f'{author["website"]}'
+                )
+                print(line, file=f)
             if i < len(citation["authors"]) - 1:
                 print("", file=f)
 
@@ -143,7 +145,10 @@ Some other past or present contributors are:
 """
     )
     for author_ in authors:
-        f.write(f"* `{author_['given-names']} {author_['family-names']}`_")
+        if "website" in author_:
+            f.write(f"* `{author_['given-names']} {author_['family-names']}`_")
+        else:
+            f.write(f"* {author_['given-names']} {author_['family-names']}")
         if author_.get("affiliation"):
             f.write(f": {author_['affiliation']}")
         f.write("\n")

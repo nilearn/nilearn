@@ -260,7 +260,7 @@ Finding help
 On top of this guide, there is a lot of content available outside of ``nilearn``
 that could be of interest to new-comers:
 
-1.  `An introduction to fMRI <https://www.cs.mtsu.edu/~xyang/fMRIHandBook.pdf>`_
+1.  `Handbook of Functional MRI Data Analysis <https://www.cambridge.org/be/universitypress/subjects/statistics-probability/statistics-life-sciences-medicine-and-health/handbook-functional-mri-data-analysis>`_
     by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
 
 2.  The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.

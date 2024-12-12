@@ -1432,7 +1432,7 @@ def fetch_atlas_basc_multiscale_2015(
     Notes
     -----
     For more information on this dataset's structure, see
-    https://figshare.com/articles/basc/1285615
+    https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615
 
     """
     versions = ["sym", "asym"]
@@ -1711,7 +1711,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     -----
     License: unknown
 
-    See http://mialab.mrn.org/data/index.html for more information
+    See https://trendscenter.org/data/ for more information
     on this dataset.
 
     """

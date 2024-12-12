@@ -283,7 +283,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.reports:
             self._reporting_data["images"] = img
 
-        output = np.empty((img.shape[1], self.output_dimension_))
+        output = np.empty((1, self.output_dimension_))
+        if len(img.shape) == 2:
+            output = np.empty((img.shape[1], self.output_dimension_))
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = img.data.parts[part_name][mask].T

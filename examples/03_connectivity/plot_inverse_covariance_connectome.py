@@ -6,7 +6,7 @@ This example constructs a functional connectome using the sparse inverse
 covariance.
 
 We use the `MSDL atlas
-<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
 of functional regions in movie watching, and the
 :class:`nilearn.maskers.NiftiMapsMasker` to extract time series.
 

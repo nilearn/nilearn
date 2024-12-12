@@ -72,8 +72,8 @@ Score function
 --------------
 
 Metrics can be specified by the "scoring" argument to the :class:`SearchLight`, as
-detailed in the :sklearn:`scikit-learn documentation
-<modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`
+detailed in the
+:sklearn:`scikit-learn documentation <modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`
 
 Cross validation
 ----------------
@@ -85,8 +85,8 @@ cross-validation is used.
 
 Cross-validation can be defined using the "cv" argument. As it
 is computationally costly, *K*-Fold cross validation with *K* = 3 is set as the
-default. A :sklearn:`scikit-learn cross-validation generator
-<modules/classes.html#splitter-classes>` can also
+default.
+A :sklearn:`scikit-learn cross-validation generator <api/sklearn.model_selection.html#splitters>` can also
 be passed to set a specific type of cross-validation.
 
 Leave-one-run-out cross-validation (LOROCV) is a common approach for searchlights.
@@ -94,8 +94,9 @@ This approach is a specific use-case of grouped cross-validation, where the
 cross-validation folds are determined by the acquisition runs. The held-out fold
 in a given iteration of cross-validation consist of data from a separate run,
 which keeps training and validation sets properly independent. For this reason,
-LOROCV is often recommended. This can be performed by using :sklearn:`LeaveOneGroupOut
-<modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`,
+LOROCV is often recommended.
+This can be performed by using
+:sklearn:`LeaveOneGroupOut <modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`,
 and then setting the group/run labels when fitting the estimator.
 
 Sphere radius

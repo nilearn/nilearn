@@ -62,7 +62,7 @@ You can change many parameters of the cross_validation here, for example:
      see `here <https://scikit-learn.org/stable/modules/cross_validation.html>`_.
 
    * `How to evaluate a model using scikit-learn
-     <https://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_.
+     <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
 
 Measuring the chance level
@@ -152,4 +152,4 @@ CPUs.
 .. seealso::
 
    `The scikit-learn documentation on choosing estimators and their parameters
-   selection <https://scikit-learn.org/stable/tutorial/statistical_inference/model_selection.html>`_
+   selection <https://scikit-learn.org/stable/auto_examples/model_selection/index.html>`_

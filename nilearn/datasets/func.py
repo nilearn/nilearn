@@ -452,10 +452,10 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     Notes
     -----
     This dataset is available on the `brainliner website
-    <http://brainliner.jp/data/brainliner-admin/Reconstruct>`_
+    <http://brainliner.jp/restrictedProject.atr>`_
 
     See `additional information
-    <http://www.cns.atr.jp/dni/en/downloads/
+    <https://bicr.atr.jp//dni/en/downloads/\
     fmri-data-set-for-visual-image-reconstruction/>`_
 
     """
@@ -1159,7 +1159,7 @@ def fetch_abide_pcp(
     Notes
     -----
     Code and description of preprocessing pipelines are provided on the
-    `PCP website <http://preprocessed-connectomes-project.github.io/>`_.
+    `PCP website <http://preprocessed-connectomes-project.org/>`_.
 
     References
     ----------

@@ -4,7 +4,6 @@ This is a good initialization method for ICA.
 """
 
 import numpy as np
-from joblib import Memory
 from sklearn.utils.extmath import randomized_svd
 
 from nilearn._utils import fill_doc
@@ -158,8 +157,6 @@ class _MultiPCA(_BaseDecomposition):
         n_jobs=1,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         self.n_components = n_components
         self.do_cca = do_cca
 
