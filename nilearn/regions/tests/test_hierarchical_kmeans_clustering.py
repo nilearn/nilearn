@@ -111,9 +111,39 @@ def test_hierarchical_k_means():
     assert_array_almost_equal(test_labels, truth_labels)
 
 
-def test_hierarchical_k_means_clustering():
+def test_hierarchical_k_means_clustering_transform():
     n_samples = 15
-    n_features = 150
+    n_clusters = 8
+    data_img, mask_img = generate_fake_fmri(
+        shape=(10, 11, 12), length=n_samples
+    )
+    masker = NiftiMasker(mask_img=mask_img).fit()
+    X = masker.transform(data_img)
+    hkmeans = HierarchicalKMeans(n_clusters=n_clusters).fit(X)
+    X_red = hkmeans.transform(X)
+
+    assert X_red.shape == (n_clusters, n_samples)
+
+
+def test_hierarchical_k_means_clustering_inverse_transform():
+    n_samples = 15
+    n_clusters = 8
+    data_img, mask_img = generate_fake_fmri(
+        shape=(10, 11, 12), length=n_samples
+    )
+    masker = NiftiMasker(mask_img=mask_img).fit()
+    X = masker.transform(data_img)
+    hkmeans = HierarchicalKMeans(n_clusters=n_clusters).fit(X)
+    X_red = hkmeans.transform(X)
+    X_inv = hkmeans.inverse_transform(X_red)
+
+    assert X_inv.shape == X.shape
+    assert np.allclose(X_inv, X)
+
+
+@pytest.mark.parametrize("n_clusters", [-2, 0])
+def test_hierarchical_k_means_clustering_error_n_clusters(n_clusters):
+    n_samples = 15
     data_img, mask_img = generate_fake_fmri(
         shape=(10, 11, 12), length=n_samples
     )
@@ -123,22 +153,23 @@ def test_hierarchical_k_means_clustering():
     with pytest.raises(
         ValueError,
         match="n_clusters should be an integer greater than 0."
-        " -2 was provided.",
+        f" {n_clusters} was provided.",
     ):
-        HierarchicalKMeans(n_clusters=-2).fit(X)
+        HierarchicalKMeans(n_clusters=n_clusters).fit(X)
 
+
+def test_hierarchical_k_means_clustering_scaling():
+    n_samples = 15
     n_clusters = 8
+    data_img, mask_img = generate_fake_fmri(
+        shape=(10, 11, 12), length=n_samples
+    )
+    masker = NiftiMasker(mask_img=mask_img).fit()
+    X = masker.transform(data_img)
+
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters)
     X_red = hkmeans.fit_transform(X)
-
-    # make sure the n_features in transformed data were reduced to n_clusters
-    assert X_red.shape[0] == n_clusters
-    assert hkmeans.n_clusters == n_clusters
-
     X_compress = hkmeans.inverse_transform(X_red)
-
-    assert_array_almost_equal(X.shape, X_compress.shape)
-    assert_array_almost_equal(X_compress.shape, (n_features, n_samples))
 
     hkmeans_scaled = HierarchicalKMeans(n_clusters=n_clusters, scaling=True)
     X_red_scaled = hkmeans_scaled.fit_transform(X)

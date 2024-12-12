@@ -230,7 +230,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : ndarray, shape = [n_samples, n_features]
+        X : ndarray, shape = [n_features, n_samples]
             Training data.
         y : Ignored
 
