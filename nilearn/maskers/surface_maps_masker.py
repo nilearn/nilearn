@@ -34,12 +34,12 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         maps_img : :obj:`~nilearn.surface.SurfaceImage`
             Set of maps that define the regions. representative time course \
             per map is extracted using least square regression. The data for \
-            each hemisphere is of shape (n_vertices/2, n_regions).
+            each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
         mask_img : :obj:`~nilearn.surface.SurfaceImage`, optional, default=None
             Mask to apply to regions before extracting signals. Defines the \
             overall area of the brain to consider. The data for each \
-            hemisphere is of shape (n_vertices/2, n_regions).
+            hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
         allow_overlap : :obj:`bool`, default=True
             If False, an error is raised if the maps overlaps (ie at least two
@@ -214,7 +214,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres/parts. The data for each \
-            hemisphere is of shape (n_vertices/2, n_timepoints).
+            hemisphere is of shape (n_vertices_per_hemisphere, n_timepoints).
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
                     :class:`pathlib.Path`, \
@@ -331,7 +331,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres. The data for each hemisphere \
-            is of shape (n_vertices/2, n_timepoints).
+            is of shape (n_vertices_per_hemisphere, n_timepoints).
 
         y : None
             This parameter is unused.
@@ -374,7 +374,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         vertex_signals: :obj:`~nilearn.surface.SurfaceImage`
             Signal for each vertex projected on the mesh of the `maps_img`.
             The data for each hemisphere is of shape
-            (n_vertices/2, n_timepoints).
+            (n_vertices_per_hemisphere, n_timepoints).
         """
         self._check_fitted()
 
