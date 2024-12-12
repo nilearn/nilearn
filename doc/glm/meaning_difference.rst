@@ -38,19 +38,31 @@ and within a run there could be multiple conditions (for example congruent and i
 `SPM`_ provides `tutorials`_ and documentation, including `lectures`_,
 to help users analyze their own fMRI data with the meaning of analysis levels being as follows:
 
-    * `First level analysis in SPM`_: Analyze across runs for a subject
-      (meaning more than one run of one subject)
-    * `Second level analysis in SPM`_: Analyze across several subjects
-       (meaning more than one subject with one or more run per subject).
-       This is also known as **group level analysis** which test
-       if the average estimate across subjects is statistically significant.
+- `First level analysis in SPM`_: Analyze across runs for a subject
+  (meaning more than one run of one subject)
+- `Second level analysis in SPM`_: Analyze across several subjects
+  (meaning more than one subject with one or more run per subject).
+  This is also known as **group level analysis** which test
+  if the average estimate across subjects is statistically significant.
 
-.. warning::
+.. admonition:: Fixed effects analyses
+    :class: hint
 
     One important difference between SPM and Nilearn,
-    is that the typical first level
-    https://andysbrainbook.readthedocs.io/en/latest/_images/05_06_Design_Review.png
+    is that the typical first level workflow in SPM
+    will create a single design matrix for all runs
+    and thus run a single model at the subject level
+    (see this `example in Andy's tutorial <First level analysis in SPM>`_).
+    Nilearn will instead create one design matrix per run,
+    and run one model per run
+    (see for example :ref:`this report with 2 runs <two_runs_glm>`).
+    In Nilearn, to compute summary statistics across runs
+    you can use the method :meth:`~nilearn.glm.first_level.FirstLevelModel.compute_contrast`
+    or the function :func:`~nilearn.glm.compute_fixed_effects`.
 
+    .. seealso::
+
+        :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_two_runs_model.py`
 
 .. _SPM: https://www.fil.ion.ucl.ac.uk/spm/docs/
 .. _tutorials: https://www.fil.ion.ucl.ac.uk/spm/docs/tutorials/
@@ -69,14 +81,14 @@ provides a CLI and GUI to run analysis on imaging data
 for first level and higher level analysis
 with the `terminology meaning`_ as follows:
 
-    * `First level analysis in FSL`_: Analyze each run's data by getting the parameter and contrast estimates
-       (meaning one run of one subject)
-    * `Second level analysis in FSL`_: Analyze across runs for a subject
-      via averaging the parameter and contrast estimates
-      within each subject (meaning more than one run of one subject)
-    * `Third level analysis in FSL`_: Analyze across several subjects or group level analysis
-      on the averaged contrast estimates for all subjects within the group
-      (meaning more than one subject with one or more runs per subject)
+- `First level analysis in FSL`_: Analyze each run's data by getting the parameter and contrast estimates
+  (meaning one run of one subject)
+- `Second level analysis in FSL`_: Analyze across runs for a subject
+  via averaging the parameter and contrast estimates
+  within each subject (meaning more than one run of one subject)
+- `Third level analysis in FSL`_: Analyze across several subjects or group level analysis
+  on the averaged contrast estimates for all subjects within the group
+  (meaning more than one subject with one or more runs per subject)
 
 .. _FEAT: https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FEAT/UserGuide#Appendix_A:_Brief_Overview_of_GLM_Analysis
 .. _terminology meaning: https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/FEAT/UserGuide#First-level_or_Higher-level_Analysis.3F
