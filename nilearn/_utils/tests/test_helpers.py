@@ -38,15 +38,24 @@ def _mock_args_for_testing_replace_parameter():
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
 )
-def test_should_raise_warning_if_mpl_not_installed():
+def test_should_raise_custom_warning_if_mpl_not_installed():
+    """Tests if, when provided, custom message is displayed together with
+    default warning.
+    """
     warning = "This package requires nilearn.plotting package."
     with (
-        pytest.warns(UserWarning, match=warning),
+        pytest.warns(UserWarning, match=warning + "\nSome dependencies"),
         pytest.raises(
             ModuleNotFoundError, match="No module named 'matplotlib'"
         ),
     ):
         _set_mpl_backend(warning)
+
+
+def test_should_raise_warning_if_mpl_not_installed():
+    """Tests if default warning is displayed when no custom message is
+    specified.
+    """
     with (
         pytest.warns(
             UserWarning, match="Some dependencies of nilearn.plotting"
