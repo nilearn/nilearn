@@ -17,6 +17,7 @@ from nilearn.maskers._utils import (
     concatenate_surface_images,
     get_min_max_surface_image,
 )
+from nilearn.regions.signal_extraction import check_reduction_strategy
 from nilearn.surface import SurfaceImage
 
 
@@ -109,6 +110,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         memory=None,
         memory_level=1,
         verbose=0,
+        strategy="mean",
         reports=True,
         cmap="inferno",
         clean_args=None,
@@ -128,6 +130,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.verbose = verbose
         self.reports = reports
+        self.strategy = strategy
         self.cmap = cmap
         self.clean_args = clean_args
         self._shelving = False
@@ -167,6 +170,8 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         SurfaceLabelsMasker object
         """
         del img, y
+
+        check_reduction_strategy(self.strategy)
 
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)

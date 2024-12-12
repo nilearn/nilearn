@@ -210,16 +210,12 @@ def _get_labels_data(
     return labels, labels_data
 
 
-def _check_reduction_strategy(strategy: str):
+def check_reduction_strategy(strategy: str):
     """Check that the provided strategy is supported.
 
     Parameters
     ----------
-    strategy : :obj:`str`
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
-
+    %(strategy)s
     """
     available_reduction_strategies = {
         "mean",
@@ -279,10 +275,8 @@ def img_to_signals_labels(
     order : :obj:`str`, default="F"
         Ordering of output array ("C" or "F").
 
-    strategy : :obj:`str`, default="mean"
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
+    %(strategy)s
+
     %(keep_masked_labels)s
 
     return_masked_atlas : :obj:`bool`, default=False
@@ -316,7 +310,7 @@ def img_to_signals_labels(
     """
     labels_img = _utils.check_niimg_3d(labels_img)
 
-    _check_reduction_strategy(strategy)
+    check_reduction_strategy(strategy)
 
     # TODO: Make a special case for list of strings
     # (load one image at a time).
