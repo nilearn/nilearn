@@ -177,6 +177,15 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 verbose=self.verbose,
             )
             check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
+            # squeeze the mask data if it is 2D and has a single column
+            for part in self.mask_img.data.parts:
+                if (
+                    self.mask_img.data.parts[part].ndim == 2
+                    and self.mask_img.data.parts[part].shape[1] == 1
+                ):
+                    self.mask_img.data.parts[part] = np.squeeze(
+                        self.mask_img.data.parts[part], axis=1
+                    )
             check_surface_data_ndims(self.mask_img, 1, "mask_img")
 
         self._shelving = False
