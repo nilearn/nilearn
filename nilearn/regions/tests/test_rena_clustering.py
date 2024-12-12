@@ -177,21 +177,23 @@ def test_make_edges_and_weights_surface(surf_mesh, surf_img_2d):
     assert len(weights["right"]) == 3
 
 
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("mask_as", ["surface_image", "surface_masker"])
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
 def test_rena_clustering_input_mask_surface(
-    surf_img_2d, surf_mask_1d, mask_as, n_clusters
+    surf_img_2d, surf_mask_dim, surf_mask_1d, surf_mask_2d, mask_as, n_clusters
 ):
     """Test if ReNA clustering works in both cases when mask_img is either a
     SurfaceImage or SurfaceMasker.
     """
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     # create a surface masker
-    masker = SurfaceMasker(surf_mask_1d).fit()
+    masker = SurfaceMasker(surf_mask).fit()
     # mask the surface image with 50 samples
     X = masker.transform(surf_img_2d(50))
     if mask_as == "surface_image":
         # instantiate ReNA with mask_img as a SurfaceImage
-        clustering = ReNA(mask_img=surf_mask_1d, n_clusters=n_clusters)
+        clustering = ReNA(mask_img=surf_mask, n_clusters=n_clusters)
     elif mask_as == "surface_masker":
         # instantiate ReNA with mask_img as a SurfaceMasker
         clustering = ReNA(mask_img=masker, n_clusters=n_clusters)
