@@ -18,7 +18,7 @@ from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.maskers import NiftiMapsMasker, SurfaceMasker
+from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger
@@ -108,10 +108,12 @@ def _mask_and_reduce(
 
     Parameters
     ----------
-    masker : NiftiMasker or MultiNiftiMasker
+    masker : NiftiMasker or MultiNiftiMasker or
+    :obj:`~nilearn.maskers.SurfaceMasker`
         Instance used to mask provided data.
 
-    imgs : list of 4D Niimg-like objects
+    imgs : list of 4D Niimg-like objects or list of
+    :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
 
@@ -197,9 +199,17 @@ def _mask_and_reduce(
     subject_n_samples = [subject_data.shape[0] for subject_data in data_list]
 
     n_samples = np.sum(subject_n_samples)
-    n_voxels = int(np.sum(safe_get_data(masker.mask_img_)))
+    # n_features is the number of True vertices in the mask if it is a surface
+    if isinstance(masker, SurfaceMasker):
+        n_features = (
+            masker.mask_img_.data.parts["left"].sum()
+            + masker.mask_img_.data.parts["right"].sum()
+        )
+    # n_features is the number of True voxels in the mask if it is a volume
+    else:
+        n_features = int(np.sum(safe_get_data(masker.mask_img_)))
     dtype = np.float64 if data_list[0].dtype.type is np.float64 else np.float32
-    data = np.empty((n_samples, n_voxels), order="F", dtype=dtype)
+    data = np.empty((n_samples, n_features), order="F", dtype=dtype)
 
     current_position = 0
     for i, next_position in enumerate(np.cumsum(subject_n_samples)):
@@ -260,7 +270,9 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
 
-    mask : Niimg-like object or MultiNiftiMasker instance, optional
+    mask : Niimg-like object or MultiNiftiMasker instance or
+           :obj:`~nilearn.surface.SurfaceImage` or
+           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, it will be computed
         automatically by a MultiNiftiMasker with default parameters.
@@ -333,7 +345,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     Attributes
     ----------
-    mask_img_ : Niimg-like object
+    mask_img_ : Niimg-like object :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation, contains
         the automatically computed mask.
@@ -391,7 +403,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        imgs : list of Niimg-like objects
+        imgs : list of Niimg-like objects or
+        list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data on which the mask is calculated. If this is a list,
             the affine is considered the same for all.
@@ -436,15 +449,15 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 "an empty list was given."
             )
 
-        # Does not support surface-based images yet; See #4756 for updates.
-        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
-            isinstance(x, SurfaceImage) for x in imgs
-        ):
-            raise NotImplementedError(
-                "Surface-based images are not yet supported by this module."
-            )
+        masker_type = "nii"
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)):
+            masker_type = "surface"
 
-        self.masker_ = check_embedded_masker(self)
+        for img in imgs:
+            if isinstance(img, SurfaceImage):
+                masker_type = "surface"
+                break
+        self.masker_ = check_embedded_masker(self, masker_type=masker_type)
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
@@ -469,15 +482,21 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         )
         self._raw_fit(data)
 
-        # Create and fit NiftiMapsMasker for transform
+        # Create and fit appropriate MapsMasker for transform
         # and inverse_transform
-        self.nifti_maps_masker_ = NiftiMapsMasker(
-            self.components_img_,
-            self.masker_.mask_img_,
-            resampling_target="maps",
-        )
+        if isinstance(self.masker_, SurfaceMasker):
+            self.surface_maps_masker_ = SurfaceMapsMasker(
+                self.components_img_, self.masker_.mask_img_
+            )
+            self.surface_maps_masker_.fit()
+        else:
+            self.nifti_maps_masker_ = NiftiMapsMasker(
+                self.components_img_,
+                self.masker_.mask_img_,
+                resampling_target="maps",
+            )
 
-        self.nifti_maps_masker_.fit()
+            self.nifti_maps_masker_.fit()
 
         return self
 
@@ -494,7 +513,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        imgs : iterable of Niimg-like objects
+        imgs : iterable of Niimg-like objects or
+        list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data to be projected
 
@@ -570,7 +590,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        imgs : iterable of Niimg-like objects
+        imgs : iterable of Niimg-like objects or
+        list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data to be scored
 
