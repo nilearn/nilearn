@@ -4,8 +4,6 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
@@ -13,6 +11,7 @@ from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     compute_mean_surface_image,
@@ -159,8 +158,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # TODO
         # get rid of if block
         # bumping sklearn_version > 1.5
-        ver = parse(sklearn_version)
-        if ver.release[1] < 6:
+        if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
             return tags(surf_img=True, niimg_like=False)

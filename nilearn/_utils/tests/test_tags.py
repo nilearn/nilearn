@@ -1,10 +1,8 @@
 """Check Nilearn estimators tags."""
 
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator
 
-SKLEARN_LT_1_6 = parse(sklearn_version).release[1] < 6
+from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 class NilearnEstimator(BaseEstimator):

@@ -8,10 +8,9 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, TransformerMixin
 
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
 
 from .. import _utils, image, masking, signal
@@ -214,8 +213,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # TODO
         # get rid of if block
         # bumping sklearn_version > 1.5
-        ver = parse(sklearn_version)
-        if ver.release[1] < 6:
+        if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
             return tags()

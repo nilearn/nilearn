@@ -13,13 +13,12 @@ import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
 from nibabel.funcs import four_to_three
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn.base import clone
 
 from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -536,8 +535,7 @@ class SecondLevelModel(BaseGLM):
         # TODO
         # get rid of if block
         # bumping sklearn_version > 1.5
-        ver = parse(sklearn_version)
-        if ver.release[1] < 6:
+        if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
             return tags(surf_img=True, niimg_like=True)

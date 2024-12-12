@@ -3,12 +3,12 @@
 import warnings
 
 import numpy as np
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
+
+from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 def _remove_empty_labels(labels):
@@ -230,8 +230,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         # TODO
         # get rid of if block
         # bumping sklearn_version > 1.5
-        ver = parse(sklearn_version)
-        if ver.release[1] < 6:
+        if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
             return tags()

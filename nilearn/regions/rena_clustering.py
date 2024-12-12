@@ -10,14 +10,13 @@ import warnings
 import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
-from packaging.version import parse
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
-from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -664,8 +663,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         # TODO
         # get rid of if block
         # bumping sklearn_version > 1.5
-        ver = parse(sklearn_version)
-        if ver.release[1] < 6:
+        if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
             return tags()

@@ -22,8 +22,6 @@ from collections.abc import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
@@ -58,6 +56,7 @@ from nilearn._utils.masker_validation import (
     check_embedded_masker,
 )
 from nilearn._utils.param_validation import check_feature_screening
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
@@ -1133,17 +1132,16 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # get rid of if block
         # bumping sklearn_version > 1.5
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        ver = parse(sklearn_version)
-        if ver.release[1] < 6:
+        if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags(require_y=True)
+            return tags(require_y=True, niimg_like=True, surf_img=True)
 
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
         tags.target_tags.required = True
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(niimg_like=True, surf_img=True)
         return tags
 
 
@@ -1308,10 +1306,10 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
-        tags = super().__sklearn_tags__()
-        ver = parse(sklearn_version)
-        if ver.release[1] >= 6:
-            tags.estimator_type = "classifier"
+        tags = super()._more_tags()
+        if SKLEARN_LT_1_6:
+            return tags
+        tags.estimator_type = "classifier"
         return tags
 
 
@@ -1480,18 +1478,14 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         # get rid of if block
         # bumping sklearn_version > 1.5
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        ver = parse(sklearn_version)
-        if ver.release[1] < 6:
-            from nilearn._utils.tags import tags
-
-            return tags(multioutput=True)
-
-        from nilearn._utils.tags import InputTags
+        if SKLEARN_LT_1_6:
+            tags = super()._more_tags()
+            tags["multioutput"] = True
+            return tags
 
         tags = super().__sklearn_tags__()
         tags.estimator_type = "regressor"
         tags.target_tags.required = True
-        tags.input_tags = InputTags()
         return tags
 
 

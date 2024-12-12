@@ -10,9 +10,7 @@ from pathlib import Path
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
-from packaging.version import parse
 from scipy import linalg
-from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
@@ -20,6 +18,7 @@ from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
 from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMapsMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 
@@ -390,8 +389,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         # TODO
         # get rid of if block
         # bumping sklearn_version > 1.5
-        ver = parse(sklearn_version)
-        if ver.release[1] < 6:
+        if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
             return tags()
