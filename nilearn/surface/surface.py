@@ -877,14 +877,13 @@ def load_surf_data(surf_data):
             else:
                 try:
                     data = np.concatenate((data, data_part), axis=1)
-                except ValueError:
+                except ValueError as e:
                     raise ValueError(
                         "When more than one file is input, "
                         "all files must contain data "
                         "with the same shape in axis=0."
-                    )
+                    ) from e
 
-    # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
         data = surf_data
 
@@ -940,7 +939,7 @@ def _gifti_img_to_mesh(gifti_img):
         coords = gifti_img.get_arrays_from_intent(
             nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
         )[0].data
-    except IndexError:
+    except IndexError as e:
         raise ValueError(
             error_message.format(
                 "NIFTI_INTENT_POINTSET",
@@ -948,12 +947,12 @@ def _gifti_img_to_mesh(gifti_img):
                     nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
                 ),
             )
-        )
+        ) from e
     try:
         faces = gifti_img.get_arrays_from_intent(
             nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
         )[0].data
-    except IndexError:
+    except IndexError as exc:
         raise ValueError(
             error_message.format(
                 "NIFTI_INTENT_TRIANGLE",
@@ -961,7 +960,7 @@ def _gifti_img_to_mesh(gifti_img):
                     nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
                 ),
             )
-        )
+        ) from exc
     return coords, faces
 
 
@@ -1116,7 +1115,7 @@ def load_surf_mesh(surf_mesh):
         try:
             coords, faces = surf_mesh
             mesh = InMemoryMesh(coordinates=coords, faces=faces)
-        except Exception:
+        except Exception as e:
             raise ValueError(
                 "If a list or tuple is given as input, "
                 "it must have two elements, the first is "
@@ -1125,7 +1124,7 @@ def load_surf_mesh(surf_mesh):
                 "array containing  the indices (into coords) of "
                 "the mesh faces. The input was a list with "
                 f"{len(surf_mesh)} elements."
-            )
+            ) from e
     elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
         mesh = InMemoryMesh(coordinates=coords, faces=faces)
