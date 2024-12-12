@@ -106,10 +106,15 @@ copyright = "The nilearn developers"
 # built documents.
 
 # Latest release version
-latest_release = re.match(
-    r"v?([0-9]+.[0-9]+.[0-9]+).*",
-    os.popen("git describe --tags").read().strip(),
-).groups()[0]
+try:
+    latest_release = re.match(
+        r"v?([0-9]+.[0-9]+.[0-9]+).*",
+        os.popen("git describe --tags").read().strip(),
+    ).groups()[0]
+except AttributeError:
+    # This may fail in case the git tags were not fetched.
+    # So let's have a back up.
+    latest_release = "0.11.0"
 
 # The full current version, including alpha/beta/rc tags.
 current_version = __version__
@@ -200,6 +205,8 @@ linkcheck_ignore = [
     r"https://doi.org/10.1152/.*",
     r"https://doi.org/10.1162/.*",
     r"https://doi.org/10.3389/.*",
+    # do not check download links for OSF
+    r"https://osf.io/.*/download",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]

@@ -126,7 +126,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     def __init__(
         self,
-        labels_img,
+        labels_img=None,
         labels=None,
         background_label=0,
         mask_img=None,
@@ -163,19 +163,6 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        self._shelving = False
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            "number_of_regions": 0,
-            "summary": {},
-        }
 
     @property
     def _labels_data(self):
@@ -201,6 +188,12 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         del img, y
 
+        if self.labels_img is None:
+            raise ValueError(
+                "Please provide a labels_img to the masker. For example, "
+                "masker = SurfaceLabelsMasker(labels_img=labels_img)"
+            )
+
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)
         self._labels_ = list(all_labels)
@@ -220,10 +213,29 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             return self
 
         self._report_content["number_of_regions"] = self.n_elements_
+
+        self._shelving = False
+        # content to inject in the HTML template
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image overlaid "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "n_vertices": {},
+            "number_of_regions": self.n_elements_,
+            "summary": {},
+        }
+
         for part in self.labels_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.labels_img.mesh.parts[part].n_vertices
             )
+
+        if not self.reports:
+            self._reporting_data = None
+            return self
 
         self._reporting_data = self._generate_reporting_data()
 
