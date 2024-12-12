@@ -72,7 +72,7 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
     then tests marked as xfail will start passing.
 
     If estimator have some nilearn specific tags
-    then some checks will skipped rather than yielded.
+    then some checks will skip rather than yield.
 
     See this section rolling-your-own-estimator in
     the scikit-learn doc for more info:

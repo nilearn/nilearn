@@ -29,7 +29,7 @@ class NilearnEstimator(BaseEstimator):
 def test_nilearn_tags():
     """Check that adding tags to Nilearn estimators work as expected.
 
-    Especially with different skleanr versions.
+    Especially with different sklearn versions.
     """
     est = NilearnEstimator()
 
