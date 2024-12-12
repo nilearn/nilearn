@@ -122,7 +122,7 @@ def generate_regions_ts(
     window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. e.g. "hamming".
 
-    negative_regions: :obj:`bool`, default=False
+    negative_regions : :obj:`bool`, default=False
         If True, creates negative and positive valued regions randomly; all
         generated region values are positive otherwise.
 
@@ -197,7 +197,7 @@ def generate_maps(
     border : :obj:`int`, default=1
         Number of background voxels on each side of the 3D volumes.
 
-    negative_regions: :obj:`bool`, default=False
+    negative_regions : :obj:`bool`, default=False
         If True, creates negative and positive valued regions randomly; all
         generated region values are positive otherwise.
 
