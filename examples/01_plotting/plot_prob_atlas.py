@@ -15,7 +15,7 @@ There are 3 different display types:
 
 A colorbar can optionally be added.
 
-The :func:`nilearn.plotting.plot_prob_atlas` function displays each map
+The :func:`~nilearn.plotting.plot_prob_atlas` function displays each map
 with each different color which are picked randomly from the colormap
 which is already defined.
 
