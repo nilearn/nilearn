@@ -102,8 +102,12 @@ def _identify_subpeaks(data):
     )
     if np.any(subpeaks_outside_cluster):
         warnings.warn(
-            "Attention: At least one of the (sub)peaks falls outside of the "
-            "cluster body. Identifying the nearest in-cluster voxel."
+            (
+                "Attention: At least one of the (sub)peaks "
+                "falls outside of the cluster body. "
+                "Identifying the nearest in-cluster voxel."
+            ),
+            stacklevel=4,
         )
         # Replace centers of mass with their nearest neighbor points in the
         # corresponding clusters. Note this is also equivalent to computing the

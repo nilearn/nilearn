@@ -222,7 +222,8 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         warnings.warn(
             "The following parameters are not needed for the "
             f"selected strategy '{denoise_strategy}': {not_needed}; "
-            f"parameters accepted: {check_parameters}"
+            f"parameters accepted: {check_parameters}",
+            stacklevel=2,
         )
     return load_confounds(img_files, **user_parameters)
 
