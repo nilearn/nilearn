@@ -21,6 +21,10 @@
     :target: https://bsky.app/profile/nilearn.bsky.social
     :alt: Bluesky
 
+.. image:: https://img.shields.io/youtube/channel/subscribers/UCU6BMAi2zOhNFnDkbdevmPw
+    :target: https://www.youtube.com/@nilearnevents5116
+    :alt: YouTube Channel Subscribers
+
 .. image:: https://img.shields.io/twitter/follow/nilearn.svg
     :target: https://x.com/nilearn
     :alt: Twitter
