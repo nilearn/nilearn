@@ -283,7 +283,9 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.reports:
             self._reporting_data["images"] = img
 
-        output = np.empty((img.shape[1], self.output_dimension_))
+        output = np.empty((1, self.output_dimension_))
+        if len(img.shape) == 2:
+            output = np.empty((img.shape[1], self.output_dimension_))
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = img.data.parts[part_name][mask].T
@@ -354,12 +356,12 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del y
         return self.fit(img).transform(img, confounds, sample_mask)
 
-    def inverse_transform(self, masked_img):
+    def inverse_transform(self, signals):
         """Transform extracted signal back to surface object.
 
         Parameters
         ----------
-        masked_img : :class:`numpy.ndarray`
+        signals : :class:`numpy.ndarray`
             Extracted signal.
 
         Returns
@@ -369,24 +371,24 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         self._check_fitted()
 
-        if masked_img.ndim == 1:
-            masked_img = np.array([masked_img])
+        if signals.ndim == 1:
+            signals = np.array([signals])
 
-        if masked_img.shape[1] != self.output_dimension_:
+        if signals.shape[1] != self.output_dimension_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
                 f"Last dimension should be {self.output_dimension_}.\n"
-                f"Got {masked_img.shape[1]}."
+                f"Got {signals.shape[1]}."
             )
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
             data[part_name] = np.zeros(
-                (mask.shape[0], masked_img.shape[0]),
-                dtype=masked_img.dtype,
+                (mask.shape[0], signals.shape[0]),
+                dtype=signals.dtype,
             )
             start, stop = self._slices[part_name]
-            data[part_name][mask.ravel()] = masked_img[:, start:stop].T
+            data[part_name][mask.ravel()] = signals[:, start:stop].T
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 

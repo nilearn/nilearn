@@ -515,8 +515,8 @@ def write_fake_fmri_data_and_design(
         fmri_files.append(str(file_path / f"fmri_run{i:d}.nii"))
         fmri.to_filename(fmri_files[-1])
     for i, design in enumerate(design_matrices):
-        design_files.append(str(file_path / f"dmtx_{i:d}.csv"))
-        design.to_csv(design_files[-1])
+        design_files.append(str(file_path / f"dmtx_{i:d}.tsv"))
+        design.to_csv(design_files[-1], sep="\t", index=False)
 
     return mask_file, fmri_files, design_files
 

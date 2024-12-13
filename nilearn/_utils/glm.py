@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 
@@ -80,14 +82,13 @@ def _read_events_table(table_path):
     ValueError
     If file loading fails.
     """
-    try:
-        # kept for historical reasons, a lot of tests use csv with index column
-        loaded = pd.read_csv(table_path, index_col=0)
-    except:  # noqa: E722
-        raise ValueError(f"table path {table_path} could not be loaded")
-    if loaded.empty:
-        try:
-            loaded = pd.read_csv(table_path, sep="\t")
-        except:  # noqa: E722
-            raise ValueError(f"table path {table_path} could not be loaded")
+    table_path = Path(table_path)
+    if table_path.suffix == ".tsv":
+        loaded = pd.read_csv(table_path, sep="\t")
+    elif table_path.suffix == ".csv":
+        loaded = pd.read_csv(table_path)
+    else:
+        raise ValueError(
+            f"Tables to load can only be TSV or CSV.\nGot {table_path}"
+        )
     return loaded

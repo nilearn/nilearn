@@ -5,6 +5,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition._multi_pca import _MultiPCA
@@ -46,6 +47,42 @@ def mask_img():
 @pytest.fixture(scope="module")
 def multi_pca_data():
     return _make_multi_pca_test_data()[0]
+
+
+extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_estimators_unfitted",
+    "check_get_params_invariance",
+    "check_no_attributes_set_in_init",
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+    "check_parameters_default_constructible",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_MultiPCA()], extra_valid_checks=extra_valid_checks
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[_MultiPCA()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_multi_pca_check_masker_attributes(multi_pca_data, mask_img):

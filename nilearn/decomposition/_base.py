@@ -361,8 +361,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         n_jobs=1,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         self.n_components = n_components
         self.random_state = random_state
         self.mask = mask
@@ -412,6 +410,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         """
         # Base fit for decomposition estimators : compute the embedded masker
+        if self.memory is None:
+            self.memory = Memory(location=None)
 
         if (
             isinstance(imgs, str)
