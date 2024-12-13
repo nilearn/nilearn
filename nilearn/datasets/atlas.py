@@ -25,14 +25,67 @@ from ._utils import (
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
 
-class Atlas(Bunch):
-    """Atlas class."""
+dec_to_hex_nums = pd.DataFrame(
+    {"hex": [f"{x:02x}" for x in range(256)]}, dtype=str
+)
 
-    def __init__(self, description, atlas_type, **kwargs):
-        assert atlas_type in ["deterministic", "probabilistic"]
 
-        super().__init__(
-            description=description, atlas_type=atlas_type, **kwargs
+def rgb_to_hex_lookup(
+    red: pd.Series, green: pd.Series, blue: pd.Series
+) -> pd.Series:
+    """Turn RGB in hex."""
+    # see https://stackoverflow.com/questions/53875880/convert-a-pandas-dataframe-of-rgb-colors-to-hex
+    # Look everything up
+    rr = dec_to_hex_nums.loc[red, "hex"]
+    gg = dec_to_hex_nums.loc[green, "hex"]
+    bb = dec_to_hex_nums.loc[blue, "hex"]
+    # Reindex
+    rr.index = red.index
+    gg.index = green.index
+    bb.index = blue.index
+    # Concatenate and return
+    return rr + gg + bb
+
+
+def _generate_atlas_look_up_table(function, name, index=None):
+    if function.__name__ in [
+        "fetch_atlas_surf_destrieux",
+        "fetch_atlas_schaefer_2018",
+    ]:
+        name = [x.decode() for x in name]
+    elif function.__name__ in ["fetch_atlas_basc_multiscale_2015"]:
+        name = [str(x) for x in range(name)]
+
+    index = list(range(len(name)))
+    if function.__name__ in ["fetch_atlas_basc_multiscale_2015"]:
+        index = [int(x) for x in name]
+    elif function.__name__ in [
+        "fetch_atlas_schaefer_2018",
+        "fetch_atlas_pauli_2017",
+    ]:
+        index = list(range(1, len(name) + 1))
+
+    lut = pd.DataFrame({"index": index, "name": name})
+
+    if function.__name__ in [
+        "fetch_atlas_harvard_oxford",
+        "fetch_atlas_juelich",
+        "fetch_atlas_talairach",
+        "fetch_atlas_aal",
+        "fetch_atlas_basc_multiscale_2015",
+    ]:
+        return lut
+
+    elif function.__name__ == "fetch_atlas_surf_destrieux":
+        return lut.replace("Unknown", "Background")
+
+    elif function.__name__ in [
+        "fetch_atlas_schaefer_2018",
+        "fetch_atlas_pauli_2017",
+    ]:
+        return pd.concat(
+            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
+            ignore_index=True,
         )
 
 
