@@ -185,7 +185,7 @@ def test_percentile_range(rng, canica_data):
     """Test that a warning is given when thresholds are stressed."""
     edge_case = rng.integers(low=1, high=10)
 
-    # stess thresholding via edge case
+    # stress thresholding via edge case
     canica = CanICA(n_components=edge_case, threshold=float(edge_case))
 
     with pytest.warns(UserWarning, match="obtained a critical threshold"):

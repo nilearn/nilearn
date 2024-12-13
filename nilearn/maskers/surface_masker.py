@@ -13,6 +13,7 @@ from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     compute_mean_surface_image,
@@ -142,6 +143,32 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "This masker has not been fitted.\n"
                 "Call fit before calling transform."
             )
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(surf_img=True, niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
+        return tags
 
     def _fit_mask_img(self, img):
         """Get mask passed during init or compute one from input image.
@@ -356,12 +383,12 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del y
         return self.fit(img).transform(img, confounds, sample_mask)
 
-    def inverse_transform(self, masked_img):
+    def inverse_transform(self, signals):
         """Transform extracted signal back to surface object.
 
         Parameters
         ----------
-        masked_img : :class:`numpy.ndarray`
+        signals : :class:`numpy.ndarray`
             Extracted signal.
 
         Returns
@@ -371,24 +398,24 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         self._check_fitted()
 
-        if masked_img.ndim == 1:
-            masked_img = np.array([masked_img])
+        if signals.ndim == 1:
+            signals = np.array([signals])
 
-        if masked_img.shape[1] != self.output_dimension_:
+        if signals.shape[1] != self.output_dimension_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
                 f"Last dimension should be {self.output_dimension_}.\n"
-                f"Got {masked_img.shape[1]}."
+                f"Got {signals.shape[1]}."
             )
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
             data[part_name] = np.zeros(
-                (mask.shape[0], masked_img.shape[0]),
-                dtype=masked_img.dtype,
+                (mask.shape[0], signals.shape[0]),
+                dtype=signals.dtype,
             )
             start, stop = self._slices[part_name]
-            data[part_name][mask.ravel()] = masked_img[:, start:stop].T
+            data[part_name][mask.ravel()] = signals[:, start:stop].T
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 

@@ -602,7 +602,7 @@ class NiftiLabelsMasker(BaseMasker):
                 warnings.warn(
                     "Number of regions in the labels image "
                     "does not match the number of labels provided.",
-                    stacklevel=3,
+                    stacklevel=2,
                 )
             # if number of regions in the labels image is more
             # than the number of labels provided, then we cannot
