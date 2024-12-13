@@ -17,12 +17,12 @@ documentation.
 # -----------------------------------------------
 
 # import datasets module and use `fetch_atlas_basc_multiscale_2015` function
-from nilearn import datasets
+from nilearn.datasets import fetch_atlas_basc_multiscale_2015
 
 parcellations = [
-    datasets.fetch_atlas_basc_multiscale_2015(version="sym", resolution=64),
-    datasets.fetch_atlas_basc_multiscale_2015(version="sym", resolution=197),
-    datasets.fetch_atlas_basc_multiscale_2015(version="sym", resolution=444),
+    fetch_atlas_basc_multiscale_2015(version="sym", resolution=64),
+    fetch_atlas_basc_multiscale_2015(version="sym", resolution=197),
+    fetch_atlas_basc_multiscale_2015(version="sym", resolution=444),
 ]
 
 # We show here networks of 64, 197, 444
@@ -35,20 +35,14 @@ networks_444 = parcellations[2]["maps"]
 # -------------------------------
 
 # import plotting module and use `plot_roi` function, since the maps are in 3D
-from nilearn import plotting
+from nilearn.plotting import cm, plot_roi, show
 
 # The coordinates of all plots are selected automatically by itself
 # We manually change the colormap of our choice
-plotting.plot_roi(
-    networks_64, cmap=plotting.cm.bwr, title="64 regions of brain clusters"
-)
+plot_roi(networks_64, cmap=cm.bwr, title="64 regions of brain clusters")
 
-plotting.plot_roi(
-    networks_197, cmap=plotting.cm.bwr, title="197 regions of brain clusters"
-)
+plot_roi(networks_197, cmap=cm.bwr, title="197 regions of brain clusters")
 
-plotting.plot_roi(
-    networks_444, cmap=plotting.cm.bwr_r, title="444 regions of brain clusters"
-)
+plot_roi(networks_444, cmap=cm.bwr_r, title="444 regions of brain clusters")
 
-plotting.show()
+show()
