@@ -805,29 +805,29 @@ def test_compare_file_and_inmemory_mesh(surf_mesh, tmp_path):
 
 
 @pytest.mark.parametrize("shape", [1, 3])
-def test_surface_image_shape(surf_img, shape):
-    assert surf_img(shape).shape == (9, shape)
+def test_surface_image_shape(surf_img_2d, shape):
+    assert surf_img_2d(shape).shape == (9, shape)
 
 
-def test_data_shape_not_matching_mesh(surf_img, flip_surf_img_parts):
+def test_data_shape_not_matching_mesh(surf_img_1d, flip_surf_img_parts):
     with pytest.raises(ValueError, match="shape.*vertices"):
-        SurfaceImage(surf_img().mesh, flip_surf_img_parts(surf_img().data))
+        SurfaceImage(surf_img_1d.mesh, flip_surf_img_parts(surf_img_1d.data))
 
 
-def test_data_shape_inconsistent(surf_img):
+def test_data_shape_inconsistent(surf_img_2d):
     bad_data = {
-        "left": surf_img(7).data.parts["left"],
-        "right": surf_img(7).data.parts["right"][0][:4],
+        "left": surf_img_2d(7).data.parts["left"],
+        "right": surf_img_2d(7).data.parts["right"][0][:4],
     }
     with pytest.raises(ValueError, match="incompatible shapes"):
-        SurfaceImage(surf_img(7).mesh, bad_data)
+        SurfaceImage(surf_img_2d(7).mesh, bad_data)
 
 
-def test_data_keys_not_matching_mesh(surf_img):
+def test_data_keys_not_matching_mesh(surf_img_1d):
     with pytest.raises(ValueError, match="same keys"):
         SurfaceImage(
-            {"left": surf_img().mesh.parts["left"]},
-            surf_img().data,
+            {"left": surf_img_1d.mesh.parts["left"]},
+            surf_img_1d.data,
         )
 
 
@@ -886,24 +886,24 @@ def test_load_save_mesh(
         assert np.array_equal(mesh.coordinates, expected_mesh.coordinates)
 
 
-def test_save_mesh_default_suffix(tmp_path, surf_img):
+def test_save_mesh_default_suffix(tmp_path, surf_img_1d):
     """Check default .gii extension is added."""
-    surf_img().mesh.to_filename(
+    surf_img_1d.mesh.to_filename(
         tmp_path / "give_me_a_default_suffix_hemi-L_mesh"
     )
     assert (tmp_path / "give_me_a_default_suffix_hemi-L_mesh.gii").exists()
 
 
-def test_save_mesh_error(tmp_path, surf_img):
+def test_save_mesh_error(tmp_path, surf_img_1d):
     with pytest.raises(ValueError, match="cannot contain both"):
-        surf_img().mesh.to_filename(
+        surf_img_1d.mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.gii"
         )
 
 
-def test_save_mesh_error_wrong_suffix(tmp_path, surf_img):
+def test_save_mesh_error_wrong_suffix(tmp_path, surf_img_1d):
     with pytest.raises(ValueError, match="with the extension '.gii'"):
-        surf_img().mesh.to_filename(
+        surf_img_1d.mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.foo"
         )
 
@@ -1002,12 +1002,12 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
         np.float64,
     ],
 )
-def test_save_dtype(surf_img, tmp_path, dtype):
+def test_save_dtype(surf_img_1d, tmp_path, dtype):
     """Check saving several data type."""
-    surf_img().data.parts["right"] = (
-        surf_img().data.parts["right"].astype(dtype)
+    surf_img_1d.data.parts["right"] = surf_img_1d.data.parts["right"].astype(
+        dtype
     )
-    surf_img().data.to_filename(tmp_path / "data.gii")
+    surf_img_1d.data.to_filename(tmp_path / "data.gii")
 
 
 def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):

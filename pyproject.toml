@@ -150,7 +150,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
 ignore = [
     "ARG005",
-    "B028",
     "B904",
     "D105",
     "D205",
@@ -214,13 +213,23 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 32
+max-complexity = 25
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
 "**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
+"nilearn/signal.py" = ["B028"]
+"nilearn/{_utils}/*" = ["B028"]
+"nilearn/{connectome}/*" = ["B028"]
+"nilearn/{datasets}/*" = ["B028"]
+"nilearn/{decoding}/*" = ["B028"]
+"nilearn/{glm}/*" = ["B028"]
+"nilearn/{image}/*" = ["B028"]
+"nilearn/{maskers}/*" = ["B028"]
+"nilearn/{mass_univariate}/*" = ["B028"]
+"nilearn/{plotting}/*" = ["B028"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -229,8 +238,8 @@ convention = "numpy"
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 26
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
-max-branches = 35
+max-branches = 27
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 116
+max-statements = 110

@@ -46,6 +46,7 @@ def _load_uniform_ball_cloud(n_points=20):
         "have a big impact on the result, we strongly recommend using one "
         'of these values when using kind="ball" for much better performance.',
         EfficiencyWarning,
+        stacklevel=3,
     )
     return _uniform_ball_cloud(n_points=n_points)
 
@@ -1271,6 +1272,22 @@ class PolyData:
             data = self.parts["right"]
 
         _data_to_gifti(data, filename)
+
+
+def at_least_2d(input):
+    """Force surface image or polydata to be 2d."""
+    if len(input.shape) == 2:
+        return input
+
+    if isinstance(input, SurfaceImage):
+        input.data = at_least_2d(input.data)
+        return input
+
+    if len(input.shape) == 1:
+        for k, v in input.parts.items():
+            input.parts[k] = v.reshape((v.shape[0], 1))
+
+    return input
 
 
 class SurfaceMesh(abc.ABC):

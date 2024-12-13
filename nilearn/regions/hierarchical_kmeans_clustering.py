@@ -8,6 +8,8 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from nilearn._utils.tags import SKLEARN_LT_1_6
+
 
 def _remove_empty_labels(labels):
     """Remove empty values label values from labels list.
@@ -221,6 +223,33 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         self.random_state = random_state
         self.scaling = scaling
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags()
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags()
+        return tags
+
     def fit(
         self,
         X,
@@ -253,7 +282,8 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
             self.n_clusters = n_features
             warnings.warn(
                 "n_clusters should be at most the number of "
-                f"features. Taking n_clusters = {n_features} instead."
+                f"features. Taking n_clusters = {n_features} instead.",
+                stacklevel=2,
             )
         self.labels_ = hierarchical_k_means(
             X,
