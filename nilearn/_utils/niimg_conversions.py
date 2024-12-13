@@ -273,26 +273,32 @@ def check_niimg(
 
     niimg = stringify_path(niimg)
 
+    # path_expanded = Path(niimg).expanduser() != Path(niimg)
+
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
-            # Ascending sorting + expand user path
-            filenames = sorted(glob.glob(str(Path(niimg).expanduser())))
+            # Expand user path
+            expanded_niimg = str(Path(niimg).expanduser())
+            # Ascending sorting
+            filenames = sorted(glob.glob(expanded_niimg))
+            # filenames = sorted(glob.glob(os.path.expanduser(niimg)))
 
             # processing filenames matching globbing expression
             if len(filenames) >= 1 and glob.has_magic(niimg):
                 niimg = filenames  # iterable case
             # niimg is an existing filename
-            elif [niimg] == filenames:
+            elif [expanded_niimg] == filenames:
                 niimg = filenames[0]
             # No files found by glob
             elif glob.has_magic(niimg):
                 # No files matching the glob expression, warn the user
                 message = (
                     "No files matching the entered niimg expression: "
-                    f"'{niimg}'.\n You may have left wildcards usage "
-                    "activated: please set the global constant "
-                    "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
-                    "deactivate this behavior."
+                    f"'{niimg}'.\n"
+                    "You may have left wildcards usage activated: "
+                    "please set the global constant "
+                    "'nilearn.EXPAND_PATH_WILDCARDS' to False "
+                    "to deactivate this behavior."
                 )
                 raise ValueError(message)
             else:
