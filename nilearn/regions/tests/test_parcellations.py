@@ -316,21 +316,16 @@ def test_transform_3d_input_images(affine_eye):
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcels", [2, 4, 5])
 def test_parcellation_all_methods_with_surface(
-    surf_img, surf_mask_1d, method, n_parcels
+    surf_img_2d, surf_mask_1d, method, n_parcels
 ):
     """Test if all parcellation methods work on surface."""
-    # TODO: remove after #4897 is merged
-    surf_mask = surf_mask()
-    surf_mask.data.parts["left"] = surf_mask.data.parts["left"].squeeze()
-    surf_mask.data.parts["right"] = surf_mask.data.parts["right"].squeeze()
-
     # create a surface masker
-    masker = SurfaceMasker(surf_mask).fit()
+    masker = SurfaceMasker(surf_mask_1d).fit()
     # mask the surface image
-    X = masker.transform(surf_img(50))
+    X = masker.transform(surf_img_2d(50))
     parcellate = Parcellations(method=method, n_parcels=n_parcels, mask=masker)
     # fit and transform the data
-    X_transformed = parcellate.fit_transform(surf_img(50))
+    X_transformed = parcellate.fit_transform(surf_img_2d(50))
     # inverse transform the transformed data
     X_inverse = parcellate.inverse_transform(X_transformed)
 
