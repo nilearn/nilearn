@@ -8,6 +8,8 @@
 Fixes
 -----
 
+- :bdg-dark:`Code` Fix issue to lead to user path to not be expanded when trying to load nifti images (:gh:`4948` by `Rémmi Gau`_).
+
 - :bdg-dark:`Code` Allow using ``confounds`` and ``sample_mask`` via ``.fit_transform`` in :obj:`~nilearn.maskers.SurfaceLabelsMasker` (:gh:`4926` by `Himanshu Aggarwal`_).
 
 Enhancements
