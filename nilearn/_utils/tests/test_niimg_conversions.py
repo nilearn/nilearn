@@ -313,11 +313,20 @@ def test_check_niimg_user_expand(img_in_home_folder, filename):
     )
 
 
-@pytest.mark.parametrize("filename", ["~/*.nii", r"~/*.nii"])
-def test_check_niimg_user_expand_wildcards(img_in_home_folder, filename):
-    """Check that user path are expanded with wildcards.
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "~/*.nii",
+        r"~/*.nii",
+        ["~/test.nii"],
+        [r"~/test.nii"],
+        [Path("~/test.nii")],
+    ],
+)
+def test_check_niimg_user_expand_4d(img_in_home_folder, filename):
+    """Check that user path are expanded.
 
-    In this case the expected data is 4D.
+    Wildcards and lists should expected 4D data to be returned.
     """
     found_file = check_niimg(filename)
 
