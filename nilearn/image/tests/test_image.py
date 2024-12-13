@@ -1070,7 +1070,7 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
 
     clean_im = clean_img(nan_img, ensure_finite=True)
 
-    assert np.any(np.isfinite(get_data(clean_im))), True
+    assert np.any(np.isfinite(get_data(clean_im)))
 
     # test_clean_img_passing_nifti2image
     data_img_nifti2 = Nifti2Image(data, affine_eye)

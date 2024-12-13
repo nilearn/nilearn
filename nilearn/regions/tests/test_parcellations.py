@@ -183,7 +183,7 @@ def test_check_parameters_transform(test_image_2, rng):
 
     assert isinstance(imgs, (list, tuple))
     assert isinstance(confounds, (list, tuple))
-    assert single_subject, True
+    assert single_subject
 
     # confounds as pandas DataFrame
     imgs, confounds, single_subject = _check_parameters_transform(
@@ -316,7 +316,7 @@ def test_transform_3d_input_images(affine_eye):
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcels", [2, 4, 5])
 def test_parcellation_all_methods_with_surface(
-    surf_img, surf_mask, method, n_parcels
+    surf_img, surf_mask_1d, method, n_parcels
 ):
     """Test if all parcellation methods work on surface."""
     # TODO: remove after #4897 is merged
