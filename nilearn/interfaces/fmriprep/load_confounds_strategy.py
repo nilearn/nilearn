@@ -261,7 +261,7 @@ def _update_user_inputs(kwargs, default_parameters, check_parameters):
         # global_signal parameter is not in default strategy, but
         # applicable to every strategy other than compcor
         # global signal strategy will only be added if user has passed a
-        # recognisable value to the global_signal parameter
+        # recognizable value to the global_signal parameter
         if key == "global_signal":
             if isinstance(value, str):
                 parameters["strategy"] += ("global_signal",)
