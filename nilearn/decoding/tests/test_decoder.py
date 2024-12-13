@@ -24,8 +24,6 @@ import pytest
 import sklearn
 from nibabel import save
 from numpy.testing import assert_array_almost_equal
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
@@ -53,6 +51,7 @@ from nilearn._utils.param_validation import (
     _get_mask_extent,
     check_feature_screening,
 )
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
     Decoder,
@@ -1175,8 +1174,7 @@ def test_decoder_tags_classification():
     model = Decoder()
     # TODO
     # remove if block when bumping sklearn_version to > 1.5
-    ver = parse(sklearn_version)
-    if ver.release[1] < 6:
+    if SKLEARN_LT_1_6:
         assert model.__sklearn_tags__()["require_y"] is True
     else:
         assert model.__sklearn_tags__().target_tags.required is True
@@ -1186,8 +1184,7 @@ def test_decoder_tags_regression():
     """Check value returned by _more_tags."""
     model = DecoderRegressor()
     # remove if block when bumping sklearn_version to > 1.5
-    ver = parse(sklearn_version)
-    if ver.release[1] < 6:
+    if SKLEARN_LT_1_6:
         assert model.__sklearn_tags__()["multioutput"] is True
     else:
         assert model.__sklearn_tags__().target_tags.multi_output is True
