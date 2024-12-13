@@ -17,6 +17,14 @@
 .. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8397156.svg
     :target: https://doi.org/10.5281/zenodo.8397156
 
+.. image:: https://img.shields.io/badge/bluesky-Follow_nilearn-blue?logo=bluesky
+    :target: https://bsky.app/profile/nilearn.bsky.social
+    :alt: Bluesky
+
+.. image:: https://img.shields.io/youtube/channel/subscribers/UCU6BMAi2zOhNFnDkbdevmPw
+    :target: https://www.youtube.com/@nilearnevents5116
+    :alt: YouTube Channel Subscribers
+
 .. image:: https://img.shields.io/twitter/follow/nilearn.svg
     :target: https://x.com/nilearn
     :alt: Twitter
