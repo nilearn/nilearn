@@ -231,7 +231,6 @@ max-complexity = 25
 "nilearn/{mass_univariate}/*" = ["B028"]
 "nilearn/{plotting}/*" = ["B028"]
 "nilearn/{regions}/*" = ["B028"]
-"nilearn/{reporting}/*" = ["B028"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
