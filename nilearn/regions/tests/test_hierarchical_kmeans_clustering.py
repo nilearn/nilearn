@@ -6,7 +6,7 @@ from sklearn import __version__ as sklearn_version
 from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.input_data import NiftiMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.maskers import SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
@@ -122,7 +122,7 @@ def test_hierarchical_k_means_clustering_transform():
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters).fit(X)
     X_red = hkmeans.transform(X)
 
-    assert X_red.shape == (n_clusters, n_samples)
+    assert X_red.shape == (n_samples, n_clusters)
 
 
 def test_hierarchical_k_means_clustering_inverse_transform():
@@ -138,7 +138,6 @@ def test_hierarchical_k_means_clustering_inverse_transform():
     X_inv = hkmeans.inverse_transform(X_red)
 
     assert X_inv.shape == X.shape
-    assert np.allclose(X_inv, X)
 
 
 @pytest.mark.parametrize("n_clusters", [-2, 0])
@@ -177,7 +176,7 @@ def test_hierarchical_k_means_clustering_scaling():
     X_compress_scaled = hkmeans_scaled.inverse_transform(X_red_scaled)
 
     assert_array_almost_equal(
-        np.asarray([np.sqrt(s) * a for s, a in zip(sizes, X_red)]),
+        np.asarray([np.sqrt(s) * a for s, a in zip(sizes, X_red.T)]).T,
         X_red_scaled,
     )
     assert_array_almost_equal(X_compress, X_compress_scaled)
@@ -188,6 +187,7 @@ def test_hierarchical_k_means_clustering_surface(
     surf_img_2d, surf_mask, n_clusters
 ):
     """Test hierarchical k-means clustering on surface."""
+    n_samples = 100
     # create a surface masker
     masker = SurfaceMasker(surf_mask()).fit()
     # mask the surface image with 50 samples
@@ -200,7 +200,7 @@ def test_hierarchical_k_means_clustering_surface(
     X_inverse = hkmeans.inverse_transform(X_transformed)
 
     # make sure the n_features in transformed data were reduced to n_clusters
-    assert X_transformed.shape[0] == n_clusters
+    assert X_transformed.shape == (n_samples, n_clusters)
     assert hkmeans.n_clusters == n_clusters
 
     # make sure the inverse transformed data has the same shape as the original

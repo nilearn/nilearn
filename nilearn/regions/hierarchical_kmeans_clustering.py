@@ -230,7 +230,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : ndarray, shape = [n_features, n_samples]
+        X : ndarray, shape = [n_samples, n_features]
             Training data.
         y : Ignored
 
@@ -238,9 +238,16 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         -------
         self
         """
+        # Transpose the data so that we can cluster features (voxels)
+        # and input them as samples to the sklearn's clustering algorithm
+        # This is because sklearn's clustering algorithm does clustering
+        # on samples and not on features
         X = check_array(
             X, ensure_min_features=2, ensure_min_samples=2, estimator=self
         )
+        X = X.T
+        # n_features for the sklearn's clustering algorithm would be the
+        # number of samples in the input data
         n_features = X.shape[1]
 
         if self.n_clusters <= 0:
@@ -281,15 +288,19 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : ndarray, shape = [n_features, n_samples]
+        X : ndarray, shape = [n_samples, n_features]
             Data to transform with the fitted clustering.
 
         Returns
         -------
-        X_red : ndarray, shape = [n_clusters, n_samples]
+        X_red : ndarray, shape = [n_samples, n_clusters]
             Data reduced with agglomerated signal for each cluster
         """
         check_is_fitted(self, "labels_")
+
+        # Transpose the data so that we can cluster features (voxels)
+        # and input them as samples to the sklearn's clustering algorithm
+        X = X.T
         unique_labels = np.arange(self.n_clusters)
 
         mean_cluster = np.empty(
@@ -303,6 +314,9 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         if self.scaling:
             X_red = X_red * np.sqrt(self.sizes_[:, np.newaxis])
 
+        # Transpose the data back to the original shape i.e.
+        # (n_samples, n_clusters)
+        X_red = X_red.T
         return X_red
 
     def inverse_transform(self, X_red):
@@ -311,18 +325,19 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X_red : ndarray , shape = [n_clusters, n_samples]
+        X_red : ndarray , shape = [n_samples, n_clusters]
             Data reduced with agglomerated signal for each cluster
 
         Returns
         -------
-        X_inv : ndarray, shape = [n_features, n_samples]
+        X_inv : ndarray, shape = [n_samples, n_features]
             Data reduced expanded to the original feature space
         """
         check_is_fitted(self, "labels_")
+        X_red = X_red.T
         inverse = self.labels_
         if self.scaling:
             X_red = X_red / np.sqrt(self.sizes_[:, np.newaxis])
         X_inv = X_red[inverse, ...]
-
+        X_inv = X_inv.T
         return X_inv
