@@ -315,6 +315,8 @@ class RegionExtractor(NiftiMapsMasker):
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
+        .. versionadded:: 0.11.1
+
     %(extractor)s
     %(smoothing_fwhm)s
         Use this parameter to smooth an image
