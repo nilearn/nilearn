@@ -301,6 +301,8 @@
 
 .. _Tharun K: https://github.com/tharun634
 
+.. _Thiti Premrudeepreechacharn: https://tpremrud.github.io/
+
 .. _Thomas Bazeille: https://github.com/thomasbazeille
 
 .. _Tom Vanasse: https://github.com/tvanasse

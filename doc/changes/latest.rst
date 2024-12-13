@@ -19,5 +19,7 @@ Enhancements
 
 - :bdg-dark:`Code` Implement :obj:`~nilearn.maskers.SurfaceMapsMasker` class to extract signals from surface maps (:gh:`4830` by `Himanshu Aggarwal`_).
 
+- :bdg-primary:`Doc` Add a :ref:`page <meaning_difference>` in the user guide to explain GLM terminology across software (Nilearn, SPM, FSL) regarding the meaning of 'levels'  (:gh:`4287` by `Thiti Premrudeepreechacharn`_).
+
 Changes
 -------
