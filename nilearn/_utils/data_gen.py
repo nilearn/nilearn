@@ -126,6 +126,8 @@ def generate_regions_ts(
         If True, creates negative and positive valued regions randomly; all
         generated region values are positive otherwise.
 
+        .. versionadded:: 0.11.1
+
     Returns
     -------
     regions : :obj:`numpy.ndarray`
@@ -200,6 +202,8 @@ def generate_maps(
     negative_regions : :obj:`bool`, default=False
         If True, creates negative and positive valued regions randomly; all
         generated region values are positive otherwise.
+
+        .. versionadded:: 0.11.1
 
     Returns
     -------
