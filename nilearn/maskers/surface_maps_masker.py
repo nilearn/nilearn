@@ -27,70 +27,70 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 
-        .. versionadded:: 0.11.1
+    .. versionadded:: 0.11.1
 
     Parameters
     ----------
-        maps_img : :obj:`~nilearn.surface.SurfaceImage`
-            Set of maps that define the regions. representative time course \
-            per map is extracted using least square regression. The data for \
-            each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
+    maps_img : :obj:`~nilearn.surface.SurfaceImage`
+        Set of maps that define the regions. representative time course \
+        per map is extracted using least square regression. The data for \
+        each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
-        mask_img : :obj:`~nilearn.surface.SurfaceImage`, optional, default=None
-            Mask to apply to regions before extracting signals. Defines the \
-            overall area of the brain to consider. The data for each \
-            hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
+    mask_img : :obj:`~nilearn.surface.SurfaceImage`, optional, default=None
+        Mask to apply to regions before extracting signals. Defines the \
+        overall area of the brain to consider. The data for each \
+        hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
-        allow_overlap : :obj:`bool`, default=True
-            If False, an error is raised if the maps overlaps (ie at least two
-            maps have a non-zero value for the same voxel).
+    allow_overlap : :obj:`bool`, default=True
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel).
 
-        %(smoothing_fwhm)s
-            This parameter is not implemented yet.
+    %(smoothing_fwhm)s
+        This parameter is not implemented yet.
 
-        %(standardize_maskers)s
+    %(standardize_maskers)s
 
-        %(standardize_confounds)s
+    %(standardize_confounds)s
 
-        %(detrend)s
+    %(detrend)s
 
-        high_variance_confounds : :obj:`bool`, default=False
-            If True, high variance confounds are computed on provided image \
-            with :func:`nilearn.image.high_variance_confounds` and default \
-            parameters and regressed out.
+    high_variance_confounds : :obj:`bool`, default=False
+        If True, high variance confounds are computed on provided image \
+        with :func:`nilearn.image.high_variance_confounds` and default \
+        parameters and regressed out.
 
-        %(low_pass)s
+    %(low_pass)s
 
-        %(high_pass)s
+    %(high_pass)s
 
-        %(t_r)s
+    %(t_r)s
 
-        %(memory)s
+    %(memory)s
 
-        %(memory_level1)s
+    %(memory_level1)s
 
-        %(verbose0)s
+    %(verbose0)s
 
-        reports : :obj:`bool`, default=True
-            If set to True, data is saved in order to produce a report.
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
 
-        %(cmap)s
-            default="inferno"
-            Only relevant for the report figures.
+    %(cmap)s
+        default="inferno"
+        Only relevant for the report figures.
 
-        clean_args : :obj:`dict` or None, default=None
-            Keyword arguments to be passed
-            to :func:`nilearn.signal.clean`
-            called within the masker.
+    clean_args : :obj:`dict` or None, default=None
+        Keyword arguments to be passed
+        to :func:`nilearn.signal.clean`
+        called within the masker.
 
     Attributes
     ----------
-        maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
-            The same as the input `maps_img`, kept solely for consistency
-            across maskers.
+    maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
+        The same as the input `maps_img`, kept solely for consistency
+        across maskers.
 
-        n_elements_ : :obj:`int`
-            The number of regions in the maps image.
+    n_elements_ : :obj:`int`
+        The number of regions in the maps image.
 
     See Also
     --------
