@@ -440,7 +440,7 @@ def test_clean_detrending():
     y_orig = y.copy()
 
     y_clean = clean(y, ensure_finite=True)
-    assert np.any(np.isfinite(y_clean)), True
+    assert np.any(np.isfinite(y_clean))
     # clean should not modify inputs
     # using assert_almost_equal instead of array_equal due to NaNs
     assert_almost_equal(y_orig, y, decimal=13)

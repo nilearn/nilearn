@@ -183,7 +183,7 @@ def test_check_parameters_transform(test_image_2, rng):
 
     assert isinstance(imgs, (list, tuple))
     assert isinstance(confounds, (list, tuple))
-    assert single_subject, True
+    assert single_subject
 
     # confounds as pandas DataFrame
     imgs, confounds, single_subject = _check_parameters_transform(
