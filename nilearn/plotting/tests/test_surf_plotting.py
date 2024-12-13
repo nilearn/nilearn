@@ -1412,7 +1412,13 @@ def test_plot_img_on_surf_surf_mesh(img_3d_mni):
         views=["lateral"],
         surf_mesh=fetch_surf_fsaverage(),
     )
-    # regression test for: https://github.com/nilearn/nilearn/issues/4900
+
+
+def test_plot_img_on_surf_surf_mesh_low_alpha(img_3d_mni):
+    """Check that low alpha value do not cause floating point error.
+
+    regression test for: https://github.com/nilearn/nilearn/issues/4900
+    """
     plot_img_on_surf(img_3d_mni, threshold=3, alpha=0.1)
 
 

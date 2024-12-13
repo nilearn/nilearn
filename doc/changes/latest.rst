@@ -10,6 +10,9 @@ Fixes
 
 - :bdg-dark:`Code` Allow using ``confounds`` and ``sample_mask`` via ``.fit_transform`` in :obj:`~nilearn.maskers.SurfaceLabelsMasker` (:gh:`4926` by `Himanshu Aggarwal`_).
 
+- :bdg-dark:`Code` Ensure that low alpha values in :func:`~nilearn.plotting.plot_img_on_surf`` do not cause color values to be above 1 (:gh:`4906` by `Paul Bogdan`_).
+
+
 Enhancements
 ------------
 
