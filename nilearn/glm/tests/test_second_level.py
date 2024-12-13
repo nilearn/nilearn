@@ -12,9 +12,8 @@ from numpy.testing import (
     assert_array_equal,
 )
 from scipy import stats
-from sklearn import __version__ as sklearn_version
 
-from nilearn._utils import compare_version, testing
+from nilearn._utils import testing
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
@@ -51,14 +50,9 @@ extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_transformers_unfitted",
     "check_transformer_n_iter",
-    "check_estimator_sparse_array",
-    "check_estimator_sparse_matrix",
     "check_estimators_unfitted",
     "check_parameters_default_constructible",
 ]
-# TODO remove when dropping support for sklearn_version < 1.5.0
-if compare_version(sklearn_version, "<", "1.5.0"):
-    extra_valid_checks.append("check_estimator_sparse_data")
 
 
 @pytest.mark.parametrize(
@@ -1513,7 +1507,10 @@ def test_second_level_input_as_surface_no_design_matrix(surf_img_1d):
         model.fit(second_level_input, design_matrix=None)
 
 
-def test_second_level_input_as_surface_image_with_mask(surf_img_1d, surf_mask):
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
+def test_second_level_input_as_surface_image_with_mask(
+    surf_img_1d, surf_mask_dim, surf_mask_1d, surf_mask_2d
+):
     """Test slm with surface mask and a list surface images as input."""
     n_subjects = 5
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
@@ -1521,8 +1518,9 @@ def test_second_level_input_as_surface_image_with_mask(surf_img_1d, surf_mask):
     design_matrix = pd.DataFrame(
         [1] * len(second_level_input), columns=["intercept"]
     )
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
 
-    model = SecondLevelModel(mask_img=surf_mask())
+    model = SecondLevelModel(mask_img=surf_mask)
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
