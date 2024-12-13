@@ -106,10 +106,15 @@ copyright = "The nilearn developers"
 # built documents.
 
 # Latest release version
-latest_release = re.match(
-    r"v?([0-9]+.[0-9]+.[0-9]+).*",
-    os.popen("git describe --tags").read().strip(),
-).groups()[0]
+try:
+    latest_release = re.match(
+        r"v?([0-9]+.[0-9]+.[0-9]+).*",
+        os.popen("git describe --tags").read().strip(),
+    ).groups()[0]
+except AttributeError:
+    # This may fail in case the git tags were not fetched.
+    # So let's have a back up.
+    latest_release = "0.11.0"
 
 # The full current version, including alpha/beta/rc tags.
 current_version = __version__
@@ -184,6 +189,9 @@ linkcheck_ignore = [
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
     "http://brainomics.cea.fr/localizer/",
     "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    # ignore nilearn github issues mostly for the sake of speed
+    # given that there many of those in our changelog
+    r"https://github.com/nilearn/nilearn/issues/.*",
     # those are needed because figure cannot take sphinx gallery reference
     # as target
     r"../auto_examples/.*html",
@@ -200,6 +208,8 @@ linkcheck_ignore = [
     r"https://doi.org/10.1152/.*",
     r"https://doi.org/10.1162/.*",
     r"https://doi.org/10.3389/.*",
+    # do not check download links for OSF
+    r"https://osf.io/.*/download",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
@@ -207,6 +217,9 @@ linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
 linkcheck_allow_unauthorized = True
 
 linkcheck_report_timeouts_as_broken = False
+
+# double default rate_limit_timeout
+linkcheck_rate_limit_timeout = 600
 
 # -- Options for HTML output -------------------------------------------------
 
