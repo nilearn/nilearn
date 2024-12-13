@@ -236,7 +236,7 @@ def _check_input_as_surface_images(second_level_input, none_design_matrix):
         )
 
     if isinstance(second_level_input, list):
-        for _, img in enumerate(second_level_input, start=1):
+        for img in second_level_input[1:]:
             check_same_n_vertices(second_level_input[0].mesh, img.mesh)
         if none_design_matrix:
             raise ValueError(
