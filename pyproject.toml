@@ -227,7 +227,6 @@ max-complexity = 25
 "nilearn/{decoding}/*" = ["B028"]
 "nilearn/{glm}/*" = ["B028"]
 "nilearn/{image}/*" = ["B028"]
-"nilearn/{interfaces}/*" = ["B028"]
 "nilearn/{maskers}/*" = ["B028"]
 "nilearn/{mass_univariate}/*" = ["B028"]
 "nilearn/{plotting}/*" = ["B028"]
