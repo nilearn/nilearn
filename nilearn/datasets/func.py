@@ -899,6 +899,7 @@ def fetch_localizer_contrasts(
 
 
 def _check_inputs_fetch_localizer_contrasts(contrasts):
+    """Check that requested contrast name exists."""
     if isinstance(contrasts, str):
         raise ValueError(
             "Contrasts should be a list of strings, but "
