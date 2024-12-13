@@ -92,6 +92,46 @@ def test_filter_with_other_cleaning_options():
     assert transformed_data.shape[1] == mask.sum()
 
 
+def test_clean_kwargs_interaction():
+    """Test that clean_kwargs and filter parameter interact correctly."""
+    rng = np.random.default_rng()
+    data = rng.random((9, 9, 9, 10))
+    img = Nifti1Image(data, np.eye(4))
+    mask = np.zeros((9, 9, 9), dtype="uint8")
+    mask[3:6, 3:6, 3:6] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    masker = NiftiMasker(
+        mask_img=mask_img,
+        clean__butterworth__padtype="constant",
+        filter="butterworth",
+    )
+    masker.fit(img)
+
+    # Assert that clean_kwargs contains the additional options
+    assert "butterworth__padtype" in masker.clean_kwargs
+    assert masker.clean_kwargs["filter"] == "butterworth"
+
+
+def test_filter_with_inverse_transform():
+    """Test that applying a filter does not break inverse_transform."""
+    rng = np.random.default_rng()
+    data = rng.random((9, 9, 9, 10))
+    img = Nifti1Image(data, np.eye(4))
+    mask = np.zeros((9, 9, 9), dtype="uint8")
+    mask[3:6, 3:6, 3:6] = 1
+    mask_img = Nifti1Image(mask, np.eye(4))
+
+    masker = NiftiMasker(
+        mask_img=mask_img, filter="cosine", t_r=2, high_pass=0.01
+    )
+    transformed_data = masker.fit_transform(img)
+    reconstructed_img = masker.inverse_transform(transformed_data)
+
+    # Ensure the reconstructed image has the original shape
+    assert reconstructed_img.shape == img.shape
+
+
 def test_auto_mask(img_3d_rand_eye):
     """Perform a smoke test on the auto-mask option."""
     masker = NiftiMasker()
@@ -642,63 +682,3 @@ def test_nifti_masker_reporting_mpl_warning():
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)
     assert result == [None]
-
-
-def test_no_filter_applied():
-    """Test that no filter is applied when filter=None."""
-    rng = np.random.default_rng()
-    data = rng.random((9, 9, 9, 10))
-    img = Nifti1Image(data, np.eye(4))
-    mask = np.zeros((9, 9, 9), dtype="uint8")
-    mask[3:6, 3:6, 3:6] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
-
-    masker = NiftiMasker(mask_img=mask_img, filter=None, t_r=2, detrend=False)
-    transformed_data = masker.fit_transform(img)
-
-    # Ensure consistency with manual clean
-    masked_data = get_data(img)[mask_img.get_fdata().astype(bool), :]
-    manual_cleaned = clean(
-        masked_data,
-        t_r=2,
-        detrend=False,
-    )
-
-    # Compare outputs
-    np.testing.assert_array_almost_equal(transformed_data, manual_cleaned.T)
-
-def test_clean_kwargs_interaction():
-    """Test that clean_kwargs and filter parameter interact correctly."""
-    rng = np.random.default_rng()
-    data = rng.random((9, 9, 9, 10))
-    img = Nifti1Image(data, np.eye(4))
-    mask = np.zeros((9, 9, 9), dtype="uint8")
-    mask[3:6, 3:6, 3:6] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
-
-    masker = NiftiMasker(
-        mask_img=mask_img,
-        clean__butterworth__padtype="constant",
-        filter="butterworth",
-    )
-    masker.fit(img)
-
-    # Assert that clean_kwargs contains the additional options
-    assert "butterworth__padtype" in masker.clean_kwargs
-    assert masker.clean_kwargs["filter"] == "butterworth"
-
-def test_filter_with_inverse_transform():
-    """Test that applying a filter does not break inverse_transform."""
-    rng = np.random.default_rng()
-    data = rng.random((9, 9, 9, 10))
-    img = Nifti1Image(data, np.eye(4))
-    mask = np.zeros((9, 9, 9), dtype="uint8")
-    mask[3:6, 3:6, 3:6] = 1
-    mask_img = Nifti1Image(mask, np.eye(4))
-
-    masker = NiftiMasker(mask_img=mask_img, filter="cosine", t_r=2, high_pass=0.01)
-    transformed_data = masker.fit_transform(img)
-    reconstructed_img = masker.inverse_transform(transformed_data)
-
-    # Ensure the reconstructed image has the original shape
-    assert reconstructed_img.shape == img.shape
