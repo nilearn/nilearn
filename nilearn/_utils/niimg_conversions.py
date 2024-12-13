@@ -281,7 +281,6 @@ def check_niimg(
             expanded_niimg = str(Path(niimg).expanduser())
             # Ascending sorting
             filenames = sorted(glob.glob(expanded_niimg))
-            # filenames = sorted(glob.glob(os.path.expanduser(niimg)))
 
             # processing filenames matching globbing expression
             if len(filenames) >= 1 and glob.has_magic(niimg):
