@@ -399,6 +399,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
+    """Class from which all surface maskers should inherit."""
+
     def _more_tags(self):
         """Return estimator tags.
 
