@@ -1324,10 +1324,21 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        tags = super()._more_tags()
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
         if SKLEARN_LT_1_6:
-            return tags
+            from nilearn._utils.tags import tags
+
+            return tags(require_y=True, niimg_like=True, surf_img=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
         tags.estimator_type = "classifier"
+        tags.target_tags.required = True
+        tags.input_tags = InputTags(niimg_like=True, surf_img=True)
         return tags
 
 
@@ -1506,13 +1517,16 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         # bumping sklearn_version > 1.5
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         if SKLEARN_LT_1_6:
-            tags = super()._more_tags()
-            tags["multioutput"] = True
-            return tags
+            from nilearn._utils.tags import tags
+
+            return tags(multioutput=True, niimg_like=True, surf_img=True)
+
+        from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
         tags.estimator_type = "regressor"
         tags.target_tags.required = True
+        tags.input_tags = InputTags(niimg_like=True, surf_img=True)
         return tags
 
 
