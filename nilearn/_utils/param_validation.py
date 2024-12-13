@@ -8,7 +8,7 @@ from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
 from nilearn._utils import logger
 
-from .niimg import _get_data
+from nilearn._utils.niimg import _get_data
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.0

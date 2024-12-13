@@ -17,8 +17,8 @@ from nibabel import Nifti1Image, Nifti1Pair, load, spatialimages
 from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
-from .. import signal
-from .._utils import (
+from nilearn import signal
+from nilearn._utils import (
     as_ndarray,
     check_niimg,
     check_niimg_3d,
@@ -27,19 +27,19 @@ from .._utils import (
     logger,
     repr_niimgs,
 )
-from .._utils.exceptions import DimensionError
-from .._utils.helpers import (
+from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.helpers import (
     check_copy_header,
     stringify_path,
 )
-from .._utils.niimg import _get_data, safe_get_data
-from .._utils.niimg_conversions import (
+from nilearn._utils.niimg import _get_data, safe_get_data
+from nilearn._utils.niimg_conversions import (
     _index_img,
     check_same_fov,
     iter_check_niimg,
 )
-from .._utils.param_validation import check_threshold
-from .._utils.path_finding import resolve_globbing
+from nilearn._utils.param_validation import check_threshold
+from nilearn._utils.path_finding import resolve_globbing
 
 
 def get_data(img):
