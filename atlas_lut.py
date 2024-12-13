@@ -22,7 +22,6 @@ from nilearn.datasets import (
     fetch_atlas_yeo_2011,
 )
 from nilearn.datasets.atlas import (
-    _generate_atlas_look_up_table,
     rgb_to_hex_lookup,
 )
 
@@ -49,7 +48,7 @@ def _check_look_up_table(lut, atlas):
 # %%
 print(fetch_atlas_destrieux_2009.__name__.upper())
 atlas = fetch_atlas_destrieux_2009()
-_check_look_up_table(atlas.labels, atlas.maps)
+_check_look_up_table(atlas.lut, atlas.maps)
 
 # %%
 # TODO do also 17 networks
@@ -78,64 +77,48 @@ _check_look_up_table(lut, atlas.thin_7)
 # TODO try all versions
 print(fetch_atlas_aal.__name__.upper())
 atlas = fetch_atlas_aal()
-lut = _generate_atlas_look_up_table(
-    fetch_atlas_aal, index=atlas.indices, name=atlas.labels
-)
-_check_look_up_table(lut, atlas.maps)
+_check_look_up_table(atlas.lut, atlas.maps)
 
 # %%
 # TODO with surface image
 print(fetch_atlas_surf_destrieux.__name__.upper())
 atlas = fetch_atlas_surf_destrieux()
-lut = _generate_atlas_look_up_table(
-    fetch_atlas_surf_destrieux, name=atlas.labels
-)
-_check_look_up_table(lut, atlas.map_left)
-_check_look_up_table(lut, atlas.map_right)
+_check_look_up_table(atlas.lut, atlas.map_left)
+_check_look_up_table(atlas.lut, atlas.map_right)
 
 # %%
 # TODO try all level_name
 print(fetch_atlas_talairach.__name__.upper())
 atlas = fetch_atlas_talairach(level_name="ba")
-lut = _generate_atlas_look_up_table(fetch_atlas_talairach, name=atlas.labels)
-_check_look_up_table(lut, atlas.maps)
+_check_look_up_table(atlas.lut, atlas.maps)
 
 
 # %%
 # TODO: try all n_rois and yeos
 print(fetch_atlas_schaefer_2018.__name__.upper())
 atlas = fetch_atlas_schaefer_2018()
-lut = _generate_atlas_look_up_table(
-    fetch_atlas_schaefer_2018, name=atlas.labels
-)
-_check_look_up_table(lut, atlas.maps)
+_check_look_up_table(atlas.lut, atlas.maps)
 
 
 # %%
 print(fetch_atlas_pauli_2017.__name__.upper())
 atlas = fetch_atlas_pauli_2017(version="det")
-lut = _generate_atlas_look_up_table(fetch_atlas_pauli_2017, name=atlas.labels)
-_check_look_up_table(lut, atlas.maps)
+_check_look_up_table(atlas.lut, atlas.maps)
 
 
 # %%
 print(fetch_atlas_harvard_oxford.__name__.upper())
 atlas = fetch_atlas_harvard_oxford(atlas_name="cort-maxprob-thr0-1mm")
-lut = _generate_atlas_look_up_table(fetch_atlas_pauli_2017, name=atlas.labels)
-_check_look_up_table(lut, atlas.maps)
+_check_look_up_table(atlas.lut, atlas.maps)
 
 #  %%
 print(fetch_atlas_juelich.__name__.upper())
 atlas = fetch_atlas_juelich(atlas_name="maxprob-thr50-2mm")
-lut = _generate_atlas_look_up_table(fetch_atlas_juelich, name=atlas.labels)
-_check_look_up_table(lut, atlas.maps)
+_check_look_up_table(atlas.lut, atlas.maps)
 
 
 # %%
 print(fetch_atlas_basc_multiscale_2015.__name__.upper())
 resolution = 444
 atlas = fetch_atlas_basc_multiscale_2015(resolution=resolution)
-lut = _generate_atlas_look_up_table(
-    fetch_atlas_basc_multiscale_2015, name=resolution
-)
-_check_look_up_table(lut, atlas.maps)
+_check_look_up_table(atlas.lut, atlas.maps)
