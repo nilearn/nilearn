@@ -215,6 +215,9 @@ linkcheck_allow_unauthorized = True
 
 linkcheck_report_timeouts_as_broken = False
 
+# double default rate_limit_timeout
+linkcheck_rate_limit_timeout = 600
+
 # -- Options for HTML output -------------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
