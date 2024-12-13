@@ -44,7 +44,7 @@ def _estimator_fit(data, estimator, method=None):
 
     """
     estimator = clone(estimator)
-    if method == "rena" or method == "hierarchical_kmeans":
+    if method in ["rena", "hierarchical_kmeans"]:
         estimator.fit(data)
     # transpose data for KMeans, AgglomerativeClustering because
     # they cluster first dimension of data (samples) but we want to cluster
@@ -385,7 +385,7 @@ class Parcellations(_MultiPCA):
             )
             # data ou data.T
             labels = self._cache(_estimator_fit, func_memory_level=1)(
-                components.T, hkmeans
+                components.T, hkmeans, self.method
             )
 
         elif self.method == "rena":
