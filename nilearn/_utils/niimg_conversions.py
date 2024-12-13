@@ -273,7 +273,6 @@ def check_niimg(
 
     niimg = stringify_path(niimg)
 
-
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
             # Expand user path
