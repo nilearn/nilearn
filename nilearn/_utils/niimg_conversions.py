@@ -273,7 +273,6 @@ def check_niimg(
 
     niimg = stringify_path(niimg)
 
-    # path_expanded = Path(niimg).expanduser() != Path(niimg)
 
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
