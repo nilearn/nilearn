@@ -716,7 +716,8 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             self.n_clusters = n_features
             warnings.warn(
                 "n_clusters should be at most the number of features. "
-                f"Taking n_clusters = {n_features} instead."
+                f"Taking n_clusters = {n_features} instead.",
+                stacklevel=2,
             )
 
         n_components, labels = self.memory_.cache(

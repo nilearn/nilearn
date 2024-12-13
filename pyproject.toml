@@ -150,7 +150,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
 ignore = [
     "ARG005",
-    "B028",
     "B904",
     "D105",
     "D205",
@@ -221,6 +220,16 @@ max-complexity = 25
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
 "**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
+"nilearn/signal.py" = ["B028"]
+"nilearn/{_utils}/*" = ["B028"]
+"nilearn/{connectome}/*" = ["B028"]
+"nilearn/{datasets}/*" = ["B028"]
+"nilearn/{decoding}/*" = ["B028"]
+"nilearn/{glm}/*" = ["B028"]
+"nilearn/{image}/*" = ["B028"]
+"nilearn/{maskers}/*" = ["B028"]
+"nilearn/{mass_univariate}/*" = ["B028"]
+"nilearn/{plotting}/*" = ["B028"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"

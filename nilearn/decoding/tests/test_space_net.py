@@ -517,17 +517,19 @@ def test_targets_in_y_space_net_regressor():
 # ------------------------ surface tests ------------------------------------ #
 
 
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize(
     "model", [BaseSpaceNet, SpaceNetRegressor, SpaceNetClassifier]
 )
 def test_space_net_not_implemented_surface_objects(
-    surf_mask, surf_img_2d, model
+    surf_mask_dim, surf_mask_1d, surf_mask_2d, surf_img_2d, model
 ):
     """Raise NotImplementedError when space net is fit on surface objects."""
     y = np.ones((5,))
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
 
     with pytest.raises(NotImplementedError):
-        model(mask=surf_mask()).fit(surf_img_2d(5), y)
+        model(mask=surf_mask).fit(surf_img_2d(5), y)
 
     with pytest.raises(NotImplementedError):
         model().fit(surf_img_2d(5), y)

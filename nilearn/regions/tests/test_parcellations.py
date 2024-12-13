@@ -183,7 +183,7 @@ def test_check_parameters_transform(test_image_2, rng):
 
     assert isinstance(imgs, (list, tuple))
     assert isinstance(confounds, (list, tuple))
-    assert single_subject, True
+    assert single_subject
 
     # confounds as pandas DataFrame
     imgs, confounds, single_subject = _check_parameters_transform(
@@ -316,16 +316,16 @@ def test_transform_3d_input_images(affine_eye):
 @pytest.mark.parametrize("mask_as", ["surface_image", "surface_masker", None])
 @pytest.mark.parametrize("method", METHODS)
 def test_parcellation_not_implemented_with_surface(
-    surf_img_2d, surf_mask, mask_as, method, n_parcels=2
+    surf_img_2d, surf_mask_1d, mask_as, method, n_parcels=2
 ):
     """Raise NotImplementedError for surface data."""
     # create a surface masker
-    masker = SurfaceMasker(surf_mask()).fit()
+    masker = SurfaceMasker(surf_mask_1d).fit()
     with pytest.raises(NotImplementedError):
-        # if mask_as is surface_image, directly pass surf_mask
+        # if mask_as is surface_image, directly pass surf_mask_1d
         if mask_as == "surface_image":
             parcellate = Parcellations(
-                method=method, n_parcels=n_parcels, mask=surf_mask()
+                method=method, n_parcels=n_parcels, mask=surf_mask_1d
             )
         # if mask_as is surface_masker, pass masker
         elif mask_as == "surface_masker":
