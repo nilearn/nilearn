@@ -220,12 +220,12 @@ def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
 
     img = SurfaceImage(mesh, img_data)
     masker = SurfaceMasker().fit(img)
-    masked_img = masker.transform(img)
+    signals = masker.transform(img)
 
     # make sure none of the data has been removed
-    assert masked_img.shape == (n_timepoints, img.shape[0])
-    assert np.array_equal(masked_img[0], [1, 2, 3, 4, 10, 20, 30, 40, 50])
-    unmasked_img = masker.inverse_transform(masked_img)
+    assert signals.shape == (n_timepoints, img.shape[0])
+    assert np.array_equal(signals[0], [1, 2, 3, 4, 10, 20, 30, 40, 50])
+    unmasked_img = masker.inverse_transform(signals)
     assert_polydata_equal(img.data, unmasked_img.data)
 
 
@@ -252,16 +252,16 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
     mask = SurfaceImage(mesh, mask_data)
 
     masker = SurfaceMasker(mask).fit(img)
-    masked_img = masker.transform(img)
+    signals = masker.transform(img)
 
     # check mask shape is as expected
-    assert masked_img.shape == (n_timepoints, masker.output_dimension_)
+    assert signals.shape == (n_timepoints, masker.output_dimension_)
 
     # check the data for first seven vertices is as expected
-    assert np.array_equal(masked_img.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])
+    assert np.array_equal(signals.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])
 
     # check whether inverse transform does not change the img
-    unmasked_img = masker.inverse_transform(masked_img)
+    unmasked_img = masker.inverse_transform(signals)
     # recreate data that we expect after unmasking
     expected_data = {k: v.copy() for (k, v) in img.data.parts.items()}
     for v in expected_data.values():
