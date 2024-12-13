@@ -259,8 +259,8 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         if self.n_clusters > n_features:
             self.n_clusters = n_features
             warnings.warn(
-                "'n_clusters' should be at most the number of features.\n"
-                f"Taking 'n_clusters = {n_features}' instead.",
+                "n_clusters should be at most the number of "
+                f"features. Taking n_clusters = {n_features} instead.",
                 stacklevel=2,
             )
         self.labels_ = hierarchical_k_means(
