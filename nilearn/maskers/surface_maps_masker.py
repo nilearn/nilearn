@@ -7,11 +7,10 @@ import warnings
 import numpy as np
 from joblib import Memory
 from scipy import linalg
-from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
 from nilearn._utils import fill_doc, logger
-from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn.maskers._utils import (
     check_same_n_vertices,
@@ -19,11 +18,12 @@ from nilearn.maskers._utils import (
     concat_extract_surface_data_parts,
     concatenate_surface_images,
 )
+from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface import SurfaceImage
 
 
 @fill_doc
-class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class SurfaceMapsMasker(_BaseSurfaceMasker):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 
