@@ -242,4 +242,4 @@ max-branches = 27
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 110
+max-statements = 108
