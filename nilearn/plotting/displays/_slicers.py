@@ -1,6 +1,7 @@
 import collections
 import contextlib
 import numbers
+from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -46,7 +47,7 @@ class BaseSlicer:
     """
 
     # This actually encodes the figsize for only one axe
-    _default_figsize = [2.2, 2.6]
+    _default_figsize: ClassVar[tuple[float, float]] = (2.2, 2.6)
     _axes_class = CutAxes
 
     def __init__(
@@ -898,9 +899,9 @@ class OrthoSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed = "yxz"
+    _cut_displayed: ClassVar[str] = "yxz"
     _axes_class = CutAxes
-    _default_figsize = [2.2, 3.5]
+    _default_figsize: ClassVar[tuple[float, float]] = (2.2, 3.5)
 
     @classmethod
     @fill_doc  # the fill_doc decorator must be last applied
@@ -1132,9 +1133,9 @@ class TiledSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed = "yxz"
-    _axes_class = CutAxes
-    _default_figsize = [2.0, 7.6]
+    _cut_displayed: ClassVar[str] = "yxz"
+    _axes_class = CutAxes              
+    _default_figsize: ClassVar[tuple[float, float]] = (2.0, 7.6)
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
@@ -1648,8 +1649,9 @@ class XSlicer(BaseStackedSlicer):
 
     """
 
-    _direction = "x"
-    _default_figsize = [2.6, 2.3]
+    _direction: ClassVar[str] = "x"
+    _default_figsize: ClassVar[tuple[float, float]] = (2.6, 2.3)
+
 
 
 class YSlicer(BaseStackedSlicer):
@@ -1687,8 +1689,8 @@ class YSlicer(BaseStackedSlicer):
 
     """
 
-    _direction = "y"
-    _default_figsize = [2.2, 3.0]
+    _direction: ClassVar[str] = "y"
+    _default_figsize: ClassVar[tuple[float, float]] = (2.2, 3.0)
 
 
 class ZSlicer(BaseStackedSlicer):
@@ -1726,8 +1728,8 @@ class ZSlicer(BaseStackedSlicer):
 
     """
 
-    _direction = "z"
-    _default_figsize = [2.2, 3.2]
+    _direction: ClassVar[str] = "z"
+    _default_figsize: ClassVar[tuple[float, float]] = (2.2, 3.2)
 
 
 class XZSlicer(OrthoSlicer):
@@ -1841,8 +1843,8 @@ class YZSlicer(OrthoSlicer):
 
     """
 
-    _cut_displayed = "yz"
-    _default_figsize = [2.2, 3.0]
+    _cut_displayed: ClassVar[str] = "yz"
+    _default_figsize: ClassVar[tuple[float, float]] = (2.2, 3.0)
 
 
 class MosaicSlicer(BaseSlicer):
@@ -1883,10 +1885,9 @@ class MosaicSlicer(BaseSlicer):
     and arranged in a 2x2 grid.
 
     """
-
-    _cut_displayed = "yxz"
-    _axes_class = CutAxes
-    _default_figsize = [4.0, 5.0]
+    _cut_displayed: ClassVar[str] = "yxz"
+    _axes_class: ClassVar[CutAxes] = CutAxes
+    _default_figsize: ClassVar[tuple[float, float]] = (4.0, 5.0)
 
     @classmethod
     def find_cut_coords(

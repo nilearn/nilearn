@@ -12,6 +12,7 @@ For example: TV-L1, Graph-Net, etc
 
 import collections
 import time
+from typing import ClassVar
 import warnings
 from functools import partial
 
@@ -705,8 +706,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         Standard deviation of X across samples
     """
 
-    SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
-    SUPPORTED_LOSSES = ["mse", "logistic"]
+    SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
+    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
 
     def __init__(
         self,
