@@ -131,6 +131,7 @@ for hemi in hemispheres_to_analyze:
         threshold=0.1,
         bg_map=fsaverage_data,
         title=f"Accuracy map, {hemi} hemisphere",
+        cmap="bwr",
     )
 show()
 

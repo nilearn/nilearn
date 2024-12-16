@@ -20,8 +20,14 @@ of functional studies are proposed:
 (2) percentage of voxels belonging to each of the AVOI intersected by a sphere centered by a set of coordinates, and
 (3) percentage of voxels belonging to each of the AVOI intersected by an activated cluster.
 
-For the AAL version SPM 5, 8, and 12, the map image (data.maps) contains 117 unique integer values that define the parcellation. However, these values are not consecutive integers from 0 to 116, as is usually the case in Nilearn. Therefore, they should not be interpreted as indices for the list of label names.
-In contrast, the total number of parcellations in AAL 3v2 is 167. The 3v2 atlas contains 171 unique integer values that define the parcellation. These values are consecutive integers from 0 to 170, except for the anterior cingulate cortex (35, 36) and thalamus (81, 82), which are left empty in AAL 3v2.
+For the AAL version SPM 5, 8, and 12, the map image (data.maps) contains 117 unique integer values
+that define the parcellation.
+However, these values are not consecutive integers from 0 to 116, as is usually the case in Nilearn.
+Therefore, they should not be interpreted as indices for the list of label names.
+In contrast, the total number of parcellations in AAL 3v2 is 167.
+The 3v2 atlas contains 171 unique integer values that define the parcellation.
+These values are consecutive integers from 0 to 170,
+except for the anterior cingulate cortex (35, 36) and thalamus (81, 82), which are left empty in AAL 3v2.
 In addition, the region IDs are provided as strings, so it is necessary to cast them to integers when indexing.
 
 For example, with version SPM 5, 8 and 12, to get the name of the region
@@ -55,7 +61,7 @@ References
 .. footbibliography::
 
 For more information on this dataset's structure, see
-http://www.gin.cnrs.fr/AAL-217?lang=en
+https://www.gin.cnrs.fr/en/tools/aal/
 
 License
 -------

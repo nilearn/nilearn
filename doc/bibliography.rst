@@ -5,7 +5,8 @@
 General bibliography
 ====================
 
-The references below are arranged alphabetically by first author. You can download the bib file :download:`here <./references.bib>`.
+The references below are arranged alphabetically by first author.
+You can download the bib file :download:`here <./references.bib>`.
 
 .. bibliography:: ./references.bib
    :all:

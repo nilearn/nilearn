@@ -34,14 +34,14 @@ loading them as if they were just any other files on our disk. For
 example, we can download the data from the
 `Haxby 2001 paper <https://doi.org/10.1126/science.1063736>`_ :
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import datasets
      dataset = datasets.fetch_haxby()
 
 ``dataset.func`` contains filenames referring to dataset files on the disk:
 
-.. code-block:: default
+.. code-block:: python
 
      list(sorted(dataset.keys()))
      # ['anat', 'description', 'func', 'mask', 'mask_face', 'mask_face_little', 'mask_house', 'mask_house_little', 'mask_vt', 'session_target']
@@ -50,7 +50,7 @@ example, we can download the data from the
 
 Access supplementary information on the dataset:
 
-.. code-block:: default
+.. code-block:: python
 
      print(haxby_dataset['description'])
 
@@ -193,7 +193,7 @@ predict the category of picture seen by the subject:
 
 
 We will not detail it here since there is a very good documentation about it in the
-`scikit-learn documentation <https://scikit-learn.org/stable/modules/svm.html#classification>`__
+:sklearn:`scikit-learn documentation <modules/svm.html#classification>`.
 
 Unmasking (inverse_transform)
 =============================

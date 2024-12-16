@@ -20,12 +20,12 @@ from nilearn.glm.first_level import run_glm
     [
         (
             "face / 10 + (window - face) * 2 - house",
-            "a face xy_z house window".split(),
+            ["a", "face", "xy_z", "house", "window"],
             [0.0, -1.9, 0.0, -1.0, 2.0],
         ),
         (
             "xy_z",
-            "a face xy_z house window".split(),
+            ["a", "face", "xy_z", "house", "window"],
             [0.0, 0.0, 1.0, 0.0, 0.0],
         ),
         ("a - b", ["a", "b", "a - b"], [0.0, 0.0, 1.0]),

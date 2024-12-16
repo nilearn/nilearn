@@ -104,4 +104,4 @@ Changes
 
 - :bdg-secondary:`Maint` Convert references in ``nilearn/glm/regression.py`` and ``nilearn/glm/thresholding.py`` to use footcite/footbibliography (:gh:`3302` by `Ahmad Chamma`_).
 
-- :bdg-info:`Plotting` Function :func:`~plotting.plot_carpet` argument ``cmap`` now respects behaviour specified by docs and changes the color of the carpet_plot. Changing the label colors is now delegated to a new variable ``cmap_labels`` (:gh:`3209` by `Daniel Gomez`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_carpet` argument ``cmap`` now respects behavior specified by docs and changes the color of the carpet_plot. Changing the label colors is now delegated to a new variable ``cmap_labels`` (:gh:`3209` by `Daniel Gomez`_).

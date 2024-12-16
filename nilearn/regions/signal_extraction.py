@@ -189,7 +189,7 @@ def _get_labels_data(
         labels_after_mask = {int(label) for label in np.unique(labels_data)}
         labels_diff = labels_before_mask.difference(labels_after_mask)
         # Raising a warning if any label is removed due to the mask
-        if len(labels_diff) > 0 and (not keep_masked_labels):
+        if labels_diff and not keep_masked_labels:
             warnings.warn(
                 "After applying mask to the labels image, "
                 "the following labels were "
@@ -340,7 +340,7 @@ def img_to_signals_labels(
         signals[n] = np.asarray(
             reduction_function(img, labels=labels_data, index=labels)
         )
-    # Set to zero signals for missing labels. Workaround for Scipy behaviour
+    # Set to zero signals for missing labels. Workaround for Scipy behavior
     if keep_masked_labels:
         missing_labels = set(labels) - set(np.unique(labels_data))
         labels_index = {l: n for n, l in enumerate(labels)}
@@ -526,7 +526,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
             labels_after_mask = {int(label) for label in labels}
             labels_diff = labels_before_mask.difference(labels_after_mask)
             # Raising a warning if any map is removed due to the mask
-            if len(labels_diff) > 0:
+            if labels_diff:
                 warnings.warn(
                     "After applying mask to the maps image, "
                     "maps with the following indices were "

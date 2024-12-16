@@ -253,7 +253,7 @@ def get_dataset_dir(
             )
             return path
 
-    # If not, create a folder in the first writeable directory
+    # If not, create a folder in the first writable directory
     errors = []
     for path, is_pre_dir in paths:
         if not is_pre_dir:
@@ -359,7 +359,7 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
 
             if file_.suffix == ".tgz":
                 filename = filename.with_suffix(".tar")
-            elif file_.suffix == "":
+            elif not file_.suffix:
                 # We rely on the assumption that gzip files have an extension
                 shutil.move(file_, f"{file_}.gz")
                 file_ = file_.with_suffix(".gz")
@@ -747,7 +747,7 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
         List of files and their corresponding url with dictionary that contains
         options regarding the files. Eg. (file_path, url, opt). If a file_path
         is not found in data_dir, as in data_dir/file_path the download will
-        be immediately cancelled and any downloaded files will be deleted.
+        be immediately canceled and any downloaded files will be deleted.
         Options supported are:
             * 'move' if renaming the file or moving it to a subfolder is needed
             * 'uncompress' to indicate that the file is an archive

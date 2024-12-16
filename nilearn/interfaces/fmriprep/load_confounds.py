@@ -73,7 +73,8 @@ def _check_strategy(strategy):
                 "Non-steady state volumes are always detected. It "
                 "doesn't need to be supplied as part of the "
                 "strategy. Supplying non_steady_state in strategy "
-                "will not have additional effect."
+                "will not have additional effect.",
+                stacklevel=3,
             )
         if conf not in all_confounds:
             raise ValueError(f"{conf} is not a supported type of confounds.")

@@ -4,7 +4,6 @@ Fastclustering for approximation of structured signals
 """
 
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
-
 import itertools
 import warnings
 
@@ -17,6 +16,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -274,7 +274,11 @@ def _make_edges_and_weights_surface(X, mask_img):
     len_previous_mask = 0
     for part in mask_img.mesh.parts:
         face_part = mask_img.mesh.parts[part].faces
-        mask_part = mask_img.data.parts[part][:, 0]
+
+        if len(mask_img.shape) == 1:
+            mask_part = mask_img.data.parts[part]
+        else:
+            mask_part = mask_img.data.parts[part][:, 0]
 
         edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
 
@@ -652,6 +656,33 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         self.memory_level = memory_level
         self.verbose = verbose
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags()
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags()
+        return tags
+
     def fit(
         self,
         X,
@@ -712,7 +743,8 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             self.n_clusters = n_features
             warnings.warn(
                 "n_clusters should be at most the number of features. "
-                f"Taking n_clusters = {n_features} instead."
+                f"Taking n_clusters = {n_features} instead.",
+                stacklevel=2,
             )
 
         n_components, labels = self.memory_.cache(

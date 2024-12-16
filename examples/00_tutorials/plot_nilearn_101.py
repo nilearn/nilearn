@@ -36,7 +36,7 @@ plotting.plot_img(MNI152_FILE_PATH)
 # ------------------------------------
 #
 # Let's use an image-smoothing function from nilearn:
-# :func:`nilearn.image.smooth_img`
+# :func:`~nilearn.image.smooth_img`
 #
 # Functions containing 'img' can take either a filename or an image as input.
 #

@@ -5,7 +5,7 @@ Voxel-Based Morphometry on OASIS dataset
 This example uses voxel-based morphometry (:term:`VBM`) to study the
 relationship between aging, sex, and gray matter density.
 
-The data come from the `OASIS <https://www.oasis-brains.org/>`_ project.
+The data come from the `OASIS <https://sites.wustl.edu/oasisbrains/>`_ project.
 If you use it, you need to agree with the data usage agreement available
 on the website.
 
@@ -79,7 +79,7 @@ mask_img = resample_to_img(
 )
 
 # %%
-# Analyse data
+# Analyze data
 # ------------
 # First, we create an adequate design matrix with three columns: 'age', 'sex',
 # and 'intercept'.

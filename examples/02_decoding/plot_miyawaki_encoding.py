@@ -50,7 +50,7 @@ fmri_random_runs_filenames = dataset.func[12:]
 stimuli_random_runs_filenames = dataset.label[12:]
 
 # %%
-# We can use :func:`nilearn.maskers.MultiNiftiMasker` to load the fMRI
+# We can use :func:`~nilearn.maskers.MultiNiftiMasker` to load the fMRI
 # data, clean and mask it.
 
 import numpy as np
@@ -86,11 +86,11 @@ plt.figure(figsize=(8, 4))
 plt.subplot(1, 2, 1)
 plt.imshow(stimuli[0][124], interpolation="nearest", cmap="gray")
 plt.axis("off")
-plt.title(f"Run {1}, Stimulus {125}")
+plt.title("Run 1, Stimulus 125")
 plt.subplot(1, 2, 2)
 plt.imshow(stimuli[2][101], interpolation="nearest", cmap="gray")
 plt.axis("off")
-plt.title(f"Run {3}, Stimulus {102}")
+plt.title("Run 3, Stimulus 102")
 plt.subplots_adjust(wspace=0.5)
 
 # %%

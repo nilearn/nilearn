@@ -82,10 +82,9 @@ of the preprocessings and validate them.
 
 .. topic:: **Advanced: scikit-learn Pipelines**
 
-    :class:`NiftiMasker` is a `scikit-learn
-    <https://scikit-learn.org>`_ compliant
-    transformer so that you can directly plug it into a `scikit-learn
-    pipeline <https://scikit-learn.org/stable/modules/pipeline.html>`_.
+    :class:`NiftiMasker` is a `scikit-learn <https://scikit-learn.org>`_ compliant
+    transformer so that you can directly plug it
+    into a :sklearn:`scikit-learn pipeline </modules/pipeline.html>`.
 
 
 Custom data loading: loading only the first 100 time points
@@ -211,7 +210,7 @@ comment on the most important.
     Forcing your data to have a ``dtype`` of **float32** can help
     save memory and is often a good-enough numerical precision.
     You can force this cast by choosing ``dtype`` to be 'auto'.
-    In the future this cast will be the default behaviour.
+    In the future this cast will be the default behavior.
 
 
 .. seealso::

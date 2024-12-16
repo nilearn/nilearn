@@ -247,29 +247,15 @@ def _group_sparse_covariance(
     """
     if tol == -1:
         tol = None
-    if not isinstance(alpha, (int, float)) or alpha < 0:
-        raise ValueError(
-            "Regularization parameter alpha must be a "
-            "positive number.\n"
-            f"You provided: {alpha}"
-        )
+
+    _check_alpha(alpha)
 
     n_subjects = emp_covs.shape[-1]
     n_features = emp_covs[0].shape[0]
     n_samples = np.asarray(n_samples)
     n_samples /= n_samples.sum()  # essential for numerical stability
 
-    # Check diagonal normalization.
-    ones = np.ones(emp_covs.shape[0])
-    for k in range(n_subjects):
-        if (
-            abs(emp_covs[..., k].flat[:: emp_covs.shape[0] + 1] - ones) > 0.1
-        ).any():
-            warnings.warn(
-                "input signals do not all have unit variance. This "
-                "can lead to numerical instability."
-            )
-            break
+    _check_diagonal_normalization(emp_covs, n_subjects)
 
     if precisions_init is None:
         # Fortran order make omega[..., k] contiguous, which is often useful.
@@ -305,11 +291,13 @@ def _group_sparse_covariance(
     max_norm = None
 
     omega_old = np.empty_like(omega)
+
     if probe_function is not None:
         # iteration number -1 means called before iteration loop.
         probe_function(
             emp_covs, n_samples, alpha, max_iter, tol, -1, omega, None
         )
+
     probe_interrupted = False
 
     # Start optimization loop. Variables are named following (mostly) the
@@ -319,53 +307,32 @@ def _group_sparse_covariance(
     alpha2 = alpha**2
 
     for n in range(max_iter):
-        if max_norm is not None:
-            suffix = f" variation (max norm): {max_norm:.3e} "
-        else:
-            suffix = ""
-        if verbose > 1:
-            logger.log(
-                f"* iteration {n:d} "
-                f"({100.0 * n / max_iter:.0f} %){suffix} ...",
-                verbose=verbose,
-                stack_level=2,
-            )
+        suffix = (
+            f" variation (max norm): {max_norm:.3e} "
+            if max_norm is not None
+            else ""
+        )
+
+        logger.log(
+            f"* iteration {n:d} "
+            f"({100.0 * n / max_iter:.0f} %){suffix} ...",
+            verbose=verbose,
+            stack_level=2,
+        )
 
         omega_old[...] = omega
         for p in range(n_features):
             if p == 0:
-                # Initial state: remove first col/row
-                W = omega[1:, 1:, :].copy()  # stack of W(k)
-                W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
-                for k in range(W.shape[2]):
-                    # stack of W^-1(k)
-                    W_inv[..., k] = scipy.linalg.inv(W[..., k])
-                    if debug:
-                        np.testing.assert_almost_equal(
-                            np.dot(W_inv[..., k], W[..., k]),
-                            np.eye(W_inv[..., k].shape[0]),
-                            decimal=10,
-                        )
-                        _assert_submatrix(omega[..., k], W[..., k], p)
-                        assert is_spd(W_inv[..., k])
+                W, W_inv = _set_initial_state_w_and_w_inv(omega, debug, p)
+
             else:
-                # Update W and W_inv
                 if debug:
                     omega_orig = omega.copy()
 
-                for k in range(n_subjects):
-                    _update_submatrix(
-                        omega[..., k], W[..., k], W_inv[..., k], p, h, v
-                    )
+                _update_w_and_w_inv(
+                    omega, debug, W, W_inv, n_subjects, p, h, v
+                )
 
-                    if debug:
-                        _assert_submatrix(omega[..., k], W[..., k], p)
-                        assert is_spd(W_inv[..., k], decimal=14)
-                        np.testing.assert_almost_equal(
-                            np.dot(W[..., k], W_inv[..., k]),
-                            np.eye(W_inv[..., k].shape[0]),
-                            decimal=10,
-                        )
                 if debug:
                     # Check that omega has not been modified.
                     np.testing.assert_almost_equal(omega_orig, omega)
@@ -404,6 +371,7 @@ def _group_sparse_covariance(
                     # q(k) -> T(k) * v(k) * h_22(k)
                     # \lambda -> gamma   (lambda is a Python keyword)
                     q[:] = n_samples * emp_covs[p, p, :] * W_inv[m, m, :]
+
                     if debug:
                         assert np.all(q > 0)
                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
@@ -437,12 +405,12 @@ def _group_sparse_covariance(
                     if abs(fval) > 0.1:
                         warnings.warn(
                             "Newton-Raphson step did not converge.\n"
-                            "This may indicate a badly conditioned "
-                            "system."
+                            "This may indicate a badly conditioned system."
                         )
 
                     if debug:
                         assert gamma >= 0.0, gamma
+
                     y[:, m] = (gamma * c) / aq  # x*
 
             # Copy back y in omega (column and row)
@@ -483,14 +451,10 @@ def _group_sparse_covariance(
         omega_old = abs(omega_old)
         max_norm = omega_old.max()
 
-        if tol is not None and max_norm < tol:
-            logger.log(
-                f"tolerance reached at iteration number {n + 1:d}: "
-                f"{max_norm:.3e}",
-                verbose=verbose,
-                stack_level=2,
-            )
-            tolerance_reached = True
+        tolerance_reached = _check_if_tolerance_reached(
+            tol, max_norm, verbose, n
+        )
+        if tolerance_reached:
             break
 
     if tol is not None and not tolerance_reached and not probe_interrupted:
@@ -500,6 +464,73 @@ def _group_sparse_covariance(
         )
 
     return omega
+
+
+def _check_alpha(alpha):
+    if not isinstance(alpha, (int, float)) or alpha < 0:
+        raise ValueError(
+            "Regularization parameter alpha must be a positive number.\n"
+            f"You provided: {alpha=}"
+        )
+
+
+def _check_diagonal_normalization(emp_covs, n_subjects):
+    ones = np.ones(emp_covs.shape[0])
+    for k in range(n_subjects):
+        if (
+            abs(emp_covs[..., k].flat[:: emp_covs.shape[0] + 1] - ones) > 0.1
+        ).any():
+            warnings.warn(
+                "Input signals do not all have unit variance. "
+                "This can lead to numerical instability."
+            )
+            break
+
+
+def _set_initial_state_w_and_w_inv(omega, debug, p):
+    """Set initial state by removing first col/row."""
+    W = omega[1:, 1:, :].copy()  # stack of W(k)
+    W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
+    for k in range(W.shape[2]):
+        # stack of W^-1(k)
+        W_inv[..., k] = scipy.linalg.inv(W[..., k])
+
+        if debug:
+            np.testing.assert_almost_equal(
+                np.dot(W_inv[..., k], W[..., k]),
+                np.eye(W_inv[..., k].shape[0]),
+                decimal=10,
+            )
+            _assert_submatrix(omega[..., k], W[..., k], p)
+            assert is_spd(W_inv[..., k])
+
+    return W, W_inv
+
+
+def _update_w_and_w_inv(omega, debug, W, W_inv, n_subjects, p, h, v):
+    for k in range(n_subjects):
+        _update_submatrix(omega[..., k], W[..., k], W_inv[..., k], p, h, v)
+
+        if debug:
+            _assert_submatrix(omega[..., k], W[..., k], p)
+            assert is_spd(W_inv[..., k], decimal=14)
+            np.testing.assert_almost_equal(
+                np.dot(W[..., k], W_inv[..., k]),
+                np.eye(W_inv[..., k].shape[0]),
+                decimal=10,
+            )
+
+
+def _check_if_tolerance_reached(tol, max_norm, verbose, n):
+    tolerance_reached = tol is not None and max_norm < tol
+    if tolerance_reached:
+        logger.log(
+            f"tolerance reached at iteration number {n + 1:d}: "
+            f"{max_norm:.3e}",
+            verbose=verbose,
+            stack_level=2,
+        )
+    return tolerance_reached
 
 
 class GroupSparseCovariance(CacheMixin, BaseEstimator):
@@ -558,8 +589,6 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         memory=None,
         memory_level=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         self.alpha = alpha
         self.tol = tol
         self.max_iter = max_iter
@@ -589,6 +618,9 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
             the object itself. Useful for chaining operations.
 
         """
+        if self.memory is None:
+            self.memory = Memory(location=None)
+
         logger.log("Computing covariance matrices", verbose=self.verbose)
         self.covariances_, n_samples = empirical_covariances(
             subjects, assume_centered=False

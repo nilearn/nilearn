@@ -45,7 +45,7 @@ Enhancements
 
 - :bdg-dark:`Code` :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMRegressor`, and :class:`~decoding.FREMClassifier` now override the ``score`` method to use whatever scoring strategy was defined through the ``scoring`` attribute instead of the sklearn default. If the ``scoring`` attribute of the decoder is set to ``None``, the scoring strategy will default to accuracy for classifiers and to r2 score for regressors (:gh:`2669` by `Nicolas Gensollen`_).
 
-- :bdg-dark:`Code` :class:`~maskers.NiftiMasker`, :class:`~maskers.NiftiLabelsMasker`, :class:`~maskers.MultiNiftiMasker`, :class:`~maskers.NiftiMapsMasker`, and :class:`~maskers.NiftiSpheresMasker` can now compute high variance confounds on the images provided to ``transform`` and regress them out automatically. This behaviour is controlled through the ``high_variance_confounds`` boolean parameter of these maskers which default to ``False`` (:gh:`2697` by `Nicolas Gensollen`_).
+- :bdg-dark:`Code` :class:`~maskers.NiftiMasker`, :class:`~maskers.NiftiLabelsMasker`, :class:`~maskers.MultiNiftiMasker`, :class:`~maskers.NiftiMapsMasker`, and :class:`~maskers.NiftiSpheresMasker` can now compute high variance confounds on the images provided to ``transform`` and regress them out automatically. This behavior is controlled through the ``high_variance_confounds`` boolean parameter of these maskers which default to ``False`` (:gh:`2697` by `Nicolas Gensollen`_).
 
 - :bdg-dark:`Code` :class:`~maskers.NiftiLabelsMasker` now automatically replaces ``NaNs`` in input data with zeros, to match the behavior of other maskers (:gh:`2712` by `Taylor Salo`_).
 

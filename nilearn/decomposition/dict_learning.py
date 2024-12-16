@@ -11,7 +11,6 @@ import warnings
 
 import numpy as np
 import sklearn
-from joblib import Memory
 from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
@@ -210,8 +209,6 @@ class DictLearning(_BaseDecomposition):
         memory=None,
         memory_level=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         _BaseDecomposition.__init__(
             self,
             n_components=n_components,

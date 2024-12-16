@@ -145,8 +145,6 @@ def _prepare_lines_metadata(
     coordinates : :obj:`dict`
         Dictionary containing base64 values for each axis
     """
-    lines_metadata = {}
-
     adjacency_matrix = np.nan_to_num(adjacency_matrix, copy=True)
     colors = colorscale(
         cmap,
@@ -154,9 +152,11 @@ def _prepare_lines_metadata(
         threshold=threshold,
         symmetric_cmap=symmetric_cmap,
     )
-    lines_metadata["line_colorscale"] = colors["colors"]
-    lines_metadata["line_cmin"] = float(colors["vmin"])
-    lines_metadata["line_cmax"] = float(colors["vmax"])
+    lines_metadata = {
+        "line_colorscale": colors["colors"],
+        "line_cmin": float(colors["vmin"]),
+        "line_cmax": float(colors["vmax"]),
+    }
     if threshold is not None:
         adjacency_matrix[
             np.abs(adjacency_matrix) <= colors["abs_threshold"]
@@ -370,8 +370,8 @@ def view_markers(
     marker_color : :class:`numpy.ndarray` of shape=(n_nodes,) or \
         'auto', default='auto'
         colors of the markers: list of strings, hex rgb or rgba strings, rgb
-        triplets, or rgba triplets (i.e. formats accepted by matplotlib, see
-        https://matplotlib.org/users/colors.html#specifying-colors)
+        triplets, or rgba triplets (see `formats accepted by matplotlib \
+        <https://matplotlib.org/stable/users/explain/colors/colors.html>`)
 
     marker_size : :obj:`float` or array-like, default=5.0
         Size of the markers showing the seeds in pixels.

@@ -6,13 +6,13 @@ This example shows how to extract regions or separate the regions
 from a statistical map.
 
 We use localizer t-statistic maps from
-:func:`nilearn.datasets.fetch_neurovault_auditory_computation_task`
+:func:`~nilearn.datasets.fetch_neurovault_auditory_computation_task`
 as an input image.
 
 The idea is to threshold an image to get foreground objects using a
-function :func:`nilearn.image.threshold_img` and
+function :func:`~nilearn.image.threshold_img` and
 extract objects using a function
-:func:`nilearn.regions.connected_regions`.
+:func:`~nilearn.regions.connected_regions`.
 """
 
 # %%

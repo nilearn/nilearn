@@ -1,6 +1,5 @@
 """Handle plotting of surfaces for html rendering."""
 
-import collections.abc
 import json
 from warnings import warn
 
@@ -8,7 +7,6 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-from nilearn import datasets, surface
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.plotting import cm
@@ -21,7 +19,17 @@ from nilearn.plotting.js_plotting_utils import (
     mesh_to_plotly,
     to_color_strings,
 )
-from nilearn.surface import PolyMesh, SurfaceImage
+from nilearn.surface import (
+    PolyMesh,
+    SurfaceImage,
+    load_surf_data,
+    load_surf_mesh,
+    vol_to_surf,
+)
+from nilearn.surface.surface import (
+    check_mesh_and_data,
+    check_mesh_is_fsaverage,
+)
 
 
 class SurfaceView(HTMLDocument):  # noqa: D101
@@ -42,7 +50,7 @@ def get_vertexcolor(
         bg_data = np.ones(len(surf_map)) * 0.5
         bg_vmin, bg_vmax = 0, 1
     else:
-        bg_data = np.copy(surface.load_surf_data(bg_map))
+        bg_data = np.copy(load_surf_data(bg_map))
 
     # scale background map if need be
     bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
@@ -101,7 +109,6 @@ def _one_mesh_info(
     background color.
 
     """
-    info = {}
     colors = colorscale(
         cmap,
         surf_map,
@@ -110,7 +117,7 @@ def _one_mesh_info(
         vmax=vmax,
         vmin=vmin,
     )
-    info["inflated_left"] = mesh_to_plotly(surf_mesh)
+    info = {"inflated_left": mesh_to_plotly(surf_mesh)}
     info["vertexcolor_left"] = get_vertexcolor(
         surf_map,
         colors["cmap"],
@@ -163,31 +170,6 @@ def one_mesh_info(
     )
 
 
-def check_mesh(mesh):
-    """Validate type and content of a mesh."""
-    if isinstance(mesh, str):
-        return datasets.fetch_surf_fsaverage(mesh)
-    if not isinstance(mesh, collections.abc.Mapping):
-        raise TypeError(
-            "The mesh should be a str or a dictionary, "
-            f"you provided: {type(mesh).__name__}."
-        )
-    missing = {
-        "pial_left",
-        "pial_right",
-        "sulc_left",
-        "sulc_right",
-        "infl_left",
-        "infl_right",
-    }.difference(mesh.keys())
-    if missing:
-        raise ValueError(
-            f"{missing} {('are' if len(missing) > 1 else 'is')} "
-            "missing from the provided mesh dictionary"
-        )
-    return mesh
-
-
 def _full_brain_info(
     volume_img,
     mesh="fsaverage5",
@@ -211,9 +193,9 @@ def _full_brain_info(
     if vol_to_surf_kwargs is None:
         vol_to_surf_kwargs = {}
     info = {}
-    mesh = surface.surface.check_mesh(mesh)
+    mesh = check_mesh_is_fsaverage(mesh)
     surface_maps = {
-        h: surface.vol_to_surf(
+        h: vol_to_surf(
             volume_img,
             mesh[f"pial_{h}"],
             inner_mesh=mesh.get(f"white_{h}", None),
@@ -231,7 +213,7 @@ def _full_brain_info(
     )
 
     for hemi, surf_map in surface_maps.items():
-        curv_map = surface.load_surf_data(mesh[f"curv_{hemi}"])
+        curv_map = load_surf_data(mesh[f"curv_{hemi}"])
         bg_map = np.sign(curv_map)
 
         info[f"pial_{hemi}"] = mesh_to_plotly(mesh[f"pial_{hemi}"])
@@ -458,14 +440,16 @@ def view_surf(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`, \
-                or a Mesh, or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.InMemoryMesh`, \
+                or a :obj:`~nilearn.surface.PolyMesh`, or None
         Surface :term:`mesh` geometry, can be a file
         (valid formats are .gii or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated) or
         a list of two Numpy arrays, the first containing the x-y-z coordinates
         of the :term:`mesh` vertices, the second containing the indices
         (into coords) of the :term:`mesh` :term:`faces`.
-        or a Mesh object with "coordinates" and "faces" attributes,
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with
+        "coordinates" and "faces" attributes,
         or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``surf_map``
@@ -488,7 +472,7 @@ def view_surf(
 
     bg_map : :obj:`str` or :class:`numpy.ndarray`, default=None
         Background image to be plotted on the :term:`mesh` underneath
-        the surf_data in greyscale, most likely a sulcal depth map for
+        the surf_data in grayscale, most likely a sulcal depth map for
         realistic shading.
         If the map contains values outside [0, 1],
         it will be rescaled such that all values are in [0, 1].
@@ -592,13 +576,13 @@ def view_surf(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
     )
 
-    surf_mesh = surface.load_surf_mesh(surf_mesh)
+    surf_mesh = load_surf_mesh(surf_mesh)
     if surf_map is None:
         surf_map = np.ones(len(surf_mesh[0]))
     else:
-        surf_mesh, surf_map = surface.check_mesh_and_data(surf_mesh, surf_map)
+        surf_mesh, surf_map = check_mesh_and_data(surf_mesh, surf_map)
     if bg_map is not None:
-        _, bg_map = surface.check_mesh_and_data(surf_mesh, bg_map)
+        _, bg_map = check_mesh_and_data(surf_mesh, bg_map)
     info = _one_mesh_info(
         surf_map=surf_map,
         surf_mesh=surf_mesh,

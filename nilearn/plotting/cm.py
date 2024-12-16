@@ -174,12 +174,9 @@ _cmaps_data = {
     "black_red": _cm.hot._segmentdata.copy(),
 }
 
-# MPL 0.99 doesn't have Ocean or afmhot
-if hasattr(_cm, "ocean"):
-    _cmaps_data["ocean_hot"] = _concat_cmap(_cm.ocean, _cm.hot_r)
-if hasattr(_cm, "afmhot"):
-    _cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
-    _cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
+_cmaps_data["ocean_hot"] = _concat_cmap(_cm.ocean, _cm.hot_r)
+_cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
+_cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
@@ -194,9 +191,10 @@ _cmaps_data["bwr"] = _colors.LinearSegmentedColormap.from_list(
 
 # backported and adapted from matplotlib since it's deprecated in 3.2
 def _revcmap(data):
-    data_r = {}
-    for key, val in data.items():
-        data_r[key] = [(1.0 - x, y1, y0) for x, y0, y1 in reversed(val)]
+    data_r = {
+        key: [(1.0 - x, y1, y0) for x, y0, y1 in reversed(val)]
+        for key, val in data.items()
+    }
     return data_r
 
 

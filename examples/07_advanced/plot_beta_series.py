@@ -61,21 +61,20 @@ to build the LSS beta series.
 # sphinx_gallery_thumbnail_number = -2
 
 # %%
-from nilearn import image, plotting
-
-# %%
 # Prepare data and analysis parameters
 # ------------------------------------
 # Download data in :term:`BIDS` format and event information for one subject,
 # and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
+from nilearn.plotting import plot_design_matrix, plot_stat_map, show
 
 data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
     dataset_path=data.data_dir,
     task_label="languagelocalizer",
+    space_label="",
     sub_labels=["01"],
     img_filters=[("desc", "preproc")],
     n_jobs=2,
@@ -110,8 +109,8 @@ standard_glm.fit(fmri_file, events_df)
 # The standard design matrix has one column for each condition, along with
 # columns for the confound regressors and drifts
 fig, ax = plt.subplots(figsize=(5, 10))
-plotting.plot_design_matrix(standard_glm.design_matrices_[0], axes=ax)
-fig.show()
+plot_design_matrix(standard_glm.design_matrices_[0], axes=ax)
+show()
 
 # %%
 # Define the LSA model
@@ -140,13 +139,14 @@ lsa_glm = FirstLevelModel(**glm_parameters)
 lsa_glm.fit(fmri_file, lsa_events_df)
 
 fig, ax = plt.subplots(figsize=(10, 10))
-plotting.plot_design_matrix(lsa_glm.design_matrices_[0], axes=ax)
-fig.show()
+plot_design_matrix(lsa_glm.design_matrices_[0], axes=ax)
+show()
 
 # %%
 # Aggregate beta maps from the LSA model based on condition
 # `````````````````````````````````````````````````````````
 # Collect the :term:`Parameter Estimate` maps
+from nilearn.image import concat_imgs
 
 lsa_beta_maps = {cond: [] for cond in events_df["trial_type"].unique()}
 trialwise_conditions = lsa_events_df["trial_type"].unique()
@@ -159,7 +159,7 @@ for condition in trialwise_conditions:
 # We can concatenate the lists of 3D maps into a single 4D beta series for
 # each condition, if we want
 lsa_beta_maps = {
-    name: image.concat_imgs(maps) for name, maps in lsa_beta_maps.items()
+    name: concat_imgs(maps) for name, maps in lsa_beta_maps.items()
 }
 
 # %%
@@ -241,7 +241,7 @@ for i_trial in range(events_df.shape[0]):
 # We can concatenate the lists of 3D maps into a single 4D beta series for
 # each condition, if we want
 lss_beta_maps = {
-    name: image.concat_imgs(maps) for name, maps in lss_beta_maps.items()
+    name: concat_imgs(maps) for name, maps in lss_beta_maps.items()
 }
 
 # %%
@@ -249,13 +249,13 @@ lss_beta_maps = {
 # `````````````````````````````````````````````````
 fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
 for i_trial in range(3):
-    plotting.plot_design_matrix(
+    plot_design_matrix(
         lss_design_matrices[i_trial],
         axes=axes[i_trial],
     )
     axes[i_trial].set_title(f"Trial {i_trial + 1}")
 
-fig.show()
+show()
 
 # %%
 # Compare the three modeling approaches
@@ -276,10 +276,10 @@ fig, axes = plt.subplots(
 )
 
 for i_ax, _ in enumerate(axes):
-    plotting.plot_design_matrix(DESIGN_MATRICES[i_ax], axes=axes[i_ax])
+    plot_design_matrix(DESIGN_MATRICES[i_ax], axes=axes[i_ax])
     axes[i_ax].set_title(DM_TITLES[i_ax])
 
-fig.show()
+show()
 
 # %%
 # Applications of beta series
@@ -300,7 +300,8 @@ fig.show()
 # connectivity analysis of each of the two task conditions
 # ('language' and 'string'), using the LSS beta series.
 # This section is based on
-# :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`,  # noqa: E501
+# :ref:`sphx_glr_auto_examples_03_connectivity\
+# _plot_seed_to_voxel_correlation.py`,
 # which goes into more detail about seed-to-voxel functional connectivity
 # analyses.
 import numpy as np
@@ -365,7 +366,7 @@ string_connectivity_img = brain_masker.inverse_transform(string_corrs.T)
 # Show both correlation maps
 fig, axes = plt.subplots(figsize=(10, 8), nrows=2)
 
-display = plotting.plot_stat_map(
+display = plot_stat_map(
     language_connectivity_img,
     threshold=0.5,
     vmax=1,
@@ -373,6 +374,7 @@ display = plotting.plot_stat_map(
     title="Language",
     figure=fig,
     axes=axes[0],
+    cmap="bwr",
 )
 display.add_markers(
     marker_coords=coords,
@@ -380,7 +382,7 @@ display.add_markers(
     marker_size=300,
 )
 
-display = plotting.plot_stat_map(
+display = plot_stat_map(
     string_connectivity_img,
     threshold=0.5,
     vmax=1,
@@ -388,6 +390,7 @@ display = plotting.plot_stat_map(
     title="String",
     figure=fig,
     axes=axes[1],
+    cmap="bwr",
 )
 display.add_markers(
     marker_coords=coords,
@@ -396,7 +399,7 @@ display.add_markers(
 )
 fig.suptitle("LSS Beta Series Functional Connectivity")
 
-fig.show()
+show()
 
 # %%
 # References

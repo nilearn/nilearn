@@ -29,16 +29,18 @@ can plot, save and load them.
 # is a good starting point.
 #
 # Surface images have two main components:
-#  1. The :term:`mesh`, which is the geometry of the surface.
-#  2. The data, which is the information stored at each vertex of the mesh.
+#
+# 1. The :term:`mesh`, which is the geometry of the surface.
+# 2. The data, which is the information stored at each vertex of the mesh.
 
 # %%
 # Mesh
 # ----
 #
 # A :term:`mesh` can be defined by two arrays:
-#  1. The coordinates of the vertices.
-#  2. Which vertices need to be connected to form :term:`faces`.
+#
+# 1. The coordinates of the vertices.
+# 2. Which vertices need to be connected to form :term:`faces`.
 #
 # .. note:: This representation of a mesh is known as `Face-Vertex
 #           <https://en.wikipedia.org/wiki/Polygon_mesh#Face-vertex_meshes>`_
@@ -76,7 +78,16 @@ left_faces = np.asarray(
 )
 # for the pyramid
 right_coords = (
-    np.asarray([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]]) + 2
+    np.asarray(
+        [
+            [0, 0, 0],
+            [1, 0, 0],
+            [1, 1, 0],
+            [0, 1, 0],
+            [0, 0, 1],
+        ]
+    )
+    + 2
 )
 right_faces = np.asarray(
     [
@@ -98,18 +109,21 @@ mesh = PolyMesh(
 # Data
 # ----
 #
-# The data is the information stored at each :term:`vertex` of the
-# :term:`mesh`.
-# This can be anything from the thickness of the cortex to the
-# activation level at that :term:`vertex`.
+# The data is the information stored at each :term:`vertex`
+# of the :term:`mesh`.
+# This can be anything from the thickness of the cortex
+# to the activation level at that :term:`vertex`.
 #
-# For this example, let's create some random data for the vertices of the
-# :term:`mesh`:
+# For this example, let's create some random data
+# for the vertices of the :term:`mesh`:
 rng = np.random.default_rng(0)
 left_data = rng.random(mesh.parts["left"].n_vertices)
 right_data = rng.random(mesh.parts["right"].n_vertices)
 # put them together in a dictionary
-data = {"left": left_data, "right": right_data}
+data = {
+    "left": left_data,
+    "right": right_data,
+}
 
 # %%
 # Creating a surface image
@@ -125,25 +139,26 @@ surface_image = SurfaceImage(mesh=mesh, data=data)
 # Plotting the surface image
 # --------------------------
 #
-# The surface image can be plotted using the different functions from the
-# :mod:`nilearn.plotting` module.
+# The surface image can be plotted using the different functions
+# from the :mod:`~nilearn.plotting` module.
 # Here we will show how to use the
 # :func:`~nilearn.plotting.view_surf` function:
-from nilearn import plotting
+from nilearn.plotting import view_surf
 
 # %%
 # Plot the left part
-plotting.view_surf(
-    surf_mesh=surface_image.mesh, surf_map=surface_image, hemi="left"
+view_surf(
+    surf_map=surface_image,
+    hemi="left",
 )
+
 
 # %%
 # Plot the right part
-plotting.view_surf(
-    surf_mesh=surface_image.mesh, surf_map=surface_image, hemi="right"
+view_surf(
+    surf_map=surface_image,
+    hemi="right",
 )
-
-plotting.show()
 
 # %%
 # Data format
@@ -187,17 +202,17 @@ data = {
     "right": output_dir / "surface_image_data_hemi-R.gii",
 }
 
-surface_image_loaded = SurfaceImage(mesh=mesh, data=data)
+surface_image_loaded = SurfaceImage(
+    mesh=mesh,
+    data=data,
+)
 
 # %%
 # You can now plot the loaded surface image:
-plotting.view_surf(
-    surf_mesh=surface_image_loaded.mesh,
+view_surf(
     surf_map=surface_image_loaded,
     hemi="left",
 )
-
-plotting.show()
 
 # %%
 # And that's it! Now you know how to create, plot, save and load surface images
@@ -217,5 +232,7 @@ plotting.show()
 #   format, see
 #   :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`
 #
-# * For performing first-level GLM analysis on surface data, see `this \
-#   example <../04_glm_first_level/plot_localizer_surface_analysis.html>`_.
+# * For performing first-level GLM analysis on surface data,
+#   see this example
+#   :ref:`sphx_glr_auto_examples_04_glm_first_level\
+#   _plot_localizer_surface_analysis.py`.

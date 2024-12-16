@@ -155,12 +155,12 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
         'lr', 'lzr', 'lyr', 'lzry', 'lyrz'}, optional
             Choose the direction of the cuts:
 
-                - 'x' - sagittal
-                - 'y' - coronal
-                - 'z' - axial
-                - 'l' - sagittal left hemisphere only
-                - 'r' - sagittal right hemisphere only
-                - 'ortho' - three cuts are performed in orthogonal directions
+            - 'x' - sagittal
+            - 'y' - coronal
+            - 'z' - axial
+            - 'l' - sagittal left hemisphere only
+            - 'r' - sagittal right hemisphere only
+            - 'ortho' - three cuts are performed in orthogonal directions
 
             Default is 'z' if ``plot_type`` is 'slice'; 'ortho' if
             ``plot_type`` is 'glass'.

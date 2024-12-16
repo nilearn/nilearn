@@ -776,7 +776,7 @@ def test_resampling_nan_big(affine_eye, force_resample):
 
     This checks the extrapolation mechanism: if we don't do any
     extrapolation before resampling, the hole creates big
-    artefacts
+    artifacts
     """
     data = 10 * np.ones((10, 10, 10))
     data[4:6, 4:6, 4:6] = np.nan

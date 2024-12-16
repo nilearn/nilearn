@@ -1070,7 +1070,7 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
 
     clean_im = clean_img(nan_img, ensure_finite=True)
 
-    assert np.any(np.isfinite(get_data(clean_im))), True
+    assert np.any(np.isfinite(get_data(clean_im)))
 
     # test_clean_img_passing_nifti2image
     data_img_nifti2 = Nifti2Image(data, affine_eye)
@@ -1198,7 +1198,7 @@ def test_clean_img_sample_mask(img_4d_rand_eye, shape_4d_default):
         confounds=confounds,
         clean__sample_mask=sample_mask,
     )
-    assert img.shape == (*shape_4d_default[0:3], length - 1)
+    assert img.shape == (*shape_4d_default[:3], length - 1)
 
 
 def test_clean_img_sample_mask_mask_img(shape_3d_default):

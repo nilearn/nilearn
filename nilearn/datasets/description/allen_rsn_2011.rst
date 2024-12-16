@@ -26,7 +26,7 @@ References
 .. footbibliography::
 
 For more information on this dataset's structure, see:
-http://mialab.mrn.org/data/index.html
+https://trendscenter.org/data/
 
 Slices and label of the RSN ICs:
 https://www.frontiersin.org/files/Articles/2093/fnsys-05-00002-HTML/image_m/fnsys-05-00002-g004.jpg

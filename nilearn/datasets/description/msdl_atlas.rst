@@ -32,7 +32,7 @@ References
 .. footbibliography::
 
 For more information about this dataset's structure:
-https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/
+https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/
 
 License
 -------

@@ -80,7 +80,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` New function :func:`~regions.connected_label_regions` to extract the connected components represented as same label to regions apart with each region labelled as unique label.
+- :bdg-success:`API` New function :func:`~regions.connected_label_regions` to extract the connected components represented as same label to regions apart with each region labeled as unique label.
 
 - :bdg-success:`API` New function :func:`~surface.load_surf_data` in ``surf_plotting`` module for loading data of numpy array to represented on a surface mesh.
 

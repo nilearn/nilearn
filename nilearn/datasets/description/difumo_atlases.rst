@@ -38,7 +38,7 @@ Content
 References
 ----------
 For more information about this dataset's structure:
-https://hal.inria.fr/hal-02904869
+https://inria.hal.science/hal-02904869
 
 .. footbibliography::
 

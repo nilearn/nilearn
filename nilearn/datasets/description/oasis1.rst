@@ -35,7 +35,7 @@ References
 .. footbibliography::
 
 For more information about this dataset's structure:
-http://www.oasis-brains.org/
+https://sites.wustl.edu/oasisbrains/
 
 
 License

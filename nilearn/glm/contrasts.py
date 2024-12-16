@@ -235,10 +235,7 @@ class Contrast:
         self.variance = variance
         self.dof = float(dof)
         if dim is None:
-            if effect.ndim == 2:
-                self.dim = effect.shape[0]
-            else:
-                self.dim = 1
+            self.dim = effect.shape[0] if effect.ndim == 2 else 1
         else:
             self.dim = dim
 

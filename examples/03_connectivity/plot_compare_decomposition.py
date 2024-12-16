@@ -182,7 +182,8 @@ show()
 #     To see how to extract subject-level timeseries' from regions
 #     created using :term:`Dictionary learning`, see :ref:`example Regions
 #     extraction using dictionary learning and functional connectomes
-#     <sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py>`.  # noqa: E501
+#     <sphx_glr_auto_examples_03_connectivity\
+#     _plot_extract_regions_dictlearning_maps.py>`.
 
 # %%
 # References

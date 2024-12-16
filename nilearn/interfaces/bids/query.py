@@ -252,7 +252,8 @@ def get_bids_files(
             files = [
                 file_
                 for file_ in files
-                if (key in file_ and file_[key] == value)
+                if (key not in file_ and value == "")
+                or (key in file_ and file_[key] == value)
             ]
         return [ref_file["file_path"] for ref_file in files]
 

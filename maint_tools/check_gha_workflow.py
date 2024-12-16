@@ -287,7 +287,7 @@ def _get_auth(username: str, token_file: Path) -> None | tuple[str, str]:
         with token_file.open() as f:
             token = f.read().strip()
     else:
-        warnings.warn(f"Token file not found.\n{token_file!s}")
+        warnings.warn(f"Token file not found.\n{token_file!s}", stacklevel=4)
 
     return None if username is None or token is None else (username, token)
 
@@ -322,10 +322,7 @@ def _get_runs(
     if event_type:
         runs = [run for run in runs if run["event"] in event_type]
 
-    conclusion = ["success"]
-    if include_failed_runs:
-        conclusion = ["success", "failure"]
-
+    conclusion = ["success", "failure"] if include_failed_runs else ["success"]
     return [run for run in runs if run["conclusion"] in conclusion]
 
 
