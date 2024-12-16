@@ -1250,10 +1250,8 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
     tmp = img._axstack.as_list()[0].collections[0]
-    assert (
-        surface_image_parcellation.mesh.parts["left"].n_vertices
-        == ((tmp._facecolors[:, 3]) != 0).sum()
-    )
+    n_faces = surface_image_parcellation.mesh.parts["left"].faces.shape[0]
+    assert n_faces == ((tmp._facecolors[:, 3]) != 0).sum()
     # Save execution time and memory
     plt.close()
 
