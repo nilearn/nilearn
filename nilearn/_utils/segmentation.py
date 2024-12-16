@@ -11,10 +11,12 @@ sub functions in skimage.segmentation
 import warnings
 
 import numpy as np
+from scipy import __version__, sparse
 from scipy import ndimage as ndi
-from scipy import sparse
 from scipy.sparse.linalg import cg
 from sklearn.utils import as_float_array
+
+from nilearn._utils.helpers import compare_version
 
 
 def _make_graph_edges_3d(n_x, n_y, n_z):
@@ -355,7 +357,15 @@ def _solve_cg(lap_sparse, B, tol):
     For each pixel, the label i corresponding to the maximal X_i is returned.
     """
     lap_sparse = lap_sparse.tocsc()
-    X = [cg(lap_sparse, -b_i.todense(), rtol=tol, atol=0)[0] for b_i in B]
+    X = [
+        cg(lap_sparse, -b_i.todense(), rtol=tol, atol=0)[0]
+        # TODO
+        # when support scipy to >= 1.12
+        # See https://github.com/nilearn/nilearn/pull/4394
+        if compare_version(__version__, ">=", "1.12")
+        else cg(lap_sparse, -b_i.todense(), tol=tol, atol="legacy")[0]
+        for b_i in B
+    ]
 
     X = np.array(X)
     X = np.argmax(X, axis=0)
