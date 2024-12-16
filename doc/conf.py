@@ -16,9 +16,6 @@ import re
 import sys
 from pathlib import Path
 
-import sphinx
-
-from nilearn._utils import compare_version
 from nilearn._version import __version__
 
 # ----------------------------------------------------------------------------
@@ -423,20 +420,12 @@ latex_elements = {
     "printindex": "",
 }
 
-if compare_version(sphinx.__version__, "<", "1.5"):
-    latex_preamble = r"""
-    \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-    \let\oldfootnote\footnote
-    \def\footnote#1{\oldfootnote{\small #1}}
-    """
-    # If false, no module index is generated.
-    latex_use_modindex = False
-else:
-    latex_elements["preamble"] = r"""
-    \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-    \let\oldfootnote\footnote
-    \def\footnote#1{\oldfootnote{\small #1}}
-    """
+
+latex_elements["preamble"] = r"""
+\usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
+\let\oldfootnote\footnote
+\def\footnote#1{\oldfootnote{\small #1}}
+"""
 
 
 latex_domain_indices = False

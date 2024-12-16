@@ -248,6 +248,26 @@ def test_miyawaki2008(tmp_path, request_mocker):
     assert dataset.description != ""
 
 
+def test_fetch_localizer_contrasts_errors(
+    tmp_path,
+    localizer_mocker,  # noqa: ARG001
+):
+    with pytest.raises(ValueError, match="should be a list of strings"):
+        func.fetch_localizer_contrasts(
+            "checkerboard",
+            n_subjects=2,
+            data_dir=tmp_path,
+        )
+    with pytest.raises(
+        ValueError, match="following contrasts are not available"
+    ):
+        func.fetch_localizer_contrasts(
+            ["foo"],
+            n_subjects=2,
+            data_dir=tmp_path,
+        )
+
+
 @pytest.mark.parametrize("subjects", [None, 9999])
 def test_fetch_localizer_contrasts_edge_cases(
     tmp_path,

@@ -2,9 +2,9 @@
 Technical point: Illustration of the volume to surface sampling schemes
 =======================================================================
 
-In nilearn, :func:`nilearn.surface.vol_to_surf` allows us to measure values of
+In nilearn, :func:`~nilearn.surface.vol_to_surf` allows us to measure values of
 a 3d volume at the nodes of a cortical mesh, transforming it into surface data.
-This data can then be plotted with :func:`nilearn.plotting.plot_surf_stat_map`
+This data can then be plotted with :func:`~nilearn.plotting.plot_surf_stat_map`
 for example.
 
 This script shows, on a toy example, where samples are drawn around each mesh
