@@ -26,53 +26,6 @@ def compute_middle_image(img):
     return img, len(dim)
 
 
-def get_min_max_surface_image(img):
-    """Get min and max across hemisphere for a SurfaceImage.
-
-    Parameters
-    ----------
-    img : SurfaceImage
-
-    Returns
-    -------
-    vmin : float
-
-    vmax : float
-    """
-    vmin = min(min(x.ravel()) for x in img.data.parts.values())
-    vmax = max(max(x.ravel()) for x in img.data.parts.values())
-    return vmin, vmax
-
-
-def check_surface_data_ndims(img, dim, var_name="img"):
-    """Check if the data of a SurfaceImage is of a given dimension,
-    raise error if not.
-
-    Parameters
-    ----------
-    img : :obj:`~nilearn.surface.SurfaceImage`
-        SurfaceImage to check.
-
-    dim : int
-        Dimensions the data should have.
-
-    var_name : str, optional
-        Name of the variable to include in the error message.
-
-    Returns
-    -------
-    raise ValueError if the data of the SurfaceImage is not of the given
-    dimension.
-    """
-    n_dim_left = img.data.parts["left"].ndim
-    n_dim_right = img.data.parts["right"].ndim
-    if not all(x == dim for x in [n_dim_left, n_dim_right]):
-        raise ValueError(
-            f"Data for each hemisphere of {var_name} should be {dim}D, "
-            f"but found {n_dim_left}D for left and {n_dim_right}D for right."
-        )
-
-
 def concat_extract_surface_data_parts(img):
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.

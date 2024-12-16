@@ -12,14 +12,12 @@ from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.maskers._utils import (
-    get_min_max_surface_image,
-)
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface import (
+from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
     concat_imgs,
+    get_min_max_surface_image,
     mean_img,
 )
 

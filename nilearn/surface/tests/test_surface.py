@@ -15,25 +15,17 @@ from nilearn._utils import data_gen
 from nilearn.image import resampling
 from nilearn.maskers._utils import (
     deconcatenate_surface_images,
-    get_min_max_surface_image,
-)
-from nilearn.surface import (
-    FileMesh,
-    InMemoryMesh,
-    PolyData,
-    PolyMesh,
-    SurfaceImage,
-    concat_imgs,
-    load_surf_data,
-    load_surf_mesh,
-    mean_img,
-    vol_to_surf,
 )
 from nilearn.surface._testing import (
     assert_polymesh_equal,
     assert_surface_image_equal,
 )
 from nilearn.surface.surface import (
+    FileMesh,
+    InMemoryMesh,
+    PolyData,
+    PolyMesh,
+    SurfaceImage,
     _choose_kind,
     _data_to_gifti,
     _gifti_img_to_mesh,
@@ -50,6 +42,12 @@ from nilearn.surface.surface import (
     _vertex_outer_normals,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
+    concat_imgs,
+    get_min_max_surface_image,
+    load_surf_data,
+    load_surf_mesh,
+    mean_img,
+    vol_to_surf,
 )
 from nilearn.surface.tests._testing import (
     flat_mesh,
