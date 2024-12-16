@@ -615,11 +615,11 @@ def surface_image_parcellation(rng, in_memory_mesh):
 )
 def test_add_contours(surface_image_roi):
     """Test that add_contours updates data in PlotlySurfaceFigure."""
-    figure = plot_surf(surface_image_roi.mesh.parts["left"], engine="plotly")
-    figure.add_contours(surface_image_roi.data.parts["left"])
+    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure.add_contours(surface_image_roi)
     assert len(figure.figure.to_dict().get("data")) == 3
 
-    figure.add_contours(surface_image_roi.data.parts["left"], levels=[1])
+    figure.add_contours(surface_image_roi, levels=[1])
     assert len(figure.figure.to_dict().get("data")) == 4
 
 
@@ -654,10 +654,8 @@ def test_surface_figure_add_contours_raises_not_implemented():
 )
 def test_add_contours_has_name(surface_image_roi):
     """Test that contours added to a PlotlySurfaceFigure can be named."""
-    figure = plot_surf(surface_image_roi.mesh.parts["left"], engine="plotly")
-    figure.add_contours(
-        surface_image_roi.data.parts["left"], levels=[1], labels=["x"]
-    )
+    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure.add_contours(surface_image_roi, levels=[1], labels=["x"])
     assert figure.figure.to_dict().get("data")[1].get("name") == "x"
 
 
@@ -690,10 +688,8 @@ def test_add_contours_line_properties(key, value, surface_image_roi):
     """Test that the specifications of a line provided to add_contours are \
     stored in the PlotlySurfaceFigure data.
     """
-    figure = plot_surf(surface_image_roi.mesh.parts["left"], engine="plotly")
-    figure.add_contours(
-        surface_image_roi.data.parts["left"], levels=[1], lines=[{key: value}]
-    )
+    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure.add_contours(surface_image_roi, levels=[1], lines=[{key: value}])
     newline = figure.figure.to_dict().get("data")[1].get("line")
     assert newline.get(key) == value
 
@@ -1185,8 +1181,8 @@ def test_plot_surf_roi(engine, surface_image_roi, colorbar):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
     plot_surf_roi(
-        surface_image_roi.mesh.parts["left"],
-        roi_map=surface_image_roi.data.parts["left"],
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
         colorbar=colorbar,
         engine=engine,
     )
@@ -1201,8 +1197,8 @@ def test_plot_surf_parcellation(
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
     plot_surf_roi(
-        surface_image_parcellation.mesh.parts["left"],
-        roi_map=surface_image_parcellation.data.parts["left"],
+        surface_image_parcellation.mesh,
+        roi_map=surface_image_parcellation,
         engine=engine,
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
@@ -1213,8 +1209,8 @@ def test_plot_surf_parcellation(
 def test_plot_surf_roi_matplotlib_specific(surface_image_roi):
     # change vmin, vmax
     img = plot_surf_roi(
-        surface_image_roi.mesh.parts["left"],
-        roi_map=surface_image_roi.data.parts["left"],
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
@@ -1228,8 +1224,8 @@ def test_plot_surf_roi_matplotlib_specific(surface_image_roi):
     assert cbar_vmax == 8.0
 
     img2 = plot_surf_roi(
-        surface_image_roi.mesh.parts["left"],
-        roi_map=surface_image_roi.data.parts["left"],
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
@@ -1250,9 +1246,10 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     # Test nans handling
     surface_image_parcellation.data.parts["left"][::2] = np.nan
     img = plot_surf_roi(
-        surface_image_parcellation.mesh.parts["left"],
-        roi_map=surface_image_parcellation.data.parts["left"],
+        surface_image_parcellation.mesh,
+        roi_map=surface_image_parcellation,
         engine="matplotlib",
+        hemi="left",
     )
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
@@ -1761,7 +1758,7 @@ def test_compute_facecolors_matplotlib():
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_default_arguments(
-    engine, symmetric_cmap, avg_method, in_memory_mesh, surf_roi_data
+    engine, symmetric_cmap, avg_method, surface_image_roi
 ):
     """Regression test for https://github.com/nilearn/nilearn/issues/3941."""
     # To avoid extra warnings
@@ -1769,8 +1766,8 @@ def test_plot_surf_roi_default_arguments(
         avg_method = None
 
     plot_surf_roi(
-        in_memory_mesh,
-        roi_map=surf_roi_data,
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi.data,
         engine=engine,
         symmetric_cmap=symmetric_cmap,
         darkness=None,  # to avoid deprecation warning
