@@ -13,13 +13,11 @@ from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn.maskers._utils import (
-    check_same_n_vertices,
     check_surface_data_ndims,
     concat_extract_surface_data_parts,
-    concatenate_surface_images,
 )
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface import SurfaceImage
+from nilearn.surface import SurfaceImage, check_same_n_vertices, concat_imgs
 
 
 @fill_doc
@@ -251,7 +249,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # to be able to concatenate it
         if not isinstance(img, list):
             img = [img]
-        img = concatenate_surface_images(img)
+        img = concat_imgs(img)
         # check img data is 2D
         check_surface_data_ndims(img, 2, "img")
         check_same_n_vertices(self.maps_img.mesh, img.mesh)

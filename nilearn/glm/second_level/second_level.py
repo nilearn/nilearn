@@ -32,13 +32,11 @@ from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image import mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers._utils import (
-    check_same_n_vertices,
-    compute_mean_surface_image,
-    concatenate_surface_images,
     deconcatenate_surface_images,
 )
 from nilearn.mass_univariate import permuted_ols
-from nilearn.surface import SurfaceImage
+from nilearn.surface import SurfaceImage, check_same_n_vertices, concat_imgs
+from nilearn.surface import mean_img as surf_mean_img
 
 
 def _input_type_error_message(second_level_input):
@@ -434,10 +432,8 @@ def _process_second_level_input_as_surface_image(second_level_input):
     if isinstance(second_level_input, SurfaceImage):
         return second_level_input, None
 
-    second_level_input = [
-        compute_mean_surface_image(x) for x in second_level_input
-    ]
-    sample_map = concatenate_surface_images(second_level_input)
+    second_level_input = [surf_mean_img(x) for x in second_level_input]
+    sample_map = concat_imgs(second_level_input)
     return sample_map, None
 
 
