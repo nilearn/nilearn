@@ -396,3 +396,33 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "has not been fitted. "
                 "You must call fit() before calling transform()."
             )
+
+
+class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
+    """Class from which all surface maskers should inherit."""
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(surf_img=True, niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
+        return tags
