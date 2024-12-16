@@ -38,8 +38,8 @@ from nilearn.glm.second_level.second_level import (
 )
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
-from nilearn.surface import concat_imgs as surf_concat_imgs
 from nilearn.surface._testing import assert_surface_image_equal
+from nilearn.surface.surface import concat_imgs as surf_concat_imgs
 
 if is_matplotlib_installed():
     from nilearn.reporting import get_clusters_table

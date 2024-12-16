@@ -13,9 +13,6 @@ from sklearn.exceptions import EfficiencyWarning
 from nilearn import datasets, image
 from nilearn._utils import data_gen
 from nilearn.image import resampling
-from nilearn.maskers._utils import (
-    deconcatenate_surface_images,
-)
 from nilearn.surface._testing import (
     assert_polymesh_equal,
     assert_surface_image_equal,
@@ -47,6 +44,7 @@ from nilearn.surface.surface import (
     load_surf_data,
     load_surf_mesh,
     mean_img,
+    two_dim_to_one_dim,
     vol_to_surf,
 )
 from nilearn.surface.tests._testing import (
@@ -1115,7 +1113,7 @@ def test_concatenate_surface_images(surf_img_2d):
 
 def test_deconcatenate_surface_images(surf_img_2d):
     input = surf_img_2d(5)
-    output = deconcatenate_surface_images(input)
+    output = two_dim_to_one_dim(input)
 
     assert isinstance(output, list)
     assert len(output) == input.shape[1]
@@ -1131,15 +1129,15 @@ def test_deconcatenate_surface_images(surf_img_2d):
 def test_deconcatenate_surface_images_2d(surf_img_1d, surf_img_2d):
     """Return as is if surface image is 2D."""
     input = surf_img_2d(1)
-    output = deconcatenate_surface_images(input)
+    output = two_dim_to_one_dim(input)
 
     assert_surface_image_equal(output[0], input)
 
-    output = deconcatenate_surface_images(surf_img_1d)
+    output = two_dim_to_one_dim(surf_img_1d)
 
     assert_surface_image_equal(output[0], surf_img_1d)
 
 
 def test_deconcatenate_wrong_input():
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        deconcatenate_surface_images(1)
+        two_dim_to_one_dim(1)

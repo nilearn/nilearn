@@ -1,6 +1,7 @@
 """Functions for surface manipulation."""
 
 import abc
+import copy
 import gzip
 import pathlib
 import warnings
@@ -1883,3 +1884,43 @@ def mean_img(img):
         for part, value in img.data.parts.items()
     }
     return SurfaceImage(mesh=img.mesh, data=data)
+
+
+def two_dim_to_one_dim(img):
+    """Deconcatenate a 2D Surface image into a a list of 1D SurfaceImages.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    Returns
+    -------
+    :obj:`list` or :obj:`tuple` of SurfaceImage object
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+
+    if len(img.shape) < 2 or img.shape[1] < 2:
+        return [img]
+
+    mesh = img.mesh
+
+    return [
+        SurfaceImage(
+            mesh=copy.deepcopy(mesh),
+            data=_extract_surface_image_data(img, i),
+        )
+        for i in range(img.shape[1])
+    ]
+
+
+def _extract_surface_image_data(surface_image, index):
+    mesh = surface_image.mesh
+    data = surface_image.data
+
+    return {
+        hemi: data.parts[hemi][..., index]
+        .copy()
+        .reshape(mesh.parts[hemi].n_vertices, 1)
+        for hemi in data.parts
+    }
