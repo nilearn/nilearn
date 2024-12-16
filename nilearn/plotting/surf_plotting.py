@@ -26,7 +26,6 @@ from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import (
-    PolyData,
     PolyMesh,
     SurfaceImage,
     load_surf_data,
@@ -2084,8 +2083,6 @@ def plot_surf_roi(
 
     if isinstance(roi_map, SurfaceImage):
         roi_map = roi_map.data.parts[hemi]
-    if isinstance(roi_map, PolyData):
-        roi_map = roi_map.parts[hemi]
     roi = load_surf_data(roi_map)
 
     idx_not_na = ~np.isnan(roi)

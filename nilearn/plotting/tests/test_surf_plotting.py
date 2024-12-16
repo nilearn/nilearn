@@ -1761,7 +1761,7 @@ def test_plot_surf_roi_default_arguments(
 
     plot_surf_roi(
         surface_image_roi.mesh,
-        roi_map=surface_image_roi.data,
+        roi_map=surface_image_roi,
         engine=engine,
         symmetric_cmap=symmetric_cmap,
         darkness=None,  # to avoid deprecation warning
