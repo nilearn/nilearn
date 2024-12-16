@@ -62,17 +62,19 @@ def test_check_mesh():
 
 
 def test_check_mesh_and_data(rng, in_memory_mesh):
-    data = in_memory_mesh[0][:, 0]
+    data = in_memory_mesh.coordinates[:, 0]
 
     m, d = check_mesh_and_data(in_memory_mesh, data)
-    assert (m[0] == in_memory_mesh[0]).all()
-    assert (m[1] == in_memory_mesh[1]).all()
+    assert (m[0] == in_memory_mesh.coordinates).all()
+    assert (m[1] == in_memory_mesh.faces).all()
     assert (d == data).all()
 
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    wrong_faces = rng.integers(in_memory_mesh[0].shape[0] + 1, size=(30, 3))
-    wrong_mesh = InMemoryMesh(in_memory_mesh[0], wrong_faces)
+    wrong_faces = rng.integers(
+        in_memory_mesh.coordinates.shape[0] + 1, size=(30, 3)
+    )
+    wrong_mesh = InMemoryMesh(in_memory_mesh.coordinates, wrong_faces)
 
     # Check that check_mesh_and_data raises an error
     # with the resulting wrong mesh
@@ -83,7 +85,7 @@ def test_check_mesh_and_data(rng, in_memory_mesh):
         check_mesh_and_data(wrong_mesh, data)
 
     # Alter the data and check that an error is raised
-    data = in_memory_mesh[0][::2, 0]
+    data = in_memory_mesh.coordinates[::2, 0]
     with pytest.raises(
         ValueError, match="Mismatch between number of nodes in mesh"
     ):

@@ -334,8 +334,8 @@ def test_check_surface_plotting_inputs_errors(surf_img_1d):
 
 def test_plot_surf_contours_warning_hemi(in_memory_mesh):
     """Test warning that hemi will be ignored."""
-    parcellation = np.zeros((in_memory_mesh[0].shape[0],))
-    parcellation[in_memory_mesh[1][3]] = 1
+    parcellation = np.zeros((in_memory_mesh.coordinates.shape[0],))
+    parcellation[in_memory_mesh.faces[3]] = 1
     with pytest.warns(UserWarning, match="This value will be ignored"):
         plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
 
@@ -777,7 +777,7 @@ def test_plot_surf_engine_error(in_memory_mesh):
 def test_plot_surf(engine, tmp_path, rng, in_memory_mesh):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
-    bg = rng.standard_normal(size=in_memory_mesh[0].shape[0])
+    bg = rng.standard_normal(size=in_memory_mesh.coordinates.shape[0])
 
     # to avoid extra warnings
     alpha = None
@@ -835,7 +835,7 @@ def test_plot_surf(engine, tmp_path, rng, in_memory_mesh):
 def test_plot_surf_avg_method(rng, in_memory_mesh):
     # Plot with avg_method
     # Test all built-in methods and check
-    mapp = rng.standard_normal(size=in_memory_mesh[0].shape[0])
+    mapp = rng.standard_normal(size=in_memory_mesh.coordinates.shape[0])
     faces = in_memory_mesh.faces
 
     for method in ["mean", "median", "min", "max"]:
@@ -869,7 +869,7 @@ def test_plot_surf_avg_method(rng, in_memory_mesh):
 
     plot_surf(
         in_memory_mesh,
-        surf_map=rng.standard_normal(size=in_memory_mesh[0].shape[0]),
+        surf_map=rng.standard_normal(size=in_memory_mesh.coordinates.shape[0]),
         avg_method=custom_avg_function,
         engine="matplotlib",
     )
@@ -893,7 +893,9 @@ def test_plot_surf_error(engine, rng, in_memory_mesh):
     ):
         plot_surf(
             in_memory_mesh,
-            bg_map=rng.standard_normal(size=in_memory_mesh[0].shape[0] - 1),
+            bg_map=rng.standard_normal(
+                size=in_memory_mesh.coordinates.shape[0] - 1
+            ),
             engine=engine,
         )
 
@@ -903,7 +905,9 @@ def test_plot_surf_error(engine, rng, in_memory_mesh):
     ):
         plot_surf(
             in_memory_mesh,
-            surf_map=rng.standard_normal(size=in_memory_mesh[0].shape[0] + 1),
+            surf_map=rng.standard_normal(
+                size=in_memory_mesh.coordinates.shape[0] + 1
+            ),
             engine=engine,
         )
 
@@ -912,7 +916,9 @@ def test_plot_surf_error(engine, rng, in_memory_mesh):
     ):
         plot_surf(
             in_memory_mesh,
-            surf_map=rng.standard_normal(size=(in_memory_mesh[0].shape[0], 2)),
+            surf_map=rng.standard_normal(
+                size=(in_memory_mesh.coordinates.shape[0], 2)
+            ),
             engine=engine,
         )
 
@@ -928,7 +934,9 @@ def test_plot_surf_warnings_not_implemented_in_plotly(
     ):
         plot_surf(
             in_memory_mesh,
-            surf_map=rng.standard_normal(size=in_memory_mesh[0].shape[0]),
+            surf_map=rng.standard_normal(
+                size=in_memory_mesh.coordinates.shape[0]
+            ),
             engine="plotly",
             **kwargs,
         )
@@ -949,7 +957,9 @@ def test_plot_surf_avg_method_errors(rng, in_memory_mesh):
 
         plot_surf(
             in_memory_mesh,
-            surf_map=rng.standard_normal(size=in_memory_mesh[0].shape[0]),
+            surf_map=rng.standard_normal(
+                size=in_memory_mesh.coordinates.shape[0]
+            ),
             avg_method=custom_avg_function,
             engine="matplotlib",
         )
@@ -966,14 +976,18 @@ def test_plot_surf_avg_method_errors(rng, in_memory_mesh):
 
         plot_surf(
             in_memory_mesh,
-            surf_map=rng.standard_normal(size=in_memory_mesh[0].shape[0]),
+            surf_map=rng.standard_normal(
+                size=in_memory_mesh.coordinates.shape[0]
+            ),
             avg_method=custom_avg_function,
             engine="matplotlib",
         )
 
         plot_surf(
             in_memory_mesh,
-            surf_map=rng.standard_normal(size=in_memory_mesh[0].shape[0]),
+            surf_map=rng.standard_normal(
+                size=in_memory_mesh.coordinates.shape[0]
+            ),
             avg_method="foo",
             engine="matplotlib",
         )
@@ -992,7 +1006,9 @@ def test_plot_surf_avg_method_errors(rng, in_memory_mesh):
 
         plot_surf(
             in_memory_mesh,
-            surf_map=rng.standard_normal(size=in_memory_mesh[0].shape[0]),
+            surf_map=rng.standard_normal(
+                size=in_memory_mesh.coordinates.shape[0]
+            ),
             avg_method=custom_avg_function,
             engine="matplotlib",
         )
@@ -1002,8 +1018,8 @@ def test_plot_surf_avg_method_errors(rng, in_memory_mesh):
 def test_plot_surf_stat_map(engine, rng, in_memory_mesh):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
-    bg = rng.standard_normal(size=in_memory_mesh[0].shape[0])
-    data = 10 * rng.standard_normal(size=in_memory_mesh[0].shape[0])
+    bg = rng.standard_normal(size=in_memory_mesh.coordinates.shape[0])
+    data = 10 * rng.standard_normal(size=in_memory_mesh.coordinates.shape[0])
 
     # to avoid extra warnings
     alpha = None
@@ -1100,7 +1116,7 @@ def test_plot_surf_stat_map(engine, rng, in_memory_mesh):
 
 
 def test_plot_surf_stat_map_matplotlib_specific(rng, in_memory_mesh):
-    data = 10 * rng.standard_normal(size=in_memory_mesh[0].shape[0])
+    data = 10 * rng.standard_normal(size=in_memory_mesh.coordinates.shape[0])
     # Plot to axes
     axes = plt.subplots(ncols=2, subplot_kw={"projection": "3d"})[1]
     for ax in axes.flatten():
@@ -1142,14 +1158,16 @@ def test_plot_surf_stat_map_matplotlib_specific(rng, in_memory_mesh):
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
     tmp = fig._axstack.as_list()[0].collections[0]
-    assert in_memory_mesh[1].shape[0] == ((tmp._facecolors[:, 3]) != 0).sum()
+    assert (
+        in_memory_mesh.faces.shape[0] == ((tmp._facecolors[:, 3]) != 0).sum()
+    )
 
     # Save execution time and memory
     plt.close()
 
 
 def test_plot_surf_stat_map_error(rng, in_memory_mesh):
-    data = 10 * rng.standard_normal(size=in_memory_mesh[0].shape[0])
+    data = 10 * rng.standard_normal(size=in_memory_mesh.coordinates.shape[0])
 
     # Wrong size of stat map data
     with pytest.raises(
@@ -1323,7 +1341,7 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
     kwargs, in_memory_mesh
 ):
     """See issue https://github.com/nilearn/nilearn/issues/3944."""
-    roi_map = np.arange(0, len(in_memory_mesh[0]))
+    roi_map = np.arange(0, len(in_memory_mesh.coordinates))
 
     mpl_plot = plot_surf_roi(
         in_memory_mesh,
@@ -1531,9 +1549,9 @@ def test_plot_img_on_surf_input_as_file(img_3d_mni_as_file):
 
 def test_plot_surf_contours(in_memory_mesh):
     # we need a valid parcellation for testing
-    parcellation = np.zeros((in_memory_mesh[0].shape[0],))
-    parcellation[in_memory_mesh[1][3]] = 1
-    parcellation[in_memory_mesh[1][5]] = 2
+    parcellation = np.zeros((in_memory_mesh.coordinates.shape[0],))
+    parcellation[in_memory_mesh.faces[3]] = 1
+    parcellation[in_memory_mesh.faces[5]] = 2
     plot_surf_contours(in_memory_mesh, parcellation)
     plot_surf_contours(in_memory_mesh, parcellation, levels=[1, 2])
     plot_surf_contours(
@@ -1604,10 +1622,12 @@ def test_plot_surf_contours(in_memory_mesh):
 
 def test_plot_surf_contours_error(rng, in_memory_mesh):
     # we need an invalid parcellation for testing
-    invalid_parcellation = rng.uniform(size=(in_memory_mesh[0].shape[0]))
-    parcellation = np.zeros((in_memory_mesh[0].shape[0],))
-    parcellation[in_memory_mesh[1][3]] = 1
-    parcellation[in_memory_mesh[1][5]] = 2
+    invalid_parcellation = rng.uniform(
+        size=(in_memory_mesh.coordinates.shape[0])
+    )
+    parcellation = np.zeros((in_memory_mesh.coordinates.shape[0],))
+    parcellation[in_memory_mesh.faces[3]] = 1
+    parcellation[in_memory_mesh.faces[5]] = 2
     with pytest.raises(
         ValueError, match="Vertices in parcellation do not form region."
     ):
