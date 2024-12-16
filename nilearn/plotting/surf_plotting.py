@@ -2081,8 +2081,6 @@ def plot_surf_roi(
     # messages in case of wrong inputs
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-    if isinstance(roi_map, SurfaceImage):
-        roi_map = roi_map.data.parts[hemi]
     roi = load_surf_data(roi_map)
 
     idx_not_na = ~np.isnan(roi)
