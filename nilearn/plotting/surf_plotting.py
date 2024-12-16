@@ -2096,7 +2096,7 @@ def plot_surf_roi(
             "roi_map can only have one dimension but has "
             f"{roi.ndim} dimensions"
         )
-    if roi.shape[0] != mesh[0].shape[0]:
+    if roi.shape[0] != mesh.n_vertices:
         raise ValueError(
             "roi_map does not have the same number of vertices "
             "as the mesh. If you have a list of indices for the "
