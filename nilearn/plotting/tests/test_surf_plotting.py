@@ -583,28 +583,24 @@ def test_value_error_add_contours_levels_lines(levels, lines, in_memory_mesh):
 
 @pytest.fixture
 def surf_roi_data(rng, in_memory_mesh):
-    roi_map = np.zeros(in_memory_mesh.n_vertices)
+    roi_map = np.zeros((in_memory_mesh.n_vertices, 1))
     roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
     roi_map[roi_idx] = 1
     return roi_map
 
 
 @pytest.fixture
-def surface_image_roi(in_memory_mesh, surf_roi_data):
+def surface_image_roi(surf_mask_1d):
     """SurfaceImage for plotting."""
-    surf_map = SurfaceImage(
-        mesh={"left": in_memory_mesh, "right": in_memory_mesh},
-        data={"left": surf_roi_data.T, "right": surf_roi_data.T},
-    )
-    return surf_map
+    return surf_mask_1d
 
 
 @pytest.fixture
 def surface_image_parcellation(rng, in_memory_mesh):
-    data = rng.integers(100, size=in_memory_mesh.n_vertices).astype(float)
+    data = rng.integers(100, size=(in_memory_mesh.n_vertices, 1)).astype(float)
     parcellation = SurfaceImage(
         mesh={"left": in_memory_mesh, "right": in_memory_mesh},
-        data={"left": data.T, "right": data.T},
+        data={"left": data, "right": data},
     )
     return parcellation
 
@@ -663,12 +659,12 @@ def test_add_contours_has_name(surface_image_roi):
     not is_plotly_installed(),
     reason="Plotly is not installed; required for this test.",
 )
-def test_add_contours_lines_duplicated(in_memory_mesh, surf_roi_data):
+def test_add_contours_lines_duplicated(surface_image_roi):
     """Test that the specifications of length 1 line provided to \
      add_contours are duplicated to all requested contours.
     """
-    figure = plot_surf(in_memory_mesh, engine="plotly")
-    figure.add_contours(surf_roi_data, lines=[{"width": 10}])
+    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure.add_contours(surface_image_roi, lines=[{"width": 10}])
     newlines = figure.figure.to_dict().get("data")[1:]
     assert all(x.get("line").__contains__("width") for x in newlines)
 
@@ -1262,13 +1258,11 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     plt.close()
 
 
-def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
-    in_memory_mesh, surf_roi_data
-):
+def test_plot_surf_roi_matplotlib_specific_plot_to_axes(surface_image_roi):
     """Test plotting directly on some axes."""
     plot_surf_roi(
-        in_memory_mesh,
-        roi_map=surf_roi_data,
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
         axes=None,
         figure=plt.gcf(),
         engine="matplotlib",
@@ -1278,8 +1272,8 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
 
     with tempfile.NamedTemporaryFile() as tmp_file:
         plot_surf_roi(
-            in_memory_mesh,
-            roi_map=surf_roi_data,
+            surface_image_roi.mesh,
+            roi_map=surface_image_roi,
             axes=ax,
             figure=None,
             output_file=tmp_file.name,
@@ -1288,8 +1282,8 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
 
     with tempfile.NamedTemporaryFile() as tmp_file:
         plot_surf_roi(
-            in_memory_mesh,
-            roi_map=surf_roi_data,
+            surface_image_roi.mesh,
+            roi_map=surface_image_roi,
             axes=ax,
             figure=None,
             output_file=tmp_file.name,
