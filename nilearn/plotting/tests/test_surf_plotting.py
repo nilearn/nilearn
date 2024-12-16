@@ -11,7 +11,6 @@ from matplotlib.figure import Figure
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
-from nilearn.conftest import _rng
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
@@ -34,7 +33,6 @@ from nilearn.surface import (
     load_surf_mesh,
 )
 from nilearn.surface._testing import assert_surface_mesh_equal
-from nilearn.surface.tests._testing import generate_surf
 
 try:
     import IPython.display  # noqa:F401
@@ -599,6 +597,16 @@ def surface_image_roi(in_memory_mesh, surf_roi_data):
         data={"left": surf_roi_data.T, "right": surf_roi_data.T},
     )
     return surf_map
+
+
+@pytest.fixture
+def surface_image_parcellation(rng, in_memory_mesh):
+    data = rng.integers(100, size=in_memory_mesh.n_vertices).astype(float)
+    parcellation = SurfaceImage(
+        mesh={"left": in_memory_mesh, "right": in_memory_mesh},
+        data={"left": data.T, "right": data.T},
+    )
+    return parcellation
 
 
 @pytest.mark.skipif(
@@ -1171,47 +1179,42 @@ def test_plot_surf_stat_map_error(rng, in_memory_mesh):
         plot_surf_stat_map(in_memory_mesh, stat_map=np.vstack((data, data)).T)
 
 
-def _generate_data_test_surf_roi():
-    mesh = generate_surf()
-    roi_idx = _rng().integers(0, mesh[0].shape[0], size=10)
-    roi_map = np.zeros(mesh[0].shape[0])
-    roi_map[roi_idx] = 1
-    parcellation = _rng().integers(100, size=mesh[0].shape[0]).astype(float)
-    return roi_map, parcellation
+@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_plot_surf_roi(engine, surface_image_roi, colorbar):
+    if not is_plotly_installed() and engine == "plotly":
+        pytest.skip("Plotly is not installed; required for this test.")
+    plot_surf_roi(
+        surface_image_roi.mesh.parts["left"],
+        roi_map=surface_image_roi.data.parts["left"],
+        colorbar=colorbar,
+        engine=engine,
+    )
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_roi(engine, in_memory_mesh):
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
+def test_plot_surf_parcellation(
+    engine, colorbar, surface_image_parcellation, cbar_tick_format
+):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
-    roi_map, parcellation = _generate_data_test_surf_roi()
-    # plot roi
-    plot_surf_roi(in_memory_mesh, roi_map=roi_map, engine=engine)
     plot_surf_roi(
-        in_memory_mesh, roi_map=roi_map, colorbar=True, engine=engine
-    )
-    # plot parcellation
-    plot_surf_roi(in_memory_mesh, roi_map=parcellation, engine=engine)
-    plot_surf_roi(
-        in_memory_mesh, roi_map=parcellation, colorbar=True, engine=engine
-    )
-    plot_surf_roi(
-        in_memory_mesh,
-        roi_map=parcellation,
-        colorbar=True,
-        cbar_tick_format="%f",
+        surface_image_parcellation.mesh.parts["left"],
+        roi_map=surface_image_parcellation.data.parts["left"],
         engine=engine,
+        colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format,
     )
     plt.close()
 
 
-def test_plot_surf_roi_matplotlib_specific(in_memory_mesh):
-    roi_map, parcellation = _generate_data_test_surf_roi()
-
+def test_plot_surf_roi_matplotlib_specific(surface_image_roi):
     # change vmin, vmax
     img = plot_surf_roi(
-        in_memory_mesh,
-        roi_map=roi_map,
+        surface_image_roi.mesh.parts["left"],
+        roi_map=surface_image_roi.data.parts["left"],
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
@@ -1225,8 +1228,8 @@ def test_plot_surf_roi_matplotlib_specific(in_memory_mesh):
     assert cbar_vmax == 8.0
 
     img2 = plot_surf_roi(
-        in_memory_mesh,
-        roi_map=roi_map,
+        surface_image_roi.mesh.parts["left"],
+        roi_map=surface_image_roi.data.parts["left"],
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
@@ -1240,16 +1243,23 @@ def test_plot_surf_roi_matplotlib_specific(in_memory_mesh):
     assert cbar_vmin == 1.2
     assert cbar_vmax == 8.9
 
+
+def test_plot_surf_roi_matplotlib_specific_nan_handling(
+    surface_image_parcellation,
+):
     # Test nans handling
-    parcellation[::2] = np.nan
+    surface_image_parcellation.data.parts["left"][::2] = np.nan
     img = plot_surf_roi(
-        in_memory_mesh, roi_map=parcellation, engine="matplotlib"
+        surface_image_parcellation.mesh.parts["left"],
+        roi_map=surface_image_parcellation.data.parts["left"],
+        engine="matplotlib",
     )
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
     tmp = img._axstack.as_list()[0].collections[0]
     assert (
-        in_memory_mesh.faces.shape[0] == ((tmp._facecolors[:, 3]) != 0).sum()
+        surface_image_parcellation.mesh.parts["left"].n_vertices
+        == ((tmp._facecolors[:, 3]) != 0).sum()
     )
     # Save execution time and memory
     plt.close()
