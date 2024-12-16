@@ -8,11 +8,12 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.conftest import _affine_eye
-from nilearn.maskers import SurfaceMasker
 from nilearn.regions.parcellations import (
     Parcellations,
     _check_parameters_transform,
 )
+from nilearn.surface import SurfaceImage
+from nilearn.surface.tests._testing import flat_mesh
 
 METHODS = [
     "kmeans",
@@ -314,23 +315,39 @@ def test_transform_3d_input_images(affine_eye):
 
 
 @pytest.mark.parametrize("method", METHODS)
-@pytest.mark.parametrize("n_parcels", [2, 4, 5])
+@pytest.mark.parametrize("n_parcels", [5, 15, 30])
+@pytest.mark.parametrize("n_vertices_left", [(10, 8), (6, 9)])
+@pytest.mark.parametrize("n_vertices_right", [(9, 7), (7, 5)])
 def test_parcellation_all_methods_with_surface(
-    surf_img_2d, surf_mask_1d, method, n_parcels
+    method,
+    n_parcels,
+    n_vertices_left,
+    n_vertices_right,
+    rng,
 ):
     """Test if all parcellation methods work on surface."""
-    # create a surface masker
-    masker = SurfaceMasker(surf_mask_1d).fit()
-    # mask the surface image
-    X = masker.transform(surf_img_2d(50))
-    parcellate = Parcellations(method=method, n_parcels=n_parcels, mask=masker)
+    n_samples = 36
+    mesh = {
+        "left": flat_mesh(*n_vertices_left),
+        "right": flat_mesh(*n_vertices_right),
+    }
+    data = {
+        "left": rng.standard_normal(
+            size=(mesh["left"].coordinates.shape[0], n_samples)
+        ),
+        "right": rng.standard_normal(
+            size=(mesh["right"].coordinates.shape[0], n_samples)
+        ),
+    }
+    surf_img = SurfaceImage(mesh=mesh, data=data)
+    parcellate = Parcellations(method=method, n_parcels=n_parcels)
     # fit and transform the data
-    X_transformed = parcellate.fit_transform(surf_img_2d(50))
+    X_transformed = parcellate.fit_transform(surf_img)
     # inverse transform the transformed data
     X_inverse = parcellate.inverse_transform(X_transformed)
 
     # make sure the n_features in transformed data were reduced to n_clusters
-    assert X_transformed.shape[1] == n_parcels
+    assert X_transformed.shape == (n_samples, n_parcels)
 
     # make sure the inverse transformed data has the same shape as the original
-    assert X_inverse.shape == X.shape
+    assert X_inverse.shape == surf_img.shape
