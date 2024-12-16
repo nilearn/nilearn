@@ -719,6 +719,10 @@ def _plot_surf_matplotlib(
                 orientation="vertical",
             )
 
+        # fix floating point bug causing highest to sometimes surpass 1
+        # (for example 1.0000000000000002)
+        face_colors[face_colors > 1] = 1
+
         p3dcollec.set_facecolors(face_colors)
         p3dcollec.set_edgecolors(face_colors)
 

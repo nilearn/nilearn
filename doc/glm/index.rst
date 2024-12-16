@@ -15,3 +15,4 @@ analyses performed and present thresholded results.
    glm_intro.rst
    first_level_model.rst
    second_level_model.rst
+   meaning_difference.rst
