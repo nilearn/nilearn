@@ -71,9 +71,7 @@ def test_check_mesh_and_data(rng, in_memory_mesh):
 
     # Generate faces such that max index is larger than
     # the length of coordinates array.
-    wrong_faces = rng.integers(
-        in_memory_mesh.coordinates.shape[0] + 1, size=(30, 3)
-    )
+    wrong_faces = rng.integers(in_memory_mesh.n_vertices + 1, size=(30, 3))
     wrong_mesh = InMemoryMesh(in_memory_mesh.coordinates, wrong_faces)
 
     # Check that check_mesh_and_data raises an error
