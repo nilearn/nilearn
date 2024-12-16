@@ -1877,9 +1877,7 @@ def concat_imgs(imgs):
         tmp = [img.data.parts[part] for img in imgs]
         output_data[part] = np.concatenate(tmp, axis=1)
 
-    output = SurfaceImage(mesh=imgs[0].mesh, data=output_data)
-
-    return output
+    return new_img_like(imgs[0], data=output_data)
 
 
 def mean_img(img):
@@ -1894,13 +1892,13 @@ def mean_img(img):
     SurfaceImage
     """
     if len(img.shape) < 2 or img.shape[1] < 2:
-        return img
-
-    data = {
-        part: np.mean(value, axis=1).astype(float)
-        for part, value in img.data.parts.items()
-    }
-    return SurfaceImage(mesh=img.mesh, data=data)
+        data = img.data
+    else:
+        data = {
+            part: np.mean(value, axis=1).astype(float)
+            for part, value in img.data.parts.items()
+        }
+    return new_img_like(img, data=data)
 
 
 def two_dim_to_one_dim(img):
@@ -1920,13 +1918,8 @@ def two_dim_to_one_dim(img):
     if len(img.shape) < 2 or img.shape[1] < 2:
         return [img]
 
-    mesh = img.mesh
-
     return [
-        SurfaceImage(
-            mesh=copy.deepcopy(mesh),
-            data=_extract_surface_image_data(img, i),
-        )
+        new_img_like(img, data=_extract_surface_image_data(img, i))
         for i in range(img.shape[1])
     ]
 
@@ -1941,3 +1934,12 @@ def _extract_surface_image_data(surface_image, index):
         .reshape(mesh.parts[hemi].n_vertices, 1)
         for hemi in data.parts
     }
+
+
+def new_img_like(ref_niimg, data):
+    """Create a new SurfaceImage instance with new data."""
+    mesh = ref_niimg.mesh
+    return SurfaceImage(
+        mesh=copy.deepcopy(mesh),
+        data=data,
+    )
