@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image, freesurfer, gifti, load, nifti1
 from numpy.testing import assert_array_almost_equal, assert_array_equal
+from scipy.spatial import Delaunay
 from scipy.stats import pearsonr
 from sklearn.exceptions import EfficiencyWarning
 
@@ -41,12 +42,24 @@ from nilearn.surface.surface import (
     check_mesh_and_data,
     check_mesh_is_fsaverage,
 )
-from nilearn.surface.tests._testing import (
-    flat_mesh,
-    z_const_img,
-)
 
 datadir = Path(__file__).resolve().parent / "data"
+
+
+def flat_mesh(x_s, y_s, z=0):
+    """Create a flat horizontal mesh."""
+    x, y = np.mgrid[:x_s, :y_s]
+    x, y = x.ravel(), y.ravel()
+    z = np.ones(len(x)) * z
+    vertices = np.asarray([x, y, z]).T
+    triangulation = Delaunay(vertices[:, :2]).simplices
+    return InMemoryMesh(coordinates=vertices, faces=triangulation)
+
+
+def z_const_img(x_s, y_s, z_s):
+    """Create an image that is constant in z direction."""
+    hslice = np.arange(x_s * y_s).reshape((x_s, y_s))
+    return np.ones((x_s, y_s, z_s)) * hslice[:, :, np.newaxis]
 
 
 def test_check_mesh():
