@@ -1,5 +1,3 @@
-import numpy as np
-
 from nilearn import image
 
 
@@ -21,20 +19,3 @@ def compute_middle_image(img):
     if len(dim) == 4 or len(dim) == 5:
         img = image.index_img(img, dim[-1] // 2)
     return img, len(dim)
-
-
-def concat_extract_surface_data_parts(img):
-    """Concatenate the data of a SurfaceImage across hemispheres and return
-    as a numpy array.
-
-    Parameters
-    ----------
-    img : :obj:`~nilearn.surface.SurfaceImage` object
-        SurfaceImage whose data to concatenate and extract.
-
-    Returns
-    -------
-    :obj:`~numpy.ndarray`
-        Concatenated data across hemispheres.
-    """
-    return np.concatenate(list(img.data.parts.values()), axis=0)

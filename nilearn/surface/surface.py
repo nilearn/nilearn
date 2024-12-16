@@ -1828,6 +1828,23 @@ def get_min_max_surface_image(img):
     return vmin, vmax
 
 
+def concat_extract_surface_data_parts(img):
+    """Concatenate the data of a SurfaceImage across hemispheres and return
+    as a numpy array.
+
+    Parameters
+    ----------
+    img : :obj:`~nilearn.surface.SurfaceImage` object
+        SurfaceImage whose data to concatenate and extract.
+
+    Returns
+    -------
+    :obj:`~numpy.ndarray`
+        Concatenated data across hemispheres.
+    """
+    return np.concatenate(list(img.data.parts.values()), axis=0)
+
+
 def concat_imgs(imgs):
     """Concatenate the data of a list or tuple of SurfaceImages.
 

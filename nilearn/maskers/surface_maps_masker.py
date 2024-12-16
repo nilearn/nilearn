@@ -12,14 +12,12 @@ from nilearn import signal
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
-from nilearn.maskers._utils import (
-    concat_extract_surface_data_parts,
-)
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
     check_surface_data_ndims,
+    concat_extract_surface_data_parts,
     concat_imgs,
 )
 
