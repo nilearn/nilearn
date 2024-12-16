@@ -3,7 +3,6 @@
 import warnings
 from typing import ClassVar
 
-
 import numpy as np
 from joblib import Memory, Parallel, delayed
 from sklearn.base import clone
@@ -269,9 +268,6 @@ class Parcellations(_MultiPCA):
         "rena",
         "hierarchical_kmeans",
     )
-
-    def __init__(self):
-        pass
 
     def __init__(
         self,

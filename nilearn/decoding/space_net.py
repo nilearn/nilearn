@@ -12,9 +12,9 @@ For example: TV-L1, Graph-Net, etc
 
 import collections
 import time
-from typing import ClassVar
 import warnings
 from functools import partial
+from typing import ClassVar
 
 import numpy as np
 from joblib import Memory, Parallel, delayed

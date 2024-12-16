@@ -1134,7 +1134,7 @@ class TiledSlicer(BaseSlicer):
     """
 
     _cut_displayed: ClassVar[str] = "yxz"
-    _axes_class = CutAxes              
+    _axes_class = CutAxes
     _default_figsize: ClassVar[tuple[float, float]] = (2.0, 7.6)
 
     @classmethod
@@ -1653,7 +1653,6 @@ class XSlicer(BaseStackedSlicer):
     _default_figsize: ClassVar[tuple[float, float]] = (2.6, 2.3)
 
 
-
 class YSlicer(BaseStackedSlicer):
     """The ``YSlicer`` class enables coronal visualization with \
     plotting functions of Nilearn like \
@@ -1885,6 +1884,7 @@ class MosaicSlicer(BaseSlicer):
     and arranged in a 2x2 grid.
 
     """
+
     _cut_displayed: ClassVar[str] = "yxz"
     _axes_class: ClassVar[CutAxes] = CutAxes
     _default_figsize: ClassVar[tuple[float, float]] = (4.0, 5.0)
