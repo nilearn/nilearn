@@ -95,19 +95,20 @@ def check_threshold(
             raise ValueError(
                 f'"{name}" should not be a negative value when two_sided=True.'
             )
-        data = np.extract(data <= 0, data)
         if percentile:
-            threshold = -1 * percentile_func(abs(data), abs(threshold))
-        else:
-            value_check = data.min()
-            if threshold < value_check:
-                warnings.warn(
-                    f"The given float value must not be less than "
-                    f"{value_check}. But, you have given "
-                    f"threshold={threshold}.",
-                    category=UserWarning,
-                    stacklevel=3,
-                )
+            raise ValueError(
+                f'"{name}" should not be a negative percentile value.'
+            )
+        data = np.extract(data <= 0, data)
+        value_check = data.min()
+        if threshold < value_check:
+            warnings.warn(
+                f"The given float value must not be less than "
+                f"{value_check}. But, you have given "
+                f"threshold={threshold}.",
+                category=UserWarning,
+                stacklevel=3,
+            )
 
     return threshold
 

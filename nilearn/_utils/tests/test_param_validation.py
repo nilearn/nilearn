@@ -128,27 +128,6 @@ def test_check_threshold_negative_ts_false(matrix):
         check_threshold(-7, matrix, scoreatpercentile, two_sided=False)
 
 
-def test_check_threshold_percentile_negative_ts_false(matrix):
-    """Tests nilearn._utils.param_validation.check_threshold when
-    two_sided=False, threshold is specified as percentile (str ending with a %)
-    and threshold <=0.
-    """
-    threshold = check_threshold(
-        "-10%", matrix, scoreatpercentile, two_sided=False
-    )
-    assert -1 < threshold < 0
-
-    threshold = check_threshold(
-        "-40%", matrix, scoreatpercentile, two_sided=False
-    )
-    assert threshold == -3.0
-
-    threshold = check_threshold(
-        "-90%", matrix, scoreatpercentile, two_sided=False
-    )
-    assert threshold == -5.0
-
-
 def test_check_threshold_for_error(matrix):
     """Tests nilearn._utils.param_validation.check_threshold for errors."""
     name = "threshold"
@@ -187,6 +166,12 @@ def test_check_threshold_for_error(matrix):
             check_threshold(
                 wrong_threshold, matrix, fast_abs_percentile, name, two_sided
             )
+    with pytest.raises(
+        ValueError, match=f"{name}.+should not be a negative"
+    ):
+        check_threshold(
+            "-10%", matrix, fast_abs_percentile, name, two_sided=False
+        )
 
 
 def test_get_mask_extent():
