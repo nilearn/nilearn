@@ -205,7 +205,6 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             **kwargs,
         )
         self.n_jobs = n_jobs
-        self._shelving = False
 
     def fit(
         self,
@@ -226,6 +225,9 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             compatibility.
 
         """
+        if getattr(self, "_shelving", None) is None:
+            self._shelving = False
+
         # Load data (if filenames are given, load them)
         logger.log(
             f"Loading data from {repr_niimgs(imgs, shorten=False)}.",

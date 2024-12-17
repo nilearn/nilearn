@@ -209,9 +209,10 @@ def test_shelving():
             memory=Memory(location=cachedir, mmap_mode="r", verbose=0),
         )
         masker_shelved._shelving = True
-        masker = MultiNiftiMasker(mask_img=mask_img)
         epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
+        masker = MultiNiftiMasker(mask_img=mask_img)
         epis = masker.fit_transform([epi_img1, epi_img2])
+
         for epi_shelved, epi in zip(epis_shelved, epis):
             epi_shelved = epi_shelved.get()
             assert_array_equal(epi_shelved, epi)

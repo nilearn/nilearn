@@ -305,23 +305,7 @@ class NiftiMasker(BaseMasker):
         self.verbose = verbose
         self.reports = reports
         self.cmap = cmap
-        self._report_content = {
-            "description": (
-                "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "warning_message": None,
-        }
-        self._overlay_text = (
-            "\n To see the input Nifti image before resampling, "
-            "hover over the displayed image."
-        )
-        self._shelving = False
-        self.clean_kwargs = {
-            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-        }
+        self.clean_kwargs = kwargs
 
     def generate_report(self):
         """Generate a report of the masker."""
@@ -444,6 +428,23 @@ class NiftiMasker(BaseMasker):
             compatibility.
 
         """
+        self._report_content = {
+            "description": (
+                "This report shows the input Nifti image overlaid "
+                "with the outlines of the mask (in green). We "
+                "recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "warning_message": None,
+        }
+        self._overlay_text = (
+            "\n To see the input Nifti image before resampling, "
+            "hover over the displayed image."
+        )
+
+        if getattr(self, "_shelving", None) is None:
+            self._shelving = False
+
         if self.memory is None:
             self.memory = Memory(location=None)
 
