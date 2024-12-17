@@ -166,9 +166,7 @@ def test_check_threshold_for_error(matrix):
             check_threshold(
                 wrong_threshold, matrix, fast_abs_percentile, name, two_sided
             )
-    with pytest.raises(
-        ValueError, match=f"{name}.+should not be a negative"
-    ):
+    with pytest.raises(ValueError, match=f"{name}.+should not be a negative"):
         check_threshold(
             "-10%", matrix, fast_abs_percentile, name, two_sided=False
         )
