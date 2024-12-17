@@ -306,7 +306,7 @@ class NiftiMasker(BaseMasker):
             k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
         }
 
-        self.cmap = kwargs.get("cmap", "CMRmap_r")
+        self.cmap = kwargs.get("cmap", "gray")
 
     def generate_report(self):
         """Generate a report of the masker."""

@@ -348,6 +348,7 @@ def plot_img(
     vmax=None,
     radiological=False,
     decimals=False,
+    cmap="gray",
     **kwargs,
 ):
     """Plot cuts of a given image.
@@ -453,6 +454,7 @@ def plot_img(
         vmax=vmax,
         radiological=radiological,
         decimals=decimals,
+        cmap=cmap,
         **kwargs,
     )
 
@@ -728,7 +730,7 @@ def plot_epi(
     black_bg=True,
     colorbar=False,
     cbar_tick_format="%.2g",
-    cmap=plt.cm.nipy_spectral,
+    cmap=plt.cm.gray,
     vmin=None,
     vmax=None,
     radiological=False,
