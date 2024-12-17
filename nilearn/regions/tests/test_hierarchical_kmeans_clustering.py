@@ -16,7 +16,6 @@ from nilearn.regions.hierarchical_kmeans_clustering import (
 extra_valid_checks = [
     "check_clusterer_compute_labels_predict",
     "check_complex_data",
-    "check_dict_unchanged",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_dont_overwrite_parameters",
     "check_dtype_object",
@@ -29,7 +28,6 @@ extra_valid_checks = [
     "check_fit2d_1feature",
     "check_fit1d",
     "check_no_attributes_set_in_init",
-    "check_readonly_memmap_input",
     "check_transformers_unfitted",
     "check_transformer_n_iter",
     "check_methods_subset_invariance",
@@ -43,9 +41,6 @@ if compare_version(sklearn_version, ">", "1.5.2"):
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.append("check_estimator_sparse_data")
-
-if compare_version(sklearn_version, ">=", "1.6"):
-    extra_valid_checks.append("check_positive_only_tag_during_fit")
 
 
 @pytest.mark.parametrize(
@@ -201,3 +196,20 @@ def test_hierarchical_k_means_clustering_surface(
 
     # make sure the inverse transformed data has the same shape as the original
     assert X_inverse.shape == X.shape
+
+
+@pytest.mark.parametrize("img_type", ["surface", "volume"])
+def test_hierarchical_k_means_n_clusters_error(img_type, surf_img_2d):
+    n_samples = 15
+    data_img, mask_img = generate_fake_fmri(
+        shape=(10, 11, 12), length=n_samples
+    )
+    masker = NiftiMasker(mask_img=mask_img).fit()
+    X = masker.transform(data_img)
+
+    with pytest.raises(
+        ValueError,
+        match="n_clusters should be an integer greater than 0."
+        " 0 was provided.",
+    ):
+        HierarchicalKMeans(n_clusters=0).fit(X)
