@@ -394,3 +394,31 @@ def test_parcellation_with_multi_surface(method, rng):
 
     assert X_transformed[0].shape == (n_samples, 5)
     assert len(X_transformed) == 3
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_parcellation_with_surface_mask(method, rng):
+    """Test if parcellation works with surface data and a mask."""
+    n_samples = 36
+    mesh = {
+        "left": flat_mesh(10, 8),
+        "right": flat_mesh(9, 7),
+    }
+    data = {
+        "left": rng.standard_normal(
+            size=(mesh["left"].coordinates.shape[0], n_samples)
+        ),
+        "right": rng.standard_normal(
+            size=(mesh["right"].coordinates.shape[0], n_samples)
+        ),
+    }
+    surf_img = SurfaceImage(mesh=mesh, data=data)
+    mask_data = {
+        "left": np.ones(mesh["left"].coordinates.shape[0]).astype(bool),
+        "right": np.ones(mesh["right"].coordinates.shape[0]).astype(bool),
+    }
+    surf_mask = SurfaceImage(mesh=mesh, data=mask_data)
+    parcellate = Parcellations(method=method, n_parcels=5, mask=surf_mask)
+    X_transformed = parcellate.fit_transform(surf_img)
+
+    assert X_transformed.shape == (n_samples, 5)
