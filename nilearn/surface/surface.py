@@ -20,7 +20,8 @@ from nilearn import _utils
 from nilearn._utils import stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.image import get_data, load_img, resampling
+from nilearn.image import get_data as get_vol_data
+from nilearn.image import load_img, resampling
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -729,7 +730,7 @@ def vol_to_surf(
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
-        mask = get_data(
+        mask = get_vol_data(
             resampling.resample_to_img(
                 mask_img,
                 img,
@@ -743,7 +744,7 @@ def vol_to_surf(
         mask = None
     original_dimension = len(img.shape)
     img = _utils.check_niimg(img, atleast_4d=True)
-    frames = np.rollaxis(get_data(img), -1)
+    frames = np.rollaxis(get_vol_data(img), -1)
     mesh = load_surf_mesh(surf_mesh)
     if inner_mesh is not None:
         inner_mesh = load_surf_mesh(inner_mesh)
@@ -859,7 +860,7 @@ def load_surf_data(surf_data):
             )
 
             if surf_data.endswith(("nii", "nii.gz", "mgz")):
-                data_part = np.squeeze(get_data(load(surf_data)))
+                data_part = np.squeeze(get_vol_data(load(surf_data)))
             elif surf_data.endswith(("area", "curv", "sulc", "thickness")):
                 data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith("annot"):
@@ -1815,7 +1816,7 @@ def get_min_max_surface_image(img):
 
     Parameters
     ----------
-    img : SurfaceImage
+    img : :obj:`~nilearn.surface.SurfaceImage`
 
     Returns
     -------
@@ -1828,7 +1829,7 @@ def get_min_max_surface_image(img):
     return vmin, vmax
 
 
-def concat_extract_surface_data_parts(img):
+def get_data(img):
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
 
@@ -1852,7 +1853,8 @@ def concat_imgs(imgs):
 
     Parameters
     ----------
-    imgs : :obj:`list` or :obj:`tuple` of SurfaceImage object
+    imgs : :obj:`list` or :obj:`tuple` \
+           of :obj:`~nilearn.surface.SurfaceImage` object
 
     Returns
     -------
@@ -1901,7 +1903,7 @@ def mean_img(img):
     return new_img_like(img, data=data)
 
 
-def two_dim_to_one_dim(img):
+def two_to_one(img):
     """Deconcatenate a 2D Surface image into a a list of 1D SurfaceImages.
 
     Parameters
@@ -1912,33 +1914,70 @@ def two_dim_to_one_dim(img):
     -------
     :obj:`list` or :obj:`tuple` of SurfaceImage object
     """
+    return iter_img(img, return_iterator=False)
+
+
+def iter_img(img, return_iterator=True):
+    """Iterate over a SurfaceImage object in the 2nd dimension.
+
+    Parameters
+    ----------
+    imgs : SurfaceImage object
+
+    Returns
+    -------
+    Iterator or list of  SurfaceImage
+    """
     if not isinstance(img, SurfaceImage):
         raise TypeError("Input must a be SurfaceImage.")
-
-    if len(img.shape) < 2 or img.shape[1] < 2:
-        return [img]
-
-    return [
-        new_img_like(img, data=_extract_surface_image_data(img, i))
-        for i in range(img.shape[1])
-    ]
+    output = (index_img(img, i) for i in range(at_least_2d(img).shape[1]))
+    return output if return_iterator else list(output)
 
 
-def _extract_surface_image_data(surface_image, index):
-    mesh = surface_image.mesh
-    data = surface_image.data
+def index_img(img, index):
+    """Indexes into a 2D SurfaceImage in the second dimension.
+
+    Common use cases include extracting an image out of `img` or
+    creating a 2D image whose data is a subset of `img` data.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    index : Any type compatible with numpy array indexing
+        Used for indexing the 2D data array in the 2nd dimension.
+
+    Returns
+    -------
+    a SurfaceImage object
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    img = at_least_2d(img)
+    return new_img_like(img, data=_extract_surface_image_data(img, index))
+
+
+def _extract_surface_image_data(img, index):
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    mesh = img.mesh
+    data = img.data
+
+    last_dim = 1 if isinstance(index, int) else len(index)
 
     return {
-        hemi: data.parts[hemi][..., index]
+        hemi: data.parts[hemi][:, index]
         .copy()
-        .reshape(mesh.parts[hemi].n_vertices, 1)
+        .reshape(mesh.parts[hemi].n_vertices, last_dim)
         for hemi in data.parts
     }
 
 
-def new_img_like(ref_niimg, data):
+def new_img_like(ref_img, data):
     """Create a new SurfaceImage instance with new data."""
-    mesh = ref_niimg.mesh
+    if not isinstance(ref_img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    mesh = ref_img.mesh
     return SurfaceImage(
         mesh=copy.deepcopy(mesh),
         data=data,

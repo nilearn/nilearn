@@ -44,7 +44,7 @@ from nilearn.surface.surface import (
     load_surf_data,
     load_surf_mesh,
     mean_img,
-    two_dim_to_one_dim,
+    two_to_one,
     vol_to_surf,
 )
 from nilearn.surface.tests._testing import (
@@ -1113,7 +1113,7 @@ def test_concatenate_surface_images(surf_img_2d):
 
 def test_deconcatenate_surface_images(surf_img_2d):
     input = surf_img_2d(5)
-    output = two_dim_to_one_dim(input)
+    output = two_to_one(input)
 
     assert isinstance(output, list)
     assert len(output) == input.shape[1]
@@ -1129,15 +1129,15 @@ def test_deconcatenate_surface_images(surf_img_2d):
 def test_deconcatenate_surface_images_2d(surf_img_1d, surf_img_2d):
     """Return as is if surface image is 2D."""
     input = surf_img_2d(1)
-    output = two_dim_to_one_dim(input)
+    output = two_to_one(input)
 
     assert_surface_image_equal(output[0], input)
 
-    output = two_dim_to_one_dim(surf_img_1d)
+    output = two_to_one(surf_img_1d)
 
     assert_surface_image_equal(output[0], surf_img_1d)
 
 
 def test_deconcatenate_wrong_input():
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        two_dim_to_one_dim(1)
+        two_to_one(1)

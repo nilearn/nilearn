@@ -17,8 +17,8 @@ from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
     check_surface_data_ndims,
-    concat_extract_surface_data_parts,
     concat_imgs,
+    get_data,
 )
 
 
@@ -260,9 +260,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data = concat_extract_surface_data_parts(self.maps_img)
+        maps_data = get_data(self.maps_img)
         if self.mask_img is not None:
-            mask_data = concat_extract_surface_data_parts(self.mask_img)
+            mask_data = get_data(self.mask_img)
         else:
             mask_data = None
 
@@ -388,9 +388,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self._check_fitted()
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data = concat_extract_surface_data_parts(self.maps_img)
+        maps_data = get_data(self.maps_img)
         if self.mask_img is not None:
-            mask_data = concat_extract_surface_data_parts(self.mask_img)
+            mask_data = get_data(self.mask_img)
         else:
             mask_data = None
 

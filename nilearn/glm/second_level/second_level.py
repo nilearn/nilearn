@@ -36,7 +36,7 @@ from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
     concat_imgs,
-    two_dim_to_one_dim,
+    two_to_one,
 )
 from nilearn.surface.surface import mean_img as surf_mean_img
 
@@ -333,7 +333,7 @@ def _get_con_val(second_level_contrast, design_matrix):
 def _infer_effect_maps(second_level_input, contrast_def):
     """Deal with the different possibilities of second_level_input."""
     if isinstance(second_level_input, SurfaceImage):
-        return two_dim_to_one_dim(second_level_input)
+        return two_to_one(second_level_input)
     if isinstance(second_level_input, list) and isinstance(
         second_level_input[0], SurfaceImage
     ):
