@@ -390,6 +390,16 @@ def single_mesh(rng):
     return [coords, faces]
 
 
+@pytest.fixture
+def in_memory_mesh(single_mesh):
+    """Create a random InMemoryMesh.
+
+    This does not generate meaningful surfaces.
+    """
+    coords, faces = single_mesh
+    return InMemoryMesh(coordinates=coords, faces=faces)
+
+
 def _make_mesh():
     """Create a sample mesh with two parts: left and right, and total of
     9 vertices and 10 faces.
@@ -459,28 +469,43 @@ def surf_img_1d():
     return img
 
 
+def _make_surface_mask(n_zeros=4):
+    mesh = _make_mesh()
+    data = {}
+    for key, val in mesh.parts.items():
+        data_shape = (val.n_vertices, 1)
+        data_part = np.ones(data_shape, dtype=int)
+        for i in range(n_zeros // 2):
+            data_part[i, ...] = 0
+        data_part = data_part.astype(bool)
+        data[key] = data_part
+    return SurfaceImage(mesh, data)
+
+
 @pytest.fixture
-def surf_mask():
+def surf_mask_1d():
     """Create a sample surface mask using the sample mesh.
     This will create a mask with n_zeros zeros (default is 4) and the
-    rest ones. If empty is True, the mask will be None, required for
-    tests for html reports.
+    rest ones.
+
+    The shape of the data will be (n_vertices,).
     """
+    mask = _make_surface_mask()
+    mask.data.parts["left"] = np.squeeze(mask.data.parts["left"])
+    mask.data.parts["right"] = np.squeeze(mask.data.parts["right"])
 
-    def _make_surface_mask(n_zeros=4, empty=False):
-        if empty:
-            return None
-        mesh = _make_mesh()
-        data = {}
-        for key, val in mesh.parts.items():
-            data_shape = (val.n_vertices, 1)
-            data_part = np.ones(data_shape, dtype=int)
-            for i in range(n_zeros // 2):
-                data_part[i, ...] = 0
-            data_part = data_part.astype(bool)
-            data[key] = data_part
-        return SurfaceImage(mesh, data)
+    return mask
 
+
+@pytest.fixture
+def surf_mask_2d():
+    """Create a sample surface mask using the sample mesh.
+    This will create a mask with n_zeros zeros (default is 4) and the
+    rest ones.
+
+    The shape of the data will be (n_vertices, 1). Could be useful for testing
+    input validation where we throw an error if the mask is not 1D.
+    """
     return _make_surface_mask
 
 

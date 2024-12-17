@@ -6,7 +6,7 @@ This simple example shows how to extract regions from Smith atlas
 resting state networks.
 
 In particular, we show how Default Mode Network regions are extracted
-using :class:`nilearn.regions.RegionExtractor` from regions module
+using :class:`~nilearn.regions.RegionExtractor` from regions module
 """
 
 # %%
