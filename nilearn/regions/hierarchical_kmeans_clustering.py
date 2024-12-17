@@ -267,13 +267,13 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         -------
         self
         """
+        X = check_array(
+            X, ensure_min_features=2, ensure_min_samples=2, estimator=self
+        )
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm
         # This is because sklearn's clustering algorithm does clustering
         # on samples and not on features
-        X = check_array(
-            X, ensure_min_features=2, ensure_min_samples=2, estimator=self
-        )
         X = X.T
         # n_features for the sklearn's clustering algorithm would be the
         # number of samples in the input data

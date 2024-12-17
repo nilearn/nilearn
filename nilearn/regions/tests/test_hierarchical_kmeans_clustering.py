@@ -2,7 +2,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
 from sklearn import __version__ as sklearn_version
-
+from nilearn.surface.tests.test_surface import flat_mesh
+from nilearn.surface import SurfaceImage
 from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
@@ -182,7 +183,7 @@ def test_hierarchical_k_means_clustering_surface(
     # create a surface masker
     masker = SurfaceMasker(surf_mask).fit()
     # mask the surface image with 50 samples
-    X = masker.transform(surf_img_2d(100))
+    X = masker.transform(surf_img_2d(n_samples))
     # instantiate HierarchicalKMeans with n_clusters
     hkmeans = HierarchicalKMeans(n_clusters=n_clusters)
     # fit and transform the data
@@ -199,17 +200,28 @@ def test_hierarchical_k_means_clustering_surface(
 
 
 @pytest.mark.parametrize("img_type", ["surface", "volume"])
-def test_hierarchical_k_means_n_clusters_error(img_type, surf_img_2d):
+def test_hierarchical_k_means_n_clusters_warning(img_type, rng):
     n_samples = 15
-    data_img, mask_img = generate_fake_fmri(
-        shape=(10, 11, 12), length=n_samples
-    )
-    masker = NiftiMasker(mask_img=mask_img).fit()
-    X = masker.transform(data_img)
+    if img_type == "surface":
+        mesh = {
+            "left": flat_mesh(10, 8),
+            "right": flat_mesh(9, 7),
+        }
+        data = {
+            "left": rng.standard_normal(
+                size=(mesh["left"].coordinates.shape[0], n_samples)
+            ),
+            "right": rng.standard_normal(
+                size=(mesh["right"].coordinates.shape[0], n_samples)
+            ),
+        }
+        img = SurfaceImage(mesh=mesh, data=data)
+        X = SurfaceMasker().fit_transform(img)
+    else:
+        img, _ = generate_fake_fmri(shape=(10, 11, 12), length=n_samples)
+        X = NiftiMasker().fit_transform(img)
 
-    with pytest.raises(
-        ValueError,
-        match="n_clusters should be an integer greater than 0."
-        " 0 was provided.",
+    with pytest.warns(
+        match="n_clusters should be at most the number of features.",
     ):
-        HierarchicalKMeans(n_clusters=0).fit(X)
+        HierarchicalKMeans(n_clusters=1000).fit_transform(X)
