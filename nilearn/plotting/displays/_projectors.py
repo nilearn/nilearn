@@ -391,9 +391,8 @@ class ZProjector(OrthoProjector):
 
     """
 
-
-_cut_displayed: ClassVar[str] = "z"
-_default_figsize: ClassVar[list[float, float]] = [2.2, 3.4]
+    _cut_displayed: ClassVar[str] = "z"
+    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.4]
 
 
 class XZProjector(OrthoProjector):
@@ -500,9 +499,8 @@ class YZProjector(OrthoProjector):
 
     """
 
-
-_cut_displayed: ClassVar[str] = "yz"
-_default_figsize: ClassVar[list[float, float]] = [2.2, 3.4]
+    _cut_displayed: ClassVar[str] = "yz"
+    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.4]
 
 
 class LYRZProjector(OrthoProjector):
@@ -703,9 +701,8 @@ class LProjector(OrthoProjector):
 
     """
 
-
-_cut_displayed: ClassVar[str] = "l"
-_default_figsize: ClassVar[list[float, float]] = [2.6, 3.0]
+    _cut_displayed: ClassVar[str] = "l"
+    _default_figsize: ClassVar[list[float, float]] = [2.6, 3.0]
 
 
 class RProjector(OrthoProjector):
@@ -737,9 +734,8 @@ class RProjector(OrthoProjector):
 
     """
 
-
-_cut_displayed: ClassVar[str] = "r"
-_default_figsize: ClassVar[list[float, float]] = [2.6, 2.8]
+    _cut_displayed: ClassVar[str] = "r"
+    _default_figsize: ClassVar[list[float, float]] = [2.6, 2.8]
 
 
 PROJECTORS = {
