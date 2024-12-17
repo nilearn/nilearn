@@ -15,9 +15,8 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
-from sklearn import __version__ as sklearn_version
 
-from nilearn._utils import compare_version, data_gen, exceptions, testing
+from nilearn._utils import data_gen, exceptions, testing
 from nilearn._utils.class_inspect import check_estimator, get_params
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, index_img
@@ -31,9 +30,6 @@ extra_valid_checks = [
     "check_transformer_n_iter",
     "check_transformers_unfitted",
 ]
-# TODO remove when dropping support for sklearn_version < 1.5.0
-if compare_version(sklearn_version, "<", "1.5.0"):
-    extra_valid_checks.append("check_estimator_sparse_data")
 
 
 @pytest.mark.parametrize(
