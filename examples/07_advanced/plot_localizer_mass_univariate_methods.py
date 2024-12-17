@@ -137,7 +137,7 @@ images_to_plot = {
     "Permutation Test\n(Max TFCE FWE)": neg_log_pvals_tfce_unmasked,
 }
 
-fig, axes = plt.subplots(figsize=(12, 3), ncols=3)
+fig, axes = plt.subplots(figsize=(12, 4), ncols=3, constrained_layout=True)
 for i_col, (title, img) in enumerate(images_to_plot.items()):
     ax = axes[i_col]
     n_detections = (get_data(img) > threshold).sum()
@@ -148,9 +148,10 @@ for i_col, (title, img) in enumerate(images_to_plot.items()):
         colorbar=True,
         vmax=vmax,
         display_mode="z",
-        plot_abs=False,
         cut_coords=[12],
         threshold=threshold,
+        vmin=threshold,
+        cmap="inferno",
         figure=fig,
         axes=ax,
     )
@@ -161,3 +162,5 @@ fig.suptitle(
     y=1.3,
     fontsize=16,
 )
+
+plotting.show()

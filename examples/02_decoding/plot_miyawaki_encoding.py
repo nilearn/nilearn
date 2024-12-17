@@ -105,7 +105,7 @@ stimuli = np.vstack([stimuli_run[:-2] for stimuli_run in stimuli]).astype(
 # %%
 # fmri_data is a matrix of *samples* x *voxels*
 
-print(fmri_data.shape)
+print(f"{fmri_data.shape=}")
 
 # %%
 # We flatten the last two dimensions of stimuli
@@ -114,7 +114,7 @@ print(fmri_data.shape)
 # Flatten the stimuli
 stimuli = np.reshape(stimuli, (-1, stimulus_shape[0] * stimulus_shape[1]))
 
-print(stimuli.shape)
+print(f"{stimuli.shape=}")
 
 # %%
 # Building the encoding models
@@ -172,7 +172,7 @@ thresholded_score_map_img = threshold_img(
 # Plotting the statistical map on a background brain, we mark four voxels
 # which we will inspect more closely later on.
 from nilearn.image import coord_transform
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 
 def index_to_xy_coord(x, y, z=10):
@@ -190,6 +190,7 @@ display = plot_stat_map(
     display_mode="z",
     aspect=1.25,
     title="Explained variance per voxel",
+    cmap="inferno",
 )
 
 # creating a marker for each voxel and adding it to the statistical map
@@ -210,6 +211,7 @@ for i, (x, y) in enumerate(xy_indices_of_special_voxels):
 fig = plt.gcf()
 fig.set_size_inches(12, 12)
 
+show()
 
 # %%
 # Estimating receptive fields

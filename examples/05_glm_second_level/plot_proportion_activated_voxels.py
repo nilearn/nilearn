@@ -73,6 +73,7 @@ plotting.plot_stat_map(
     display_mode="z",
     vmax=1,
     colorbar=True,
+    cmap="inferno",
     title="group left-right button press, proportion true positives",
 )
 

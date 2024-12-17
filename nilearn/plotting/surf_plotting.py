@@ -1313,7 +1313,7 @@ def plot_surf_stat_map(
     alpha=None,
     vmin=None,
     vmax=None,
-    cmap="cold_hot",
+    cmap="RdBu_r",
     colorbar=True,
     symmetric_cbar="auto",
     cbar_tick_format="auto",
@@ -1689,7 +1689,7 @@ def plot_img_on_surf(
     vmax=None,
     threshold=None,
     symmetric_cbar="auto",
-    cmap="cold_hot",
+    cmap="RdBu_r",
     cbar_tick_format="%i",
     **kwargs,
 ):

@@ -1309,7 +1309,7 @@ def plot_stat_map(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap=cm.cold_hot,
+    cmap=plt.cm.RdBu_r,
     symmetric_cbar="auto",
     dim="auto",
     vmin=None,
@@ -1564,7 +1564,11 @@ def plot_glass_brain(
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
     if cmap is None:
-        cmap = cm.cold_hot if black_bg else cm.cold_white_hot
+        cmap = cm.cold_white_hot
+        if black_bg:
+            cmap = cm.cold_hot
+        if not plot_abs:
+            cmap = plt.cm.RdBu_r
         # use only positive half of colormap if plotting absolute values
         if plot_abs:
             cmap = LinearSegmentedColormap.from_list(
@@ -1772,7 +1776,7 @@ def plot_markers(
     node_values,
     node_coords,
     node_size="auto",
-    node_cmap=plt.cm.viridis_r,
+    node_cmap=plt.cm.gray,
     node_vmin=None,
     node_vmax=None,
     node_threshold=None,

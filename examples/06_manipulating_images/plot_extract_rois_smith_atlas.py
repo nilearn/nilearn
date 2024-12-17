@@ -59,7 +59,7 @@ plotting.plot_stat_map(
     display_mode="z",
     cut_coords=1,
     title="Network 3",
-    colorbar=False,
+    colorbar=True,
 )
 
 regions_indices_network3 = np.where(np.array(extraction.index_) == 3)
@@ -71,7 +71,9 @@ for index in regions_indices_network3[0]:
         display_mode="z",
         cut_coords=coords[2:3],
         title="Blob of network3",
-        colorbar=False,
+        colorbar=True,
+        cmap="inferno",
+        vmax=15,
     )
 
 plotting.show()

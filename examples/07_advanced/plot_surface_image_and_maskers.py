@@ -89,7 +89,6 @@ for view, ax_row in zip(views, axes):
             axes=ax,
             title=f"mean image - {hemi} - {view}",
             colorbar=False,
-            cmap="bwr",
             symmetric_cmap=True,
             bg_on_data=True,
             vmin=vmin,

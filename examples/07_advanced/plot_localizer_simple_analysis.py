@@ -79,6 +79,8 @@ display = plot_stat_map(
     display_mode="z",
     cut_coords=[plotted_slice],
     figure=fig,
+    cmap="inferno",
+    vmin=threshold,
 )
 
 masked_pvals = np.ma.masked_less(

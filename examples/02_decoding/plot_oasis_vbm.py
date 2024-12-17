@@ -154,7 +154,11 @@ from nilearn.plotting import plot_stat_map, show
 bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
 display = plot_stat_map(
-    weight_img, bg_img=bg_filename, display_mode="z", cut_coords=[z_slice]
+    weight_img,
+    bg_img=bg_filename,
+    display_mode="z",
+    cut_coords=[z_slice],
+    cmap="cold_hot",
 )
 display.title("SVM weights")
 show()
@@ -212,10 +216,10 @@ display = plot_stat_map(
     signed_neg_log_pvals_unmasked,
     bg_img=bg_filename,
     threshold=threshold,
-    cmap=plt.cm.RdBu_r,
     display_mode="z",
     cut_coords=[z_slice],
     figure=fig,
+    cmap="cold_hot",
 )
 title = (
     "Negative $\\log_{10}$ p-values\n(Non-parametric + max-type correction)"

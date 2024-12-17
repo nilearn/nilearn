@@ -83,6 +83,7 @@ plot_stat_map(
     title="graph-net weights",
     display_mode="z",
     cut_coords=1,
+    cmap="cold_hot",
 )
 
 # Plot the prediction errors.

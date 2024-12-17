@@ -11,11 +11,10 @@ Here we represent the nodes constituting the default mode network in the
 
 The tools that we need to leverage are:
 
- * :func:`~nilearn.image.index_img` to retrieve the various maps composing
-   the atlas
+* :func:`~nilearn.image.index_img` to retrieve the various maps composing
+  the atlas
 
- * Adding overlays on an existing brain display, to plot each of these
-   maps
+* Adding overlays on an existing brain display, to plot each of these maps
 
 Alternatively, :func:`~nilearn.plotting.plot_prob_atlas` allows
 to plot the maps in one step that
