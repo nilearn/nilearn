@@ -690,7 +690,8 @@ def plot_design_matrix_correlation(
     check_design_matrix(design_matrix)
 
     ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
-    if cmap not in ALLOWED_CMAP:
+    cmap_name = cmap if isinstance(cmap, str) else cmap.name
+    if cmap_name not in ALLOWED_CMAP:
         raise ValueError(f"cmap must be one of {ALLOWED_CMAP}")
 
     columns_to_drop = ["intercept", "constant"]
