@@ -13,7 +13,7 @@ from nilearn.regions.parcellations import (
     _check_parameters_transform,
 )
 from nilearn.surface import SurfaceImage
-from nilearn.surface.tests._testing import flat_mesh
+from nilearn.surface.tests.test_surface import flat_mesh
 
 METHODS = [
     "kmeans",
