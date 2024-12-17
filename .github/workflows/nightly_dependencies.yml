@@ -62,6 +62,9 @@ jobs:
                     fi;
                 fi;
 
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v4
+
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
@@ -69,7 +72,7 @@ jobs:
 
         -   name: Install tox
             if: steps.check-commit-msg.outputs.skip == 'false'
-            run: python -m pip install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
 
         -   name: Run test suite
             if: steps.check-commit-msg.outputs.skip == 'false'
