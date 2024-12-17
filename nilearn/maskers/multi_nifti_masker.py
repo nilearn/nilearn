@@ -228,6 +228,20 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         if getattr(self, "_shelving", None) is None:
             self._shelving = False
 
+        self._report_content = {
+            "description": (
+                "This report shows the input Nifti image overlaid "
+                "with the outlines of the mask (in green). We "
+                "recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "warning_message": None,
+        }
+        self._overlay_text = (
+            "\n To see the input Nifti image before resampling, "
+            "hover over the displayed image."
+        )
+
         # Load data (if filenames are given, load them)
         logger.log(
             f"Loading data from {repr_niimgs(imgs, shorten=False)}.",
