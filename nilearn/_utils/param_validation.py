@@ -7,16 +7,16 @@ import numpy as np
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
 from nilearn._utils import logger
-
 from nilearn._utils.niimg import _get_data
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.0
 
 
-def check_threshold(threshold, data, percentile_func, name="threshold"):
-    """Check if the given threshold is in correct format \
-    and within the limit.
+def check_threshold(
+    threshold, data, percentile_func, name="threshold", two_sided=True
+):
+    """Check if the given threshold is in correct format and within the limit.
 
     If necessary, this function also returns score of the data calculated based
     upon the given specific percentile function.
@@ -38,18 +38,23 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
         to calculate the score on the data.
 
     name : str, default='threshold'
-        A string just used for representing
-        the name of the threshold for a precise
-        error message.
+        A string just used for representing the name of the threshold for a
+        precise error message.
+
+    two_sided : :obj:`bool`, default=True
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+
+        .. versionadded:: 0.11.1
 
     Returns
     -------
     threshold : number
-        Returns the score of the percentile on the data or
-        returns threshold as it is
-        if given threshold is not a string percentile.
+        Returns the score of the percentile on the data or returns threshold as
+    it is if given threshold is not a string percentile.
 
     """
+    percentile = False
     if isinstance(threshold, str):
         message = (
             f'If "{name}" is given as string it '
@@ -60,28 +65,50 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
             raise ValueError(message)
 
         try:
-            percentile = float(threshold[:-1])
+            threshold = float(threshold[:-1])
+            percentile = True
         except ValueError as exc:
             exc.args += (message,)
             raise
-
-        threshold = percentile_func(data, percentile)
-    elif isinstance(threshold, numbers.Real):
-        # checks whether given float value exceeds the maximum
-        # value of the image data
-        value_check = abs(data).max()
-        if abs(threshold) > value_check:
-            warnings.warn(
-                f"The given float value must not exceed {value_check}. "
-                f"But, you have given threshold={threshold}.",
-                category=UserWarning,
-                stacklevel=3,
-            )
-    else:
+    elif not isinstance(threshold, numbers.Real):
         raise TypeError(
             f"{name} should be either a number "
             "or a string finishing with a percent sign"
         )
+
+    if threshold >= 0:
+        data = abs(data) if two_sided else np.extract(data >= 0, data)
+
+        if percentile:
+            threshold = percentile_func(data, threshold)
+        else:
+            value_check = data.max()
+            if threshold > value_check:
+                warnings.warn(
+                    f"The given float value must not exceed {value_check}. "
+                    f"But, you have given threshold={threshold}.",
+                    category=UserWarning,
+                    stacklevel=3,
+                )
+    else:
+        if two_sided:
+            raise ValueError(
+                f'"{name}" should not be a negative value when two_sided=True.'
+            )
+        data = np.extract(data <= 0, data)
+        if percentile:
+            threshold = -1 * percentile_func(abs(data), abs(threshold))
+        else:
+            value_check = data.min()
+            if threshold < value_check:
+                warnings.warn(
+                    f"The given float value must not be less than "
+                    f"{value_check}. But, you have given "
+                    f"threshold={threshold}.",
+                    category=UserWarning,
+                    stacklevel=3,
+                )
+
     return threshold
 
 
