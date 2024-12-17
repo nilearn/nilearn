@@ -274,9 +274,10 @@ def test_region_extractor_strategy_percentile(maps_and_mask):
 
     extractor = RegionExtractor(
         maps,
-        threshold=30,
+        threshold=20,
         thresholding_strategy="percentile",
         mask_img=mask_img,
+        two_sided=True,
     )
     extractor.fit()
 
