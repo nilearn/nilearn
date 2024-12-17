@@ -28,6 +28,7 @@ Classes
    NiftiSpheresMasker
    SurfaceLabelsMasker
    SurfaceMasker
+   SurfaceMapsMasker
 
 .. toctree::
 

@@ -46,6 +46,7 @@ def _load_uniform_ball_cloud(n_points=20):
         "have a big impact on the result, we strongly recommend using one "
         'of these values when using kind="ball" for much better performance.',
         EfficiencyWarning,
+        stacklevel=3,
     )
     return _uniform_ball_cloud(n_points=n_points)
 

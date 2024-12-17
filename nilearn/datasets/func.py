@@ -3,6 +3,7 @@ functional datasets (task + resting-state).
 """
 
 import fnmatch
+import itertools
 import json
 import numbers
 import os
@@ -529,6 +530,51 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     )
 
 
+# we allow the user to use alternatives to Brainomics contrast names
+CONTRAST_NAME_WRAPPER = {
+    # Checkerboard
+    "checkerboard": "checkerboard",
+    "horizontal checkerboard": "horizontal checkerboard",
+    "vertical checkerboard": "vertical checkerboard",
+    "horizontal vs vertical checkerboard": "horizontal vs vertical checkerboard",  # noqa: E501
+    "vertical vs horizontal checkerboard": "vertical vs horizontal checkerboard",  # noqa: E501
+    # Sentences
+    "sentence listening": "auditory sentences",
+    "sentence reading": "visual sentences",
+    "sentence listening and reading": "auditory&visual sentences",
+    "sentence reading vs checkerboard": "visual sentences vs checkerboard",
+    # Calculation
+    "calculation (auditory cue)": "auditory calculation",
+    "calculation (visual cue)": "visual calculation",
+    "calculation (auditory and visual cue)": "auditory&visual calculation",
+    "calculation (auditory cue) vs sentence listening": "auditory calculation vs auditory sentences",  # noqa: E501
+    "calculation (visual cue) vs sentence reading": "visual calculation vs sentences",  # noqa: E501
+    "calculation vs sentences": "auditory&visual calculation vs sentences",
+    # Calculation + Sentences
+    "calculation (auditory cue) and sentence listening": "auditory processing",
+    "calculation (visual cue) and sentence reading": "visual processing",
+    "calculation (visual cue) and sentence reading vs "
+    "calculation (auditory cue) and sentence listening": "visual processing vs auditory processing",  # noqa: E501
+    "calculation (auditory cue) and sentence listening vs "
+    "calculation (visual cue) and sentence reading": "auditory processing vs visual processing",  # noqa: E501
+    "calculation (visual cue) and sentence reading vs checkerboard": "visual processing vs checkerboard",  # noqa: E501
+    "calculation and sentence listening/reading vs button press": "cognitive processing vs motor",  # noqa: E501
+    # Button press
+    "left button press (auditory cue)": "left auditory click",
+    "left button press (visual cue)": "left visual click",
+    "left button press": "left auditory&visual click",
+    "left vs right button press": "left auditory & visual click vs right auditory&visual click",  # noqa: E501
+    "right button press (auditory cue)": "right auditory click",
+    "right button press (visual cue)": "right visual click",
+    "right button press": "right auditory & visual click",
+    "right vs left button press": "right auditory & visual click vs left auditory&visual click",  # noqa: E501
+    "button press (auditory cue) vs sentence listening": "auditory click vs auditory sentences",  # noqa: E501
+    "button press (visual cue) vs sentence reading": "visual click vs visual sentences",  # noqa: E501
+    "button press vs calculation and sentence listening/reading": "auditory&visual motor vs cognitive processing",  # noqa: E501
+}
+ALLOWED_CONTRASTS = list(CONTRAST_NAME_WRAPPER.values())
+
+
 @fill_doc
 def fetch_localizer_contrasts(
     contrasts,
@@ -676,11 +722,8 @@ def fetch_localizer_contrasts(
     nilearn.datasets.fetch_localizer_button_task
 
     """
-    if isinstance(contrasts, str):
-        raise ValueError(
-            "Contrasts should be a list of strings, but "
-            f'a single string was given: "{contrasts}"'
-        )
+    _check_inputs_fetch_localizer_contrasts(contrasts)
+
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
     if isinstance(n_subjects, numbers.Number) and (
@@ -692,65 +735,19 @@ def fetch_localizer_contrasts(
         )
         n_subjects = 94  # 94 subjects available
 
-    # we allow the user to use alternatives to Brainomics contrast names
-    contrast_name_wrapper = {
-        # Checkerboard
-        "checkerboard": "checkerboard",
-        "horizontal checkerboard": "horizontal checkerboard",
-        "vertical checkerboard": "vertical checkerboard",
-        "horizontal vs vertical checkerboard": "horizontal vs vertical checkerboard",  # noqa: E501
-        "vertical vs horizontal checkerboard": "vertical vs horizontal checkerboard",  # noqa: E501
-        # Sentences
-        "sentence listening": "auditory sentences",
-        "sentence reading": "visual sentences",
-        "sentence listening and reading": "auditory&visual sentences",
-        "sentence reading vs checkerboard": "visual sentences vs checkerboard",
-        # Calculation
-        "calculation (auditory cue)": "auditory calculation",
-        "calculation (visual cue)": "visual calculation",
-        "calculation (auditory and visual cue)": "auditory&visual calculation",
-        "calculation (auditory cue) vs sentence listening": "auditory calculation vs auditory sentences",  # noqa: E501
-        "calculation (visual cue) vs sentence reading": "visual calculation vs sentences",  # noqa: E501
-        "calculation vs sentences": "auditory&visual calculation vs sentences",
-        # Calculation + Sentences
-        "calculation (auditory cue) and sentence listening": "auditory processing",  # noqa: E501
-        "calculation (visual cue) and sentence reading": "visual processing",
-        "calculation (visual cue) and sentence reading vs "
-        "calculation (auditory cue) and sentence listening": "visual processing vs auditory processing",  # noqa: E501
-        "calculation (auditory cue) and sentence listening vs "
-        "calculation (visual cue) and sentence reading": "auditory processing vs visual processing",  # noqa: E501
-        "calculation (visual cue) and sentence reading vs checkerboard": "visual processing vs checkerboard",  # noqa: E501
-        "calculation and sentence listening/reading vs button press": "cognitive processing vs motor",  # noqa: E501
-        # Button press
-        "left button press (auditory cue)": "left auditory click",
-        "left button press (visual cue)": "left visual click",
-        "left button press": "left auditory&visual click",
-        "left vs right button press": "left auditory & visual click vs right auditory&visual click",  # noqa: E501
-        "right button press (auditory cue)": "right auditory click",
-        "right button press (visual cue)": "right visual click",
-        "right button press": "right auditory & visual click",
-        "right vs left button press": "right auditory & visual click vs left auditory&visual click",  # noqa: E501
-        "button press (auditory cue) vs sentence listening": "auditory click vs auditory sentences",  # noqa: E501
-        "button press (visual cue) vs sentence reading": "visual click vs visual sentences",  # noqa: E501
-        "button press vs calculation and sentence listening/reading": "auditory&visual motor vs cognitive processing",  # noqa: E501
-    }
-    allowed_contrasts = list(contrast_name_wrapper.values())
-
     # convert contrast names
     contrasts_wrapped = []
     # get a unique ID for each contrast. It is used to give a unique name to
     # each download file and avoid name collisions.
     contrasts_indices = []
     for contrast in contrasts:
-        if contrast in allowed_contrasts:
+        if contrast in ALLOWED_CONTRASTS:
             contrasts_wrapped.append(contrast.title().replace(" ", ""))
-            contrasts_indices.append(allowed_contrasts.index(contrast))
-        elif contrast in contrast_name_wrapper:
-            name = contrast_name_wrapper[contrast]
+            contrasts_indices.append(ALLOWED_CONTRASTS.index(contrast))
+        elif contrast in CONTRAST_NAME_WRAPPER:
+            name = CONTRAST_NAME_WRAPPER[contrast]
             contrasts_wrapped.append(name.title().replace(" ", ""))
-            contrasts_indices.append(allowed_contrasts.index(name))
-        else:
-            raise ValueError(f"Contrast '{contrast}' is not available")
+            contrasts_indices.append(ALLOWED_CONTRASTS.index(name))
 
     # Get the dataset OSF index
     dataset_name = "brainomics_localizer"
@@ -784,33 +781,32 @@ def fetch_localizer_contrasts(
     root_url = "https://osf.io/download/{0}/"
     files = {}
     filenames = []
-    for subject_id in subject_ids:
-        for data_type in data_types:
-            for contrast in contrasts_wrapped:
-                name_aux = f"{data_type}_{contrast}"
-                name_aux.replace(" ", "_")
-                file_path = Path(
-                    "brainomics_data", subject_id, f"{name_aux}.nii.gz"
-                )
 
-                path = "/".join(
-                    [
-                        "/localizer",
-                        "derivatives",
-                        "spm_1st_level",
-                        f"sub-{subject_id}",
-                        (
-                            f"sub-{subject_id}_task-localizer"
-                            f"_acq-{contrast}_{data_type}.nii.gz"
-                        ),
-                    ]
-                )
+    for subject_id, data_type, contrast in itertools.product(
+        subject_ids, data_types, contrasts_wrapped
+    ):
+        name_aux = f"{data_type}_{contrast}"
+        name_aux.replace(" ", "_")
+        file_path = Path("brainomics_data", subject_id, f"{name_aux}.nii.gz")
 
-                if _is_valid_path(path, index, verbose=verbose):
-                    file_url = root_url.format(index[path][1:])
-                    opts = {"move": file_path}
-                    filenames.append((file_path, file_url, opts))
-                    files.setdefault(data_type, []).append(file_path)
+        path = "/".join(
+            [
+                "/localizer",
+                "derivatives",
+                "spm_1st_level",
+                f"sub-{subject_id}",
+                (
+                    f"sub-{subject_id}_task-localizer"
+                    f"_acq-{contrast}_{data_type}.nii.gz"
+                ),
+            ]
+        )
+
+        if _is_valid_path(path, index, verbose=verbose):
+            file_url = root_url.format(index[path][1:])
+            opts = {"move": file_path}
+            filenames.append((file_path, file_url, opts))
+            files.setdefault(data_type, []).append(file_path)
 
     # Fetch masks if asked by user
     if get_masks:
@@ -900,6 +896,25 @@ def fetch_localizer_contrasts(
         csv_data = csv_data.to_records(index=False)
 
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
+
+
+def _check_inputs_fetch_localizer_contrasts(contrasts):
+    """Check that requested contrast name exists."""
+    if isinstance(contrasts, str):
+        raise ValueError(
+            "Contrasts should be a list of strings, but "
+            f'a single string was given: "{contrasts}"'
+        )
+    unknown_contrasts = [
+        x
+        for x in contrasts
+        if (x not in ALLOWED_CONTRASTS and x not in CONTRAST_NAME_WRAPPER)
+    ]
+    if unknown_contrasts:
+        raise ValueError(
+            "The following contrasts are not available:\n"
+            f"- {'- '.join(unknown_contrasts)}"
+        )
 
 
 def _is_valid_path(path, index, verbose):
