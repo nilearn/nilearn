@@ -34,6 +34,7 @@ extra_valid_checks = [
     "check_transformer_n_iter",
     "check_methods_subset_invariance",
     "check_methods_sample_order_invariance",
+    "check_dict_unchanged",
 ]
 
 
