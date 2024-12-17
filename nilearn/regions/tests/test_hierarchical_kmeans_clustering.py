@@ -224,4 +224,5 @@ def test_hierarchical_k_means_n_clusters_warning(img_type, rng):
     with pytest.warns(
         match="n_clusters should be at most the number of features.",
     ):
+        # very high number of clusters
         HierarchicalKMeans(n_clusters=1000).fit_transform(X)
