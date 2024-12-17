@@ -28,7 +28,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    test_nightly:
+    nightly:
 
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
@@ -75,7 +75,7 @@ jobs:
             if: steps.check-commit-msg.outputs.skip == 'false'
             id: nightly
             continue-on-error: true
-            run: tox run -e test_nightly -- nilearn
+            run: tox run -e nightly -- nilearn
 
         -   name: Upload test report
             if: success() || failure()
