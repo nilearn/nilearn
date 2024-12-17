@@ -21,11 +21,8 @@ import warnings
 
 import numpy as np
 import pytest
-import sklearn
 from nibabel import save
 from numpy.testing import assert_array_almost_equal
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
@@ -47,12 +44,12 @@ from sklearn.model_selection import KFold, LeaveOneGroupOut, ParameterGrid
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
-from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.param_validation import (
     _get_mask_extent,
     check_feature_screening,
 )
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _rng
 from nilearn.decoding.decoder import (
     Decoder,
@@ -862,18 +859,12 @@ def test_decoder_error_unknown_scoring_metrics(
 
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
-    if compare_version(sklearn.__version__, ">", "1.2.2"):
-        with pytest.raises(
-            ValueError,
-            match="The 'scoring' parameter of check_scoring "
-            "must be a str among",
-        ):
-            model.fit(X, y)
-    else:
-        with pytest.raises(
-            ValueError, match="'foo' is not a valid scoring value"
-        ):
-            model.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match="The 'scoring' parameter of check_scoring "
+        "must be a str among",
+    ):
+        model.fit(X, y)
 
 
 def test_decoder_dummy_classifier_default_scoring():
@@ -1175,8 +1166,7 @@ def test_decoder_tags_classification():
     model = Decoder()
     # TODO
     # remove if block when bumping sklearn_version to > 1.5
-    ver = parse(sklearn_version)
-    if ver.release[1] < 6:
+    if SKLEARN_LT_1_6:
         assert model.__sklearn_tags__()["require_y"] is True
     else:
         assert model.__sklearn_tags__().target_tags.required is True
@@ -1186,8 +1176,7 @@ def test_decoder_tags_regression():
     """Check value returned by _more_tags."""
     model = DecoderRegressor()
     # remove if block when bumping sklearn_version to > 1.5
-    ver = parse(sklearn_version)
-    if ver.release[1] < 6:
+    if SKLEARN_LT_1_6:
         assert model.__sklearn_tags__()["multioutput"] is True
     else:
         assert model.__sklearn_tags__().target_tags.multi_output is True

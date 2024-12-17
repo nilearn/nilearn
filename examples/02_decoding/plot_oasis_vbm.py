@@ -107,7 +107,7 @@ mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
 # %%
 # Prediction pipeline with :term:`ANOVA` and SVR using
-# :class:`nilearn.decoding.DecoderRegressor` Object
+# :class:`~nilearn.decoding.DecoderRegressor` Object
 #
 # In nilearn we can benefit from the built-in DecoderRegressor object to
 # do :term:`ANOVA` with SVR instead of manually defining the whole pipeline.
