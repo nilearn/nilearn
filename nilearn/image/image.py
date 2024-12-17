@@ -1028,7 +1028,7 @@ def threshold_img(
         img_data[
             (-cutoff_threshold < img_data) & (img_data < cutoff_threshold)
         ] = 0.0
-    elif threshold > 0:
+    elif cutoff_threshold > 0:
         img_data[img_data < cutoff_threshold] = 0.0
     else:
         img_data[img_data > cutoff_threshold] = 0.0
