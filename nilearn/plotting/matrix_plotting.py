@@ -641,7 +641,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
-    cmap="bwr",
+    cmap=plt.cm.RdBu_r,
     output_file=None,
     **kwargs,
 ):
