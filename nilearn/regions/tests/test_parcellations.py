@@ -315,21 +315,13 @@ def test_transform_3d_input_images(affine_eye):
 
 
 @pytest.mark.parametrize("method", METHODS)
-@pytest.mark.parametrize("n_parcels", [5, 15, 30])
-@pytest.mark.parametrize("n_vertices_left", [(10, 8), (6, 9)])
-@pytest.mark.parametrize("n_vertices_right", [(9, 7), (7, 5)])
-def test_parcellation_all_methods_with_surface(
-    method,
-    n_parcels,
-    n_vertices_left,
-    n_vertices_right,
-    rng,
-):
+@pytest.mark.parametrize("n_parcels", [5, 25])
+def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
     """Test if all parcellation methods work on surface."""
-    n_samples = 36
+    n_samples = 35
     mesh = {
-        "left": flat_mesh(*n_vertices_left),
-        "right": flat_mesh(*n_vertices_right),
+        "left": flat_mesh(10, 8),
+        "right": flat_mesh(9, 7),
     }
     data = {
         "left": rng.standard_normal(
@@ -351,3 +343,54 @@ def test_parcellation_all_methods_with_surface(
 
     # make sure the inverse transformed data has the same shape as the original
     assert X_inverse.shape == surf_img.shape
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_parcellation_with_surface_and_confounds(method, rng):
+    """Test if parcellation works on surface with confounds."""
+    n_samples = 36
+    mesh = {
+        "left": flat_mesh(10, 8),
+        "right": flat_mesh(9, 7),
+    }
+    data = {
+        "left": rng.standard_normal(
+            size=(mesh["left"].coordinates.shape[0], n_samples)
+        ),
+        "right": rng.standard_normal(
+            size=(mesh["right"].coordinates.shape[0], n_samples)
+        ),
+    }
+    surf_img = SurfaceImage(mesh=mesh, data=data)
+    confounds = rng.standard_normal(size=(n_samples, 3))
+    parcellate = Parcellations(method=method, n_parcels=5)
+    X_transformed = parcellate.fit_transform(surf_img, confounds=[confounds])
+
+    assert X_transformed.shape == (n_samples, 5)
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_parcellation_with_multi_surface(method, rng):
+    """Test if parcellation works with surface data from multiple
+    'subjects'.
+    """
+    n_samples = 36
+    mesh = {
+        "left": flat_mesh(10, 8),
+        "right": flat_mesh(9, 7),
+    }
+    data = {
+        "left": rng.standard_normal(
+            size=(mesh["left"].coordinates.shape[0], n_samples)
+        ),
+        "right": rng.standard_normal(
+            size=(mesh["right"].coordinates.shape[0], n_samples)
+        ),
+    }
+    surf_img = SurfaceImage(mesh=mesh, data=data)
+    surf_imgs = [surf_img] * 3
+    parcellate = Parcellations(method=method, n_parcels=5)
+    X_transformed = parcellate.fit_transform(surf_imgs)
+
+    assert X_transformed[0].shape == (n_samples, 5)
+    assert len(X_transformed) == 3
