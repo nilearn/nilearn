@@ -14,6 +14,7 @@ import collections
 import time
 import warnings
 from functools import partial
+from typing import ClassVar
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -705,8 +706,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         Standard deviation of X across samples
     """
 
-    SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
-    SUPPORTED_LOSSES = ["mse", "logistic"]
+    SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
+    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
 
     def __init__(
         self,
