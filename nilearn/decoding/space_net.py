@@ -544,7 +544,7 @@ def path_scores(
 
 
 @fill_doc
-class BaseSpaceNet(LinearRegression, CacheMixin):
+class BaseSpaceNet(CacheMixin, LinearRegression):
     """Regression and classification learners with sparsity and spatial priors.
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /

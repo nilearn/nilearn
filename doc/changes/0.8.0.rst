@@ -80,7 +80,7 @@ Enhancements
 
 - :bdg-info:`Plotting` Function :func:`~plotting.plot_surf` now accepts new values for ``avg_method`` argument, such as ``min``, ``max``, or even a custom python function to compute the value displayed for each face of the plotted mesh (:gh:`2790` by `Alexis Thual`_).
 
-- :bdg-info:`Plotting` Function :func:`~plotting.view_img_on_surf` can now optionally pass through parameters to function :func:`~surface.vol_to_surf` using the ``vol_to_surf_kwargs`` argument. One application is better HTML visualization of atlases (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html) (:gh:`2805` by `Evan Edmond`_).
+- :bdg-info:`Plotting` Function :func:`~plotting.view_img_on_surf` can now optionally pass through parameters to function :func:`~surface.vol_to_surf` using the ``vol_to_surf_kwargs`` argument. One application is better HTML visualization of atlases :ref:`sphx_glr_auto_examples_01_plotting_plot_3d_map_to_surface_projection.py` (:gh:`2805` by `Evan Edmond`_).
 
 - :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` now accepts an optional argument ``node_color`` to provide a single color for all nodes, or one color per node. It defaults to ``auto`` which colors markers according to the viridis colormap (:gh:`2810` by `Raphael Meudec`_).
 

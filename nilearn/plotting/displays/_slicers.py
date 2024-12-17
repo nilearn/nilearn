@@ -426,10 +426,11 @@ class BaseSlicer:
         # Compute tight bounds
         if type in ("contour", "contourf"):
             # Define a pseudo threshold to have a tight bounding box
-            if "levels" in kwargs:
-                thr = 0.9 * np.min(np.abs(kwargs["levels"]))
-            else:
-                thr = 1e-6
+            thr = (
+                0.9 * np.min(np.abs(kwargs["levels"]))
+                if "levels" in kwargs
+                else 1e-6
+            )
             not_mask = np.logical_or(data > thr, data < -thr)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = get_mask_bounds(
                 new_img_like(img, not_mask, affine)
@@ -761,11 +762,7 @@ class BaseSlicer:
         """
         kwargs = kwargs.copy()
         if "color" not in kwargs:
-            if self._black_bg:
-                kwargs["color"] = "w"
-            else:
-                kwargs["color"] = "k"
-
+            kwargs["color"] = "w" if self._black_bg else "k"
         bg_color = "k" if self._black_bg else "w"
 
         if left_right:
@@ -996,11 +993,10 @@ class OrthoSlicer(BaseSlicer):
         ``renderer`` is required to match the matplotlib API.
         """
         x0, y0, x1, y1 = self.rect
-        width_dict = {}
         # A dummy axes, for the situation in which we are not plotting
         # all three (x, y, z) cuts
         dummy_ax = self._axes_class(None, None, None)
-        width_dict[dummy_ax.ax] = 0
+        width_dict = {dummy_ax.ax: 0}
         display_ax_dict = self.axes
 
         if self._colorbar:
@@ -1064,11 +1060,7 @@ class OrthoSlicer(BaseSlicer):
 
         kwargs = kwargs.copy()
         if "color" not in kwargs:
-            if self._black_bg:
-                kwargs["color"] = ".8"
-            else:
-                kwargs["color"] = "k"
-
+            kwargs["color"] = ".8" if self._black_bg else "k"
         if "y" in self.axes:
             ax = self.axes["y"].ax
             if x is not None:
@@ -1267,8 +1259,8 @@ class TiledSlicer(BaseSlicer):
 
         if "y" in self.axes:
             ax = self.axes["y"].ax
-            total_height = total_height + height_dict[ax]
-            total_width = total_width + width_dict[ax]
+            total_height += height_dict[ax]
+            total_width += width_dict[ax]
 
         if "x" in self.axes:
             ax = self.axes["x"].ax
@@ -1357,15 +1349,11 @@ class TiledSlicer(BaseSlicer):
         """
         rect_x0, rect_y0, rect_x1, rect_y1 = self.rect
 
-        # image width and height
-        width_dict = {}
-        height_dict = {}
-
         # A dummy axes, for the situation in which we are not plotting
         # all three (x, y, z) cuts
         dummy_ax = self._axes_class(None, None, None)
-        width_dict[dummy_ax.ax] = 0
-        height_dict[dummy_ax.ax] = 0
+        width_dict = {dummy_ax.ax: 0}
+        height_dict = {dummy_ax.ax: 0}
         display_ax_dict = self.axes
 
         if self._colorbar:

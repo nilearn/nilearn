@@ -140,7 +140,7 @@ surface_image = SurfaceImage(mesh=mesh, data=data)
 # --------------------------
 #
 # The surface image can be plotted using the different functions
-# from the :mod:`nilearn.plotting` module.
+# from the :mod:`~nilearn.plotting` module.
 # Here we will show how to use the
 # :func:`~nilearn.plotting.view_surf` function:
 from nilearn.plotting import view_surf
@@ -232,5 +232,7 @@ view_surf(
 #   format, see
 #   :ref:`sphx_glr_auto_examples_07_advanced_plot_surface_bids_analysis.py`
 #
-# * For performing first-level GLM analysis on surface data, see `this \
-#   example <../04_glm_first_level/plot_localizer_surface_analysis.html>`_.
+# * For performing first-level GLM analysis on surface data,
+#   see this example
+#   :ref:`sphx_glr_auto_examples_04_glm_first_level\
+#   _plot_localizer_surface_analysis.py`.

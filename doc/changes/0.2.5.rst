@@ -70,7 +70,7 @@ Contributors (from ``git shortlog -ns 0.2.4..0.2.5``):
     * `Alexandre Abraham`_ (39)
     * `Martin Perez-Guevara`_ (26)
     * `Kamalakar Reddy Daddy`_ (20)
-    * `Amadeus Kanaan`_ (8)
+    * Amadeus Kanaan (8)
     * `Alexandre Abadie`_ (3)
     * `Arthur Mensch`_ (3)
     * `Elvis Dohmatob`_ (3)

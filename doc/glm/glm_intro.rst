@@ -20,6 +20,22 @@ The signal picked up by the MRI scanner is sensitive to these modifications of t
 To record cerebral activity during functional runs,
 the scanner is tuned to detect this "Blood Oxygen Level Dependent" (:term:`BOLD`) signal.
 
+.. admonition:: What do we mean by a ``run``?
+    :class: important
+
+    In Nilearn we try to stick to the :term:`BIDS` definition of run.
+
+        `An uninterrupted repetition of data acquisition that has the same acquisition parameters and task
+        (however events can change from run to run due
+        to different subject response or randomized nature of the stimuli).
+        Run is a synonym of a data acquisition.
+        Note that "uninterrupted" may look different by modality due to the nature of the recording.
+        For example, in MRI or MEG, if a subject leaves the scanner,
+        the acquisition must be restarted.
+        For some types of PET acquisitions, a subject may leave and re-enter the scanner without interrupting the scan.`
+
+    `BIDS glossary <https://bids-specification.readthedocs.io/en/latest/glossary.html#run-common_principles>`_
+
 Brain activity is measured in runs that span several minutes,
 during which the participant performs some cognitive task and the scanner acquires brain images,
 typically every 2 or 3 seconds
@@ -49,7 +65,7 @@ a time series of positive real number representing the MRI signal, sampled at th
   As previously mentioned, the nilearn package does not perform spatial preprocessing;
   it only does statistical analyses on the voxel time series.
   For preprocessing functions, users are referred to `Nipype <https://nipype.readthedocs.io/en/latest/>`_
-  or `fMRIPrep <https://fmriprep.readthedocs.io/en/stable/>`_.
+  or `fMRIPrep <https://fmriprep.org/en/stable/>`_.
 
 fMRI data modeling
 -------------------

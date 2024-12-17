@@ -547,8 +547,8 @@ class NiftiSpheresMasker(BaseMasker):
         else:
             self.mask_img_ = None
 
-        if self.reports:
-            if X is not None:
+        if X is not None:
+            if self.reports:
                 if self.mask_img_ is not None:
                     # TODO switch to force_resample=True
                     # when bumping to version > 0.13
@@ -564,8 +564,8 @@ class NiftiSpheresMasker(BaseMasker):
                     resampl_imgs = X
                 # Store 1 timepoint to pass to reporter
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
-            else:  # imgs not provided to fit
-                resampl_imgs = None
+        elif self.reports:  # imgs not provided to fit
+            resampl_imgs = None
 
         if not hasattr(self.seeds, "__iter__"):
             raise ValueError(
@@ -582,12 +582,9 @@ class NiftiSpheresMasker(BaseMasker):
                     f"It is of type {type(seed)}."
                 )
             # Convert to list because it is easier to process
-            if isinstance(seed, np.ndarray):
-                seed = seed.tolist()
-            else:
-                # in case of tuple
-                seed = list(seed)
-
+            seed = (
+                seed.tolist() if isinstance(seed, np.ndarray) else list(seed)
+            )
             # Check the length
             if len(seed) != 3:
                 raise ValueError(

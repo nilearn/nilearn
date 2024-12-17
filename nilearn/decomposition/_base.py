@@ -18,6 +18,7 @@ from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
 from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMapsMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 
@@ -361,8 +362,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         n_jobs=1,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         self.n_components = n_components
         self.random_state = random_state
         self.mask = mask
@@ -382,6 +381,33 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags()
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags()
+        return tags
 
     def fit(
         self,
@@ -412,6 +438,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         """
         # Base fit for decomposition estimators : compute the embedded masker
+        if self.memory is None:
+            self.memory = Memory(location=None)
 
         if (
             isinstance(imgs, str)

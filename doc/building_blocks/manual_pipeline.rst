@@ -193,7 +193,7 @@ predict the category of picture seen by the subject:
 
 
 We will not detail it here since there is a very good documentation about it in the
-`scikit-learn documentation <https://scikit-learn.org/stable/modules/svm.html#classification>`__
+:sklearn:`scikit-learn documentation <modules/svm.html#classification>`.
 
 Unmasking (inverse_transform)
 =============================

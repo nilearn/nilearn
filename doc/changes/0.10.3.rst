@@ -31,7 +31,7 @@ HIGHLIGHTS
 
 - :bdg-info:`Plotting` Allow setting ``vmin`` in :func:`~nilearn.plotting.plot_glass_brain` and :func:`~nilearn.plotting.plot_stat_map` (:gh:`3993` by `Michelle Wang`_).
 
-- :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`#2833` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`2833` by `Nicolas Gensollen`_).
 
 
 NEW
@@ -92,7 +92,7 @@ Enhancements
 
 - :bdg-info:`Plotting` Allow setting ``vmin`` in :func:`~nilearn.plotting.plot_glass_brain` and :func:`~nilearn.plotting.plot_stat_map` (:gh:`3993` by `Michelle Wang`_).
 
-- :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`#2833` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`2833` by `Nicolas Gensollen`_).
 
 
 Changes

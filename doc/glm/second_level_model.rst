@@ -77,6 +77,6 @@ Voxel based morphometry
 =======================
 
 The :class:`nilearn.glm.second_level.SecondLevelModel` and its associated functions can also be used
-to perform voxel based morphometry. An example using the `OASIS <https://www.oasis-brains.org/>`_ dataset to
+to perform voxel based morphometry. An example using the `OASIS <https://sites.wustl.edu/oasisbrains/>`_ dataset to
 identify the relationship between aging, sex and gray matter density is available here
 :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_oasis.py`.

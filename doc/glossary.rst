@@ -380,7 +380,7 @@ References
     https://fmriprep.org/en/stable/
 
 .. _`FREM`:
-    https://www.sciencedirect.com/science/article/abs/pii/S1053811917308182
+    https://doi.org/10.1016/j.neuroimage.2017.10.005
 
 .. _`FWHM`:
     https://en.wikipedia.org/wiki/Full_width_at_half_maximum
@@ -404,7 +404,7 @@ References
     https://en.wikipedia.org/wiki/Predictive_modelling
 
 .. _`Recursive nearest agglomeration`:
-    https://hal.archives-ouvertes.fr/hal-01366651/
+    https://hal.science/hal-01366651/
 
 .. _`receiver operating characteristic curve`:
     https://en.wikipedia.org/wiki/Receiver_operating_characteristic

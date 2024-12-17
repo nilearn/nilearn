@@ -13,7 +13,7 @@ In this example, the Nifti masker is used to automatically compute a mask.
 
 In addition, we show here how to tweak the different parameters of the
 underlying routine that extract masks from EPI
-:func:`nilearn.masking.compute_epi_mask`.
+:func:`~nilearn.masking.compute_epi_mask`.
 
 .. include:: ../../../examples/masker_note.rst
 

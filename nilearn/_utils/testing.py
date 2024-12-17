@@ -100,7 +100,9 @@ def serialize_niimg(img, gzipped=True):
             return f.read()
 
 
-def write_imgs_to_path(*imgs, file_path=None, **kwargs):
+def write_imgs_to_path(
+    *imgs, file_path=None, create_files=True, use_wildcards=False
+):
     """Write Nifti images on disk.
 
     Write nifti images in a specified location.
@@ -110,6 +112,9 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
     imgs : Nifti1Image
         Several Nifti images. Every format understood by nibabel.save is
         accepted.
+
+    file_path: pathlib.Path
+        Output directory
 
     create_files : bool
         If True, imgs are written on disk and filenames are returned. If
@@ -131,17 +136,6 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
     """
     if file_path is None:
         file_path = Path.cwd()
-
-    valid_keys = {"create_files", "use_wildcards"}
-    input_keys = set(kwargs.keys())
-    invalid_keys = input_keys - valid_keys
-    if len(invalid_keys) > 0:
-        raise TypeError(
-            f"{sys._getframe().f_code.co_name}: "
-            f"unexpected keyword argument(s): {' '.join(invalid_keys)}"
-        )
-    create_files = kwargs.get("create_files", True)
-    use_wildcards = kwargs.get("use_wildcards", False)
 
     if create_files:
         filenames = []

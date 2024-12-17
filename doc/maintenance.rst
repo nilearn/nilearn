@@ -132,7 +132,7 @@ details on their process are available
 Using tox
 =========
 
-`Tox <See https://tox.wiki/en>`_ is set
+`Tox <https://tox.wiki/en/4.23.2/>`_ is set
 to facilitate testing and managing environments during development
 and ensure that the same commands can easily be run locally and in CI.
 

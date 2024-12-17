@@ -216,30 +216,32 @@ def test_check_surface_plotting_inputs_no_change(surf_map, surf_mesh, bg_map):
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
 @pytest.mark.parametrize("mesh", [None])
 def test_check_surface_plotting_inputs_extract_mesh_and_data(
-    surf_img, mesh, bg_map
+    surf_img_1d, mesh, bg_map
 ):
     """Extract mesh and data when a SurfaceImage is passed."""
     hemi = "left"
     out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img(),
+        surf_map=surf_img_1d,
         surf_mesh=mesh,
         hemi=hemi,
         bg_map=bg_map,
     )
 
-    assert_array_equal(out_surf_map, surf_img().data.parts[hemi].T)
-    assert_surface_mesh_equal(out_surf_mesh, surf_img().mesh.parts[hemi])
+    assert_array_equal(out_surf_map, surf_img_1d.data.parts[hemi].T)
+    assert_surface_mesh_equal(out_surf_mesh, surf_img_1d.mesh.parts[hemi])
 
     assert bg_map == out_bg_map
 
 
-def test_check_surface_plotting_inputs_many_time_points(surf_img):
+def test_check_surface_plotting_inputs_many_time_points(
+    surf_img_1d, surf_img_2d
+):
     """Extract mesh and data when a SurfaceImage is passed."""
     with pytest.raises(
         TypeError, match="Input data has incompatible dimensionality"
     ):
         check_surface_plotting_inputs(
-            surf_map=surf_img(10),
+            surf_map=surf_img_2d(10),
             surf_mesh=None,
             hemi="left",
             bg_map=None,
@@ -249,49 +251,49 @@ def test_check_surface_plotting_inputs_many_time_points(surf_img):
         TypeError, match="Input data has incompatible dimensionality"
     ):
         check_surface_plotting_inputs(
-            surf_map=surf_img(),
+            surf_map=surf_img_1d,
             surf_mesh=None,
             hemi="left",
-            bg_map=surf_img(10),
+            bg_map=surf_img_2d(10),
         )
 
 
-def test_plot_surf_surface_image(surf_img):
+def test_plot_surf_surface_image(surf_img_1d):
     """Smoke test some surface plotting functions accept a SurfaceImage."""
-    plot_surf(surf_map=surf_img())
-    plot_surf_stat_map(stat_map=surf_img())
-    plot_surf_roi(roi_map=surf_img())
+    plot_surf(surf_map=surf_img_1d)
+    plot_surf_stat_map(stat_map=surf_img_1d)
+    plot_surf_roi(roi_map=surf_img_1d)
 
 
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
 def test_check_surface_plotting_inputs_extract_mesh_from_polymesh(
-    surf_img, surf_mesh, bg_map
+    surf_img_1d, surf_mesh, bg_map
 ):
     """Extract mesh from Polymesh and data from SurfaceImage."""
     hemi = "left"
     out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img(),
+        surf_map=surf_img_1d,
         surf_mesh=surf_mesh(),
         hemi=hemi,
         bg_map=bg_map,
     )
-    assert_array_equal(out_surf_map, surf_img().data.parts[hemi].T)
+    assert_array_equal(out_surf_map, surf_img_1d.data.parts[hemi].T)
     assert_surface_mesh_equal(out_surf_mesh, surf_mesh().parts[hemi])
     assert bg_map == out_bg_map
 
 
 def test_check_surface_plotting_inputs_extract_bg_map_data(
-    surf_img, surf_mesh
+    surf_img_1d, surf_mesh
 ):
     """Extract background map data."""
     hemi = "left"
     _, _, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img(),
+        surf_map=surf_img_1d,
         surf_mesh=surf_mesh(),
         hemi=hemi,
-        bg_map=surf_img(),
+        bg_map=surf_img_1d,
     )
-    assert_array_equal(out_bg_map, surf_img().data.parts[hemi])
+    assert_array_equal(out_bg_map, surf_img_1d.data.parts[hemi])
 
 
 @pytest.mark.parametrize(
@@ -310,7 +312,7 @@ def test_check_surface_plotting_inputs_error_mash_and_data_none(fn):
         fn(None, None)
 
 
-def test_check_surface_plotting_inputs_errors(surf_img):
+def test_check_surface_plotting_inputs_errors(surf_img_1d):
     """Fail if mesh is none and data is not not SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         check_surface_plotting_inputs(surf_map=1, surf_mesh=None)
@@ -326,7 +328,7 @@ def test_check_surface_plotting_inputs_errors(surf_img):
         TypeError, match="'surf_mesh' cannot be a SurfaceImage instance."
     ):
         check_surface_plotting_inputs(
-            surf_map=surf_img(), surf_mesh=surf_img()
+            surf_map=surf_img_1d, surf_mesh=surf_img_1d
         )
 
 
@@ -1410,6 +1412,14 @@ def test_plot_img_on_surf_surf_mesh(img_3d_mni):
         views=["lateral"],
         surf_mesh=fetch_surf_fsaverage(),
     )
+
+
+def test_plot_img_on_surf_surf_mesh_low_alpha(img_3d_mni):
+    """Check that low alpha value do not cause floating point error.
+
+    regression test for: https://github.com/nilearn/nilearn/issues/4900
+    """
+    plot_img_on_surf(img_3d_mni, threshold=3, alpha=0.1)
 
 
 def test_plot_img_on_surf_with_invalid_orientation(img_3d_mni):

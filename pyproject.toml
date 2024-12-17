@@ -50,17 +50,17 @@ dev = [
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
-    "furo",
-    "memory_profiler",  # measuring memory during docs building
-    "myst-parser",
-    "numpydoc",
-    "ruamel.yaml",
-    "sphinx",
-    "sphinx-copybutton",
-    "sphinx-design",
-    "sphinx-gallery",
-    "sphinxcontrib-bibtex",
-    "sphinxext-opengraph"
+    "furo>=2024.8.6",
+    "memory_profiler>=0.61.0",  # measuring memory during docs building
+    "myst-parser>=3.0.1",
+    "numpydoc>=1.8.0",
+    "ruamel.yaml>=0.18.6",
+    "sphinx>=7.4.7",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-design>=0.6.1",
+    "sphinx-gallery>=0.18.0",
+    "sphinxcontrib-bibtex>=2.6.3",
+    "sphinxext-opengraph>=0.9.1"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
@@ -150,7 +150,6 @@ dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 fixable = ["ALL"]
 ignore = [
     "ARG005",
-    "B028",
     "B904",
     "D105",
     "D205",
@@ -213,13 +212,23 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 41
+max-complexity = 25
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
 "**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
+"nilearn/signal.py" = ["B028"]
+"nilearn/{_utils}/*" = ["B028"]
+"nilearn/{connectome}/*" = ["B028"]
+"nilearn/{datasets}/*" = ["B028"]
+"nilearn/{decoding}/*" = ["B028"]
+"nilearn/{glm}/*" = ["B028"]
+"nilearn/{image}/*" = ["B028"]
+"nilearn/{maskers}/*" = ["B028"]
+"nilearn/{mass_univariate}/*" = ["B028"]
+"nilearn/{plotting}/*" = ["B028"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -228,8 +237,8 @@ convention = "numpy"
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 26
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
-max-branches = 48
+max-branches = 27
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 151
+max-statements = 108

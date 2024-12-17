@@ -1,12 +1,12 @@
-"""Understanding :class:`nilearn.decoding.Decoder`
+"""Understanding :class:`~nilearn.decoding.Decoder`
 ==================================================
 
-Nilearn's :class:`nilearn.decoding.Decoder` object is a composite estimator
+Nilearn's :class:`~nilearn.decoding.Decoder` object is a composite estimator
 that does several things under the hood and can hence be a bit difficult to
 understand at first.
 
 This example aims to provide a clear understanding of the
-:class:`nilearn.decoding.Decoder` object by demonstrating these steps via a
+:class:`~nilearn.decoding.Decoder` object by demonstrating these steps via a
 Scikit-Learn pipeline.
 
 We will use the :footcite:t:`Haxby2001` dataset where the participants were
@@ -65,23 +65,24 @@ print(f"Runs (groups): {np.unique(run)}")
 # of brain volumes acquired while visual stimuli were presented, each
 # corresponding to one of the 8 labels we selected above.
 #
-# :class:`nilearn.decoding.Decoder` can convert this 4D image to a 2D numpy
+# :class:`~nilearn.decoding.Decoder` can convert this 4D image to a 2D numpy
 # array where each row corresponds to a trial and each column corresponds to a
 # voxel. In addition, it can also do several other things like masking,
 # smoothing, standardizing the data etc. depending on your requirements.
 #
-# Under the hood, :class:`nilearn.decoding.Decoder` uses
-# :class:`nilearn.maskers.NiftiMasker` to do all these operations. So here we
+# Under the hood, :class:`~nilearn.decoding.Decoder` uses
+# :class:`~nilearn.maskers.NiftiMasker` to do all these operations. So here we
 # will demonstrate this by directly using the
-# :class:`nilearn.maskers.NiftiMasker`. Specifically, we will use it to:
+# :class:`~nilearn.maskers.NiftiMasker`. Specifically, we will use it to:
 #
 # 1. only keep the data from the Ventral Temporal cortex by providing the
-# mask image (in :class:`nilearn.decoding.Decoder` this is done by
+# mask image (in :class:`~nilearn.decoding.Decoder` this is done by
 # providing the mask image in the ``mask`` parameter).
 #
 # 2. standardize the data by z-scoring it such that the data is scaled to
 # have zero mean and unit variance across trials (in
-# :class:`nilearn.decoding.Decoder` this is done by setting the ``standardize``
+# :class:`~nilearn.decoding.Decoder`
+# this is done by setting the ``standardize``
 # parameter to ``"zscore_sample"``).
 
 from nilearn.maskers import NiftiMasker
@@ -92,7 +93,7 @@ masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample")
 # Convert the multi-class labels to binary labels
 # -----------------------------------------------
 #
-# The :class:`nilearn.decoding.Decoder` converts multi-class classification
+# The :class:`~nilearn.decoding.Decoder` converts multi-class classification
 # problem to N one-vs-others binary classification problems by default (where N
 # is the number of unique labels)
 #
@@ -175,7 +176,7 @@ plt.show()
 # -----------------
 #
 # After preprocessing the provided fMRI data, the
-# :class:`nilearn.decoding.Decoder` performs a univariate feature selection on
+# :class:`~nilearn.decoding.Decoder` performs a univariate feature selection on
 # the voxels of the brain volume. It uses Scikit-Learn's
 # :class:`~sklearn.feature_selection.SelectPercentile` with
 # :func:`~sklearn.feature_selection.f_classif` to calculate ANOVA F-scores for
@@ -210,7 +211,7 @@ feature_selector = SelectPercentile(f_classif, percentile=int(screen_percent))
 # Hyperparameter optimization
 # ---------------------------
 #
-# The :class:`nilearn.decoding.Decoder` also performs hyperparameter tuning.
+# The :class:`~nilearn.decoding.Decoder` also performs hyperparameter tuning.
 # How this is done depends on the estimator used.
 #
 # For the support vector classifiers (known as SVC, and used by setting
@@ -224,14 +225,14 @@ feature_selector = SelectPercentile(f_classif, percentile=int(screen_percent))
 # the training data.
 #
 # In addition, the parameter grids that are used for hyperparameter tuning
-# by :class:`nilearn.decoding.Decoder` are also different from the default
+# by :class:`~nilearn.decoding.Decoder` are also different from the default
 # Scikit-Learn parameter grids for the corresponding ``<estimator_name>CV``
 # objects.
 #
 # For simplicity, let's use Scikit-Learn's
 # :class:`~sklearn.linear_model.LogisticRegressionCV` with custom parameter
 # grid (via ``Cs`` parameter) as used in Nilearn's
-# :class:`nilearn.decoding.Decoder`.
+# :class:`~nilearn.decoding.Decoder`.
 
 from sklearn.linear_model import LogisticRegressionCV
 
@@ -247,7 +248,7 @@ classifier = LogisticRegressionCV(
 # -----------------------------------------------------
 #
 # Now let's put all the pieces together to train and cross-validate. The
-# :class:`nilearn.decoding.Decoder` uses a leave-one-group-out
+# :class:`~nilearn.decoding.Decoder` uses a leave-one-group-out
 # cross-validation scheme by default in cases where groups are defined. In our
 # example a group is a run, so we will use Scikit-Learn's
 # :class:`~sklearn.model_selection.LeaveOneGroupOut`
@@ -290,12 +291,12 @@ for klass in range(n_labels):
         scores_sklearn.append(score)
 
 # %%
-# Decode via the :class:`nilearn.decoding.Decoder`
-# ------------------------------------------------
+# Decode via the :class:`~nilearn.decoding.Decoder`
+# -------------------------------------------------
 #
 # All these steps can be done in a few lines and made faster via parallel
 # processing using the ``n_jobs`` parameter in
-# :class:`nilearn.decoding.Decoder`.
+# :class:`~nilearn.decoding.Decoder`.
 
 from nilearn.decoding import Decoder
 
@@ -323,9 +324,9 @@ print("Scikit-Learn mean AU-ROC score", np.mean(scores_sklearn))
 
 # %%
 # As we can see, the mean AU-ROC scores from the Scikit-Learn pipeline and
-# Nilearn's :class:`nilearn.decoding.Decoder` are identical.
+# Nilearn's :class:`~nilearn.decoding.Decoder` are identical.
 #
-# The advantage of using Nilearn's :class:`nilearn.decoding.Decoder` is
+# The advantage of using Nilearn's :class:`~nilearn.decoding.Decoder` is
 # that it does all these steps under the hood and provides a simple interface
 # to train, cross-validate and predict on new data, while also parallelizing
 # the computations to make the cross-validation faster. It also organizes the
