@@ -1020,13 +1020,19 @@ def threshold_img(
         img_data,
         percentile_func=scoreatpercentile,
         name="threshold",
+        two_sided=two_sided,
     )
 
     # Apply threshold
     if two_sided:
-        img_data[np.abs(img_data) < cutoff_threshold] = 0.0
+        img_data[
+            (-cutoff_threshold < img_data) & (img_data < cutoff_threshold)
+        ] = 0.0
     else:
-        img_data[img_data < cutoff_threshold] = 0.0
+        if threshold > 0:
+            img_data[img_data < cutoff_threshold] = 0.0
+        else:
+            img_data[img_data > cutoff_threshold] = 0.0
 
     # Expand to 4D to support both 3D and 4D
     expand_to_4d = img_data.ndim == 3
