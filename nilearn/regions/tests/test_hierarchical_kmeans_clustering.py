@@ -2,8 +2,7 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
 from sklearn import __version__ as sklearn_version
-from nilearn.surface.tests.test_surface import flat_mesh
-from nilearn.surface import SurfaceImage
+
 from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
@@ -13,6 +12,8 @@ from nilearn.regions.hierarchical_kmeans_clustering import (
     _adjust_small_clusters,
     hierarchical_k_means,
 )
+from nilearn.surface import SurfaceImage
+from nilearn.surface.tests.test_surface import flat_mesh
 
 extra_valid_checks = [
     "check_clusterer_compute_labels_predict",
