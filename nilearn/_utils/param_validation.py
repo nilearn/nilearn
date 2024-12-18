@@ -20,15 +20,20 @@ def check_threshold(
 
     If necessary, this function also returns score of the data calculated based
     upon the given specific percentile function.
-    Note: This is only for threshold as string.
+
+    Note
+    ----
+    This is only for threshold as string.
 
     Parameters
     ----------
-    threshold : float or str
-        If threshold is a float value, it should be within the range of the
-        maximum intensity value of the data.
-        If threshold is a percentage expressed in a string it must finish with
-        a percent sign like "99.7%".
+    threshold : :obj:`float` or :obj:`str`
+        Threshold that is used to set certain data values to zero.
+        If threshold is float, it should be within the range of minimum and the
+        maximum intensity of the data.
+        If `two_sided` is True, threshold cannot be negative.
+        If threshold is str, the given string should be within the range of
+        "0%" to "100%".
 
     data : ndarray
         An array of the input masked data.
@@ -51,8 +56,17 @@ def check_threshold(
     -------
     threshold : number
         Returns the score of the percentile on the data or returns threshold as
-    it is if given threshold is not a string percentile.
+        it is if given threshold is not a string percentile.
 
+    Raises
+    ------
+    ValueError
+        If threshold is of type str but is not a non-negative number followed
+        by the percent sign.
+        If threshold is a negative float and `two_sided` is True.
+    TypeError
+        If threshold is neither float nor a string in correct percentile
+        format.
     """
     percentile = False
     if isinstance(threshold, str):
@@ -63,7 +77,6 @@ def check_threshold(
         )
         if not threshold.endswith("%"):
             raise ValueError(message)
-
         try:
             threshold = float(threshold[:-1])
             percentile = True

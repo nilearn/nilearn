@@ -922,6 +922,28 @@ def threshold_img(
     Thresholding can be done based on direct image intensities or selection
     threshold with given percentile.
 
+    If threshold is float, we threshold the image based on image intensities.
+    When `two_sided` is True, the given value should be within the range of
+    minimum and maximum intensity of the input image. All instensities in the
+    interval (-threshold, threshold) will be set to zero.
+    When `two_sided` is False:
+        - if the threshold is negative, then it should be greater than the
+          minimum intensity of the input data. All intensities greater than the
+          specified threshold will be set to zero.
+        - if the threshold is positive, then it should be less than the maximum
+          intensity of the input data. All intensities less than the specified
+          threshold will be set to zero.
+    All other instensities keep their original values.
+
+    If threshold is str, the number part should be in interval [0, 100].
+    We threshold the image based on the score obtained using this percentile on
+    the image data. The percentile rank is computed using
+    :func:`scipy.stats.scoreatpercentile`.
+    When `two_sided` is True, score is calculated on the absolute values of
+    data.
+    When `two_sided` is False, score is calculated on only the non-negative
+    values of data.
+
     .. versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
@@ -933,24 +955,17 @@ def threshold_img(
         Image containing statistical or atlas maps which should be thresholded.
 
     threshold : :obj:`float` or :obj:`str`
-        Voxels with intensities less than the requested threshold
-        will be set to zero.
-        Those with intensities greater or equal than the requested threshold
-        will keep their original value.
-        If float, we threshold the image based on image intensities.
-        The given value should be within the range of minimum and maximum
-        intensity of the input image.
-        If string, it should finish with percent sign e.g. "80%"
-        and we threshold based on the score obtained
-        using this percentile on the image data.
-        The given string should be within the range of "0%" to "100%".
-        The percentile rank is computed using
-        :func:`scipy.stats.scoreatpercentile`.
+        Threshold that is used to set certain voxel intensities to zero.
+        If threshold is float, it should be within the range of minimum and the
+        maximum intensity of the data.
+        If `two_sided` is True, threshold cannot be negative.
+        If threshold is str, the given string should be within the range of
+        "0%" to "100%".
 
     cluster_threshold : :obj:`float`, default=0
         Cluster size threshold, in voxels. In the returned thresholded map,
-        sets of connected voxels (``clusters``) with size smaller
-        than this number will be removed.
+        sets of connected voxels (``clusters``) with size smaller than this
+        number will be removed.
 
         .. versionadded:: 0.9.0
 
@@ -979,6 +994,16 @@ def threshold_img(
     -------
     :class:`~nibabel.nifti1.Nifti1Image`
         Thresholded image of the given input image.
+
+    Raises
+    ------
+    ValueError
+        If threshold is of type str but is not a non-negative number followed
+        by the percent sign.
+        If threshold is a negative float and `two_sided` is True.
+    TypeError
+        If threshold is neither float nor a string in correct percentile
+        format.
 
     See Also
     --------
