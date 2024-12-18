@@ -10,6 +10,7 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
+from nilearn.maskers.surface_labels_masker import _signals_to_surf_img_labels
 from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger, stringify_path
@@ -180,35 +181,8 @@ def _labels_masker_extraction(img, masker, confound):
     return signals
 
 
-def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
-    """Apply mask to labels data.
-    Copy of nilearn.maskers.surface_labels_masker._apply_mask.
-    """
-    labels_before_mask = {int(label) for label in np.unique(labels_data)}
-    labels_data[np.logical_not(mask_data.flatten())] = background_label
-    labels_after_mask = {int(label) for label in np.unique(labels_data)}
-    labels_diff = labels_before_mask - labels_after_mask
-    if labels_diff:
-        warnings.warn(
-            "After applying mask to the labels image, "
-            "the following labels were "
-            f"removed: {labels_diff}. "
-            f"Out of {len(labels_before_mask)} labels, the "
-            "masked labels image only contains "
-            f"{len(labels_after_mask)} labels "
-            "(including background).",
-            stacklevel=3,
-        )
-    labels = np.unique(labels_data)
-    labels = labels[labels != background_label]
-
-    return labels_data, labels
-
-
-def _signals_to_surf_img_labels(signals, labels_img, mask_img):
-    """Transform signals to surface image labels, used to parallelize.
-    Copy of nilearn.maskers.surface_labels_masker.inverse_transform.
-    """
+def _get_unique_labels(labels_img):
+    """Get unique labels from labels image."""
     # remove singleton dimension if present
     for part in labels_img.data.parts:
         if (
@@ -217,20 +191,7 @@ def _signals_to_surf_img_labels(signals, labels_img, mask_img):
         ):
             labels_img.data.parts[part] = labels_img.data.parts[part].squeeze()
     labels_data = np.concatenate(list(labels_img.data.parts.values()), axis=0)
-    labels = np.unique(labels_data)
-    if mask_img is not None:
-        mask_data = np.concatenate(list(mask_img.data.parts.values()), axis=0)
-        _, labels = _apply_surf_mask_on_labels(mask_data, labels_data)
-
-    data = {}
-    for part_name, labels_part in labels_img.data.parts.items():
-        data[part_name] = np.zeros(
-            (labels_part.shape[0], signals.shape[0]),
-            dtype=signals.dtype,
-        )
-        for label_idx, label in enumerate(labels):
-            data[part_name][labels_part == label] = signals[:, label_idx].T
-    return SurfaceImage(mesh=labels_img.mesh, data=data)
+    return np.unique(labels_data)
 
 
 @fill_doc
@@ -721,12 +682,13 @@ class Parcellations(_MultiPCA):
             single_subject = False
 
         if isinstance(self.mask_img_, SurfaceImage):
+            labels = _get_unique_labels(self.labels_img_)
             imgs = Parallel(n_jobs=self.n_jobs)(
                 delayed(
                     self._cache(
                         _signals_to_surf_img_labels, func_memory_level=2
                     )
-                )(each_signal, self.labels_img_, self.mask_img_)
+                )(each_signal, labels, self.labels_img_, self.mask_img_)
                 for each_signal in signals
             )
         else:
