@@ -43,12 +43,13 @@ stat_img
 from nilearn.plotting import plot_glass_brain, show
 
 # Whole brain sagittal cuts and map is thresholded at 3
+
 plot_glass_brain(stat_img, threshold=3)
 
 
 # %%
-# The same figure, with a colorbar, can be produced by
-# setting ``colorbar=True``.
+# The same figure, with a colorbar,
+# can be produced by setting ``colorbar=True``.
 
 plot_glass_brain(stat_img, threshold=3, colorbar=True)
 
