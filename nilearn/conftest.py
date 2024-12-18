@@ -390,6 +390,16 @@ def single_mesh(rng):
     return [coords, faces]
 
 
+@pytest.fixture
+def in_memory_mesh(single_mesh):
+    """Create a random InMemoryMesh.
+
+    This does not generate meaningful surfaces.
+    """
+    coords, faces = single_mesh
+    return InMemoryMesh(coordinates=coords, faces=faces)
+
+
 def _make_mesh():
     """Create a sample mesh with two parts: left and right, and total of
     9 vertices and 10 faces.
