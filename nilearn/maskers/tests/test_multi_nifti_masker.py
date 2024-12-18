@@ -14,20 +14,21 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 
 extra_valid_checks = [
     "check_estimators_unfitted",
     "check_get_params_invariance",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
+    "check_parameters_default_constructible",
 ]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[MultiNiftiMasker(), NiftiMasker()],
+        estimator=[MultiNiftiMasker()],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -40,7 +41,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[MultiNiftiMasker(), NiftiMasker()],
+        estimator=[MultiNiftiMasker()],
         extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
@@ -208,9 +209,10 @@ def test_shelving():
             memory=Memory(location=cachedir, mmap_mode="r", verbose=0),
         )
         masker_shelved._shelving = True
-        masker = MultiNiftiMasker(mask_img=mask_img)
         epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
+        masker = MultiNiftiMasker(mask_img=mask_img)
         epis = masker.fit_transform([epi_img1, epi_img2])
+
         for epi_shelved, epi in zip(epis_shelved, epis):
             epi_shelved = epi_shelved.get()
             assert_array_equal(epi_shelved, epi)
