@@ -301,7 +301,7 @@ If you wish to add a missing term, please
         have high magnitude, or both.
 
         For more information about TFCE, see :footcite:t:`Smith2009a` or
-        `Benedikt Ehinger's tutorial <https://benediktehinger.de/blog/science/threshold-free-cluster-enhancement-explained/>`_.
+        `Jeanette Mumford's video <https://www.youtube.com/watch?v=q7cWw8WC0Ws>`_ about it.
 
     TR
         Repetition time. This is the time in seconds between the beginning of an
