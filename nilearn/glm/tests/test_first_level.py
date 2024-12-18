@@ -700,7 +700,7 @@ def test_fmri_inputs_with_confounds(tmp_path):
     assert "confound_0" in flm.design_matrices_[0]
 
 
-def test_fmri_inputs_confounds_ingored_with_design_matrix(tmp_path):
+def test_fmri_inputs_confounds_ignored_with_design_matrix(tmp_path):
     """Test with confounds with design matrix.
 
     Confounds ignored if design matrix is passed
