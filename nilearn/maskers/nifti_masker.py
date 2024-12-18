@@ -125,6 +125,10 @@ def _filter_and_mask(
         parameters["target_shape"] = mask_img_.shape
         parameters["target_affine"] = mask_img_.affine
 
+    clean_kwargs = parameters.get("clean_kwargs", {}).copy()
+    if parameters.get("filter") is not None:
+        clean_kwargs["filter"] = parameters["filter"]
+
     data, affine = _filter_and_extract(
         imgs,
         _ExtractionFunctor(mask_img_),
@@ -210,6 +214,13 @@ class NiftiMasker(BaseMasker):
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
+
+    filter : str, optional
+        Filtering method to apply during signal cleaning. Options include:
+        - "butterworth"
+        - "cosine"
+        - None (default)
+
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
@@ -263,6 +274,7 @@ class NiftiMasker(BaseMasker):
         memory=None,
         verbose=0,
         reports=True,
+        filter=None,
         **kwargs,
     ):
         if memory is None:
@@ -302,9 +314,12 @@ class NiftiMasker(BaseMasker):
             "hover over the displayed image."
         )
         self._shelving = False
+        self.filter = filter
         self.clean_kwargs = {
             k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
         }
+        if filter:
+            self.clean_kwargs["filter"] = filter
 
         self.cmap = kwargs.get("cmap", "CMRmap_r")
 
@@ -578,6 +593,7 @@ class NiftiMasker(BaseMasker):
             ],
         )
         params["clean_kwargs"] = self.clean_kwargs
+        params["filter"] = self.filter
 
         data = self._cache(
             _filter_and_mask,

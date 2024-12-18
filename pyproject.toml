@@ -121,7 +121,7 @@ packages = ["nilearn"]
 source = "vcs"
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
