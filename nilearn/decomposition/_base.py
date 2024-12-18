@@ -583,9 +583,10 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        reconstructed_imgs : list of nibabel.Nifti1Image or
-                             `~nilearn.surface.SurfaceImage`
-            For each loading, reconstructed Nifti1Image
+        reconstructed_imgs : list of nibabel.Nifti1Image or \
+            :class:`~nilearn.surface.SurfaceImage`
+
+        For each loading, reconstructed Nifti1Image or SurfaceImage.
 
         """
         if not hasattr(self, "components_"):
