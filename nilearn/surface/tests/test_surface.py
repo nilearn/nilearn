@@ -41,11 +41,11 @@ from nilearn.surface.surface import (
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     concat_imgs,
-    get_min_max_surface_image,
+    get_min_max,
+    iter_img,
     load_surf_data,
     load_surf_mesh,
     mean_img,
-    two_to_one,
     vol_to_surf,
 )
 
@@ -1115,7 +1115,7 @@ def test_compute_mean_surface_image(surf_img_1d, surf_img_2d):
     assert img.shape == (img.mesh.n_vertices,)
 
 
-def test_get_min_max_surface_image(surf_img_2d):
+def test_get_min_max(surf_img_2d):
     """Make sure we get the min and max across hemispheres."""
     img = surf_img_2d()
     img.data.parts["left"][:, 0] = np.zeros(shape=(4))
@@ -1123,7 +1123,7 @@ def test_get_min_max_surface_image(surf_img_2d):
     img.data.parts["right"][:, 0] = np.zeros(shape=(5))
     img.data.parts["right"][0][0] = -3.5
 
-    vmin, vmax = get_min_max_surface_image(img)
+    vmin, vmax = get_min_max(img)
 
     assert vmin == -3.5
     assert vmax == 10
@@ -1138,7 +1138,7 @@ def test_concatenate_surface_images(surf_img_2d):
 
 def test_deconcatenate_surface_images(surf_img_2d):
     input = surf_img_2d(5)
-    output = two_to_one(input)
+    output = iter_img(input, return_iterator=False)
 
     assert isinstance(output, list)
     assert len(output) == input.shape[1]
@@ -1154,16 +1154,15 @@ def test_deconcatenate_surface_images(surf_img_2d):
 def test_deconcatenate_surface_images_2d(surf_img_1d, surf_img_2d):
     """Return as is if surface image is 2D."""
     input = surf_img_2d(1)
-    output = two_to_one(input)
+    output = iter_img(input, return_iterator=False)
 
     assert_surface_image_equal(output[0], input)
 
-    output = two_to_one(surf_img_1d)
+    output = iter_img(surf_img_1d, return_iterator=False)
 
     assert_surface_image_equal(output[0], surf_img_1d)
 
 
 def test_deconcatenate_wrong_input():
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        two_to_one(1)
-
+        iter_img(1)

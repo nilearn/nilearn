@@ -1811,7 +1811,7 @@ def check_surface_data_ndims(img, dim, var_name="img"):
         )
 
 
-def get_min_max_surface_image(img):
+def get_min_max(img):
     """Get min and max across hemisphere for a SurfaceImage.
 
     Parameters
@@ -1903,20 +1903,6 @@ def mean_img(img):
     return new_img_like(img, data=data)
 
 
-def two_to_one(img):
-    """Deconcatenate a 2D Surface image into a a list of 1D SurfaceImages.
-
-    Parameters
-    ----------
-    img : SurfaceImage object
-
-    Returns
-    -------
-    :obj:`list` or :obj:`tuple` of SurfaceImage object
-    """
-    return iter_img(img, return_iterator=False)
-
-
 def iter_img(img, return_iterator=True):
     """Iterate over a SurfaceImage object in the 2nd dimension.
 
@@ -1954,10 +1940,10 @@ def index_img(img, index):
     if not isinstance(img, SurfaceImage):
         raise TypeError("Input must a be SurfaceImage.")
     img = at_least_2d(img)
-    return new_img_like(img, data=_extract_surface_image_data(img, index))
+    return new_img_like(img, data=_extract_data(img, index))
 
 
-def _extract_surface_image_data(img, index):
+def _extract_data(img, index):
     if not isinstance(img, SurfaceImage):
         raise TypeError("Input must a be SurfaceImage.")
     mesh = img.mesh
