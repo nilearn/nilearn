@@ -618,8 +618,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        imgs : iterable of Niimg-like objects or
-        list of :obj:`~nilearn.surface.SurfaceImage`
+        imgs : iterable of Niimg-like objects or \
+               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data to be scored
 
