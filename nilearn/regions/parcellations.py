@@ -10,7 +10,7 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
-from nilearn.maskers.surface_labels_masker import _signals_to_surf_img_labels
+from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
 from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger, stringify_path
