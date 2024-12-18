@@ -76,7 +76,7 @@ jobs:
         -   name: Show tox config
             run: tox c
         -   name: Run test suite
-            run: tox run -e ${{ matrix.env }} -- nilearn
+            run: tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
         -   name: Upload test report
             if: success() || failure()
             uses: actions/upload-artifact@v4

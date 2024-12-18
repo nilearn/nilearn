@@ -78,7 +78,7 @@ jobs:
             if: steps.check-commit-msg.outputs.skip == 'false'
             id: nightly
             continue-on-error: true
-            run: tox run -e nightly -- nilearn
+            run: tox run --list-dependencies -e nightly -- nilearn
 
         -   name: Upload test report
             if: success() || failure()
