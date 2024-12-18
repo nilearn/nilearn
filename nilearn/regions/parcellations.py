@@ -1,6 +1,7 @@
 """Parcellation tools such as KMeans or Ward for fMRI images."""
 
 import warnings
+from typing import ClassVar
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -375,14 +376,14 @@ class Parcellations(_MultiPCA):
 
     """
 
-    VALID_METHODS = [
+    VALID_METHODS: ClassVar[tuple[str, ...]] = (
         "kmeans",
         "ward",
         "complete",
         "average",
         "rena",
         "hierarchical_kmeans",
-    ]
+    )
 
     def __init__(
         self,
