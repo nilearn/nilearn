@@ -742,14 +742,33 @@ def test_validity_threshold_value_in_threshold_img(shape_3d_default):
     ):
         threshold_img(maps, threshold=None, copy_header=True)
 
+    threshold = object()
+    for two_sided in [True, False]:
+        with pytest.raises(
+            TypeError, match="should be either a number or a string"
+        ):
+            threshold_img(maps, threshold=threshold, two_sided=two_sided)
     invalid_threshold_values = ["90t%", "s%", "t", "0.1"]
     name = "threshold"
     for thr in invalid_threshold_values:
-        with pytest.raises(
-            ValueError,
-            match=f"{name}.+should be a number followed by the percent sign",
-        ):
-            threshold_img(maps, threshold=thr, copy_header=True)
+        for two_sided in [True, False]:
+            with pytest.raises(
+                ValueError,
+                match=f"{name}.+should be a number followed by the percent",
+            ):
+                threshold_img(
+                    maps, threshold=thr, copy_header=True, two_sided=two_sided
+                )
+
+    two_sided = True
+    # invalid threshold values when two_sided=True
+    thresholds = [-10, "-10%"]
+    for wrong_threshold in thresholds:
+        with pytest.raises(ValueError, match="should not be a negative"):
+            threshold_img(maps, threshold=wrong_threshold, two_sided=two_sided)
+
+    with pytest.raises(ValueError, match="should not be a negative"):
+        threshold_img(maps, threshold="-10%", two_sided=False)
 
 
 def test_threshold_img(affine_eye):
@@ -767,6 +786,50 @@ def test_threshold_img(affine_eye):
 
         # when threshold is a percentile
         threshold_img(img, threshold="2%", copy_header=True)
+
+
+@pytest.mark.parametrize(
+    "threshold, two_sided, expected",
+    [
+        (3, True, 16),
+        (3, False, 8),
+        (4, True, 0),
+        (4, False, 0),
+        (4.5, True, 0),
+        (4.5, False, 0),
+        (0, True, 448),
+        (0, False, 224),
+        (-3, False, 8),
+        (-0.5, False, 224),
+        ("10%", False, 224),
+        ("99%", False, 8),
+        ("99%", True, 16)
+    ]
+)
+def test_threshold_img_with_mask(
+    stat_img_test_data, affine_eye, threshold, two_sided, expected
+):
+    temp_mask = np.ones((stat_img_test_data.shape), dtype=np.int8)
+
+    temp_mask[8:11, 0, 0] = 0  # mask values 5
+    temp_mask[13:16, 0, 0] = 0  # mask values -5
+    temp_mask[19:, 10:, 6:] = 0  # 8-voxel positive cluster
+    temp_mask[:4, 10:, 6:] = 0
+    temp_mask[13:19, 10:, 6:] = 0
+    temp_mask[13:19, 0:4, 6:] = 0
+    mask_img = Nifti1Image(temp_mask, affine_eye)
+
+    thr_img = threshold_img(
+        img=stat_img_test_data,
+        mask_img=mask_img,
+        threshold=threshold,
+        two_sided=two_sided,
+        copy=True,
+        copy_header=True,
+    )
+
+    img_data = thr_img.get_fdata()
+    assert len(img_data[np.nonzero(img_data)]) == expected
 
 
 @pytest.mark.parametrize(
