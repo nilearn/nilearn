@@ -638,7 +638,7 @@ class NiftiLabelsMasker(BaseMasker):
                 )
                 # We want to have the background in the list too
                 region_id_name_list.insert(
-                    0, 
+                    0,
                     (self.background_label, "background")
                 )
                 # now create the _region_id_name df
