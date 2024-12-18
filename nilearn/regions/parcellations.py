@@ -55,7 +55,6 @@ def _estimator_fit(data, estimator, method=None):
     labels_ = estimator.labels_
 
     return labels_
-    return labels_
 
 
 def _check_parameters_transform(imgs, confounds):
