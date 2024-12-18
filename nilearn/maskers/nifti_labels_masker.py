@@ -571,7 +571,9 @@ class NiftiLabelsMasker(BaseMasker):
                         "Expected columns 'index' and 'name' in the labels "
                         "tsv file."
                     )
-                self._region_id_name.set_index('index', inplace=True)
+                self._region_id_name = self._region_id_name.set_index(
+                    'index'
+                )
                 # Note that self.labels should include the background too
                 self.labels = self._region_id_name["name"].tolist()
             except Exception as e:
@@ -635,13 +637,18 @@ class NiftiLabelsMasker(BaseMasker):
                     zip(initial_region_ids, initial_region_names)
                 )
                 # We want to have the background in the list too
-                region_id_name_list.insert(0, (self.background_label, "background"))
+                region_id_name_list.insert(
+                    0, 
+                    (self.background_label, "background")
+                )
                 # now create the _region_id_name df
                 self._region_id_name = pd.DataFrame(
                     region_id_name_list,
                     columns=["index", "name"],
                 )
-                self._region_id_name.set_index('index', inplace=True)
+                self._region_id_name = self._region_id_name.set_index(
+                    'index'
+                )
 
         if self.mask_img is not None:
             repr = _utils.repr_niimgs(
