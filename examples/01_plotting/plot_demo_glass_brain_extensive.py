@@ -169,7 +169,7 @@ plot_glass_brain(
     threshold=0,
     colorbar=True,
     title='display_mode="x"',
-    plot_abs=False,
+    plot_abs=True,
     display_mode="x",
 )
 

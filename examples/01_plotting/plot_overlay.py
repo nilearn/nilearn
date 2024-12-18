@@ -40,6 +40,7 @@ display = plotting.plot_stat_map(
     image.index_img(atlas_filename, 4),
     colorbar=False,
     title="DMN nodes in MSDL atlas",
+    cmap="inferno",
 )
 
 # Now add as an overlay the maps for the ACC and the left and right

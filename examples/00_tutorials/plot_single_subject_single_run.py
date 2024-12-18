@@ -248,7 +248,7 @@ clean_map, threshold = threshold_stats_img(
     two_sided=False,  # using a one-sided test
 )
 # Let's use a sequential colormap as we will only display positive values.
-plotting_config["cmap"] = "black_red"
+plotting_config["cmap"] = "inferno"
 plot_stat_map(
     clean_map,
     threshold=threshold,

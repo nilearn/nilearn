@@ -90,6 +90,7 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
         cut_coords=1,
         vmax=0.05,
         vmin=-0.05,
+        colorbar=False,
     )
 
 
@@ -155,6 +156,7 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
         cut_coords=1,
         vmax=0.1,
         vmin=-0.1,
+        colorbar=False,
     )
 
 # %%

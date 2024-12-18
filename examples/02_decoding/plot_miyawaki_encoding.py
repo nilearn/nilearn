@@ -20,8 +20,10 @@ from the binary pixel-values of the presented images. Then we extract the
 receptive fields for a set of voxels to see which pixel location a
 :term:`voxel` is most sensitive to.
 
-See also :doc:`plot_miyawaki_reconstruction` for a decoding
-approach for the same dataset.
+.. seealso::
+
+    :doc:`plot_miyawaki_reconstruction` for a decoding approach
+    for the same dataset.
 
 .. include:: ../../../examples/masker_note.rst
 

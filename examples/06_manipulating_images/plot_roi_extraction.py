@@ -17,8 +17,11 @@ libraries. Here we give clear guidelines about these steps, starting with
 pre-image operations to post-image operations. The main point is that
 visualization & results checking be possible at each step.
 
-See also :doc:`plot_extract_rois_smith_atlas` for automatic ROI extraction
-of brain connected networks given in 4D image.
+.. seealso::
+
+    :doc:`plot_extract_rois_smith_atlas`
+    for automatic ROI extraction of brain connected networks
+    given in 4D image.
 
 .. include:: ../../../examples/masker_note.rst
 

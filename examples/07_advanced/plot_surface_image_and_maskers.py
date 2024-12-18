@@ -94,6 +94,7 @@ for view, ax_row in zip(views, axes):
             vmin=vmin,
             vmax=vmax,
             bg_map=fsaverage_sulcal,
+            cmap="seismic",
         )
 fig.set_size_inches(6, 8)
 
@@ -196,7 +197,7 @@ plot_surf(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     colorbar=True,
-    cmap="black_red",
+    cmap="inferno",
     vmin=0,
 )
 show()
@@ -222,7 +223,7 @@ vmax = max(np.absolute(hemi).max() for hemi in coef_img.data.parts.values())
 vmin = -vmax
 plot_surf(
     surf_map=coef_img,
-    cmap="bwr",
+    cmap="RdBu_r",
     vmin=vmin,
     vmax=vmax,
     threshold=1e-6,

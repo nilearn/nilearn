@@ -56,11 +56,11 @@ print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 # extract a single 3D :term:`EPI` image from the :term:`fMRI` data.
 #
 from nilearn.image import mean_img
-from nilearn.plotting import plot_roi, show, view_img
+from nilearn.plotting import plot_epi, plot_roi, show, view_img
 
-view_img(
-    mean_img(fmri_filename, copy_header=True), threshold=None, cmap="gray"
-)
+plot_epi(mean_img(fmri_filename, copy_header=True))
+
+show()
 
 # %%
 # Feature extraction: from :term:`fMRI` volumes to a data matrix
@@ -322,12 +322,14 @@ decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 # ................................
 #
 # We can plot the weights, using the subject's anatomical as a background
-view_img(
+html_view = view_img(
     decoder.coef_img_["face"],
     bg_img=haxby_dataset.anat[0],
     title="SVM weights",
     dim=-1,
 )
+
+html_view.open_in_browser()
 
 # %%
 # What is the chance level accuracy?
@@ -359,8 +361,7 @@ print(f"{dummy_decoder.cv_scores_=}")
 #
 # .. footbibliography::
 #
-# See also
-# --------
+# .. seealso::
 #
 # * The :ref:`section of the documentation on decoding <decoding>`
 #

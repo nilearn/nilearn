@@ -84,7 +84,7 @@ im = plot_matrix(
     matrix,
     labels=sorted(np.unique(y_test)),
     vmin=0,
-    cmap="hot_r",
+    cmap="inferno",
 )
 
 # Add x/y-axis labels

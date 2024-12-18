@@ -158,9 +158,9 @@ display = plot_stat_map(
     bg_img=bg_filename,
     display_mode="z",
     cut_coords=[z_slice],
+    title="SVM weights",
     cmap="cold_hot",
 )
-display.title("SVM weights")
 show()
 
 # %%
@@ -210,24 +210,22 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 # Show results
 threshold = -np.log10(0.1)  # 10% corrected
 
-fig = plt.figure(figsize=(5.5, 7.5), facecolor="k")
+n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
 
-display = plot_stat_map(
+title = (
+    "Negative $\\log_{10}$ p-values\n(Non-parametric + max-type correction)"
+    f"\n{int(n_detections)} detections"
+)
+
+plot_stat_map(
     signed_neg_log_pvals_unmasked,
     bg_img=bg_filename,
     threshold=threshold,
     display_mode="z",
     cut_coords=[z_slice],
-    figure=fig,
-    cmap="cold_hot",
+    figure=plt.figure(figsize=(5.5, 7.5), facecolor="k"),
+    title=title,
 )
-title = (
-    "Negative $\\log_{10}$ p-values\n(Non-parametric + max-type correction)"
-)
-display.title(title)
-
-n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
-print(f"\n{int(n_detections)} detections")
 
 show()
 

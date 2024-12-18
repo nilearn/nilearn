@@ -151,6 +151,16 @@ threshold = -np.log10(0.1)  # 10% corrected
 vmax = min(signed_neg_log_pvals.max(), neg_log_pvals_bonferroni.max())
 
 # Plot thresholded p-values map corresponding to F-scores
+
+neg_log_pvals_bonferroni_data = get_data(neg_log_pvals_bonferroni_unmasked)
+n_detections = (neg_log_pvals_bonferroni_data > threshold).sum()
+title = (
+    "Negative $\\log_{10}$ p-values"
+    "\n(Parametric two-sided F-test"
+    "\n+ Bonferroni correction)"
+    f"\n{n_detections} detections"
+)
+
 display = plot_stat_map(
     neg_log_pvals_bonferroni_unmasked,
     mean_fmri_img,
@@ -162,18 +172,17 @@ display = plot_stat_map(
     cmap="inferno",
 )
 
-neg_log_pvals_bonferroni_data = get_data(neg_log_pvals_bonferroni_unmasked)
-n_detections = (neg_log_pvals_bonferroni_data > threshold).sum()
-title = (
-    "Negative $\\log_{10}$ p-values"
-    "\n(Parametric two-sided F-test"
-    "\n+ Bonferroni correction)"
-    f"\n{n_detections} detections"
-)
-
 display.title(title, size=10)
 
 # Plot permutation p-values map
+n_detections = (np.abs(signed_neg_log_pvals) > threshold).sum()
+title = (
+    "Negative $\\log_{10}$ p-values"
+    "\n(Non-parametric two-sided test"
+    "\n+ max-type correction)"
+    f"\n{n_detections} detections"
+)
+
 display = plot_stat_map(
     signed_neg_log_pvals_unmasked,
     mean_fmri_img,
@@ -183,14 +192,6 @@ display = plot_stat_map(
     vmax=vmax,
     vmin=threshold,
     cmap="inferno",
-)
-
-n_detections = (np.abs(signed_neg_log_pvals) > threshold).sum()
-title = (
-    "Negative $\\log_{10}$ p-values"
-    "\n(Non-parametric two-sided test"
-    "\n+ max-type correction)"
-    f"\n{n_detections} detections"
 )
 
 display.title(title, size=10)

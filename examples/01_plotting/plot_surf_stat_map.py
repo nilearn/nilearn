@@ -18,10 +18,12 @@ is used to select a seed region in the posterior cingulate cortex.
 The :func:`~nilearn.plotting.plot_surf_stat_map` function is used
 to plot the resulting statistical map on the pial surface.
 
-See also :ref:`for a similar example but using volumetric input data
-<sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py>`.
+.. seealso::
 
-See :ref:`plotting` for more details on plotting tools.
+    :ref:`for a similar example but using volumetric input data
+    <sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py>`.
+
+    See :ref:`plotting` for more details on plotting tools.
 """
 
 # %%
