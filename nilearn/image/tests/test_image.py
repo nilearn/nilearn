@@ -811,6 +811,9 @@ def test_threshold_img(affine_eye):
 def test_threshold_img_with_mask(
     stat_img_test_data, affine_eye, threshold, two_sided, expected
 ):
+    """Tests `nilearn.image.threshold_img` for float and str values using
+    mask.
+    """
     temp_mask = np.ones((stat_img_test_data.shape), dtype=np.int8)
 
     temp_mask[8:11, 0, 0] = 0  # mask values 5
