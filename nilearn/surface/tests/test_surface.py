@@ -26,6 +26,7 @@ from nilearn.surface.surface import (
     SurfaceImage,
     _choose_kind,
     _data_to_gifti,
+    _extract_data,
     _gifti_img_to_mesh,
     _interpolation_sampling,
     _load_surf_files_gifti_gzip,
@@ -42,10 +43,12 @@ from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     concat_imgs,
     get_min_max,
+    index_img,
     iter_img,
     load_surf_data,
     load_surf_mesh,
     mean_img,
+    new_img_like,
     vol_to_surf,
 )
 
@@ -1095,7 +1098,7 @@ def test_inmemorymesh_index_error(in_memory_mesh):
         in_memory_mesh[2]
 
 
-def test_compute_mean_surface_image(surf_img_1d, surf_img_2d):
+def test_mean_img(surf_img_1d, surf_img_2d):
     """Check that mean is properly computed over 'time points'."""
     # one 'time point' image returns same
     img = mean_img(surf_img_1d)
@@ -1129,14 +1132,14 @@ def test_get_min_max(surf_img_2d):
     assert vmax == 10
 
 
-def test_concatenate_surface_images(surf_img_2d):
+def test_concat_imgs(surf_img_2d):
     img = concat_imgs([surf_img_2d(3), surf_img_2d(5)])
     assert img.shape == (9, 8)
     for value in img.data.parts.values():
         assert value.ndim == 2
 
 
-def test_deconcatenate_surface_images(surf_img_2d):
+def test_iter_img(surf_img_2d):
     input = surf_img_2d(5)
     output = iter_img(input, return_iterator=False)
 
@@ -1151,7 +1154,7 @@ def test_deconcatenate_surface_images(surf_img_2d):
         )
 
 
-def test_deconcatenate_surface_images_2d(surf_img_1d, surf_img_2d):
+def test_iter_img_2d(surf_img_1d, surf_img_2d):
     """Return as is if surface image is 2D."""
     input = surf_img_2d(1)
     output = iter_img(input, return_iterator=False)
@@ -1163,6 +1166,21 @@ def test_deconcatenate_surface_images_2d(surf_img_1d, surf_img_2d):
     assert_surface_image_equal(output[0], surf_img_1d)
 
 
-def test_deconcatenate_wrong_input():
+def test_iter_img_wrong_input():
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         iter_img(1)
+
+
+def test_new_img_like_wrong_input():
+    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+        new_img_like(1, data=np.ones(2))
+
+
+def test_extract_data_wrong_input():
+    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+        _extract_data(1, index=1)
+
+
+def test_index_img_wrong_input():
+    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+        index_img(1, index=1)
