@@ -34,7 +34,6 @@ extra_valid_checks = [
     "check_transformer_n_iter",
     "check_methods_subset_invariance",
     "check_methods_sample_order_invariance",
-    "check_dict_unchanged",
 ]
 
 
@@ -43,7 +42,12 @@ if compare_version(sklearn_version, ">", "1.5.2"):
 
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
-    extra_valid_checks.append("check_estimator_sparse_data")
+    extra_valid_checks.extend(
+        [
+            "check_estimator_sparse_data",
+            "check_dict_unchanged",
+        ]
+    )
 
 
 @pytest.mark.parametrize(
