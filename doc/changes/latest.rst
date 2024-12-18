@@ -29,5 +29,7 @@ Enhancements
 
 - :bdg-primary:`Doc` Add a :ref:`page <meaning_difference>` in the user guide to explain GLM terminology across software (Nilearn, SPM, FSL) regarding the meaning of 'levels'  (:gh:`4287` by `Thiti Premrudeepreechacharn`_).
 
+- :bdg-dark:`Code` Update :obj:`~nilearn.regions.HierarchicalKMeans` to take X as array of shape ``[n_samples, n_features]`` (:gh:`4939` by `Himanshu Aggarwal`_ and `Rémi Gau`_).
+
 Changes
 -------
