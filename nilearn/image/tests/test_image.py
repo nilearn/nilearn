@@ -803,8 +803,8 @@ def test_threshold_img(affine_eye):
         (-0.5, False, 224),
         ("10%", False, 224),
         ("99%", False, 8),
-        ("99%", True, 16)
-    ]
+        ("99%", True, 16),
+    ],
 )
 def test_threshold_img_with_mask(
     stat_img_test_data, affine_eye, threshold, two_sided, expected

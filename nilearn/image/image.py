@@ -928,11 +928,11 @@ def threshold_img(
     interval [-threshold, threshold] will be set to zero.
     When `two_sided` is False:
         - if the threshold is negative, then it should be greater than the
-          minimum intensity of the input data. All intensities greater than or
-          equal to the specified threshold will be set to zero.
+        minimum intensity of the input data. All intensities greater than or
+        equal to the specified threshold will be set to zero.
         - if the threshold is positive, then it should be less than the maximum
-          intensity of the input data. All intensities less than or equal to
-          the specified threshold will be set to zero.
+        intensity of the input data. All intensities less than or equal to
+        the specified threshold will be set to zero.
     All other instensities keep their original values.
 
     If threshold is str, the number part should be in interval [0, 100].
