@@ -1022,6 +1022,8 @@ def threshold_img(
     img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
     affine = img.affine
 
+    img_data_for_cutoff = img_data
+
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
         if not check_same_fov(img, mask_img):
@@ -1037,12 +1039,16 @@ def threshold_img(
             )
 
         mask_data, _ = masking.load_mask_img(mask_img)
+
+        # Take only points that are within the mask to check for threshold
+        img_data_for_cutoff = img_data_for_cutoff[mask_data != 0.0]
+
         # Set as 0 for the values which are outside of the mask
         img_data[mask_data == 0.0] = 0.0
 
     cutoff_threshold = check_threshold(
         threshold,
-        img_data,
+        img_data_for_cutoff,
         percentile_func=scoreatpercentile,
         name="threshold",
         two_sided=two_sided,
