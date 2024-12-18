@@ -381,7 +381,7 @@ class NiftiLabelsMasker(BaseMasker):
             if region_id not in region_ids_after_masking
         ]
         removed_region_names = [
-            self._region_id_name[region_id]
+            self._region_id_name.loc[region_id, "name"]
             for region_id in removed_region_ids
             if region_id != self.background_label
         ]
@@ -559,16 +559,21 @@ class NiftiLabelsMasker(BaseMasker):
         # if self.labels is a path, it is the path to tsv file, so read it
         if isinstance(self.labels, (str, pathlib.Path)):
             try:
-                region_id_name = pd.read_csv(self.labels, sep="\t")
-                # Note that self.labels should include the background too
-                self.labels = region_id_name["region name"].tolist()
-                # create the _region_id_name dict based on the
+                # create the _region_id_name df based on the
                 # provided tsv file
                 # it will include the background too
-                self._region_id_name = {
-                    row["region id"]: row["region name"]
-                    for _, row in region_id_name.iterrows()
-                }
+                self._region_id_name = pd.read_csv(self.labels, sep="\t")
+                # columns should be 'index' and 'name'
+                if not {"index", "name"}.issubset(
+                    self._region_id_name.columns
+                ):
+                    raise ValueError(
+                        "Expected columns 'index' and 'name' in the labels "
+                        "tsv file."
+                    )
+                self._region_id_name.set_index('index', inplace=True)
+                # Note that self.labels should include the background too
+                self.labels = self._region_id_name["name"].tolist()
             except Exception as e:
                 warnings.warn(
                     "Expected a path to a tsv file containing 'index' and "
@@ -595,16 +600,19 @@ class NiftiLabelsMasker(BaseMasker):
         ]
         if self._region_id_name is not None:
             # check if initial_region_ids all exist in self._region_id_name
-            missing_ids = set(initial_region_ids) - set(self._region_id_name)
+            # self._region_id_name is a pandas dataframe
+            missing_ids = set(initial_region_ids) - set(
+                self._region_id_name.index
+            )
             if missing_ids:
                 raise ValueError(
                     "The following region ids are missing "
                     f"in the provided labels: {missing_ids}"
                 )
         elif self.labels is not None:
-            # create _region_id_name dictionary if not already created
+            # create _region_id_name df if not already created
             # from labels tsv file
-            # this dictionary will be used to store region names and
+            # this df will be used to store region names and
             # the corresponding region ids as keys
             # it will also include the background
             known_backgrounds = {"background", "Background"}
@@ -621,17 +629,19 @@ class NiftiLabelsMasker(BaseMasker):
                 )
             # if number of regions in the labels image is more
             # than the number of labels provided, then we cannot
-            # create _region_id_name dictionary
+            # create _region_id_name df
             if len(initial_region_ids) <= len(initial_region_names):
-                self._region_id_name = {
-                    region_id: initial_region_names[i]
-                    for i, region_id in enumerate(initial_region_ids)
-                }
-                # We want to have the background in the dict too
-                self._region_id_name = {
-                    self.background_label: "background",
-                    **self._region_id_name,
-                }
+                region_id_name_list = list(
+                    zip(initial_region_ids, initial_region_names)
+                )
+                # We want to have the background in the list too
+                region_id_name_list.insert(0, (self.background_label, "background"))
+                # now create the _region_id_name df
+                self._region_id_name = pd.DataFrame(
+                    region_id_name_list,
+                    columns=["index", "name"],
+                )
+                self._region_id_name.set_index('index', inplace=True)
 
         if self.mask_img is not None:
             repr = _utils.repr_niimgs(
@@ -898,7 +908,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         if self._region_id_name is not None:
             self.region_names_ = {
-                key: self._region_id_name[region_id]
+                key: self._region_id_name.loc[key, "name"]
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
