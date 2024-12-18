@@ -715,10 +715,7 @@ def test_fmri_inputs_confounds_ignored_with_design_matrix(tmp_path):
 
     func_img = func_img[0]
 
-    des = pd.read_csv(
-        des[0],
-        sep="\t",
-    )
+    des = pd.read_csv(des[0], sep="\t")
     n_col_in_des = len(des.columns)
 
     flm = FirstLevelModel(mask_img=mask).fit(
