@@ -50,17 +50,17 @@ dev = [
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
-    "furo",
-    "memory_profiler",  # measuring memory during docs building
-    "myst-parser",
-    "numpydoc",
-    "ruamel.yaml",
-    "sphinx",
-    "sphinx-copybutton",
-    "sphinx-design",
-    "sphinx-gallery",
-    "sphinxcontrib-bibtex",
-    "sphinxext-opengraph"
+    "furo>=2024.8.6",
+    "memory_profiler>=0.61.0",  # measuring memory during docs building
+    "myst-parser>=3.0.1",
+    "numpydoc>=1.8.0",
+    "ruamel.yaml>=0.18.6",
+    "sphinx>=7.4.7",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-design>=0.6.1",
+    "sphinx-gallery>=0.18.0",
+    "sphinxcontrib-bibtex>=2.6.3",
+    "sphinxext-opengraph>=0.9.1"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
@@ -164,7 +164,6 @@ ignore = [
     "PIE790",
     "PLR2004",
     "PTH207",
-    "RUF012",
     "UP038",  # https://github.com/astral-sh/ruff/issues/7871
     # Avoid linter rules conflicting with the formatter
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules

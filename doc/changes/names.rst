@@ -119,6 +119,8 @@
 
 .. _Ian Abenes: https://github.com/boredStats
 
+.. _Idrissa Traore: https://github.com/badrinini
+
 .. _Jake Vogel: https://github.com/illdopejake
 
 .. _Jan Margeta: https://github.com/jmargeta

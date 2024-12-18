@@ -12,8 +12,11 @@ Fixes
 
 - :bdg-dark:`Code` Allow using ``confounds`` and ``sample_mask`` via ``.fit_transform`` in :obj:`~nilearn.maskers.SurfaceLabelsMasker` (:gh:`4926` by `Himanshu Aggarwal`_).
 
+- :bdg-dark:`Code` Allow extracting only positive regions by adding ``two_sided`` parameter to :obj:`~nilearn.regions.RegionExtractor`.  (:gh:`4849` by `Hande Gözükan`_).
+
 - :bdg-dark:`Code` Ensure that low alpha values in :func:`~plotting.plot_img_on_surf` do not cause color values to be above 1 (:gh:`4906` by `Paul Bogdan`_).
 
+- :bdg-dark:`Code` Fix all occurrences of the RUF012 error related to mutable default values in Python classes (:gh:`4954` by `Idrissa Traore`_).
 
 Enhancements
 ------------
