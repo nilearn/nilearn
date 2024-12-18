@@ -271,7 +271,7 @@ plot_surf_stat_map(
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 
 
 # sphinx_gallery_thumbnail_number = 2

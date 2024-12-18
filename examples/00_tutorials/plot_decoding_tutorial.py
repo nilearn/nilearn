@@ -357,7 +357,7 @@ print(f"{dummy_decoder.cv_scores_=}")
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 #
 # See also
 # --------

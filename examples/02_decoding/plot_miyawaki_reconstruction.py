@@ -332,4 +332,4 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

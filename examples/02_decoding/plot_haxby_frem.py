@@ -118,7 +118,7 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 
 
 # sphinx_gallery_dummy_images=1

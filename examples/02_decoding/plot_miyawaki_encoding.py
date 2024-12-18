@@ -317,4 +317,4 @@ plt.colorbar(ax_im, ax=ax)
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

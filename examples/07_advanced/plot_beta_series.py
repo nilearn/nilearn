@@ -403,4 +403,4 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
