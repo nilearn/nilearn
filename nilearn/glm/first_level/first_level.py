@@ -26,6 +26,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -439,16 +440,8 @@ class FirstLevelModel(BaseGLM):
         subject_label=None,
         random_state=None,
     ):
-        if fir_delays is None:
-            fir_delays = [0]
-        if memory is None:
-            memory = Memory(None)
         # design matrix parameters
-        if t_r is not None:
-            _check_repetition_time(t_r)
         self.t_r = t_r
-        if slice_time_ref is not None:
-            _check_slice_time_ref(slice_time_ref)
         self.slice_time_ref = slice_time_ref
         self.hrf_model = hrf_model
         self.drift_model = drift_model
@@ -456,32 +449,23 @@ class FirstLevelModel(BaseGLM):
         self.drift_order = drift_order
         self.fir_delays = fir_delays
         self.min_onset = min_onset
+
         # glm parameters
         self.mask_img = mask_img
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
-        memory = stringify_path(memory)
-        self.memory = Memory(memory) if isinstance(memory, str) else memory
+        self.memory = memory
         self.memory_level = memory_level
         self.standardize = standardize
-        if signal_scaling is False:
-            self.signal_scaling = signal_scaling
-        elif signal_scaling in [0, 1, (0, 1)]:
-            self.signal_scaling = signal_scaling
-            self.standardize = False
-        else:
-            raise ValueError(
-                'signal_scaling must be "False", "0", "1" or "(0, 1)"'
-            )
+        self.signal_scaling = signal_scaling
 
         self.noise_model = noise_model
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
+
         # attributes
-        self.labels_ = None
-        self.results_ = None
         self.subject_label = subject_label
         self.random_state = random_state
 
@@ -687,6 +671,45 @@ class FirstLevelModel(BaseGLM):
 
         return design
 
+    def __sklearn_is_fitted__(self):
+        return (
+            hasattr(self, "labels_")
+            and hasattr(self, "results_")
+            and self.labels_ is not None
+            and self.results_ is not None
+        )
+
+    def _check_fitted(self):
+        if not self.__sklearn_is_fitted__():
+            raise ValueError("The model has not been fit yet.")
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(niimg_like=True, surf_img=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(niimg_like=True, surf_img=True)
+        return tags
+
     def fit(
         self,
         run_imgs,
@@ -777,6 +800,29 @@ class FirstLevelModel(BaseGLM):
             will be clustered via K-means with `bins` number of clusters.
 
         """
+        #  check attributes passed at construction
+        if self.t_r is not None:
+            _check_repetition_time(self.t_r)
+
+        if self.slice_time_ref is not None:
+            _check_slice_time_ref(self.slice_time_ref)
+
+        if self.fir_delays is None:
+            self.fir_delays = [0]
+
+        self.memory = stringify_path(self.memory)
+        if self.memory is None:
+            self.memory = Memory(None)
+        if isinstance(self.memory, str):
+            self.memory = Memory(self.memory)
+
+        if self.signal_scaling not in {False, 1, (0, 1)}:
+            raise ValueError(
+                'signal_scaling must be "False", "0", "1" or "(0, 1)"'
+            )
+        if self.signal_scaling in [0, 1, (0, 1)]:
+            self.standardize = False
+
         if not isinstance(
             run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
         ) or (
@@ -798,6 +844,9 @@ class FirstLevelModel(BaseGLM):
                 "- SurfaceImage\n"
                 f"Got: {input_type}"
             )
+
+        self.labels_ = None
+        self.results_ = None
 
         run_imgs, events, confounds, sample_masks, design_matrices = (
             self._check_fit_inputs(
@@ -874,8 +923,7 @@ class FirstLevelModel(BaseGLM):
             keyed by the type of image.
 
         """
-        if self.labels_ is None or self.results_ is None:
-            raise ValueError("The model has not been fit yet.")
+        self._check_fitted()
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -985,8 +1033,7 @@ class FirstLevelModel(BaseGLM):
                 "when initializing the `FirstLevelModel`-object."
             )
 
-        if self.labels_ is None or self.results_ is None:
-            raise ValueError("The model has not been fit yet.")
+        self._check_fitted()
 
         output = []
 
@@ -1095,10 +1142,10 @@ class FirstLevelModel(BaseGLM):
                         warn(
                             f"Parameter {param_name} of the masker overridden"
                         )
-                    if isinstance(self.masker_, SurfaceMasker):
-                        if param_name not in ["target_affine", "target_shape"]:
-                            setattr(self.masker_, param_name, our_param)
-                    else:
+                    if (
+                        isinstance(self.masker_, SurfaceMasker)
+                        and param_name not in ["target_affine", "target_shape"]
+                    ) or not isinstance(self.masker_, SurfaceMasker):
                         setattr(self.masker_, param_name, our_param)
                 self.masker_.fit(run_img)
             else:

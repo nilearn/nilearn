@@ -7,98 +7,92 @@ import warnings
 import numpy as np
 from joblib import Memory
 from scipy import linalg
-from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs, fill_doc
-from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     check_surface_data_ndims,
-    compute_mean_surface_image,
+    concat_extract_surface_data_parts,
     concatenate_surface_images,
-    deconcatenate_surface_images,
 )
+from nilearn.maskers.base_masker import _BaseSurfaceMasker
+
 from nilearn.surface import SurfaceImage
 
 
 @fill_doc
-class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class SurfaceMapsMasker(_BaseSurfaceMasker):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 
-        .. versionadded:: 0.11.1
+    .. versionadded:: 0.11.1
 
     Parameters
     ----------
-        maps_img : :obj:`~nilearn.surface.SurfaceImage`
-            Set of maps that define the regions. representative time course \
-            per map is extracted using least square regression. The data for \
-            each hemisphere is of shape (n_vertices/2, n_regions).
+    maps_img : :obj:`~nilearn.surface.SurfaceImage`
+        Set of maps that define the regions. representative time course \
+        per map is extracted using least square regression. The data for \
+        each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
-        mask_img : :obj:`~nilearn.surface.SurfaceImage`, optional, default=None
-            Mask to apply to regions before extracting signals. Defines the \
-            overall area of the brain to consider. The data for each \
-            hemisphere is of shape (n_vertices/2, n_regions).
+    mask_img : :obj:`~nilearn.surface.SurfaceImage`, optional, default=None
+        Mask to apply to regions before extracting signals. Defines the \
+        overall area of the brain to consider. The data for each \
+        hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
-        allow_overlap : :obj:`bool`, default=True
-            If False, an error is raised if the maps overlaps (ie at least two
-            maps have a non-zero value for the same voxel).
+    allow_overlap : :obj:`bool`, default=True
+        If False, an error is raised if the maps overlaps (ie at least two
+        maps have a non-zero value for the same voxel).
 
-        %(smoothing_fwhm)s
-            This parameter is not implemented yet.
+    %(smoothing_fwhm)s
+        This parameter is not implemented yet.
 
-        %(standardize_maskers)s
+    %(standardize_maskers)s
 
-        %(standardize_confounds)s
+    %(standardize_confounds)s
 
-        %(detrend)s
+    %(detrend)s
 
-        high_variance_confounds : :obj:`bool`, default=False
-            If True, high variance confounds are computed on provided image \
-            with :func:`nilearn.image.high_variance_confounds` and default \
-            parameters and regressed out.
+    high_variance_confounds : :obj:`bool`, default=False
+        If True, high variance confounds are computed on provided image \
+        with :func:`nilearn.image.high_variance_confounds` and default \
+        parameters and regressed out.
 
-        %(low_pass)s
+    %(low_pass)s
 
-        %(high_pass)s
+    %(high_pass)s
 
-        %(t_r)s
+    %(t_r)s
 
-        %(memory)s
+    %(memory)s
 
-        %(memory_level1)s
+    %(memory_level1)s
 
-        %(verbose0)s
+    %(verbose0)s
 
-        reports : :obj:`bool`, default=True
-            If set to True, data is saved in order to produce a report.
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
 
-        %(cmap)s
-            default="inferno"
-            Only relevant for the report figures.
+    %(cmap)s
+        default="inferno"
+        Only relevant for the report figures.
 
-        clean_args : :obj:`dict` or None, default=None
-            Keyword arguments to be passed
-            to :func:`nilearn.signal.clean`
-            called within the masker.
+    clean_args : :obj:`dict` or None, default=None
+        Keyword arguments to be passed
+        to :func:`nilearn.signal.clean`
+        called within the masker.
 
     Attributes
     ----------
-        maps_img_ : :obj:`~numpy.ndarray`
-            The maps image converted to a numpy array by concatenating the \
-            data of both hemispheres/parts.
-            shape: (n_vertices, n_regions)
+    maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
+        The same as the input `maps_img`, kept solely for consistency
+        across maskers.
 
-        mask_img_ : :obj:`~numpy.ndarray` or None
-            The mask image converted to a numpy array by concatenating the \
-            `mask_img` data of both hemispheres/parts.
-            shape: (n_vertices,)
+    n_elements_ : :obj:`int`
+        The number of regions in the maps image.
 
-        n_elements_ : :obj:`int`
-            The number of regions in the maps image.
 
     See Also
     --------
@@ -109,7 +103,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     def __init__(
         self,
-        maps_img,
+        maps_img=None,
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
@@ -144,18 +138,6 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        self._shelving = False
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image "
-                "(if provided via img) overlaid with the regions provided via "
-                "maps_img."
-            ),
-            "n_vertices": {},
-            "number_of_regions": 0,
-            "summary": {},
-        }
 
     def fit(self, img=None, y=None):
         """Prepare signal extraction from regions.
@@ -174,28 +156,59 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         SurfaceMapsMasker object
         """
         del img, y
+        
+        if self.maps_img is None:
+            raise ValueError(
+                "Please provide a maps_img during initialization. "
+                "For example, masker = SurfaceMapsMasker(maps_img=maps_img)"
+            )
 
+        logger.log(
+            msg=f"loading regions from {self.maps_img.__repr__()}",
+            verbose=self.verbose,
+        )
         # check maps_img data is 2D
         check_surface_data_ndims(self.maps_img, 2, "maps_img")
+        self.maps_img_ = self.maps_img
 
-        self.maps_img_ = np.concatenate(
-            list(self.maps_img.data.parts.values()), axis=0
-        )
-        self.n_elements_ = self.maps_img_.shape[1]
+        self.n_elements_ = self.maps_img.shape[1]
 
         if self.mask_img is not None:
-            check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
-            check_surface_data_ndims(self.mask_img, 1, "mask_img")
-            self.mask_img_ = np.concatenate(
-                list(self.mask_img.data.parts.values()), axis=0
+            logger.log(
+                msg=f"loading regions from {self.mask_img.__repr__()}",
+                verbose=self.verbose,
             )
-        else:
-            self.mask_img_ = None
+            check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
+            # squeeze the mask data if it is 2D and has a single column
+            for part in self.mask_img.data.parts:
+                if (
+                    self.mask_img.data.parts[part].ndim == 2
+                    and self.mask_img.data.parts[part].shape[1] == 1
+                ):
+                    self.mask_img.data.parts[part] = np.squeeze(
+                        self.mask_img.data.parts[part], axis=1
+                    )
+            check_surface_data_ndims(self.mask_img, 1, "mask_img")
 
         # initialize reporting content and data
         if not self.reports:
             self._reporting_data = None
             return self
+
+        self._shelving = False
+        # content to inject in the HTML template
+        self._report_content = (
+            {
+                "description": (
+                    "This report shows the input surface image "
+                    "(if provided via img) overlaid with the regions provided "
+                    "via maps_img."
+                ),
+                "n_vertices": {},
+                "number_of_regions": 0,
+                "summary": {},
+            },
+        )
 
         self._report_content["number_of_regions"] = self.n_elements_
         for part in self.maps_img.data.parts:
@@ -230,7 +243,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres/parts. The data for each \
-            hemisphere is of shape (n_vertices/2, n_timepoints).
+            hemisphere is of shape (n_vertices_per_hemisphere, n_timepoints).
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
                     :class:`pathlib.Path`, \
@@ -262,10 +275,16 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # check img data is 2D
         check_surface_data_ndims(img, 2, "img")
         check_same_n_vertices(self.maps_img.mesh, img.mesh)
-        # concatenate data over hemispheres
         img_data = np.concatenate(
             list(img.data.parts.values()), axis=0
         ).astype(np.float32)
+
+        # get concatenated hemispheres/parts data from maps_img and mask_img
+        maps_data = concat_extract_surface_data_parts(self.maps_img)
+        if self.mask_img is not None:
+            mask_data = concat_extract_surface_data_parts(self.mask_img)
+        else:
+            mask_data = None
 
         if self.smoothing_fwhm is not None:
             warnings.warn(
@@ -280,6 +299,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.reports:
             self._reporting_data["images"] = img
 
+
         parameters = get_params(
             self.__class__,
             self,
@@ -293,14 +313,27 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         # apply mask if provided
         # and then extract signal via least square regression
-        if self.mask_img_ is not None:
-            region_signals = linalg.lstsq(
-                self.maps_img_[self.mask_img_.flatten(), :],
-                img_data[self.mask_img_.flatten(), :],
+
+        if mask_data is not None:
+            region_signals = cache(
+                linalg.lstsq,
+                memory=self.memory,
+                func_memory_level=2,
+                memory_level=self.memory_level,
+                shelve=self._shelving,
+            )(
+                maps_data[mask_data.flatten(), :],
+                img_data[mask_data.flatten(), :],
             )[0].T
         # if no mask, directly extract signal
         else:
-            region_signals = linalg.lstsq(self.maps_img_, img_data)[0].T
+            region_signals = cache(
+                linalg.lstsq,
+                memory=self.memory,
+                func_memory_level=2,
+                memory_level=self.memory_level,
+                shelve=self._shelving,
+            )(maps_data, img_data)[0].T
 
         # signal cleaning here
         region_signals = cache(
@@ -333,7 +366,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres. The data for each hemisphere \
-            is of shape (n_vertices/2, n_timepoints).
+            is of shape (n_vertices_per_hemisphere, n_timepoints).
 
         y : None
             This parameter is unused.
@@ -362,6 +395,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del y
         return self.fit().transform(img, confounds, sample_mask)
 
+
     def inverse_transform(self, region_signals):
         """Compute :term:`vertex` signals from region signals.
 
@@ -376,9 +410,17 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         vertex_signals: :obj:`~nilearn.surface.SurfaceImage`
             Signal for each vertex projected on the mesh of the `maps_img`.
             The data for each hemisphere is of shape
-            (n_vertices/2, n_timepoints).
+            (n_vertices_per_hemisphere, n_timepoints).
         """
+        
         self._check_fitted()
+
+        # get concatenated hemispheres/parts data from maps_img and mask_img
+        maps_data = concat_extract_surface_data_parts(self.maps_img)
+        if self.mask_img is not None:
+            mask_data = concat_extract_surface_data_parts(self.mask_img)
+        else:
+            mask_data = None
 
         if region_signals.shape[1] != self.n_elements_:
             raise ValueError(
@@ -386,8 +428,23 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 f"but got {region_signals.shape[1]}."
             )
 
+        logger.log("computing image from signals", verbose=self.verbose)
         # project region signals back to vertices
-        vertex_signals = np.dot(region_signals, self.maps_img_.T)
+        if mask_data is not None:
+            # vertices that are not in the mask will have a signal of 0
+            # so we initialize the vertex signals with 0
+            # and shape (n_timepoints, n_vertices)
+            vertex_signals = np.zeros(
+                (region_signals.shape[0], self.maps_img.mesh.n_vertices)
+            )
+            # dot product between (n_timepoints, n_regions) and
+            # (n_regions, n_vertices)
+            vertex_signals[:, mask_data.flatten()] = np.dot(
+                region_signals, maps_data[mask_data.flatten(), :].T
+            )
+        else:
+            vertex_signals = np.dot(region_signals, maps_data.T)
+
 
         # we need the data to be of shape (n_vertices, n_timepoints)
         # because the SurfaceImage object expects it
@@ -399,7 +456,7 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 : self.maps_img.data.parts["left"].shape[0], :
             ],
             "right": vertex_signals[
-                : self.maps_img.data.parts["right"].shape[0], :
+                self.maps_img.data.parts["left"].shape[0] :, :
             ],
         }
 
@@ -500,3 +557,4 @@ class SurfaceMapsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                     bg_on_data=True,
                 )
         return fig
+

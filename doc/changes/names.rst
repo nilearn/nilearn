@@ -119,6 +119,8 @@
 
 .. _Ian Abenes: https://github.com/boredStats
 
+.. _Idrissa Traore: https://github.com/badrinini
+
 .. _Jake Vogel: https://github.com/illdopejake
 
 .. _Jan Margeta: https://github.com/jmargeta
@@ -300,6 +302,8 @@
 .. _Taylor Salo: https://tsalo.github.io/
 
 .. _Tharun K: https://github.com/tharun634
+
+.. _Thiti Premrudeepreechacharn: https://tpremrud.github.io/
 
 .. _Thomas Bazeille: https://github.com/thomasbazeille
 

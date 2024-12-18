@@ -15,10 +15,8 @@ from numpy.testing import (
     assert_array_equal,
     assert_array_less,
 )
-from sklearn import __version__ as sklearn_version
 from sklearn.cluster import KMeans
 
-from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
@@ -59,13 +57,11 @@ FUNCFILE = BASEDIR / "functional.nii.gz"
 extra_valid_checks = [
     "check_transformers_unfitted",
     "check_transformer_n_iter",
-    "check_estimator_sparse_array",
-    "check_estimator_sparse_matrix",
     "check_estimators_unfitted",
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_no_attributes_set_in_init",
+    "check_parameters_default_constructible",
 ]
-# TODO remove when dropping support for sklearn_version < 1.5.0
-if compare_version(sklearn_version, "<", "1.5.0"):
-    extra_valid_checks.append("check_estimator_sparse_data")
 
 
 @pytest.mark.parametrize(
@@ -333,7 +329,7 @@ def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     )
     FirstLevelModel(mask_img=mask).fit(func_img[0], design_matrices=des[0])
     FirstLevelModel(mask_img=mask).fit(
-        func_img[0], design_matrices=[pd.read_csv(des[0])]
+        func_img[0], design_matrices=[pd.read_csv(des[0], sep="\t")]
     )
     FirstLevelModel(mask_img=mask).fit(
         func_img[0], design_matrices=[Path(des[0])]
@@ -636,9 +632,8 @@ def test_fmri_inputs_design_matrices_tsv(tmp_path, shape_4d_default):
         shapes=[shape_4d_default], file_path=tmp_path
     )
     func_img = func_img[0]
-    des = des[0]
-    pd.read_csv(des).to_csv(des, sep="\t", index=False)
-
+    des = Path(des[0])
+    pd.read_csv(des, sep="\t").to_csv(des.with_suffix(".csv"), index=False)
     FirstLevelModel(mask_img=mask).fit([func_img], design_matrices=des)
 
 
@@ -1180,12 +1175,6 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     In particular, that derived theta are correct for a
     constant design matrix with a single valued fmri image
     """
-    # Check error with invalid signal_scaling values
-    with pytest.raises(ValueError, match="signal_scaling must be"):
-        FirstLevelModel(
-            mask_img=False, noise_model="ols", signal_scaling="foo"
-        )
-
     shapes, rk = [(3, 1, 1, 2)], 1
     design_matrices = [
         pd.DataFrame(
@@ -1194,6 +1183,14 @@ def test_first_level_with_no_signal_scaling(affine_eye):
         )
     ]
     fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye)]
+
+    # Check error with invalid signal_scaling values
+    with pytest.raises(ValueError, match="signal_scaling must be"):
+        flm = FirstLevelModel(
+            mask_img=False, noise_model="ols", signal_scaling="foo"
+        )
+        flm.fit(fmri_data, design_matrices=design_matrices)
+
     first_level = FirstLevelModel(
         mask_img=False, noise_model="ols", signal_scaling=False
     )
@@ -2135,14 +2132,18 @@ def test_check_run_tables_errors():
     # check high level wrapper keeps behavior
     with pytest.raises(ValueError, match="len.* does not match len.*"):
         _check_run_tables([""] * 2, [""], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         _check_run_tables([""] * 2, [".csv", ".csv"], "")
     with pytest.raises(
         TypeError,
         match="can only be a pandas DataFrame, a Path object or a string",
     ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
 
 
@@ -2207,23 +2208,30 @@ def test_flm_fit_surface_image_one_hemisphere(
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_fit_surface_image_with_mask(surface_glm_data, surf_mask):
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
+def test_flm_fit_surface_image_with_mask(
+    surface_glm_data, surf_mask_dim, surf_mask_1d, surf_mask_2d
+):
     """Test FirstLevelModel with surface mask."""
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     img, des = surface_glm_data(5)
-    model = FirstLevelModel(mask_img=surf_mask())
+    model = FirstLevelModel(mask_img=surf_mask)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9, 1)
+    if surf_mask_dim == 1:
+        assert model.masker_.mask_img_.shape == (9,)
+    else:
+        assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
 def test_error_flm_surface_mask_volume_image(
-    surface_glm_data, surf_mask, img_4d_rand_eye
+    surface_glm_data, surf_mask_1d, img_4d_rand_eye
 ):
     """Test error is raised when mask is a surface and data is in volume."""
     img, des = surface_glm_data(5)
-    model = FirstLevelModel(mask_img=surf_mask())
+    model = FirstLevelModel(mask_img=surf_mask_1d)
     with pytest.raises(
         TypeError, match="Mask and images to fit must be of compatible types."
     ):
@@ -2269,15 +2277,22 @@ def test_flm_with_surface_image_with_surface_masker(surface_glm_data):
     assert isinstance(model.masker_, SurfaceMasker)
 
 
-def test_flm_with_surface_masker_with_mask(surface_glm_data, surf_mask):
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
+def test_flm_with_surface_masker_with_mask(
+    surface_glm_data, surf_mask_dim, surf_mask_1d, surf_mask_2d
+):
     """Test FirstLevelModel with SurfaceMasker and mask image."""
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     img, des = surface_glm_data(5)
-    masker = SurfaceMasker(mask_img=surf_mask()).fit(img)
+    masker = SurfaceMasker(mask_img=surf_mask).fit(img)
     model = FirstLevelModel(mask_img=masker)
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9, 1)
+    if surf_mask_dim == 1:
+        assert model.masker_.mask_img_.shape == (9,)
+    else:
+        assert model.masker_.mask_img_.shape == (9, 1)
     assert isinstance(model.masker_, SurfaceMasker)
 
 

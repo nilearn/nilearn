@@ -381,7 +381,9 @@ def test_plot_design_matrix_correlation_smoke_path(tmp_path):
 
 
 def test_plot_design_matrix_correlation_errors(mat):
-    with pytest.raises(ValueError, match="table path foo could not be loaded"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         plot_design_matrix_correlation("foo")
 
     with pytest.raises(ValueError, match="dataframe cannot be empty."):

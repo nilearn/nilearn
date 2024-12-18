@@ -106,6 +106,7 @@ Some other past or present contributors are:
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Ian Abenes`_
+* `Idrissa Traore`_: IMT Atlantique, Brest, France
 * `Jake Vogel`_: Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
@@ -197,6 +198,7 @@ Some other past or present contributors are:
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
 * `Tharun K`_
+* `Thiti Premrudeepreechacharn`_
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_

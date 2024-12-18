@@ -56,7 +56,7 @@ ____
 # %%
 import numpy as np
 
-from nilearn import datasets
+from nilearn.datasets import fetch_oasis_vbm
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker
 
@@ -65,9 +65,7 @@ n_subjects = 100  # more subjects requires more memory
 # %%
 # Load Oasis dataset
 # ------------------
-oasis_dataset = datasets.fetch_oasis_vbm(
-    n_subjects=n_subjects, legacy_format=False
-)
+oasis_dataset = fetch_oasis_vbm(n_subjects=n_subjects, legacy_format=False)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars["age"].to_numpy()
 
@@ -109,7 +107,7 @@ mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
 # %%
 # Prediction pipeline with :term:`ANOVA` and SVR using
-# :class:`nilearn.decoding.DecoderRegressor` Object
+# :class:`~nilearn.decoding.DecoderRegressor` Object
 #
 # In nilearn we can benefit from the built-in DecoderRegressor object to
 # do :term:`ANOVA` with SVR instead of manually defining the whole pipeline.

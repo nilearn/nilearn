@@ -81,8 +81,6 @@ jobs:
             uses: actions/checkout@v4
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
-        -   name: Merge with upstream
-            run: ./build_tools/github/merge_upstream.sh
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
