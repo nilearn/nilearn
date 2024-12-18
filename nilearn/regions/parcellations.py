@@ -686,7 +686,7 @@ class Parcellations(_MultiPCA):
             imgs = Parallel(n_jobs=self.n_jobs)(
                 delayed(
                     self._cache(
-                        _signals_to_surf_img_labels, func_memory_level=2
+                        signals_to_surf_img_labels, func_memory_level=2
                     )
                 )(each_signal, labels, self.labels_img_, self.mask_img_)
                 for each_signal in signals

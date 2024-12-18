@@ -22,7 +22,7 @@ from nilearn.surface import SurfaceImage
 
 def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
     """Apply mask to labels data.
-    
+
     Ensures that we only get the data back
     according to the mask that was applied. So if some labels were removed,
     we will only get the data for the remaining labels, the vertices that were
@@ -49,7 +49,7 @@ def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
     return labels_data, labels
 
 
-def _signals_to_surf_img_labels(
+def signals_to_surf_img_labels(
     signals,
     labels,
     labels_img,
@@ -479,7 +479,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         self._check_fitted()
 
-        return _signals_to_surf_img_labels(
+        return signals_to_surf_img_labels(
             signals,
             self._labels_,
             self.labels_img,
