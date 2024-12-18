@@ -567,7 +567,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         if confounds is None:
             confounds = [None] * len(imgs)
         return [
-            self.nifti_maps_masker_.transform(img, confounds=confound)
+            self.maps_masker_.transform(img, confounds=confound)
             for img, confound in zip(imgs, confounds)
         ]
 
@@ -596,7 +596,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         self._check_components_()
         # XXX: dealing properly with 2D/ list of 2D data?
         return [
-            self.nifti_maps_masker_.inverse_transform(loading)
+            self.maps_masker_.inverse_transform(loading)
             for loading in loadings
         ]
 
