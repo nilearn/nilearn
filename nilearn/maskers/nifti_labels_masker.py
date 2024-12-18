@@ -915,7 +915,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         if self._region_id_name is not None:
             self.region_names_ = {
-                key: self._region_id_name.loc[key, "name"]
+                key: self._region_id_name.loc[region_id, "name"]
                 for key, region_id in region_ids.items()
                 if region_id != self.background_label
             }
