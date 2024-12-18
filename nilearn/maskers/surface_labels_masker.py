@@ -21,7 +21,9 @@ from nilearn.surface import SurfaceImage
 
 
 def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
-    """Apply mask to labels data. Ensures that we only get the data back
+    """Apply mask to labels data.
+    
+    Ensures that we only get the data back
     according to the mask that was applied. So if some labels were removed,
     we will only get the data for the remaining labels, the vertices that were
     masked out will be set to the background label.
