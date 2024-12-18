@@ -202,10 +202,7 @@ def _mask_and_reduce(
     n_samples = np.sum(subject_n_samples)
     # n_features is the number of True vertices in the mask if it is a surface
     if isinstance(masker, SurfaceMasker):
-        n_features = (
-            masker.mask_img_.data.parts["left"].sum()
-            + masker.mask_img_.data.parts["right"].sum()
-        )
+        n_features = masker.output_dimension_
     # n_features is the number of True voxels in the mask if it is a volume
     else:
         n_features = int(np.sum(safe_get_data(masker.mask_img_)))
@@ -478,13 +475,10 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             )
 
         masker_type = "nii"
-        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)):
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
+            isinstance(x, SurfaceImage) for x in imgs
+        ):
             masker_type = "surface"
-
-        for img in imgs:
-            if isinstance(img, SurfaceImage):
-                masker_type = "surface"
-                break
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
 
         # Avoid warning with imgs != None
