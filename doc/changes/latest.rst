@@ -18,6 +18,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix all occurrences of the RUF012 error related to mutable default values in Python classes (:gh:`4954` by `Idrissa Traore`_).
 
+- :bdg-dark:`Code` Support for confounds as numpy arrays in :meth:`nilearn.glm.first_level.FirstLevelModel.fit` (:gh:`4967` by `Rémi Gau`_).
+
 Enhancements
 ------------
 
