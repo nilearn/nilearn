@@ -165,13 +165,13 @@ Some environments allow passing extra argument:
     tox run -e lint -- ruff
 
     # only run some tests
-    tox -e plotting -- nilearn/glm/tests/test_contrasts.py
+    tox -e test_plotting -- nilearn/glm/tests/test_contrasts.py
 
 You can also run any arbitrary command in a given environment with ``tox exec``:
 
 .. code-block:: bash
 
-    tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+    tox exec -e test_latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
 
 
 How to make a release?

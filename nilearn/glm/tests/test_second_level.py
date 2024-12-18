@@ -565,7 +565,7 @@ def test_high_level_glm_with_paths_errors(tmp_path):
     X = pd.DataFrame([[1]] * 4, columns=["intercept"])
 
     # Provide a masker as mask_img
-    masker = NiftiMasker(mask)
+    masker = NiftiMasker(mask).fit()
     with pytest.warns(
         UserWarning, match="Parameter memory of the masker overridden"
     ):
