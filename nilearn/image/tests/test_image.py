@@ -801,9 +801,11 @@ def test_threshold_img(affine_eye):
         (0, False, 224),
         (-3, False, 8),
         (-0.5, False, 224),
+        ("0%", True, 448),
         ("10%", False, 224),
         ("99%", False, 8),
         ("99%", True, 16),
+        ("100%", True, 0),
     ],
 )
 def test_threshold_img_with_mask(
