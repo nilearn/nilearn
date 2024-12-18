@@ -925,14 +925,14 @@ def threshold_img(
     If threshold is float, we threshold the image based on image intensities.
     When `two_sided` is True, the given value should be within the range of
     minimum and maximum intensity of the input image. All instensities in the
-    interval (-threshold, threshold) will be set to zero.
+    interval [-threshold, threshold] will be set to zero.
     When `two_sided` is False:
         - if the threshold is negative, then it should be greater than the
-          minimum intensity of the input data. All intensities greater than the
-          specified threshold will be set to zero.
+          minimum intensity of the input data. All intensities greater than or
+          equal to the specified threshold will be set to zero.
         - if the threshold is positive, then it should be less than the maximum
-          intensity of the input data. All intensities less than the specified
-          threshold will be set to zero.
+          intensity of the input data. All intensities less than or equal to
+          the specified threshold will be set to zero.
     All other instensities keep their original values.
 
     If threshold is str, the number part should be in interval [0, 100].
@@ -1051,12 +1051,12 @@ def threshold_img(
     # Apply threshold
     if two_sided:
         img_data[
-            (-cutoff_threshold < img_data) & (img_data < cutoff_threshold)
+            (-cutoff_threshold <= img_data) & (img_data <= cutoff_threshold)
         ] = 0.0
-    elif cutoff_threshold > 0:
-        img_data[img_data < cutoff_threshold] = 0.0
+    elif cutoff_threshold >= 0:
+        img_data[img_data <= cutoff_threshold] = 0.0
     else:
-        img_data[img_data > cutoff_threshold] = 0.0
+        img_data[img_data >= cutoff_threshold] = 0.0
 
     # Expand to 4D to support both 3D and 4D
     expand_to_4d = img_data.ndim == 3
