@@ -5,6 +5,7 @@ Utilities for masking and dimension reduction of group data
 
 import glob
 import itertools
+import warnings
 from math import ceil
 from pathlib import Path
 
@@ -507,18 +508,26 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         # Create and fit appropriate MapsMasker for transform
         # and inverse_transform
         if isinstance(self.masker_, SurfaceMasker):
-            self.surface_maps_masker_ = SurfaceMapsMasker(
+            self.maps_masker_ = SurfaceMapsMasker(
                 self.components_img_, self.masker_.mask_img_
             )
             self.surface_maps_masker_.fit()
         else:
-            self.nifti_maps_masker_ = NiftiMapsMasker(
+            self.maps_masker_ = NiftiMapsMasker(
                 self.components_img_,
                 self.masker_.mask_img_,
                 resampling_target="maps",
             )
-
-            self.nifti_maps_masker_.fit()
+            # TODO: remove in 0.11.4
+            self.nifti_maps_masker_ = self.maps_masker_
+            warnings.warn(
+                FutureWarning,
+                message="The nifti_maps_masker_ attribute is deprecated and"
+                "will be removed in Nilearn 0.11.3. Please use "
+                "maps_masker_ instead.",
+                stacklevel=2,
+            )
+        self.maps_masker_.fit()
 
         return self
 
