@@ -16,6 +16,7 @@ Fixes
 
 - :bdg-dark:`Code` Ensure that low alpha values in :func:`~plotting.plot_img_on_surf` do not cause color values to be above 1 (:gh:`4906` by `Paul Bogdan`_).
 
+- :bdg-dark:`Code` Fix all occurrences of the RUF012 error related to mutable default values in Python classes (:gh:`4954` by `Idrissa Traore`_).
 
 Enhancements
 ------------
