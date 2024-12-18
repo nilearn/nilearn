@@ -94,7 +94,7 @@ def calculate_tfce(
                 temp_arr3d[temp_arr3d < score_thresh] = 0
 
                 # Label into clusters - importantly (for the next step)
-                # this returns clusters labelled ordinally
+                # this returns clusters labeled ordinally
                 # from 1 to n_clusters+1,
                 # which allows us to use bincount to count
                 # frequencies directly.

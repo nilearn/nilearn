@@ -354,7 +354,7 @@ def test_nifti_labels_masker_reduction_strategies(
     """Tests NiftiLabelsMasker strategies.
 
     1. whether the usage of different reduction strategies work.
-    2. whether unrecognised strategies raise a ValueError
+    2. whether unrecognized strategies raise a ValueError
     3. whether the default option is backwards compatible (calls "mean")
     """
     test_values = [-2.0, -1.0, 0.0, 1.0, 2]
@@ -778,7 +778,7 @@ def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
 )
 @pytest.mark.parametrize(
     "dtype",
-    ["int32", "float32"],  # In case regions are labelled with floats
+    ["int32", "float32"],  # In case regions are labeled with floats
 )
 @pytest.mark.parametrize(
     "affine_data",

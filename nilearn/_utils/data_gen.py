@@ -9,7 +9,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import scipy.linalg
 import scipy.signal
 from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
@@ -96,7 +95,12 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
 
 
 def generate_regions_ts(
-    n_features, n_regions, overlap=0, random_state=0, window="boxcar"
+    n_features,
+    n_regions,
+    overlap=0,
+    random_state=0,
+    window="boxcar",
+    negative_regions=False,
 ):
     """Generate some regions as timeseries.
 
@@ -117,6 +121,12 @@ def generate_regions_ts(
 
     window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. e.g. "hamming".
+
+    negative_regions : :obj:`bool`, default=False
+        If True, creates negative and positive valued regions randomly; all
+        generated region values are positive otherwise.
+
+        .. versionadded:: 0.11.1
 
     Returns
     -------
@@ -148,6 +158,8 @@ def generate_regions_ts(
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
         win = scipy.signal.get_window(window, end - start)
         win /= win.mean()  # unity mean
+        if negative_regions and rand_gen.choice(a=[True, False]):
+            win = -1 * win
         regions[n, start:end] = win
 
     return regions
@@ -161,6 +173,7 @@ def generate_maps(
     window="boxcar",
     random_state=0,
     affine=None,
+    negative_regions=False,
 ):
     """Generate a 4D volume containing several maps.
 
@@ -186,6 +199,12 @@ def generate_maps(
     border : :obj:`int`, default=1
         Number of background voxels on each side of the 3D volumes.
 
+    negative_regions : :obj:`bool`, default=False
+        If True, creates negative and positive valued regions randomly; all
+        generated region values are positive otherwise.
+
+        .. versionadded:: 0.11.1
+
     Returns
     -------
     maps : Niimg-like object
@@ -205,6 +224,7 @@ def generate_maps(
         overlap=overlap,
         random_state=random_state,
         window=window,
+        negative_regions=negative_regions,
     )
     mask_img = Nifti1Image(mask, affine)
     return masking.unmask(ts, mask_img), mask_img
@@ -516,8 +536,8 @@ def write_fake_fmri_data_and_design(
         fmri_files.append(str(file_path / f"fmri_run{i:d}.nii"))
         fmri.to_filename(fmri_files[-1])
     for i, design in enumerate(design_matrices):
-        design_files.append(str(file_path / f"dmtx_{i:d}.csv"))
-        design.to_csv(design_files[-1])
+        design_files.append(str(file_path / f"dmtx_{i:d}.tsv"))
+        design.to_csv(design_files[-1], sep="\t", index=False)
 
     return mask_file, fmri_files, design_files
 
@@ -631,10 +651,10 @@ def _generate_signals_from_precisions(
     )
 
     mean = np.zeros(precisions[0].shape[0])
-    for n, prec in zip(n_samples, precisions):
-        signals.append(
-            rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
-        )
+    signals.extend(
+        rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
+        for n, prec in zip(n_samples, precisions)
+    )
     return signals
 
 

@@ -14,6 +14,7 @@ import collections
 import time
 import warnings
 from functools import partial
+from typing import ClassVar
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -543,7 +544,7 @@ def path_scores(
 
 
 @fill_doc
-class BaseSpaceNet(LinearRegression, CacheMixin):
+class BaseSpaceNet(CacheMixin, LinearRegression):
     """Regression and classification learners with sparsity and spatial priors.
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /
@@ -705,8 +706,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         Standard deviation of X across samples
     """
 
-    SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
-    SUPPORTED_LOSSES = ["mse", "logistic"]
+    SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
+    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
 
     def __init__(
         self,
@@ -794,7 +795,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                 f"{self.SUPPORTED_PENALTIES}. "
                 f"Got {self.penalty}."
             )
-        if not (self.loss is None or self.loss in self.SUPPORTED_LOSSES):
+        if self.loss is not None and self.loss not in self.SUPPORTED_LOSSES:
             raise ValueError(
                 f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
                 f"Got {self.loss}."

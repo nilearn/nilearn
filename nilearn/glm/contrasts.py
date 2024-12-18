@@ -182,6 +182,35 @@ class Contrast:
     and could be enhanced in the future on the computational side
     (high-dimensional F :term:`contrasts<contrast>`
     may lead to memory breakage).
+
+    Parameters
+    ----------
+    effect : array of shape (contrast_dim, n_voxels)
+        The effects related to the :term:`contrast`.
+
+    variance : array of shape (n_voxels)
+        The associated variance estimate.
+
+    dim : :obj:`int` or None, optional
+        The dimension of the :term:`contrast`.
+
+    dof : scalar, default=DEF_DOFMAX
+        The degrees of freedom of the residuals.
+
+    stat_type : {'t', 'F'}, default='t'
+        Specification of the :term:`contrast` type.
+
+    contrast_type :
+
+        .. deprecated:: 0.10.3
+
+            Use ``stat_type`` instead (see above).
+
+    tiny : :obj:`float`, default=DEF_TINY
+        Small quantity used to avoid numerical underflows.
+
+    dofmax : scalar, default=DEF_DOFMAX
+        The maximum degrees of freedom of the residuals.
     """
 
     @rename_parameters(
@@ -197,38 +226,6 @@ class Contrast:
         tiny=DEF_TINY,
         dofmax=DEF_DOFMAX,
     ):
-        """Construct instance.
-
-        Parameters
-        ----------
-        effect : array of shape (contrast_dim, n_voxels)
-            The effects related to the :term:`contrast`.
-
-        variance : array of shape (n_voxels)
-            The associated variance estimate.
-
-        dim : :obj:`int` or None, optional
-            The dimension of the :term:`contrast`.
-
-        dof : scalar, default=DEF_DOFMAX
-            The degrees of freedom of the residuals.
-
-        stat_type : {'t', 'F'}, default='t'
-            Specification of the :term:`contrast` type.
-
-        contrast_type :
-
-            .. deprecated:: 0.10.3
-
-                Use ``stat_type`` instead (see above).
-
-        tiny : :obj:`float`, default=DEF_TINY
-            Small quantity used to avoid numerical underflows.
-
-        dofmax : scalar, default=DEF_DOFMAX
-            The maximum degrees of freedom of the residuals.
-
-        """
         if variance.ndim != 1:
             raise ValueError("Variance array should have 1 dimension")
         if effect.ndim > 2:
@@ -238,10 +235,7 @@ class Contrast:
         self.variance = variance
         self.dof = float(dof)
         if dim is None:
-            if effect.ndim == 2:
-                self.dim = effect.shape[0]
-            else:
-                self.dim = 1
+            self.dim = effect.shape[0] if effect.ndim == 2 else 1
         else:
             self.dim = dim
 

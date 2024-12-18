@@ -15,6 +15,9 @@ from scipy import stats
 from nilearn.conftest import _rng
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
+from nilearn.mass_univariate.permuted_least_squares import (
+    _sanitize_inputs_permuted_ols,
+)
 
 N_COVARS = 2
 
@@ -134,10 +137,14 @@ def run_permutations(tested_var, target_var, model_intercept):
 
     for i, n_perm in enumerate(np.repeat(PERM_RANGES, 10)):
         if model_intercept:
-            h0 = permuted_ols_with_intercept(tested_var, target_var, n_perm, i)
+            h0 = permuted_ols_with_intercept(
+                tested_var, target_var, int(n_perm), i
+            )
             dof = N_SAMPLES - 2
         else:
-            h0 = permuted_ols_no_intercept(tested_var, target_var, n_perm, i)
+            h0 = permuted_ols_no_intercept(
+                tested_var, target_var, int(n_perm), i
+            )
             dof = N_SAMPLES - 1
 
         h0_intercept = h0[0, :]
@@ -159,6 +166,7 @@ def permuted_ols_no_intercept(tested_var, target_var, n_perm, i):
         two_sided_test=False,
         random_state=i,
         output_type="dict",
+        verbose=1,
     )
     assert_equal(output["h0_max_t"].shape, (n_regressors, n_perm))
     return output["h0_max_t"]
@@ -173,6 +181,7 @@ def permuted_ols_with_intercept(tested_var, target_var, n_perm, i):
         two_sided_test=False,
         random_state=i,
         output_type="dict",
+        verbose=1,
     )
     # pval should not be significant
     assert_array_less(output["logp_max_t"], 1.0)
@@ -320,55 +329,6 @@ def test_permuted_ols_no_covar_with_intercept(design):
     )
 
 
-def test_permuted_ols_no_covar_warning(rng):
-    """Ensure that a warning is raised when a given voxel has all zeros."""
-    target_var, tested_var, *_ = _create_design(
-        rng, n_samples=N_SAMPLES, n_descriptors=10, n_regressors=1
-    )
-    output_1 = permuted_ols(
-        tested_var,
-        target_var,
-        model_intercept=False,
-        n_perm=N_PERM,
-        random_state=0,
-        output_type="dict",
-        verbose=1,
-    )
-
-    # test with ravelized tested_var
-    target_var[:, 0] = 0
-
-    with pytest.warns(UserWarning):
-        output_2 = permuted_ols(
-            np.ravel(tested_var),
-            target_var,
-            model_intercept=False,
-            n_perm=N_PERM,
-            random_state=0,
-            output_type="dict",
-        )
-
-    assert np.array_equal(output_1["t"][1:], output_2["t"][1:])
-
-
-def test_permuted_ols_no_covar_n_job_error(dummy_design):
-    """Ensure that a warning is raised when a given voxel has all zeros.
-
-    This test also checks that an invalid n_jobs value will raise a ValueError.
-    """
-    target_var, tested_var, *_ = dummy_design
-
-    with pytest.raises(ValueError):
-        permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            n_perm=N_PERM,
-            n_jobs=0,  # not allowed
-            random_state=0,
-        )
-
-
 def test_permuted_ols_with_covar(design, confounding_vars):
     target_var, tested_var, n_descriptors, n_regressors = design
 
@@ -451,34 +411,6 @@ def test_permuted_ols_with_multiple_constants_and_covars(design, rng):
         verbose=1,
     )
     assert output["t"].shape == (n_regressors, n_descriptors)
-
-
-def test_permuted_ols_with_multiple_constants_and_covars_warnings(design):
-    target_var, tested_var, *_ = design
-
-    # Multiple intercepts should raise a warning
-    # In confounding vars
-    with pytest.warns(UserWarning, match="Multiple columns across"):
-        confounding_vars = np.ones([N_SAMPLES, 2])
-        permuted_ols(
-            tested_var,
-            target_var,
-            confounding_vars,
-            n_perm=0,
-            random_state=0,
-        )
-
-    # Across tested vars and confounding vars
-    with pytest.warns(UserWarning, match="Multiple columns across"):
-        confounding_vars = np.ones([N_SAMPLES, 1])
-        tested_var = np.ones([N_SAMPLES, 1])
-        permuted_ols(
-            tested_var,
-            target_var,
-            confounding_vars,
-            n_perm=0,
-            random_state=0,
-        )
 
 
 def test_permuted_ols_nocovar_multivariate(rng):
@@ -715,57 +647,6 @@ def test_two_sided_recover_positive_and_negative_effects():
     )
 
 
-def test_tfce_no_masker_error():
-    target_var, tested_var, *_ = _tfce_design()
-
-    with pytest.raises(ValueError, match="masker must be provided"):
-        permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            tfce=True,
-        )
-
-
-def test_tfce_smoke_legacy_warnings():
-    target_var, tested_var, masker, *_ = _tfce_design()
-
-    # tfce is True, but output_type is "legacy".
-    # raise a warning, and get a dictionary.
-    with pytest.warns(UserWarning, match="Overriding."):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=0,
-            random_state=0,
-            masker=masker,
-            tfce=True,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, dict)
-
-    # output_type is "legacy".
-    # raise a deprecation warning, but get the standard output.
-    with pytest.deprecated_call():
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, tuple)
-
-
 def test_tfce_smoke_legacy_smoke():
     (
         target_var,
@@ -827,78 +708,6 @@ def test_tfce_smoke_legacy_smoke():
     assert out["h0_max_tfce"].size == n_perm
 
 
-def test_cluster_level_parameters_error_no_masker(cluster_level_design):
-    """Test combinations of parameters related to cluster-level inference."""
-    target_var, tested_var = cluster_level_design
-
-    # threshold is defined, indicating cluster-level inference should be done,
-    # but masker is not defined.
-    with pytest.raises(ValueError):
-        permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            threshold=0.001,
-            tfce=False,
-        )
-
-
-def test_cluster_level_parameters_warnings(cluster_level_design, masker):
-    """Test combinations of parameters related to cluster-level inference."""
-    target_var, tested_var = cluster_level_design
-
-    # masker is defined, but threshold is not.
-    # no cluster-level inference is performed, but there's a warning.
-    with pytest.warns(Warning):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            masker=masker,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, tuple)
-
-    # threshold is defined, but output_type is "legacy".
-    # raise a warning, and get a dictionary.
-    with pytest.warns(Warning):
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=0,
-            random_state=0,
-            threshold=0.001,
-            masker=masker,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, dict)
-
-    # output_type is "legacy".
-    # raise a deprecation warning, but get the standard output.
-    with pytest.deprecated_call():
-        out = permuted_ols(
-            tested_var,
-            target_var,
-            model_intercept=False,
-            two_sided_test=False,
-            n_perm=N_PERM,
-            random_state=0,
-            output_type="legacy",
-        )
-
-    assert isinstance(out, tuple)
-
-
 def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     """Test combinations of parameters related to cluster-level inference."""
     target_var, tested_var = cluster_level_design
@@ -945,3 +754,262 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     assert out["h0_max_t"].size == n_perm
     assert out["h0_max_size"].size == n_perm
     assert out["h0_max_mass"].size == n_perm
+
+
+def test_sanitize_inputs_permuted_ols(design):
+    target_vars, tested_vars, *_ = design
+    _sanitize_inputs_permuted_ols(
+        n_jobs=-1,
+        output_type="dict",
+        tfce=False,
+        threshold=None,
+        target_vars=target_vars,
+        tested_vars=tested_vars,
+    )
+
+
+def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
+    """Check that proper warning are thrown depending on n_job VS n_perm."""
+    target_var, tested_var = cluster_level_design
+
+    # n_perm > n_job --> no warning
+    with pytest.warns() as record:
+        permuted_ols(
+            tested_var,
+            target_var,
+            n_perm=4,
+            n_jobs=1,
+            masker=masker,
+        )
+    assert not any(
+        "perform more permutations" in str(x.message) for x in record
+    )
+
+    # n_perm <= n_job  and n_job > 0 -->  warning
+    with pytest.warns(
+        UserWarning,
+        match="perform more permutations",
+    ):
+        permuted_ols(tested_var, target_var, n_perm=1, masker=masker, n_jobs=2)
+
+
+def test_cluster_level_parameters_warnings(cluster_level_design, masker):
+    """Test combinations of parameters related to cluster-level inference."""
+    target_var, tested_var = cluster_level_design
+
+    # masker is defined, but threshold is not.
+    # no cluster-level inference is performed, but there's a warning.
+    with pytest.warns(
+        DeprecationWarning,
+        match='"legacy" output structure for "permuted_ols" is deprecated',
+    ):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=N_PERM,
+            random_state=0,
+            masker=masker,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, tuple)
+
+    # threshold is defined, but output_type is "legacy".
+    # raise a warning, and get a dictionary.
+    with pytest.warns(
+        Warning,
+        match='If "threshold" is not None',
+    ):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=0,
+            random_state=0,
+            threshold=0.001,
+            masker=masker,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, dict)
+
+    # output_type is "legacy".
+    # raise a deprecation warning, but get the standard output.
+    with pytest.deprecated_call():
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=N_PERM,
+            random_state=0,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, tuple)
+
+
+def test_permuted_ols_no_covar_warning(rng):
+    """Ensure that a warning is raised when a given voxel has all zeros."""
+    target_var, tested_var, *_ = _create_design(
+        rng, n_samples=N_SAMPLES, n_descriptors=10, n_regressors=1
+    )
+    output_1 = permuted_ols(
+        tested_var,
+        target_var,
+        model_intercept=False,
+        n_perm=N_PERM,
+        random_state=0,
+        output_type="dict",
+        verbose=1,
+    )
+
+    # test with ravelized tested_var
+    target_var[:, 0] = 0
+
+    with pytest.warns(UserWarning, match="have zeros across all samples"):
+        output_2 = permuted_ols(
+            np.ravel(tested_var),
+            target_var,
+            model_intercept=False,
+            n_perm=N_PERM,
+            random_state=0,
+            output_type="dict",
+        )
+
+    assert np.array_equal(output_1["t"][1:], output_2["t"][1:])
+
+
+def test_permuted_ols_with_multiple_constants_and_covars_warnings(design):
+    target_var, tested_var, *_ = design
+
+    # Multiple intercepts should raise a warning
+    # In confounding vars
+    with pytest.warns(UserWarning, match="Multiple columns across"):
+        confounding_vars = np.ones([N_SAMPLES, 2])
+        permuted_ols(
+            tested_var,
+            target_var,
+            confounding_vars,
+            n_perm=0,
+            random_state=0,
+        )
+
+    # Across tested vars and confounding vars
+    with pytest.warns(UserWarning, match="Multiple columns across"):
+        confounding_vars = np.ones([N_SAMPLES, 1])
+        tested_var = np.ones([N_SAMPLES, 1])
+        permuted_ols(
+            tested_var,
+            target_var,
+            confounding_vars,
+            n_perm=0,
+            random_state=0,
+        )
+
+
+def test_tfce_smoke_legacy_warnings():
+    target_var, tested_var, masker, *_ = _tfce_design()
+
+    # tfce is True, but output_type is "legacy".
+    # raise a warning, and get a dictionary.
+    with pytest.warns(UserWarning, match="Overriding."):
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=0,
+            random_state=0,
+            masker=masker,
+            tfce=True,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, dict)
+
+    # output_type is "legacy".
+    # raise a deprecation warning, but get the standard output.
+    with pytest.deprecated_call():
+        out = permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=N_PERM,
+            random_state=0,
+            output_type="legacy",
+        )
+
+    assert isinstance(out, tuple)
+
+
+def test_permuted_ols_no_covar_n_job_error(dummy_design):
+    """Check that an invalid n_jobs value will raise a ValueError."""
+    target_var, tested_var, *_ = dummy_design
+
+    with pytest.raises(
+        ValueError, match="'n_jobs == 0' is not a valid choice."
+    ):
+        permuted_ols(
+            tested_var,
+            target_var,
+            n_jobs=0,  # not allowed
+        )
+
+
+def test_permuted_ols_target_vars_error(dummy_design):
+    """Checks dimension of target_var."""
+    target_var, tested_var, *_ = dummy_design
+
+    with pytest.raises(
+        ValueError, match="'target_vars' should be a 2D array."
+    ):
+        permuted_ols(
+            tested_var,
+            target_var.ravel(),  # must be 2D
+        )
+
+
+def test_permuted_ols_type_n_perm(dummy_design):
+    """Checks type n_perm."""
+    target_var, tested_var, *_ = dummy_design
+
+    with pytest.raises(TypeError, match="must be an int"):
+        permuted_ols(tested_var, target_var, n_perm=0.1)
+
+
+def test_tfce_no_masker_error():
+    target_var, tested_var, *_ = _tfce_design()
+
+    with pytest.raises(ValueError, match="masker must be provided"):
+        permuted_ols(
+            tested_var,
+            target_var,
+            model_intercept=False,
+            two_sided_test=False,
+            n_perm=N_PERM,
+            tfce=True,
+        )
+
+
+def test_cluster_level_parameters_error_no_masker(cluster_level_design):
+    """Test combinations of parameters related to cluster-level inference."""
+    target_var, tested_var = cluster_level_design
+
+    # threshold is defined, indicating cluster-level inference should be done,
+    # but masker is not defined.
+    with pytest.raises(
+        ValueError,
+        match='If "threshold" is not None, masker must be defined as well.',
+    ):
+        permuted_ols(
+            tested_var,
+            target_var,
+            two_sided_test=False,
+            threshold=0.001,
+            tfce=False,
+        )

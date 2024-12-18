@@ -81,7 +81,7 @@ class _ShelvedFunc:
 
     def __init__(self, func):
         self.func = func
-        self.func_name = func.__name__ + "_shelved"
+        self.func_name = f"{func.__name__}_shelved"
 
     def __call__(self, *args, **kwargs):
         return self.func.call_and_shelve(*args, **kwargs)

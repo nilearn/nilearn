@@ -1,6 +1,7 @@
 """Parcellation tools such as KMeans or Ward for fMRI images."""
 
 import warnings
+from typing import ClassVar
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -19,6 +20,9 @@ from .rena_clustering import ReNA
 
 def _estimator_fit(data, estimator, method=None):
     """Estimator to fit on the data matrix.
+    Mostly just choosing which methods to transpose the data for because
+    KMeans, AgglomerativeClustering cluster first dimension of data (samples)
+    but we want to cluster features (voxels).
 
     Parameters
     ----------
@@ -40,24 +44,15 @@ def _estimator_fit(data, estimator, method=None):
         labels_ estimated from estimator.
 
     """
-    if method == "rena":
-        rena = ReNA(
-            mask_img=estimator.mask_img,
-            n_clusters=estimator.n_clusters,
-            scaling=estimator.scaling,
-            n_iter=estimator.n_iter,
-            threshold=estimator.threshold,
-            memory=estimator.memory,
-            memory_level=estimator.memory_level,
-            verbose=estimator.verbose,
-        )
-        rena.fit(data)
-        labels_ = rena.labels_
-
+    estimator = clone(estimator)
+    if method in ["rena", "hierarchical_kmeans"]:
+        estimator.fit(data)
+    # transpose data for KMeans, AgglomerativeClustering because
+    # they cluster first dimension of data (samples) but we want to cluster
+    # features (voxels)
     else:
-        estimator = clone(estimator)
         estimator.fit(data.T)
-        labels_ = estimator.labels_
+    labels_ = estimator.labels_
 
     return labels_
 
@@ -259,14 +254,14 @@ class Parcellations(_MultiPCA):
 
     """
 
-    VALID_METHODS = [
+    VALID_METHODS: ClassVar[tuple[str, ...]] = (
         "kmeans",
         "ward",
         "complete",
         "average",
         "rena",
         "hierarchical_kmeans",
-    ]
+    )
 
     def __init__(
         self,
@@ -390,7 +385,7 @@ class Parcellations(_MultiPCA):
             )
             # data ou data.T
             labels = self._cache(_estimator_fit, func_memory_level=1)(
-                components.T, hkmeans
+                components.T, hkmeans, self.method
             )
 
         elif self.method == "rena":

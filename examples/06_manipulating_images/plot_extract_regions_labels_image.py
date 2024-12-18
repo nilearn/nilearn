@@ -3,7 +3,7 @@ Breaking an atlas of labels in separated regions
 ================================================
 
 This example shows how to use
-:class:`nilearn.regions.connected_label_regions`
+:class:`~nilearn.regions.connected_label_regions`
 to assign each spatially-separated region of the atlas a unique label.
 
 Indeed, often in a given atlas of labels, the same label (number) may
@@ -14,7 +14,7 @@ label to each region. We end up with a new atlas that has more labels,
 but each one points to a single region.
 
 We use the Yeo atlas as an example for labeling regions,
-:func:`nilearn.datasets.fetch_atlas_yeo_2011`
+:func:`~nilearn.datasets.fetch_atlas_yeo_2011`
 
 """
 

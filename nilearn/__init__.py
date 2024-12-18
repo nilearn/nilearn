@@ -24,7 +24,7 @@ datasets                --- Utilities to download NeuroImaging datasets
 decoding                --- Decoding tools and algorithms
 decomposition           --- Includes a subject level variant of the ICA
                             algorithm called Canonical ICA
-glm                     --- Analysing fMRI data using GLMs
+glm                     --- Analyzing fMRI data using GLMs
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
 maskers                 --- Includes scikit-learn transformers.

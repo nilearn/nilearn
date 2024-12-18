@@ -4,6 +4,7 @@ import warnings
 
 import nibabel
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
@@ -389,6 +390,16 @@ def single_mesh(rng):
     return [coords, faces]
 
 
+@pytest.fixture
+def in_memory_mesh(single_mesh):
+    """Create a random InMemoryMesh.
+
+    This does not generate meaningful surfaces.
+    """
+    coords, faces = single_mesh
+    return InMemoryMesh(coordinates=coords, faces=faces)
+
+
 def _make_mesh():
     """Create a sample mesh with two parts: left and right, and total of
     9 vertices and 10 faces.
@@ -424,51 +435,77 @@ def surf_mesh():
     return _make_mesh
 
 
+def _make_surface_img(n_samples=1):
+    mesh = _make_mesh()
+    data = {}
+    for i, (key, val) in enumerate(mesh.parts.items()):
+        data_shape = (val.n_vertices, n_samples)
+        data_part = (
+            np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
+        ) * 10**i
+        data[key] = data_part.T
+    return SurfaceImage(mesh, data)
+
+
 @pytest.fixture
-def surf_img():
+def surf_img_2d():
     """Create a sample surface image using the sample mesh.
     This will add some random data to the vertices of the mesh.
     The shape of the data will be (n_vertices, n_samples).
     n_samples by default is 1.
     """
-
-    def _make_surface_img(n_samples=1):
-        mesh = _make_mesh()
-        data = {}
-        for i, (key, val) in enumerate(mesh.parts.items()):
-            data_shape = (val.n_vertices, n_samples)
-            data_part = (
-                np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
-            ) * 10**i
-            data[key] = data_part.T
-        return SurfaceImage(mesh, data)
-
     return _make_surface_img
 
 
 @pytest.fixture
-def surf_mask():
+def surf_img_1d():
+    """Create a sample surface image using the sample mesh.
+    This will add some random data to the vertices of the mesh.
+    The shape of the data will be (n_vertices,).
+    """
+    img = _make_surface_img(n_samples=1)
+    img.data.parts["left"] = np.squeeze(img.data.parts["left"])
+    img.data.parts["right"] = np.squeeze(img.data.parts["right"])
+    return img
+
+
+def _make_surface_mask(n_zeros=4):
+    mesh = _make_mesh()
+    data = {}
+    for key, val in mesh.parts.items():
+        data_shape = (val.n_vertices, 1)
+        data_part = np.ones(data_shape, dtype=int)
+        for i in range(n_zeros // 2):
+            data_part[i, ...] = 0
+        data_part = data_part.astype(bool)
+        data[key] = data_part
+    return SurfaceImage(mesh, data)
+
+
+@pytest.fixture
+def surf_mask_1d():
     """Create a sample surface mask using the sample mesh.
     This will create a mask with n_zeros zeros (default is 4) and the
-    rest ones. If empty is True, the mask will be None, required for
-    tests for html reports.
+    rest ones.
+
+    The shape of the data will be (n_vertices,).
     """
+    mask = _make_surface_mask()
+    mask.data.parts["left"] = np.squeeze(mask.data.parts["left"])
+    mask.data.parts["right"] = np.squeeze(mask.data.parts["right"])
 
-    def _make_surface_mask(n_zeros=4, empty=False):
-        if empty:
-            return None
-        else:
-            mesh = _make_mesh()
-            data = {}
-            for key, val in mesh.parts.items():
-                data_shape = (val.n_vertices, 1)
-                data_part = np.ones(data_shape, dtype=int)
-                for i in range(n_zeros // 2):
-                    data_part[i, ...] = 0
-                data_part = data_part.astype(bool)
-                data[key] = data_part
-            return SurfaceImage(mesh, data)
+    return mask
 
+
+@pytest.fixture
+def surf_mask_2d():
+    """Create a sample surface mask using the sample mesh.
+    This will create a mask with n_zeros zeros (default is 4) and the
+    rest ones.
+
+    The shape of the data will be (n_vertices, 1). Could be useful for testing
+    input validation where we throw an error if the mask is not 1D.
+    """
     return _make_surface_mask
 
 
@@ -509,29 +546,6 @@ def flip_surf_img(flip_surf_img_parts):
 
 
 @pytest.fixture
-def assert_surf_img_equal():
-    """Check that 2 SurfaceImages are equal."""
-
-    def f(img_1, img_2):
-        assert set(img_1.data.parts.keys()) == set(img_2.data.parts.keys())
-        for key in img_1.data.parts:
-            assert np.array_equal(img_1.data.parts[key], img_2.data.parts[key])
-
-    return f
-
-
-@pytest.fixture
-def assert_surf_mesh_equal():
-    """Check that 2 meshes are equal."""
-
-    def f(mesh_1, mesh_2):
-        assert np.array_equal(mesh_1.coordinates, mesh_2.coordinates)
-        assert np.array_equal(mesh_1.faces, mesh_2.faces)
-
-    return f
-
-
-@pytest.fixture
 def drop_surf_img_part():
     """Remove one hemisphere from a SurfaceImage."""
 
@@ -543,3 +557,16 @@ def drop_surf_img_part():
         return SurfaceImage(mesh_parts, data_parts)
 
     return f
+
+
+@pytest.fixture()
+def surface_glm_data(rng, surf_img_2d):
+    """Create a surface image and design matrix for testing."""
+
+    def _make_surface_img_and_design(n_samples=5):
+        des = pd.DataFrame(
+            rng.standard_normal((n_samples, 3)), columns=["", "", ""]
+        )
+        return surf_img_2d(n_samples), des
+
+    return _make_surface_img_and_design

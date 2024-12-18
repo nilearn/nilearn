@@ -15,8 +15,8 @@ from nilearn.plotting.html_document import (  # noqa: F401
     HTMLDocument,
     set_max_img_views_before_warning,
 )
+from nilearn.surface import load_surf_mesh
 
-from .. import surface
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 
@@ -110,9 +110,10 @@ def colorscale(
     x = np.linspace(0, 1, 100)
     rgb = our_cmap(x, bytes=True)[:, :3]
     rgb = np.array(rgb, dtype=int)
-    colors = []
-    for i, col in zip(x, rgb):
-        colors.append([np.round(i, 3), f"rgb({col[0]}, {col[1]}, {col[2]})"])
+    colors = [
+        [np.round(i, 3), f"rgb({col[0]}, {col[1]}, {col[2]})"]
+        for i, col in zip(x, rgb)
+    ]
     return {
         "colors": colors,
         "vmin": vmin,
@@ -141,9 +142,9 @@ def decode(b, dtype):
 
 def mesh_to_plotly(mesh):
     """Convert a :term:`mesh` to plotly format."""
-    mesh = surface.load_surf_mesh(mesh)
-    x, y, z = map(encode, np.asarray(mesh[0].T, dtype="<f4"))
-    i, j, k = map(encode, np.asarray(mesh[1].T, dtype="<i4"))
+    mesh = load_surf_mesh(mesh)
+    x, y, z = map(encode, np.asarray(mesh.coordinates.T, dtype="<f4"))
+    i, j, k = map(encode, np.asarray(mesh.faces.T, dtype="<i4"))
     info = {
         "_x": x,
         "_y": y,

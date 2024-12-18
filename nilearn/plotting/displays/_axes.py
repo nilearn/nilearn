@@ -77,7 +77,6 @@ class BaseAxes:
 
         self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
         self.shape = data_2d.T.shape
-
         # The bounds of the object do not take into account a possible
         # inversion of the axis. As such, we check that the axis is properly
         # inverted when direction is left
@@ -187,11 +186,9 @@ class BaseAxes:
             Whether the scale bar is plotted with a border.
 
         loc : :obj:`int`, default=4
-            Location of this scale bar. Valid location codes are documented
-            `here <https://matplotlib.org/mpl_toolkits/axes_grid/\
-            api/anchored_artists_api.html#mpl_toolkits.axes_grid1.\
-            anchored_artists.AnchoredSizeBar>`__.
-
+            Location of this scale bar.
+            Valid location codes are documented in
+            :class:`~mpl_toolkits.axes_grid1.anchored_artists.AnchoredSizeBar`
 
         pad : :obj:`int` or :obj:`float`, default=0.1
             Padding around the label and scale bar, in fraction of the font
@@ -414,11 +411,9 @@ class GlassBrainAxes(BaseAxes):
             The affine of the volume.
 
         """
-        if self.direction in "xlr":
-            max_axis = 0
-        else:
-            max_axis = ".yz".index(self.direction)
-
+        max_axis = (
+            0 if self.direction in "xlr" else ".yz".index(self.direction)
+        )
         # set unselected brain hemisphere activations to 0
         if self.direction == "l":
             x_center, _, _, _ = np.dot(
@@ -490,11 +485,12 @@ class GlassBrainAxes(BaseAxes):
                 marker_color = np.asarray(marker_color)
             relevant_coords = []
             xcoords, ycoords, zcoords = marker_coords.T
-            for cidx, xc in enumerate(xcoords):
-                if (self.direction == "r" and xc >= 0) or (
-                    self.direction == "l" and xc <= 0
-                ):
-                    relevant_coords.append(cidx)
+            relevant_coords.extend(
+                cidx
+                for cidx, xc in enumerate(xcoords)
+                if (self.direction == "r" and xc >= 0)
+                or (self.direction == "l" and xc <= 0)
+            )
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
             # if marker_color is string for example 'red' or 'blue', then
@@ -583,16 +579,18 @@ class GlassBrainAxes(BaseAxes):
 
         # Allow lines only in their respective hemisphere when appropriate
         if self.direction in "lr":
-            relevant_lines = []
-            for lidx, line in enumerate(line_coords):
+            relevant_lines = [
+                lidx
+                for lidx, line in enumerate(line_coords)
                 if (
                     self.direction == "r"
                     and line[0, 0] >= 0
                     and line[1, 0] >= 0
-                ) or (
+                )
+                or (
                     self.direction == "l" and line[0, 0] < 0 and line[1, 0] < 0
-                ):
-                    relevant_lines.append(lidx)
+                )
+            ]
             line_coords = np.array(line_coords)[relevant_lines]
             line_values = line_values[relevant_lines]
 

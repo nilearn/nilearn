@@ -240,7 +240,7 @@ Highlights
 Enhancements
 ------------
 
-- :bdg-success:`API` All ``NiftiMaskers`` now have a ``dtype`` argument. For now the default behaviour is to keep the same data type as the input data.
+- :bdg-success:`API` All ``NiftiMaskers`` now have a ``dtype`` argument. For now the default behavior is to keep the same data type as the input data.
 
 - :bdg-success:`API` New function :func:`~datasets.fetch_surf_fsaverage` to download either ``fsaverage`` or ``fsaverage5`` (Freesurfer cortical meshes).
 

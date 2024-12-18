@@ -73,7 +73,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         - "pd": str,
           Path to the proton density weighted anatomical image
         - "gm": str,
-          Path to grey matter segmented image
+          Path to gray matter segmented image
         - "wm": str,
           Path to white matter segmented image
         - "csf": str,
@@ -89,7 +89,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     --------
     nilearn.datasets.load_mni152_template: to load MNI152 T1 template.
 
-    nilearn.datasets.load_mni152_gm_template: to load MNI152 grey matter
+    nilearn.datasets.load_mni152_gm_template: to load MNI152 gray matter
         template.
 
     nilearn.datasets.load_mni152_wm_template: to load MNI152 white matter
@@ -97,11 +97,11 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     nilearn.datasets.load_mni152_brain_mask: to load MNI152 whole brain mask.
 
-    nilearn.datasets.load_mni152_gm_mask: to load MNI152 grey matter mask.
+    nilearn.datasets.load_mni152_gm_mask: to load MNI152 gray matter mask.
 
     nilearn.datasets.load_mni152_wm_mask: to load MNI152 white matter mask.
 
-    nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM grey
+    nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM gray
         matter mask.
 
     References
@@ -120,7 +120,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Symmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSym
 
-    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSAsym
+    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cAsym
 
 
     """
@@ -531,13 +531,13 @@ def fetch_icbm152_brain_gm_mask(
 
     Returns
     -------
-    gm_mask_img : Nifti1Image, image corresponding to the brain grey matter
+    gm_mask_img : Nifti1Image, image corresponding to the brain gray matter
         from ICBM152 template.
 
     Notes
     -----
     This function relies on ICBM152 templates where we particularly pick
-    grey matter template and threshold the template at .2 to take one fifth
+    gray matter template and threshold the template at .2 to take one fifth
     of the values. Then, do a bit post processing such as binary closing
     operation to more compact mask image.
 
@@ -553,7 +553,7 @@ def fetch_icbm152_brain_gm_mask(
         template and related.
 
     """
-    # Fetching ICBM152 grey matter mask image
+    # Fetching ICBM152 gray matter mask image
     icbm = fetch_icbm152_2009(
         data_dir=data_dir, resume=resume, verbose=verbose
     )
@@ -701,7 +701,7 @@ def fetch_oasis_vbm(
     dedicated to making brain imaging data openly available to the public.
     Using data available through the OASIS project requires agreeing with
     the Data Usage Agreement that can be found at
-    https://www.oasis-brains.org/#access
+    https://sites.wustl.edu/oasisbrains/
 
     """
     # check number of subjects

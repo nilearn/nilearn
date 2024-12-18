@@ -6,9 +6,9 @@ This example constructs a functional connectome using the sparse inverse
 covariance.
 
 We use the `MSDL atlas
-<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
 of functional regions in movie watching, and the
-:class:`nilearn.maskers.NiftiMapsMasker` to extract time series.
+:class:`~nilearn.maskers.NiftiMapsMasker` to extract time series.
 
 Note that the inverse covariance (or precision) contains values that can
 be linked to *negated* partial correlations, so we negated it for
@@ -113,8 +113,8 @@ plotting.show()
 # %%
 # 3D visualization in a web browser
 # ---------------------------------
-# An alternative to :func:`nilearn.plotting.plot_connectome` is to use
-# :func:`nilearn.plotting.view_connectome` that gives more interactive
+# An alternative to :func:`~nilearn.plotting.plot_connectome` is to use
+# :func:`~nilearn.plotting.view_connectome` that gives more interactive
 # visualizations in a web browser. See :ref:`interactive-connectome-plotting`
 # for more details.
 
