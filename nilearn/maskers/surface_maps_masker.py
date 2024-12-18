@@ -19,7 +19,6 @@ from nilearn.maskers._utils import (
     concatenate_surface_images,
 )
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-
 from nilearn.surface import SurfaceImage
 
 
@@ -156,7 +155,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         SurfaceMapsMasker object
         """
         del img, y
-        
+
         if self.maps_img is None:
             raise ValueError(
                 "Please provide a maps_img during initialization. "
@@ -299,7 +298,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if self.reports:
             self._reporting_data["images"] = img
 
-
         parameters = get_params(
             self.__class__,
             self,
@@ -395,7 +393,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         del y
         return self.fit().transform(img, confounds, sample_mask)
 
-
     def inverse_transform(self, region_signals):
         """Compute :term:`vertex` signals from region signals.
 
@@ -412,7 +409,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             The data for each hemisphere is of shape
             (n_vertices_per_hemisphere, n_timepoints).
         """
-        
         self._check_fitted()
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
@@ -444,7 +440,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             )
         else:
             vertex_signals = np.dot(region_signals, maps_data.T)
-
 
         # we need the data to be of shape (n_vertices, n_timepoints)
         # because the SurfaceImage object expects it
@@ -557,4 +552,3 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                     bg_on_data=True,
                 )
         return fig
-
