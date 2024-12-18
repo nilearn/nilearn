@@ -274,7 +274,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
            :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, it will be computed
-        automatically by a MultiNiftiMasker with default parameters.
+        automatically by a MultiNiftiMasker for Niimg-like objects with default
+        parameters and no mask will be used for SurfaceImage objects.
     %(smoothing_fwhm)s
     standardize : boolean, default=True
         If standardize is True, the time-series are centered and normed:
@@ -433,7 +434,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data on which the mask is calculated. If this is a list,
-            the affine is considered the same for all.
+            the affine (for Niimg-like objects) and mesh (for SurfaceImages)
+            is considered the same for all
 
         confounds : list of CSV file paths, numpy.ndarrays
             or pandas DataFrames, optional.
@@ -518,7 +520,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 self.masker_.mask_img_,
                 resampling_target="maps",
             )
-            # TODO: remove in 0.11.4
+            # TODO: remove in 0.11.3
             self.nifti_maps_masker_ = self.maps_masker_
             warnings.warn(
                 FutureWarning,
@@ -582,7 +584,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        reconstructed_imgs : list of nibabel.Nifti1Image
+        reconstructed_imgs : list of nibabel.Nifti1Image or
+                             `~nilearn.surface.SurfaceImage`
             For each loading, reconstructed Nifti1Image
 
         """
