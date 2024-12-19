@@ -1245,6 +1245,19 @@ class PolyData:
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.shape}>"
 
+    def _get_min_max(self):
+        """Get min and max across parts.
+
+        Returns
+        -------
+        vmin : float
+
+        vmax : float
+        """
+        vmin = min(x.min() for x in self.parts.values())
+        vmax = max(x.max() for x in self.parts.values())
+        return vmin, vmax
+
     def to_filename(self, filename):
         """Save data to gifti.
 
@@ -1811,31 +1824,13 @@ def check_surface_data_ndims(img, dim, var_name="img"):
         )
 
 
-def get_min_max(img):
-    """Get min and max across hemisphere for a SurfaceImage.
-
-    Parameters
-    ----------
-    img : :obj:`~nilearn.surface.SurfaceImage`
-
-    Returns
-    -------
-    vmin : float
-
-    vmax : float
-    """
-    vmin = min(min(x.ravel()) for x in img.data.parts.values())
-    vmax = max(max(x.ravel()) for x in img.data.parts.values())
-    return vmin, vmax
-
-
 def get_data(img):
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
 
     Parameters
     ----------
-    img : :obj:`~nilearn.surface.SurfaceImage` object
+    img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
         SurfaceImage whose data to concatenate and extract.
 
     Returns
@@ -1843,7 +1838,9 @@ def get_data(img):
     :obj:`~numpy.ndarray`
         Concatenated data across hemispheres.
     """
-    return np.concatenate(list(img.data.parts.values()), axis=0)
+    if isinstance(img, SurfaceImage):
+        data = img.data
+    return np.concatenate(list(data.parts.values()), axis=0)
 
 
 def concat_imgs(imgs):

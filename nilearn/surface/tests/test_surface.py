@@ -42,7 +42,6 @@ from nilearn.surface.surface import (
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     concat_imgs,
-    get_min_max,
     index_img,
     iter_img,
     load_surf_data,
@@ -1126,7 +1125,7 @@ def test_get_min_max(surf_img_2d):
     img.data.parts["right"][:, 0] = np.zeros(shape=(5))
     img.data.parts["right"][0][0] = -3.5
 
-    vmin, vmax = get_min_max(img)
+    vmin, vmax = img.data._get_min_max()
 
     assert vmin == -3.5
     assert vmax == 10

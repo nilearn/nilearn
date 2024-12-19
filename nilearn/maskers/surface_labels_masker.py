@@ -15,7 +15,6 @@ from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
     concat_imgs,
-    get_min_max,
     mean_img,
 )
 
@@ -544,7 +543,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         img = self._reporting_data["images"]
         if img:
             img = mean_img(img)
-            vmin, vmax = get_min_max(img)
+            vmin, vmax = img.data._get_min_max()
 
         # TODO: possibly allow to generate a report with other views
         views = ["lateral", "medial"]
