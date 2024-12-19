@@ -73,6 +73,7 @@ jobs:
                 fi
 
     # check the links in the doc
+    # only on full build
     linkcheck:
         needs: [check_skip_flags, validate_cff]
         runs-on: ubuntu-latest
@@ -81,6 +82,16 @@ jobs:
             uses: actions/checkout@v4
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
+        -   name: Check if we are doing a full or partial build
+            run: ./build_tools/github/build_type.sh
+            env:
+                COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        -   name: Verify build type
+            id: build-type
+            run: |
+                echo "PATTERN = $(cat pattern.txt)"
+                echo "BUILD = $(cat build.txt)"
+                echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
@@ -88,6 +99,7 @@ jobs:
         -   name: Install packages
             run: python -m pip install tox
         -   name: check links
+            if: ${{ steps.build-type.outputs.build == 'html-strict' }}
             run: tox run -e linkcheck
 
     get_data:
