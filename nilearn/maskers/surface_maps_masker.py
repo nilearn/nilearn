@@ -92,6 +92,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     n_elements_ : :obj:`int`
         The number of regions in the maps image.
 
+
     See Also
     --------
         nilearn.maskers.SurfaceMasker
@@ -188,6 +189,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                     )
             check_surface_data_ndims(self.mask_img, 1, "mask_img")
 
+        # initialize reporting content and data
+        if not self.reports:
+            self._reporting_data = None
+            return self
+
         self._shelving = False
         # content to inject in the HTML template
         self._report_content = (
@@ -202,6 +208,19 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "summary": {},
             },
         )
+
+        self._report_content["number_of_regions"] = self.n_elements_
+        for part in self.maps_img.data.parts:
+            self._report_content["n_vertices"][part] = (
+                self.maps_img.mesh.parts[part].n_vertices
+            )
+
+        self._reporting_data = {
+            "maps_img": self.maps_img,
+            "mask": self.mask_img,
+            "images": None,  # we will update image in transform
+        }
+
         return self
 
     def __sklearn_is_fitted__(self):
@@ -275,6 +294,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             )
             self.smoothing_fwhm = None
 
+        # add the image to the reporting data
+        if self.reports:
+            self._reporting_data["images"] = img
+
         parameters = get_params(
             self.__class__,
             self,
@@ -288,6 +311,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         # apply mask if provided
         # and then extract signal via least square regression
+
         if mask_data is not None:
             region_signals = cache(
                 linalg.lstsq,
@@ -399,6 +423,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 f"Expected {self.n_elements_} regions, "
                 f"but got {region_signals.shape[1]}."
             )
+
         logger.log("computing image from signals", verbose=self.verbose)
         # project region signals back to vertices
         if mask_data is not None:
@@ -431,3 +456,99 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         }
 
         return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+
+    def generate_report(self, displayed_maps=10):
+        """Generate a report."""
+        if not is_matplotlib_installed():
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib is not imported! "
+                    "No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                return [None]
+
+        self.displayed_maps = displayed_maps
+        from nilearn.reporting.html_report import generate_report
+
+        return generate_report(self)
+
+    def _reporting(self):
+        """Load displays needed for report.
+
+        Returns
+        -------
+        displays : list
+            A list of all displays to be rendered.
+        """
+        import matplotlib.pyplot as plt
+
+        from nilearn.reporting.utils import figure_to_png_base64
+
+        maps_img = self._reporting_data["maps_img"]
+        maps_img = deconcatenate_surface_images(maps_img)
+
+        img = self._reporting_data["images"]
+        if img:
+            img = compute_mean_surface_image(img)
+
+        # Handle the edge case where this function is
+        # called with a masker having report capabilities disabled
+        if self._reporting_data is None:
+            return [None]
+
+        n_maps = self.maps_img_.shape[1]
+        self._report_content["number_of_maps"] = n_maps
+        self._report_content["displayed_maps"] = list(
+            range(self.displayed_maps)
+        )
+        embeded_images = []
+        for roi in maps_img[: self.displayed_maps]:
+            fig = self._create_figure_for_report(roi=roi, bg_img=img)
+            embeded_images.append(figure_to_png_base64(fig))
+            plt.close()
+
+        return embeded_images
+
+    def _create_figure_for_report(self, roi, bg_img):
+        """Create a figure of the contours of maps image.
+
+        If transform() was applied to an image,
+        this image is used as background
+        on which the contours are drawn.
+        """
+        import matplotlib.pyplot as plt
+
+        from nilearn.plotting import plot_surf
+
+        # TODO: possibly allow to generate a report with other views
+        views = ["lateral", "medial"]
+        hemispheres = ["left", "right"]
+
+        fig, axes = plt.subplots(
+            len(views),
+            len(hemispheres),
+            subplot_kw={"projection": "3d"},
+            figsize=(20, 20),
+            **_constrained_layout_kwargs(),
+        )
+        axes = np.atleast_2d(axes)
+
+        for ax_row, view in zip(axes, views):
+            for ax, hemi in zip(ax_row, hemispheres):
+                # very low threshold to only make 0 values transparent
+                threshold = 0.00000001
+                plot_surf(
+                    surf_map=roi,
+                    bg_map=bg_img,
+                    hemi=hemi,
+                    view=view,
+                    figure=fig,
+                    axes=ax,
+                    cmap=self.cmap,
+                    colorbar=False,
+                    threshold=threshold,
+                    bg_on_data=True,
+                )
+        return fig
