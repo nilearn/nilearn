@@ -33,5 +33,7 @@ Enhancements
 
 - :bdg-dark:`Code` Update :obj:`~nilearn.regions.HierarchicalKMeans` to take X as array of shape ``[n_samples, n_features]`` (:gh:`4939` by `Himanshu Aggarwal`_ and `Rémi Gau`_).
 
+- :bdg-dark:`Code` Allow :obj:`~nilearn.regions.Parcellations` to work with Surface data (:gh:`4756` by `Himanshu Aggarwal`_).
+
 Changes
 -------
