@@ -1937,6 +1937,20 @@ def index_img(img, index):
 
 
 def _extract_data(img, index):
+    """Extract data of a SurfaceImage a specified indices.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    index : Any type compatible with numpy array indexing
+        Used for indexing the 2D data array in the 2nd dimension.
+
+    Returns
+    -------
+    a dict where each value contains the data extracted
+    for each part
+    """
     if not isinstance(img, SurfaceImage):
         raise TypeError("Input must a be SurfaceImage.")
     mesh = img.mesh
