@@ -1258,6 +1258,31 @@ class PolyData:
         vmax = max(x.max() for x in self.parts.values())
         return vmin, vmax
 
+    def _check_ndims(self, dim, var_name="img"):
+        """Check if the data is of a given dimension.
+
+        Raise error if not.
+
+        Parameters
+        ----------
+        dim : int
+            Dimensions the data should have.
+
+        var_name : str, optional
+            Name of the variable to include in the error message.
+
+        Returns
+        -------
+        raise ValueError if the data of the SurfaceImage is not of the given
+        dimension.
+        """
+        if not all(x.ndim == dim for x in self.parts.values()):
+            msg = [f"{v}D for {k}" for k, v in self.parts.items()]
+            raise ValueError(
+                f"Data for each part of {var_name} should be {dim}D. "
+                f"Found: {', '.join(msg)}."
+            )
+
     def to_filename(self, filename):
         """Save data to gifti.
 
@@ -1793,35 +1818,6 @@ class SurfaceImage:
         data = PolyData(left=texture_left, right=texture_right)
 
         return cls(mesh=mesh, data=data)
-
-
-def check_surface_data_ndims(img, dim, var_name="img"):
-    """Check if the data of a SurfaceImage is of a given dimension,
-    raise error if not.
-
-    Parameters
-    ----------
-    img : :obj:`~nilearn.surface.SurfaceImage`
-        SurfaceImage to check.
-
-    dim : int
-        Dimensions the data should have.
-
-    var_name : str, optional
-        Name of the variable to include in the error message.
-
-    Returns
-    -------
-    raise ValueError if the data of the SurfaceImage is not of the given
-    dimension.
-    """
-    n_dim_left = img.data.parts["left"].ndim
-    n_dim_right = img.data.parts["right"].ndim
-    if not all(x == dim for x in [n_dim_left, n_dim_right]):
-        raise ValueError(
-            f"Data for each hemisphere of {var_name} should be {dim}D, "
-            f"but found {n_dim_left}D for left and {n_dim_right}D for right."
-        )
 
 
 def get_data(img):

@@ -16,7 +16,6 @@ from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
-    check_surface_data_ndims,
     concat_imgs,
     get_data,
 )
@@ -166,7 +165,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             verbose=self.verbose,
         )
         # check maps_img data is 2D
-        check_surface_data_ndims(self.maps_img, 2, "maps_img")
+        self.maps_img.data._check_ndims(2, "maps_img")
         self.maps_img_ = self.maps_img
 
         self.n_elements_ = self.maps_img.shape[1]
@@ -186,7 +185,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                     self.mask_img.data.parts[part] = np.squeeze(
                         self.mask_img.data.parts[part], axis=1
                     )
-            check_surface_data_ndims(self.mask_img, 1, "mask_img")
+            self.mask_img.data._check_ndims(1, "mask_img")
 
         self._shelving = False
         # content to inject in the HTML template
@@ -253,7 +252,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             img = [img]
         img = concat_imgs(img)
         # check img data is 2D
-        check_surface_data_ndims(img, 2, "img")
+        img.data._check_ndims(2, "img")
         check_same_n_vertices(self.maps_img.mesh, img.mesh)
         img_data = np.concatenate(
             list(img.data.parts.values()), axis=0
