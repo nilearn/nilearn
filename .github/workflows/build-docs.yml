@@ -86,6 +86,8 @@ jobs:
             run: ./build_tools/github/build_type.sh
             env:
                 COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        -   name: Merge with upstream
+            run: ./build_tools/github/merge_upstream.sh
         -   name: Verify build type
             id: build-type
             run: |
