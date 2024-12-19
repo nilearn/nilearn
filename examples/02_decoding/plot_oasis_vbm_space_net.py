@@ -6,7 +6,9 @@ Predicting age from gray-matter concentration maps from OASIS
 dataset. Note that age is a continuous variable, we use the regressor
 here, and not the classification object.
 
-See also the documentation: :ref:`space_net`.
+.. seealso::
+
+    The documentation: :ref:`space_net`.
 
 """
 
@@ -83,6 +85,7 @@ plot_stat_map(
     title="graph-net weights",
     display_mode="z",
     cut_coords=1,
+    cmap="cold_hot",
 )
 
 # Plot the prediction errors.

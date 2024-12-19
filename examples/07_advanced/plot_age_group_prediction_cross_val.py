@@ -144,4 +144,4 @@ plt.show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

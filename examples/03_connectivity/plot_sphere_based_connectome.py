@@ -422,8 +422,7 @@ plotting.show()
 #
 # .. footbibliography::
 #
-# See also
-# --------
+# .. seealso::
 #
 #   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #

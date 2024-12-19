@@ -281,7 +281,7 @@ class NiftiMasker(BaseMasker):
         memory=None,
         verbose=0,
         reports=True,
-        cmap="CMRmap_r",
+        cmap="gray",
         **kwargs,
     ):
         # Mask is provided or computed
