@@ -72,6 +72,8 @@ for index in regions_indices_network3[0]:
         cut_coords=coords[2:3],
         title="Blob of network3",
         colorbar=False,
+        cmap="inferno",
+        vmax=15,
     )
 
 plotting.show()
