@@ -18,6 +18,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix all occurrences of the RUF012 error related to mutable default values in Python classes (:gh:`4954` by `Idrissa Traore`_).
 
+- :bdg-dark:`Code` Support for confounds as numpy arrays in :meth:`nilearn.glm.first_level.FirstLevelModel.fit` (:gh:`4967` by `Rémi Gau`_).
+
 Enhancements
 ------------
 
@@ -28,6 +30,8 @@ Enhancements
 - :bdg-dark:`Code` Implement :obj:`~nilearn.maskers.SurfaceMapsMasker` class to extract signals from surface maps (:gh:`4830` by `Himanshu Aggarwal`_).
 
 - :bdg-primary:`Doc` Add a :ref:`page <meaning_difference>` in the user guide to explain GLM terminology across software (Nilearn, SPM, FSL) regarding the meaning of 'levels'  (:gh:`4287` by `Thiti Premrudeepreechacharn`_).
+
+- :bdg-dark:`Code` Update :obj:`~nilearn.regions.HierarchicalKMeans` to take X as array of shape ``[n_samples, n_features]`` (:gh:`4939` by `Himanshu Aggarwal`_ and `Rémi Gau`_).
 
 Changes
 -------
