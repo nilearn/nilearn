@@ -741,7 +741,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
     data_dir = str(tmp_path / "pauli_2017")
 
-    data = atlas.fetch_atlas_pauli_2017("det", data_dir)
+    data = atlas.fetch_atlas_pauli_2017("deterministic", data_dir)
 
     assert isinstance(data, Bunch)
 
@@ -753,7 +753,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
 
     assert len(np.unique(values)) == 17
 
-    data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
+    data = atlas.fetch_atlas_pauli_2017("probabilistic", data_dir)
 
     assert load(data.maps).shape[-1] == 16
 
@@ -761,6 +761,52 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
 
     with pytest.raises(NotImplementedError):
         atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)
+
+
+# TODO: remove this test after release 0.13.0
+def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
+    """Tests nilearn.datasets.atlas.fetch_atlas_pauli_2017 to receive
+    DepricationWarning upon use of deprecated version parameter and its
+    possible values "prob" and "det".
+    """
+    labels = pd.DataFrame({"label": [f"label_{i}" for i in range(16)]}).to_csv(
+        sep="\t", header=False
+    )
+    det_atlas = data_gen.generate_labeled_regions((7, 6, 5), 16)
+    prob_atlas, _ = data_gen.generate_maps((7, 6, 5), 16)
+    request_mocker.url_mapping["*osf.io/6qrcb/*"] = labels
+    request_mocker.url_mapping["*osf.io/5mqfx/*"] = det_atlas
+    request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
+    data_dir = str(tmp_path / "pauli_2017")
+
+    with pytest.warns(DeprecationWarning, match='The parameter "version"'):
+        data = atlas.fetch_atlas_pauli_2017(
+            version="probabilistic", data_dir=data_dir
+        )
+
+        assert load(data.maps).shape[-1] == 16
+
+        assert data.description != ""
+
+    with pytest.warns(
+        DeprecationWarning, match="The possible values for atlas_type"
+    ):
+        data = atlas.fetch_atlas_pauli_2017("det", data_dir)
+
+        assert isinstance(data, Bunch)
+
+        assert data.description != ""
+
+        assert len(data.labels) == 16
+
+    with pytest.warns(
+        DeprecationWarning, match="The possible values for atlas_type"
+    ):
+        data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
+
+        assert load(data.maps).shape[-1] == 16
+
+        assert data.description != ""
 
 
 def _schaefer_labels(match, requests):  # noqa: ARG001
