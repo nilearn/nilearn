@@ -10,7 +10,7 @@ We use the `MSDL atlas
 of functional regions in movie-watching.
 
 The key to extract signals is to use the
-:class:`nilearn.maskers.NiftiMapsMasker` that can transform nifti
+:class:`~nilearn.maskers.NiftiMapsMasker` that can transform nifti
 objects to time series using a probabilistic atlas.
 
 As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates for the
@@ -107,8 +107,8 @@ plotting.show()
 # %%
 # 3D visualization in a web browser
 # ---------------------------------
-# An alternative to :func:`nilearn.plotting.plot_connectome` is to use
-# :func:`nilearn.plotting.view_connectome` that gives more interactive
+# An alternative to :func:`~nilearn.plotting.plot_connectome` is to use
+# :func:`~nilearn.plotting.view_connectome` that gives more interactive
 # visualizations in a web browser. See :ref:`interactive-connectome-plotting`
 # for more details.
 

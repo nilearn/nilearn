@@ -15,10 +15,8 @@ from numpy.testing import (
     assert_array_equal,
     assert_array_less,
 )
-from sklearn import __version__ as sklearn_version
 from sklearn.cluster import KMeans
 
-from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
@@ -59,16 +57,11 @@ FUNCFILE = BASEDIR / "functional.nii.gz"
 extra_valid_checks = [
     "check_transformers_unfitted",
     "check_transformer_n_iter",
-    "check_estimator_sparse_array",
-    "check_estimator_sparse_matrix",
     "check_estimators_unfitted",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_no_attributes_set_in_init",
     "check_parameters_default_constructible",
 ]
-# TODO remove when dropping support for sklearn_version < 1.5.0
-if compare_version(sklearn_version, "<", "1.5.0"):
-    extra_valid_checks.append("check_estimator_sparse_data")
 
 
 @pytest.mark.parametrize(
@@ -663,31 +656,73 @@ def test_fmri_inputs_events_type(tmp_path):
 
 
 def test_fmri_inputs_with_confounds(tmp_path):
-    """Test with confounds and, events or design matrix."""
+    """Test with confounds and, events."""
+    n_timepoints = 10
+    shapes = ((3, 4, 5, n_timepoints),)
+    mask, func_img, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=tmp_path
+    )
+
+    conf = pd.DataFrame([0] * n_timepoints, columns=["conf"])
+
+    events = basic_paradigm()
+
+    func_img = func_img[0]
+
+    # Provide t_r, confounds, and events but no design matrix
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img,
+        confounds=conf,
+        events=events,
+    )
+    assert "conf" in flm.design_matrices_[0]
+
+    # list are OK
+    FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img,
+        confounds=[conf],
+        events=events,
+    )
+
+    # test with confounds as numpy array
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img,
+        confounds=conf.to_numpy(),
+        events=events,
+    )
+    assert "confound_0" in flm.design_matrices_[0]
+
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img,
+        confounds=[conf.to_numpy()],
+        events=events,
+    )
+    assert "confound_0" in flm.design_matrices_[0]
+
+
+def test_fmri_inputs_confounds_ignored_with_design_matrix(tmp_path):
+    """Test with confounds with design matrix.
+
+    Confounds ignored if design matrix is passed
+    """
     n_timepoints = 10
     shapes = ((3, 4, 5, n_timepoints),)
     mask, func_img, des = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path
     )
 
-    conf = pd.DataFrame([0, 0])
-
-    events = basic_paradigm()
+    conf = pd.DataFrame([0] * n_timepoints, columns=["conf"])
 
     func_img = func_img[0]
-    des = des[0]
 
-    # Provide t_r, confounds, and events but no design matrix
-    FirstLevelModel(mask_img=mask, t_r=2.0).fit(
-        func_img,
-        confounds=pd.DataFrame([0] * n_timepoints, columns=["conf"]),
-        events=events,
+    des = pd.read_csv(des[0], sep="\t")
+    n_col_in_des = len(des.columns)
+
+    flm = FirstLevelModel(mask_img=mask).fit(
+        func_img, confounds=conf, design_matrices=des
     )
 
-    # test with confounds as numpy array
-    FirstLevelModel(mask_img=mask).fit(
-        [func_img], confounds=conf.values, design_matrices=[des]
-    )
+    assert len(flm.design_matrices_[0].columns) == n_col_in_des
 
 
 def test_fmri_inputs_errors(tmp_path, shape_4d_default):

@@ -12,9 +12,8 @@ from numpy.testing import (
     assert_array_equal,
 )
 from scipy import stats
-from sklearn import __version__ as sklearn_version
 
-from nilearn._utils import compare_version, testing
+from nilearn._utils import testing
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
@@ -48,14 +47,9 @@ extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_transformers_unfitted",
     "check_transformer_n_iter",
-    "check_estimator_sparse_array",
-    "check_estimator_sparse_matrix",
     "check_estimators_unfitted",
     "check_parameters_default_constructible",
 ]
-# TODO remove when dropping support for sklearn_version < 1.5.0
-if compare_version(sklearn_version, "<", "1.5.0"):
-    extra_valid_checks.append("check_estimator_sparse_data")
 
 
 @pytest.mark.parametrize(
@@ -570,7 +564,7 @@ def test_high_level_glm_with_paths_errors(tmp_path):
     X = pd.DataFrame([[1]] * 4, columns=["intercept"])
 
     # Provide a masker as mask_img
-    masker = NiftiMasker(mask)
+    masker = NiftiMasker(mask).fit()
     with pytest.warns(
         UserWarning, match="Parameter memory of the masker overridden"
     ):

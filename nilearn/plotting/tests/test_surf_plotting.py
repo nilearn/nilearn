@@ -11,7 +11,6 @@ from matplotlib.figure import Figure
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
-from nilearn.conftest import _rng
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
@@ -29,13 +28,11 @@ from nilearn.plotting.surf_plotting import (
     plot_surf_stat_map,
 )
 from nilearn.surface import (
-    InMemoryMesh,
     SurfaceImage,
     load_surf_data,
     load_surf_mesh,
 )
 from nilearn.surface._testing import assert_surface_mesh_equal
-from nilearn.surface.tests._testing import generate_surf
 
 try:
     import IPython.display  # noqa:F401
@@ -332,13 +329,12 @@ def test_check_surface_plotting_inputs_errors(surf_img_1d):
         )
 
 
-def test_plot_surf_contours_warning_hemi():
+def test_plot_surf_contours_warning_hemi(in_memory_mesh):
     """Test warning that hemi will be ignored."""
-    mesh = generate_surf()
-    parcellation = np.zeros((mesh[0].shape[0],))
-    parcellation[mesh[1][3]] = 1
+    parcellation = np.zeros((in_memory_mesh.n_vertices,))
+    parcellation[in_memory_mesh.faces[3]] = 1
     with pytest.warns(UserWarning, match="This value will be ignored"):
-        plot_surf_contours(mesh, parcellation, hemi="left")
+        plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
 
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
@@ -484,12 +480,11 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
     not is_plotly_installed(),
     reason="Plotly is not installed; required for this test.",
 )
-def test_value_error_get_faces_on_edge():
+def test_value_error_get_faces_on_edge(in_memory_mesh):
     """Test that calling _get_faces_on_edge raises a ValueError when \
        called with with indices that do not form a region.
     """
-    mesh = generate_surf()
-    figure = plot_surf(mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine="plotly")
     with pytest.raises(
         ValueError, match=("Vertices in parcellation do not form region.")
     ):
@@ -500,36 +495,33 @@ def test_value_error_get_faces_on_edge():
     not is_plotly_installed(),
     reason="Plotly is not installed; required for this test.",
 )
-def test_plot_surf_contours_errors_with_plotly_figure():
+def test_plot_surf_contours_errors_with_plotly_figure(in_memory_mesh):
     """Test that plot_surf_contours rasises error when given plotly obj."""
-    mesh = generate_surf()
-    figure = plot_surf(mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine="plotly")
     with pytest.raises(ValueError):
-        plot_surf_contours(mesh, np.ones((10,)), figure=figure)
+        plot_surf_contours(in_memory_mesh, np.ones((10,)), figure=figure)
 
 
 @pytest.mark.skipif(
     not is_plotly_installed(),
     reason="Plotly is not installed; required for this test.",
 )
-def test_plot_surf_contours_errors_with_plotly_axes():
+def test_plot_surf_contours_errors_with_plotly_axes(in_memory_mesh):
     """Test that plot_surf_contours rasises error when given plotly \
         obj as axis.
     """
-    mesh = generate_surf()
-    figure = plot_surf(mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine="plotly")
     with pytest.raises(ValueError):
-        plot_surf_contours(mesh, np.ones((10,)), axes=figure)
+        plot_surf_contours(in_memory_mesh, np.ones((10,)), axes=figure)
 
 
 @pytest.mark.skipif(
     not is_plotly_installed(),
     reason="Plotly is not installed; required for this test.",
 )
-def test_plotly_surface_figure_warns_on_isolated_roi():
+def test_plotly_surface_figure_warns_on_isolated_roi(in_memory_mesh):
     """Test that a warning is generated for ROIs with isolated vertices."""
-    mesh = generate_surf()
-    figure = plot_surf(mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine="plotly")
     # the method raises an error because the (randomly generated)
     # vertices don't form regions
     try:
@@ -553,12 +545,13 @@ def test_distant_line_segments_detected_as_not_intersecting():
     reason="Plotly is not installed; required for this test.",
 )
 @pytest.mark.parametrize("levels,labels", [([0], ["a", "b"]), ([0, 1], ["a"])])
-def test_value_error_add_contours_levels_labels(levels, labels):
+def test_value_error_add_contours_levels_labels(
+    levels, labels, in_memory_mesh
+):
     """Test that add_contours raises a ValueError when called with levels and \
     labels that have incompatible lengths.
     """
-    mesh = generate_surf()
-    figure = plot_surf(mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine="plotly")
     with pytest.raises(
         ValueError,
         match=("levels and labels need to be either the same length or None."),
@@ -576,12 +569,11 @@ def test_value_error_add_contours_levels_labels(levels, labels):
     "levels,lines",
     [([0], [{}, {}]), ([0, 1], [{}, {}, {}])],
 )
-def test_value_error_add_contours_levels_lines(levels, lines):
+def test_value_error_add_contours_levels_lines(levels, lines, in_memory_mesh):
     """Test that add_contours raises a ValueError when called with levels and \
     lines that have incompatible lengths.
     """
-    mesh = generate_surf()
-    figure = plot_surf(mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine="plotly")
     with pytest.raises(
         ValueError,
         match=("levels and lines need to be either the same length or None."),
@@ -589,30 +581,42 @@ def test_value_error_add_contours_levels_lines(levels, lines):
         figure.add_contours(levels=levels, lines=lines, roi_map=np.ones((10,)))
 
 
+@pytest.fixture
+def surf_roi_data(rng, in_memory_mesh):
+    roi_map = np.zeros((in_memory_mesh.n_vertices, 1))
+    roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
+    roi_map[roi_idx] = 1
+    return roi_map
+
+
+@pytest.fixture
+def surface_image_roi(surf_mask_1d):
+    """SurfaceImage for plotting."""
+    return surf_mask_1d
+
+
+@pytest.fixture
+def surface_image_parcellation(rng, in_memory_mesh):
+    data = rng.integers(100, size=(in_memory_mesh.n_vertices, 1)).astype(float)
+    parcellation = SurfaceImage(
+        mesh={"left": in_memory_mesh, "right": in_memory_mesh},
+        data={"left": data, "right": data},
+    )
+    return parcellation
+
+
 @pytest.mark.skipif(
     not is_plotly_installed(),
     reason="Plotly is not installed; required for this test.",
 )
-def test_add_contours():
+def test_add_contours(surface_image_roi):
     """Test that add_contours updates data in PlotlySurfaceFigure."""
-    mesh, roi_map, _ = _generate_data_test_surf_roi()
-    figure = plot_surf(mesh, engine="plotly")
-    figure.add_contours(roi_map)
+    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure.add_contours(surface_image_roi)
     assert len(figure.figure.to_dict().get("data")) == 3
-    figure.add_contours(roi_map, levels=[1])
+
+    figure.add_contours(surface_image_roi, levels=[1])
     assert len(figure.figure.to_dict().get("data")) == 4
-
-
-@pytest.fixture
-def surface_image_roi():
-    """SurfaceImage for plotting."""
-    mesh, roi_map, _ = _generate_data_test_surf_roi()
-    mesh = InMemoryMesh(coordinates=mesh[0], faces=mesh[1])
-    surf_map = SurfaceImage(
-        mesh={"left": mesh, "right": mesh},
-        data={"left": roi_map.T, "right": roi_map.T},
-    )
-    return surf_map
 
 
 @pytest.mark.skipif(
@@ -644,11 +648,10 @@ def test_surface_figure_add_contours_raises_not_implemented():
     not is_plotly_installed(),
     reason="Plotly is not installed; required for this test.",
 )
-def test_add_contours_has_name():
+def test_add_contours_has_name(surface_image_roi):
     """Test that contours added to a PlotlySurfaceFigure can be named."""
-    mesh, roi_map, _ = _generate_data_test_surf_roi()
-    figure = plot_surf(mesh, engine="plotly")
-    figure.add_contours(roi_map, levels=[1], labels=["x"])
+    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure.add_contours(surface_image_roi, levels=[1], labels=["x"])
     assert figure.figure.to_dict().get("data")[1].get("name") == "x"
 
 
@@ -656,13 +659,12 @@ def test_add_contours_has_name():
     not is_plotly_installed(),
     reason="Plotly is not installed; required for this test.",
 )
-def test_add_contours_lines_duplicated():
+def test_add_contours_lines_duplicated(surface_image_roi):
     """Test that the specifications of length 1 line provided to \
      add_contours are duplicated to all requested contours.
     """
-    mesh, roi_map, _ = _generate_data_test_surf_roi()
-    figure = plot_surf(mesh, engine="plotly")
-    figure.add_contours(roi_map, lines=[{"width": 10}])
+    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure.add_contours(surface_image_roi, lines=[{"width": 10}])
     newlines = figure.figure.to_dict().get("data")[1:]
     assert all(x.get("line").__contains__("width") for x in newlines)
 
@@ -678,13 +680,12 @@ def test_add_contours_lines_duplicated():
         ("width", 10),
     ],
 )
-def test_add_contours_line_properties(key, value):
+def test_add_contours_line_properties(key, value, surface_image_roi):
     """Test that the specifications of a line provided to add_contours are \
     stored in the PlotlySurfaceFigure data.
     """
-    mesh, roi_map, _ = _generate_data_test_surf_roi()
-    figure = plot_surf(mesh, engine="plotly")
-    figure.add_contours(roi_map, levels=[1], lines=[{key: value}])
+    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure.add_contours(surface_image_roi, levels=[1], lines=[{key: value}])
     newline = figure.figure.to_dict().get("data")[1].get("line")
     assert newline.get(key) == value
 
@@ -773,18 +774,16 @@ def test_get_bounds(data, expected):
     assert _get_bounds(data, vmin=0.1, vmax=0.8) == (0.1, 0.8)
 
 
-def test_plot_surf_engine_error():
-    mesh = generate_surf()
+def test_plot_surf_engine_error(in_memory_mesh):
     with pytest.raises(ValueError, match="Unknown plotting engine"):
-        plot_surf(mesh, engine="foo")
+        plot_surf(in_memory_mesh, engine="foo")
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf(engine, tmp_path, rng):
+def test_plot_surf(engine, tmp_path, rng, in_memory_mesh):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
-    mesh = generate_surf()
-    bg = rng.standard_normal(size=mesh[0].shape[0])
+    bg = rng.standard_normal(size=in_memory_mesh.n_vertices)
 
     # to avoid extra warnings
     alpha = None
@@ -796,13 +795,13 @@ def test_plot_surf(engine, tmp_path, rng):
         cbar_vmax = 150
 
     # Plot mesh only
-    plot_surf(mesh, engine=engine)
+    plot_surf(in_memory_mesh, engine=engine)
 
     # Plot mesh with background
-    plot_surf(mesh, bg_map=bg, engine=engine)
-    plot_surf(mesh, bg_map=bg, darkness=0.5, engine=engine)
+    plot_surf(in_memory_mesh, bg_map=bg, engine=engine)
+    plot_surf(in_memory_mesh, bg_map=bg, darkness=0.5, engine=engine)
     plot_surf(
-        mesh,
+        in_memory_mesh,
         bg_map=bg,
         alpha=alpha,
         output_file=tmp_path / "tmp.png",
@@ -810,14 +809,16 @@ def test_plot_surf(engine, tmp_path, rng):
     )
 
     # Plot different views
-    plot_surf(mesh, bg_map=bg, hemi="right", engine=engine)
-    plot_surf(mesh, bg_map=bg, view="medial", engine=engine)
-    plot_surf(mesh, bg_map=bg, hemi="right", view="medial", engine=engine)
+    plot_surf(in_memory_mesh, bg_map=bg, hemi="right", engine=engine)
+    plot_surf(in_memory_mesh, bg_map=bg, view="medial", engine=engine)
+    plot_surf(
+        in_memory_mesh, bg_map=bg, hemi="right", view="medial", engine=engine
+    )
 
     # Plot with colorbar
-    plot_surf(mesh, bg_map=bg, colorbar=True, engine=engine)
+    plot_surf(in_memory_mesh, bg_map=bg, colorbar=True, engine=engine)
     plot_surf(
-        mesh,
+        in_memory_mesh,
         bg_map=bg,
         colorbar=True,
         cbar_vmin=cbar_vmin,
@@ -829,23 +830,26 @@ def test_plot_surf(engine, tmp_path, rng):
     plt.close()
 
     # Plot with title
-    display = plot_surf(mesh, bg_map=bg, title="Test title", engine=engine)
+    display = plot_surf(
+        in_memory_mesh, bg_map=bg, title="Test title", engine=engine
+    )
     if engine == "matplotlib":
         assert len(display.axes) == 1
         assert display.axes[0].title._text == "Test title"
 
 
-def test_plot_surf_avg_method(rng):
-    mesh = generate_surf()
+def test_plot_surf_avg_method(rng, in_memory_mesh):
     # Plot with avg_method
     # Test all built-in methods and check
-    mapp = rng.standard_normal(size=mesh[0].shape[0])
-    mesh_ = load_surf_mesh(mesh)
-    _, faces = mesh_[0], mesh_[1]
+    mapp = rng.standard_normal(size=in_memory_mesh.n_vertices)
+    faces = in_memory_mesh.faces
 
     for method in ["mean", "median", "min", "max"]:
         display = plot_surf(
-            mesh, surf_map=mapp, avg_method=method, engine="matplotlib"
+            in_memory_mesh,
+            surf_map=mapp,
+            avg_method=method,
+            engine="matplotlib",
         )
         if method == "mean":
             agg_faces = np.mean(mapp[faces], axis=1)
@@ -870,8 +874,8 @@ def test_plot_surf_avg_method(rng):
         return vertices[0] * vertices[1] * vertices[2]
 
     plot_surf(
-        mesh,
-        surf_map=rng.standard_normal(size=mesh[0].shape[0]),
+        in_memory_mesh,
+        surf_map=rng.standard_normal(size=in_memory_mesh.n_vertices),
         avg_method=custom_avg_function,
         engine="matplotlib",
     )
@@ -880,24 +884,22 @@ def test_plot_surf_avg_method(rng):
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_error(engine, rng):
+def test_plot_surf_error(engine, rng, in_memory_mesh):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
-    mesh = generate_surf()
-
     # Wrong inputs for view or hemi
     with pytest.raises(ValueError, match="Invalid view definition"):
-        plot_surf(mesh, view="middle", engine=engine)
+        plot_surf(in_memory_mesh, view="middle", engine=engine)
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        plot_surf(mesh, hemi="lft", engine=engine)
+        plot_surf(in_memory_mesh, hemi="lft", engine=engine)
 
     # Wrong size of background image
     with pytest.raises(
         ValueError, match="bg_map does not have the same number of vertices"
     ):
         plot_surf(
-            mesh,
-            bg_map=rng.standard_normal(size=mesh[0].shape[0] - 1),
+            in_memory_mesh,
+            bg_map=rng.standard_normal(size=in_memory_mesh.n_vertices - 1),
             engine=engine,
         )
 
@@ -906,8 +908,8 @@ def test_plot_surf_error(engine, rng):
         ValueError, match="surf_map does not have the same number of vertices"
     ):
         plot_surf(
-            mesh,
-            surf_map=rng.standard_normal(size=mesh[0].shape[0] + 1),
+            in_memory_mesh,
+            surf_map=rng.standard_normal(size=in_memory_mesh.n_vertices + 1),
             engine=engine,
         )
 
@@ -915,30 +917,30 @@ def test_plot_surf_error(engine, rng):
         ValueError, match="'surf_map' can only have one dimension"
     ):
         plot_surf(
-            mesh,
-            surf_map=rng.standard_normal(size=(mesh[0].shape[0], 2)),
+            in_memory_mesh,
+            surf_map=rng.standard_normal(size=(in_memory_mesh.n_vertices, 2)),
             engine=engine,
         )
 
 
 @pytest.mark.parametrize("kwargs", [{"avg_method": "mean"}, {"alpha": "auto"}])
-def test_plot_surf_warnings_not_implemented_in_plotly(rng, kwargs):
+def test_plot_surf_warnings_not_implemented_in_plotly(
+    rng, kwargs, in_memory_mesh
+):
     if not is_plotly_installed():
         pytest.skip("Plotly is not installed; required for this test.")
-    mesh = generate_surf()
     with pytest.warns(
         UserWarning, match="is not implemented for the plotly engine"
     ):
         plot_surf(
-            mesh,
-            surf_map=rng.standard_normal(size=mesh[0].shape[0]),
+            in_memory_mesh,
+            surf_map=rng.standard_normal(size=in_memory_mesh.n_vertices),
             engine="plotly",
             **kwargs,
         )
 
 
-def test_plot_surf_avg_method_errors(rng):
-    mesh = generate_surf()
+def test_plot_surf_avg_method_errors(rng, in_memory_mesh):
     with pytest.raises(
         ValueError,
         match=(
@@ -952,8 +954,8 @@ def test_plot_surf_avg_method_errors(rng):
             return [vertices[0] * vertices[1], vertices[2]]
 
         plot_surf(
-            mesh,
-            surf_map=rng.standard_normal(size=mesh[0].shape[0]),
+            in_memory_mesh,
+            surf_map=rng.standard_normal(size=in_memory_mesh.n_vertices),
             avg_method=custom_avg_function,
             engine="matplotlib",
         )
@@ -969,15 +971,15 @@ def test_plot_surf_avg_method_errors(rng):
         custom_avg_function = {}
 
         plot_surf(
-            mesh,
-            surf_map=rng.standard_normal(size=mesh[0].shape[0]),
+            in_memory_mesh,
+            surf_map=rng.standard_normal(size=in_memory_mesh.n_vertices),
             avg_method=custom_avg_function,
             engine="matplotlib",
         )
 
         plot_surf(
-            mesh,
-            surf_map=rng.standard_normal(size=mesh[0].shape[0]),
+            in_memory_mesh,
+            surf_map=rng.standard_normal(size=in_memory_mesh.n_vertices),
             avg_method="foo",
             engine="matplotlib",
         )
@@ -995,20 +997,19 @@ def test_plot_surf_avg_method_errors(rng):
             return "string"
 
         plot_surf(
-            mesh,
-            surf_map=rng.standard_normal(size=mesh[0].shape[0]),
+            in_memory_mesh,
+            surf_map=rng.standard_normal(size=in_memory_mesh.n_vertices),
             avg_method=custom_avg_function,
             engine="matplotlib",
         )
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_stat_map(engine, rng):
+def test_plot_surf_stat_map(engine, rng, in_memory_mesh):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
-    mesh = generate_surf()
-    bg = rng.standard_normal(size=mesh[0].shape[0])
-    data = 10 * rng.standard_normal(size=mesh[0].shape[0])
+    bg = rng.standard_normal(size=in_memory_mesh.n_vertices)
+    data = 10 * rng.standard_normal(size=in_memory_mesh.n_vertices)
 
     # to avoid extra warnings
     alpha = None
@@ -1016,14 +1017,18 @@ def test_plot_surf_stat_map(engine, rng):
         alpha = 1
 
     # Plot mesh with stat map
-    plot_surf_stat_map(mesh, stat_map=data, engine=engine)
-    plot_surf_stat_map(mesh, stat_map=data, colorbar=True, engine=engine)
-    plot_surf_stat_map(mesh, stat_map=data, alpha=alpha, engine=engine)
+    plot_surf_stat_map(in_memory_mesh, stat_map=data, engine=engine)
+    plot_surf_stat_map(
+        in_memory_mesh, stat_map=data, colorbar=True, engine=engine
+    )
+    plot_surf_stat_map(
+        in_memory_mesh, stat_map=data, alpha=alpha, engine=engine
+    )
 
     # Plot mesh with background and stat map
-    plot_surf_stat_map(mesh, stat_map=data, bg_map=bg, engine=engine)
+    plot_surf_stat_map(in_memory_mesh, stat_map=data, bg_map=bg, engine=engine)
     plot_surf_stat_map(
-        mesh,
+        in_memory_mesh,
         stat_map=data,
         bg_map=bg,
         bg_on_data=True,
@@ -1031,7 +1036,7 @@ def test_plot_surf_stat_map(engine, rng):
         engine=engine,
     )
     plot_surf_stat_map(
-        mesh,
+        in_memory_mesh,
         stat_map=data,
         bg_map=bg,
         colorbar=True,
@@ -1042,13 +1047,13 @@ def test_plot_surf_stat_map(engine, rng):
 
     # Plot with title
     display = plot_surf_stat_map(
-        mesh, stat_map=data, bg_map=bg, title="Stat map title"
+        in_memory_mesh, stat_map=data, bg_map=bg, title="Stat map title"
     )
     assert display.axes[0].title._text == "Stat map title"
 
     # Apply threshold
     plot_surf_stat_map(
-        mesh,
+        in_memory_mesh,
         stat_map=data,
         bg_map=bg,
         bg_on_data=True,
@@ -1057,7 +1062,7 @@ def test_plot_surf_stat_map(engine, rng):
         engine=engine,
     )
     plot_surf_stat_map(
-        mesh,
+        in_memory_mesh,
         stat_map=data,
         bg_map=bg,
         colorbar=True,
@@ -1069,7 +1074,7 @@ def test_plot_surf_stat_map(engine, rng):
 
     # Change colorbar tick format
     plot_surf_stat_map(
-        mesh,
+        in_memory_mesh,
         stat_map=data,
         bg_map=bg,
         colorbar=True,
@@ -1080,37 +1085,44 @@ def test_plot_surf_stat_map(engine, rng):
     )
 
     # Change vmax
-    plot_surf_stat_map(mesh, stat_map=data, vmax=5, engine=engine)
+    plot_surf_stat_map(in_memory_mesh, stat_map=data, vmax=5, engine=engine)
     plot_surf_stat_map(
-        mesh, stat_map=data, vmax=5, colorbar=True, engine=engine
+        in_memory_mesh, stat_map=data, vmax=5, colorbar=True, engine=engine
     )
 
     # Change colormap
-    plot_surf_stat_map(mesh, stat_map=data, cmap="cubehelix", engine=engine)
     plot_surf_stat_map(
-        mesh, stat_map=data, cmap="cubehelix", colorbar=True, engine=engine
+        in_memory_mesh, stat_map=data, cmap="cubehelix", engine=engine
+    )
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=data,
+        cmap="cubehelix",
+        colorbar=True,
+        engine=engine,
     )
 
     plt.close()
 
 
-def test_plot_surf_stat_map_matplotlib_specific(rng):
-    mesh = generate_surf()
-    data = 10 * rng.standard_normal(size=mesh[0].shape[0])
+def test_plot_surf_stat_map_matplotlib_specific(rng, in_memory_mesh):
+    data = 10 * rng.standard_normal(size=in_memory_mesh.n_vertices)
     # Plot to axes
     axes = plt.subplots(ncols=2, subplot_kw={"projection": "3d"})[1]
     for ax in axes.flatten():
-        plot_surf_stat_map(mesh, stat_map=data, axes=ax)
+        plot_surf_stat_map(in_memory_mesh, stat_map=data, axes=ax)
     axes = plt.subplots(ncols=2, subplot_kw={"projection": "3d"})[1]
     for ax in axes.flatten():
-        plot_surf_stat_map(mesh, stat_map=data, axes=ax, colorbar=True)
+        plot_surf_stat_map(
+            in_memory_mesh, stat_map=data, axes=ax, colorbar=True
+        )
 
-    fig = plot_surf_stat_map(mesh, stat_map=data, colorbar=False)
+    fig = plot_surf_stat_map(in_memory_mesh, stat_map=data, colorbar=False)
     assert len(fig.axes) == 1
 
     # symmetric_cbar
     fig = plot_surf_stat_map(
-        mesh, stat_map=data, colorbar=True, symmetric_cbar=True
+        in_memory_mesh, stat_map=data, colorbar=True, symmetric_cbar=True
     )
     fig.canvas.draw()
     assert len(fig.axes) == 2
@@ -1120,7 +1132,7 @@ def test_plot_surf_stat_map_matplotlib_specific(rng):
 
     # no symmetric_cbar
     fig = plot_surf_stat_map(
-        mesh, stat_map=data, colorbar=True, symmetric_cbar=False
+        in_memory_mesh, stat_map=data, colorbar=True, symmetric_cbar=False
     )
     fig.canvas.draw()
     assert len(fig.axes) == 2
@@ -1132,69 +1144,69 @@ def test_plot_surf_stat_map_matplotlib_specific(rng):
     # Add nan values in the texture
     data[2] = np.nan
     # Plot the surface stat map
-    fig = plot_surf_stat_map(mesh, stat_map=data)
+    fig = plot_surf_stat_map(in_memory_mesh, stat_map=data)
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
     tmp = fig._axstack.as_list()[0].collections[0]
-    assert mesh[1].shape[0] == ((tmp._facecolors[:, 3]) != 0).sum()
+    assert (
+        in_memory_mesh.faces.shape[0] == ((tmp._facecolors[:, 3]) != 0).sum()
+    )
 
     # Save execution time and memory
     plt.close()
 
 
-def test_plot_surf_stat_map_error(rng):
-    mesh = generate_surf()
-    data = 10 * rng.standard_normal(size=mesh[0].shape[0])
+def test_plot_surf_stat_map_error(rng, in_memory_mesh):
+    data = 10 * rng.standard_normal(size=in_memory_mesh.n_vertices)
 
     # Wrong size of stat map data
     with pytest.raises(
         ValueError, match="surf_map does not have the same number of vertices"
     ):
-        plot_surf_stat_map(mesh, stat_map=np.hstack((data, data)))
+        plot_surf_stat_map(in_memory_mesh, stat_map=np.hstack((data, data)))
 
     with pytest.raises(
         ValueError, match="'surf_map' can only have one dimension"
     ):
-        plot_surf_stat_map(mesh, stat_map=np.vstack((data, data)).T)
-
-
-def _generate_data_test_surf_roi():
-    mesh = generate_surf()
-    roi_idx = _rng().integers(0, mesh[0].shape[0], size=10)
-    roi_map = np.zeros(mesh[0].shape[0])
-    roi_map[roi_idx] = 1
-    parcellation = _rng().integers(100, size=mesh[0].shape[0]).astype(float)
-    return mesh, roi_map, parcellation
+        plot_surf_stat_map(in_memory_mesh, stat_map=np.vstack((data, data)).T)
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_roi(engine):
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_plot_surf_roi(engine, surface_image_roi, colorbar):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
-    mesh, roi_map, parcellation = _generate_data_test_surf_roi()
-    # plot roi
-    plot_surf_roi(mesh, roi_map=roi_map, engine=engine)
-    plot_surf_roi(mesh, roi_map=roi_map, colorbar=True, engine=engine)
-    # plot parcellation
-    plot_surf_roi(mesh, roi_map=parcellation, engine=engine)
-    plot_surf_roi(mesh, roi_map=parcellation, colorbar=True, engine=engine)
     plot_surf_roi(
-        mesh,
-        roi_map=parcellation,
-        colorbar=True,
-        cbar_tick_format="%f",
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
+        colorbar=colorbar,
         engine=engine,
+    )
+
+
+@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
+def test_plot_surf_parcellation(
+    engine, colorbar, surface_image_parcellation, cbar_tick_format
+):
+    if not is_plotly_installed() and engine == "plotly":
+        pytest.skip("Plotly is not installed; required for this test.")
+    plot_surf_roi(
+        surface_image_parcellation.mesh,
+        roi_map=surface_image_parcellation,
+        engine=engine,
+        colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format,
     )
     plt.close()
 
 
-def test_plot_surf_roi_matplotlib_specific():
-    mesh, roi_map, parcellation = _generate_data_test_surf_roi()
-
+def test_plot_surf_roi_matplotlib_specific(surface_image_roi):
     # change vmin, vmax
     img = plot_surf_roi(
-        mesh,
-        roi_map=roi_map,
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
@@ -1208,8 +1220,8 @@ def test_plot_surf_roi_matplotlib_specific():
     assert cbar_vmax == 8.0
 
     img2 = plot_surf_roi(
-        mesh,
-        roi_map=roi_map,
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
@@ -1223,31 +1235,43 @@ def test_plot_surf_roi_matplotlib_specific():
     assert cbar_vmin == 1.2
     assert cbar_vmax == 8.9
 
+
+def test_plot_surf_roi_matplotlib_specific_nan_handling(
+    surface_image_parcellation,
+):
     # Test nans handling
-    parcellation[::2] = np.nan
-    img = plot_surf_roi(mesh, roi_map=parcellation, engine="matplotlib")
+    surface_image_parcellation.data.parts["left"][::2] = np.nan
+    img = plot_surf_roi(
+        surface_image_parcellation.mesh,
+        roi_map=surface_image_parcellation,
+        engine="matplotlib",
+        hemi="left",
+    )
     # Check that the resulting plot facecolors contain no transparent faces
     # (last column equals zero) even though the texture contains nan values
     tmp = img._axstack.as_list()[0].collections[0]
-    assert mesh[1].shape[0] == ((tmp._facecolors[:, 3]) != 0).sum()
+    n_faces = surface_image_parcellation.mesh.parts["left"].faces.shape[0]
+    assert n_faces == ((tmp._facecolors[:, 3]) != 0).sum()
     # Save execution time and memory
     plt.close()
 
 
-def test_plot_surf_roi_matplotlib_specific_plot_to_axes():
+def test_plot_surf_roi_matplotlib_specific_plot_to_axes(surface_image_roi):
     """Test plotting directly on some axes."""
-    mesh, roi_map, _ = _generate_data_test_surf_roi()
-
     plot_surf_roi(
-        mesh, roi_map=roi_map, axes=None, figure=plt.gcf(), engine="matplotlib"
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
+        axes=None,
+        figure=plt.gcf(),
+        engine="matplotlib",
     )
 
     _, ax = plt.subplots(subplot_kw={"projection": "3d"})
 
     with tempfile.NamedTemporaryFile() as tmp_file:
         plot_surf_roi(
-            mesh,
-            roi_map=roi_map,
+            surface_image_roi.mesh,
+            roi_map=surface_image_roi,
             axes=ax,
             figure=None,
             output_file=tmp_file.name,
@@ -1256,8 +1280,8 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes():
 
     with tempfile.NamedTemporaryFile() as tmp_file:
         plot_surf_roi(
-            mesh,
-            roi_map=roi_map,
+            surface_image_roi.mesh,
+            roi_map=surface_image_roi,
             axes=ax,
             figure=None,
             output_file=tmp_file.name,
@@ -1270,41 +1294,41 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes():
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_roi_error(engine, rng):
+def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
-    mesh, roi_map, _ = _generate_data_test_surf_roi()
-
     # too many axes
     with pytest.raises(
         ValueError, match="roi_map can only have one dimension but has"
     ):
         plot_surf_roi(
-            mesh, roi_map=np.array([roi_map, roi_map]), engine=engine
+            in_memory_mesh,
+            roi_map=np.array([surf_roi_data, surf_roi_data]),
+            engine=engine,
         )
 
     # wrong number of vertices
-    roi_idx = rng.integers(0, mesh[0].shape[0], size=5)
+    roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=5)
     with pytest.raises(
         ValueError, match="roi_map does not have the same number of vertices"
     ):
-        plot_surf_roi(mesh, roi_map=roi_idx, engine=engine)
+        plot_surf_roi(in_memory_mesh, roi_map=roi_idx, engine=engine)
 
     # negative value in roi map
-    roi_map[0] = -1
+    surf_roi_data[0] = -1
     with pytest.warns(
         DeprecationWarning,
         match="Negative values in roi_map will no longer be allowed",
     ):
-        plot_surf_roi(mesh, roi_map=roi_map, engine=engine)
+        plot_surf_roi(in_memory_mesh, roi_map=surf_roi_data, engine=engine)
 
     # float value in roi map
-    roi_map[0] = 1.2
+    surf_roi_data[0] = 1.2
     with pytest.warns(
         DeprecationWarning,
         match="Non-integer values in roi_map will no longer be allowed",
     ):
-        plot_surf_roi(mesh, roi_map=roi_map, engine=engine)
+        plot_surf_roi(in_memory_mesh, roi_map=surf_roi_data, engine=engine)
 
 
 @pytest.mark.skipif(
@@ -1314,16 +1338,25 @@ def test_plot_surf_roi_error(engine, rng):
 @pytest.mark.parametrize(
     "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
 )
-def test_plot_surf_roi_colorbar_vmin_equal_across_engines(kwargs):
+def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
+    kwargs, in_memory_mesh
+):
     """See issue https://github.com/nilearn/nilearn/issues/3944."""
-    mesh = generate_surf()
-    roi_map = np.arange(0, len(mesh[0]))
+    roi_map = np.arange(0, len(in_memory_mesh.coordinates))
 
     mpl_plot = plot_surf_roi(
-        mesh, roi_map=roi_map, colorbar=True, engine="matplotlib", **kwargs
+        in_memory_mesh,
+        roi_map=roi_map,
+        colorbar=True,
+        engine="matplotlib",
+        **kwargs,
     )
     plotly_plot = plot_surf_roi(
-        mesh, roi_map=roi_map, colorbar=True, engine="plotly", **kwargs
+        in_memory_mesh,
+        roi_map=roi_map,
+        colorbar=True,
+        engine="plotly",
+        **kwargs,
     )
     assert (
         mpl_plot.axes[-1].get_ylim()[0] == plotly_plot.figure.data[1]["cmin"]
@@ -1412,6 +1445,14 @@ def test_plot_img_on_surf_surf_mesh(img_3d_mni):
         views=["lateral"],
         surf_mesh=fetch_surf_fsaverage(),
     )
+
+
+def test_plot_img_on_surf_surf_mesh_low_alpha(img_3d_mni):
+    """Check that low alpha value do not cause floating point error.
+
+    regression test for: https://github.com/nilearn/nilearn/issues/4900
+    """
+    plot_img_on_surf(img_3d_mni, threshold=3, alpha=0.1)
 
 
 def test_plot_img_on_surf_with_invalid_orientation(img_3d_mni):
@@ -1507,21 +1548,28 @@ def test_plot_img_on_surf_input_as_file(img_3d_mni_as_file):
     plot_img_on_surf(stat_map=str(img_3d_mni_as_file))
 
 
-def test_plot_surf_contours():
-    mesh = generate_surf()
+def test_plot_surf_contours(in_memory_mesh):
     # we need a valid parcellation for testing
-    parcellation = np.zeros((mesh[0].shape[0],))
-    parcellation[mesh[1][3]] = 1
-    parcellation[mesh[1][5]] = 2
-    plot_surf_contours(mesh, parcellation)
-    plot_surf_contours(mesh, parcellation, levels=[1, 2])
-    plot_surf_contours(mesh, parcellation, levels=[1, 2], cmap="gist_ncar")
-    plot_surf_contours(mesh, parcellation, levels=[1, 2], colors=["r", "g"])
+    parcellation = np.zeros((in_memory_mesh.n_vertices,))
+    parcellation[in_memory_mesh.faces[3]] = 1
+    parcellation[in_memory_mesh.faces[5]] = 2
+    plot_surf_contours(in_memory_mesh, parcellation)
+    plot_surf_contours(in_memory_mesh, parcellation, levels=[1, 2])
     plot_surf_contours(
-        mesh, parcellation, levels=[1, 2], colors=["r", "g"], labels=["1", "2"]
+        in_memory_mesh, parcellation, levels=[1, 2], cmap="gist_ncar"
+    )
+    plot_surf_contours(
+        in_memory_mesh, parcellation, levels=[1, 2], colors=["r", "g"]
+    )
+    plot_surf_contours(
+        in_memory_mesh,
+        parcellation,
+        levels=[1, 2],
+        colors=["r", "g"],
+        labels=["1", "2"],
     )
     fig = plot_surf_contours(
-        mesh,
+        in_memory_mesh,
         parcellation,
         levels=[1, 2],
         colors=["r", "g"],
@@ -1530,15 +1578,18 @@ def test_plot_surf_contours():
     )
     assert fig.legends is not None
     plot_surf_contours(
-        mesh, parcellation, levels=[1, 2], colors=[[0, 0, 0, 1], [1, 1, 1, 1]]
+        in_memory_mesh,
+        parcellation,
+        levels=[1, 2],
+        colors=[[0, 0, 0, 1], [1, 1, 1, 1]],
     )
     fig, axes = plt.subplots(1, 1, subplot_kw={"projection": "3d"})
-    plot_surf_contours(mesh, parcellation, axes=axes)
-    plot_surf_contours(mesh, parcellation, figure=fig)
-    fig = plot_surf(mesh)
-    plot_surf_contours(mesh, parcellation, figure=fig)
+    plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
+    plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
+    fig = plot_surf(in_memory_mesh)
+    plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
     display = plot_surf_contours(
-        mesh,
+        in_memory_mesh,
         parcellation,
         levels=[1, 2],
         labels=["1", "2"],
@@ -1550,9 +1601,9 @@ def test_plot_surf_contours():
     # Non-regression assertion: we switched from _suptitle to axis title
     assert display._suptitle is None
     assert display.axes[0].get_title() == "title"
-    fig = plot_surf(mesh, title="title 2")
+    fig = plot_surf(in_memory_mesh, title="title 2")
     display = plot_surf_contours(
-        mesh,
+        in_memory_mesh,
         parcellation,
         levels=[1, 2],
         labels=["1", "2"],
@@ -1564,33 +1615,38 @@ def test_plot_surf_contours():
     assert display._suptitle is None
     assert display.axes[0].get_title() == "title 2"
     with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_contours(mesh, parcellation, output_file=tmp_file.name)
+        plot_surf_contours(
+            in_memory_mesh, parcellation, output_file=tmp_file.name
+        )
     plt.close()
 
 
-def test_plot_surf_contours_error(rng):
-    mesh = generate_surf()
+def test_plot_surf_contours_error(rng, in_memory_mesh):
     # we need an invalid parcellation for testing
-    invalid_parcellation = rng.uniform(size=(mesh[0].shape[0]))
-    parcellation = np.zeros((mesh[0].shape[0],))
-    parcellation[mesh[1][3]] = 1
-    parcellation[mesh[1][5]] = 2
+    invalid_parcellation = rng.uniform(size=(in_memory_mesh.n_vertices))
+    parcellation = np.zeros((in_memory_mesh.n_vertices,))
+    parcellation[in_memory_mesh.faces[3]] = 1
+    parcellation[in_memory_mesh.faces[5]] = 2
     with pytest.raises(
         ValueError, match="Vertices in parcellation do not form region."
     ):
-        plot_surf_contours(mesh, invalid_parcellation)
+        plot_surf_contours(in_memory_mesh, invalid_parcellation)
     fig, axes = plt.subplots(1, 1)
     with pytest.raises(ValueError, match="Axes must be 3D."):
-        plot_surf_contours(mesh, parcellation, axes=axes)
+        plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
     msg = "All elements of colors .* matplotlib .* RGBA"
     with pytest.raises(ValueError, match=msg):
         plot_surf_contours(
-            mesh, parcellation, levels=[1, 2], colors=[[1, 2], 3]
+            in_memory_mesh, parcellation, levels=[1, 2], colors=[[1, 2], 3]
         )
     msg = "Levels, labels, and colors argument .* same length or None."
     with pytest.raises(ValueError, match=msg):
         plot_surf_contours(
-            mesh, parcellation, levels=[1, 2], colors=["r"], labels=["1", "2"]
+            in_memory_mesh,
+            parcellation,
+            levels=[1, 2],
+            colors=["r"],
+            labels=["1", "2"],
         )
 
 
@@ -1633,24 +1689,24 @@ def test_compute_facecolors_matplotlib():
     assert bg_min < 0 or bg_max > 1
     facecolors_auto_normalized = _compute_facecolors_matplotlib(
         bg_map,
-        mesh[1],
-        len(mesh[0]),
+        mesh.faces,
+        len(mesh.coordinates),
         None,
         alpha,
     )
-    assert len(facecolors_auto_normalized) == len(mesh[1])
+    assert len(facecolors_auto_normalized) == len(mesh.faces)
 
     # Manually set values of background map between 0 and 1
     bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
     assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
     facecolors_manually_normalized = _compute_facecolors_matplotlib(
         bg_map_normalized,
-        mesh[1],
-        len(mesh[0]),
+        mesh.faces,
+        len(mesh.coordinates),
         None,
         alpha,
     )
-    assert len(facecolors_manually_normalized) == len(mesh[1])
+    assert len(facecolors_manually_normalized) == len(mesh.faces)
     assert np.allclose(
         facecolors_manually_normalized, facecolors_auto_normalized
     )
@@ -1660,12 +1716,12 @@ def test_compute_facecolors_matplotlib():
     assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
     facecolors_manually_rescaled = _compute_facecolors_matplotlib(
         bg_map_scaled,
-        mesh[1],
-        len(mesh[0]),
+        mesh.faces,
+        len(mesh.coordinates),
         None,
         alpha,
     )
-    assert len(facecolors_manually_rescaled) == len(mesh[1])
+    assert len(facecolors_manually_rescaled) == len(mesh.faces)
     assert not np.allclose(
         facecolors_manually_rescaled, facecolors_auto_normalized
     )
@@ -1679,8 +1735,8 @@ def test_compute_facecolors_matplotlib():
     ):
         facecolors_manually_rescaled = _compute_facecolors_matplotlib(
             bg_map_scaled,
-            mesh[1],
-            len(mesh[0]),
+            mesh.faces,
+            len(mesh.coordinates),
             0.5,
             alpha,
         )
@@ -1693,17 +1749,17 @@ def test_compute_facecolors_matplotlib():
 @pytest.mark.parametrize("avg_method", ["mean", "median"])
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_roi_default_arguments(engine, symmetric_cmap, avg_method):
+def test_plot_surf_roi_default_arguments(
+    engine, symmetric_cmap, avg_method, surface_image_roi
+):
     """Regression test for https://github.com/nilearn/nilearn/issues/3941."""
-    mesh, roi_map, _ = _generate_data_test_surf_roi()
-
     # To avoid extra warnings
     if engine == "plotly":
         avg_method = None
 
     plot_surf_roi(
-        mesh,
-        roi_map=roi_map,
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
         engine=engine,
         symmetric_cmap=symmetric_cmap,
         darkness=None,  # to avoid deprecation warning
@@ -1716,10 +1772,11 @@ def test_plot_surf_roi_default_arguments(engine, symmetric_cmap, avg_method):
     "function",
     [plot_surf_roi, plot_surf_stat_map, plot_surf_contours, plot_surf],
 )
-def test_error_nifti_not_supported(function, img_3d_mni_as_file):
+def test_error_nifti_not_supported(
+    function, img_3d_mni_as_file, in_memory_mesh
+):
     """Test nifti file not supported by several surface plotting functions."""
-    mesh = generate_surf()
     with pytest.raises(ValueError, match="The input type is not recognized"):
-        function(mesh, img_3d_mni_as_file)
+        function(in_memory_mesh, img_3d_mni_as_file)
     with pytest.raises(ValueError, match="The input type is not recognized"):
-        function(mesh, str(img_3d_mni_as_file))
+        function(in_memory_mesh, str(img_3d_mni_as_file))
