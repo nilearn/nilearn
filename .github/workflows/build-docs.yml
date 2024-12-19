@@ -81,12 +81,14 @@ jobs:
             uses: actions/checkout@v4
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v4
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
                 python-version: '3.13'
         -   name: Install packages
-            run: python -m pip install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
         -   name: check links
             run: tox run -e linkcheck
 
@@ -256,13 +258,16 @@ jobs:
         -   name: Set up display server for virtual browser
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v4
+
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
 
         -   name: Install tox
-            run: python -m pip install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
 
         -   name: Show tox config
             run: tox c
