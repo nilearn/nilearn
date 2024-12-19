@@ -76,4 +76,5 @@ def test_import_get_clusters_table_when_matplotlib_not_installed():
     """Tests if nilearn.reporting.get_clusters_table can be imported without
     problems when matplotlib is not installed.
     """
-    from nilearn.reporting import get_clusters_table  # noqa: F401
+    with pytest.warns(UserWarning, match="nilearn.reporting.glm_reporter and"):
+        from nilearn.reporting import get_clusters_table  # noqa: F401
