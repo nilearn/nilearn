@@ -12,6 +12,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_random_img,
@@ -31,6 +32,48 @@ def n_regions():
 @pytest.fixture
 def length():
     return 93
+
+
+def _labels_img():
+    return generate_labeled_regions(
+        shape=(7, 8, 9),
+        affine=np.eye(4),
+        n_regions=9,
+    )
+
+
+extra_valid_checks = [
+    "check_parameters_default_constructible",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+    "check_estimators_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiLabelsMasker(labels_img=_labels_img())],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiLabelsMasker(labels_img=_labels_img())],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
@@ -387,7 +430,8 @@ def test_nifti_labels_masker_reduction_strategies_error(affine_eye):
     labels = Nifti1Image(labels_data, affine_eye)
 
     with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
-        NiftiLabelsMasker(labels, strategy="TESTRAISE")
+        masker = NiftiLabelsMasker(labels, strategy="TESTRAISE")
+        masker.fit()
 
 
 def test_nifti_labels_masker_resampling_errors(
@@ -404,16 +448,18 @@ def test_nifti_labels_masker_resampling_errors(
         ValueError,
         match="invalid value for 'resampling_target' parameter: mask",
     ):
-        NiftiLabelsMasker(labels_img, resampling_target="mask")
+        masker = NiftiLabelsMasker(labels_img, resampling_target="mask")
+        masker.fit()
 
     with pytest.raises(
         ValueError,
         match="invalid value for 'resampling_target' parameter: invalid",
     ):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             resampling_target="invalid",
         )
+        masker.fit()
 
 
 def test_nifti_labels_masker_resampling_to_data(
@@ -739,10 +785,11 @@ def test_warning_n_labels_not_equal_n_regions(
     with pytest.warns(
         UserWarning, match="Mismatch between the number of provided labels"
     ):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             labels=region_names,
         )
+        masker.fit()
 
 
 def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
@@ -752,17 +799,19 @@ def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
         n_regions=n_regions,
     )
     with pytest.warns(UserWarning, match="'labels' must be a list."):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             labels="foo",
         )
+        masker.fit()
     with pytest.warns(
         UserWarning, match="All elements of 'labels' must be a string"
     ):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             labels=[1, 2, 3],
         )
+        masker.fit()
 
 
 @pytest.mark.parametrize(
