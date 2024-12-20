@@ -45,6 +45,7 @@ Related example
 :ref:`Age prediction on OASIS dataset with SpaceNet <sphx_glr_auto_examples_02_decoding_plot_oasis_vbm_space_net.py>`.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_oasis_vbm_space_net_002.png
+   :align: center
 
 .. note::
 
