@@ -150,22 +150,26 @@ class SurfaceMasker(_BaseSurfaceMasker):
         ----------
         img : SurfaceImage object or :obj:`list` of SurfaceImage or None
         """
-        if self.mask_img is not None:
-            if img is not None:
-                check_same_n_vertices(self.mask_img.mesh, img.mesh)
-            self.mask_img_ = self.mask_img
-            return
-
         if img is None:
-            raise ValueError(
-                "Please provide either a mask_img "
-                "when initializing the masker "
-                "or an img when calling fit()."
-            )
+            if self.mask_img is None:
+                raise ValueError(
+                    "Please provide either a mask_img "
+                    "when initializing the masker "
+                    "or an img when calling fit()."
+                )
+
+            if self.mask_img is not None:
+                self.mask_img_ = self.mask_img
+                return
 
         if not isinstance(img, list):
             img = [img]
         img = concatenate_surface_images(img)
+
+        if self.mask_img is not None:
+            check_same_n_vertices(self.mask_img.mesh, img.mesh)
+            self.mask_img_ = self.mask_img
+            return
 
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
