@@ -818,7 +818,7 @@ def test_threshold_img_with_mask(
 
     temp_mask[8:11, 0, 0] = 0  # mask values 5
     temp_mask[13:16, 0, 0] = 0  # mask values -5
-    temp_mask[19:, 10:, 6:] = 0  # 8-voxel positive cluster
+    temp_mask[19:, 10:, 6:] = 0  
     temp_mask[:4, 10:, 6:] = 0
     temp_mask[13:19, 10:, 6:] = 0
     temp_mask[13:19, 0:4, 6:] = 0
