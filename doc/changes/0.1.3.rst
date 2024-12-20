@@ -18,10 +18,10 @@ It also includes a full rewamp of the documentation, and support for Python 3.
 
     Minimum version of supported packages are now:
 
-        - ``numpy -- 1.6.1``
-        - ``scipy -- 0.9.0``
-        - ``scikit-learn -- 0.12.1``
-        - ``Matplotlib -- 1.1.1`` (optional)
+    - ``numpy -- 1.6.1``
+    - ``scipy -- 0.9.0``
+    - ``scikit-learn -- 0.12.1``
+    - ``Matplotlib -- 1.1.1`` (optional)
 
 Fixes
 -----

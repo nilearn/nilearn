@@ -77,11 +77,11 @@ The default values for the ``collection_terms`` and ``image_terms`` parameters
 filter out empty collections, and exclude an image if one of the following is
 true:
 
-   - it is not in :term:`MNI` space.
-   - its metadata field "is_valid" is cleared.
-   - it is thresholded.
-   - its map type is one of "ROI/mask", "anatomical", or "parcellation".
-   - its image type is "atlas"
+- it is not in :term:`MNI` space.
+- its metadata field "is_valid" is cleared.
+- it is thresholded.
+- its map type is one of "ROI/mask", "anatomical", or "parcellation".
+- its image type is "atlas"
 
 Extra keyword arguments are treated as additional image filters, so if we want
 to keep the default filters, and add the requirement that the modality should
@@ -171,11 +171,10 @@ attributes.
 
 It contains:
 
-  - ``images``, the paths to downloaded files.
-  - ``images_meta``, the metadata for the images in a list of
-    dictionaries.
-  - ``collections_meta``, the metadata for the collections.
-  - ``description``, a short description of the Neurovault dataset.
+- ``images``, the paths to downloaded files.
+- ``images_meta``, the metadata for the images in a list of dictionaries.
+- ``collections_meta``, the metadata for the collections.
+- ``description``, a short description of the Neurovault dataset.
 
 Note to ``pandas`` users: passing ``images_meta`` or ``collections_meta``
 to the ``DataFrame`` constructor yields the expected result, with
@@ -197,22 +196,20 @@ download the annotations for the resulting images. They will be stored
 as json files on your disk. The result will also contain (unless you
 clear the ``vectorize_words`` parameter to save computation time):
 
-   - ``vocabulary``, a list of words
-   - ``word_frequencies``, the weight of the words returned by
-     neurosynth.org for each image, such that the weight of word
-     ``vocabulary[j]`` for the image found in ``images[i]`` is
-     ``word_frequencies[i, j]``
+- ``vocabulary``, a list of words
+- ``word_frequencies``, the weight of the words returned by
+  neurosynth.org for each image, such that the weight of word
+  ``vocabulary[j]`` for the image found in ``images[i]`` is
+  ``word_frequencies[i, j]``
 
 Examples using Neurovault
 -------------------------
 
-    - :ref:`sphx_glr_auto_examples_07_advanced_plot_ica_neurovault.py`
-          Download images from Neurovault and extract some networks
-          using ICA.
+- :ref:`sphx_glr_auto_examples_07_advanced_plot_ica_neurovault.py`
+      Download images from Neurovault and extract some networks using ICA.
 
-    - :ref:`sphx_glr_auto_examples_07_advanced_plot_neurovault_meta_analysis.py`
-        Meta-analysis of "Stop minus go" studies available on
-        Neurovault.
+- :ref:`sphx_glr_auto_examples_07_advanced_plot_neurovault_meta_analysis.py`
+    Meta-analysis of "Stop minus go" studies available on Neurovault.
 
 References
 ----------
