@@ -458,7 +458,41 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
 
     def generate_report(self, displayed_maps=10):
-        """Generate a report."""
+        """Generate an HTML report for the current ``SurfaceMapsMasker``
+        object.
+        .. note::
+            This functionality requires to have ``Matplotlib`` installed.
+
+        Parameters
+        ----------
+        displayed_maps : :obj:`int`, or :obj:`list`, \
+                         or :class:`~numpy.ndarray`, or "all", default=10
+            Indicates which maps will be displayed in the HTML report.
+                - If "all": All maps will be displayed in the report.
+                .. code-block:: python
+                    masker.generate_report("all")
+                .. warning:
+                    If there are too many maps, this might be time and
+                    memory consuming, and will result in very heavy
+                    reports.
+                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                  the indices of the maps to be displayed in the report. For
+                  example, the following code will generate a report with maps
+                  6, 3, and 12, displayed in this specific order:
+                .. code-block:: python
+                    masker.generate_report([6, 3, 12])
+                - If an :obj:`int`: This will only display the first n maps,
+                  n being the value of the parameter. By default, the report
+                  will only contain the first 10 maps. Example to display the
+                  first 16 maps:
+                .. code-block:: python
+                    masker.generate_report(16)
+
+        Returns
+        -------
+        report : `nilearn.reporting.html_report.HTMLReport`
+            HTML report for the masker.
+        """
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
@@ -468,6 +502,24 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 return [None]
+
+        incorrect_type = not isinstance(
+            displayed_maps, (list, np.ndarray, int, str)
+        )
+        incorrect_string = (
+            isinstance(displayed_maps, str) and displayed_maps != "all"
+        )
+        not_integer = (
+            not isinstance(displayed_maps, str)
+            and np.array(displayed_maps).dtype != int
+        )
+        if incorrect_type or incorrect_string or not_integer:
+            raise TypeError(
+                "Parameter ``displayed_maps`` of "
+                "``generate_report()`` should be either 'all' or "
+                "an int, or a list/array of ints. You provided a "
+                f"{type(displayed_maps)}"
+            )
 
         self.displayed_maps = displayed_maps
         from nilearn.reporting.html_report import generate_report
@@ -499,11 +551,39 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             return [None]
 
         n_maps = self.maps_img_.shape[1]
+        maps_to_be_displayed = range(n_maps)
+        if isinstance(self.displayed_maps, int):
+            if n_maps < self.displayed_maps:
+                msg = (
+                    "`generate_report()` received "
+                    f"{self.displayed_maps} to be displayed. "
+                    f"But masker only has {n_maps} maps."
+                    f"Setting number of displayed maps to {n_maps}."
+                )
+                warnings.warn(category=UserWarning, message=msg, stacklevel=6)
+                self.displayed_maps = n_maps
+            maps_to_be_displayed = range(self.displayed_maps)
+
+        elif isinstance(self.displayed_maps, (list, np.ndarray)):
+            if max(self.displayed_maps) > n_maps:
+                raise ValueError(
+                    "Report cannot display the following maps "
+                    f"{self.displayed_maps} because "
+                    f"masker only has {n_maps} maps."
+                )
+            maps_to_be_displayed = self.displayed_maps
+
         self._report_content["number_of_maps"] = n_maps
-        self._report_content["displayed_maps"] = list(
-            range(self.displayed_maps)
-        )
+        self._report_content["displayed_maps"] = list(maps_to_be_displayed)
         embeded_images = []
+
+        if img is None:
+            msg = (
+                "SurfaceMapsMasker has not been transformed (via transform() "
+                "method) on any image yet. Plotting only maps for reporting."
+            )
+            warnings.warn(msg, stacklevel=6)
+
         for roi in maps_img[: self.displayed_maps]:
             fig = self._create_figure_for_report(roi=roi, bg_img=img)
             embeded_images.append(figure_to_png_base64(fig))
@@ -512,11 +592,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         return embeded_images
 
     def _create_figure_for_report(self, roi, bg_img):
-        """Create a figure of the contours of maps image.
+        """Create a figure of maps image, one region at a time.
 
-        If transform() was applied to an image,
-        this image is used as background
-        on which the contours are drawn.
+        If transform() was applied to an image, this image is used as
+        background on which the maps are plotted.
         """
         import matplotlib.pyplot as plt
 

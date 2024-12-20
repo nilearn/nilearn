@@ -8,8 +8,8 @@
     <div class="image">
       <script>
         current_map_idx = 0;
-        displayed_maps = {{displayed_maps}};
-        number_maps = {{len(displayed_maps)}};
+        displayed_maps = {{ displayed_maps }};
+        number_maps = {{ len(displayed_maps) }};
       </script>
 
       <div class="btn-container">
@@ -50,6 +50,17 @@
     <p>{{description}}</p>
     {{endif}}
     <!--  -->
+    {{if number_of_regions}}
+    <p>
+      The masker has <b>{{number_of_regions}}</b> different potentially
+      overlapping regions.
+    </p>
+    {{if len(displayed_maps) != number_of_maps}}
+    <p>Only <b>{{len(displayed_maps)}}</b> regions are shown in this report.</p>
+    {{endif}}
+    <!--  -->
+    {{endif}}
+    <!--  -->
     {{if n_vertices}}
     <div>
       <table class="pure-table">
@@ -72,12 +83,6 @@
     </div>
     {{endif}}
     <!--  -->
-    {{if number_of_regions}}
-    <p>
-      The masker has <b>{{number_of_regions}}</b> different potentially
-      overlapping regions.
-    </p>
-    {{endif}}
   </div>
 </div>
 <div class="pure-g">
