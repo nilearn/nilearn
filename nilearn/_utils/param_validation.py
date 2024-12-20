@@ -18,12 +18,8 @@ def check_threshold(
 ):
     """Check if the given threshold is in correct format and within the limit.
 
-    If necessary, this function also returns score of the data calculated based
-    upon the given specific percentile function.
-
-    Note
-    ----
-    This is only for threshold as string.
+    If threshold is string, this function returns score of the data calculated
+    based upon the given specific percentile function.
 
     Parameters
     ----------
@@ -38,11 +34,11 @@ def check_threshold(
     data : ndarray
         An array of the input masked data.
 
-    percentile_func : function {scoreatpercentile, fastabspercentile}
+    percentile_func : function {scoreatpercentile, fast_abs_percentile}
         Percentile function for example scipy.stats.scoreatpercentile
         to calculate the score on the data.
 
-    name : str, default='threshold'
+    name : :obj:`str`, default='threshold'
         A string just used for representing the name of the threshold for a
         precise error message.
 
@@ -54,7 +50,7 @@ def check_threshold(
 
     Returns
     -------
-    threshold : number
+    threshold : :obj:`float`
         Returns the score of the percentile on the data or returns threshold as
         it is if given threshold is not a string percentile.
 
