@@ -460,6 +460,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     def generate_report(self, displayed_maps=10):
         """Generate an HTML report for the current ``SurfaceMapsMasker``
         object.
+
         .. note::
             This functionality requires to have ``Matplotlib`` installed.
 
@@ -468,6 +469,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         displayed_maps : :obj:`int`, or :obj:`list`, \
                          or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
+
                 - If "all": All maps will be displayed in the report.
 
                 .. code-block:: python
@@ -487,6 +489,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 .. code-block:: python
 
                     masker.generate_report([6, 3, 12])
+
                 - If an :obj:`int`: This will only display the first n maps,
                   n being the value of the parameter. By default, the report
                   will only contain the first 10 maps. Example to display the
