@@ -2342,7 +2342,6 @@ def test_flm_with_surface_data_no_design_matrix(surface_glm_data):
     """Smoke test FirstLevelModel with surface data and no design matrix."""
     img, _ = surface_glm_data(5)
     masker = SurfaceMasker().fit(img)
-    # breakpoint()
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     model.fit(img, events=basic_paradigm())
 
