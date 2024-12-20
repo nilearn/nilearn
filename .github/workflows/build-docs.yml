@@ -223,13 +223,6 @@ jobs:
         -   name: Merge with upstream
             run: ./build_tools/github/merge_upstream.sh
 
-        # Set up environment
-        -   name: Install apt packages
-            run: |
-                sudo -E apt-get -yq update
-                sudo -E apt-get -yq --no-install-suggests --no-install-recommends install \
-                    dvipng texlive-latex-base texlive-latex-extra
-
         # Check if we are doing a full or partial build
         -   name: Find build type
             run: ./build_tools/github/build_type.sh
