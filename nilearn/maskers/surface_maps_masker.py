@@ -9,14 +9,17 @@ from joblib import Memory
 from scipy import linalg
 
 from nilearn import signal
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import _constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     check_surface_data_ndims,
+    compute_mean_surface_image,
     concat_extract_surface_data_parts,
     concatenate_surface_images,
+    deconcatenate_surface_images,
 )
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -196,20 +199,17 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         self._shelving = False
         # content to inject in the HTML template
-        self._report_content = (
-            {
-                "description": (
-                    "This report shows the input surface image "
-                    "(if provided via img) overlaid with the regions provided "
-                    "via maps_img."
-                ),
-                "n_vertices": {},
-                "number_of_regions": 0,
-                "summary": {},
-            },
-        )
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image "
+                "(if provided via img) overlaid with the regions provided "
+                "via maps_img."
+            ),
+            "n_vertices": {},
+            "number_of_regions": self.n_elements_,
+            "summary": {},
+        }
 
-        self._report_content["number_of_regions"] = self.n_elements_
         for part in self.maps_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.maps_img.mesh.parts[part].n_vertices
