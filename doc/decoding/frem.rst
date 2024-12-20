@@ -8,7 +8,7 @@ FREM: fast ensembling of regularized models for robust decoding
 and aggregates a high number of estimators trained on various splits of the training set,
 thus returning a very robust decoder at a lower computational cost
 than other spatially regularized methods.
-Its performance compared to usual classifiers was studied on several datasets in [:footcite:t:`Hoyos-Idrobo2018`].
+Its performance compared to usual classifiers was studied on several datasets in :footcite:t:`Hoyos-Idrobo2018`.
 
 FREM pipeline
 =============

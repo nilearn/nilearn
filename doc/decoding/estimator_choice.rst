@@ -27,7 +27,7 @@ Regression
 
 A :term:`regression` problem is a learning task in which the variable to predict
 --that we often call **y** -- is a continuous value, such as an age.
-Encoding models [:footcite:t:`Naselaris2011`] typically call for regressions.
+Encoding models (:footcite:t:`Naselaris2011`) typically call for regressions.
 :class:`nilearn.decoding.DecoderRegressor` implement easy and efficient
 regression pipelines.
 
