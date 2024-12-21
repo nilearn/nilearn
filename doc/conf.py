@@ -416,16 +416,15 @@ latex_logo = "logos/nilearn-transparent.png"
 latex_elements = {
     "classoptions": ",oneside",
     "babel": "\\usepackage[english]{babel}",
+    "preamble": r"""
+\usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
+\let\oldfootnote\footnote
+\def\footnote#1{\oldfootnote{\small #1}}
+""",
     # Get completely rid of index
     "printindex": "",
 }
 
-
-latex_elements["preamble"] = r"""
-\usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-\let\oldfootnote\footnote
-\def\footnote#1{\oldfootnote{\small #1}}
-"""
 
 
 latex_domain_indices = False
