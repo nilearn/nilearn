@@ -682,7 +682,7 @@ class SecondLevelModel(BaseGLM):
         # Report progress
         logger.log(
             "\nComputation of second level model done in "
-            f"{time.time() - t0 :0.2f} seconds.\n",
+            f"{time.time() - t0:0.2f} seconds.\n",
             verbose=self.verbose,
         )
 
