@@ -425,7 +425,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         # avoid circular import
         import matplotlib.pyplot as plt
 
-        from nilearn.reporting.utils import figure_to_png_base64
+        from nilearn.reporting.utils import figure_to_svg_base64
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
@@ -439,7 +439,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         plt.close()
 
-        init_display = figure_to_png_base64(fig)
+        init_display = figure_to_svg_base64(fig)
 
         return [init_display]
 
