@@ -27,6 +27,6 @@ Contributors
 
 The following people contributed to this release:
 
-    * `Kshitij Chawla`_ (11)
-    * `Gael Varoquaux`_ (3)
-    * `Alexandre Gramfort`_ (2)
+* `Kshitij Chawla`_ (11)
+* `Gael Varoquaux`_ (3)
+* `Alexandre Gramfort`_ (2)

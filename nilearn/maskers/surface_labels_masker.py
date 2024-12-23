@@ -293,7 +293,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     / self.labels_img.mesh.parts[part].n_vertices
                     * 100
                 )
-                relative_size.append(f"{tmp :.2}")
+                relative_size.append(f"{tmp:.2}")
 
             regions_summary["size<br>(number of vertices)"] = size
             regions_summary["relative size<br>(% vertices in hemisphere)"] = (
