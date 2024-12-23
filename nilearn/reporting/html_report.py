@@ -23,7 +23,7 @@ ESTIMATOR_TEMPLATES = {
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
     "SurfaceMasker": "report_body_template_surfacemasker.html",
     "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
-    "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
+    "SurfaceMapsMasker": "report_body_template_surfacemapsmasker_plotly.html",
     "default": "report_body_template.html",
 }
 

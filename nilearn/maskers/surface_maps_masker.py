@@ -12,7 +12,7 @@ from nilearn import signal
 from nilearn._utils import _constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn.maskers._utils import (
     check_same_n_vertices,
     check_surface_data_ndims,
@@ -504,7 +504,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        if not is_matplotlib_installed():
+        if not is_matplotlib_installed() and not is_plotly_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
                     "Matplotlib is not imported! "
@@ -597,8 +597,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         for roi in maps_img[: self.displayed_maps]:
             fig = self._create_figure_for_report(roi=roi, bg_img=img)
-            embeded_images.append(figure_to_png_base64(fig))
-            plt.close()
+            if is_plotly_installed:
+                embeded_images.append(fig)
+            else:
+                embeded_images.append(figure_to_png_base64(fig))
+                plt.close()
 
         return embeded_images
 
@@ -625,20 +628,41 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         )
         axes = np.atleast_2d(axes)
 
-        for ax_row, view in zip(axes, views):
-            for ax, hemi in zip(ax_row, hemispheres):
-                # very low threshold to only make 0 values transparent
-                threshold = 0.00000001
-                plot_surf(
-                    surf_map=roi,
-                    bg_map=bg_img,
-                    hemi=hemi,
-                    view=view,
-                    figure=fig,
-                    axes=ax,
-                    cmap=self.cmap,
-                    colorbar=False,
-                    threshold=threshold,
-                    bg_on_data=True,
+        if is_plotly_installed:
+            # squeeze the last dimension
+            for part in roi.data.parts:
+                roi.data.parts[part] = np.squeeze(
+                    roi.data.parts[part], axis=-1
                 )
+            fig = plot_surf(
+                surf_map=roi,
+                bg_map=bg_img,
+                bg_on_data=True,
+                engine="plotly",
+            ).figure.to_html(full_html=False)
+        elif is_matplotlib_installed():
+            fig, axes = plt.subplots(
+                len(views),
+                len(hemispheres),
+                subplot_kw={"projection": "3d"},
+                figsize=(20, 20),
+                **_constrained_layout_kwargs(),
+            )
+            axes = np.atleast_2d(axes)
+            for ax_row, view in zip(axes, views):
+                for ax, hemi in zip(ax_row, hemispheres):
+                    # very low threshold to only make 0 values transparent
+                    threshold = 0.00000001
+                    plot_surf(
+                        surf_map=roi,
+                        bg_map=bg_img,
+                        hemi=hemi,
+                        view=view,
+                        figure=fig,
+                        axes=ax,
+                        cmap=self.cmap,
+                        colorbar=False,
+                        threshold=threshold,
+                        bg_on_data=True,
+                    )
         return fig
