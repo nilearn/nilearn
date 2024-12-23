@@ -4,6 +4,7 @@ first level contrasts or directly on fitted first level models.
 Author: Martin Perez-Guevara, 2016
 """
 
+import operator
 import time
 from pathlib import Path
 from warnings import warn
@@ -18,6 +19,7 @@ from sklearn.base import clone
 from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -401,7 +403,7 @@ def _sort_input_dataframe(second_level_input):
     columns = second_level_input.columns.tolist()
     column_index = columns.index("subject_label")
     sorted_matrix = sorted(
-        second_level_input.values, key=lambda x: x[column_index]
+        second_level_input.values, key=operator.itemgetter(column_index)
     )
     return pd.DataFrame(sorted_matrix, columns=columns)
 
@@ -526,6 +528,33 @@ class SecondLevelModel(BaseGLM):
         self.confounds_ = None
         self.labels_ = None
         self.results_ = None
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(surf_img=True, niimg_like=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=True)
+        return tags
 
     @fill_doc
     def fit(self, second_level_input, confounds=None, design_matrix=None):
@@ -654,7 +683,7 @@ class SecondLevelModel(BaseGLM):
         # Report progress
         logger.log(
             "\nComputation of second level model done in "
-            f"{time.time() - t0 :0.2f} seconds.\n",
+            f"{time.time() - t0:0.2f} seconds.\n",
             verbose=self.verbose,
         )
 

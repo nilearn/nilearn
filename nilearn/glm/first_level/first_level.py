@@ -26,6 +26,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -638,19 +639,38 @@ class FirstLevelModel(BaseGLM):
         return design_matrices
 
     def _create_single_design(self, n_scans, events, confounds, run_idx):
-        """Build experimental design of a single run."""
+        """Build experimental design of a single run.
+
+        Parameters
+        ----------
+        n_scans: int
+
+        events : list of pandas.DataFrame
+
+        confounds : list of pandas.DataFrame or numpy.arrays
+
+        run_idx : int
+        """
+        confounds_matrix = None
+        confounds_names = None
         if confounds is not None:
-            confounds_matrix = confounds[run_idx].to_numpy()
+            confounds_matrix = confounds[run_idx]
+
+            if isinstance(confounds_matrix, pd.DataFrame):
+                confounds_names = confounds[run_idx].columns.tolist()
+                confounds_matrix = confounds_matrix.to_numpy()
+            else:
+                # create dummy names when dealing with numpy arrays
+                confounds_names = [
+                    f"confound_{i}" for i in range(confounds_matrix.shape[1])
+                ]
+
             if confounds_matrix.shape[0] != n_scans:
                 raise ValueError(
                     "Rows in confounds does not match "
                     "n_scans in run_img "
                     f"at index {run_idx}."
                 )
-            confounds_names = confounds[run_idx].columns.tolist()
-        else:
-            confounds_matrix = None
-            confounds_names = None
 
         start_time = self.slice_time_ref * self.t_r
         end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
@@ -681,6 +701,33 @@ class FirstLevelModel(BaseGLM):
     def _check_fitted(self):
         if not self.__sklearn_is_fitted__():
             raise ValueError("The model has not been fit yet.")
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(niimg_like=True, surf_img=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(niimg_like=True, surf_img=True)
+        return tags
 
     def fit(
         self,
@@ -745,7 +792,8 @@ class FirstLevelModel(BaseGLM):
             Each column in a DataFrame corresponds to a confound variable
             to be included in the regression model of the respective run_img.
             The number of rows must match the number of volumes in the
-            respective run_img. Ignored in case designs is not None.
+            respective run_img.
+            Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
 
         sample_masks : array_like, or :obj:`list` of array_like, default=None

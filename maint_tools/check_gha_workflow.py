@@ -149,7 +149,7 @@ def _update_tsv(
     update: bool,
     output_file: Path,
     workflow_id: str,
-    event_type: None | str = None,
+    event_type: str | None = None,
 ) -> None:
     """Update TSV containing run time of every workflow."""
     update_tsv = update if output_file.exists() else True
@@ -279,7 +279,7 @@ def _set_dependencies(x: str) -> str:
     )
 
 
-def _get_auth(username: str, token_file: Path) -> None | tuple[str, str]:
+def _get_auth(username: str, token_file: Path) -> tuple[str, str] | None:
     """Get authentication with token."""
     token = None
 
@@ -287,17 +287,17 @@ def _get_auth(username: str, token_file: Path) -> None | tuple[str, str]:
         with token_file.open() as f:
             token = f.read().strip()
     else:
-        warnings.warn(f"Token file not found.\n{token_file!s}")
+        warnings.warn(f"Token file not found.\n{token_file!s}", stacklevel=4)
 
     return None if username is None or token is None else (username, token)
 
 
 def _get_runs(
     workflow_id: str,
-    auth: None | tuple[str, str] = None,
+    auth: tuple[str, str] | None = None,
     page: int = 1,
     include_failed_runs: bool = True,
-    event_type: None | str = None,
+    event_type: str | None = None,
 ) -> list[dict[str, Any]]:
     """Get list of runs for a workflow.
 
@@ -326,7 +326,7 @@ def _get_runs(
     return [run for run in runs if run["conclusion"] in conclusion]
 
 
-def _handle_request(url: str, auth: None | tuple[str, str]):
+def _handle_request(url: str, auth: tuple[str, str] | None):
     """Wrap request."""
     if isinstance(auth, tuple):
         response = requests.get(url, auth=auth)
@@ -345,7 +345,7 @@ def _handle_request(url: str, auth: None | tuple[str, str]):
 def _update_jobs_data(
     jobs_data: dict[str, list[str]],
     runs: list[dict[str, Any]],
-    auth: None | tuple[str, str] = None,
+    auth: tuple[str, str] | None = None,
 ) -> dict[str, list[str]]:
     """Collect info for each job in a run."""
     for run in runs:

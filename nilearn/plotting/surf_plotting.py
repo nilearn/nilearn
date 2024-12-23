@@ -719,6 +719,10 @@ def _plot_surf_matplotlib(
                 orientation="vertical",
             )
 
+        # fix floating point bug causing highest to sometimes surpass 1
+        # (for example 1.0000000000000002)
+        face_colors[face_colors > 1] = 1
+
         p3dcollec.set_facecolors(face_colors)
         p3dcollec.set_edgecolors(face_colors)
 
@@ -2076,6 +2080,7 @@ def plot_surf_roi(
     # preload roi and mesh to determine vmin, vmax and give more useful error
     # messages in case of wrong inputs
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
     roi = load_surf_data(roi_map)
 
     idx_not_na = ~np.isnan(roi)
@@ -2091,7 +2096,7 @@ def plot_surf_roi(
             "roi_map can only have one dimension but has "
             f"{roi.ndim} dimensions"
         )
-    if roi.shape[0] != mesh[0].shape[0]:
+    if roi.shape[0] != mesh.n_vertices:
         raise ValueError(
             "roi_map does not have the same number of vertices "
             "as the mesh. If you have a list of indices for the "

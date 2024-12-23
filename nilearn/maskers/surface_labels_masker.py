@@ -4,11 +4,10 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
 from nilearn._utils import _constrained_layout_kwargs, fill_doc
-from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import (
@@ -17,16 +16,21 @@ from nilearn.maskers._utils import (
     concatenate_surface_images,
     get_min_max_surface_image,
 )
+from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface import SurfaceImage
 
 
-def _apply_mask(labels_masker, mask_data, labels_data):
-    """Apply mask to labels data."""
-    labels_data[np.logical_not(mask_data.flatten())] = (
-        labels_masker.background_label
-    )
+def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
+    """Apply mask to labels data.
+
+    Ensures that we only get the data back
+    according to the mask that was applied. So if some labels were removed,
+    we will only get the data for the remaining labels, the vertices that were
+    masked out will be set to the background label.
+    """
+    labels_before_mask = {int(label) for label in np.unique(labels_data)}
+    labels_data[np.logical_not(mask_data.flatten())] = background_label
     labels_after_mask = {int(label) for label in np.unique(labels_data)}
-    labels_before_mask = {int(label) for label in labels_masker._labels_}
     labels_diff = labels_before_mask - labels_after_mask
     if labels_diff:
         warnings.warn(
@@ -40,13 +44,41 @@ def _apply_mask(labels_masker, mask_data, labels_data):
             stacklevel=3,
         )
     labels = np.unique(labels_data)
-    labels = labels[labels != labels_masker.background_label]
+    labels = labels[labels != background_label]
 
     return labels_data, labels
 
 
+def signals_to_surf_img_labels(
+    signals,
+    labels,
+    labels_img,
+    mask_img,
+    background_label=0,
+):
+    """Transform signals to surface image labels."""
+    if mask_img is not None:
+        mask_data = np.concatenate(list(mask_img.data.parts.values()), axis=0)
+        labels_data = np.concatenate(
+            list(labels_img.data.parts.values()), axis=0
+        )
+        _, labels = _apply_surf_mask_on_labels(
+            mask_data, labels_data, background_label
+        )
+
+    data = {}
+    for part_name, labels_part in labels_img.data.parts.items():
+        data[part_name] = np.zeros(
+            (labels_part.shape[0], signals.shape[0]),
+            dtype=signals.dtype,
+        )
+        for label_idx, label in enumerate(labels):
+            data[part_name][labels_part == label] = signals[:, label_idx].T
+    return SurfaceImage(mesh=labels_img.mesh, data=data)
+
+
 @fill_doc
-class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class SurfaceLabelsMasker(_BaseSurfaceMasker):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
     .. versionadded:: 0.11.0
@@ -261,7 +293,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
                     / self.labels_img.mesh.parts[part].n_vertices
                     * 100
                 )
-                relative_size.append(f"{tmp :.2}")
+                relative_size.append(f"{tmp:.2}")
 
             regions_summary["size<br>(number of vertices)"] = size
             regions_summary["relative size<br>(% vertices in hemisphere)"] = (
@@ -332,8 +364,10 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             mask_data = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
             )
-            labels_data, labels = _apply_mask(
-                self, mask_data, self._labels_data
+            labels_data, labels = _apply_surf_mask_on_labels(
+                mask_data,
+                self._labels_data,
+                self.background_label,
             )
 
         if self.smoothing_fwhm is not None:
@@ -445,25 +479,13 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         self._check_fitted()
 
-        # we will only get the data back according to the mask that was applied
-        # so if some labels were removed, we will only get the data for the
-        # remaining labels, the vertices that were masked out will be set to 0
-        labels = self._labels_
-        if self.mask_img is not None:
-            mask_data = np.concatenate(
-                list(self.mask_img.data.parts.values()), axis=0
-            )
-            _, labels = _apply_mask(self, mask_data, self._labels_data)
-
-        data = {}
-        for part_name, labels_part in self.labels_img.data.parts.items():
-            data[part_name] = np.zeros(
-                (labels_part.shape[0], signals.shape[0]),
-                dtype=signals.dtype,
-            )
-            for label_idx, label in enumerate(labels):
-                data[part_name][labels_part == label] = signals[:, label_idx].T
-        return SurfaceImage(mesh=self.labels_img.mesh, data=data)
+        return signals_to_surf_img_labels(
+            signals,
+            self._labels_,
+            self.labels_img,
+            self.mask_img,
+            self.background_label,
+        )
 
     def generate_report(self):
         """Generate a report."""
