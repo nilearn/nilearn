@@ -547,7 +547,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         import matplotlib.pyplot as plt
 
-        from nilearn.reporting.utils import figure_to_png_base64
+        from nilearn.reporting.utils import figure_to_svg_base64
 
         maps_img = self._reporting_data["maps_img"]
         maps_img = deconcatenate_surface_images(maps_img)
@@ -600,7 +600,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             if is_plotly_installed:
                 embeded_images.append(fig)
             else:
-                embeded_images.append(figure_to_png_base64(fig))
+                embeded_images.append(figure_to_svg_base64(fig))
                 plt.close()
 
         return embeded_images
@@ -628,7 +628,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         )
         axes = np.atleast_2d(axes)
 
-        if is_plotly_installed:
+        if is_plotly_installed():
             # squeeze the last dimension
             for part in roi.data.parts:
                 roi.data.parts[part] = np.squeeze(
