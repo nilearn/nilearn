@@ -1,3 +1,5 @@
+"""Test utilities for plotting."""
+
 import pytest
 
 
