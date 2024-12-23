@@ -12,19 +12,19 @@ in nilearn with the :class:`SearchLight` estimator.
 Principle of the Searchlight
 ============================
 
-:class:`SearchLight` analysis was introduced in [:footcite:t:`Kriegeskorte2006`],
+:class:`SearchLight` analysis was introduced in :footcite:t:`Kriegeskorte2006`,
 and consists of scanning the brain with a *searchlight*.
 Briefly, a ball of given radius is scanned across the brain volume and the prediction accuracy
 of a classifier trained on the corresponding :term:`voxels<voxel>` is measured.
 
 Searchlights are also not limited
-to :term:`classification`; :term:`regression` (e.g., [:footcite:t:`Kahnt2011`])
-and representational similarity analysis (e.g., [:footcite:t:`Clarke2014`]) are other uses of searchlights.
+to :term:`classification`; :term:`regression` (for example :footcite:t:`Kahnt2011`)
+and representational similarity analysis (for example :footcite:t:`Clarke2014`) are other uses of searchlights.
 Currently, only :term:`classification` and :term:`regression` are supported in nilearn.
 
 .. topic:: **Further Reading**
 
-    For a critical review on searchlights, see [:footcite:t:`Etzel2013`].
+    For a critical review on searchlights, see :footcite:t:`Etzel2013`.
 
 
 Preparing the data
@@ -112,7 +112,7 @@ for :term:`classification` (i.e. more :term:`voxels<voxel>` are included with la
     of :term:`voxels<voxel>` included in the sphere will therefore depend on the
     :term:`voxel` size.
 
-    For reference, [:footcite:t:`Kriegeskorte2006`] use a 4mm radius because it yielded
+    For reference, :footcite:t:`Kriegeskorte2006` use a 4mm radius because it yielded
     the best detection performance in their simulation of 2mm isovoxel data.
 
 Visualization
