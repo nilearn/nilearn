@@ -361,17 +361,19 @@ print(f"{dummy_decoder.cv_scores_=}")
 #
 # .. seealso::
 #
-# * The :ref:`section of the documentation on decoding <decoding>`
+#   * The :ref:`section of the documentation on decoding <decoding>`
 #
-# * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_understand_decoder.py`
-#   For a more in-depth understanding of the :class:`~nilearn.decoding.Decoder`
+#   * :ref:`sphx_glr_auto_examples_02_decoding_\
+#     plot_haxby_understand_decoder.py`
+#     For a more in-depth understanding
+#     of the :class:`~nilearn.decoding.Decoder`
 #
-# * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
-#   For decoding without a precomputed mask
+#   * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
+#     For decoding without a precomputed mask
 #
-# * :ref:`frem`
+#   * :ref:`frem`
 #
-# * :ref:`space_net`
+#   * :ref:`space_net`
 #
 # ______________
 
