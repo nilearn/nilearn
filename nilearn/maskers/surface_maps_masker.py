@@ -597,10 +597,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         for roi in maps_img[: self.displayed_maps]:
             fig = self._create_figure_for_report(roi=roi, bg_img=img)
-            if is_plotly_installed:
+            if is_plotly_installed():
                 embeded_images.append(fig)
-            else:
+            elif is_matplotlib_installed():
                 embeded_images.append(figure_to_svg_base64(fig))
+                breakpoint()
                 plt.close()
 
         return embeded_images
@@ -641,6 +642,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 engine="plotly",
             ).figure.to_html(full_html=False)
         elif is_matplotlib_installed():
+            breakpoint()
             fig, axes = plt.subplots(
                 len(views),
                 len(hemispheres),
