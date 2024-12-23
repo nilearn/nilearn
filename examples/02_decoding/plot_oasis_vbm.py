@@ -60,7 +60,7 @@ from nilearn.datasets import fetch_oasis_vbm
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker
 
-n_subjects = 100  # more subjects requires more memory
+n_subjects = 50  # more subjects requires more memory
 
 # %%
 # Load Oasis dataset
