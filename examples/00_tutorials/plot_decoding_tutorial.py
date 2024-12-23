@@ -322,14 +322,12 @@ decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 # ................................
 #
 # We can plot the weights, using the subject's anatomical as a background
-html_view = view_img(
+view_img(
     decoder.coef_img_["face"],
     bg_img=haxby_dataset.anat[0],
     title="SVM weights",
     dim=-1,
 )
-
-html_view.open_in_browser()
 
 # %%
 # What is the chance level accuracy?
