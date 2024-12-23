@@ -126,7 +126,7 @@ Applying a mask
 
 .. figure:: ../auto_examples/00_tutorials/images/sphx_glr_plot_decoding_tutorial_001.png
     :target: ../auto_examples/00_tutorials/plot_decoding_tutorial.html
-    :align: right
+    :align: center
     :scale: 30%
 
 If your dataset provides a mask, the :class:`NiftiMasker` can apply it

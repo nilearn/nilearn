@@ -46,6 +46,7 @@ Decoding performance increase on Haxby dataset
 ----------------------------------------------
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_frem_001.png
+   :align: center
 
 In this example we showcase the use of :term:`FREM` and the performance increase that
 it brings on this problem.
@@ -59,6 +60,7 @@ Spatial regularization of decoding maps on mixed gambles study
 ---------------------------------------------------------------
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_frem_001.png
+   :align: center
 
 
 .. topic:: **Code**
