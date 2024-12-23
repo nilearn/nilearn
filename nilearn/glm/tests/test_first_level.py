@@ -1,5 +1,6 @@
 import itertools
 import shutil
+import string
 import unittest.mock
 import warnings
 from itertools import product
@@ -1190,7 +1191,7 @@ def test_first_level_with_scaling(affine_eye):
     design_matrices = [
         pd.DataFrame(
             np.ones((shapes[0][-1], rk)),
-            columns=list("abcdefghijklmnopqrstuvwxyz")[:rk],
+            columns=list(string.ascii_lowercase)[:rk],
         )
     ]
     fmri_glm = FirstLevelModel(
@@ -1221,7 +1222,7 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     design_matrices = [
         pd.DataFrame(
             np.ones((shapes[0][-1], rk)),
-            columns=list("abcdefghijklmnopqrstuvwxyz")[:rk],
+            columns=list(string.ascii_lowercase)[:rk],
         )
     ]
     fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye)]
