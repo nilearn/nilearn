@@ -13,6 +13,8 @@ def check_and_load_tables(tables_to_check, var_name):
        if they are pandas.DataFrame, \
        or a CSV or TSV file that can be loaded to a pandas.DataFrame.
 
+       Numpy arrays will also be appended as is.
+
     tables_to_check : str or pathlib.Path to a TSV or CSV \
               or pandas.DataFrame or numpy.ndarray or, \
               a list of str or pathlib.Path to a TSV or CSV \
@@ -27,7 +29,7 @@ def check_and_load_tables(tables_to_check, var_name):
 
     Returns
     -------
-    list of pandas.DataFrame
+    list of pandas.DataFrame or numpy.arrays
 
     Raises
     ------
@@ -55,7 +57,7 @@ def check_and_load_tables(tables_to_check, var_name):
         if isinstance(table, str):
             loaded = _read_events_table(table)
             tables.append(loaded)
-        elif isinstance(table, pd.DataFrame):
+        elif isinstance(table, (pd.DataFrame, np.ndarray)):
             tables.append(table)
 
     return tables
