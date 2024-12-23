@@ -110,19 +110,19 @@ Contributors
 
 The following people contributed to this release (in alphabetical order):
 
-    * `Chris Markiewicz`_
-    * `Dan Gale`_
-    * `Daniel Gomez`_
-    * `Derek Pisner`_
-    * `Elizabeth DuPre`_
-    * `Eric Larson`_
-    * `Gael Varoquaux`_
-    * `Jerome Dockes`_
-    * `Johannes Wiesner`_
-    * `Kshitij Chawla`_
-    * `Paula Sanz-Leon`_
-    * `Loic Tetrel`_
-    * `Ryan Hammonds`_
+* `Chris Markiewicz`_
+* `Dan Gale`_
+* `Daniel Gomez`_
+* `Derek Pisner`_
+* `Elizabeth DuPre`_
+* `Eric Larson`_
+* `Gael Varoquaux`_
+* `Jerome Dockes`_
+* `Johannes Wiesner`_
+* `Kshitij Chawla`_
+* `Paula Sanz-Leon`_
+* `Loic Tetrel`_
+* `Ryan Hammonds`_
 
 
 0.6.0b0
@@ -162,10 +162,10 @@ Contributors
 
 The following people contributed to this release (in alphabetical order):
 
-    * `Jake Vogel`_
-    * `Jerome Dockes`_
-    * `Kshitij Chawla`_
-    * `Roberto Guidotti`_
+* `Jake Vogel`_
+* `Jerome Dockes`_
+* `Kshitij Chawla`_
+* `Roberto Guidotti`_
 
 0.6.0a0
 =======
@@ -255,30 +255,30 @@ Contributors
 
 The following people contributed to this release (in alphabetical order):
 
-  * `Alexandre Abraham`_
-  * `Alexandre Gramfort`_
-  * `Ana Luisa Pinho`_
-  * `Andrés Hoyos Idrobo`_
-  * `Thomas Bazeille`_
-  * `Bertrand Thirion`_
-  * `Colin Reininger`_
-  * `Céline Delettre`_
-  * `Dan Gale`_
-  * `Daniel Gomez`_
-  * `Elizabeth DuPre`_
-  * `Eric Larson`_
-  * `Franz Liem`_
-  * `Gael Varoquaux`_
-  * `Gilles de Hollander`_
-  * `Greg Kiar`_
-  * `Guillaume Lemaitre`_
-  * `Ian Abenes`_
-  * `Jake Vogel`_
-  * `Jerome Dockes`_
-  * `Jerome-Alexis Chevalier`_
-  * `Julia Huntenburg`_
-  * `Kamalakar Reddy Daddy`_
-  * `Kshitij Chawla`_
-  * `Mehdi Rahim`_
-  * `Moritz Boos`_
-  * `Sylvain Takerkart`_
+* `Alexandre Abraham`_
+* `Alexandre Gramfort`_
+* `Ana Luisa Pinho`_
+* `Andrés Hoyos Idrobo`_
+* `Thomas Bazeille`_
+* `Bertrand Thirion`_
+* `Colin Reininger`_
+* `Céline Delettre`_
+* `Dan Gale`_
+* `Daniel Gomez`_
+* `Elizabeth DuPre`_
+* `Eric Larson`_
+* `Franz Liem`_
+* `Gael Varoquaux`_
+* `Gilles de Hollander`_
+* `Greg Kiar`_
+* `Guillaume Lemaitre`_
+* `Ian Abenes`_
+* `Jake Vogel`_
+* `Jerome Dockes`_
+* `Jerome-Alexis Chevalier`_
+* `Julia Huntenburg`_
+* `Kamalakar Reddy Daddy`_
+* `Kshitij Chawla`_
+* `Mehdi Rahim`_
+* `Moritz Boos`_
+* `Sylvain Takerkart`_
