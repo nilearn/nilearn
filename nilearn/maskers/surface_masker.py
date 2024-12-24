@@ -12,14 +12,13 @@ from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.maskers._utils import (
-    check_same_n_vertices,
-    compute_mean_surface_image,
-    concatenate_surface_images,
-    get_min_max_surface_image,
-)
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import (
+    SurfaceImage,
+    check_same_n_vertices,
+    concat_imgs,
+    mean_img,
+)
 
 
 @fill_doc
@@ -164,7 +163,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         if not isinstance(img, list):
             img = [img]
-        img = concatenate_surface_images(img)
+        img = concat_imgs(img)
 
         if self.mask_img is not None:
             check_same_n_vertices(self.mask_img.mesh, img.mesh)
@@ -280,7 +279,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         if not isinstance(img, list):
             img = [img]
-        img = concatenate_surface_images(img)
+        img = concat_imgs(img)
 
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
 
@@ -471,8 +470,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         vmax = None
         if self._reporting_data["images"]:
             background_data = self._reporting_data["images"]
-            background_data = compute_mean_surface_image(background_data)
-            vmin, vmax = get_min_max_surface_image(background_data)
+            background_data = mean_img(background_data)
+            vmin, vmax = background_data.data._get_min_max()
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
