@@ -369,7 +369,7 @@ or 'fast' or None, optional
 
 # hemi
 docdict["hemi"] = """
-hemi : {"left", "right"}, default="left"
+hemi : {"left", "right", "both"}, default="left"
     Hemisphere to display.
 """
 
