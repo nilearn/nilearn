@@ -457,7 +457,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
 
-    def generate_report(self, displayed_maps=10):
+    def generate_report(self, displayed_maps=10, engine="plotly"):
         """Generate an HTML report for the current ``SurfaceMapsMasker``
         object.
 
@@ -499,20 +499,51 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
                     masker.generate_report(16)
 
+        engine : :obj:`str`, default="plotly"
+            The plotting engine to use for the report. Can be either
+            "plotly" or "matplotlib". If "plotly" is selected, the report
+            will be interactive. If "matplotlib" is selected, the report
+            will be static. If the selected engine is not installed, the
+            report will use the available plotting engine. If none of the
+            engines are installed, no report will be generated.
+
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        if not is_matplotlib_installed() and not is_plotly_installed():
+        if engine not in ["plotly", "matplotlib"]:
+            raise ValueError(
+                "Parameter ``engine`` should be either 'plotly' or "
+                "'matplotlib'."
+            )
+
+        if engine == "plotly" and not is_plotly_installed():
+            engine = "matplotlib"
+            warnings.warn(
+                "Plotly is not installed. "
+                "Switching to matplotlib for report generation.",
+                stacklevel=2,
+            )
+        elif engine == "matplotlib" and not is_matplotlib_installed():
+            engine = "plotly"
+            warnings.warn(
+                "Matplotlib is not installed. "
+                "Switching to plotly for report generation.",
+                stacklevel=2,
+            )
+        elif not is_plotly_installed() and not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
+                    "Neither of matplotlib or plotly are imported! "
                     "No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                self._report_content["engine"] = None
                 return [None]
+
+        self._report_content["engine"] = engine
 
         incorrect_type = not isinstance(
             displayed_maps, (list, np.ndarray, int, str)
@@ -615,20 +646,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         from nilearn.plotting import plot_surf, view_surf
 
-        # TODO: possibly allow to generate a report with other views
-        views = ["lateral", "medial"]
-        hemispheres = ["left", "right"]
-
-        fig, axes = plt.subplots(
-            len(views),
-            len(hemispheres),
-            subplot_kw={"projection": "3d"},
-            figsize=(20, 20),
-            **_constrained_layout_kwargs(),
-        )
-        axes = np.atleast_2d(axes)
-        threshold = 0.00000001
-        if is_plotly_installed():
+        threshold = 1e-6
+        if self._report_content["engine"] == "plotly":
             # squeeze the last dimension
             for part in roi.data.parts:
                 roi.data.parts[part] = np.squeeze(
@@ -639,8 +658,12 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 bg_map=bg_img,
                 bg_on_data=True,
                 threshold=threshold,
+                hemi="both",
             ).get_iframe()
-        elif is_matplotlib_installed():
+        elif self._report_content["engine"] == "matplotlib":
+            # TODO: possibly allow to generate a report with other views
+            views = ["lateral", "medial"]
+            hemispheres = ["left", "right"]
             fig, axes = plt.subplots(
                 len(views),
                 len(hemispheres),
