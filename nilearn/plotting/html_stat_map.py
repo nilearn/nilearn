@@ -21,7 +21,6 @@ from .._utils.niimg_conversions import check_niimg_3d
 from .._utils.param_validation import check_threshold
 from ..datasets import load_mni152_template
 from ..image import get_data, new_img_like, reorder_img, resample_to_img
-from ..plotting import cm
 from ..plotting.find_cuts import find_xyz_cut_coords
 from ..plotting.img_plotting import load_anat
 from .js_plotting_utils import colorscale, get_html_template
@@ -514,7 +513,7 @@ def view_img(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap=cm.cold_hot,
+    cmap="RdBu_r",
     symmetric_cmap=True,
     dim="auto",
     vmax=None,

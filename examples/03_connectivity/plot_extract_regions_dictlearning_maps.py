@@ -176,7 +176,8 @@ coords = plotting.find_xyz_cut_coords(img)
 display = plotting.plot_stat_map(
     img,
     cut_coords=coords,
-    colorbar=False,
+    colorbar=True,
+    cmap="inferno",
     title="Showing one specific network",
 )
 

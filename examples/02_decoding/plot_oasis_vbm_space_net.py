@@ -6,7 +6,9 @@ Predicting age from gray-matter concentration maps from OASIS
 dataset. Note that age is a continuous variable, we use the regressor
 here, and not the classification object.
 
-See also the documentation: :ref:`space_net`.
+.. seealso::
+
+    The documentation: :ref:`space_net`.
 
 """
 
@@ -17,7 +19,9 @@ import numpy as np
 
 from nilearn import datasets
 
-n_subjects = 200  # increase this number if you have more RAM on your box
+# Number of subjects is kept low for the sake of speed.
+# Increase this number if you have more RAM on your computer.
+n_subjects = 50
 dataset_files = datasets.fetch_oasis_vbm(
     n_subjects=n_subjects, legacy_format=False
 )
@@ -72,7 +76,8 @@ print(f"Mean square error (MSE) on the predicted age: {mse:.2f}")
 # %%
 # Visualize the decoding maps and quality of predictions
 # ------------------------------------------------------
-# Visualize the resulting maps
+import matplotlib.pyplot as plt
+
 from nilearn.plotting import plot_stat_map, show
 
 # weights map
@@ -83,11 +88,10 @@ plot_stat_map(
     title="graph-net weights",
     display_mode="z",
     cut_coords=1,
+    cmap="cold_hot",
 )
 
 # Plot the prediction errors.
-import matplotlib.pyplot as plt
-
 plt.figure()
 plt.suptitle(f"graph-net: Mean Absolute Error {mse:.2f} years")
 linewidth = 3

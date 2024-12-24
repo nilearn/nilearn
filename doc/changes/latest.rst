@@ -16,3 +16,5 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-info:`Plotting` Change the default map to be ``"RdBu_r"`` or ``"gray"`` for most plotting functions (:gh:`4807` by `Rémi Gau`_).

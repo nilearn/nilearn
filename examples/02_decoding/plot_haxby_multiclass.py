@@ -129,7 +129,7 @@ plot_matrix(
     confusion_matrix(y_pred_ovo, y[run >= 10]),
     labels=unique_conditions,
     title="Confusion matrix: One vs One",
-    cmap="hot_r",
+    cmap="inferno",
 )
 
 svc_ova.fit(X[run < 10], y[run < 10])
@@ -139,7 +139,7 @@ plot_matrix(
     confusion_matrix(y_pred_ova, y[run >= 10]),
     labels=unique_conditions,
     title="Confusion matrix: One vs All",
-    cmap="hot_r",
+    cmap="inferno",
 )
 
 show()

@@ -111,10 +111,11 @@ plot_img(
     title="Searchlight scores image",
     display_mode="z",
     cut_coords=[-9],
-    vmin=0.42,
-    cmap="hot",
+    vmin=0.2,
+    cmap="inferno",
     threshold=0.2,
     black_bg=True,
+    colorbar=True,
 )
 
 # %%
@@ -148,7 +149,7 @@ plot_stat_map(
     title="F-scores",
     display_mode="z",
     cut_coords=[-9],
-    colorbar=False,
+    cmap="inferno",
 )
 
 show()

@@ -13,6 +13,12 @@ It is not a minimalistic example, as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
 """
 
+import warnings
+
+warnings.filterwarnings(
+    "ignore", message="The provided image has no sform in its header."
+)
+
 # %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
 # ------------------------------------------------------------
@@ -49,10 +55,12 @@ print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 # Here we are using :func:`~nilearn.image.mean_img` to
 # extract a single 3D :term:`EPI` image from the :term:`fMRI` data.
 #
-from nilearn import plotting
 from nilearn.image import mean_img
+from nilearn.plotting import plot_epi, plot_roi, show, view_img
 
-plotting.view_img(mean_img(fmri_filename, copy_header=True), threshold=None)
+plot_epi(mean_img(fmri_filename, copy_header=True))
+
+show()
 
 # %%
 # Feature extraction: from :term:`fMRI` volumes to a data matrix
@@ -70,7 +78,9 @@ mask_filename = haxby_dataset.mask_vt[0]
 
 # Let's visualize it, using the subject's anatomical image as a
 # background
-plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0], cmap="Paired")
+plot_roi(mask_filename, bg_img=haxby_dataset.anat[0], cmap="Paired")
+
+show()
 
 # %%
 # Load the behavioral labels
@@ -124,7 +134,7 @@ fmri_niimgs = index_img(fmri_filename, condition_mask)
 # We apply the same mask to the targets
 conditions = conditions[condition_mask]
 conditions = conditions.to_numpy()
-print(conditions.shape)
+print(f"{conditions.shape=}")
 
 # %%
 # Decoding with Support Vector Machine
@@ -148,7 +158,7 @@ decoder.fit(fmri_niimgs, conditions)
 # %%
 # We can then predict the labels from the data
 prediction = decoder.predict(fmri_niimgs)
-print(prediction)
+print(f"{prediction=}")
 
 # %%
 # Note that for this classification task both classes contain the same number
@@ -273,7 +283,7 @@ decoder = Decoder(
 )
 decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
-print(decoder.cv_scores_)
+print(f"{decoder.cv_scores_=}")
 
 # %%
 # Inspecting the model weights
@@ -286,11 +296,11 @@ print(decoder.cv_scores_)
 #
 # We retrieve the SVC discriminating weights
 coef_ = decoder.coef_
-print(coef_)
+print(f"{coef_=}")
 
 # %%
 # It's a numpy array with only one coefficient per voxel:
-print(coef_.shape)
+print(f"{coef_.shape=}")
 
 # %%
 # To get the Nifti image of these coefficients, we only need retrieve the
@@ -312,7 +322,7 @@ decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 # ................................
 #
 # We can plot the weights, using the subject's anatomical as a background
-plotting.view_img(
+view_img(
     decoder.coef_img_["face"],
     bg_img=haxby_dataset.anat[0],
     title="SVM weights",
@@ -341,28 +351,29 @@ dummy_decoder = Decoder(
 dummy_decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
 # Now, we can compare these scores by simply taking a mean over folds
-print(dummy_decoder.cv_scores_)
+print(f"{dummy_decoder.cv_scores_=}")
 
 # %%
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 #
-# See also
-# --------
+# .. seealso::
 #
-# * The :ref:`section of the documentation on decoding <decoding>`
+#   * The :ref:`section of the documentation on decoding <decoding>`
 #
-# * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_understand_decoder.py`
-#   For a more in-depth understanding of the :class:`~nilearn.decoding.Decoder`
+#   * :ref:`sphx_glr_auto_examples_02_decoding_\
+#     plot_haxby_understand_decoder.py`
+#     For a more in-depth understanding
+#     of the :class:`~nilearn.decoding.Decoder`
 #
-# * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
-#   For decoding without a precomputed mask
+#   * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
+#     For decoding without a precomputed mask
 #
-# * :ref:`frem`
+#   * :ref:`frem`
 #
-# * :ref:`space_net`
+#   * :ref:`space_net`
 #
 # ______________
 

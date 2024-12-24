@@ -33,13 +33,13 @@ tmap_filename = motor_images.images[0]
 #
 # The file contains a 3D volume, we can easily visualize it as a
 # statistical map:
-from nilearn import plotting
+from nilearn.plotting import plot_stat_map, show
 
-plotting.plot_stat_map(tmap_filename)
+plot_stat_map(tmap_filename)
 
 # %%
 # Visualizing works better with a threshold
-plotting.plot_stat_map(tmap_filename, threshold=3)
+plot_stat_map(tmap_filename, threshold=3)
 
 
 # %%
@@ -67,7 +67,7 @@ print(first_rsn.shape)
 # first_rsn is a 3D image.
 #
 # We can then plot it
-plotting.plot_stat_map(first_rsn)
+plot_stat_map(first_rsn)
 
 
 # %%
@@ -81,7 +81,7 @@ plotting.plot_stat_map(first_rsn)
 # compact display.
 for img in image.iter_img(rsn):
     # img is now an in-memory 3D img
-    plotting.plot_stat_map(
+    plot_stat_map(
         img, threshold=3, display_mode="z", cut_coords=1, colorbar=False
     )
 
@@ -103,13 +103,13 @@ selected_volumes = image.index_img(rsn, slice(3, 5))
 # to the previous plot above.
 
 for img in image.iter_img(selected_volumes):
-    plotting.plot_stat_map(img)
+    plot_stat_map(img)
 
 
 # %%
 # plotting.show is useful to force the display of figures when running
 # outside IPython
-plotting.show()
+show()
 
 # %%
 # |
