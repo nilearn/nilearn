@@ -196,6 +196,14 @@ EXPECTED_VIEW_MATPLOTLIB = {
         "dorsal": (90, 0),
         "ventral": (270, 0),
     },
+    "both": {
+        "lateral": (0, 0),
+        "medial": (0, 180),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270),
+    },
 }
 
 
