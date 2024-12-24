@@ -66,3 +66,15 @@ def test_import_reporting_should_raise_warning_if_matplotlib_not_installed():
         ),
     ):
         from nilearn.reporting import make_glm_report  # noqa: F401
+
+
+@pytest.mark.skipif(
+    is_matplotlib_installed(),
+    reason="This test should run only if matplotlib is not installed.",
+)
+def test_import_get_clusters_table_when_matplotlib_not_installed():
+    """Tests if nilearn.reporting.get_clusters_table can be imported without
+    problems when matplotlib is not installed.
+    """
+    with pytest.warns(UserWarning, match="nilearn.reporting.glm_reporter and"):
+        from nilearn.reporting import get_clusters_table  # noqa: F401
