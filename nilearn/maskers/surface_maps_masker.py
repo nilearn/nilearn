@@ -614,7 +614,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         import matplotlib.pyplot as plt
 
-        from nilearn.plotting import plot_surf
+        from nilearn.plotting import plot_surf, view_surf
 
         # TODO: possibly allow to generate a report with other views
         views = ["lateral", "medial"]
@@ -628,19 +628,19 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             **_constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
-
+        threshold = 0.00000001
         if is_plotly_installed():
             # squeeze the last dimension
             for part in roi.data.parts:
                 roi.data.parts[part] = np.squeeze(
                     roi.data.parts[part], axis=-1
                 )
-            fig = plot_surf(
+            fig = view_surf(
                 surf_map=roi,
                 bg_map=bg_img,
                 bg_on_data=True,
-                engine="plotly",
-            ).figure.to_html(full_html=False)
+                threshold=threshold,
+            ).get_iframe()
         elif is_matplotlib_installed():
             breakpoint()
             fig, axes = plt.subplots(
@@ -654,7 +654,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             for ax_row, view in zip(axes, views):
                 for ax, hemi in zip(ax_row, hemispheres):
                     # very low threshold to only make 0 values transparent
-                    threshold = 0.00000001
                     plot_surf(
                         surf_map=roi,
                         bg_map=bg_img,
