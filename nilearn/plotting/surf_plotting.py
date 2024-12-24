@@ -39,7 +39,7 @@ from nilearn.surface.surface import (
 )
 
 VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
-VALID_HEMISPHERES = "left", "right"
+VALID_HEMISPHERES = "left", "right", "both"
 
 # subset of data format extensions supported
 DATA_EXTENSIONS = (
@@ -61,6 +61,14 @@ MATPLOTLIB_VIEWS = {
     "right": {
         "lateral": (0, 0),
         "medial": (0, 180),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270),
+    },
+    "both": {
+        "lateral": (0, 0),
+        "medial": (0, 180),  # does not make sense, will show left hemisphere
         "dorsal": (90, 0),
         "ventral": (270, 0),
         "anterior": (0, 90),
@@ -1131,7 +1139,7 @@ def plot_surf_contours(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    hemi : {"left", "right", None}, default=None
+    hemi : {"left", "right", "both", None}, default=None
         Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
         is passed as ``roi_map``
         and / or if PolyMesh is passed as ``surf_mesh``.

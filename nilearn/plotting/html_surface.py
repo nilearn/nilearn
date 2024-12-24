@@ -478,7 +478,7 @@ def view_surf(
         it will be rescaled such that all values are in [0, 1].
         Otherwise, it will not be modified.
 
-    hemi : {"left", "right", None}, default=None
+    hemi : {"left", "right", "both", None}, default=None
         Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
         is passed as ``surf_map``
         and / or if :obj:`~nilearn.surface.PolyMesh`
