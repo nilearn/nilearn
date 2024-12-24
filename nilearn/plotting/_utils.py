@@ -109,9 +109,7 @@ def _check_hemi_present(mesh, hemi):
     and right hemispheres.
     """
     if hemi not in [*list(mesh.parts), "both"]:
-        raise ValueError(
-            f"{hemi} must be one of {[*list(mesh.parts), "both"]}."
-        )
+        raise ValueError(f"{hemi} must be one of left, right or both.")
 
     if hemi == "both":
         combined_coords = np.concatenate(
