@@ -2,7 +2,7 @@
 
 import itertools
 
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 
 from .._utils import fill_doc
 from .._utils.niimg_conversions import iter_check_niimg
@@ -129,8 +129,6 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         n_jobs=1,
         **kwargs,
     ):
-        if memory is None:
-            memory = Memory(location=None, verbose=0)
         self.n_jobs = n_jobs
         super().__init__(
             maps_img,
