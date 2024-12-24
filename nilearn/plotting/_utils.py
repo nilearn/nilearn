@@ -108,9 +108,9 @@ def _check_hemi_present(mesh, hemi):
     return the corresponding mesh. If "both" is requested, combine the left
     and right hemispheres.
     """
-    if hemi not in [*list(mesh.parts) + "both"]:
+    if hemi not in [*list(mesh.parts), "both"]:
         raise ValueError(
-            f"{hemi} must be one of {[*list(mesh.parts) + "both"]}."
+            f"{hemi} must be one of {[*list(mesh.parts), "both"]}."
         )
 
     if hemi == "both":
