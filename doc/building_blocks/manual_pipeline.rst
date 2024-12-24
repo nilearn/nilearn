@@ -11,13 +11,10 @@ data.
 Before using a machine learning tool, we may need to apply the following
 steps:
 
-    1. :ref:`data_loading` : load Nifti files and check consistency of data
-    2. :ref:`Masking data <masking>` : if a mask is not provided, one is
-       computed automatically
-    3. :ref:`resampling`: optionally data could be resampled to a
-       different resolution
-    4. :ref:`temporal_filtering`: detrending, regressing out confounds,
-       normalization
+1. :ref:`data_loading` : load Nifti files and check consistency of data
+2. :ref:`Masking data <masking>` : if a mask is not provided, one is computed automatically
+3. :ref:`resampling`: optionally data could be resampled to a different resolution
+4. :ref:`temporal_filtering`: detrending, regressing out confounds, normalization
 
 .. _data_loading:
 
@@ -129,7 +126,7 @@ Applying a mask
 
 .. figure:: ../auto_examples/00_tutorials/images/sphx_glr_plot_decoding_tutorial_001.png
     :target: ../auto_examples/00_tutorials/plot_decoding_tutorial.html
-    :align: right
+    :align: center
     :scale: 30%
 
 If your dataset provides a mask, the :class:`NiftiMasker` can apply it

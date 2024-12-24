@@ -4,6 +4,7 @@ first level contrasts or directly on fitted first level models.
 Author: Martin Perez-Guevara, 2016
 """
 
+import operator
 import time
 from pathlib import Path
 from warnings import warn
@@ -402,7 +403,7 @@ def _sort_input_dataframe(second_level_input):
     columns = second_level_input.columns.tolist()
     column_index = columns.index("subject_label")
     sorted_matrix = sorted(
-        second_level_input.values, key=lambda x: x[column_index]
+        second_level_input.values, key=operator.itemgetter(column_index)
     )
     return pd.DataFrame(sorted_matrix, columns=columns)
 
@@ -682,7 +683,7 @@ class SecondLevelModel(BaseGLM):
         # Report progress
         logger.log(
             "\nComputation of second level model done in "
-            f"{time.time() - t0 :0.2f} seconds.\n",
+            f"{time.time() - t0:0.2f} seconds.\n",
             verbose=self.verbose,
         )
 

@@ -216,7 +216,7 @@ linkcheck_allow_unauthorized = True
 linkcheck_report_timeouts_as_broken = False
 
 # double default rate_limit_timeout
-linkcheck_rate_limit_timeout = 600
+linkcheck_rate_limit_timeout = 600.0
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -378,63 +378,6 @@ htmlhelp_basename = "PythonScientic"
 
 # Sphinx copybutton config
 copybutton_prompt_text = ">>> "
-
-# -- Options for LaTeX output ------------------------------------------------
-
-# The paper size ('letter' or 'a4').
-# latex_paper_size = 'letter'
-
-# The font size ('10pt', '11pt' or '12pt').
-# latex_font_size = '10pt'
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass
-# [howto/manual]).
-latex_documents = [
-    (
-        "index",
-        "nilearn.tex",
-        "NeuroImaging with scikit-learn",
-        "Gaël Varoquaux and Alexandre Abraham"
-        + r"\\\relax ~\\\relax https://nilearn.github.io",
-        "manual",
-    ),
-]
-
-# The name of an image file (relative to this directory) to place at the top of
-# the title page.
-latex_logo = "logos/nilearn-transparent.png"
-
-# For "manual" documents, if this is true, then toplevel headings are parts,
-# not chapters.
-# latex_use_parts = False
-
-# Additional stuff for the LaTeX preamble.
-
-# Documents to append as an appendix to all manuals.
-# latex_appendices = []
-latex_elements = {
-    "classoptions": ",oneside",
-    "babel": "\\usepackage[english]{babel}",
-    # Get completely rid of index
-    "printindex": "",
-}
-
-
-latex_elements["preamble"] = r"""
-\usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-\let\oldfootnote\footnote
-\def\footnote#1{\oldfootnote{\small #1}}
-"""
-
-
-latex_domain_indices = False
-
-# Show the page numbers in the references
-latex_show_pagerefs = True
-
-# Show URLs in footnotes
-latex_show_urls = "footnote"
 
 trim_doctests_flags = True
 
