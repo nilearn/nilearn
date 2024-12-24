@@ -11,38 +11,31 @@
         displayed_maps = {{ displayed_maps }};
         number_maps = {{ len(displayed_maps) }};
       </script>
+      <div style="display: flex">
+        <div class="btn-container">
+          <button onclick="displayPreviousMap()" class="btn">
+            Previous Map
+          </button>
+        </div>
 
-      <div class="btn-container">
-        <button onclick="displayPreviousMap()" class="btn">Previous Map</button>
+        <div class="btn-container">
+          <h3 class="comp-title" style="margin: 0">
+            Region <span id="comp"></span>
+          </h3>
+        </div>
+
+        <div class="btn-container">
+          <button
+            onclick="displayNextMap()"
+            class="btn"
+            style="padding: 10px 20px; font-size: 16px"
+          >
+            Next Map
+          </button>
+        </div>
       </div>
 
-      <div class="btn-container">
-        <h3 class="comp-title">Region <span id="comp"></span></h3>
-      </div>
-
-      <div class="btn-container">
-        <button onclick="displayNextMap()" class="btn">Next Map</button>
-      </div>
-
-      <img
-        id="map0"
-        class="pure-img"
-        width="100%"
-        src="data:image/svg+xml;base64,{{content[0]}}"
-        style="display: block"
-        alt="image"
-      />
-
-      {{for map in range(1, len(displayed_maps))}}
-      <img
-        id="map{{map}}"
-        class="pure-img"
-        width="100%"
-        src="data:image/svg+xml;base64,{{content[map]}}"
-        style="display: none"
-        alt="image"
-      />
-      {{endfor}}
+      {{ figure|html }}
     </div>
   </div>
   <div class="pure-u-1 pure-u-md-1-3">
