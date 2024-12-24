@@ -601,7 +601,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 embeded_images.append(fig)
             elif is_matplotlib_installed():
                 embeded_images.append(figure_to_svg_base64(fig))
-                breakpoint()
                 plt.close()
 
         return embeded_images
@@ -642,7 +641,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 threshold=threshold,
             ).get_iframe()
         elif is_matplotlib_installed():
-            breakpoint()
             fig, axes = plt.subplots(
                 len(views),
                 len(hemispheres),
