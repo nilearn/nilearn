@@ -459,9 +459,11 @@ We let tox handle creating virtual env and install dependencies.
 
 .. code-block:: bash
 
-    export VERSIONTAG=$(git describe --tags --abbrev=0)
     pip install tox
-    tox run --colored yes --list-dependencies -e doc -- install
+    tox run --colored yes --list-dependencies -e doc -- html
+    export DEPLOY_TYPE="stable"
+    export COMMIT_SHA=$(git rev-parse HEAD)
+    bash ./build_tools/github/deploy_doc.sh
 
 
 This will build the documentation (beware, this is time consuming...)
