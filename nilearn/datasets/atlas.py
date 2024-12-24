@@ -25,6 +25,68 @@ from nilearn.image import get_data, new_img_like, reorder_img
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
 
+dec_to_hex_nums = pd.DataFrame(
+    {"hex": [f"{x:02x}" for x in range(256)]}, dtype=str
+)
+
+
+def rgb_to_hex_lookup(
+    red: pd.Series, green: pd.Series, blue: pd.Series
+) -> pd.Series:
+    """Turn RGB in hex."""
+    # see https://stackoverflow.com/questions/53875880/convert-a-pandas-dataframe-of-rgb-colors-to-hex
+    # Look everything up
+    rr = dec_to_hex_nums.loc[red, "hex"]
+    gg = dec_to_hex_nums.loc[green, "hex"]
+    bb = dec_to_hex_nums.loc[blue, "hex"]
+    # Reindex
+    rr.index = red.index
+    gg.index = green.index
+    bb.index = blue.index
+    # Concatenate and return
+    return rr + gg + bb
+
+
+def _generate_atlas_look_up_table(function, name, index=None):
+    fname = function
+    if not isinstance(function, str):
+        fname = function.__name__
+
+    # deal with names
+    if fname in ["fetch_atlas_surf_destrieux", "fetch_atlas_schaefer_2018"]:
+        name = [x.decode() for x in name]
+    elif fname in ["fetch_atlas_basc_multiscale_2015"]:
+        name = [str(x) for x in range(name)]
+
+    # deal with indices
+    index = list(range(len(name)))
+    if fname in ["fetch_atlas_basc_multiscale_2015"]:
+        index = [int(x) for x in name]
+    elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
+        index = list(range(1, len(name) + 1))
+
+    # convert to dataframa and do some cleaning where required
+    lut = pd.DataFrame({"index": index, "name": name})
+
+    if fname in [
+        "fetch_atlas_harvard_oxford",
+        "fetch_atlas_juelich",
+        "fetch_atlas_talairach",
+        "fetch_atlas_aal",
+        "fetch_atlas_basc_multiscale_2015",
+    ]:
+        return lut
+
+    elif fname == "fetch_atlas_surf_destrieux":
+        return lut.replace("Unknown", "Background")
+
+    elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
+        return pd.concat(
+            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
+            ignore_index=True,
+        )
+
+
 @fill_doc
 def fetch_atlas_difumo(
     dimension=64,
@@ -355,6 +417,7 @@ def fetch_atlas_destrieux_2009(
     files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     params = {"maps": files_[1], "labels": pd.read_csv(files_[0], index_col=0)}
+    params["lut"] = params["labels"]
 
     if legacy_format:
         params["labels"] = params["labels"].to_records()
@@ -511,11 +574,22 @@ def fetch_atlas_harvard_oxford(
 
     atlas_niimg = check_niimg(atlas_img)
     if not symmetric_split or is_lateralized:
+        if is_probabilistic:
+            return Bunch(
+                filename=atlas_filename,
+                maps=atlas_niimg,
+                labels=names,
+                description=fdescr,
+            )
+        lut = _generate_atlas_look_up_table(
+            "fetch_atlas_harvard_oxford", name=names
+        )
         return Bunch(
             filename=atlas_filename,
             maps=atlas_niimg,
             labels=names,
             description=fdescr,
+            lut=lut,
         )
 
     new_atlas_data, new_names = _compute_symmetric_split(
@@ -524,11 +598,24 @@ def fetch_atlas_harvard_oxford(
     new_atlas_niimg = new_img_like(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
+
+    if is_probabilistic:
+        return Bunch(
+            filename=atlas_filename,
+            maps=new_atlas_niimg,
+            labels=new_names,
+            description=fdescr,
+        )
+
+    lut = _generate_atlas_look_up_table(
+        "fetch_atlas_harvard_oxford", name=new_names
+    )
     return Bunch(
         filename=atlas_filename,
         maps=new_atlas_niimg,
         labels=new_names,
         description=fdescr,
+        lut=lut,
     )
 
 
@@ -665,11 +752,23 @@ def fetch_atlas_juelich(
 
     fdescr = get_dataset_descr("juelich")
 
+    if is_probabilistic:
+        return Bunch(
+            filename=atlas_filename,
+            maps=new_atlas_niimg,
+            labels=list(new_names),
+            description=fdescr,
+        )
+
+    lut = _generate_atlas_look_up_table(
+        "fetch_atlas_juelich", name=list(new_names)
+    )
     return Bunch(
         filename=atlas_filename,
         maps=new_atlas_niimg,
         labels=list(new_names),
         description=fdescr,
+        lut=lut,
     )
 
 
@@ -1345,6 +1444,9 @@ def fetch_atlas_aal(
         "maps": atlas_img,
         "labels": labels,
         "indices": indices,
+        "lut": _generate_atlas_look_up_table(
+            "fetch_atlas_aal", index=indices, name=labels
+        ),
     }
 
     return Bunch(**params)
@@ -1479,7 +1581,12 @@ def fetch_atlas_basc_multiscale_2015(
         filename = [(folder_name / basename, url, opts)]
 
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-        params = Bunch(maps=data[0], description=fdescr)
+
+        lut = _generate_atlas_look_up_table(
+            "fetch_atlas_basc_multiscale_2015", name=resolution
+        )
+
+        params = Bunch(maps=data[0], description=fdescr, lut=lut)
     else:
         basenames = [
             "template_cambridge_basc_multiscale_"
@@ -1844,6 +1951,9 @@ def fetch_atlas_surf_destrieux(
         map_left=annot_left[0],
         map_right=annot_right[0],
         description=fdescr,
+        lut=_generate_atlas_look_up_table(
+            "fetch_atlas_surf_destrieux", name=annot_left[2]
+        ),
     )
 
 
@@ -1953,12 +2063,18 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     img_file = talairach_dir / f"{level_name}.nii.gz"
     labels_file = talairach_dir / f"{level_name}-labels.json"
+
     if not img_file.is_file() or not labels_file.is_file():
         _download_talairach(talairach_dir, verbose=verbose)
+
     atlas_img = check_niimg(img_file)
     labels = json.loads(labels_file.read_text("utf-8"))
     description = get_dataset_descr("talairach_atlas").format(level_name)
-    return Bunch(maps=atlas_img, labels=labels, description=description)
+    lut = _generate_atlas_look_up_table("fetch_atlas_talairach", name=labels)
+
+    return Bunch(
+        maps=atlas_img, labels=labels, description=description, lut=lut
+    )
 
 
 @rename_parameters(
@@ -2077,7 +2193,10 @@ def fetch_atlas_pauli_2017(
 
     fdescr = get_dataset_descr(dataset_name)
 
-    return Bunch(maps=atlas_file, labels=labels, description=fdescr)
+    if version == "prob":
+        return Bunch(maps=atlas_file, labels=labels, description=fdescr)
+    lut = _generate_atlas_look_up_table("fetch_atlas_pauli_2017", name=labels)
+    return Bunch(maps=atlas_file, labels=labels, description=fdescr, lut=lut)
 
 
 @fill_doc
@@ -2222,4 +2341,8 @@ def fetch_atlas_schaefer_2018(
     )
     fdescr = get_dataset_descr(dataset_name)
 
-    return Bunch(maps=atlas_file, labels=labels, description=fdescr)
+    lut = _generate_atlas_look_up_table(
+        "fetch_atlas_schaefer_2018", name=labels
+    )
+
+    return Bunch(maps=atlas_file, labels=labels, description=fdescr, lut=lut)
