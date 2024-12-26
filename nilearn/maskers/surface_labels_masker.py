@@ -292,7 +292,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     / self.labels_img.mesh.parts[part].n_vertices
                     * 100
                 )
-                relative_size.append(f"{tmp :.2}")
+                relative_size.append(f"{tmp:.2}")
 
             regions_summary["size<br>(number of vertices)"] = size
             regions_summary["relative size<br>(% vertices in hemisphere)"] = (
@@ -512,7 +512,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         import matplotlib.pyplot as plt
 
-        from nilearn.reporting.utils import figure_to_png_base64
+        from nilearn.reporting.utils import figure_to_svg_base64
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
@@ -523,7 +523,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         plt.close()
 
-        init_display = figure_to_png_base64(fig)
+        init_display = figure_to_svg_base64(fig)
 
         return [init_display]
 
