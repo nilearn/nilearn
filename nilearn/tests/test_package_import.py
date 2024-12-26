@@ -1,4 +1,6 @@
 import os
+import sys
+from unittest import mock
 
 import pytest
 from numpy import __version__ as np_version
@@ -59,6 +61,7 @@ def test_import_reporting_should_raise_warning_if_matplotlib_not_installed():
     warning and raises error when matplotlib is not installed.
     """
     with (
+        mock.patch.dict(sys.modules, {}),
         pytest.warns(UserWarning, match="nilearn.reporting.glm_reporter and"),
         pytest.raises(
             ImportError,
@@ -76,5 +79,8 @@ def test_import_get_clusters_table_when_matplotlib_not_installed():
     """Tests if nilearn.reporting.get_clusters_table can be imported without
     problems when matplotlib is not installed.
     """
-    with pytest.warns(UserWarning, match="nilearn.reporting.glm_reporter and"):
+    with (
+        mock.patch.dict(sys.modules, {}),
+        pytest.warns(UserWarning, match="nilearn.reporting.glm_reporter and"),
+    ):
         from nilearn.reporting import get_clusters_table  # noqa: F401
