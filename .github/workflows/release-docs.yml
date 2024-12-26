@@ -1,0 +1,130 @@
+---
+name: BuildReleaseDocs
+
+on:
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+    # This will run automatically when a release is published
+    release:
+        types: [published]
+
+env:
+    BROWSER: /usr/bin/firefox
+    DISPLAY: :99.0
+    NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
+    MIN_PYTHON_VERSION: '3.9'
+
+jobs:
+
+    # this job gets the data required for the build and passes via cache to the build_doc job
+    get_data:
+        # This prevents this workflow from running on a fork.
+        # To test this workflow on a fork, uncomment the following line.
+        if: github.repository == 'nilearn/nilearn'
+        runs-on: ubuntu-latest
+        timeout-minutes: 360
+        defaults:
+            run:
+                shell: bash -el {0}
+
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+
+        # Set up environment
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: ${{ env.MIN_PYTHON_VERSION }}
+        -   name: Install packages
+            run: |
+                python -m pip install --user --upgrade pip setuptools
+                python -m pip install .
+
+        -   name: Get cache from a previous attempts of this run number
+            uses: actions/cache@v4
+            with:
+                path: nilearn_data
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+                restore-keys: |
+                    data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
+
+        -   name: Get data
+            run: |
+                echo "Download data required for building doc"
+                python doc/get_data_examples.py full
+
+        -   name: Save cache to pass to build_docs job
+            uses: actions/cache/save@v4
+            if: always()
+            with:
+                path: /home/runner/work/nilearn/nilearn/nilearn_data
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+
+    release-docs:
+        if: github.repository == 'nilearn/nilearn'
+        needs: [get_data]
+        runs-on: ubuntu-latest
+        timeout-minutes: 360
+        defaults:
+            run:
+                shell: bash -el {0}
+
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+            with:
+                fetch-depth: 0
+
+        -   name: Add SSH key
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+            run: |
+                mkdir -p ~/.ssh
+                ssh-keyscan github.com >> ~/.ssh/known_hosts
+                echo "${{ secrets.ACTIONS_SSH_DEPLOY }}" > ~/.ssh/github_actions
+                chmod 600 ~/.ssh/github_actions
+                ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+                ssh-add ~/.ssh/github_actions
+
+        -   name: Install apt packages
+            run: |
+                sudo -E apt-get -yq update
+                sudo -E apt-get -yq --no-install-suggests --no-install-recommends install \
+                    dvipng texlive-latex-base texlive-latex-extra
+
+        -   name: Get data from the get_data job
+            uses: actions/cache@v4
+            with:
+                path: /home/runner/work/nilearn/nilearn/nilearn_data
+                key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
+                restore-keys: |
+                    data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
+
+        # Set up and launch a virtual browser needed for one example to run
+        # without stalling the job. The example launches an html in the browser.
+        -   name: Set up display server for virtual browser
+            run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
+
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: ${{ env.MIN_PYTHON_VERSION }}
+
+        -   name: Install tox
+            run: python -m pip install pip tox
+
+        -   name: Build docs
+            # We let tox handle creating virtual env and install dependencies.
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+            run: |
+                git config --global user.email "actions@github.com"
+                git config --global user.name "GitHub actions"
+                set -o pipefail
+                export VERSIONTAG=$(git describe --tags --abbrev=0)
+                tox run \
+                    --colored yes \
+                    --list-dependencies \
+                    -e doc -- install
