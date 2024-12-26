@@ -659,7 +659,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 bg_map=bg_img,
                 bg_on_data=True,
                 threshold=threshold,
-                hemi="both",
+                hemi="left",  # TODO: use "both" after #4991 is merged
             ).get_iframe()
         elif self._report_content["engine"] == "matplotlib":
             # TODO: possibly allow to generate a report with other views
