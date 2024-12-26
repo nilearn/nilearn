@@ -156,6 +156,7 @@ or saved as a portable HTML file ``report.save_as_html(output_filepath)``.
 .. figure:: /images/niftimasker_report.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
     :scale: 50%
+    :align: center
 
 Different masking strategies
 .............................
@@ -180,6 +181,7 @@ functions documentation, or :doc:`the NiftiMasker example
 .. figure:: /images/niftimasker_report_params.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
     :scale: 50%
+    :align: center
 
 .. _masker_preprocessing_steps:
 

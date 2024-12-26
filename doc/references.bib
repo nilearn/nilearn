@@ -383,12 +383,8 @@
 	year = {2012},
 	month = {06},
 	abstract = {Gaussian Markov random fields (GMRFs) are useful in a broad range of applications. In this paper we tackle the problem of learning a sparse GMRF in a high-dimensional space. Our approach uses the l1-norm as a regularization on the inverse covariance matrix. We utilize a novel projected gradient method, which is faster than previous methods in practice and equal to the best performing of these in asymptotic complexity. We also extend the l1-regularized objective to the problem of sparsifying entire blocks within the inverse covariance matrix. Our methods generalize fairly easily to this case, while other methods do not. We demonstrate that our extensions give better generalization performance on two real domains--biological network analysis and a 2D-shape modeling image task.},
-	url = {https://arxiv.org/abs/1206.3249},
-	archiveprefix = {arXiv},
 	eprint = {1206.3249},
-	eprinttype = {arxiv},
-	journal = {arXiv:1206.3249 [cs, stat]},
-	primaryclass = {cs, stat}
+	journal={arXiv},
 }
 
 @article{Etzel2013,
@@ -690,26 +686,14 @@
     doi = {10.1093/cercor/13.7.793},
 }
 
-@article{Honorio2015,
+@article{Honorio2012,
 	title = {On the statistical efficiency of l1,p multi-task learning of Gaussian graphical models},
 	author = {Honorio, Jean and Jaakkola, Tommi and Samaras, Dimitris},
-	year = {2015},
+	year = {2012},
 	month = {10},
 	abstract = {In this paper, we present l1,p multi-task structure learning for Gaussian graphical models. We analyze the sufficient number of samples for the correct recovery of the support union and edge signs. We also analyze the necessary number of samples for any conceivable method by providing information-theoretic lower bounds. We compare the statistical efficiency of multi-task learning versus that of single-task learning. For experiments, we use a block coordinate descent method that is provably convergent and generates a sequence of positive definite solutions. We provide experimental validation on synthetic data as well as on two publicly available real-world data sets, including functional magnetic resonance imaging and gene expression data.},
-	url = {https://arxiv.org/abs/1207.4255},
-	archiveprefix = {arXiv},
 	eprint = {1207.4255},
-	eprinttype = {arxiv},
-	journal = {arXiv:1207.4255 [cs, stat]},
-	primaryclass = {cs, stat}
-}
-
-@article{Honorio2012,
-	title={On the Statistical Efficiency of $$\backslash$ell\_ $\{$1, p$\}$ $ Multi-Task Learning of Gaussian Graphical Models},
-	author={Honorio, Jean and Jaakkola, Tommi and Samaras, Dimitris},
-	journal={arXiv preprint arXiv:1207.4255},
-	year={2012},
-	eprint = {1207.4255},
+	journal = {arXiv},
 }
 
 
@@ -1421,16 +1405,22 @@
 @article{Varoquaux2010a,
 	title = {Brain covariance selection: Better individual functional connectivity models using population prior},
 	author = {Varoquaux, Gael and Gramfort, Alexandre and Poline, Jean Baptiste and Thirion, Bertrand},
-	year = {2010},
-	month = {11},
 	abstract = {Spontaneous brain activity, as observed in functional neuroimaging, has been shown to display reproducible structure that expresses brain architecture and carries markers of brain pathologies. An important view of modern neuroscience is that such large-scale structure of coherent activity reflects modularity properties of brain connectivity graphs. However, to date, there has been no demonstration that the limited and noisy data available in spontaneous activity observations could be used to learn full-brain probabilistic models that generalize to new data. Learning such models entails two main challenges: i) modeling full brain connectivity is a difficult estimation problem that faces the curse of dimensionality and ii) variability between subjects, coupled with the variability of functional signals between experimental runs, makes the use of multiple datasets challenging. We describe subject-level brain functional connectivity structure as a multivariate Gaussian process and introduce a new strategy to estimate it from group data, by imposing a common structure on the graphical model in the population. We show that individual models learned from functional Magnetic Resonance Imaging (fMRI) data using this population prior generalize better to unseen data than models based on alternative regularization schemes. To our knowledge, this is the first report of a cross-validated model of spontaneous brain activity. Finally, we use the estimated graphical model to explore the large-scale characteristics of functional architecture and show for the first time that known cognitive networks appear as the integrated communities of functional connectivity graph.},
-	archiveprefix = {arXiv},
 	eprint = {1008.5071},
-	eprinttype = {arxiv},
-	journal = {arXiv:1008.5071 [q-bio, stat]},
-	primaryclass = {q-bio, stat},
+	journal={Advances in neural information processing systems},
+	volume={23},
+	year={2010},
 	url={https://inria.hal.science/inria-00512451}
 }
+
+@article{varoquaux2010brain,
+  title={Brain covariance selection: better individual functional connectivity models using population prior},
+  author={Varoquaux, Ga{\"e}l and Gramfort, Alexandre and Poline, Jean-Baptiste and Thirion, Bertrand},
+  journal={Advances in neural information processing systems},
+  volume={23},
+  year={2010}
+}
+
 
 @inproceedings{Varoquaux2010b,
 	title = {Detection of brain functional-connectivity difference in post-stroke patients using group-level covariance modeling},
@@ -1482,11 +1472,11 @@
 @article{Varoquaux2012,
   title={Small-sample brain mapping: sparse recovery on spatially correlated designs with randomization and clustering},
   author={Varoquaux, Ga{\"e}l and Gramfort, Alexandre and Thirion, Bertrand},
-  journal={arXiv preprint arXiv:1206.6447},
+  journal={arXiv},
+  eprint={1206.6447},
   year={2012},
   pdf={https://icml.cc/2012/papers/688.pdf},
 }
-
 
 @article{Varoquaux2017,
 	title={Assessing and tuning brain decoders: cross-validation, caveats, and guidelines},

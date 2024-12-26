@@ -186,16 +186,17 @@ linkcheck_ignore = [
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
     "http://brainomics.cea.fr/localizer/",
     "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    "https://pkgs.org/search/.*",
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog
     r"https://github.com/nilearn/nilearn/issues/.*",
-    # those are needed because figure cannot take sphinx gallery reference
+    # those are needed because figures cannot take sphinx gallery reference
     # as target
     r"../auto_examples/.*html",
     r"auto_examples/.*html",
-    "https://pkgs.org/search/.*",
-    # below are publishers that do not like doi redirects
-    # and give a 403 Client Error: Forbidden for url
+    # give a 403 Client Error: Forbidden for url:
+    r"https://sites.wustl.edu/oasisbrains/.*"
+    # similarly below are publishers that do not like doi redirects:
     r"https://doi.org/10.1002/.*",
     r"https://doi.org/10.1073/.*",
     r"https://doi.org/10.1080/.*",
@@ -378,63 +379,6 @@ htmlhelp_basename = "PythonScientic"
 
 # Sphinx copybutton config
 copybutton_prompt_text = ">>> "
-
-# -- Options for LaTeX output ------------------------------------------------
-
-# The paper size ('letter' or 'a4').
-# latex_paper_size = 'letter'
-
-# The font size ('10pt', '11pt' or '12pt').
-# latex_font_size = '10pt'
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass
-# [howto/manual]).
-latex_documents = [
-    (
-        "index",
-        "nilearn.tex",
-        "NeuroImaging with scikit-learn",
-        "Gaël Varoquaux and Alexandre Abraham"
-        + r"\\\relax ~\\\relax https://nilearn.github.io",
-        "manual",
-    ),
-]
-
-# The name of an image file (relative to this directory) to place at the top of
-# the title page.
-latex_logo = "logos/nilearn-transparent.png"
-
-# For "manual" documents, if this is true, then toplevel headings are parts,
-# not chapters.
-# latex_use_parts = False
-
-# Additional stuff for the LaTeX preamble.
-
-# Documents to append as an appendix to all manuals.
-# latex_appendices = []
-latex_elements = {
-    "classoptions": ",oneside",
-    "babel": "\\usepackage[english]{babel}",
-    # Get completely rid of index
-    "printindex": "",
-}
-
-
-latex_elements["preamble"] = r"""
-\usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-\let\oldfootnote\footnote
-\def\footnote#1{\oldfootnote{\small #1}}
-"""
-
-
-latex_domain_indices = False
-
-# Show the page numbers in the references
-latex_show_pagerefs = True
-
-# Show URLs in footnotes
-latex_show_urls = "footnote"
 
 trim_doctests_flags = True
 
