@@ -73,7 +73,7 @@ def test_plot_roi_view_type_error(pyplot):
         demo_plot_roi(view_type="flled")
 
 
-def test_demo_plot_roi_output_file(pypot, tmp_path):
+def test_demo_plot_roi_output_file(pyplot, tmp_path):
     """Tests plot_roi file saving capabilities."""
     filename = tmp_path / "test.png"
     with filename.open("wb") as fp:
