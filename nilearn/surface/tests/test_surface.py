@@ -1132,6 +1132,10 @@ def test_get_min_max(surf_img_2d):
 
 
 def test_concat_imgs(surf_img_2d):
+    """Check concat_imgs returns a single SurfaceImage.
+
+    Output must have as many samples as the sum of samples in the input.
+    """
     img = concat_imgs([surf_img_2d(3), surf_img_2d(5)])
     assert img.shape == (9, 8)
     for value in img.data.parts.values():
@@ -1139,6 +1143,11 @@ def test_concat_imgs(surf_img_2d):
 
 
 def test_iter_img(surf_img_2d):
+    """Check iter_img returns list of SurfaceImage.
+
+    Each SurfaceImage must have same mesh as input
+    and data from one of the sample of the input SurfaceImage.
+    """
     input = surf_img_2d(5)
     output = iter_img(input, return_iterator=False)
 
@@ -1166,20 +1175,24 @@ def test_iter_img_2d(surf_img_1d, surf_img_2d):
 
 
 def test_iter_img_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         iter_img(1)
 
 
 def test_new_img_like_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         new_img_like(1, data=np.ones(2))
 
 
 def test_extract_data_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         _extract_data(1, index=1)
 
 
 def test_index_img_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         index_img(1, index=1)
