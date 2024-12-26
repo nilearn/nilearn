@@ -31,6 +31,7 @@ from nilearn.plotting.surf_plotting import (
     plot_surf_stat_map,
 )
 from nilearn.surface import (
+    InMemoryMesh,
     SurfaceImage,
     load_surf_data,
     load_surf_mesh,
@@ -344,6 +345,53 @@ def test_check_surface_plotting_inputs_errors(surf_img_1d):
         check_surface_plotting_inputs(
             surf_map=surf_img_1d, surf_mesh=surf_img_1d
         )
+
+
+def test_check_surface_plotting_hemi_both_all_inputs(surf_img_1d, surf_mesh):
+    """Test that hemi="both" works as expected when all inputs are provided."""
+    hemi = "both"
+    combined_map, combined_mesh, combined_bg = check_surface_plotting_inputs(
+        surf_map=surf_img_1d,
+        surf_mesh=surf_mesh(),
+        hemi=hemi,
+        bg_map=surf_img_1d,
+    )
+    # check that the data is concatenated
+    for data in [combined_map, combined_bg]:
+        assert_array_equal(
+            data,
+            np.concatenate(
+                (
+                    surf_img_1d.data.parts["left"],
+                    surf_img_1d.data.parts["right"],
+                )
+            ),
+        )
+        assert isinstance(data, np.ndarray)
+    # check that the mesh is concatenated
+    assert combined_mesh.n_vertices == surf_mesh().n_vertices
+    assert isinstance(combined_mesh, InMemoryMesh)
+
+
+def test_check_surface_plotting_hemi_both_mesh_none(surf_img_1d):
+    """Test that hemi="both" works as expected when mesh is not provided."""
+    hemi = "both"
+    combined_map, combined_mesh, combined_bg = check_surface_plotting_inputs(
+        surf_map=surf_img_1d,
+        surf_mesh=None,
+        hemi=hemi,
+    )
+    # check that the mesh is taken from surf_map
+    assert combined_mesh.n_vertices == surf_img_1d.mesh.n_vertices
+    assert isinstance(combined_mesh, InMemoryMesh)
+
+
+def test_check_surface_plotting_hemi_error(surf_img_1d):
+    """Test that an error is raised when hemi is not valid."""
+    with pytest.raises(
+        ValueError, match="hemi must be one of left, right or both"
+    ):
+        check_surface_plotting_inputs(surf_map=surf_img_1d, hemi="foo")
 
 
 def test_plot_surf_contours_warning_hemi(in_memory_mesh):
