@@ -175,8 +175,9 @@ can be computed from the data:
      :end-before: # Applying the mask to extract the corresponding time series
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png
-    :target: ../auto_examples/01_plotting/plot_visualization.html
-    :scale: 50%
+   :target: ../auto_examples/01_plotting/plot_visualization.html
+   :scale: 50%
+   :align: center
 
 
 .. _mask_4d_2_3d:
