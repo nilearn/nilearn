@@ -186,16 +186,17 @@ linkcheck_ignore = [
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
     "http://brainomics.cea.fr/localizer/",
     "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    "https://pkgs.org/search/.*",
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog
     r"https://github.com/nilearn/nilearn/issues/.*",
-    # those are needed because figure cannot take sphinx gallery reference
+    # those are needed because figures cannot take sphinx gallery reference
     # as target
     r"../auto_examples/.*html",
     r"auto_examples/.*html",
-    "https://pkgs.org/search/.*",
-    # below are publishers that do not like doi redirects
-    # and give a 403 Client Error: Forbidden for url
+    # give a 403 Client Error: Forbidden for url:
+    r"https://sites.wustl.edu/oasisbrains/.*"
+    # similarly below are publishers that do not like doi redirects:
     r"https://doi.org/10.1002/.*",
     r"https://doi.org/10.1073/.*",
     r"https://doi.org/10.1080/.*",
