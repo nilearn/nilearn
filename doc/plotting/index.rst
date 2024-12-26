@@ -459,8 +459,8 @@ Nilearn also has functions for making interactive plots that can be
 seen in a web browser. There are two kinds of plots for which an
 interactive mode is available:
 
-    - :ref:`interactive-surface-plotting`
-    - :ref:`interactive-connectome-plotting`
+- :ref:`interactive-surface-plotting`
+- :ref:`interactive-connectome-plotting`
 
 .. versionadded:: 0.5
 
@@ -480,28 +480,30 @@ interactive mode is available:
 For 3D surface plots of statistical maps or surface atlases, you have different options
 depending on what you want to do and the packages you have installed.
 
-    - If you have `plotly`_ installed: Since Nilearn ``0.9.0``, it is possible to use
-      `plotly`_ as the plotting engine in most surface plotting functions of Nilearn like
-      :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`. By default
-      these functions use `matplotlib`_ as the plotting engine which results in
-      non-interactive plots. By setting ``engine='plotly'``, an interactive version of
-      these plots will be automatically opened in your web browser. In addition, if you
-      have `kaleido`_ installed, you can save the plots automatically to png files.
-      Finally, the `plotly`_ figure returned can be further customized in order to make
-      more elaborate plots.
+-    If you have `plotly`_ installed
 
-    - If you don't have `plotly`_:
+     Since Nilearn ``0.9.0``, it is possible to use
+     `plotly`_ as the plotting engine in most surface plotting functions of Nilearn like
+     :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`. By default
+     these functions use `matplotlib`_ as the plotting engine which results in
+     non-interactive plots. By setting ``engine='plotly'``, an interactive version of
+     these plots will be automatically opened in your web browser. In addition, if you
+     have `kaleido`_ installed, you can save the plots automatically to png files.
+     Finally, the `plotly`_ figure returned can be further customized in order to make
+     more elaborate plots.
 
-        - If you don't need to save the plots to png and want to interactively visualize
+-    If you don't have `plotly`_
+
+     -    If you don't need to save the plots to png and want to interactively visualize
           the surface, you can rely on ``view`` functions:
 
-            - :func:`view_img_on_surf` which takes as input a volume statistical map and
-              projects it on the cortical surface before making a 3D interactive plot.
+          -    :func:`view_img_on_surf` which takes as input a volume statistical map and
+               projects it on the cortical surface before making a 3D interactive plot.
 
-            - :func:`view_surf` which takes as input a surface map and a cortical mesh
-              and produces a 3D interactive plot on the cortical surface.
+          -    :func:`view_surf` which takes as input a surface map and a cortical mesh
+               and produces a 3D interactive plot on the cortical surface.
 
-        - The last option is to rely on surface plotting functions (:func:`plot_surf`,
+     -    The last option is to rely on surface plotting functions (:func:`plot_surf`,
           :func:`plot_surf_stat_map`, :func:`plot_surf_roi`...) with the default
           `matplotlib`_ plotting engine. In this case, you will be able to save to png
           but you will lose the interactivity of the plots.

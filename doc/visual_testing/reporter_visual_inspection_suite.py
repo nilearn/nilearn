@@ -632,7 +632,7 @@ def main(args=sys.argv):
     report_multi_nifti_maps_masker(build_type)
 
     t1 = time.time()
-    print(f"\nTook: {t1 - t0 :0.2f} seconds\n")
+    print(f"\nTook: {t1 - t0:0.2f} seconds\n")
 
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
@@ -643,7 +643,7 @@ def main(args=sys.argv):
     report_slm_oasis(build_type)
 
     t1 = time.time()
-    print(f"\nTook: {t1 - t0 :0.2f} seconds\n")
+    print(f"\nTook: {t1 - t0:0.2f} seconds\n")
 
 
 if __name__ == "__main__":
