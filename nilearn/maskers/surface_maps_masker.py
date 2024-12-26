@@ -192,12 +192,13 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                     )
             check_surface_data_ndims(self.mask_img, 1, "mask_img")
 
+        self._shelving = False
+
         # initialize reporting content and data
         if not self.reports:
             self._reporting_data = None
             return self
 
-        self._shelving = False
         # content to inject in the HTML template
         self._report_content = {
             "description": (
@@ -598,8 +599,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             if n_maps < self.displayed_maps:
                 msg = (
                     "`generate_report()` received "
-                    f"{self.displayed_maps} to be displayed. "
-                    f"But masker only has {n_maps} maps."
+                    f"{self.displayed_maps} maps to be displayed. "
+                    f"But masker only has {n_maps} maps. "
                     f"Setting number of displayed maps to {n_maps}."
                 )
                 warnings.warn(category=UserWarning, message=msg, stacklevel=6)
@@ -628,9 +629,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         for roi in maps_img[: self.displayed_maps]:
             fig = self._create_figure_for_report(roi=roi, bg_img=img)
-            if is_plotly_installed():
+            if self._report_content["engine"] == "plotly":
                 embeded_images.append(fig)
-            elif is_matplotlib_installed():
+            elif self._report_content["engine"] == "matplotlib":
                 embeded_images.append(figure_to_svg_base64(fig))
                 plt.close()
 

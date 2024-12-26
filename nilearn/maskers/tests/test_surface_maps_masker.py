@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 
 from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
 
@@ -294,3 +295,176 @@ def test_surface_maps_masker_sample_mask_to_fit_transform(
     )
     # we remove two samples via sample_mask so we should have 3 samples
     assert signals.shape == (3, masker.n_elements_)
+
+
+# ------------------ Tests for reporting ------------------
+
+
+def test_reports_false(surf_maps_img, surf_img_2d):
+    """Test when reports=False, corresponding attributes should not exist."""
+    masker = SurfaceMapsMasker(surf_maps_img, reports=False)
+    masker.fit_transform(surf_img_2d(10))
+    assert masker._reporting_data is None
+    # reporting_content does not exist when reports=False
+    assert not hasattr(masker, "_report_content")
+
+
+def test_generate_report_engine_error(surf_maps_img, surf_img_2d):
+    """Test error is raised when engine is not 'plotly' or 'matplotlib'."""
+    masker = SurfaceMapsMasker(surf_maps_img)
+    masker.fit_transform(surf_img_2d(10))
+    with pytest.raises(
+        ValueError,
+        match="should be either 'plotly' or 'matplotlib'",
+    ):
+        masker.generate_report(engine="invalid")
+
+
+@pytest.mark.skipif(
+    is_plotly_installed(),
+    reason="Test requires plotly not to be installed.",
+)
+def test_generate_report_engine_no_plotly_warning(surf_maps_img, surf_img_2d):
+    """Test warning is raised when engine selected is plotly but it is not
+    installed.
+    """
+    masker = SurfaceMapsMasker(surf_maps_img)
+    masker.fit_transform(surf_img_2d(10))
+    with pytest.warns(match="Plotly is not installed"):
+        masker.generate_report(engine="plotly")
+    # check if the engine is switched to matplotlib
+    assert masker._report_content["engine"] == "matplotlib"
+
+
+@pytest.mark.skipif(
+    is_matplotlib_installed(),
+    reason="Test requires plotly not to be installed.",
+)
+def test_generate_report_engine_no_matplotlib_warning(
+    surf_maps_img, surf_img_2d
+):
+    """Test warning is raised when engine selected is matplotlib but it is not
+    installed.
+    """
+    masker = SurfaceMapsMasker(surf_maps_img)
+    masker.fit_transform(surf_img_2d(10))
+    with pytest.warns(match="Matplotlib is not installed"):
+        masker.generate_report(engine="matplotlib")
+    # check if the engine is switched to plotly
+    assert masker._report_content["engine"] == "plotly"
+
+
+@pytest.mark.skipif(
+    is_matplotlib_installed() or is_plotly_installed(),
+    reason="Test requires both matplotlib and plotly not to be installed.",
+)
+def test_generate_report_engine_no_matplotlib_plotly_error(
+    surf_maps_img, surf_img_2d
+):
+    """Test when neither of plotly and matplotlib are installed."""
+    masker = SurfaceMapsMasker(surf_maps_img)
+    masker.fit_transform(surf_img_2d(10))
+    with pytest.raises(
+        ImportError,
+        match="No reports will be generated",
+    ):
+        masker.generate_report()
+    # check if the engine is None
+    assert masker._report_content["engine"] is None
+
+
+@pytest.mark.parametrize("displayed_maps", [4.5, [8.4, 3], "invalid"])
+def test_generate_report_displayed_maps_type_error(
+    surf_maps_img, surf_img_2d, displayed_maps
+):
+    """Test error is raised when displayed_maps is not a list or int or
+    np.ndarray or str(all).
+    """
+    masker = SurfaceMapsMasker(surf_maps_img)
+    masker.fit_transform(surf_img_2d(10))
+    with pytest.raises(
+        TypeError,
+        match="should be either 'all' or an int, or a list/array of ints",
+    ):
+        masker.generate_report(displayed_maps=displayed_maps)
+
+
+def test_generate_report_displayed_maps_more_than_regions_warn_int(
+    surf_maps_img, surf_img_2d
+):
+    """Test error is raised when displayed_maps is int and is more than n
+    regions.
+    """
+    masker = SurfaceMapsMasker(surf_maps_img)
+    masker.fit_transform(surf_img_2d(10))
+    with pytest.warns(
+        UserWarning,
+        match="But masker only has 6 maps",
+    ):
+        masker.generate_report(displayed_maps=10)
+    # check if displayed_maps is switched to 6
+    assert masker.displayed_maps == 6
+
+
+def test_generate_report_displayed_maps_more_than_regions_warn_list(
+    surf_maps_img, surf_img_2d
+):
+    """Test error is raised when displayed_maps is list has more elements than
+    n regions.
+    """
+    masker = SurfaceMapsMasker(surf_maps_img)
+    masker.fit_transform(surf_img_2d(10))
+    with pytest.raises(
+        ValueError,
+        match="Report cannot display the following maps",
+    ):
+        masker.generate_report(displayed_maps=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+
+
+def test_generate_report_before_transform_warn(surf_maps_img):
+    """Test warning is raised when generate_report is called before
+    transform.
+    """
+    masker = SurfaceMapsMasker(surf_maps_img).fit()
+    with pytest.warns(match="SurfaceMapsMasker has not been transformed"):
+        masker.generate_report()
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed(), reason="Test requires plotly to be installed."
+)
+def test_generate_report_plotly_out_figure_type(surf_maps_img, surf_img_2d):
+    """Test that the report has a <iframe tag  when engine is plotly
+    (default).
+    """
+    masker = SurfaceMapsMasker(surf_maps_img)
+    masker.fit_transform(surf_img_2d(10))
+    report = masker.generate_report()
+
+    # read the html file and see if plotly figure is inserted
+    # meaning it should have <iframe tag
+    report_str = report.__str__()
+    assert "<iframe" in report_str
+    # and no <img tag
+    assert "<img" not in report_str
+
+
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
+def test_generate_report_matplotlib_out_figure_type(
+    surf_maps_img,
+    surf_img_2d,
+):
+    """Test that the report has a <img tag when engine is matplotlib."""
+    masker = SurfaceMapsMasker(surf_maps_img)
+    masker.fit_transform(surf_img_2d(10))
+    report = masker.generate_report(engine="matplotlib")
+
+    # read the html file and see if matplotlib figure is inserted
+    # meaning it should have <img tag
+    report_str = report.__str__()
+    assert "<img" in report_str
+    # and no <iframe tag
+    assert "<iframe" not in report_str
