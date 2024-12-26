@@ -19,11 +19,10 @@ import numpy as np
 
 from nilearn import datasets
 
-# Number of subjects is kept low for the sake of speed.
-# Increase this number if you have more RAM on your computer.
-n_subjects = 50
+n_subjects = 200
 dataset_files = datasets.fetch_oasis_vbm(
-    n_subjects=n_subjects, legacy_format=False
+    n_subjects=n_subjects,
+    legacy_format=False,
 )
 age = dataset_files.ext_vars["age"].astype(float)
 age = np.array(age)
