@@ -8,7 +8,7 @@ FREM: fast ensembling of regularized models for robust decoding
 and aggregates a high number of estimators trained on various splits of the training set,
 thus returning a very robust decoder at a lower computational cost
 than other spatially regularized methods.
-Its performance compared to usual classifiers was studied on several datasets in [:footcite:t:`Hoyos-Idrobo2018`].
+Its performance compared to usual classifiers was studied on several datasets in :footcite:t:`Hoyos-Idrobo2018`.
 
 FREM pipeline
 =============
@@ -46,6 +46,7 @@ Decoding performance increase on Haxby dataset
 ----------------------------------------------
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_frem_001.png
+   :align: center
 
 In this example we showcase the use of :term:`FREM` and the performance increase that
 it brings on this problem.
@@ -59,6 +60,7 @@ Spatial regularization of decoding maps on mixed gambles study
 ---------------------------------------------------------------
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_mixed_gambles_frem_001.png
+   :align: center
 
 
 .. topic:: **Code**

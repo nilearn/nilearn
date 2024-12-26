@@ -79,18 +79,14 @@ force:
 view: _build/html/index.html
 	$(BROWSER) _build/html/index.html
 
-no_jekyll:
-	mkdir -p $(BUILDDIR)/html
-	touch $(BUILDDIR)/html/.nojekyll
-
-html: no_jekyll	sym_links sym_links_datasets
+html: sym_links sym_links_datasets
 	rm -rf $(BUILDDIR)/html/_images
 	python visual_testing/reporter_visual_inspection_suite.py full
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict: no_jekyll sym_links sym_links_datasets
+html-strict: sym_links sym_links_datasets
 	python visual_testing/reporter_visual_inspection_suite.py full
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
@@ -103,7 +99,7 @@ html-modified-examples-only: sym_links sym_links_datasets glm_reports
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot: no_jekyll sym_links_datasets
+html-noplot: sym_links_datasets
 	python visual_testing/reporter_visual_inspection_suite.py full
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
@@ -119,7 +115,7 @@ ci-html-noplot: sym_links_datasets glm_reports
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-dirhtml: no_jekyll
+dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
@@ -148,19 +144,6 @@ qthelp:
 	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/nilearn.qhcp"
 	@echo "To view the help file:"
 	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/nilearn.qhc"
-
-latex:
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
-	@echo
-	@echo "Build finished; the LaTeX files are in $(BUILDDIR)/latex."
-	@echo "Run \`make' in that directory to run these through (pdf)latex" \
-	      "(use \`make latexpdf' here to do that automatically)."
-
-latexpdf:
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
-	@echo "Running LaTeX files through pdflatex..."
-	make -C $(BUILDDIR)/latex all-pdf
-	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
 
 changes:
 	$(SPHINXBUILD) -b changes $(ALLSPHINXOPTS) $(BUILDDIR)/changes
