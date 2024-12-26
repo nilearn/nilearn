@@ -195,7 +195,7 @@ linkcheck_ignore = [
     r"../auto_examples/.*html",
     r"auto_examples/.*html",
     # give a 403 Client Error: Forbidden for url:
-    r"https://sites.wustl.edu/oasisbrains/.*"
+    r"https://sites.wustl.edu/oasisbrains/.*",
     # similarly below are publishers that do not like doi redirects:
     r"https://doi.org/10.1002/.*",
     r"https://doi.org/10.1073/.*",
