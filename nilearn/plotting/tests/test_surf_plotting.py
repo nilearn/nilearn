@@ -18,8 +18,7 @@ from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.plotting.surf_plotting import (
-    VALID_HEMISPHERES,
-    VALID_VIEWS,
+    MATPLOTLIB_VIEWS,
     _compute_facecolors_matplotlib,
     _get_ticks_matplotlib,
     _get_view_plot_surf_matplotlib,
@@ -198,8 +197,8 @@ EXPECTED_VIEW_MATPLOTLIB = {
         "ventral": (270, 0),
     },
     "both": {
-        "lateral": (0, 0),
-        "medial": (0, 180),
+        "right": (0, 0),
+        "left": (0, 180),
         "dorsal": (90, 0),
         "ventral": (270, 0),
         "anterior": (0, 90),
@@ -436,17 +435,13 @@ def test_get_view_plot_surf_plotly(full_view):
         )
 
 
-@pytest.fixture
-def expected_view_matplotlib(hemi, view):
-    return EXPECTED_VIEW_MATPLOTLIB[hemi][view]
-
-
-@pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
-@pytest.mark.parametrize("view", VALID_VIEWS)
-def test_get_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
-    assert (
-        _get_view_plot_surf_matplotlib(hemi, view) == expected_view_matplotlib
-    )
+@pytest.mark.parametrize("hemi", list(MATPLOTLIB_VIEWS.keys()))
+def test_get_view_plot_surf_matplotlib(hemi):
+    for view in MATPLOTLIB_VIEWS[hemi]:
+        assert (
+            _get_view_plot_surf_matplotlib(hemi, view)
+            == EXPECTED_VIEW_MATPLOTLIB[hemi][view]
+        )
 
 
 def test_surface_figure():
