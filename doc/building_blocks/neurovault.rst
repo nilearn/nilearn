@@ -9,7 +9,7 @@ parcellations, and atlases of the human brain. You can read about it
 and browse the images it contains at https://www.neurovault.org. You
 can download maps from Neurovault with Nilearn.
 
-Neurovault was introduced in [1]_.
+Neurovault was introduced in :footcite:t:`Gorgolewski2015`.
 
 Neurovault contains collections of images. We can get information
 about each collection - such as who uploaded it, a link to a paper, a
@@ -188,7 +188,7 @@ Neurovault. Neurosynth is a platform for large-scale, automated
 synthesis of :term:`fMRI` data. It can be used to perform decoding.  You can
 learn more about Neurosynth at https://www.neurosynth.org.
 
-Neurosynth was introduced in [2]_.
+Neurosynth was introduced in :footcite:`Yarkoni2011`.
 
 If you set the parameter ``fetch_neurosynth_words`` when calling
 ``fetch_neurovault`` or ``fetch_neurovault_ids``, we will also
@@ -214,14 +214,4 @@ Examples using Neurovault
 References
 ----------
 
-.. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
-   Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
-   Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
-   repository for collecting and sharing unthresholded
-   statistical maps of the human brain. Front. Neuroinform. 9:8.
-   doi: 10.3389/fninf.2015.00008
-
-.. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
-   C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
-   of human functional neuroimaging data." Nature methods 8, no. 8
-   (2011): 665-670.
+.. footbibliography::
