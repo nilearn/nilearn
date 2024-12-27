@@ -6,7 +6,7 @@ from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.surface import SurfaceImage
-from nilearn.surface.surface import load_surf_data
+from nilearn.surface.surface import get_data, load_surf_data
 
 if is_plotly_installed():
     import plotly.graph_objects as go
@@ -189,7 +189,10 @@ class PlotlySurfaceFigure(SurfaceFigure):
         """
         if isinstance(roi_map, SurfaceImage):
             assert len(roi_map.shape) == 1 or roi_map.shape[1] == 1
-            roi_map = roi_map.data.parts[hemi]
+            if hemi in ["left", "right"]:
+                roi_map = roi_map.data.parts[hemi]
+            elif hemi == "both":
+                roi_map = get_data(roi_map)
 
         if levels is None:
             levels = np.unique(roi_map)
