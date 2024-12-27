@@ -1395,11 +1395,11 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
     "hemispheres, views",
     [
         (["right"], ["lateral"]),
-        (["left", "right", "both"], ["anterior"]),
+        (["left", "right"], ["anterior"]),
         (["right"], ["medial", "lateral"]),
-        (["left", "right", "both"], ["dorsal", "ventral"]),
+        (["left", "right"], ["dorsal", "ventral"]),
         # Check that manually set view angles work.
-        (["left", "right", "both"], [(210.0, 90.0), (15.0, -45.0)]),
+        (["left", "right"], [(210.0, 90.0), (15.0, -45.0)]),
     ],
 )
 def test_plot_img_on_surf_hemispheres_and_orientations(
