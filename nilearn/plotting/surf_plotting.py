@@ -768,7 +768,7 @@ def plot_surf(
     surf_map=None,
     bg_map=None,
     hemi="left",
-    view="lateral",
+    view=None,
     engine="matplotlib",
     cmap=None,
     symmetric_cmap=False,
@@ -980,6 +980,9 @@ def plot_surf(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+
     parameters_not_implemented_in_plotly = {
         "avg_method": avg_method,
         "figure": figure,
@@ -1335,7 +1338,7 @@ def plot_surf_stat_map(
     stat_map=None,
     bg_map=None,
     hemi="left",
-    view="lateral",
+    view=None,
     engine="matplotlib",
     threshold=None,
     alpha=None,
@@ -1521,6 +1524,10 @@ def plot_surf_stat_map(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    # set default view to dorsal if hemi is both and view is not set
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+
     stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
     )
@@ -1753,8 +1760,8 @@ def plot_img_on_surf(
     %(bg_on_data)s
 
     hemispheres : :obj:`list` of :obj:`str`, default=None
-        Hemispheres to display. Does not support 'both'.
-        Will default to ``['left', 'right']`` if ``None`` is passed.
+        Hemispheres to display.
+        Will default to ``['left', 'right']`` if ``None`` or "both" is passed.
 
     inflate : :obj:`bool`, default=False
         If True, display images in inflated brain.
@@ -1795,7 +1802,7 @@ def plot_img_on_surf(
         accepted by plot_img_on_surf.
 
     """
-    if hemispheres is None:
+    if hemispheres in (None, "both"):
         hemispheres = ["left", "right"]
     if views is None:
         views = ["lateral", "medial"]
@@ -1925,7 +1932,7 @@ def plot_surf_roi(
     roi_map=None,
     bg_map=None,
     hemi="left",
-    view="lateral",
+    view=None,
     engine="matplotlib",
     avg_method=None,
     threshold=1e-14,
@@ -2098,6 +2105,10 @@ def plot_surf_roi(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    # set default view to dorsal if hemi is both and view is not set
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+
     roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, bg_map
     )
