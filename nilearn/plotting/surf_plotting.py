@@ -146,18 +146,23 @@ LAYOUT = {
 
 def _get_camera_view_from_string_view(hemi, view):
     """Return plotly camera parameters from string view."""
-    if view == "lateral":
-        return CAMERAS[hemi]
-    elif view == "medial":
-        return CAMERAS[
-            (
-                VALID_HEMISPHERES[0]
-                if hemi == VALID_HEMISPHERES[1]
-                else VALID_HEMISPHERES[1]
-            )
-        ]
-    else:
-        return CAMERAS[view]
+    if hemi in ["left", "right"]:
+        if view == "lateral":
+            return CAMERAS[hemi]
+        elif view == "medial":
+            return CAMERAS[
+                (
+                    VALID_HEMISPHERES[0]
+                    if hemi == VALID_HEMISPHERES[1]
+                    else VALID_HEMISPHERES[1]
+                )
+            ]
+    elif hemi == "both" and view in ["left", "right"]:
+        raise ValueError(
+            "Invalid view definition: when hemi is 'both', view cannot "
+            "be 'lateral' or 'medial'. Maybe you meant 'left' or 'right'?"
+        )
+    return CAMERAS[view]
 
 
 def _get_camera_view_from_elevation_and_azimut(view):
@@ -405,6 +410,12 @@ def _get_view_plot_surf_matplotlib(hemi, view):
     _check_views([view])
     _check_hemispheres([hemi])
     if isinstance(view, str):
+        if hemi == "both" and view in ["lateral", "medial"]:
+            raise ValueError(
+                "Invalid view definition: when hemi is 'both', view "
+                "cannot be 'lateral' or 'medial'. Maybe you meant 'left' "
+                "or 'right'?"
+            )
         return MATPLOTLIB_VIEWS[hemi][view]
     return view
 

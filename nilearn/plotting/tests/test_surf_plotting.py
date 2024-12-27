@@ -747,6 +747,8 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
         ("right", "bar", _get_view_plot_surf_plotly),
         ("both", "lateral", _get_view_plot_surf_matplotlib),
         ("both", "medial", _get_view_plot_surf_plotly),
+        ("both", "foo", _get_view_plot_surf_matplotlib),
+        ("both", "bar", _get_view_plot_surf_plotly),
     ],
 )
 def test_get_view_plot_surf_view_errors(hemi, view, f):
