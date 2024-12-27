@@ -1,6 +1,10 @@
 import numpy as np
 
-from nilearn.surface import InMemoryMesh, PolyMesh, SurfaceImage
+from nilearn.surface import (
+    PolyMesh,
+    SurfaceImage,
+)
+from nilearn.surface.surface import combine_img_hemispheres
 
 
 def check_surface_plotting_inputs(
@@ -40,7 +44,7 @@ def check_surface_plotting_inputs(
         )
 
     if isinstance(surf_mesh, PolyMesh):
-        surf_mesh = _check_hemi_present(surf_mesh, hemi)
+        surf_mesh = _get_hemi(surf_mesh, hemi)
 
     if isinstance(surf_mesh, SurfaceImage):
         raise TypeError(
@@ -51,7 +55,7 @@ def check_surface_plotting_inputs(
 
     if isinstance(surf_map, SurfaceImage):
         if surf_mesh is None:
-            surf_mesh = _check_hemi_present(surf_map.mesh, hemi)
+            surf_mesh = _get_hemi(surf_map.mesh, hemi)
         if len(surf_map.shape) > 1 and surf_map.shape[1] > 1:
             raise TypeError(
                 "Input data has incompatible dimensionality. "
@@ -103,27 +107,14 @@ def _check_bg_map(bg_map, hemi):
     return bg_map
 
 
-def _check_hemi_present(mesh, hemi):
-    """Check that a given hemisphere exists in a PolyMesh or is "both", and
-    return the corresponding mesh. If "both" is requested, combine the left
-    and right hemispheres.
+def _get_hemi(mesh, hemi):
+    """Check that a given hemisphere exists in a PolyMesh and return the
+    corresponding mesh. If "both" is requested, combine the left and right
+    hemispheres.
     """
-    if hemi not in [*list(mesh.parts), "both"]:
-        raise ValueError("hemi must be one of left, right or both.")
-
     if hemi == "both":
-        combined_coords = np.concatenate(
-            (mesh.parts["left"].coordinates, mesh.parts["right"].coordinates)
-        )
-        combined_faces = np.concatenate(
-            (
-                mesh.parts["left"].faces,
-                mesh.parts["right"].faces
-                + mesh.parts["left"].coordinates.shape[0],
-            )
-        )
-        surf_mesh = InMemoryMesh(combined_coords, combined_faces)
+        return combine_img_hemispheres(mesh)
+    elif hemi in mesh.parts:
+        return mesh.parts[hemi]
     else:
-        surf_mesh = mesh.parts[hemi]
-
-    return surf_mesh
+        raise ValueError("hemi must be one of left, right or both.")

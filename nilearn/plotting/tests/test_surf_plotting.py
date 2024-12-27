@@ -386,12 +386,14 @@ def test_check_surface_plotting_hemi_both_mesh_none(surf_img_1d):
     assert isinstance(combined_mesh, InMemoryMesh)
 
 
-def test_check_surface_plotting_hemi_error(surf_img_1d):
+def test_check_surface_plotting_hemi_error(surf_img_1d, surf_mesh):
     """Test that an error is raised when hemi is not valid."""
     with pytest.raises(
         ValueError, match="hemi must be one of left, right or both"
     ):
-        check_surface_plotting_inputs(surf_map=surf_img_1d, hemi="foo")
+        check_surface_plotting_inputs(
+            surf_map=surf_img_1d, surf_mesh=surf_mesh(), hemi="foo"
+        )
 
 
 def test_plot_surf_contours_warning_hemi(in_memory_mesh):
@@ -725,6 +727,7 @@ def test_check_view_is_valid(view, is_valid):
     [
         ("left", True),
         ("right", True),
+        ("both", True),
         ("lft", False),
     ],
 )
@@ -747,6 +750,8 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     [
         ("left", "foo", _get_view_plot_surf_matplotlib),
         ("right", "bar", _get_view_plot_surf_plotly),
+        ("both", "lateral", _get_view_plot_surf_matplotlib),
+        ("both", "medial", _get_view_plot_surf_plotly),
     ],
 )
 def test_get_view_plot_surf_view_errors(hemi, view, f):
@@ -832,8 +837,8 @@ def test_plot_surf(pyplot, engine, tmp_path, rng, in_memory_mesh, bg_map):
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-@pytest.mark.parametrize("view", ["lateral", "medial"])
-@pytest.mark.parametrize("hemi", ["left", "right"])
+@pytest.mark.parametrize("view", ["anterior", "posterior"])
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
 def test_plot_surf_hemi_views(
     pyplot, engine, rng, in_memory_mesh, hemi, view, bg_map
 ):
@@ -1390,11 +1395,11 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
     "hemispheres, views",
     [
         (["right"], ["lateral"]),
-        (["left", "right"], ["lateral"]),
+        (["left", "right", "both"], ["anterior"]),
         (["right"], ["medial", "lateral"]),
-        (["left", "right"], ["medial", "lateral"]),
+        (["left", "right", "both"], ["dorsal", "ventral"]),
         # Check that manually set view angles work.
-        (["left", "right"], [(210.0, 90.0), (15.0, -45.0)]),
+        (["left", "right", "both"], [(210.0, 90.0), (15.0, -45.0)]),
     ],
 )
 def test_plot_img_on_surf_hemispheres_and_orientations(
@@ -1455,7 +1460,7 @@ def test_plot_img_on_surf_surf_mesh(pyplot, img_3d_mni, surf_mesh):
     plot_img_on_surf(
         img_3d_mni,
         hemispheres=["right", "left"],
-        views=["lateral"],
+        views=["anterior"],
         surf_mesh=surf_mesh,
     )
 

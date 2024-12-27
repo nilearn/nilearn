@@ -968,6 +968,23 @@ def _gifti_img_to_mesh(gifti_img):
     return coords, faces
 
 
+def combine_img_hemispheres(mesh):
+    """Combine the left and right hemisphere meshes such that both are
+    represented in the same mesh.
+    """
+    combined_coords = np.concatenate(
+        (mesh.parts["left"].coordinates, mesh.parts["right"].coordinates)
+    )
+    combined_faces = np.concatenate(
+        (
+            mesh.parts["left"].faces,
+            mesh.parts["right"].faces
+            + mesh.parts["left"].coordinates.shape[0],
+        )
+    )
+    return InMemoryMesh(combined_coords, combined_faces)
+
+
 def check_mesh_is_fsaverage(mesh):
     """Check that :term:`mesh` data is either a :obj:`str`, or a :obj:`dict`
     with sufficient entries. Basically ensures that the mesh data is

@@ -38,7 +38,16 @@ from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
 )
 
-VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
+VALID_VIEWS = (
+    "anterior",
+    "posterior",
+    "medial",
+    "lateral",
+    "dorsal",
+    "ventral",
+    "left",
+    "right",
+)
 VALID_HEMISPHERES = "left", "right", "both"
 
 # subset of data format extensions supported
@@ -67,8 +76,8 @@ MATPLOTLIB_VIEWS = {
         "posterior": (0, 270),
     },
     "both": {
-        "lateral": (0, 0),
-        "medial": (0, 180),  # does not make sense, will show left hemisphere
+        "right": (0, 0),
+        "left": (0, 180),
         "dorsal": (90, 0),
         "ventral": (270, 0),
         "anterior": (0, 90),
@@ -1733,7 +1742,7 @@ def plot_img_on_surf(
     %(bg_on_data)s
 
     hemispheres : :obj:`list` of :obj:`str`, default=None
-        Hemispheres to display.
+        Hemispheres to display. Does not support 'both'.
         Will default to ``['left', 'right']`` if ``None`` is passed.
 
     inflate : :obj:`bool`, default=False
