@@ -324,6 +324,11 @@ jobs:
         needs: [build_docs]
         if: ${{ contains(fromJSON('["push", "workflow_dispatch", "schedule", "release"]'), github.event_name)}}
         steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+            with:
+                fetch-depth: 0
+
         -   name: Add SSH key
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent.sock
