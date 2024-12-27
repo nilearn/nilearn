@@ -14,5 +14,7 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Allow plotting both hemispheres together (:gh:`4991` by `Himanshu Aggarwal`_).
+
 Changes
 -------
