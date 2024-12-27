@@ -1,10 +1,8 @@
-import numpy as np
-
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
 )
-from nilearn.surface.surface import combine_img_hemispheres
+from nilearn.surface.surface import combine_img_hemispheres, get_data
 
 
 def check_surface_plotting_inputs(
@@ -65,9 +63,7 @@ def check_surface_plotting_inputs(
             )
         # concatenate the left and right data if hemi is "both"
         if hemi == "both":
-            surf_map = np.concatenate(
-                (surf_map.data.parts["left"], surf_map.data.parts["right"])
-            ).T
+            surf_map = get_data(surf_map).T
         else:
             surf_map = surf_map.data.parts[hemi].T
 
@@ -98,9 +94,7 @@ def _check_bg_map(bg_map, hemi):
                 f"and you provided a {bg_map.shape} surface image."
             )
         if hemi == "both":
-            bg_map = np.concatenate(
-                (bg_map.data.parts["left"], bg_map.data.parts["right"])
-            )
+            bg_map = get_data(bg_map)
         else:
             assert bg_map.data.parts[hemi] is not None
             bg_map = bg_map.data.parts[hemi]
