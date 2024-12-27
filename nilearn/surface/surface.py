@@ -971,9 +971,30 @@ def _gifti_img_to_mesh(gifti_img):
 def combine_img_hemispheres(mesh):
     """Combine the left and right hemisphere meshes such that both are
     represented in the same mesh.
+
+    Parameters
+    ----------
+    mesh : :obj:`~nilearn.surface.PolyMesh`
+        The mesh object containing the left and right hemisphere meshes.
+
+    Returns
+    -------
+    combined_mesh : :obj:`~nilearn.surface.InMemoryMesh`
+        The combined mesh object containing both left and right hemisphere
+        meshes.
     """
+    # calculate how much the right hemisphere should be offset
+    left_max_x = mesh.parts["left"].coordinates[:, 0].max()
+    right_min_x = mesh.parts["right"].coordinates[:, 0].min()
+    offset = (
+        left_max_x - right_min_x + 1
+    )  # add a small buffer to avoid touching
+
     combined_coords = np.concatenate(
-        (mesh.parts["left"].coordinates, mesh.parts["right"].coordinates)
+        (
+            mesh.parts["left"].coordinates,
+            mesh.parts["right"].coordinates + np.asarray([offset, 0, 0]),
+        )
     )
     combined_faces = np.concatenate(
         (
