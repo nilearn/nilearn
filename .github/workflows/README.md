@@ -66,6 +66,14 @@ To run a full build and download all datasets, you would then combine both tags:
 $ git commit -m "[full doc][force download] request full build"
 ```
 
+## Building the stable release documentation
+
+### release-docs.yml
+
+Should be triggered automatically after merging and tagging a release PR to
+build the stable docs with a GitHub runner and push to nilearn.github.io.
+Can also be triggered manually.
+
 ## Hosting and deploying development documentation
 
 ### [.circleci/config.yml](/.circleci/config.yml)
