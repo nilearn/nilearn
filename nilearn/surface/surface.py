@@ -14,6 +14,7 @@ import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
+from scipy.sparse import csr_matrix, find
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
@@ -1977,7 +1978,7 @@ def new_img_like(ref_img, data):
     )
 
 
-def _compute_adjacency_matrix(surface, values="ones", dtype=None):
+def _compute_adjacency_matrix(mesh, values="ones", dtype=None):
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
@@ -2007,16 +2008,14 @@ def _compute_adjacency_matrix(surface, values="ones", dtype=None):
         A sparse matrix representing the edge relationships in `surface`.
 
     """
-    from scipy.sparse import csr_matrix
-
-    surface = load_surf_mesh(surface)
     # This is a bit of a hack to quickly find a unique set of all edges.
-    n = surface.coordinates.shape[0]
+    n = mesh.coordinates.shape[0]
+
     edges = np.vstack(
         [
-            surface.faces[:, [0, 1]],
-            surface.faces[:, [0, 2]],
-            surface.faces[:, [1, 2]],
+            mesh.faces[:, [0, 1]],
+            mesh.faces[:, [0, 2]],
+            mesh.faces[:, [1, 2]],
         ]
     )
     edges = edges.astype(np.int64)
@@ -2029,12 +2028,14 @@ def _compute_adjacency_matrix(surface, values="ones", dtype=None):
         ]
     )
     edges = np.unique(edges)
+
     (u, v) = (edges // n, edges % n)
+
     # Calculate distances between pairs.
     # We use this as a weighting to make sure that
     # smoothing takes into account the distance between each vertex neighbor
     if values in ("len", "invlen"):
-        coords = surface.coordinates
+        coords = mesh.coordinates
         edge_lens = np.sqrt(np.sum((coords[u, :] - coords[v, :]) ** 2, axis=1))
         if dtype is None:
             dtype = edge_lens.dtype
@@ -2049,10 +2050,12 @@ def _compute_adjacency_matrix(surface, values="ones", dtype=None):
             edge_lens = np.ones(edges.shape, dtype=dtype)
     else:
         raise ValueError(f"unrecognized values argument: {values}")
+
     # We can now make a sparse matrix.
     ee = np.concatenate([edge_lens, edge_lens])
     uv = np.concatenate([u, v])
     vu = np.concatenate([v, u])
+
     return csr_matrix((ee, (uv, vu)), shape=(n, n))
 
 
@@ -2072,19 +2075,15 @@ def _compute_vertex_neighborhoods(surface):
     neighbors : list
         A list of all the vertices that are connected to each vertex
     """
-    from scipy.sparse import find
-
     matrix = _compute_adjacency_matrix(surface)
     return [find(row)[1] for row in matrix]
 
 
-def smooth_surface_data(
-    surface,
-    surf_data,
+def smooth_img(
+    imgs,
     iterations=1,
     distance_weights=False,
     vertex_weights=None,
-    return_vertex_weights=False,
     center_surround_knob=0,
     match="sum",
 ):
@@ -2119,10 +2118,6 @@ def smooth_surface_data(
         These weights are normalized and
         applied to the smoothing
         after the application of center-surround weights.
-
-    return_vector_weights : :obj:`bool`, optional
-        If `True` then `(smoothed_data, smoothed_vertex_weights)` are returned.
-        The default is `False`.
 
     center_surround_knob : :obj:`float`, optional
         The relative weighting of the center and the surround
@@ -2162,24 +2157,27 @@ def smooth_surface_data(
     >>> fsaverage = datasets.fetch_surf_fsaverage("fsaverage")
     >>> white_left = surface.load_surf_mesh(fsaverage.white_left)
     >>> curv = surface.load_surf_data(fsaverage.curv_left)
-    >>> curv_smooth = surface.smooth_surface_data(
+    >>> curv_smooth = surface.smooth_img(
     ...     surface=white_left, surf_data=curv, iterations=50
     ... )
     >>> plotting.plot_surf(white_left, surf_map=curv_smooth)
 
     """
-    surface = load_surf_mesh(surface)
+    mesh = imgs.mesh.parts["right"]
+    data = imgs.data.parts["right"]
+
     # First, calculate the center and surround weights for the
     # center-surround knob.
     center_weight = 1 / (1 + np.exp2(-center_surround_knob))
     surround_weight = 1 - center_weight
     if surround_weight == 0:
         # There's nothing to do in this case.
-        return np.array(surf_data)
+        return np.array(data)
+
     # Calculate the adjacency matrix either weighting
     # by inverse distance or not weighting (ones)
     values = "invlen" if distance_weights else "ones"
-    matrix = _compute_adjacency_matrix(surface, values=values)
+    matrix = _compute_adjacency_matrix(mesh, values=values)
 
     # If there are vertex weights, get them ready.
     if vertex_weights:
@@ -2187,6 +2185,7 @@ def smooth_surface_data(
         w /= np.sum(w)
     else:
         w = np.ones(matrix.shape[0])
+
     # We need to normalize the matrix columns, and we can do this now by
     # normalizing everything but the diagonal to the surround weight, then
     # adding the center weight along the diagonal.
@@ -2196,36 +2195,37 @@ def smooth_surface_data(
 
     # Add in the diagonal.
     matrix.setdiag(center_weight)
+
     # Run the iteratioons of smooothing.
-    data = surf_data
+    new_data = data
     for _ in range(iterations):
-        data = matrix.dot(data)
+        new_data = matrix.dot(data)
+
     # Convert back into numpy array.
-    data = np.reshape(np.asarray(data), np.shape(surf_data))
+    new_data = np.reshape(np.asarray(new_data), np.shape(data))
+
     # Rescale it if needed.
     if match == "sum":
-        sum0 = np.nansum(surf_data, axis=0)
-        sum1 = np.nansum(data, axis=0)
-        data = data * (sum0 / sum1)
+        sum0 = np.nansum(data, axis=0)
+        sum1 = np.nansum(new_data, axis=0)
+        new_data = new_data * (sum0 / sum1)
     elif match == "mean":
-        mu0 = np.nanmean(surf_data, axis=0)
-        mu1 = np.nanmean(data, axis=0)
-        data = data + (mu0 - mu1)
+        mu0 = np.nanmean(data, axis=0)
+        mu1 = np.nanmean(new_data, axis=0)
+        new_data = new_data + (mu0 - mu1)
     elif match in ("var", "std", "variance", "stddev", "sd"):
-        std0 = np.nanstd(surf_data, axis=0)
-        std1 = np.nanstd(data, axis=0)
-        mu1 = np.nanmean(data, axis=0)
-        data = (data - mu1) * (std0 / std1) + mu1
+        std0 = np.nanstd(data, axis=0)
+        std1 = np.nanstd(new_data, axis=0)
+        mu1 = np.nanmean(new_data, axis=0)
+        new_data = (new_data - mu1) * (std0 / std1) + mu1
     elif match in ("dist", "meanvar", "meanstd", "meansd"):
-        std0 = np.nanstd(surf_data, axis=0)
-        std1 = np.nanstd(data, axis=0)
-        mu0 = np.nanmean(surf_data, axis=0)
-        mu1 = np.nanmean(data, axis=0)
-        data = (data - mu1) * (std0 / std1) + mu0
+        std0 = np.nanstd(data, axis=0)
+        std1 = np.nanstd(new_data, axis=0)
+        mu0 = np.nanmean(data, axis=0)
+        mu1 = np.nanmean(new_data, axis=0)
+        new_data = (new_data - mu1) * (std0 / std1) + mu0
     elif match is not None:
         raise ValueError(f"invalid match argument: {match}")
-    if return_vertex_weights:
-        w /= np.sum(w)
-        return (data, w)
-    else:
-        return data
+
+    w /= np.sum(w)
+    return (new_data, w)

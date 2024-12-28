@@ -48,7 +48,7 @@ from nilearn.surface.surface import (
     load_surf_mesh,
     mean_img,
     new_img_like,
-    smooth_surface_data,
+    smooth_img,
     vol_to_surf,
 )
 
@@ -1098,21 +1098,12 @@ def test_inmemorymesh_index_error(in_memory_mesh):
         in_memory_mesh[2]
 
 
-def test_smooth_surface_data():
-    # Create simple surface
-    from nilearn.surface import Mesh
-
-    sphere = Mesh(
-        np.array([[0, 0, 0], [1, 0, 0], [0, 1, 0]]), np.array([[0, 1, 2]])
-    )
-    # Create surface data with activation at one mesh vertex
-    surf_data = np.zeros(np.shape(sphere.coordinates)[0])
-    surf_data[0] = 1
-    surf_data_smooth = smooth_surface_data(
-        surface=sphere, surf_data=surf_data, iterations=1, match="sum"
-    )
+def test_smooth_img(surf_img_1d):
+    surf_data_smooth = smooth_img(surf_img_1d, iterations=1, match="sum")
     # checking that output was properly normalized
-    assert np.isclose(np.sum(surf_data_smooth), np.sum(surf_data))
+    assert np.isclose(
+        np.sum(surf_data_smooth), np.sum(surf_img_1d.data.parts["right"])
+    )
 
 
 def test_mean_img(surf_img_1d, surf_img_2d):
