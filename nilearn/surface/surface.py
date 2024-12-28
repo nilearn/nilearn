@@ -14,7 +14,7 @@ import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
-from scipy.sparse import csr_matrix, find
+from scipy.sparse import csr_matrix
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
@@ -2058,26 +2058,6 @@ def _compute_adjacency_matrix(mesh, values="ones", dtype=None):
     vu = np.concatenate([v, u])
 
     return csr_matrix((ee, (uv, vu)), shape=(n, n))
-
-
-def _compute_vertex_neighborhoods(surface):
-    """For each vertex, compute the neighborhood.
-
-    The neighborhood is defined as all the vertices
-    that are connected by a face.
-
-    Parameters
-    ----------
-    surface : Surface-like
-        The surface whose vertex neighborhoods are to be computed.
-
-    Returns
-    -------
-    neighbors : list
-        A list of all the vertices that are connected to each vertex
-    """
-    matrix = _compute_adjacency_matrix(surface)
-    return [find(row)[1] for row in matrix]
 
 
 def smooth_img(
