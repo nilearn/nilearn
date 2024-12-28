@@ -1,6 +1,7 @@
 """Downloading NeuroImaging datasets: utility functions."""
 
 import os
+from pathlib import Path
 from warnings import warn
 
 from .._utils import fill_doc
@@ -60,7 +61,7 @@ def get_data_dirs(data_dir=None):
         if local_data is not None:
             paths.extend(local_data.split(os.pathsep))
 
-        paths.append(os.path.expanduser("~/nilearn_data"))
+        paths.append(str(Path("~/nilearn_data").expanduser()))
     return paths
 
 

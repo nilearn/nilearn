@@ -91,8 +91,37 @@ searchlight = nilearn.decoding.SearchLight(
 searchlight.fit(fmri_img, y)
 
 # %%
+# Visualization
+# -------------
+from nilearn import image
+from nilearn.plotting import plot_img, plot_stat_map, show
+
+# After fitting the searchlight, we can access the searchlight scores
+# as a NIfTI image using the `scores_img_` attribute.
+scores_img = searchlight.scores_img_
+
+# Use the :term:`fMRI` mean image as a surrogate of anatomical data
+mean_fmri = image.mean_img(fmri_img, copy_header=True)
+
+# Because scores are not a zero-center test statistics,
+# we cannot use plot_stat_map
+plot_img(
+    scores_img,
+    bg_img=mean_fmri,
+    title="Searchlight scores image",
+    display_mode="z",
+    cut_coords=[-9],
+    vmin=0.42,
+    cmap="hot",
+    threshold=0.2,
+    black_bg=True,
+)
+
+# %%
 # F-scores computation
 # --------------------
+from sklearn.feature_selection import f_classif
+
 from nilearn.maskers import NiftiMasker
 
 # For decoding, standardizing is often very important
@@ -105,38 +134,10 @@ nifti_masker = NiftiMasker(
 )
 fmri_masked = nifti_masker.fit_transform(fmri_img)
 
-from sklearn.feature_selection import f_classif
-
 _, p_values = f_classif(fmri_masked, y)
 p_values = -np.log10(p_values)
 p_values[p_values > 10] = 10
 p_unmasked = get_data(nifti_masker.inverse_transform(p_values))
-
-# %%
-# Visualization
-# -------------
-# Use the :term:`fMRI` mean image as a surrogate of anatomical data
-from nilearn import image
-
-mean_fmri = image.mean_img(fmri_img, copy_header=True)
-
-from nilearn.plotting import plot_img, plot_stat_map, show
-
-searchlight_img = new_img_like(mean_fmri, searchlight.scores_)
-
-# Because scores are not a zero-center test statistics, we cannot use
-# plot_stat_map
-plot_img(
-    searchlight_img,
-    bg_img=mean_fmri,
-    title="Searchlight",
-    display_mode="z",
-    cut_coords=[-9],
-    vmin=0.42,
-    cmap="hot",
-    threshold=0.2,
-    black_bg=True,
-)
 
 # F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))

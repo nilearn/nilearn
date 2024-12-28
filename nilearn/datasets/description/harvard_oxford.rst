@@ -19,7 +19,7 @@ The T1-weighted images were affine-registered to MNI152 space using FLIRT (FSL),
 and the transforms then applied to the individual labels.
 Finally, these were combined across subjects to form population probability maps for each label.
 
-For more details: https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Atlases
+For more details: https://fsl.fmrib.ox.ac.uk/fsl/docs/#/other/datasets
 
 See also :footcite:t:`Makris2006`, :footcite:t:`Desikan2006`,
 :footcite:t:`Frazier2005`, :footcite:t:`Goldstein2007`.
@@ -36,4 +36,4 @@ References
 
 License
 -------
-See https://fsl.fmrib.ox.ac.uk/fsl/fslwiki/Licence
+See https://fsl.fmrib.ox.ac.uk/fsl/docs/#/license?id=fsl-license

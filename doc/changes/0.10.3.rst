@@ -31,7 +31,7 @@ HIGHLIGHTS
 
 - :bdg-info:`Plotting` Allow setting ``vmin`` in :func:`~nilearn.plotting.plot_glass_brain` and :func:`~nilearn.plotting.plot_stat_map` (:gh:`3993` by `Michelle Wang`_).
 
-- :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`#2833` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`2833` by `Nicolas Gensollen`_).
 
 
 NEW
@@ -55,7 +55,7 @@ Fixes
 
 - :bdg-dark:`Code` Fix plotting of an image with color bar when maximum value is exactly zero (:gh:`4204` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Fix PSC normalisation method applied by ``standardize_signal`` in :mod:`~nilearn.signal` (:gh:`4116` by `Hao-Ting Wang`_ and `Yasmin Mzayek`_).
+- :bdg-dark:`Code` Fix PSC normalization method applied by ``standardize_signal`` in :mod:`~nilearn.signal` (:gh:`4116` by `Hao-Ting Wang`_ and `Yasmin Mzayek`_).
 
 - :bdg-dark:`Code` Fixed inheritance of decoder classes to keep compatibility with scikit-learn>v1.3 (:gh:`4188` by `Yasmin Mzayek`_).
 
@@ -92,7 +92,7 @@ Enhancements
 
 - :bdg-info:`Plotting` Allow setting ``vmin`` in :func:`~nilearn.plotting.plot_glass_brain` and :func:`~nilearn.plotting.plot_stat_map` (:gh:`3993` by `Michelle Wang`_).
 
-- :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`#2833` by `Nicolas Gensollen`_).
+- :bdg-info:`Plotting` When plotting thresholded statistical maps with a colorbar, the threshold value(s) will now be displayed as tick labels on the colorbar (:gh:`2833` by `Nicolas Gensollen`_).
 
 
 Changes

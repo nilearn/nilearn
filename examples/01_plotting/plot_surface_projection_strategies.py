@@ -2,9 +2,9 @@
 Technical point: Illustration of the volume to surface sampling schemes
 =======================================================================
 
-In nilearn, :func:`nilearn.surface.vol_to_surf` allows us to measure values of
+In nilearn, :func:`~nilearn.surface.vol_to_surf` allows us to measure values of
 a 3d volume at the nodes of a cortical mesh, transforming it into surface data.
-This data can then be plotted with :func:`nilearn.plotting.plot_surf_stat_map`
+This data can then be plotted with :func:`~nilearn.plotting.plot_surf_stat_map`
 for example.
 
 This script shows, on a toy example, where samples are drawn around each mesh
@@ -22,16 +22,15 @@ passing both to `vol_to_surf`.
 
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 # %%
-import matplotlib
 import numpy as np
+from matplotlib import pyplot as plt
+from matplotlib import tri
 
-from nilearn.plotting import show
 from nilearn.surface import surface
 
 # %%
@@ -41,7 +40,7 @@ from nilearn.surface import surface
 N_Z = 5
 N_T = 10
 u, v = np.mgrid[:N_T, :N_Z]
-triangulation = matplotlib.tri.Triangulation(u.flatten(), v.flatten())
+triangulation = tri.Triangulation(u.flatten(), v.flatten())
 angles = u.flatten() * 2 * np.pi / N_T
 x, y = np.cos(angles), np.sin(angles)
 z = v.flatten() * 2 / N_Z
@@ -101,4 +100,4 @@ ax.plot_trisurf(x, y, z, triangles=triangulation.triangles, alpha=0.6)
 ax.plot_trisurf(*inner_mesh[0].T, triangles=triangulation.triangles)
 ax.scatter(*nested_sample_points.T, color="r")
 
-show()
+plt.show()

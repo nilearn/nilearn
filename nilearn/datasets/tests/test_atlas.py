@@ -3,8 +3,8 @@
 # Author: Alexandre Abraham
 
 import itertools
-import os
 import re
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import numpy as np
@@ -108,7 +108,7 @@ def test_fetch_atlas_source():
 
 
 def _write_sample_atlas_metadata(ho_dir, filename, is_symm):
-    with open(os.path.join(ho_dir, f"{filename}.xml"), "w") as dm:
+    with Path(ho_dir, f"{filename}.xml").open("w") as dm:
         if not is_symm:
             dm.write(
                 "<?xml version='1.0' encoding='us-ascii'?>\n"
@@ -390,7 +390,7 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
     )
 
     labels_img = set(np.unique(get_data(bunch.maps)))
-    labels = {label.index for label in bunch.labels}
+    labels = set(bunch.labels.index.to_numpy().tolist())
 
     assert labels_img.issubset(labels)
 
@@ -668,12 +668,13 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
 
 
 def test_fetch_atlas_surf_destrieux(tmp_path):
-    data_dir = str(tmp_path / "destrieux_surface")
-    os.mkdir(data_dir)
+    data_dir = tmp_path / "destrieux_surface"
+    data_dir.mkdir()
+
     # Create mock annots
     for hemi in ("left", "right"):
         freesurfer.write_annot(
-            os.path.join(data_dir, f"{hemi}.aparc.a2009s.annot"),
+            data_dir / f"{hemi}.aparc.a2009s.annot",
             np.arange(4),
             np.zeros((4, 5)),
             5 * ["a"],
@@ -740,7 +741,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
     data_dir = str(tmp_path / "pauli_2017")
 
-    data = atlas.fetch_atlas_pauli_2017("det", data_dir)
+    data = atlas.fetch_atlas_pauli_2017("deterministic", data_dir)
 
     assert isinstance(data, Bunch)
 
@@ -752,7 +753,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
 
     assert len(np.unique(values)) == 17
 
-    data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
+    data = atlas.fetch_atlas_pauli_2017("probabilistic", data_dir)
 
     assert load(data.maps).shape[-1] == 16
 
@@ -762,7 +763,53 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
         atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)
 
 
-def _schaefer_labels(match, requests):
+# TODO: remove this test after release 0.13.0
+def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
+    """Tests nilearn.datasets.atlas.fetch_atlas_pauli_2017 to receive
+    DepricationWarning upon use of deprecated version parameter and its
+    possible values "prob" and "det".
+    """
+    labels = pd.DataFrame({"label": [f"label_{i}" for i in range(16)]}).to_csv(
+        sep="\t", header=False
+    )
+    det_atlas = data_gen.generate_labeled_regions((7, 6, 5), 16)
+    prob_atlas, _ = data_gen.generate_maps((7, 6, 5), 16)
+    request_mocker.url_mapping["*osf.io/6qrcb/*"] = labels
+    request_mocker.url_mapping["*osf.io/5mqfx/*"] = det_atlas
+    request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
+    data_dir = str(tmp_path / "pauli_2017")
+
+    with pytest.warns(DeprecationWarning, match='The parameter "version"'):
+        data = atlas.fetch_atlas_pauli_2017(
+            version="probabilistic", data_dir=data_dir
+        )
+
+        assert load(data.maps).shape[-1] == 16
+
+        assert data.description != ""
+
+    with pytest.warns(
+        DeprecationWarning, match="The possible values for atlas_type"
+    ):
+        data = atlas.fetch_atlas_pauli_2017("det", data_dir)
+
+        assert isinstance(data, Bunch)
+
+        assert data.description != ""
+
+        assert len(data.labels) == 16
+
+    with pytest.warns(
+        DeprecationWarning, match="The possible values for atlas_type"
+    ):
+        data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
+
+        assert load(data.maps).shape[-1] == 16
+
+        assert data.description != ""
+
+
+def _schaefer_labels(match, requests):  # noqa: ARG001
     # fails if requests is not passed
     info = match.groupdict()
     label_names = [f"{info['network']}Networks"] * int(info["n_rois"])
@@ -770,7 +817,7 @@ def _schaefer_labels(match, requests):
     return labels.to_csv(sep="\t", header=False).encode("utf-8")
 
 
-def _schaefer_img(match, requests):
+def _schaefer_img(match, requests):  # noqa: ARG001
     # fails if requests is not passed
     info = match.groupdict()
     shape = (15, 14, 13)
@@ -824,3 +871,40 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
 
         assert img.header.get_zooms()[0] == resolution_mm
         assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))
+
+
+@pytest.fixture
+def aal_xml():
+    atlas = ET.Element("atlas", version="2.0")
+
+    data = ET.SubElement(atlas, "data")
+
+    label1 = ET.SubElement(data, "label")
+    ET.SubElement(label1, "index").text = "2001"
+    ET.SubElement(label1, "name").text = "Precentral_L"
+
+    # Convert the XML tree to a string with proper encoding and declaration
+    return ET.ElementTree(atlas)
+
+
+def test_aal_version_deprecation(
+    tmp_path, shape_3d_default, affine_eye, aal_xml
+):
+    img = data_gen.generate_labeled_regions(
+        shape_3d_default, 15, affine=affine_eye
+    )
+    output_path = tmp_path / "aal_SPM12/aal/atlas/AAL.nii"
+    output_path.parent.mkdir(parents=True)
+    img.to_filename(output_path)
+
+    with (tmp_path / "aal_SPM12" / "aal" / "atlas" / "AAL.xml").open(
+        "wb"
+    ) as file:
+        aal_xml.write(file, encoding="ISO-8859-1", xml_declaration=True)
+
+    with pytest.deprecated_call(
+        match=r"Starting in version 0\.13, the default fetched mask"
+    ):
+        atlas.fetch_atlas_aal(
+            data_dir=tmp_path,
+        )

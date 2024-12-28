@@ -8,6 +8,22 @@ import traceback
 from sklearn.base import BaseEstimator
 
 
+def _has_rich():
+    """Check if rich is installed."""
+    try:
+        import rich  # noqa: F401
+
+        return True
+
+    except ImportError:
+        return False
+
+
+if _has_rich():
+    from rich import print
+    from rich.markup import escape
+
+
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
 def log(
@@ -55,33 +71,37 @@ def log(
     is the one which is most likely to have been written in the user's script.
 
     """
-    if verbose >= msg_level:
-        stack = inspect.stack()
-        object_frame = None
-        object_self = None
-        for f in reversed(stack):
-            frame = f[0]
-            current_self = frame.f_locals.get("self", None)
-            if isinstance(current_self, object_classes):
-                object_frame = frame
-                func_name = f[3]
-                object_self = current_self
-                break
+    if verbose < msg_level:
+        return
+    stack = inspect.stack()
+    object_frame = None
+    object_self = None
+    for f in reversed(stack):
+        frame = f[0]
+        current_self = frame.f_locals.get("self", None)
+        if isinstance(current_self, object_classes):
+            object_frame = frame
+            func_name = f[3]
+            object_self = current_self
+            break
 
-        if object_frame is None:  # no object found: use stack_level
-            if stack_level >= len(stack):
-                func_name = "<top_level>"
-            else:
-                object_frame, _, _, func_name = stack[stack_level][:4]
-                object_self = object_frame.f_locals.get("self", None)
+    if object_frame is None:  # no object found: use stack_level
+        if stack_level >= len(stack):
+            func_name = "<top_level>"
+        else:
+            object_frame, _, _, func_name = stack[stack_level][:4]
+            object_self = object_frame.f_locals.get("self", None)
 
-        if object_self is not None:
-            func_name = f"{object_self.__class__.__name__}.{func_name}"
+    if object_self is not None:
+        func_name = f"{object_self.__class__.__name__}.{func_name}"
 
+    if _has_rich():
+        print(f"[blue]\\[{func_name}][/blue] {escape(msg)}")
+    else:
         print(f"[{func_name}] {msg}")
 
-        if with_traceback:
-            traceback.print_exc()
+    if with_traceback:
+        traceback.print_exc()
 
 
 def compose_err_msg(msg, **kwargs):

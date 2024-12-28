@@ -82,10 +82,9 @@ of the preprocessings and validate them.
 
 .. topic:: **Advanced: scikit-learn Pipelines**
 
-    :class:`NiftiMasker` is a `scikit-learn
-    <https://scikit-learn.org>`_ compliant
-    transformer so that you can directly plug it into a `scikit-learn
-    pipeline <https://scikit-learn.org/stable/modules/pipeline.html>`_.
+    :class:`NiftiMasker` is a `scikit-learn <https://scikit-learn.org>`_ compliant
+    transformer so that you can directly plug it
+    into a :sklearn:`scikit-learn pipeline </modules/pipeline.html>`.
 
 
 Custom data loading: loading only the first 100 time points
@@ -157,6 +156,7 @@ or saved as a portable HTML file ``report.save_as_html(output_filepath)``.
 .. figure:: /images/niftimasker_report.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
     :scale: 50%
+    :align: center
 
 Different masking strategies
 .............................
@@ -181,6 +181,7 @@ functions documentation, or :doc:`the NiftiMasker example
 .. figure:: /images/niftimasker_report_params.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
     :scale: 50%
+    :align: center
 
 .. _masker_preprocessing_steps:
 
@@ -194,10 +195,10 @@ preparation::
    >>> from nilearn import maskers
    >>> masker = maskers.NiftiMasker()
    >>> masker # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-   NiftiMasker(detrend=False, dtype=None, high_pass=None,
+   NiftiMasker(cmap='CMRmap_r', detrend=False, dtype=None, high_pass=None,
          high_variance_confounds=False, low_pass=None, mask_args=None,
          mask_img=None, mask_strategy='background',
-         memory=Memory(location=None), memory_level=1, reports=True,
+         memory=None, memory_level=1, reports=True,
          runs=None, smoothing_fwhm=None, standardize=False,
          standardize_confounds=True, t_r=None,
          target_affine=None, target_shape=None, verbose=0)
@@ -211,7 +212,7 @@ comment on the most important.
     Forcing your data to have a ``dtype`` of **float32** can help
     save memory and is often a good-enough numerical precision.
     You can force this cast by choosing ``dtype`` to be 'auto'.
-    In the future this cast will be the default behaviour.
+    In the future this cast will be the default behavior.
 
 
 .. seealso::

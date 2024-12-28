@@ -154,7 +154,7 @@ def _update_template(
     )
 
     css_file_path = CSS_PATH / "masker_report.css"
-    with open(css_file_path, encoding="utf-8") as css_file:
+    with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
     body = tpl.substitute(
@@ -173,11 +173,11 @@ def _update_template(
 
     head_template_name = "report_head_template.html"
     head_template_path = HTML_TEMPLATE_PATH / head_template_name
-    with open(str(head_template_path)) as head_file:
+    with head_template_path.open() as head_file:
         head_tpl = Template(head_file.read())
 
     head_css_file_path = CSS_PATH / "head.css"
-    with open(head_css_file_path, encoding="utf-8") as head_css_file:
+    with head_css_file_path.open(encoding="utf-8") as head_css_file:
         head_css = head_css_file.read()
 
     return HTMLReport(
@@ -193,7 +193,8 @@ def _update_template(
 
 def _define_overlay(estimator):
     """Determine whether an overlay was provided and \
-    update the report text as appropriate."""
+    update the report text as appropriate.
+    """
     displays = estimator._reporting()
 
     if len(displays) == 1:  # set overlay to None
@@ -313,36 +314,34 @@ class HTMLReport(HTMLDocument):
     Methods such as ``save_as_html``, or ``open_in_browser``
     are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
 
+    Parameters
+    ----------
+    head_tpl : Template
+        This is meant for display as a full page, eg writing on disk.
+        This is the Template object used to generate the HTML head
+        section of the report. The template should be filled with:
+
+            - title: The title of the HTML page.
+            - body: The full body of the HTML page. Provided through
+                the ``body`` input.
+
+    body : :obj:`str`
+        This parameter is used for embedding in the provided
+        ``head_tpl`` template. It contains the full body of the
+        HTML page.
+
+    head_values : :obj:`dict`, default=None
+        Additional substitutions in ``head_tpl``.
+        if ``None`` is passed, defaults to ``{}``
+
+        .. note::
+            This can be used to provide additional values
+            with custom templates.
+
     """
 
     def __init__(self, head_tpl, body, head_values=None):
-        """Construct the ``HTMLReport`` class.
-
-        Parameters
-        ----------
-        head_tpl : Template
-            This is meant for display as a full page, eg writing on disk.
-            This is the Template object used to generate the HTML head
-            section of the report. The template should be filled with:
-
-                - title: The title of the HTML page.
-                - body: The full body of the HTML page. Provided through
-                  the ``body`` input.
-
-        body : :obj:`str`
-            This parameter is used for embedding in the provided
-            ``head_tpl`` template. It contains the full body of the
-            HTML page.
-
-        head_values : :obj:`dict`, default=None
-            Additional substitutions in ``head_tpl``.
-            if ``None`` is passed, defaults to ``{}``
-
-            .. note::
-                This can be used to provide additional values
-                with custom templates.
-
-        """
+        """Construct the ``HTMLReport`` class."""
         if head_values is None:
             head_values = {}
         html = head_tpl.safe_substitute(body=body, **head_values)

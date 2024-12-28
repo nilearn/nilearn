@@ -10,15 +10,39 @@ A primer on BOLD-fMRI data analysis
 What is fMRI ?
 --------------
 
-Functional magnetic resonance imaging (:term:`fMRI`) is based on the fact that when local neural activity increases, increases in metabolism and blood flow lead to fluctuations of the relative concentrations of oxyhaemoglobin (the red cells in the blood that carry oxygen) and deoxyhaemoglobin (the same red cells after they have delivered the oxygen). Oxyhaemoglobin and deoxyhaemoglobin have different magnetic properties (diamagnetic and paramagnetic, respectively), and they affect the local magnetic field in different ways.
-The signal picked up by the MRI scanner is sensitive to these modifications of the local magnetic field. To record cerebral activity during functional runs,
+Functional magnetic resonance imaging (:term:`fMRI`) is based on the fact that
+when local neural activity increases, increases in metabolism and blood flow lead to fluctuations
+of the relative concentrations of oxyhaemoglobin (the red cells in the blood that carry oxygen)
+and deoxyhaemoglobin (the same red cells after they have delivered the oxygen).
+Oxyhaemoglobin and deoxyhaemoglobin have different magnetic properties (diamagnetic and paramagnetic, respectively),
+and they affect the local magnetic field in different ways.
+The signal picked up by the MRI scanner is sensitive to these modifications of the local magnetic field.
+To record cerebral activity during functional runs,
 the scanner is tuned to detect this "Blood Oxygen Level Dependent" (:term:`BOLD`) signal.
+
+.. admonition:: What do we mean by a ``run``?
+    :class: important
+
+    In Nilearn we try to stick to the :term:`BIDS` definition of run.
+
+        `An uninterrupted repetition of data acquisition that has the same acquisition parameters and task
+        (however events can change from run to run due
+        to different subject response or randomized nature of the stimuli).
+        Run is a synonym of a data acquisition.
+        Note that "uninterrupted" may look different by modality due to the nature of the recording.
+        For example, in MRI or MEG, if a subject leaves the scanner,
+        the acquisition must be restarted.
+        For some types of PET acquisitions, a subject may leave and re-enter the scanner without interrupting the scan.`
+
+    `BIDS glossary <https://bids-specification.readthedocs.io/en/latest/glossary.html#run-common_principles>`_
 
 Brain activity is measured in runs that span several minutes,
 during which the participant performs some cognitive task and the scanner acquires brain images,
-typically every 2 or 3 seconds (the time between two successive image acquisition is called the Repetition time, or :term:`TR`).
+typically every 2 or 3 seconds
+(the time between two successive image acquisition is called the Repetition time, or :term:`TR`).
 
-A cerebral MR image provides a 3D image of the brain that can be decomposed into `voxels`_ (the equivalent of pixels, but in 3 dimensions).
+A cerebral MR image provides a 3D image of the brain that can be decomposed into `voxels`_
+(the equivalent of pixels, but in 3 dimensions).
 The series of images acquired during a functional run provides, in each voxel,
 a time series of positive real number representing the MRI signal, sampled at the :term:`TR`.
 
@@ -26,25 +50,63 @@ a time series of positive real number representing the MRI signal, sampled at th
 
 .. note::
 
-  Before :term:`fMRI` images can be used to do meaningful comparisons, they must be processed to ensure that the voxels that are being compared represent the same brain regions, irrespective of the variability in size and shape of the brain and its microarchitecture across different subjects in the experiment. The process is called spatial registration or spatial normalization. During this procedure, the voxels of all the brain images are 'registered' to correspond to the same region of the brain. Usually, the images (their voxels) are registered to a standard 'template' brain image (its voxels). One often used standard template is the MNI152 template from the Montreal Neurological Institute. Once this is done, the coordinates of a :term:`voxel` are in the same space as the template and can be used to estimate its brain location using brain atlases based on that same template. As previously mentioned, the nilearn package does not perform spatial preprocessing; it only does statistical analyses on the voxel time series. For preprocessing functions, users are referred to `Nipype <https://nipype.readthedocs.io/en/latest/>`_ or `fMRIPrep <https://fmriprep.readthedocs.io/en/stable/>`_.
+  Before :term:`fMRI` images can be used to do meaningful comparisons,
+  they must be processed to ensure that the voxels that are being compared represent
+  the same brain regions, irrespective of the variability in size and shape of the brain
+  and its microarchitecture across different subjects in the experiment.
+  The process is called spatial registration or spatial normalization.
+  During this procedure, the voxels of all the brain images are 'registered' to correspond
+  to the same region of the brain. Usually, the images (their voxels)
+  are registered to a standard 'template' brain image (its voxels).
+  One often used standard template is the MNI152 template from the Montreal Neurological Institute.
+  Once this is done, the coordinates of a :term:`voxel`
+  are in the same space as the template and can be used to estimate its brain location
+  using brain atlases based on that same template.
+  As previously mentioned, the nilearn package does not perform spatial preprocessing;
+  it only does statistical analyses on the voxel time series.
+  For preprocessing functions, users are referred to `Nipype <https://nipype.readthedocs.io/en/latest/>`_
+  or `fMRIPrep <https://fmriprep.org/en/stable/>`_.
 
-fMRI data modelling
+fMRI data modeling
 -------------------
 
-One way to analyze times series consists in comparing them to a *model* built from our knowledge of the events that occurred during the functional run.
-Events can correspond to actions of the participant (e.g. button presses), presentations of sensory stimui (e.g. sound, images), or hypothesized internal processes (e.g. memorization of a stimulus), ...
+One way to analyze times series consists in comparing them to a *model* built
+from our knowledge of the events that occurred during the functional run.
+Events can correspond to actions of the participant (e.g. button presses),
+presentations of sensory stimui (e.g. sound, images),
+or hypothesized internal processes (e.g. memorization of a stimulus), ...
 
 
 .. figure:: ../images/stimulation-time-diagram.png
+   :align: center
 
 
-One expects that a brain region involved in the processing of a certain type of event (e.g. the auditory cortex for sounds) would show a time course of activation that correlates with the time-diagram of these events. If the :term:`fMRI` signal directly showed neural activity and did not contain any noise, we could just look at it in various voxels and detect those that conform to the time-diagrams.
+One expects that a brain region involved in the processing of a certain type of event
+(e.g. the auditory cortex for sounds) would show a time course of activation that correlates
+with the time-diagram of these events.
+If the :term:`fMRI` signal directly showed neural activity and did not contain any noise,
+we could just look at it in various voxels and detect those that conform to the time-diagrams.
 
-But we know from previous measurements that the :term:`BOLD` signal does not follow the exact time course of stimulus processing and the underlying neural activity. The :term:`BOLD` response reflects changes in blood flow and concentrations in oxy-deoxy haemoglobin, all together forming a `haemodynamic response`_ which is sluggish and long-lasting, as can be seen in the following figure showing the response to an impulsive event (for example, an auditory click played to the participants).
+But we know from previous measurements that the :term:`BOLD` signal does not follow
+the exact time course of stimulus processing and the underlying neural activity.
+The :term:`BOLD` response reflects changes in blood flow and concentrations in oxy-deoxy haemoglobin,
+all together forming a `haemodynamic response`_ which is sluggish and long-lasting,
+as can be seen in the following figure showing the response to an impulsive event
+(for example, an auditory click played to the participants).
 
 .. figure:: ../images/spm_iHRF.png
+   :align: center
 
-Using our knowledge of the haemodynamic response, we can build a predicted time course from the time-diagram of the event (the operation is known as  `convolution`_; simply stated, it measures how the shape of one function's plot affects the shape of another function's plot. **Remark:** it assumes linearity of the :term:`BOLD` response, an assumption that may be wrong in some scenarios). It is this predicted time course, also known as a *predictor*, that is compared to the actual :term:`fMRI` signal. If the correlation between the predictor and the signal is higher than expected by chance, the voxel is said to exhibit a significant response to the event type.
+Using our knowledge of the haemodynamic response,
+we can build a predicted time course from the time-diagram of the event
+(the operation is known as  `convolution`_;
+simply stated, it measures how the shape of one function's plot affects the shape of another function's plot.
+**Remark:** it assumes linearity of the :term:`BOLD` response,
+an assumption that may be wrong in some scenarios).
+It is this predicted time course, also known as a *predictor*,
+that is compared to the actual :term:`fMRI` signal.
+If the correlation between the predictor and the signal is higher than expected by chance,
+the voxel is said to exhibit a significant response to the event type.
 
 
 .. _haemodynamic response: https://en.wikipedia.org/wiki/Haemodynamic_response
@@ -52,9 +114,15 @@ Using our knowledge of the haemodynamic response, we can build a predicted time 
 
 
 .. figure:: ../images/time-course-and-model-fit-in-a-voxel.png
+   :align: center
 
-Correlations are computed separately at each :term:`voxel` and a correlation map can be produced displaying  the values of correlations (real numbers between -1 and +1) at each :term:`voxel`. Generally, however, the maps presented in the papers report the significance of the correlations at each :term:`voxel`, using T, Z or p values for the null hypothesis test of no correlation (see below). For example, the following figure displays a Z-map showing voxels responding to auditory events. Large (positive or negative) values are unlikely to be due to chance alone. The map is thresholded so that only voxels with a p-value less than 1/1000 are coloured.
-
+Correlations are computed separately at each :term:`voxel` and a correlation map can be produced displaying
+the values of correlations (real numbers between -1 and +1) at each :term:`voxel`.
+Generally, however, the maps presented in the papers report the significance of the correlations
+at each :term:`voxel`, using T, Z or p values for the null hypothesis test of no correlation (see below).
+For example, the following figure displays a Z-map showing voxels responding to auditory events.
+Large (positive or negative) values are unlikely to be due to chance alone.
+The map is thresholded so that only voxels with a p-value less than 1/1000 are colored.
 
 .. note::
 
@@ -62,27 +130,42 @@ Correlations are computed separately at each :term:`voxel` and a correlation map
 
 
 .. figure:: ../images/example-spmZ_map.png
+   :align: center
 
 
-In most :term:`fMRI` experiments, several predictors are needed to fully describe the events occurring during the run -- for example, the experimenter may want to distinguish brain activities linked to the perception of auditory stimuli and to button presses.
-To find the effect specific to each predictor, a multiple  `linear regression`_ approach is typically used: all predictors are entered as columns in a *design matrix* and the software finds the linear combination of these columns that best fits the signal. The weights assigned to each predictor by this linear combination are estimates of the contribution of this predictor to the response in the voxel. One can plot this using effect size maps or, maps showing their statistical significance (how unlikely they are under the null hypothesis of no effect).
+In most :term:`fMRI` experiments, several predictors are needed to fully
+describe the events occurring during the run -- for example,
+the experimenter may want to distinguish brain activities
+linked to the perception of auditory stimuli and to button presses.
+To find the effect specific to each predictor,
+a multiple  `linear regression`_ approach is typically used:
+all predictors are entered as columns in a *design matrix*
+and the software finds the linear combination of these columns
+that best fits the signal.
+The weights assigned to each predictor by this linear combination
+are estimates of the contribution of this predictor to the response in the voxel.
+One can plot this using effect size maps or, maps showing their statistical significance
+(how unlikely they are under the null hypothesis of no effect).
 
 
 .. _linear regression: https://en.wikipedia.org/wiki/Linear_regression
 
 In brief, the analysis of :term:`fMRI` images involves:
 
-1. Describing the paradigm in terms of events grouped by type, occurring at certain times and having specific durations.
-2. Creating predictors for each type of event, typically using a convolution by the haemodynamic response.
-3. Assembling these predictors in a design matrix, providing a *linear model*.
-4. Estimating the parameters of the model, i.e., the weights associated with each predictor at each voxel, using linear regression.
-5. Displaying the coefficients or their linear combination, and/or their statistical significance.
+1.  Describing the paradigm in terms of events grouped by type, occurring
+    at certain times and having specific durations.
+2.  Creating predictors for each type of event, typically using a convolution by the haemodynamic response.
+3.  Assembling these predictors in a design matrix, providing a *linear model*.
+4.  Estimating the parameters of the model, i.e.,
+    the weights associated with each predictor at each voxel, using linear regression.
+5.  Displaying the coefficients or their linear combination, and/or their statistical significance.
 
 
 fMRI statistical analysis
 -------------------------
 
-As explained in the previous section, the basic statistical analysis of :term:`fMRI` is conceptually a correlation analysis,
+As explained in the previous section,
+the basic statistical analysis of :term:`fMRI` is conceptually a correlation analysis,
 where one identifies whether a certain combination (:term:`contrast`) of columns of the design matrix
 fits a significant proportion of the :term:`fMRI` signal at a given location.
 
@@ -101,16 +184,21 @@ However, if we assume that the noise is Gaussian and that the model is correctly
 then we know that ``t`` should follow a Student distribution with ``dof`` degrees of freedom,
 where ``dof`` is the number of free parameters in the model:
 in practice, the number of observations (i.e. the number of time points), ``n_scans``
-minus the number of effects modelled (i.e. the number of columns ``n_columns``) of the design matrix:
+minus the number of effects modeled (i.e. the number of columns ``n_columns``) of the design matrix:
 
  :math:`dof = n\_scans - n\_columns`
 
-With this we can do statistical inference. Given a pre-defined error rate :math:`\alpha`,
-we compare the observed ``t`` to the :math:`(1-\alpha)` quantile of the Student distribution with ``dof`` degrees of freedom.
-If ``t`` is greater than this number we can reject the null hypothesis with a *p-value* :math:`\alpha`;
-meaning, if there were no effect, the probability of observing an effect as large as ``t`` would be less than :math:`\alpha`.
+With this we can do statistical inference.
+Given a pre-defined error rate :math:`\alpha`,
+we compare the observed ``t`` to the :math:`(1-\alpha)` quantile of the Student distribution
+with ``dof`` degrees of freedom.
+If ``t`` is greater than this number
+we can reject the null hypothesis with a *p-value* :math:`\alpha`;
+meaning, if there were no effect, the probability of observing an effect as large as ``t``
+would be less than :math:`\alpha`.
 
 .. figure:: ../images/student.png
+   :align: center
 
 .. note::
 

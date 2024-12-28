@@ -63,8 +63,9 @@ task_data = index_img(func_filename, task_mask)
 # Decoding on the different masks
 # -------------------------------
 #
-# The classifier used here is a support vector classifier (svc). We use
-# class:`nilearn.decoding.Decoder` and specify the classifier.
+# The classifier used here is a support vector classifier (svc).
+# We use
+# :class:`~nilearn.decoding.Decoder` and specify the classifier.
 import numpy as np
 
 # Make a data splitting object for cross validation
@@ -75,7 +76,7 @@ from nilearn.decoding import Decoder
 cv = LeaveOneGroupOut()
 
 # %%
-# We use :class:`nilearn.decoding.Decoder` to estimate a baseline.
+# We use :class:`~nilearn.decoding.Decoder` to estimate a baseline.
 
 mask_names = ["mask_vt", "mask_face", "mask_house"]
 
@@ -129,7 +130,7 @@ for mask_name in mask_names:
 # --------------------------------------------------
 import matplotlib.pyplot as plt
 
-plt.figure()
+plt.figure(constrained_layout=True)
 
 tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
@@ -161,7 +162,6 @@ plt.xlabel("Visual stimuli category")
 plt.ylim(0.3, 1)
 plt.legend(loc="lower right")
 plt.title("Category-specific classification accuracy for different masks")
-plt.tight_layout()
 
 show()
 

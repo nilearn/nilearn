@@ -4,7 +4,7 @@ Copying headers from input images with ``math_img``
 
 This example shows how to copy the header information from one of
 the input images to the result image when using the function
-:func:`nilearn.image.math_img`.
+:func:`~nilearn.image.math_img`.
 
 The header information contains metadata about the image, such as the
 dimensions, the voxel sizes, the affine matrix, repetition time (:term:`TR`),
@@ -27,13 +27,13 @@ subj2_img = load_img(dataset.func[1])
 
 print(f"Subject 1 header:\n{subj1_img.header}")
 # %%
-# Let's apply a simple operation using :func:`nilearn.image.math_img`
+# Let's apply a simple operation using :func:`~nilearn.image.math_img`
 from nilearn.image import math_img
 
 result_img = math_img("img1 * 1", img1=subj1_img)
 
 # %%
-# By default, :func:`nilearn.image.math_img` simply resets result image's
+# By default, :func:`~nilearn.image.math_img` simply resets result image's
 # header to the default :class:`~nibabel.nifti1.Nifti1Header`.
 #
 # This means that it will contain different information as compared to the
@@ -41,7 +41,7 @@ result_img = math_img("img1 * 1", img1=subj1_img)
 #
 # We can check that as follows:
 print("Following header fields do not match:")
-for key in result_img.header.keys():
+for key in result_img.header:
     if not (subj1_img.header[key] == result_img.header[key]).all():
         print(
             f"For '{key}'\n",
@@ -66,7 +66,7 @@ result_img_with_header = math_img(
 # %%
 # Let's compare the header fields again.
 print("Following header fields do not match:")
-for key in result_img_with_header.header.keys():
+for key in result_img_with_header.header:
     if not (subj1_img.header[key] == result_img_with_header.header[key]).all():
         print(
             f"For '{key}'\n",
@@ -91,9 +91,9 @@ for key in result_img_with_header.header.keys():
 # Copying the header with the ``copy_header_from`` parameter will not work
 # in this case.
 #
-# So, in such cases we could just use :func:`nilearn.image.math_img` without
+# So, in such cases we could just use :func:`~nilearn.image.math_img` without
 # specifying ``copy_header_from`` and then explicitly copy the header from one
-# of the images using :func:`nilearn.image.new_img_like`
+# of the images using :func:`~nilearn.image.new_img_like`
 result_img = math_img(
     "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)",
     img1=subj1_img,
@@ -103,7 +103,7 @@ result_img = math_img(
 # %%
 # Several of the header fields are different:
 print("Following header fields do not match:")
-for key in result_img.header.keys():
+for key in result_img.header:
     if not (subj1_img.header[key] == result_img.header[key]).all():
         print(
             f"For '{key}'\n",
@@ -135,7 +135,7 @@ result_img_with_header = new_img_like(
 # And again, ``cal_min`` and ``cal_max`` are set to minimum and maximum data
 # values respectively, by Nilearn.
 print("Following header fields do not match:")
-for key in result_img_with_header.header.keys():
+for key in result_img_with_header.header:
     if not (subj1_img.header[key] == result_img_with_header.header[key]).all():
         print(
             f"For '{key}'\n",

@@ -1,7 +1,7 @@
 """Test the _utils.param_validation module."""
 
-import os
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -11,9 +11,9 @@ from sklearn.base import BaseEstimator
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (
     MNI152_BRAIN_VOLUME,
+    _get_mask_extent,
     check_feature_screening,
     check_threshold,
-    get_mask_volume,
 )
 
 mni152_brain_mask = (
@@ -64,10 +64,10 @@ def test_check_threshold():
     )
 
 
-def test_get_mask_volume():
+def test_get_mask_extent():
     # Test that hard-coded standard mask volume can be corrected computed
-    if os.path.isfile(mni152_brain_mask):
-        assert MNI152_BRAIN_VOLUME == get_mask_volume(load(mni152_brain_mask))
+    if Path(mni152_brain_mask).is_file():
+        assert _get_mask_extent(load(mni152_brain_mask)) == MNI152_BRAIN_VOLUME
     else:
         warnings.warn(f"Couldn't find {mni152_brain_mask} (for testing)")
 
@@ -87,7 +87,7 @@ def test_feature_screening(affine_eye):
                     )
                     is None
                 )
-            elif screening_percentile == 101 or screening_percentile == -1:
+            elif screening_percentile in {-1, 101}:
                 with pytest.raises(ValueError):
                     check_feature_screening(
                         screening_percentile,

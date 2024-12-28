@@ -7,10 +7,7 @@ def _check_dims(imgs):
         im = imgs[0]
         dim = image.load_img(im).shape
         # in case of 4D (timeseries) + 1D (subjects) return first subject
-        if len(dim) == 4:
-            return im, dim + (1,)
-        else:
-            return imgs, dim + (1,)
+        return (im, (*dim, 1)) if len(dim) == 4 else (imgs, (*dim, 1))
     else:
         dim = image.load_img(imgs).shape
         return imgs, dim

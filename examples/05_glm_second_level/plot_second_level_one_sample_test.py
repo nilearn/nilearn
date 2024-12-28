@@ -126,7 +126,7 @@ p_val = second_level_model.compute_contrast(output_type="p_value")
 n_voxels = np.sum(get_data(second_level_model.masker_.mask_img_))
 # Correcting the p-values for multiple testing and taking negative logarithm
 neg_log_pval = math_img(
-    f"-np.log10(np.minimum(1, img * {str(n_voxels)}))",
+    f"-np.log10(np.minimum(1, img * {n_voxels!s}))",
     img=p_val,
 )
 

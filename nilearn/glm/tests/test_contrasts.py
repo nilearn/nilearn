@@ -20,12 +20,12 @@ from nilearn.glm.first_level import run_glm
     [
         (
             "face / 10 + (window - face) * 2 - house",
-            "a face xy_z house window".split(),
+            ["a", "face", "xy_z", "house", "window"],
             [0.0, -1.9, 0.0, -1.0, 2.0],
         ),
         (
             "xy_z",
-            "a face xy_z house window".split(),
+            ["a", "face", "xy_z", "house", "window"],
             [0.0, 0.0, 1.0, 0.0, 0.0],
         ),
         ("a - b", ["a", "b", "a - b"], [0.0, 0.0, 1.0]),
@@ -50,8 +50,9 @@ def test_expression_to_contrast_vector_error():
 def set_up_glm():
     def _set_up_glm(rng, noise_model, bins=100):
         n, p, q = 100, 80, 10
-        X, Y = rng.standard_normal(size=(p, q)), rng.standard_normal(
-            size=(p, n)
+        X, Y = (
+            rng.standard_normal(size=(p, q)),
+            rng.standard_normal(size=(p, n)),
         )
         labels, results = run_glm(Y, X, noise_model, bins=bins)
         return labels, results, q
@@ -64,7 +65,7 @@ def test_deprecation_contrast_type(rng, set_up_glm):
     labels, results, q = set_up_glm(rng, "ar1")
     con_val = np.eye(q)[0]
 
-    with pytest.warns(DeprecationWarning, match="0.13.0"):
+    with pytest.deprecated_call(match="0.13.0"):
         compute_contrast(
             labels=labels,
             regression_result=results,
@@ -73,7 +74,7 @@ def test_deprecation_contrast_type(rng, set_up_glm):
         )
 
 
-def test_Tcontrast(rng, set_up_glm):
+def test_t_contrast(rng, set_up_glm):
     labels, results, q = set_up_glm(rng, "ar1")
     con_val = np.eye(q)[0]
 
@@ -84,7 +85,7 @@ def test_Tcontrast(rng, set_up_glm):
 
 
 @pytest.mark.parametrize("model", ["ols", "ar1"])
-def test_Fcontrast(rng, set_up_glm, model):
+def test_f_contrast(rng, set_up_glm, model):
     labels, results, q = set_up_glm(rng, model)
     for con_val in [np.eye(q)[0], np.eye(q)[:3]]:
         z_vals = compute_contrast(
@@ -146,7 +147,7 @@ def test_fixed_effect_contrast_nonzero_effect():
         assert_almost_equal(fixed_effect.effect_size(), coef.ravel()[i])
 
 
-def test_F_contrast_add(set_up_glm, rng):
+def test_f_contrast_add(set_up_glm, rng):
     labels, results, q = set_up_glm(rng, "ar1")
     c1, c2 = np.eye(q)[:2], np.eye(q)[2:4]
 
@@ -186,14 +187,14 @@ def test_contrast_values(set_up_glm, rng):
     # t test
     cval = np.eye(q)[0]
     con = compute_contrast(labels, results, cval)
-    t_ref = list(results.values())[0].Tcontrast(cval).t
+    t_ref = next(iter(results.values())).Tcontrast(cval).t
 
     assert_almost_equal(np.ravel(con.stat()), t_ref)
 
     # F test
     cval = np.eye(q)[:3]
     con = compute_contrast(labels, results, cval)
-    F_ref = list(results.values())[0].Fcontrast(cval).F
+    F_ref = next(iter(results.values())).Fcontrast(cval).F
 
     # Note that the values are not strictly equal,
     # this seems to be related to a bug in Mahalanobis
@@ -259,11 +260,11 @@ def test_deprecation_contrast_type_attribute():
     effect = np.ones((1, 3))
     variance = effect[0]
 
-    with pytest.warns(DeprecationWarning, match="0.13.0"):
+    with pytest.deprecated_call(match="0.13.0"):
         contrast = Contrast(effect, variance, contrast_type="t")
 
-    with pytest.warns(DeprecationWarning, match="0.13.0"):
-        contrast.contrast_type
+    with pytest.deprecated_call(match="0.13.0"):
+        contrast.contrast_type  # noqa: B018
 
 
 @pytest.mark.parametrize(
@@ -281,12 +282,12 @@ def test_deprecation_contrast_type_attribute():
         ),
     ],
 )
-def test_improper_Contrast_inputs(effect, variance, match):
+def test_improper_contrast_inputs(effect, variance, match):
     with pytest.raises(ValueError, match=match):
         Contrast(effect, variance, stat_type="t")
 
 
-def test_automatic_t2F_conversion():
+def test_automatic_t2f_conversion():
     effect = np.ones((5, 3))
     variance = np.ones(5)
     contrast = Contrast(effect, variance, stat_type="t")

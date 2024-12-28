@@ -305,7 +305,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
             f"with vector of shape {vec.shape}"
         )
 
-    sym = np.zeros(first_shape + (n_columns, n_columns))
+    sym = np.zeros((*first_shape, n_columns, n_columns))
 
     # Fill lower triangular part
     skip_diagonal = diagonal is not None
@@ -370,7 +370,7 @@ def prec_to_partial(precision):
 
 
 @fill_doc
-class ConnectivityMeasure(BaseEstimator, TransformerMixin):
+class ConnectivityMeasure(TransformerMixin, BaseEstimator):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 
@@ -437,8 +437,6 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         discard_diagonal=False,
         standardize=True,
     ):
-        if cov_estimator is None:
-            cov_estimator = LedoitWolf(store_precision=False)
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
@@ -479,7 +477,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                 f"You provided {confounds.__class__}"
             )
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Fit the covariance estimator to the given time series for each \
         subject.
 
@@ -502,7 +504,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self, X, do_transform=False, do_fit=False, confounds=None
     ):
         """Avoid duplication of computation."""
+        if self.cov_estimator is None:
+            self.cov_estimator = LedoitWolf(store_precision=False)
+
         self._check_input(X, confounds=confounds)
+
         if do_fit:
             self.cov_estimator_ = clone(self.cov_estimator)
 
@@ -589,7 +595,12 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
         return connectivities
 
-    def fit_transform(self, X, y=None, confounds=None):
+    def fit_transform(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+        confounds=None,
+    ):
         """Fit the covariance estimator to the given time series \
         for each subject. \
         Then apply transform to covariance matrices for the chosen kind.
@@ -661,8 +672,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self._check_fitted()
         return self._fit_transform(X, do_transform=True, confounds=confounds)
 
+    def __sklearn_is_fitted__(self):
+        return not hasattr(self, "cov_estimator_")
+
     def _check_fitted(self):
-        if not hasattr(self, "cov_estimator_"):
+        if self.__sklearn_is_fitted__():
             raise ValueError(
                 f"It seems that {self.__class__.__name__} "
                 "has not been fitted. "

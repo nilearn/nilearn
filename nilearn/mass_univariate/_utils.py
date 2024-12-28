@@ -84,7 +84,7 @@ def calculate_tfce(
         # If we apply the sign first...
         for sign in signs:
             # Init a temp copy of arr3d with the current sign applied,
-            # which can then be re-used by incrementally setting more
+            # which can then be reused by incrementally setting more
             # voxel's to background, by taking advantage that each score_thresh
             # is incrementally larger
             temp_arr3d = arr3d * sign
@@ -94,7 +94,7 @@ def calculate_tfce(
                 temp_arr3d[temp_arr3d < score_thresh] = 0
 
                 # Label into clusters - importantly (for the next step)
-                # this returns clusters labelled ordinally
+                # this returns clusters labeled ordinally
                 # from 1 to n_clusters+1,
                 # which allows us to use bincount to count
                 # frequencies directly.
@@ -307,7 +307,8 @@ def normalize_matrix_on_axis(m, axis=0):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     normalize_matrix_on_axis)
+    ...     normalize_matrix_on_axis,
+    ... )
     >>> X = np.array([[0, 4], [1, 0]])
     >>> normalize_matrix_on_axis(X)
     array([[0., 1.],
@@ -356,7 +357,8 @@ def orthonormalize_matrix(m, tol=1.0e-12):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     orthonormalize_matrix)
+    ...     orthonormalize_matrix,
+    ... )
     >>> X = np.array([[1, 2], [0, 1], [1, 1]])
     >>> orthonormalize_matrix(X)
     array([[-0.81049889, -0.0987837 ],

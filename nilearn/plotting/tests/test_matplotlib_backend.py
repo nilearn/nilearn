@@ -1,20 +1,11 @@
-from unittest.mock import patch
-
-SKIP_REASON = "matplotlib missing; necessary for this test"
-try:
-    import matplotlib  # noqa: F401
-except ImportError:
-    MATPLOTLIB_INSTALLED = False
-else:
-    MATPLOTLIB_INSTALLED = True
 import warnings
+from unittest.mock import patch
 
 import pytest
 
 from nilearn.plotting import _set_mpl_backend
 
 
-@pytest.mark.skipif(not MATPLOTLIB_INSTALLED, reason=SKIP_REASON)
 @patch("matplotlib.use")
 @patch("matplotlib.get_backend", side_effect=["backend_1", "backend_2"])
 def test_should_raise_warning_if_backend_changes(*_):
@@ -24,7 +15,6 @@ def test_should_raise_warning_if_backend_changes(*_):
         _set_mpl_backend()
 
 
-@pytest.mark.skipif(not MATPLOTLIB_INSTALLED, reason=SKIP_REASON)
 @patch("matplotlib.use")
 @patch("matplotlib.get_backend", side_effect=["backend_1", "backend_1"])
 def test_should_not_raise_warning_if_backend_is_not_changed(*_):
@@ -35,7 +25,6 @@ def test_should_not_raise_warning_if_backend_is_not_changed(*_):
         _set_mpl_backend()
 
 
-@pytest.mark.skipif(not MATPLOTLIB_INSTALLED, reason=SKIP_REASON)
 @patch(
     "matplotlib.use", side_effect=[Exception("Failed to switch backend"), True]
 )
@@ -49,7 +38,6 @@ def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
     use_mock.assert_called_with("Agg")
 
 
-@pytest.mark.skipif(not MATPLOTLIB_INSTALLED, reason=SKIP_REASON)
 @patch("matplotlib.__version__", "0.0.0")
 def test_should_raise_import_error_for_version_check():
     with pytest.raises(ImportError, match="A matplotlib version of at least"):

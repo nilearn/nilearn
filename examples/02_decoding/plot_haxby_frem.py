@@ -42,8 +42,8 @@ from nilearn.image import index_img
 func_filenames = data_files.func[0]
 X_train = index_img(func_filenames, condition_mask_train)
 X_test = index_img(func_filenames, condition_mask_test)
-y_train = conditions[condition_mask_train].values
-y_test = conditions[condition_mask_test].values
+y_train = conditions[condition_mask_train].to_numpy()
+y_test = conditions[condition_mask_test].to_numpy()
 
 
 # Compute the mean EPI to be used for the background of the plotting
@@ -92,16 +92,11 @@ ax = im.axes
 ax.set_ylabel("True label")
 ax.set_xlabel("Predicted label")
 
-# Adjust figure to make labels fit
-ax.get_figure().tight_layout()
-
 plotting.show()
 
 # %%
 # Visualization of :term:`FREM` weights
 # -------------------------------------
-from nilearn import plotting
-
 plotting.plot_stat_map(
     decoder.coef_img_["face"],
     background_img,

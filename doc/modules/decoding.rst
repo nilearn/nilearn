@@ -7,7 +7,8 @@
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+Classes
+-------
 
 .. currentmodule:: nilearn.decoding
 

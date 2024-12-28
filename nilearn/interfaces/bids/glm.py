@@ -106,7 +106,7 @@ def _generate_model_metadata(out_file, model):
         "ModelParameters": model_attributes,
     }
 
-    with open(out_file, "w") as f_obj:
+    with Path(out_file).open("w") as f_obj:
         json.dump(model_metadata, f_obj, indent=4, sort_keys=True)
 
 
@@ -140,7 +140,7 @@ def _generate_dataset_description(out_file, model_level):
     }
 
     if out_file.exists():
-        with open(out_file) as f_obj:
+        with out_file.open() as f_obj:
             dataset_description = json.load(f_obj)
         if dataset_description.get("GeneratedBy"):
             dataset_description["GeneratedBy"].append(GeneratedBy)
@@ -151,7 +151,7 @@ def _generate_dataset_description(out_file, model_level):
             "GeneratedBy": [GeneratedBy],
         }
 
-    with open(out_file, "w") as f_obj:
+    with out_file.open("w") as f_obj:
         json.dump(dataset_description, f_obj, indent=4, sort_keys=True)
 
 
@@ -325,7 +325,9 @@ def save_glm_to_bids(
         dm_fig.figure.savefig(out_dir / f"{prefix}{run_str}design.svg")
 
         if model_level == 1:
-            with open(out_dir / f"{prefix}{run_str}design.json", "w") as f_obj:
+            with (out_dir / f"{prefix}{run_str}design.json").open(
+                "w"
+            ) as f_obj:
                 json.dump(
                     {"RepetitionTime": model.t_r},
                     f_obj,
@@ -342,7 +344,6 @@ def save_glm_to_bids(
             )
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
-            contrast_plot.figure.tight_layout()
             contrast_name = _clean_contrast_name(contrast_name)
             constrast_fig_file = (
                 out_dir
@@ -416,7 +417,6 @@ def _model_level(model):
 
 def _write_model_level_statistical_maps(model, prefix, out_dir):
     if _model_level(model) == 2:
-
         model_level_mapping = {
             "residuals": f"{prefix}stat-errorts_statmap.nii.gz",
             "r_square": f"{prefix}stat-rsquared_statmap.nii.gz",
@@ -426,7 +426,6 @@ def _write_model_level_statistical_maps(model, prefix, out_dir):
             stat_map_to_save.to_filename(out_dir / map_name)
 
     else:
-
         if hasattr(model, "design_matrices_"):
             design_matrices = model.design_matrices_
         else:

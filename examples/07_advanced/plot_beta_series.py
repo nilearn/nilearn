@@ -58,11 +58,7 @@ to build the LSS beta series.
 .. include:: ../../../examples/masker_note.rst
 
 """
-
 # sphinx_gallery_thumbnail_number = -2
-
-# %%
-from nilearn import image, plotting
 
 # %%
 # Prepare data and analysis parameters
@@ -71,12 +67,15 @@ from nilearn import image, plotting
 # and create a standard :class:`~nilearn.glm.first_level.FirstLevelModel`.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
+from nilearn.plotting import plot_design_matrix, plot_stat_map, show
 
 data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 models, models_run_imgs, events_dfs, models_confounds = first_level_from_bids(
-    data.data_dir,
-    "languagelocalizer",
+    dataset_path=data.data_dir,
+    task_label="languagelocalizer",
+    space_label="",
+    sub_labels=["01"],
     img_filters=[("desc", "preproc")],
     n_jobs=2,
 )
@@ -91,7 +90,7 @@ glm_parameters = standard_glm.get_params()
 
 # We need to override one parameter (signal_scaling)
 # with the value of scaling_axis
-glm_parameters["signal_scaling"] = standard_glm.scaling_axis
+glm_parameters["signal_scaling"] = standard_glm.signal_scaling
 
 # %%
 # Define the standard model
@@ -103,13 +102,15 @@ glm_parameters["signal_scaling"] = standard_glm.scaling_axis
 # :func:`~nilearn.glm.first_level.first_level_from_bids`.
 import matplotlib.pyplot as plt
 
+print("Fit model")
+
 standard_glm.fit(fmri_file, events_df)
 
 # The standard design matrix has one column for each condition, along with
 # columns for the confound regressors and drifts
 fig, ax = plt.subplots(figsize=(5, 10))
-plotting.plot_design_matrix(standard_glm.design_matrices_[0], axes=ax)
-fig.show()
+plot_design_matrix(standard_glm.design_matrices_[0], axes=ax)
+show()
 
 # %%
 # Define the LSA model
@@ -120,11 +121,12 @@ fig.show()
 # It's important to ensure that the original trial types can be inferred from
 # the updated trial-wise trial types, in order to collect the resulting
 # beta maps into condition-wise beta series.
+print("Define and fit LSA")
 
 # Transform the DataFrame for LSA
 lsa_events_df = events_df.copy()
 conditions = lsa_events_df["trial_type"].unique()
-condition_counter = {c: 0 for c in conditions}
+condition_counter = dict.fromkeys(conditions, 0)
 for i_trial, trial in lsa_events_df.iterrows():
     trial_condition = trial["trial_type"]
     condition_counter[trial_condition] += 1
@@ -137,13 +139,14 @@ lsa_glm = FirstLevelModel(**glm_parameters)
 lsa_glm.fit(fmri_file, lsa_events_df)
 
 fig, ax = plt.subplots(figsize=(10, 10))
-plotting.plot_design_matrix(lsa_glm.design_matrices_[0], axes=ax)
-fig.show()
+plot_design_matrix(lsa_glm.design_matrices_[0], axes=ax)
+show()
 
 # %%
 # Aggregate beta maps from the LSA model based on condition
 # `````````````````````````````````````````````````````````
 # Collect the :term:`Parameter Estimate` maps
+from nilearn.image import concat_imgs
 
 lsa_beta_maps = {cond: [] for cond in events_df["trial_type"].unique()}
 trialwise_conditions = lsa_events_df["trial_type"].unique()
@@ -156,7 +159,7 @@ for condition in trialwise_conditions:
 # We can concatenate the lists of 3D maps into a single 4D beta series for
 # each condition, if we want
 lsa_beta_maps = {
-    name: image.concat_imgs(maps) for name, maps in lsa_beta_maps.items()
+    name: concat_imgs(maps) for name, maps in lsa_beta_maps.items()
 }
 
 # %%
@@ -169,9 +172,10 @@ lsa_beta_maps = {
 # We loop through the trials, create a version of the DataFrame where the
 # targeted trial has a unique trial type, fit the model to that DataFrame,
 # and finally collect the targeted trial's beta map for the beta series.
+print("Define and fit LSS")
 
 
-def lss_transformer(df, row_number):
+def lss_transformer(events_df, row_number):
     """Label one trial for one LSS model.
 
     Parameters
@@ -189,11 +193,11 @@ def lss_transformer(df, row_number):
     trial_name : str
         Name of the isolated trial's trial type.
     """
-    df = df.copy()
+    events_df = events_df.copy()
 
     # Determine which number trial it is *within the condition*
-    trial_condition = df.loc[row_number, "trial_type"]
-    trial_type_series = df["trial_type"]
+    trial_condition = events_df.loc[row_number, "trial_type"]
+    trial_type_series = events_df["trial_type"]
     trial_type_series = trial_type_series.loc[
         trial_type_series == trial_condition
     ]
@@ -207,8 +211,8 @@ def lss_transformer(df, row_number):
     # However, we may want to have meaningful 'trial_type's (e.g., 'Left_001')
     # across models, so that you could track individual trials across models.
     trial_name = f"{trial_condition}__{trial_number:03d}"
-    df.loc[row_number, "trial_type"] = trial_name
-    return df, trial_name
+    events_df.loc[row_number, "trial_type"] = trial_name
+    return events_df, trial_name
 
 
 # Loop through the trials of interest and transform the DataFrame for LSS
@@ -237,7 +241,7 @@ for i_trial in range(events_df.shape[0]):
 # We can concatenate the lists of 3D maps into a single 4D beta series for
 # each condition, if we want
 lss_beta_maps = {
-    name: image.concat_imgs(maps) for name, maps in lss_beta_maps.items()
+    name: concat_imgs(maps) for name, maps in lss_beta_maps.items()
 }
 
 # %%
@@ -245,17 +249,18 @@ lss_beta_maps = {
 # `````````````````````````````````````````````````
 fig, axes = plt.subplots(ncols=3, figsize=(20, 10))
 for i_trial in range(3):
-    plotting.plot_design_matrix(
+    plot_design_matrix(
         lss_design_matrices[i_trial],
         axes=axes[i_trial],
     )
     axes[i_trial].set_title(f"Trial {i_trial + 1}")
 
-fig.show()
+show()
 
 # %%
 # Compare the three modeling approaches
 # -------------------------------------
+print("Compare models")
 
 DM_TITLES = ["Standard GLM", "LSA Model", "LSS Model (Trial 1)"]
 DESIGN_MATRICES = [
@@ -271,10 +276,10 @@ fig, axes = plt.subplots(
 )
 
 for i_ax, _ in enumerate(axes):
-    plotting.plot_design_matrix(DESIGN_MATRICES[i_ax], axes=axes[i_ax])
+    plot_design_matrix(DESIGN_MATRICES[i_ax], axes=axes[i_ax])
     axes[i_ax].set_title(DM_TITLES[i_ax])
 
-fig.show()
+show()
 
 # %%
 # Applications of beta series
@@ -295,12 +300,15 @@ fig.show()
 # connectivity analysis of each of the two task conditions
 # ('language' and 'string'), using the LSS beta series.
 # This section is based on
-# :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`,
+# :ref:`sphx_glr_auto_examples_03_connectivity\
+# _plot_seed_to_voxel_correlation.py`,
 # which goes into more detail about seed-to-voxel functional connectivity
 # analyses.
 import numpy as np
 
 from nilearn.maskers import NiftiMasker, NiftiSpheresMasker
+
+print("Apply beta series")
 
 # Coordinate taken from Neurosynth's 'language' meta-analysis
 coords = [(-54, -42, 3)]
@@ -358,7 +366,7 @@ string_connectivity_img = brain_masker.inverse_transform(string_corrs.T)
 # Show both correlation maps
 fig, axes = plt.subplots(figsize=(10, 8), nrows=2)
 
-display = plotting.plot_stat_map(
+display = plot_stat_map(
     language_connectivity_img,
     threshold=0.5,
     vmax=1,
@@ -366,6 +374,7 @@ display = plotting.plot_stat_map(
     title="Language",
     figure=fig,
     axes=axes[0],
+    cmap="bwr",
 )
 display.add_markers(
     marker_coords=coords,
@@ -373,7 +382,7 @@ display.add_markers(
     marker_size=300,
 )
 
-display = plotting.plot_stat_map(
+display = plot_stat_map(
     string_connectivity_img,
     threshold=0.5,
     vmax=1,
@@ -381,6 +390,7 @@ display = plotting.plot_stat_map(
     title="String",
     figure=fig,
     axes=axes[1],
+    cmap="bwr",
 )
 display.add_markers(
     marker_coords=coords,
@@ -389,7 +399,7 @@ display.add_markers(
 )
 fig.suptitle("LSS Beta Series Functional Connectivity")
 
-fig.show()
+show()
 
 # %%
 # References

@@ -8,9 +8,43 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nilearn._utils import data_gen
-from nilearn.conftest import have_mpl
+from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
+
+extra_valid_checks = [
+    "check_estimators_unfitted",
+    "check_get_params_invariance",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiSpheresMasker([(1, 1, 1)])],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiSpheresMasker([(1, 1, 1)])],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_seed_extraction(rng):
@@ -104,7 +138,7 @@ def test_nifti_spheres_masker_overlap(rng):
     affine = np.eye(4)
     shape = (5, 5, 5)
 
-    data = rng.random(shape + (5,))
+    data = rng.random((*shape, 5))
     fmri_img = Nifti1Image(data, affine)
 
     seeds = [(0, 0, 0), (2, 2, 2)]
@@ -255,7 +289,7 @@ def test_nifti_spheres_masker_inverse_overlap(rng):
     affine = np.eye(4)
     shape = (5, 5, 5)
 
-    data = rng.random(shape + (5,))
+    data = rng.random((*shape, 5))
     fmri_img = Nifti1Image(data, affine)
 
     # Apply mask image - to allow inversion
@@ -336,7 +370,7 @@ def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
     inverse_transform(2D array with wrong shape) --> ValueError
     """
     n_regions, n_volumes = 2, 5
-    shape_4d = shape_3d_default + (n_volumes,)
+    shape_4d = (*shape_3d_default, n_volumes)
 
     img_4d, mask_img = data_gen.generate_random_img(
         shape_4d,
@@ -354,7 +388,7 @@ def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
     masker.fit()
 
     # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.warns(DeprecationWarning, match="Starting in version 0.12"):
+    with pytest.deprecated_call(match="Starting in version 0.12"):
         test_data = masker.transform(img_3d)
         assert test_data.shape == (1, n_regions)
 
@@ -395,7 +429,8 @@ def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
 
 
 @pytest.mark.skipif(
-    have_mpl, reason="Test requires matplotlib not to be installed."
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
 )
 def test_nifti_spheres_masker_reporting_mpl_warning():
     """Raise warning after exception if matplotlib is not installed."""

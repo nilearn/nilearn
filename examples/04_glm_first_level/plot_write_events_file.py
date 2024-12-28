@@ -10,9 +10,6 @@ task.
 
 For details on the task, please see :footcite:t:`Pinel2007`.
 """
-
-from nilearn.plotting import plot_event
-
 # %%
 # Define the onset times in seconds. These are typically extracted from
 # the stimulation software used, but we will use hardcoded values in this
@@ -20,9 +17,9 @@ from nilearn.plotting import plot_event
 
 # fmt: off
 onsets = [
-    0.0,   2.4,   8.7,   11.4,  15.0,  18.0,  20.7,  23.7,  26.7,  29.7, # noqa
-    33.0,  35.4,  39.0,  41.7,  44.7,  48.0,  56.4,  59.7,  62.4,  69.0, # noqa
-    71.4,  75.0,  83.4,  87.0,  89.7,  96.0,  108.0, 116.7, 119.4, 122.7, # noqa
+    0.0,   2.4,   8.7,   11.4,  15.0,  18.0,  20.7,  23.7,  26.7,  29.7,
+    33.0,  35.4,  39.0,  41.7,  44.7,  48.0,  56.4,  59.7,  62.4,  69.0,
+    71.4,  75.0,  83.4,  87.0,  89.7,  96.0,  108.0, 116.7, 119.4, 122.7,
     125.4, 131.4, 135.0, 137.7, 140.4, 143.4, 146.7, 149.4, 153.0, 156.0,
     159.0, 162.0, 164.4, 167.7, 170.4, 173.7, 176.7, 188.4, 191.7, 195.0,
     198.0, 201.0, 203.7, 207.0, 210.0, 212.7, 215.7, 218.7, 221.4, 224.7,
@@ -105,10 +102,11 @@ print(f"The event information has been saved to {tsvfile}")
 # %%
 # Optionally, the events can be visualized using the
 # :func:`~nilearn.plotting.plot_event` function.
-import matplotlib.pyplot as plt
+from nilearn.plotting import plot_event, show
 
-plot_event(events, figsize=(15, 5))
-plt.show()
+fig = plot_event(events, figsize=(15, 5))
+fig.suptitle("Events")
+show()
 
 # %%
 # Parametric modulation
@@ -149,9 +147,17 @@ modulated_events = pd.DataFrame(
     }
 )
 
-# Now lets plot the modulated and unmodulated events side by side.
-plot_event([events, modulated_events], figsize=(15, 5))
-plt.show()
+# Now lets plot the modulated and unmodulated events.
+fig = plot_event([events, modulated_events], figsize=(15, 5))
+fig.suptitle("Events and modulated events")
+show()
+
+# %%
+#
+# ..  note::
+#
+#       See how the modulation affects the height of the events.
+#
 
 # %%
 # References

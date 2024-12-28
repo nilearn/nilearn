@@ -165,14 +165,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
-plt.figure(figsize=(4, 4))
+plt.figure(figsize=(4, 4), constrained_layout=True)
+
 positions = np.arange(len(scores))
 plt.barh(positions, scores)
 plt.ylabel("Component #", size=12)
 plt.xlabel("Explained variance", size=12)
 plt.yticks(np.arange(20))
 plt.gca().xaxis.set_major_formatter(FormatStrFormatter("%.3f"))
-plt.tight_layout()
 
 show()
 
@@ -182,7 +182,8 @@ show()
 #     To see how to extract subject-level timeseries' from regions
 #     created using :term:`Dictionary learning`, see :ref:`example Regions
 #     extraction using dictionary learning and functional connectomes
-#     <sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py>`.
+#     <sphx_glr_auto_examples_03_connectivity\
+#     _plot_extract_regions_dictlearning_maps.py>`.
 
 # %%
 # References

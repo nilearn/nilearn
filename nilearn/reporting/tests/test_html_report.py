@@ -20,6 +20,8 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceLabelsMasker,
+    SurfaceMasker,
 )
 
 # Note: html output by nilearn view_* functions
@@ -113,7 +115,7 @@ def input_parameters(
 def test_report_empty_fit(masker_class, input_parameters):
     """Test minimal report generation."""
     masker = masker_class(**input_parameters)
-    masker.fit()
+    masker = masker.fit()
     _check_html(masker.generate_report())
 
 
@@ -172,10 +174,11 @@ def test_reports_after_fit_3d_data_with_mask(
 )
 def test_warning_in_report_after_empty_fit(masker_class, input_parameters):
     """Tests that a warning is both given and written in the report \
-       if no images were provided to fit."""
+       if no images were provided to fit.
+    """
     masker = masker_class(**input_parameters)
-    assert masker._report_content["warning_message"] is None
     masker.fit()
+    assert masker._report_content["warning_message"] is None
     warn_message = f"No image provided to fit in {masker_class.__name__}."
     with pytest.warns(UserWarning, match=warn_message):
         html = masker.generate_report()
@@ -188,7 +191,8 @@ def test_nifti_maps_masker_report_displayed_maps_errors(
     niftimapsmasker_inputs, displayed_maps
 ):
     """Tests that a TypeError is raised when the argument `displayed_maps` \
-       of `generate_report()` is not valid."""
+       of `generate_report()` is not valid.
+    """
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     with pytest.raises(TypeError, match=("Parameter ``displayed_maps``")):
@@ -200,7 +204,8 @@ def test_nifti_maps_masker_report_maps_number_errors(
     niftimapsmasker_inputs, displayed_maps
 ):
     """Tests that a ValueError is raised when the argument `displayed_maps` \
-       contains invalid map numbers."""
+       contains invalid map numbers.
+    """
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     with pytest.raises(
@@ -214,7 +219,8 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     niftimapsmasker_inputs, displayed_maps, n_regions
 ):
     """Tests report generation for NiftiMapsMasker with displayed_maps \
-       passed as a list of a Numpy arrays."""
+       passed as a list of a Numpy arrays.
+    """
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     html = masker.generate_report(displayed_maps)
@@ -234,7 +240,8 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     niftimapsmasker_inputs, displayed_maps, n_regions
 ):
     """Tests NiftiMapsMasker reporting with no image provided to fit \
-       and displayed_maps provided as an integer or as 'all'."""
+       and displayed_maps provided as an integer or as 'all'.
+    """
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     expected_n_maps = (
@@ -279,7 +286,8 @@ def test_nifti_spheres_masker_report_displayed_spheres_errors(
     displayed_spheres,
 ):
     """Tests that a TypeError is raised when the argument `displayed_spheres` \
-       of `generate_report()` is not valid."""
+       of `generate_report()` is not valid.
+    """
     masker = NiftiSpheresMasker(seeds=[(1, 1, 1)])
     masker.fit()
     with pytest.raises(TypeError, match=("Parameter ``displayed_spheres``")):
@@ -288,7 +296,8 @@ def test_nifti_spheres_masker_report_displayed_spheres_errors(
 
 def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
     """Tests that a warning is raised when number of `displayed_spheres` \
-       is greater than number of seeds."""
+       is greater than number of seeds.
+    """
     displayed_spheres = 10
     seeds = [(1, 1, 1)]
     masker = NiftiSpheresMasker(seeds=seeds)
@@ -311,7 +320,8 @@ def test_nifti_spheres_masker_report_displayed_spheres_list():
 
 def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
     """Tests that a ValueError is raised when list of `displayed_spheres` \
-       maximum is greater than number of seeds."""
+       maximum is greater than number of seeds.
+    """
     displayed_spheres = [1, 2, 3]
     seeds = [(1, 1, 1)]
     masker = NiftiSpheresMasker(seeds=seeds)
@@ -596,3 +606,77 @@ def test_multi_nifti_maps_masker_report_warning(
         UserWarning, match="A list of 4D subject images were provided to fit. "
     ):
         masker.fit([imgs, imgs]).generate_report()
+
+
+@pytest.mark.parametrize("reports", [True, False])
+@pytest.mark.parametrize("empty_mask", [True, False])
+def test_surface_masker_minimal_report_no_fit(
+    surf_mask_1d, empty_mask, reports
+):
+    """Test minimal report generation with no fit."""
+    mask = None if empty_mask else surf_mask_1d
+    masker = SurfaceMasker(mask_img=mask, reports=reports)
+    report = masker.generate_report()
+
+    _check_html(report)
+    assert "Make sure to run `fit`" in str(report)
+
+
+@pytest.mark.parametrize("reports", [True, False])
+@pytest.mark.parametrize("empty_mask", [True, False])
+def test_surface_masker_minimal_report_fit(
+    surf_mask_1d, empty_mask, surf_img_1d, reports
+):
+    """Test minimal report generation with fit."""
+    mask = None if empty_mask else surf_mask_1d
+    masker = SurfaceMasker(mask_img=mask, reports=reports)
+    masker.fit_transform(surf_img_1d)
+    report = masker.generate_report()
+
+    _check_html(report)
+    assert '<div class="image">' in str(report)
+    if not reports:
+        assert "Make sure to run `fit`" in str(report)
+        assert 'src="data:image/svg+xml;base64,"' in str(report)
+
+
+def test_surface_masker_report_no_report(surf_img_1d):
+    """Check content of no report."""
+    masker = SurfaceMasker(reports=False)
+    masker.fit_transform(surf_img_1d)
+    report = masker.generate_report()
+
+    _check_html(report)
+    assert "No visual outputs created." in str(report)
+    assert "Empty Report" in str(report)
+
+
+@pytest.mark.parametrize("reports", [True, False])
+@pytest.mark.parametrize("label_names", [None, ["region 1", "region 2"]])
+def test_surface_label_masker_report_unfitted(
+    surf_label_img, label_names, reports
+):
+    masker = SurfaceLabelsMasker(surf_label_img, label_names, reports=reports)
+    report = masker.generate_report()
+
+    _check_html(report)
+    assert "Make sure to run `fit`" in str(report)
+
+
+def test_surface_label_masker_report(surf_label_img, surf_img_1d, tmp_path):
+    """Test that a report can be generated and saved as html."""
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
+    masker = masker.fit()
+    masker.transform(surf_img_1d)
+    report = masker.generate_report()
+    report.save_as_html(tmp_path / "surface_label_masker.html")
+
+
+def test_surface_label_masker_report_no_report(surf_label_img):
+    """Check content of no report."""
+    masker = SurfaceLabelsMasker(surf_label_img, reports=False)
+    report = masker.generate_report()
+
+    _check_html(report)
+    assert "No visual outputs created." in str(report)
+    assert "Empty Report" in str(report)

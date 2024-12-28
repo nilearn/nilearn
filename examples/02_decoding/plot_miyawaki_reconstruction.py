@@ -66,13 +66,13 @@ X_test = masker.transform(X_figure_filenames)
 
 y_train = [
     np.reshape(
-        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
+        np.loadtxt(y, dtype=int, delimiter=","), (-1, *y_shape), order="F"
     )
     for y in y_random_filenames
 ]
 y_test = [
     np.reshape(
-        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
+        np.loadtxt(y, dtype=int, delimiter=","), (-1, *y_shape), order="F"
     )
     for y in y_figure_filenames
 ]
@@ -141,11 +141,11 @@ sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
 from sklearn.feature_selection import SelectKBest, f_classif
-from sklearn.linear_model import OrthogonalMatchingPursuit as OMP
+from sklearn.linear_model import OrthogonalMatchingPursuit
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-# Create as many OMP as voxels to predict
+# Create as many OrthogonalMatchingPursuit as voxels to predict
 clfs = []
 n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
@@ -157,7 +157,7 @@ for i in range(y_train.shape[1]):
         [
             ("selection", SelectKBest(f_classif, k=500)),
             ("scl", StandardScaler()),
-            ("clf", OMP(n_nonzero_coefs=10)),
+            ("clf", OrthogonalMatchingPursuit(n_nonzero_coefs=10)),
         ]
     )
     clf.fit(X_train, y_train[:, i])
@@ -261,31 +261,28 @@ from sklearn.metrics import (
 
 print("Scores")
 print("------")
-print(
-    "  - Accuracy (percent): %f"
-    % np.mean(
-        [accuracy_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
-    )
+accuracy_to_print = np.mean(
+    [accuracy_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
-print(
-    "  - Precision: %f"
-    % np.mean(
-        [precision_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
-    )
+print(f"  - Accuracy (percent): {accuracy_to_print:f}")
+
+precision_to_print = np.mean(
+    [precision_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
-print(
-    "  - Recall: %f"
-    % np.mean(
-        [
-            recall_score(y_test[:, i], y_pred[:, i] > 0.5, zero_division=0)
-            for i in range(100)
-        ]
-    )
+print(f"  - Precision: {precision_to_print:f}")
+
+recall_to_print = np.mean(
+    [
+        recall_score(y_test[:, i], y_pred[:, i] > 0.5, zero_division=0)
+        for i in range(100)
+    ]
 )
-print(
-    "  - F1-score: %f"
-    % np.mean([f1_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)])
+print(f"  - Recall: {recall_to_print:f}")
+
+f1_score_to_print = np.mean(
+    [f1_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
+print(f"  - F1-score: {f1_score_to_print:f}")
 
 
 # %%

@@ -39,9 +39,7 @@ def find_compcor(confounds_json, compcor, n_compcor):
     for prefix in prefix_set:
         # all possible compcor confounds in order
         all_compcor_name = [
-            comp
-            for comp in confounds_json.keys()
-            if f"{prefix}_comp_cor" in comp
+            comp for comp in confounds_json if f"{prefix}_comp_cor" in comp
         ]
         # filter by prefix first (anat vs temporal)
         compcor_cols_filt = _prefix_confound_filter(prefix, all_compcor_name)

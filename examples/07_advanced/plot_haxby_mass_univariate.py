@@ -122,7 +122,8 @@ from sklearn.feature_selection import f_regression
 
 # f_regression implicitly adds intercept
 _, pvals_bonferroni = f_regression(
-    grouped_fmri_masked, grouped_conditions_encoded
+    grouped_fmri_masked,
+    grouped_conditions_encoded.ravel(),
 )
 pvals_bonferroni *= fmri_masked.shape[1]
 pvals_bonferroni[np.isnan(pvals_bonferroni)] = 1

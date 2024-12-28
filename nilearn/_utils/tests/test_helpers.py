@@ -1,4 +1,5 @@
 import warnings
+from pathlib import Path
 
 import pytest
 
@@ -7,7 +8,8 @@ from nilearn._utils import helpers
 
 def _mock_args_for_testing_replace_parameter():
     """Create mock deprecated & replacement parameters for use \
-       with testing functions related to replace_parameters()."""
+       with testing functions related to replace_parameters().
+    """
     mock_kwargs_with_deprecated_params_used = {
         "unchanged_param_0": "unchanged_param_0_val",
         "deprecated_param_0": "deprecated_param_0_val",
@@ -82,7 +84,8 @@ def test_rename_parameters():
 
 def test_transfer_deprecated_param_vals():
     """Check that values assigned to deprecated parameters are \
-       correctly reassigned to the replacement parameters."""
+       correctly reassigned to the replacement parameters.
+    """
     mock_input, replacement_params = _mock_args_for_testing_replace_parameter()
     expected_output = {
         "unchanged_param_0": "unchanged_param_0_val",
@@ -156,3 +159,8 @@ def test_is_plotly_installed():
 
 def test_is_kaleido_installed():
     helpers.is_kaleido_installed()
+
+
+def test_stringify_path():
+    assert isinstance(helpers.stringify_path(Path("foo") / "bar"), str)
+    assert helpers.stringify_path([]) == []

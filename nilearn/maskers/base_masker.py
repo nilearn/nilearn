@@ -3,12 +3,14 @@
 # Author: Gael Varoquaux, Alexandre Abraham
 
 import abc
+import contextlib
 import warnings
 
 import numpy as np
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
 
 from .. import _utils, image, masking, signal
@@ -61,7 +63,7 @@ def _filter_and_extract(
         copy = False
 
     logger.log(
-        f"Loading data " f"from {_utils._repr_niimgs(imgs, shorten=False)}",
+        f"Loading data from {_utils.repr_niimgs(imgs, shorten=False)}",
         verbose=verbose,
         stack_level=2,
     )
@@ -103,6 +105,7 @@ def _filter_and_extract(
             target_affine=target_affine,
             copy=copy,
             copy_header=True,
+            force_resample=False,  # set to True in 0.13.0
         )
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
@@ -153,7 +156,7 @@ def _filter_and_extract(
     return region_signals, aux
 
 
-class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
+class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Base class for NiftiMaskers."""
 
     @abc.abstractmethod
@@ -202,6 +205,37 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         """
         raise NotImplementedError()
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags()
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags()
+        return tags
+
+    def fit(self, imgs=None, y=None):
+        """Present only to comply with sklearn estimators checks."""
+        ...
 
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
@@ -351,10 +385,8 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
         img = self._cache(masking.unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array
-        try:
+        with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
-        except Exception:
-            pass
         return img
 
     def _check_fitted(self):
@@ -364,3 +396,33 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
                 "has not been fitted. "
                 "You must call fit() before calling transform()."
             )
+
+
+class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
+    """Class from which all surface maskers should inherit."""
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(surf_img=True, niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
+        return tags

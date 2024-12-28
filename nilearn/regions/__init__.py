@@ -1,5 +1,6 @@
 """The :mod:`nilearn.regions` class module includes region extraction \
-procedure on a 4D statistical/atlas maps and its function."""
+procedure on a 4D statistical/atlas maps and its function.
+"""
 
 from .hierarchical_kmeans_clustering import HierarchicalKMeans
 from .parcellations import Parcellations

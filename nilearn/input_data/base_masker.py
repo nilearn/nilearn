@@ -1,1 +1,1 @@
-from nilearn.maskers.base_masker import *  # noqa
+from nilearn.maskers.base_masker import *  # noqa: D100, F403

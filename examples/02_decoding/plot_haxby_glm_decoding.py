@@ -38,10 +38,10 @@ t_r = 2.5
 
 # Load target information as string and give a numerical identifier to each
 behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
-conditions = behavioral["labels"].values
+conditions = behavioral["labels"].to_numpy()
 
 # Record these as an array of runs
-runs = behavioral["chunks"].values
+runs = behavioral["chunks"].to_numpy()
 unique_runs = behavioral["chunks"].unique()
 
 # fMRI data: a unique file for each run
@@ -52,7 +52,7 @@ func_filename = haxby_dataset.func[0]
 # -------------------------------------------
 
 events = {}
-# events will take  the form of a dictionary of Dataframes, one per run
+# events will take the form of a dictionary of Dataframes, one per run
 for run in unique_runs:
     # get the condition label per run
     conditions_run = conditions[runs == run]

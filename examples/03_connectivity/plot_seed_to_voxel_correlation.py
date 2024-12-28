@@ -54,7 +54,7 @@ print(confound_filename)
 pcc_coords = [(0, -52, 18)]
 
 # %%
-# We use :class:`nilearn.maskers.NiftiSpheresMasker` to extract the
+# We use :class:`~nilearn.maskers.NiftiSpheresMasker` to extract the
 # **time series from the functional imaging within the sphere**. The
 # sphere is centered at pcc_coords and will have the radius we pass the
 # NiftiSpheresMasker function (here 8 mm).
@@ -87,7 +87,7 @@ seed_time_series = seed_masker.fit_transform(
 
 # %%
 # Next, we can proceed similarly for the **brain-wide voxel-wise time
-# series**, using :class:`nilearn.maskers.NiftiMasker` with the same input
+# series**, using :class:`~nilearn.maskers.NiftiMasker` with the same input
 # arguments as in the seed_masker in addition to smoothing with a 6 mm kernel
 from nilearn.maskers import NiftiMasker
 
@@ -121,24 +121,24 @@ print(f"Brain time series shape: ({brain_time_series.shape})")
 
 # %%
 # We can plot the **seed time series**.
-
 import matplotlib.pyplot as plt
+
+plt.figure(constrained_layout=True)
 
 plt.plot(seed_time_series)
 plt.title("Seed time series (Posterior cingulate cortex)")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
-plt.tight_layout()
 
 # %%
 # Exemplarily, we can also select 5 random voxels from the **brain-wide
 # data** and plot the time series from.
+plt.figure(constrained_layout=True)
 
 plt.plot(brain_time_series[:, [10, 45, 100, 5000, 10000]])
 plt.title("Time series from 5 random voxels")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
-plt.tight_layout()
 
 # %%
 # Performing the seed-to-voxel correlation analysis
@@ -163,12 +163,14 @@ seed_to_voxel_correlations = (
 # voxel's signal**, and will be of shape (n_voxels, 1). The correlation
 # values can potentially range between -1 and 1.
 print(
-    "Seed-to-voxel correlation shape: (%s, %s)"
-    % seed_to_voxel_correlations.shape
+    "Seed-to-voxel correlation shape: ({}, {})".format(
+        *seed_to_voxel_correlations.shape
+    )
 )
 print(
-    "Seed-to-voxel correlation: min = %.3f; max = %.3f"
-    % (seed_to_voxel_correlations.min(), seed_to_voxel_correlations.max())
+    f"Seed-to-voxel correlation: "
+    f"min = {seed_to_voxel_correlations.min():.3f}; "
+    f"max = {seed_to_voxel_correlations.max():.3f}"
 )
 
 # %%

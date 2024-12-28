@@ -85,62 +85,95 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
     return threshold
 
 
-def get_mask_volume(mask_img):
-    """Compute the volume of a brain mask in mm^3.
+def _get_mask_extent(mask_img):
+    """Compute the extent of the provided brain mask.
+    The extent is the volume of the mask in mm^3 if mask_img is a Nifti1Image
+    or the number of vertices if mask_img is a SurfaceImage.
 
     Parameters
     ----------
-    mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
+    mask_img : Nifti1Image or SurfaceImage
+        The Nifti1Image whose voxel dimensions or the SurfaceImage whose
+        number of vertices are to be computed.
 
     Returns
     -------
-    vol : float
-        The computed volume.
+    mask_extent : float
+        The computed volume in mm^3 (if mask_img is a Nifti1Image) or the
+        number of vertices (if mask_img is a SurfaceImage).
 
     """
-    affine = mask_img.affine
-    prod_vox_dims = 1.0 * np.abs(np.linalg.det(affine[:3, :3]))
-    return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
+    if hasattr(mask_img, "affine"):
+        affine = mask_img.affine
+        prod_vox_dims = 1.0 * np.abs(np.linalg.det(affine[:3, :3]))
+        return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
+    else:
+        # sum number of True values in both hemispheres
+        return (
+            mask_img.data.parts["left"].sum()
+            + mask_img.data.parts["right"].sum()
+        )
 
 
-def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
-    """Adjust the screening percentile according to the MNI152 template.
+def adjust_screening_percentile(
+    screening_percentile,
+    mask_img,
+    verbose=0,
+    mesh_n_vertices=None,
+):
+    """Adjust the screening percentile according to the MNI152 template or
+    the number of vertices of the provided standard brain mesh.
 
     Parameters
     ----------
     screening_percentile : float in the interval [0, 100]
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime by premultiplying it with the ratio of the volume of the
-        mask of the data and volume of a standard brain.
+        w.r.t the volume of either a standard (MNI152) brain (if mask_img is a
+        3D volume) or a the number of vertices in the standard brain mesh
+        (if mask_img is a SurfaceImage). This means that the
+        `screening_percentile` is corrected at runtime by premultiplying it
+        with the ratio of the volume of the mask of the data and volume of the
+        standard brain.
 
-    mask_img : nibabel image object
-        Input image whose voxel dimensions are to be computed.
+    mask_img :  Nifti1Image or SurfaceImage
+        The Nifti1Image whose voxel dimensions or the SurfaceImage whose
+        number of vertices are to be computed.
 
     verbose : int, default=0
         Verbosity level.
 
+    mesh_n_vertices : int, default=None
+        Number of vertices of the reference brain mesh, eg., fsaverage5
+        or fsaverage7 etc.. If provided, the screening percentile will be
+        adjusted according to the number of vertices.
+
     Returns
     -------
-    screening_percentile: float in the interval [0, 100]
+    screening_percentile : float in the interval [0, 100]
         Percentile value for ANOVA univariate feature selection.
 
     """
     original_screening_percentile = screening_percentile
     # correct screening_percentile according to the volume of the data mask
-    mask_volume = get_mask_volume(mask_img)
-    if mask_volume > 1.1 * MNI152_BRAIN_VOLUME:
+    # or the number of vertices of the reference mesh
+    mask_extent = _get_mask_extent(mask_img)
+    # if mask_img is a surface mesh, reference is the number of vertices
+    # in the standard mesh otherwise it is the volume of the MNI152 brain
+    # template
+    reference_extent = (
+        MNI152_BRAIN_VOLUME if mesh_n_vertices is None else mesh_n_vertices
+    )
+    if mask_extent > 1.1 * reference_extent:
         warnings.warn(
-            "Brain mask is bigger than the volume of a standard "
+            "Brain mask is bigger than the standard "
             "human brain. This object is probably not tuned to "
             "be used on such data.",
             stacklevel=3,
         )
-    elif mask_volume < 0.005 * MNI152_BRAIN_VOLUME:
+    elif mask_extent < 0.005 * reference_extent:
         warnings.warn(
-            "Brain mask is smaller than .5% of the volume "
+            "Brain mask is smaller than .5% of the size of the standard "
             "human brain. This object is probably not tuned to "
             "be used on such data.",
             stacklevel=3,
@@ -148,20 +181,28 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
 
     if screening_percentile < 100.0:
         screening_percentile = screening_percentile * (
-            MNI152_BRAIN_VOLUME / mask_volume
+            reference_extent / mask_extent
         )
         screening_percentile = min(screening_percentile, 100.0)
     # if screening_percentile is 100, we don't do anything
 
+    if hasattr(mask_img, "mesh"):
+        log_mask = f"Mask n_vertices = {mask_extent:g}"
+    else:
+        log_mask = (
+            f"Mask volume = {mask_extent:g}mm^3 = {mask_extent / 1000.0:g}cm^3"
+        )
     logger.log(
-        f"Mask volume = {mask_volume:g}mm^3 = {mask_volume / 1000.0:g}cm^3",
+        log_mask,
         verbose=verbose,
         msg_level=1,
     )
+    if hasattr(mask_img, "mesh"):
+        log_ref = f"Reference mesh n_vertices = {reference_extent:g}"
+    else:
+        log_ref = f"Standard brain volume = {MNI152_BRAIN_VOLUME:g}mm^3"
     logger.log(
-        "Standard brain volume "
-        f"= {MNI152_BRAIN_VOLUME:g}mm^3 "
-        f"= {MNI152_BRAIN_VOLUME / 1.0e3:g}cm^3",
+        log_ref,
         verbose=verbose,
         msg_level=1,
     )
@@ -171,7 +212,7 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
         msg_level=1,
     )
     logger.log(
-        f"Volume-corrected screening-percentile: {screening_percentile:g}",
+        f"Corrected screening-percentile: {screening_percentile:g}",
         verbose=verbose,
         msg_level=1,
     )
@@ -179,7 +220,11 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
 
 
 def check_feature_screening(
-    screening_percentile, mask_img, is_classification, verbose=0
+    screening_percentile,
+    mask_img,
+    is_classification,
+    verbose=0,
+    mesh_n_vertices=None,
 ):
     """Check feature screening method.
 
@@ -205,6 +250,11 @@ def check_feature_screening(
     verbose : int, default=0
         Verbosity level.
 
+    mesh_n_vertices : int, default=None
+        Number of vertices of the reference mesh, eg., fsaverage5 or
+        fsaverage7 etc.. If provided, the screening percentile will be adjusted
+        according to the number of vertices.
+
     Returns
     -------
     selector : SelectPercentile instance
@@ -221,9 +271,13 @@ def check_feature_screening(
             f" [0, 100], got {screening_percentile:g}"
         )
     else:
-        # correct screening_percentile according to the volume of the data mask
+        # correct screening_percentile according to the volume or the number of
+        # vertices in the data mask
         screening_percentile_ = adjust_screening_percentile(
-            screening_percentile, mask_img, verbose=verbose
+            screening_percentile,
+            mask_img,
+            verbose=verbose,
+            mesh_n_vertices=mesh_n_vertices,
         )
 
         return SelectPercentile(f_test, percentile=int(screening_percentile_))
