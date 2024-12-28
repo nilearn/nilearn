@@ -2075,25 +2075,25 @@ def smooth_img(
         The surface whose is to be smoothed.
         In the case of 2D data, each sample is smoothed independently.
 
-    iterations : :obj:`int`, optional
+    iterations : :obj:`int`, default = 1
         The number of times to repeat the smoothing operation
         (it must be a positive value).
         Defaults to 1
 
-    distance_weights : :obj:`bool`, optional
+    distance_weights : :obj:`bool`, default = False
         Whether to add distance-based weighting to the smoothing.
         With such weights, the value calculated for each vertex
         at each iteration is the weighted sum of neighboring vertices
         where the weight on each neighbor is the inverse
         of the distances to it.
 
-    vertex_weights : array-like or None, optional
-        A vector of weights, one per vertex.
+    vertex_weights : SurfaceImage or None, default = None
+        A SurfaceImage whose data are vector of weights, one per vertex.
         These weights are normalized and
         applied to the smoothing
         after the application of center-surround weights.
 
-    center_surround_knob : :obj:`float`, optional
+    center_surround_knob : :obj:`float`, default = 0
         The relative weighting of the center and the surround
         in each iteration of the smoothing.
         If the value of the knob is `k`,
@@ -2108,33 +2108,29 @@ def smooth_img(
         A value of `inf` results in each vertex being updated
         with the average of its neighbors without including its own value.
 
-    match : { 'sum' | 'mean' | 'var' | 'dist', None }, optional
+    match : { 'sum', 'mean', 'var', 'dist', None}, default = "sum"
         What properties of the input data should be matched in the output data.
         `None` indicates that the smoothed output should be
-        returned without transformation. If the value is `'sum'`, then the
-        output is rescaled to have the same sum as `surf_data`.
+        returned without transformation.
+        If the value is `'sum'`,
+        then the  output is rescaled to have the same sum as `surf_data`.
         If the value is `'mean'`,
         then the output is shifted to match the mean of the input.
-        If the value is `'var'` or `'std'`,
+        If the value is `'var'`,
         then the variance of the output is matched.
         Finally, if the value is `'dist'`,
-        then the mean and the variance are matched. Default is `'sum'`
+        then the mean and the variance are matched.
 
     Returns
     -------
-    surf_data_smooth : array
-        The array of smoothed values at each vertex.
+    smoothed_imgs : SurfaceImage
+        SurfaceImage with smoothed data at each vertex.
 
     Examples
     --------
-    >>> from nilearn import datasets, surface, plotting
-    >>> fsaverage = datasets.fetch_surf_fsaverage("fsaverage")
-    >>> white_left = surface.load_surf_mesh(fsaverage.white_left)
-    >>> curv = surface.load_surf_data(fsaverage.curv_left)
-    >>> curv_smooth = surface.smooth_img(
-    ...     surface=white_left, surf_data=curv, iterations=50
-    ... )
-    >>> plotting.plot_surf(white_left, surf_map=curv_smooth)
+    >>> from nilearn import datasets, surface
+    >>> curv = datasets.load_fsaverage_data(data_type="curvature")
+    >>> curv_smooth, _ = surface.smooth_img(curv, iterations=50)
 
     """
     if match not in (
@@ -2142,15 +2138,6 @@ def smooth_img(
         "mean",
         "var",
         "dist",
-        "var",
-        "std",
-        "variance",
-        "stddev",
-        "sd",
-        "dist",
-        "meanvar",
-        "meanstd",
-        "meansd",
         None,
     ):
         raise ValueError(f"invalid match argument: {match}")
@@ -2168,6 +2155,7 @@ def smooth_img(
     values = "invlen" if distance_weights else "ones"
 
     new_data = {}
+    weights = {}
 
     for hemi in imgs.mesh.parts:
         mesh = imgs.mesh.parts[hemi]
@@ -2188,14 +2176,13 @@ def smooth_img(
         colsums = matrix.sum(axis=1)
         colsums = np.asarray(colsums).flatten()
         matrix = matrix.multiply(surround_weight / colsums[:, None])
-
         # Add in the diagonal.
         matrix.setdiag(center_weight)
 
         # Run the iteratioons of smooothing.
         tmp = data
         for _ in range(iterations):
-            tmp = matrix.dot(data)
+            tmp = matrix.dot(tmp)
 
         # Convert back into numpy array.
         tmp = np.reshape(np.asarray(tmp), np.shape(data))
@@ -2209,12 +2196,12 @@ def smooth_img(
             mu0 = np.nanmean(data, axis=0)
             mu1 = np.nanmean(tmp, axis=0)
             tmp = tmp + (mu0 - mu1)
-        elif match in ("var", "std", "variance", "stddev", "sd"):
+        elif match == "var":
             std0 = np.nanstd(data, axis=0)
             std1 = np.nanstd(tmp, axis=0)
             mu1 = np.nanmean(tmp, axis=0)
             tmp = (tmp - mu1) * (std0 / std1) + mu1
-        elif match in ("dist", "meanvar", "meanstd", "meansd"):
+        elif match == "dist":
             std0 = np.nanstd(data, axis=0)
             std1 = np.nanstd(tmp, axis=0)
             mu0 = np.nanmean(data, axis=0)
@@ -2223,8 +2210,9 @@ def smooth_img(
 
         new_data[hemi] = tmp
 
+        w /= np.sum(w)
+        weights[hemi] = w
+
     smoothed_imgs = new_img_like(imgs, new_data)
 
-    w /= np.sum(w)
-
-    return (smoothed_imgs, w)
+    return smoothed_imgs, weights
