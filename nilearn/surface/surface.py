@@ -1988,8 +1988,7 @@ def _compute_adjacency_matrix(mesh, values="ones", dtype=None):
 
     Parameters
     ----------
-    surface : Surface-like
-        The surface whose adjacency matrix is to be computed.
+    mesh : InMemoryMesh
 
     values : { 'len' | 'invlen' | 'ones'}, optional
         If `values` is `'ones'` (the default), then the returned matrix
@@ -2069,7 +2068,6 @@ def smooth_img(
     match="sum",
 ):
     """Smooth values along the surface.
-
 
     Parameters
     ----------
@@ -2157,67 +2155,76 @@ def smooth_img(
     ):
         raise ValueError(f"invalid match argument: {match}")
 
-    mesh = imgs.mesh.parts["right"]
-    data = imgs.data.parts["right"]
-
     # First, calculate the center and surround weights for the
     # center-surround knob.
     center_weight = 1 / (1 + np.exp2(-center_surround_knob))
     surround_weight = 1 - center_weight
     if surround_weight == 0:
         # There's nothing to do in this case.
-        return np.array(data)
+        return imgs
 
     # Calculate the adjacency matrix either weighting
     # by inverse distance or not weighting (ones)
     values = "invlen" if distance_weights else "ones"
-    matrix = _compute_adjacency_matrix(mesh, values=values)
 
-    # If there are vertex weights, get them ready.
-    if vertex_weights:
-        w = np.array(vertex_weights)
-        w /= np.sum(w)
-    else:
-        w = np.ones(matrix.shape[0])
+    new_data = {}
 
-    # We need to normalize the matrix columns, and we can do this now by
-    # normalizing everything but the diagonal to the surround weight, then
-    # adding the center weight along the diagonal.
-    colsums = matrix.sum(axis=1)
-    colsums = np.asarray(colsums).flatten()
-    matrix = matrix.multiply(surround_weight / colsums[:, None])
+    for hemi in imgs.mesh.parts:
+        mesh = imgs.mesh.parts[hemi]
+        data = imgs.data.parts[hemi]
 
-    # Add in the diagonal.
-    matrix.setdiag(center_weight)
+        matrix = _compute_adjacency_matrix(mesh, values=values)
 
-    # Run the iteratioons of smooothing.
-    new_data = data
-    for _ in range(iterations):
-        new_data = matrix.dot(data)
+        # If there are vertex weights, get them ready.
+        if vertex_weights:
+            w = np.array(vertex_weights)
+            w /= np.sum(w)
+        else:
+            w = np.ones(matrix.shape[0])
 
-    # Convert back into numpy array.
-    new_data = np.reshape(np.asarray(new_data), np.shape(data))
+        # We need to normalize the matrix columns, and we can do this now by
+        # normalizing everything but the diagonal to the surround weight, then
+        # adding the center weight along the diagonal.
+        colsums = matrix.sum(axis=1)
+        colsums = np.asarray(colsums).flatten()
+        matrix = matrix.multiply(surround_weight / colsums[:, None])
 
-    # Rescale it if needed.
-    if match == "sum":
-        sum0 = np.nansum(data, axis=0)
-        sum1 = np.nansum(new_data, axis=0)
-        new_data = new_data * (sum0 / sum1)
-    elif match == "mean":
-        mu0 = np.nanmean(data, axis=0)
-        mu1 = np.nanmean(new_data, axis=0)
-        new_data = new_data + (mu0 - mu1)
-    elif match in ("var", "std", "variance", "stddev", "sd"):
-        std0 = np.nanstd(data, axis=0)
-        std1 = np.nanstd(new_data, axis=0)
-        mu1 = np.nanmean(new_data, axis=0)
-        new_data = (new_data - mu1) * (std0 / std1) + mu1
-    elif match in ("dist", "meanvar", "meanstd", "meansd"):
-        std0 = np.nanstd(data, axis=0)
-        std1 = np.nanstd(new_data, axis=0)
-        mu0 = np.nanmean(data, axis=0)
-        mu1 = np.nanmean(new_data, axis=0)
-        new_data = (new_data - mu1) * (std0 / std1) + mu0
+        # Add in the diagonal.
+        matrix.setdiag(center_weight)
+
+        # Run the iteratioons of smooothing.
+        tmp = data
+        for _ in range(iterations):
+            tmp = matrix.dot(data)
+
+        # Convert back into numpy array.
+        tmp = np.reshape(np.asarray(tmp), np.shape(data))
+
+        # Rescale it if needed.
+        if match == "sum":
+            sum0 = np.nansum(data, axis=0)
+            sum1 = np.nansum(tmp, axis=0)
+            tmp = tmp * (sum0 / sum1)
+        elif match == "mean":
+            mu0 = np.nanmean(data, axis=0)
+            mu1 = np.nanmean(tmp, axis=0)
+            tmp = tmp + (mu0 - mu1)
+        elif match in ("var", "std", "variance", "stddev", "sd"):
+            std0 = np.nanstd(data, axis=0)
+            std1 = np.nanstd(tmp, axis=0)
+            mu1 = np.nanmean(tmp, axis=0)
+            tmp = (tmp - mu1) * (std0 / std1) + mu1
+        elif match in ("dist", "meanvar", "meanstd", "meansd"):
+            std0 = np.nanstd(data, axis=0)
+            std1 = np.nanstd(tmp, axis=0)
+            mu0 = np.nanmean(data, axis=0)
+            mu1 = np.nanmean(tmp, axis=0)
+            tmp = (tmp - mu1) * (std0 / std1) + mu0
+
+        new_data[hemi] = tmp
+
+    smoothed_imgs = new_img_like(imgs, new_data)
 
     w /= np.sum(w)
-    return (new_data, w)
+
+    return (smoothed_imgs, w)
