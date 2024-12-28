@@ -1239,4 +1239,3 @@ def check_surface(surface):
     surface = load_surface(surface)
     mesh, data = check_mesh_and_data(surface.mesh, surface.data)
     return Surface(mesh, data)
-

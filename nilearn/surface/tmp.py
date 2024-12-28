@@ -1,4 +1,3 @@
-
 def _compute_adjacency_matrix(surface, values="ones", dtype=None):
     """Compute the adjacency matrix for a surface.
 
