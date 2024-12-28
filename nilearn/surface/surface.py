@@ -2009,6 +2009,9 @@ def _compute_adjacency_matrix(mesh, values="ones", dtype=None):
 
     """
     # This is a bit of a hack to quickly find a unique set of all edges.
+    if values not in {"len", "invlen", "ones"}:
+        raise ValueError(f"unrecognized values argument: {values}")
+
     n = mesh.coordinates.shape[0]
 
     edges = np.vstack(
@@ -2048,8 +2051,6 @@ def _compute_adjacency_matrix(mesh, values="ones", dtype=None):
             edge_lens = np.ones_like(edges)
         else:
             edge_lens = np.ones(edges.shape, dtype=dtype)
-    else:
-        raise ValueError(f"unrecognized values argument: {values}")
 
     # We can now make a sparse matrix.
     ee = np.concatenate([edge_lens, edge_lens])
@@ -2089,17 +2090,12 @@ def smooth_img(
 ):
     """Smooth values along the surface.
 
+
     Parameters
     ----------
-    surface : Surface-like
-        The surface on which the data `surf_data` are to be smoothed.
-
-    surf_data : array-like
-        The array of values at each vertex that is being smoothed.
-        This may either be a vector of length `n`
-        or a matrix with `n` rows.
-        In the case of fMRI data, `n` could be the number of timepoints.
-        Each column is smoothed independently.
+    imgs : SurfaceImage
+        The surface whose is to be smoothed.
+        In the case of 2D data, each sample is smoothed independently.
 
     iterations : :obj:`int`, optional
         The number of times to repeat the smoothing operation
@@ -2134,7 +2130,7 @@ def smooth_img(
         A value of `inf` results in each vertex being updated
         with the average of its neighbors without including its own value.
 
-    match : { 'sum' | 'mean' | 'var' | 'dist' | None }, optional
+    match : { 'sum' | 'mean' | 'var' | 'dist', None }, optional
         What properties of the input data should be matched in the output data.
         `None` indicates that the smoothed output should be
         returned without transformation. If the value is `'sum'`, then the
@@ -2163,6 +2159,24 @@ def smooth_img(
     >>> plotting.plot_surf(white_left, surf_map=curv_smooth)
 
     """
+    if match not in (
+        "sum",
+        "mean",
+        "var",
+        "dist",
+        "var",
+        "std",
+        "variance",
+        "stddev",
+        "sd",
+        "dist",
+        "meanvar",
+        "meanstd",
+        "meansd",
+        None,
+    ):
+        raise ValueError(f"invalid match argument: {match}")
+
     mesh = imgs.mesh.parts["right"]
     data = imgs.data.parts["right"]
 
@@ -2224,8 +2238,6 @@ def smooth_img(
         mu0 = np.nanmean(data, axis=0)
         mu1 = np.nanmean(new_data, axis=0)
         new_data = (new_data - mu1) * (std0 / std1) + mu0
-    elif match is not None:
-        raise ValueError(f"invalid match argument: {match}")
 
     w /= np.sum(w)
     return (new_data, w)
