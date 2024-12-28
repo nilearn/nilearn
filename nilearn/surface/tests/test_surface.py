@@ -48,6 +48,7 @@ from nilearn.surface.surface import (
     load_surf_mesh,
     mean_img,
     new_img_like,
+    smooth_surface_data,
     vol_to_surf,
 )
 
@@ -1107,7 +1108,7 @@ def test_smooth_surface_data():
     # Create surface data with activation at one mesh vertex
     surf_data = np.zeros(np.shape(sphere.coordinates)[0])
     surf_data[0] = 1
-    surf_data_smooth = surface.smooth_surface_data(
+    surf_data_smooth = smooth_surface_data(
         surface=sphere, surf_data=surf_data, iterations=1, match="sum"
     )
     # checking that output was properly normalized

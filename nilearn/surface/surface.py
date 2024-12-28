@@ -1977,7 +1977,6 @@ def new_img_like(ref_img, data):
     )
 
 
-
 def _compute_adjacency_matrix(surface, values="ones", dtype=None):
     """Compute the adjacency matrix for a surface.
 
@@ -2034,7 +2033,7 @@ def _compute_adjacency_matrix(surface, values="ones", dtype=None):
     # Calculate distances between pairs.
     # We use this as a weighting to make sure that
     # smoothing takes into account the distance between each vertex neighbor
-    if values == "len" or values == "invlen":
+    if values in ("len", "invlen"):
         coords = surface.coordinates
         edge_lens = np.sqrt(np.sum((coords[u, :] - coords[v, :]) ** 2, axis=1))
         if dtype is None:
@@ -2160,12 +2159,13 @@ def smooth_surface_data(
     Examples
     --------
     >>> from nilearn import datasets, surface, plotting
-    >>> fsaverage = datasets.fetch_surf_fsaverage('fsaverage')
+    >>> fsaverage = datasets.fetch_surf_fsaverage("fsaverage")
     >>> white_left = surface.load_surf_mesh(fsaverage.white_left)
     >>> curv = surface.load_surf_data(fsaverage.curv_left)
-    >>> curv_smooth = surface.smooth_surface_data(surface=white_left,
-    ... surf_data=curv, iterations=50)
-    >>> plotting.plot_surf(white_left, surf_map = curv_smooth)
+    >>> curv_smooth = surface.smooth_surface_data(
+    ...     surface=white_left, surf_data=curv, iterations=50
+    ... )
+    >>> plotting.plot_surf(white_left, surf_map=curv_smooth)
 
     """
     surface = load_surf_mesh(surface)
