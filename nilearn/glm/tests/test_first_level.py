@@ -1,5 +1,6 @@
 import itertools
 import shutil
+import string
 import unittest.mock
 import warnings
 from itertools import product
@@ -656,31 +657,73 @@ def test_fmri_inputs_events_type(tmp_path):
 
 
 def test_fmri_inputs_with_confounds(tmp_path):
-    """Test with confounds and, events or design matrix."""
+    """Test with confounds and, events."""
+    n_timepoints = 10
+    shapes = ((3, 4, 5, n_timepoints),)
+    mask, func_img, _ = write_fake_fmri_data_and_design(
+        shapes, file_path=tmp_path
+    )
+
+    conf = pd.DataFrame([0] * n_timepoints, columns=["conf"])
+
+    events = basic_paradigm()
+
+    func_img = func_img[0]
+
+    # Provide t_r, confounds, and events but no design matrix
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img,
+        confounds=conf,
+        events=events,
+    )
+    assert "conf" in flm.design_matrices_[0]
+
+    # list are OK
+    FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img,
+        confounds=[conf],
+        events=events,
+    )
+
+    # test with confounds as numpy array
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img,
+        confounds=conf.to_numpy(),
+        events=events,
+    )
+    assert "confound_0" in flm.design_matrices_[0]
+
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        func_img,
+        confounds=[conf.to_numpy()],
+        events=events,
+    )
+    assert "confound_0" in flm.design_matrices_[0]
+
+
+def test_fmri_inputs_confounds_ignored_with_design_matrix(tmp_path):
+    """Test with confounds with design matrix.
+
+    Confounds ignored if design matrix is passed
+    """
     n_timepoints = 10
     shapes = ((3, 4, 5, n_timepoints),)
     mask, func_img, des = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path
     )
 
-    conf = pd.DataFrame([0, 0])
-
-    events = basic_paradigm()
+    conf = pd.DataFrame([0] * n_timepoints, columns=["conf"])
 
     func_img = func_img[0]
-    des = des[0]
 
-    # Provide t_r, confounds, and events but no design matrix
-    FirstLevelModel(mask_img=mask, t_r=2.0).fit(
-        func_img,
-        confounds=pd.DataFrame([0] * n_timepoints, columns=["conf"]),
-        events=events,
+    des = pd.read_csv(des[0], sep="\t")
+    n_col_in_des = len(des.columns)
+
+    flm = FirstLevelModel(mask_img=mask).fit(
+        func_img, confounds=conf, design_matrices=des
     )
 
-    # test with confounds as numpy array
-    FirstLevelModel(mask_img=mask).fit(
-        [func_img], confounds=conf.values, design_matrices=[des]
-    )
+    assert len(flm.design_matrices_[0].columns) == n_col_in_des
 
 
 def test_fmri_inputs_errors(tmp_path, shape_4d_default):
@@ -1148,7 +1191,7 @@ def test_first_level_with_scaling(affine_eye):
     design_matrices = [
         pd.DataFrame(
             np.ones((shapes[0][-1], rk)),
-            columns=list("abcdefghijklmnopqrstuvwxyz")[:rk],
+            columns=list(string.ascii_lowercase)[:rk],
         )
     ]
     fmri_glm = FirstLevelModel(
@@ -1179,7 +1222,7 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     design_matrices = [
         pd.DataFrame(
             np.ones((shapes[0][-1], rk)),
-            columns=list("abcdefghijklmnopqrstuvwxyz")[:rk],
+            columns=list(string.ascii_lowercase)[:rk],
         )
     ]
     fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye)]
@@ -2300,7 +2343,6 @@ def test_flm_with_surface_data_no_design_matrix(surface_glm_data):
     """Smoke test FirstLevelModel with surface data and no design matrix."""
     img, _ = surface_glm_data(5)
     masker = SurfaceMasker().fit(img)
-    # breakpoint()
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     model.fit(img, events=basic_paradigm())
 

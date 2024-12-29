@@ -7,6 +7,10 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.surface._testing import (
+    assert_polydata_equal,
+    assert_surface_image_equal,
+)
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
@@ -53,10 +57,11 @@ def test_fit_list_surf_images(surf_img_2d):
     assert masker.mask_img_.shape == (surf_img_2d(1).shape[0], 1)
 
 
-from nilearn.surface._testing import (
-    assert_polydata_equal,
-    assert_surface_image_equal,
-)
+def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):
+    """Test fit on list of surface images when masker has a mask."""
+    masker = SurfaceMasker(mask_img=surf_mask_1d)
+    masker.fit([surf_img_2d(3), surf_img_2d(5)])
+    assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
 
 
 # test with only one surface image and with 2 surface images (surface time

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import operator
 from pathlib import Path
 from typing import Any
 
@@ -171,7 +172,7 @@ def write_core_devs(f):
 def sort_authors(authors: list[dict[str, str]]) -> list[dict[str, str]]:
     """Sort authors by given name."""
     print(" Sorting authors by given name")
-    authors.sort(key=lambda x: x["given-names"])
+    authors.sort(key=operator.itemgetter("given-names"))
     return authors
 
 

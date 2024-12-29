@@ -297,7 +297,7 @@ learning <decoding>` e.g. :footcite:t:`Mourao-miranda2012`.
 
 Using the prediction accuracy of a classifier
 to characterize relationships between brain images and stimuli. (e.g.
-:ref:`searchlight <searchlight>`) [:footcite:t:`Kriegeskorte2006`]
+:ref:`searchlight <searchlight>` and :footcite:t:`Kriegeskorte2006`)
 
 **Transfer learning**
 
@@ -313,7 +313,7 @@ From a statistical point of view, machine learning implements
 statistical estimation of models with a large number of parameters.
 Tricks pulled in machine learning (e.g. regularization) can
 make this estimation possible despite the usually
-small number of observations in the neuroimaging domain footcite:p:`Varoquaux2012`.
+small number of observations in the neuroimaging domain :footcite:p:`Varoquaux2012`.
 This usage of machine learning requires some understanding of the models.
 
 **Data mining / exploration**

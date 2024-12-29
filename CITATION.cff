@@ -306,6 +306,10 @@ authors:
     family-names: Abenes
     website: https://github.com/boredStats
     orcid: https://orcid.org/0000-0002-7625-1557
+  - given-names: Idrissa
+    family-names: Traore
+    affiliation: IMT Atlantique, Brest, France
+    website: https://github.com/badrinini
   - given-names: Jake
     family-names: Vogel
     website: https://github.com/illdopejake

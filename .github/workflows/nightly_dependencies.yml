@@ -28,7 +28,7 @@ concurrency:
     cancel-in-progress: true
 
 jobs:
-    test_nightly:
+    nightly:
 
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
@@ -62,20 +62,23 @@ jobs:
                     fi;
                 fi;
 
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v4
+
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
-                python-version: 3.12
+                python-version: 3.13
 
         -   name: Install tox
             if: steps.check-commit-msg.outputs.skip == 'false'
-            run: python -m pip install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
 
         -   name: Run test suite
             if: steps.check-commit-msg.outputs.skip == 'false'
             id: nightly
             continue-on-error: true
-            run: tox run -e test_nightly -- nilearn
+            run: tox run --list-dependencies -e nightly -- nilearn
 
         -   name: Upload test report
             if: success() || failure()

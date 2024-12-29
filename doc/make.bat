@@ -20,7 +20,6 @@ if "%1" == "help" (
 	echo.  json      to make JSON files
 	echo.  htmlhelp  to make HTML files and a HTML help project
 	echo.  qthelp    to make HTML files and a qthelp project
-	echo.  latex     to make LaTeX files, you can set PAPER=a4 or PAPER=letter
 	echo.  changes   to make an overview over all changed/added/deprecated items
 	echo.  linkcheck to check all external links for integrity
 	echo.  doctest   to run all doctests embedded in the documentation if enabled
@@ -77,13 +76,6 @@ if "%1" == "qthelp" (
 	echo.^> qcollectiongenerator %BUILDDIR%\qthelp\nilearn.qhcp
 	echo.To view the help file:
 	echo.^> assistant -collectionFile %BUILDDIR%\qthelp\nilearn.ghc
-	goto end
-)
-
-if "%1" == "latex" (
-	%SPHINXBUILD% -b latex %ALLSPHINXOPTS% %BUILDDIR%/latex
-	echo.
-	echo.Build finished; the LaTeX files are in %BUILDDIR%/latex.
 	goto end
 )
 

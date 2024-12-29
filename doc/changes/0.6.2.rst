@@ -33,11 +33,11 @@ Contributors
 
 The following people contributed to this release:
 
-    * `Elizabeth DuPre`_
-    * `Franz Liem`_
-    * `Gael Varoquaux`_
-    * `Jon Haitz Legarreta Gorrono`_
-    * `Joshua Teves`_
-    * `Kshitij Chawla`_
-    * `Zvi Baratz`_
-    * `Simon Steinkamp`_
+* `Elizabeth DuPre`_
+* `Franz Liem`_
+* `Gael Varoquaux`_
+* `Jon Haitz Legarreta Gorrono`_
+* `Joshua Teves`_
+* `Kshitij Chawla`_
+* `Zvi Baratz`_
+* `Simon Steinkamp`_

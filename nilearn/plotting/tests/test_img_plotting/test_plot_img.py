@@ -1,5 +1,7 @@
 """Tests for :func:`nilearn.plotting.plot_img`."""
 
+# ruff: noqa: ARG001
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -30,7 +32,7 @@ def _testdata_3d_for_plotting_for_resampling(img, binary):
     return Nifti1Image(data, affine)
 
 
-def test_display_methods(img_3d_mni):
+def test_display_methods(pyplot, img_3d_mni):
     """Tests display methods."""
     display = plot_img(img_3d_mni)
     display.add_overlay(img_3d_mni, threshold=0)
@@ -40,36 +42,33 @@ def test_display_methods(img_3d_mni):
     )
 
 
-def test_plot_with_axes_or_figure(img_3d_mni):
+def test_plot_with_axes_or_figure(pyplot, img_3d_mni):
     """Smoke tests for plot_img with providing figure or Axes."""
     figure = plt.figure()
     plot_img(img_3d_mni, figure=figure)
     ax = plt.subplot(111)
     plot_img(img_3d_mni, axes=ax)
-    plt.close()
 
 
-def test_plot_empty_slice(affine_mni):
+def test_plot_empty_slice(pyplot, affine_mni):
     """Test that things don't crash when we give a map \
        with nothing above threshold. This is only a smoke test.
     """
     img = Nifti1Image(np.zeros((20, 20, 20)), affine_mni)
     plot_img(img, display_mode="y", threshold=1)
-    plt.close()
 
 
 @pytest.mark.parametrize("display_mode", ["x", "y", "z"])
-def test_plot_img_with_auto_cut_coords(affine_eye, display_mode):
+def test_plot_img_with_auto_cut_coords(pyplot, affine_eye, display_mode):
     """Smoke test for plot_img with cut_coords set in auto mode."""
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
     img = Nifti1Image(data, affine_eye)
     plot_img(img, cut_coords=None, display_mode=display_mode, black_bg=True)
-    plt.close()
 
 
 @pytest.mark.parametrize("binary_img", [True, False])
-def test_plot_img_with_resampling(binary_img, img_3d_mni):
+def test_plot_img_with_resampling(pyplot, binary_img, img_3d_mni):
     """Tests for plot_img with resampling of the data image."""
     img = _testdata_3d_for_plotting_for_resampling(img_3d_mni, binary_img)
     if binary_img:
@@ -82,10 +81,9 @@ def test_plot_img_with_resampling(binary_img, img_3d_mni):
         img, contours=2, linewidth=4, colors=["limegreen", "yellow"]
     )
     display.add_edges(img, color="c")
-    plt.close()
 
 
-def test_display_methods_with_display_mode_tiled(img_3d_mni):
+def test_display_methods_with_display_mode_tiled(pyplot, img_3d_mni):
     """Smoke tests for display methods with tiled display mode."""
     display = plot_img(img_3d_mni, display_mode="tiled")
     display.add_overlay(img_3d_mni, threshold=0)

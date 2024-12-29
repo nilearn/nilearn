@@ -315,6 +315,7 @@ Featured examples
    maintenance.rst
    changes/whats_new.rst
    authors.rst
+   Versions <versions.rst>
    GitHub Repository <https://github.com/nilearn/nilearn>
 
 

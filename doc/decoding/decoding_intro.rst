@@ -38,28 +38,28 @@ information on the corresponding category.
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_007.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
-   :align: left
+   :align: center
 
    Face stimuli
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_004.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
-   :align: left
+   :align: center
 
    Cat stimuli
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_haxby_masks_001.png
    :target: ../auto_examples/01_plotting/plot_haxby_masks.html
    :scale: 30
-   :align: left
+   :align: center
 
    Masks
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_full_analysis.html
    :scale: 35
-   :align: left
+   :align: center
 
    Decoding scores per mask
 
@@ -314,7 +314,7 @@ model is better than chance or not.
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_haxby_masks_001.png
    :target: ../auto_examples/01_plotting/plot_haxby_masks.html
    :scale: 55
-   :align: left
+   :align: center
 
    Masks
 
@@ -322,7 +322,7 @@ model is better than chance or not.
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_full_analysis.html
    :scale: 70
-   :align: left
+   :align: center
 
 
 Visualizing the decoder's weights
@@ -334,6 +334,7 @@ coefficients of best models for each class in ``decoder.coef_img_``.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: ../auto_examples/plot_decoding_tutorial.html
+   :align: center
    :scale: 65
 
 .. note::
@@ -383,6 +384,7 @@ To visualize the results, :class:`nilearn.decoding.Decoder` handles two main ste
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
+   :align: center
    :scale: 65
 
 .. seealso::

@@ -78,6 +78,7 @@ or hypothesized internal processes (e.g. memorization of a stimulus), ...
 
 
 .. figure:: ../images/stimulation-time-diagram.png
+   :align: center
 
 
 One expects that a brain region involved in the processing of a certain type of event
@@ -94,6 +95,7 @@ as can be seen in the following figure showing the response to an impulsive even
 (for example, an auditory click played to the participants).
 
 .. figure:: ../images/spm_iHRF.png
+   :align: center
 
 Using our knowledge of the haemodynamic response,
 we can build a predicted time course from the time-diagram of the event
@@ -112,6 +114,7 @@ the voxel is said to exhibit a significant response to the event type.
 
 
 .. figure:: ../images/time-course-and-model-fit-in-a-voxel.png
+   :align: center
 
 Correlations are computed separately at each :term:`voxel` and a correlation map can be produced displaying
 the values of correlations (real numbers between -1 and +1) at each :term:`voxel`.
@@ -127,6 +130,7 @@ The map is thresholded so that only voxels with a p-value less than 1/1000 are c
 
 
 .. figure:: ../images/example-spmZ_map.png
+   :align: center
 
 
 In most :term:`fMRI` experiments, several predictors are needed to fully
@@ -194,6 +198,7 @@ meaning, if there were no effect, the probability of observing an effect as larg
 would be less than :math:`\alpha`.
 
 .. figure:: ../images/student.png
+   :align: center
 
 .. note::
 

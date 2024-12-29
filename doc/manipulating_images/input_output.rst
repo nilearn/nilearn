@@ -55,29 +55,27 @@ File name matching: "globbing" and user path expansion
 You can specify files with *wildcard* matching patterns (as in Unix
 shell):
 
- * **Matching multiple files**: suppose the dataset folder contains
-   subject_01.nii, subject_03.nii, and subject_03.nii;
-   ``dataset/subject_*.nii`` is a glob expression matching all filenames:
+* **Matching multiple files**: suppose the dataset folder contains
+  subject_01.nii, subject_03.nii, and subject_03.nii;
+  ``dataset/subject_*.nii`` is a glob expression matching all filenames:
 
- .. code-block:: python
+.. code-block:: python
 
-    # Example with a smoothing process:
-    from nilearn.image import smooth_img
-    result_img = smooth_img("dataset/subject_*.nii")
+  # Example with a smoothing process:
+  from nilearn.image import smooth_img
+  result_img = smooth_img("dataset/subject_*.nii")
 
- Note that the resulting is a 4D image.
+Note that the resulting is a 4D image.
 
- * **Expanding the home directory** ``~`` is expanded to your home
-   directory:
+* **Expanding the home directory** ``~`` is expanded to your home directory:
 
- .. code-block:: python
+.. code-block:: python
 
-    result_img = smooth_img("~/dataset/subject_01.nii")
+  result_img = smooth_img("~/dataset/subject_01.nii")
 
- Using ``~`` rather than specifying the details of the path is good
- practice, as it will make it more likely that your script work on
- different computers.
-
+Using ``~`` rather than specifying the details of the path is good
+practice, as it will make it more likely that your script work on
+different computers.
 
 .. topic:: **Python globbing**
 
@@ -154,10 +152,10 @@ follows:
     They save it locally for future use, in one of the
     following directories (in order of priority, if present):
 
-     * the folder specified by `data_dir` parameter in the fetching function
-     * the global environment variable `NILEARN_SHARED_DATA`
-     * the user environment variable `NILEARN_DATA`
-     * the `nilearn_data` folder in the user home folder
+    * the folder specified by `data_dir` parameter in the fetching function
+    * the global environment variable `NILEARN_SHARED_DATA`
+    * the user environment variable `NILEARN_DATA`
+    * the `nilearn_data` folder in the user home folder
 
     The two different environment variables (NILEARN_SHARED_DATA and
     NILEARN_DATA) are provided for multi-user systems, to distinguish a
@@ -236,17 +234,18 @@ objects":
 
 **Niimg:** A Niimg-like object can be one of the following:
 
-  * A string or pathlib.Path object with a file path to a Nifti or Analyze image
-  * An ``SpatialImage`` from nibabel, ie an object exposing ``get_fdata()``
-    method and ``affine`` attribute, typically a ``Nifti1Image`` from nibabel_.
+* A string or pathlib.Path object with a file path to a Nifti or Analyze image
+
+* An ``SpatialImage`` from nibabel, ie an object exposing ``get_fdata()``
+  method and ``affine`` attribute, typically a ``Nifti1Image`` from nibabel_.
 
 **Niimg-4D:** Similarly, some functions require 4D Nifti-like
 data, which we call Niimgs or Niimg-4D. Accepted input arguments are:
 
-  * A path to a 4D Nifti image
-  * List of paths to 3D Nifti images
-  * 4D Nifti-like object
-  * List of 3D Nifti-like objects
+* A path to a 4D Nifti image
+* List of paths to 3D Nifti images
+* 4D Nifti-like object
+* List of 3D Nifti-like objects
 
 .. topic:: **Image affines**
 

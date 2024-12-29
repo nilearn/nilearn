@@ -447,5 +447,5 @@ def list_to_archive(sequence, archive_format="gztar", content=""):
 
     """
     return dict_to_archive(
-        {item: content for item in sequence}, archive_format=archive_format
+        dict.fromkeys(sequence, content), archive_format=archive_format
     )

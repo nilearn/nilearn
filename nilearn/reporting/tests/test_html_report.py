@@ -115,7 +115,7 @@ def input_parameters(
 def test_report_empty_fit(masker_class, input_parameters):
     """Test minimal report generation."""
     masker = masker_class(**input_parameters)
-    masker.fit()
+    masker = masker.fit()
     _check_html(masker.generate_report())
 
 
@@ -177,8 +177,8 @@ def test_warning_in_report_after_empty_fit(masker_class, input_parameters):
        if no images were provided to fit.
     """
     masker = masker_class(**input_parameters)
-    assert masker._report_content["warning_message"] is None
     masker.fit()
+    assert masker._report_content["warning_message"] is None
     warn_message = f"No image provided to fit in {masker_class.__name__}."
     with pytest.warns(UserWarning, match=warn_message):
         html = masker.generate_report()

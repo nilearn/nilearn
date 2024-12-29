@@ -23,6 +23,6 @@ Contributors
 
 The following people contributed to this release:
 
-    * `Elizabeth DuPre`_
-    * `Jerome Dockes`_
-    * `Kshitij Chawla`_
+* `Elizabeth DuPre`_
+* `Jerome Dockes`_
+* `Kshitij Chawla`_
