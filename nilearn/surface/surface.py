@@ -17,9 +17,10 @@ from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
-from nilearn._utils import stringify_path
+from nilearn._utils import stringify_path, as_ndarray
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn._utils.param_validation import check_threshold
 from nilearn.image import get_data as get_vol_data
 from nilearn.image import load_img, resampling
 
@@ -1820,7 +1821,7 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
-def get_data(img):
+def get_data(img, ensure_finite=False):
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
 
@@ -1829,6 +1830,10 @@ def get_data(img):
     img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
         SurfaceImage whose data to concatenate and extract.
 
+    ensure_finite : bool
+        If True, non-finite values such as (NaNs and infs) found in the
+        image will be replaced by zeros.
+
     Returns
     -------
     :obj:`~numpy.ndarray`
@@ -1836,7 +1841,19 @@ def get_data(img):
     """
     if isinstance(img, SurfaceImage):
         data = img.data
-    return np.concatenate(list(data.parts.values()), axis=0)
+    data = np.concatenate(list(data.parts.values()), axis=0)
+
+    if ensure_finite:
+        non_finite_mask = np.logical_not(np.isfinite(data))
+        if non_finite_mask.sum() > 0:  # any non_finite_mask values?
+            warn(
+                "Non-finite values detected. "
+                "These values will be replaced with zeros.",
+                stacklevel=3,
+            )
+            data[non_finite_mask] = 0
+
+    return data
 
 
 def concat_imgs(imgs):
@@ -1975,3 +1992,139 @@ def new_img_like(ref_img, data):
         mesh=copy.deepcopy(mesh),
         data=data,
     )
+
+
+
+def threshold_img(
+    img,
+    threshold,
+    cluster_threshold=0,
+    two_sided=True,
+    mask_img=None,
+    copy=True,
+):
+    """Threshold the given input image, mostly statistical or atlas images.
+
+    Thresholding can be done based on direct image intensities or selection
+    threshold with given percentile.
+
+    .. versionchanged:: 0.9.0
+        New ``cluster_threshold`` and ``two_sided`` parameters added.
+
+    .. versionadded:: 0.2
+
+    Parameters
+    ----------
+    img : a 1D/2D SurfaceImage
+        Image which should be thresholded.
+
+    threshold : :obj:`float` or :obj:`str`
+        Voxels with intensities less than the requested threshold
+        will be set to zero.
+        Those with intensities greater or equal than the requested threshold
+        will keep their original value.
+        If float, we threshold the image based on image intensities.
+        The given value should be within the range of minimum and maximum
+        intensity of the input image.
+        If string, it should finish with percent sign e.g. "80%"
+        and we threshold based on the score obtained
+        using this percentile on the image data.
+        The given string should be within the range of "0%" to "100%".
+        The percentile rank is computed using
+        :func:`scipy.stats.scoreatpercentile`.
+
+    cluster_threshold : :obj:`float`, default=0
+        Cluster size threshold, in voxels. In the returned thresholded map,
+        sets of connected voxels (``clusters``) with size smaller
+        than this number will be removed.
+
+        Not implemented
+
+    two_sided : :obj:`bool`, default=True
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+
+    mask_img : Niimg-like object, default=None
+        Mask image applied to mask the input data.
+        If None, no masking will be applied.
+
+    copy : :obj:`bool`, default=True
+        If True, input array is not modified. True by default: the filtering
+        is not performed in-place.
+
+    """
+    img_data = img.data
+
+    if mask_img is not None:
+        check_same_n_vertices(mask_img.mesh, img.mesh)
+        for hemi in mask_img.data.parts:
+            mask_data = mask_img.data.parts[hemi]
+            # Set as 0 for the values which are outside of the mask
+            img_data.parts[hemi][mask_data == 0.0] = 0.0
+
+    cutoff_threshold = check_threshold(
+        threshold,
+        img_data,
+        percentile_func=scoreatpercentile,
+        name="threshold",
+    )
+
+    # Apply threshold
+    if two_sided:
+        img_data[np.abs(img_data) < cutoff_threshold] = 0.0
+    else:
+        img_data[img_data < cutoff_threshold] = 0.0
+
+
+    # Perform cluster thresholding, if requested
+    if cluster_threshold > 0:
+        raise NotImplementedError
+    
+    # Reconstitute img object
+    thresholded_img = new_img_like(img, img_data)
+
+    return thresholded_img
+
+
+def load_mask_img(mask_img, allow_empty=False):
+    """Check that a mask is valid, ie with two values including 0 and load it.
+
+    Parameters
+    ----------
+    mask_img : SurfaceImage object
+        See :ref:`extracting_data`.
+        The mask to check.
+
+    allow_empty : :obj:`bool`, default=False
+        Allow loading an empty mask (full of 0 values).
+
+    Returns
+    -------
+    mask : SurfaceImage
+        Boolean version of the mask.
+    """
+    mask = get_data(mask_img, ensure_finite=True)
+    values = np.unique(mask)
+
+    if len(values) == 1:
+        # We accept a single value if it is not 0 (full true mask).
+        if values[0] == 0 and not allow_empty:
+            raise ValueError(
+                "The mask is invalid as it is empty: it masks all data."
+            )
+    elif len(values) == 2:
+        # If there are 2 different values, one of them must be 0 (background)
+        if 0 not in values:
+            raise ValueError(
+                "Background of the mask must be represented with 0. "
+                f"Given mask contains: {values}."
+            )
+    else:
+        # If there are more than 2 values, the mask is invalid
+        raise ValueError(
+            f"Given mask is not made of 2 values: {values}. "
+            "Cannot interpret as true or false."
+        )
+
+    mask = as_ndarray(mask, dtype=bool)
+    return mask, mask_img.affine
