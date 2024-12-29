@@ -10,10 +10,11 @@ from xml.etree import ElementTree
 
 import numpy as np
 import pandas as pd
-from nibabel import freesurfer, load
+from nibabel import Nifti1Image, freesurfer, load
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, rename_parameters
+from nilearn._utils.niimg import safe_get_data
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
@@ -85,6 +86,25 @@ def _generate_atlas_look_up_table(function, name, index=None):
             [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
             ignore_index=True,
         )
+
+
+def _check_look_up_table(lut, atlas):
+    if isinstance(atlas, (str, Path)):
+        atlas = check_niimg(atlas)
+
+    if isinstance(atlas, Nifti1Image):
+        data = safe_get_data(atlas, ensure_finite=True)
+    elif isinstance(atlas, np.ndarray):
+        data = atlas
+
+    roi_id = np.unique(data)
+
+    if len(lut) != len(roi_id):
+        print(f"{len(lut)=} vs {len(roi_id)=}")
+        if missing_from_image := set(lut.index.to_list()) - set(roi_id):
+            print(f"{missing_from_image=}")
+        if missing_from_lut := set(roi_id) - set(lut.index.to_list()):
+            print(f"{missing_from_lut=}")
 
 
 @fill_doc
@@ -361,9 +381,10 @@ def fetch_atlas_destrieux_2009(
 
     .. note::
 
-        Some labels from the list of labels might not be present in the
-        atlas image, in which case the integer values in the image might
-        not be consecutive.
+        Some labels from the list of labels might not be present
+        in the atlas image,
+        in which case the integer values in the image
+        might not be consecutive.
 
     Parameters
     ----------
@@ -418,6 +439,8 @@ def fetch_atlas_destrieux_2009(
 
     params = {"maps": files_[1], "labels": pd.read_csv(files_[0], index_col=0)}
     params["lut"] = params["labels"]
+
+    _check_look_up_table(lut=params["lut"], atlas=params["maps"])
 
     if legacy_format:
         params["labels"] = params["labels"].to_records()
@@ -581,9 +604,12 @@ def fetch_atlas_harvard_oxford(
                 labels=names,
                 description=fdescr,
             )
+
         lut = _generate_atlas_look_up_table(
             "fetch_atlas_harvard_oxford", name=names
         )
+        _check_look_up_table(lut=lut, atlas=atlas_niimg)
+
         return Bunch(
             filename=atlas_filename,
             maps=atlas_niimg,
@@ -610,6 +636,8 @@ def fetch_atlas_harvard_oxford(
     lut = _generate_atlas_look_up_table(
         "fetch_atlas_harvard_oxford", name=new_names
     )
+    _check_look_up_table(lut=lut, atlas=new_atlas_niimg)
+
     return Bunch(
         filename=atlas_filename,
         maps=new_atlas_niimg,
@@ -763,6 +791,8 @@ def fetch_atlas_juelich(
     lut = _generate_atlas_look_up_table(
         "fetch_atlas_juelich", name=list(new_names)
     )
+    _check_look_up_table(lut=lut, atlas=new_atlas_niimg)
+
     return Bunch(
         filename=atlas_filename,
         maps=new_atlas_niimg,
@@ -1439,14 +1469,17 @@ def fetch_atlas_aal(
                 labels.append(label)
         fdescr = fdescr.replace("SPM 12", version)
 
+    lut = _generate_atlas_look_up_table(
+        "fetch_atlas_aal", index=indices, name=labels
+    )
+    _check_look_up_table(lut=lut, atlas=atlas_img)
+
     params = {
         "description": fdescr,
         "maps": atlas_img,
         "labels": labels,
         "indices": indices,
-        "lut": _generate_atlas_look_up_table(
-            "fetch_atlas_aal", index=indices, name=labels
-        ),
+        "lut": lut,
     }
 
     return Bunch(**params)
@@ -1587,6 +1620,8 @@ def fetch_atlas_basc_multiscale_2015(
         )
 
         params = Bunch(maps=data[0], description=fdescr, lut=lut)
+        _check_look_up_table(lut=params.lut, atlas=params.maps)
+
     else:
         basenames = [
             "template_cambridge_basc_multiscale_"
@@ -1946,14 +1981,18 @@ def fetch_atlas_surf_destrieux(
     annot_left = freesurfer.read_annot(annots[0])
     annot_right = freesurfer.read_annot(annots[1])
 
+    lut = _generate_atlas_look_up_table(
+        "fetch_atlas_surf_destrieux", name=annot_left[2]
+    )
+    _check_look_up_table(lut=lut, atlas=annot_left[0])
+    _check_look_up_table(lut=lut, atlas=annot_right[0])
+
     return Bunch(
         labels=annot_left[2],
         map_left=annot_left[0],
         map_right=annot_right[0],
         description=fdescr,
-        lut=_generate_atlas_look_up_table(
-            "fetch_atlas_surf_destrieux", name=annot_left[2]
-        ),
+        lut=lut,
     )
 
 
@@ -2070,7 +2109,9 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     atlas_img = check_niimg(img_file)
     labels = json.loads(labels_file.read_text("utf-8"))
     description = get_dataset_descr("talairach_atlas").format(level_name)
+
     lut = _generate_atlas_look_up_table("fetch_atlas_talairach", name=labels)
+    _check_look_up_table(lut=lut, atlas=atlas_img)
 
     return Bunch(
         maps=atlas_img, labels=labels, description=description, lut=lut
@@ -2165,16 +2206,16 @@ def fetch_atlas_pauli_2017(
             "probabilistic" if atlas_type == "prob" else "deterministic"
         )
 
-    if atlas_type == "probabilistic":
-        url_maps = "https://osf.io/w8zq2/download"
-        filename = "pauli_2017_prob.nii.gz"
-    elif atlas_type == "deterministic":
-        url_maps = "https://osf.io/5mqfx/download"
-        filename = "pauli_2017_det.nii.gz"
-    else:
+    if atlas_type not in {"probabilistic", "deterministic"}:
         raise NotImplementedError(
             f"{atlas_type} is not a valid type for the Pauli atlas"
         )
+
+    url_maps = "https://osf.io/w8zq2/download"
+    filename = "pauli_2017_prob.nii.gz"
+    if atlas_type == "deterministic":
+        url_maps = "https://osf.io/5mqfx/download"
+        filename = "pauli_2017_det.nii.gz"
 
     url_labels = "https://osf.io/6qrcb/download"
     dataset_name = "pauli_2017"
@@ -2193,9 +2234,12 @@ def fetch_atlas_pauli_2017(
 
     fdescr = get_dataset_descr(dataset_name)
 
-    if version == "prob":
+    if atlas_type == "prob":
         return Bunch(maps=atlas_file, labels=labels, description=fdescr)
+
     lut = _generate_atlas_look_up_table("fetch_atlas_pauli_2017", name=labels)
+    _check_look_up_table(lut=lut, atlas=atlas_file)
+
     return Bunch(maps=atlas_file, labels=labels, description=fdescr, lut=lut)
 
 
@@ -2344,5 +2388,6 @@ def fetch_atlas_schaefer_2018(
     lut = _generate_atlas_look_up_table(
         "fetch_atlas_schaefer_2018", name=labels
     )
+    _check_look_up_table(lut=lut, atlas=atlas_file)
 
     return Bunch(maps=atlas_file, labels=labels, description=fdescr, lut=lut)
