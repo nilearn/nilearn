@@ -414,9 +414,9 @@ def _get_view_plot_surf_matplotlib(hemi, view):
     if isinstance(view, str):
         if hemi == "both" and view in ["lateral", "medial"]:
             raise ValueError(
-                "Invalid view definition: when hemi is 'both', view "
-                "cannot be 'lateral' or 'medial'. Maybe you meant 'left' "
-                "or 'right'?"
+                "Invalid view definition: when hemi is 'both', "
+                "view cannot be 'lateral' or 'medial'.\n"
+                "Maybe you meant 'left' or 'right'?"
             )
         return MATPLOTLIB_VIEWS[hemi][view]
     return view
