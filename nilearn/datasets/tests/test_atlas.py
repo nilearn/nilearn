@@ -58,6 +58,7 @@ def validate_atlas(atlas_data):
     assert atlas_data.atlas_type in {"deterministic", "probabilistic"}
     if atlas_data.atlas_type == "deterministic":
         assert isinstance(atlas_data.labels, list)
+        assert all(isinstance(x, str) for x in atlas_data.labels)
         assert isinstance(atlas_data.lut, pd.DataFrame)
 
 
