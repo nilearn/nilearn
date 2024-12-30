@@ -17,10 +17,10 @@ from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
-from nilearn._utils import stringify_path, as_ndarray
+from nilearn._utils import as_ndarray, stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.path_finding import resolve_globbing
 from nilearn._utils.param_validation import check_threshold
+from nilearn._utils.path_finding import resolve_globbing
 from nilearn.image import get_data as get_vol_data
 from nilearn.image import load_img, resampling
 
@@ -1994,7 +1994,6 @@ def new_img_like(ref_img, data):
     )
 
 
-
 def threshold_img(
     img,
     threshold,
@@ -2075,11 +2074,10 @@ def threshold_img(
     else:
         img_data[img_data < cutoff_threshold] = 0.0
 
-
     # Perform cluster thresholding, if requested
     if cluster_threshold > 0:
         raise NotImplementedError
-    
+
     # Reconstitute img object
     thresholded_img = new_img_like(img, img_data)
 
