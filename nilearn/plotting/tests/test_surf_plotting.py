@@ -435,12 +435,12 @@ def test_get_view_plot_surf_plotly(full_view):
         )
 
 
-@pytest.mark.parametrize("hemi", list(MATPLOTLIB_VIEWS.keys()))
-def test_get_view_plot_surf_matplotlib(hemi):
-    for view in MATPLOTLIB_VIEWS[hemi]:
+@pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
+def test_get_view_plot_surf_matplotlib(hemi, views):
+    for v in views:
         assert (
-            _get_view_plot_surf_matplotlib(hemi, view)
-            == EXPECTED_VIEW_MATPLOTLIB[hemi][view]
+            _get_view_plot_surf_matplotlib(hemi, v)
+            == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
         )
 
 
