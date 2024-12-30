@@ -641,7 +641,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
-    cmap="bwr",
+    cmap=plt.cm.RdBu_r,
     output_file=None,
     **kwargs,
 ):
@@ -690,7 +690,8 @@ def plot_design_matrix_correlation(
     check_design_matrix(design_matrix)
 
     ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
-    if cmap not in ALLOWED_CMAP:
+    cmap_name = cmap if isinstance(cmap, str) else cmap.name
+    if cmap_name not in ALLOWED_CMAP:
         raise ValueError(f"cmap must be one of {ALLOWED_CMAP}")
 
     columns_to_drop = ["intercept", "constant"]

@@ -56,6 +56,8 @@ for cidx, tmap in enumerate(data["tmaps"]):
         axes=axes[int(cidx / 4), int(cidx % 4)],
         plot_abs=False,
         display_mode="z",
+        vmin=-8.5,
+        vmax=8.5,
     )
 fig.suptitle("subjects t_map left-right button press")
 plt.show()
@@ -213,12 +215,14 @@ for img_counter, (i_row, j_col) in enumerate(
         IMAGES[img_counter],
         colorbar=True,
         vmax=vmax,
+        vmin=threshold,
         display_mode="z",
         plot_abs=False,
         cut_coords=cut_coords,
         threshold=threshold,
         figure=fig,
         axes=ax,
+        cmap="inferno",
     )
     ax.set_title(TITLES[img_counter])
 fig.suptitle("Group left-right button press\n(negative log10 p-values)")

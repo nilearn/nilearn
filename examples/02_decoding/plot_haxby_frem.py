@@ -70,7 +70,7 @@ print(f"FREM classification accuracy : {accuracy:g}%")
 import numpy as np
 from sklearn.metrics import confusion_matrix
 
-from nilearn import plotting
+from nilearn.plotting import plot_matrix, plot_stat_map, show
 
 # Calculate the confusion matrix
 matrix = confusion_matrix(
@@ -80,11 +80,11 @@ matrix = confusion_matrix(
 )
 
 # Plot the confusion matrix
-im = plotting.plot_matrix(
+im = plot_matrix(
     matrix,
     labels=sorted(np.unique(y_test)),
     vmin=0,
-    cmap="hot_r",
+    cmap="inferno",
 )
 
 # Add x/y-axis labels
@@ -92,19 +92,19 @@ ax = im.axes
 ax.set_ylabel("True label")
 ax.set_xlabel("Predicted label")
 
-plotting.show()
+show()
 
 # %%
 # Visualization of :term:`FREM` weights
 # -------------------------------------
-plotting.plot_stat_map(
+plot_stat_map(
     decoder.coef_img_["face"],
     background_img,
     title=f"FREM: accuracy {accuracy:g}%, 'face coefs'",
     cut_coords=(-50, -4),
     display_mode="yz",
 )
-plotting.show()
+show()
 # %%
 # :term:`FREM` ensembling procedure
 # yields an important improvement of decoding
@@ -118,7 +118,7 @@ plotting.show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 
 
 # sphinx_gallery_dummy_images=1

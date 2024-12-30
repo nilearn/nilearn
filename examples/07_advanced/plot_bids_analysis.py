@@ -69,7 +69,8 @@ task_label = "languagelocalizer"
     img_filters=[("desc", "preproc")],
     n_jobs=2,
     space_label="",
-    sub_labels=["01", "02", "03", "04"],  # comment to run all subjects
+    sub_labels=["01", "02", "05", "08"],  # comment to run all subjects
+    smoothing_fwhm=8,
 )
 
 # %%
@@ -118,7 +119,7 @@ from math import ceil
 import matplotlib.pyplot as plt
 import numpy as np
 
-ncols = 3
+ncols = 2
 nrows = ceil(len(models) / ncols)
 
 fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 4.5))
@@ -131,13 +132,14 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     zmap = model.compute_contrast("language-string")
     plotting.plot_glass_brain(
         zmap,
-        colorbar=False,
+        colorbar=True,
         threshold=p001_unc,
         title=f"sub-{model.subject_label}",
         axes=axes[int(midx / ncols), int(midx % ncols)],
         plot_abs=False,
         display_mode="x",
-        cmap="bwr",
+        vmin=-12,
+        vmax=12,
     )
 fig.suptitle("subjects z_map language network (unc p<0.001)")
 plotting.show()
@@ -178,6 +180,5 @@ plotting.plot_glass_brain(
     plot_abs=False,
     display_mode="x",
     figure=plt.figure(figsize=(5, 4)),
-    cmap="bwr",
 )
 plotting.show()

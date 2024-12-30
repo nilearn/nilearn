@@ -374,7 +374,6 @@ display = plot_stat_map(
     title="Language",
     figure=fig,
     axes=axes[0],
-    cmap="bwr",
 )
 display.add_markers(
     marker_coords=coords,
@@ -390,7 +389,6 @@ display = plot_stat_map(
     title="String",
     figure=fig,
     axes=axes[1],
-    cmap="bwr",
 )
 display.add_markers(
     marker_coords=coords,
@@ -405,4 +403,4 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
