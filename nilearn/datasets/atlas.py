@@ -55,11 +55,11 @@ def _generate_atlas_look_up_table(function, name, index=None):
     supported by Nilearn,
     this returns a pandas dataframe to use as look up table (LUT)
     between the name of a ROI and its index in the associated image.
-    This LUT is compatible with the seg.tsv BIDS format
+    This LUT is compatible with the dseg.tsv BIDS format
     describing brain segmentations and parcellations,
     with an 'index' and 'name' column
     ('color' may be an example of an optional column).
-    TODO  add link BIDS spec
+    https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels
 
     For some atlases some 'clean up' of the LUT is done
     (for example make sure that the LUT contains the background 'ROI').
@@ -85,7 +85,7 @@ def _generate_atlas_look_up_table(function, name, index=None):
     if fname in ["fetch_atlas_surf_destrieux", "fetch_atlas_schaefer_2018"]:
         name = [x.decode() for x in name]
     elif fname in ["fetch_atlas_basc_multiscale_2015"]:
-        name = [str(x) for x in range(name)]
+        name = [str(x) for x in range(name + 1)]
 
     # deal with indices
     if index is None:
@@ -144,10 +144,14 @@ def _check_look_up_table(lut, atlas):
 
     if len(lut) != len(roi_id):
         if missing_from_image := set(lut["index"].to_list()) - set(roi_id):
+            missing_rows = lut[
+                lut["index"].isin(list(missing_from_image))
+            ].to_string(index=False)
             warnings.warn(
-                "\nThe following regions are listed in the look-up table, "
-                "but are missing from the atlas image:\n"
-                f"{missing_from_image}"
+                "\nThe following regions are listed in the look-up table,\n"
+                "but are missing from the atlas image:\n\n"
+                f"{missing_rows}\n",
+                stacklevel=3,
             )
         if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
             warnings.warn(

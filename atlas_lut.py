@@ -80,5 +80,5 @@ atlas = fetch_atlas_juelich(atlas_name="maxprob-thr50-2mm")
 
 # %%
 print(fetch_atlas_basc_multiscale_2015.__name__.upper())
-resolution = 444
+resolution = 325
 atlas = fetch_atlas_basc_multiscale_2015(resolution=resolution)
