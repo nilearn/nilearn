@@ -286,14 +286,12 @@ class NiftiLabelsMasker(BaseMasker):
             if not isinstance(labels, list):
                 raise TypeError(
                     f"'labels' must be a list. Got: {type(labels)}",
-                    stacklevel=3,
                 )
             if not all(isinstance(x, str) for x in labels):
                 types_labels = {type(x) for x in labels}
                 raise TypeError(
                     "All elements of 'labels' must be a string.\n"
                     f"Got a list of {types_labels}",
-                    stacklevel=3,
                 )
 
     def _check_mismatch_labels_regions(
