@@ -45,7 +45,6 @@ lut = lut.drop(["r", "g", "b", "fs"], axis=1)
 _check_look_up_table(lut, atlas.thin_7)
 
 #  %%
-# TODO try all versions
 print(fetch_atlas_aal.__name__.upper())
 atlas = fetch_atlas_aal()
 

@@ -860,24 +860,40 @@ Additional cases
 How to contribute an atlas
 --------------------------
 
-We want atlases in nilearn to be internally consistent. Specifically,
-your atlas object should have three attributes (as with the existing
-atlases):
+We want atlases in nilearn to be internally consistent.
+Specifically, your atlas object:
 
-- ``description`` (bytes): A text description of the atlas. This should be
-  brief but thorough, describing the source (paper), relevant information
-  related to its construction (modality, dataset, method), and, if there is
-  more than one map, a description of each map.
-- ``labels`` (list): a list of string labels corresponding to each atlas
-  label, in the same (numerical) order as the atlas labels
-- ``maps`` (list or string): the path to the nifti image, or a list of paths
+- should be scikitlearn ``Bunch``
+
+- MUST have at least the following 4 attributes (as with the existing atlases):
+
+  - ``description`` (bytes): A text description of the atlas.
+    This should be brief but thorough,
+    describing the source (paper),
+    relevant information related to its construction (modality, dataset, method),
+    and, if there is more than one map, a description of each map.
+  - ``maps`` (list or string): the path to the nifti image, or a list of paths
+  - ``atlas_type``: must be either ``deterministic`` or ``probabilistic``
+  - ``labels`` (list): a list of string labels corresponding to each atlas label,
+    in the same (numerical) order as the atlas labels
+
+Deterministic atlases must also include:
+
+- a look up table (``lut``) attribute:
+
+  - providing the mapping between the values in the atlas image
+    and the name to the region of interest they define.
+  - that complies with the
+    `dseg.tsv format from BIDS
+    <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
+  - can be validated by the function ``nilearn.datasets.atlas._check_look_up_table``
+    in strict mode.
 
 In addition, the atlas will need to be called by a fetcher.
 For example, see :nilearn-gh:`here <blob/main/nilearn/datasets/atlas.py>`.
 
 Finally, as with other features, please provide a test for your atlas.
 Examples can be found :nilearn-gh:`here <blob/main/nilearn/datasets/tests/test_atlas.py>`.
-
 
 How to contribute a dataset fetcher
 -----------------------------------

@@ -19,26 +19,44 @@ from nilearn._utils.testing import serialize_niimg
 from nilearn.conftest import _rng
 from nilearn.datasets import atlas
 from nilearn.datasets._utils import fetch_files
+from nilearn.datasets.atlas import (
+    fetch_atlas_aal,
+    fetch_atlas_allen_2011,
+    fetch_atlas_basc_multiscale_2015,
+    fetch_atlas_craddock_2012,
+    fetch_atlas_destrieux_2009,
+    fetch_atlas_difumo,
+    fetch_atlas_harvard_oxford,
+    fetch_atlas_juelich,
+    fetch_atlas_msdl,
+    fetch_atlas_pauli_2017,
+    fetch_atlas_schaefer_2018,
+    fetch_atlas_smith_2009,
+    fetch_atlas_surf_destrieux,
+    fetch_atlas_talairach,
+    fetch_atlas_yeo_2011,
+)
 from nilearn.datasets.tests._testing import dict_to_archive
 from nilearn.image import get_data
 
 
-@pytest.mark.parametrize(
-    "fn",
-    [
-        atlas.fetch_atlas_allen_2011,
-        atlas.fetch_atlas_basc_multiscale_2015,
-        atlas.fetch_atlas_schaefer_2018,
-        atlas.fetch_atlas_smith_2009,
-        atlas.fetch_atlas_yeo_2011,
-        atlas.fetch_coords_dosenbach_2010,
-        atlas.fetch_coords_power_2011,
-        atlas.fetch_coords_seitzman_2018,
-    ],
-)
-def test_atlas_fetcher_return_bunch(fn):
-    data = fn()
-    assert isinstance(data, Bunch)
+def validate_atlas(atlas_data):
+    """Validate content of the atlas bunch.
+
+    Atlas must:
+    - be a bunch
+    - with descrription and atlas_type attributes
+    - deterministic atlases must have:
+      - a labels attribute that is a list
+      - a lut attribute that is a pd.DataFrame
+    """
+    assert isinstance(atlas_data, Bunch)
+    assert isinstance(atlas_data.description, str)
+    assert atlas_data.description != ""
+    assert atlas_data.atlas_type in {"deterministic", "probabilistic"}
+    if atlas_data.atlas_type == "deterministic":
+        assert isinstance(atlas_data.labels, list)
+        assert isinstance(atlas_data.lut, pd.DataFrame)
 
 
 def test_downloader(tmp_path, request_mocker):
@@ -95,7 +113,7 @@ def test_downloader(tmp_path, request_mocker):
     # Now, we use the regular downloading feature. This will override the dummy
     # file created before.
 
-    atlas.fetch_atlas_craddock_2012(data_dir=tmp_path)
+    fetch_atlas_craddock_2012(data_dir=tmp_path)
     with dummy_file.open() as f:
         stuff = f.read()
     assert stuff == ""
@@ -157,8 +175,8 @@ def _test_atlas_instance_should_match_data(atlas, is_symm):
 @pytest.fixture
 def fsl_fetcher(name):
     if name == "Juelich":
-        return atlas.fetch_atlas_juelich
-    return atlas.fetch_atlas_harvard_oxford
+        return fetch_atlas_juelich
+    return fetch_atlas_harvard_oxford
 
 
 @pytest.mark.parametrize(
@@ -235,13 +253,12 @@ def test_fetch_atlas_fsl(
         data_dir=tmp_path,
         symmetric_split=split,
     )
-    assert isinstance(atlas_instance, Bunch)
+
+    validate_atlas(atlas_instance)
     _test_atlas_instance_should_match_data(
         atlas_instance,
         is_symm=is_symm or split,
     )
-
-    assert atlas_instance.description != ""
 
     # check for typo in label names
     for label in atlas_instance.labels:
@@ -254,31 +271,45 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
         Path(__file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
     )
     request_mocker.url_mapping["*craddock*"] = local_archive
-    bunch = atlas.fetch_atlas_craddock_2012(
+
+    bunch = fetch_atlas_craddock_2012(
         data_dir=tmp_path, verbose=0, homogeneity="spatial"
     )
-    assert isinstance(bunch, Bunch)
-    bunch_rand = atlas.fetch_atlas_craddock_2012(
-        data_dir=tmp_path, verbose=0, homogeneity="random"
-    )
-    bunch_no_mean = atlas.fetch_atlas_craddock_2012(
-        data_dir=tmp_path, verbose=0, grp_mean=False, homogeneity="spatial"
-    )
 
-    assert request_mocker.url_count == 1
+    validate_atlas(bunch)
     assert bunch["maps"] == str(
         tmp_path / "craddock_2012" / "scorr05_mean_all.nii.gz"
     )
+
+    bunch_rand = fetch_atlas_craddock_2012(
+        data_dir=tmp_path, verbose=0, homogeneity="random"
+    )
+
+    validate_atlas(bunch_rand)
     assert bunch_rand["maps"] == str(
         tmp_path / "craddock_2012" / "random_all.nii.gz"
     )
+
+    bunch_no_mean = fetch_atlas_craddock_2012(
+        data_dir=tmp_path, verbose=0, grp_mean=False, homogeneity="spatial"
+    )
+
+    validate_atlas(bunch_no_mean)
     assert bunch_no_mean["maps"] == str(
         tmp_path / "craddock_2012" / "scorr05_2level_all.nii.gz"
     )
-    assert bunch.description != ""
 
-    # Old code
-    bunch = atlas.fetch_atlas_craddock_2012(data_dir=tmp_path, verbose=0)
+    assert request_mocker.url_count == 1
+
+
+def test_fetch_atlas_craddock_2012_legacy(tmp_path, request_mocker):
+    """Check legacy format that return all maps at once."""
+    local_archive = (
+        Path(__file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
+    )
+    request_mocker.url_mapping["*craddock*"] = local_archive
+
+    bunch = fetch_atlas_craddock_2012(data_dir=tmp_path, verbose=0)
 
     keys = (
         "scorr_mean",
@@ -298,19 +329,16 @@ def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
     assert request_mocker.url_count == 1
     for key, fn in zip(keys, filenames):
         assert bunch[key] == str(tmp_path / "craddock_2012" / fn)
-    assert bunch.description != ""
 
 
 def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
-    bunch = atlas.fetch_atlas_smith_2009(
-        data_dir=tmp_path, verbose=0, dimension=20
-    )
+    bunch = fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0, dimension=20)
+
+    validate_atlas(bunch)
     assert bunch["maps"] == str(tmp_path / "smith_2009" / "rsn20.nii.gz")
-    assert len(bunch.keys()) == 2
-    assert bunch.description != ""
 
     # Old code
-    bunch = atlas.fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0)
+    bunch = fetch_atlas_smith_2009(data_dir=tmp_path, verbose=0)
 
     keys = ("rsn20", "rsn10", "rsn70", "bm20", "bm10", "bm70")
     filenames = [
@@ -332,7 +360,6 @@ def test_fetch_coords_power_2011():
     bunch = atlas.fetch_coords_power_2011()
 
     assert len(bunch.rois) == 264
-    assert bunch.description != ""
 
 
 def test_fetch_coords_seitzman_2018():
@@ -345,7 +372,6 @@ def test_fetch_coords_seitzman_2018():
     assert len(np.unique(bunch.networks)) == 14
     assert len(np.unique(bunch.regions)) == 8
     assert_array_equal(bunch.networks, np.sort(bunch.networks))
-    assert bunch.description != ""
     assert bunch.regions[0] == "cortexL"
 
     bunch = atlas.fetch_coords_seitzman_2018(ordered_regions=False)
@@ -375,11 +401,9 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
     The atlas is fetched with different values for `lateralized`.
     """
     request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
-    bunch = atlas.fetch_atlas_destrieux_2009(
+    bunch = fetch_atlas_destrieux_2009(
         lateralized=lateralized, data_dir=tmp_path, verbose=0
     )
-
-    assert isinstance(bunch, Bunch)
 
     assert request_mocker.url_count == 1
 
@@ -393,6 +417,14 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
     labels = set(bunch.labels.index.to_numpy().tolist())
 
     assert labels_img.issubset(labels)
+
+
+# TODO labels should be a list of strings
+@pytest.mark.xfail(reason="Atlas labels should be list of strings not bytes.")
+def test_validate_fetch_atlas_destrieux_2009(tmp_path, request_mocker):
+    request_mocker.url_mapping["*destrieux2009.tgz"] = _destrieux_data()
+    bunch = fetch_atlas_destrieux_2009(data_dir=tmp_path, verbose=0)
+    validate_atlas(bunch)
 
 
 def test_fetch_atlas_msdl(tmp_path, request_mocker):
@@ -414,19 +446,17 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     request_mocker.url_mapping["*MSDL_rois.zip"] = dict_to_archive(
         archive, "zip"
     )
-    dataset = atlas.fetch_atlas_msdl(data_dir=tmp_path, verbose=0)
+    dataset = fetch_atlas_msdl(data_dir=tmp_path, verbose=0)
 
-    assert isinstance(dataset, Bunch)
-    assert isinstance(dataset.labels, list)
+    validate_atlas(dataset)
     assert isinstance(dataset.region_coords, list)
     assert isinstance(dataset.networks, list)
     assert isinstance(dataset.maps, str)
     assert request_mocker.url_count == 1
-    assert dataset.description != ""
 
 
 def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
-    dataset = atlas.fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
+    dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
 
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.colors_17, str)
@@ -436,7 +466,16 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     assert isinstance(dataset.thin_17, str)
     assert isinstance(dataset.thin_7, str)
     assert request_mocker.url_count == 1
-    assert dataset.description != ""
+
+
+@pytest.mark.xfail(
+    reason="Atlas should return single map with associated labels."
+)
+def test_validate_fetch_atlas_yeo_2011(tmp_path, request_mocker):
+    dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
+
+    validate_atlas(dataset)
+    assert request_mocker.url_count == 1
 
 
 def test_fetch_atlas_difumo(tmp_path, request_mocker):
@@ -466,22 +505,18 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
         request_mocker.url_mapping[url] = dict_to_archive(archive, "zip")
 
         for res in resolutions:
-            dataset = atlas.fetch_atlas_difumo(
+            dataset = fetch_atlas_difumo(
                 data_dir=tmp_path, dimension=dim, resolution_mm=res, verbose=0
             )
 
-            assert isinstance(dataset, Bunch)
-            assert len(dataset.keys()) == 3
+            validate_atlas(dataset)
             assert len(dataset.labels) == dim
             assert isinstance(dataset.maps, str)
             assert request_mocker.url_count == url_count
-            assert dataset.description != ""
 
     with pytest.raises(ValueError):
-        atlas.fetch_atlas_difumo(
-            data_dir=tmp_path, dimension=42, resolution_mm=3
-        )
-        atlas.fetch_atlas_difumo(
+        fetch_atlas_difumo(data_dir=tmp_path, dimension=42, resolution_mm=3)
+        fetch_atlas_difumo(
             data_dir=tmp_path, dimension=128, resolution_mm=3.14
         )
 
@@ -527,32 +562,29 @@ def test_fetch_atlas_aal(
         archive_format=archive_format,
     )
     request_mocker.url_mapping[f"*{url_key}*"] = aal_data
-    dataset = atlas.fetch_atlas_aal(
-        version=version, data_dir=tmp_path, verbose=0
-    )
 
-    assert isinstance(dataset, Bunch)
+    dataset = fetch_atlas_aal(version=version, data_dir=tmp_path, verbose=0)
+
+    validate_atlas(dataset)
     assert isinstance(dataset.maps, str)
-    assert isinstance(dataset.labels, list)
     assert isinstance(dataset.indices, list)
     assert request_mocker.url_count == 1
-    assert dataset.description != ""
 
 
 def test_fetch_atlas_aal_version_error(tmp_path):
     with pytest.raises(
         ValueError, match="The version of AAL requested 'FLS33'"
     ):
-        atlas.fetch_atlas_aal(version="FLS33", data_dir=tmp_path, verbose=0)
+        fetch_atlas_aal(version="FLS33", data_dir=tmp_path, verbose=0)
 
 
 def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     # default version='sym',
-    data_sym = atlas.fetch_atlas_basc_multiscale_2015(
+    data_sym = fetch_atlas_basc_multiscale_2015(
         data_dir=tmp_path, verbose=0, resolution=7
     )
     # version='asym'
-    data_asym = atlas.fetch_atlas_basc_multiscale_2015(
+    data_asym = fetch_atlas_basc_multiscale_2015(
         version="asym", verbose=0, data_dir=tmp_path, resolution=7
     )
 
@@ -570,17 +602,18 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     assert data_asym["maps"] == str(
         tmp_path / dataset_name / name_asym / basename_asym
     )
-    assert len(data_sym) == 2
+
+    validate_atlas(data_sym)
+    validate_atlas(data_asym)
+
     assert request_mocker.url_count == 2
-    assert data_sym.description != ""
-    assert data_asym.description != ""
 
 
 def test_fetch_atlas_basc_multiscale_2015_error(tmp_path):
     with pytest.raises(
         ValueError, match="The version of Brain parcellations requested 'aym'"
     ):
-        atlas.fetch_atlas_basc_multiscale_2015(
+        fetch_atlas_basc_multiscale_2015(
             version="aym", data_dir=tmp_path, verbose=0
         )
 
@@ -604,11 +637,9 @@ def test_fetch_atlas_basc_multiscale_2015_old_code(
 ):
     # Old code
     # default version='sym',
-    data_sym = atlas.fetch_atlas_basc_multiscale_2015(
-        data_dir=tmp_path, verbose=0
-    )
+    data_sym = fetch_atlas_basc_multiscale_2015(data_dir=tmp_path, verbose=0)
     # version='asym'
-    data_asym = atlas.fetch_atlas_basc_multiscale_2015(
+    data_asym = fetch_atlas_basc_multiscale_2015(
         version="asym", verbose=0, data_dir=tmp_path
     )
 
@@ -627,11 +658,7 @@ def test_fetch_atlas_basc_multiscale_2015_old_code(
         tmp_path / dataset_name / name_asym / basename_asym
     )
 
-    assert len(data_sym) == 10
-
     assert request_mocker.url_count == 2
-    assert data_sym.description != ""
-    assert data_asym.description != ""
 
 
 def test_fetch_coords_dosenbach_2010():
@@ -640,7 +667,6 @@ def test_fetch_coords_dosenbach_2010():
     assert len(bunch.rois) == 160
     assert len(bunch.labels) == 160
     assert len(np.unique(bunch.networks)) == 6
-    assert bunch.description != ""
     assert_array_equal(bunch.networks, np.sort(bunch.networks))
 
     bunch = atlas.fetch_coords_dosenbach_2010(ordered_regions=False)
@@ -649,7 +675,7 @@ def test_fetch_coords_dosenbach_2010():
 
 
 def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
-    bunch = atlas.fetch_atlas_allen_2011(data_dir=tmp_path, verbose=0)
+    bunch = fetch_atlas_allen_2011(data_dir=tmp_path, verbose=0)
     keys = ("maps", "rsn28", "comps")
 
     filenames = [
@@ -658,13 +684,12 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
         "rest_hcp_agg__component_ica_.nii.gz",
     ]
 
+    validate_atlas(bunch)
     assert request_mocker.url_count == 1
     for key, fn in zip(keys, filenames):
         assert bunch[key] == str(
             tmp_path / "allen_rsn_2011" / "allen_rsn_2011" / fn
         )
-
-    assert bunch.description != ""
 
 
 def test_fetch_atlas_surf_destrieux(tmp_path):
@@ -680,15 +705,14 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
             5 * ["a"],
         )
 
-    bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
+    bunch = fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
 
-    assert isinstance(bunch, Bunch)
+    validate_atlas(bunch)
 
     # Our mock annots have 4 labels
     assert len(bunch.labels) == 4
     assert bunch.map_left.shape == (4,)
     assert bunch.map_right.shape == (4,)
-    assert bunch.description != ""
 
 
 def _get_small_fake_talairach():
@@ -709,25 +733,21 @@ def _get_small_fake_talairach():
 def test_fetch_atlas_talairach(tmp_path, request_mocker):
     request_mocker.url_mapping["*talairach.nii"] = _get_small_fake_talairach()
     level_values = np.ones((81, 3)) * [0, 1, 2]
-    talairach = atlas.fetch_atlas_talairach("hemisphere", data_dir=tmp_path)
+    talairach = fetch_atlas_talairach("hemisphere", data_dir=tmp_path)
 
-    assert isinstance(talairach, Bunch)
-
-    assert talairach.description != ""
+    validate_atlas(talairach)
 
     assert_array_equal(
         get_data(talairach.maps).ravel(), level_values.T.ravel()
     )
     assert_array_equal(talairach.labels, ["Background", "b", "a"])
 
-    talairach = atlas.fetch_atlas_talairach("ba", data_dir=tmp_path)
-
-    assert talairach.description != ""
+    talairach = fetch_atlas_talairach("ba", data_dir=tmp_path)
 
     assert_array_equal(get_data(talairach.maps).ravel(), level_values.ravel())
 
     with pytest.raises(ValueError):
-        atlas.fetch_atlas_talairach("bad_level")
+        fetch_atlas_talairach("bad_level")
 
 
 def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
@@ -741,26 +761,22 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
     data_dir = str(tmp_path / "pauli_2017")
 
-    data = atlas.fetch_atlas_pauli_2017("deterministic", data_dir)
+    data = fetch_atlas_pauli_2017("deterministic", data_dir)
 
-    assert isinstance(data, Bunch)
-
-    assert data.description != ""
-
+    validate_atlas(data)
     assert len(data.labels) == 16
 
     values = get_data(load(data.maps))
 
     assert len(np.unique(values)) == 17
 
-    data = atlas.fetch_atlas_pauli_2017("probabilistic", data_dir)
+    data = fetch_atlas_pauli_2017("probabilistic", data_dir)
 
+    validate_atlas(data)
     assert load(data.maps).shape[-1] == 16
 
-    assert data.description != ""
-
     with pytest.raises(NotImplementedError):
-        atlas.fetch_atlas_pauli_2017("junk for testing", data_dir)
+        fetch_atlas_pauli_2017("junk for testing", data_dir)
 
 
 # TODO: remove this test after release 0.13.0
@@ -780,33 +796,25 @@ def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
     data_dir = str(tmp_path / "pauli_2017")
 
     with pytest.warns(DeprecationWarning, match='The parameter "version"'):
-        data = atlas.fetch_atlas_pauli_2017(
+        data = fetch_atlas_pauli_2017(
             version="probabilistic", data_dir=data_dir
         )
 
         assert load(data.maps).shape[-1] == 16
 
-        assert data.description != ""
-
     with pytest.warns(
         DeprecationWarning, match="The possible values for atlas_type"
     ):
-        data = atlas.fetch_atlas_pauli_2017("det", data_dir)
-
-        assert isinstance(data, Bunch)
-
-        assert data.description != ""
+        data = fetch_atlas_pauli_2017("det", data_dir)
 
         assert len(data.labels) == 16
 
     with pytest.warns(
         DeprecationWarning, match="The possible values for atlas_type"
     ):
-        data = atlas.fetch_atlas_pauli_2017("prob", data_dir)
+        data = fetch_atlas_pauli_2017("prob", data_dir)
 
         assert load(data.maps).shape[-1] == 16
-
-        assert data.description != ""
 
 
 def _schaefer_labels(match, requests):  # noqa: ARG001
@@ -844,16 +852,16 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
     valid_resolution_mm = [1, 2]
 
     with pytest.raises(ValueError):
-        atlas.fetch_atlas_schaefer_2018(n_rois=44)
+        fetch_atlas_schaefer_2018(n_rois=44)
     with pytest.raises(ValueError):
-        atlas.fetch_atlas_schaefer_2018(yeo_networks=10)
+        fetch_atlas_schaefer_2018(yeo_networks=10)
     with pytest.raises(ValueError):
-        atlas.fetch_atlas_schaefer_2018(resolution_mm=3)
+        fetch_atlas_schaefer_2018(resolution_mm=3)
 
     for n_rois, yeo_networks, resolution_mm in itertools.product(
         valid_n_rois, valid_yeo_networks, valid_resolution_mm
     ):
-        data = atlas.fetch_atlas_schaefer_2018(
+        data = fetch_atlas_schaefer_2018(
             n_rois=n_rois,
             yeo_networks=yeo_networks,
             resolution_mm=resolution_mm,
@@ -861,7 +869,6 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
             verbose=0,
         )
 
-        assert data.description != ""
         assert isinstance(data.maps, str)
         assert isinstance(data.labels, np.ndarray)
         assert len(data.labels) == n_rois
@@ -871,6 +878,35 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
 
         assert img.header.get_zooms()[0] == resolution_mm
         assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))
+
+
+@pytest.mark.xfail(reason="Atlas labels should be list of strings not bytes.")
+def test_validate_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
+    labels_pattern = re.compile(
+        r".*2018_(?P<n_rois>\d+)Parcels_(?P<network>\d+)Networks_order.txt"
+    )
+    img_pattern = re.compile(
+        r".*_(?P<n_rois>\d+)Parcels_(?P<network>\d+)"
+        r"Networks_order_FSLMNI152_(?P<res>\d)mm.nii.gz"
+    )
+    request_mocker.url_mapping[labels_pattern] = _schaefer_labels
+    request_mocker.url_mapping[img_pattern] = _schaefer_img
+    valid_n_rois = list(range(100, 1100, 100))
+    valid_yeo_networks = [7, 17]
+    valid_resolution_mm = [1, 2]
+
+    for n_rois, yeo_networks, resolution_mm in itertools.product(
+        valid_n_rois, valid_yeo_networks, valid_resolution_mm
+    ):
+        data = fetch_atlas_schaefer_2018(
+            n_rois=n_rois,
+            yeo_networks=yeo_networks,
+            resolution_mm=resolution_mm,
+            data_dir=tmp_path,
+            verbose=0,
+        )
+
+        validate_atlas(data)
 
 
 @pytest.fixture
@@ -905,6 +941,6 @@ def test_aal_version_deprecation(
     with pytest.deprecated_call(
         match=r"Starting in version 0\.13, the default fetched mask"
     ):
-        atlas.fetch_atlas_aal(
+        fetch_atlas_aal(
             data_dir=tmp_path,
         )

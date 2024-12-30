@@ -120,13 +120,23 @@ def _generate_atlas_look_up_table(function, name, index=None):
         )
 
 
-def _check_look_up_table(lut, atlas):
-    """Validate atals look up table (LUT).
+def _check_look_up_table(lut, atlas, strict=False):
+    """Validate atlas look up table (LUT).
 
-    Must be a pandas dataframe with at least name and index columns.
+    Throws warning / errors:
+    - lut is not a dataframe with the required columns
+    - if there are mismatches between the number of ROIs
+      in the LUT and th number of unique ROIs in the associated image.
 
-    Throws warning if there are mismatches between the number of ROIs
-    in the LUT and th number of unique ROIs in the associated image.
+    Parameters
+    ----------
+    lut : :obj:`pandas.DataFrame`
+        Must be a pandas dataframe with at least "name" and "index" columns.
+
+    atlas : Niimg like object or SurfaceImage
+
+    strict : bool, default = False
+        Errors are raised instead of warnings if strict == True.
     """
     assert isinstance(lut, pd.DataFrame)
     assert "name" in lut.columns
@@ -147,18 +157,23 @@ def _check_look_up_table(lut, atlas):
             missing_rows = lut[
                 lut["index"].isin(list(missing_from_image))
             ].to_string(index=False)
-            warnings.warn(
+            msg = (
                 "\nThe following regions are listed in the look-up table,\n"
                 "but are missing from the atlas image:\n\n"
-                f"{missing_rows}\n",
-                stacklevel=3,
+                f"{missing_rows}\n"
             )
+            if strict:
+                raise ValueError(msg)
+            warnings.warn(msg, stacklevel=3)
         if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
-            warnings.warn(
-                "\nThe following regions are present in the atlas image, "
+            msg = (
+                "\nThe following regions are present in the atlas image,\n"
                 "but missing from the look-up table:\n"
                 f"{missing_from_lut}"
             )
+            if strict:
+                raise ValueError(msg)
+            warnings.warn(msg, stacklevel=3)
 
 
 @fill_doc
@@ -228,6 +243,8 @@ def fetch_atlas_difumo(
     .. footbibliography::
 
     """
+    atlas_type = "probabilistic"
+
     dic = {
         64: "pqu9r",
         128: "wjvd5",
@@ -284,7 +301,12 @@ def fetch_atlas_difumo(
 
     fdescr = get_dataset_descr(dataset_name)
 
-    return Bunch(description=fdescr, maps=files_[1], labels=labels)
+    return Bunch(
+        description=fdescr,
+        maps=files_[1],
+        labels=labels,
+        atlas_type=atlas_type,
+    )
 
 
 @fill_doc
@@ -358,6 +380,8 @@ def fetch_atlas_craddock_2012(
     .. footbibliography::
 
     """
+    atlas_type = "probabilistic"
+
     if url is None:
         url = (
             "https://cluster_roi.projects.nitrc.org"
@@ -405,9 +429,19 @@ def fetch_atlas_craddock_2012(
         else:
             filename = [("random_all.nii.gz", url, opts)]
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-        params = {"maps": data[0], "description": fdescr}
+        params = {
+            "maps": data[0],
+            "description": fdescr,
+            "atlas_type": atlas_type,
+        }
     else:
-        params = dict([("description", fdescr), *list(zip(keys, sub_files))])
+        params = dict(
+            [
+                ("description", fdescr),
+                *list(zip(keys, sub_files)),
+                ("atlas_type", atlas_type),
+            ]
+        )
         warnings.warn(
             category=DeprecationWarning,
             message="In release 0.13, this fetcher will return a dictionary "
@@ -503,6 +537,9 @@ def fetch_atlas_destrieux_2009(
         params["labels"] = params["labels"].to_records()
 
     params["description"] = Path(files_[2]).read_text()
+
+    params["atlas_type"] = "deterministic"
+
     return Bunch(**params)
 
 
@@ -631,8 +668,10 @@ def fetch_atlas_harvard_oxford(
             f"Invalid atlas name: {atlas_name}. "
             f"Please choose an atlas among:\n{atlases}"
         )
-    is_probabilistic = "-prob-" in atlas_name
-    if is_probabilistic and symmetric_split:
+
+    atlas_type = "probabilistic" if "-prob-" in atlas_name else "deterministic"
+
+    if atlas_type == "probabilistic" and symmetric_split:
         raise ValueError(
             "Region splitting not supported for probabilistic atlases"
         )
@@ -654,12 +693,13 @@ def fetch_atlas_harvard_oxford(
 
     atlas_niimg = check_niimg(atlas_img)
     if not symmetric_split or is_lateralized:
-        if is_probabilistic:
+        if atlas_type == "probabilistic":
             return Bunch(
                 filename=atlas_filename,
                 maps=atlas_niimg,
                 labels=names,
                 description=fdescr,
+                atlas_type=atlas_type,
             )
 
         lut = _generate_atlas_look_up_table(
@@ -673,6 +713,7 @@ def fetch_atlas_harvard_oxford(
             labels=names,
             description=fdescr,
             lut=lut,
+            atlas_type=atlas_type,
         )
 
     new_atlas_data, new_names = _compute_symmetric_split(
@@ -682,12 +723,13 @@ def fetch_atlas_harvard_oxford(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
 
-    if is_probabilistic:
+    if atlas_type == "probabilistic":
         return Bunch(
             filename=atlas_filename,
             maps=new_atlas_niimg,
             labels=new_names,
             description=fdescr,
+            atlas_type=atlas_type,
         )
 
     lut = _generate_atlas_look_up_table(
@@ -701,6 +743,7 @@ def fetch_atlas_harvard_oxford(
         labels=new_names,
         description=fdescr,
         lut=lut,
+        atlas_type=atlas_type,
     )
 
 
@@ -805,8 +848,12 @@ def fetch_atlas_juelich(
             f"Invalid atlas name: {atlas_name}. "
             f"Please choose an atlas among:\n{atlases}"
         )
-    is_probabilistic = atlas_name.startswith("prob-")
-    if is_probabilistic and symmetric_split:
+
+    atlas_type = (
+        "probabilistic" if atlas_name.startswith("prob-") else "deterministic"
+    )
+
+    if atlas_type == "probabilistic" and symmetric_split:
         raise ValueError(
             "Region splitting not supported for probabilistic atlases"
         )
@@ -820,7 +867,7 @@ def fetch_atlas_juelich(
     atlas_niimg = check_niimg(atlas_img)
     atlas_data = get_data(atlas_niimg)
 
-    if is_probabilistic:
+    if atlas_type == "probabilistic":
         new_atlas_data, new_names = _merge_probabilistic_maps_juelich(
             atlas_data, names
         )
@@ -837,12 +884,13 @@ def fetch_atlas_juelich(
 
     fdescr = get_dataset_descr("juelich")
 
-    if is_probabilistic:
+    if atlas_type == "probabilistic":
         return Bunch(
             filename=atlas_filename,
             maps=new_atlas_niimg,
             labels=list(new_names),
             description=fdescr,
+            atlas_type=atlas_type,
         )
 
     lut = _generate_atlas_look_up_table(
@@ -856,6 +904,7 @@ def fetch_atlas_juelich(
         labels=list(new_names),
         description=fdescr,
         lut=lut,
+        atlas_type=atlas_type,
     )
 
 
@@ -1064,6 +1113,8 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
     """
+    atlas_type = "probabilistic"
+
     url = "https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip"
     opts = {"uncompress": True}
 
@@ -1093,6 +1144,7 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
         region_coords=region_coords,
         networks=net_names,
         description=fdescr,
+        atlas_type=atlas_type,
     )
 
 
@@ -1217,6 +1269,8 @@ def fetch_atlas_smith_2009(
     https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
 
     """
+    atlas_type = "probabilistic"
+
     if url is None:
         if mirror == "origin":
             url = "https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
@@ -1260,13 +1314,14 @@ def fetch_atlas_smith_2009(
 
         file = [(files[key], url[key_index] + files[key], {})]
         data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
-        params = Bunch(maps=data[0], description=fdescr)
+        params = Bunch(maps=data[0], description=fdescr, atlas_type=atlas_type)
     else:
         keys = list(files.keys())
         files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
         files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
         params = dict(zip(keys, files_))
         params["description"] = fdescr
+        params["atlas_type"] = atlas_type
         warnings.warn(
             category=DeprecationWarning,
             message="In release 0.13, this fetcher will return a dictionary "
@@ -1342,6 +1397,8 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     License: unknown.
 
     """
+    atlas_type = "deterministic"
+
     if url is None:
         url = (
             "ftp://surfer.nmr.mgh.harvard.edu/pub/data/"
@@ -1382,7 +1439,13 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
+    params = dict(
+        [
+            ("description", fdescr),
+            ("atlas_type", atlas_type),
+            *list(zip(keys, sub_files)),
+        ]
+    )
     return Bunch(**params)
 
 
@@ -1537,6 +1600,7 @@ def fetch_atlas_aal(
         "labels": labels,
         "indices": indices,
         "lut": lut,
+        "atlas_type": "deterministic",
     }
 
     return Bunch(**params)
@@ -1627,6 +1691,8 @@ def fetch_atlas_basc_multiscale_2015(
     https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615
 
     """
+    atlas_type = "deterministic"
+
     versions = ["sym", "asym"]
     if version not in versions:
         raise ValueError(
@@ -1676,7 +1742,9 @@ def fetch_atlas_basc_multiscale_2015(
             "fetch_atlas_basc_multiscale_2015", name=resolution
         )
 
-        params = Bunch(maps=data[0], description=fdescr, lut=lut)
+        params = Bunch(
+            maps=data[0], description=fdescr, lut=lut, atlas_type=atlas_type
+        )
         _check_look_up_table(lut=params.lut, atlas=params.maps)
 
     else:
@@ -1697,6 +1765,7 @@ def fetch_atlas_basc_multiscale_2015(
 
         params = dict(zip(keys, data))
         params["description"] = descr
+        params["atlas_type"] = atlas_type
         warnings.warn(
             category=DeprecationWarning,
             message="In release 0.13, this fetcher will return a dictionary "
@@ -1952,6 +2021,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     params = [
         ("description", fdescr),
+        ("atlas_type", "probabilistic"),
         ("rsn_indices", labels),
         ("networks", networks),
         *list(zip(keys, sub_files)),
@@ -2050,6 +2120,7 @@ def fetch_atlas_surf_destrieux(
         map_right=annot_right[0],
         description=fdescr,
         lut=lut,
+        atlas_type="deterministic",
     )
 
 
@@ -2171,7 +2242,11 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     _check_look_up_table(lut=lut, atlas=atlas_img)
 
     return Bunch(
-        maps=atlas_img, labels=labels, description=description, lut=lut
+        maps=atlas_img,
+        labels=labels,
+        description=description,
+        lut=lut,
+        atlas_type="deterministic",
     )
 
 
@@ -2291,13 +2366,24 @@ def fetch_atlas_pauli_2017(
 
     fdescr = get_dataset_descr(dataset_name)
 
-    if atlas_type == "prob":
-        return Bunch(maps=atlas_file, labels=labels, description=fdescr)
+    if atlas_type == "probabilistic":
+        return Bunch(
+            maps=atlas_file,
+            labels=labels,
+            description=fdescr,
+            atlas_type=atlas_type,
+        )
 
     lut = _generate_atlas_look_up_table("fetch_atlas_pauli_2017", name=labels)
     _check_look_up_table(lut=lut, atlas=atlas_file)
 
-    return Bunch(maps=atlas_file, labels=labels, description=fdescr, lut=lut)
+    return Bunch(
+        maps=atlas_file,
+        labels=labels,
+        description=fdescr,
+        lut=lut,
+        atlas_type=atlas_type,
+    )
 
 
 @fill_doc
@@ -2390,6 +2476,8 @@ def fetch_atlas_schaefer_2018(
     License: MIT.
 
     """  # noqa: E501
+    atlas_type = "deterministic"
+
     valid_n_rois = list(range(100, 1100, 100))
     valid_yeo_networks = [7, 17]
     valid_resolution_mm = [1, 2]
@@ -2447,4 +2535,10 @@ def fetch_atlas_schaefer_2018(
     )
     _check_look_up_table(lut=lut, atlas=atlas_file)
 
-    return Bunch(maps=atlas_file, labels=labels, description=fdescr, lut=lut)
+    return Bunch(
+        maps=atlas_file,
+        labels=labels,
+        description=fdescr,
+        lut=lut,
+        atlas_type=atlas_type,
+    )
