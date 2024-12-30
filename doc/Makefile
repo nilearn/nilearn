@@ -79,18 +79,14 @@ force:
 view: _build/html/index.html
 	$(BROWSER) _build/html/index.html
 
-no_jekyll:
-	mkdir -p $(BUILDDIR)/html
-	touch $(BUILDDIR)/html/.nojekyll
-
-html: no_jekyll	sym_links sym_links_datasets
+html: sym_links sym_links_datasets
 	rm -rf $(BUILDDIR)/html/_images
 	python visual_testing/reporter_visual_inspection_suite.py full
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict: no_jekyll sym_links sym_links_datasets
+html-strict: sym_links sym_links_datasets
 	python visual_testing/reporter_visual_inspection_suite.py full
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
@@ -103,7 +99,7 @@ html-modified-examples-only: sym_links sym_links_datasets glm_reports
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot: no_jekyll sym_links_datasets
+html-noplot: sym_links_datasets
 	python visual_testing/reporter_visual_inspection_suite.py full
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
@@ -119,7 +115,7 @@ ci-html-noplot: sym_links_datasets glm_reports
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-dirhtml: no_jekyll
+dirhtml:
 	$(SPHINXBUILD) -b dirhtml $(ALLSPHINXOPTS) $(BUILDDIR)/dirhtml
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/dirhtml."
@@ -174,24 +170,3 @@ check:
 	rm -rf _build/doctrees
 	rm -rf $(BUILDDIR)/html/_images
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -T -n -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
-
-install: clean sym_links_datasets
-	@echo $(VERSIONTAG)
-	# first clone the nilearn.github.io repo because it may ask
-	# for password and we don't want to delay this long build in
-	# the middle of it
-	# --depth 1 is a speed optimization since we don't need the
-	# history prior to the last commit
-	git clone --depth 1 git@github.com:nilearn/nilearn.github.io.git ~/_build/nilearn.github.io
-	touch ~/_build/nilearn.github.io/.nojekyll
-	rm -Rf ~/_build/nilearn.github.io/stable;
-	mkdir ~/_build/nilearn.github.io/stable;
-	make html
-	cd ~/_build/ && \
-	cp -r html/* nilearn.github.io/stable/ && \
-	cd nilearn.github.io && \
-	git add -A && \
-	git add .nojekyll && \
-	git commit -a -m 'Make install' && \
-	git tag $(VERSIONTAG) && \
-	git push --tags

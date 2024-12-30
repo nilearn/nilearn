@@ -13,16 +13,15 @@ from nilearn._utils import _constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
-from nilearn.maskers._utils import (
-    check_same_n_vertices,
-    check_surface_data_ndims,
-    compute_mean_surface_image,
-    concat_extract_surface_data_parts,
-    concatenate_surface_images,
-    deconcatenate_surface_images,
-)
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import (
+    SurfaceImage,
+    check_same_n_vertices,
+    concat_imgs,
+    get_data,
+    iter_img,
+    mean_img,
+)
 
 
 @fill_doc
@@ -170,7 +169,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             verbose=self.verbose,
         )
         # check maps_img data is 2D
-        check_surface_data_ndims(self.maps_img, 2, "maps_img")
+        self.maps_img.data._check_ndims(2, "maps_img")
         self.maps_img_ = self.maps_img
 
         self.n_elements_ = self.maps_img.shape[1]
@@ -190,7 +189,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                     self.mask_img.data.parts[part] = np.squeeze(
                         self.mask_img.data.parts[part], axis=1
                     )
-            check_surface_data_ndims(self.mask_img, 1, "mask_img")
+            self.mask_img.data._check_ndims(1, "mask_img")
 
         self._shelving = False
 
@@ -271,18 +270,18 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # to be able to concatenate it
         if not isinstance(img, list):
             img = [img]
-        img = concatenate_surface_images(img)
+        img = concat_imgs(img)
         # check img data is 2D
-        check_surface_data_ndims(img, 2, "img")
+        img.data._check_ndims(2, "img")
         check_same_n_vertices(self.maps_img.mesh, img.mesh)
         img_data = np.concatenate(
             list(img.data.parts.values()), axis=0
         ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data = concat_extract_surface_data_parts(self.maps_img)
+        maps_data = get_data(self.maps_img)
         if self.mask_img is not None:
-            mask_data = concat_extract_surface_data_parts(self.mask_img)
+            mask_data = get_data(self.mask_img)
         else:
             mask_data = None
 
@@ -413,9 +412,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self._check_fitted()
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
-        maps_data = concat_extract_surface_data_parts(self.maps_img)
+        maps_data = get_data(self.maps_img)
         if self.mask_img is not None:
-            mask_data = concat_extract_surface_data_parts(self.mask_img)
+            mask_data = get_data(self.mask_img)
         else:
             mask_data = None
 
@@ -582,11 +581,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         from nilearn.reporting.utils import figure_to_svg_base64
 
         maps_img = self._reporting_data["maps_img"]
-        maps_img = deconcatenate_surface_images(maps_img)
+        maps_img = iter_img(maps_img, return_iterator=False)
 
         img = self._reporting_data["images"]
         if img:
-            img = compute_mean_surface_image(img)
+            img = mean_img(img)
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
