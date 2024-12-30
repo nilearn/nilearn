@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data
 
 # Set backend to avoid DISPLAY problems
@@ -17,6 +18,10 @@ def shape():
     return (9, 10, 11)
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
+)
 def test_local_max_two_maxima(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
     # Two maxima (one global, one local), 10 voxels apart.
@@ -34,6 +39,10 @@ def test_local_max_two_maxima(shape, affine_eye):
     assert np.array_equal(vals, np.array([6]))
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
+)
 def test_local_max_two_global_maxima(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
     # Two global (equal) maxima, 10 voxels apart.
@@ -51,6 +60,10 @@ def test_local_max_two_global_maxima(shape, affine_eye):
     assert np.array_equal(vals, np.array([5]))
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
+)
 def test_local_max_donut(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
     # A donut.

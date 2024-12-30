@@ -7,6 +7,7 @@ from nilearn._utils.data_gen import (
     basic_paradigm,
     write_fake_fmri_data_and_design,
 )
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -29,6 +30,10 @@ def flm(tmp_path):
     )
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
+)
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_flm_reporting(flm, height_control):
     """Smoke test for first level model reporting."""
@@ -48,6 +53,10 @@ def test_flm_reporting(flm, height_control):
     report_flm.get_iframe()
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
+)
 def test_flm_reporting_method(flm):
     """Smoke test for the first level generate method."""
     contrast = np.eye(3)[1]
@@ -75,6 +84,10 @@ def slm(tmp_path):
     return model.fit(Y, design_matrix=X)
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
+)
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
     """Smoke test for the second level reporting."""
@@ -86,6 +99,10 @@ def test_slm_reporting_method(slm, height_control):
     report_slm.get_iframe()
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
+)
 def test_slm_reporting(slm):
     """Smoke test for the second level model generate method."""
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
@@ -272,6 +289,10 @@ def test_plot_contrasts():
     )
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Matplotlib not installed; required for this test",
+)
 def test_masking_first_level_model(tmp_path):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
