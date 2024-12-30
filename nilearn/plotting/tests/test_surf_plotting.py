@@ -672,7 +672,7 @@ def test_add_contours_plotly_surface_image(plotly, surface_image_roi):
     figure = plot_surf(
         surf_map=surface_image_roi, hemi="left", engine="plotly"
     )
-    figure.add_contours(roi_map=surface_image_roi, hemi="left")
+    figure.add_contours(roi_map=surface_image_roi)
 
 
 def test_surface_figure_add_contours_raises_not_implemented(plotly):
