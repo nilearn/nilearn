@@ -280,21 +280,6 @@ def test_fetch_localizer_contrasts_edge_cases(
 
 
 def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):  # noqa: ARG001
-    # 2 subjects
-    dataset = func.fetch_localizer_contrasts(
-        ["checkerboard"], n_subjects=2, data_dir=tmp_path, verbose=1
-    )
-
-    assert isinstance(dataset, Bunch)
-    assert not hasattr(dataset, "anats")
-    assert not hasattr(dataset, "tmaps")
-    assert not hasattr(dataset, "masks")
-    assert isinstance(dataset.cmaps[0], str)
-    assert isinstance(dataset.ext_vars, np.recarray)
-    assert len(dataset.cmaps) == 2
-    assert dataset.ext_vars.size == 2
-    assert dataset.description != ""
-
     dataset = func.fetch_localizer_contrasts(
         ["checkerboard"], n_subjects=2, data_dir=tmp_path, verbose=1
     )
