@@ -8,7 +8,7 @@ from nibabel import Nifti1Image
 
 from nilearn import _utils, image, masking
 from nilearn._utils import logger
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import set_plotting_engine
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
 
@@ -395,15 +395,8 @@ class NiftiLabelsMasker(BaseMasker):
 
     def generate_report(self):
         """Generate a report."""
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
+        if set_plotting_engine("matplotlib", set_alternative=False) is None:
+            return [None]
 
         from nilearn.reporting.html_report import generate_report
 

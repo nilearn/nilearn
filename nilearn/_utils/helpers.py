@@ -6,6 +6,81 @@ import warnings
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
 
+def set_plotting_engine(engine, error_if_missing=False, set_alternative=True):
+    """Set the plotting engine.
+
+    Parameters
+    ----------
+    engine : {'matplotlib', 'plotly'}
+        The plotting engine to use. If 'matplotlib', the matplotlib
+        engine will be used. If 'plotly', the plotly engine will be used.
+        If the requested engine is not installed and ``error_if_missing`` is
+        False, a warning will be issued and the alternative engine will be
+        used if ``set_alternative`` is True; if ``error_if_missing`` is True,
+        an error will be raised.
+
+    error_if_missing : bool, default=False
+        If True, raise an error if the requested plotting engine is not
+        installed. If False, issue a warning and switch to the alternative
+        engine.
+
+    set_alternative : bool, default=True
+        If True, switch to the alternative plotting engine if the requested
+        engine is not installed. If False, do not switch to the alternative
+        engine, and return None. Only relevant if ``error_if_missing`` is
+        False.
+    """
+    if engine not in ["matplotlib", "plotly"]:
+        raise ValueError(
+            f"Invalid value for `engine`. Expected one of matplotlib "
+            f" or plotly. Got {engine}."
+        )
+
+    error_msg = (
+        "You can install Nilearn's plotting dependencies with:\n"
+        "pip install 'nilearn[plotting]'"
+    )
+
+    if not is_plotly_installed() and not is_matplotlib_installed():
+        raise RuntimeError(f"No plotting libraries are installed. {error_msg}")
+
+    engine = _warn_or_raise_dependencies_error(
+        engine, error_if_missing, set_alternative, error_msg
+    )
+
+    if engine == "matplotlib":
+        _set_mpl_backend()
+    return engine
+
+
+def _warn_or_raise_dependencies_error(
+    engine, error_if_missing, set_alternative, error_msg
+):
+    """Raise error or issue warning for missing plotting dependencies."""
+    engine_to_checker = {
+        "plotly": is_plotly_installed(),
+        "matplotlib": is_matplotlib_installed(),
+    }
+    alternative_engine = "matplotlib" if engine == "plotly" else "plotly"
+
+    not_installed_msg = f"The {engine} library is not installed."
+    warn_msg = f"Switching to {alternative_engine} for plotting."
+
+    if not engine_to_checker[engine] and error_if_missing:
+        raise ImportError(f"{not_installed_msg} {error_msg}")
+    elif not engine_to_checker[engine] and not error_if_missing:
+        warnings.warn(
+            category=ImportWarning,
+            message=f"{not_installed_msg} {warn_msg}",
+            stacklevel=2,
+        )
+        if set_alternative:
+            return alternative_engine
+        else:
+            return None
+    return engine
+
+
 def _set_mpl_backend():
     """Check if matplotlib is installed.
 
