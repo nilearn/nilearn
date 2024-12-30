@@ -963,8 +963,8 @@ def threshold_img(
         If threshold is float, it should be within the range of minimum and the
         maximum intensity of the data.
         If `two_sided` is True, threshold cannot be negative.
-        If threshold is str, the given string should be within the range of
-        "0%" to "100%".
+        If threshold is :obj:`str`,
+        the given string should be within the range of "0%" to "100%".
 
     cluster_threshold : :obj:`float`, default=0
         Cluster size threshold, in voxels. In the returned thresholded map,
