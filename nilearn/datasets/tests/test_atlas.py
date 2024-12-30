@@ -20,6 +20,7 @@ from nilearn.conftest import _rng
 from nilearn.datasets import atlas
 from nilearn.datasets._utils import fetch_files
 from nilearn.datasets.atlas import (
+    _generate_atlas_look_up_table,
     fetch_atlas_aal,
     fetch_atlas_allen_2011,
     fetch_atlas_basc_multiscale_2015,
@@ -57,6 +58,13 @@ def validate_atlas(atlas_data):
     if atlas_data.atlas_type == "deterministic":
         assert isinstance(atlas_data.labels, list)
         assert isinstance(atlas_data.lut, pd.DataFrame)
+
+
+def test_generate_atlas_look_up_table(shape_3d_default):
+    mock_regions = data_gen.generate_labeled_regions(
+        shape_3d_default, n_regions=10
+    )
+    _generate_atlas_look_up_table(function="unknown", index=mock_regions)
 
 
 def test_downloader(tmp_path, request_mocker):
@@ -448,7 +456,55 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     assert request_mocker.url_count == 1
 
 
+@pytest.mark.xfail(
+    reason="Atlas should return single map with associated labels.",
+    raises=AttributeError,
+)
 def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
+    dataset_name = "yeo_2011"
+    yeo_archive_root = "Yeo_JNeurophysiol11_MNI152"
+
+    mock_dir = tmp_path / dataset_name / yeo_archive_root
+    mock_dir.mkdir(exist_ok=True, parents=True)
+
+    # only mock 7 networks for now
+    n_roi = 7
+
+    to_archive = {}
+
+    mock_map = data_gen.generate_labeled_regions((53, 64, 52), n_roi)
+    for basename in (
+        "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm.nii.gz",
+        "Yeo2011_7Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
+        "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm.nii.gz",
+        "Yeo2011_17Networks_MNI152_FreeSurferConformed1mm_LiberalMask.nii.gz",
+        "FSL_MNI152_FreeSurferConformed_1mm.nii.gz",
+    ):
+        mock_file = mock_dir / basename
+        mock_map.to_filename(mock_file)
+        to_archive[Path(yeo_archive_root) / basename] = mock_file
+
+    mock_lut = pd.DataFrame(
+        {
+            "name": [None] + [f"7Networks_{x}" for x in range(1, n_roi + 1)],
+            "r": [1] * (n_roi + 1),
+            "g": [1] * (n_roi + 1),
+            "b": [1] * (n_roi + 1),
+            "o": [0] * (n_roi + 1),
+        }
+    )
+    for basename in (
+        "Yeo2011_7Networks_ColorLUT.txt",
+        "Yeo2011_17Networks_ColorLUT.txt",
+    ):
+        mock_file = mock_dir / basename
+        mock_lut.to_csv(mock_file, sep=" ", header=False)
+        to_archive[Path(yeo_archive_root) / basename] = mock_file
+
+    yeo_data = dict_to_archive(to_archive, archive_format="zip")
+
+    request_mocker.url_mapping["*Yeo_JNeurophysiol11_MNI152*"] = yeo_data
+
     dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
 
     assert isinstance(dataset.anat, str)
@@ -458,17 +514,8 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     assert isinstance(dataset.thick_7, str)
     assert isinstance(dataset.thin_17, str)
     assert isinstance(dataset.thin_7, str)
-    assert request_mocker.url_count == 1
-
-
-@pytest.mark.xfail(
-    reason="Atlas should return single map with associated labels."
-)
-def test_validate_fetch_atlas_yeo_2011(tmp_path, request_mocker):
-    dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
 
     validate_atlas(dataset)
-    assert request_mocker.url_count == 1
 
 
 def test_fetch_atlas_difumo(tmp_path, request_mocker):
@@ -578,19 +625,14 @@ def test_fetch_atlas_aal_version_error(tmp_path):
         fetch_atlas_aal(version="FLS33", data_dir=tmp_path, verbose=0)
 
 
-def test_fetch_atlas_basc_multiscale_2015(tmp_path, affine_mni, rng):
+def test_fetch_atlas_basc_multiscale_2015(tmp_path):
     resolution = 7
 
     dataset_name = "basc_multiscale_2015"
     name_sym = "template_cambridge_basc_multiscale_nii_sym"
     basename_sym = "template_cambridge_basc_multiscale_sym_scale007.nii.gz"
 
-    mock_map = Nifti1Image(
-        rng.integers(
-            size=(53, 64, 52), low=0, high=resolution + 1, dtype="int8"
-        ),
-        affine=affine_mni,
-    )
+    mock_map = data_gen.generate_labeled_regions((53, 64, 52), resolution)
     mock_file = tmp_path / dataset_name / name_sym / basename_sym
     mock_file.parent.mkdir(exist_ok=True, parents=True)
     mock_map.to_filename(mock_file)
