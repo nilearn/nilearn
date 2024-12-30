@@ -99,7 +99,7 @@ jobs:
         -   name: Upload build.txt and pattern.txt
             uses: actions/upload-artifact@v4
             with:
-                name: build-type-and-pattern
+                name: build_type
                 path: |
                     build.txt
                     pattern.txt
@@ -117,7 +117,7 @@ jobs:
         -   name: Download build type
             uses: actions/download-artifact@v4
             with:
-                name: build_type_and_pattern
+                name: build_type
         -   name: Verify build type
             id: build-type
             run: echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
@@ -165,7 +165,7 @@ jobs:
         -   name: Download build type
             uses: actions/download-artifact@v4
             with:
-                name: build_type_and_pattern
+                name: build_type
         -   name: Verify build type
             id: build-type
             run: echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
@@ -294,7 +294,7 @@ jobs:
         -   name: Download build type
             uses: actions/download-artifact@v4
             with:
-                name: build_type_and_pattern
+                name: build_type
 
         -   name: Install tox
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
