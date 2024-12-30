@@ -343,7 +343,7 @@ jobs:
         -   uses: actions/download-artifact@v4
             with:
                 name: doc
-                path: ~/doc/_build/html
+                path: doc/_build/html
 
         -   name: Identify deploy type
             id: deploy-type
