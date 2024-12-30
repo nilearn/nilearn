@@ -42,7 +42,7 @@ def set_plotting_engine(engine, error_if_missing=False, set_alternative=True):
     )
 
     if not is_plotly_installed() and not is_matplotlib_installed():
-        raise RuntimeError(f"No plotting libraries are installed. {error_msg}")
+        raise ImportError(f"No plotting libraries are installed. {error_msg}")
 
     engine = _warn_or_raise_dependencies_error(
         engine, error_if_missing, set_alternative, error_msg
