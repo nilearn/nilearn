@@ -24,9 +24,10 @@ class SurfaceFigure:
         Path to output file.
     """
 
-    def __init__(self, figure=None, output_file=None):
+    def __init__(self, figure=None, output_file=None, hemi="left"):
         self.figure = figure
         self.output_file = output_file
+        self.hemi = hemi
 
     def show(self):
         """Show the figure."""
@@ -90,7 +91,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             [self.figure._data[0].get(d) for d in ["x", "y", "z"]]
         ).T
 
-    def __init__(self, figure=None, output_file=None):
+    def __init__(self, figure=None, output_file=None, hemi="left"):
         if not is_plotly_installed():
             raise ImportError(
                 "Plotly is required to use `PlotlySurfaceFigure`."
@@ -101,7 +102,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             raise TypeError(
                 "`PlotlySurfaceFigure` accepts only plotly figure objects."
             )
-        super().__init__(figure=figure, output_file=output_file)
+        super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 
     def show(self, renderer="browser"):
         """Show the figure.
@@ -139,7 +140,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
         labels=None,
         lines=None,
         elevation=0.1,
-        hemi="left",
     ):
         """Draw boundaries around roi.
 
@@ -189,9 +189,9 @@ class PlotlySurfaceFigure(SurfaceFigure):
         """
         if isinstance(roi_map, SurfaceImage):
             assert len(roi_map.shape) == 1 or roi_map.shape[1] == 1
-            if hemi in ["left", "right"]:
-                roi_map = roi_map.data.parts[hemi]
-            elif hemi == "both":
+            if self.hemi in ["left", "right"]:
+                roi_map = roi_map.data.parts[self.hemi]
+            elif self.hemi == "both":
                 roi_map = get_data(roi_map)
 
         if levels is None:

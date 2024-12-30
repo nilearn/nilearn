@@ -205,7 +205,6 @@ elif engine == "plotly":
         levels=regions_indices,
         labels=labels,
         lines=[{"width": 5}],
-        hemi=hemi,
     )
     # view the contours in a browser
     # figure.show()

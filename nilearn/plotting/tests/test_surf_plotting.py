@@ -647,6 +647,26 @@ def test_add_contours(plotly, surface_image_roi):
     assert len(figure.figure.to_dict().get("data")) == 4
 
 
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
+def test_add_contours_hemi(
+    plotly,
+    surface_image_roi,
+    hemi,
+):
+    """Test that add_contours works with all hemi inputs."""
+    if hemi == "both":
+        n_vertices = surface_image_roi.mesh.n_vertices
+    else:
+        n_vertices = surface_image_roi.data.parts[hemi].shape[0]
+    figure = plot_surf(
+        surface_image_roi.mesh,
+        engine="plotly",
+        hemi=hemi,
+    )
+    figure.add_contours(surface_image_roi)
+    assert figure._coords.shape[0] == n_vertices
+
+
 def test_add_contours_plotly_surface_image(plotly, surface_image_roi):
     """Test that add_contours works with SurfaceImage."""
     figure = plot_surf(

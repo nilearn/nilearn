@@ -387,7 +387,9 @@ def _plot_surf_plotly(
     )
 
     # save figure
-    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
+    plotly_figure = PlotlySurfaceFigure(
+        figure=fig, output_file=output_file, hemi=hemi
+    )
 
     if output_file is not None:
         if not is_kaleido_installed():
