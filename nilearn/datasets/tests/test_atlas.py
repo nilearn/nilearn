@@ -75,6 +75,35 @@ def test_generate_atlas_look_up_table(shape_3d_default, surf_three_labels_img):
     _check_look_up_table(lut=lut, atlas=surf_three_labels_img, strict=True)
 
 
+def test_generate_atlas_look_up_table_errors():
+    with pytest.raises(
+        ValueError, match="'index' and 'name' cannot both be None."
+    ):
+        _generate_atlas_look_up_table(function=None, name=None, index=None)
+
+
+def test_check_look_up_table_errors(shape_3d_default):
+    mock_regions = data_gen.generate_labeled_regions(
+        shape_3d_default, n_regions=10
+    )
+    lut = _generate_atlas_look_up_table(function="unknown", index=mock_regions)
+
+    with pytest.raises(
+        ValueError, match="missing from the atlas look-up table"
+    ):
+        _check_look_up_table(
+            lut=lut.drop(index=2), atlas=mock_regions, strict=True
+        )
+
+    mock_regions_with_missing_labels = data_gen.generate_labeled_regions(
+        shape_3d_default, n_regions=8
+    )
+    with pytest.raises(ValueError, match="missing from the atlas image"):
+        _check_look_up_table(
+            lut=lut, atlas=mock_regions_with_missing_labels, strict=True
+        )
+
+
 def test_downloader(tmp_path, request_mocker):
     # Sandboxing test
     # ===============

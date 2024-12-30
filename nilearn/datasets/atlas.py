@@ -71,8 +71,8 @@ def _generate_atlas_look_up_table(function=None, name=None, index=None):
 
     Parameters
     ----------
-    function : function or obj:`str` or None, default=None
-        Atlas fetching function or its name as a string.
+    function : obj:`str` or None, default=None
+        Atlas fetching function name as a string.
         Defaults to "unknown" in case None is passed.
 
     name : iterable of bytes or string, or int or None, default=None
@@ -87,11 +87,9 @@ def _generate_atlas_look_up_table(function=None, name=None, index=None):
         then a LUT is generated for this image.
     """
     if name is None and index is None:
-        raise ValueError("'Index' and 'name' cannot both be None.")
+        raise ValueError("'index' and 'name' cannot both be None.")
 
     fname = "unknown" if function is None else function
-    if function and not isinstance(function, str):
-        fname = function.__name__
 
     # deal with names
     if name is None:
@@ -179,8 +177,9 @@ def _check_look_up_table(lut, atlas, strict=False):
                 lut["index"].isin(list(missing_from_image))
             ].to_string(index=False)
             msg = (
-                "\nThe following regions are listed in the look-up table,\n"
-                "but are missing from the atlas image:\n\n"
+                "\nThe following regions are present "
+                "in the atlas look-up table,\n"
+                "but missing from the atlas image:\n\n"
                 f"{missing_rows}\n"
             )
             if strict:
@@ -188,8 +187,9 @@ def _check_look_up_table(lut, atlas, strict=False):
             warnings.warn(msg, stacklevel=3)
         if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
             msg = (
-                "\nThe following regions are present in the atlas image,\n"
-                "but missing from the look-up table:\n"
+                "\nThe following regions are present "
+                "in the atlas image,\n"
+                "but missing from the atlas look-up table:\n\n"
                 f"{missing_from_lut}"
             )
             if strict:
