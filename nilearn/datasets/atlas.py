@@ -1839,8 +1839,10 @@ def fetch_atlas_surf_destrieux(
     annot_left = freesurfer.read_annot(annots[0])
     annot_right = freesurfer.read_annot(annots[1])
 
+    labels = [x.decode("utf-8") for x in annot_left[2]]
+
     return Bunch(
-        labels=annot_left[2],
+        labels=labels,
         map_left=annot_left[0],
         map_right=annot_right[0],
         description=fdescr,

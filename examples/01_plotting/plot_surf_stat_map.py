@@ -59,9 +59,6 @@ destrieux_atlas = SurfaceImage(
         "right": destrieux.map_right,
     },
 )
-# The labels are stored as bytes for the Destrieux atlas.
-# For convenience we decode them to string.
-labels = [x.decode("utf-8") for x in destrieux.labels]
 
 # The fsaverage meshes contains FileMesh objects:
 print(f"{fsaverage_meshes['pial'].parts['left']=}")
@@ -83,7 +80,7 @@ from nilearn.maskers import SurfaceLabelsMasker
 
 # Extract seed region via label
 name_seed_region = "G_cingul-Post-dorsal"
-label_seed_region = labels.index(name_seed_region)
+label_seed_region = destrieux.labels.index(name_seed_region)
 
 # Here we create a surface mask image
 # that has False for all vertices
@@ -172,8 +169,8 @@ for hemi, mesh in surf_img_nki.mesh.parts.items():
 # in unknown regions
 # and on the medial wall.
 excluded_labels = [
-    labels.index("Unknown"),
-    labels.index("Medial_wall"),
+    destrieux.labels.index("Unknown"),
+    destrieux.labels.index("Medial_wall"),
 ]
 is_excluded = np.isin(
     destrieux_atlas.data.parts[hemisphere],
