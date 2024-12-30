@@ -28,7 +28,7 @@ from nilearn.surface import (
 from nilearn.surface.surface import (
     check_mesh_and_data,
     check_mesh_is_fsaverage,
-    combine_img_hemispheres,
+    combine_hemispheres_meshes,
     get_data,
 )
 
@@ -251,7 +251,7 @@ def _full_brain_info(
     for mesh_type in ["infl", "pial"]:
         if mesh_type == "infl":
             info["inflated_both"] = mesh_to_plotly(
-                combine_img_hemispheres(
+                combine_hemispheres_meshes(
                     PolyMesh(
                         left=mesh[f"{mesh_type}_left"],
                         right=mesh[f"{mesh_type}_right"],
@@ -260,7 +260,7 @@ def _full_brain_info(
             )
         else:
             info[f"{mesh_type}_both"] = mesh_to_plotly(
-                combine_img_hemispheres(
+                combine_hemispheres_meshes(
                     PolyMesh(
                         left=mesh[f"{mesh_type}_left"],
                         right=mesh[f"{mesh_type}_right"],

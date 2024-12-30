@@ -2,7 +2,7 @@ from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
 )
-from nilearn.surface.surface import combine_img_hemispheres, get_data
+from nilearn.surface.surface import combine_hemispheres_meshes, get_data
 
 
 def check_surface_plotting_inputs(
@@ -107,7 +107,7 @@ def _get_hemi(mesh, hemi):
     hemispheres.
     """
     if hemi == "both":
-        return combine_img_hemispheres(mesh)
+        return combine_hemispheres_meshes(mesh)
     elif hemi in mesh.parts:
         return mesh.parts[hemi]
     else:

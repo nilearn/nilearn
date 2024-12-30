@@ -968,7 +968,7 @@ def _gifti_img_to_mesh(gifti_img):
     return coords, faces
 
 
-def combine_img_hemispheres(mesh):
+def combine_hemispheres_meshes(mesh):
     """Combine the left and right hemisphere meshes such that both are
     represented in the same mesh.
 
