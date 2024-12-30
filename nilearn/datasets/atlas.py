@@ -49,6 +49,34 @@ def rgb_to_hex_lookup(
 
 
 def _generate_atlas_look_up_table(function, name, index=None):
+    """Generate a look up tale for an atlas.
+
+    For a given deterministic atlas
+    supported by Nilearn,
+    this returns a pandas dataframe to use as look up table (LUT)
+    between the name of a ROI and its index in the associated image.
+    This LUT is compatible with the seg.tsv BIDS format
+    describing brain segmentations and parcellations,
+    with an 'index' and 'name' column
+    ('color' may be an example of an optional column).
+    TODO  add link BIDS spec
+
+    For some atlases some 'clean up' of the LUT is done
+    (for example make sure that the LUT contains the background 'ROI').
+
+    Parameters
+    ----------
+    function : function or obj:`str`
+        Atlas fetching function or its name as a string.
+
+    name : iterable of bytes or string, or int
+        If an integer is passed this corresponds
+        to the number of ROIs in the atlas
+        If an iterable is passed then it contains the ROI names.
+
+    index : iterable of integers or None, default=None
+        If None then the index of each ROI is derived from name.
+    """
     fname = function
     if not isinstance(function, str):
         fname = function.__name__
@@ -60,20 +88,20 @@ def _generate_atlas_look_up_table(function, name, index=None):
         name = [str(x) for x in range(name)]
 
     # deal with indices
-    index = list(range(len(name)))
+    if index is None:
+        index = list(range(len(name)))
     if fname in ["fetch_atlas_basc_multiscale_2015"]:
         index = [int(x) for x in name]
     elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
         index = list(range(1, len(name) + 1))
 
-    # convert to dataframa and do some cleaning where required
+    # convert to dataframe and do some cleaning where required
     lut = pd.DataFrame({"index": index, "name": name})
 
     if fname in [
         "fetch_atlas_harvard_oxford",
         "fetch_atlas_juelich",
         "fetch_atlas_talairach",
-        "fetch_atlas_aal",
         "fetch_atlas_basc_multiscale_2015",
     ]:
         return lut
@@ -81,7 +109,11 @@ def _generate_atlas_look_up_table(function, name, index=None):
     elif fname == "fetch_atlas_surf_destrieux":
         return lut.replace("Unknown", "Background")
 
-    elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
+    elif fname in [
+        "fetch_atlas_schaefer_2018",
+        "fetch_atlas_pauli_2017",
+        "fetch_atlas_aal",
+    ]:
         return pd.concat(
             [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
             ignore_index=True,
@@ -89,6 +121,17 @@ def _generate_atlas_look_up_table(function, name, index=None):
 
 
 def _check_look_up_table(lut, atlas):
+    """Validate atals look up table (LUT).
+
+    Must be a pandas dataframe with at least name and index columns.
+
+    Throws warning if there are mismatches between the number of ROIs
+    in the LUT and th number of unique ROIs in the associated image.
+    """
+    assert isinstance(lut, pd.DataFrame)
+    assert "name" in lut.columns
+    assert "index" in lut.columns
+
     if isinstance(atlas, (str, Path)):
         atlas = check_niimg(atlas)
 
@@ -100,11 +143,18 @@ def _check_look_up_table(lut, atlas):
     roi_id = np.unique(data)
 
     if len(lut) != len(roi_id):
-        print(f"{len(lut)=} vs {len(roi_id)=}")
-        if missing_from_image := set(lut.index.to_list()) - set(roi_id):
-            print(f"{missing_from_image=}")
-        if missing_from_lut := set(roi_id) - set(lut.index.to_list()):
-            print(f"{missing_from_lut=}")
+        if missing_from_image := set(lut["index"].to_list()) - set(roi_id):
+            warnings.warn(
+                "\nThe following regions are listed in the look-up table, "
+                "but are missing from the atlas image:\n"
+                f"{missing_from_image}"
+            )
+        if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
+            warnings.warn(
+                "\nThe following regions are present in the atlas image, "
+                "but missing from the look-up table:\n"
+                f"{missing_from_lut}"
+            )
 
 
 @fill_doc
@@ -437,8 +487,11 @@ def fetch_atlas_destrieux_2009(
     )
     files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    params = {"maps": files_[1], "labels": pd.read_csv(files_[0], index_col=0)}
-    params["lut"] = params["labels"]
+    params = {
+        "maps": files_[1],
+        "labels": pd.read_csv(files_[0], index_col=0),
+        "lut": pd.read_csv(files_[0]),
+    }
 
     _check_look_up_table(lut=params["lut"], atlas=params["maps"])
 
@@ -1470,7 +1523,7 @@ def fetch_atlas_aal(
         fdescr = fdescr.replace("SPM 12", version)
 
     lut = _generate_atlas_look_up_table(
-        "fetch_atlas_aal", index=indices, name=labels
+        "fetch_atlas_aal", index=[int(x) for x in indices], name=labels
     )
     _check_look_up_table(lut=lut, atlas=atlas_img)
 

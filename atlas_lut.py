@@ -67,7 +67,7 @@ atlas = fetch_atlas_schaefer_2018()
 
 # %%
 print(fetch_atlas_pauli_2017.__name__.upper())
-atlas = fetch_atlas_pauli_2017(version="deterministic")
+atlas = fetch_atlas_pauli_2017(atlas_type="deterministic")
 
 
 # %%
