@@ -58,10 +58,7 @@ views = [
     "anterior",
     "posterior",
 ]
-hemispheres = [
-    "left",
-    "right",
-]
+hemispheres = ["left", "right", "both"]
 
 # for our plots we will be using the fsaverage sulcal data as background map
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
@@ -81,6 +78,10 @@ vmin = -vmax
 
 for view, ax_row in zip(views, axes):
     for ax, hemi in zip(ax_row, hemispheres):
+        if hemi == "both" and view == "lateral":
+            view = "left"
+        elif hemi == "both" and view == "medial":
+            view = "right"
         plot_surf(
             surf_map=mean_img,
             hemi=hemi,
@@ -96,7 +97,7 @@ for view, ax_row in zip(views, axes):
             vmax=vmax,
             bg_map=fsaverage_sulcal,
         )
-fig.set_size_inches(6, 8)
+fig.set_size_inches(12, 8)
 
 show()
 
