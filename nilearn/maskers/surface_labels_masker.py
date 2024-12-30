@@ -10,14 +10,13 @@ from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.maskers._utils import (
-    check_same_n_vertices,
-    compute_mean_surface_image,
-    concatenate_surface_images,
-    get_min_max_surface_image,
-)
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import (
+    SurfaceImage,
+    check_same_n_vertices,
+    concat_imgs,
+    mean_img,
+)
 
 
 def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
@@ -353,7 +352,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         # to be able to concatenate it
         if not isinstance(img, list):
             img = [img]
-        img = concatenate_surface_images(img)
+        img = concat_imgs(img)
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
         # concatenate data over hemispheres
         img_data = np.concatenate(list(img.data.parts.values()), axis=0)
@@ -513,7 +512,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         import matplotlib.pyplot as plt
 
-        from nilearn.reporting.utils import figure_to_png_base64
+        from nilearn.reporting.utils import figure_to_svg_base64
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
@@ -524,7 +523,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         plt.close()
 
-        init_display = figure_to_png_base64(fig)
+        init_display = figure_to_svg_base64(fig)
 
         return [init_display]
 
@@ -543,8 +542,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         img = self._reporting_data["images"]
         if img:
-            img = compute_mean_surface_image(img)
-            vmin, vmax = get_min_max_surface_image(img)
+            img = mean_img(img)
+            vmin, vmax = img.data._get_min_max()
 
         # TODO: possibly allow to generate a report with other views
         views = ["lateral", "medial"]

@@ -202,7 +202,7 @@ class NiftiMapsMasker(BaseMasker):
 
         self.keep_masked_maps = keep_masked_maps
 
-        self.cmap = kwargs.get("cmap", "CMRmap_r")
+        self.cmap = kwargs.get("cmap", "gray")
 
     def generate_report(self, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
