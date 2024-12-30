@@ -46,7 +46,10 @@ _check_look_up_table(lut, atlas.thin_7)
 
 #  %%
 print(fetch_atlas_aal.__name__.upper())
-atlas = fetch_atlas_aal()
+atlas = fetch_atlas_aal(version="SPM12")
+atlas = fetch_atlas_aal(version="SPM8")
+atlas = fetch_atlas_aal(version="SPM5")
+atlas = fetch_atlas_aal(version="3v2")
 
 # %%
 # TODO with surface image

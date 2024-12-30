@@ -84,8 +84,6 @@ def _generate_atlas_look_up_table(function, name, index=None):
     # deal with names
     if fname in ["fetch_atlas_surf_destrieux", "fetch_atlas_schaefer_2018"]:
         name = [x.decode() for x in name]
-    elif fname in ["fetch_atlas_basc_multiscale_2015"]:
-        name = [str(x) for x in range(name + 1)]
 
     # deal with indices
     if index is None:
@@ -1738,12 +1736,18 @@ def fetch_atlas_basc_multiscale_2015(
 
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
 
+        labels = [str(x) for x in range(resolution + 1)]
+
         lut = _generate_atlas_look_up_table(
-            "fetch_atlas_basc_multiscale_2015", name=resolution
+            "fetch_atlas_basc_multiscale_2015", name=labels
         )
 
         params = Bunch(
-            maps=data[0], description=fdescr, lut=lut, atlas_type=atlas_type
+            maps=data[0],
+            description=fdescr,
+            lut=lut,
+            atlas_type=atlas_type,
+            labels=labels,
         )
         _check_look_up_table(lut=params.lut, atlas=params.maps)
 

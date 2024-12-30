@@ -537,8 +537,9 @@ def test_fetch_atlas_aal(
     aal_archive_root,
     tmp_path,
     request_mocker,
+    img_3d_rand_eye,
 ):
-    metadata = "A\tB\tC\n"
+    metadata = "1\t2\t3\n"
     if version == "SPM12":
         metadata = (
             b"<?xml version='1.0' encoding='us-ascii'?>"
@@ -546,11 +547,17 @@ def test_fetch_atlas_aal(
             b"<name>A</name></label></metadata>"
         )
     label_file = "AAL.xml" if version == "SPM12" else "ROI_MNI_V4.txt"
+
     atlas_file = "AAL.nii" if version == "SPM12" else "ROI_MNI_V4.nii"
+
+    mock_file = tmp_path / f"aal_{version}" / aal_archive_root / atlas_file
+    mock_file.parent.mkdir(exist_ok=True, parents=True)
+    img_3d_rand_eye.to_filename(mock_file)
+
     aal_data = dict_to_archive(
         {
             aal_archive_root / label_file: metadata,
-            aal_archive_root / atlas_file: "",
+            aal_archive_root / atlas_file: mock_file,
         },
         archive_format=archive_format,
     )
@@ -571,20 +578,29 @@ def test_fetch_atlas_aal_version_error(tmp_path):
         fetch_atlas_aal(version="FLS33", data_dir=tmp_path, verbose=0)
 
 
-def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
-    # default version='sym',
-    data_sym = fetch_atlas_basc_multiscale_2015(
-        data_dir=tmp_path, verbose=0, resolution=7
-    )
-    # version='asym'
-    data_asym = fetch_atlas_basc_multiscale_2015(
-        version="asym", verbose=0, data_dir=tmp_path, resolution=7
-    )
+def test_fetch_atlas_basc_multiscale_2015(tmp_path, affine_mni, rng):
+    resolution = 7
 
     dataset_name = "basc_multiscale_2015"
     name_sym = "template_cambridge_basc_multiscale_nii_sym"
     basename_sym = "template_cambridge_basc_multiscale_sym_scale007.nii.gz"
 
+    mock_map = Nifti1Image(
+        rng.integers(
+            size=(53, 64, 52), low=0, high=resolution + 1, dtype="int8"
+        ),
+        affine=affine_mni,
+    )
+    mock_file = tmp_path / dataset_name / name_sym / basename_sym
+    mock_file.parent.mkdir(exist_ok=True, parents=True)
+    mock_map.to_filename(mock_file)
+
+    # default version='sym',
+    data_sym = fetch_atlas_basc_multiscale_2015(
+        data_dir=tmp_path, verbose=0, resolution=resolution
+    )
+
+    validate_atlas(data_sym)
     assert data_sym["maps"] == str(
         tmp_path / dataset_name / name_sym / basename_sym
     )
@@ -592,14 +608,19 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path, request_mocker):
     name_asym = "template_cambridge_basc_multiscale_nii_asym"
     basename_asym = "template_cambridge_basc_multiscale_asym_scale007.nii.gz"
 
+    # version='asym'
+    mock_file = tmp_path / dataset_name / name_asym / basename_asym
+    mock_file.parent.mkdir(exist_ok=True, parents=True)
+    mock_map.to_filename(mock_file)
+
+    data_asym = fetch_atlas_basc_multiscale_2015(
+        version="asym", verbose=0, data_dir=tmp_path, resolution=resolution
+    )
+
+    validate_atlas(data_asym)
     assert data_asym["maps"] == str(
         tmp_path / dataset_name / name_asym / basename_asym
     )
-
-    validate_atlas(data_sym)
-    validate_atlas(data_asym)
-
-    assert request_mocker.url_count == 2
 
 
 def test_fetch_atlas_basc_multiscale_2015_error(tmp_path):
