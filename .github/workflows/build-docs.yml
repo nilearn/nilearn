@@ -99,7 +99,7 @@ jobs:
                 echo "BUILD = $(cat build.txt)"
                 echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v4
+            uses: astral-sh/setup-uv@v5
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
@@ -277,7 +277,7 @@ jobs:
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v4
+            uses: astral-sh/setup-uv@v5
 
         -   name: Setup python
             uses: actions/setup-python@v5
