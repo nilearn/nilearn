@@ -42,7 +42,6 @@ n_subjects = 100  # more subjects requires more memory
 
 oasis_dataset = datasets.fetch_oasis_vbm(
     n_subjects=n_subjects,
-    legacy_format=False,
 )
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars["age"].astype(float)

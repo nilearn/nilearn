@@ -65,7 +65,7 @@ n_subjects = 100  # more subjects requires more memory
 # %%
 # Load Oasis dataset
 # ------------------
-oasis_dataset = fetch_oasis_vbm(n_subjects=n_subjects, legacy_format=False)
+oasis_dataset = fetch_oasis_vbm(n_subjects=n_subjects)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars["age"].to_numpy()
 

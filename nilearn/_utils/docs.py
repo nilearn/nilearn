@@ -457,13 +457,6 @@ imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
-# legacy_format
-docdict["legacy_format"] = """
-legacy_format : :obj:`bool`, default=True
-    If set to `True`, the fetcher will return recarrays.
-    Otherwise, it will return pandas dataframes.
-"""
-
 # linewidth
 docdict["linewidths"] = """
 linewidths : :obj:`float`, optional

@@ -25,7 +25,6 @@ n_samples = 94
 localizer_dataset = fetch_localizer_contrasts(
     ["left button press (auditory cue)"],
     n_subjects=n_samples,
-    legacy_format=False,
 )
 
 # %%

@@ -625,7 +625,6 @@ def fetch_oasis_vbm(
     url=None,
     resume=True,
     verbose=1,
-    legacy_format=False,
 ):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
@@ -645,7 +644,6 @@ def fetch_oasis_vbm(
     %(url)s
     %(resume)s
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -863,9 +861,6 @@ def fetch_oasis_vbm(
         columns={c: c.lower().replace("/", "") for c in csv_data.columns}
     )
     fdescr = get_dataset_descr(dataset_name)
-
-    if legacy_format:
-        csv_data = csv_data.to_records(index=False)
 
     return Bunch(
         gray_matter_maps=gm_maps,
