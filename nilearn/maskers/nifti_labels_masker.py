@@ -283,21 +283,17 @@ class NiftiLabelsMasker(BaseMasker):
         """
         if labels is not None:
             if not isinstance(labels, list):
-                warnings.warn(
+                raise TypeError(
                     f"'labels' must be a list. Got: {type(labels)}",
                     stacklevel=3,
                 )
             if not all(isinstance(x, str) for x in labels):
                 types_labels = {type(x) for x in labels}
-                warnings.warn(
+                raise TypeError(
                     "All elements of 'labels' must be a string.\n"
                     f"Got a list of {types_labels}",
                     stacklevel=3,
                 )
-            labels = [
-                x.decode("utf-8") if isinstance(x, bytes) else str(x)
-                for x in labels
-            ]
         return labels
 
     def _check_mismatch_labels_regions(
