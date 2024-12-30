@@ -61,13 +61,18 @@ def validate_atlas(atlas_data):
         assert isinstance(atlas_data.lut, pd.DataFrame)
 
 
-def test_generate_atlas_look_up_table(shape_3d_default):
+def test_generate_atlas_look_up_table(shape_3d_default, surf_three_labels_img):
     """Check generation of LUT directly from niimg or surface image."""
     mock_regions = data_gen.generate_labeled_regions(
         shape_3d_default, n_regions=10
     )
     lut = _generate_atlas_look_up_table(function="unknown", index=mock_regions)
     _check_look_up_table(lut=lut, atlas=mock_regions, strict=True)
+
+    lut = _generate_atlas_look_up_table(
+        function="unknown", index=surf_three_labels_img
+    )
+    _check_look_up_table(lut=lut, atlas=surf_three_labels_img, strict=True)
 
 
 def test_downloader(tmp_path, request_mocker):

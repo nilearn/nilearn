@@ -22,6 +22,8 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import get_data, new_img_like, reorder_img
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -93,9 +95,12 @@ def _generate_atlas_look_up_table(function=None, name=None, index=None):
 
     # deal with names
     if name is None:
-        if isinstance(index, (str, Path, Nifti1Image)) and fname == "unknown":
-            img = check_niimg(index)
-            index = np.unique(safe_get_data(img))
+        if fname == "unknown":
+            if isinstance(index, (str, Path, Nifti1Image)):
+                img = check_niimg(index)
+                index = np.unique(safe_get_data(img))
+            elif isinstance(index, SurfaceImage):
+                index = np.unique(get_surface_data(index))
         name = [str(x) for x in index]
     if fname in ["fetch_atlas_surf_destrieux", "fetch_atlas_schaefer_2018"]:
         name = [x.decode() for x in name]
@@ -161,6 +166,8 @@ def _check_look_up_table(lut, atlas, strict=False):
 
     if isinstance(atlas, Nifti1Image):
         data = safe_get_data(atlas, ensure_finite=True)
+    elif isinstance(atlas, SurfaceImage):
+        data = get_surface_data(atlas)
     elif isinstance(atlas, np.ndarray):
         data = atlas
 
