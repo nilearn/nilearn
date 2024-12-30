@@ -369,7 +369,7 @@ or 'fast' or None, optional
 
 # hemi
 docdict["hemi"] = """
-hemi : {"left", "right"}, default="left"
+hemi : {"left", "right", "both"}, default="left"
     Hemisphere to display.
 """
 
@@ -909,9 +909,12 @@ docdict["verbose0"] = verbose.format(0)
 
 # view
 docdict["view"] = """
-view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"
-    If a string, must be in
+view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"\
+    if `hemi` is "left" or "right", if `hemi` is "both" "dorsal"
+    If a string, and `hemi` is "left" or "right" must be in
     {"lateral", "medial", "dorsal", "ventral", "anterior", "posterior"}.
+    If `hemi` is "both", must be in {"left", "right", "dorsal", "ventral",
+    "anterior", "posterior"}.
     If a sequence, must be a pair (elev, azim) of :obj:`float` or :obj:`int`
     angles in degrees that will manually set a custom view.
     E.g., view=[270.0, 90] or view=(0, -180.0).

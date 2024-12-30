@@ -279,4 +279,4 @@ rfe_svc = Pipeline([("rfe", rfe), ("svc", svc)])
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

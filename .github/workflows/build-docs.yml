@@ -359,4 +359,7 @@ jobs:
                 SSH_AUTH_SOCK: /tmp/ssh_agent.sock
                 COMMIT_SHA: ${{ github.event.head_commit.id }}
                 DEPLOY_TYPE: ${{ steps.deploy-type.outputs.DEPLOY_TYPE }}
-            run: ./build_tools/github/deploy_doc.sh
+            run: |
+                git config --global user.email "actions@github.com"
+                git config --global user.name "GitHub actions"
+                ./build_tools/github/deploy_doc.sh
