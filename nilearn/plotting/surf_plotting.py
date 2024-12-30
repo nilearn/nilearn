@@ -159,8 +159,9 @@ def _get_camera_view_from_string_view(hemi, view):
             ]
     elif hemi == "both" and view in ["lateral", "medial"]:
         raise ValueError(
-            "Invalid view definition: when hemi is 'both', view cannot "
-            "be 'lateral' or 'medial'. Maybe you meant 'left' or 'right'?"
+            "Invalid view definition: when hemi is 'both', "
+            "view cannot be 'lateral' or 'medial'.\n"
+            "Maybe you meant 'left' or 'right'?"
         )
     return CAMERAS[view]
 
