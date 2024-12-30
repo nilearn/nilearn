@@ -654,7 +654,7 @@ def fetch_oasis_vbm(
           Paths to nifti gray matter density probability maps
         - 'white_matter_maps' string list
           Paths to nifti white matter density probability maps
-        - 'ext_vars': np.recarray
+        - 'ext_vars': pandas.DataFrame
           Data from the .csv file with information about selected subjects
         - 'data_usage_agreement': string
           Path to the .txt file containing the data usage agreement.
