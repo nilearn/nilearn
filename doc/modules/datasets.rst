@@ -68,7 +68,6 @@ Deterministic atlases
    fetch_atlas_surf_destrieux
    fetch_atlas_talairach
    fetch_atlas_yeo_2011
-
    fetch_coords_dosenbach_2010
    fetch_coords_power_2011
    fetch_coords_seitzman_2018
