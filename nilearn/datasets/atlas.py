@@ -48,7 +48,7 @@ def rgb_to_hex_lookup(
     return rr + gg + bb
 
 
-def _generate_atlas_look_up_table(function, name, index=None):
+def _generate_atlas_look_up_table(function=None, name=None, index=None):
     """Generate a look up tale for an atlas.
 
     For a given deterministic atlas
@@ -64,24 +64,39 @@ def _generate_atlas_look_up_table(function, name, index=None):
     For some atlases some 'clean up' of the LUT is done
     (for example make sure that the LUT contains the background 'ROI').
 
+    This can also generate a look up table
+    for an arbitrary niimg-like or surface image.
+
     Parameters
     ----------
-    function : function or obj:`str`
+    function : function or obj:`str` or None, default=None
         Atlas fetching function or its name as a string.
+        Defaults to "unknown" in case None is passed.
 
-    name : iterable of bytes or string, or int
+    name : iterable of bytes or string, or int or None, default=None
         If an integer is passed this corresponds
         to the number of ROIs in the atlas
         If an iterable is passed then it contains the ROI names.
+        If None is passed then it is inferred from index.
 
-    index : iterable of integers or None, default=None
+    index : iterable of integers, niimg like or None, default=None
         If None then the index of each ROI is derived from name.
+        if a Niimg like or SurfaceImage is passed
+        then a LUT is generated for this image.
     """
-    fname = function
-    if not isinstance(function, str):
+    if name is None and index is None:
+        raise ValueError("'Index' and 'name' cannot both be None.")
+
+    fname = "unknown" if function is None else function
+    if function and not isinstance(function, str):
         fname = function.__name__
 
     # deal with names
+    if name is None:
+        if isinstance(index, (str, Path, Nifti1Image)) and fname == "unknown":
+            img = check_niimg(index)
+            index = np.unique(safe_get_data(img))
+        name = [str(x) for x in index]
     if fname in ["fetch_atlas_surf_destrieux", "fetch_atlas_schaefer_2018"]:
         name = [x.decode() for x in name]
 
@@ -101,6 +116,7 @@ def _generate_atlas_look_up_table(function, name, index=None):
         "fetch_atlas_juelich",
         "fetch_atlas_talairach",
         "fetch_atlas_basc_multiscale_2015",
+        "unknown",
     ]:
         return lut
 

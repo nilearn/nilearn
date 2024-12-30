@@ -20,6 +20,7 @@ from nilearn.conftest import _rng
 from nilearn.datasets import atlas
 from nilearn.datasets._utils import fetch_files
 from nilearn.datasets.atlas import (
+    _check_look_up_table,
     _generate_atlas_look_up_table,
     fetch_atlas_aal,
     fetch_atlas_allen_2011,
@@ -61,10 +62,12 @@ def validate_atlas(atlas_data):
 
 
 def test_generate_atlas_look_up_table(shape_3d_default):
+    """Check generation of LUT directly from niimg or surface image."""
     mock_regions = data_gen.generate_labeled_regions(
         shape_3d_default, n_regions=10
     )
-    _generate_atlas_look_up_table(function="unknown", index=mock_regions)
+    lut = _generate_atlas_look_up_table(function="unknown", index=mock_regions)
+    _check_look_up_table(lut=lut, atlas=mock_regions, strict=True)
 
 
 def test_downloader(tmp_path, request_mocker):
