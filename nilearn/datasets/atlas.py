@@ -1855,7 +1855,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=False):
           of the 160 ROIs in :term:`MNI` space.
           If ``legacy_format`` is set to ``False``, this is a
           :class:`pandas.DataFrame`.
-        - 'labels': :class:`numpy.ndarray` of :obj:`str`, list of label
+        - 'labels': :obj:`list` of :obj:`str`, list of label
           names for the 160 ROIs.
         - 'networks': :class:`numpy.ndarray` of :obj:`str`, list of network
           names for the 160 ROI.
@@ -1877,9 +1877,7 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=False):
     # We add the ROI number to its name, since names are not unique
     names = out_csv["name"]
     numbers = out_csv["number"]
-    labels = np.array(
-        [f"{name} {number}" for (name, number) in zip(names, numbers)]
-    )
+    labels = [f"{name} {number}" for (name, number) in zip(names, numbers)]
     params = {
         "rois": out_csv[["x", "y", "z"]],
         "labels": labels,
