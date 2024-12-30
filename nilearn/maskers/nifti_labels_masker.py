@@ -204,7 +204,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         self.background_label = background_label
         self._original_region_ids = self._get_labels_values(self.labels_img)
-        self.labels = self._sanitize_labels(labels)
+        self.labels = labels
         self._check_mismatch_labels_regions(
             self._original_region_ids, tolerant=True
         )
@@ -275,12 +275,13 @@ class NiftiLabelsMasker(BaseMasker):
         labels_image_data = image.get_data(labels_image)
         return np.unique(labels_image_data)
 
-    def _sanitize_labels(self, labels):
+    def _check_labels(self):
         """Check and clean labels.
 
         - checks that labels is a list of strings.
         - cast all items of the list into strings if they are bytestrings.
         """
+        labels = self.labels
         if labels is not None:
             if not isinstance(labels, list):
                 raise TypeError(
@@ -294,7 +295,6 @@ class NiftiLabelsMasker(BaseMasker):
                     f"Got a list of {types_labels}",
                     stacklevel=3,
                 )
-        return labels
 
     def _check_mismatch_labels_regions(
         self, region_ids, tolerant=True, resampling_done=False
@@ -546,6 +546,8 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        self._check_labels()
+
         repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)

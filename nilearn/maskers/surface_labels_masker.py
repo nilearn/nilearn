@@ -225,6 +225,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "masker = SurfaceLabelsMasker(labels_img=labels_img)"
             )
 
+        self._check_labels()
+
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)
         self._labels_ = list(all_labels)
@@ -234,7 +236,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if self.labels is None:
             self.label_names_ = [str(label) for label in self._labels_]
         else:
-            self.label_names_ = [self.labels[x] for x in self._labels_]
+            self.label_names_ = self.labels
 
         if self.mask_img is not None:
             check_same_n_vertices(self.labels_img.mesh, self.mask_img.mesh)
@@ -269,6 +271,27 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self._reporting_data = self._generate_reporting_data()
 
         return self
+
+    def _check_labels(self):
+        """Check and clean labels.
+
+        - checks that labels is a list of strings.
+        - cast all items of the list into strings if they are bytestrings.
+        """
+        labels = self.labels
+        if labels is not None:
+            if not isinstance(labels, list):
+                raise TypeError(
+                    f"'labels' must be a list. Got: {type(labels)}",
+                    stacklevel=3,
+                )
+            if not all(isinstance(x, str) for x in labels):
+                types_labels = {type(x) for x in labels}
+                raise TypeError(
+                    "All elements of 'labels' must be a string.\n"
+                    f"Got a list of {types_labels}",
+                    stacklevel=3,
+                )
 
     def _generate_reporting_data(self):
         for part in self.labels_img.data.parts:
