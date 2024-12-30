@@ -1444,7 +1444,35 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
             *list(zip(keys, sub_files)),
         ]
     )
+
+    params["lut_7"] = _generate_lut_yeo(params, 7)
+    params["lut_17"] = _generate_lut_yeo(params, 17)
+
+    _check_look_up_table(params["lut_7"], params["thin_7"])
+    _check_look_up_table(params["lut_7"], params["thick_7"])
+    _check_look_up_table(params["lut_17"], params["thin_17"])
+    _check_look_up_table(params["lut_17"], params["thick_17"])
+
     return Bunch(**params)
+
+
+def _generate_lut_yeo(params, n_roi):
+    lut = pd.read_csv(
+        params[f"colors_{n_roi}"],
+        sep="\\s+",
+        names=["index", "name", "r", "g", "b", "fs"],
+        header=0,
+    )
+    lut = pd.concat(
+        [
+            pd.DataFrame([[0, "Background", 0, 0, 0, 0]], columns=lut.columns),
+            lut,
+        ],
+        ignore_index=True,
+    )
+    lut["color"] = "#" + rgb_to_hex_lookup(lut.r, lut.g, lut.b).astype(str)
+    lut = lut.drop(["r", "g", "b", "fs"], axis=1)
+    return lut
 
 
 @fill_doc
