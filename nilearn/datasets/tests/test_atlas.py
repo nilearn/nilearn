@@ -266,38 +266,31 @@ def test_fetch_atlas_fsl(
         assert label.strip() == label
 
 
-def test_fetch_atlas_craddock_2012(tmp_path, request_mocker):
+@pytest.mark.parametrize(
+    "homogeneity, grp_mean, expected",
+    [
+        ("spatial", True, "scorr05_mean_all.nii.gz"),
+        ("random", True, "random_all.nii.gz"),
+        ("spatial", False, "scorr05_2level_all.nii.gz"),
+    ],
+)
+def test_fetch_atlas_craddock_2012(
+    tmp_path, request_mocker, homogeneity, grp_mean, expected
+):
     local_archive = (
         Path(__file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
     )
     request_mocker.url_mapping["*craddock*"] = local_archive
 
     bunch = fetch_atlas_craddock_2012(
-        data_dir=tmp_path, verbose=0, homogeneity="spatial"
+        data_dir=tmp_path,
+        verbose=0,
+        homogeneity=homogeneity,
+        grp_mean=grp_mean,
     )
 
     validate_atlas(bunch)
-    assert bunch["maps"] == str(
-        tmp_path / "craddock_2012" / "scorr05_mean_all.nii.gz"
-    )
-
-    bunch_rand = fetch_atlas_craddock_2012(
-        data_dir=tmp_path, verbose=0, homogeneity="random"
-    )
-
-    validate_atlas(bunch_rand)
-    assert bunch_rand["maps"] == str(
-        tmp_path / "craddock_2012" / "random_all.nii.gz"
-    )
-
-    bunch_no_mean = fetch_atlas_craddock_2012(
-        data_dir=tmp_path, verbose=0, grp_mean=False, homogeneity="spatial"
-    )
-
-    validate_atlas(bunch_no_mean)
-    assert bunch_no_mean["maps"] == str(
-        tmp_path / "craddock_2012" / "scorr05_2level_all.nii.gz"
-    )
+    assert bunch["maps"] == str(tmp_path / "craddock_2012" / expected)
 
     assert request_mocker.url_count == 1
 
