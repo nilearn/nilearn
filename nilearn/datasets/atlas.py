@@ -908,7 +908,7 @@ def fetch_coords_power_2011():
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-            - 'rois': :class:`pandas.DataFrame containing the
+            - 'rois': :class:`pandas.DataFrame` containing the
               coordinates of 264 ROIs in :term:`MNI` space.
             - 'description': :obj:`str`, description of the atlas.
 
