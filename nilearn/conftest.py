@@ -31,7 +31,10 @@ else:
     collect_ignore.extend(
         [
             "plotting",
-            "reporting",
+            "reporting/glm_reporter.py",
+            "reporting/html_report.py",
+            "reporting/tests/test_glm_reporter.py",
+            "reporting/tests/test_html_report.py",
         ]
     )
     matplotlib = None
