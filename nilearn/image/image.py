@@ -922,11 +922,12 @@ def threshold_img(
     Thresholding can be done based on direct image intensities or selection
     threshold with given percentile.
 
-    - If ``threshold`` is a :obj:`float`,
+    - If ``threshold`` is a :obj:`float`:
+
       we threshold the image based on image intensities.
-    
+
       - When ``two_sided`` is True:
-      
+
         the given value should be
         within the range of minimum and maximum intensity
         of the input image.
@@ -935,31 +936,37 @@ def threshold_img(
 
       - When ``two_sided`` is False:
 
-        - If the threshold is negative,
+        - If the threshold is negative:
+
           then it should be greater than the minimum intensity
           of the input data.
           All intensities greater than or equal
           to the specified threshold will be set to zero.
+          All other instensities keep their original values.
 
-        - If the threshold is positive,
+        - If the threshold is positive:
+
           then it should be less than the maximum intensity
           of the input data.
           All intensities less than or equal
           to the specified threshold will be set to zero.
+          All other instensities keep their original values.
 
-       All other instensities keep their original values.
+    - If threshold is :obj:`str`:
 
-    - If threshold is :obj:`str`,
       the number part should be in interval ``[0, 100]``.
       We threshold the image based on the score
       obtained using this percentile on the image data.
       The percentile rank is computed using
       :func:`scipy.stats.scoreatpercentile`.
-      
-      - When ``two_sided`` is True, 
-        teh score is calculated on the absolute values of data.
-      
-      - When ``two_sided`` is False, the score is calculated
+
+      - When ``two_sided`` is True:
+
+        the score is calculated on the absolute values of data.
+
+      - When ``two_sided`` is False:
+
+        the score is calculated
         only on the non-negative values of data.
 
     .. versionchanged:: 0.9.0
