@@ -315,7 +315,7 @@ view
 # Using nearest-neighbor interpolation with zero radius will achieve this.
 from nilearn.datasets import fetch_atlas_destrieux_2009
 
-destrieux = fetch_atlas_destrieux_2009(legacy_format=False)
+destrieux = fetch_atlas_destrieux_2009()
 
 view = view_img_on_surf(
     stat_map_img=destrieux.maps,

@@ -37,7 +37,7 @@ from nilearn.maskers import NiftiMasker
 # Load Localizer contrast
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
-    n_subjects=n_samples, legacy_format=False
+    n_subjects=n_samples
 )
 tested_var = np.ones((n_samples, 1))
 

@@ -19,7 +19,7 @@ display ROIs on top of a background image.
 
 from nilearn import datasets
 
-localizer_dataset = datasets.fetch_localizer_button_task(legacy_format=False)
+localizer_dataset = datasets.fetch_localizer_button_task()
 # Contrast map of motor task
 localizer_tmap_filename = localizer_dataset.tmap
 # Subject specific anatomical image

@@ -102,7 +102,6 @@ def suppress_specific_warning():
     with warnings.catch_warnings():
         messages = (
             "The `darkness` parameter will be deprecated.*|"
-            "`legacy_format` will default to `False`.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"
             "The default strategy for standardize.*|"
             "The 'fetch_bids_langloc_dataset' function will be removed.*|"

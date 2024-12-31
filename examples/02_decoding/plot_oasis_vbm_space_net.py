@@ -20,10 +20,7 @@ import numpy as np
 from nilearn import datasets
 
 n_subjects = 200
-dataset_files = datasets.fetch_oasis_vbm(
-    n_subjects=n_subjects,
-    legacy_format=False,
-)
+dataset_files = datasets.fetch_oasis_vbm(n_subjects=n_subjects)
 age = dataset_files.ext_vars["age"].astype(float)
 age = np.array(age)
 gm_imgs = np.array(dataset_files.gray_matter_maps)
