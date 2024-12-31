@@ -97,7 +97,7 @@ plotting.show()
 #     dim = 64
 #     res = 2
 #     difumo = datasets.fetch_atlas_difumo(
-#         dimension=dim, resolution_mm=res, legacy_format=False
+#         dimension=dim, resolution_mm=res,
 #     )
 #
 #     # Visualization

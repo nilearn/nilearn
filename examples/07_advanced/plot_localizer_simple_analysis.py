@@ -37,7 +37,7 @@ from nilearn.maskers import NiftiMasker
 # Load Localizer contrast
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
-    n_subjects=n_samples, legacy_format=False
+    n_subjects=n_samples
 )
 tested_var = np.ones((n_samples, 1))
 
@@ -71,16 +71,6 @@ from nilearn.plotting import plot_stat_map, show
 plotted_slice = 45
 threshold = -np.log10(0.1)  # 10% corrected
 
-# Plot Anova p-values
-fig = plt.figure(figsize=(5, 6), facecolor="w")
-display = plot_stat_map(
-    neg_log_pvals_anova_unmasked,
-    threshold=threshold,
-    display_mode="z",
-    cut_coords=[plotted_slice],
-    figure=fig,
-)
-
 masked_pvals = np.ma.masked_less(
     get_data(neg_log_pvals_anova_unmasked), threshold
 )
@@ -91,6 +81,17 @@ title = (
     f"\n{(~masked_pvals.mask).sum()} detections"
 )
 
-display.title(title, y=1, alpha=0.8)
+# Plot Anova p-values
+display = plot_stat_map(
+    neg_log_pvals_anova_unmasked,
+    threshold=threshold,
+    display_mode="z",
+    cut_coords=[plotted_slice],
+    figure=plt.figure(figsize=(5, 6), facecolor="w"),
+    cmap="inferno",
+    vmin=threshold,
+    title=title,
+)
+
 
 show()

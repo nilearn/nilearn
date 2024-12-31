@@ -14,16 +14,16 @@ Also, these methods can be used to learn functional connectomes
 and subsequently for classification tasks or to analyze data at a local
 level.
 
-See Also
---------
-Which clustering method to use, an empirical comparison can be found
-in :footcite:t:`Thirion2014`.
+.. seealso::
 
-This :term:`parcellation` may be useful in a supervised learning,
-see for instance :footcite:t:`Michel2011b`.
+    Which clustering method to use, an empirical comparison can be found
+    in :footcite:t:`Thirion2014`.
 
-The big picture discussion corresponding to this example can be found
-in the documentation section :ref:`parcellating_brain`.
+    This :term:`parcellation` may be useful in a supervised learning,
+    see for instance :footcite:t:`Michel2011b`.
+
+    The big picture discussion corresponding to this example can be found
+    in the documentation section :ref:`parcellating_brain`.
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -120,6 +120,8 @@ first_plot = plotting.plot_roi(
     ward_labels_img, title="Ward parcellation", display_mode="xz"
 )
 
+plotting.show()
+
 # Grab cut coordinates from this plot to use as a common for all plots
 cut_coords = first_plot.cut_coords
 
@@ -170,6 +172,9 @@ plotting.plot_epi(
     vmax=vmax,
     display_mode="xz",
 )
+
+plotting.show()
+
 # As you can see below, this approximation is almost good, although there
 # are only 2000 parcels, instead of the original 60000 voxels
 
@@ -213,6 +218,8 @@ display = plotting.plot_roi(
     title="KMeans parcellation",
     display_mode="xz",
 )
+
+plotting.show()
 
 # kmeans_labels_img is a Nifti1Image object, it can be saved to file with
 # the following code:
@@ -262,6 +269,8 @@ plotting.plot_roi(
     display_mode="xz",
     cut_coords=display.cut_coords,
 )
+
+plotting.show()
 
 # kmeans_labels_img is a :class:`nibabel.nifti1.Nifti1Image` object, it can be
 # saved to file with the following code:
@@ -321,6 +330,9 @@ handles = [
 ]
 labels = ["Kmeans", "Hierarchical Kmeans"]
 fig.legend(handles, labels, loc=(0.5, 0.8))
+
+plotting.show()
+
 # %%
 # As we can see, half of the 50 KMeans clusters contain less than
 # 100 voxels whereas three contain several thousands voxels
@@ -375,6 +387,8 @@ plotting.plot_roi(
     cut_coords=cut_coords,
 )
 
+plotting.show()
+
 # %%
 # Compressed representation of :term:`ReNA` clustering
 # ....................................................
@@ -396,6 +410,8 @@ plotting.plot_epi(
     display_mode="xz",
 )
 
+plotting.show()
+
 # A reduced data can be created by taking the parcel-level average:
 # Note that, as many scikit-learn objects, the ``rena`` object exposes
 # a transform method that modifies input features. Here it reduces their
@@ -416,6 +432,8 @@ plotting.plot_epi(
     display_mode="xz",
 )
 
+plotting.show()
+
 # %%
 # Even if the compressed signal is relatively close
 # to the original signal, we can notice that Ward Clustering
@@ -428,7 +446,7 @@ plotting.plot_epi(
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 
 
 # sphinx_gallery_dummy_images=3

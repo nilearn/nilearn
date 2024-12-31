@@ -175,7 +175,7 @@ view
 #
 # First we fetch the coordinates of the Power atlas
 
-power = datasets.fetch_coords_power_2011(legacy_format=False)
+power = datasets.fetch_coords_power_2011()
 print(f"Power atlas comes with {power.keys()}.")
 
 # %%
@@ -326,7 +326,7 @@ plotting.plot_markers(
 # -------------------------------------------
 #
 # We repeat the same steps for Dosenbach's atlas.
-dosenbach = datasets.fetch_coords_dosenbach_2010(legacy_format=False)
+dosenbach = datasets.fetch_coords_dosenbach_2010()
 
 coords = np.vstack(
     (
@@ -422,8 +422,7 @@ plotting.show()
 #
 # .. footbibliography::
 #
-# See also
-# --------
+# .. seealso::
 #
 #   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #

@@ -40,16 +40,16 @@ stat_img
 # value of ``display_mode``, different display objects are returned. Here,
 # a :class:`~nilearn.plotting.displays.OrthoProjector` is returned.
 
-from nilearn import plotting
-from nilearn.plotting import plot_glass_brain
+from nilearn.plotting import plot_glass_brain, show
 
 # Whole brain sagittal cuts and map is thresholded at 3
+
 plot_glass_brain(stat_img, threshold=3)
 
 
 # %%
-# The same figure, with a colorbar, can be produced by
-# setting ``colorbar=True``.
+# The same figure, with a colorbar,
+# can be produced by setting ``colorbar=True``.
 
 plot_glass_brain(stat_img, threshold=3, colorbar=True)
 
@@ -89,8 +89,9 @@ plot_glass_brain(
 
 # %%
 # We can control the limits of the colormap and colorbar by setting ``vmin``
-# and ``vmax``. Note that we use a non-diverging colormap here since the
-# colorbar will not be centered around zero.
+# and ``vmax``.
+# Note that we use a non-diverging colormap here
+# since the colorbar will not be centered around zero.
 
 # only plot positive values
 plot_glass_brain(
@@ -101,7 +102,7 @@ plot_glass_brain(
     vmin=0,
     threshold=2,
     symmetric_cbar=False,
-    cmap="viridis",
+    cmap="inferno",
     title="only plot positive values",
 )
 
@@ -116,7 +117,7 @@ plot_glass_brain(
     vmin=2,
     threshold=2,
     symmetric_cbar=False,
-    cmap="viridis",
+    cmap="inferno",
     title="vmin == threshold",
 )
 
@@ -168,7 +169,7 @@ plot_glass_brain(
     threshold=0,
     colorbar=True,
     title='display_mode="x"',
-    plot_abs=False,
+    plot_abs=True,
     display_mode="x",
 )
 
@@ -332,6 +333,6 @@ display.add_contours(stat_img, filled=True, levels=[-np.inf, -2.8], colors="b")
 display.add_contours(stat_img, filled=True, levels=[3.0], colors="r")
 display.title("Now same plotting but with filled contours")
 # Finally, displaying them
-plotting.show()
+show()
 
 # sphinx_gallery_dummy_images=7

@@ -47,7 +47,7 @@ from nilearn.plotting import plot_anat, plot_img, plot_stat_map, show
 
 fmri_img = subject_data.func
 mean_img = mean_img(subject_data.func[0], copy_header=True)
-plot_img(mean_img, colorbar=True, cbar_tick_format="%i", cmap="gray")
+plot_img(mean_img, colorbar=True, cbar_tick_format="%i")
 
 plot_anat(subject_data.anat, colorbar=True, cbar_tick_format="%i")
 
@@ -248,7 +248,7 @@ clean_map, threshold = threshold_stats_img(
     two_sided=False,  # using a one-sided test
 )
 # Let's use a sequential colormap as we will only display positive values.
-plotting_config["cmap"] = "black_red"
+plotting_config["cmap"] = "inferno"
 plot_stat_map(
     clean_map,
     threshold=threshold,

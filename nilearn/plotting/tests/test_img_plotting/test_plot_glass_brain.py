@@ -33,6 +33,15 @@ def test_plot_glass_brain(pyplot, img_3d_mni):
     )
 
 
+@pytest.mark.parametrize("black_bg", [True, False])
+@pytest.mark.parametrize("plot_abs", [True, False])
+def test_plot_glass_brain_background_absolute(
+    pyplot, img_3d_mni, plot_abs, black_bg
+):
+    """Somke test for absolute value plotting and background."""
+    plot_glass_brain(img_3d_mni, black_bg=black_bg, plot_abs=plot_abs)
+
+
 def test_plot_glass_brain_file_output(pyplot, img_3d_mni, tmp_path):
     """Smoke-test for hemispheric glass brain with file output."""
     filename = tmp_path / "test.png"

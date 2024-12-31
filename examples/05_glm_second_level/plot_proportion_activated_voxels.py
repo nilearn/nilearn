@@ -23,7 +23,6 @@ n_subjects = 16
 data = fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects,
-    legacy_format=False,
 )
 # %%
 # Estimate second level model
@@ -73,6 +72,7 @@ plotting.plot_stat_map(
     display_mode="z",
     vmax=1,
     colorbar=True,
+    cmap="inferno",
     title="group left-right button press, proportion true positives",
 )
 
@@ -90,4 +90,4 @@ plotting.show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

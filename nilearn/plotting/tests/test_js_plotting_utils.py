@@ -227,7 +227,7 @@ def check_html(
     assert len(selects) == 3
     hemi = selects[0]
     assert ("id", "select-hemisphere") in hemi.items()
-    assert len(hemi.findall("option")) == 2
+    assert len(hemi.findall("option")) == 3
     kind = selects[1]
     assert ("id", "select-kind") in kind.items()
     assert len(kind.findall("option")) == 2
