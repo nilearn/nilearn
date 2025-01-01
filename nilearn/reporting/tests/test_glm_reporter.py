@@ -30,10 +30,6 @@ def flm(tmp_path):
     )
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_flm_reporting(flm, height_control):
     """Smoke test for first level model reporting."""
