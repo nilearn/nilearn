@@ -60,10 +60,6 @@ def test_local_max_two_global_maxima(shape, affine_eye):
     assert np.array_equal(vals, np.array([5]))
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 def test_local_max_donut(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
     # A donut.
