@@ -266,3 +266,29 @@ def test_is_kaleido_installed():
 def test_stringify_path():
     assert isinstance(stringify_path(Path("foo") / "bar"), str)
     assert stringify_path([]) == []
+
+
+def test_set_plotting_engine_plotly():
+    assert helpers.set_plotting_engine("plotly") == "plotly"
+
+
+def test_set_plotting_engine_matplotlib():
+    assert helpers.set_plotting_engine("matplotlib") == "matplotlib"
+
+
+def test_set_plotting_engine_no_mpl_error():
+    with pytest.raises(
+        ImportError, match="The matplotlib library is not installed."
+    ):
+        helpers.set_plotting_engine("matplotlib", error_if_missing=True)
+
+
+@pytest.mark.skipif(
+    helpers.is_matplotlib_installed() and helpers.is_plotly_installed(),
+    reason="This test requires matplotlib and plotly to not be installed.",
+)
+def test_set_plotting_engine_no_plotly_no_mpl():
+    with pytest.raises(
+        ImportError, match="No plotting libraries are installed"
+    ):
+        helpers.set_plotting_engine("matplotlib")
