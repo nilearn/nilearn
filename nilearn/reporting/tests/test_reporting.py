@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data
 
 # Set backend to avoid DISPLAY problems
