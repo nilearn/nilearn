@@ -76,10 +76,6 @@ def slm(tmp_path):
     return model.fit(Y, design_matrix=X)
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
     """Smoke test for the second level reporting."""
