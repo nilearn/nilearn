@@ -99,10 +99,6 @@ def test_slm_reporting_method(slm, height_control):
     report_slm.get_iframe()
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 def test_slm_reporting(slm):
     """Smoke test for the second level model generate method."""
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
