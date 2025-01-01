@@ -13,6 +13,7 @@ from nilearn._utils.helpers import (
     is_matplotlib_installed,
     is_plotly_installed,
     rename_parameters,
+    set_plotting_engine,
     stringify_path,
 )
 
@@ -269,26 +270,26 @@ def test_stringify_path():
 
 
 def test_set_plotting_engine_plotly():
-    assert helpers.set_plotting_engine("plotly") == "plotly"
+    assert set_plotting_engine("plotly") == "plotly"
 
 
 def test_set_plotting_engine_matplotlib():
-    assert helpers.set_plotting_engine("matplotlib") == "matplotlib"
+    assert set_plotting_engine("matplotlib") == "matplotlib"
 
 
 def test_set_plotting_engine_no_mpl_error():
     with pytest.raises(
         ImportError, match="The matplotlib library is not installed."
     ):
-        helpers.set_plotting_engine("matplotlib", error_if_missing=True)
+        set_plotting_engine("matplotlib", error_if_missing=True)
 
 
 @pytest.mark.skipif(
-    helpers.is_matplotlib_installed() and helpers.is_plotly_installed(),
+    is_matplotlib_installed() and is_plotly_installed(),
     reason="This test requires matplotlib and plotly to not be installed.",
 )
 def test_set_plotting_engine_no_plotly_no_mpl():
     with pytest.raises(
         ImportError, match="No plotting libraries are installed"
     ):
-        helpers.set_plotting_engine("matplotlib")
+        set_plotting_engine("matplotlib")
