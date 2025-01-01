@@ -81,7 +81,7 @@ def _warn_or_raise_dependencies_error(
     return engine
 
 
-def _set_mpl_backend():
+def _set_mpl_backend(message=None):
     """Check if matplotlib is installed.
 
     If not installed, raise error and display warning to install necessary
@@ -92,16 +92,25 @@ def _set_mpl_backend():
     the matplotlib backend.
 
     If current backend is not usable, switch to default "Agg" backend.
+
+    Parameters
+    ----------
+    message: str, default=None
+        Message to be prepended to standard warning when matplotlib is not
+    installed.
     """
     # We are doing local imports here to avoid polluting our namespace
     try:
         import matplotlib
     except ImportError:
-        warnings.warn(
+        warning = (
             "Some dependencies of nilearn.plotting package seem to be missing."
             "\nThey can be installed with:\n"
             " pip install 'nilearn[plotting]'"
         )
+        if message is not None:
+            warning = f"{message}\n{warning}"
+        warnings.warn(warning)
         raise
     else:
         # When matplotlib was successfully imported we need to check

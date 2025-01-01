@@ -965,7 +965,7 @@ def _stat_map_to_svg(
     stat_map_min = np.nanmin(data)
     stat_map_max = np.nanmax(data)
     symmetric_cbar = True
-    cmap = "bwr"
+    cmap = "RdBu_r"
     if stat_map_min >= 0.0:
         symmetric_cbar = False
         cmap = "red_transparent_full_alpha_range"

@@ -88,9 +88,13 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
         display_mode="z",
         title=f"IC {int(i)}",
         cut_coords=1,
+        vmax=0.05,
+        vmin=-0.05,
         colorbar=False,
     )
 
+
+show()
 
 # %%
 # Compare :term:`CanICA` to dictionary learning
@@ -150,6 +154,8 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
         display_mode="z",
         title=f"Comp {int(i)}",
         cut_coords=1,
+        vmax=0.1,
+        vmin=-0.1,
         colorbar=False,
     )
 
@@ -189,7 +195,7 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 
 
 # sphinx_gallery_dummy_images=5

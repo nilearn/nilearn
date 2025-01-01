@@ -486,9 +486,7 @@ def report_multi_nifti_maps_masker(build_type):
         )
         return None, None
 
-    difumo = fetch_atlas_difumo(
-        dimension=64, resolution_mm=2, legacy_format=False
-    )
+    difumo = fetch_atlas_difumo(dimension=64, resolution_mm=2)
 
     data = fetch_development_fmri(n_subjects=2)
 

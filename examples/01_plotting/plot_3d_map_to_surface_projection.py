@@ -11,7 +11,6 @@ and add contours of regions of interest using
 :func:`~nilearn.plotting.plot_surf_contours`.
 """
 
-
 # %%
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
@@ -62,8 +61,9 @@ for hemi, data in curv_sign.data.parts.items():
 # as the default plotting engine.
 from nilearn.plotting import plot_surf_stat_map
 
-# In this example we will only plot the right hemisphere
-hemi = "right"
+# In this example we will plot both hemispheres, but you can choose one of
+# "left", "right" or "both".
+hemi = "both"
 
 fig = plot_surf_stat_map(
     stat_map=surface_image,
@@ -116,7 +116,7 @@ figure = plot_surf_stat_map(
 
 # Save the figure as we would do with a matplotlib figure.
 # Uncomment the following line to save the previous figure to file
-# fig.savefig("right_hemisphere.png")
+# fig.savefig("both_hemisphere.png")
 
 # %%
 # Plot 3D image for comparison
@@ -205,7 +205,6 @@ elif engine == "plotly":
         levels=regions_indices,
         labels=labels,
         lines=[{"width": 5}],
-        hemi=hemi,
     )
     # view the contours in a browser
     # figure.show()
@@ -286,7 +285,7 @@ view = view_surf(
     surf_map=surface_image,
     threshold="90%",
     bg_map=fsaverage_sulcal,
-    hemi="right",
+    hemi=hemi,
     title="3D visualization in a web browser",
 )
 
@@ -316,7 +315,7 @@ view
 # Using nearest-neighbor interpolation with zero radius will achieve this.
 from nilearn.datasets import fetch_atlas_destrieux_2009
 
-destrieux = fetch_atlas_destrieux_2009(legacy_format=False)
+destrieux = fetch_atlas_destrieux_2009()
 
 view = view_img_on_surf(
     stat_map_img=destrieux.maps,

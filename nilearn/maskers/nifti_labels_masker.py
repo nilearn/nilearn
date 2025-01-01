@@ -268,7 +268,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         self.keep_masked_labels = keep_masked_labels
 
-        self.cmap = kwargs.get("cmap", "CMRmap_r")
+        self.cmap = kwargs.get("cmap", "gray")
 
     def _get_labels_values(self, labels_image):
         labels_image = image.load_img(labels_image, dtype="int32")
