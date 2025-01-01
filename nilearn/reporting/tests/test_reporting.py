@@ -18,10 +18,6 @@ def shape():
     return (9, 10, 11)
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 def test_local_max_two_maxima(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
     # Two maxima (one global, one local), 10 voxels apart.
