@@ -49,10 +49,6 @@ def test_flm_reporting(flm, height_control):
     report_flm.get_iframe()
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 def test_flm_reporting_method(flm):
     """Smoke test for the first level generate method."""
     contrast = np.eye(3)[1]
