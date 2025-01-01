@@ -289,10 +289,6 @@ def test_plot_contrasts():
     )
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 def test_masking_first_level_model(tmp_path):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
