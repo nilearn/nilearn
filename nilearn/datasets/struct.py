@@ -366,7 +366,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
         .. versionadded:: 0.8.1
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the MNI152 T1 template above this threshold will be included.
 
     Returns
@@ -408,7 +408,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the grey-matter MNI152 template above this threshold will be
         included.
 
@@ -461,7 +461,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the white-matter MNI152 template above this threshold will be
         included.
 
@@ -514,7 +514,7 @@ def fetch_icbm152_brain_gm_mask(
     ----------
     %(data_dir)s
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the ICBM152 grey-matter template above this threshold will be
         included.
 
@@ -637,7 +637,7 @@ def fetch_oasis_vbm(
         The number of subjects to load. If None is given, all the
         subjects are used.
 
-    dartel_version : boolean, default=True
+    dartel_version : :obj:`bool`, default=True
         Whether or not to use data normalized with DARTEL instead of standard
         SPM8 normalization.
     %(data_dir)s

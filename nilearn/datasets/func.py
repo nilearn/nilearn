@@ -62,7 +62,7 @@ def fetch_haxby(
         By default, 2nd subject will be loaded.
         Empty list returns no subject data.
 
-    fetch_stimuli : boolean, default=False
+    fetch_stimuli : :obj:`bool`, default=False
         Indicate if stimuli images must be downloaded.
         They will be presented as a dictionary of categories.
     %(url)s
@@ -684,13 +684,13 @@ def fetch_localizer_contrasts(
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
-    get_tmaps : boolean, default=False
+    get_tmaps : :obj:`bool`, default=False
         Whether t maps should be fetched or not.
 
-    get_masks : boolean, default=False
+    get_masks : :obj:`bool`, default=False
         Whether individual masks should be fetched or not.
 
-    get_anats : boolean, default=False
+    get_anats : :obj:`bool`, default=False
         Whether individual structural images should be fetched or not.
 
     %(data_dir)s
@@ -1085,7 +1085,7 @@ def fetch_abide_pcp(
         O is control, 1 is autism, 2 is Asperger, 3 is PPD-NOS,
         4 is Asperger or PPD-NOS.
 
-    AGE_AT_SCAN : float in [6.47, 64], optional
+    AGE_AT_SCAN : :obj:`float` in [6.47, 64], optional
         Age of the subject.
 
     SEX : :obj`int` in {1, 2}, optional

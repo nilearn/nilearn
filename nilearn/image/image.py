@@ -1496,7 +1496,7 @@ def concat_imgs(
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 
-    auto_resample : boolean, default=False
+    auto_resample : :obj:`bool`, default=False
         Converts all images to the space of the first one.
 
     verbose : int, default=0

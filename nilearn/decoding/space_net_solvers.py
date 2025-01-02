@@ -506,10 +506,10 @@ def tvl1_solver(
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    alpha : float, default=1.0
+    alpha : :obj:`float`, default=1.0
         Constant that scales the overall regularization term.
 
-    l1_ratio : float in the interval [0, 1]; default=0.5
+    l1_ratio : :obj:`float` in the interval [0, 1]; default=0.5
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
 
@@ -524,14 +524,14 @@ def tvl1_solver(
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
-    tol : float, default=1e-4
+    tol : :obj:`float`, default=1e-4
         Defines the tolerance for convergence.
 
     loss : :obj:`str` or None
         Loss model for regression. Can be "mse" (for squared loss) or
         "logistic" (for logistic loss).
 
-    lipschitz_constant : float, optional (default None)
+    lipschitz_constant : :obj:`float`, optional (default None)
         Lipschitz constant (i.e an upper bound of) of gradient of smooth part
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.

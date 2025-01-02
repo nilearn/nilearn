@@ -325,10 +325,10 @@ def path_scores(
     y : 1D array of length n_samples
         Response vector; one value per sample.
 
-    mask : 3D arrays of boolean
+    mask : 3D arrays of :obj:`bool`
         Mask defining brain regions that we work on.
 
-    alphas : :obj:`list` of floats
+    alphas : :obj:`list` of :obj:`float`
         List of regularization parameters being considered.
 
     train : array or :obj:`list` of :obj`int`:
@@ -337,12 +337,12 @@ def path_scores(
     test : array or :obj:`list` of :obj`int`
         List of indices for the test samples.
 
-    l1_ratios : float or :obj:`list` of floats in the interval [0, 1];\
+    l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1];\
         optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
         l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
 
-    eps : float, optional (default 1e-3)
+    eps : :obj:`float`, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
@@ -356,16 +356,16 @@ def path_scores(
     solver_params : :obj:`dict`
        Dictionary of param-value pairs to be passed to solver.
 
-    is_classif : bool, default=False
+    is_classif : :obj:`bool`, default=False
         Indicates whether the loss is a classification loss or a
         regression loss.
 
     key: ??? TODO: Add description.
 
-    debias : bool, default=False
+    debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
 
-    screening_percentile : float in the interval [0, 100], optional\
+    screening_percentile : :obj:`float` in the interval [0, 100], optional\
         (default 20)
         Percentile value for :term:`ANOVA` univariate feature selection.
         A value of 100 means 'keep all features'.

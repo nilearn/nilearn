@@ -224,7 +224,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
         (..., n_features, n_features)
         Input array.
 
-    discard_diagonal : boolean, default=False
+    discard_diagonal : :obj:`bool`, default=False
         If True, the values of the diagonal are not returned.
 
     Returns

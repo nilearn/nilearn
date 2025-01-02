@@ -255,7 +255,7 @@ def get_confounds_file(image_file, flag_full_aroma):
     image_file : :obj:`str`
         Path to the functional image file.
 
-    flag_full_aroma : bool
+    flag_full_aroma : :obj:`bool`
         True if the input is a full ICA-AROMA output, False otherwise.
 
     Returns
@@ -282,7 +282,7 @@ def load_confounds_json(confounds_json, flag_acompcor):
     confounds_json : :obj:`str`
         Path to the json file.
 
-    flag_acompcor : bool
+    flag_acompcor : :obj:`bool`
         True if user selected anatomical compcor for denoising strategy,
         False otherwise.
 
@@ -423,7 +423,7 @@ def prepare_output(confounds, demean):
     confounds : pandas.DataFrame
         Confound regressors loaded based on user's choice.
 
-    demean : bool
+    demean : :obj:`bool`
         True if the confounds should be demeaned, False otherwise.
 
     Returns

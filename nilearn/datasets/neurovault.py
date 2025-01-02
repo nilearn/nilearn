@@ -2559,15 +2559,15 @@ def fetch_neurovault(
 
     %(data_dir)s
 
-    fetch_neurosynth_words : bool, default=False
+    fetch_neurosynth_words : :obj:`bool`, default=False
         whether to collect words from Neurosynth.
 
-    vectorize_words : bool, default=True
+    vectorize_words : :obj:`bool`, default=True
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    resample : bool, optional (default=False)
+    resample : :obj:`bool`, optional (default=False)
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
@@ -2770,14 +2770,14 @@ def fetch_neurovault_ids(
 
     %(data_dir)s
 
-    fetch_neurosynth_words : bool, default=False
+    fetch_neurosynth_words : :obj:`bool`, default=False
         Whether to collect words from Neurosynth.
 
-    resample : bool, optional (default=False)
+    resample : :obj:`bool`, optional (default=False)
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
-    vectorize_words : bool, default=True
+    vectorize_words : :obj:`bool`, default=True
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.

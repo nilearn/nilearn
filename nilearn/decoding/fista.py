@@ -97,27 +97,27 @@ def mfista(
     total_energy : callable(w) -> float
         total energy (i.e smooth (f1) + nonsmooth (f2) parts)
 
-    lipschitz_constant : float
+    lipschitz_constant : :obj:`float`
         Lipschitz constant of gradient of f1_grad.
 
-    check_lipschitz : boolean, default=False
+    check_lipschitz : :obj:`bool`, default=False
         If True, check Lipschitz continuity of gradient of smooth part.
 
     w_size : int
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
         accept a w such that w.shape = (w_size,).
 
-    tol : float, default=1e-4
+    tol : :obj:`float`, default=1e-4
         Tolerance on the (primal) cost function.
 
-    dgap_tol : float, optional
+    dgap_tol : :obj:`float`, optional
         If None, the nonsmooth_prox argument returns a float, with the value,
         if not 0, the nonsmooth_prox accepts a third parameter tol, which is
         the tolerance on the computation of the proximal operator and returns a
         float, and a dict with the key "converged", that says if the method to
         compute f2_prox converged or not.
 
-    dgap_factor : float, optional
+    dgap_factor : :obj:`float`, optional
         Dual gap factor. Used for debugging purpose (control the convergence).
 
     init : dict-like, optional

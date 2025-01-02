@@ -159,7 +159,7 @@ def group_sparse_covariance(
         The sample number can vary from subject to subject, but all subjects
         must have the same number of features (i.e. of columns).
 
-    alpha : float
+    alpha : :obj:`float`
         regularization parameter. With normalized covariances matrices and
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
@@ -167,7 +167,7 @@ def group_sparse_covariance(
     max_iter : int, default=50
         maximum number of iterations.
 
-    tol : positive float or None, default=1e-3
+    tol : positive :obj:`float` or None, default=1e-3
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
 
@@ -193,7 +193,7 @@ def group_sparse_covariance(
         initial value of the precision matrices. If not provided, a diagonal
         matrix with the variances of each input signal is used.
 
-    debug : bool, default=False
+    debug : :obj:`bool`, default=False
         if True, perform checks during computation. It can help find
         numerical problems, but increases computation time a lot.
 
@@ -652,11 +652,11 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
         signals. Sample number can vary from subject to subject, but all
         subjects must have the same number of features (i.e. of columns).
 
-    assume_centered : bool, default=False
+    assume_centered : :obj:`bool`, default=False
         if True, assume that all input signals are centered. This slightly
         decreases computation time by avoiding useless computation.
 
-    standardize : bool, default=False
+    standardize : :obj:`bool`, default=False
         if True, set every signal variance to one before computing their
         covariance matrix (i.e. compute a correlation matrix).
 
@@ -723,13 +723,13 @@ def group_sparse_scores(
     emp_covs : numpy.ndarray, shape (n_features, n_features, n_subjects)
         empirical covariance matrix
 
-    alpha : float
+    alpha : :obj:`float`
         regularization parameter
 
-    duality_gap : bool, default=False
+    duality_gap : :obj:`bool`, default=False
         if True, also returns a duality gap upper bound.
 
-    debug : bool, default=False
+    debug : :obj:`bool`, default=False
         if True, some consistency checks are performed to help solving
         numerical problems.
 
@@ -839,7 +839,7 @@ def group_sparse_covariance_path(
     train_subjs : :obj:`list` of numpy.ndarray
         list of signals.
 
-    alphas : :obj:`list` of float
+    alphas : :obj:`list` of :obj:`float`
          values of alpha to use. Best results for sorted values (decreasing)
 
     test_subjs : :obj:`list` of numpy.ndarray, optional

@@ -384,7 +384,7 @@ def resample_img(
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
         method.
 
-    copy : bool, default=True
+    copy : :obj:`bool`, default=True
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
@@ -393,14 +393,14 @@ def resample_img(
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
 
-    clip : bool, default=True
+    clip : :obj:`bool`, default=True
         If True (default) all resampled image values above max(img) and
         under min(img) are clipped to min(img) and max(img). Note that
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
         If False no clip is performed.
 
-    fill_value : float, default=0
+    fill_value : :obj:`float`, default=0
         Use a fill value for points outside of input volume.
 
     force_resample : :obj:`bool`, default=None
@@ -751,7 +751,7 @@ def resample_to_img(
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
         method.
 
-    copy : bool, default=True
+    copy : :obj:`bool`, default=True
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
@@ -760,12 +760,12 @@ def resample_to_img(
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
 
-    clip : bool, default=False
+    clip : :obj:`bool`, default=False
         If False (default) no clip is performed.
         If True all resampled image values above max(img)
         and under min(img) are cllipped to min(img) and max(img).
 
-    fill_value : float, default=0
+    fill_value : :obj:`float`, default=0
         Use a fill value for points outside of input volume.
 
     force_resample : :obj:`bool`, default=None

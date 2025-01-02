@@ -115,11 +115,11 @@ def make_glm_report(
         The background image for mask and stat maps to be plotted on upon.
         To turn off background image, just pass "bg_img=None".
 
-    threshold : float, default=3.09
+    threshold : :obj:`float`, default=3.09
         Cluster forming threshold in same scale as `stat_img` (either a
         t-scale or z-scale value). Used only if height_control is None.
 
-    alpha : float, default=0.001
+    alpha : :obj:`float`, default=0.001
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
@@ -131,11 +131,11 @@ def make_glm_report(
         false positive control meaning of cluster forming
         threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or None.
 
-    two_sided : `bool`, default=False
+    two_sided : :obj:`bool`, default=False
         Whether to employ two-sided thresholding or to evaluate positive values
         only.
 
-    min_distance : float, default=8
+    min_distance : :obj:`float`, default=8
         For display purposes only.
         Minimum distance between subpeaks in mm.
 
