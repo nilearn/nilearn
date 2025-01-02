@@ -5,7 +5,63 @@ import re
 
 from numpydoc.docscrape import NumpyDocString
 from rich import print
-from utils import list_functions, list_modules
+from utils import list_classes, list_functions, list_modules
+
+
+def main():
+    """Flag functions or methods with missing defaults."""
+    filenames = list_modules()
+
+    n_issues = 0
+
+    for filename in filenames:
+        for func_def in list_functions(filename):
+            n_issues = check_def(func_def, n_issues, filename)
+
+        for _ in list_classes(filename):
+            for meth_def in list_functions(filename):
+                n_issues = check_def(meth_def, n_issues, filename)
+
+    print(f"{n_issues} issues detected")
+
+
+def check_def(ast_def, n_issues, filename):
+    """Check AST definitions for missing default values in doc strings."""
+    docstring = ast.get_docstring(ast_def, clean=False)
+
+    if not docstring:
+        print(f"{filename}:{ast_def.lineno} - No docstring detected")
+        return
+
+    default_args = list_parameters_with_defaults(ast_def)
+
+    missing = get_missing(docstring, default_args)
+
+    n_issues += len(missing)
+
+    # Log arguments with missing default values in documentation.
+    if missing:
+        print(f"{filename}:{ast_def.lineno} - {ast_def.name}")
+        for k, d, v in missing:
+            print(f" `{k} : {d[0:20]}...`[red] - missing `Default={v}`")
+
+    return n_issues
+
+
+def list_parameters_with_defaults(ast_def):
+    """List parameters in function that have a default value."""
+    default_args = {
+        k.arg: ast.unparse(v)
+        for k, v in zip(ast_def.args.args[::-1], ast_def.args.defaults[::-1])
+    }
+    # kwargs with default value
+    default_args |= {
+        k.arg: ast.unparse(v)
+        for k, v in zip(
+            ast_def.args.kwonlyargs[::-1], ast_def.args.kw_defaults[::-1]
+        )
+    }
+    return default_args
 
 
 def get_missing(docstring, default_args):
@@ -24,9 +80,10 @@ def get_missing(docstring, default_args):
         if f"%({argname})s" in params:
             # Skip the generation for templated arguments.
             continue
-        elif argname not in params:
-            missing.append((argname, argvalue))
+        if argname not in params:
+            missing.append((argname, "", argvalue))
         else:
+            desc = "".join(params[argname].desc)
             # Match any of the following patterns:
             # arg : type, default value
             # arg : type, default=value
@@ -38,50 +95,13 @@ def get_missing(docstring, default_args):
                 r"(default|Default)(\s|:\s|=)(\'|\")?"
                 + re.escape(str(argvalue))
                 + r"(\'|\")?",
-                "".join(params[argname].desc),
+                desc,
             )
             if not m:
-                missing.append((argname, argvalue))
+                missing.append((argname, desc, argvalue))
 
     return missing
 
 
 if __name__ == "__main__":
-    filenames = list_modules()
-
-    n_issues = 0
-
-    for filename in filenames:
-        create_module_header = True
-
-        for func in list_functions(filename):
-            docstring = ast.get_docstring(func, clean=False)
-
-            if not docstring:
-                print(f"{filename}:{func.lineno} - No docstring detected")
-                continue
-
-            # args with default value
-            default_args = {
-                k.arg: ast.unparse(v)
-                for k, v in zip(func.args.args[::-1], func.args.defaults[::-1])
-            }
-            # kwargs with default value
-            default_args |= {
-                k.arg: ast.unparse(v)
-                for k, v in zip(
-                    func.args.kwonlyargs[::-1], func.args.kw_defaults[::-1]
-                )
-            }
-
-            missing = get_missing(docstring, default_args)
-
-            n_issues += len(missing)
-
-            # Log arguments with missing default values in documentation.
-            if missing:
-                print(f"{filename}:{func.lineno}")
-                for k, v in missing:
-                    print(f" `{k}` `Default={v}`")
-
-    print(f"{n_issues} issues detected")
+    main()
