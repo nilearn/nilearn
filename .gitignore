@@ -54,10 +54,6 @@ report_doc.html
 # CI benchmark
 maint_tools/*_runs_timing.*
 
-# maint tools outputs
-missing_docstring_default.md
-missing_obj.md
-
 # coverage
 .coverage
 coverage

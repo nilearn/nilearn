@@ -263,8 +263,8 @@ def main():
     modules = list_modules()
 
     for file in modules:
-        # functions_ast = list_functions(file)
-        # check_functions(functions_ast, terms, file)
+        functions_ast = list_functions(file)
+        check_functions(functions_ast, terms, file)
 
         class_definitions = list_classes(file)
 
