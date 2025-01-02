@@ -130,13 +130,9 @@ labels_img = SurfaceImage(
     },
 )
 
-# The labels are stored as bytes for the Destrieux atlas.
-# For convenience we decode them to string.
-label_names = [x.decode("utf-8") for x in destrieux.labels]
-
 labels_masker = SurfaceLabelsMasker(
     labels_img=labels_img,
-    labels=label_names,
+    labels=destrieux.labels,
 ).fit()
 
 masked_data = labels_masker.transform(surf_img_nki)
