@@ -328,16 +328,16 @@ def path_scores(
     mask : 3D arrays of boolean
         Mask defining brain regions that we work on.
 
-    alphas : list of floats
+    alphas : :obj:`list` of floats
         List of regularization parameters being considered.
 
-    train : array or list of :obj`int`:
+    train : array or :obj:`list` of :obj`int`:
         List of indices for the train samples.
 
-    test : array or list of :obj`int`
+    test : array or :obj:`list` of :obj`int`
         List of indices for the test samples.
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
+    l1_ratios : float or :obj:`list` of floats in the interval [0, 1];\
         optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
         l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
@@ -353,7 +353,7 @@ def path_scores(
     solver : function handle
        See for example tv.TVl1Classifier documentation.
 
-    solver_params : dict
+    solver_params : :obj:`dict`
        Dictionary of param-value pairs to be passed to solver.
 
     is_classif : bool, default=False

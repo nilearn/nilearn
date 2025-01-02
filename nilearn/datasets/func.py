@@ -56,7 +56,7 @@ def fetch_haxby(
     Parameters
     ----------
     %(data_dir)s
-    subjects : list or int, default=(2,)
+    subjects : :obj:`list` or :obj:`tuple` or int, default=(2,)
         Either a list of subjects or the number of subjects to load,
         from 1 to 6.
         By default, 2nd subject will be loaded.
@@ -680,7 +680,7 @@ def fetch_localizer_contrasts(
         - "visual click vs visual sentences"
         - "auditory&visual motor vs cognitive processing"
 
-    n_subjects : int or list, optional
+    n_subjects : int or :obj:`list`, optional
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
@@ -1070,12 +1070,12 @@ def fetch_abide_pcp(
     %(url)s
     %(verbose)s
 
-    kwargs : parameter list, optional
+    kwargs : extra parameters, optional
         Any extra keyword argument will be used to filter downloaded subjects
         according to the CSV phenotypic file. Some examples of filters are
         indicated below.
 
-    SUB_ID : list of :obj:`int` in [50001, 50607], optional
+    SUB_ID : :obj:`list` of :obj:`int` in [50001, 50607], optional
         Ids of the subjects to be loaded.
 
     DX_GROUP : :obj`int` in {1, 2}, optional
@@ -2077,7 +2077,7 @@ def fetch_development_fmri(
     %(data_dir)s
     %(resume)s
     %(verbose)s
-    age_group : str, default='both'
+    age_group : :obj:`str`, default='both'
         Which age group to fetch
 
         - 'adults' = fetch adults only (n=33, ages 18-39)

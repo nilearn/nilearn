@@ -14,13 +14,19 @@ from utils import list_functions, list_modules, root_dir
 VALUES = [
     "integers",
     "integer",
+    "Integer",
     "strings",
     "string",
-    #  "int",
-    #  "float",
-    #  "str",
-    #  "list",
-    #  "tuple",
+    "String",
+    # "list",
+    "List",
+    "tuple",
+    "Tuple",
+    # "dict",
+    "Dict",
+    # "int",
+    # "float",
+    # "str",
 ]
 
 

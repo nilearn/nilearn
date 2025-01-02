@@ -153,7 +153,7 @@ def group_sparse_covariance(
 
     Parameters
     ----------
-    subjects : list of numpy.ndarray
+    subjects : :obj:`list` of numpy.ndarray
         input subjects. Each subject is a 2D array, whose columns contain
         signals. Each array shape must be (sample number, feature number).
         The sample number can vary from subject to subject, but all subjects
@@ -646,7 +646,8 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
 
     Parameters
     ----------
-    subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
+    subjects : :obj:`list` of numpy.ndarray, \
+        shape for each (n_samples, n_features)
         input subjects. Each subject is a 2D array, whose columns contain
         signals. Sample number can vary from subject to subject, but all
         subjects must have the same number of features (i.e. of columns).
@@ -835,13 +836,13 @@ def group_sparse_covariance_path(
 
     Parameters
     ----------
-    train_subjs : list of numpy.ndarray
+    train_subjs : :obj:`list` of numpy.ndarray
         list of signals.
 
-    alphas : list of float
+    alphas : :obj:`list` of float
          values of alpha to use. Best results for sorted values (decreasing)
 
-    test_subjs : list of numpy.ndarray, optional
+    test_subjs : :obj:`list` of numpy.ndarray, optional
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
@@ -869,11 +870,11 @@ def group_sparse_covariance_path(
 
     Returns
     -------
-    precisions_list : list of numpy.ndarray
+    precisions_list : :obj:`list` of numpy.ndarray
         estimated precisions for each value of alpha provided. The length of
         this list is the same as that of parameter "alphas".
 
-    scores : list of float
+    scores : :obj:`list` of float
         for each estimated precision, score obtained on the test set. Output
         only if test_subjs is not None.
 

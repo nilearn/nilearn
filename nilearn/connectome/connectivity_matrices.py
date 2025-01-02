@@ -220,7 +220,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
 
     Parameters
     ----------
-    symmetric : numpy.ndarray or list of numpy arrays, shape\
+    symmetric : numpy.ndarray or :obj:`list` of numpy arrays, shape\
         (..., n_features, n_features)
         Input array.
 
@@ -256,7 +256,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
 
     Parameters
     ----------
-    vec : numpy.ndarray or list of numpy arrays, shape \
+    vec : numpy.ndarray or :obj:`list` of numpy arrays, shape \
         (..., n_columns * (n_columns + 1) /2) or
         (..., (n_columns - 1) * n_columns / 2) if diagonal is given separately.
         The input array.

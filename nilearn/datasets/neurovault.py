@@ -2522,7 +2522,7 @@ def fetch_neurovault(
     max_images : int, default=100
         Maximum number of images to fetch.
 
-    collection_terms : dict, default=None
+    collection_terms : :obj:`dict` or None, default=None
         Key, value pairs used to filter collection
         metadata. Collections for which
         ``collection_metadata['key'] == value`` is not ``True`` for
@@ -2535,7 +2535,7 @@ def fetch_neurovault(
         Collections for which `collection_filter(collection_metadata)`
         is ``False`` will be discarded.
 
-    image_terms : dict, default=None
+    image_terms : :obj:`dict` or None, default=None
         Key, value pairs used to filter image metadata. Images for
         which ``image_metadata['key'] == value`` is not ``True`` for
         if image_filter != _empty_filter and image_terms =
@@ -2557,9 +2557,7 @@ def fetch_neurovault(
         - 'overwrite' means ignore files on disk and overwrite them.
         - 'offline' means load only data from disk; don't query server.
 
-    data_dir : str, optional
-        The directory we want to use for nilearn data. A subdirectory
-        named "neurovault" will contain :term:`Neurovault` data.
+    %(data_dir)s
 
     fetch_neurosynth_words : bool, default=False
         whether to collect words from Neurosynth.
@@ -2770,9 +2768,7 @@ def fetch_neurovault_ids(
         - 'overwrite' means ignore files on disk and overwrite them.
         - 'offline' means load only data from disk; don't query server.
 
-    data_dir : str, optional
-        The directory we want to use for nilearn data. A subdirectory
-        named "neurovault" will contain :term:`Neurovault` data.
+    %(data_dir)s
 
     fetch_neurosynth_words : bool, default=False
         Whether to collect words from Neurosynth.

@@ -160,7 +160,7 @@ def get_bounds(shape, affine):
 
     Parameters
     ----------
-    shape : tuple
+    shape : :obj:`tuple`
         shape of the array. Must have 3 integer values.
 
     affine : numpy.ndarray
@@ -374,13 +374,13 @@ def resample_img(
         If specified, the image is resampled corresponding to this new affine.
         target_affine can be a 3x3 or a 4x4 matrix. (See notes)
 
-    target_shape : tuple or list, optional
+    target_shape : :obj:`tuple` or :obj:`list`, optional
         If specified, the image will be resized to match this new shape.
         len(target_shape) must be equal to 3.
         If target_shape is specified, a target_affine of shape (4, 4)
         must also be given. (See notes)
 
-    interpolation : str, default='continuous'
+    interpolation : :obj:`str`, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
         method.
 
@@ -747,7 +747,7 @@ def resample_to_img(
         See :ref:`extracting_data`.
         Reference image taken for resampling.
 
-    interpolation : str, default='continuous'
+    interpolation : :obj:`str`, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
         method.
 
