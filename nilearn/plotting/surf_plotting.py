@@ -800,7 +800,7 @@ def plot_surf(
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
                 or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1131,7 +1131,7 @@ def plot_surf_contours(
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
                 or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1369,7 +1369,7 @@ def plot_surf_stat_map(
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
                 or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1385,7 +1385,7 @@ def plot_surf_stat_map(
         and the mesh from
         that :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
-    stat_map : :obj:`str` or :class:`numpy.ndarray`
+    stat_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Statistical map to be displayed on the surface :term:`mesh`,
         can be a file
         (valid formats are .gii, .mgz, or
@@ -1961,7 +1961,7 @@ def plot_surf_roi(
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
                 or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or

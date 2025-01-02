@@ -370,11 +370,11 @@ def resample_img(
         See :ref:`extracting_data`.
         Image(s) to resample.
 
-    target_affine : numpy.ndarray, optional
+    target_affine : numpy.ndarray, default=None
         If specified, the image is resampled corresponding to this new affine.
         target_affine can be a 3x3 or a 4x4 matrix. (See notes)
 
-    target_shape : :obj:`tuple` or :obj:`list`, optional
+    target_shape : :obj:`tuple` or :obj:`list`, default=None
         If specified, the image will be resized to match this new shape.
         len(target_shape) must be equal to 3.
         If target_shape is specified, a target_affine of shape (4, 4)

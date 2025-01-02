@@ -261,7 +261,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
         (..., (n_columns - 1) * n_columns / 2) if diagonal is given separately.
         The input array.
 
-    diagonal : numpy.ndarray, shape (..., n_columns), optional
+    diagonal : numpy.ndarray, shape (..., n_columns), default=None
         The diagonal array to be stacked to vec. If None, the diagonal is
         assumed to be included in vec.
 
@@ -613,7 +613,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             from one subject to another.
 
         confounds : np.ndarray with shape (n_samples) or \
-                    (n_samples, n_confounds), or pandas DataFrame, optional
+                    (n_samples, n_confounds), or pandas DataFrame, default=None
             Confounds to be cleaned on the vectorized matrices. Only takes
             into effect when vetorize=True.
             This parameter is passed to signal.clean. Please see the related
@@ -654,7 +654,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             from one subject to another.
 
         confounds : numpy.ndarray with shape (n_samples) or \
-                    (n_samples, n_confounds), optional
+                    (n_samples, n_confounds), default=None
             Confounds to be cleaned on the vectorized matrices. Only takes
             into effect when vetorize=True.
             This parameter is passed to signal.clean. Please see the related
@@ -696,7 +696,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             or ((n_features - 1) * n_features / 2,)
             Connectivities of each subject, vectorized or not.
 
-        diagonal : numpy.ndarray, shape (n_subjects, n_features), optional
+        diagonal : numpy.ndarray, shape (n_subjects, n_features), default=None
             The diagonals of the connectivity matrices.
 
         Returns

@@ -215,7 +215,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs : :obj:`list` of Niimg-like objects
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
             See :ref:`extracting_data`.
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
@@ -359,11 +359,11 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             See :ref:`extracting_data`.
             List of imgs file to prepare. One item per subject.
 
-        confounds : :obj:`list` of confounds, optional
+        confounds : :obj:`list` of confounds, default=None
             List of confounds (2D arrays or filenames pointing to CSV
             files or pandas DataFrames). Must be of same length than imgs_list.
 
-        sample_mask : :obj:`list` of sample_mask, optional
+        sample_mask : :obj:`list` of sample_mask, default=None
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 
@@ -470,11 +470,11 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             Data to be preprocessed
 
         confounds : CSV file or 2D :obj:`numpy.ndarray` or \
-                :obj:`pandas.DataFrame`, optional
+                :obj:`pandas.DataFrame`, default=None
             This parameter is passed to signal.clean. Please see the
             corresponding documentation for details.
 
-        sample_mask : :obj:`list` of 1D :obj:`numpy.ndarray`, optional
+        sample_mask : :obj:`list` of 1D :obj:`numpy.ndarray`, default=None
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 

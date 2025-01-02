@@ -173,12 +173,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like, optional
+        confounds : CSV file or array-like, default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
@@ -248,12 +249,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like, optional
+        confounds : CSV file or array-like, default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
@@ -308,14 +310,14 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         X : Niimg-like object
             See :ref:`extracting_data`.
 
-        y : numpy array of shape [n_samples], optional
+        y : numpy array of shape [n_samples], default=None
             Target values.
 
-        confounds : list of confounds, optional
+        confounds : list of confounds, default=None
             List of confounds (2D arrays or filenames pointing to CSV
             files). Must be of same length than imgs_list.
 
-        sample_mask : list of sample_mask, optional
+        sample_mask : list of sample_mask, default=None
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 

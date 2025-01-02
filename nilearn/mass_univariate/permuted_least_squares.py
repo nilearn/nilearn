@@ -353,7 +353,7 @@ def permuted_ols(
         while the descriptors will generally be images,
         such as run-wise z-statistic maps.
 
-    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+    confounding_vars : array-like, shape=(n_samples, n_covars), default=None
         Confounding variates (covariates), fitted but not tested.
         If None, no confounding variate is added to the model
         (except maybe a constant column according to the value of
@@ -376,7 +376,7 @@ def permuted_ols(
         If False, only positive effects are considered as relevant. The null
         hypothesis is that the effect is zero or negative.
 
-    random_state : :obj:`int` or np.random.RandomState or None, optional
+    random_state : :obj:`int` or np.random.RandomState or None, default=None
         Seed for random number generator, to have the same permutations
         in each computing units.
 
@@ -390,7 +390,7 @@ def permuted_ols(
         verbosity level (0 means no message).
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
-            :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+            :class:`~nilearn.maskers.MultiNiftiMasker`, default=None
         A mask to be used on the data.
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.

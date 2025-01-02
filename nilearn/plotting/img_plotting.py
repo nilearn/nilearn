@@ -380,6 +380,9 @@ def plot_img(
         If False (default),
         the slice position is integer without decimal point.
 
+    %(cmap)s
+        default="gray"
+
     %(draw_cross)s
 
     %(black_bg)s
@@ -1810,7 +1813,7 @@ def plot_markers(
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely proportional to the number of nodes.
 
-    node_cmap : :obj:`str` or colormap, default=plt.cm.viridis_r.
+    node_cmap : :obj:`str` or colormap, default=plt.cm.gray.
         Colormap used to represent the node measure.
 
     node_vmin : :obj:`float` or None, default=None

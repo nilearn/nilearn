@@ -544,7 +544,7 @@ class Parcellations(_MultiPCA):
             Images to process.
 
         confounds : :obj:`list` of CSV files, arrays-like,\
- or :class:`pandas.DataFrame`, optional
+            or :class:`pandas.DataFrame`, default=None
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds)
             Must be of same length as imgs.
@@ -619,7 +619,7 @@ class Parcellations(_MultiPCA):
             Images for process for fit as well for transform to signals.
 
         confounds : :obj:`list` of CSV files, arrays-like or\
- :class:`pandas.DataFrame`, optional
+            :class:`pandas.DataFrame`, default=None
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds).
             Given confounds should have same length as images if

@@ -362,7 +362,7 @@ def butterworth(
         Type of padding to use for the Butterworth filter.
         For more information about this, see :func:`scipy.signal.filtfilt`.
 
-    padlen : :obj:`int` or None, optional
+    padlen : :obj:`int` or None, default=None
         The size of the padding to add to the beginning and end of ``signals``.
         If None, the default value from :func:`scipy.signal.filtfilt` will be
         used.

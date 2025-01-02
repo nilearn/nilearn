@@ -167,14 +167,14 @@ def group_sparse_covariance(
     max_iter : :obj:`int`, default=50
         maximum number of iterations.
 
-    tol : positive :obj:`float` or None, default=1e-3
+    tol : positive :obj:`float` or None, default=0.001
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
 
     verbose : :obj:`int`, default=0
         verbosity level. Zero means "no message".
 
-    probe_function : callable or None, optional
+    probe_function : callable or None,  default=None
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.
@@ -189,7 +189,7 @@ def group_sparse_covariance(
         - current value of precisions (ndarray).
         - previous value of precisions (ndarray). None before first iteration.
 
-    precisions_init : numpy.ndarray, optional
+    precisions_init : numpy.ndarray,  default=None
         initial value of the precision matrices. If not provided, a diagonal
         matrix with the variances of each input signal is used.
 

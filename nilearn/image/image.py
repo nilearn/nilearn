@@ -74,7 +74,7 @@ def high_variance_confounds(
         4D image.
         See :ref:`extracting_data`.
 
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or None, default=None
         If not provided, all voxels are used.
         If provided, confounds are extracted from voxels inside the mask.
         See :ref:`extracting_data`.
@@ -544,11 +544,11 @@ def mean_img(
         Images to be averaged over time (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
-    target_affine : :class:`numpy.ndarray`, optional
+    target_affine : :class:`numpy.ndarray`, default=None
         If specified, the image is resampled corresponding to this new affine.
         target_affine can be a 3x3 or a 4x4 matrix.
 
-    target_shape : :obj:`tuple` or :obj:`list`, optional
+    target_shape : :obj:`tuple` or :obj:`list`, default=None
         If specified, the image will be resized to match this new shape.
         len(target_shape) must be equal to 3.
         A target_affine has to be specified jointly with target_shape.
@@ -789,7 +789,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         .. versionchanged:: 0.9.2
             Changed default dtype casting of booleans from 'int8' to 'uint8'.
 
-    affine : 4x4 :class:`numpy.ndarray`, optional
+    affine : 4x4 :class:`numpy.ndarray`, default=None
         Transformation matrix.
 
     copy_header : :obj:`bool`, default=False
@@ -1312,8 +1312,8 @@ def clean_img(
     standardize : :obj:`bool`, default=True
         If True, returned signals are set to unit variance.
 
-    confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of
-        Confounds timeseries. optional
+    confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
+        Confounds timeseries. default=None
         Shape must be (instant number, confound number),
         or just (instant number,)
         The number of time instants in signals and confounds must be
@@ -1323,13 +1323,13 @@ def clean_img(
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
 
-    low_pass : :obj:`float`, optional
+    low_pass : :obj:`float`, default=None
         Low cutoff frequencies, in Hertz.
 
-    high_pass : :obj:`float`, optional
+    high_pass : :obj:`float`, default=None
         High cutoff frequencies, in Hertz.
 
-    t_r : :obj:`float`, optional
+    t_r : :obj:`float`, default=None
         Repetition time, in second (sampling period). Set to None if not
         specified. Mandatory if used together with `low_pass` or `high_pass`.
 
@@ -1337,7 +1337,7 @@ def clean_img(
         If True, the non-finite values (NaNs and infs) found in the images
         will be replaced by zeros.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         If provided, signal is only cleaned from voxels inside the mask. If
         mask is provided, it should have same shape and affine as imgs.
         If not provided, all voxels are used.
@@ -1451,7 +1451,7 @@ def load_img(img, wildcards=True, dtype=None):
         If no file matches the regular expression, a `ValueError` exception is
         raised.
 
-    dtype : {dtype, "auto"}, optional
+    dtype : {dtype, "auto", None}, default=None
         Data type toward which the data should be converted. If "auto", the
         data will be converted to int32 if dtype is discrete and float32 if it
         is continuous.
@@ -1492,7 +1492,7 @@ def concat_imgs(
     dtype : numpy dtype, default=np.float32
         The dtype of the returned image.
 
-    ensure_ndim : :obj:`int`, optional
+    ensure_ndim : :obj:`int`, default=None
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 

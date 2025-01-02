@@ -186,7 +186,7 @@ def load_mni152_template(resolution=None):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
+    resolution : :obj:`int` or None, default=None
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -250,7 +250,7 @@ def load_mni152_gm_template(resolution=None):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
+    resolution : :obj:`int` or None, default=None
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -306,7 +306,7 @@ def load_mni152_wm_template(resolution=None):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
+    resolution : :obj:`int`or None, default=None
         If resolution is different from 1, the template is re-sampled with the
         specified resolution.
 
@@ -360,7 +360,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
+    resolution : :obj:`int` or None,  default=None
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -404,7 +404,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
+    resolution : :obj:`int`or None, default=None
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -457,7 +457,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
+    resolution : :obj:`int`or None, default=None
         If resolution is different from 1, the template loaded is first
         re-sampled with the specified resolution.
 
@@ -633,7 +633,7 @@ def fetch_oasis_vbm(
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=None
         The number of subjects to load. If None is given, all the
         subjects are used.
 

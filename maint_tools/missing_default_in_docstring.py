@@ -5,11 +5,23 @@ instead of the type section.
 """
 
 import ast
+import importlib
 import re
 
 from numpydoc.docscrape import NumpyDocString
 from rich import print
 from utils import list_classes, list_functions, list_modules
+
+import nilearn
+
+PUBLIC_API_ONLY = True
+
+PUBLIC_API = []
+for x in nilearn.__all__:
+    if x.startswith("_"):
+        continue
+    mod = importlib.import_module(f"nilearn.{x}")
+    PUBLIC_API.extend(mod.__all__)
 
 
 def main():
@@ -20,10 +32,14 @@ def main():
 
     for filename in filenames:
         for func_def in list_functions(filename):
+            if PUBLIC_API_ONLY and func_def.name not in PUBLIC_API:
+                continue
             n_issues = check_def(func_def, n_issues, filename)
 
-        for _ in list_classes(filename):
-            for meth_def in list_functions(filename):
+        for class_def in list_classes(filename):
+            if PUBLIC_API_ONLY and class_def.name not in PUBLIC_API:
+                continue
+            for meth_def in list_functions(class_def):
                 n_issues = check_def(meth_def, n_issues, filename)
 
     print(f"{n_issues} issues detected")
@@ -46,7 +62,7 @@ def check_def(ast_def, n_issues, filename):
     if missing:
         print(f"{filename}:{ast_def.lineno} - {ast_def.name}")
         for k, d, v in missing:
-            print(f" `{k} : {d[0:20]}...`[red] - missing `Default={v}`")
+            print(f" `{k} : {d[0:120]}...`[red] - missing `Default={v}`")
 
     if in_desc:
         print(f"{filename}:{ast_def.lineno} - {ast_def.name}")
@@ -91,30 +107,34 @@ def get_missing(docstring, default_args):
         if f"%({argname})s" in params:
             # Skip the generation for templated arguments.
             continue
+
         if argname not in params:
-            missing.append((argname, "", argvalue))
+            # missing.append((argname, "", argvalue))
+            continue
+
+        if argname == "y":
             continue
 
         # Match any of the following patterns:
-        # arg : type, default value
-        # arg : type, default=value
-        # arg : type, default: value
-        # arg : type, Default value
-        # arg : type, Default=value
-        # arg : type, Default: value
+        # arg : type, default.*value
+        str_arg = str(argvalue)
+        if str_arg != "None":
+            continue
+        if "%" in argvalue:
+            str_arg = str_arg.replace("%", "%%")
         regex = (
-            r"(default|Default)(\s|:\s|=)(\'|\")?"
-            + re.escape(str(argvalue))
-            + r"(\'|\")?"
+            (r"(default|Default).*" + re.escape(str_arg))
+            .replace("'", "")
+            .replace('"', "")
         )
 
         type = "".join(params[argname].type)
         if not re.search(regex, type):
             missing.append((argname, type, argvalue))
 
-        desc = "".join(params[argname].desc)
-        if re.search(regex, desc):
-            in_desc.append((argname, desc, argvalue))
+        # desc = "".join(params[argname].desc)
+        # if re.search(regex, desc):
+        #     in_desc.append((argname, desc, argvalue))
 
     return missing, in_desc
 
