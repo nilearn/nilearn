@@ -13,6 +13,8 @@ from nilearn._utils.helpers import compare_version
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
 
+__all__ = ["_cmap_d"]
+
 
 def mix_colormaps(fg, bg):
     """Mixes foreground and background arrays of RGBA colors.

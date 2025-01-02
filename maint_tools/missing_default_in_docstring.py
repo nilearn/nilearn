@@ -6,6 +6,7 @@ instead of the type section.
 
 import ast
 import importlib
+import inspect
 import re
 
 from numpydoc.docscrape import NumpyDocString
@@ -14,14 +15,33 @@ from utils import list_classes, list_functions, list_modules
 
 import nilearn
 
-PUBLIC_API_ONLY = True
+PUBLIC_API_ONLY = False
 
-PUBLIC_API = []
-for x in nilearn.__all__:
-    if x.startswith("_"):
+
+def update_api(api, mod):
+    """Add function and class names of a module to user facing API listing."""
+    for x in mod.__all__:
+        if x.startswith("_"):
+            continue
+        if inspect.isfunction(mod.__dict__[x]) or inspect.isclass(
+            mod.__dict__[x]
+        ):
+            api.append(x)
+    return api
+
+
+public_api = []
+for subpackage in nilearn.__all__:
+    if subpackage.startswith("_"):
         continue
-    mod = importlib.import_module(f"nilearn.{x}")
-    PUBLIC_API.extend(mod.__all__)
+    mod = importlib.import_module(f"nilearn.{subpackage}")
+    public_api = update_api(public_api, mod)
+    for x in mod.__all__:
+        if x.startswith("_"):
+            continue
+        if inspect.ismodule(mod.__dict__[x]):
+            submod = importlib.import_module(f"nilearn.{subpackage}.{x}")
+            public_api = update_api(public_api, submod)
 
 
 def main():
@@ -32,12 +52,12 @@ def main():
 
     for filename in filenames:
         for func_def in list_functions(filename):
-            if PUBLIC_API_ONLY and func_def.name not in PUBLIC_API:
+            if PUBLIC_API_ONLY and func_def.name not in public_api:
                 continue
             n_issues = check_def(func_def, n_issues, filename)
 
         for class_def in list_classes(filename):
-            if PUBLIC_API_ONLY and class_def.name not in PUBLIC_API:
+            if PUBLIC_API_ONLY and class_def.name not in public_api:
                 continue
             for meth_def in list_functions(class_def):
                 n_issues = check_def(meth_def, n_issues, filename)
@@ -115,8 +135,6 @@ def get_missing(docstring, default_args):
         # Match any of the following patterns:
         # arg : type, default.*value
         str_arg = str(argvalue)
-        if str_arg == "None":
-            continue
         if "%" in argvalue:
             str_arg = str_arg.replace("%", "%%")
         regex = (

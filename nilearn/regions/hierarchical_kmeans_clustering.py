@@ -8,6 +8,7 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from nilearn._utils import fill_doc
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
@@ -48,6 +49,7 @@ def _adjust_small_clusters(array, n_clusters):
     return array_round
 
 
+@fill_doc
 def hierarchical_k_means(
     X,
     n_clusters,
@@ -95,9 +97,11 @@ def hierarchical_k_means(
         To disable convergence detection based on inertia, set
         max_no_improvement to None.
 
-    random_state : :obj:`int`, RandomState instance or None (default)
+    random_state : :obj:`int`, RandomState instance or None, default=0
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
+
+    %(verbose0)s
 
     Returns
     -------

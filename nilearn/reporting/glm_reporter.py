@@ -135,7 +135,7 @@ def make_glm_report(
         Whether to employ two-sided thresholding or to evaluate positive values
         only.
 
-    min_distance : :obj:`float`, default=8
+    min_distance : :obj:`float`, default=8.0
         For display purposes only.
         Minimum distance between subpeaks in mm.
 

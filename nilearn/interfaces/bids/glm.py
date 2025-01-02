@@ -192,7 +192,7 @@ def save_glm_to_bids(
         for which :term:`contrast` type must be
         explicitly set need to be included.
 
-    out_dir : :obj:`str` or :obj:`pathlib.Path`, optional
+    out_dir : :obj:`str` or :obj:`pathlib.Path`, default="."
         Output directory for files. Default is current working directory.
 
     prefix : :obj:`str` or None, default=None
