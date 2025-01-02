@@ -7,7 +7,6 @@ instead of the type section.
 import ast
 import re
 
-import libcst as cst
 from numpydoc.docscrape import NumpyDocString
 from rich import print
 from utils import list_classes, list_functions, list_modules
@@ -26,8 +25,6 @@ def main():
         for _ in list_classes(filename):
             for meth_def in list_functions(filename):
                 n_issues = check_def(meth_def, n_issues, filename)
-
-        update_docstrings(filename)
 
     print(f"{n_issues} issues detected")
 
@@ -120,55 +117,6 @@ def get_missing(docstring, default_args):
             in_desc.append((argname, desc, argvalue))
 
     return missing, in_desc
-
-
-class DocstringUpdater(cst.CSTTransformer):
-    """Update doc string in CST node."""
-
-    def leave_FunctionDef(self, original_node, updated_node):  # noqa: N802
-        """Update node with new doc string."""
-        # Get existing docstring
-        docstring = None
-        if original_node.body.body and isinstance(
-            original_node.body.body[0], cst.SimpleStatementLine
-        ):
-            first_stmt = original_node.body.body[0].body[0]
-            if isinstance(first_stmt, cst.Expr) and isinstance(
-                first_stmt.value, cst.SimpleString
-            ):
-                docstring = first_stmt.value.value.strip("\"'")
-
-        # Generate new docstring with defaults from the signature
-        new_docstring = self._generate_updated_docstring(
-            original_node, docstring
-        )
-        if new_docstring:
-            new_docstring_node = cst.Expr(
-                value=cst.SimpleString(f'"""{new_docstring}"""')
-            )
-            body = updated_node.body.with_changes(
-                body=(new_docstring_node,) + updated_node.body.body[1:]
-            )
-            return updated_node.with_changes(body=body)
-        return updated_node
-
-    def _generate_updated_docstring(self, node, docstring):
-        print(node)
-        return docstring
-
-
-def update_docstrings(file_path):
-    """Update default in doc strings."""
-    with file_path.open() as file:
-        code = file.read()
-
-    tree = cst.parse_module(code)
-    updated_tree = tree.visit(DocstringUpdater())
-
-    with file_path.open("w") as file:
-        file.write(updated_tree.code)
-
-    print(f"Updated docstrings in {file_path}")
 
 
 if __name__ == "__main__":
