@@ -76,9 +76,9 @@ jobs:
                     exit 1
                 fi
 
-    # check the links in the doc
-    # only on full build
-    linkcheck:
+    # Check the build type and files examples to generate
+    # Upload as an artifact for other jobs.
+    build_type:
         needs: [check_skip_flags, validate_cff]
         runs-on: ubuntu-latest
         steps:
@@ -93,11 +93,34 @@ jobs:
             env:
                 COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         -   name: Verify build type
-            id: build-type
             run: |
                 echo "PATTERN = $(cat pattern.txt)"
                 echo "BUILD = $(cat build.txt)"
-                echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
+        -   name: Upload build.txt and pattern.txt
+            uses: actions/upload-artifact@v4
+            with:
+                name: build_type
+                path: |
+                    build.txt
+                    pattern.txt
+                retention-days: 1
+                overwrite: true
+
+    # check the links in the doc
+    # only on full build
+    linkcheck:
+        needs: [build_type]
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+        -   name: Download build type
+            uses: actions/download-artifact@v4
+            with:
+                name: build_type
+        -   name: Verify build type
+            id: build-type
+            run: echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v5
         -   name: Setup python
@@ -114,7 +137,7 @@ jobs:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
         if: github.repository == 'nilearn/nilearn'
-        needs: [check_skip_flags]
+        needs: [build_type]
         runs-on: ubuntu-latest
         defaults:
             run:
@@ -128,9 +151,6 @@ jobs:
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
 
-        -   name: Merge with upstream
-            run: ./build_tools/github/merge_upstream.sh
-
         # Set up environment
         -   name: Setup python
             uses: actions/setup-python@v5
@@ -142,16 +162,13 @@ jobs:
                 python -m pip install --user --upgrade pip setuptools
                 python -m pip install .
 
-        -   name: Check if we are doing a full or partial build
-            run: ./build_tools/github/build_type.sh
-            env:
-                COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        -   name: Download build type
+            uses: actions/download-artifact@v4
+            with:
+                name: build_type
         -   name: Verify build type
             id: build-type
-            run: |
-                echo "PATTERN = $(cat pattern.txt)"
-                echo "BUILD = $(cat build.txt)"
-                echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
+            run: echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
 
         -   name: Determine if we will use cached data
             run: ./build_tools/github/determine_restore_data.sh
@@ -225,7 +242,7 @@ jobs:
 
     # Steps to build the documentation.
     build_docs:
-        needs: [get_data, validate_cff]
+        needs: [get_data]
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
         runs-on: ubuntu-latest
@@ -250,16 +267,6 @@ jobs:
                 sudo -E apt-get -yq --no-install-suggests --no-install-recommends install \
                     dvipng texlive-latex-base texlive-latex-extra
 
-        # Check if we are doing a full or partial build
-        -   name: Find build type
-            run: ./build_tools/github/build_type.sh
-            env:
-                COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
-        -   name: Verify build type
-            run: |
-                echo "PATTERN = $(cat pattern.txt)"
-                echo "BUILD = $(cat build.txt)"
-
         -   name: Key for cache based on month number
             run: date +%m > month_num;
 
@@ -283,6 +290,11 @@ jobs:
             uses: actions/setup-python@v5
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
+
+        -   name: Download build type
+            uses: actions/download-artifact@v4
+            with:
+                name: build_type
 
         -   name: Install tox
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions

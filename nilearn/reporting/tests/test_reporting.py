@@ -170,7 +170,9 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
     data[6, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
     stat_img = Nifti1Image(data, affine_eye)
 
-    cluster_table = get_clusters_table(stat_img, 0, 0, min_distance=9)
+    cluster_table = get_clusters_table(
+        stat_img, 0, 0, min_distance=9, two_sided=True
+    )
     assert len(cluster_table) == 2
     assert 1 in cluster_table["Cluster ID"].to_numpy()
     assert "1a" in cluster_table["Cluster ID"].to_numpy()

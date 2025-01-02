@@ -33,10 +33,6 @@ destrieux_atlas = SurfaceImage(
     },
 )
 
-# The labels are stored as bytes for the Destrieux atlas.
-# For convenience we decode them to string.
-labels = [x.decode("utf-8") for x in destrieux.labels]
-
 # Retrieve fsaverage5 surface dataset for the plotting background.
 # It contains the surface template as pial and inflated version.
 fsaverage_meshes = load_fsaverage()
@@ -119,7 +115,7 @@ for hemi in ["left", "right"]:
     mesh_coordinates = destrieux_atlas.mesh.parts[hemi].coordinates
     coordinates.extend(
         np.mean(mesh_coordinates[data == k], axis=0)
-        for k, label in enumerate(labels)
+        for k, label in enumerate(destrieux.labels)
         if "Unknown" not in str(label)
     )
 # 3D coordinates of parcels

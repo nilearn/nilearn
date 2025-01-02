@@ -130,26 +130,35 @@ labels_img = SurfaceImage(
     },
 )
 
-# The labels are stored as bytes for the Destrieux atlas.
-# For convenience we decode them to string.
-label_names = [x.decode("utf-8") for x in destrieux.labels]
-
 labels_masker = SurfaceLabelsMasker(
     labels_img=labels_img,
-    labels=label_names,
+    labels=destrieux.labels,
 ).fit()
 
 masked_data = labels_masker.transform(surf_img_nki)
 print(f"Masked data shape: {masked_data.shape}")
 
 # %%
+# Plot connectivity matrix
+# ------------------------
 connectome_measure = ConnectivityMeasure(kind="correlation")
 connectome = connectome_measure.fit([masked_data])
+
 vmax = np.absolute(connectome.mean_).max()
 vmin = -vmax
+
+# We only print every 3rd label
+# for a more legible figure.
+labels = []
+for i, label in enumerate(labels_masker.label_names_):
+    if i % 3 == 1:
+        labels.append(label)
+    else:
+        labels.append("")
+
 plot_matrix(
     connectome.mean_,
-    labels=labels_masker.label_names_,
+    labels=labels,
     vmax=vmax,
     vmin=vmin,
 )
@@ -157,10 +166,10 @@ plot_matrix(
 show()
 
 # %%
-# Using the `Decoder`
-# -------------------
+# Using the decoder
+# -----------------
 # Now using the appropriate masker
-# we can use a `Decoder` on surface data
+# we can use a ``Decoder`` on surface data
 # just as we do for volume images.
 #
 # .. note::

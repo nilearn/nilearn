@@ -745,24 +745,24 @@ def test_warning_n_labels_not_equal_n_regions(
         )
 
 
-def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
+def test_sanitize_labels_errors(shape_3d_default, affine_eye):
     labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
-        n_regions=n_regions,
+        n_regions=2,
     )
-    with pytest.warns(UserWarning, match="'labels' must be a list."):
+    with pytest.raises(TypeError, match="'labels' must be a list."):
         NiftiLabelsMasker(
             labels_img,
-            labels="foo",
-        )
-    with pytest.warns(
-        UserWarning, match="All elements of 'labels' must be a string"
+            labels={"foo", "bar", "baz"},
+        ).fit()
+    with pytest.raises(
+        TypeError, match="All elements of 'labels' must be a string"
     ):
         NiftiLabelsMasker(
             labels_img,
             labels=[1, 2, 3],
-        )
+        ).fit()
 
 
 @pytest.mark.parametrize(
