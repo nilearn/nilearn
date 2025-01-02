@@ -2129,7 +2129,7 @@ def fetch_atlas_surf_destrieux(
     annot_left = freesurfer.read_annot(annots[0])
     annot_right = freesurfer.read_annot(annots[1])
 
-    labels = [x.decode("utf-8") for x in annot_left[2]]  
+    labels = [x.decode("utf-8") for x in annot_left[2]]
     lut = _generate_atlas_look_up_table(
         "fetch_atlas_surf_destrieux", name=labels
     )
