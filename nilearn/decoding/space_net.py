@@ -331,10 +331,10 @@ def path_scores(
     alphas : list of floats
         List of regularization parameters being considered.
 
-    train : array or list of integers
+    train : array or list of :obj`int`:
         List of indices for the train samples.
 
-    test : array or list of integers
+    test : array or list of :obj`int`
         List of indices for the test samples.
 
     l1_ratios : float or list of floats in the interval [0, 1];\

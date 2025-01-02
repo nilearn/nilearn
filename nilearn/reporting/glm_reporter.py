@@ -79,8 +79,8 @@ def make_glm_report(
         A fitted first or second level model object.
         Must have the computed design matrix(ces).
 
-    contrasts : Dict[string, ndarray] or String or List[String] or ndarray or
-        List[ndarray]
+    contrasts : Dict[:obj:`str`, ndarray] or :obj:`str` \
+        or List[:obj:`str`] or ndarray or List[ndarray]
 
         Contrasts information for a first or second level model.
 
@@ -124,7 +124,7 @@ def make_glm_report(
     cluster_threshold : int, default=0
         Cluster size threshold, in voxels.
 
-    height_control : string, default='fpr'
+    height_control : :obj`str`, default='fpr'
         false positive control meaning of cluster forming
         threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or None.
 
@@ -141,7 +141,7 @@ def make_glm_report(
 
     %(cut_coords)s
 
-    display_mode : string, optional
+    display_mode : :obj`str`, optional
         Default is 'z' if plot_type is 'slice'; '
         ortho' if plot_type is 'glass'.
 

@@ -128,10 +128,10 @@ def mfista(
         Function called on every iteration. If it returns True, then the loop
         breaks.
 
-    max_iter : integer, default=1000
+    max_iter : :obj`int`, default=1000
         Maximum number of iterations for the solver.
 
-    verbose : integer, default=2
+    verbose : :obj`int`, default=2
         Indicate the level of verbosity.
 
     Returns

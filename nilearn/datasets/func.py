@@ -1075,26 +1075,26 @@ def fetch_abide_pcp(
         according to the CSV phenotypic file. Some examples of filters are
         indicated below.
 
-    SUB_ID : list of integers in [50001, 50607], optional
+    SUB_ID : list of :obj:`int` in [50001, 50607], optional
         Ids of the subjects to be loaded.
 
-    DX_GROUP : integer in {1, 2}, optional
+    DX_GROUP : :obj`int` in {1, 2}, optional
         1 is autism, 2 is control.
 
-    DSM_IV_TR : integer in [0, 4], optional
+    DSM_IV_TR : :obj`int` in [0, 4], optional
         O is control, 1 is autism, 2 is Asperger, 3 is PPD-NOS,
         4 is Asperger or PPD-NOS.
 
     AGE_AT_SCAN : float in [6.47, 64], optional
         Age of the subject.
 
-    SEX : integer in {1, 2}, optional
+    SEX : :obj`int` in {1, 2}, optional
         1 is male, 2 is female.
 
-    HANDEDNESS_CATEGORY : string in {'R', 'L', 'Mixed', 'Ambi'}, optional
+    HANDEDNESS_CATEGORY : :obj:`str` in {'R', 'L', 'Mixed', 'Ambi'}, optional
         R = Right, L = Left, Ambi = Ambidextrous.
 
-    HANDEDNESS_SCORE : integer in [-100, 100], optional
+    HANDEDNESS_SCORE : :obj`int` in [-100, 100], optional
         Positive = Right, Negative = Left, 0 = Ambidextrous.
 
     Returns

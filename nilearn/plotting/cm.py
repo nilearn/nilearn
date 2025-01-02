@@ -119,11 +119,11 @@ def alpha_cmap(color, name="", alpha_min=0.5, alpha_max=1.0):
 
     Parameters
     ----------
-    color : (r, g, b), or a string
+    color : (r, g, b), or a :obj:`str`
         A triplet of floats ranging from 0 to 1, or a matplotlib
         color string.
 
-    name : string, default=''
+    name : :obj:`str` , default=''
         Name of the colormap.
 
     alpha_min : Float, default=0.5

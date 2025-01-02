@@ -2850,12 +2850,9 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
+    %(data_dir)s
 
-    verbose : int, default=1
-        Verbosity level (0 means no message).
+    %(verbose)s
 
     Returns
     -------
@@ -2893,12 +2890,9 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
+    %(data_dir)s
 
-    verbose : int, default=1
-        Verbosity level (0 means no message).
+    %(verbose)s
 
     Returns
     -------

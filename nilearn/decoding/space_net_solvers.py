@@ -527,7 +527,7 @@ def tvl1_solver(
     tol : float, default=1e-4
         Defines the tolerance for convergence.
 
-    loss : string
+    loss : :obj:`str` or None
         Loss model for regression. Can be "mse" (for squared loss) or
         "logistic" (for logistic loss).
 

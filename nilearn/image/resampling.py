@@ -829,7 +829,8 @@ def reorder_img(img, resample=None, copy_header=False):
         See :ref:`extracting_data`.
         Image to reorder.
 
-    resample : None or string in {'continuous', 'linear', 'nearest'}, optional
+    resample : None or :obj:`str` in {'continuous', 'linear', 'nearest'}, \
+        default=None
         If resample is None (default), no resampling is performed, the
         axes are only permuted.
         Otherwise resampling is performed and 'resample' will

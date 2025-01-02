@@ -4,7 +4,7 @@ import ast
 from pathlib import Path
 from typing import Literal
 
-FOLDERS_TO_SKIP = ["externals", "data", "input_data"]
+FOLDERS_TO_SKIP = ["externals", "data", "input_data", "tests", "_utils"]
 
 FILES_TO_SKIP = ["test_", "conftest"]
 
@@ -26,7 +26,7 @@ def list_modules(
     if files_to_skip is None:
         files_to_skip = FILES_TO_SKIP
 
-    if not skip_private:
+    if skip_private:
         files_to_skip += "_"
 
     modules = []

@@ -62,7 +62,7 @@ def search_light(
     groups : array-like, optional, (default None)
         group label for each sample for cross validation.
 
-    scoring : string or callable, optional
+    scoring : :obj:`str` or callable or None, optional
         The scoring strategy to use. See the scikit-learn documentation
         for possible values.
         If callable, it takes as arguments the fitted estimator, the
