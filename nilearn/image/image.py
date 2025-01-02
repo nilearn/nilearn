@@ -82,7 +82,7 @@ def high_variance_confounds(
     n_confounds : :obj:`int`, default=5
         Number of confounds to return.
 
-    percentile : :obj:`float`, default=2
+    percentile : :obj:`float`, default=2.0
         Highest-variance signals percentile to keep before computing the
         singular value decomposition, 0. <= `percentile` <= 100.
         `mask_img.sum() * percentile / 100` must be greater than `n_confounds`.
@@ -367,7 +367,7 @@ def crop_img(
         Image to be cropped (see :ref:`extracting_data` for a detailed
         description of the valid input types).
 
-    rtol : :obj:`float`, default=1e-8
+    rtol : :obj:`float`, default=1e-08
         relative tolerance (with respect to maximal absolute value of the
         image), under which values are considered negligeable and thus
         croppable.
@@ -1171,7 +1171,7 @@ def math_img(formula, copy_header_from=None, **imgs):
 
 
 def binarize_img(
-    img, threshold=0, mask_img=None, two_sided=True, copy_header=False
+    img, threshold=0.0, mask_img=None, two_sided=True, copy_header=False
 ):
     """Binarize an image such that its values are either 0 or 1.
 
@@ -1182,7 +1182,7 @@ def binarize_img(
     img : a 3D/4D Niimg-like object
         Image which should be binarized.
 
-    threshold : :obj:`float` or :obj:`str`
+    threshold : :obj:`float` or :obj:`str`, default=0.0
         If float, we threshold the image based on image intensities meaning
         voxels which have intensities greater than this value will be kept.
         The given value should be within the range of minimum and
@@ -1197,7 +1197,7 @@ def binarize_img(
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
-    two_sided : :obj:`bool`
+    two_sided : :obj:`bool`, default=True
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
 

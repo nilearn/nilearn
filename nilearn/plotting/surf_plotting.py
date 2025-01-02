@@ -2063,6 +2063,10 @@ def plot_surf_roi(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    %(vmin)s
+
+    %(vmax)s
+
     %(bg_on_data)s
 
     %(darkness)s

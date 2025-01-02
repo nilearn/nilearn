@@ -2548,7 +2548,7 @@ def fetch_neurovault(
         Images for which `image_filter(image_metadata)` is ``False``
         will be discarded.
 
-    mode : {'download_new', 'overwrite', 'offline'}
+    mode : {'download_new', 'overwrite', 'offline'}, default="download_new"
         When to fetch an image from the server rather than the local
         disk.
 

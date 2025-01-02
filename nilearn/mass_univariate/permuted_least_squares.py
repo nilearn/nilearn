@@ -425,7 +425,7 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    output_type : {'legacy', 'dict'}, optional
+    output_type : {'legacy', 'dict'}, default="legacy"
         Determines how outputs should be returned.
         The two options are:
 

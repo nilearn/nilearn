@@ -1941,6 +1941,9 @@ def iter_img(img, return_iterator=True):
     ----------
     imgs : SurfaceImage object
 
+    return_iterator : :obj:`bool`, default=True
+        Returns a list if set to False.
+
     Returns
     -------
     Iterator or list of  SurfaceImage

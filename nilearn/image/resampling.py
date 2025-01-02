@@ -409,7 +409,7 @@ def resample_img(
         Will be set to ``False`` if ``None`` is passed.
         The default value will be set to ``True`` for Nilearn >=0.13.0.
 
-    copy_header : :obj:`bool`
+    copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
         .. versionadded:: 0.11.0
@@ -837,7 +837,7 @@ def reorder_img(img, resample=None, copy_header=False):
         be passed as the 'interpolation' argument into
         resample_img.
 
-    copy_header : :obj:`bool`, default=None
+    copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
         .. versionadded:: 0.11.0

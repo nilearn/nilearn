@@ -104,21 +104,18 @@ def get_missing(docstring, default_args):
     missing = []
     in_desc = []
     for argname, argvalue in default_args.items():
-        if f"%({argname})s" in params:
+        if f"%({argname})s" in params or f"%({argname}0)s" in params:
             # Skip the generation for templated arguments.
             continue
 
         if argname not in params:
-            # missing.append((argname, "", argvalue))
-            continue
-
-        if argname == "y":
+            missing.append((argname, "", argvalue))
             continue
 
         # Match any of the following patterns:
         # arg : type, default.*value
         str_arg = str(argvalue)
-        if str_arg != "None":
+        if str_arg == "None":
             continue
         if "%" in argvalue:
             str_arg = str_arg.replace("%", "%%")
@@ -132,9 +129,9 @@ def get_missing(docstring, default_args):
         if not re.search(regex, type):
             missing.append((argname, type, argvalue))
 
-        # desc = "".join(params[argname].desc)
-        # if re.search(regex, desc):
-        #     in_desc.append((argname, desc, argvalue))
+        desc = "".join(params[argname].desc)
+        if re.search(regex, desc):
+            in_desc.append((argname, desc, argvalue))
 
     return missing, in_desc
 
