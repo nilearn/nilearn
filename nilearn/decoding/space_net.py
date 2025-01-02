@@ -331,10 +331,10 @@ def path_scores(
     alphas : :obj:`list` of :obj:`float`
         List of regularization parameters being considered.
 
-    train : array or :obj:`list` of :obj`int`:
+    train : array or :obj:`list` of :obj:`int`:
         List of indices for the train samples.
 
-    test : array or :obj:`list` of :obj`int`
+    test : array or :obj:`list` of :obj:`int`
         List of indices for the test samples.
 
     l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1];\
@@ -346,7 +346,7 @@ def path_scores(
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : :obj:`int`, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 

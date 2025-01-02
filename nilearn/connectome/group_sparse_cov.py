@@ -164,14 +164,14 @@ def group_sparse_covariance(
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    max_iter : int, default=50
+    max_iter : :obj:`int`, default=50
         maximum number of iterations.
 
     tol : positive :obj:`float` or None, default=1e-3
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
 
-    verbose : int, default=0
+    verbose : :obj:`int`, default=0
         verbosity level. Zero means "no message".
 
     probe_function : callable or None, optional
@@ -846,7 +846,7 @@ def group_sparse_covariance_path(
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
-    verbose : int, default=0
+    verbose : :obj:`int`, default=0
         verbosity level.
 
     tol, max_iter, debug, precisions_init :

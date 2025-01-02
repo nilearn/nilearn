@@ -103,7 +103,7 @@ def mfista(
     check_lipschitz : :obj:`bool`, default=False
         If True, check Lipschitz continuity of gradient of smooth part.
 
-    w_size : int
+    w_size : :obj:`int`
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
         accept a w such that w.shape = (w_size,).
 
@@ -128,10 +128,10 @@ def mfista(
         Function called on every iteration. If it returns True, then the loop
         breaks.
 
-    max_iter : :obj`int`, default=1000
+    max_iter : :obj:`int`, default=1000
         Maximum number of iterations for the solver.
 
-    verbose : :obj`int`, default=2
+    verbose : :obj:`int`, default=2
         Indicate the level of verbosity.
 
     Returns

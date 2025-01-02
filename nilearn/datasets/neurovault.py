@@ -1195,7 +1195,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         is supposed to contain the Neurosynth response for a
         particular image).
 
-    verbose : int, default=3
+    verbose : :obj:`int`, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     Keyword arguments are passed on to
@@ -2519,7 +2519,7 @@ def fetch_neurovault(
 
     Parameters
     ----------
-    max_images : int, default=100
+    max_images : :obj:`int`, default=100
         Maximum number of images to fetch.
 
     collection_terms : :obj:`dict` or None, default=None
@@ -2576,7 +2576,7 @@ def fetch_neurovault(
         method.
         Argument passed to nilearn.image.resample_img.
 
-    verbose : int, default=3
+    verbose : :obj:`int`, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     kwarg_image_filters
@@ -2782,7 +2782,7 @@ def fetch_neurovault_ids(
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    verbose : int, default=3
+    verbose : :obj:`int`, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     Returns

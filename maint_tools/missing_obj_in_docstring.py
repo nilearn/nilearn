@@ -26,9 +26,9 @@ VALUES = [
     "Tuple",
     # "dict",
     "Dict",
-    # "int", # 43
+    # "int",
     "Int",
-    "float",
+    # "float",
     "Float",
     # "str",
     "Bool",

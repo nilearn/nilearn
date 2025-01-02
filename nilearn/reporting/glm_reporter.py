@@ -124,7 +124,7 @@ def make_glm_report(
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
 
-    cluster_threshold : int, default=0
+    cluster_threshold : :obj:`int`, default=0
         Cluster size threshold, in voxels.
 
     height_control :  :obj:`str`, default='fpr'
@@ -158,7 +158,7 @@ def make_glm_report(
         'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
         'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
-    report_dims : Sequence[int, int], default=(1600, 800)
+    report_dims : Sequence[:obj:`int`, :obj:`int`], default=(1600, 800)
         Specifies width, height (in pixels) of report window within a notebook.
         Only applicable when inserting the report into a Jupyter notebook.
         Can be set after report creation using report.width, report.height.

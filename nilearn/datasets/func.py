@@ -56,7 +56,7 @@ def fetch_haxby(
     Parameters
     ----------
     %(data_dir)s
-    subjects : :obj:`list` or :obj:`tuple` or int, default=(2,)
+    subjects : :obj:`list` or :obj:`tuple` or :obj:`int`, default=(2,)
         Either a list of subjects or the number of subjects to load,
         from 1 to 6.
         By default, 2nd subject will be loaded.
@@ -271,7 +271,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    n_subjects : int, default=30
+    n_subjects : :obj:`int`, default=30
         The number of subjects to load from maximum of 40 subjects.
         By default, 30 subjects will be loaded. If None is given,
         all 40 subjects will be loaded.
@@ -680,7 +680,7 @@ def fetch_localizer_contrasts(
         - "visual click vs visual sentences"
         - "auditory&visual motor vs cognitive processing"
 
-    n_subjects : int or :obj:`list`, optional
+    n_subjects : :obj:`int` or :obj:`list`, optional
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
@@ -1078,23 +1078,23 @@ def fetch_abide_pcp(
     SUB_ID : :obj:`list` of :obj:`int` in [50001, 50607], optional
         Ids of the subjects to be loaded.
 
-    DX_GROUP : :obj`int` in {1, 2}, optional
+    DX_GROUP : :obj:`int` in {1, 2}, optional
         1 is autism, 2 is control.
 
-    DSM_IV_TR : :obj`int` in [0, 4], optional
+    DSM_IV_TR : :obj:`int` in [0, 4], optional
         O is control, 1 is autism, 2 is Asperger, 3 is PPD-NOS,
         4 is Asperger or PPD-NOS.
 
     AGE_AT_SCAN : :obj:`float` in [6.47, 64], optional
         Age of the subject.
 
-    SEX : :obj`int` in {1, 2}, optional
+    SEX : :obj:`int` in {1, 2}, optional
         1 is male, 2 is female.
 
     HANDEDNESS_CATEGORY : :obj:`str` in {'R', 'L', 'Mixed', 'Ambi'}, optional
         R = Right, L = Left, Ambi = Ambidextrous.
 
-    HANDEDNESS_SCORE : :obj`int` in [-100, 100], optional
+    HANDEDNESS_SCORE : :obj:`int` in [-100, 100], optional
         Positive = Right, Negative = Left, 0 = Ambidextrous.
 
     Returns

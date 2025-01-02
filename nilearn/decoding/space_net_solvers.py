@@ -517,10 +517,10 @@ def tvl1_solver(
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    max_iter : int, default=100
+    max_iter : :obj:`int`, default=100
         Defines the iterations for the solver.
 
-    prox_max_iter : int, default=5000
+    prox_max_iter : :obj:`int`, default=5000
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 

@@ -633,7 +633,7 @@ def fetch_oasis_vbm(
 
     Parameters
     ----------
-    n_subjects : int, optional
+    n_subjects : :obj:`int`, optional
         The number of subjects to load. If None is given, all the
         subjects are used.
 

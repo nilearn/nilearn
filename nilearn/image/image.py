@@ -1492,15 +1492,14 @@ def concat_imgs(
     dtype : numpy dtype, default=np.float32
         The dtype of the returned image.
 
-    ensure_ndim : :obj`int`, optional
+    ensure_ndim : :obj:`int`, optional
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 
     auto_resample : :obj:`bool`, default=False
         Converts all images to the space of the first one.
 
-    verbose : int, default=0
-        Controls the amount of verbosity (0 means no messages).
+    %(verbose0)s
 
     %(memory)s
 
