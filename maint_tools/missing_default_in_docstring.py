@@ -1,4 +1,8 @@
-"""Utility to find non-documented default value in docstrings."""
+"""Utility to find non-documented default value in docstrings.
+
+Also flags if default definition is in the description of the parameter
+instead of the type section.
+"""
 
 import ast
 import re
@@ -35,15 +39,21 @@ def check_def(ast_def, n_issues, filename):
 
     default_args = list_parameters_with_defaults(ast_def)
 
-    missing = get_missing(docstring, default_args)
+    missing, in_desc = get_missing(docstring, default_args)
 
-    n_issues += len(missing)
+    n_issues += len(missing) + len(in_desc)
 
-    # Log arguments with missing default values in documentation.
     if missing:
         print(f"{filename}:{ast_def.lineno} - {ast_def.name}")
         for k, d, v in missing:
             print(f" `{k} : {d[0:20]}...`[red] - missing `Default={v}`")
+
+    if in_desc:
+        print(f"{filename}:{ast_def.lineno} - {ast_def.name}")
+        for k, d, _ in in_desc:
+            print(
+                f" `{k} : {d[0:20]}...`[red] - Default found in description."
+            )
 
     return n_issues
 
@@ -76,31 +86,37 @@ def get_missing(docstring, default_args):
     params = {param.name: param for param in doc["Parameters"]}
 
     missing = []
+    in_desc = []
     for argname, argvalue in default_args.items():
         if f"%({argname})s" in params:
             # Skip the generation for templated arguments.
             continue
         if argname not in params:
             missing.append((argname, "", argvalue))
-        else:
-            desc = "".join(params[argname].desc)
-            # Match any of the following patterns:
-            # arg : type, default value
-            # arg : type, default=value
-            # arg : type, default: value
-            # arg : type, Default value
-            # arg : type, Default=value
-            # arg : type, Default: value
-            m = re.search(
-                r"(default|Default)(\s|:\s|=)(\'|\")?"
-                + re.escape(str(argvalue))
-                + r"(\'|\")?",
-                desc,
-            )
-            if not m:
-                missing.append((argname, desc, argvalue))
+            continue
 
-    return missing
+        # Match any of the following patterns:
+        # arg : type, default value
+        # arg : type, default=value
+        # arg : type, default: value
+        # arg : type, Default value
+        # arg : type, Default=value
+        # arg : type, Default: value
+        regex = (
+            r"(default|Default)(\s|:\s|=)(\'|\")?"
+            + re.escape(str(argvalue))
+            + r"(\'|\")?"
+        )
+
+        type = "".join(params[argname].type)
+        if not re.search(regex, type):
+            missing.append((argname, type, argvalue))
+
+        desc = "".join(params[argname].desc)
+        if re.search(regex, desc):
+            in_desc.append((argname, desc, argvalue))
+
+    return missing, in_desc
 
 
 if __name__ == "__main__":

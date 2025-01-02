@@ -9,8 +9,7 @@ from pathlib import Path
 from docstring_parser import parse
 from docstring_parser.common import DocstringStyle
 from rich import print
-
-from .utils import root_dir
+from utils import list_modules
 
 TARGET_STRINGS = [
     "Default=",
@@ -23,6 +22,32 @@ TARGET_STRINGS = [
     "Defaults to ",
 ]
 TARGET_STRINGS += [target.lower() for target in TARGET_STRINGS]
+
+
+def main():
+    """Update defaults."""
+    modules = list_modules
+
+    for file in modules:
+        with file.open() as f:
+            module = ast.parse(f.read())
+
+        check_functions(module.body, file)
+
+        class_definitions = [
+            node for node in module.body if isinstance(node, ast.ClassDef)
+        ]
+
+        for class_def in class_definitions:
+            print(
+                f"class: '{class_def.name}' "
+                f"in {file.resolve()}:{class_def.lineno}"
+            )
+
+            docstring = ast.get_docstring(class_def)
+            check_docstring(docstring, file, class_def.lineno)
+
+            check_functions(class_def.body, file)
 
 
 def check_docstring(docstring: str, file: Path, lineno: int) -> str:
@@ -117,32 +142,6 @@ def check_functions(body, file):
             print(f"function: '{node.name}' in {file.resolve()}:{node.lineno}")
             docstring = ast.get_docstring(node)
             docstring = check_docstring(docstring, file, node.lineno)
-
-
-def main():
-    """Update defaults."""
-    modules = (root_dir() / "nilearn").glob("**/*.py")
-
-    for file in modules:
-        with file.open() as f:
-            module = ast.parse(f.read())
-
-        check_functions(module.body, file)
-
-        class_definitions = [
-            node for node in module.body if isinstance(node, ast.ClassDef)
-        ]
-
-        for class_def in class_definitions:
-            print(
-                f"class: '{class_def.name}' "
-                f"in {file.resolve()}:{class_def.lineno}"
-            )
-
-            docstring = ast.get_docstring(class_def)
-            check_docstring(docstring, file, class_def.lineno)
-
-            check_functions(class_def.body, file)
 
 
 if __name__ == "__main__":

@@ -180,7 +180,6 @@ def fetch_atlas_craddock_2012(
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
     grp_mean : :obj:`bool`, default=True
         The choice of the :term:`parcellation` (with group_mean or without)
-        Default=True.
 
 
     Returns
