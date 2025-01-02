@@ -1,5 +1,6 @@
 docstring_parser
 kaleido
+libcst
 numpydoc
 pandas
 plotly
