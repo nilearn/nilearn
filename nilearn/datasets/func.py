@@ -1442,11 +1442,7 @@ def fetch_megatrawls_netmats(
     This data can be used to predict relationships between imaging data and
     non-imaging behavioral measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
-    datasets of 461 subjects. Full technical details in references.
-
-    More information available in :footcite:t:`Smith2015b`,
-    :footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
-    :footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
+    datasets of 461 subjects.
 
     Parameters
     ----------
@@ -1489,13 +1485,10 @@ def fetch_megatrawls_netmats(
 
         - 'description': data description
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
-    See description for terms & conditions on data usage.
+    For more information
+    see the :ref:`dataset description <megatrawls_maps>`.
 
     """
     url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
