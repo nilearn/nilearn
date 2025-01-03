@@ -15,6 +15,9 @@ from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import glm_reporter as glmr
 from nilearn.reporting import make_glm_report
+from nilearn.reporting.glm_reporter import (
+    _make_surface_glm_report,
+)
 
 
 @pytest.fixture()
@@ -315,3 +318,10 @@ def test_flm_generate_report_error_with_surface_data(
 
     with pytest.raises(NotImplementedError):
         make_glm_report(model, "c0")
+
+
+@pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
+def test_empty_reports(tmp_path, model):
+    report = _make_surface_glm_report(model())
+    report.save_as_html(tmp_path / "tmp.html")
+    assert (tmp_path / "tmp.html").exists()
