@@ -544,9 +544,7 @@ def mean_img(
         Images to be averaged over time (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
-    target_affine : :class:`numpy.ndarray`, optional
-        If specified, the image is resampled corresponding to this new affine.
-        target_affine can be a 3x3 or a 4x4 matrix.
+    %(target_affine)s
 
     target_shape : :obj:`tuple` or :obj:`list`, optional
         If specified, the image will be resized to match this new shape.

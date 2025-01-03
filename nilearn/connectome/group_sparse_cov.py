@@ -17,8 +17,8 @@ from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
 from sklearn.utils.extmath import fast_logdet
 
-from .._utils import CacheMixin, logger
-from .._utils.extmath import is_spd
+from nilearn._utils import CacheMixin, fill_doc, logger
+from nilearn._utils.extmath import is_spd
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -533,6 +533,7 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
     return tolerance_reached
 
 
+@fill_doc
 class GroupSparseCovariance(CacheMixin, BaseEstimator):
     """Covariance and precision matrix estimator.
 
@@ -557,14 +558,9 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
     verbose : int, default=0
         verbosity level. Zero means "no message".
 
-    memory : instance of joblib.Memory or string, default=None
-        Used to cache the masking process.
-        By default, no caching is done.
-        If a string is given, it is the path to the caching directory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
+    %(memory)s
 
-    memory_level : int, default=0
-        Caching aggressiveness. Higher values mean more caching.
+    %(memory_level)s
 
     Attributes
     ----------
@@ -955,6 +951,7 @@ class EarlyStopProbe:
         self.last_log_lik = log_lik
 
 
+@fill_doc
 class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
 
@@ -992,13 +989,9 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
     max_iter : integer, default=100
         maximum number of iterations in the final optimization.
 
-    verbose : integer, default=0
-        verbosity level. 0 means nothing is printed to the user.
+    %(verbose0)s
 
-    n_jobs : integer, default=1
-        maximum number of cpu cores to use. The number of cores actually used
-        at the same time cannot exceed the number of folds in folding strategy
-        (that is, the value of cv).
+    %(n_jobs)s
 
     debug : bool, default=False
         if True, activates some internal checks for consistency. Only useful

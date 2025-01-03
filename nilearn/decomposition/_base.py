@@ -301,9 +301,10 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         This parameter is passed to signal.clean. Please see the related
         documentation for details
 
-    target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(target_affine)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     target_shape : 3-tuple of integers, optional
         This parameter is passed to image.resample_img. Please see the

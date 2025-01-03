@@ -337,25 +337,20 @@ class FirstLevelModel(BaseGLM):
         In the case of surface analysis, passing None or False will lead to
         no masking.
 
-    target_affine : 3x3 or 4x4 matrix, or None, default=None
+    %(target_affine)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    target_shape : 3- :obj:`tuple` of :obj:`int`, or None, default=None
         This parameter is passed to nilearn.image.resample_img.
         Please see the related documentation for details.
 
-    target_shape : 3-tuple of :obj:`int`, or None, default=None
-        This parameter is passed to nilearn.image.resample_img.
-        Please see the related documentation for details.
     %(smoothing_fwhm)s
-    memory : :obj:`str` or pathlib.Path, default=None
-        Path to the directory used to cache the masking process
-        and the glm fit.
-        By default, no caching is done.
-        Creates instance of joblib.Memory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : :obj:`int` or None, default=None
-        Rough estimator of the amount of memory used by caching.
-        Higher value means more memory for caching.
+    %(memory)s
 
+    %(memory_level)s
 
     standardize : :obj:`bool`, default=False
         If standardize is True, the time-series are centered and normed:
@@ -375,15 +370,12 @@ class FirstLevelModel(BaseGLM):
     noise_model : {'ar1', 'ols'}, default='ar1'
         The temporal variance model.
 
-    verbose : :obj:`int`, default=0
-        Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints progress by computation of
+    %(verbose)s
+        If 1 prints progress by computation of
         each run. If 2 prints timing details of masker and GLM. If 3
         prints masker computation details.
 
-    n_jobs : :obj:`int`, default=1
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on.
+    %(n_jobs)s
 
     minimize_memory : :obj:`bool`, default=True
         Gets rid of some variables on the model fit results that are not
@@ -912,8 +904,9 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        contrast_def : str or array of shape (n_col) or list of (string or\
-                       array of shape (n_col))
+        contrast_def : :obj:`str` \
+                       or array of shape (n_col) or \
+                       list of (:obj:`str` or array of shape (n_col))
 
             where ``n_col`` is the number of columns of the design matrix,
             (one array per run). If only one array is provided when there

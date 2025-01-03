@@ -66,9 +66,10 @@ class CanICA(_MultiPCA):
     random_state : int or RandomState, optional
         Pseudo number generator state used for random sampling.
 
-    target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(target_affine)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     target_shape : 3-tuple of integers, optional
         This parameter is passed to image.resample_img. Please see the
@@ -103,22 +104,13 @@ class CanICA(_MultiPCA):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    memory : instance of joblib.Memory or string, default=None
-        Used to cache the masking process.
-        By default, no caching is done.
-        If a string is given, it is the path to the caching directory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
+    %(memory)s
 
-    memory_level : integer, default=0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+    %(memory_level)s
 
-    n_jobs : integer, default=1
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on.
+    %(n_jobs)s
 
-    verbose : integer, default=0
-        Indicate the level of verbosity. By default, nothing is printed
+    %(verbose0)s
 
     Attributes
     ----------

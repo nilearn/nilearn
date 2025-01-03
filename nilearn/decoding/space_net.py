@@ -554,10 +554,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : :obj:`str`, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default None)
+    loss : :obj:`str`, optional (default None)
         Loss to be used in the model. Must be an one of "mse", or "logistic".
 
     is_classif : bool, optional (default False)
@@ -1097,10 +1097,10 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : :obj:`str`, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default "logistic")
+    loss : :obj:`str`, optional (default "logistic")
         Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
     l1_ratios : float or list of floats in the interval [0, 1];\
@@ -1351,7 +1351,7 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : :obj:`str`, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
     l1_ratios : float or list of floats in the interval [0, 1];\
