@@ -8,15 +8,6 @@ Examples of GLM reports
 First level report
 ------------------
 
-Surface based reports
-^^^^^^^^^^^^^^^^^^^^^
-
-.. raw:: html
-   :file: flm_empty_surface.html
-
-.. raw:: html
-   :file: flm_localizer_surface.html
-
 ADHD
 ^^^^
 
