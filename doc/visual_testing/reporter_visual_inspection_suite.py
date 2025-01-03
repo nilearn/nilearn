@@ -325,17 +325,17 @@ def report_slm_oasis(build_type):
 
 def report_surface_glm(build_type):
     flm = FirstLevelModel(mask_img=SurfaceMasker())
-    report = flm.generate_report()
-    report.save_as_html(REPORTS_DIR / "flm_surf_empty.html")
+    report_flm_empty = flm.generate_report()
+    report_flm_empty.save_as_html(REPORTS_DIR / "flm_surf_empty.html")
 
     flm = SecondLevelModel(mask_img=SurfaceMasker())
-    report = flm.generate_report()
-    report.save_as_html(REPORTS_DIR / "slm_surf_empty.html")
+    report_slm_empty = flm.generate_report()
+    report_slm_empty.save_as_html(REPORTS_DIR / "slm_surf_empty.html")
 
     if build_type == "partial":
         _generate_dummy_html(filenames=["flm_surf.html"])
         _generate_dummy_html(filenames=["flm_surf.html"])
-        return None
+        return report_flm_empty, report_slm_empty
 
 
 # %%
