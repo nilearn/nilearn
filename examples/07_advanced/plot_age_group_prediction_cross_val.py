@@ -97,7 +97,7 @@ param_grid = [
 # We use random splits of the subjects into training/testing sets.
 # StratifiedShuffleSplit allows preserving the proportion of children in the
 # test set.
-from sklearn.model_selection import GridSearchCV, StratifiedShuffleSplit
+from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import LabelEncoder
 
 groups = [pheno["Child_Adult"] for pheno in development_dataset.phenotypic]
@@ -119,16 +119,16 @@ scores_std = gs.cv_results_["std_test_score"]
 
 # %%
 # display the results
-plt.figure(figsize=(6, 4))
+plt.figure(figsize=(6, 4), constrained_layout=True)
+
 positions = [0.1, 0.2, 0.3, 0.4]
 plt.barh(positions, mean_scores, align="center", height=0.05, xerr=scores_std)
-yticks = ["dummy"] + list(gs.cv_results_["param_connectivity__kind"].data[1:])
+yticks = ["dummy", *list(gs.cv_results_["param_connectivity__kind"].data[1:])]
 yticks = [t.replace(" ", "\n") for t in yticks]
 plt.yticks(positions, yticks)
 plt.xlabel("Classification accuracy")
 plt.gca().grid(True)
 plt.gca().set_axisbelow(True)
-plt.tight_layout()
 
 # %%
 # This is a small example to showcase nilearn features. In practice such
@@ -144,4 +144,4 @@ plt.show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

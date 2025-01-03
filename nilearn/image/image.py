@@ -11,36 +11,35 @@ import copy
 import itertools
 import warnings
 
-import nibabel
 import numpy as np
 from joblib import Memory, Parallel, delayed
+from nibabel import Nifti1Image, Nifti1Pair, load, spatialimages
 from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
-from .. import signal
-from .._utils import (
-    _repr_niimgs,
+from nilearn import signal
+from nilearn._utils import (
     as_ndarray,
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
     fill_doc,
     logger,
+    repr_niimgs,
 )
-from .._utils.exceptions import DimensionError
-from .._utils.helpers import (
+from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.helpers import (
     check_copy_header,
-    rename_parameters,
     stringify_path,
 )
-from .._utils.niimg import _get_data, safe_get_data
-from .._utils.niimg_conversions import (
+from nilearn._utils.niimg import _get_data, safe_get_data
+from nilearn._utils.niimg_conversions import (
     _index_img,
     check_same_fov,
     iter_check_niimg,
 )
-from .._utils.param_validation import check_threshold
-from .._utils.path_finding import resolve_globbing
+from nilearn._utils.param_validation import check_threshold
+from nilearn._utils.path_finding import resolve_globbing
 
 
 def get_data(img):
@@ -138,7 +137,7 @@ def _fast_smooth_array(arr):
 
     Only the first three dimensions of the array will be smoothed. The
     filter uses [0.2, 1, 0.2] weights in each direction and use a
-    normalisation to preserve the local average value.
+    normalization to preserve the local average value.
 
     Parameters
     ----------
@@ -160,10 +159,10 @@ def _fast_smooth_array(arr):
     """
     neighbor_weight = 0.2
     # 6 neighbors in 3D if not on an edge
-    nb_neighbors = 6
+    n_neighbors = 6
     # This scale ensures that a uniform array stays uniform
     # except on the array edges
-    scale = 1 + nb_neighbors * neighbor_weight
+    scale = 1 + n_neighbors * neighbor_weight
 
     # Need to copy because the smoothing is done in multiple statements
     # and there does not seem to be an easy way to do it in place
@@ -483,7 +482,7 @@ def _pad_array(array, pad_sizes):
 def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     from . import resampling
 
-    input_repr = _repr_niimgs(imgs, shorten=True)
+    input_repr = repr_niimgs(imgs, shorten=True)
 
     imgs = check_niimg(imgs)
     mean_data = safe_get_data(imgs)
@@ -502,7 +501,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     # TODO switch to force_resample=True
     # when bumping to version > 0.13
     mean_data = resampling.resample_img(
-        nibabel.Nifti1Image(mean_data, affine),
+        Nifti1Image(mean_data, affine),
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
@@ -719,7 +718,7 @@ def index_img(imgs, index):
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
     if hasattr(index, "values") and hasattr(index, "iloc"):
-        index = index.values.flatten()
+        index = index.to_numpy().flatten()
     return _index_img(imgs, index)
 
 
@@ -787,8 +786,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         Data to be stored in the image. If data dtype is a boolean, then data
         is cast to 'uint8' by default.
 
-    .. versionchanged:: 0.9.2
-        Changed default dtype casting of booleans from 'int8' to 'uint8'.
+        .. versionchanged:: 0.9.2
+            Changed default dtype casting of booleans from 'int8' to 'uint8'.
 
     affine : 4x4 :class:`numpy.ndarray`, optional
         Transformation matrix.
@@ -821,7 +820,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         has_affine = hasattr(ref_niimg, "affine")
     if not ((has_get_data or has_get_fdata) and has_affine):
         if is_str:
-            ref_niimg = nibabel.load(ref_niimg)
+            ref_niimg = load(ref_niimg)
         else:
             raise TypeError(
                 "The reference image should be a niimg."
@@ -837,7 +836,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if copy_header:
         header = copy.deepcopy(ref_niimg.header)
         try:
-            "something" in header  # noqa B015
+            "something" in header  # noqa: B015
         except TypeError:
             pass
         else:
@@ -854,10 +853,10 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
             if "cal_min" in header:
                 header["cal_min"] = np.min(data) if data.size > 0 else 0.0
     klass = ref_niimg.__class__
-    if klass is nibabel.Nifti1Pair:
+    if klass is Nifti1Pair:
         # Nifti1Pair is an internal class, without a to_filename,
         # we shouldn't return it
-        klass = nibabel.Nifti1Image
+        klass = Nifti1Image
     return klass(data, affine, header=header)
 
 
@@ -901,7 +900,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
 
         # Apply cluster threshold
         label_map = label(binarized, bin_struct)[0]
-        clust_ids = sorted(list(np.unique(label_map)[1:]))
+        clust_ids = sorted(np.unique(label_map)[1:])
         for c_val in clust_ids:
             if np.sum(label_map == c_val) < cluster_threshold:
                 arr[label_map == c_val] = 0
@@ -923,6 +922,49 @@ def threshold_img(
     Thresholding can be done based on direct image intensities or selection
     threshold with given percentile.
 
+    - If ``threshold`` is a :obj:`float`:
+
+      we threshold the image based on image intensities.
+
+      - When ``two_sided`` is True:
+
+        The given value should be within the range of minimum and maximum
+        intensity of the input image.
+        All instensities in the interval ``[-threshold, threshold]`` will be
+        set to zero.
+
+      - When ``two_sided`` is False:
+
+        - If the threshold is negative:
+
+          It should be greater than the minimum intensity of the input data.
+          All intensities greater than or equal to the specified threshold will
+          be set to zero.
+          All other instensities keep their original values.
+
+        - If the threshold is positive:
+
+          then it should be less than the maximum intensity of the input data.
+          All intensities less than or equal to the specified threshold will be
+          set to zero.
+          All other instensities keep their original values.
+
+    - If threshold is :obj:`str`:
+
+      The number part should be in interval ``[0, 100]``.
+      We threshold the image based on the score obtained using this percentile
+      on the image data.
+      The percentile rank is computed using
+      :func:`scipy.stats.scoreatpercentile`.
+
+      - When ``two_sided`` is True:
+
+        The score is calculated on the absolute values of data.
+
+      - When ``two_sided`` is False:
+
+        The score is calculated only on the non-negative values of data.
+
     .. versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
@@ -934,24 +976,17 @@ def threshold_img(
         Image containing statistical or atlas maps which should be thresholded.
 
     threshold : :obj:`float` or :obj:`str`
-        Voxels with intensities less than the requested threshold
-        will be set to zero.
-        Those with intensities greater or equal than the requested threshold
-        will keep their original value.
-        If float, we threshold the image based on image intensities.
-        The given value should be within the range of minimum and maximum
-        intensity of the input image.
-        If string, it should finish with percent sign e.g. "80%"
-        and we threshold based on the score obtained
-        using this percentile on the image data.
-        The given string should be within the range of "0%" to "100%".
-        The percentile rank is computed using
-        :func:`scipy.stats.scoreatpercentile`.
+        Threshold that is used to set certain voxel intensities to zero.
+        If threshold is float, it should be within the range of minimum and the
+        maximum intensity of the data.
+        If `two_sided` is True, threshold cannot be negative.
+        If threshold is :obj:`str`,
+        the given string should be within the range of "0%" to "100%".
 
     cluster_threshold : :obj:`float`, default=0
         Cluster size threshold, in voxels. In the returned thresholded map,
-        sets of connected voxels (``clusters``) with size smaller
-        than this number will be removed.
+        sets of connected voxels (``clusters``) with size smaller than this
+        number will be removed.
 
         .. versionadded:: 0.9.0
 
@@ -981,6 +1016,16 @@ def threshold_img(
     :class:`~nibabel.nifti1.Nifti1Image`
         Thresholded image of the given input image.
 
+    Raises
+    ------
+    ValueError
+        If threshold is of type str but is not a non-negative number followed
+        by the percent sign.
+        If threshold is a negative float and `two_sided` is True.
+    TypeError
+        If threshold is neither float nor a string in correct percentile
+        format.
+
     See Also
     --------
     nilearn.glm.threshold_stats_img :
@@ -998,6 +1043,8 @@ def threshold_img(
     img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
     affine = img.affine
 
+    img_data_for_cutoff = img_data
+
     if mask_img is not None:
         mask_img = check_niimg_3d(mask_img)
         if not check_same_fov(img, mask_img):
@@ -1013,21 +1060,30 @@ def threshold_img(
             )
 
         mask_data, _ = masking.load_mask_img(mask_img)
+
+        # Take only points that are within the mask to check for threshold
+        img_data_for_cutoff = img_data_for_cutoff[mask_data != 0.0]
+
         # Set as 0 for the values which are outside of the mask
         img_data[mask_data == 0.0] = 0.0
 
     cutoff_threshold = check_threshold(
         threshold,
-        img_data,
+        img_data_for_cutoff,
         percentile_func=scoreatpercentile,
         name="threshold",
+        two_sided=two_sided,
     )
 
     # Apply threshold
     if two_sided:
-        img_data[np.abs(img_data) < cutoff_threshold] = 0.0
+        img_data[
+            (-cutoff_threshold <= img_data) & (img_data <= cutoff_threshold)
+        ] = 0.0
+    elif cutoff_threshold >= 0:
+        img_data[img_data <= cutoff_threshold] = 0.0
     else:
-        img_data[img_data < cutoff_threshold] = 0.0
+        img_data[img_data >= cutoff_threshold] = 0.0
 
     # Expand to 4D to support both 3D and 4D
     expand_to_4d = img_data.ndim == 3
@@ -1133,7 +1189,8 @@ def math_img(formula, copy_header_from=None, **imgs):
         exc.args = (
             "Input images cannot be compared, "
             f"you provided '{imgs.values()}',",
-        ) + exc.args
+            *exc.args,
+        )
         raise
 
     # Computing input data as a dictionary of numpy arrays. Keep a reference
@@ -1152,23 +1209,22 @@ def math_img(formula, copy_header_from=None, **imgs):
     except Exception as exc:
         exc.args = (
             f"Input formula couldn't be processed, you provided '{formula}',",
-        ) + exc.args
+            *exc.args,
+        )
         raise
 
-    # check whether to copy header from one of the input images
-    if copy_header_from is not None:
-        niimg = check_niimg(imgs[copy_header_from])
-        # only copy the header if the result and the input image to copy the
-        # header from have the same shape
-        if result.ndim != niimg.ndim:
-            raise ValueError(
-                "Cannot copy the header. "
-                "The result of the formula has a different number of "
-                "dimensions than the image to copy the header from."
-            )
-        return new_img_like(niimg, result, niimg.affine, copy_header=True)
-    else:
+    if copy_header_from is None:
         return new_img_like(niimg, result, niimg.affine)
+    niimg = check_niimg(imgs[copy_header_from])
+    # only copy the header if the result and the input image to copy the
+    # header from have the same shape
+    if result.ndim != niimg.ndim:
+        raise ValueError(
+            "Cannot copy the header. "
+            "The result of the formula has a different number of "
+            "dimensions than the image to copy the header from."
+        )
+    return new_img_like(niimg, result, niimg.affine, copy_header=True)
 
 
 def binarize_img(
@@ -1254,7 +1310,6 @@ def binarize_img(
     )
 
 
-@rename_parameters({"sessions": "runs"}, "0.10.0")
 def clean_img(
     imgs,
     runs=None,
@@ -1362,10 +1417,10 @@ def clean_img(
     Notes
     -----
     Confounds removal is based on a projection on the orthogonal
-    of the signal space [:footcite:t:`Friston1994`].
+    of the signal space from :footcite:t:`Friston1994`.
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in [:footcite:t:`Lindquist2018`].
+    suggestions in :footcite:t:`Lindquist2018`.
 
     References
     ----------
@@ -1378,7 +1433,6 @@ def clean_img(
     """
     # Avoid circular import
     from .. import masking
-    from .image import new_img_like
 
     imgs_ = check_niimg_4d(imgs)
 
@@ -1578,7 +1632,7 @@ def concat_imgs(
     target_shape = first_niimg.shape[:3]
     if dtype is None:
         dtype = _get_data(first_niimg).dtype
-    data = np.ndarray(target_shape + (sum(lengths),), order="F", dtype=dtype)
+    data = np.ndarray((*target_shape, sum(lengths)), order="F", dtype=dtype)
     cur_4d_index = 0
     for index, (size, niimg) in enumerate(
         zip(
@@ -1656,15 +1710,15 @@ def copy_img(img):
 
     Parameters
     ----------
-    img: image
+    img : image
         nibabel SpatialImage object to copy.
 
     Returns
     -------
-    img_copy: image
+    img_copy : image
         copy of input (data, affine and header)
     """
-    if not isinstance(img, nibabel.spatialimages.SpatialImage):
+    if not isinstance(img, spatialimages.SpatialImage):
         raise ValueError("Input value is not an image")
     return new_img_like(
         img,

@@ -1,7 +1,7 @@
 """Utility functions for testing load_confounds."""
 
 import json
-import os
+from pathlib import Path
 
 import pandas as pd
 
@@ -54,13 +54,11 @@ img_file_patterns = {
 def get_testdata_path(non_steady_state=True, fmriprep_version="1.4.x"):
     """Get file path for the confound regressors."""
     derivative = "regressors" if fmriprep_version != "21.x.x" else "timeseries"
-    path_data = os.path.join(
-        os.path.dirname(load_confounds_utils.__file__), "data"
-    )
+    path_data = Path(load_confounds_utils.__file__).parent / "data"
     suffix = "test-v21" if fmriprep_version == "21.x.x" else "test"
     if non_steady_state:
         return [
-            os.path.join(path_data, filename)
+            path_data / filename
             for filename in [
                 f"{suffix}_desc-confounds_{derivative}.tsv",
                 f"{suffix}_desc-confounds_{derivative}.json",
@@ -68,7 +66,7 @@ def get_testdata_path(non_steady_state=True, fmriprep_version="1.4.x"):
         ]
     else:
         return [
-            os.path.join(path_data, filename)
+            path_data / filename
             for filename in [
                 f"no_nonsteady_desc-confounds_{derivative}.tsv",
                 f"test_desc-confounds_{derivative}.json",
@@ -96,7 +94,7 @@ def create_tmp_filepath(
             }
         }
 
-    """Create test files in temporary directory."""
+    # create test files in temporary directory
     derivative = "regressors" if fmriprep_version == "1.2.x" else "timeseries"
 
     # confound files
@@ -121,7 +119,7 @@ def create_tmp_filepath(
         )
         tmp_meta = base_path / confounds_sidecar
         conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
-        with open(tmp_meta, "w") as file:
+        with tmp_meta.open("w") as file:
             json.dump(meta, file, indent=2)
 
     # image data
@@ -154,7 +152,7 @@ def get_legal_confound(non_steady_state=True, fmriprep_version="1.4.x"):
         non_steady_state=non_steady_state, fmriprep_version=fmriprep_version
     )
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
-    with open(meta) as file:
+    with meta.open() as file:
         meta = json.load(file)
     return conf, meta
 

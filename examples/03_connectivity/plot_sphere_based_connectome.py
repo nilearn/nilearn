@@ -49,7 +49,7 @@ labels = [
 #
 # We can compute the mean signal within **spheres** of a fixed radius
 # around a sequence of (x, y, z) coordinates with the object
-# :class:`nilearn.maskers.NiftiSpheresMasker`.
+# :class:`~nilearn.maskers.NiftiSpheresMasker`.
 # The resulting signal is then prepared by the masker object: Detrended,
 # band-pass filtered and **standardized to 1 variance**.
 
@@ -94,6 +94,8 @@ report
 # -------------------
 import matplotlib.pyplot as plt
 
+plt.figure(constrained_layout=True)
+
 for time_serie, label in zip(time_series.T, labels):
     plt.plot(time_serie, label=label)
 
@@ -101,12 +103,11 @@ plt.title("Default Mode Network Time Series")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
 plt.legend()
-plt.tight_layout()
 
 # %%
 # Compute partial correlation matrix
 # -----------------------------------
-# Using object :class:`nilearn.connectome.ConnectivityMeasure`:
+# Using object :class:`~nilearn.connectome.ConnectivityMeasure`:
 # its default covariance estimator is Ledoit-Wolf,
 # allowing to obtain accurate partial correlations.
 
@@ -147,8 +148,8 @@ plotting.show()
 # %%
 # 3D visualization in a web browser
 # ---------------------------------
-# An alternative to :func:`nilearn.plotting.plot_connectome` is to use
-# :func:`nilearn.plotting.view_connectome`, which gives more interactive
+# An alternative to :func:`~nilearn.plotting.plot_connectome` is to use
+# :func:`~nilearn.plotting.view_connectome`, which gives more interactive
 # visualizations in a web browser. See :ref:`interactive-connectome-plotting`
 # for more details.
 
@@ -174,7 +175,7 @@ view
 #
 # First we fetch the coordinates of the Power atlas
 
-power = datasets.fetch_coords_power_2011(legacy_format=False)
+power = datasets.fetch_coords_power_2011()
 print(f"Power atlas comes with {power.keys()}.")
 
 # %%
@@ -182,7 +183,7 @@ print(f"Power atlas comes with {power.keys()}.")
 #
 #     You can retrieve the coordinates for any atlas, including atlases
 #     not included in nilearn, using
-#     :func:`nilearn.plotting.find_parcellation_cut_coords`.
+#     :func:`~nilearn.plotting.find_parcellation_cut_coords`.
 
 # %%
 # Compute within spheres averaged time-series
@@ -225,11 +226,7 @@ print(f"time series has {timeseries.shape[0]} samples")
 # %%
 # in which situation the graphical lasso **sparse inverse covariance**
 # estimator captures well the covariance **structure**.
-try:
-    from sklearn.covariance import GraphicalLassoCV
-except ImportError:
-    # for Scitkit-Learn < v0.20.0
-    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
+from sklearn.covariance import GraphicalLassoCV
 
 covariance_estimator = GraphicalLassoCV(cv=3, verbose=1)
 
@@ -249,8 +246,6 @@ print(f"Covariance matrix has shape {matrix.shape}.")
 # We use `:func: nilearn.plotting.plot_matrix`
 # to visualize our correlation matrix
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
-from nilearn import plotting
-
 plotting.plot_matrix(
     matrix,
     vmin=-1.0,
@@ -331,7 +326,7 @@ plotting.plot_markers(
 # -------------------------------------------
 #
 # We repeat the same steps for Dosenbach's atlas.
-dosenbach = datasets.fetch_coords_dosenbach_2010(legacy_format=False)
+dosenbach = datasets.fetch_coords_dosenbach_2010()
 
 coords = np.vstack(
     (
@@ -427,11 +422,11 @@ plotting.show()
 #
 # .. footbibliography::
 #
-# See also
-# --------
+# .. seealso::
 #
 #   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #
-#   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py` # noqa
+#   * :ref:`sphx_glr_auto_examples_03_connectivity\
+#     _plot_multi_subject_connectome.py`
 
 # sphinx_gallery_dummy_images=7

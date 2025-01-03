@@ -140,7 +140,7 @@ different heuristics to find cutting coordinates.
 
    To avoid this, you must close the plot as follow:
 
-   .. code-block:: default
+   .. code-block:: python
 
      from nilearn import plotting
      display = plotting.plot_stat_map(img)
@@ -298,7 +298,7 @@ functions. Indeed, these return a display object, such as the
 :class:`nilearn.plotting.displays.OrthoSlicer`. This object represents the
 plot, and has methods to add overlays, contours or edge maps:
 
-.. code-block:: default
+.. code-block:: python
 
         display = plotting.plot_epi(...)
 
@@ -382,7 +382,7 @@ To display the figure when running a script, you need to call
 :func:`nilearn.plotting.show` (this is just an alias to
 :func:`matplotlib.pyplot.show`):
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting
      plotting.show()
@@ -390,7 +390,7 @@ To display the figure when running a script, you need to call
 The simplest way to output an image file from the plotting functions is
 to specify the ``output_file`` argument:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting
      plotting.plot_stat_map(img, output_file='pretty_brain.png')
@@ -403,7 +403,7 @@ function returns None.
 The display object returned by the plotting function has a savefig method
 that can be used to save the plot to an image file:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting
      display = plotting.plot_stat_map(img)
@@ -459,8 +459,8 @@ Nilearn also has functions for making interactive plots that can be
 seen in a web browser. There are two kinds of plots for which an
 interactive mode is available:
 
-    - :ref:`interactive-surface-plotting`
-    - :ref:`interactive-connectome-plotting`
+- :ref:`interactive-surface-plotting`
+- :ref:`interactive-connectome-plotting`
 
 .. versionadded:: 0.5
 
@@ -480,28 +480,30 @@ interactive mode is available:
 For 3D surface plots of statistical maps or surface atlases, you have different options
 depending on what you want to do and the packages you have installed.
 
-    - If you have `plotly`_ installed: Since Nilearn ``0.9.0``, it is possible to use
-      `plotly`_ as the plotting engine in most surface plotting functions of Nilearn like
-      :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`. By default
-      these functions use `matplotlib`_ as the plotting engine which results in
-      non-interactive plots. By setting ``engine='plotly'``, an interactive version of
-      these plots will be automatically opened in your web browser. In addition, if you
-      have `kaleido`_ installed, you can save the plots automatically to png files.
-      Finally, the `plotly`_ figure returned can be further customized in order to make
-      more elaborate plots.
+-    If you have `plotly`_ installed
 
-    - If you don't have `plotly`_:
+     Since Nilearn ``0.9.0``, it is possible to use
+     `plotly`_ as the plotting engine in most surface plotting functions of Nilearn like
+     :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`. By default
+     these functions use `matplotlib`_ as the plotting engine which results in
+     non-interactive plots. By setting ``engine='plotly'``, an interactive version of
+     these plots will be automatically opened in your web browser. In addition, if you
+     have `kaleido`_ installed, you can save the plots automatically to png files.
+     Finally, the `plotly`_ figure returned can be further customized in order to make
+     more elaborate plots.
 
-        - If you don't need to save the plots to png and want to interactively visualize
+-    If you don't have `plotly`_
+
+     -    If you don't need to save the plots to png and want to interactively visualize
           the surface, you can rely on ``view`` functions:
 
-            - :func:`view_img_on_surf` which takes as input a volume statistical map and
-              projects it on the cortical surface before making a 3D interactive plot.
+          -    :func:`view_img_on_surf` which takes as input a volume statistical map and
+               projects it on the cortical surface before making a 3D interactive plot.
 
-            - :func:`view_surf` which takes as input a surface map and a cortical mesh
-              and produces a 3D interactive plot on the cortical surface.
+          -    :func:`view_surf` which takes as input a surface map and a cortical mesh
+               and produces a 3D interactive plot on the cortical surface.
 
-        - The last option is to rely on surface plotting functions (:func:`plot_surf`,
+     -    The last option is to rely on surface plotting functions (:func:`plot_surf`,
           :func:`plot_surf_stat_map`, :func:`plot_surf_roi`...) with the default
           `matplotlib`_ plotting engine. In this case, you will be able to save to png
           but you will lose the interactivity of the plots.
@@ -512,7 +514,7 @@ depending on what you want to do and the packages you have installed.
 You can use :func:`view_img_on_surf` to display a 3D statistical map projected on the
 cortical surface:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting, datasets
      img = datasets.fetch_localizer_button_task()['tmap']
@@ -526,7 +528,7 @@ functions):
 
 If you are not using a notebook, you can open the plot in a browser like this:
 
-.. code-block:: default
+.. code-block:: python
 
      view.open_in_browser()
 
@@ -537,7 +539,7 @@ This will open this 3D plot in your web browser:
 
 Or you can save it to an html file:
 
-.. code-block:: default
+.. code-block:: python
 
      view.save_as_html("surface_plot.html")
 
@@ -548,7 +550,7 @@ Or you can save it to an html file:
 You can use :func:`view_surf` to display a 3D surface statistical map over
 a cortical mesh:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting, datasets
      destrieux = datasets.fetch_atlas_surf_destrieux()
@@ -568,7 +570,7 @@ If you have `plotly`_ installed, you can also use :func:`plot_surf_stat_map` wit
 the ``engine`` parameter set to "plotly" to display a statistical map over a
 cortical mesh:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting, datasets, surface
      fsaverage = datasets.fetch_surf_fsaverage()
@@ -594,7 +596,7 @@ use :func:`view_markers`.
 
 :func:`view_connectome`: 3D plot of a connectome:
 
-.. code-block:: default
+.. code-block:: python
 
      view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')
      view.open_in_browser()
@@ -610,7 +612,7 @@ use :func:`view_markers`.
 
 :func:`view_markers`: showing markers (e.g. seed locations) in 3D:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting
      dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
@@ -629,7 +631,7 @@ Interactive visualization of statistical map slices
 
 :func:`view_img`: open stat map in a Brainsprite viewer (https://github.com/simexp/brainsprite.js):
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import plotting, datasets
      img = datasets.fetch_localizer_button_task()['tmap']

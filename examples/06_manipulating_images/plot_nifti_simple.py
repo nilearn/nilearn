@@ -74,7 +74,6 @@ components_masked = ica.fit_transform(fmri_masked.T).T
 components = nifti_masker.inverse_transform(components_masked)
 
 from nilearn.image import index_img
-from nilearn.image.image import mean_img
 
 # Visualize results
 from nilearn.plotting import plot_stat_map, show

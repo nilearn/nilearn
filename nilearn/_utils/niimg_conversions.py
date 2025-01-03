@@ -2,10 +2,10 @@
 
 import glob
 import itertools
-import os.path
 
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 import warnings
+from pathlib import Path
 
 import numpy as np
 from joblib import Memory
@@ -21,7 +21,8 @@ from .path_finding import resolve_globbing
 
 def _check_fov(img, affine, shape):
     """Return True if img's field of view correspond to given \
-    shape and affine, False elsewhere."""
+    shape and affine, False elsewhere.
+    """
     img = check_niimg(img)
     return img.shape[:3] == shape and np.allclose(img.affine, affine)
 
@@ -38,7 +39,7 @@ def check_same_fov(*args, **kwargs):
     Parameters
     ----------
     args : images
-        Images to be checked. Images passed without keywords will be labelled
+        Images to be checked. Images passed without keywords will be labeled
         as img_#1 in the error message (replace 1 with the appropriate index).
 
     kwargs : images
@@ -56,11 +57,11 @@ def check_same_fov(*args, **kwargs):
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
         kwargs.items(), 2
     ):
-        if not a_img.shape[:3] == b_img.shape[:3]:
+        if a_img.shape[:3] != b_img.shape[:3]:
             errors.append((a_name, b_name, "shape"))
         if not np.allclose(a_img.affine, b_img.affine):
             errors.append((a_name, b_name, "affine"))
-    if len(errors) > 0 and raise_error:
+    if errors and raise_error:
         raise ValueError(
             "Following field of view errors were detected:\n"
             + "\n".join(
@@ -70,7 +71,7 @@ def check_same_fov(*args, **kwargs):
                 ]
             )
         )
-    return len(errors) == 0
+    return not errors
 
 
 def _index_img(img, index):
@@ -154,53 +155,47 @@ def iter_check_niimg(
                     resample_to_first_img = True
 
             if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
-                if target_fov is not None:
-                    from nilearn import image  # we avoid a circular import
-
-                    if resample_to_first_img:
-                        warnings.warn(
-                            "Affine is different across subjects."
-                            " Realignement on first subject "
-                            "affine forced"
-                        )
-                    niimg = cache(
-                        image.resample_img,
-                        memory,
-                        func_memory_level=2,
-                        memory_level=memory_level,
-                    )(
-                        niimg,
-                        target_affine=ref_fov[0],
-                        target_shape=ref_fov[1],
-                        copy_header=True,
-                    )
-                else:
+                if target_fov is None:
                     raise ValueError(
-                        "Field of view of image #%d is different from "
+                        f"Field of view of image #{i} is different from "
                         "reference FOV.\n"
-                        "Reference affine:\n%r\nImage affine:\n%r\n"
-                        "Reference shape:\n%r\nImage shape:\n%r\n"
-                        % (
-                            i,
-                            ref_fov[0],
-                            niimg.affine,
-                            ref_fov[1],
-                            niimg.shape,
-                        )
+                        f"Reference affine:\n{ref_fov[0]!r}\n"
+                        f"Image affine:\n{niimg.affine!r}\n"
+                        f"Reference shape:\n{ref_fov[1]!r}\n"
+                        f"Image shape:\n{niimg.shape!r}\n"
                     )
+                from nilearn import image  # we avoid a circular import
+
+                if resample_to_first_img:
+                    warnings.warn(
+                        "Affine is different across subjects."
+                        " Realignement on first subject "
+                        "affine forced"
+                    )
+                niimg = cache(
+                    image.resample_img,
+                    memory,
+                    func_memory_level=2,
+                    memory_level=memory_level,
+                )(
+                    niimg,
+                    target_affine=ref_fov[0],
+                    target_shape=ref_fov[1],
+                    copy_header=True,
+                    force_resample=False,  # TODO update to True in 0.13.0
+                )
             yield niimg
         except DimensionError as exc:
             # Keep track of the additional dimension in the error
             exc.increment_stack_counter()
             raise
         except TypeError as exc:
-            img_name = ""
-            if isinstance(niimg, str):
-                img_name = f" ({niimg}) "
+            img_name = f" ({niimg}) " if isinstance(niimg, (str, Path)) else ""
 
             exc.args = (
                 f"Error encountered while loading image #{i}{img_name}",
-            ) + exc.args
+                *exc.args,
+            )
             raise
 
     # Raising an error if input generator is empty.
@@ -280,29 +275,32 @@ def check_niimg(
 
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
-            # Ascending sorting + expand user path
-            filenames = sorted(glob.glob(os.path.expanduser(niimg)))
+            # Expand user path
+            expanded_niimg = str(Path(niimg).expanduser())
+            # Ascending sorting
+            filenames = sorted(glob.glob(expanded_niimg))
 
             # processing filenames matching globbing expression
             if len(filenames) >= 1 and glob.has_magic(niimg):
                 niimg = filenames  # iterable case
             # niimg is an existing filename
-            elif [niimg] == filenames:
+            elif [expanded_niimg] == filenames:
                 niimg = filenames[0]
             # No files found by glob
             elif glob.has_magic(niimg):
                 # No files matching the glob expression, warn the user
                 message = (
                     "No files matching the entered niimg expression: "
-                    "'%s'.\n You may have left wildcards usage "
-                    "activated: please set the global constant "
-                    "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
-                    "deactivate this behavior."
-                ) % niimg
+                    f"'{niimg}'.\n"
+                    "You may have left wildcards usage activated: "
+                    "please set the global constant "
+                    "'nilearn.EXPAND_PATH_WILDCARDS' to False "
+                    "to deactivate this behavior."
+                )
                 raise ValueError(message)
             else:
                 raise ValueError(f"File not found: '{niimg}'")
-        elif not os.path.exists(niimg):
+        elif not Path(niimg).exists():
             raise ValueError(f"File not found: '{niimg}'")
 
     # in case of an iterable
@@ -325,7 +323,7 @@ def check_niimg(
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
     if atleast_4d and len(niimg.shape) == 3:
         data = _get_data(niimg).view()
-        data.shape = data.shape + (1,)
+        data.shape = (*data.shape, 1)
         niimg = new_img_like(niimg, data, niimg.affine)
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:

@@ -75,7 +75,7 @@ PAGES_TO_COLLECT = range(1, 30)
 UPDATE_TSV = True
 
 # used by set_python_version to filter jobs by their python version
-EXPECTED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12"]
+EXPECTED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
 
 def main(args=sys.argv) -> None:
@@ -93,22 +93,26 @@ def main(args=sys.argv) -> None:
         workflow_id=TEST_WORKFLOW_ID,
     )
 
-    df = pd.read_csv(
+    test_runs_timing = pd.read_csv(
         output_file,
         sep="\t",
         parse_dates=["started_at", "completed_at"],
     )
 
-    df["duration"] = (df["completed_at"] - df["started_at"]) / pd.Timedelta(
-        minutes=1
+    test_runs_timing["duration"] = (
+        test_runs_timing["completed_at"] - test_runs_timing["started_at"]
+    ) / pd.Timedelta(minutes=1)
+    test_runs_timing["python"] = test_runs_timing["name"].apply(
+        _set_python_version
     )
-    df["python"] = df["name"].apply(_set_python_version)
-    df["OS"] = df["name"].apply(_set_os)
-    df["dependencies"] = df["name"].apply(_set_dependencies)
+    test_runs_timing["OS"] = test_runs_timing["name"].apply(_set_os)
+    test_runs_timing["dependencies"] = test_runs_timing["name"].apply(
+        _set_dependencies
+    )
 
-    print(df)
+    print(test_runs_timing)
 
-    _plot_test_job_durations(df, output_file)
+    _plot_test_job_durations(test_runs_timing, output_file)
 
     # %%
     DOC_WORKFLOW_ID = "37349438"
@@ -122,22 +126,22 @@ def main(args=sys.argv) -> None:
         event_type="push",
     )
 
-    df = pd.read_csv(
+    doc_runs_timing = pd.read_csv(
         output_file,
         sep="\t",
         parse_dates=["started_at", "completed_at"],
     )
 
-    df["duration"] = (df["completed_at"] - df["started_at"]) / pd.Timedelta(
-        minutes=1
-    )
+    doc_runs_timing["duration"] = (
+        doc_runs_timing["completed_at"] - doc_runs_timing["started_at"]
+    ) / pd.Timedelta(minutes=1)
 
-    df = df[df["name"] == "build_docs"]
-    df = df[df["duration"] < 360]
+    doc_runs_timing = doc_runs_timing[doc_runs_timing["name"] == "build_docs"]
+    doc_runs_timing = doc_runs_timing[doc_runs_timing["duration"] < 360]
 
-    print(df)
+    print(doc_runs_timing)
 
-    _plot_doc_job_durations(df, output_file)
+    _plot_doc_job_durations(doc_runs_timing, output_file)
 
 
 def _update_tsv(
@@ -145,7 +149,7 @@ def _update_tsv(
     update: bool,
     output_file: Path,
     workflow_id: str,
-    event_type: None | str = None,
+    event_type: str | None = None,
 ) -> None:
     """Update TSV containing run time of every workflow."""
     update_tsv = update if output_file.exists() else True
@@ -175,8 +179,7 @@ def _update_tsv(
         else:
             break
 
-    df = pd.DataFrame(jobs_data)
-    df.to_csv(output_file, sep="\t", index=False)
+    pd.DataFrame(jobs_data).to_csv(output_file, sep="\t", index=False)
 
 
 def _plot_test_job_durations(df: pd.DataFrame, output_file: Path) -> None:
@@ -276,25 +279,25 @@ def _set_dependencies(x: str) -> str:
     )
 
 
-def _get_auth(username: str, token_file: Path) -> None | tuple[str, str]:
+def _get_auth(username: str, token_file: Path) -> tuple[str, str] | None:
     """Get authentication with token."""
     token = None
 
     if token_file.exists():
-        with open(token_file) as f:
+        with token_file.open() as f:
             token = f.read().strip()
     else:
-        warnings.warn(f"Token file not found.\n{str(token_file)}")
+        warnings.warn(f"Token file not found.\n{token_file!s}", stacklevel=4)
 
     return None if username is None or token is None else (username, token)
 
 
 def _get_runs(
     workflow_id: str,
-    auth: None | tuple[str, str] = None,
+    auth: tuple[str, str] | None = None,
     page: int = 1,
     include_failed_runs: bool = True,
-    event_type: None | str = None,
+    event_type: str | None = None,
 ) -> list[dict[str, Any]]:
     """Get list of runs for a workflow.
 
@@ -319,14 +322,11 @@ def _get_runs(
     if event_type:
         runs = [run for run in runs if run["event"] in event_type]
 
-    conclusion = ["success"]
-    if include_failed_runs:
-        conclusion = ["success", "failure"]
-
+    conclusion = ["success", "failure"] if include_failed_runs else ["success"]
     return [run for run in runs if run["conclusion"] in conclusion]
 
 
-def _handle_request(url: str, auth: None | tuple[str, str]):
+def _handle_request(url: str, auth: tuple[str, str] | None):
     """Wrap request."""
     if isinstance(auth, tuple):
         response = requests.get(url, auth=auth)
@@ -345,7 +345,7 @@ def _handle_request(url: str, auth: None | tuple[str, str]):
 def _update_jobs_data(
     jobs_data: dict[str, list[str]],
     runs: list[dict[str, Any]],
-    auth: None | tuple[str, str] = None,
+    auth: tuple[str, str] | None = None,
 ) -> dict[str, list[str]]:
     """Collect info for each job in a run."""
     for run in runs:
@@ -354,8 +354,8 @@ def _update_jobs_data(
         content = _handle_request(run["jobs_url"], auth)
 
         for job in content.get("jobs", {}):
-            for key in jobs_data:
-                jobs_data[key].append(job[key])
+            for key, value in jobs_data.items():
+                value.append(job[key])
 
     return jobs_data
 

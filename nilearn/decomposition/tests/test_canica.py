@@ -5,6 +5,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition.canica import CanICA
@@ -34,7 +35,7 @@ def _make_data_from_components(
         this_data = np.dot(rng.normal(size=(40, 4)), components)
         this_data += 0.01 * rng.normal(size=this_data.shape)
         # Get back into 3D for CanICA
-        this_data = np.reshape(this_data, (40,) + shape)
+        this_data = np.reshape(this_data, (40, *shape))
         this_data = np.rollaxis(this_data, 0, 4)
         # Put the border of the image to zero, to mimic a brain image
         this_data[:5] = background[:5]
@@ -109,11 +110,49 @@ def canica_data():
     return _make_canica_test_data()[0]
 
 
-def test_threshold_bound_error():
+extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_estimators_unfitted",
+    "check_get_params_invariance",
+    "check_no_attributes_set_in_init",
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+    "check_parameters_default_constructible",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[CanICA()], extra_valid_checks=extra_valid_checks
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[CanICA()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+def test_threshold_bound_error(canica_data):
     """Test that an error is raised when the threshold is higher \
-    than the number of components."""
+    than the number of components.
+    """
     with pytest.raises(ValueError, match="Threshold must not be higher"):
-        CanICA(n_components=4, threshold=5.0)
+        canica = CanICA(n_components=4, threshold=5.0)
+        canica.fit(canica_data)
 
 
 def test_transform_and_fit_errors(canica_data, mask_img):
@@ -146,7 +185,7 @@ def test_percentile_range(rng, canica_data):
     """Test that a warning is given when thresholds are stressed."""
     edge_case = rng.integers(low=1, high=10)
 
-    # stess thresholding via edge case
+    # stress thresholding via edge case
     canica = CanICA(n_components=edge_case, threshold=float(edge_case))
 
     with pytest.warns(UserWarning, match="obtained a critical threshold"):
@@ -279,6 +318,19 @@ def test_with_globbing_patterns_with_single_subject(mask_img, tmp_path):
     assert components_img.shape, check_shape
 
 
+def test_with_globbing_patterns_with_single_subject_path(mask_img, tmp_path):
+    # single subject but as a Path object
+    data, *_ = _make_canica_test_data(n_subjects=1)
+    n_components = 3
+
+    canica = CanICA(n_components=n_components, mask=mask_img)
+
+    tmp_file = tmp_path / "tmp.nii.gz"
+    data[0].to_filename(tmp_file)
+
+    canica.fit(tmp_file)
+
+
 def test_with_globbing_patterns_with_multi_subjects(
     canica_data, mask_img, tmp_path
 ):
@@ -311,7 +363,7 @@ def test_canica_score(canica_data, mask_img):
     scores = canica.score(canica_data, per_component=False)
 
     assert scores <= 1
-    assert 0 <= scores
+    assert scores >= 0
 
     # Per component score
     scores = canica.score(canica_data, per_component=True)

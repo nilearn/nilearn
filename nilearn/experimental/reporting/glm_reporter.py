@@ -9,9 +9,8 @@ from string import Template
 import numpy as np
 from matplotlib import pyplot as plt
 
+from nilearn import plotting
 from nilearn._version import __version__
-from nilearn.experimental import plotting
-from nilearn.experimental.surface import SurfaceImage
 from nilearn.externals import tempita
 from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
@@ -29,6 +28,7 @@ from nilearn.reporting.utils import (
     coerce_to_dict,
     figure_to_png_base64,
 )
+from nilearn.surface import SurfaceImage
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
@@ -45,7 +45,6 @@ def _make_surface_glm_report(
     height_control="fpr",
     bg_img=None,
 ):
-
     if bg_img == "MNI152TEMPLATE":
         bg_img = None
 
@@ -101,7 +100,7 @@ def _make_surface_glm_report(
         cluster_table_details.update({"Height control": height_control})
         if alpha < 0.001:
             alpha = f"{Decimal(alpha):.2E}"
-        cluster_table_details.update({"\u03B1": alpha})
+        cluster_table_details.update({"\u03b1": alpha})
         cluster_table_details.update({"Threshold (computed)": threshold})
     else:
         cluster_table_details.update({"Height control": "None"})
@@ -132,7 +131,6 @@ def _make_surface_glm_report(
     contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
     if contrasts_dict is not None:
-
         statistical_maps = {}
         statistical_maps = {
             contrast_name: model.compute_contrast(
@@ -174,7 +172,7 @@ def _make_surface_glm_report(
     )
 
     css_file_path = CSS_PATH / "masker_report.css"
-    with open(css_file_path, encoding="utf-8") as css_file:
+    with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
     body = tpl.substitute(
@@ -198,11 +196,11 @@ def _make_surface_glm_report(
     head_template_path = (
         TEMPLATE_ROOT_PATH / "html" / "report_head_template.html"
     )
-    with open(head_template_path) as head_file:
+    with head_template_path.open() as head_file:
         head_tpl = Template(head_file.read())
 
     head_css_file_path = CSS_PATH / "head.css"
-    with open(head_css_file_path, encoding="utf-8") as head_css_file:
+    with head_css_file_path.open(encoding="utf-8") as head_css_file:
         head_css = head_css_file.read()
 
     report = HTMLReport(

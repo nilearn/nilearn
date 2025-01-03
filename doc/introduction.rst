@@ -5,12 +5,13 @@ Introduction
 What is ``nilearn``?
 ====================
 
-``nilearn`` is a package that makes it easy to use advanced machine learning techniques to analyze data acquired with MRI machines.
+``nilearn`` is a package that makes it easy to use advanced machine learning techniques
+to analyze data acquired with MRI machines.
 In particular, underlying machine learning problems include
 :ref:`decoding brain data <decoding>`,
 computing :ref:`brain parcellations <parcellating_brain>`,
 analyzing :ref:`functional connectivity <functional_connectomes>` and :ref:`connectomes <functional_connectomes>`,
-doing multi-voxel pattern analysis (MVPA) or :ref:`predictive modelling <decoding>`.
+doing multi-voxel pattern analysis (MVPA) or :ref:`predictive modeling <decoding>`.
 
 ``nilearn`` can readily be used on :ref:`task fMRI <decoding_intro>`,
 :ref:`resting-state <functional_connectomes>`, or
@@ -42,14 +43,14 @@ First steps with nilearn
 At this stage, you should have :ref:`installed <quickstart>` ``nilearn`` and opened a Jupyter notebook
 or an IPython / Python session.  First, load ``nilearn`` with
 
-.. code-block:: default
+.. code-block:: python
 
     import nilearn
 
 ``nilearn`` comes in with some data that are commonly used in neuroimaging.
 For instance, it comes with volumic template images of brains such as MNI:
 
-.. code-block:: default
+.. code-block:: python
 
     print(nilearn.datasets.MNI152_FILE_PATH)
 
@@ -62,7 +63,7 @@ Output:
 
 Let's have a look at this image:
 
-.. code-block:: default
+.. code-block:: python
 
     nilearn.plotting.plot_img(nilearn.datasets.MNI152_FILE_PATH)
 
@@ -259,17 +260,17 @@ Finding help
 On top of this guide, there is a lot of content available outside of ``nilearn``
 that could be of interest to new-comers:
 
-1. `An introduction to fMRI <https://www.cs.mtsu.edu/~xyang/fMRIHandBook.pdf>`_ by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
+1.  `Handbook of Functional MRI Data Analysis <https://www.cambridge.org/be/universitypress/subjects/statistics-probability/statistics-life-sciences-medicine-and-health/handbook-functional-mri-data-analysis>`_
+    by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
 
-2. (For French readers) `An introduction to cognitive neuroscience <https://psy3018.github.io/intro.html>`_ given at the University of Montréal.
+2.  The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.
+    While not specific to neuroimaging, it is often a recommended read.
 
-3. The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.  While not specific to neuroimaging, it is often a recommended read.
-
-4. (For Python beginners) A quick and gentle introduction to scientific computing with Python with the `scientififc Python lectures <https://lectures.scientific-python.org/>`_.
-Moreover, you can use ``nilearn`` with `Jupyter <https://jupyter.org/>`_ notebooks or
-`IPython <https://ipython.org/>`_ sessions. They provide an interactive
-environment that greatly facilitates debugging and visualisation.
-
+3.  (For Python beginners) A quick and gentle introduction to scientific computing
+    with Python with the `scientififc Python lectures <https://lectures.scientific-python.org/>`_.
+    Moreover, you can use ``nilearn`` with `Jupyter <https://jupyter.org/>`_ notebooks or
+    `IPython <https://ipython.org/>`_ sessions. They provide an interactive
+    environment that greatly facilitates debugging and visualization.
 
 Besides, you can find help on :neurostars:`neurostars <>` for questions
 related to ``nilearn`` and to computational neuroscience in general.
@@ -296,7 +297,7 @@ learning <decoding>` e.g. :footcite:t:`Mourao-miranda2012`.
 
 Using the prediction accuracy of a classifier
 to characterize relationships between brain images and stimuli. (e.g.
-:ref:`searchlight <searchlight>`) [:footcite:t:`Kriegeskorte2006`]
+:ref:`searchlight <searchlight>` and :footcite:t:`Kriegeskorte2006`)
 
 **Transfer learning**
 
@@ -312,7 +313,7 @@ From a statistical point of view, machine learning implements
 statistical estimation of models with a large number of parameters.
 Tricks pulled in machine learning (e.g. regularization) can
 make this estimation possible despite the usually
-small number of observations in the neuroimaging domain footcite:p:`Varoquaux2012`.
+small number of observations in the neuroimaging domain :footcite:p:`Varoquaux2012`.
 This usage of machine learning requires some understanding of the models.
 
 **Data mining / exploration**

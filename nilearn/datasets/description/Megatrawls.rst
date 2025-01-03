@@ -20,7 +20,7 @@ with combination of two variants of timeseries extraction methods,
 multiple spatial regression (ts2) and eigen regression (ts3).
 
 These matrices can be used to predict the relationships between subjects
-functional connectivity datasets and their behavioural measures. Both can be
+functional connectivity datasets and their behavioral measures. Both can be
 downloaded from HCP connectome website under conditions. See disclaimer below.
 
 More information available in :footcite:t:`Smith2015b`,

@@ -26,7 +26,8 @@ from nilearn.tests.test_signal import generate_trends
 
 def _simu_img(tmp_path, trend, demean):
     """Simulate an nifti image based on confound file \
-    with some parts confounds and some parts noise."""
+    with some parts confounds and some parts noise.
+    """
     file_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
     # set the size of the image matrix
     nx = 5
@@ -42,7 +43,7 @@ def _simu_img(tmp_path, trend, demean):
     )
 
     X = _handle_non_steady(confounds)
-    X = X.values
+    X = X.to_numpy()
     # the number of time points is based on the example confound file
     nt = X.shape[0]
     # initialize an empty 4D volume
@@ -100,7 +101,7 @@ def _handle_non_steady(confounds):
 
     - Put non-steady state volume back at the first sample.
     """
-    X = confounds.values
+    X = confounds.to_numpy()
     non_steady = X[0, :]
     tmp = np.vstack((X[1, :], X[1:, :]))
     tmp = np.tile(tmp, (10, 1))
@@ -302,7 +303,8 @@ def test_confounds2df(tmp_path, fmriprep_version):
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 def test_load_single_confounds_file(tmp_path, fmriprep_version):
     """Check that the load_confounds function returns the same confounds \
-    as _load_single_confounds_file."""
+    as _load_single_confounds_file.
+    """
     nii_file, confounds_file = create_tmp_filepath(
         tmp_path, copy_confounds=True, fmriprep_version=fmriprep_version
     )
@@ -340,7 +342,8 @@ def test_load_single_confounds_file(tmp_path, fmriprep_version):
 )
 def test_check_strategy(strategy, message):
     """Check that flawed strategy options \
-    generate meaningful error messages."""
+    generate meaningful error messages.
+    """
     with pytest.raises(ValueError) as exc_info:
         _check_strategy(strategy=strategy)
     assert message in exc_info.value.args[0]
@@ -629,7 +632,7 @@ def test_ica_aroma(tmp_path, fmriprep_version):
     )
     for col_name in conf.columns:
         # only aroma and non-steady state columns will be present
-        assert re.match("(?:aroma_motion_+|non_steady_state+)", col_name)
+        assert re.match(r"(?:aroma_motion_+|non_steady_state+)", col_name)
 
     # Non-aggressive strategy
     conf, _ = load_confounds(
@@ -649,6 +652,7 @@ def test_ica_aroma(tmp_path, fmriprep_version):
     "fmriprep_version, scrubbed_time_points, non_steady_outliers",
     [("1.4.x", 8, 1), ("21.x.x", 30, 3)],
 )
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_sample_mask(
     tmp_path, fmriprep_version, scrubbed_time_points, non_steady_outliers
 ):
@@ -665,7 +669,7 @@ def test_sample_mask(
     )
     # the "1.4.x" test data has 6 time points marked as motion outliers,
     # and one nonsteady state (overlap with the first motion outlier)
-    # 2 time points removed due to the "full" srubbing strategy
+    # 2 time points removed due to the "full" scrubbing strategy
     # (remove segment shorter than 5 volumes)
     assert reg.shape[0] - len(mask) == scrubbed_time_points
 

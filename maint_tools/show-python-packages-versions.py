@@ -5,12 +5,15 @@ import sys
 import pkg_resources
 
 DEPENDENCIES = [
-    "numpy",
-    "scipy",
-    "scikit-learn",
     "joblib",
+    "lxml",
     "matplotlib",
     "nibabel",
+    "numpy",
+    "pandas",
+    "requests",
+    "scipy",
+    "scikit-learn",
 ]
 
 
@@ -28,7 +31,7 @@ def print_package_version(package_name, indent="  "):
 
 if __name__ == "__main__":
     print("=" * 120)
-    print(f"Python {str(sys.version)}")
+    print(f"Python {sys.version!s}")
     print(f"from: {sys.executable}\n")
 
     print("Dependencies versions")

@@ -27,10 +27,12 @@ timing issues.
 This example requires matplotlib and scipy.
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 # %%
 # Define stimulus parameters and response models
@@ -39,7 +41,6 @@ except ImportError:
 # To get an impulse response, we simulate a single event occurring at time t=0,
 # with duration 1s.
 
-import numpy as np
 
 time_length = 30.0
 frame_times = np.linspace(0, time_length, 61)
@@ -62,16 +63,17 @@ def mion_response_function(t_r, oversampling=16, onset=0.0):
 
     Parameters
     ----------
-    t_r: float
+    t_r : float
         scan repeat time, in seconds
-    oversampling: int, optional
+    oversampling : int, optional
         temporal oversampling factor
-    onset: float, optional
+    onset : float, optional
         hrf onset time, in seconds
 
     Returns
     -------
-    response_function: array of shape(length / t_r * oversampling, dtype=float)
+    response_function :
+        array of shape(length / t_r * oversampling, dtype=float)
         response_function sampling on the oversampled time grid
     """
     dt = t_r / oversampling
@@ -96,14 +98,14 @@ def mion_time_derivative(t_r, oversampling=16.0):
 
     Parameters
     ----------
-    t_r: float
+    t_r : float
         scan repeat time, in seconds
-    oversampling: int, optional
+    oversampling : int, optional
         temporal oversampling factor, optional
 
     Returns
     -------
-    drf: array of shape(time_length / t_r * oversampling, dtype=float)
+    drf : array of shape(time_length / t_r * oversampling, dtype=float)
         derived_response_function sampling on the provided grid
     """
     do = 0.1

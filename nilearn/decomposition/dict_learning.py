@@ -10,8 +10,6 @@ constitutes output maps
 import warnings
 
 import numpy as np
-import sklearn
-from joblib import Memory
 from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
@@ -130,9 +128,10 @@ class DictLearning(_BaseDecomposition):
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
@@ -209,8 +208,6 @@ class DictLearning(_BaseDecomposition):
         memory=None,
         memory_level=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         _BaseDecomposition.__init__(
             self,
             n_components=n_components,
@@ -297,14 +294,9 @@ class DictLearning(_BaseDecomposition):
 
         logger.log(" Learning dictionary", verbose=self.verbose, stack_level=2)
 
-        # TODO: remove this when sklearn 1.0 not supported anymore;
-        # replace kwargs with actual parameter name
-        if sklearn.__version__ <= "1.0":
-            kwargs = {"n_iter": max_iter}
-        else:
-            kwargs = _transfer_deprecated_param_vals(
-                {"n_iter": "max_iter"}, {"max_iter": max_iter}
-            )
+        kwargs = _transfer_deprecated_param_vals(
+            {"n_iter": "max_iter"}, {"max_iter": max_iter}
+        )
         self.components_, _ = self._cache(dict_learning_online)(
             data.T,
             self.n_components,

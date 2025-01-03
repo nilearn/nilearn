@@ -6,7 +6,7 @@ import warnings as _warnings
 from operator import itemgetter
 
 import numpy as np
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
 from sklearn.utils import check_random_state
@@ -98,9 +98,10 @@ class CanICA(_MultiPCA):
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
@@ -176,8 +177,6 @@ class CanICA(_MultiPCA):
         n_jobs=1,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             n_components=n_components,
             do_cca=do_cca,
@@ -200,19 +199,13 @@ class CanICA(_MultiPCA):
             verbose=verbose,
         )
 
-        if isinstance(threshold, float) and threshold > n_components:
-            raise ValueError(
-                "Threshold must not be higher than number "
-                "of maps. "
-                f"Number of maps is {n_components} and you provided "
-                f"threshold={threshold}"
-            )
         self.threshold = threshold
         self.n_init = n_init
 
     def _unmix_components(self, components):
         """Core function of CanICA than rotate components_ to maximize \
-        independence."""
+        independence.
+        """
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
@@ -287,6 +280,15 @@ class CanICA(_MultiPCA):
             Unmasked data to process
 
         """
+        if (
+            isinstance(self.threshold, float)
+            and self.threshold > self.n_components
+        ):
+            raise ValueError(
+                "Threshold must not be higher than number of maps. "
+                f"Number of maps is {self.n_components} "
+                f"and you provided threshold={self.threshold}."
+            )
         components = _MultiPCA._raw_fit(self, data)
         self._unmix_components(components)
         return self

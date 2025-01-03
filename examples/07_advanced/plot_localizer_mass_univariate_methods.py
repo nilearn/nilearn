@@ -24,10 +24,9 @@ is included in the model.
 
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 # %%
 import numpy as np
@@ -42,7 +41,6 @@ n_samples = 94
 localizer_dataset = datasets.fetch_localizer_contrasts(
     ["left button press (auditory cue)"],
     n_subjects=n_samples,
-    legacy_format=False,
 )
 
 # print basic information on the dataset
@@ -59,7 +57,7 @@ n_samples = mask_quality_check.size
 contrast_map_filenames = [
     localizer_dataset.cmaps[i] for i in mask_quality_check
 ]
-tested_var = tested_var[mask_quality_check].values.reshape((-1, 1))
+tested_var = tested_var[mask_quality_check].to_numpy().reshape((-1, 1))
 print(f"Actual number of subjects after quality check: {int(n_samples)}")
 
 # %%
@@ -101,7 +99,7 @@ ols_outputs = permuted_ols(
     model_intercept=True,
     masker=nifti_masker,
     tfce=True,
-    n_perm=200,  # 200 for the sake of time. Ideally, this should be 10000.
+    n_perm=100,  # 100 for the sake of time. Ideally, this should be 10000.
     verbose=1,  # display progress bar
     n_jobs=2,  # can be changed to use more CPUs
     output_type="dict",
@@ -115,11 +113,11 @@ neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
 
 # %%
 # Visualization
+import matplotlib.pyplot as plt
+
 from nilearn import plotting
 from nilearn.image import get_data
 
-# Various plotting parameters
-z_slice = 12  # plotted slice
 threshold = -np.log10(0.1)  # 10% corrected
 
 vmax = max(
@@ -136,7 +134,7 @@ images_to_plot = {
     "Permutation Test\n(Max TFCE FWE)": neg_log_pvals_tfce_unmasked,
 }
 
-fig, axes = plt.subplots(figsize=(12, 3), ncols=3)
+fig, axes = plt.subplots(figsize=(10, 4), ncols=3)
 for i_col, (title, img) in enumerate(images_to_plot.items()):
     ax = axes[i_col]
     n_detections = (get_data(img) > threshold).sum()
@@ -147,9 +145,9 @@ for i_col, (title, img) in enumerate(images_to_plot.items()):
         colorbar=True,
         vmax=vmax,
         display_mode="z",
-        plot_abs=False,
-        cut_coords=[12],
         threshold=threshold,
+        vmin=threshold,
+        cmap="inferno",
         figure=fig,
         axes=ax,
     )
@@ -157,6 +155,10 @@ for i_col, (title, img) in enumerate(images_to_plot.items()):
 
 fig.suptitle(
     "Group left button press ($-\\log_{10}$ p-values)",
-    y=1.3,
+    y=1,
     fontsize=16,
 )
+
+fig.subplots_adjust(top=0.75, wspace=0.5)
+
+plotting.show()

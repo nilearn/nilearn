@@ -7,7 +7,8 @@
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+Classes
+-------
 
 .. currentmodule:: nilearn.reporting
 
@@ -17,7 +18,8 @@
 
    HTMLReport
 
-**Functions**:
+Functions
+---------
 
 .. currentmodule:: nilearn.reporting
 

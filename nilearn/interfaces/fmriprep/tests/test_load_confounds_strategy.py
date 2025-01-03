@@ -3,7 +3,7 @@ import re
 import pandas as pd
 import pytest
 
-from nilearn.interfaces.fmriprep import load_confounds_strategy
+from nilearn.interfaces.fmriprep import load_confounds, load_confounds_strategy
 from nilearn.interfaces.fmriprep.load_confounds_strategy import (
     preset_strategies,
 )
@@ -20,6 +20,7 @@ from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
         ("ica_aroma", "ica_aroma"),
     ],
 )
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_load_confounds_strategy(
     tmp_path, denoise_strategy, image_type, fmriprep_version
 ):
@@ -47,6 +48,7 @@ def test_load_confounds_strategy(
         ("ica_aroma", "ica_aroma"),
     ],
 )
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_strategies(tmp_path, denoise_strategy, image_type, fmriprep_version):
     """Check defaults setting of each preset strategy."""
     file_nii, _ = create_tmp_filepath(
@@ -100,6 +102,7 @@ def _get_headers(denoise_strategy):
     "fmriprep_version, volumes_left, len_sample_mask",
     [("1.4.x", 22, 29), ("21.x.x", 0, 5)],
 )
+@pytest.mark.filterwarnings("ignore::RuntimeWarning")
 def test_strategy_scrubbing(
     tmp_path, fmriprep_version, volumes_left, len_sample_mask
 ):
@@ -197,3 +200,21 @@ def test_irrelevant_input(tmp_path, fmriprep_version):
     # invalid strategy
     with pytest.raises(KeyError, match="blah"):
         load_confounds_strategy(file_nii, denoise_strategy="blah")
+
+
+def test_empty_strategy(tmp_path):
+    """Ensure to return None for confounds and raise a warning
+    when strategy is empty.
+    """
+    file_nii, _ = create_tmp_filepath(
+        tmp_path,
+        image_type="regular",
+        copy_confounds=True,
+        copy_json=True,
+    )
+
+    warning_message = "strategy is empty, confounds will return None."
+    with pytest.warns(UserWarning, match=warning_message):
+        confounds, sample_mask = load_confounds(file_nii, strategy=[])
+
+    assert confounds is None

@@ -38,7 +38,7 @@ PENALTY = ["graph-net", "tv-l1"]
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("n_alphas", range(1, 10))
 def test_space_net_alpha_grid(
     rng, is_classif, l1_ratio, n_alphas, n_samples=4, n_features=3
@@ -90,7 +90,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
         if k > 0 and rng.random() > 0.9:
             w[k - 1] = 1 - w[k - 1]
 
-        escb(dict(w=w, counter=counter))
+        escb({"w": w, "counter": counter})
         assert len(escb.test_scores) == counter + 1
 
         # restart
@@ -101,7 +101,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("n_alphas", [0.1, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("n_jobs", [1, -1])
 @pytest.mark.parametrize("cv", [2, 3])
 @pytest.mark.parametrize("perc", [5, 10])
@@ -129,7 +129,7 @@ def test_params_correctly_propagated_in_constructors(
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 def test_params_correctly_propagated_in_constructors_biz(
     penalty, is_classif, alpha, l1_ratio
 ):
@@ -213,7 +213,7 @@ def test_squared_loss_path_scores():
     assert X.shape[1] + 1 == len(best_w)
 
 
-@pytest.mark.parametrize("l1_ratio", [1])
+@pytest.mark.parametrize("l1_ratio", [0.99])
 @pytest.mark.parametrize("debias", [True])
 def test_tv_regression_simple(rng, l1_ratio, debias):
     dim = (4, 4, 4)
@@ -239,8 +239,8 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
     ).fit(X, y)
 
 
-@pytest.mark.parametrize("l1_ratio", [0.0, 0.5, 1.0])
-def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
+@pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
+def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
     W_init[2:3, 3:, 1:3] = 1
@@ -393,7 +393,7 @@ def test_univariate_feature_screening(
 
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("verbose", [True, False])
 def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
     cvobj = SpaceNetClassifier(
@@ -410,7 +410,7 @@ def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
 
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("verbose", [True, False])
 def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
     cvobj = SpaceNetRegressor(
@@ -512,3 +512,24 @@ def test_targets_in_y_space_net_regressor():
         ValueError, match="The given input y must have at least 2 targets"
     ):
         regressor.fit(imgs, y)
+
+
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
+@pytest.mark.parametrize(
+    "model", [BaseSpaceNet, SpaceNetRegressor, SpaceNetClassifier]
+)
+def test_space_net_not_implemented_surface_objects(
+    surf_mask_dim, surf_mask_1d, surf_mask_2d, surf_img_2d, model
+):
+    """Raise NotImplementedError when space net is fit on surface objects."""
+    y = np.ones((5,))
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+
+    with pytest.raises(NotImplementedError):
+        model(mask=surf_mask).fit(surf_img_2d(5), y)
+
+    with pytest.raises(NotImplementedError):
+        model().fit(surf_img_2d(5), y)

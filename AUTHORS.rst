@@ -59,11 +59,12 @@ Some other past or present contributors are:
 * `Alexandre Sayal`_: CIBIT, University of Coimbra, Portugal
 * `Alexis Thual`_: Inria, Saclay, France
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
-* `Amadeus Kanaan`_
+* Amadeus Kanaan
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
 * `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+* `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
@@ -101,13 +102,16 @@ Some other past or present contributors are:
 * `Greg Kiar`_: Child Mind Institute
 * `Greydon Gilmore`_: Department of Mathematics, Western University, Toronto, Canada
 * `Guillaume Lemaitre`_: Inria, Saclay, France
+* `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Ian Abenes`_
+* `Idrissa Traore`_: IMT Atlantique, Brest, France
 * `Jake Vogel`_: Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
 * `Jason Gors`_: Insight Data Science, Mountain View, California, USA
+* `Jason Kai`_: Child Mind Institute
 * `Javier Rasero`_: School of Data Science, University of Virginia, Viginia, USA
 * `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
@@ -143,6 +147,7 @@ Some other past or present contributors are:
 * `Maximilian Cosmo Sitter`_
 * `Mehdi Rahim`_: Air Liquide, France
 * `Mia Zwally`_: DSST, National Institute of Mental Health, USA
+* `Micha Burkhardt`_: University of Oldenburg, Germany
 * `Michael Eickenberg`_: Flatiron Institute, New-York, New-York, USA
 * `Michael Hanke`_: Psychoinformatics, Forschungszentrum Jülich GmbH, Jülich, Germany
 * `Michael Notter`_: ams OSRAM, Martigny, Lausanne, Switzerland
@@ -168,6 +173,7 @@ Some other past or present contributors are:
 * `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
+* `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
@@ -191,9 +197,12 @@ Some other past or present contributors are:
 * `Tamer Gezici`_: Bilkent University
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
+* `Tharun K`_
+* `Thiti Premrudeepreechacharn`_
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
+* `Victoria Shevchenko`_: Inria Saclay, Université Paris Cité, France
 * `Vincent Michel`_: https://www.logilab.fr/
 * `Virgile Fritsch`_: Inria, Saclay, France
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
@@ -216,15 +225,15 @@ Funding
 `Mehdi Rahim`_, `Philippe Gervais`_ were paid by the
 :inria:`NiConnect <parietal/research/spatial_patterns/niconnect/>`.
 project, funded by the French `Investissement d'Avenir
-<https://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
+<https://www.info.gouv.fr/organisation/secretariat-general-pour-l-investissement-sgpi>`_.
 
 `Kshitij Chawla`_ was paid by `INRIA <https://www.inria.fr/en>`_.
 
 `Yasmin Mzayek`_ and `Nicolas Gensollen`_ were paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
 |HBP logo|.
 
-NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
-|digicosme logo| and `DataIA <https://dataia.eu/en>`_ |dataia_logo|.
+NiLearn is also supported by `DigiCosme <https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/>`_
+|digicosme logo| and `DataIA <https://www.dataia.eu/en>`_ |dataia_logo|.
 
 .. _citing:
 
@@ -244,7 +253,7 @@ If you want to cite Nilearn, we suggest you do it using our Zenodo DOI:
     }
 
 Nilearn's Research Resource Identifier (RRID) is:
-`RRID:SCR_001362 <https://scicrunch.org/resources/data/record/nlx_144509-1/SCR_001362/resolver?q=nilearn&l=nilearn&i=rrid:scr_001362>`_
+`RRID:SCR_001362 <https://rrid.site/data/record/nlx_144509-1/SCR_001362/resolver?q=nilearn&l=nilearn&i=rrid:scr_001362>`_
 
 There is no paper published about nilearn.
 However, the patterns underlying the package have been described in:

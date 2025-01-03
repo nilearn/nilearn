@@ -2,6 +2,11 @@
 
 Check rst files in doc, py files in examples and py files in nilearn.
 
+requirements:
+
+docstring_parser
+rich
+
 """
 
 from __future__ import annotations
@@ -34,7 +39,7 @@ def get_terms_in_glossary() -> list[str]:
     terms = []
 
     track = False
-    with open(glossary_file(), encoding="utf-8") as file:
+    with glossary_file().open(encoding="utf-8") as file:
         for line in file:
             if line.startswith(".. glossary::"):
                 track = True
@@ -86,7 +91,7 @@ def check_file_content(file, term):
 
     count = 0
 
-    with open(file, encoding="utf-8") as f:
+    with file.open(encoding="utf-8") as f:
         if file.suffix == ".py":
             is_rendered_section = False
             is_docstring = False
@@ -164,7 +169,7 @@ def check_docstring(docstring, terms):
 def check_description(docstring, terms):
     """Check docstring description."""
     text = ""
-    if docstring.short_description is not None:
+    if docstring.short_description is not None:  # noqa: SIM102
         if tmp := [
             term
             for term in terms
@@ -172,7 +177,7 @@ def check_description(docstring, terms):
         ]:
             text += f" terms: '{', '.join(tmp)}' in short description\n"
 
-    if docstring.long_description is not None:
+    if docstring.long_description is not None:  # noqa: SIM102
         if tmp := [
             term
             for term in terms
@@ -275,7 +280,7 @@ def main():
         if file.parent.name.startswith("_"):
             continue
 
-        with open(file) as f:
+        with file.open() as f:
             module = ast.parse(f.read())
 
         check_functions(module.body, terms, file)

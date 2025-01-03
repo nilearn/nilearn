@@ -11,7 +11,7 @@ then adding 1 as a fourth entry, (i, j, k, 1), and multiplying by the affine
 matrix yields (x, y, z, 1), a 4-vector containing the millimeter position of
 the voxel.
 
-The resampling procedure in :func:`nilearn.image.resample_img` can attribute
+The resampling procedure in :func:`~nilearn.image.resample_img` can attribute
 a new affine matrix and a new shape to your Nifti image while keeping its
 representation in millimeter space exactly the same (up to sampling error and
 possible clipping).
@@ -52,18 +52,22 @@ from nilearn.plotting import show
 
 grid = np.mgrid[0:192, 0:128]
 circle = (
-    np.sum((grid - np.array([32, 32])[:, np.newaxis, np.newaxis]) ** 2, axis=0)
+    np.sum(
+        (grid - np.array([32.0, 32.0])[:, np.newaxis, np.newaxis]) ** 2, axis=0
+    )
     < 256
 )
 diamond = (
     np.sum(
-        np.abs(grid - np.array([128, 80])[:, np.newaxis, np.newaxis]), axis=0
+        np.abs(grid - np.array([128.0, 80.0])[:, np.newaxis, np.newaxis]),
+        axis=0,
     )
     < 16
 )
 rectangle = (
     np.max(
-        np.abs(grid - np.array([64, 96])[:, np.newaxis, np.newaxis]), axis=0
+        np.abs(grid - np.array([64.0, 96.0])[:, np.newaxis, np.newaxis]),
+        axis=0,
     )
     < 16
 )
@@ -87,10 +91,10 @@ rotation_matrix = np.array(
 source_affine[:2, :2] = rotation_matrix * 2.0  # 2.0mm voxel size
 
 # We need to turn this data into a nibabel image
-import nibabel
+from nibabel import Nifti1Image
 
-img = nibabel.Nifti1Image(
-    image[:, :, np.newaxis].astype("int32"), affine=source_affine
+img = Nifti1Image(
+    image[:, :, np.newaxis].astype("float32"), affine=source_affine
 )
 
 # %%
@@ -98,17 +102,21 @@ img = nibabel.Nifti1Image(
 from nilearn.image import resample_img
 
 img_in_mm_space = resample_img(
-    img, target_affine=np.eye(4), target_shape=(512, 512, 1), copy_header=True
+    img,
+    target_affine=np.eye(4),
+    target_shape=(512, 512, 1),
+    copy_header=True,
+    force_resample=True,
 )
 
 target_affine_3x3 = np.eye(3) * 2
 target_affine_4x4 = np.eye(4) * 2
 target_affine_4x4[3, 3] = 1.0
 img_3d_affine = resample_img(
-    img, target_affine=target_affine_3x3, copy_header=True
+    img, target_affine=target_affine_3x3, copy_header=True, force_resample=True
 )
 img_4d_affine = resample_img(
-    img, target_affine=target_affine_4x4, copy_header=True
+    img, target_affine=target_affine_4x4, copy_header=True, force_resample=True
 )
 target_affine_mm_space_offset_changed = np.eye(4)
 target_affine_mm_space_offset_changed[:3, 3] = img_3d_affine.affine[:3, 3]
@@ -118,12 +126,15 @@ img_3d_affine_in_mm_space = resample_img(
     target_affine=target_affine_mm_space_offset_changed,
     target_shape=(np.array(img_3d_affine.shape) * 2).astype(int),
     copy_header=True,
+    force_resample=True,
 )
 
 img_4d_affine_in_mm_space = resample_img(
     img_4d_affine,
     target_affine=np.eye(4),
     target_shape=(np.array(img_4d_affine.shape) * 2).astype(int),
+    force_resample=True,
+    copy_header=True,
 )
 
 # %%

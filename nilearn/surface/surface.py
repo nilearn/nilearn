@@ -1,55 +1,55 @@
 """Functions for surface manipulation."""
 
+import abc
+import copy
 import gzip
-import os
+import pathlib
 import warnings
-from collections import namedtuple
 from collections.abc import Mapping
 from pathlib import Path
 
-import nibabel
 import numpy as np
 import sklearn.cluster
 import sklearn.preprocessing
-from nibabel import freesurfer as fs, gifti
+from nibabel import freesurfer as fs
+from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
-from nilearn import _utils, datasets
+from nilearn import _utils
 from nilearn._utils import stringify_path
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.image import get_data, load_img, resampling
-
-# Create a namedtuple object for meshes
-Mesh = namedtuple("mesh", ["coordinates", "faces"])
-
-# Create a namedtuple object for surfaces
-Surface = namedtuple("surface", ["mesh", "data"])
+from nilearn.image import get_data as get_vol_data
+from nilearn.image import load_img, resampling
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
     """Get points uniformly spaced in the unit ball."""
     rng = np.random.RandomState(0)
     mc_cube = rng.uniform(-1, 1, size=(n_monte_carlo, dim))
-    mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.]
+    mc_ball = mc_cube[(mc_cube**2).sum(axis=1) <= 1.0]
     centroids, *_ = sklearn.cluster.k_means(
-        mc_ball, n_clusters=n_points, random_state=0)
+        mc_ball, n_clusters=n_points, random_state=0
+    )
     return centroids
 
 
 def _load_uniform_ball_cloud(n_points=20):
-    stored_points = os.path.abspath(
-        os.path.join(__file__, '..', 'data',
-                     f'ball_cloud_{n_points}_samples.csv'))
-    if os.path.isfile(stored_points):
+    stored_points = (
+        Path(__file__, "..", "data", f"ball_cloud_{n_points}_samples.csv")
+    ).resolve()
+    if stored_points.is_file():
         points = np.loadtxt(stored_points)
         return points
     warnings.warn(
-        'Cached sample positions are provided for '
-        'n_samples = 10, 20, 40, 80, 160. Since the number of samples does '
-        'have a big impact on the result, we strongly recommend using one '
+        "Cached sample positions are provided for "
+        "n_samples = 10, 20, 40, 80, 160. Since the number of samples does "
+        "have a big impact on the result, we strongly recommend using one "
         'of these values when using kind="ball" for much better performance.',
-        EfficiencyWarning)
+        EfficiencyWarning,
+        stacklevel=3,
+    )
     return _uniform_ball_cloud(n_points=n_points)
 
 
@@ -61,11 +61,15 @@ def _face_outer_normals(mesh):
     rule) points outwards.
 
     """
-    vertices, faces = load_surf_mesh(mesh)
+    mesh = load_surf_mesh(mesh)
+    vertices = mesh.coordinates
+    faces = mesh.faces
     face_vertices = vertices[faces]
     # The right-hand rule gives the direction of the outer normal
-    normals = np.cross(face_vertices[:, 1, :] - face_vertices[:, 0, :],
-                       face_vertices[:, 2, :] - face_vertices[:, 0, :])
+    normals = np.cross(
+        face_vertices[:, 1, :] - face_vertices[:, 0, :],
+        face_vertices[:, 2, :] - face_vertices[:, 0, :],
+    )
     normals = sklearn.preprocessing.normalize(normals)
     return normals
 
@@ -76,10 +80,17 @@ def _surrounding_faces(mesh):
     i, j is set if node i is a vertex of triangle j.
 
     """
-    vertices, faces = load_surf_mesh(mesh)
+    mesh = load_surf_mesh(mesh)
+    vertices = mesh.coordinates
+    faces = mesh.faces
     n_faces = faces.shape[0]
-    return sparse.csr_matrix((np.ones(3 * n_faces), (faces.ravel(), np.tile(
-        np.arange(n_faces), (3, 1)).T.ravel())), (vertices.shape[0], n_faces))
+    return sparse.csr_matrix(
+        (
+            np.ones(3 * n_faces),
+            (faces.ravel(), np.tile(np.arange(n_faces), (3, 1)).T.ravel()),
+        ),
+        (vertices.shape[0], n_faces),
+    )
 
 
 def _vertex_outer_normals(mesh):
@@ -97,9 +108,10 @@ def _vertex_outer_normals(mesh):
 
 
 def _sample_locations_between_surfaces(
-        mesh, inner_mesh, affine, n_points=10, depth=None):
-    outer_vertices, _ = mesh
-    inner_vertices, _ = inner_mesh
+    mesh, inner_mesh, affine, n_points=10, depth=None
+):
+    outer_vertices = load_surf_mesh(mesh).coordinates
+    inner_vertices = load_surf_mesh(inner_mesh).coordinates
 
     if depth is None:
         steps = np.linspace(0, 1, n_points)[:, None, None]
@@ -107,18 +119,21 @@ def _sample_locations_between_surfaces(
         steps = np.asarray(depth)[:, None, None]
 
     sample_locations = outer_vertices + steps * (
-        inner_vertices - outer_vertices)
+        inner_vertices - outer_vertices
+    )
     sample_locations = np.rollaxis(sample_locations, 1)
 
     sample_locations_voxel_space = np.asarray(
         resampling.coord_transform(
-            *np.vstack(sample_locations).T,
-            affine=np.linalg.inv(affine))).T.reshape(sample_locations.shape)
+            *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
+        )
+    ).T.reshape(sample_locations.shape)
     return sample_locations_voxel_space
 
 
 def _ball_sample_locations(
-        mesh, affine, ball_radius=3., n_points=20, depth=None):
+    mesh, affine, ball_radius=3.0, n_points=20, depth=None
+):
     """Locations to draw samples from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
@@ -158,26 +173,34 @@ def _ball_sample_locations(
 
     """
     if depth is not None:
-        raise ValueError("The 'ball' sampling strategy does not support "
-                         "the 'depth' parameter")
-    vertices, faces = mesh
-    offsets_world_space = _load_uniform_ball_cloud(
-        n_points=n_points) * ball_radius
+        raise ValueError(
+            "The 'ball' sampling strategy does not support "
+            "the 'depth' parameter.\n"
+            "To avoid this error with this strategy, set 'depth' to None."
+        )
+    vertices = load_surf_mesh(mesh).coordinates
+    offsets_world_space = (
+        _load_uniform_ball_cloud(n_points=n_points) * ball_radius
+    )
     mesh_voxel_space = np.asarray(
-        resampling.coord_transform(*vertices.T,
-                                   affine=np.linalg.inv(affine))).T
+        resampling.coord_transform(*vertices.T, affine=np.linalg.inv(affine))
+    ).T
     linear_map = np.eye(affine.shape[0])
     linear_map[:-1, :-1] = affine[:-1, :-1]
     offsets_voxel_space = np.asarray(
-        resampling.coord_transform(*offsets_world_space.T,
-                                   affine=np.linalg.inv(linear_map))).T
-    sample_locations_voxel_space = (mesh_voxel_space[:, np.newaxis, :] +
-                                    offsets_voxel_space[np.newaxis, :])
+        resampling.coord_transform(
+            *offsets_world_space.T, affine=np.linalg.inv(linear_map)
+        )
+    ).T
+    sample_locations_voxel_space = (
+        mesh_voxel_space[:, np.newaxis, :] + offsets_voxel_space[np.newaxis, :]
+    )
     return sample_locations_voxel_space
 
 
 def _line_sample_locations(
-        mesh, affine, segment_half_width=3., n_points=10, depth=None):
+    mesh, affine, segment_half_width=3.0, n_points=10, depth=None
+):
     """Locations to draw samples from to project volume data onto a mesh.
 
     For each mesh vertex, the locations of `n_points` points evenly spread in a
@@ -217,20 +240,24 @@ def _line_sample_locations(
         z in voxel space.
 
     """
-    vertices, faces = mesh
+    vertices = load_surf_mesh(mesh).coordinates
     normals = _vertex_outer_normals(mesh)
     if depth is None:
         offsets = np.linspace(
-            segment_half_width, -segment_half_width, n_points)
+            segment_half_width, -segment_half_width, n_points
+        )
     else:
-        offsets = - segment_half_width * np.asarray(depth)
-    sample_locations = vertices[
-        np.newaxis, :, :] + normals * offsets[:, np.newaxis, np.newaxis]
+        offsets = -segment_half_width * np.asarray(depth)
+    sample_locations = (
+        vertices[np.newaxis, :, :]
+        + normals * offsets[:, np.newaxis, np.newaxis]
+    )
     sample_locations = np.rollaxis(sample_locations, 1)
     sample_locations_voxel_space = np.asarray(
         resampling.coord_transform(
-            *np.vstack(sample_locations).T,
-            affine=np.linalg.inv(affine))).T.reshape(sample_locations.shape)
+            *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
+        )
+    ).T.reshape(sample_locations.shape)
     return sample_locations_voxel_space
 
 
@@ -238,31 +265,41 @@ def _choose_kind(kind, inner_mesh):
     if kind == "depth" and inner_mesh is None:
         raise TypeError(
             "'inner_mesh' must be provided to use "
-            "the 'depth' sampling strategy")
+            "the 'depth' sampling strategy"
+        )
     if kind == "auto":
         kind = "line" if inner_mesh is None else "depth"
     return kind
 
 
-def _sample_locations(mesh, affine, radius, kind='auto', n_points=None,
-                      inner_mesh=None, depth=None):
+def _sample_locations(
+    mesh,
+    affine,
+    radius,
+    kind="auto",
+    n_points=None,
+    inner_mesh=None,
+    depth=None,
+):
     """Get either ball or line sample locations."""
     kind = _choose_kind(kind, inner_mesh)
-    kwargs = ({} if n_points is None else {'n_points': n_points})
+    kwargs = {} if n_points is None else {"n_points": n_points}
     projectors = {
-        'line': (_line_sample_locations, {"segment_half_width": radius}),
-        'ball': (_ball_sample_locations, {"ball_radius": radius}),
-        'depth': (_sample_locations_between_surfaces,
-                  {"inner_mesh": inner_mesh})
+        "line": (_line_sample_locations, {"segment_half_width": radius}),
+        "ball": (_ball_sample_locations, {"ball_radius": radius}),
+        "depth": (
+            _sample_locations_between_surfaces,
+            {"inner_mesh": inner_mesh},
+        ),
     }
     if kind not in projectors:
-        raise ValueError(
-            f'"kind" must be one of {tuple(projectors.keys())}')
+        raise ValueError(f'"kind" must be one of {tuple(projectors.keys())}')
     projector, extra_kwargs = projectors[kind]
     # let the projector choose the default for n_points
     # (for example a ball probably needs more than a line)
     sample_locations = projector(
-        mesh=mesh, affine=affine, depth=depth, **kwargs, **extra_kwargs)
+        mesh=mesh, affine=affine, depth=depth, **kwargs, **extra_kwargs
+    )
     return sample_locations
 
 
@@ -292,13 +329,21 @@ def _masked_indices(sample_locations, img_shape, mask=None):
         kept = np.logical_and(kept, sample_locations[:, dim] < size)
     if mask is not None:
         indices = np.asarray(np.floor(sample_locations[kept]), dtype=int)
-        kept[kept] = mask[
-            indices[:, 0], indices[:, 1], indices[:, 2]] != 0
+        kept[kept] = mask[indices[:, 0], indices[:, 1], indices[:, 2]] != 0
     return ~kept
 
 
-def _projection_matrix(mesh, affine, img_shape, kind='auto', radius=3.,
-                       n_points=None, mask=None, inner_mesh=None, depth=None):
+def _projection_matrix(
+    mesh,
+    affine,
+    img_shape,
+    kind="auto",
+    radius=3.0,
+    n_points=None,
+    mask=None,
+    inner_mesh=None,
+    depth=None,
+):
     """Get a sparse matrix that projects volume data onto a mesh.
 
     Parameters
@@ -377,17 +422,24 @@ def _projection_matrix(mesh, affine, img_shape, kind='auto', radius=3.,
     """
     # A user might want to call this function directly so check mask size.
     if mask is not None and tuple(mask.shape) != img_shape:
-        raise ValueError('mask should have shape img_shape')
+        raise ValueError("mask should have shape img_shape")
     mesh = load_surf_mesh(mesh)
     sample_locations = _sample_locations(
-        mesh, affine, kind=kind, radius=radius, n_points=n_points,
-        inner_mesh=inner_mesh, depth=depth)
+        mesh,
+        affine,
+        kind=kind,
+        radius=radius,
+        n_points=n_points,
+        inner_mesh=inner_mesh,
+        depth=depth,
+    )
     sample_locations = np.asarray(np.round(sample_locations), dtype=int)
     n_vertices, n_points, _ = sample_locations.shape
     masked = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
     sample_locations = np.rollaxis(sample_locations, -1)
     sample_indices = np.ravel_multi_index(
-        sample_locations, img_shape, mode='clip').ravel()
+        sample_locations, img_shape, mode="clip"
+    ).ravel()
     row_indices, _ = np.mgrid[:n_vertices, :n_points]
     row_indices = row_indices.ravel()
     row_indices = row_indices[~masked]
@@ -395,14 +447,23 @@ def _projection_matrix(mesh, affine, img_shape, kind='auto', radius=3.,
     weights = np.ones(len(row_indices))
     proj = sparse.csr_matrix(
         (weights, (row_indices, sample_indices.ravel())),
-        shape=(n_vertices, np.prod(img_shape)))
-    proj = sklearn.preprocessing.normalize(proj, axis=1, norm='l1')
+        shape=(n_vertices, np.prod(img_shape)),
+    )
+    proj = sklearn.preprocessing.normalize(proj, axis=1, norm="l1")
     return proj
 
 
-def _nearest_voxel_sampling(images, mesh, affine, kind='auto', radius=3.,
-                            n_points=None, mask=None, inner_mesh=None,
-                            depth=None):
+def _nearest_voxel_sampling(
+    images,
+    mesh,
+    affine,
+    kind="auto",
+    radius=3.0,
+    n_points=None,
+    mask=None,
+    inner_mesh=None,
+    depth=None,
+):
     """In each image, measure the intensity at each node of the mesh.
 
     Image intensity at each sample point is that of the nearest voxel.
@@ -412,8 +473,16 @@ def _nearest_voxel_sampling(images, mesh, affine, kind='auto', radius=3.,
 
     """
     proj = _projection_matrix(
-        mesh, affine, images[0].shape, kind=kind, radius=radius,
-        n_points=n_points, mask=mask, inner_mesh=inner_mesh, depth=depth)
+        mesh,
+        affine,
+        images[0].shape,
+        kind=kind,
+        radius=radius,
+        n_points=n_points,
+        mask=mask,
+        inner_mesh=inner_mesh,
+        depth=depth,
+    )
     data = np.asarray(images).reshape(len(images), -1).T
     texture = proj.dot(data)
     # if all samples around a mesh vertex are outside the image,
@@ -423,9 +492,17 @@ def _nearest_voxel_sampling(images, mesh, affine, kind='auto', radius=3.,
     return texture.T
 
 
-def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
-                            n_points=None, mask=None, inner_mesh=None,
-                            depth=None):
+def _interpolation_sampling(
+    images,
+    mesh,
+    affine,
+    kind="auto",
+    radius=3,
+    n_points=None,
+    mask=None,
+    inner_mesh=None,
+    depth=None,
+):
     """In each image, measure the intensity at each node of the mesh.
 
     Image intensity at each sample point is computed with trilinear
@@ -436,8 +513,14 @@ def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
 
     """
     sample_locations = _sample_locations(
-        mesh, affine, kind=kind, radius=radius, n_points=n_points,
-        inner_mesh=inner_mesh, depth=depth)
+        mesh,
+        affine,
+        kind=kind,
+        radius=radius,
+        n_points=n_points,
+        inner_mesh=inner_mesh,
+        depth=depth,
+    )
     n_vertices, n_points, _ = sample_locations.shape
     grid = [np.arange(size) for size in images[0].shape]
     interp_locations = np.vstack(sample_locations)
@@ -446,8 +529,8 @@ def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
     all_samples = []
     for img in images:
         interpolator = interpolate.RegularGridInterpolator(
-            grid, img,
-            bounds_error=False, method='linear', fill_value=None)
+            grid, img, bounds_error=False, method="linear", fill_value=None
+        )
         samples = interpolator(interp_locations)
         # if all samples around a mesh vertex are outside the image,
         # there is no reasonable value to assign to this vertex.
@@ -460,9 +543,17 @@ def _interpolation_sampling(images, mesh, affine, kind='auto', radius=3,
     return texture
 
 
-def vol_to_surf(img, surf_mesh,
-                radius=3., interpolation='linear', kind='auto',
-                n_samples=None, mask_img=None, inner_mesh=None, depth=None):
+def vol_to_surf(
+    img,
+    surf_mesh,
+    radius=3.0,
+    interpolation="linear",
+    kind="auto",
+    n_samples=None,
+    mask_img=None,
+    inner_mesh=None,
+    depth=None,
+):
     """Extract surface data from a Nifti image.
 
     .. versionadded:: 0.4.0
@@ -472,13 +563,13 @@ def vol_to_surf(img, surf_mesh,
     img : Niimg-like object, 3d or 4d.
         See :ref:`extracting_data`.
 
-    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, :obj:`numpy.ndarray`, or Mesh
+    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, :obj:`numpy.ndarray`, or \
+                :obj:`~nilearn.surface.InMemoryMesh`
         Either a file containing surface :term:`mesh` geometry
         (valid formats are .gii or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated)
-        or two Numpy arrays organized in a list,
-        tuple or a namedtuple with the fields "coordinates" and "faces", or
-        a Mesh object with "coordinates" and "faces" attributes.
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
+        and "faces" attributes.
 
     radius : :obj:`float`, default=3.0
         The size (in mm) of the neighbourhood from which samples are drawn
@@ -600,7 +691,7 @@ def vol_to_surf(img, surf_mesh,
 
     The 3d image then needs to be interpolated at each of the remaining points.
     Two options are available: 'nearest' selects the value of the nearest
-    voxel, and 'linear' performs trilinear interpolation of neighbouring
+    voxel, and 'linear' performs trilinear interpolation of neighboring
     voxels. 'linear' may give better results - for example, the projected
     values are more stable when resampling the 3d image or applying affine
     transformations to it. For one image, the speed difference is small,
@@ -627,29 +718,48 @@ def vol_to_surf(img, surf_mesh,
      ... )
 
     """
-    sampling_schemes = {'linear': _interpolation_sampling,
-                        'nearest': _nearest_voxel_sampling}
+    sampling_schemes = {
+        "linear": _interpolation_sampling,
+        "nearest": _nearest_voxel_sampling,
+    }
     if interpolation not in sampling_schemes:
-        raise ValueError("'interpolation' should be one of "
-                         f"{tuple(sampling_schemes.keys())}")
+        raise ValueError(
+            "'interpolation' should be one of "
+            f"{tuple(sampling_schemes.keys())}"
+        )
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
-        mask = get_data(resampling.resample_to_img(
-            mask_img, img, interpolation='nearest', copy=False,
-            copy_header=True))
+        mask = get_vol_data(
+            resampling.resample_to_img(
+                mask_img,
+                img,
+                interpolation="nearest",
+                copy=False,
+                force_resample=False,  # TODO update to True in 0.13.0
+                copy_header=True,
+            )
+        )
     else:
         mask = None
     original_dimension = len(img.shape)
     img = _utils.check_niimg(img, atleast_4d=True)
-    frames = np.rollaxis(get_data(img), -1)
+    frames = np.rollaxis(get_vol_data(img), -1)
     mesh = load_surf_mesh(surf_mesh)
     if inner_mesh is not None:
         inner_mesh = load_surf_mesh(inner_mesh)
     sampling = sampling_schemes[interpolation]
     texture = sampling(
-        frames, mesh, img.affine, radius=radius, kind=kind,
-        n_points=n_samples, mask=mask, inner_mesh=inner_mesh, depth=depth)
+        frames,
+        mesh,
+        img.affine,
+        radius=radius,
+        kind=kind,
+        n_points=n_samples,
+        mask=mask,
+        inner_mesh=inner_mesh,
+        depth=depth,
+    )
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
@@ -677,34 +787,28 @@ def _gifti_img_to_data(gifti_img):
 
     """
     if not gifti_img.darrays:
-        raise ValueError('Gifti must contain at least one data array')
+        raise ValueError("Gifti must contain at least one data array")
 
     if len(gifti_img.darrays) == 1:
         return np.asarray([gifti_img.darrays[0].data]).T.squeeze()
 
     return np.asarray(
-        [arr.data for arr in gifti_img.darrays],
-        dtype=object).T.squeeze()
+        [arr.data for arr in gifti_img.darrays], dtype=object
+    ).T.squeeze()
 
 
-FREESURFER_MESH_EXTENSIONS = ("orig",
-                              "pial",
-                              "sphere",
-                              "white",
-                              "inflated")
+FREESURFER_MESH_EXTENSIONS = ("orig", "pial", "sphere", "white", "inflated")
 
-FREESURFER_DATA_EXTENSIONS = ("area",
-                              "curv",
-                              "sulc",
-                              "thickness",
-                              "label",
-                              "annot")
+FREESURFER_DATA_EXTENSIONS = (
+    "area",
+    "curv",
+    "sulc",
+    "thickness",
+    "label",
+    "annot",
+)
 
-DATA_EXTENSIONS = ("gii",
-                   "gii.gz",
-                   "mgz",
-                   "nii",
-                   "nii.gz")
+DATA_EXTENSIONS = ("gii", "gii.gz", "mgz", "nii", "nii.gz")
 
 
 def _stringify(word_list):
@@ -735,57 +839,53 @@ def load_surf_data(surf_data):
 
     if not isinstance(surf_data, (str, np.ndarray)):
         raise ValueError(
-            'The input type is not recognized. '
-            'Valid inputs are a Numpy array or one of the '
-            'following file formats: '
+            "The input type is not recognized. "
+            "Valid inputs are a Numpy array or one of the "
+            "following file formats: "
             f"{_stringify(DATA_EXTENSIONS)}, "
-            'Freesurfer specific files such as '
-            f"{_stringify(FREESURFER_DATA_EXTENSIONS)}.")
+            "Freesurfer specific files such as "
+            f"{_stringify(FREESURFER_DATA_EXTENSIONS)}."
+        )
 
     if isinstance(surf_data, str):
-
         # resolve globbing
         file_list = resolve_globbing(surf_data)
         # resolve_globbing handles empty lists
 
-        for f in range(len(file_list)):
-            surf_data = file_list[f]
+        for i, surf_data in enumerate(file_list):
+            surf_data = str(surf_data)
 
-            check_extensions(surf_data,
-                             DATA_EXTENSIONS,
-                             FREESURFER_DATA_EXTENSIONS)
+            check_extensions(
+                surf_data, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS
+            )
 
-            if (surf_data.endswith('nii') or surf_data.endswith('nii.gz') or
-                    surf_data.endswith('mgz')):
-                data_part = np.squeeze(get_data(nibabel.load(surf_data)))
-            elif (
-                surf_data.endswith('area')
-                or surf_data.endswith('curv')
-                or surf_data.endswith('sulc')
-                or surf_data.endswith('thickness')
-            ):
+            if surf_data.endswith(("nii", "nii.gz", "mgz")):
+                data_part = np.squeeze(get_vol_data(load(surf_data)))
+            elif surf_data.endswith(("area", "curv", "sulc", "thickness")):
                 data_part = fs.io.read_morph_data(surf_data)
-            elif surf_data.endswith('annot'):
+            elif surf_data.endswith("annot"):
                 data_part = fs.io.read_annot(surf_data)[0]
-            elif surf_data.endswith('label'):
+            elif surf_data.endswith("label"):
                 data_part = fs.io.read_label(surf_data)
-            elif surf_data.endswith('gii'):
-                data_part = _gifti_img_to_data(nibabel.load(surf_data))
-            elif surf_data.endswith('gii.gz'):
+            elif surf_data.endswith("gii"):
+                data_part = _gifti_img_to_data(load(surf_data))
+            elif surf_data.endswith("gii.gz"):
                 gii = _load_surf_files_gifti_gzip(surf_data)
                 data_part = _gifti_img_to_data(gii)
 
             if len(data_part.shape) == 1:
                 data_part = data_part[:, np.newaxis]
-            if f == 0:
+            if i == 0:
                 data = data_part
-            elif f > 0:
+            else:
                 try:
                     data = np.concatenate((data, data_part), axis=1)
                 except ValueError:
-                    raise ValueError('When more than one file is input, all '
-                                     'files must contain data with the same '
-                                     'shape in axis=0')
+                    raise ValueError(
+                        "When more than one file is input, "
+                        "all files must contain data "
+                        "with the same shape in axis=0."
+                    )
 
     # if the input is a numpy array
     elif isinstance(surf_data, np.ndarray):
@@ -808,17 +908,21 @@ def check_extensions(surf_data, data_extensions, freesurfer_data_extensions):
     """
     if isinstance(surf_data, Path):
         surf_data = str(surf_data)
-    if isinstance(surf_data, str) and (not any(surf_data.endswith(x)
-                                       for x in data_extensions +
-                                       freesurfer_data_extensions)):
+    if isinstance(surf_data, str) and (
+        not any(
+            surf_data.endswith(x)
+            for x in data_extensions + freesurfer_data_extensions
+        )
+    ):
         raise ValueError(
-            'The input type is not recognized. '
-            f'{surf_data!r} was given '
-            'while valid inputs are a Numpy array '
-            'or one of the following file formats: '
+            "The input type is not recognized. "
+            f"{surf_data!r} was given "
+            "while valid inputs are a Numpy array "
+            "or one of the following file formats: "
             f"{_stringify(data_extensions)}, "
-            'Freesurfer specific files such as '
-            f"{_stringify(freesurfer_data_extensions)}.")
+            "Freesurfer specific files such as "
+            f"{_stringify(freesurfer_data_extensions)}."
+        )
 
 
 def _gifti_img_to_mesh(gifti_img):
@@ -828,184 +932,111 @@ def _gifti_img_to_mesh(gifti_img):
     acceptable to .gii or .gii.gz
 
     """
-    error_message = ('The surf_mesh input is not recognized. '
-                     'Valid Freesurfer surface mesh inputs are: '
-                     f"{_stringify(FREESURFER_MESH_EXTENSIONS)}."
-                     'You provided input which have '
-                     'no {0} or of empty value={1}')
+    error_message = (
+        "The surf_mesh input is not recognized. "
+        "Valid Freesurfer surface mesh inputs are: "
+        f"{_stringify(FREESURFER_MESH_EXTENSIONS)}."
+        "You provided input which have "
+        "no {0} or of empty value={1}"
+    )
     try:
         coords = gifti_img.get_arrays_from_intent(
-            nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])[0].data
+            nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
+        )[0].data
     except IndexError:
-        raise ValueError(error_message.format(
-            'NIFTI_INTENT_POINTSET', gifti_img.get_arrays_from_intent(
-                nibabel.nifti1.intent_codes['NIFTI_INTENT_POINTSET'])))
+        raise ValueError(
+            error_message.format(
+                "NIFTI_INTENT_POINTSET",
+                gifti_img.get_arrays_from_intent(
+                    nifti1.intent_codes["NIFTI_INTENT_POINTSET"]
+                ),
+            )
+        )
     try:
         faces = gifti_img.get_arrays_from_intent(
-            nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])[0].data
+            nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
+        )[0].data
     except IndexError:
-        raise ValueError(error_message.format(
-            'NIFTI_INTENT_TRIANGLE', gifti_img.get_arrays_from_intent(
-                nibabel.nifti1.intent_codes['NIFTI_INTENT_TRIANGLE'])))
+        raise ValueError(
+            error_message.format(
+                "NIFTI_INTENT_TRIANGLE",
+                gifti_img.get_arrays_from_intent(
+                    nifti1.intent_codes["NIFTI_INTENT_TRIANGLE"]
+                ),
+            )
+        )
     return coords, faces
 
 
-# function to figure out datatype and load data
-def load_surf_mesh(surf_mesh):
-    """Load a surface :term:`mesh` geometry.
+def combine_hemispheres_meshes(mesh):
+    """Combine the left and right hemisphere meshes such that both are
+    represented in the same mesh.
 
     Parameters
     ----------
-    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, or \
-        :obj:`numpy.ndarray` or Mesh
-        Either a file containing surface :term:`mesh` geometry
-        (valid formats are .gii .gii.gz or Freesurfer specific files
-        such as .orig, .pial, .sphere, .white, .inflated)
-        or two Numpy arrays organized in a list,
-        tuple or a namedtuple with the fields "coordinates" and "faces",
-        or a Mesh object with "coordinates" and "faces" attributes.
+    mesh : :obj:`~nilearn.surface.PolyMesh`
+        The mesh object containing the left and right hemisphere meshes.
 
     Returns
     -------
-    mesh : Mesh
-        With the fields "coordinates" and "faces", each containing a
-        :obj:`numpy.ndarray`
-
+    combined_mesh : :obj:`~nilearn.surface.InMemoryMesh`
+        The combined mesh object containing both left and right hemisphere
+        meshes.
     """
-    # if input is a filename, try to load it
-    surf_mesh = stringify_path(surf_mesh)
-    if isinstance(surf_mesh, str):
-        # resolve globbing
-        file_list = resolve_globbing(surf_mesh)
-        if len(file_list) == 1:
-            surf_mesh = file_list[0]
-        elif len(file_list) > 1:
-            # empty list is handled inside resolve_globbing function
-            raise ValueError(
-                f"More than one file matching path: {surf_mesh} \n"
-                "load_surf_mesh can only load one file at a time.")
+    # calculate how much the right hemisphere should be offset
+    left_max_x = mesh.parts["left"].coordinates[:, 0].max()
+    right_min_x = mesh.parts["right"].coordinates[:, 0].min()
+    offset = (
+        left_max_x - right_min_x + 1
+    )  # add a small buffer to avoid touching
 
-        if any(surf_mesh.endswith(x) for x in FREESURFER_MESH_EXTENSIONS):
-            coords, faces, header = fs.io.read_geometry(surf_mesh,
-                                                        read_metadata=True)
-            # See https://github.com/nilearn/nilearn/pull/3235
-            if 'cras' in header:
-                coords += header['cras']
-            mesh = Mesh(coordinates=coords, faces=faces)
-        elif surf_mesh.endswith('gii'):
-            coords, faces = _gifti_img_to_mesh(nibabel.load(surf_mesh))
-            mesh = Mesh(coordinates=coords, faces=faces)
-        elif surf_mesh.endswith('gii.gz'):
-            gifti_img = _load_surf_files_gifti_gzip(surf_mesh)
-            coords, faces = _gifti_img_to_mesh(gifti_img)
-            mesh = Mesh(coordinates=coords, faces=faces)
-        else:
-            raise ValueError('The input type is not recognized. '
-                             f'{surf_mesh!r} was given '
-                             'while valid inputs are one of the following '
-                             'file formats: .gii, .gii.gz, '
-                             'Freesurfer specific files such as '
-                             f"{_stringify(FREESURFER_MESH_EXTENSIONS)}, "
-                             'two Numpy arrays organized in a list, tuple '
-                             'or a namedtuple with the '
-                             'fields "coordinates" and "faces".')
-    elif isinstance(surf_mesh, (list, tuple)):
-        try:
-            coords, faces = surf_mesh
-            mesh = Mesh(coordinates=coords, faces=faces)
-        except Exception:
-            raise ValueError('If a list or tuple is given as input, '
-                             'it must have two elements, the first is '
-                             'a Numpy array containing the x-y-z coordinates '
-                             'of the mesh vertices, the second is a Numpy '
-                             'array containing  the indices (into coords) of '
-                             'the mesh faces. The input was a list with '
-                             f'{len(surf_mesh)} elements.')
-    elif (hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates")):
-        coords, faces = surf_mesh.coordinates, surf_mesh.faces
-        mesh = Mesh(coordinates=coords, faces=faces)
-
-    else:
-        raise ValueError('The input type is not recognized. '
-                         'Valid inputs are one of the following file '
-                         'formats: .gii, .gii.gz, '
-                         'Freesurfer specific files such as '
-                         f"{_stringify(FREESURFER_MESH_EXTENSIONS)}"
-                         'or two Numpy arrays organized in a list, tuple or '
-                         'a namedtuple with the fields "coordinates" and '
-                         '"faces"')
-
-    return mesh
+    combined_coords = np.concatenate(
+        (
+            mesh.parts["left"].coordinates,
+            mesh.parts["right"].coordinates + np.asarray([offset, 0, 0]),
+        )
+    )
+    combined_faces = np.concatenate(
+        (
+            mesh.parts["left"].faces,
+            mesh.parts["right"].faces
+            + mesh.parts["left"].coordinates.shape[0],
+        )
+    )
+    return InMemoryMesh(combined_coords, combined_faces)
 
 
-def load_surface(surface):
-    """Load a surface.
-
-    Parameters
-    ----------
-    surface : Surface-like (see description)
-        The surface to be loaded.
-        A surface can be:
-            - a nilearn.surface.Surface
-            - a sequence (mesh, data) where:
-                - :term:`mesh` can be:
-                    - a nilearn.surface.Mesh
-                    - a path to .gii or .gii.gz etc.
-                    - a sequence of two numpy arrays,
-                    the first containing :term:`vertex` coordinates
-                    and the second containing triangles.
-                - data can be:
-                    - a path to .gii or .gii.gz etc.
-                    - a numpy array with shape (n_vertices,)
-                    or (n_time_points, n_vertices)
-
-    Returns
-    -------
-    surface : Surface
-        With the fields "mesh" (Mesh object) and "data" (:obj:`numpy.ndarray`).
-
-    """
-    # Handle the case where we received a Surface
-    # object with mesh and data attributes
-    if hasattr(surface, "mesh") and hasattr(surface, "data"):
-        mesh = load_surf_mesh(surface.mesh)
-        data = load_surf_data(surface.data)
-    # Handle the case where we received a sequence
-    # (mesh, data)
-    elif isinstance(surface, (list, tuple, np.ndarray)):
-        if len(surface) != 2:
-            raise ValueError("`load_surface` accepts iterables "
-                             "of length 2 to define a surface. "
-                             f"You provided a {type(surface)} "
-                             f"of length {len(surface)}.")
-        mesh = load_surf_mesh(surface[0])
-        data = load_surf_data(surface[1])
-    else:
-        raise ValueError(
-            "Wrong parameter `surface` in `load_surface`. "
-            "Please refer to the documentation for more information.")
-    return Surface(mesh, data)
-
-
-def check_mesh(mesh):
-    """Check that :term:`mesh` data is either a :obj:`str`, \
-        or a :obj:`dict` with sufficient entries.
+def check_mesh_is_fsaverage(mesh):
+    """Check that :term:`mesh` data is either a :obj:`str`, or a :obj:`dict`
+    with sufficient entries. Basically ensures that the mesh data is
+    Freesurfer-like fsaverage data.
 
     Used by plotting.surf_plotting.plot_img_on_surf and
-    plotting.html_surface._full_brain_info
-
+    plotting.html_surface._full_brain_info.
     """
     if isinstance(mesh, str):
-        return datasets.fetch_surf_fsaverage(mesh)
+        # avoid circular imports
+        from nilearn.datasets import fetch_surf_fsaverage
+
+        return fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, Mapping):
-        raise TypeError("The mesh should be a str or a dictionary, "
-                        f"you provided: {type(mesh).__name__}.")
-    missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
-               'infl_left', 'infl_right'}.difference(mesh.keys())
+        raise TypeError(
+            "The mesh should be a str or a dictionary, "
+            f"you provided: {type(mesh).__name__}."
+        )
+    missing = {
+        "pial_left",
+        "pial_right",
+        "sulc_left",
+        "sulc_right",
+        "infl_left",
+        "infl_right",
+    }.difference(mesh.keys())
     if missing:
         raise ValueError(
             f"{missing} {'are' if len(missing) > 1 else 'is'} "
-            "missing from the provided mesh dictionary")
+            "missing from the provided mesh dictionary"
+        )
     return mesh
 
 
@@ -1015,13 +1046,14 @@ def check_mesh_and_data(mesh, data):
 
     Parameters
     ----------
-    mesh : :obj:`str` or :obj:`numpy.ndarray` or Mesh
+    mesh : :obj:`str` or :obj:`numpy.ndarray` or \
+           :obj:`~nilearn.surface.InMemoryMesh`
         Either a file containing surface :term:`mesh` geometry (valid formats
         are .gii .gii.gz or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or two Numpy arrays organized in a list,
         tuple or a namedtuple with the fields "coordinates" and "faces", or a
-        Mesh object with "coordinates" and "faces" attributes.
-
+        :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates" and
+        "faces" attributes.
     data : :obj:`str` or :obj:`numpy.ndarray`
         Either a file containing surface data (valid format are .gii,
         .gii.gz, .mgz, .nii, .nii.gz, or Freesurfer specific files such as
@@ -1031,12 +1063,10 @@ def check_mesh_and_data(mesh, data):
 
     Returns
     -------
-    mesh : Mesh
+    mesh : :obj:`~nilearn.surface.InMemoryMesh`
         Checked :term:`mesh`.
-
     data : :obj:`numpy.ndarray`
         Checked data.
-
     """
     mesh = load_surf_mesh(mesh)
     data = load_surf_data(data)
@@ -1044,9 +1074,10 @@ def check_mesh_and_data(mesh, data):
     # equal to the size of the data.
     if len(data) != len(mesh.coordinates):
         raise ValueError(
-            'Mismatch between number of nodes '
-            f'in mesh ({len(mesh.coordinates)}) and '
-            f'size of surface data ({len(data)})')
+            "Mismatch between number of nodes "
+            f"in mesh ({len(mesh.coordinates)}) and "
+            f"size of surface data ({len(data)})"
+        )
     # Check that the indices of faces are consistent with the
     # mesh coordinates. That is, we shouldn't have an index
     # larger or equal to the length of the coordinates array.
@@ -1059,37 +1090,926 @@ def check_mesh_and_data(mesh, data):
     return mesh, data
 
 
-def check_surface(surface):
-    """Load a surface as a Surface object.
-
-    This function will make sure that the surfaces's
-    mesh and data have compatible shapes.
+# function to figure out datatype and load data
+def load_surf_mesh(surf_mesh):
+    """Load a surface :term:`mesh` geometry.
 
     Parameters
     ----------
-    surface : Surface-like (see description)
-        The surface to be loaded.
-        A surface can be:
-            - a nilearn.surface.Surface
-            - a sequence (:term:`mesh`, data) where:
-                - :term:`mesh` can be:
-                    - a nilearn.surface.Mesh
-                    - a path to .gii or .gii.gz etc.
-                    - a sequence of two numpy arrays,
-                    the first containing :term:`vertex` coordinates
-                    and the second containing triangles.
-                - data can be:
-                    - a path to .gii or .gii.gz etc.
-                    - a numpy array with shape (n_vertices,)
-                    or (n_time_points, n_vertices)
+    surf_mesh : :obj:`str`, :obj:`pathlib.Path`, or \
+        :obj:`numpy.ndarray` or :obj:`~nilearn.surface.InMemoryMesh`
+        Either a file containing surface :term:`mesh` geometry
+        (valid formats are .gii .gii.gz or Freesurfer specific files
+        such as .orig, .pial, .sphere, .white, .inflated)
+        or two Numpy arrays organized in a list,
+        tuple or a namedtuple with the fields "coordinates" and "faces",
+        or an :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
+        and "faces" attributes.
 
     Returns
     -------
-    surface : Surface
-        Checked surface object.
+    mesh : :obj:`~nilearn.surface.InMemoryMesh`
+        With the attributes "coordinates" and "faces", each containing a
+        :obj:`numpy.ndarray`
 
     """
-    surface = load_surface(surface)
-    mesh, data = check_mesh_and_data(surface.mesh,
-                                     surface.data)
-    return Surface(mesh, data)
+    # if input is a filename, try to load it
+    surf_mesh = stringify_path(surf_mesh)
+    if isinstance(surf_mesh, str):
+        # resolve globbing
+        file_list = resolve_globbing(surf_mesh)
+        if len(file_list) > 1:
+            # empty list is handled inside resolve_globbing function
+            raise ValueError(
+                f"More than one file matching path: {surf_mesh}\n"
+                "load_surf_mesh can only load one file at a time."
+            )
+        surf_mesh = str(file_list[0])
+
+        if any(surf_mesh.endswith(x) for x in FREESURFER_MESH_EXTENSIONS):
+            coords, faces, header = fs.io.read_geometry(
+                surf_mesh, read_metadata=True
+            )
+            # See https://github.com/nilearn/nilearn/pull/3235
+            if "cras" in header:
+                coords += header["cras"]
+            mesh = InMemoryMesh(coordinates=coords, faces=faces)
+        elif surf_mesh.endswith("gii"):
+            coords, faces = _gifti_img_to_mesh(load(surf_mesh))
+            mesh = InMemoryMesh(coordinates=coords, faces=faces)
+        elif surf_mesh.endswith("gii.gz"):
+            gifti_img = _load_surf_files_gifti_gzip(surf_mesh)
+            coords, faces = _gifti_img_to_mesh(gifti_img)
+            mesh = InMemoryMesh(coordinates=coords, faces=faces)
+        else:
+            raise ValueError(
+                "The input type is not recognized. "
+                f"{surf_mesh!r} was given "
+                "while valid inputs are one of the following "
+                "file formats: .gii, .gii.gz, "
+                "Freesurfer specific files such as "
+                f"{_stringify(FREESURFER_MESH_EXTENSIONS)}, "
+                "two Numpy arrays organized in a list, tuple "
+                "or a namedtuple with the "
+                'fields "coordinates" and "faces".'
+            )
+    elif isinstance(surf_mesh, (list, tuple)):
+        try:
+            coords, faces = surf_mesh
+            mesh = InMemoryMesh(coordinates=coords, faces=faces)
+        except Exception:
+            raise ValueError(
+                "If a list or tuple is given as input, "
+                "it must have two elements, the first is "
+                "a Numpy array containing the x-y-z coordinates "
+                "of the mesh vertices, the second is a Numpy "
+                "array containing  the indices (into coords) of "
+                "the mesh faces. The input was a list with "
+                f"{len(surf_mesh)} elements."
+            )
+    elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
+        coords, faces = surf_mesh.coordinates, surf_mesh.faces
+        mesh = InMemoryMesh(coordinates=coords, faces=faces)
+
+    else:
+        raise ValueError(
+            "The input type is not recognized. "
+            "Valid inputs are one of the following file "
+            "formats: .gii, .gii.gz, "
+            "Freesurfer specific files such as "
+            f"{_stringify(FREESURFER_MESH_EXTENSIONS)}"
+            "or two Numpy arrays organized in a list, tuple or "
+            'a namedtuple with the fields "coordinates" and '
+            '"faces"'
+        )
+
+    return mesh
+
+
+class PolyData:
+    """A collection of data arrays.
+
+    It is a shallow wrapper around the ``parts`` dictionary, which cannot be
+    empty and whose keys must be a subset of {"left", "right"}.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    left : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
+           or None, default = None
+
+    right : 1/2D :obj:`numpy.ndarray` or :obj:`str` or :obj:`pathlib.Path` \
+            or None, default = None
+
+    Attributes
+    ----------
+    parts : :obj:`dict` of 2D :obj:`numpy.ndarray` (n_vertices, n_timepoints)
+
+    shape : :obj:`tuple` of :obj:`int`
+            The first dimension corresponds to the vertices:
+            the typical shape of the
+            data for a hemisphere is ``(n_vertices, n_time_points)``.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from nilearn.surface import PolyData
+    >>> n_time_points = 10
+    >>> n_left_vertices = 5
+    >>> n_right_vertices = 7
+    >>> left = np.ones((n_left_vertices, n_time_points))
+    >>> right = np.ones((n_right_vertices, n_time_points))
+    >>> PolyData(left=left, right=right)
+    <PolyData (12, 10)>
+    >>> PolyData(right=right)
+    <PolyData (7, 10)>
+
+    >>> PolyData()
+    Traceback (most recent call last):
+        ...
+    ValueError: Cannot create an empty PolyData. ...
+    """
+
+    def __init__(self, left=None, right=None):
+        if left is None and right is None:
+            raise ValueError(
+                "Cannot create an empty PolyData. "
+                "Either left or right (or both) must be provided."
+            )
+
+        parts = {}
+        for hemi, param in zip(["left", "right"], [left, right]):
+            if param is not None:
+                if not isinstance(param, np.ndarray):
+                    param = load_surf_data(param)
+                parts[hemi] = param
+        self.parts = parts
+
+        self._check_parts()
+
+    def _check_parts(self):
+        parts = self.parts
+
+        if len(parts) == 1:
+            return
+
+        if len(parts["left"].shape) != len(parts["right"].shape) or (
+            len(parts["left"].shape) > 1
+            and len(parts["right"].shape) > 1
+            and parts["left"].shape[-1] != parts["right"].shape[-1]
+        ):
+            raise ValueError(
+                f"Data arrays for keys 'left' and 'right' "
+                "have incompatible shapes: "
+                f"{parts['left'].shape} and {parts['right'].shape}"
+            )
+
+    @property
+    def shape(self):
+        """Shape of the data."""
+        if len(self.parts) == 1:
+            return next(iter(self.parts.values())).shape
+
+        tmp = next(iter(self.parts.values()))
+
+        sum_vertices = sum(p.shape[0] for p in self.parts.values())
+        return (
+            (sum_vertices, tmp.shape[1])
+            if len(tmp.shape) == 2
+            else (sum_vertices,)
+        )
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} {self.shape}>"
+
+    def _get_min_max(self):
+        """Get min and max across parts.
+
+        Returns
+        -------
+        vmin : float
+
+        vmax : float
+        """
+        vmin = min(x.min() for x in self.parts.values())
+        vmax = max(x.max() for x in self.parts.values())
+        return vmin, vmax
+
+    def _check_ndims(self, dim, var_name="img"):
+        """Check if the data is of a given dimension.
+
+        Raise error if not.
+
+        Parameters
+        ----------
+        dim : int
+            Dimensions the data should have.
+
+        var_name : str, optional
+            Name of the variable to include in the error message.
+
+        Returns
+        -------
+        raise ValueError if the data of the SurfaceImage is not of the given
+        dimension.
+        """
+        if not all(x.ndim == dim for x in self.parts.values()):
+            msg = [f"{v}D for {k}" for k, v in self.parts.items()]
+            raise ValueError(
+                f"Data for each part of {var_name} should be {dim}D. "
+                f"Found: {', '.join(msg)}."
+            )
+
+    def to_filename(self, filename):
+        """Save data to gifti.
+
+        Parameters
+        ----------
+        filename : :obj:`str` or :obj:`pathlib.Path`
+                   If the filename contains `hemi-L`
+                   then only the left part of the mesh will be saved.
+                   If the filename contains `hemi-R`
+                   then only the right part of the mesh will be saved.
+                   If the filename contains neither of those,
+                   then `_hemi-L` and `_hemi-R`
+                   will be appended to the filename and both will be saved.
+        """
+        filename = _sanitize_filename(filename)
+
+        if "hemi-L" not in filename.stem and "hemi-R" not in filename.stem:
+            for hemi in ["L", "R"]:
+                self.to_filename(
+                    filename.with_stem(f"{filename.stem}_hemi-{hemi}")
+                )
+            return None
+
+        if "hemi-L" in filename.stem:
+            data = self.parts["left"]
+        if "hemi-R" in filename.stem:
+            data = self.parts["right"]
+
+        _data_to_gifti(data, filename)
+
+
+def at_least_2d(input):
+    """Force surface image or polydata to be 2d."""
+    if len(input.shape) == 2:
+        return input
+
+    if isinstance(input, SurfaceImage):
+        input.data = at_least_2d(input.data)
+        return input
+
+    if len(input.shape) == 1:
+        for k, v in input.parts.items():
+            input.parts[k] = v.reshape((v.shape[0], 1))
+
+    return input
+
+
+class SurfaceMesh(abc.ABC):
+    """A surface :term:`mesh` having vertex, \
+    coordinates and faces (triangles).
+
+    .. versionadded:: 0.11.0
+
+    Attributes
+    ----------
+    n_vertices : int
+        number of vertices
+    """
+
+    n_vertices: int
+
+    # TODO those are properties are for compatibility with plot_surf_img.
+    # But they should probably become functions as they can take some time to
+    # return or even fail
+    coordinates: np.ndarray
+    faces: np.ndarray
+
+    def __repr__(self):
+        return (
+            f"<{self.__class__.__name__} with "
+            f"{self.n_vertices} vertices and "
+            f"{len(self.faces)} faces.>"
+        )
+
+    def to_gifti(self, gifti_file):
+        """Write surface mesh to a Gifti file on disk.
+
+        Parameters
+        ----------
+        gifti_file : :obj:`str` or :obj:`pathlib.Path`
+            Filename to save the mesh to.
+        """
+        _mesh_to_gifti(self.coordinates, self.faces, gifti_file)
+
+
+class InMemoryMesh(SurfaceMesh):
+    """A surface mesh stored as in-memory numpy arrays.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    coordinates : :obj:`numpy.ndarray`
+
+    faces : :obj:`numpy.ndarray`
+
+    Attributes
+    ----------
+    n_vertices : int
+        number of vertices
+    """
+
+    n_vertices: int
+
+    coordinates: np.ndarray
+
+    faces: np.ndarray
+
+    def __init__(self, coordinates, faces):
+        self.coordinates = coordinates
+        self.faces = faces
+        self.n_vertices = coordinates.shape[0]
+
+    def __getitem__(self, index):
+        if index == 0:
+            return self.coordinates
+        elif index == 1:
+            return self.faces
+        else:
+            raise IndexError(
+                "Index out of range. Use 0 for coordinates and 1 for faces."
+            )
+
+    def __iter__(self):
+        return iter([self.coordinates, self.faces])
+
+
+class FileMesh(SurfaceMesh):
+    """A surface mesh stored in a Gifti or Freesurfer file.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    file_path : :obj:`str` or :obj:`pathlib.Path`
+            Filename to read mesh from.
+    """
+
+    n_vertices: int
+
+    file_path: pathlib.Path
+
+    def __init__(self, file_path):
+        self.file_path = pathlib.Path(file_path)
+        self.n_vertices = load_surf_mesh(self.file_path).coordinates.shape[0]
+
+    @property
+    def coordinates(self):
+        """Get x, y, z, values for each mesh vertex.
+
+        Returns
+        -------
+        :obj:`numpy.ndarray`
+        """
+        return load_surf_mesh(self.file_path).coordinates
+
+    @property
+    def faces(self):
+        """Get array of adjacent vertices.
+
+        Returns
+        -------
+        :obj:`numpy.ndarray`
+        """
+        return load_surf_mesh(self.file_path).faces
+
+    def loaded(self):
+        """Load surface mesh into memory.
+
+        Returns
+        -------
+        :obj:`nilearn.surface.InMemoryMesh`
+        """
+        loaded = load_surf_mesh(self.file_path)
+        return InMemoryMesh(loaded.coordinates, loaded.faces)
+
+
+class PolyMesh:
+    """A collection of meshes.
+
+    It is a shallow wrapper around the ``parts`` dictionary, which cannot be
+    empty and whose keys must be a subset of {"left", "right"}.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    left : :obj:`str` or :obj:`pathlib.Path` \
+                or :obj:`nilearn.surface.SurfaceMesh` or None, default=None
+            SurfaceMesh for the left hemisphere.
+
+    right : :obj:`str` or :obj:`pathlib.Path` \
+                or :obj:`nilearn.surface.SurfaceMesh` or None, default=None
+            SurfaceMesh for the right hemisphere.
+
+    Attributes
+    ----------
+    n_vertices : int
+        number of vertices
+    """
+
+    n_vertices: int
+
+    def __init__(self, left=None, right=None) -> None:
+        if left is None and right is None:
+            raise ValueError(
+                "Cannot create an empty PolyMesh. "
+                "Either left or right (or both) must be provided."
+            )
+
+        self.parts = {}
+        if left is not None:
+            if not isinstance(left, SurfaceMesh):
+                left = FileMesh(left).loaded()
+            self.parts["left"] = left
+        if right is not None:
+            if not isinstance(right, SurfaceMesh):
+                right = FileMesh(right).loaded()
+            self.parts["right"] = right
+
+        self.n_vertices = sum(p.n_vertices for p in self.parts.values())
+
+    def to_filename(self, filename):
+        """Save mesh to gifti.
+
+        Parameters
+        ----------
+        filename : :obj:`str` or :obj:`pathlib.Path`
+                   If the filename contains `hemi-L`
+                   then only the left part of the mesh will be saved.
+                   If the filename contains `hemi-R`
+                   then only the right part of the mesh will be saved.
+                   If the filename contains neither of those,
+                   then `_hemi-L` and `_hemi-R`
+                   will be appended to the filename and both will be saved.
+        """
+        filename = _sanitize_filename(filename)
+
+        if "hemi-L" not in filename.stem and "hemi-R" not in filename.stem:
+            for hemi in ["L", "R"]:
+                self.to_filename(
+                    filename.with_stem(f"{filename.stem}_hemi-{hemi}")
+                )
+            return None
+
+        if "hemi-L" in filename.stem:
+            mesh = self.parts["left"]
+        if "hemi-R" in filename.stem:
+            mesh = self.parts["right"]
+
+        mesh.to_gifti(filename)
+
+
+def _check_data_and_mesh_compat(mesh, data):
+    """Check that mesh and data have the same keys and that shapes match.
+
+    mesh : :obj:`nilearn.surface.PolyMesh`
+
+    data : :obj:`nilearn.surface.PolyData`
+    """
+    data_keys, mesh_keys = set(data.parts.keys()), set(mesh.parts.keys())
+    if data_keys != mesh_keys:
+        diff = data_keys.symmetric_difference(mesh_keys)
+        raise ValueError(
+            "Data and mesh do not have the same keys. "
+            f"Offending keys: {diff}"
+        )
+    for key in mesh_keys:
+        if data.parts[key].shape[0] != mesh.parts[key].n_vertices:
+            raise ValueError(
+                f"Data shape does not match number of vertices for '{key}':\n"
+                f"- data shape: {data.parts[key].shape}\n"
+                f"- n vertices: {mesh.parts[key].n_vertices}"
+            )
+
+
+def check_same_n_vertices(mesh_1, mesh_2):
+    """Check that 2 PolyMesh have the same keys and that n vertices match.
+
+    Parameters
+    ----------
+    mesh_1: PolyMesh
+
+    mesh_2: PolyMesh
+    """
+    keys_1, keys_2 = set(mesh_1.parts.keys()), set(mesh_2.parts.keys())
+    if keys_1 != keys_2:
+        diff = keys_1.symmetric_difference(keys_2)
+        raise ValueError(
+            f"Meshes do not have the same keys. Offending keys: {diff}"
+        )
+    for key in keys_1:
+        if mesh_1.parts[key].n_vertices != mesh_2.parts[key].n_vertices:
+            raise ValueError(
+                f"Number of vertices do not match for '{key}'."
+                "number of vertices in mesh_1: "
+                f"{mesh_1.parts[key].n_vertices}; "
+                f"in mesh_2: {mesh_2.parts[key].n_vertices}"
+            )
+
+
+def _mesh_to_gifti(coordinates, faces, gifti_file):
+    """Write surface mesh to gifti file on disk.
+
+    Parameters
+    ----------
+    coordinates : :obj:`numpy.ndarray`
+        a Numpy array containing the x-y-z coordinates of the mesh vertices
+
+    faces : :obj:`numpy.ndarray`
+        a Numpy array containing the indices (into coords) of the mesh faces.
+
+    gifti_file : :obj:`str` or :obj:`pathlib.Path`
+        name for the output gifti file.
+    """
+    gifti_file = Path(gifti_file)
+    gifti_img = gifti.GiftiImage()
+    coords_array = gifti.GiftiDataArray(
+        coordinates, intent="NIFTI_INTENT_POINTSET", datatype="float32"
+    )
+    faces_array = gifti.GiftiDataArray(
+        faces, intent="NIFTI_INTENT_TRIANGLE", datatype="int32"
+    )
+    gifti_img.add_gifti_data_array(coords_array)
+    gifti_img.add_gifti_data_array(faces_array)
+    gifti_img.to_filename(gifti_file)
+
+
+def _data_to_gifti(data, gifti_file):
+    """Save data from Polydata to a gifti file.
+
+    Parameters
+    ----------
+    data : :obj:`numpy.ndarray`
+        The data will be cast to np.uint8, np.int32) or np.float32
+        as only the following are 'supported' for now:
+        - NIFTI_TYPE_UINT8
+        - NIFTI_TYPE_INT32
+        - NIFTI_TYPE_FLOAT32
+        See https://github.com/nipy/nibabel/blob/master/nibabel/gifti/gifti.py
+
+    gifti_file : :obj:`str` or :obj:`pathlib.Path`
+        name for the output gifti file.
+    """
+    if data.dtype in [np.uint16, np.uint32, np.uint64]:
+        data = data.astype(np.uint8)
+    elif data.dtype in [np.int8, np.int16, np.int64]:
+        data = data.astype(np.int32)
+    elif data.dtype in [np.float64]:
+        data = data.astype(np.float32)
+
+    if data.dtype == np.uint8:
+        datatype = "NIFTI_TYPE_UINT8"
+    elif data.dtype == np.int32:
+        datatype = "NIFTI_TYPE_INT32"
+    elif data.dtype == np.float32:
+        datatype = "NIFTI_TYPE_FLOAT32"
+    else:
+        datatype = None
+    darray = gifti.GiftiDataArray(data=data, datatype=datatype)
+
+    gii = gifti.GiftiImage(darrays=[darray])
+    gii.to_filename(Path(gifti_file))
+
+
+def _sanitize_filename(filename):
+    """Check filenames to write gifti.
+
+    - add suffix .gii if missing
+    - make sure that there is only one hemi entity in the filename
+
+    Parameters
+    ----------
+    filename : :obj:`str` or :obj:`pathlib.Path`
+        filename to check
+
+    Returns
+    -------
+    :obj:`pathlib.Path`
+    """
+    filename = Path(filename)
+
+    if not filename.suffix:
+        filename = filename.with_suffix(".gii")
+    if filename.suffix != ".gii":
+        raise ValueError(
+            "SurfaceMesh / Data should be saved as gifti files "
+            "with the extension '.gii'.\n"
+            f"Got '{filename.suffix}'."
+        )
+
+    if "hemi-L" in filename.stem and "hemi-R" in filename.stem:
+        raise ValueError(
+            "'filename' cannot contain both "
+            "'hemi-L' and 'hemi-R'.\n"
+            f"Got: {filename}"
+        )
+    return filename
+
+
+class SurfaceImage:
+    """Surface image containing meshes & data for both hemispheres.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    mesh : :obj:`nilearn.surface.PolyMesh`, \
+           or :obj:`dict` of  \
+           :obj:`nilearn.surface.SurfaceMesh`, \
+           :obj:`str`, \
+           :obj:`pathlib.Path`
+           Meshes for the both hemispheres.
+
+    data : :obj:`nilearn.surface.PolyData`, \
+           or :obj:`dict` of  \
+           :obj:`numpy.ndarray`, \
+           :obj:`str`, \
+           :obj:`pathlib.Path`
+           Data for the both hemispheres.
+
+    squeeze_on_save : :obj:`bool` or None, default=None
+            If ``True`` axes of length one from the data
+            will be removed before saving them to file.
+            If ``None`` is passed,
+            then the value will be set to ``True``
+            if any of the data parts is one dimensional.
+
+    Attributes
+    ----------
+    shape : (int, int)
+        shape of the surface data array
+    """
+
+    def __init__(self, mesh, data):
+        """Create a SurfaceImage instance."""
+        self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
+
+        if not isinstance(data, (PolyData, dict)):
+            raise TypeError(
+                "'data' must be one of"
+                "[PolyData, dict].\n"
+                f"Got {type(data)}"
+            )
+
+        if isinstance(data, PolyData):
+            self.data = data
+        elif isinstance(data, dict):
+            self.data = PolyData(**data)
+
+        _check_data_and_mesh_compat(self.mesh, self.data)
+
+    @property
+    def shape(self):
+        """Shape of the data."""
+        return self.data.shape
+
+    def __repr__(self) -> str:
+        return f"<{self.__class__.__name__} {self.shape}>"
+
+    @classmethod
+    def from_volume(
+        cls, mesh, volume_img, inner_mesh=None, **vol_to_surf_kwargs
+    ):
+        """Create surface image from volume image.
+
+        Parameters
+        ----------
+        mesh : :obj:`nilearn.surface.PolyMesh` \
+             or :obj:`dict` of  \
+             :obj:`nilearn.surface.SurfaceMesh`, \
+             :obj:`str`, \
+             :obj:`pathlib.Path`
+             Surface mesh.
+
+        volume_img : Niimg-like object
+            3D or 4D volume image to project to the surface mesh.
+
+        inner_mesh : :obj:`nilearn.surface.PolyMesh` \
+             or :obj:`dict` of  \
+             :obj:`nilearn.surface.SurfaceMesh`, \
+             :obj:`str`, \
+             :obj:`pathlib.Path`, default=None
+            Inner mesh to pass to :func:`nilearn.surface.vol_to_surf`.
+
+        vol_to_surf_kwargs : dict[str, Any]
+            Dictionary of extra key-words arguments to pass
+            to :func:`nilearn.surface.vol_to_surf`.
+
+        Examples
+        --------
+        >>> from nilearn.surface import SurfaceImage
+        >>> from nilearn.datasets import load_fsaverage
+        >>> from nilearn.datasets import load_sample_motor_activation_image
+
+        >>> fsavg = load_fsaverage()
+        >>> vol_img = load_sample_motor_activation_image()
+        >>> img = SurfaceImage.from_volume(fsavg["white_matter"], vol_img)
+        >>> img
+        <SurfaceImage (20484,)>
+        >>> img = SurfaceImage.from_volume(
+        ...     fsavg["white_matter"], vol_img, inner_mesh=fsavg["pial"]
+        ... )
+        >>> img
+        <SurfaceImage (20484,)>
+        """
+        mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
+        if inner_mesh is not None:
+            inner_mesh = (
+                inner_mesh
+                if isinstance(inner_mesh, PolyMesh)
+                else PolyMesh(**inner_mesh)
+            )
+            left_kwargs = {"inner_mesh": inner_mesh.parts["left"]}
+            right_kwargs = {"inner_mesh": inner_mesh.parts["right"]}
+        else:
+            left_kwargs, right_kwargs = {}, {}
+
+        if isinstance(volume_img, (str, Path)):
+            volume_img = check_niimg(volume_img)
+
+        texture_left = vol_to_surf(
+            volume_img, mesh.parts["left"], **vol_to_surf_kwargs, **left_kwargs
+        )
+
+        texture_right = vol_to_surf(
+            volume_img,
+            mesh.parts["right"],
+            **vol_to_surf_kwargs,
+            **right_kwargs,
+        )
+
+        data = PolyData(left=texture_left, right=texture_right)
+
+        return cls(mesh=mesh, data=data)
+
+
+def get_data(img):
+    """Concatenate the data of a SurfaceImage across hemispheres and return
+    as a numpy array.
+
+    Parameters
+    ----------
+    img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
+        SurfaceImage whose data to concatenate and extract.
+
+    Returns
+    -------
+    :obj:`~numpy.ndarray`
+        Concatenated data across hemispheres.
+    """
+    if isinstance(img, SurfaceImage):
+        data = img.data
+    return np.concatenate(list(data.parts.values()), axis=0)
+
+
+def concat_imgs(imgs):
+    """Concatenate the data of a list or tuple of SurfaceImages.
+
+    Assumes all images have same meshes.
+
+    Parameters
+    ----------
+    imgs : :obj:`list` or :obj:`tuple` \
+           of :obj:`~nilearn.surface.SurfaceImage` object
+
+    Returns
+    -------
+    SurfaceImage object
+    """
+    if not isinstance(imgs, (tuple, list)) or any(
+        not isinstance(x, SurfaceImage) for x in imgs
+    ):
+        raise TypeError(
+            "'imgs' must be a list or a tuple of SurfaceImage instances."
+        )
+
+    if len(imgs) == 1:
+        return imgs[0]
+
+    for i, img in enumerate(imgs):
+        check_same_n_vertices(img.mesh, imgs[0].mesh)
+        imgs[i] = at_least_2d(img)
+
+    output_data = {}
+    for part in imgs[0].data.parts:
+        tmp = [img.data.parts[part] for img in imgs]
+        output_data[part] = np.concatenate(tmp, axis=1)
+
+    return new_img_like(imgs[0], data=output_data)
+
+
+def mean_img(img):
+    """Compute mean of SurfaceImage over time points (for 'time series').
+
+    Parameters
+    ----------
+    img : SurfaceImage
+
+    Returns
+    -------
+    SurfaceImage
+    """
+    if len(img.shape) < 2 or img.shape[1] < 2:
+        data = img.data
+    else:
+        data = {
+            part: np.mean(value, axis=1).astype(float)
+            for part, value in img.data.parts.items()
+        }
+    return new_img_like(img, data=data)
+
+
+def iter_img(img, return_iterator=True):
+    """Iterate over a SurfaceImage object in the 2nd dimension.
+
+    Parameters
+    ----------
+    imgs : SurfaceImage object
+
+    Returns
+    -------
+    Iterator or list of  SurfaceImage
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    output = (index_img(img, i) for i in range(at_least_2d(img).shape[1]))
+    return output if return_iterator else list(output)
+
+
+def index_img(img, index):
+    """Indexes into a 2D SurfaceImage in the second dimension.
+
+    Common use cases include extracting an image out of `img` or
+    creating a 2D image whose data is a subset of `img` data.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    index : Any type compatible with numpy array indexing
+        Used for indexing the 2D data array in the 2nd dimension.
+
+    Returns
+    -------
+    a SurfaceImage object
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    img = at_least_2d(img)
+    return new_img_like(img, data=_extract_data(img, index))
+
+
+def _extract_data(img, index):
+    """Extract data of a SurfaceImage a specified indices.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    index : Any type compatible with numpy array indexing
+        Used for indexing the 2D data array in the 2nd dimension.
+
+    Returns
+    -------
+    a dict where each value contains the data extracted
+    for each part
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    mesh = img.mesh
+    data = img.data
+
+    last_dim = 1 if isinstance(index, int) else len(index)
+
+    return {
+        hemi: data.parts[hemi][:, index]
+        .copy()
+        .reshape(mesh.parts[hemi].n_vertices, last_dim)
+        for hemi in data.parts
+    }
+
+
+def new_img_like(ref_img, data):
+    """Create a new SurfaceImage instance with new data."""
+    if not isinstance(ref_img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    mesh = ref_img.mesh
+    return SurfaceImage(
+        mesh=copy.deepcopy(mesh),
+        data=data,
+    )

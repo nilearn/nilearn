@@ -148,9 +148,3 @@ table.plotting-table img {
 .announcement-content {
   white-space: normal;
 }
-
-/* Wrap code blocks */
-pre {
-  white-space: pre-wrap !important;
-  word-break: break-all;
-}

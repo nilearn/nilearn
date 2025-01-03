@@ -10,7 +10,7 @@ import pandas as pd
 
 from . import load_confounds_components as components
 from .load_confounds_utils import (
-    MissingConfound,
+    MissingConfoundError,
     get_confounds_file,
     get_json,
     load_confounds_file_as_dataframe,
@@ -61,13 +61,20 @@ def _check_strategy(strategy):
             "strategy needs to be a tuple or list of strings"
             f" A {type(strategy)} was provided instead."
         )
+
+    if len(strategy) == 0:
+        warnings.warn(
+            "strategy is empty, confounds will return None.", stacklevel=3
+        )
+
     for conf in strategy:
         if conf == "non_steady_state":
             warnings.warn(
                 "Non-steady state volumes are always detected. It "
                 "doesn't need to be supplied as part of the "
                 "strategy. Supplying non_steady_state in strategy "
-                "will not have additional effect."
+                "will not have additional effect.",
+                stacklevel=3,
             )
         if conf not in all_confounds:
             raise ValueError(f"{conf} is not a supported type of confounds.")
@@ -85,9 +92,9 @@ def _check_error(missing):
     if missing["confounds"] or missing["keywords"]:
         error_msg = (
             "The following keywords or parameters are missing: "
-            + f" {missing['confounds']}"
-            + f" {missing['keywords']}"
-            + ". You may want to try a different denoising strategy."
+            f" {missing['confounds']}"
+            f" {missing['keywords']}"
+            ". You may want to try a different denoising strategy."
         )
         raise ValueError(error_msg)
 
@@ -356,6 +363,11 @@ def load_confounds(
     if flag_single:
         confounds_out = confounds_out[0]
         sample_mask_out = sample_mask_out[0]
+
+    # If no strategy was provided, return None for confounds
+    if len(strategy) == 0:
+        confounds_out = None
+
     return confounds_out, sample_mask_out
 
 
@@ -505,7 +517,7 @@ def _load_noise_component(confounds_raw, component, missing, **kargs):
 
     Raises
     ------
-    MissingConfound
+    MissingConfoundError
         If any of the confounds specified in the strategy are not found in the
         confounds file or confounds json file.
     """
@@ -520,7 +532,7 @@ def _load_noise_component(confounds_raw, component, missing, **kargs):
             loaded_confounds = getattr(components, f"_load_{component}")(
                 confounds_raw
             )
-    except MissingConfound as exception:
+    except MissingConfoundError as exception:
         missing["confounds"] += exception.params
         missing["keywords"] += exception.keywords
         loaded_confounds = pd.DataFrame()
