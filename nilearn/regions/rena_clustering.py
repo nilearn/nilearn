@@ -522,6 +522,7 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     return reduced_connectivity, reduced_X, labels
 
 
+@fill_doc
 def recursive_neighbor_agglomeration(
     X, mask_img, n_clusters, n_iter=10, threshold=1e-7, verbose=0
 ):

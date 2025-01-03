@@ -15,7 +15,7 @@ from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
 
 from nilearn import image
-from nilearn._utils import logger
+from nilearn._utils import fill_doc, logger
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -295,6 +295,7 @@ def _permuted_ols_on_chunk(
     )
 
 
+@fill_doc
 def permuted_ols(
     tested_vars,
     target_vars,

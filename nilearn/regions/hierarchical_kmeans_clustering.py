@@ -8,6 +8,7 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from nilearn._utils import fill_doc
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
@@ -142,6 +143,7 @@ def hierarchical_k_means(
     return _remove_empty_labels(fine_labels)
 
 
+@fill_doc
 class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     """Hierarchical KMeans.
 

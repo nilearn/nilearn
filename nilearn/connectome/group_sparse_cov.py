@@ -813,6 +813,7 @@ def group_sparse_scores(
     return ret
 
 
+@fill_doc
 def group_sparse_covariance_path(
     train_subjs,
     alphas,

@@ -1247,6 +1247,7 @@ def binarize_img(
     )
 
 
+@fill_doc
 def clean_img(
     imgs,
     runs=None,
@@ -1460,6 +1461,7 @@ def load_img(img, wildcards=True, dtype=None):
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
+@fill_doc
 def concat_imgs(
     niimgs,
     dtype=np.float32,

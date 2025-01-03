@@ -44,11 +44,14 @@ def main():
 
     for filename in filenames:
         for func_def in list_functions(filename):
+            check_fill_doc_decorator(func_def, filename)
+
             docstring = ast.get_docstring(func_def, clean=False)
+
             if not docstring:
                 print(
                     f"{filename}:{func_def.lineno} "
-                    "- {func_def.name} No docstring detected"
+                    f"- [red] {func_def.name} No docstring detected"
                 )
                 continue
 
@@ -60,14 +63,16 @@ def main():
             if missing:
                 print(f"{filename}:{func_def.lineno} - {func_def.name}")
                 for param, desc, value in missing:
-                    print(f" '{param}: {desc}' missing :obj:`{value}`")
+                    print(f" '{param}: {desc}' - [red]missing :obj:`{value}`")
 
         for class_def in list_classes(filename):
+            check_fill_doc_decorator(class_def, filename)
+
             docstring = ast.get_docstring(class_def, clean=False)
             if not docstring:
                 print(
                     f"{filename}:{class_def.lineno} "
-                    "- {class_def.name} No docstring detected"
+                    f"- {class_def.name} - [red] No docstring detected"
                 )
             else:
                 try:
@@ -80,14 +85,17 @@ def main():
                 if missing:
                     print(f"{filename}:{class_def.lineno} - {class_def.name}")
                     for param, desc, value in missing:
-                        print(f" '{param}: {desc}' missing :obj:`{value}`")
+                        print(
+                            f" '{param}: {desc}' "
+                            f"- [red] missing :obj:`{value}`"
+                        )
 
             for meth_def in list_functions(class_def):
                 docstring = ast.get_docstring(meth_def, clean=False)
                 if not docstring:
                     print(
                         f"{filename}:{meth_def.lineno} "
-                        "- {meth_def.name} No docstring detected"
+                        f"- {meth_def.name} - [red] No docstring detected"
                     )
                     continue
 
@@ -98,9 +106,50 @@ def main():
                 if missing:
                     print(f"{filename}:{meth_def.lineno} - {meth_def.name}")
                     for param, desc, value in missing:
-                        print(f" '{param}: {desc}' missing :obj:`{value}`")
+                        print(
+                            f" '{param}: {desc}' "
+                            f"- [red] missing :obj:`{value}`"
+                        )
 
     print(f"{n_issues} detected")
+
+
+def check_fill_doc_decorator(ast_node, filename):
+    """Check that fill_doc decorator is present when needed.
+
+    Checks if '%(' is present in the doc string
+    and warns if the function or class
+    does not have the @fill_doc dcorator.
+
+    Also warns if the decorator is used for no reason.
+    """
+    expand_docstring = False
+    if ast.get_docstring(ast_node, clean=False):
+        expand_docstring = "%(" in ast.get_docstring(ast_node, clean=False)
+
+    if isinstance(ast_node, ast.ClassDef):
+        methods_docstrings = [
+            ast.get_docstring(meth_def, clean=False)
+            for meth_def in list_functions(ast_node)
+        ]
+        expand_docstring_any_method = any(
+            "%(" in x for x in methods_docstrings
+        )
+        expand_docstring = expand_docstring or expand_docstring_any_method
+
+    if expand_docstring:
+        if len(ast_node.decorator_list) == 0:
+            print(
+                f"{filename}:{ast_node.lineno} "
+                f"- [red]missing @fill_doc decorator."
+            )
+    elif any(
+        getattr(x, "name", "") == "fill_doc" for x in ast_node.decorator_list
+    ):
+        print(
+            f"{filename}:{ast_node.lineno} "
+            f"- [red]@fill_doc decorator not needed."
+        )
 
 
 def get_missing(docstring, values=None):

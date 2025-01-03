@@ -7,6 +7,8 @@ import json
 from pathlib import Path
 from warnings import warn
 
+from nilearn._utils import fill_doc
+
 
 def _get_metadata_from_bids(
     field,
@@ -53,6 +55,7 @@ def _get_metadata_from_bids(
     return None
 
 
+@fill_doc
 def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     """Return the StartTime metadata field from a BIDS derivatives dataset.
 
@@ -103,6 +106,7 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     )
 
 
+@fill_doc
 def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
     """Return the RepetitionTime metadata field from a BIDS dataset.
 

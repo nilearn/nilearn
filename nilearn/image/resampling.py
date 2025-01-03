@@ -11,10 +11,11 @@ import numpy as np
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
-from .. import _utils
-from .._utils import stringify_path
-from .._utils.helpers import check_copy_header
-from .._utils.niimg import _get_data
+from nilearn import _utils
+from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.helpers import check_copy_header
+from nilearn._utils.niimg import _get_data
+
 from .image import copy_img, crop_img
 
 ###############################################################################
@@ -350,6 +351,7 @@ def _check_force_resample(force_resample):
     return force_resample
 
 
+@fill_doc
 def resample_img(
     img,
     target_affine=None,
