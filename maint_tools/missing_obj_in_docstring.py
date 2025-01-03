@@ -45,71 +45,14 @@ def main():
     for filename in filenames:
         for func_def in list_functions(filename):
             check_fill_doc_decorator(func_def, filename)
-
-            docstring = ast.get_docstring(func_def, clean=False)
-
-            if not docstring:
-                print(
-                    f"{filename}:{func_def.lineno} "
-                    f"- [red] {func_def.name} No docstring detected"
-                )
-                continue
-
-            missing = get_missing(docstring)
-
-            n_issues += len(missing)
-
-            # Log arguments with missing default values in documentation.
-            if missing:
-                print(f"{filename}:{func_def.lineno} - {func_def.name}")
-                for param, desc, value in missing:
-                    print(f" '{param}: {desc}' - [red]missing :obj:`{value}`")
+            n_issues = check_docstring(func_def, filename, n_issues)
 
         for class_def in list_classes(filename):
             check_fill_doc_decorator(class_def, filename)
-
-            docstring = ast.get_docstring(class_def, clean=False)
-            if not docstring:
-                print(
-                    f"{filename}:{class_def.lineno} "
-                    f"- {class_def.name} - [red] No docstring detected"
-                )
-            else:
-                try:
-                    missing = get_missing(docstring)
-                except Exception:
-                    continue
-
-                n_issues += len(missing)
-
-                if missing:
-                    print(f"{filename}:{class_def.lineno} - {class_def.name}")
-                    for param, desc, value in missing:
-                        print(
-                            f" '{param}: {desc}' "
-                            f"- [red] missing :obj:`{value}`"
-                        )
+            n_issues = check_docstring(class_def, filename, n_issues)
 
             for meth_def in list_functions(class_def):
-                docstring = ast.get_docstring(meth_def, clean=False)
-                if not docstring:
-                    print(
-                        f"{filename}:{meth_def.lineno} "
-                        f"- {meth_def.name} - [red] No docstring detected"
-                    )
-                    continue
-
-                missing = get_missing(docstring)
-
-                n_issues += len(missing)
-
-                if missing:
-                    print(f"{filename}:{meth_def.lineno} - {meth_def.name}")
-                    for param, desc, value in missing:
-                        print(
-                            f" '{param}: {desc}' "
-                            f"- [red] missing :obj:`{value}`"
-                        )
+                n_issues = check_docstring(meth_def, filename, n_issues)
 
     print(f"{n_issues} detected")
 
@@ -150,6 +93,30 @@ def check_fill_doc_decorator(ast_node, filename):
             f"{filename}:{ast_node.lineno} "
             "- [red]@fill_doc decorator not needed."
         )
+
+
+def check_docstring(ast_node, filename, n_issues):
+    """Check that defaults in an AST node are present in docstring type."""
+    docstring = ast.get_docstring(ast_node, clean=False)
+    if not docstring:
+        print(
+            f"{filename}:{ast_node.lineno} "
+            f"- {ast_node.name} - [red] No docstring detected"
+        )
+    else:
+        try:
+            missing = get_missing(docstring)
+        except Exception:
+            return n_issues
+
+        n_issues += len(missing)
+
+        if missing:
+            print(f"{filename}:{ast_node.lineno} - {ast_node.name}")
+            for param, desc, value in missing:
+                print(f" '{param}: {desc}' - [red] missing :obj:`{value}`")
+
+    return n_issues
 
 
 def get_missing(docstring, values=None):
