@@ -371,13 +371,10 @@ def resample_img(
         Image(s) to resample.
 
     %(target_affine)s
-        See notes
+        See notes.
 
-    target_shape : :obj:`tuple` or :obj:`list`, optional
-        If specified, the image will be resized to match this new shape.
-        len(target_shape) must be equal to 3.
-        If target_shape is specified, a target_affine of shape (4, 4)
-        must also be given. (See notes)
+    %(target_shape)s
+        See notes.
 
     interpolation : :obj:`str`, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample

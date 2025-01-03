@@ -342,9 +342,10 @@ class FirstLevelModel(BaseGLM):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    target_shape : 3- :obj:`tuple` of :obj:`int`, or None, default=None
-        This parameter is passed to nilearn.image.resample_img.
-        Please see the related documentation for details.
+    %(target_shape)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(smoothing_fwhm)s
 

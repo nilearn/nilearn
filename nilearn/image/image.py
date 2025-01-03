@@ -546,10 +546,7 @@ def mean_img(
 
     %(target_affine)s
 
-    target_shape : :obj:`tuple` or :obj:`list`, optional
-        If specified, the image will be resized to match this new shape.
-        len(target_shape) must be equal to 3.
-        A target_affine has to be specified jointly with target_shape.
+    %(target_shape)s
 
     verbose : :obj:`int`, default=0
         Controls the amount of verbosity: higher numbers give more messages
