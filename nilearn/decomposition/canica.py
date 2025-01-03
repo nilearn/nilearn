@@ -35,19 +35,19 @@ class CanICA(_MultiPCA):
     %(smoothing_fwhm)s
         Default=6mm.
 
-    do_cca : boolean, default=True
+    do_cca : obj:`bool`, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    standardize : boolean, default=True
+    standardize : obj:`bool`, default=True
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    standardize_confounds : boolean, default=True
+    standardize_confounds : obj:`bool`, default=True
         If standardize_confounds is True, the confounds are zscored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : boolean, default=True
+    detrend : obj:`bool`, default=True
         If detrend is True, the time-series will be detrended before
         components extraction.
 
@@ -76,17 +76,20 @@ class CanICA(_MultiPCA):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    %(low_pass)
 
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    t_r : float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    %(high_pass)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(t_r)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
 

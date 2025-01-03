@@ -54,10 +54,10 @@ class DictLearning(_BaseDecomposition):
         it will be computed automatically by a MultiNiftiMasker with default
         parameters.
 
-    n_components : int, default=20
+    n_components : :obj:`int`, default=20
         Number of components to extract.
 
-    batch_size : int, default=20
+    batch_size : obj:`int`, default=20
         The number of samples to take in each batch.
 
     n_epochs : float, default=1
@@ -84,16 +84,16 @@ class DictLearning(_BaseDecomposition):
         Lasso solution (linear_model.Lasso). Lars will be faster if
         the estimated components are sparse.
 
-    random_state : int or RandomState, optional
+    random_state : obj:`int` or RandomState, optional
         Pseudo number generator state used for random sampling.
     %(smoothing_fwhm)s
         Default=4mm.
 
-    standardize : boolean, default=True
+    standardize : obj:`bool`, default=True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    detrend : boolean, default=True
+    detrend : obj:`bool`, default=True
         If detrend is True, the time-series will be detrended before
         components extraction.
 
@@ -103,20 +103,24 @@ class DictLearning(_BaseDecomposition):
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(target_shape)s
-        This parameter is passed to image.resample_img.
-        Please see the related documentation for details.
 
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+    %(low_pass)
 
-    t_r : float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(high_pass)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(t_r)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
 

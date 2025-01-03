@@ -1318,11 +1318,9 @@ def clean_img(
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
 
-    low_pass : :obj:`float`, optional
-        Low cutoff frequencies, in Hertz.
+    %(low_pass)
 
-    high_pass : :obj:`float`, optional
-        High cutoff frequencies, in Hertz.
+    %(high_pass)s
 
     t_r : :obj:`float`, optional
         Repetition time, in second (sampling period). Set to None if not

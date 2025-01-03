@@ -964,21 +964,21 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
 
     Parameters
     ----------
-    alphas : integer, default=4
+    alphas : :obj:`int`, default=4
         initial number of points in the grid of regularization parameter
         values. Each step of grid refinement adds that many points as well.
 
-    n_refinements : integer, default=4
+    n_refinements : :obj:`int`, default=4
         number of times the initial grid should be refined.
 
-    cv : integer, default=3
+    cv : :obj:`int`, default=3
         number of folds in a K-fold cross-validation scheme.
 
     tol_cv : float, default=1e-2
         tolerance used to get the optimal alpha value. It has the same meaning
         as the `tol` parameter in :func:`group_sparse_covariance`.
 
-    max_iter_cv : integer, default=50
+    max_iter_cv : :obj:`int`, default=50
         maximum number of iterations for each optimization, during the alpha-
         selection phase.
 
@@ -986,7 +986,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
         tolerance used during the final optimization for determining precision
         matrices value.
 
-    max_iter : integer, default=100
+    max_iter : :obj:`int`, default=100
         maximum number of iterations in the final optimization.
 
     %(verbose0)s
