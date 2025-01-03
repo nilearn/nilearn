@@ -141,14 +141,14 @@ def check_fill_doc_decorator(ast_node, filename):
         if len(ast_node.decorator_list) == 0:
             print(
                 f"{filename}:{ast_node.lineno} "
-                f"- [red]missing @fill_doc decorator."
+                "- [red]missing @fill_doc decorator."
             )
     elif any(
         getattr(x, "name", "") == "fill_doc" for x in ast_node.decorator_list
     ):
         print(
             f"{filename}:{ast_node.lineno} "
-            f"- [red]@fill_doc decorator not needed."
+            "- [red]@fill_doc decorator not needed."
         )
 
 
