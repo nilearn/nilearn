@@ -24,5 +24,3 @@ else
     fi
 
 fi
-
-GITHUB_REF_TYPE
