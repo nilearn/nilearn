@@ -1,8 +1,9 @@
-"""Utility to find missing :obj:`` in doc string type.
+"""Utility to check dostrings.
 
-The script support either a folder or file path as argument
-and write the results
-in the file `missing_objefault.md`.
+- checks donstrings of functions, classes and methods
+- checks for:
+    - find missing :obj:`` in doc string type
+    - if a function of class definition uses the fill_doc decorator properly
 """
 
 import ast
@@ -11,6 +12,7 @@ from numpydoc.docscrape import NumpyDocString
 from rich import print
 from utils import list_classes, list_functions, list_modules
 
+# List of values to check for missing :obj:`` link
 VALUES = [
     "integers",
     "integer",
