@@ -1,4 +1,4 @@
-.. _mixed_gamble_naps:
+.. _mixed_gamble_maps:
 
 Mixed gambles statistical maps
 ==============================
@@ -10,19 +10,18 @@ See :func:`nilearn.datasets.fetch_mixed_gambles`.
 Notes
 -----
 zmaps for each subject of the raw dataset dataset available at
-https://openneuro.org/datasets/ds000005/versions/00001
+https://openneuro.org/datasets/ds000005
 
-See :footcite:p:`Jimura2012`.
+See :footcite:t:`Jimura2012`.
 
 Content
 -------
-    :'zmaps':
-    :'gain':
-    :'y':
+:'zmaps':
+:'gain':
+:'y':
 
 References
 ----------
-
 .. footbibliography::
 
 License
