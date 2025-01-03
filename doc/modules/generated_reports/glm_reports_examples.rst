@@ -34,6 +34,15 @@ Adapted from :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_two_runs_model
 .. raw:: html
    :file: flm_fiac.html
 
+Surface GLM
+^^^^^^^^^^^
+
+.. raw:: html
+   :file: flm_surf_empty.html
+
+.. raw:: html
+   :file: slm_surf_empty.html
+
 Second level report
 -------------------
 

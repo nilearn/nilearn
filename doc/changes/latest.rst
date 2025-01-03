@@ -15,6 +15,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add reports for the surface based GLMs (:gh:`4442` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Allow plotting both hemispheres together (:gh:`4991` by `Himanshu Aggarwal`_).
 
 Changes
