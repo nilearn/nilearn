@@ -20,19 +20,19 @@ VALUES = [
     "String",
     "boolean",
     "Boolean",
-    # "list",
+    "list",
     "List",
     "tuple",
     "Tuple",
-    # "dict",
+    "dict",
     "Dict",
     # "int",
     "Int",
     # "float",
     "Float",
-    # "str",
+    "str",
     "Bool",
-    # "bool"
+    "bool",
 ]
 
 

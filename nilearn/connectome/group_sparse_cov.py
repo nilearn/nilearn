@@ -603,7 +603,8 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        subjects : list of numpy.ndarray with shapes (n_samples, n_features)
+        subjects : :obj:`list` of numpy.ndarray \
+                   with shapes (n_samples, n_features)
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns).
@@ -993,11 +994,11 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
 
     %(n_jobs)s
 
-    debug : bool, default=False
+    debug : :obj:`bool`, default=False
         if True, activates some internal checks for consistency. Only useful
         for nilearn developers, not users.
 
-    early_stopping : bool, default=True
+    early_stopping : :obj:`bool`, default=True
         if True, reduce computation time by using a heuristic to reduce the
         number of iterations required to get the optimal value for alpha. Be
         aware that this can lead to slightly different values for the optimal
@@ -1073,7 +1074,8 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        subjects : list of numpy.ndarray with shapes (n_samples, n_features)
+        subjects : :obj:`list` of numpy.ndarray \
+            with shapes (n_samples, n_features)
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns.)

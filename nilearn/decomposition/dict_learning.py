@@ -84,16 +84,16 @@ class DictLearning(_BaseDecomposition):
         Lasso solution (linear_model.Lasso). Lars will be faster if
         the estimated components are sparse.
 
-    random_state : obj:`int` or RandomState, optional
+    random_state : :obj:`int` or RandomState, optional
         Pseudo number generator state used for random sampling.
     %(smoothing_fwhm)s
         Default=4mm.
 
-    standardize : obj:`bool`, default=True
+    standardize : :obj:`bool`, default=True
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
-    detrend : obj:`bool`, default=True
+    detrend : :obj:`bool`, default=True
         If detrend is True, the time-series will be detrended before
         components extraction.
 
@@ -132,7 +132,7 @@ class DictLearning(_BaseDecomposition):
 
         Default='epi'.
 
-    mask_args : dict, optional
+    mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`

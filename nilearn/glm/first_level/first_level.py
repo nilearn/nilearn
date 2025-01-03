@@ -907,7 +907,7 @@ class FirstLevelModel(BaseGLM):
         ----------
         contrast_def : :obj:`str` \
                        or array of shape (n_col) or \
-                       list of (:obj:`str` or array of shape (n_col))
+                       :obj:`list` of (:obj:`str` or array of shape (n_col))
 
             where ``n_col`` is the number of columns of the design matrix,
             (one array per run). If only one array is provided when there

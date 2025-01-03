@@ -35,19 +35,19 @@ class CanICA(_MultiPCA):
     %(smoothing_fwhm)s
         Default=6mm.
 
-    do_cca : obj:`bool`, default=True
+    do_cca : :obj:`bool`, default=True
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    standardize : obj:`bool`, default=True
+    standardize : :obj:`bool`, default=True
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    standardize_confounds : obj:`bool`, default=True
+    standardize_confounds : :obj:`bool`, default=True
         If standardize_confounds is True, the confounds are zscored:
         their mean is put to 0 and their variance to 1 in the time dimension.
 
-    detrend : obj:`bool`, default=True
+    detrend : :obj:`bool`, default=True
         If detrend is True, the time-series will be detrended before
         components extraction.
 
@@ -101,7 +101,7 @@ class CanICA(_MultiPCA):
 
         Default='epi'.
 
-    mask_args : dict, optional
+    mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
         :func:`nilearn.masking.compute_background_mask`,
         or :func:`nilearn.masking.compute_epi_mask`
