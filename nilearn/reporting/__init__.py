@@ -23,6 +23,5 @@ try:
         "get_clusters_table",
         "make_glm_report",
     ]
-
 except ImportError:
     __all__ = ["get_clusters_table"]

@@ -11,7 +11,7 @@ from nilearn import signal
 from nilearn._utils import _constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import set_plotting_engine
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -402,15 +402,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         -------
         list(None) or HTMLReport
         """
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
+        if set_plotting_engine("matplotlib", set_alternative=False) is None:
+            return [None]
 
         from nilearn.reporting.html_report import generate_report
 

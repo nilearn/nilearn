@@ -13,6 +13,7 @@ from nilearn._utils.helpers import (
     is_matplotlib_installed,
     is_plotly_installed,
     rename_parameters,
+    set_plotting_engine,
     stringify_path,
 )
 from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
@@ -275,3 +276,29 @@ def test_is_kaleido_installed():
 def test_stringify_path():
     assert isinstance(stringify_path(Path("foo") / "bar"), str)
     assert stringify_path([]) == []
+
+
+def test_set_plotting_engine_plotly():
+    assert set_plotting_engine("plotly") == "plotly"
+
+
+def test_set_plotting_engine_matplotlib():
+    assert set_plotting_engine("matplotlib") == "matplotlib"
+
+
+def test_set_plotting_engine_no_mpl_error():
+    with pytest.raises(
+        ImportError, match="The matplotlib library is not installed."
+    ):
+        set_plotting_engine("matplotlib", error_if_missing=True)
+
+
+@pytest.mark.skipif(
+    is_matplotlib_installed() and is_plotly_installed(),
+    reason="This test requires matplotlib and plotly to not be installed.",
+)
+def test_set_plotting_engine_no_plotly_no_mpl():
+    with pytest.raises(
+        ImportError, match="No plotting libraries are installed"
+    ):
+        set_plotting_engine("matplotlib")

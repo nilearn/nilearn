@@ -14,7 +14,7 @@ from sklearn import neighbors
 from nilearn import image, masking
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import set_plotting_engine
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
     check_niimg_3d,
@@ -396,15 +396,8 @@ class NiftiSpheresMasker(BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
+        if set_plotting_engine("matplotlib", set_alternative=False) is None:
+            return [None]
 
         from nilearn.reporting.html_report import generate_report
 
