@@ -7,6 +7,13 @@ Access
 ------
 See :func:`nilearn.datasets.fetch_megatrawls_netmats`.
 
+Content
+-------
+:'dimensions': contains given input in dimensions used in fetching data.
+:'timeseries': contains given specific timeseries method used in fetching data.
+:'matrices': contains given specific type of matrices name.
+:'correlation_matrices': contains correlation network matrices data.
+
 Notes
 -----
 Contains network matrices data of two types, full correlation and partial
@@ -26,13 +33,6 @@ downloaded from HCP connectome website under conditions. See disclaimer below.
 More information available in :footcite:t:`Smith2015b`,
 :footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
 :footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
-
-Content
--------
-:'dimensions': contains given input in dimensions used in fetching data.
-:'timeseries': contains given specific timeseries method used in fetching data.
-:'matrices': contains given specific type of matrices name.
-:'correlation_matrices': contains correlation network matrices data.
 
 References
 ----------

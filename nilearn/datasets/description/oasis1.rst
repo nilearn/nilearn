@@ -7,6 +7,13 @@ Access
 ------
 See :func:`nilearn.datasets.fetch_oasis_vbm`.
 
+Content
+-------
+:'gray_matter_maps': Nifti images with gray matter density probability
+:'white_matter_maps': Nifti images with white matter density probability maps
+:'ext_vars': Behavioral information on the participants
+:'data_usage_agreement': Text file containing the data usage agreement
+
 Notes
 -----
 The Open Access Structural Imaging Series (OASIS) is a project
@@ -59,13 +66,6 @@ For more information this dataset's structure:
 https://sites.wustl.edu/oasisbrains/,
 :footcite:t:`OASISbrain`,
 and :footcite:t:`Marcus2007`.
-
-Content
--------
-:'gray_matter_maps': Nifti images with gray matter density probability
-:'white_matter_maps': Nifti images with white matter density probability maps
-:'ext_vars': Behavioral information on the participants
-:'data_usage_agreement': Text file containing the data usage agreement
 
 References
 ----------
