@@ -11,10 +11,11 @@ GITLOG=$(cat gitlog.txt)
 touch pattern.txt;
 
 # do a full build on main, release or if requested in the commit message
+# exit early
 if [ "$GITHUB_REF_NAME" == "main" ] || [ "$GITHUB_REF_TYPE" != "tag" ] || [[ $GITLOG == *"[full doc]"* ]]; then
     echo "Doing a full build";
     echo html-strict > build.txt;
-    return
+    exit 1
 fi
 
 # check if the build of some examples was requested in the commit message
