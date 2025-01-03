@@ -426,10 +426,7 @@ def _make_headings(contrasts, title, model):
         If title is user-supplied, then subheading is empty string.
 
     """
-    if isinstance(model, FirstLevelModel):
-        model_type = "First Level Model"
-    elif isinstance(model, SecondLevelModel):
-        model_type = "Second Level Model"
+    model_type = _return_model_type(model)
 
     if title:
         return title, title, model_type
@@ -1093,6 +1090,8 @@ def _make_surface_glm_report(
 ):
     if bg_img == "MNI152TEMPLATE":
         bg_img = None
+    if bg_img:
+        assert isinstance(bg_img, SurfaceImage)
 
     title = f"<br>{title}" if title else ""
 
@@ -1123,9 +1122,6 @@ def _make_surface_glm_report(
             selected_attributes.append("high_pass")
         elif model.drift_model == "polynomial":
             selected_attributes.append("drift_order")
-
-    if bg_img:
-        assert isinstance(bg_img, SurfaceImage)
 
     selected_attributes.sort()
     parameters = {
