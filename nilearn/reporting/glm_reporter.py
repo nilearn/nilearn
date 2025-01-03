@@ -44,7 +44,6 @@ from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import (
     HTMLReport,
-    _render_parameters_partial,
     _render_warnings_partial,
 )
 from nilearn.reporting.utils import (
@@ -460,22 +459,26 @@ def _model_attributes_to_dataframe(model):
         "standardize",
         "noise_model",
         "t_r",
-        "high_pass",
         "target_shape",
         "signal_scaling",
-        "drift_order",
         "scaling_axis",
         "smoothing_fwhm",
         "target_affine",
         "slice_time_ref",
     ]
     attribute_units = {
-        "t_r": "s",
-        "high_pass": "Hz",
+        "t_r": "seconds",
+        "high_pass": "Hertz",
     }
 
     if hasattr(model, "hrf_model") and model.hrf_model == "fir":
         selected_attributes.append("fir_delays")
+
+    if hasattr(model, "drift_model"):
+        if model.drift_model == "cosine":
+            selected_attributes.append("high_pass")
+        elif model.drift_model == "polynomial":
+            selected_attributes.append("drift_order")
 
     selected_attributes.sort()
     display_attributes = OrderedDict(
@@ -494,6 +497,7 @@ def _model_attributes_to_dataframe(model):
     model_attributes = model_attributes.rename(
         index=attribute_names_with_units
     )
+    model_attributes.index.names = ["Parameter"]
     return model_attributes
 
 
@@ -1075,7 +1079,7 @@ def _dataframe_to_html(df, precision, **kwargs):
     with pd.option_context("display.precision", precision):
         html_table = df.to_html(**kwargs)
     html_table = html_table.replace('border="1" ', "")
-    return html_table
+    return html_table.replace('class="dataframe"', 'class="pure-table"')
 
 
 def _make_surface_glm_report(
@@ -1094,47 +1098,6 @@ def _make_surface_glm_report(
         assert isinstance(bg_img, SurfaceImage)
 
     title = f"<br>{title}" if title else ""
-
-    selected_attributes = [
-        "subject_label",
-        "drift_model",
-        "hrf_model",
-        "standardize",
-        "noise_model",
-        "t_r",
-        "target_shape",
-        "signal_scaling",
-        "scaling_axis",
-        "smoothing_fwhm",
-        "target_affine",
-        "slice_time_ref",
-    ]
-    attribute_units = {
-        "t_r": "seconds",
-        "high_pass": "Hertz",
-    }
-
-    if hasattr(model, "hrf_model") and model.hrf_model == "fir":
-        selected_attributes.append("fir_delays")
-
-    if hasattr(model, "drift_model"):
-        if model.drift_model == "cosine":
-            selected_attributes.append("high_pass")
-        elif model.drift_model == "polynomial":
-            selected_attributes.append("drift_order")
-
-    selected_attributes.sort()
-    parameters = {
-        attr_name: getattr(model, attr_name)
-        for attr_name in selected_attributes
-        if hasattr(model, attr_name)
-    }
-    for attribute_name_, attribute_unit_ in attribute_units.items():
-        if attribute_name_ in parameters:
-            parameters[f"{attribute_name_} ({attribute_unit_})"] = parameters[
-                attribute_name_
-            ]
-            parameters.pop(attribute_name_)
 
     cluster_table_details = OrderedDict()
     threshold = np.around(threshold, 3)
@@ -1203,8 +1166,18 @@ def _make_surface_glm_report(
                 "contrast_img": contrasts_dict[contrast_name],
             }
 
+    model_attributes = _model_attributes_to_dataframe(model)
+    with pd.option_context("display.max_colwidth", 100):
+        model_attributes_html = _dataframe_to_html(
+            model_attributes,
+            precision=2,
+            header=False,
+            sparsify=False,
+        )
+
     warning_messages = []
-    if model.labels_ is None or model.results_ is None:
+    if not model.__sklearn_is_fitted__():
+        print("The model has not been fit yet.")
         warning_messages.append("The model has not been fit yet.")
 
     body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
@@ -1223,7 +1196,7 @@ def _make_surface_glm_report(
         docstring=snippet,
         warning_messages=_render_warnings_partial(warning_messages),
         design_matrices_dict=design_matrices_dict,
-        parameters=_render_parameters_partial(parameters),
+        parameters=model_attributes_html,
         contrasts_dict=contrasts_dict,
         statistical_maps=statistical_maps,
         cluster_table_details=cluster_table_details,

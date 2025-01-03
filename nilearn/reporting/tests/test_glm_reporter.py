@@ -321,7 +321,7 @@ def test_flm_generate_report_error_with_surface_data(
 
 
 @pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
-def test_empty_reports(tmp_path, model):
+def test_empty_surface_reports(tmp_path, model):
     report = _make_surface_glm_report(model())
     report.save_as_html(tmp_path / "tmp.html")
     assert (tmp_path / "tmp.html").exists()

@@ -163,7 +163,6 @@
 <section id="statistical-maps">
   <h2>Statistical Maps</h2>
   {{if statistical_maps}}
-
   <div class="pure-g">
     {{py: contrasts = statistical_maps.items()}}
     <!--  -->
@@ -231,6 +230,10 @@
     </div>
     {{endfor}}
     <!--  -->
+  </div>
+  {{else}}
+  <div class="d-flex flex-wrap justify-content-evenly">
+    <p>No statistical map was provided.</p>
   </div>
   {{endif}}
 </section>
