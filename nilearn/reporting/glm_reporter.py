@@ -497,6 +497,7 @@ def _model_attributes_to_dataframe(model, is_volume_glm=True):
         index=attribute_names_with_units
     )
     model_attributes.index.names = ["Parameter"]
+    model_attributes.columns = ["Value"]
     return model_attributes
 
 
@@ -1104,21 +1105,6 @@ def _make_surface_glm_report(
 
     title = f"<br>{title}" if title else ""
 
-    cluster_table_details = OrderedDict()
-    threshold = np.around(threshold, 3)
-    if height_control:
-        cluster_table_details.update({"Height control": height_control})
-        if alpha < 0.001:
-            alpha = f"{Decimal(alpha):.2E}"
-        cluster_table_details.update({"\u03b1": alpha})
-        cluster_table_details.update({"Threshold (computed)": threshold})
-    else:
-        cluster_table_details.update({"Height control": "None"})
-        cluster_table_details.update({"Threshold Z": threshold})
-    cluster_table_details.update(
-        {"Cluster size threshold (vertices)": cluster_threshold}
-    )
-
     docstring = model.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
@@ -1129,7 +1115,7 @@ def _make_surface_glm_report(
         model_attributes_html = _dataframe_to_html(
             model_attributes,
             precision=2,
-            header=False,
+            header=True,
             sparsify=False,
         )
 
@@ -1166,7 +1152,7 @@ def _make_surface_glm_report(
             parameters=model_attributes_html,
             contrasts_dict=None,
             statistical_maps=None,
-            cluster_table_details=cluster_table_details,
+            cluster_table_details=None,
             mask_plot=None,
             cluster_table=None,
             date=datetime.datetime.now().replace(microsecond=0).isoformat(),
@@ -1199,6 +1185,20 @@ def _make_surface_glm_report(
 
     contrasts = coerce_to_dict(contrasts)
     contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
+
+    cluster_table_details = _clustering_params_to_dataframe(
+        threshold,
+        cluster_threshold,
+        None,
+        height_control,
+        alpha,
+    )
+    cluster_table_html = _dataframe_to_html(
+        cluster_table_details,
+        precision=2,
+        header=True,
+        sparsify=False,
+    )
 
     statistical_maps = None
     if contrasts_dict is not None:
@@ -1241,7 +1241,7 @@ def _make_surface_glm_report(
         parameters=model_attributes_html,
         contrasts_dict=contrasts_dict,
         statistical_maps=statistical_maps,
-        cluster_table_details=cluster_table_details,
+        cluster_table_details=cluster_table_html,
         mask_plot=mask_plot,
         cluster_table=None,
         date=datetime.datetime.now().replace(microsecond=0).isoformat(),

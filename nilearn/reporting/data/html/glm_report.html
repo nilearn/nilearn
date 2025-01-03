@@ -201,27 +201,7 @@
         <summary class="pure-button button-small contrast-button">
           Cluster Table
         </summary>
-        {{if cluster_table_details}}
-        <table class="pure-table">
-          <thead>
-            <tr>
-              <th>Parameter</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {{py: cluster_params = cluster_table_details.items()}}
-            <!--  -->
-            {{for p, v in cluster_params}}
-            <tr>
-              <td data-column="Parameter">{{p}}</td>
-              <td data-column="Value">{{v}}</td>
-            </tr>
-            {{endfor}}
-          </tbody>
-        </table>
-        {{else}}
+        {{if cluster_table_details}} {{ cluster_table_details|html }} {{else}}
         <p>No cluster table parameter provided</p>
         {{endif}}
         <!--  -->
