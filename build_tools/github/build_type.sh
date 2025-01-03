@@ -19,7 +19,7 @@ fi
 
 # check if the build of some examples was requested in the commit message
 # like:
-# git commit -m "[example] plot_atlas.py"
+# git commit -m '[example] plot_*atlas*.py'
 EXAMPLE=""
 if [[ $GITLOG == *"[example]"* ]]; then
     echo "Building selected example";
@@ -32,9 +32,14 @@ if [ -z ${CI+x} ]; then
     COMMIT_SHA=$(git log --format=format:%H -n 1)
 fi
 
+# generate examples.txt that will list
+# - all the files modified in this PR
+# - and the examples listed in the commit message
 git diff --name-only "$(git merge-base $COMMIT_SHA upstream/main)" "$COMMIT_SHA" | tee examples.txt;
 echo "$EXAMPLE" >> examples.txt
 
+# Filter the list of files to only keep files
+# that are of interest for sphinx_gallery
 for FILENAME in $(cat examples.txt); do
     if [[ $(expr match "$FILENAME" "\(examples\)/.*plot_.*\.py") ]]; then
         echo "Checking example $FILENAME ...";
