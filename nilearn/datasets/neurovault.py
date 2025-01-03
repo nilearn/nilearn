@@ -22,14 +22,15 @@ import requests
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
-from nilearn._utils import (
+from nilearn._utils import fill_doc
+from nilearn.image import resample_img
+
+from ._utils import (
     fetch_single_file,
-    fill_doc,
     get_dataset_descr,
     get_dataset_dir,
     logger,
 )
-from nilearn.image import resample_img
 
 _NEUROVAULT_BASE_URL = "https://neurovault.org/api/"
 _NEUROVAULT_COLLECTIONS_URL = urljoin(_NEUROVAULT_BASE_URL, "collections/")

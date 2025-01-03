@@ -1318,7 +1318,7 @@ def clean_img(
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
 
-    %(low_pass)
+    %(low_pass)s
 
     %(high_pass)s
 
