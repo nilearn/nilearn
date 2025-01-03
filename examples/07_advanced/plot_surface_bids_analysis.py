@@ -72,8 +72,7 @@ models, run_imgs, events, confounds = first_level_from_bids(
     task_label="languagelocalizer",
     space_label="",
     img_filters=[("desc", "preproc")],
-    sub_labels=["01", "02", "05", "08"],  # comment to run all subjects
-    hrf_model="glover",
+    sub_labels=["01", "02"],  # "05", "08" comment to run all subjects
     n_jobs=2,
 )
 
@@ -110,8 +109,8 @@ fsaverage5 = load_fsaverage()
 z_scores = []
 z_scores_left = []
 z_scores_right = []
-for first_level_glm, fmri_img, confound, event in zip(
-    models, run_imgs, confounds, events
+for i, (first_level_glm, fmri_img, confound, event) in enumerate(
+    zip(models, run_imgs, confounds, events)
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 
@@ -128,6 +127,10 @@ for first_level_glm, fmri_img, confound, event in zip(
         confounds=confound[0],
     )
 
+    # Let's only generate a report for the first subject
+    if i == 1:
+        report_flm = first_level_glm.generate_report()
+
     # Compute contrast between 'language' and 'string' events
     z_scores.append(
         first_level_glm.compute_contrast(
@@ -135,6 +138,9 @@ for first_level_glm, fmri_img, confound, event in zip(
         )
     )
 
+# View the GLM report of the first subject
+report_flm
+# report_flm.open_in_browser()
 
 # %%
 # Group level model
@@ -153,6 +159,11 @@ from nilearn.glm.second_level import SecondLevelModel
 second_level_glm = SecondLevelModel()
 design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
 second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
+
+report_slm = second_level_glm.generate_report()
+report_slm
+# report_slm.open_in_browser()
+
 results = second_level_glm.compute_contrast("intercept", output_type="z_score")
 
 # %%

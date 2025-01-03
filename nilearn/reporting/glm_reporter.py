@@ -191,10 +191,6 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
-    from nilearn.experimental.reporting.glm_reporter import (
-        _make_surface_glm_report,
-    )
-
     if isinstance(model.masker_, SurfaceMasker):
         report_text = _make_surface_glm_report(
             model,

@@ -14,7 +14,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from nilearn import datasets, surface
 from nilearn.datasets import (
     fetch_adhd,
     fetch_atlas_difumo,
@@ -53,99 +52,10 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.reporting import make_glm_report
-from nilearn.reporting.glm_reporter import _make_surface_glm_report
 from nilearn.surface import SurfaceImage
 
 REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
-
-
-def report_flm_empty_surface():
-    report = _make_surface_glm_report(FirstLevelModel())
-    report.save_as_html(REPORTS_DIR / "flm_empty_surface.html")
-    return report
-
-
-def report_flm_localizer_surface():
-    t_r = 2.4
-    slice_time_ref = 0.5
-    data = datasets.fetch_localizer_first_level()
-    fmri_img = data.epi_img
-    events_file = data.events
-    events = pd.read_table(events_file)
-
-    fsaverage5 = load_fsaverage()
-    texture_left = surface.vol_to_surf(
-        fmri_img, fsaverage5["pial"].parts["left"]
-    )
-    texture_right = surface.vol_to_surf(
-        fmri_img, fsaverage5["pial"].parts["right"]
-    )
-    image = SurfaceImage(
-        mesh=fsaverage5["pial"],
-        data={
-            "left": texture_left.T,
-            "right": texture_right.T,
-        },
-    )
-
-    glm = FirstLevelModel(
-        t_r,
-        slice_time_ref=slice_time_ref,
-        hrf_model="glover + derivative",
-    ).fit(image, events)
-
-    design_matrix = glm.design_matrices_[0]
-    contrast_matrix = np.eye(design_matrix.shape[1])
-
-    basic_contrasts = {
-        column: contrast_matrix[i]
-        for i, column in enumerate(design_matrix.columns)
-    }
-
-    basic_contrasts["audio"] = (
-        basic_contrasts["audio_left_hand_button_press"]
-        + basic_contrasts["audio_right_hand_button_press"]
-        + basic_contrasts["audio_computation"]
-        + basic_contrasts["sentence_listening"]
-    )
-
-    basic_contrasts["visual"] = (
-        basic_contrasts["visual_left_hand_button_press"]
-        + basic_contrasts["visual_right_hand_button_press"]
-        + basic_contrasts["visual_computation"]
-        + basic_contrasts["sentence_reading"]
-    )
-
-    basic_contrasts["computation"] = (
-        basic_contrasts["visual_computation"]
-        + basic_contrasts["audio_computation"]
-    )
-
-    basic_contrasts["sentences"] = (
-        basic_contrasts["sentence_listening"]
-        + basic_contrasts["sentence_reading"]
-    )
-
-    contrasts = {
-        "(left - right) button press": (
-            basic_contrasts["audio_left_hand_button_press"]
-            - basic_contrasts["audio_right_hand_button_press"]
-            + basic_contrasts["visual_left_hand_button_press"]
-            - basic_contrasts["visual_right_hand_button_press"]
-        ),
-        "audio - visual": basic_contrasts["audio"] - basic_contrasts["visual"],
-        "computation - sentences": (
-            basic_contrasts["computation"] - basic_contrasts["sentences"]
-        ),
-    }
-
-    report = glm.generate_report(
-        contrasts,
-        title="surface-based example",
-    )
-    report.save_as_html(REPORTS_DIR / "flm_localizer_surface.html")
-    return report
 
 
 # %%
@@ -629,7 +539,6 @@ def report_surface_masker(build_type):
         mask.data.parts[part] = mask.data.parts[part] == 34
 
     masker = SurfaceMasker(mask)
-
     masker.fit_transform(img)
     surface_masker_with_mask_report = masker.generate_report()
     surface_masker_with_mask_report.save_as_html(
