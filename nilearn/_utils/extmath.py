@@ -54,8 +54,7 @@ def is_spd(M, decimal=15, verbose=1):
     decimal : int, default=15
         Decimal.
 
-    verbose : int, default=1
-        Verbosity level (0 means no message).
+    %(verbose)s
 
     Returns
     -------

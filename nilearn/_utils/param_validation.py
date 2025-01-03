@@ -177,8 +177,7 @@ def adjust_screening_percentile(
         The Nifti1Image whose voxel dimensions or the SurfaceImage whose
         number of vertices are to be computed.
 
-    verbose : int, default=0
-        Verbosity level.
+    %(verbose0)s
 
     mesh_n_vertices : int, default=None
         Number of vertices of the reference brain mesh, eg., fsaverage5
@@ -284,8 +283,7 @@ def check_feature_screening(
         If is_classification is True, it indicates that a classification task
         is performed. Otherwise, a regression task is performed.
 
-    verbose : int, default=0
-        Verbosity level.
+    %(verbose0)s
 
     mesh_n_vertices : int, default=None
         Number of vertices of the reference mesh, eg., fsaverage5 or

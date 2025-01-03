@@ -186,7 +186,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
                 .. versionadded:: 0.8.0
 
-        copy : Boolean, default=True
+        copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
 
         Returns
@@ -311,11 +311,11 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         y : numpy array of shape [n_samples], optional
             Target values.
 
-        confounds : list of confounds, optional
+        confounds : :obj:`list` of confounds, optional
             List of confounds (2D arrays or filenames pointing to CSV
             files). Must be of same length than imgs_list.
 
-        sample_mask : list of sample_mask, optional
+        sample_mask : :obj:`list` of sample_mask, optional
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 

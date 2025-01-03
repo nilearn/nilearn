@@ -689,8 +689,7 @@ def generate_group_sparse_gaussian_graphs(
                    default=0
         Random number generator, or seed.
 
-    verbose : :obj:`int`, default=0
-        Verbosity level (0 means no message).
+    %(verbose0)s
 
     Returns
     -------

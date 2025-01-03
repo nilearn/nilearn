@@ -2,33 +2,16 @@
 
 from __future__ import annotations
 
-import ast
-from pathlib import Path
-
 import pandas as pd
 from rich import print
-
-
-def root_dir() -> Path:
-    """Return path to root directory."""
-    return Path(__file__).parent.parent
-
-
-def list_private_functions(body) -> list[str]:
-    """Check functions of a module or methods of a class."""
-    function_definitions = [
-        node for node in body if isinstance(node, ast.FunctionDef)
-    ]
-    return [f.name for f in function_definitions if f.name.startswith("_")]
+from utils import list_functions, list_modules
 
 
 def main():
     """List private function that are only mnetioned once in their module."""
     print("\nCheck .py files in nilearn\n")
 
-    modules = (root_dir() / "nilearn").glob("**/*.py")
-
-    files_to_skip = ["test_", "conftest.py"]
+    modules = list_modules()
 
     private_functions = {
         "module": [],
@@ -38,13 +21,7 @@ def main():
     }
 
     for file in modules:
-        if any(file.name.startswith(s) for s in files_to_skip):
-            continue
-
-        with file.open() as f:
-            module = ast.parse(f.read())
-
-        functions = list_private_functions(module.body)
+        functions = [f.name for f in list_functions(file, include="private")]
         if private_functions:
             for f in functions:
                 private_functions["module"].append(file)
@@ -70,10 +47,7 @@ def main():
         assert private_functions["count_in"][i] >= 1
 
     # out of its own module
-    modules = (root_dir() / "nilearn").glob("**/*.py")
     for file in modules:
-        if any(file.name.startswith(s) for s in files_to_skip):
-            continue
         with file.open() as f:
             lines = f.readlines()
         for line in lines:
