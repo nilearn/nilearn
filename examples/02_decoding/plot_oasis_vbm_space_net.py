@@ -10,6 +10,9 @@ here, and not the classification object.
 
     The documentation: :ref:`space_net`.
 
+    For more information
+    see the :ref:`dataset description <oasis_maps>`.
+
 """
 
 # %%
