@@ -33,10 +33,6 @@ subject_data = fetch_spm_auditory()
 # ----------------------
 
 # %%
-# print dataset descriptions
-print(subject_data.description)
-
-# %%
 # print paths of func image
 subject_data.func[0]
 
