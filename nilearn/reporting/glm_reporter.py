@@ -14,7 +14,6 @@ import os
 import string
 import warnings
 from collections import OrderedDict
-from collections.abc import Iterable
 from decimal import Decimal
 from html import escape
 from pathlib import Path
@@ -320,41 +319,6 @@ def _check_report_dims(report_size):
         )
         width, height = (1600, 800)
     return width, height
-
-
-def _coerce_to_dict(input_arg):
-    """Construct a dict from the provided arg.
-
-    If input_arg is:
-      dict then returns it unchanged.
-
-      string or collection of Strings or Sequence[int],
-      returns a dict {str(value): value, ...}
-
-    Parameters
-    ----------
-    input_arg : String or Collection[str or Int or Sequence[Int]]
-     or Dict[str, str or np.array]
-        Can be of the form:
-         'string'
-         ['string_1', 'string_2', ...]
-         list/array
-         [list/array_1, list/array_2, ...]
-         {'string_1': list/array1, ...}
-
-    Returns
-    -------
-    input_args : Dict[str, np.array or str]
-
-    """
-    if not isinstance(input_arg, dict):
-        if isinstance(input_arg, Iterable) and not isinstance(
-            input_arg[0], Iterable
-        ):
-            input_arg = [input_arg]
-        input_arg = [input_arg] if isinstance(input_arg, str) else input_arg
-        input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
-    return input_arg
 
 
 def _plot_to_svg(plot):
