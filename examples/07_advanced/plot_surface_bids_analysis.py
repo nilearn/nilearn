@@ -60,10 +60,6 @@ data.data_dir
 # To get the first level models we only have to specify the dataset directory
 # and the ``task_label`` as specified in the file names.
 #
-# .. note::
-#
-#       We are only using a subset of participants from the dataset
-#       to lower the run time of the example.
 #
 from nilearn.glm.first_level import first_level_from_bids
 
@@ -72,7 +68,6 @@ models, run_imgs, events, confounds = first_level_from_bids(
     task_label="languagelocalizer",
     space_label="",
     img_filters=[("desc", "preproc")],
-    sub_labels=["01", "02"],  # "05", "08" comment to run all subjects
     n_jobs=2,
 )
 
