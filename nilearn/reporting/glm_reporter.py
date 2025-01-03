@@ -58,14 +58,6 @@ from nilearn.reporting.utils import (
 )
 from nilearn.surface import SurfaceImage
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", FutureWarning)
-    from nilearn import glm
-
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore", FutureWarning)
-    from nilearn.glm.thresholding import threshold_stats_img
-
 HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
 
 
@@ -1360,7 +1352,7 @@ def _return_contrasts_dict(design_matrices, contrasts):
 
 
 def _return_model_type(model):
-    if isinstance(model, glm.first_level.FirstLevelModel):
+    if isinstance(model, FirstLevelModel):
         return "First Level Model"
-    elif isinstance(model, glm.second_level.SecondLevelModel):
+    elif isinstance(model, SecondLevelModel):
         return "Second Level Model"
