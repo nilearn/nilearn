@@ -49,9 +49,6 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     %(templateflow)s
 
-    For more information, see :footcite:t:`Fonov2011`,
-    :footcite:t:`Fonov2009`, and :footcite:t:`Collins1999`.
-
     Parameters
     ----------
     %(data_dir)s
@@ -104,24 +101,10 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM gray
         matter mask.
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
-    For more information about this dataset's structure:
-    https://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
-
-    The original download URL is
-    https://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
-
-    TemplateFlow repository for ICBM152 2009
-
-    Symmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSym
-
-    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cAsym
-
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     if url is None:
@@ -181,8 +164,7 @@ def load_mni152_template(resolution=None):
     re-scaled 1mm-resolution version of the :term:`MNI` ICBM152 T1 template
     and re-samples it using a different resolution, if specified.
 
-    For more information, see :footcite:t:`Fonov2011`,
-    and :footcite:t:`Fonov2009`.
+    %(templateflow)s
 
     Parameters
     ----------
@@ -208,9 +190,10 @@ def load_mni152_template(resolution=None):
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
 
-    References
-    ----------
-    .. footbibliography::
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -246,6 +229,8 @@ def load_mni152_gm_template(resolution=None):
     MNI ICBM152 template and re-samples it using a different resolution,
     if specified.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
@@ -266,6 +251,11 @@ def load_mni152_gm_template(resolution=None):
 
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -302,6 +292,8 @@ def load_mni152_wm_template(resolution=None):
     and re-samples it using a different
     resolution, if specified.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
@@ -322,6 +314,11 @@ def load_mni152_wm_template(resolution=None):
 
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -356,6 +353,8 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     This function takes the whole-brain MNI152 T1 template and threshold it,
     in order to obtain the corresponding whole-brain mask.
 
+    %(templateflow)s
+
     .. versionadded:: 0.2.5
 
     Parameters
@@ -373,15 +372,15 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     -------
     mask_img : Nifti1Image, image corresponding to the whole-brain mask.
 
-    Notes
-    -----
-    Refer to load_mni152_template function for more information about the
-    MNI152 T1 template.
-
     See Also
     --------
     nilearn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template and related.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -399,6 +398,8 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     This function takes the grey-matter MNI152 template and threshold it, in
     order to obtain the corresponding grey-matter mask.
+
+    %(templateflow)s
 
     .. versionadded:: 0.8.1
 
@@ -421,15 +422,15 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     -------
     gm_mask_img : Nifti1Image, image corresponding to the grey-matter mask.
 
-    Notes
-    -----
-    Refer to load_mni152_gm_template function for more information about the
-    MNI152 grey-matter template.
-
     See Also
     --------
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template and related.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -453,6 +454,8 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     This function takes the white-matter MNI152 template and threshold it, in
     order to obtain the corresponding white-matter mask.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
@@ -474,15 +477,15 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     -------
     wm_mask_img : Nifti1Image, image corresponding to the white-matter mask.
 
-    Notes
-    -----
-    Refer to load_mni152_gm_template function for more information about the
-    MNI152 white-matter template.
-
     See Also
     --------
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template and related.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -534,6 +537,14 @@ def fetch_icbm152_brain_gm_mask(
     gm_mask_img : Nifti1Image, image corresponding to the brain gray matter
         from ICBM152 template.
 
+    See Also
+    --------
+    nilearn.datasets.fetch_icbm152_2009: for details regarding the ICBM152
+        template.
+
+    nilearn.datasets.load_mni152_template: for details about version of MNI152
+        template and related.
+
     Notes
     -----
     This function relies on ICBM152 templates where we particularly pick
@@ -544,13 +555,8 @@ def fetch_icbm152_brain_gm_mask(
     .. note::
         It is advised to check the mask image with your own data processing.
 
-    See Also
-    --------
-    nilearn.datasets.fetch_icbm152_2009: for details regarding the ICBM152
-        template.
-
-    nilearn.datasets.load_mni152_template: for details about version of MNI152
-        template and related.
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     # Fetching ICBM152 gray matter mask image
@@ -879,6 +885,10 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
     are guaranteed to be stable across nilearn versions.
     See :footcite:t:`Fischl1999`.
 
+    See :func:`~nilearn.datasets.load_fsaverage` and
+    :func:`~nilearn.datasets.load_fsaverage_data`
+    to access fsaverage data as :obj:`~nilearn.surface.SurfaceImage`.
+
     Parameters
     ----------
     mesh : :obj:`str`, default='fsaverage5'
@@ -903,7 +913,7 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
          - 'infl_left': Gifti file, left hemisphere inflated pial surface
            :term:`mesh`
          - 'infl_right': Gifti file, right hemisphere inflated pial
-                         surface :term:`mesh`
+           surface :term:`mesh`
          - 'sphere_left': Gifti file, left hemisphere sphere surface
            :term:`mesh`
          - 'sphere_right': Gifti file, right hemisphere sphere surface
@@ -916,10 +926,6 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
            white surface :term:`mesh`
          - 'white_right': Gifti file, right hemisphere*
            white surface :term:`mesh`
-
-         See load_fsaverage and load_fsaverage_data
-         to access fsaverage data as SurfaceImages.
-
 
     References
     ----------
