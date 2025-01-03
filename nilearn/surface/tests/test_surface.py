@@ -48,6 +48,7 @@ from nilearn.surface.surface import (
     load_surf_mesh,
     mean_img,
     new_img_like,
+    smooth_img,
     vol_to_surf,
 )
 
@@ -1095,6 +1096,15 @@ def test_inmemorymesh_index_error(in_memory_mesh):
         IndexError, match="Use 0 for coordinates and 1 for faces"
     ):
         in_memory_mesh[2]
+
+
+def test_smooth_img(surf_img_1d):
+    surf_data_smooth, _ = smooth_img(surf_img_1d, iterations=1, match="sum")
+    # checking that output was properly normalized
+    assert np.isclose(
+        np.sum(surf_data_smooth.data.parts["right"]),
+        np.sum(surf_img_1d.data.parts["right"]),
+    )
 
 
 def test_mean_img(surf_img_1d, surf_img_2d):
