@@ -129,6 +129,7 @@ def _assert_submatrix(full, sub, n):
     np.testing.assert_almost_equal(true_sub, sub)
 
 
+@fill_doc
 def group_sparse_covariance(
     subjects,
     alpha,
@@ -171,8 +172,7 @@ def group_sparse_covariance(
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
 
-    verbose : :obj:`int`, default=0
-        verbosity level. Zero means "no message".
+    %(verbose0)s
 
     probe_function : callable or None, optional
         This value is called before the first iteration and after each
@@ -555,8 +555,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         maximum number of iterations. The default value is rather
         conservative.
 
-    verbose : int, default=0
-        verbosity level. Zero means "no message".
+    %(verbose0)s
 
     %(memory)s
 
@@ -843,8 +842,7 @@ def group_sparse_covariance_path(
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
-    verbose : :obj:`int`, default=0
-        verbosity level.
+    %(verbose0)s
 
     tol, max_iter, debug, precisions_init :
         Passed to group_sparse_covariance(). See the corresponding docstring

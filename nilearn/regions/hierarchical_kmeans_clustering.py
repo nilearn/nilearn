@@ -190,8 +190,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         inverse_transform() will apply inversed scaling to yield an image with
         same l2-norm as input.
 
-    verbose : int, optional (default 0)
-        Verbosity level.
+    %(verbose0)s
 
     Attributes
     ----------

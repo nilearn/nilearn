@@ -72,9 +72,7 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
-    verbose : :obj:`int`, optional
-        Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints warnings.
+    %(verbose0)s
 
     Returns
     -------
@@ -119,9 +117,7 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
-    verbose : :obj:`int`, optional
-        Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints warnings.
+    %(verbose0)s
 
     Returns
     -------

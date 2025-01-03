@@ -120,8 +120,7 @@ def _permuted_ols_on_chunk(
         Seed for random number generator, to have the same permutations
         in each computing units.
 
-    verbose : int, default=0
-        Defines the verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -386,8 +385,7 @@ def permuted_ols(
         A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
         ones will be used.
 
-    verbose : :obj:`int`, default=0
-        verbosity level (0 means no message).
+    %(verbose0)s
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
             :class:`~nilearn.maskers.MultiNiftiMasker`, optional

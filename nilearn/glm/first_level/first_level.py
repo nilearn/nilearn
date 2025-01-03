@@ -128,6 +128,7 @@ def _yule_walker(x, order):
     return rho
 
 
+@fill_doc
 def run_glm(
     Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
 ):
@@ -157,8 +158,7 @@ def run_glm(
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : :obj:`int`, default=0
-        The verbosity level.
+    %(verbose0)s
 
     random_state : :obj:`int` or numpy.random.RandomState, default=None
         Random state seed to sklearn.cluster.KMeans for autoregressive models
@@ -2224,8 +2224,7 @@ def _make_bids_files_filter(
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    verbose : :obj:`integer`
-        Indicate the level of verbosity.
+    %(verbose0)s
 
     Returns
     -------

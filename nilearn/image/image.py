@@ -525,6 +525,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     return mean_data, affine
 
 
+@fill_doc
 def mean_img(
     imgs,
     target_affine=None,
@@ -548,9 +549,7 @@ def mean_img(
 
     %(target_shape)s
 
-    verbose : :obj:`int`, default=0
-        Controls the amount of verbosity: higher numbers give more messages
-        (0 means no messages).
+    %(verbose0)s
 
     n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation (-1 means
