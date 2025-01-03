@@ -12,8 +12,15 @@ git fetch upstream
 git log -1 --pretty=%B | tee gitlog.txt
 echo "gitlog.txt = $(cat gitlog.txt)"
 
-echo "$GITHUB_REF_NAME" | tee merge.txt
-if [ "$GITHUB_REF_NAME" != "main" ]; then
-    echo "Merging $(cat merge.txt)";
-    git pull --ff-only upstream "refs/pull/$(cat merge.txt)";
+if [ -z ${CI+x} ]; then
+    echo "Running locally";
+
+else
+    echo "Running in CI";
+    echo "$GITHUB_REF_NAME" | tee merge.txt
+    if [ "$GITHUB_REF_NAME" != "main" ]; then
+        echo "Merging $(cat merge.txt)";
+        git pull --ff-only upstream "refs/pull/$(cat merge.txt)";
+    fi
+
 fi

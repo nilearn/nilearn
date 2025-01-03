@@ -3,32 +3,52 @@
 set -x -e
 
 GITLOG=$(cat gitlog.txt)
+
+# pattern.txt lists the examples to build
+# must be generated even if empty
+# as its content is passed to sphinx_gallery_conf.filename_pattern
+# via a PATTERN env variable
+touch pattern.txt;
+
+# do a full build on main or if requested in the commit message
 if [ "$GITHUB_REF_NAME" == "main" ] || [[ $GITLOG == *"[full doc]"* ]]; then
     echo "Doing a full build";
     echo html-strict > build.txt;
-else
-    if [[ $GITLOG == *"[example]"* ]]; then
-        echo "Building selected example";
-        COMMIT_MESSAGE=${GITLOG#*] };
-        EXAMPLE="examples/*/$COMMIT_MESSAGE";
-    else
-        EXAMPLE=""
-    fi;
-    git diff --name-only "$(git merge-base $COMMIT_SHA upstream/main)" "$COMMIT_SHA" | tee examples.txt;
-    echo "$EXAMPLE" >> examples.txt
-    for FILENAME in $(cat examples.txt); do
-        if [[ $(expr match "$FILENAME" "\(examples\)/.*plot_.*\.py") ]]; then
-            echo "Checking example $FILENAME ...";
-            PATTERN=$(basename "$FILENAME")"\\|"$PATTERN;
-        fi;
-    done;
-    echo PATTERN="$PATTERN";
-    if [[ $PATTERN ]]; then
-        # Remove trailing \| introduced by the for loop above
-        PATTERN="\(${PATTERN::-2}\)";
-        echo html-modified-examples-only > build.txt;
-    else
-        echo ci-html-noplot > build.txt;
-    fi;
+    return
+fi
+
+# check if the build of some examples was requested in the commit message
+# like:
+# git commit -m "[example] plot_atlas.py"
+EXAMPLE=""
+if [[ $GITLOG == *"[example]"* ]]; then
+    echo "Building selected example";
+    COMMIT_MESSAGE=${GITLOG#*] };
+    EXAMPLE="examples/*/$COMMIT_MESSAGE";
 fi;
+
+if [ -z ${CI+x} ]; then
+    echo "Running locally";
+    COMMIT_SHA=$(git log --format=format:%H -n 1)
+fi
+
+git diff --name-only "$(git merge-base $COMMIT_SHA upstream/main)" "$COMMIT_SHA" | tee examples.txt;
+echo "$EXAMPLE" >> examples.txt
+
+for FILENAME in $(cat examples.txt); do
+    if [[ $(expr match "$FILENAME" "\(examples\)/.*plot_.*\.py") ]]; then
+        echo "Checking example $FILENAME ...";
+        PATTERN=$(basename "$FILENAME")"\\|"$PATTERN;
+    fi;
+done;
+echo PATTERN="$PATTERN";
+
+if [[ $PATTERN ]]; then
+    # Remove trailing \| introduced by the for loop above
+    PATTERN="\(${PATTERN::-2}\)";
+    echo html-modified-examples-only > build.txt;
+else
+    echo ci-html-noplot > build.txt;
+fi;
+
 echo "$PATTERN" > pattern.txt;
