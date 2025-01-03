@@ -312,7 +312,6 @@ def test_flm_generate_report_error_with_surface_data(
     model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0)
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
-
     model.generate_report("c0")
     make_glm_report(model, "c0")
 

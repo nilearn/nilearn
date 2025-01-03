@@ -181,7 +181,9 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
-    if isinstance(model.masker_, SurfaceMasker):
+    if isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or isinstance(
+        model.masker_, SurfaceMasker
+    ):
         report_text = _make_surface_glm_report(
             model,
             contrasts=contrasts,
