@@ -157,6 +157,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 
 @functools.lru_cache(maxsize=3)
+@fill_doc
 def load_mni152_template(resolution=None):
     """Load the MNI152 skullstripped T1 template.
 
@@ -168,9 +169,7 @@ def load_mni152_template(resolution=None):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    %(resolution)s
 
         .. versionadded:: 0.8.1
 
@@ -222,6 +221,7 @@ def load_mni152_template(resolution=None):
     return new_brain_template
 
 
+@fill_doc
 def load_mni152_gm_template(resolution=None):
     """Load the MNI152 grey-matter template.
 
@@ -235,9 +235,7 @@ def load_mni152_gm_template(resolution=None):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    %(resolution)s
 
     Returns
     -------
@@ -284,6 +282,7 @@ def load_mni152_gm_template(resolution=None):
     return new_gm_template
 
 
+@fill_doc
 def load_mni152_wm_template(resolution=None):
     """Load the MNI152 white-matter template.
 
@@ -298,9 +297,7 @@ def load_mni152_wm_template(resolution=None):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    %(resolution)s
 
     Returns
     -------
@@ -347,6 +344,7 @@ def load_mni152_wm_template(resolution=None):
     return new_wm_template
 
 
+@fill_doc
 def load_mni152_brain_mask(resolution=None, threshold=0.2):
     """Load the MNI152 whole-brain mask.
 
@@ -359,9 +357,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
+    %(resolution)s
 
         .. versionadded:: 0.8.1
 
@@ -393,6 +389,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     return mask_img
 
 
+@fill_doc
 def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     """Load the MNI152 grey-matter mask.
 
@@ -405,9 +402,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
+    %(resolution)s
 
     threshold : float, default=0.2
         Values of the grey-matter MNI152 template above this threshold will be
@@ -448,6 +443,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     return gm_mask_img
 
 
+@fill_doc
 def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     """Load the MNI152 white-matter mask.
 
@@ -460,9 +456,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
+    %(resolution)s
 
     threshold : float, default=0.2
         Values of the white-matter MNI152 template above this threshold will be

@@ -711,6 +711,14 @@ resampling_interpolation : :obj:`str`, optional
 
 """
 
+# resolution template
+docdict["resolution"] = """
+resolution : :obj:`int`, default=None
+        If resolution is different from 1,
+        the template is re-sampled with the specified resolution.
+        Default to ``1`` if None is passed.
+"""
+
 # resume
 docdict["resume"] = """
 resume : :obj:`bool`, default=True
