@@ -10,8 +10,8 @@ GITLOG=$(cat gitlog.txt)
 # via a PATTERN env variable
 touch pattern.txt;
 
-# do a full build on main or if requested in the commit message
-if [ "$GITHUB_REF_NAME" == "main" ] || [[ $GITLOG == *"[full doc]"* ]]; then
+# do a full build on main, release or if requested in the commit message
+if [ "$GITHUB_REF_NAME" == "main" ] || [ "$GITHUB_REF_TYPE" != "tag" ] || [[ $GITLOG == *"[full doc]"* ]]; then
     echo "Doing a full build";
     echo html-strict > build.txt;
     return

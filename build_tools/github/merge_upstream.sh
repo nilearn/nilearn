@@ -18,9 +18,11 @@ if [ -z ${CI+x} ]; then
 else
     echo "Running in CI";
     echo "$GITHUB_REF_NAME" | tee merge.txt
-    if [ "$GITHUB_REF_NAME" != "main" ]; then
+    if [ "$GITHUB_REF_NAME" != "main" ] && [ "$GITHUB_REF_TYPE" != "branch" ]; then
         echo "Merging $(cat merge.txt)";
         git pull --ff-only upstream "refs/pull/$(cat merge.txt)";
     fi
 
 fi
+
+GITHUB_REF_TYPE
