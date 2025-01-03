@@ -313,11 +313,8 @@ def test_flm_generate_report_error_with_surface_data(
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
 
-    with pytest.raises(NotImplementedError):
-        model.generate_report("c0")
-
-    with pytest.raises(NotImplementedError):
-        make_glm_report(model, "c0")
+    model.generate_report("c0")
+    make_glm_report(model, "c0")
 
 
 @pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
