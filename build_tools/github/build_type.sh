@@ -8,8 +8,8 @@
 #
 # On the main branch, on tagged released or if requested in the commit message,
 # this exits early and sets things for a full doc build.
-# Otherwise it checks if any examples must be build
-# (either because changed in the PR or requested in the commit message).
+# Otherwise it checks if any examples must be built
+# (either because it was changed in the PR or requested in the commit message).
 #
 # Must be run after running build_tools/github/merge_upstream.sh
 #
