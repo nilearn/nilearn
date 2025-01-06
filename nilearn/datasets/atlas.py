@@ -2484,7 +2484,7 @@ def fetch_atlas_schaefer_2018(
                         # Get region ID of label '7Networks_LH_Vis_3' when
                         # 'Background' was not added to the list of labels:
                         # idx should be equal to 3:
-                        idx = np.where(data.labels == b"7Networks_LH_Vis_3")[0] + 1
+                        idx = data.labels.index("7Networks_LH_Vis_3") + 1
 
             - 'description': :obj:`str`, short description of the atlas
               and some references.
