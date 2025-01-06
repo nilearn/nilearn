@@ -318,7 +318,7 @@ def get_clusters_table(
     stat_map = safe_get_data(
         stat_img,
         ensure_finite=True,
-        copy_data=(cluster_threshold is not None),
+        copy_data=(cluster_threshold != 0),
     )
 
     # Define array for 6-connectivity, aka NN1 or "faces"

@@ -36,6 +36,7 @@ frem = FREMRegressor("svr", cv=10, standardize="zscore_sample")
 
 frem.fit(zmap_filenames, behavioral_target)
 
+# %%
 # Visualize FREM weights
 # ----------------------
 
