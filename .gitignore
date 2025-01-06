@@ -61,7 +61,6 @@ coverage.xml
 nosetests_coverage/
 
 # documentation
-doc/.nojekyll
 doc/_build/
 doc/auto_examples/
 doc/building_blocks/generated/

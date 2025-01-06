@@ -149,7 +149,7 @@ def group_sparse_covariance(
     Running time is linear on max_iter, and number of subjects (len(subjects)),
     but cubic on number of features (subjects[0].shape[1]).
 
-    The present algorithm is based on :footcite:t:`Honorio2015`.
+    The present algorithm is based on :footcite:t:`Honorio2012`.
 
     Parameters
     ----------
@@ -537,7 +537,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
     """Covariance and precision matrix estimator.
 
     The model used has been introduced in :footcite:t:`Varoquaux2010a`, and the
-    algorithm used is based on what is described in :footcite:t:`Honorio2015`.
+    algorithm used is based on what is described in :footcite:t:`Honorio2012`.
 
     Parameters
     ----------

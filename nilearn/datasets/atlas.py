@@ -13,14 +13,14 @@ import pandas as pd
 from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
-from .._utils import check_niimg, fill_doc, logger
-from ..image import get_data, new_img_like, reorder_img
-from ._utils import (
+from nilearn._utils import check_niimg, fill_doc, logger, rename_parameters
+from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
     get_dataset_descr,
     get_dataset_dir,
 )
+from nilearn.image import get_data, new_img_like, reorder_img
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -32,7 +32,6 @@ def fetch_atlas_difumo(
     data_dir=None,
     resume=True,
     verbose=1,
-    legacy_format=False,
 ):
     """Fetch DiFuMo brain atlas.
 
@@ -68,7 +67,6 @@ def fetch_atlas_difumo(
     %(data_dir)s
     %(resume)s
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -79,12 +77,10 @@ def fetch_atlas_difumo(
           definition. The shape of the image is
           ``(104, 123, 104, dimension)`` where ``dimension`` is the
           requested dimension of the atlas.
-        - 'labels': :class:`numpy.recarray` containing the labels of
+        - 'labels': :class:`pandas.DataFrame` containing the labels of
           the regions. The length of the label array corresponds to the
           number of dimensions requested. ``data.labels[i]`` is the label
           corresponding to volume ``i`` in the 'maps' image.
-          If ``legacy_format`` is set to ``False``, this is a
-          :class:`pandas.DataFrame`.
         - 'description': :obj:`str`, general description of the dataset.
 
     References
@@ -136,8 +132,6 @@ def fetch_atlas_difumo(
     files_ = fetch_files(data_dir, files, verbose=verbose, resume=resume)
     labels = pd.read_csv(files_[0])
     labels = labels.rename(columns={c: c.lower() for c in labels.columns})
-    if legacy_format:
-        labels = labels.to_records(index=False)
 
     # README
     readme_files = [
@@ -289,7 +283,6 @@ def fetch_atlas_destrieux_2009(
     url=None,
     resume=True,
     verbose=1,
-    legacy_format=False,
 ):
     """Download and load the Destrieux cortical \
     :term:`deterministic atlas<Deterministic atlas>` (dated 2009).
@@ -312,7 +305,6 @@ def fetch_atlas_destrieux_2009(
     %(url)s
     %(resume)s
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -324,10 +316,8 @@ def fetch_atlas_destrieux_2009(
               ROIs, lateralized or not. The image has shape ``(76, 93, 76)``,
               and contains integer values which can be interpreted as the
               indices in the list of labels.
-            - 'labels': :class:`numpy.recarray`, rec array containing the
+            - 'labels': :class:`pandas.DataFrame` containing the
               names of the ROIs.
-              If ``legacy_format`` is set to ``False``, this is a
-              :class:`pandas.DataFrame`.
             - 'description': :obj:`str`, description of the atlas.
 
     References
@@ -355,9 +345,6 @@ def fetch_atlas_destrieux_2009(
     files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     params = {"maps": files_[1], "labels": pd.read_csv(files_[0], index_col=0)}
-
-    if legacy_format:
-        params["labels"] = params["labels"].to_records()
 
     params["description"] = Path(files_[2]).read_text()
     return Bunch(**params)
@@ -911,24 +898,18 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
 @fill_doc
-def fetch_coords_power_2011(legacy_format=False):
+def fetch_coords_power_2011():
     """Download and load the Power et al. brain atlas composed of 264 ROIs.
 
     See :footcite:t:`Power2011`.
-
-    Parameters
-    ----------
-    %(legacy_format)s
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-            - 'rois': :class:`numpy.recarray`, rec array containing the
+            - 'rois': :class:`pandas.DataFrame` containing the
               coordinates of 264 ROIs in :term:`MNI` space.
-              If ``legacy_format`` is set to ``False``, this is a
-              :class:`pandas.DataFrame`.
             - 'description': :obj:`str`, description of the atlas.
 
 
@@ -944,8 +925,7 @@ def fetch_coords_power_2011(legacy_format=False):
     params["rois"] = params["rois"].rename(
         columns={c: c.lower() for c in params["rois"].columns}
     )
-    if legacy_format:
-        params["rois"] = params["rois"].to_records(index=False)
+
     return Bunch(**params)
 
 
@@ -1508,7 +1488,7 @@ def fetch_atlas_basc_multiscale_2015(
 
 
 @fill_doc
-def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=False):
+def fetch_coords_dosenbach_2010(ordered_regions=True):
     """Load the Dosenbach et al 160 ROIs.
 
     These ROIs cover much of the cerebral cortex
@@ -1521,17 +1501,14 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=False):
     ordered_regions : :obj:`bool`, default=True
         ROIs from same networks are grouped together and ordered with respect
         to their names and their locations (anterior to posterior).
-    %(legacy_format)s
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'rois': :class:`numpy.recarray`, rec array with the coordinates
+        - 'rois':  :class:`pandas.DataFrame` with the coordinates
           of the 160 ROIs in :term:`MNI` space.
-          If ``legacy_format`` is set to ``False``, this is a
-          :class:`pandas.DataFrame`.
         - 'labels': :class:`numpy.ndarray` of :obj:`str`, list of label
           names for the 160 ROIs.
         - 'networks': :class:`numpy.ndarray` of :obj:`str`, list of network
@@ -1564,14 +1541,11 @@ def fetch_coords_dosenbach_2010(ordered_regions=True, legacy_format=False):
         "description": fdescr,
     }
 
-    if legacy_format:
-        params["rois"] = params["rois"].to_records(index=False)
-
     return Bunch(**params)
 
 
 @fill_doc
-def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=False):
+def fetch_coords_seitzman_2018(ordered_regions=True):
     """Load the Seitzman et al. 300 ROIs.
 
     These ROIs cover cortical, subcortical and cerebellar regions and are
@@ -1590,17 +1564,14 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=False):
     ordered_regions : :obj:`bool`, default=True
         ROIs from same networks are grouped together and ordered with respect
         to their locations (anterior to posterior).
-    %(legacy_format)s
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'rois': :class:`numpy.recarray`, rec array with the coordinates
+        - 'rois': :class:`pandas.DataFrame` with the coordinates
           of the 300 ROIs in :term:`MNI` space.
-          If ``legacy_format`` is set to ``False``, this is a
-          :class:`pandas.DataFrame`.
         - 'radius': :class:`numpy.ndarray` of :obj:`int`, radius of each
           ROI in mm.
         - 'networks': :class:`numpy.ndarray` of :obj:`str`, names of the
@@ -1645,9 +1616,6 @@ def fetch_coords_seitzman_2018(ordered_regions=True, legacy_format=False):
 
     if ordered_regions:
         rois = rois.sort_values(by=["network", "y"])
-
-    if legacy_format:
-        rois = rois.to_records()
 
     params = {
         "rois": rois[["x", "y", "z"]],
@@ -1839,8 +1807,10 @@ def fetch_atlas_surf_destrieux(
     annot_left = freesurfer.read_annot(annots[0])
     annot_right = freesurfer.read_annot(annots[1])
 
+    labels = [x.decode("utf-8") for x in annot_left[2]]
+
     return Bunch(
-        labels=annot_left[2],
+        labels=labels,
         map_left=annot_left[0],
         map_right=annot_right[0],
         description=fdescr,
@@ -1961,8 +1931,13 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     return Bunch(maps=atlas_img, labels=labels, description=description)
 
 
+@rename_parameters(
+    replacement_params={"version": "atlas_type"}, end_version="0.13.1"
+)
 @fill_doc
-def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
+def fetch_atlas_pauli_2017(
+    atlas_type="probabilistic", data_dir=None, verbose=1
+):
     """Download the Pauli et al. (2017) atlas.
 
     This atlas has 12 subcortical nodes in total. See
@@ -1970,10 +1945,10 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
 
     Parameters
     ----------
-    version : {'prob', 'det'}, default='prob'
-        Which version of the atlas should be download. This can be
-        'prob' for the :term:`Probabilistic atlas`, or 'det' for the
-        :term:`Deterministic atlas`.
+    atlas_type : {'probabilistic', 'deterministic'}, default='probabilistic'
+        Which type of the atlas should be download. This can be
+        'probabilistic' for the :term:`Probabilistic atlas`, or 'deterministic'
+        for the :term:`Deterministic atlas`.
     %(data_dir)s
     %(verbose)s
 
@@ -1983,17 +1958,18 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
         Dictionary-like object, contains:
 
             - 'maps': :obj:`str`, path to nifti file containing the
-              :class:`~nibabel.nifti1.Nifti1Image`. If ``version='prob'``,
-              the image shape is ``(193, 229, 193, 16)``. If ``version='det'``
-              the image shape is ``(198, 263, 212)``, and values are indices
-              in the list of labels (integers from 0 to 16).
+              :class:`~nibabel.nifti1.Nifti1Image`. If
+              ``atlas_type='probabilistic'``, the image shape is ``(193, 229,
+              193, 16)``. If ``atlas_type='deterministic'`` the image shape is
+              ``(198, 263, 212)``, and values are indices in the list of labels
+              (integers from 0 to 16).
             - 'labels': :obj:`list` of :obj:`str`. List of region names. The
               list contains 16 values for both
               :term:`probabilitic<Probabilistic atlas>` and
-              :term:`deterministic<Deterministic atlas>` versions.
+              :term:`deterministic<Deterministic atlas>` types.
 
                 .. warning::
-                    For the :term:`deterministic<Deterministic atlas>` version,
+                    For the :term:`deterministic<Deterministic atlas>` type,
                     'Background' is not included in the list of labels.
                     To have proper indexing, you should either manually add
                     'Background' to the list of labels:
@@ -2015,20 +1991,43 @@ def fetch_atlas_pauli_2017(version="prob", data_dir=None, verbose=1):
             - 'description': :obj:`str`, short description of the atlas and
               some references.
 
+    Warns
+    -----
+    DeprecationWarning
+        The possible values for atlas_type are currently 'prob' and 'det'. From
+    release 0.13.0 onwards, atlas_type will accept only 'probabilistic' or
+    'deterministic' as value.
+
     References
     ----------
     .. footbibliography::
 
     """
-    if version == "prob":
+    # TODO: remove this part after release 0.13.0
+    if atlas_type in ("prob", "det"):
+        atlas_type_values = (
+            "The possible values for atlas_type are currently 'prob' and"
+            " 'det'. From release 0.13.0 onwards, atlas_type will accept only"
+            " 'probabilistic' or 'deterministic' as value."
+        )
+        warnings.warn(
+            category=DeprecationWarning,
+            message=atlas_type_values,
+            stacklevel=2,
+        )
+        atlas_type = (
+            "probabilistic" if atlas_type == "prob" else "deterministic"
+        )
+
+    if atlas_type == "probabilistic":
         url_maps = "https://osf.io/w8zq2/download"
         filename = "pauli_2017_prob.nii.gz"
-    elif version == "det":
+    elif atlas_type == "deterministic":
         url_maps = "https://osf.io/5mqfx/download"
         filename = "pauli_2017_det.nii.gz"
     else:
         raise NotImplementedError(
-            f"{version} is no valid version for the Pauli atlas"
+            f"{atlas_type} is not a valid type for the Pauli atlas"
         )
 
     url_labels = "https://osf.io/6qrcb/download"
@@ -2100,7 +2099,7 @@ def fetch_atlas_schaefer_2018(
               The values are consecutive integers
               between 0 and ``n_rois`` which can be interpreted as indices
               in the list of labels.
-            - 'labels': :class:`numpy.ndarray` of :obj:`str`, array
+            - 'labels': :obj:`list` of :obj:`str`, list
               containing the ROI labels including Yeo-network annotation.
 
                 .. warning::
@@ -2188,9 +2187,12 @@ def fetch_atlas_schaefer_2018(
         data_dir, files, resume=resume, verbose=verbose
     )
 
-    labels = np.genfromtxt(
-        labels_file, usecols=1, dtype="S", delimiter="\t", encoding=None
+    lut = pd.read_csv(
+        labels_file,
+        delimiter="\t",
+        names=["index", "name", "r", "g", "b", "fs"],
     )
+    labels = list(lut["name"])
     fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file, labels=labels, description=fdescr)

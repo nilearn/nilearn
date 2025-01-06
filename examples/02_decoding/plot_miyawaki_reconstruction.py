@@ -10,8 +10,10 @@ are used as training set and structured images are used for reconstruction.
 The code is a bit elaborate as the example uses, as the original article,
 a multiscale prediction on the images seen by the subject.
 
-For an encoding approach for the same dataset, see also
-:ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
+.. seealso::
+
+    For an encoding approach for the same dataset, see
+    :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
 
 .. include:: ../../../examples/masker_note.rst
 
@@ -332,4 +334,4 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

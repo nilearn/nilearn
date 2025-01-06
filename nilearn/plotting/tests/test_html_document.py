@@ -14,10 +14,13 @@ from nilearn.plotting import html_document
 
 
 class Get:
+    """Dummy class to implement GET requests."""
+
     def __init__(self, delay=0.0):
         self.delay = delay
 
     def __call__(self, url):
+        """Get implementation."""
         time.sleep(self.delay)
         self.url = url
         requests.get(url.replace("index.html", "favicon.ico"))
