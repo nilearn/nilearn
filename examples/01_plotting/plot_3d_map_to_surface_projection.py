@@ -82,10 +82,13 @@ fig.show()
 # you can easily configure :func:`~nilearn.plotting.plot_surf_stat_map`
 # to use ``plotly`` instead of ``matplotlib``:
 
-# If plotly is not installed, use matplotlib
-from nilearn._utils.helpers import is_plotly_installed
+engine = "matplotlib"
 
-engine = "plotly" if is_plotly_installed() else "matplotlib"
+# uncomment the following line if you use plotly
+# in the rest of this example
+
+# engine = "plotly"
+
 print(f"Using plotting engine {engine}.")
 
 figure = plot_surf_stat_map(
@@ -102,7 +105,7 @@ figure = plot_surf_stat_map(
 
 # Uncomment the line below
 # to view the figure in browser.
-# figure.show()
+figure.show()
 
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
@@ -204,7 +207,7 @@ elif engine == "plotly":
         lines=[{"width": 5}],
     )
     # view the contours in a browser
-    # figure.show()
+    figure.show()
 
 # %%
 # Plot with higher-resolution mesh
