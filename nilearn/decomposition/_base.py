@@ -526,7 +526,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             # TODO: remove in 0.11.3
             self.nifti_maps_masker_ = self.maps_masker_
             warnings.warn(
-                message="The nifti_maps_masker_ attribute is deprecated and"
+                message="The nifti_maps_masker_ attribute is deprecated and "
                 "will be removed in Nilearn 0.11.3. Please use "
                 "maps_masker_ instead.",
                 category=FutureWarning,
