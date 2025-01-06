@@ -310,6 +310,8 @@ class NiftiSpheresMasker(BaseMasker):
         reports=True,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None, verbose=0)
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
@@ -327,7 +329,9 @@ class NiftiSpheresMasker(BaseMasker):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
-        self.clean_kwargs = kwargs
+        self.clean_kwargs = {
+            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+        }
 
         # Parameters for joblib
         self.memory = memory
@@ -532,15 +536,6 @@ class NiftiSpheresMasker(BaseMasker):
         """
         if hasattr(self, "seeds_"):
             return self
-
-        if self.memory is None:
-            self.memory = Memory(location=None, verbose=0)
-
-        self.clean_kwargs = {
-            k[7:]: v
-            for k, v in self.clean_kwargs.items()
-            if k.startswith("clean__")
-        }
 
         error = (
             "Seeds must be a list of triplets of coordinates in "
