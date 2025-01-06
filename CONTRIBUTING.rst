@@ -863,11 +863,11 @@ How to contribute an atlas
 We want atlases in nilearn to be internally consistent.
 Specifically, your atlas object:
 
-- should be scikitlearn ``Bunch``
+- should be a scikitlearn ``Bunch``
 
 - MUST have at least the following 4 attributes (as with the existing atlases):
 
-  - ``description`` (bytes): A text description of the atlas.
+  - ``description`` (str): A text description of the atlas.
     This should be brief but thorough,
     describing the source (paper),
     relevant information related to its construction (modality, dataset, method),

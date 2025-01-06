@@ -1745,12 +1745,12 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         Dictionary-like object, keys are:
 
         - 'maps': :obj:`str`
-            path to nifti file containing the
+            Path to nifti file containing the
             T-maps of all 75 unthresholded components.
             The image has shape ``(53, 63, 46, 75)``.
 
         - 'rsn28': :obj:`str`
-            path to nifti file containing the
+            Path to nifti file containing the
             T-maps of 28 RSNs included in :footcite:t:`Allen2011`.
             The image has shape ``(53, 63, 46, 28)``.
 
@@ -1866,7 +1866,7 @@ def fetch_atlas_surf_destrieux(
             into the list of label name.
 
         - 'map_right': :class:`numpy.ndarray` of :obj:`int`
-            maps each :term:`vertex` on the right hemisphere
+            Maps each :term:`vertex` on the right hemisphere
             of the fsaverage5 surface to its index
             into the list of label name.
 
@@ -2012,7 +2012,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`, image has
+        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`
+            The image has
             shape ``(141, 172, 110)`` and contains consecutive integer
             values from 0 to the number of regions, which are indices
             in the list of labels.
