@@ -14,12 +14,19 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 import sys
 
 ##############################################################################
-
+#
+# Parameters definitions
+#
 # Standard documentation entries
 #
 # Entries are listed in alphabetical order.
 #
 docdict = {}
+
+##############################################################################
+#
+# Parameters definitions
+#
 
 # annotate
 docdict["annotate"] = """
@@ -477,6 +484,7 @@ docdict["lower_cutoff"] = """
 lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
+
 
 # mask_strategy
 docdict["mask_strategy"] = """
@@ -936,6 +944,32 @@ vmin : :obj:`float`, optional
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
+
+
+##############################################################################
+#
+# Other values definitions
+#
+
+# atlas_type
+docdict["atlas_type"] = """'atlas_type' : :obj:`str`
+        Type of atlas.
+        See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
+
+# dataset description
+docdict["description"] = """'description' : :obj:`str`
+        Description of the dataset."""
+
+# atlas labels
+docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
+        List of the names of the regions."""
+
+# look up table
+docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
 
 ##############################################################################
 
