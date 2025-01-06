@@ -126,13 +126,15 @@ exclude = [
     "examples/.*",
     "maint_tools/.*",
     "nilearn_cache/.*",
-    ".*/tests/.*"
+    ".*/tests/.*",
+    "nilearn/_version.py"
 ]
 
 [[tool.mypy.overrides]]
 ignore_errors = true
 module = [
-    "nilearn.externals.*"
+    "nilearn.externals.*",
+    "nilearn._version"
 ]
 
 [[tool.mypy.overrides]]
@@ -146,7 +148,7 @@ module = [
     "plotly.*",
     "svg.*",
     "memory_profiler.*",
-    "nilearn.externals.*"
+    "nilearn._version"
 ]
 
 [tool.pytest.ini_options]

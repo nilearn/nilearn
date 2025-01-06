@@ -939,7 +939,7 @@ vmin : :obj:`float`, optional
 
 ##############################################################################
 
-docdict_indented = {}
+docdict_indented: dict[int, dict[str, str]] = {}
 
 
 def _indentcount_lines(lines):
