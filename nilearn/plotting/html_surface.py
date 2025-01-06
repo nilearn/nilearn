@@ -376,7 +376,7 @@ def view_img_on_surf(
         e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : :obj:`str` or matplotlib colormap, default=cm.cold_hot
+    cmap : :obj:`str` or matplotlib colormap, default="RdBu_r"
         Colormap to use.
 
     black_bg : :obj:`bool`, default=False
@@ -550,7 +550,7 @@ def view_surf(
         e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : :obj:`str` or matplotlib colormap, default=cm.cold_hot
+    cmap : :obj:`str` or matplotlib colormap, default="RdBu_r"
         You might want to change it to 'gnist_ncar' if plotting a
         surface atlas.
 
