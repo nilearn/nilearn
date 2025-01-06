@@ -73,6 +73,9 @@ doc/themes/nilearn/static/jquery.js
 log.txt
 build.txt
 pattern.txt
+examples.txt
+gitlog.txt
+merge.txt
 
 # examples
 results/
