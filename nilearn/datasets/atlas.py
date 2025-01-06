@@ -1866,7 +1866,7 @@ def fetch_atlas_surf_destrieux(
         - %(labels)s
 
         - 'map_left': :class:`numpy.ndarray` of :obj:`int`
-            maps each vertex on the left hemisphere
+            Maps each vertex on the left hemisphere
             of the fsaverage5 surface to its index
             into the list of label name.
 
