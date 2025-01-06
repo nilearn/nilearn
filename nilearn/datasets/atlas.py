@@ -333,8 +333,7 @@ def fetch_atlas_destrieux_2009(
             and contains integer values which can be interpreted as the
             indices in the list of labels.
 
-        - 'labels': :obj:`list` of `str` of  containing the
-            names of the ROIs.
+        - %(labels)s
 
         - %(description)s
 
@@ -457,8 +456,7 @@ def fetch_atlas_harvard_oxford(
                 unique values in the map can be strictly smaller than the
                 number of region names in ``labels``.
 
-        - 'labels': :obj:`list` of :obj:`str`
-            List of labels for the regions in the atlas.
+        - %(labels)s
 
         - 'filename': Same as 'maps', kept for backward compatibility only.
 
@@ -1017,29 +1015,35 @@ def fetch_atlas_smith_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - ``'rsn20'``: :obj:`str`, path to nifti file containing
+        - ``'rsn20'``: :obj:`str`
+            Path to nifti file containing
             the 20-dimensional :term:`ICA`, resting-:term:`fMRI` components.
             The shape of the image is ``(91, 109, 91, 20)``.
 
-        - ``'rsn10'``: :obj:`str`, path to nifti file containing
+        - ``'rsn10'``: :obj:`str`
+            Path to nifti file containing
             the 10 well-matched maps from the 20 maps obtained as for 'rsn20',
             as shown in :footcite:t:`Smith2009b`.
             The shape of the image is ``(91, 109, 91, 10)``.
 
-        - ``'bm20'``: :obj:`str`, path to nifti file containing
+        - ``'bm20'``: :obj:`str`
+            Path to nifti file containing
             the 20-dimensional :term:`ICA`, BrainMap components.
             The shape of the image is ``(91, 109, 91, 20)``.
 
-        - ``'bm10'``: :obj:`str`, path to nifti file containing
+        - ``'bm10'``: :obj:`str`
+            Path to nifti file containing
             the 10 well-matched maps from the 20 maps obtained as for 'bm20',
             as shown in :footcite:t:`Smith2009b`.
             The shape of the image is ``(91, 109, 91, 10)``.
 
-        - ``'rsn70'``: :obj:`str`, path to nifti file containing
+        - ``'rsn70'``: :obj:`str`
+            Path to nifti file containing
             the 70-dimensional :term:`ICA`, resting-:term:`fMRI` components.
             The shape of the image is ``(91, 109, 91, 70)``.
 
-        - ``'bm70'``: :obj:`str`, path to nifti file containing
+        - ``'bm70'``: :obj:`str`
+            Path to nifti file containing
             the 70-dimensional :term:`ICA`, BrainMap components.
             The shape of the image is ``(91, 109, 91, 70)``.
 
@@ -1300,7 +1304,8 @@ def fetch_atlas_aal(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - 'maps': :obj:`str`, path to nifti file containing the regions.
+        - 'maps': :obj:`str`
+            Path to nifti file containing the regions.
             The image has shape ``(91, 109, 91)`` and contains
             117 unique integer values defining the parcellation in version
             SPM 5, 8 and 12, and 167 unique integer values defining the
@@ -1315,7 +1320,7 @@ def fetch_atlas_aal(
             to see how to   link labels to regions IDs.
 
         - 'indices': :obj:`list` of :obj:`str`
-            indices mapping 'labels'
+            Indices mapping 'labels'
             to values in the 'maps' image. This list has 116 elements in
             version SPM 5, 8 and 12, and 166 elements in version 3v2.
             Since the values in the 'maps' image do not correspond to
@@ -1665,10 +1670,10 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
           of the 300 ROIs in :term:`MNI` space.
 
         - 'radius': :class:`numpy.ndarray` of :obj:`int`
-            radius of each ROI in mm.
+            Radius of each ROI in mm.
 
         - 'networks': :class:`numpy.ndarray` of :obj:`str`
-            names of the corresponding network for each ROI.
+            Names of the corresponding network for each ROI.
 
         - 'regions': :class:`numpy.ndarray` of :obj:`str`
             Names of the regions.
@@ -1755,13 +1760,13 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
             The image has shape ``(53, 63, 46, 28)``.
 
         - 'networks': :obj:`list` of :obj:`list` of :obj:`str`
-            list containing the names for the 28 RSNs.
+            List containing the names for the 28 RSNs.
 
         - 'rsn_indices': :obj:`list` of :obj:`tuple`, each tuple is a \
           (:obj:`str`, :obj:`list` of :`int`).
-            This maps the network names
-            to the map indices. For example, the map indices for the 'Visual'
-            network can be obtained:
+            This maps the network names to the map indices.
+            For example, the map indices for the 'Visual' network
+            can be obtained:
 
             .. code-block:: python
 
