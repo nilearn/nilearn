@@ -216,10 +216,7 @@ class NiftiMasker(BaseMasker):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     %(memory)s
 

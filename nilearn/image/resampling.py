@@ -836,7 +836,7 @@ def reorder_img(img, resample=None, copy_header=False):
         be passed as the 'interpolation' argument into
         resample_img.
 
-    copy_header : :obj:`bool`, default=None
+    copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
         .. versionadded:: 0.11.0

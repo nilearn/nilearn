@@ -778,7 +778,7 @@ def apply_mask(
         See :ref:`extracting_data`.
         3D mask array: True where a :term:`voxel` should be used.
 
-    dtype: numpy dtype or 'f'
+    dtype : numpy dtype or 'f'
         The dtype of the output, if 'f', any float output is acceptable
         and if the data is stored on the disk as floats the data type
         will not be changed.

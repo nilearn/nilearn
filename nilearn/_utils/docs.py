@@ -296,6 +296,14 @@ draw_cross : :obj:`bool`, default=True
     to indicate the cut position.
 """
 
+# dtype
+docdict["dtype"] = """
+dtype : dtype like, "auto" or None, default=None
+    Data type toward which the data should be converted.
+    If "auto", the data will be converted to int32
+    if dtype is discrete and float32 if it is continuous.
+"""
+
 # extractor / extract_type
 docdict["extractor"] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
@@ -939,7 +947,7 @@ vmin : :obj:`float`, optional
 
 ##############################################################################
 
-docdict_indented = {}
+docdict_indented: dict[int, dict[str, str]] = {}
 
 
 def _indentcount_lines(lines):
