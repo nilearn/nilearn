@@ -4,9 +4,9 @@ import contextlib
 
 import matplotlib
 import numpy as _np
-from matplotlib import cm as _cm
 from matplotlib import colors as _colors
 from matplotlib import rcParams as _rcParams
+from matplotlib.cm import _colormaps as _cm
 
 from nilearn._utils.helpers import compare_version
 
@@ -151,36 +151,48 @@ def alpha_cmap(color, name="", alpha_min=0.5, alpha_max=1.0):
 
 
 _cmaps_data = {
-    "cold_hot": _pigtailed_cmap(_cm.hot),
-    "cold_white_hot": _pigtailed_cmap(_cm.hot_r),
-    "brown_blue": _pigtailed_cmap(_cm.bone),
-    "cyan_copper": _pigtailed_cmap(_cm.copper),
-    "cyan_orange": _pigtailed_cmap(_cm.YlOrBr_r),
-    "blue_red": _pigtailed_cmap(_cm.Reds_r),
-    "brown_cyan": _pigtailed_cmap(_cm.Blues_r),
+    "cold_hot": _pigtailed_cmap(_cm.get_cmap("hot")),
+    "cold_white_hot": _pigtailed_cmap(_cm.get_cmap("hot_r")),
+    "brown_blue": _pigtailed_cmap(_cm.get_cmap("bone")),
+    "cyan_copper": _pigtailed_cmap(_cm.get_cmap("copper")),
+    "cyan_orange": _pigtailed_cmap(_cm.get_cmap("YlOrBr_r")),
+    "blue_red": _pigtailed_cmap(_cm.get_cmap("Reds_r")),
+    "brown_cyan": _pigtailed_cmap(_cm.get_cmap("Blues_r")),
     "purple_green": _pigtailed_cmap(
-        _cm.Greens_r, swap_order=("red", "blue", "green")
+        _cm.get_cmap("Greens_r"), swap_order=("red", "blue", "green")
     ),
     "purple_blue": _pigtailed_cmap(
-        _cm.Blues_r, swap_order=("red", "blue", "green")
+        _cm.get_cmap("Blues_r"), swap_order=("red", "blue", "green")
     ),
     "blue_orange": _pigtailed_cmap(
-        _cm.Oranges_r, swap_order=("green", "red", "blue")
+        _cm.get_cmap("Oranges_r"), swap_order=("green", "red", "blue")
     ),
-    "black_blue": _rotate_cmap(_cm.hot),
-    "black_purple": _rotate_cmap(_cm.hot, swap_order=("blue", "red", "green")),
-    "black_pink": _rotate_cmap(_cm.hot, swap_order=("blue", "green", "red")),
-    "black_green": _rotate_cmap(_cm.hot, swap_order=("red", "blue", "green")),
-    "black_red": _cm.hot._segmentdata.copy(),
+    "black_blue": _rotate_cmap(_cm.get_cmap("hot")),
+    "black_purple": _rotate_cmap(
+        _cm.get_cmap("hot"), swap_order=("blue", "red", "green")
+    ),
+    "black_pink": _rotate_cmap(
+        _cm.get_cmap("hot"), swap_order=("blue", "green", "red")
+    ),
+    "black_green": _rotate_cmap(
+        _cm.get_cmap("hot"), swap_order=("red", "blue", "green")
+    ),
+    "black_red": _cm.get_cmap("hot")._segmentdata.copy(),  # type: ignore[attr-defined]
 }
 
-_cmaps_data["ocean_hot"] = _concat_cmap(_cm.ocean, _cm.hot_r)
-_cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
-_cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
+_cmaps_data["ocean_hot"] = _concat_cmap(
+    _cm.get_cmap("ocean"), _cm.get_cmap("hot_r")
+)
+_cmaps_data["hot_white_bone"] = _concat_cmap(
+    _cm.get_cmap("afmhot"), _cm.get_cmap("bone_r")
+)
+_cmaps_data["hot_black_bone"] = _concat_cmap(
+    _cm.get_cmap("afmhot_r"), _cm.get_cmap("bone")
+)
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
-_cmaps_data["bwr"] = _colors.LinearSegmentedColormap.from_list(
+_cmaps_data["bwr"] = _colors.LinearSegmentedColormap.from_list(  # type: ignore[attr-defined]
     "bwr", _bwr_data
 )._segmentdata.copy()
 
@@ -291,7 +303,7 @@ for k, v in _cmap_d.items():
 
         _register_cmap = _colormaps.register
     else:
-        _register_cmap = _cm.register_cmap
+        _register_cmap = _cm.register_cmap  # type: ignore[attr-defined]
 
     # "bwr" is already registered in latest matplotlib
     with contextlib.suppress(ValueError):
