@@ -76,7 +76,7 @@ class _MultiPCA(_BaseDecomposition):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    %(low_pass)
+    %(low_pass)s
 
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.

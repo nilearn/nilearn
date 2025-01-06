@@ -289,7 +289,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    %(low_pass)
+    %(low_pass)s
 
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
