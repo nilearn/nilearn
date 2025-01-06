@@ -536,9 +536,6 @@ def fetch_atlas_destrieux_2009(
         "lut": pd.read_csv(files_[0]),
     }
     params["labels"] = params["labels"].name.to_list()
-    from rich import print
-
-    print(params)
 
     _check_look_up_table(lut=params["lut"], atlas=params["maps"])
 

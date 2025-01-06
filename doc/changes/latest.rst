@@ -19,6 +19,8 @@ Enhancements
 
 - :bdg-dark:`Code` Add a look up table to each of the deterministic atlas (:gh:`4820` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Add an 'atlas_type' metadata to each atlas (:gh:`4820` by `Rémi Gau`_).
+
 Changes
 -------
 
