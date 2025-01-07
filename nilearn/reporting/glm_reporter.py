@@ -23,7 +23,6 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
-from nilearn import plotting
 from nilearn._utils import check_niimg, fill_doc
 from nilearn._utils.niimg import safe_get_data
 from nilearn._version import __version__
@@ -38,6 +37,7 @@ from nilearn.plotting import (
     plot_glass_brain,
     plot_roi,
     plot_stat_map,
+    plot_surf_stat_map,
 )
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
@@ -1182,7 +1182,11 @@ def _make_surface_glm_report(
     fig = model.masker_._create_figure_for_report()
     mask_plot = figure_to_png_base64(fig)
 
-    design_matrices = model.design_matrices_
+    design_matrices = (
+        model.design_matrices_
+        if isinstance(model, FirstLevelModel)
+        else [model.design_matrix_]
+    )
     design_matrices_dict = _return_design_matrices_dict(design_matrices)
 
     contrasts = coerce_to_dict(contrasts)
@@ -1220,11 +1224,10 @@ def _make_surface_glm_report(
             contrast_map = model.compute_contrast(
                 contrast_val, output_type="z_score"
             )
-            fig = plotting.plot_surf_stat_map(
+            fig = plot_surf_stat_map(
                 stat_map=contrast_map,
                 hemi="left",
                 colorbar=True,
-                cmap="seismic",
                 threshold=threshold,
                 bg_map=bg_img,
                 surf_mesh=surf_mesh,
@@ -1233,6 +1236,8 @@ def _make_surface_glm_report(
                 "stat_map_img": figure_to_png_base64(fig),
                 "contrast_img": contrasts_dict[contrast_name],
             }
+            # prevents sphinx-gallery & jupyter from scraping & inserting plots
+            plt.close("all")
 
     body = tpl.substitute(
         css=css,
@@ -1269,13 +1274,7 @@ def _make_surface_glm_report(
 
 
 def _return_design_matrices_dict(design_matrices):
-    # avoid circular import
-    from nilearn.reporting.glm_reporter import (
-        _plot_to_svg,
-        _resize_plot_inches,
-    )
-
-    if not design_matrices:
+    if design_matrices is None:
         return None
 
     design_matrices_dict = {}
@@ -1287,14 +1286,15 @@ def _return_design_matrices_dict(design_matrices):
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
         url_design_matrix_svg = _plot_to_svg(dmtx_plot)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
-        plt.close()
+        plt.close("all")
 
         design_matrices_dict[dmtx_title] = url_design_matrix_svg
+
     return design_matrices_dict
 
 
 def _return_contrasts_dict(design_matrices, contrasts):
-    if not design_matrices or not contrasts:
+    if design_matrices is None or not contrasts:
         return None
 
     contrasts_dict = {}
@@ -1308,7 +1308,7 @@ def _return_contrasts_dict(design_matrices, contrasts):
             url_contrast_plot_svg = _plot_to_svg(contrast_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
-            plt.close()
+            plt.close("all")
             contrasts_dict[contrast_name] = url_contrast_plot_svg
 
     return contrasts_dict

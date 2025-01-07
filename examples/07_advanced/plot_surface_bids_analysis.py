@@ -135,7 +135,7 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
 
 # View the GLM report of the first subject
 report_flm
-# report_flm.open_in_browser()
+report_flm.open_in_browser()
 
 # %%
 # Group level model
@@ -157,7 +157,7 @@ second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
 
 report_slm = second_level_glm.generate_report()
 report_slm
-# report_slm.open_in_browser()
+report_slm.open_in_browser()
 
 results = second_level_glm.compute_contrast("intercept", output_type="z_score")
 
