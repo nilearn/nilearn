@@ -27,14 +27,8 @@ from nilearn.maskers import NiftiMapsMasker
 
 def test_nifti_maps_masker(length, n_regions, affine_eye, shape_3d_default):
     """Check working of shape/affine checks."""
-    shape2 = (12, 10, 14)
-    affine2 = np.diag((1, 2, 3, 1))
-
     fmri11_img, mask11_img = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
-    )
-    _, mask21_img = generate_fake_fmri(
-        shape2, affine=affine_eye, length=length
     )
     labels11_img, _ = generate_maps(
         shape_3d_default, n_regions, affine=affine_eye
@@ -77,13 +71,28 @@ def test_nifti_maps_masker(length, n_regions, affine_eye, shape_3d_default):
     masker2.fit()
     masker2.inverse_transform(signals11)
 
-    # Test with data and atlas of different shape: the atlas should be
-    # resampled to the data
+
+def test_nifti_maps_masker_data_atlas_different_shape(
+    length, n_regions, affine_eye, shape_3d_default
+):
+    """Test with data and atlas of different shape.
+
+    The atlas should be resampled to the data.
+    """
+    shape2 = (12, 10, 14)
     shape22 = (5, 5, 6)
+    affine2 = np.diag((1, 2, 3, 1))
     affine2 = 2 * np.eye(4)
     affine2[-1, -1] = 1
 
+    _, mask21_img = generate_fake_fmri(
+        shape2, affine=affine_eye, length=length
+    )
+    labels11_img, _ = generate_maps(
+        shape_3d_default, n_regions, affine=affine_eye
+    )
     fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
+
     masker = NiftiMapsMasker(labels11_img, mask_img=mask21_img)
 
     masker.fit_transform(fmri22_img)
