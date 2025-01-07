@@ -17,3 +17,21 @@ def data_1(shape_3d_default):
 def mask_img_1(data_1, affine_eye):
     """Return a mask image."""
     return Nifti1Image(data_1.astype("uint8"), affine_eye)
+
+
+@pytest.fixture
+def shape_mask():
+    """Shape for masks."""
+    return (13, 14, 15)
+
+
+@pytest.fixture
+def length():
+    """Return a default length for 4D images."""
+    return 10
+
+
+@pytest.fixture
+def n_regions():
+    """Return a default numher of regions for maps."""
+    return 9
