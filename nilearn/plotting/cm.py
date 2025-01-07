@@ -4,9 +4,9 @@ import contextlib
 
 import matplotlib
 import numpy as _np
+from matplotlib import cm as _cm
 from matplotlib import colors as _colors
 from matplotlib import rcParams as _rcParams
-from matplotlib.cm import _colormaps as _cm
 
 from nilearn._utils.helpers import compare_version
 
