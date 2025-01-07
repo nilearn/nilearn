@@ -124,10 +124,10 @@ def test_multi_nifti_maps_masker_fit_files(
     maps11_img, _ = generate_maps(
         shape_3d_default, n_regions, affine=affine_eye
     )
-
     labels11 = write_imgs_to_path(
         maps11_img, file_path=tmp_path, create_files=create_files
     )
+
     masker = MultiNiftiMapsMasker(labels11, resampling_target=None)
 
     signals11 = masker.fit().transform(fmri11_img)
@@ -207,17 +207,16 @@ def test_multi_nifti_maps_masker_errors_field_of_view(
     fmri21_img, mask21_img = generate_fake_fmri(
         shape2, affine=affine_eye, length=length
     )
-
     maps11_img, _ = generate_maps(
         shape_3d_default, n_regions, affine=affine_eye
     )
 
+    error_msg = "Following field of view errors were detected"
+
     masker = MultiNiftiMapsMasker(
         maps11_img, mask_img=mask21_img, resampling_target=None
     )
-    with pytest.raises(
-        ValueError, match="Following field of view errors were detected:"
-    ):
+    with pytest.raises(ValueError, match=error_msg):
         masker.fit()
 
     images = write_imgs_to_path(
@@ -230,22 +229,16 @@ def test_multi_nifti_maps_masker_errors_field_of_view(
     masker = MultiNiftiMapsMasker(labels11, resampling_target=None)
     masker.fit()
 
-    with pytest.raises(
-        ValueError, match="Following field of view errors were detected:"
-    ):
+    with pytest.raises(ValueError, match=error_msg):
         masker.transform(fmri12_img)
 
-    with pytest.raises(
-        ValueError, match="Following field of view errors were detected:"
-    ):
+    with pytest.raises(ValueError, match=error_msg):
         masker.transform(fmri21_img)
 
     masker = MultiNiftiMapsMasker(
         labels11, mask_img=mask12, resampling_target=None
     )
-    with pytest.raises(
-        ValueError, match="Following field of view errors were detected:"
-    ):
+    with pytest.raises(ValueError, match=error_msg):
         masker.fit()
 
 
@@ -258,7 +251,6 @@ def test_multi_nifti_maps_masker_resampling_error(
     fmri11_img, _ = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
-
     maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
 
     mask_img_4d = Nifti1Image(
@@ -309,7 +301,6 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
     _, mask22_img = generate_fake_fmri(
         shape_mask, affine=affine_eye, length=length
     )
-
     maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
 
     # Multi-subject example
@@ -348,7 +339,6 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
     _, mask22_img = generate_fake_fmri(
         shape_mask, affine=affine_eye, length=length
     )
-
     maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
 
     # Multi-subject example
@@ -388,7 +378,6 @@ def test_multi_nifti_maps_masker_resampling_clipped_mask(
         shape_3d_default, affine=affine_eye, length=length
     )
     _, mask22_img = generate_fake_fmri(shape2, length=1, affine=affine2)
-    # Target: maps
     maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
 
     # Multi-subject example
@@ -432,7 +421,6 @@ def test_multi_nifti_maps_masker_list_of_sample_mask(
     fmri11_img, mask11_img = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
-
     maps11_img, _ = generate_maps(
         shape_3d_default, n_regions, affine=affine_eye
     )
