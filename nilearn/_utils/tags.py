@@ -82,8 +82,6 @@ else:
         # estimator accepts for str, Path to .nii[.gz] file
         # or NiftiImage object
         niimg_like: bool = True
-        # niimg_4D: bool = False
-        # niimg_5D: bool = False
         # estimator accepts SurfaceImage object
         surf_img: bool = False
 
