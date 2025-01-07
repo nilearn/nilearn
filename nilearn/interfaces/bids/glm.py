@@ -165,21 +165,19 @@ def save_glm_to_bids(
     Parameters
     ----------
     model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or \
-    :obj:`~nilearn.glm.second_level.SecondLevelModel`
+            :obj:`~nilearn.glm.second_level.SecondLevelModel`
         First- or second-level model from which to save outputs.
 
     contrasts : :obj:`str` or array of shape (n_col) or :obj:`list` \
-    of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
-        Contrast definitions. This may be one of the following:
+                of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
+        Contrast definitions.
 
-        - A string
-        - A list of strings
-        - A dictionary of
-            ':term:`contrast` name': ':term:`contrast`weight' key-value pairs.
+        If a dictionary is passed then it must be a dictionary of
+        'contrast name': 'contrast weight' key-value pairs.
+        The contrast weights may be strings, lists, or arrays.
 
-          The contrast weights may be strings, lists, or arrays.
-          Arrays may be 1D or 2D, with 1D arrays typically being
-          t-contrasts and 2D arrays typically being F-contrasts.
+        Arrays may be 1D or 2D, with 1D arrays typically being
+        t-contrasts and 2D arrays typically being F-contrasts.
 
     contrast_types : None or :obj:`dict` of :obj:`str`, default=None
         An optional dictionary mapping some
