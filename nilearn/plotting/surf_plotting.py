@@ -326,7 +326,7 @@ def _plot_surf_plotly(
     i, j, k = faces.T
 
     if cmap is None:
-        cmap = "cold_hot"
+        cmap = "RdBu_r"
 
     bg_data = None
     if bg_map is not None:
