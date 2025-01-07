@@ -61,9 +61,6 @@ def test_nifti_maps_masker(tmp_path):
     masker11 = NiftiMapsMasker(
         labels11_img, mask_img=mask11_img, resampling_target=None
     )
-
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker11.transform(fmri11_img)
     signals11 = masker11.fit().transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
 
@@ -122,9 +119,6 @@ def test_nifti_maps_masker(tmp_path):
     )
     signals11 = masker11.fit_transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
-
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        NiftiMapsMasker(labels11_img).inverse_transform(signals11)
 
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)

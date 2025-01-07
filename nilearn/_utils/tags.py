@@ -24,7 +24,7 @@ SKLEARN_LT_1_6 = parse(sklearn_version).release[1] < 6
 
 if SKLEARN_LT_1_6:
 
-    def tags(niimg_like=True, surf_img=False, **kwargs):
+    def tags(niimg_like=True, surf_img=False, masker=False, **kwargs):
         """Add nilearn tags to estimator.
 
         See also: InputTags
@@ -39,6 +39,8 @@ if SKLEARN_LT_1_6:
             X_types.append("niimg_like")
         if surf_img:
             X_types.append("surf_img")
+        if masker:
+            X_types.append("masker")
         X_types = list(set(X_types))
         return dict(X_types=X_types, **kwargs)
 
@@ -67,8 +69,13 @@ else:
         pairwise: bool = False
 
         # nilearn specific things
+
         # estimator accepts for str, Path to .nii[.gz] file
         # or NiftiImage object
         niimg_like: bool = True
         # estimator accepts SurfaceImage object
         surf_img: bool = False
+
+        # estimator that are maskers
+        # TODO: implement a masker_tags attribute
+        masker: bool = False

@@ -230,7 +230,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(masker=True)
         return tags
 
     def fit(self, imgs=None, y=None):
@@ -424,5 +424,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
+        tags.input_tags = InputTags(
+            surf_img=True, niimg_like=False, masker=True
+        )
         return tags
