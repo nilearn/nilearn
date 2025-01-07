@@ -1,5 +1,7 @@
 """Utilities for maintenance."""
 
+from __future__ import annotations
+
 import ast
 from pathlib import Path
 from typing import Literal
@@ -61,7 +63,7 @@ def list_nodes(
     file: Path,
     node_type,
     include: Literal["private", "public", "all"] = "public",
-):
+) -> list[ast.ClassDef] | list[ast.FunctionDef]:
     """Return AST of the nodes in a module."""
     with file.open() as f:
         module = ast.parse(f.read())

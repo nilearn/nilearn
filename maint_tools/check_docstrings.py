@@ -6,6 +6,8 @@
     - if a function of class definition uses the fill_doc decorator properly
 """
 
+from __future__ import annotations
+
 import ast
 
 from numpydoc.docscrape import NumpyDocString
@@ -38,7 +40,7 @@ VALUES = [
 ]
 
 
-def main():
+def main() -> None:
     """Find missing :obj:`` in doc string type."""
     filenames = list_modules()
 
@@ -59,7 +61,9 @@ def main():
     print(f"{n_issues} detected")
 
 
-def check_fill_doc_decorator(ast_node, filename):
+def check_fill_doc_decorator(
+    ast_node: ast.ClassDef | ast.FunctionDef, filename: str
+) -> None:
     """Check that fill_doc decorator is present when needed.
 
     Checks if '%(' is present in the doc string
@@ -97,7 +101,7 @@ def check_fill_doc_decorator(ast_node, filename):
         )
 
 
-def check_docstring(ast_node, filename, n_issues):
+def check_docstring(ast_node, filename: str, n_issues: int) -> int:
     """Check that defaults in an AST node are present in docstring type."""
     docstring = ast.get_docstring(ast_node, clean=False)
     if not docstring:
@@ -121,7 +125,7 @@ def check_docstring(ast_node, filename, n_issues):
     return n_issues
 
 
-def get_missing(docstring, values=None):
+def get_missing(docstring: str, values=None) -> list[tuple[str, str, str]]:
     """Return missing obj in doc string.
 
     Returns
