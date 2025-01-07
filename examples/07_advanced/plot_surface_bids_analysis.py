@@ -122,16 +122,18 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
         confounds=confound[0],
     )
 
-    # Let's only generate a report for the first subject
-    if i == 1:
-        report_flm = first_level_glm.generate_report()
-
     # Compute contrast between 'language' and 'string' events
     z_scores.append(
         first_level_glm.compute_contrast(
             "language-string", stat_type="t", output_type="z_score"
         )
     )
+
+    # Let's only generate a report for the first subject
+    if i == 1:
+        report_flm = first_level_glm.generate_report(
+            contrasts="language-string", threshold=1.96, alpha=0.001
+        )
 
 # View the GLM report of the first subject
 report_flm
@@ -145,7 +147,6 @@ report_flm
 # by passing them as input
 # to :class:`~nilearn.glm.second_level.SecondLevelModel`.
 #
-
 import pandas as pd
 
 from nilearn.glm.second_level import SecondLevelModel
@@ -154,10 +155,15 @@ second_level_glm = SecondLevelModel()
 design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
 second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
 
-report_slm = second_level_glm.generate_report()
+results = second_level_glm.compute_contrast("intercept", output_type="z_score")
+
+report_slm = second_level_glm.generate_report(
+    contrasts="intercept", threshold=1.96, alpha=0.001
+)
+
+# View the GLM report at the group level
 report_slm
 
-results = second_level_glm.compute_contrast("intercept", output_type="z_score")
 
 # %%
 # Visualization
