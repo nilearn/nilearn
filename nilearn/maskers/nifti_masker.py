@@ -231,7 +231,7 @@ class NiftiMasker(BaseMasker):
         If set to True, data is saved in order to produce a report.
 
     %(cmap)s
-        default="CMRmap_r"
+        default="gray"
         Only relevant for the report figures.
 
     %(masker_kwargs)s

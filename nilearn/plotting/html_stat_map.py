@@ -131,8 +131,9 @@ def _save_sprite(
     mask : :class:`numpy.ndarray`, optional
         Mask to use.
 
-    cmap : :obj:`str` or colormap, default='Greys'
-        Colormap to use.
+    %(cmap)s
+        default='Greys'
+
 
     format : :obj:`str`, default='png'
         Format to use for output image.
@@ -561,7 +562,7 @@ def view_img(
         If set to auto, an educated guess is made to find if the background
         is white or black.
     %(cmap)s
-        Default=`plt.cm.cold_hot`.
+        default="RdBu_r"
     symmetric_cmap : :obj:`bool`, default=True
         True: make colormap symmetric (ranging from -vmax to vmax).
         False: the colormap will go from the minimum of the volume to vmax.
