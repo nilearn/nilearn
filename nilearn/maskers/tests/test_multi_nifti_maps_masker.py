@@ -243,15 +243,13 @@ def test_multi_nifti_maps_masker_errors_field_of_view(
 
 
 def test_multi_nifti_maps_masker_resampling_error(
-    affine_eye, length, n_regions, shape_3d_default
+    affine_eye, length, n_regions, shape_3d_default, shape_maps
 ):
     """Test MultiNiftiMapsMasker when using resampling."""
-    shape3 = (16, 17, 18)  # maps
-
     fmri11_img, _ = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
-    maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
+    maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
 
     mask_img_4d = Nifti1Image(
         np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
@@ -290,18 +288,16 @@ def test_multi_nifti_maps_masker_resampling_error(
 
 
 def test_multi_nifti_maps_masker_resampling_to_mask(
-    shape_mask, affine_eye, length, n_regions, shape_3d_default
+    shape_mask, affine_eye, length, n_regions, shape_3d_default, shape_maps
 ):
     """Test resampling to mask in MultiNiftiMapsMasker."""
-    shape3 = (16, 17, 18)  # maps
-
     fmri11_img, _ = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
     _, mask22_img = generate_fake_fmri(
         shape_mask, affine=affine_eye, length=length
     )
-    maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
+    maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
 
     # Multi-subject example
     fmri11_img = [fmri11_img, fmri11_img]
@@ -328,18 +324,16 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
 
 
 def test_multi_nifti_maps_masker_resampling_to_maps(
-    shape_mask, affine_eye, length, n_regions, shape_3d_default
+    shape_mask, affine_eye, length, n_regions, shape_3d_default, shape_maps
 ):
     """Test resampling to maps in MultiNiftiMapsMasker."""
-    shape3 = (16, 17, 18)  # maps
-
     fmri11_img, _ = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
     _, mask22_img = generate_fake_fmri(
         shape_mask, affine=affine_eye, length=length
     )
-    maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
+    maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
 
     # Multi-subject example
     fmri11_img = [fmri11_img, fmri11_img]
