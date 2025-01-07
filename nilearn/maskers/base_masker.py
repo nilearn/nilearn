@@ -419,7 +419,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags(surf_img=True, niimg_like=False)
+            return tags(surf_img=True, niimg_like=False, masker=True)
 
         from nilearn._utils.tags import InputTags
 
