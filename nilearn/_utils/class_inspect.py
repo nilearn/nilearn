@@ -9,11 +9,7 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._utils import compare_version
-from nilearn.conftest import (
-    _affine_eye,
-    _shape_3d_default,
-    _shape_4d_default,
-)
+from nilearn.conftest import _img_3d_rand
 
 # List of sklearn estimators checks that are valid
 # for all nilearn estimators.
@@ -29,6 +25,7 @@ VALID_CHECKS = [
     "check_set_params",
     # Nilearn checks
     "check_masker_fitted",
+    "check_nifti_masker_fit_list_3d",
 ]
 
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -140,25 +137,23 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
 
 def nilearn_check_estimator(estimator):
     tags = estimator.__sklearn_tags__()
-    is_masker = (
-        isinstance(tags, dict) and tags.get("masker") is True
-    ) or getattr(tags.input_tags, "masker", None)
 
     niimg_input = False
+    is_masker = False
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
         niimg_input = "niimg_like" in tags["X_types"]
+        is_masker = "masker" in tags["X_types"]
     else:
         niimg_input = getattr(tags.input_tags, "niimg_like", False)
+        is_masker = getattr(tags.input_tags, "masker", False)
 
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
 
-        if niimg_input:
-            yield (clone(estimator), check_nifti_masker_fit_3d)
-            yield (clone(estimator), check_nifti_masker_fit_4d)
-            yield (clone(estimator), check_nifti_masker_fit_5d)
+    if is_masker and niimg_input:
+        yield (clone(estimator), check_nifti_masker_fit_list_3d)
 
 
 def check_masker_fitted(estimator):
@@ -180,34 +175,9 @@ def check_masker_fitted(estimator):
         estimator.inverse_transform(signals)
 
 
-def check_nifti_masker_fit_3d(estimator):
-    """Check that 3D image can be fitted."""
-    from nilearn._utils.data_gen import generate_random_img
-
-    img_3d_rand_eye = generate_random_img(
-        shape=_shape_3d_default(), affine=_affine_eye()
-    )
-    estimator.fit(img_3d_rand_eye)
-
-
-def check_nifti_masker_fit_4d(estimator):
-    """Check that 3D image can be fitted."""
-    from nilearn._utils.data_gen import generate_random_img
-
-    img_4d_rand_eye = generate_random_img(
-        shape=_shape_4d_default(), affine=_affine_eye()
-    )
-    estimator.fit([img_4d_rand_eye])
-
-
-def check_nifti_masker_fit_5d(estimator):
-    """Check that 3D image can be fitted."""
-    from nilearn._utils.data_gen import generate_random_img
-
-    img_4d_rand_eye = generate_random_img(
-        shape=_shape_4d_default(), affine=_affine_eye()
-    )
-    estimator.fit([img_4d_rand_eye, img_4d_rand_eye])
+def check_nifti_masker_fit_list_3d(estimator):
+    """Check that list of 3D image can be fitted."""
+    estimator.fit([_img_3d_rand(), _img_3d_rand()])
 
 
 def get_params(cls, instance, ignore=None):
