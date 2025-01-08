@@ -51,10 +51,9 @@ def rgb_to_hex_lookup(
 
 
 def _generate_atlas_look_up_table(function=None, name=None, index=None):
-    """Generate a look up tale for an atlas.
+    """Generate a look up table for an atlas.
 
-    For a given deterministic atlas
-    supported by Nilearn,
+    For a given deterministic atlas supported by Nilearn,
     this returns a pandas dataframe to use as look up table (LUT)
     between the name of a ROI and its index in the associated image.
     This LUT is compatible with the dseg.tsv BIDS format
