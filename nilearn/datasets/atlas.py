@@ -1468,7 +1468,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
 
 def _update_lut_freesurder(lut):
-    """Update LUT with formatted for Freesurfer."""
+    """Update LUT formatted for Freesurfer."""
     lut = pd.concat(
         [
             pd.DataFrame([[0, "Background", 0, 0, 0, 0]], columns=lut.columns),
