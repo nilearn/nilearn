@@ -24,6 +24,9 @@ to plot the resulting statistical map on the pial surface.
     <sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py>`.
 
     See :ref:`plotting` for more details on plotting tools.
+
+See the :ref:`dataset description <nki_dataset>`
+for more information on the data used in this example.
 """
 
 # %%
