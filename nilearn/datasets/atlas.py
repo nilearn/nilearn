@@ -21,7 +21,8 @@ from nilearn.datasets._utils import (
     get_dataset_descr,
     get_dataset_dir,
 )
-from nilearn.image import get_data, new_img_like, reorder_img
+from nilearn.image import get_data as get_img_data
+from nilearn.image import new_img_like, reorder_img
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
@@ -75,14 +76,14 @@ def _generate_atlas_look_up_table(function=None, name=None, index=None):
         Defaults to "unknown" in case None is passed.
 
     name : iterable of bytes or string, or int or None, default=None
-        If an integer is passed this corresponds
-        to the number of ROIs in the atlas
-        If an iterable is passed then it contains the ROI names.
-        If None is passed then it is inferred from index.
+        If an integer is passed,
+        this corresponds to the number of ROIs in the atlas.
+        If an iterable is passed, then it contains the ROI names.
+        If None is passed, then it is inferred from index.
 
     index : iterable of integers, niimg like or None, default=None
-        If None then the index of each ROI is derived from name.
-        if a Niimg like or SurfaceImage is passed
+        If None, then the index of each ROI is derived from name.
+        If a Niimg like or SurfaceImage is passed,
         then a LUT is generated for this image.
     """
     if name is None and index is None:
@@ -112,23 +113,15 @@ def _generate_atlas_look_up_table(function=None, name=None, index=None):
     lut = pd.DataFrame({"index": index, "name": name})
 
     if fname in [
-        "fetch_atlas_harvard_oxford",
-        "fetch_atlas_juelich",
-        "fetch_atlas_talairach",
-        "fetch_atlas_basc_multiscale_2015",
-        "fetch_atlas_surf_destrieux",
-        "unknown",
-    ]:
-        return lut
-
-    elif fname in [
         "fetch_atlas_pauli_2017",
         "fetch_atlas_aal",
     ]:
-        return pd.concat(
+        lut = pd.concat(
             [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
             ignore_index=True,
         )
+
+    return lut
 
 
 def _check_look_up_table(lut, atlas, strict=False):
@@ -148,6 +141,25 @@ def _check_look_up_table(lut, atlas, strict=False):
 
     strict : bool, default = False
         Errors are raised instead of warnings if strict == True.
+
+    Raises
+    ------
+    AssertionError
+        If:
+        - lut is not a dataframe with the required columns
+        - if there are mismatches between the number of ROIs
+          in the LUT and th number of unique ROIs in the associated image.
+
+    ValueError
+        If regions in the image do not exist in the atlas lookup table
+        and `strict=True`.
+
+    Warns
+    -----
+    UserWarning
+        If regions in the image do not exist in the atlas lookup table
+        and `strict=False`.
+
     """
     assert isinstance(lut, pd.DataFrame)
     assert "name" in lut.columns
@@ -179,6 +191,7 @@ def _check_look_up_table(lut, atlas, strict=False):
             if strict:
                 raise ValueError(msg)
             warnings.warn(msg, stacklevel=3)
+
         if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
             msg = (
                 "\nThe following regions are present "
@@ -441,14 +454,12 @@ def fetch_atlas_craddock_2012(
         params = {
             "maps": data[0],
             "description": fdescr,
-            "atlas_type": atlas_type,
         }
     else:
         params = dict(
             [
                 ("description", fdescr),
                 *list(zip(keys, sub_files)),
-                ("atlas_type", atlas_type),
             ]
         )
         warnings.warn(
@@ -457,6 +468,8 @@ def fetch_atlas_craddock_2012(
             "with one map accessed through a 'maps' key. Please use the new "
             "parameters homogeneity and grp_mean.",
         )
+
+    params["atlas_type"] = atlas_type
 
     return Bunch(**params)
 
@@ -510,6 +523,8 @@ def fetch_atlas_destrieux_2009(
     .. footbibliography::
 
     """
+    atlas_type = "deterministic"
+
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/11942/"
 
@@ -533,14 +548,12 @@ def fetch_atlas_destrieux_2009(
         "maps": files_[1],
         "labels": pd.read_csv(files_[0], index_col=0),
         "lut": pd.read_csv(files_[0]),
+        "atlas_type": atlas_type,
+        "description": Path(files_[2]).read_text(),
     }
     params["labels"] = params["labels"].name.to_list()
 
     _check_look_up_table(lut=params["lut"], atlas=params["maps"])
-
-    params["description"] = Path(files_[2]).read_text()
-
-    params["atlas_type"] = "deterministic"
 
     return Bunch(**params)
 
@@ -867,7 +880,7 @@ def fetch_atlas_juelich(
         verbose=verbose,
     )
     atlas_niimg = check_niimg(atlas_img)
-    atlas_data = get_data(atlas_niimg)
+    atlas_data = get_img_data(atlas_niimg)
 
     if atlas_type == "probabilistic":
         new_atlas_data, new_names = _merge_probabilistic_maps_juelich(
@@ -1032,7 +1045,7 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     # should be positive. This is important to
     # correctly split left and right hemispheres.
     assert atlas_niimg.affine[0, 0] > 0
-    atlas_data = get_data(atlas_niimg)
+    atlas_data = get_img_data(atlas_niimg)
     labels = np.unique(atlas_data)
     # Build a mask of both halves of the brain
     middle_ind = (atlas_data.shape[0]) // 2
@@ -1562,6 +1575,8 @@ def fetch_atlas_aal(
     License: unknown.
 
     """
+    atlas_type = "deterministic"
+
     versions = ["SPM5", "SPM8", "SPM12", "3v2"]
     if version not in versions:
         raise ValueError(
@@ -1631,7 +1646,7 @@ def fetch_atlas_aal(
         "labels": labels,
         "indices": indices,
         "lut": lut,
-        "atlas_type": "deterministic",
+        "atlas_type": atlas_type,
     }
 
     return Bunch(**params)
@@ -2006,6 +2021,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     on this dataset.
 
     """
+    atlas_type = "probabilistic"
+
     if url is None:
         url = "https://osf.io/hrcku/download"
 
@@ -2044,7 +2061,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     params = [
         ("description", fdescr),
-        ("atlas_type", "probabilistic"),
+        ("atlas_type", atlas_type),
         ("rsn_indices", labels),
         ("networks", networks),
         *list(zip(keys, sub_files)),
@@ -2098,6 +2115,8 @@ def fetch_atlas_surf_destrieux(
     .. footbibliography::
 
     """
+    atlas_type = "deterministic"
+
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
 
@@ -2144,7 +2163,7 @@ def fetch_atlas_surf_destrieux(
         map_right=annot_right[0],
         description=fdescr,
         lut=lut,
-        atlas_type="deterministic",
+        atlas_type=atlas_type,
     )
 
 
@@ -2174,7 +2193,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         level_labels = {"*": 0}
         for region_nb, region_name in enumerate(old_level_labels):
             level_labels.setdefault(region_name, len(level_labels))
-            level_data[get_data(atlas_img) == region_nb] = level_labels[
+            level_data[get_img_data(atlas_img) == region_nb] = level_labels[
                 region_name
             ]
         new_img_like(atlas_img, level_data).to_filename(
@@ -2246,6 +2265,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     .. footbibliography::
 
     """
+    atlas_type = "deterministic"
+
     if level_name not in _TALAIRACH_LEVELS:
         raise ValueError(f'"level_name" should be one of {_TALAIRACH_LEVELS}')
     talairach_dir = get_dataset_dir(
@@ -2270,7 +2291,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
         labels=labels,
         description=description,
         lut=lut,
-        atlas_type="deterministic",
+        atlas_type=atlas_type,
     )
 
 
