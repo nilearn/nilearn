@@ -166,7 +166,7 @@ for contrast_id, contrast_val in contrasts.items():
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 
 
 # sphinx_gallery_dummy_images=3

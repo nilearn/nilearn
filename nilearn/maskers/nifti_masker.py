@@ -216,10 +216,7 @@ class NiftiMasker(BaseMasker):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     %(memory)s
 
@@ -231,7 +228,7 @@ class NiftiMasker(BaseMasker):
         If set to True, data is saved in order to produce a report.
 
     %(cmap)s
-        default="CMRmap_r"
+        default="gray"
         Only relevant for the report figures.
 
     %(masker_kwargs)s
@@ -281,7 +278,7 @@ class NiftiMasker(BaseMasker):
         memory=None,
         verbose=0,
         reports=True,
-        cmap="CMRmap_r",
+        cmap="gray",
         **kwargs,
     ):
         # Mask is provided or computed
