@@ -860,10 +860,10 @@ Additional cases
 How to contribute an atlas
 --------------------------
 
-We want atlases in nilearn to be internally consistent.
+We want atlases in Nilearn to be internally consistent.
 Specifically, your atlas object:
 
-- should be a scikitlearn ``Bunch``
+- should be a Scikit-learn ``Bunch``
 
 - MUST have at least the following 4 attributes (as with the existing atlases):
 
