@@ -17,6 +17,8 @@ Enhancements
 
 - :bdg-dark:`Code` Allow plotting both hemispheres together (:gh:`4991` by `Himanshu Aggarwal`_).
 
+- :bdg-dark:`Code` Add surface smoothing (:gh:`3267` by `Jason D. Yeatman`_ and `Noah C. Benson`_ ).
+
 Changes
 -------
 
