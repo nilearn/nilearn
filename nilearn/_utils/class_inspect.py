@@ -1,7 +1,6 @@
 """Small utilities to inspect classes."""
 
 import numpy as np
-import pytest
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.utils.estimator_checks import (
@@ -160,6 +159,8 @@ def check_masker_fitted(estimator):
     """Check that transform() and inverse_transform() \
        fail for maskers if they have not been fitted.
     """
+    import pytest
+
     from nilearn._utils.data_gen import generate_random_img
 
     # Failure should happen before the input type is determined
