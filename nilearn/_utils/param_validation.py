@@ -295,9 +295,7 @@ def check_run_sample_masks(n_runs, sample_masks):
         sample_masks = (sample_masks,)
 
     checked_sample_masks = [_convert_bool2index(sm) for sm in sample_masks]
-    checked_sample_masks = [
-        _check_sample_mask_int64(sm) for sm in checked_sample_masks
-    ]
+    checked_sample_masks = [_cast_to_int64(sm) for sm in checked_sample_masks]
 
     if len(checked_sample_masks) != n_runs:
         raise ValueError(
@@ -317,7 +315,7 @@ def _convert_bool2index(sample_mask):
     return sample_mask
 
 
-def _check_sample_mask_int64(sample_mask):
+def _cast_to_int64(sample_mask):
     """Ensure the sample mask dtype is signed."""
     new_dtype = np.int64
     if np.min(sample_mask) < 0:
