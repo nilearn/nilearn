@@ -27,7 +27,7 @@ def shape_mask():
 
 @pytest.fixture
 def shape_maps():
-    """Shape for masks."""
+    """Shape for maps."""
     return (16, 17, 18)
 
 
