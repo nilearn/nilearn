@@ -863,9 +863,9 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
 
         assert data.description != ""
         assert isinstance(data.maps, str)
-        assert isinstance(data.labels, np.ndarray)
+        assert isinstance(data.labels, list)
         assert len(data.labels) == n_rois
-        assert data.labels[0].astype(str).startswith(f"{yeo_networks}Networks")
+        assert data.labels[0].startswith(f"{yeo_networks}Networks")
 
         img = load(data.maps)
 

@@ -12,6 +12,9 @@ a very robust decoder at a lower computational cost than other spatially
 regularized methods.
 
 To have more details, see: :ref:`frem`.
+
+See the :ref:`dataset description <mixed_gamble_maps>`
+for more information on the data used in this example.
 """
 
 # %%
@@ -36,6 +39,7 @@ frem = FREMRegressor("svr", cv=10, standardize="zscore_sample")
 
 frem.fit(zmap_filenames, behavioral_target)
 
+# %%
 # Visualize FREM weights
 # ----------------------
 

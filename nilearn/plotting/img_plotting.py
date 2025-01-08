@@ -775,7 +775,7 @@ def plot_epi(
         Ex: use "%%i" to display as integers.
 
     %(cmap)s
-        Default=`plt.cm.nipy_spectral`.
+        Default=`plt.cm.gray`.
 
     %(vmin)s
 
@@ -834,8 +834,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         The ROI/mask image, it could be binary mask or an atlas or ROIs
         with integer values.
 
-    cmap : matplotlib colormap
-        The colormap for the atlas maps.
+    %(cmap)s
 
     alpha : :obj:`float` between 0 and 1
         Alpha sets the transparency of the color inside the filled
@@ -1312,7 +1311,7 @@ def plot_stat_map(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap=plt.cm.RdBu_r,
+    cmap="RdBu_r",
     symmetric_cbar="auto",
     dim="auto",
     vmin=None,
@@ -1370,7 +1369,7 @@ def plot_stat_map(
         .. note::
             The colormap *must* be symmetrical.
 
-        Default=`plt.cm.cold_hot`.
+        Default=default="RdBu_r".
 
     %(symmetric_cbar)s
 
@@ -1997,7 +1996,6 @@ def plot_carpet(
     %(vmax)s
     %(title)s
     %(cmap)s
-
         Default=`gray`.
 
     cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \

@@ -1806,8 +1806,10 @@ def fetch_atlas_surf_destrieux(
     annot_left = freesurfer.read_annot(annots[0])
     annot_right = freesurfer.read_annot(annots[1])
 
+    labels = [x.decode("utf-8") for x in annot_left[2]]
+
     return Bunch(
-        labels=annot_left[2],
+        labels=labels,
         map_left=annot_left[0],
         map_right=annot_right[0],
         description=fdescr,
@@ -2096,7 +2098,7 @@ def fetch_atlas_schaefer_2018(
               The values are consecutive integers
               between 0 and ``n_rois`` which can be interpreted as indices
               in the list of labels.
-            - 'labels': :class:`numpy.ndarray` of :obj:`str`, array
+            - 'labels': :obj:`list` of :obj:`str`, list
               containing the ROI labels including Yeo-network annotation.
 
                 .. warning::
@@ -2184,9 +2186,12 @@ def fetch_atlas_schaefer_2018(
         data_dir, files, resume=resume, verbose=verbose
     )
 
-    labels = np.genfromtxt(
-        labels_file, usecols=1, dtype="S", delimiter="\t", encoding=None
+    lut = pd.read_csv(
+        labels_file,
+        delimiter="\t",
+        names=["index", "name", "r", "g", "b", "fs"],
     )
+    labels = list(lut["name"])
     fdescr = get_dataset_descr(dataset_name)
 
     return Bunch(maps=atlas_file, labels=labels, description=fdescr)

@@ -338,7 +338,7 @@ def view_img_on_surf(
     stat_map_img,
     surf_mesh="fsaverage5",
     threshold=None,
-    cmap=cm.cold_hot,
+    cmap="RdBu_r",
     black_bg=False,
     vmax=None,
     vmin=None,
@@ -376,8 +376,8 @@ def view_img_on_surf(
         e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : :obj:`str` or matplotlib colormap, default=cm.cold_hot
-        Colormap to use.
+    %(cmap)s
+        default="RdBu_r"
 
     black_bg : :obj:`bool`, default=False
         If True, image is plotted on a black background. Otherwise on a
@@ -472,7 +472,7 @@ def view_surf(
     bg_map=None,
     hemi=None,
     threshold=None,
-    cmap=cm.cold_hot,
+    cmap="RdBu_r",
     black_bg=False,
     vmax=None,
     vmin=None,
@@ -550,9 +550,8 @@ def view_surf(
         e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : :obj:`str` or matplotlib colormap, default=cm.cold_hot
-        You might want to change it to 'gnist_ncar' if plotting a
-        surface atlas.
+    %(cmap)s
+        default="RdBu_r"
 
     black_bg : :obj:`bool`, default=False
         If True, image is plotted on a black background. Otherwise on a

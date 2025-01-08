@@ -1438,6 +1438,7 @@ def plot_surf_stat_map(
         as transparent.
 
     %(cmap)s
+        default="RdBu_r"
 
     %(cbar_tick_format)s
         Default="auto" which will select:
@@ -1789,7 +1790,7 @@ def plot_img_on_surf(
     %(threshold)s
     %(symmetric_cbar)s
     %(cmap)s
-        Default='cold_hot'.
+        Default="RdBu_r".
     %(cbar_tick_format)s
     kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.

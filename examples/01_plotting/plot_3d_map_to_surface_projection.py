@@ -154,10 +154,6 @@ destrieux_atlas = SurfaceImage(
     },
 )
 
-# The labels are stored as bytes for the Destrieux atlas.
-# For convenience we decode them to string.
-label_names = [x.decode("utf-8") for x in destrieux.labels]
-
 # these are the regions we want to outline
 regions_dict = {
     "G_postcentral": "Postcentral gyrus",
@@ -166,7 +162,8 @@ regions_dict = {
 
 # get indices in atlas for these labels
 regions_indices = [
-    np.where(np.array(label_names) == region)[0][0] for region in regions_dict
+    np.where(np.array(destrieux.labels) == region)[0][0]
+    for region in regions_dict
 ]
 
 labels = list(regions_dict.values())

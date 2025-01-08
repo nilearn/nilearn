@@ -1357,7 +1357,8 @@ def fetch_mixed_gambles(
 ):
     """Fetch Jimura "mixed gambles" dataset.
 
-    See :footcite:t:`Jimura2012`.
+    See the :ref:`dataset description <mixed_gamble_maps>`
+    for more information.
 
     Parameters
     ----------
@@ -1393,10 +1394,6 @@ def fetch_mixed_gambles(
           :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)``,
           else it is ``None``.
         - 'description': data description
-
-    References
-    ----------
-    .. footbibliography::
 
     """
     if n_subjects > 16:
@@ -1442,11 +1439,23 @@ def fetch_megatrawls_netmats(
     This data can be used to predict relationships between imaging data and
     non-imaging behavioral measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
-    datasets of 461 subjects. Full technical details in references.
+    datasets of 461 subjects.
 
-    More information available in :footcite:t:`Smith2015b`,
-    :footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
-    :footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
+    ..  admonition:: Technical details
+        :class: important
+
+        For more technical details about predicting the measures, refer to:
+        Stephen Smith et al,
+        HCP beta-release of the Functional Connectivity MegaTrawl.
+        April 2015 "HCP500-MegaTrawl" release.
+        https://db.humanconnectome.org/megatrawl/
+
+    ..  admonition:: Terms and conditions
+        :class: attention
+
+        This is open access data. You must agree to Terms and conditions
+        of using this data before using it, available at:
+        http://humanconnectome.org/data/data-use-terms/open-access.html
 
     Parameters
     ----------
@@ -1489,13 +1498,10 @@ def fetch_megatrawls_netmats(
 
         - 'description': data description
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
-    See description for terms & conditions on data usage.
+    For more information
+    see the :ref:`dataset description <megatrawls_maps>`.
 
     """
     url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
