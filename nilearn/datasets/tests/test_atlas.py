@@ -487,6 +487,10 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     raises=AttributeError,
 )
 def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
+    """Check fetcher for the yeo atlas.
+
+    Mocks data for each deterministic atlas and their look up tables.
+    """
     dataset_name = "yeo_2011"
     yeo_archive_root = "Yeo_JNeurophysiol11_MNI152"
 
@@ -757,6 +761,7 @@ def test_fetch_coords_dosenbach_2010():
 
 
 def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
+    """Fetch allen atlas and checks filenames are those expected."""
     bunch = fetch_atlas_allen_2011(data_dir=tmp_path, verbose=0)
     keys = ("maps", "rsn28", "comps")
 
