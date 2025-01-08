@@ -279,7 +279,7 @@ def _resample_one_img(
             "passed to resample. This is a bad thing as they "
             "make resampling ill-defined and much slower.",
             RuntimeWarning,
-            stacklevel=2,
+            stacklevel=3,
         )
         if copy:
             # We need to do a copy to avoid modifying the input
@@ -299,7 +299,8 @@ def _resample_one_img(
             "Resampling binary images with continuous or "
             "linear interpolation. This might lead to "
             "unexpected results. You might consider using "
-            "nearest interpolation instead."
+            "nearest interpolation instead.",
+            stacklevel=3,
         )
 
     # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
@@ -487,7 +488,8 @@ def resample_img(
             warnings.warn(
                 "The provided image has no sform in its header. "
                 "Please check the provided file. "
-                "Results may not be as expected."
+                "Results may not be as expected.",
+                stacklevel=2,
             )
 
     # noop cases
@@ -835,7 +837,7 @@ def reorder_img(img, resample=None, copy_header=False):
         be passed as the 'interpolation' argument into
         resample_img.
 
-    copy_header : :obj:`bool`, default=None
+    copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
         .. versionadded:: 0.11.0

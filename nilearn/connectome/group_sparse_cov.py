@@ -971,7 +971,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
     n_refinements : :obj:`int`, default=4
         number of times the initial grid should be refined.
 
-    cv : :obj:`int`, default=3
+    cv : :obj:`int`, default=None
         number of folds in a K-fold cross-validation scheme.
 
     tol_cv : float, default=1e-2

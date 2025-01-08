@@ -523,18 +523,21 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 self.masker_.mask_img_,
                 resampling_target="maps",
             )
-            # TODO: remove in 0.11.3
-            self.nifti_maps_masker_ = self.maps_masker_
-            warnings.warn(
-                message="The nifti_maps_masker_ attribute is deprecated and "
-                "will be removed in Nilearn 0.11.3. Please use "
-                "maps_masker_ instead.",
-                category=FutureWarning,
-                stacklevel=2,
-            )
         self.maps_masker_.fit()
 
         return self
+
+    @property
+    def nifti_maps_masker_(self):
+        # TODO: remove in 0.13
+        warnings.warn(
+            message="The 'nifti_maps_masker_' attribute is deprecated "
+            "and will be removed in Nilearn 0.13.0.\n"
+            "Please use 'maps_masker_' instead.",
+            category=FutureWarning,
+            stacklevel=2,
+        )
+        return self.maps_masker_
 
     def _check_components_(self):
         if not hasattr(self, "components_"):
