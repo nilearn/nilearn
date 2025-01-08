@@ -8,7 +8,6 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._utils import compare_version
-from nilearn.conftest import _img_3d_rand
 
 # List of sklearn estimators checks that are valid
 # for all nilearn estimators.
@@ -178,6 +177,8 @@ def check_masker_fitted(estimator):
 
 def check_nifti_masker_fit_list_3d(estimator):
     """Check that list of 3D image can be fitted."""
+    from nilearn.conftest import _img_3d_rand
+
     estimator.fit([_img_3d_rand(), _img_3d_rand()])
 
 
