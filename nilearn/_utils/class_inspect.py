@@ -135,7 +135,7 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
 
 
 def nilearn_check_estimator(estimator):
-    tags = estimator.__sklearn_tags__()
+    tags = estimator._more_tags()
 
     niimg_input = False
     is_masker = False
