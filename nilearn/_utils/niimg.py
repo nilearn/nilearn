@@ -106,10 +106,7 @@ def load_niimg(niimg, dtype=None):
         See :ref:`extracting_data`.
         Image to load.
 
-    dtype : {dtype, "auto"}
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     Returns
     -------

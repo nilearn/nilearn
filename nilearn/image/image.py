@@ -1509,10 +1509,7 @@ def load_img(img, wildcards=True, dtype=None):
         If no file matches the regular expression, a `ValueError` exception is
         raised.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     Returns
     -------

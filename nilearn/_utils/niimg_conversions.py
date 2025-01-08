@@ -109,10 +109,7 @@ def iter_check_niimg(
     target_fov : tuple of affine and shape, optional
        If specified, images are resampled to this field of view.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
@@ -232,10 +229,8 @@ def check_niimg(
     atleast_4d : boolean, default=False
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
 
-    dtype : {None, dtype, "auto"}, default=None
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous. If None, data will not be converted to a new data type.
+    %(dtype)s
+        If None, data will not be converted to a new data type.
 
     return_iterator : boolean, default=False
         Returns an iterator on the content of the niimg file input.
@@ -347,10 +342,7 @@ def check_niimg_3d(niimg, dtype=None):
         If it is an object, check if the affine attribute present and that
         nilearn.image.get_data returns a result, raise TypeError otherwise.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     Returns
     -------
