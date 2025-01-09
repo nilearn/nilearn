@@ -124,7 +124,7 @@ def test_nifti_maps_masker_fit_files(
     labels11 = write_imgs_to_path(
         img_maps, file_path=tmp_path, create_files=create_files
     )
-    masker = NiftiMapsMasker(labels11, resampling_target=None)
+    masker = NiftiMapsMasker(labels11, resampling_target=None, verbose=0)
 
     signals11 = masker.fit().transform(img_fmri)
 

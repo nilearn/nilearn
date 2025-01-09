@@ -406,7 +406,7 @@ def img_fmri(shape_3d_default, affine_eye, length):
     """Return a default length for fmri images."""
     return generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
-    )
+    )[0]
 
 
 # ------------------------ SURFACE ------------------------#
