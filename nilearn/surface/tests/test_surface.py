@@ -740,7 +740,7 @@ def test_choose_kind():
         kind = _choose_kind("depth", None)
 
 
-def test_validate_mesh(rng):
+def test__validate_mesh(rng):
     """Ensures that invalid meshes cannot be instantiated."""
     # valid mesh is fine
     coords = rng.random((20, 3))

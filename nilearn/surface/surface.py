@@ -1070,7 +1070,7 @@ def check_mesh_and_data(mesh, data):
     """
     mesh = load_surf_mesh(mesh)
 
-    validate_mesh(mesh)
+    _validate_mesh(mesh)
 
     data = load_surf_data(data)
     # Check that mesh coordinates has a number of nodes
@@ -1085,7 +1085,7 @@ def check_mesh_and_data(mesh, data):
     return mesh, data
 
 
-def validate_mesh(mesh):
+def _validate_mesh(mesh):
     """Check mesh coordinates and faces.
 
     Mesh coordinates and faces must be numpy arrays.
@@ -1475,7 +1475,7 @@ class InMemoryMesh(SurfaceMesh):
         self.coordinates = coordinates
         self.faces = faces
         self.n_vertices = coordinates.shape[0]
-        validate_mesh(self)
+        _validate_mesh(self)
 
     def __getitem__(self, index):
         if index == 0:
