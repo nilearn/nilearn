@@ -388,7 +388,7 @@ def n_regions():
 
 
 @pytest.fixture
-def maps11_img(shape_3d_default, n_regions, affine_eye):
+def maps_img(shape_3d_default, n_regions, affine_eye):
     """Generate a default map image."""
     return generate_maps(
         shape=shape_3d_default, n_regions=n_regions, affine=affine_eye

@@ -27,7 +27,7 @@ from nilearn.maskers import NiftiMapsMasker
 
 
 def test_nifti_maps_masker(
-    length, n_regions, affine_eye, shape_3d_default, maps11_img
+    length, n_regions, affine_eye, shape_3d_default, maps_img
 ):
     """Check common methods of NiftiMapsMasker."""
     fmri11_img, mask11_img = generate_fake_fmri(
@@ -35,7 +35,7 @@ def test_nifti_maps_masker(
     )
 
     masker11 = NiftiMapsMasker(
-        maps11_img, mask_img=mask11_img, resampling_target=None
+        maps_img, mask_img=mask11_img, resampling_target=None
     )
 
     signals11 = masker11.fit().transform(fmri11_img)
@@ -44,7 +44,7 @@ def test_nifti_maps_masker(
 
     # Transform, with smoothing (smoke test)
     masker11 = NiftiMapsMasker(
-        maps11_img, smoothing_fwhm=3, resampling_target=None
+        maps_img, smoothing_fwhm=3, resampling_target=None
     )
 
     masker11.fit()
@@ -53,7 +53,7 @@ def test_nifti_maps_masker(
     assert signals11.shape == (length, n_regions)
 
     masker11 = NiftiMapsMasker(
-        maps11_img, smoothing_fwhm=3, resampling_target=None
+        maps_img, smoothing_fwhm=3, resampling_target=None
     )
 
     signals11 = masker11.fit_transform(fmri11_img)
@@ -67,13 +67,13 @@ def test_nifti_maps_masker(
     assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
     # Now try on a masker that has never seen the call to "transform"
-    masker2 = NiftiMapsMasker(maps11_img, resampling_target=None)
+    masker2 = NiftiMapsMasker(maps_img, resampling_target=None)
     masker2.fit()
     masker2.inverse_transform(signals11)
 
 
 def test_nifti_maps_masker_data_atlas_different_shape(
-    length, affine_eye, maps11_img
+    length, affine_eye, maps_img
 ):
     """Test with data and atlas of different shape.
 
@@ -90,15 +90,15 @@ def test_nifti_maps_masker_data_atlas_different_shape(
     )
     fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
 
-    masker = NiftiMapsMasker(maps11_img, mask_img=mask21_img)
+    masker = NiftiMapsMasker(maps_img, mask_img=mask21_img)
 
     masker.fit_transform(fmri22_img)
     assert_array_equal(masker._resampled_maps_img_.affine, affine2)
 
 
-def test_nifti_maps_masker_fit(n_regions, maps11_img):
+def test_nifti_maps_masker_fit(n_regions, maps_img):
     """Check fitted attributes."""
-    masker = NiftiMapsMasker(maps11_img, resampling_target=None)
+    masker = NiftiMapsMasker(maps_img, resampling_target=None)
     # Check attributes defined at fit
     assert not hasattr(masker, "maps_img_")
     assert not hasattr(masker, "n_elements_")
@@ -119,7 +119,7 @@ def test_nifti_maps_masker_fit_files(
     affine_eye,
     shape_3d_default,
     create_files,
-    maps11_img,
+    maps_img,
 ):
     """Check fitting files directly."""
     fmri11_img, _ = generate_fake_fmri(
@@ -127,7 +127,7 @@ def test_nifti_maps_masker_fit_files(
     )
 
     labels11 = write_imgs_to_path(
-        maps11_img, file_path=tmp_path, create_files=create_files
+        maps_img, file_path=tmp_path, create_files=create_files
     )
     masker = NiftiMapsMasker(labels11, resampling_target=None)
 
@@ -137,7 +137,7 @@ def test_nifti_maps_masker_fit_files(
 
 
 def test_nifti_maps_masker_errors(
-    length, n_regions, affine_eye, shape_3d_default, maps11_img
+    length, n_regions, affine_eye, shape_3d_default, maps_img
 ):
     """Check fitting errors."""
     fmri11_img, mask11_img = generate_fake_fmri(
@@ -145,25 +145,25 @@ def test_nifti_maps_masker_errors(
     )
 
     masker = NiftiMapsMasker(
-        maps11_img, mask_img=mask11_img, resampling_target=None
+        maps_img, mask_img=mask11_img, resampling_target=None
     )
 
     with pytest.raises(ValueError, match="has not been fitted. "):
         masker.transform(fmri11_img)
 
     masker = NiftiMapsMasker(
-        maps11_img, smoothing_fwhm=3, resampling_target=None
+        maps_img, smoothing_fwhm=3, resampling_target=None
     )
     signals11 = masker.fit_transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
 
     with pytest.raises(ValueError, match="has not been fitted."):
-        NiftiMapsMasker(maps11_img).inverse_transform(signals11)
+        NiftiMapsMasker(maps_img).inverse_transform(signals11)
 
 
 @pytest.mark.parametrize("create_files", (True, False))
 def test_nifti_maps_masker_errors_field_of_view(
-    tmp_path, length, affine_eye, shape_3d_default, create_files, maps11_img
+    tmp_path, length, affine_eye, shape_3d_default, create_files, maps_img
 ):
     """Check field of view errors."""
     shape2 = (12, 10, 14)
@@ -179,14 +179,14 @@ def test_nifti_maps_masker_errors_field_of_view(
     error_msg = "Following field of view errors were detected"
 
     masker = NiftiMapsMasker(
-        maps11_img, mask_img=mask21_img, resampling_target=None
+        maps_img, mask_img=mask21_img, resampling_target=None
     )
     with pytest.raises(ValueError, match=error_msg):
         masker.fit()
 
     # Test all kinds of mismatches between shapes and between affines
     images = write_imgs_to_path(
-        maps11_img,
+        maps_img,
         mask12_img,
         file_path=tmp_path,
         create_files=create_files,
@@ -245,7 +245,7 @@ def test_nifti_maps_masker_resampling_errors(
 
 
 def test_nifti_maps_masker_io_shapes(
-    rng, affine_eye, length, n_regions, shape_3d_default, maps11_img
+    rng, affine_eye, length, n_regions, shape_3d_default, maps_img
 ):
     """Ensure that NiftiMapsMasker handles 1D/2D/3D/4D data appropriately.
 
@@ -262,7 +262,7 @@ def test_nifti_maps_masker_io_shapes(
     )
     img_3d, _ = generate_random_img(shape_3d_default, affine=affine_eye)
 
-    masker = NiftiMapsMasker(maps11_img, mask_img=mask_img)
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
     masker.fit()
 
     # DeprecationWarning *should* be raised for 3D inputs
@@ -612,10 +612,10 @@ def test_3d_images(affine_eye, n_regions, shape_3d_default):
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
 )
-def test_nifti_maps_masker_reporting_mpl_warning(maps11_img):
+def test_nifti_maps_masker_reporting_mpl_warning(maps_img):
     """Raise warning after exception if matplotlib is not installed."""
     with warnings.catch_warnings(record=True) as warning_list:
-        result = NiftiMapsMasker(maps11_img).generate_report()
+        result = NiftiMapsMasker(maps_img).generate_report()
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)

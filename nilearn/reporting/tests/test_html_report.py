@@ -52,8 +52,8 @@ def mask(shape_3d_default, affine_eye):
 
 
 @pytest.fixture
-def niftimapsmasker_inputs(maps11_img):
-    return {"maps_img": maps11_img}
+def niftimapsmasker_inputs(maps_img):
+    return {"maps_img": maps_img}
 
 
 @pytest.fixture
@@ -69,13 +69,13 @@ def labels_img(shape_3d_default, affine_eye, n_regions):
 
 
 @pytest.fixture
-def input_parameters(masker_class, mask, labels, labels_img, maps11_img):
+def input_parameters(masker_class, mask, labels, labels_img, maps_img):
     if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": mask}
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
         return {"labels_img": labels_img, "labels": labels}
     if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
-        return {"maps_img": maps11_img}
+        return {"maps_img": maps_img}
     if masker_class is NiftiSpheresMasker:
         return {"seeds": [(1, 1, 1)]}
 
@@ -570,7 +570,7 @@ def test_multi_nifti_labels_masker_report_warning(
 
 
 def test_multi_nifti_maps_masker_report_warning(
-    shape_3d_default, affine_eye, maps11_img
+    shape_3d_default, affine_eye, maps_img
 ):
     """Test calling generate report on multiple subjects raises warning."""
     length = 3
@@ -579,7 +579,7 @@ def test_multi_nifti_maps_masker_report_warning(
         shape_3d_default, affine=affine_eye, length=length
     )
 
-    masker = MultiNiftiMapsMasker(maps11_img)
+    masker = MultiNiftiMapsMasker(maps_img)
 
     with pytest.warns(
         UserWarning, match="A list of 4D subject images were provided to fit. "
