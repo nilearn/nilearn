@@ -484,7 +484,7 @@ class GlassBrainAxes(BaseAxes):
             ):
                 marker_color = np.asarray(marker_color)
             relevant_coords = []
-            xcoords, ycoords, zcoords = marker_coords.T
+            xcoords, _, _ = marker_coords.T
             relevant_coords.extend(
                 cidx
                 for cidx, xc in enumerate(xcoords)

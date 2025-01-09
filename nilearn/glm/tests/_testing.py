@@ -124,19 +124,6 @@ def design_with_negative_onsets():
     return events
 
 
-def design_with_negative_durations():
-    durations = _durations()
-    durations[1] = -5
-    events = pd.DataFrame(
-        {
-            "trial_type": _conditions(),
-            "onset": _onsets(),
-            "duration": durations,
-        }
-    )
-    return events
-
-
 def duplicate_events_paradigm():
     conditions = ["c0", "c0", "c0", "c0", "c1", "c1"]
     onsets = [10, 30, 70, 70, 10, 30]
