@@ -756,8 +756,7 @@ def test_validate_mesh(rng):
         InMemoryMesh(coordinates=coords, faces=faces)
 
     # coordinates is None
-    coords = rng.random((20, 3))
-    faces = rng.integers(coords.shape[0], size=(30, 3))
+    faces = rng.integers(20, size=(30, 3))
     coords = None
 
     with pytest.raises(TypeError, match="must be numpy arrays."):
