@@ -253,14 +253,20 @@ def fetch_atlas_difumo(
         Dictionary-like object, the interest attributes are :
 
         - 'maps': :obj:`str`, path to 4D nifti file containing regions
-          definition. The shape of the image is
-          ``(104, 123, 104, dimension)`` where ``dimension`` is the
-          requested dimension of the atlas.
+            definition. The shape of the image is
+            ``(104, 123, 104, dimension)`` where ``dimension`` is the
+            requested dimension of the atlas.
+
         - 'labels': :class:`pandas.DataFrame` containing the labels of
-          the regions. The length of the label array corresponds to the
-          number of dimensions requested. ``data.labels[i]`` is the label
-          corresponding to volume ``i`` in the 'maps' image.
-        - 'description': :obj:`str`, general description of the dataset.
+            the regions.
+            The length of the label array corresponds to the
+            number of dimensions requested. ``data.labels[i]`` is the label
+            corresponding to volume ``i`` in the 'maps' image.
+
+        - %(description)s
+
+        - %(atlas_type)s
+
 
     References
     ----------
@@ -377,17 +383,25 @@ def fetch_atlas_craddock_2012(
         - ``'scorr_mean'``: :obj:`str`, path to nifti file containing
             the group-mean :term:`parcellation`
             when emphasizing spatial homogeneity.
+
         - ``'tcorr_mean'``: :obj:`str`, path to nifti file containing
             the group-mean parcellation when emphasizing temporal homogeneity.
+
         - ``'scorr_2level'``: :obj:`str`, path to nifti file containing
             the :term:`parcellation` obtained
             when emphasizing spatial homogeneity.
+
         - ``'tcorr_2level'``: :obj:`str`, path to nifti file containing
             the :term:`parcellation` obtained
             when emphasizing temporal homogeneity.
+
         - ``'random'``: :obj:`str`, path to nifti file containing
             the :term:`parcellation` obtained with random clustering.
-        - ``'description'``: :obj:`str`, general description of the dataset.
+
+        - %(description)s
+
+        - %(atlas_type)s
+
 
     Warns
     -----
@@ -490,9 +504,10 @@ def fetch_atlas_destrieux_2009(
 
     .. note::
 
-        Some labels from the list of labels might not be present in the
-        atlas image, in which case the integer values in the image might
-        not be consecutive.
+        Some labels from the list of labels might not be present
+        in the atlas image,
+        in which case the integer values in the image
+        might not be consecutive.
 
     Parameters
     ----------
@@ -509,14 +524,20 @@ def fetch_atlas_destrieux_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-            - 'maps': :obj:`str`, path to nifti file containing the
-              :class:`~nibabel.nifti1.Nifti1Image` defining the cortical
-              ROIs, lateralized or not. The image has shape ``(76, 93, 76)``,
-              and contains integer values which can be interpreted as the
-              indices in the list of labels.
-            - 'labels': :class:`pandas.DataFrame` containing the
-              names of the ROIs.
-            - 'description': :obj:`str`, description of the atlas.
+        - 'maps': :obj:`str`
+            path to nifti file containing the
+            :class:`~nibabel.nifti1.Nifti1Image` defining the cortical
+            ROIs, lateralized or not. The image has shape ``(76, 93, 76)``,
+            and contains integer values which can be interpreted as the
+            indices in the list of labels.
+
+        - %(labels)s
+
+        - %(description)s
+
+        - %(lut)s
+
+        - %(atlas_type)s
 
     References
     ----------
@@ -624,27 +645,35 @@ def fetch_atlas_harvard_oxford(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-            - 'maps': :obj:`str`, path to nifti file containing the
-              atlas :class:`~nibabel.nifti1.Nifti1Image`. It is a 4D image
-              if a :term:`Probabilistic atlas` is requested, and a 3D image
-              if a :term:`maximum probability atlas<Deterministic atlas>` is
-              requested. In the latter case, the image contains integer
-              values which can be interpreted as the indices in the list
-              of labels.
+        - 'maps': :obj:`str`
+            path to nifti file containing the
+            atlas :class:`~nibabel.nifti1.Nifti1Image`.
+            It is a 4D image
+            if a :term:`Probabilistic atlas` is requested, and a 3D image
+            if a :term:`maximum probability atlas<Deterministic atlas>` is
+            requested.
+            In the latter case, the image contains integer
+            values which can be interpreted as the indices in the list
+            of labels.
 
-                .. note::
+            .. note::
 
-                    For some atlases, it can be the case that some regions
-                    are empty. In this case, no :term:`voxels<voxel>` in the
-                    map are assigned to these regions. So the number of
-                    unique values in the map can be strictly smaller than the
-                    number of region names in ``labels``.
+                For some atlases, it can be the case that some regions
+                are empty. In this case, no :term:`voxels<voxel>` in the
+                map are assigned to these regions. So the number of
+                unique values in the map can be strictly smaller than the
+                number of region names in ``labels``.
 
-            - 'labels': :obj:`list` of :obj:`str`, list of labels for the
-              regions in the atlas.
-            - 'filename': Same as 'maps', kept for backward
-              compatibility only.
-            - 'description': :obj:`str`, description of the atlas.
+        - %(labels)s
+
+        - 'filename': Same as 'maps', kept for backward compatibility only.
+
+        - %(description)s
+
+        - %(lut)s
+            Only for deterministic version of the atlas.
+
+        - %(atlas_type)s
 
     See Also
     --------
@@ -821,26 +850,32 @@ def fetch_atlas_juelich(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-            - 'maps': :class:`~nibabel.nifti1.Nifti1Image`. It is a 4D image
-              if a :term:`Probabilistic atlas` is requested, and a 3D image
-              if a :term:`maximum probability atlas<Deterministic atlas>` is
-              requested. In the latter case, the image contains integer
-              values which can be interpreted as the indices in the list
-              of labels.
+        - 'maps': :class:`~nibabel.nifti1.Nifti1Image`.
+            It is a 4D image if a :term:`Probabilistic atlas` is requested,
+            and a 3D image
+            if a :term:`maximum probability atlas<Deterministic atlas>`
+            is requested.
+            In the latter case, the image contains integer values
+            which can be interpreted as the indices in the list of labels.
 
-                .. note::
+            .. note::
 
-                    For some atlases, it can be the case that some regions
-                    are empty. In this case, no :term:`voxels<voxel>` in the
-                    map are assigned to these regions. So the number of
-                    unique values in the map can be strictly smaller than the
-                    number of region names in ``labels``.
+                For some atlases, it can be the case that some regions
+                are empty. In this case, no :term:`voxels<voxel>` in the
+                map are assigned to these regions. So the number of
+                unique values in the map can be strictly smaller than the
+                number of region names in ``labels``.
 
-            - 'labels': :obj:`list` of :obj:`str`, list of labels for the
-              regions in the atlas.
-            - 'filename': Same as 'maps', kept for backward
-              compatibility only.
-            - 'description': :obj:`str`, description of the atlas.
+        - %(labels)s
+
+        - 'filename': Same as 'maps', kept for backward compatibility only.
+
+        - %(description)s
+
+        - %(lut)s
+            Only for deterministic version of the atlas.
+
+        - %(atlas_type)s
 
     See Also
     --------
@@ -1108,19 +1143,27 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'maps': :obj:`str`, path to nifti file containing the
-          :term:`Probabilistic atlas` image (shape is equal to
-          ``(40, 48, 35, 39)``).
-        - 'labels': :obj:`list` of :obj:`str`, list containing the labels
-          of the regions. There are 39 labels such that ``data.labels[i]``
-          corresponds to map ``i``.
-        - 'region_coords': :obj:`list` of length-3 :obj:`tuple`,
-          ``data.region_coords[i]`` contains the coordinates ``(x, y, z)``
-          of region ``i`` in :term:`MNI` space.
-        - 'networks': :obj:`list` of :obj:`str`, list containing the names
-          of the networks. There are 39 network names such that
-          ``data.networks[i]`` is the network name of region ``i``.
-        - 'description': :obj:`str`, description of the atlas.
+        - 'maps': :obj:`str`
+            path to nifti file containing the
+            :term:`Probabilistic atlas` image
+            (shape is equal to ``(40, 48, 35, 39)``).
+
+        - %(labels)s
+            There are 39 labels such that ``data.labels[i]``
+            corresponds to map ``i``.
+
+        - 'region_coords': :obj:`list` of length-3 :obj:`tuple`
+            ``data.region_coords[i]`` contains the coordinates ``(x, y, z)``
+            of region ``i`` in :term:`MNI` space.
+
+        - 'networks': :obj:`list` of :obj:`str`
+            list containing the names of the networks.
+            There are 39 network names such that
+            ``data.networks[i]`` is the network name of region ``i``.
+
+        - %(description)s
+
+        - %(atlas_type)s
 
     References
     ----------
@@ -1174,9 +1217,10 @@ def fetch_coords_power_2011():
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-            - 'rois': :class:`pandas.DataFrame` containing the
-              coordinates of 264 ROIs in :term:`MNI` space.
-            - 'description': :obj:`str`, description of the atlas.
+        - 'rois': :class:`pandas.DataFrame`
+            Contains the coordinates of 264 ROIs in :term:`MNI` space.
+
+        - %(description)s
 
 
     References
@@ -1237,27 +1281,41 @@ def fetch_atlas_smith_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - ``'rsn20'``: :obj:`str`, path to nifti file containing
+        - ``'rsn20'``: :obj:`str`
+            Path to nifti file containing
             the 20-dimensional :term:`ICA`, resting-:term:`fMRI` components.
             The shape of the image is ``(91, 109, 91, 20)``.
-        - ``'rsn10'``: :obj:`str`, path to nifti file containing
+
+        - ``'rsn10'``: :obj:`str`
+            Path to nifti file containing
             the 10 well-matched maps from the 20 maps obtained as for 'rsn20',
             as shown in :footcite:t:`Smith2009b`.
             The shape of the image is ``(91, 109, 91, 10)``.
-        - ``'bm20'``: :obj:`str`, path to nifti file containing
+
+        - ``'bm20'``: :obj:`str`
+            Path to nifti file containing
             the 20-dimensional :term:`ICA`, BrainMap components.
             The shape of the image is ``(91, 109, 91, 20)``.
-        - ``'bm10'``: :obj:`str`, path to nifti file containing
+
+        - ``'bm10'``: :obj:`str`
+            Path to nifti file containing
             the 10 well-matched maps from the 20 maps obtained as for 'bm20',
             as shown in :footcite:t:`Smith2009b`.
             The shape of the image is ``(91, 109, 91, 10)``.
-        - ``'rsn70'``: :obj:`str`, path to nifti file containing
+
+        - ``'rsn70'``: :obj:`str`
+            Path to nifti file containing
             the 70-dimensional :term:`ICA`, resting-:term:`fMRI` components.
             The shape of the image is ``(91, 109, 91, 70)``.
-        - ``'bm70'``: :obj:`str`, path to nifti file containing
+
+        - ``'bm70'``: :obj:`str`
+            Path to nifti file containing
             the 70-dimensional :term:`ICA`, BrainMap components.
             The shape of the image is ``(91, 109, 91, 70)``.
-        - ``'description'``: :obj:`str`, description of the atlas.
+
+        - %(description)s
+
+        - %(atlas_type)s
 
     Warns
     -----
@@ -1366,35 +1424,55 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-            - 'thin_7': :obj:`str`, path to nifti file containing the
-              7 regions :term:`parcellation` fitted to thin template cortex
-              segmentations. The image contains integer values which can be
-              interpreted as the indices in ``colors_7``.
-            - 'thick_7': :obj:`str`, path to nifti file containing the
-              7 region :term:`parcellation` fitted to thick template cortex
-              segmentations. The image contains integer values which can be
-              interpreted as the indices in ``colors_7``.
-            - 'thin_17': :obj:`str`, path to nifti file containing the
-              17 region :term:`parcellation` fitted to thin template cortex
-              segmentations. The image contains integer values which can be
-              interpreted as the indices in ``colors_17``.
-            - 'thick_17': :obj:`str`, path to nifti file containing the
-              17 region :term:`parcellation` fitted to thick template cortex
-              segmentations. The image contains integer values which can be
-              interpreted as the indices in ``colors_17``.
-            - 'colors_7': :obj:`str`, path to colormaps text file for
-              7 region :term:`parcellation`.
-              This file maps :term:`voxel` integer
-              values from ``data.thin_7`` and ``data.tick_7`` to network
-              names.
-            - 'colors_17': :obj:`str`, path to colormaps text file for
-              17 region :term:`parcellation`.
-              This file maps :term:`voxel` integer
-              values from ``data.thin_17`` and ``data.tick_17`` to network
-              names.
-            - 'anat': :obj:`str`, path to nifti file containing the anatomy
-              image.
-            - 'description': :obj:`str`, description of the atlas.
+        - 'thin_7': :obj:`str`
+            Path to nifti file containing the
+            7 regions :term:`parcellation` fitted to thin template cortex
+            segmentations.
+            The image contains integer values which can be
+            interpreted as the indices in ``colors_7``.
+
+        - 'thick_7': :obj:`str`
+            Path to nifti file containing the
+            7 region :term:`parcellation` fitted to thick template cortex
+            segmentations.
+            The image contains integer values which can be
+            interpreted as the indices in ``colors_7``.
+
+        - 'thin_17': :obj:`str`
+            Path to nifti file containing the
+            17 region :term:`parcellation` fitted to thin template cortex
+            segmentations.
+            The image contains integer values which can be
+            interpreted as the indices in ``colors_17``.
+
+        - 'thick_17': :obj:`str`
+            Path to nifti file containing the
+            17 region :term:`parcellation` fitted to thick template cortex
+            segmentations.
+            The image contains integer values which can be
+            interpreted as the indices in ``colors_17``.
+
+        - 'colors_7': :obj:`str`
+            Path to colormaps text file for
+            7 region :term:`parcellation`.
+            This file maps :term:`voxel` integer
+            values from ``data.thin_7`` and ``data.tick_7`` to network names.
+
+        - 'colors_17': :obj:`str`
+            Path to colormaps text file for
+            17 region :term:`parcellation`.
+            This file maps :term:`voxel` integer
+            values from ``data.thin_17`` and ``data.tick_17``
+            to network names.
+
+        - 'anat': :obj:`str`
+            Path to nifti file containing the anatomy image.
+
+        - %(description)s
+
+        - %(lut)s
+
+        - %(atlas_type)s
 
     References
     ----------
@@ -1539,27 +1617,38 @@ def fetch_atlas_aal(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-            - 'maps': :obj:`str`, path to nifti file containing the
-              regions. The image has shape ``(91, 109, 91)`` and contains
-              117 unique integer values defining the parcellation in version
-              SPM 5, 8 and 12, and 167 unique integer values defining the
-              parcellation in version 3v2. Please refer to the main description
-              to see how to link labels to regions IDs.
-            - 'labels': :obj:`list` of :obj:`str`, list of the names of the
-              regions. As 'Background' (label 0) is not included in this list,
-              there are 116 names in version SPM 5, 8, and 12, and 166 names in
-              version 3v2. Please refer to the main description to see how to
-              link labels to regions IDs.
-            - 'indices': :obj:`list` of :obj:`str`, indices mapping 'labels'
-              to values in the 'maps' image. This list has 116 elements in
-              version SPM 5, 8 and 12, and 166 elements in version 3v2.
-              Since the values in the 'maps' image do not correspond to
-              indices in ``labels``, but rather to values in ``indices``, the
-              location of a label in the ``labels`` list does not necessary
-              match the associated value in the image. Use the ``indices``
-              list to identify the appropriate image value for a given label
-              (See main description above).
-            - 'description': :obj:`str`, description of the atlas.
+        - 'maps': :obj:`str`
+            Path to nifti file containing the regions.
+            The image has shape ``(91, 109, 91)`` and contains
+            117 unique integer values defining the parcellation in version
+            SPM 5, 8 and 12, and 167 unique integer values defining the
+            parcellation in version 3v2. Please refer to the main description
+            to see how to link labels to regions IDs.
+
+        - %(labels)s
+            As 'Background' (label 0) is not included in this list,
+            there are 116 names in version SPM 5, 8, and 12,
+            and 166 names in version 3v2.
+            Please refer to the main description
+            to see how to   link labels to regions IDs.
+
+        - 'indices': :obj:`list` of :obj:`str`
+            Indices mapping 'labels'
+            to values in the 'maps' image. This list has 116 elements in
+            version SPM 5, 8 and 12, and 166 elements in version 3v2.
+            Since the values in the 'maps' image do not correspond to
+            indices in ``labels``, but rather to values in ``indices``, the
+            location of a label in the ``labels`` list does not necessary
+            match the associated value in the image. Use the ``indices``
+            list to identify the appropriate image value for a given label
+            (See main description above).
+
+        - %(description)s
+
+        - %(lut)s
+
+        - %(atlas_type)s
+
 
     Warns
     -----
@@ -1712,12 +1801,17 @@ def fetch_atlas_basc_multiscale_2015(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, Keys are:
 
-        - "scale007", "scale012", "scale020", "scale036", "scale064",
-          "scale122", "scale197", "scale325", "scale444": :obj:`str`, path
-          to Nifti file of various scales of brain parcellations.
-          Images have shape ``(53, 64, 52)`` and contain consecutive integer
-          values from 0 to the selected number of networks (scale).
-        - "description": :obj:`str`, details about the data release.
+        - "scale007", "scale012", "scale020", "scale036", "scale064", \
+          "scale122", "scale197", "scale325", "scale444": :obj:`str`
+            Path to Nifti file of various scales of brain parcellations.
+            Images have shape ``(53, 64, 52)`` and contain consecutive integer
+            values from 0 to the selected number of networks (scale).
+
+        - %(description)s
+
+        - %(lut)s
+
+        - %(atlas_type)s
 
     Warns
     -----
@@ -1849,11 +1943,13 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
 
         - 'rois':  :class:`pandas.DataFrame` with the coordinates
           of the 160 ROIs in :term:`MNI` space.
-        - 'labels': :class:`numpy.ndarray` of :obj:`str`, list of label
-          names for the 160 ROIs.
+
+        - %(labels)s
+
         - 'networks': :class:`numpy.ndarray` of :obj:`str`, list of network
           names for the 160 ROI.
-        - 'description': :obj:`str`, description of the dataset.
+
+        - %(description)s
 
     References
     ----------
@@ -1910,13 +2006,17 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 
         - 'rois': :class:`pandas.DataFrame` with the coordinates
           of the 300 ROIs in :term:`MNI` space.
-        - 'radius': :class:`numpy.ndarray` of :obj:`int`, radius of each
-          ROI in mm.
-        - 'networks': :class:`numpy.ndarray` of :obj:`str`, names of the
-          corresponding network for each ROI.
-        - 'regions': :class:`numpy.ndarray` of :obj:`str`, names of the
-          regions.
-        - 'description': :obj:`str`, description of the dataset.
+
+        - 'radius': :class:`numpy.ndarray` of :obj:`int`
+            Radius of each ROI in mm.
+
+        - 'networks': :class:`numpy.ndarray` of :obj:`str`
+            Names of the corresponding network for each ROI.
+
+        - 'regions': :class:`numpy.ndarray` of :obj:`str`
+            Names of the regions.
+
+        - %(description)s
 
     References
     ----------
@@ -1987,27 +2087,36 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, keys are:
 
-        - 'maps': :obj:`str`, path to nifti file containing the
-          T-maps of all 75 unthresholded components. The image has
-          shape ``(53, 63, 46, 75)``.
-        - 'rsn28': :obj:`str`, path to nifti file containing the
-          T-maps of 28 RSNs included in :footcite:t:`Allen2011`.
-          The image has shape ``(53, 63, 46, 28)``.
-        - 'networks': :obj:`list` of :obj:`list` of :obj:`str`, list
-          containing the names for the 28 RSNs.
-        - 'rsn_indices': :obj:`list` of :obj:`tuple`, each tuple is a
-          (:obj:`str`, :obj:`list` of :`int`). This maps the network names
-          to the map indices. For example, the map indices for the 'Visual'
-          network can be obtained:
+        - 'maps': :obj:`str`
+            Path to nifti file containing the
+            T-maps of all 75 unthresholded components.
+            The image has shape ``(53, 63, 46, 75)``.
+
+        - 'rsn28': :obj:`str`
+            Path to nifti file containing the
+            T-maps of 28 RSNs included in :footcite:t:`Allen2011`.
+            The image has shape ``(53, 63, 46, 28)``.
+
+        - 'networks': :obj:`list` of :obj:`list` of :obj:`str`
+            List containing the names for the 28 RSNs.
+
+        - 'rsn_indices': :obj:`list` of :obj:`tuple`, each tuple is a \
+          (:obj:`str`, :obj:`list` of :`int`).
+            This maps the network names to the map indices.
+            For example, the map indices for the 'Visual' network
+            can be obtained:
 
             .. code-block:: python
 
                 # Should return [46, 64, 67, 48, 39, 59]
                 dict(data.rsn_indices)["Visual"]
 
-        - 'comps': :obj:`str`, path to nifti file containing the
-          aggregate :term:`ICA` components.
-        - 'description': :obj:`str`, description of the dataset.
+        - 'comps': :obj:`str`
+            Path to nifti file containing the aggregate :term:`ICA` components.
+
+        - %(description)s
+
+        - %(atlas_type)s
 
     References
     ----------
@@ -2095,16 +2204,23 @@ def fetch_atlas_surf_destrieux(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-            - 'labels': :obj:`list` of :obj:`str`, list containing the
-              76 region labels.
-            - 'map_left': :class:`numpy.ndarray` of :obj:`int`, maps each
-              vertex on the left hemisphere of the fsaverage5 surface to its
-              index into the list of label name.
-            - 'map_right': :class:`numpy.ndarray` of :obj:`int`,
-              maps each :term:`vertex` on the right hemisphere
-              of the fsaverage5 surface to its index
-              into the list of label name.
-            - 'description': :obj:`str`, description of the dataset.
+        - %(labels)s
+
+        - 'map_left': :class:`numpy.ndarray` of :obj:`int`
+            Maps each vertex on the left hemisphere
+            of the fsaverage5 surface to its index
+            into the list of label name.
+
+        - 'map_right': :class:`numpy.ndarray` of :obj:`int`
+            Maps each :term:`vertex` on the right hemisphere
+            of the fsaverage5 surface to its index
+            into the list of label name.
+
+        - %(description)s
+
+        - %(lut)s
+
+        - %(atlas_type)s
 
     See Also
     --------
@@ -2251,14 +2367,21 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-            - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`, image has
-              shape ``(141, 172, 110)`` and contains consecutive integer
-              values from 0 to the number of regions, which are indices
-              in the list of labels.
-            - 'labels': :obj:`list` of :obj:`str`. List of region names.
-              The list starts with 'Background' (region ID 0 in the image).
-            - 'description': :obj:`str`, a short description of the atlas
-              and some references.
+        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`
+            The image has
+            shape ``(141, 172, 110)`` and contains consecutive integer
+            values from 0 to the number of regions, which are indices
+            in the list of labels.
+
+        - %(labels)s
+
+            The list starts with 'Background' (region ID 0 in the image).
+
+        - %(description)s
+
+        - %(lut)s
+
+        - %(atlas_type)s
 
     References
     ----------
@@ -2321,39 +2444,47 @@ def fetch_atlas_pauli_2017(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-            - 'maps': :obj:`str`, path to nifti file containing the
-              :class:`~nibabel.nifti1.Nifti1Image`. If
-              ``atlas_type='probabilistic'``, the image shape is ``(193, 229,
-              193, 16)``. If ``atlas_type='deterministic'`` the image shape is
-              ``(198, 263, 212)``, and values are indices in the list of labels
-              (integers from 0 to 16).
-            - 'labels': :obj:`list` of :obj:`str`. List of region names. The
-              list contains 16 values for both
-              :term:`probabilitic<Probabilistic atlas>` and
-              :term:`deterministic<Deterministic atlas>` types.
+        - 'maps': :obj:`str`,
+            path to nifti file containing the
+            :class:`~nibabel.nifti1.Nifti1Image`.
+            If ``atlas_type='probabilistic'``,
+            the image shape is ``(193, 229, 193, 16)``.
+            If ``atlas_type='deterministic'`` the image shape is
+            ``(198, 263, 212)``, and values are indices in the list of labels
+            (integers from 0 to 16).
 
-                .. warning::
-                    For the :term:`deterministic<Deterministic atlas>` type,
-                    'Background' is not included in the list of labels.
-                    To have proper indexing, you should either manually add
-                    'Background' to the list of labels:
+        - %(labels)s
+            The list contains 16 values for both
+            :term:`probabilitic<Probabilistic atlas>` and
+            :term:`deterministic<Deterministic atlas>` types.
 
-                    .. code-block:: python
+            .. warning::
+                For the :term:`deterministic<Deterministic atlas>` type,
+                'Background' is not included in the list of labels.
+                To have proper indexing, you should either manually add
+                'Background' to the list of labels:
 
-                        # Prepend background label
-                        data.labels.insert(0, "Background")
+                .. code-block:: python
 
-                    Or be careful that the indexing should be offset by one:
+                    # Prepend background label
+                    data.labels.insert(0, "Background")
 
-                    .. code-block:: python
+                Or be careful that the indexing should be offset by one:
 
-                        # Get region ID of label 'NAC' when 'background' was
-                        # not added to the list of labels:
-                        # idx_nac should be equal to 3:
-                        idx_nac = data.labels.index("NAC") + 1
+                .. code-block:: python
 
-            - 'description': :obj:`str`, short description of the atlas and
-              some references.
+                    # Get region ID of label 'NAC' when 'background' was
+                    # not added to the list of labels:
+                    # idx_nac should be equal to 3:
+                    idx_nac = data.labels.index("NAC") + 1
+
+        - %(description)s
+
+        - %(lut)s
+            Only when atlas_type="probabilistic"
+
+        - %(atlas_type)s
+
 
     Warns
     -----
@@ -2474,37 +2605,39 @@ def fetch_atlas_schaefer_2018(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-            - 'maps': :obj:`str`, path to nifti file containing the
-              3D :class:`~nibabel.nifti1.Nifti1Image` (its shape is
-              ``(182, 218, 182)``).
-              The values are consecutive integers
-              between 0 and ``n_rois`` which can be interpreted as indices
-              in the list of labels.
-            - 'labels': :obj:`list` of :obj:`str`, list
-              containing the ROI labels including Yeo-network annotation.
+        - 'maps': :obj:`str`, path to nifti file containing the
+            3D :class:`~nibabel.nifti1.Nifti1Image` (its shape is
+            ``(182, 218, 182)``).
+            The values are consecutive integers
+            between 0 and ``n_rois`` which can be interpreted as indices
+            in the list of labels.
 
-                .. warning::
-                    The list of labels does not contain
-                    'Background' by default.
-                    To have proper indexing, you should either
-                    manually add 'Background' to the list of labels:
+        - %(labels)s
 
-                    .. code-block:: python
+            .. warning::
+                The list of labels does not contain 'Background' by default.
+                To have proper indexing, you should either
+                manually add 'Background' to the list of labels:
 
-                        # Prepend background label
-                        data.labels = np.insert(data.labels, 0, "Background")
+                .. code-block:: python
 
-                    Or be careful that the indexing should be offset by one:
+                   # Prepend background label
+                   data.labels.insert(0, "Background")
 
-                    .. code-block:: python
+                Or be careful that the indexing should be offset by one:
 
-                        # Get region ID of label '7Networks_LH_Vis_3' when
-                        # 'Background' was not added to the list of labels:
-                        # idx should be equal to 3:
-                        idx = data.labels.index("7Networks_LH_Vis_3") + 1
+                .. code-block:: python
 
-            - 'description': :obj:`str`, short description of the atlas
-              and some references.
+                   # Get region ID of label '7Networks_LH_Vis_3'
+                   # when 'Background' was not added to the list of labels:
+                   # idx should be equal to 3:
+                   idx = data.labels.index("7Networks_LH_Vis_3") + 1
+
+        - %(description)s
+
+        - %(lut)s
+
+        - %(atlas_type)s
 
     References
     ----------
