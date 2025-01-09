@@ -1071,7 +1071,7 @@ def validate_mesh(mesh):
     non_finite_mask = np.logical_not(np.isfinite(mesh.coordinates))
     if non_finite_mask.any():
         raise ValueError(
-            "Mesh coordinates must be finite."
+            "Mesh coordinates must be finite. "
             "Current coordinates contains NaN or Inf values."
         )
 

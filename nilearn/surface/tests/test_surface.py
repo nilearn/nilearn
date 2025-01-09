@@ -768,7 +768,7 @@ def test_validate_mesh(rng):
     coords[0] = np.array([np.nan, np.nan, np.nan])
     faces = rng.integers(coords.shape[0], size=(30, 3))
 
-    with pytest.raises(ValueError, match="Non-finite values detected."):
+    with pytest.raises(ValueError, match="Mesh coordinates must be finite."):
         InMemoryMesh(coordinates=coords, faces=faces)
 
     # faces with indices that do not correspond to any coordinate
