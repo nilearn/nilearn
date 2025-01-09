@@ -733,7 +733,7 @@ def fetch_atlas_harvard_oxford(
     if not symmetric_split or is_lateralized:
         return Atlas(
             maps=atlas_niimg,
-            labels=atlas_niimg,
+            labels=names,
             description=get_dataset_descr("harvard_oxford"),
             atlas_type=atlas_type,
             lut=_generate_atlas_look_up_table(
@@ -2662,7 +2662,7 @@ class Atlas(Bunch):
         assert atlas_type in ["probabilistic", "deterministic"]
 
         if atlas_type == "probabilistic":
-            super.__init__(
+            super().__init__(
                 maps=maps,
                 labels=labels,
                 description=description,
@@ -2670,9 +2670,11 @@ class Atlas(Bunch):
                 **kwargs,
             )
 
+            return None
+
         _check_look_up_table(lut=lut, atlas=maps)
 
-        super.__init__(
+        super().__init__(
             maps=maps,
             labels=labels,
             description=description,
