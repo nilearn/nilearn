@@ -296,6 +296,14 @@ draw_cross : :obj:`bool`, default=True
     to indicate the cut position.
 """
 
+# dtype
+docdict["dtype"] = """
+dtype : dtype like, "auto" or None, default=None
+    Data type toward which the data should be converted.
+    If "auto", the data will be converted to int32
+    if dtype is discrete and float32 if it is continuous.
+"""
+
 # extractor / extract_type
 docdict["extractor"] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
@@ -369,7 +377,7 @@ or 'fast' or None, optional
 
 # hemi
 docdict["hemi"] = """
-hemi : {"left", "right"}, default="left"
+hemi : {"left", "right", "both"}, default="left"
     Hemisphere to display.
 """
 
@@ -455,13 +463,6 @@ img : Niimg-like object
 docdict["imgs"] = """
 imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
-"""
-
-# legacy_format
-docdict["legacy_format"] = """
-legacy_format : :obj:`bool`, default=True
-    If set to `True`, the fetcher will return recarrays.
-    Otherwise, it will return pandas dataframes.
 """
 
 # linewidth
@@ -916,9 +917,12 @@ docdict["verbose0"] = verbose.format(0)
 
 # view
 docdict["view"] = """
-view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"
-    If a string, must be in
+view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"\
+    if `hemi` is "left" or "right", if `hemi` is "both" "dorsal"
+    If a string, and `hemi` is "left" or "right" must be in
     {"lateral", "medial", "dorsal", "ventral", "anterior", "posterior"}.
+    If `hemi` is "both", must be in {"left", "right", "dorsal", "ventral",
+    "anterior", "posterior"}.
     If a sequence, must be a pair (elev, azim) of :obj:`float` or :obj:`int`
     angles in degrees that will manually set a custom view.
     E.g., view=[270.0, 90] or view=(0, -180.0).
