@@ -11,7 +11,7 @@ from sklearn.base import BaseEstimator
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import (
     MNI152_BRAIN_VOLUME,
-    _cast_to_int64,
+    _cast_to_int32,
     _get_mask_extent,
     check_feature_screening,
     check_threshold,
@@ -108,7 +108,7 @@ def test_feature_screening(affine_eye):
 def test_sample_mask_signed(dtype):
     """Check unsigned sample_mask is converted to signed."""
     sample_mask = np.arange(2, dtype=dtype)
-    assert _cast_to_int64(sample_mask).dtype.kind == "i"
+    assert _cast_to_int32(sample_mask).dtype.kind == "i"
 
 
 def test_sample_mask_raises_on_negative():
@@ -116,7 +116,7 @@ def test_sample_mask_raises_on_negative():
     with pytest.raises(
         ValueError, match="sample_mask should not contain negative values"
     ):
-        _cast_to_int64(np.array([-1, -2, 1]))
+        _cast_to_int32(np.array([-1, -2, 1]))
 
 
 def test_sample_mask_raises_on_high_index():
@@ -124,4 +124,4 @@ def test_sample_mask_raises_on_high_index():
     with pytest.raises(
         ValueError, match="Max value in sample mask is larger than"
     ):
-        _cast_to_int64(np.array(2**66))
+        _cast_to_int32(np.array(2**66))

@@ -295,7 +295,7 @@ def check_run_sample_masks(n_runs, sample_masks):
         sample_masks = (sample_masks,)
 
     checked_sample_masks = [_convert_bool2index(sm) for sm in sample_masks]
-    checked_sample_masks = [_cast_to_int64(sm) for sm in checked_sample_masks]
+    checked_sample_masks = [_cast_to_int32(sm) for sm in checked_sample_masks]
 
     if len(checked_sample_masks) != n_runs:
         raise ValueError(
@@ -315,15 +315,15 @@ def _convert_bool2index(sample_mask):
     return sample_mask
 
 
-def _cast_to_int64(sample_mask):
+def _cast_to_int32(sample_mask):
     """Ensure the sample mask dtype is signed."""
-    new_dtype = np.int64
+    new_dtype = np.int32
     if np.min(sample_mask) < 0:
         msg = "sample_mask should not contain negative values."
         raise ValueError(msg)
 
     if highest := np.max(sample_mask) > np.iinfo(new_dtype).max:
         msg = f"Max value in sample mask is larger than \
-            what can be represented by int64: {highest}."
+            what can be represented by int32: {highest}."
         raise ValueError(msg)
     return np.asarray(sample_mask, new_dtype)
