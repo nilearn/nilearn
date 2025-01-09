@@ -327,12 +327,10 @@ def fetch_atlas_difumo(
     if not (data_dir / "README.md").exists():
         fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
-    fdescr = get_dataset_descr(dataset_name)
-
-    return Bunch(
-        description=fdescr,
+    return Atlas(
         maps=files_[1],
         labels=labels,
+        description=get_dataset_descr(dataset_name),
         atlas_type=atlas_type,
     )
 
@@ -465,24 +463,25 @@ def fetch_atlas_craddock_2012(
         else:
             filename = [("random_all.nii.gz", url, opts)]
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-        params = {
-            "maps": data[0],
-            "description": fdescr,
-        }
-    else:
-        params = dict(
-            [
-                ("description", fdescr),
-                *list(zip(keys, sub_files)),
-            ]
-        )
-        warnings.warn(
-            category=DeprecationWarning,
-            message="In release 0.13, this fetcher will return a dictionary "
-            "with one map accessed through a 'maps' key. Please use the new "
-            "parameters homogeneity and grp_mean.",
+
+        return Atlas(
+            maps=data[0],
+            description=fdescr,
+            atlas_type=atlas_type,
         )
 
+    warnings.warn(
+        category=DeprecationWarning,
+        message="In release 0.13, this fetcher will return a dictionary "
+        "with one map accessed through a 'maps' key. Please use the new "
+        "parameters homogeneity and grp_mean.",
+    )
+    params = dict(
+        [
+            ("description", fdescr),
+            *list(zip(keys, sub_files)),
+        ]
+    )
     params["atlas_type"] = atlas_type
 
     return Bunch(**params)
@@ -565,18 +564,15 @@ def fetch_atlas_destrieux_2009(
     )
     files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    params = {
-        "maps": files_[1],
-        "labels": pd.read_csv(files_[0], index_col=0),
-        "lut": pd.read_csv(files_[0]),
-        "atlas_type": atlas_type,
-        "description": Path(files_[2]).read_text(),
-    }
-    params["labels"] = params["labels"].name.to_list()
+    labels = pd.read_csv(files_[0], index_col=0)
 
-    _check_look_up_table(lut=params["lut"], atlas=params["maps"])
-
-    return Bunch(**params)
+    return Atlas(
+        maps=files_[1],
+        labels=labels.name.to_list(),
+        description=Path(files_[2]).read_text(),
+        atlas_type=atlas_type,
+        lut=pd.read_csv(files_[0]),
+    )
 
 
 @fill_doc
@@ -733,31 +729,17 @@ def fetch_atlas_harvard_oxford(
         verbose=verbose,
     )
 
-    fdescr = get_dataset_descr("harvard_oxford")
-
     atlas_niimg = check_niimg(atlas_img)
     if not symmetric_split or is_lateralized:
-        if atlas_type == "probabilistic":
-            return Bunch(
-                filename=atlas_filename,
-                maps=atlas_niimg,
-                labels=names,
-                description=fdescr,
-                atlas_type=atlas_type,
-            )
-
-        lut = _generate_atlas_look_up_table(
-            "fetch_atlas_harvard_oxford", name=names
-        )
-        _check_look_up_table(lut=lut, atlas=atlas_niimg)
-
-        return Bunch(
-            filename=atlas_filename,
+        return Atlas(
             maps=atlas_niimg,
-            labels=names,
-            description=fdescr,
-            lut=lut,
+            labels=atlas_niimg,
+            description=get_dataset_descr("harvard_oxford"),
             atlas_type=atlas_type,
+            lut=_generate_atlas_look_up_table(
+                "fetch_atlas_harvard_oxford", name=names
+            ),
+            filename=atlas_filename,
         )
 
     new_atlas_data, new_names = _compute_symmetric_split(
@@ -767,27 +749,15 @@ def fetch_atlas_harvard_oxford(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
 
-    if atlas_type == "probabilistic":
-        return Bunch(
-            filename=atlas_filename,
-            maps=new_atlas_niimg,
-            labels=new_names,
-            description=fdescr,
-            atlas_type=atlas_type,
-        )
-
-    lut = _generate_atlas_look_up_table(
-        "fetch_atlas_harvard_oxford", name=new_names
-    )
-    _check_look_up_table(lut=lut, atlas=new_atlas_niimg)
-
-    return Bunch(
-        filename=atlas_filename,
+    return Atlas(
         maps=new_atlas_niimg,
         labels=new_names,
-        description=fdescr,
-        lut=lut,
+        description=get_dataset_descr("harvard_oxford"),
         atlas_type=atlas_type,
+        lut=_generate_atlas_look_up_table(
+            "fetch_atlas_harvard_oxford", name=new_names
+        ),
+        filename=atlas_filename,
     )
 
 
@@ -932,29 +902,15 @@ def fetch_atlas_juelich(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
 
-    fdescr = get_dataset_descr("juelich")
-
-    if atlas_type == "probabilistic":
-        return Bunch(
-            filename=atlas_filename,
-            maps=new_atlas_niimg,
-            labels=list(new_names),
-            description=fdescr,
-            atlas_type=atlas_type,
-        )
-
-    lut = _generate_atlas_look_up_table(
-        "fetch_atlas_juelich", name=list(new_names)
-    )
-    _check_look_up_table(lut=lut, atlas=new_atlas_niimg)
-
-    return Bunch(
-        filename=atlas_filename,
+    return Atlas(
         maps=new_atlas_niimg,
         labels=list(new_names),
-        description=fdescr,
-        lut=lut,
+        description=get_dataset_descr("juelich"),
         atlas_type=atlas_type,
+        lut=_generate_atlas_look_up_table(
+            "fetch_atlas_juelich", name=list(new_names)
+        ),
+        filename=atlas_filename,
     )
 
 
@@ -1188,21 +1144,17 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     csv_data = pd.read_csv(files[0])
-    labels = [name.strip() for name in csv_data["name"].to_list()]
     net_names = [
         net_name.strip() for net_name in csv_data["net name"].to_list()
     ]
-    region_coords = csv_data[["x", "y", "z"]].to_numpy().tolist()
 
-    fdescr = get_dataset_descr(dataset_name)
-
-    return Bunch(
+    return Atlas(
         maps=files[1],
-        labels=labels,
-        region_coords=region_coords,
-        networks=net_names,
-        description=fdescr,
+        labels=[name.strip() for name in csv_data["name"].to_list()],
+        description=get_dataset_descr(dataset_name),
         atlas_type=atlas_type,
+        region_coords=csv_data[["x", "y", "z"]].to_numpy().tolist(),
+        networks=net_names,
     )
 
 
@@ -1380,20 +1332,25 @@ def fetch_atlas_smith_2009(
 
         file = [(files[key], url[key_index] + files[key], {})]
         data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
-        params = Bunch(maps=data[0], description=fdescr, atlas_type=atlas_type)
-    else:
-        keys = list(files.keys())
-        files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
-        files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-        params = dict(zip(keys, files_))
-        params["description"] = fdescr
-        params["atlas_type"] = atlas_type
-        warnings.warn(
-            category=DeprecationWarning,
-            message="In release 0.13, this fetcher will return a dictionary "
-            "with one map accessed through a 'maps' key. Please use the new "
-            "parameters dimension and resting.",
+
+        return Atlas(
+            maps=data[0],
+            description=fdescr,
+            atlas_type=atlas_type,
         )
+
+    keys = list(files.keys())
+    files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
+    files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    params = dict(zip(keys, files_))
+    params["description"] = fdescr
+    params["atlas_type"] = atlas_type
+    warnings.warn(
+        category=DeprecationWarning,
+        message="In release 0.13, this fetcher will return a dictionary "
+        "with one map accessed through a 'maps' key. Please use the new "
+        "parameters dimension and resting.",
+    )
 
     return Bunch(**params)
 
@@ -1724,21 +1681,16 @@ def fetch_atlas_aal(
                 labels.append(label)
         fdescr = fdescr.replace("SPM 12", version)
 
-    lut = _generate_atlas_look_up_table(
-        "fetch_atlas_aal", index=[int(x) for x in indices], name=labels
+    return Atlas(
+        maps=atlas_img,
+        labels=labels,
+        description=fdescr,
+        lut=_generate_atlas_look_up_table(
+            "fetch_atlas_aal", index=[int(x) for x in indices], name=labels
+        ),
+        atlas_type=atlas_type,
+        indices=indices,
     )
-    _check_look_up_table(lut=lut, atlas=atlas_img)
-
-    params = {
-        "description": fdescr,
-        "maps": atlas_img,
-        "labels": labels,
-        "indices": indices,
-        "lut": lut,
-        "atlas_type": atlas_type,
-    }
-
-    return Bunch(**params)
 
 
 @fill_doc
@@ -1880,18 +1832,15 @@ def fetch_atlas_basc_multiscale_2015(
 
         labels = [str(x) for x in range(resolution + 1)]
 
-        lut = _generate_atlas_look_up_table(
-            "fetch_atlas_basc_multiscale_2015", name=labels
-        )
-
-        params = Bunch(
+        params = Atlas(
             maps=data[0],
-            description=fdescr,
-            lut=lut,
-            atlas_type=atlas_type,
             labels=labels,
+            description=fdescr,
+            lut=_generate_atlas_look_up_table(
+                "fetch_atlas_basc_multiscale_2015", name=labels
+            ),
+            atlas_type=atlas_type,
         )
-        _check_look_up_table(lut=params.lut, atlas=params.maps)
 
     else:
         basenames = [
@@ -1907,10 +1856,8 @@ def fetch_atlas_basc_multiscale_2015(
         ]
         data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
 
-        descr = get_dataset_descr(dataset_name)
-
         params = dict(zip(keys, data))
-        params["description"] = descr
+        params["description"] = fdescr
         params["atlas_type"] = atlas_type
         warnings.warn(
             category=DeprecationWarning,
@@ -2404,16 +2351,14 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     atlas_img = check_niimg(img_file)
     labels = json.loads(labels_file.read_text("utf-8"))
-    description = get_dataset_descr("talairach_atlas").format(level_name)
 
-    lut = _generate_atlas_look_up_table("fetch_atlas_talairach", name=labels)
-    _check_look_up_table(lut=lut, atlas=atlas_img)
-
-    return Bunch(
+    return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=description,
-        lut=lut,
+        description=get_dataset_descr("talairach_atlas").format(level_name),
+        lut=_generate_atlas_look_up_table(
+            "fetch_atlas_talairach", name=labels
+        ),
         atlas_type=atlas_type,
     )
 
@@ -2540,24 +2485,13 @@ def fetch_atlas_pauli_2017(
 
     labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
 
-    fdescr = get_dataset_descr(dataset_name)
-
-    if atlas_type == "probabilistic":
-        return Bunch(
-            maps=atlas_file,
-            labels=labels,
-            description=fdescr,
-            atlas_type=atlas_type,
-        )
-
-    lut = _generate_atlas_look_up_table("fetch_atlas_pauli_2017", name=labels)
-    _check_look_up_table(lut=lut, atlas=atlas_file)
-
-    return Bunch(
+    return Atlas(
         maps=atlas_file,
         labels=labels,
-        description=fdescr,
-        lut=lut,
+        description=get_dataset_descr(dataset_name),
+        lut=_generate_atlas_look_up_table(
+            "fetch_atlas_pauli_2017", name=labels
+        ),
         atlas_type=atlas_type,
     )
 
@@ -2710,15 +2644,39 @@ def fetch_atlas_schaefer_2018(
     )
     lut = _update_lut_freesurder(lut)
 
-    labels = list(lut["name"])
-    fdescr = get_dataset_descr(dataset_name)
-
-    _check_look_up_table(lut=lut, atlas=atlas_file)
-
-    return Bunch(
+    return Atlas(
         maps=atlas_file,
-        labels=labels,
-        description=fdescr,
+        labels=list(lut["name"]),
+        description=get_dataset_descr(dataset_name),
         lut=lut,
         atlas_type=atlas_type,
     )
+
+
+class Atlas(Bunch):
+    """Sub class of Bunch to help standardize atlases."""
+
+    def __init__(
+        self, maps, description, atlas_type, labels=None, lut=None, **kwargs
+    ):
+        assert atlas_type in ["probabilistic", "deterministic"]
+
+        if atlas_type == "probabilistic":
+            super.__init__(
+                maps=maps,
+                labels=labels,
+                description=description,
+                atlas_type=atlas_type,
+                **kwargs,
+            )
+
+        _check_look_up_table(lut=lut, atlas=maps)
+
+        super.__init__(
+            maps=maps,
+            labels=labels,
+            description=description,
+            lut=lut,
+            atlas_type=atlas_type,
+            **kwargs,
+        )
