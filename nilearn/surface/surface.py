@@ -1511,7 +1511,9 @@ class FileMesh(SurfaceMesh):
         -------
         :obj:`numpy.ndarray`
         """
-        return load_surf_mesh(self.file_path).coordinates
+        mesh = load_surf_mesh(self.file_path)
+        _validate_mesh(mesh)
+        return mesh.coordinates
 
     @property
     def faces(self):
@@ -1521,7 +1523,9 @@ class FileMesh(SurfaceMesh):
         -------
         :obj:`numpy.ndarray`
         """
-        return load_surf_mesh(self.file_path).faces
+        mesh = load_surf_mesh(self.file_path)
+        _validate_mesh(mesh)
+        return mesh.faces
 
     def loaded(self):
         """Load surface mesh into memory.
