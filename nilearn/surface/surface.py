@@ -1098,13 +1098,6 @@ def _validate_mesh(mesh):
     - larger or equal to the length of the coordinates array
     - negative
     """
-    if not isinstance(mesh.coordinates, np.ndarray) or not isinstance(
-        mesh.faces, np.ndarray
-    ):
-        raise TypeError(
-            "Mesh coordinates and faces must be numpy arrays.\n"
-            f"Got {type(mesh.coordinates)=} and {type(mesh.faces)=}."
-        )
 
     non_finite_mask = np.logical_not(np.isfinite(mesh.coordinates))
     if non_finite_mask.any():
