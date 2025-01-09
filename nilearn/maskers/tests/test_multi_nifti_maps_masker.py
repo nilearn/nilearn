@@ -61,7 +61,7 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 
 
 def test_multi_nifti_maps_masker(
-    affine_eye, length, n_regions, shape_3d_default, maps_img
+    affine_eye, length, n_regions, shape_3d_default, img_maps
 ):
     # Check working of shape/affine checks
     fmri11_img, mask11_img = generate_fake_fmri(
@@ -69,14 +69,14 @@ def test_multi_nifti_maps_masker(
     )
 
     masker = MultiNiftiMapsMasker(
-        maps_img, mask_img=mask11_img, resampling_target=None
+        img_maps, mask_img=mask11_img, resampling_target=None
     )
 
     signals11 = masker.fit().transform(fmri11_img)
 
     assert signals11.shape == (length, n_regions)
 
-    MultiNiftiMapsMasker(maps_img).fit_transform(fmri11_img)
+    MultiNiftiMapsMasker(img_maps).fit_transform(fmri11_img)
 
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
@@ -89,7 +89,7 @@ def test_multi_nifti_maps_masker(
 
     # Transform, with smoothing (smoke test)
     masker = MultiNiftiMapsMasker(
-        maps_img, smoothing_fwhm=3, resampling_target=None
+        img_maps, smoothing_fwhm=3, resampling_target=None
     )
 
     signals11_list = masker.fit().transform(signals_input)
@@ -105,18 +105,18 @@ def test_multi_nifti_maps_masker(
         assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
 
     # Now try on a masker that has never seen the call to "transform"
-    masker = MultiNiftiMapsMasker(maps_img, resampling_target=None)
+    masker = MultiNiftiMapsMasker(img_maps, resampling_target=None)
     masker.fit()
     masker.inverse_transform(signals)
 
 
 @pytest.mark.parametrize("create_files", [True, False])
 def test_multi_nifti_maps_masker_fit_files(
-    tmp_path, length, n_regions, create_files, maps_img, img_fmri
+    tmp_path, length, n_regions, create_files, img_maps, img_fmri
 ):
     # Check working of shape/affine checks
     labels11 = write_imgs_to_path(
-        maps_img, file_path=tmp_path, create_files=create_files
+        img_maps, file_path=tmp_path, create_files=create_files
     )
 
     masker = MultiNiftiMapsMasker(labels11, resampling_target=None)
@@ -127,7 +127,7 @@ def test_multi_nifti_maps_masker_fit_files(
 
 
 def test_multi_nifti_maps_masker_data_atlas_different_shape(
-    affine_eye, length, maps_img
+    affine_eye, length, img_maps
 ):
     """Test with data and atlas of different shape.
 
@@ -145,7 +145,7 @@ def test_multi_nifti_maps_masker_data_atlas_different_shape(
     )
     fmri22_img, _ = generate_fake_fmri(shape22, affine=affine2, length=length)
 
-    masker = MultiNiftiMapsMasker(maps_img, mask_img=mask21_img)
+    masker = MultiNiftiMapsMasker(img_maps, mask_img=mask21_img)
 
     masker.fit_transform(fmri22_img)
 
@@ -153,14 +153,14 @@ def test_multi_nifti_maps_masker_data_atlas_different_shape(
 
 
 def test_multi_nifti_maps_masker_errors(
-    affine_eye, length, shape_3d_default, maps_img
+    affine_eye, length, shape_3d_default, img_maps
 ):
     fmri11_img, mask11_img = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
 
     masker = MultiNiftiMapsMasker(
-        maps_img, mask_img=mask11_img, resampling_target=None
+        img_maps, mask_img=mask11_img, resampling_target=None
     )
 
     with pytest.raises(ValueError, match="has not been fitted. "):
@@ -170,10 +170,10 @@ def test_multi_nifti_maps_masker_errors(
     signals11_list = masker.fit().transform(signals_input)
 
     with pytest.raises(ValueError, match="has not been fitted. "):
-        MultiNiftiMapsMasker(maps_img).inverse_transform(signals11_list[0])
+        MultiNiftiMapsMasker(img_maps).inverse_transform(signals11_list[0])
 
     # NiftiMapsMasker should not work with 4D + 1D input
-    masker = NiftiMapsMasker(maps_img, resampling_target=None)
+    masker = NiftiMapsMasker(img_maps, resampling_target=None)
     with pytest.raises(DimensionError, match="incompatible dimensionality"):
         masker.fit_transform(signals_input)
 
@@ -185,7 +185,7 @@ def test_multi_nifti_maps_masker_errors_field_of_view(
     length,
     create_files,
     shape_3d_default,
-    maps_img,
+    img_maps,
 ):
     """Test all kinds of mismatches between shapes and between affines."""
     # Check working of shape/affine checks
@@ -202,13 +202,13 @@ def test_multi_nifti_maps_masker_errors_field_of_view(
     error_msg = "Following field of view errors were detected"
 
     masker = MultiNiftiMapsMasker(
-        maps_img, mask_img=mask21_img, resampling_target=None
+        img_maps, mask_img=mask21_img, resampling_target=None
     )
     with pytest.raises(ValueError, match=error_msg):
         masker.fit()
 
     images = write_imgs_to_path(
-        maps_img,
+        img_maps,
         mask12_img,
         file_path=tmp_path,
         create_files=create_files,
@@ -375,7 +375,7 @@ def test_multi_nifti_maps_masker_resampling_clipped_mask(
 
 
 def test_multi_nifti_maps_masker_list_of_sample_mask(
-    length, n_regions, maps_img, img_fmri
+    length, n_regions, img_maps, img_fmri
 ):
     """Tests MultiNiftiMapsMasker.fit_transform with a list of "sample_mask".
 
@@ -389,7 +389,7 @@ def test_multi_nifti_maps_masker_list_of_sample_mask(
     sample_mask1 = np.arange(length - n_scrub1)
     sample_mask2 = np.arange(length - n_scrub2)
 
-    masker = MultiNiftiMapsMasker(maps_img)
+    masker = MultiNiftiMapsMasker(img_maps)
     ts_list = masker.fit_transform(
         [img_fmri, img_fmri], sample_mask=[sample_mask1, sample_mask2]
     )
