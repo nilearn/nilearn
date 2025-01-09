@@ -291,7 +291,7 @@ class NiftiMapsMasker(BaseMasker):
 
         """
         from nilearn import plotting
-        from nilearn.reporting.html_report import _embed_img
+        from nilearn.reporting.html_report import embed_img
 
         if self._reporting_data is not None:
             maps_image = self._reporting_data["maps_image"]
@@ -343,7 +343,7 @@ class NiftiMapsMasker(BaseMasker):
                 display = plotting.plot_stat_map(
                     image.index_img(maps_image, component)
                 )
-                embeded_images.append(_embed_img(display))
+                embeded_images.append(embed_img(display))
                 display.close()
             return embeded_images
 
@@ -370,7 +370,7 @@ class NiftiMapsMasker(BaseMasker):
                 image.index_img(maps_image, component),
                 cmap=plotting.cm.black_blue,
             )
-            embeded_images.append(_embed_img(display))
+            embeded_images.append(embed_img(display))
             display.close()
         return embeded_images
 

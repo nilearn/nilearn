@@ -25,7 +25,7 @@ from nilearn._utils.class_inspect import (
 )
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
+from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 
 
 def _get_mask_strategy(strategy):
@@ -431,7 +431,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         params["clean_kwargs"] = self.clean_kwargs
 
         func = self._cache(
-            _filter_and_mask,
+            filter_and_mask,
             ignore=[
                 "verbose",
                 "memory",

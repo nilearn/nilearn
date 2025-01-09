@@ -480,7 +480,11 @@ def _pad_array(array, pad_sizes):
     return padded
 
 
-def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
+def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
+    """Compute the mean of the images over time or the 4th dimension.
+
+    See mean_img for details about the API.
+    """
     from . import resampling
 
     input_repr = repr_niimgs(imgs, shorten=True)
@@ -596,7 +600,7 @@ def mean_img(
     # Compute the first mean to retrieve the reference
     # target_affine and target_shape if_needed
     n_imgs = 1
-    running_mean, first_affine = _compute_mean(
+    running_mean, first_affine = compute_mean(
         first_img, target_affine=target_affine, target_shape=target_shape
     )
 
@@ -605,13 +609,13 @@ def mean_img(
         target_shape = running_mean.shape[:3]
 
     for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(_compute_mean)(
+        delayed(compute_mean)(
             n, target_affine=target_affine, target_shape=target_shape
         )
         for n in imgs_iter
     ):
         n_imgs += 1
-        # _compute_mean returns (mean_img, affine)
+        # compute_mean returns (mean_img, affine)
         this_mean = this_mean[0]
         running_mean += this_mean
 

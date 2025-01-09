@@ -60,7 +60,7 @@ def _get_mask_strategy(strategy):
         )
 
 
-def _filter_and_mask(
+def filter_and_mask(
     imgs,
     mask_img_,
     parameters,
@@ -602,7 +602,7 @@ class NiftiMasker(BaseMasker):
         params["clean_kwargs"] = self.clean_kwargs
 
         data = self._cache(
-            _filter_and_mask,
+            filter_and_mask,
             ignore=[
                 "verbose",
                 "memory",

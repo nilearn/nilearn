@@ -25,7 +25,7 @@ from scipy.ndimage import binary_fill_holes
 from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
-from nilearn.plotting.displays._slicers import _get_cbar_ticks
+from nilearn.plotting.displays._slicers import get_cbar_ticks
 
 from .. import _utils
 from .._utils import (
@@ -313,7 +313,7 @@ def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
         # within an asymmetric cbar
         # and both threshold values are within bounds
         elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
-            new_tick_locs = _get_cbar_ticks(
+            new_tick_locs = get_cbar_ticks(
                 cbar_vmin, cbar_vmax, threshold, n_ticks=len(new_tick_locs)
             )
         # Case where one of the threshold values is out of bounds

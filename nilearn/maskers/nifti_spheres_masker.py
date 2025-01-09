@@ -429,7 +429,7 @@ class NiftiSpheresMasker(BaseMasker):
             A list of all displays to be rendered.
         """
         from nilearn import plotting
-        from nilearn.reporting.html_report import _embed_img
+        from nilearn.reporting.html_report import embed_img
 
         if self._reporting_data is not None:
             seeds = self._reporting_data["seeds"]
@@ -498,7 +498,7 @@ class NiftiSpheresMasker(BaseMasker):
         display = plotting.plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embeded_images = [_embed_img(display)]
+        embeded_images = [embed_img(display)]
         display.close()
         for idx, seed in enumerate(seeds):
             regions_summary["seed number"].append(idx)
@@ -517,7 +517,7 @@ class NiftiSpheresMasker(BaseMasker):
                     marker_color="g",
                     marker_size=20 * radius,
                 )
-                embeded_images.append(_embed_img(display))
+                embeded_images.append(embed_img(display))
                 display.close()
         self._report_content["summary"] = regions_summary
 

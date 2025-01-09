@@ -546,7 +546,7 @@ class BaseSlicer:
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
         n_ticks = 5 if cbar_vmin != cbar_vmax else 1
-        ticks = _get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
+        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
         bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         # some colormap hacking
@@ -815,7 +815,7 @@ class BaseSlicer:
         )
 
 
-def _get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
+def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
     """Help for BaseSlicer."""
     # edge case where the data has a single value yields
     # a cryptic matplotlib error message when trying to plot the color bar
