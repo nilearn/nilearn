@@ -981,7 +981,7 @@ docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
 
 ##############################################################################
 
-docdict_indented: dict[int, dict[str, str]] = {}
+docdict_indented = {}
 
 
 def _indentcount_lines(lines):

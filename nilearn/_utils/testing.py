@@ -49,7 +49,7 @@ except ImportError:
 
         return dummy_func
 
-    memory_usage = memory_used = None  # type: ignore[assignment]
+    memory_usage = memory_used = None
 
 
 def is_64bit() -> bool:
