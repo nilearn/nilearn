@@ -11,10 +11,11 @@ import numpy as np
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
-from .. import _utils
-from .._utils import stringify_path
-from .._utils.helpers import check_copy_header
-from .._utils.niimg import _get_data
+from nilearn import _utils
+from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.helpers import check_copy_header
+from nilearn._utils.niimg import _get_data
+
 from .image import copy_img, crop_img
 
 ###############################################################################
@@ -160,7 +161,7 @@ def get_bounds(shape, affine):
 
     Parameters
     ----------
-    shape : tuple
+    shape : :obj:`tuple`
         shape of the array. Must have 3 integer values.
 
     affine : numpy.ndarray
@@ -351,6 +352,7 @@ def _check_force_resample(force_resample):
     return force_resample
 
 
+@fill_doc
 def resample_img(
     img,
     target_affine=None,
@@ -371,21 +373,17 @@ def resample_img(
         See :ref:`extracting_data`.
         Image(s) to resample.
 
-    target_affine : numpy.ndarray, optional
-        If specified, the image is resampled corresponding to this new affine.
-        target_affine can be a 3x3 or a 4x4 matrix. (See notes)
+    %(target_affine)s
+        See notes.
 
-    target_shape : tuple or list, optional
-        If specified, the image will be resized to match this new shape.
-        len(target_shape) must be equal to 3.
-        If target_shape is specified, a target_affine of shape (4, 4)
-        must also be given. (See notes)
+    %(target_shape)s
+        See notes.
 
-    interpolation : str, default='continuous'
+    interpolation : :obj:`str`, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
         method.
 
-    copy : bool, default=True
+    copy : :obj:`bool`, default=True
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
@@ -394,14 +392,14 @@ def resample_img(
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
 
-    clip : bool, default=True
+    clip : :obj:`bool`, default=True
         If True (default) all resampled image values above max(img) and
         under min(img) are clipped to min(img) and max(img). Note that
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
         If False no clip is performed.
 
-    fill_value : float, default=0
+    fill_value : :obj:`float`, default=0
         Use a fill value for points outside of input volume.
 
     force_resample : :obj:`bool`, default=None
@@ -749,11 +747,11 @@ def resample_to_img(
         See :ref:`extracting_data`.
         Reference image taken for resampling.
 
-    interpolation : str, default='continuous'
+    interpolation : :obj:`str`, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
         method.
 
-    copy : bool, default=True
+    copy : :obj:`bool`, default=True
         If True, guarantees that output array has no memory in common with
         input array.
         In all cases, input images are never modified by this function.
@@ -762,12 +760,12 @@ def resample_to_img(
         Data ordering in output array. This function is slightly faster with
         Fortran ordering.
 
-    clip : bool, default=False
+    clip : :obj:`bool`, default=False
         If False (default) no clip is performed.
         If True all resampled image values above max(img)
         and under min(img) are cllipped to min(img) and max(img).
 
-    fill_value : float, default=0
+    fill_value : :obj:`float`, default=0
         Use a fill value for points outside of input volume.
 
     force_resample : :obj:`bool`, default=None
@@ -831,7 +829,8 @@ def reorder_img(img, resample=None, copy_header=False):
         See :ref:`extracting_data`.
         Image to reorder.
 
-    resample : None or string in {'continuous', 'linear', 'nearest'}, optional
+    resample : None or :obj:`str` in {'continuous', 'linear', 'nearest'}, \
+        default=None
         If resample is None (default), no resampling is performed, the
         axes are only permuted.
         Otherwise resampling is performed and 'resample' will

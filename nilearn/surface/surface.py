@@ -1845,7 +1845,7 @@ class SurfaceImage:
              :obj:`pathlib.Path`, default=None
             Inner mesh to pass to :func:`nilearn.surface.vol_to_surf`.
 
-        vol_to_surf_kwargs : dict[str, Any]
+        vol_to_surf_kwargs : :obj:`dict` [ :obj:`str` , Any]
             Dictionary of extra key-words arguments to pass
             to :func:`nilearn.surface.vol_to_surf`.
 

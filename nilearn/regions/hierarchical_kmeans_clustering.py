@@ -8,6 +8,7 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from nilearn._utils import fill_doc
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
@@ -68,7 +69,7 @@ def hierarchical_k_means(
     X : ndarray (n_samples, n_features)
         Data to cluster
 
-    n_clusters : int,
+    n_clusters : :obj:`int`,
         The number of clusters to find.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
@@ -81,21 +82,21 @@ def hierarchical_k_means(
         If an ndarray is passed, it should be of shape (n_clusters, n_features)
         and gives the initial centers.
 
-    batch_size : int, optional, default: 1000
+    batch_size : :obj:`int`, optional, default: 1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
-    n_init : int, default=10
+    n_init : :obj:`int`, default=10
         Number of random initializations that are tried.
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : int, default: 10
+    max_no_improvement : :obj:`int`, default: 10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set
         max_no_improvement to None.
 
-    random_state : int, RandomState instance or None (default)
+    random_state : :obj:`int`, RandomState instance or None (default)
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
 
@@ -142,6 +143,7 @@ def hierarchical_k_means(
     return _remove_empty_labels(fine_labels)
 
 
+@fill_doc
 class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     """Hierarchical KMeans.
 
@@ -184,14 +186,13 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
 
-    scaling : bool, optional (default False)
+    scaling : :obj:`bool`, optional (default False)
         If scaling is True, each cluster is scaled by the square root of its
         size during transform(), preserving the l2-norm of the image.
         inverse_transform() will apply inversed scaling to yield an image with
         same l2-norm as input.
 
-    verbose : int, optional (default 0)
-        Verbosity level.
+    %(verbose0)s
 
     Attributes
     ----------
