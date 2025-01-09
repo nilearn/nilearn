@@ -2164,10 +2164,10 @@ def get_slicer(display_mode):
               :class:`~nilearn.plotting.displays.ZSlicer`.
 
     """
-    return _get_create_display_fun(display_mode, SLICERS)
+    return get_create_display_fun(display_mode, SLICERS)
 
 
-def _get_create_display_fun(display_mode, class_dict):
+def get_create_display_fun(display_mode, class_dict):
     """Help for functions \
     :func:`~nilearn.plotting.displays.get_slicer` and \
     :func:`~nilearn.plotting.displays.get_projector`.

@@ -26,7 +26,7 @@ from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 
 
-def _apply_mask_and_get_affinity(
+def apply_mask_and_get_affinity(
     seeds, niimg, radius, allow_overlap, mask_img=None
 ):
     """Get only the rows which are occupied by sphere \
@@ -185,7 +185,7 @@ def _iter_signals_from_spheres(
         Mask to apply to regions before extracting signals.
 
     """
-    X, A = _apply_mask_and_get_affinity(
+    X, A = apply_mask_and_get_affinity(
         seeds, niimg, radius, allow_overlap, mask_img=mask_img
     )
     for row in A.rows:
@@ -750,7 +750,7 @@ class NiftiSpheresMasker(BaseMasker):
                 "provide a reference for the inverse_transform."
             )
 
-        _, adjacency = _apply_mask_and_get_affinity(
+        _, adjacency = apply_mask_and_get_affinity(
             self.seeds_, None, self.radius, self.allow_overlap, mask_img=mask
         )
         adjacency = adjacency.tocsr()

@@ -212,7 +212,7 @@ def make_glm_report(
             header=False,
             sparsify=False,
         )
-    statistical_maps = _make_stat_maps(model, contrasts)
+    statistical_maps = make_stat_maps(model, contrasts)
     html_design_matrices = _dmtx_to_svg_url(design_matrices)
 
     # Select mask_img to use for plotting
@@ -510,7 +510,7 @@ def _model_attributes_to_dataframe(model):
     return model_attributes
 
 
-def _make_stat_maps(model, contrasts, output_type="z_score"):
+def make_stat_maps(model, contrasts, output_type="z_score"):
     """Given a model and contrasts, return the corresponding z-maps.
 
     Parameters

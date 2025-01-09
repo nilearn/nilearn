@@ -97,9 +97,7 @@ def rename_parameters(
             _warn_deprecated_params(
                 replacement_params, end_version, lib_name, kwargs
             )
-            kwargs = _transfer_deprecated_param_vals(
-                replacement_params, kwargs
-            )
+            kwargs = transfer_deprecated_param_vals(replacement_params, kwargs)
             return func(*args, **kwargs)
 
         return wrapper
@@ -143,7 +141,7 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
         )
 
 
-def _transfer_deprecated_param_vals(replacement_params, kwargs):
+def transfer_deprecated_param_vals(replacement_params, kwargs):
     """Reassigns new parameters \
     the values passed to their corresponding deprecated parameters \
     for the decorator replace_parameters().

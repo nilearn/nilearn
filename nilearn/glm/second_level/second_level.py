@@ -60,6 +60,8 @@ def _check_second_level_input(
     second_level_input, design_matrix, confounds=None
 ):
     """Check second_level_input type."""
+    _check_design_matrix(design_matrix)
+
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
         second_level_input,

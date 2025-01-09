@@ -21,7 +21,7 @@ from sklearn.model_selection import KFold, cross_val_score
 
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import new_img_like
-from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
+from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 
 from .. import masking
 from .._utils import check_niimg_4d, fill_doc, logger
@@ -395,7 +395,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         )
         process_mask_coords = np.asarray(process_mask_coords).T
 
-        X, A = _apply_mask_and_get_affinity(
+        X, A = apply_mask_and_get_affinity(
             process_mask_coords,
             imgs,
             self.radius,
@@ -449,7 +449,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
         imgs = check_niimg_4d(imgs)
 
-        X, A = _apply_mask_and_get_affinity(
+        X, A = apply_mask_and_get_affinity(
             np.asarray(np.where(self.process_mask_)).T,
             imgs,
             self.radius,

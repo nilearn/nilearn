@@ -5,7 +5,6 @@ from unittest.mock import patch
 import pytest
 
 from nilearn._utils.helpers import (
-    _transfer_deprecated_param_vals,
     _warn_deprecated_params,
     compare_version,
     is_kaleido_installed,
@@ -14,6 +13,7 @@ from nilearn._utils.helpers import (
     rename_parameters,
     set_mpl_backend,
     stringify_path,
+    transfer_deprecated_param_vals,
 )
 from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 
@@ -204,7 +204,7 @@ def test_transfer_deprecated_param_vals():
         "replacement_param_1": "deprecated_param_1_val",
         "unchanged_param_1": "unchanged_param_1_val",
     }
-    actual_ouput = _transfer_deprecated_param_vals(
+    actual_ouput = transfer_deprecated_param_vals(
         replacement_params,
         mock_input,
     )
