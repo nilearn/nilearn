@@ -61,14 +61,11 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 
 
 def test_multi_nifti_maps_masker(
-    affine_eye, length, n_regions, shape_3d_default
+    affine_eye, length, n_regions, shape_3d_default, maps11_img
 ):
     # Check working of shape/affine checks
     fmri11_img, mask11_img = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
-    )
-    maps11_img, _ = generate_maps(
-        shape_3d_default, n_regions, affine=affine_eye
     )
 
     masker = MultiNiftiMapsMasker(
@@ -115,14 +112,17 @@ def test_multi_nifti_maps_masker(
 
 @pytest.mark.parametrize("create_files", [True, False])
 def test_multi_nifti_maps_masker_fit_files(
-    tmp_path, affine_eye, length, n_regions, shape_3d_default, create_files
+    tmp_path,
+    affine_eye,
+    length,
+    n_regions,
+    shape_3d_default,
+    create_files,
+    maps11_img,
 ):
     # Check working of shape/affine checks
     fmri11_img, _ = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
-    )
-    maps11_img, _ = generate_maps(
-        shape_3d_default, n_regions, affine=affine_eye
     )
     labels11 = write_imgs_to_path(
         maps11_img, file_path=tmp_path, create_files=create_files
@@ -136,21 +136,19 @@ def test_multi_nifti_maps_masker_fit_files(
 
 
 def test_multi_nifti_maps_masker_data_atlas_different_shape(
-    affine_eye, length, n_regions
+    affine_eye, length, maps11_img
 ):
     """Test with data and atlas of different shape.
 
     The atlas should be resampled to the data.
     """
     # Check working of shape/affine checks
-    shape1 = (13, 11, 12)
     shape2 = (12, 10, 14)
     shape22 = (5, 5, 6)
     affine2 = np.diag((1, 2, 3, 1))
     affine2 = 2 * np.eye(4)
     affine2[-1, -1] = 1
 
-    maps11_img, _ = generate_maps(shape1, n_regions, affine=affine_eye)
     _, mask21_img = generate_fake_fmri(
         shape2, affine=affine_eye, length=length
     )
@@ -164,13 +162,10 @@ def test_multi_nifti_maps_masker_data_atlas_different_shape(
 
 
 def test_multi_nifti_maps_masker_errors(
-    affine_eye, length, n_regions, shape_3d_default
+    affine_eye, length, shape_3d_default, maps11_img
 ):
     fmri11_img, mask11_img = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
-    )
-    maps11_img, _ = generate_maps(
-        shape_3d_default, n_regions, affine=affine_eye
     )
 
     masker = MultiNiftiMapsMasker(
@@ -194,7 +189,12 @@ def test_multi_nifti_maps_masker_errors(
 
 @pytest.mark.parametrize("create_files", [True, False])
 def test_multi_nifti_maps_masker_errors_field_of_view(
-    tmp_path, affine_eye, length, n_regions, create_files, shape_3d_default
+    tmp_path,
+    affine_eye,
+    length,
+    create_files,
+    shape_3d_default,
+    maps11_img,
 ):
     """Test all kinds of mismatches between shapes and between affines."""
     # Check working of shape/affine checks
@@ -206,9 +206,6 @@ def test_multi_nifti_maps_masker_errors_field_of_view(
     )
     fmri21_img, mask21_img = generate_fake_fmri(
         shape2, affine=affine_eye, length=length
-    )
-    maps11_img, _ = generate_maps(
-        shape_3d_default, n_regions, affine=affine_eye
     )
 
     error_msg = "Following field of view errors were detected"
@@ -401,7 +398,7 @@ def test_multi_nifti_maps_masker_resampling_clipped_mask(
 
 
 def test_multi_nifti_maps_masker_list_of_sample_mask(
-    shape_3d_default, affine_eye, length, n_regions
+    shape_3d_default, affine_eye, length, n_regions, maps11_img
 ):
     """Tests MultiNiftiMapsMasker.fit_transform with a list of "sample_mask".
 
@@ -412,11 +409,8 @@ def test_multi_nifti_maps_masker_list_of_sample_mask(
     n_scrub1 = 3
     n_scrub2 = 2
 
-    fmri11_img, mask11_img = generate_fake_fmri(
+    fmri11_img, _ = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
-    )
-    maps11_img, _ = generate_maps(
-        shape_3d_default, n_regions, affine=affine_eye
     )
     sample_mask1 = np.arange(length - n_scrub1)
     sample_mask2 = np.arange(length - n_scrub2)

@@ -9,6 +9,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn import image
+from nilearn._utils.data_gen import generate_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
@@ -378,6 +379,20 @@ def img_atlas(shape_3d_default, affine_mni):
             "csf": 3,
         },
     }
+
+
+@pytest.fixture
+def n_regions():
+    """Return a default numher of regions for maps."""
+    return 9
+
+
+@pytest.fixture
+def maps11_img(shape_3d_default, n_regions, affine_eye):
+    """Generate a default map image."""
+    return generate_maps(
+        shape=shape_3d_default, n_regions=n_regions, affine=affine_eye
+    )[0]
 
 
 # ------------------------ SURFACE ------------------------#

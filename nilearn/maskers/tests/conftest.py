@@ -35,9 +35,3 @@ def shape_maps():
 def length():
     """Return a default length for 4D images."""
     return 10
-
-
-@pytest.fixture
-def n_regions():
-    """Return a default numher of regions for maps."""
-    return 9

@@ -8,7 +8,6 @@ from numpy.testing import assert_almost_equal
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
-    generate_maps,
     generate_random_img,
 )
 from nilearn.image import get_data, new_img_like
@@ -53,16 +52,8 @@ def mask(shape_3d_default, affine_eye):
 
 
 @pytest.fixture
-def n_regions():
-    return 9
-
-
-@pytest.fixture
-def niftimapsmasker_inputs(n_regions, shape_3d_default, affine_eye):
-    label_img, _ = generate_maps(
-        shape_3d_default, n_regions=n_regions, affine=affine_eye
-    )
-    return {"maps_img": label_img}
+def niftimapsmasker_inputs(maps11_img):
+    return {"maps_img": maps11_img}
 
 
 @pytest.fixture
@@ -78,24 +69,13 @@ def labels_img(shape_3d_default, affine_eye, n_regions):
 
 
 @pytest.fixture
-def input_parameters(
-    n_regions,
-    shape_3d_default,
-    masker_class,
-    mask,
-    affine_eye,
-    labels,
-    labels_img,
-):
+def input_parameters(masker_class, mask, labels, labels_img, maps11_img):
     if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": mask}
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
         return {"labels_img": labels_img, "labels": labels}
     if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
-        label_img, _ = generate_maps(
-            shape_3d_default, n_regions=n_regions, affine=affine_eye
-        )
-        return {"maps_img": label_img}
+        return {"maps_img": maps11_img}
     if masker_class is NiftiSpheresMasker:
         return {"seeds": [(1, 1, 1)]}
 
@@ -590,17 +570,16 @@ def test_multi_nifti_labels_masker_report_warning(
 
 
 def test_multi_nifti_maps_masker_report_warning(
-    shape_3d_default, affine_eye, n_regions
+    shape_3d_default, affine_eye, maps11_img
 ):
     """Test calling generate report on multiple subjects raises warning."""
     length = 3
 
-    maps_img, _ = generate_maps(shape_3d_default, n_regions, affine=affine_eye)
     imgs, _ = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
 
-    masker = MultiNiftiMapsMasker(maps_img)
+    masker = MultiNiftiMapsMasker(maps11_img)
 
     with pytest.warns(
         UserWarning, match="A list of 4D subject images were provided to fit. "

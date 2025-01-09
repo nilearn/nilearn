@@ -24,11 +24,6 @@ from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
 
 @pytest.fixture
-def n_regions():
-    return 9
-
-
-@pytest.fixture
 def length():
     return 93
 
