@@ -29,9 +29,3 @@ def shape_mask():
 def shape_maps():
     """Shape for maps."""
     return (16, 17, 18)
-
-
-@pytest.fixture
-def length():
-    """Return a default length for 4D images."""
-    return 10

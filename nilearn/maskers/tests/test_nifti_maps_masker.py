@@ -116,22 +116,17 @@ def test_nifti_maps_masker_fit_files(
     tmp_path,
     length,
     n_regions,
-    affine_eye,
-    shape_3d_default,
     create_files,
     maps_img,
+    img_fmri,
 ):
     """Check fitting files directly."""
-    fmri11_img, _ = generate_fake_fmri(
-        shape_3d_default, affine=affine_eye, length=length
-    )
-
     labels11 = write_imgs_to_path(
         maps_img, file_path=tmp_path, create_files=create_files
     )
     masker = NiftiMapsMasker(labels11, resampling_target=None)
 
-    signals11 = masker.fit().transform(fmri11_img)
+    signals11 = masker.fit().transform(img_fmri)
 
     assert signals11.shape == (length, n_regions)
 
@@ -407,12 +402,14 @@ def test_nifti_maps_masker_with_nans_and_infs_in_data(
 
 
 def test_nifti_maps_masker_resampling_to_mask(
-    length, n_regions, affine_eye, shape_3d_default, shape_mask, shape_maps
+    length,
+    n_regions,
+    affine_eye,
+    shape_mask,
+    shape_maps,
+    img_fmri,
 ):
     """Test resampling to_mask in NiftiMapsMasker."""
-    fmri11_img, _ = generate_fake_fmri(
-        shape_3d_default, length=length, affine=affine_eye
-    )
     _, mask22_img = generate_fake_fmri(
         shape_mask, length=length, affine=affine_eye
     )
@@ -430,7 +427,7 @@ def test_nifti_maps_masker_resampling_to_mask(
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    transformed = masker.transform(fmri11_img)
+    transformed = masker.transform(img_fmri)
 
     assert transformed.shape == (length, n_regions)
 
@@ -441,12 +438,14 @@ def test_nifti_maps_masker_resampling_to_mask(
 
 
 def test_nifti_maps_masker_resampling_to_maps(
-    length, n_regions, affine_eye, shape_3d_default, shape_mask, shape_maps
+    length,
+    n_regions,
+    affine_eye,
+    shape_mask,
+    shape_maps,
+    img_fmri,
 ):
     """Test resampling to maps in NiftiMapsMasker."""
-    fmri11_img, _ = generate_fake_fmri(
-        shape_3d_default, length=length, affine=affine_eye
-    )
     _, mask22_img = generate_fake_fmri(
         shape_mask, length=length, affine=affine_eye
     )
@@ -463,7 +462,7 @@ def test_nifti_maps_masker_resampling_to_maps(
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    transformed = masker.transform(fmri11_img)
+    transformed = masker.transform(img_fmri)
 
     assert transformed.shape == (length, n_regions)
 
@@ -531,21 +530,15 @@ def overlapping_maps():
     "maps_img_fn", [overlapping_maps, non_overlapping_maps]
 )
 @pytest.mark.parametrize("allow_overlap", [True, False])
-def test_nifti_maps_masker_overlap(
-    maps_img_fn, allow_overlap, affine_eye, shape_3d_default, length
-):
+def test_nifti_maps_masker_overlap(maps_img_fn, allow_overlap, img_fmri):
     """Test resampling in NiftiMapsMasker."""
-    fmri_img, _ = generate_fake_fmri(
-        shape_3d_default, affine=affine_eye, length=length
-    )
-
     masker = NiftiMapsMasker(maps_img_fn(), allow_overlap=allow_overlap)
 
     if allow_overlap is False and maps_img_fn.__name__ == "overlapping_maps":
         with pytest.raises(ValueError, match="Overlap detected"):
-            masker.fit_transform(fmri_img)
+            masker.fit_transform(img_fmri)
     else:
-        masker.fit_transform(fmri_img)
+        masker.fit_transform(img_fmri)
 
 
 def test_standardization(rng, affine_eye, shape_3d_default):

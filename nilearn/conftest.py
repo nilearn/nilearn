@@ -9,7 +9,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn import image
-from nilearn._utils.data_gen import generate_maps
+from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
@@ -393,6 +393,20 @@ def maps_img(shape_3d_default, n_regions, affine_eye):
     return generate_maps(
         shape=shape_3d_default, n_regions=n_regions, affine=affine_eye
     )[0]
+
+
+@pytest.fixture
+def length():
+    """Return a default length for 4D images."""
+    return 10
+
+
+@pytest.fixture
+def img_fmri(shape_3d_default, affine_eye, length):
+    """Return a default length for fmri images."""
+    return generate_fake_fmri(
+        shape_3d_default, affine=affine_eye, length=length
+    )
 
 
 # ------------------------ SURFACE ------------------------#
