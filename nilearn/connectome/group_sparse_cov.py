@@ -973,7 +973,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
     n_refinements : integer, default=4
         number of times the initial grid should be refined.
 
-    cv : integer, default=3
+    cv : integer, default=None
         number of folds in a K-fold cross-validation scheme.
 
     tol_cv : float, default=1e-2

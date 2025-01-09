@@ -260,10 +260,9 @@ class NiftiSpheresMasker(BaseMasker):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+
+    %(dtype)s
+
     %(memory)s
     %(memory_level1)s
     %(verbose0)s

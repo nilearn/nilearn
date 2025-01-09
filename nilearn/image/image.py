@@ -220,7 +220,8 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
     if isinstance(fwhm, (int, float)) and (fwhm == 0.0):
         warnings.warn(
             f"The parameter 'fwhm' for smoothing is specified as {fwhm}. "
-            "Setting it to None (no smoothing will be performed)"
+            "Setting it to None (no smoothing will be performed)",
+            stacklevel=3,
         )
         fwhm = None
     if arr.dtype.kind == "i":
@@ -1508,10 +1509,7 @@ def load_img(img, wildcards=True, dtype=None):
         If no file matches the regular expression, a `ValueError` exception is
         raised.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     Returns
     -------
