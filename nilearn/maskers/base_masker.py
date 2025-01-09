@@ -187,7 +187,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
                 .. versionadded:: 0.8.0
 
-        copy : Boolean, default=True
+        copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
 
         Returns

@@ -522,6 +522,7 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     return reduced_connectivity, reduced_X, labels
 
 
+@fill_doc
 def recursive_neighbor_agglomeration(
     X, mask_img, n_clusters, n_iter=10, threshold=1e-7, verbose=0
 ):
@@ -547,8 +548,7 @@ def recursive_neighbor_agglomeration(
     threshold : :obj:`float` in the close interval [0, 1], default=1e-07
         The threshold is set to handle eccentricities.
 
-    verbose : :obj:`int`, default=0
-        Verbosity level.
+    %(verbose0)s
 
     Returns
     -------

@@ -184,8 +184,7 @@ def _group_iter_search_light(
     total : int
         Total number of voxels, used for display
 
-    verbose : int, default=0
-        The verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -257,8 +256,10 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     estimator : 'svr', 'svc', or an estimator object implementing 'fit'
         The object to use to fit the data
+
     %(n_jobs)s
-    scoring : string or callable, optional
+
+    scoring : :obj:`str` or callable, optional
         The scoring strategy to use. See the scikit-learn documentation
         If callable, takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
@@ -268,6 +269,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
+
     %(verbose0)s
 
     Attributes

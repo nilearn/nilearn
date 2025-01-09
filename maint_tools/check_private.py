@@ -8,7 +8,7 @@ from utils import list_functions, list_modules
 
 
 def main():
-    """List private function that are only mnetioned once in their module."""
+    """List private functions that are only mentioned once in their module."""
     print("\nCheck .py files in nilearn\n")
 
     modules = list_modules()

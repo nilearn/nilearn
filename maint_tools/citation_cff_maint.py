@@ -7,8 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import ruamel.yaml
-
-from .utils import root_dir
+from utils import root_dir
 
 yaml = ruamel.yaml.YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)

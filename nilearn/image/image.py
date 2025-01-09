@@ -526,6 +526,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     return mean_data, affine
 
 
+@fill_doc
 def mean_img(
     imgs,
     target_affine=None,
@@ -545,18 +546,11 @@ def mean_img(
         Images to be averaged over time (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
-    target_affine : :class:`numpy.ndarray`, default=None
-        If specified, the image is resampled corresponding to this new affine.
-        target_affine can be a 3x3 or a 4x4 matrix.
+    %(target_affine)s
 
-    target_shape : :obj:`tuple` or :obj:`list`, default=None
-        If specified, the image will be resized to match this new shape.
-        len(target_shape) must be equal to 3.
-        A target_affine has to be specified jointly with target_shape.
+    %(target_shape)s
 
-    verbose : :obj:`int`, default=0
-        Controls the amount of verbosity: higher numbers give more messages
-        (0 means no messages).
+    %(verbose0)s
 
     n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation (-1 means
@@ -1311,6 +1305,7 @@ def binarize_img(
     )
 
 
+@fill_doc
 def clean_img(
     imgs,
     runs=None,
@@ -1381,11 +1376,9 @@ def clean_img(
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
 
-    low_pass : :obj:`float`, default=None
-        Low cutoff frequencies, in Hertz.
+    %(low_pass)s
 
-    high_pass : :obj:`float`, default=None
-        High cutoff frequencies, in Hertz.
+    %(high_pass)s
 
     t_r : :obj:`float`, default=None
         Repetition time, in second (sampling period). Set to None if not
@@ -1523,6 +1516,7 @@ def load_img(img, wildcards=True, dtype=None):
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
+@fill_doc
 def concat_imgs(
     niimgs,
     dtype=np.float32,

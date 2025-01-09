@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import scale
 
+from nilearn._utils import fill_doc
 from nilearn._utils.fmriprep_confounds import flag_single_gifti, is_camel_case
 from nilearn.interfaces.bids import parse_bids_filename
 
@@ -481,6 +482,7 @@ def _demean_confounds(confounds, sample_mask):
     return pd.DataFrame(confounds, columns=confound_cols)
 
 
+@fill_doc
 class MissingConfoundError(Exception):
     """
     Exception raised when failing to find params in the confounds.

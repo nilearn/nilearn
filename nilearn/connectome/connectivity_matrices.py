@@ -389,11 +389,11 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         The matrix kind.
         For the use of "tangent" see :footcite:t:`Varoquaux2010b`.
 
-    vectorize : bool, default=False
+    vectorize : :obj:`bool`, default=False
         If True, connectivity matrices are reshaped into 1D arrays and only
         their flattened lower triangular parts are returned.
 
-    discard_diagonal : bool, default=False
+    discard_diagonal : :obj:`bool`, default=False
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
 
@@ -487,7 +487,8 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : list of numpy.ndarray, shape for each (n_samples, n_features)
+        X : :obj:`list` of numpy.ndarray, \
+            shape for each (n_samples, n_features)
             The input subjects time series. The number of samples may differ
             from one subject to another.
 
@@ -607,7 +608,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : list of n_subjects numpy.ndarray with shapes \
+        X : :obj:`list` of n_subjects numpy.ndarray with shapes \
             (n_samples, n_features)
             The input subjects time series. The number of samples may differ
             from one subject to another.
@@ -648,7 +649,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : list of n_subjects numpy.ndarray with shapes \
+        X : :obj:`list` of n_subjects numpy.ndarray with shapes \
             (n_samples, n_features)
             The input subjects time series. The number of samples may differ
             from one subject to another.
@@ -691,7 +692,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        connectivities : list of n_subjects numpy.ndarray with shapes\
+        connectivities : :obj:`list` of n_subjects numpy.ndarray with shapes \
             (n_features, n_features) or (n_features * (n_features + 1) / 2,)
             or ((n_features - 1) * n_features / 2,)
             Connectivities of each subject, vectorized or not.

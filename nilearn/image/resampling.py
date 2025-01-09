@@ -11,10 +11,11 @@ import numpy as np
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
-from .. import _utils
-from .._utils import stringify_path
-from .._utils.helpers import check_copy_header
-from .._utils.niimg import _get_data
+from nilearn import _utils
+from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.helpers import check_copy_header
+from nilearn._utils.niimg import _get_data
+
 from .image import copy_img, crop_img
 
 ###############################################################################
@@ -351,6 +352,7 @@ def _check_force_resample(force_resample):
     return force_resample
 
 
+@fill_doc
 def resample_img(
     img,
     target_affine=None,
@@ -371,15 +373,11 @@ def resample_img(
         See :ref:`extracting_data`.
         Image(s) to resample.
 
-    target_affine : numpy.ndarray, default=None
-        If specified, the image is resampled corresponding to this new affine.
-        target_affine can be a 3x3 or a 4x4 matrix. (See notes)
+    %(target_affine)s
+        See notes.
 
-    target_shape : :obj:`tuple` or :obj:`list`, default=None
-        If specified, the image will be resized to match this new shape.
-        len(target_shape) must be equal to 3.
-        If target_shape is specified, a target_affine of shape (4, 4)
-        must also be given. (See notes)
+    %(target_shape)s
+        See notes.
 
     interpolation : :obj:`str`, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample

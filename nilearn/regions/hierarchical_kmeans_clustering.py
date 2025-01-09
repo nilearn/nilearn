@@ -146,6 +146,7 @@ def hierarchical_k_means(
     return _remove_empty_labels(fine_labels)
 
 
+@fill_doc
 class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     """Hierarchical KMeans.
 
@@ -188,14 +189,13 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
 
-    scaling : bool, optional (default False)
+    scaling : :obj:`bool`, optional (default False)
         If scaling is True, each cluster is scaled by the square root of its
         size during transform(), preserving the l2-norm of the image.
         inverse_transform() will apply inversed scaling to yield an image with
         same l2-norm as input.
 
-    verbose : int, optional (default 0)
-        Verbosity level.
+    %(verbose0)s
 
     Attributes
     ----------

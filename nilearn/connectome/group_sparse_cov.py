@@ -17,8 +17,8 @@ from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
 from sklearn.utils.extmath import fast_logdet
 
-from .._utils import CacheMixin, logger
-from .._utils.extmath import is_spd
+from nilearn._utils import CacheMixin, fill_doc, logger
+from nilearn._utils.extmath import is_spd
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -129,6 +129,7 @@ def _assert_submatrix(full, sub, n):
     np.testing.assert_almost_equal(true_sub, sub)
 
 
+@fill_doc
 def group_sparse_covariance(
     subjects,
     alpha,
@@ -171,8 +172,7 @@ def group_sparse_covariance(
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
 
-    verbose : :obj:`int`, default=0
-        verbosity level. Zero means "no message".
+    %(verbose0)s
 
     probe_function : callable or None,  default=None
         This value is called before the first iteration and after each
@@ -533,6 +533,7 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
     return tolerance_reached
 
 
+@fill_doc
 class GroupSparseCovariance(CacheMixin, BaseEstimator):
     """Covariance and precision matrix estimator.
 
@@ -554,17 +555,11 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         maximum number of iterations. The default value is rather
         conservative.
 
-    verbose : int, default=0
-        verbosity level. Zero means "no message".
+    %(verbose0)s
 
-    memory : instance of joblib.Memory or string, default=None
-        Used to cache the masking process.
-        By default, no caching is done.
-        If a string is given, it is the path to the caching directory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
+    %(memory)s
 
-    memory_level : int, default=0
-        Caching aggressiveness. Higher values mean more caching.
+    %(memory_level)s
 
     Attributes
     ----------
@@ -607,7 +602,8 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        subjects : list of numpy.ndarray with shapes (n_samples, n_features)
+        subjects : :obj:`list` of numpy.ndarray \
+                   with shapes (n_samples, n_features)
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns).
@@ -817,6 +813,7 @@ def group_sparse_scores(
     return ret
 
 
+@fill_doc
 def group_sparse_covariance_path(
     train_subjs,
     alphas,
@@ -846,8 +843,12 @@ def group_sparse_covariance_path(
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
+    <<<<<<< HEAD
     verbose : :obj:`int`, default=0
         verbosity level.
+    =======
+    %(verbose0)s
+    >>>>>>> upstream/main
 
     tol, max_iter, debug, precisions_init :
         Passed to group_sparse_covariance(). See the corresponding docstring
@@ -955,6 +956,7 @@ class EarlyStopProbe:
         self.last_log_lik = log_lik
 
 
+@fill_doc
 class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
 
@@ -967,21 +969,21 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
 
     Parameters
     ----------
-    alphas : integer, default=4
+    alphas : :obj:`int`, default=4
         initial number of points in the grid of regularization parameter
         values. Each step of grid refinement adds that many points as well.
 
-    n_refinements : integer, default=4
+    n_refinements : :obj:`int`, default=4
         number of times the initial grid should be refined.
 
-    cv : integer, default=None
+    cv : :obj:`int`, default=None
         number of folds in a K-fold cross-validation scheme.
 
     tol_cv : float, default=1e-2
         tolerance used to get the optimal alpha value. It has the same meaning
         as the `tol` parameter in :func:`group_sparse_covariance`.
 
-    max_iter_cv : integer, default=50
+    max_iter_cv : :obj:`int`, default=50
         maximum number of iterations for each optimization, during the alpha-
         selection phase.
 
@@ -989,22 +991,18 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
         tolerance used during the final optimization for determining precision
         matrices value.
 
-    max_iter : integer, default=100
+    max_iter : :obj:`int`, default=100
         maximum number of iterations in the final optimization.
 
-    verbose : integer, default=0
-        verbosity level. 0 means nothing is printed to the user.
+    %(verbose0)s
 
-    n_jobs : integer, default=1
-        maximum number of cpu cores to use. The number of cores actually used
-        at the same time cannot exceed the number of folds in folding strategy
-        (that is, the value of cv).
+    %(n_jobs)s
 
-    debug : bool, default=False
+    debug : :obj:`bool`, default=False
         if True, activates some internal checks for consistency. Only useful
         for nilearn developers, not users.
 
-    early_stopping : bool, default=True
+    early_stopping : :obj:`bool`, default=True
         if True, reduce computation time by using a heuristic to reduce the
         number of iterations required to get the optimal value for alpha. Be
         aware that this can lead to slightly different values for the optimal
@@ -1080,7 +1078,8 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        subjects : list of numpy.ndarray with shapes (n_samples, n_features)
+        subjects : :obj:`list` of numpy.ndarray \
+            with shapes (n_samples, n_features)
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns.)

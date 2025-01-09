@@ -22,7 +22,9 @@ import requests
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
-from ..image import resample_img
+from nilearn._utils import fill_doc
+from nilearn.image import resample_img
+
 from ._utils import (
     fetch_single_file,
     get_dataset_descr,
@@ -2489,6 +2491,7 @@ def _fetch_neurovault_implementation(
     return _result_list_to_bunch(scroller, download_params)
 
 
+@fill_doc
 def fetch_neurovault(
     max_images=_DEFAULT_MAX_IMAGES,
     collection_terms=None,
@@ -2728,6 +2731,7 @@ def fetch_neurovault(
     )
 
 
+@fill_doc
 def fetch_neurovault_ids(
     collection_ids=(),
     image_ids=(),
@@ -2840,6 +2844,7 @@ def fetch_neurovault_ids(
     )
 
 
+@fill_doc
 def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     """Fetch left vs right button press \
        group :term:`contrast` map from :term:`Neurovault`.
@@ -2880,6 +2885,7 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     return data
 
 
+@fill_doc
 def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.

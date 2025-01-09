@@ -1,5 +1,7 @@
 """Utilities for maintenance."""
 
+from __future__ import annotations
+
 import ast
 from pathlib import Path
 from typing import Literal
@@ -44,33 +46,34 @@ def list_functions(
     file: Path | ast.Module | ast.ClassDef,
     include: Literal["private", "public", "all"] = "public",
 ) -> list[ast.FunctionDef]:
-    """Return AST of the functions in a module."""
-    if isinstance(file, Path):
-        with file.open() as f:
-            module = ast.parse(f.read())
-    else:
-        module = file
-    function_definitions = [
-        node for node in module.body if isinstance(node, ast.FunctionDef)
-    ]
-    if include == "all":
-        return function_definitions
-    elif include == "private":
-        return [f for f in function_definitions if f.name.startswith("_")]
-    return [f for f in function_definitions if not f.name.startswith("_")]
+    """Return AST of the functions in a module.
+
+    Can also be used to return the AST of methods in a class.
+    """
+    return list_nodes(file, ast.FunctionDef, include)
 
 
 def list_classes(
     file: Path, include: Literal["private", "public", "all"] = "public"
 ) -> list[ast.ClassDef]:
     """Return AST of the Classes in a module."""
+    return list_nodes(file, ast.ClassDef, include)
+
+
+def list_nodes(
+    file: Path,
+    node_type,
+    include: Literal["private", "public", "all"] = "public",
+) -> list[ast.ClassDef] | list[ast.FunctionDef]:
+    """Return AST of the nodes in a module."""
     with file.open() as f:
         module = ast.parse(f.read())
-    class_definitions = [
-        node for node in module.body if isinstance(node, ast.ClassDef)
+    node_definitions = [
+        node for node in module.body if isinstance(node, node_type)
     ]
+
     if include == "all":
-        return class_definitions
+        return node_definitions
     elif include == "private":
-        return [c for c in class_definitions if c.name.startswith("_")]
-    return [c for c in class_definitions if not c.name.startswith("_")]
+        return [c for c in node_definitions if c.name.startswith("_")]
+    return [c for c in node_definitions if not c.name.startswith("_")]
