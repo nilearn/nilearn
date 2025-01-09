@@ -1098,7 +1098,6 @@ def _validate_mesh(mesh):
     - larger or equal to the length of the coordinates array
     - negative
     """
-
     non_finite_mask = np.logical_not(np.isfinite(mesh.coordinates))
     if non_finite_mask.any():
         raise ValueError(
