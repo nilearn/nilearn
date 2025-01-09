@@ -1182,7 +1182,7 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         :obj:`~nilearn.maskers.SurfaceMasker`
         to check for default parameters.
 
-    cv : cross-validation generator or int, default=10
+    cv : cross-validation generator or :obj:`int`, default=10
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html.
         The default 10 refers to K = 10 folds of
@@ -1206,7 +1206,7 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         For DummyClassifier, parameter grid defaults to empty dictionary, class
         predictions are estimated using default strategy.
 
-    screening_percentile : int, float, optional, \
+    screening_percentile : :obj:`int`, :obj:`float`, optional, \
                           in the closed interval [0, 100], default=20
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
@@ -1360,7 +1360,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv : cross-validation generator or int, default=10
+    cv : cross-validation generator or :obj:`int`, default=10
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html.
         The default 10 refers to K = 10 folds of
@@ -1384,7 +1384,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         For DummyRegressor, parameter grid defaults to empty dictionary, class
         predictions are estimated using default strategy.
 
-    screening_percentile : int, float, \
+    screening_percentile : :obj:`int`, :obj:`float`, \
                           in the closed interval [0, 100], \
                           default=20
         The percentage of brain volume that will be kept with respect to a full
@@ -1545,7 +1545,7 @@ class FREMRegressor(_BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv : int or cross-validation generator, optional (default 30)
+    cv : :obj:`int` or cross-validation generator, (default 30)
         If int, number of shuffled splits returned, which is usually the right
         way to train many different classifiers. A good trade-off between
         stability of the aggregated model and computation time is 50 splits.
@@ -1564,14 +1564,16 @@ class FREMRegressor(_BaseDecoder):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-    clustering_percentile : int, float, optional, in closed interval [0, 100]\
+    clustering_percentile : :obj:`int`, :obj:`float`, \
+        in closed interval [0, 100] \
         (default 10)
         Used to perform a fast ReNA clustering on input data as a first step of
         fit. It agglomerates similar features together to reduce their number
         by this percentile. ReNA is typically efficient for cluster_percentile
         equal to 10.
 
-    screening_percentile : int, float, optional, in closed interval [0, 100]\
+    screening_percentile : :obj:`int`, :obj:`float`, \
+        in closed interval [0, 100] \
         (default 20)
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
@@ -1701,7 +1703,7 @@ class FREMClassifier(_BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv : int or cross-validation generator, optional (default 30)
+    cv : :obj:`int` or cross-validation generator, (default 30)
         If int, number of stratified shuffled splits returned, which is usually
         the right way to train many different classifiers. A good trade-off
         between stability of the aggregated model and computation time is
@@ -1720,14 +1722,16 @@ class FREMClassifier(_BaseDecoder):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-    clustering_percentile : int, float, optional, in closed interval [0, 100]\
+    clustering_percentile : :obj:`int`, :obj:`float`, \
+        in closed interval [0, 100] \
         (default 10)
         Used to perform a fast ReNA clustering on input data as a first step of
         fit. It agglomerates similar features together to reduce their number
         down to this percentile. ReNA is typically efficient for
         cluster_percentile equal to 10.
 
-    screening_percentile : int, float, optional, in closed interval [0, 100],\
+    screening_percentile : :obj:`int`, :obj:`float`, \
+        in closed interval [0, 100], \
         (default 20)
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate

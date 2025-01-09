@@ -113,7 +113,7 @@ class GroupIterator:
 
     Parameters
     ----------
-    n_features : int
+    n_features : :obj:`int`
         Total number of features
     %(n_jobs)s
 
@@ -251,7 +251,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         Boolean image giving voxels on which searchlight should be
         computed.
 
-    radius : float, default=2.
+    radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
     estimator : 'svr', 'svc', or an estimator object implementing 'fit'

@@ -542,16 +542,16 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
 
     Parameters
     ----------
-    alpha : float, default=0.1
+    alpha : :obj:`float`, default=0.1
         regularization parameter. With normalized covariances matrices and
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse).
 
-    tol : positive float, default=1e-3
+    tol : positive :obj:`float`, default=1e-3
         The tolerance to declare convergence: if the dual gap goes below
         this value, iterations are stopped.
 
-    max_iter : int, default=10
+    max_iter : :obj:`int`, default=10
         maximum number of iterations. The default value is rather
         conservative.
 
@@ -843,12 +843,7 @@ def group_sparse_covariance_path(
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
-    <<<<<<< HEAD
-    verbose : :obj:`int`, default=0
-        verbosity level.
-    =======
     %(verbose0)s
-    >>>>>>> upstream/main
 
     tol, max_iter, debug, precisions_init :
         Passed to group_sparse_covariance(). See the corresponding docstring
@@ -979,7 +974,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
     cv : :obj:`int`, default=None
         number of folds in a K-fold cross-validation scheme.
 
-    tol_cv : float, default=1e-2
+    tol_cv : :obj:`float`, default=1e-2
         tolerance used to get the optimal alpha value. It has the same meaning
         as the `tol` parameter in :func:`group_sparse_covariance`.
 
@@ -987,7 +982,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
         maximum number of iterations for each optimization, during the alpha-
         selection phase.
 
-    tol : float, default=1e-3
+    tol : :obj:`float`, default=1e-3
         tolerance used during the final optimization for determining precision
         matrices value.
 

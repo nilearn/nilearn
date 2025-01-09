@@ -221,7 +221,7 @@ class ARModel(OLSModel):
     design : ndarray
         2D array with design matrix.
 
-    rho : int or array-like
+    rho : :obj:`int` or array-like
         If int, gives order of model, and initializes rho to zeros.  If
         ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
         1) != ARModel(X, 1.0)``.

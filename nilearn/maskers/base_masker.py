@@ -313,11 +313,11 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         y : numpy array of shape [n_samples], default=None
             Target values.
 
-        confounds : list of confounds, default=None
+        confounds : :obj:`list` of confounds, default=None
             List of confounds (2D arrays or filenames pointing to CSV
             files). Must be of same length than imgs_list.
 
-        sample_mask : list of sample_mask, default=None
+        sample_mask : :obj:`list` of sample_mask, default=None
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 

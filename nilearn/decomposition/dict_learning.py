@@ -56,20 +56,20 @@ class DictLearning(_BaseDecomposition):
     n_components : :obj:`int`, default=20
         Number of components to extract.
 
-    batch_size : obj:`int`, default=20
+    batch_size : :obj:`int`, default=20
         The number of samples to take in each batch.
 
-    n_epochs : float, default=1
+    n_epochs : :obj:`float`, default=1
         Number of epochs the algorithm should run on the data.
 
-    alpha : float, default=10
+    alpha : :obj:`float`, default=10
         Sparsity controlling parameter.
 
     dict_init : Niimg-like object, optional
         Initial estimation of dictionary maps. Would be computed from CanICA if
         not provided.
 
-    reduction_ratio : 'auto' or float between 0. and 1., default='auto'
+    reduction_ratio : 'auto' or :obj:`float` between 0. and 1., default='auto'
         - Between 0. or 1. : controls data reduction in the temporal domain.
           1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per

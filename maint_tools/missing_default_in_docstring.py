@@ -5,43 +5,13 @@ instead of the type section.
 """
 
 import ast
-import importlib
-import inspect
 import re
 
 from numpydoc.docscrape import NumpyDocString
 from rich import print
-from utils import list_classes, list_functions, list_modules
-
-import nilearn
+from utils import list_classes, list_functions, list_modules, public_api
 
 PUBLIC_API_ONLY = False
-
-
-def update_api(api, mod):
-    """Add function and class names of a module to user facing API listing."""
-    for x in mod.__all__:
-        if x.startswith("_"):
-            continue
-        if inspect.isfunction(mod.__dict__[x]) or inspect.isclass(
-            mod.__dict__[x]
-        ):
-            api.append(x)
-    return api
-
-
-public_api = []
-for subpackage in nilearn.__all__:
-    if subpackage.startswith("_"):
-        continue
-    mod = importlib.import_module(f"nilearn.{subpackage}")
-    public_api = update_api(public_api, mod)
-    for x in mod.__all__:
-        if x.startswith("_"):
-            continue
-        if inspect.ismodule(mod.__dict__[x]):
-            submod = importlib.import_module(f"nilearn.{subpackage}.{x}")
-            public_api = update_api(public_api, submod)
 
 
 def main():

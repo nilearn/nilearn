@@ -563,24 +563,24 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     is_classif : :obj:`bool`, optional (default False)
         Flag telling whether the learning task is classification or regression.
 
-    l1_ratios : float or :obj:`list` of floats in the interval [0, 1];\
+    l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1];\
         optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : float or :obj:`list` of floats, optional (default None)
+    alphas : :obj:`float` or :obj:`list` of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
         If None or list of floats is provided, then the best value will be
         selected by cross-validation.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : :obj:`int`, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional (default 1e-3)
+    eps : :obj:`float`, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
@@ -595,7 +595,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : float in the interval [0, 100]; Optional (\
+    screening_percentile : :obj:`float` in the interval [0, 100]; Optional (\
         default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is expressed
@@ -612,16 +612,16 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     fit_intercept : :obj:`bool`, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int (default 200)
+    max_iter : :obj:`int` (default 200)
         Defines the iterations for the solver.
 
-    tol : float, optional (default 5e-4)
+    tol : :obj:`float`, optional (default 5e-4)
         Defines the tolerance for convergence for the backend FISTA solver.
     %(verbose)s
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : int, a cv generator instance, or None (default 8)
+    cv : :obj:`int`, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -1097,34 +1097,34 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     Parameters
     ----------
-    penalty : :obj:`str`, optional (default 'graph-net')
+    penalty : :obj:`str`, (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : :obj:`str`, optional (default "logistic")
+    loss : :obj:`str`, (default "logistic")
         Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
-    l1_ratios : float or :obj:`list` of floats in the interval [0, 1];\
-        optional (default .5)
+    l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]; \
+        (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : float or :obj:`list` of floats, optional (default None)
+    alphas : :obj:`float` or :obj:`list` of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
         If None or list of floats is provided, then the best value will be
         selected by cross-validation.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : :obj:`int`, (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional (default 1e-3)
+    eps : :obj:`float`, (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    mask : filename, niimg, NiftiMasker instance, optional (default None)
+    mask : filename, niimg, NiftiMasker instance, (default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
@@ -1133,7 +1133,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : float in the interval [0, 100]; Optional\
+    screening_percentile : :obj:`float` in the interval [0, 100]; \
         (default 20)
         Percentile value for ANOVA univariate feature selection.
         A value of 100 means 'keep all features'.
@@ -1152,7 +1152,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     fit_intercept : :obj:`bool`, optional (default True)
         Fit or not an intercept.
 
-    max_iter : int (default 200)
+    max_iter : :obj:`int` (default 200)
         Defines the iterations for the solver.
 
     tol : float, default=1e-4.
@@ -1161,7 +1161,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : int, a cv generator instance, or None (default 8)
+    cv : :obj:`int`, a cv generator instance, or None (default 8)
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
@@ -1351,31 +1351,31 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     Parameters
     ----------
-    penalty : :obj:`str`, optional (default 'graph-net')
+    penalty : :obj:`str`, (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    l1_ratios : float or :obj:`list` of floats in the interval [0, 1];\
-        optional (default .5)
+    l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]; \
+        (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : float or :obj:`list` of floats, optional (default None)
+    alphas : :obj:`float` or :obj:`list` of floats, (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
         If None or list of floats is provided, then the best value will be
         selected by cross-validation.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : :obj:`int`, (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional (default 1e-3)
+    eps : :obj:`float`, (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    mask : filename, niimg, NiftiMasker instance, optional (default None)
+    mask : filename, niimg, NiftiMasker instance, (default None)
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
@@ -1384,7 +1384,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : float in the interval [0, 100]; Optional\
+    screening_percentile : :obj:`float` in the interval [0, 100]; \
         (default 20)
         Percentile value for ANOVA univariate feature selection.
         A value of 100 means 'keep all features'.
@@ -1393,30 +1393,30 @@ class SpaceNetRegressor(BaseSpaceNet):
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller).
 
-    standardize : :obj:`bool`, optional (default True):
+    standardize : :obj:`bool`, (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : :obj:`bool`, optional (default True)
+    fit_intercept : :obj:`bool`, (default True)
         Fit or not an intercept.
 
-    max_iter : int (default 200)
+    max_iter : :obj:`int` (default 200)
         Defines the iterations for the solver.
 
-    tol : float, default=1e-4
+    tol : :obj:`float`, default=1e-4
         Defines the tolerance for convergence.
     %(verbose)s
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : int, a cv generator instance, or None, default=8
+    cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : :obj:`bool`, optional (default False)
+    debias : :obj:`bool`, (default False)
         If set, then the estimated weights maps will be debiased.
 
     Attributes
@@ -1462,7 +1462,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
-    screening_percentile_ : float
+    screening_percentile_ : :obj:`float`
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
 

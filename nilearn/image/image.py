@@ -1394,7 +1394,7 @@ def clean_img(
         If not provided, all voxels are used.
         See :ref:`extracting_data`.
 
-    kwargs : dict
+    kwargs : :obj:`dict`
         Keyword arguments to be passed to functions called
         within this function.
         Kwargs prefixed with ``'clean__'`` will be passed to
@@ -1479,6 +1479,7 @@ def clean_img(
     return imgs_
 
 
+@fill_doc
 def load_img(img, wildcards=True, dtype=None):
     """Load a Niimg-like object from filenames or list of filenames.
 

@@ -114,11 +114,11 @@ class LikelihoodModelResults:
             i.e. 1 for t contrasts, 1
             or more for F :term:`contrasts<contrast>`.
 
-        column : int, optional
+        column : :obj:`int`, optional
             Alternative way of specifying :term:`contrasts<contrast>`
             (column index).
 
-        dispersion : float or (n_voxels,) array, optional
+        dispersion : :obj:`float` or (n_voxels,) array, optional
             Value(s) for the dispersion parameters.
 
         other : (dim, self.theta.shape[0]) array, optional
@@ -177,7 +177,7 @@ class LikelihoodModelResults:
         store : sequence, default=('t', 'effect', 'sd')
             Components of t to store in results output object.
 
-        dispersion : None or float, optional
+        dispersion : None or :obj:`float`, default = None
 
         Returns
         -------
@@ -236,10 +236,10 @@ class LikelihoodModelResults:
         matrix : 1D array-like
             Contrast matrix.
 
-        dispersion : None or float, optional
+        dispersion : None or :obj:`float`, default=None
             If None, use ``self.dispersion``.
 
-        invcov : None or array, optional
+        invcov : None or array, default=None
             Known inverse of variance covariance matrix.
             If None, calculate this matrix.
 
@@ -290,7 +290,7 @@ class LikelihoodModelResults:
 
         Parameters
         ----------
-        alpha : float, default=0.05
+        alpha : :obj:`float`, default=0.05
             The `alpha` level for the confidence interval.
             ie., `alpha` = .05 returns a 95% confidence interval.
 
