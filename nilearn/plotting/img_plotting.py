@@ -474,7 +474,7 @@ class _MNI152Template(SpatialImage):
     vmax = None
     _shape = None
     # Having a header is required by the load_niimg function
-    header = None
+    header = None  # type: ignore[assignment]
 
     def __init__(self, data=None, affine=None, header=None):
         # Comply with spatial image requirements while allowing empty init
