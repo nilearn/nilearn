@@ -83,7 +83,7 @@ def hierarchical_k_means(
         If an ndarray is passed, it should be of shape (n_clusters, n_features)
         and gives the initial centers.
 
-    batch_size : :obj:`int`, optional, default: 1000
+    batch_size : :obj:`int`, default: 1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
     n_init : :obj:`int`, default=10

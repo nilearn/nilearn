@@ -390,7 +390,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : :obj:`float`, optional, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
 

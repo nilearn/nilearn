@@ -839,7 +839,7 @@ def group_sparse_covariance_path(
     alphas : :obj:`list` of :obj:`float`
          values of alpha to use. Best results for sorted values (decreasing)
 
-    test_subjs : :obj:`list` of numpy.ndarray, optional
+    test_subjs : :obj:`list` of numpy.ndarray, default=None
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
@@ -849,7 +849,7 @@ def group_sparse_covariance_path(
         Passed to group_sparse_covariance(). See the corresponding docstring
         for details.
 
-    probe_function : callable, optional
+    probe_function : callable, default=None
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.

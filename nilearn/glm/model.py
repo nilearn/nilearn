@@ -108,20 +108,20 @@ class LikelihoodModelResults:
 
         Parameters
         ----------
-        matrix : (dim, self.theta.shape[0]) array, optional
+        matrix : (dim, self.theta.shape[0]) array, default=None
             Numerical :term:`contrast` specification,
             where ``dim`` refers to the 'dimension' of the contrast
             i.e. 1 for t contrasts, 1
             or more for F :term:`contrasts<contrast>`.
 
-        column : :obj:`int`, optional
+        column : :obj:`int`, default=None
             Alternative way of specifying :term:`contrasts<contrast>`
             (column index).
 
-        dispersion : :obj:`float` or (n_voxels,) array, optional
+        dispersion : :obj:`float` or (n_voxels,) array, default=None
             Value(s) for the dispersion parameters.
 
-        other : (dim, self.theta.shape[0]) array, optional
+        other : (dim, self.theta.shape[0]) array, default=None
             Alternative :term:`contrast` specification (?).
 
         Returns
@@ -295,10 +295,10 @@ class LikelihoodModelResults:
             ie., `alpha` = .05 returns a 95% confidence interval.
 
 
-        cols : :obj:`tuple`, optional
+        cols : :obj:`tuple`, default=None
             `cols` specifies which confidence intervals to return.
 
-        dispersion : None or scalar, optional
+        dispersion : None or scalar, default=None
             Scale factor for the variance / covariance
             (see class docstring and ``vcov`` method docstring).
 

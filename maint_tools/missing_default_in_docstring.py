@@ -1,7 +1,11 @@
 """Utility to find non-documented default value in docstrings.
 
-Also flags if default definition is in the description of the parameter
+Also flags if:
+
+- default definition is in the description of the parameter
 instead of the type section.
+
+- "optional" is found in type section of a parameter
 """
 
 import ast
@@ -11,7 +15,7 @@ from numpydoc.docscrape import NumpyDocString
 from rich import print
 from utils import list_classes, list_functions, list_modules, public_api
 
-PUBLIC_API_ONLY = False
+PUBLIC_API_ONLY = True
 
 
 def main():
@@ -45,7 +49,7 @@ def check_def(ast_def, n_issues, filename):
 
     default_args = list_parameters_with_defaults(ast_def)
 
-    missing, in_desc = get_missing(docstring, default_args)
+    missing, in_desc, optional_found = get_missing(docstring, default_args)
 
     n_issues += len(missing) + len(in_desc)
 
@@ -59,6 +63,13 @@ def check_def(ast_def, n_issues, filename):
         for k, d, _ in in_desc:
             print(
                 f" `{k} : {d[0:20]}...`[red] - Default found in description."
+            )
+
+    if optional_found:
+        print(f"{filename}:{ast_def.lineno} - {ast_def.name}")
+        for k, d, _ in optional_found:
+            print(
+                f" `{k} : {d[-40:]}...`[red] - 'optional' found in type desc."
             )
 
     return n_issues
@@ -92,6 +103,7 @@ def get_missing(docstring, default_args):
     params = {param.name: param for param in doc["Parameters"]}
 
     missing = []
+    optional_found = []
     in_desc = []
     for argname, argvalue in default_args.items():
         if f"%({argname})s" in params or f"%({argname}0)s" in params:
@@ -117,11 +129,14 @@ def get_missing(docstring, default_args):
         if not re.search(regex, type):
             missing.append((argname, type, argvalue))
 
+        if "optional" in type:
+            optional_found.append((argname, type, argvalue))
+
         desc = "".join(params[argname].desc)
         if re.search(regex, desc):
             in_desc.append((argname, desc, argvalue))
 
-    return missing, in_desc
+    return missing, in_desc, optional_found
 
 
 if __name__ == "__main__":

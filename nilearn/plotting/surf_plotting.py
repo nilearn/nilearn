@@ -1195,7 +1195,7 @@ def plot_surf_contours(
         default=None
         Colors to be used.
 
-    legend : :obj:`bool`,  optional, default=False
+    legend : :obj:`bool`,  default=False
         Whether to plot a legend of region's labels.
 
     %(cmap)s

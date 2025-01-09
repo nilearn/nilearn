@@ -338,15 +338,15 @@ def path_scores(
         List of indices for the test samples.
 
     l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1];\
-        optional (default .5)
+        (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
         l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
 
-    eps : :obj:`float`, optional (default 1e-3)
+    eps : :obj:`float`, (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    n_alphas : :obj:`int`, optional (default 10).
+    n_alphas : :obj:`int`, (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
@@ -365,7 +365,7 @@ def path_scores(
     debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
 
-    screening_percentile : :obj:`float` in the interval [0, 100], optional\
+    screening_percentile : :obj:`float` in the interval [0, 100], \
         (default 20)
         Percentile value for :term:`ANOVA` univariate feature selection.
         A value of 100 means 'keep all features'.

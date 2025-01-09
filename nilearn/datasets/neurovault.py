@@ -2570,7 +2570,7 @@ def fetch_neurovault(
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    resample : :obj:`bool`, optional (default=False)
+    resample : :obj:`bool`, default=False
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
@@ -2777,7 +2777,7 @@ def fetch_neurovault_ids(
     fetch_neurosynth_words : :obj:`bool`, default=False
         Whether to collect words from Neurosynth.
 
-    resample : :obj:`bool`, optional (default=False)
+    resample : :obj:`bool`, (default=False)
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
