@@ -12,7 +12,7 @@ from nilearn import _utils, image, masking
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 
 
 class _ExtractionFunctor:
@@ -125,7 +125,7 @@ def _filter_and_mask(
         parameters["target_shape"] = mask_img_.shape
         parameters["target_affine"] = mask_img_.affine
 
-    data, affine = _filter_and_extract(
+    data, affine = filter_and_extract(
         imgs,
         _ExtractionFunctor(mask_img_),
         parameters,

@@ -23,7 +23,7 @@ from nilearn._utils.niimg_conversions import (
 )
 from nilearn.datasets import load_mni152_template
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 
 
 def _apply_mask_and_get_affinity(
@@ -692,7 +692,7 @@ class NiftiSpheresMasker(BaseMasker):
         params["clean_kwargs"] = self.clean_kwargs
 
         signals, _ = self._cache(
-            _filter_and_extract, ignore=["verbose", "memory", "memory_level"]
+            filter_and_extract, ignore=["verbose", "memory", "memory_level"]
         )(
             imgs,
             _ExtractionFunctor(

@@ -6,7 +6,7 @@ import warnings
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
 
-def _set_mpl_backend(message=None):
+def set_mpl_backend(message=None):
     """Check if matplotlib is installed.
 
     If not installed, raise error and display warning to install necessary
@@ -342,7 +342,7 @@ def check_copy_header(copy_header):
 
 
 # TODO: This can be removed once MPL 3.5 is the min
-def _constrained_layout_kwargs():
+def constrained_layout_kwargs():
     import matplotlib
 
     if compare_version(matplotlib.__version__, ">=", "3.5"):

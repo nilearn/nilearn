@@ -6,7 +6,7 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs, fill_doc
+from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -554,7 +554,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
 

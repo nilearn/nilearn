@@ -10,7 +10,7 @@ from nilearn import _utils, image, masking
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 
 
 class _ExtractionFunctor:
@@ -809,7 +809,7 @@ class NiftiLabelsMasker(BaseMasker):
         params["clean_kwargs"] = self.clean_kwargs
 
         region_signals, (ids, masked_atlas) = self._cache(
-            _filter_and_extract,
+            filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
         )(
             # Images

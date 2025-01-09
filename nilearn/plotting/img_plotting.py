@@ -29,8 +29,8 @@ from nilearn.plotting.displays._slicers import _get_cbar_ticks
 
 from .. import _utils
 from .._utils import (
-    _constrained_layout_kwargs,
     compare_version,
+    constrained_layout_kwargs,
     fill_doc,
     logger,
 )
@@ -2262,7 +2262,7 @@ def plot_img_comparison(
                 1,
                 2,
                 figsize=(12, 5),
-                **_constrained_layout_kwargs(),
+                **constrained_layout_kwargs(),
             )
         else:
             (ax1, ax2) = axes
