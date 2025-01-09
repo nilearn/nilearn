@@ -63,8 +63,7 @@ class CanICA(_MultiPCA):
     n_init : :obj:`int`, default=10
         The number of times the fastICA algorithm is restarted
 
-    random_state : :obj:`int` or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
 
     %(target_affine)s
 

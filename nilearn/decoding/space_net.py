@@ -1155,7 +1155,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     max_iter : :obj:`int` (default 200)
         Defines the iterations for the solver.
 
-    tol : float, default=1e-4.
+    tol : :obj:`float`, default=1e-4.
         Defines the tolerance for convergence.
     %(verbose)s
     %(n_jobs)s

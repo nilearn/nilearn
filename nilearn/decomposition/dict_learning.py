@@ -83,8 +83,8 @@ class DictLearning(_BaseDecomposition):
         Lasso solution (linear_model.Lasso). Lars will be faster if
         the estimated components are sparse.
 
-    random_state : :obj:`int` or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
+
     %(smoothing_fwhm)s
         Default=4mm.
 

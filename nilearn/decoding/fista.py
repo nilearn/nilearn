@@ -48,8 +48,8 @@ def _check_lipschitz_continuous(
       function `f`. The more tests, the more confident we are in the
       Lipschitz continuity of `f` if the test passes.
 
-    random_state : int, optional (default 42)
-        Random state for initializing local rng.
+    %(random_state)s
+        default 42
 
     Raises
     ------

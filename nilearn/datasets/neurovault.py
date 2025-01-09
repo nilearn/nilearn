@@ -733,7 +733,7 @@ class ResultFilter:
 
     Attributes
     ----------
-    query_terms_ : dict
+    query_terms_ : :obj:`dict`
         In order to pass through the filter, metadata must verify
         ``metadata[key] == value`` for each ``key``, ``value`` pair in
         `query_terms_`.

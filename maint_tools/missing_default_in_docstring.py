@@ -15,6 +15,8 @@ from numpydoc.docscrape import NumpyDocString
 from rich import print
 from utils import list_classes, list_functions, list_modules, public_api
 
+# Set to true if you want to restrict the checks
+# to the user facing part of the API.
 PUBLIC_API_ONLY = True
 
 

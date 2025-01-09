@@ -116,9 +116,7 @@ def _permuted_ols_on_chunk(
 
         .. versionadded:: 0.9.2
 
-    random_state : int or None, optional
-        Seed for random number generator, to have the same permutations
-        in each computing units.
+    %(random_state)s
 
     %(verbose0)s
 
@@ -376,9 +374,7 @@ def permuted_ols(
         If False, only positive effects are considered as relevant. The null
         hypothesis is that the effect is zero or negative.
 
-    random_state : :obj:`int` or np.random.RandomState or None, default=None
-        Seed for random number generator, to have the same permutations
-        in each computing units.
+    %(random_state)s
 
     n_jobs : :obj:`int`, default=1
         Number of parallel workers.
