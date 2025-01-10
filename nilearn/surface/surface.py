@@ -2256,7 +2256,7 @@ def smooth_img(
         # Add in the diagonal.
         matrix.setdiag(center_weight)
 
-        # Run the iteratioons of smooothing.
+        # Run the iterations of smoothing.
         tmp = data
         for _ in range(iterations):
             tmp = matrix.dot(tmp)
