@@ -95,10 +95,14 @@ models, run_imgs, events, confounds = first_level_from_bids(
 #
 from pathlib import Path
 
-from nilearn.datasets import load_fsaverage
+from nilearn.datasets import load_fsaverage, load_fsaverage_data
 from nilearn.surface import SurfaceImage
 
 fsaverage5 = load_fsaverage()
+
+# let's get the fsaverage curvature data image
+# to use as background for the GLM report.
+curvature = load_fsaverage_data(mesh_type="inflated", data_type="curvature")
 
 # Empty lists in which we are going to store activation values.
 z_scores = []
@@ -132,7 +136,10 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
     # Let's only generate a report for the first subject
     if i == 1:
         report_flm = first_level_glm.generate_report(
-            contrasts="language-string", threshold=1.96, alpha=0.001
+            contrasts="language-string",
+            threshold=1.96,
+            alpha=0.001,
+            bg_img=curvature,
         )
 
 # View the GLM report of the first subject
@@ -158,7 +165,7 @@ second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
 results = second_level_glm.compute_contrast("intercept", output_type="z_score")
 
 report_slm = second_level_glm.generate_report(
-    contrasts="intercept", threshold=1.96, alpha=0.001
+    contrasts="intercept", threshold=1.96, alpha=0.001, bg_img=curvature
 )
 
 # View the GLM report at the group level
