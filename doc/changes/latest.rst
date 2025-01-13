@@ -27,7 +27,7 @@ Enhancements
 Changes
 -------
 
-- :bdg-dark:`Code` Fix labels of all deterministic atlases to be list of strings (:gh:`4820`, :gh:`5006`, :gh:`5013` by `Rémi Gau`_).
+- :bdg-dark:`Code` Fix labels of all deterministic atlases to be list of strings that contain a ``"Background"`` label (:gh:`4820`, :gh:`5006`, :gh:`5013`, :gh:`5041` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Remove the ``legacy_format`` parameter from several dataset fetcher functions as it was due for deprecation in version 0.11.0  (:gh:`5004` by `Rémi Gau`_).
 
