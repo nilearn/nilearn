@@ -122,12 +122,12 @@ source = "vcs"
 [tool.mypy]
 allow_redefinition = false
 exclude = [
-    "doc/.*",
-    "examples/.*",
-    "maint_tools/.*",
-    "nilearn_cache/.*",
-    ".*/tests/.*",
-    "nilearn/_version.py"
+    'doc/.*',
+    'examples/.*',
+    'maint_tools/.*',
+    'nilearn_cache/.*',
+    '.*/tests/test_.*',
+    'nilearn/_version.py'
 ]
 
 [[tool.mypy.overrides]]
@@ -144,11 +144,19 @@ module = [
     "sklearn.*",
     "scipy.*",
     "kaleido",
-    "mpl_toolkits.*",
     "plotly.*",
     "svg.*",
     "memory_profiler.*",
-    "nilearn._version"
+    "nilearn._version",
+    "nibabel.*",
+    "rich.*",
+    "statsmodels.*",
+    "ipython.*",
+    "pytest.*",
+    "matplotlib.*",
+    "packaging.*",
+    "mpl_toolkits.*",
+    "IPython.*"
 ]
 
 [tool.pytest.ini_options]
