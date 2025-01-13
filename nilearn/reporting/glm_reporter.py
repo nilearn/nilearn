@@ -1242,6 +1242,10 @@ def _make_surface_glm_report(
             # prevents sphinx-gallery & jupyter from scraping & inserting plots
             plt.close("all")
 
+    # For now we do not have surface clusters,
+    # so we do not display this in the report
+    cluster_table_html = None
+
     body = tpl.substitute(
         css=css,
         title=f"Statistical Report - {_return_model_type(model)}{title}",

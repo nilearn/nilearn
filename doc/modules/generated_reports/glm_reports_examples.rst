@@ -40,13 +40,19 @@ Surface GLM
 .. raw:: html
    :file: flm_surf_empty.html
 
-.. raw:: html
-   :file: slm_surf_empty.html
-
 Second level report
 -------------------
+
+Volume GLM
+^^^^^^^^^^
 
 Adapted from :ref:`sphx_glr_auto_examples_05_glm_second_level_plot_oasis.py`
 
 .. raw:: html
    :file: slm_oasis.html
+
+Surface GLM
+^^^^^^^^^^^
+
+.. raw:: html
+   :file: slm_surf_empty.html
