@@ -352,7 +352,7 @@ def test_generate_report_engine_no_matplotlib_warning(
     """
     masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
-    with pytest.warns(match="Matplotlib is not installed"):
+    with pytest.warns(ImportWarning, match="Matplotlib not installed"):
         assert masker.generate_report(engine="matplotlib") == [None]
 
 
