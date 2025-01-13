@@ -1001,7 +1001,7 @@ docdict["template"] = """'template' : :obj:`str`
         in which the atlas results are provided.
         When known it should be a valid template name
         taken from the spaces described in
-        `BIDS <https://bids-specification.readthedocs.io/en/latest/appendices/coordinate-systems.html#image-based-coordinate-systems>`_."""
+        `the BIDS specification <https://bids-specification.readthedocs.io/en/latest/appendices/coordinate-systems.html#image-based-coordinate-systems>`_."""
 
 
 # templateflow
