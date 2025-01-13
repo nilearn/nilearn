@@ -1,0 +1,28 @@
+---
+# Run mypy only on push to main branch with oldest supported Python version
+name: mypy
+
+on:
+    push:
+        branches:
+        -   main
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    test_install:
+        runs-on: ubuntu-latest
+        name: mypy
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.9'
+        -   name: Install dependencies for building Nilearn
+            run: python -m pip tox
+        -   name: Run mypy via tox
+            run: tox run -e mypy
