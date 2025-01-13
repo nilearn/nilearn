@@ -457,7 +457,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
 
-    def generate_report(self, displayed_maps=10, engine="plotly"):
+    def generate_report(self, displayed_maps=10, engine="matplotlib"):
         """Generate an HTML report for the current ``SurfaceMapsMasker``
         object.
 
@@ -499,11 +499,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
                     masker.generate_report(16)
 
-        engine : :obj:`str`, default="plotly"
+        engine : :obj:`str`, default="matplotlib"
             The plotting engine to use for the report. Can be either
-            "plotly" or "matplotlib". If "plotly" is selected, the report
-            will be interactive. If "matplotlib" is selected, the report
-            will be static. If the selected engine is not installed, the
+            "matplotlib" or "plotly". If "matplotlib" is selected, the report
+            will be static. If "plotly" is selected, the report
+            will be interactive. If the selected engine is not installed, the
             report will use the available plotting engine. If none of the
             engines are installed, no report will be generated.
 
@@ -518,6 +518,19 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "'matplotlib'."
             )
 
+        # need to have matplotlib installed to generate reports no matter what
+        # engine is selected
+        if not is_matplotlib_installed():
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib not installed. No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                self._report_content["engine"] = None
+                return [None]
+
+        # switch to matplotlib if plotly is selected but not installed
         if engine == "plotly" and not is_plotly_installed():
             engine = "matplotlib"
             warnings.warn(
@@ -525,23 +538,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "Switching to matplotlib for report generation.",
                 stacklevel=2,
             )
-        elif engine == "matplotlib" and not is_matplotlib_installed():
-            engine = "plotly"
-            warnings.warn(
-                "Matplotlib is not installed. "
-                "Switching to plotly for report generation.",
-                stacklevel=2,
-            )
-        elif not is_plotly_installed() and not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Neither of matplotlib or plotly are imported! "
-                    "No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                self._report_content["engine"] = None
-                return [None]
 
         self._report_content["engine"] = engine
 
@@ -578,7 +574,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         import matplotlib.pyplot as plt
 
-        from nilearn.reporting.utils import figure_to_svg_base64
+        from nilearn.reporting.utils import figure_to_png_base64
 
         maps_img = self._reporting_data["maps_img"]
         maps_img = iter_img(maps_img, return_iterator=False)
@@ -631,7 +627,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             if self._report_content["engine"] == "plotly":
                 embeded_images.append(fig)
             elif self._report_content["engine"] == "matplotlib":
-                embeded_images.append(figure_to_svg_base64(fig))
+                embeded_images.append(figure_to_png_base64(fig))
                 plt.close()
 
         return embeded_images

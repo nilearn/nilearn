@@ -439,7 +439,7 @@ def test_generate_report_plotly_out_figure_type(surf_maps_img, surf_img_2d):
     """
     masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
-    report = masker.generate_report()
+    report = masker.generate_report(engine="plotly")
 
     # read the html file and see if plotly figure is inserted
     # meaning it should have <iframe tag
