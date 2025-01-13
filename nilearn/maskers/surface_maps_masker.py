@@ -512,12 +512,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        if engine not in ["plotly", "matplotlib"]:
-            raise ValueError(
-                "Parameter ``engine`` should be either 'plotly' or "
-                "'matplotlib'."
-            )
-
         # need to have matplotlib installed to generate reports no matter what
         # engine is selected
         if not is_matplotlib_installed():
@@ -529,6 +523,12 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
                 self._report_content["engine"] = None
                 return [None]
+
+        if engine not in ["plotly", "matplotlib"]:
+            raise ValueError(
+                "Parameter ``engine`` should be either 'matplotlib' or "
+                "'plotly'."
+            )
 
         # switch to matplotlib if plotly is selected but not installed
         if engine == "plotly" and not is_plotly_installed():
