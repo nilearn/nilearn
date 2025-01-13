@@ -727,6 +727,15 @@ resampling_interpolation : :obj:`str`, optional
 
 """
 
+# resolution template
+docdict["resolution"] = """
+resolution : :obj:`int`, default=None
+        Resolution in millimeters.
+        If resolution is different from 1,
+        the template is re-sampled with the specified resolution.
+        Default to ``1`` if None is passed.
+"""
+
 # resume
 docdict["resume"] = """
 resume : :obj:`bool`, default=True
@@ -873,6 +882,22 @@ target_shape : :obj:`tuple` or :obj:`list`, default=None
 
         If `target_shape` is specified, a `target_affine` of shape
         `(4, 4)` must also be given.
+
+"""
+
+# templateflow
+docdict["templateflow"] = """
+
+.. admonition:: Nilearn MNI template
+   :class: important
+
+   The Nilearn template is asymmetrical ICBM152 2009, release a.
+
+   The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+   release c (MNI152NLin2009cSAsym).
+
+   If you wish to use the exact same release as :term:`fMRIPrep`,
+   please refer to `TemplateFlow <https://www.templateflow.org>`_.
 
 """
 
