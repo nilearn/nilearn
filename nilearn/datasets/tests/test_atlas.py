@@ -59,6 +59,7 @@ def validate_atlas(atlas_data):
     if atlas_data.atlas_type == "deterministic":
         assert isinstance(atlas_data.labels, list)
         assert all(isinstance(x, str) for x in atlas_data.labels)
+        assert "Background" in atlas_data.labels
         assert isinstance(atlas_data.lut, pd.DataFrame)
 
 
@@ -419,10 +420,11 @@ def test_fetch_coords_seitzman_2018():
 def _destrieux_data():
     """Mock the download of the destrieux atlas."""
     data = {"destrieux2009.rst": "readme"}
-    atlas = _rng().integers(0, 10, (10, 10, 10), dtype="int32")
+    background_value = 0
+    atlas = _rng().integers(background_value, 10, (10, 10, 10), dtype="int32")
     atlas_img = Nifti1Image(atlas, np.eye(4))
     labels = "\n".join([f"{idx},label {idx}" for idx in range(10)])
-    labels = f"index,name\n{labels}"
+    labels = f"index,name\n0,Background\n{labels}"
     for lat in ["_lateralized", ""]:
         lat_data = {
             f"destrieux2009_rois_labels{lat}.csv": labels,
@@ -851,7 +853,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     data = fetch_atlas_pauli_2017("deterministic", data_dir)
 
     validate_atlas(data)
-    assert len(data.labels) == 16
+    assert len(data.labels) == 17
 
     values = get_data(load(data.maps))
 
@@ -894,7 +896,7 @@ def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
     ):
         data = fetch_atlas_pauli_2017("det", data_dir)
 
-        assert len(data.labels) == 16
+        assert len(data.labels) == 17
 
     with pytest.warns(
         DeprecationWarning, match="The possible values for atlas_type"

@@ -2399,34 +2399,14 @@ def fetch_atlas_pauli_2017(
             (integers from 0 to 16).
 
         - %(labels)s
-            The list contains 16 values for both
+            The list contains values for both
             :term:`probabilitic<Probabilistic atlas>` and
             :term:`deterministic<Deterministic atlas>` types.
-
-            .. warning::
-                For the :term:`deterministic<Deterministic atlas>` type,
-                'Background' is not included in the list of labels.
-                To have proper indexing, you should either manually add
-                'Background' to the list of labels:
-
-                .. code-block:: python
-
-                    # Prepend background label
-                    data.labels.insert(0, "Background")
-
-                Or be careful that the indexing should be offset by one:
-
-                .. code-block:: python
-
-                    # Get region ID of label 'NAC' when 'background' was
-                    # not added to the list of labels:
-                    # idx_nac should be equal to 3:
-                    idx_nac = data.labels.index("NAC") + 1
 
         - %(description)s
 
         - %(lut)s
-            Only when atlas_type="probabilistic"
+            Only when atlas_type="deterministic"
 
         - %(atlas_type)s
 
@@ -2547,25 +2527,6 @@ def fetch_atlas_schaefer_2018(
             in the list of labels.
 
         - %(labels)s
-
-            .. warning::
-                The list of labels does not contain 'Background' by default.
-                To have proper indexing, you should either
-                manually add 'Background' to the list of labels:
-
-                .. code-block:: python
-
-                   # Prepend background label
-                   data.labels.insert(0, "Background")
-
-                Or be careful that the indexing should be offset by one:
-
-                .. code-block:: python
-
-                   # Get region ID of label '7Networks_LH_Vis_3'
-                   # when 'Background' was not added to the list of labels:
-                   # idx should be equal to 3:
-                   idx = data.labels.index("7Networks_LH_Vis_3") + 1
 
         - %(description)s
 
