@@ -876,15 +876,6 @@ target_shape : :obj:`tuple` or :obj:`list`, default=None
 
 """
 
-# templateflow
-docdict["templateflow"] = """
-    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
-    release c (MNI152NLin2009cSAsym).
-    The NiLearn template is asymmetrical ICBM152 2009, release a.
-    If you wish to use the exact same release as :term:`fMRIPrep`,
-    please refer to TemplateFlow (https://www.templateflow.org/).
-"""
-
 # threshold
 docdict["threshold"] = """
 threshold : a number, None, or 'auto', optional
@@ -978,6 +969,24 @@ docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
+# template
+docdict["template"] = """'template' : :obj:`str`
+        The standardized space of analysis
+        in which the atlas results are provided.
+        When known it should be a valid template name
+        taken from the spaces described in
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/appendices/coordinate-systems.html#image-based-coordinate-systems>`_."""
+
+
+# templateflow
+docdict["templateflow"] = """
+    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+    release c (MNI152NLin2009cSAsym).
+    The NiLearn template is asymmetrical ICBM152 2009, release a.
+    If you wish to use the exact same release as :term:`fMRIPrep`,
+    please refer to TemplateFlow (https://www.templateflow.org/).
+"""
 
 ##############################################################################
 

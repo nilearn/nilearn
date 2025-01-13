@@ -269,6 +269,7 @@ def fetch_atlas_difumo(
 
         - %(atlas_type)s
 
+        - %(template)s
 
     References
     ----------
@@ -401,6 +402,8 @@ def fetch_atlas_craddock_2012(
         - %(description)s
 
         - %(atlas_type)s
+
+        - %(template)s
 
 
     Warns
@@ -539,6 +542,8 @@ def fetch_atlas_destrieux_2009(
 
         - %(lut)s
 
+        - %(template)s
+
         - %(atlas_type)s
 
     References
@@ -671,6 +676,8 @@ def fetch_atlas_harvard_oxford(
 
         - %(lut)s
             Only for deterministic version of the atlas.
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -847,6 +854,8 @@ def fetch_atlas_juelich(
 
         - %(lut)s
             Only for deterministic version of the atlas.
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -1124,6 +1133,8 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
         - %(atlas_type)s
 
+        - %(template)s
+
     References
     ----------
     .. footbibliography::
@@ -1271,6 +1282,8 @@ def fetch_atlas_smith_2009(
         - %(description)s
 
         - %(atlas_type)s
+
+        - %(template)s
 
     Warns
     -----
@@ -1432,7 +1445,7 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
         - %(description)s
 
-        - %(lut)s
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -1610,6 +1623,8 @@ def fetch_atlas_aal(
 
         - %(lut)s
 
+        - %(template)s
+
         - %(atlas_type)s
 
 
@@ -1768,6 +1783,8 @@ def fetch_atlas_basc_multiscale_2015(
         - %(description)s
 
         - %(lut)s
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -2066,6 +2083,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
         - %(atlas_type)s
 
+        - %(template)s
+
     References
     ----------
     .. footbibliography::
@@ -2168,6 +2187,8 @@ def fetch_atlas_surf_destrieux(
         - %(description)s
 
         - %(lut)s
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -2331,6 +2352,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
         - %(lut)s
 
+        - %(template)s
+
         - %(atlas_type)s
 
     References
@@ -2411,6 +2434,8 @@ def fetch_atlas_pauli_2017(
 
         - %(lut)s
             Only when atlas_type="deterministic"
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -2535,6 +2560,8 @@ def fetch_atlas_schaefer_2018(
         - %(description)s
 
         - %(lut)s
+
+        - %(template)s
 
         - %(atlas_type)s
 
