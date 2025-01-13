@@ -105,7 +105,10 @@ def _generate_atlas_look_up_table(function=None, name=None, index=None):
     if index is None:
         index = list(range(len(name)))
     if fname in ["fetch_atlas_basc_multiscale_2015"]:
-        index = [int(x) for x in name]
+        index = []
+        for x in name:
+            tmp = x if isinstance(x, str) else int(x)
+            index.append(tmp)
     elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
         index = list(range(1, len(name) + 1))
 
@@ -114,7 +117,6 @@ def _generate_atlas_look_up_table(function=None, name=None, index=None):
 
     if fname in [
         "fetch_atlas_pauli_2017",
-        "fetch_atlas_aal",
     ]:
         lut = pd.concat(
             [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
@@ -476,6 +478,7 @@ def fetch_atlas_craddock_2012(
         "with one map accessed through a 'maps' key. Please use the new "
         "parameters homogeneity and grp_mean.",
     )
+
     params = dict(
         [
             ("description", fdescr),
@@ -1339,18 +1342,20 @@ def fetch_atlas_smith_2009(
             atlas_type=atlas_type,
         )
 
-    keys = list(files.keys())
-    files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
-    files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    params = dict(zip(keys, files_))
-    params["description"] = fdescr
-    params["atlas_type"] = atlas_type
     warnings.warn(
         category=DeprecationWarning,
         message="In release 0.13, this fetcher will return a dictionary "
         "with one map accessed through a 'maps' key. Please use the new "
         "parameters dimension and resting.",
     )
+
+    keys = list(files.keys())
+    files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
+    files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    params = dict(zip(keys, files_))
+
+    params["description"] = fdescr
+    params["atlas_type"] = atlas_type
 
     return Bunch(**params)
 
@@ -1583,20 +1588,21 @@ def fetch_atlas_aal(
             to see how to link labels to regions IDs.
 
         - %(labels)s
-            As 'Background' (label 0) is not included in this list,
-            there are 116 names in version SPM 5, 8, and 12,
-            and 166 names in version 3v2.
+            There are 117 names in version SPM 5, 8, and 12,
+            and 167 names in version 3v2.
             Please refer to the main description
-            to see how to   link labels to regions IDs.
+            to see how to link labels to regions IDs.
 
         - 'indices': :obj:`list` of :obj:`str`
             Indices mapping 'labels'
-            to values in the 'maps' image. This list has 116 elements in
-            version SPM 5, 8 and 12, and 166 elements in version 3v2.
+            to values in the 'maps' image.
+            This list has 117 elements in
+            version SPM 5, 8 and 12, and 167 elements in version 3v2.
             Since the values in the 'maps' image do not correspond to
             indices in ``labels``, but rather to values in ``indices``, the
             location of a label in the ``labels`` list does not necessary
-            match the associated value in the image. Use the ``indices``
+            match the associated value in the image.
+            Use the ``indices``
             list to identify the appropriate image value for a given label
             (See main description above).
 
@@ -1665,8 +1671,8 @@ def fetch_atlas_aal(
         data_dir, filenames, resume=resume, verbose=verbose
     )
     fdescr = get_dataset_descr("aal")
-    labels = []
-    indices = []
+    labels = ["Background"]
+    indices = ["0"]
     if version in ("SPM12", "3v2"):
         xml_tree = ElementTree.parse(labels_file)
         root = xml_tree.getroot()
@@ -1830,9 +1836,9 @@ def fetch_atlas_basc_multiscale_2015(
 
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
 
-        labels = [str(x) for x in range(resolution + 1)]
+        labels = ["Background"] + [str(x) for x in range(1, resolution + 1)]
 
-        params = Atlas(
+        return Atlas(
             maps=data[0],
             labels=labels,
             description=fdescr,
@@ -1842,29 +1848,24 @@ def fetch_atlas_basc_multiscale_2015(
             atlas_type=atlas_type,
         )
 
-    else:
-        basenames = [
-            "template_cambridge_basc_multiscale_"
-            + version
-            + "_"
-            + key
-            + ".nii.gz"
-            for key in keys
-        ]
-        filenames = [
-            (folder_name / basename, url, opts) for basename in basenames
-        ]
-        data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
+    warnings.warn(
+        category=DeprecationWarning,
+        message="In release 0.13, this fetcher will return a dictionary "
+        "with one map accessed through a 'maps' key. Please use the new "
+        "parameters resolution and version.",
+    )
 
-        params = dict(zip(keys, data))
-        params["description"] = fdescr
-        params["atlas_type"] = atlas_type
-        warnings.warn(
-            category=DeprecationWarning,
-            message="In release 0.13, this fetcher will return a dictionary "
-            "with one map accessed through a 'maps' key. Please use the new "
-            "parameters resolution and version.",
-        )
+    basenames = [
+        "template_cambridge_basc_multiscale_" + version + "_" + key + ".nii.gz"
+        for key in keys
+    ]
+    filenames = [(folder_name / basename, url, opts) for basename in basenames]
+    data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
+
+    params = dict(zip(keys, data))
+    params["description"] = fdescr
+    params["atlas_type"] = atlas_type
+
     return Bunch(**params)
 
 
@@ -2227,6 +2228,7 @@ def fetch_atlas_surf_destrieux(
         description=fdescr,
         lut=lut,
         atlas_type=atlas_type,
+        space="fsaverage5",
     )
 
 
@@ -2618,9 +2620,19 @@ class Atlas(Bunch):
     """Sub class of Bunch to help standardize atlases."""
 
     def __init__(
-        self, maps, description, atlas_type, labels=None, lut=None, **kwargs
+        self,
+        maps,
+        description,
+        atlas_type,
+        labels=None,
+        lut=None,
+        space=None,
+        **kwargs,
     ):
         assert atlas_type in ["probabilistic", "deterministic"]
+
+        if space is None:
+            space = "volume"
 
         if atlas_type == "probabilistic":
             super().__init__(
@@ -2628,6 +2640,7 @@ class Atlas(Bunch):
                 labels=labels,
                 description=description,
                 atlas_type=atlas_type,
+                space=space,
                 **kwargs,
             )
 
@@ -2637,9 +2650,10 @@ class Atlas(Bunch):
 
         super().__init__(
             maps=maps,
-            labels=labels,
+            labels=lut.name.to_list(),
             description=description,
             lut=lut,
             atlas_type=atlas_type,
+            space=space,
             **kwargs,
         )

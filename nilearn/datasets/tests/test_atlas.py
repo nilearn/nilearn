@@ -59,8 +59,9 @@ def validate_atlas(atlas_data):
     if atlas_data.atlas_type == "deterministic":
         assert isinstance(atlas_data.labels, list)
         assert all(isinstance(x, str) for x in atlas_data.labels)
-        assert "Background" in atlas_data.labels
         assert isinstance(atlas_data.lut, pd.DataFrame)
+        if "fsaverage" not in atlas_data.space:
+            assert "Background" in atlas_data.labels
 
 
 def test_generate_atlas_look_up_table(shape_3d_default, surf_three_labels_img):
