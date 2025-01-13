@@ -2121,6 +2121,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         ("atlas_type", atlas_type),
         ("rsn_indices", labels),
         ("networks", networks),
+        ("template", "volume"),
         *list(zip(keys, sub_files)),
     ]
     return Bunch(**dict(params))
@@ -2228,7 +2229,7 @@ def fetch_atlas_surf_destrieux(
         description=fdescr,
         lut=lut,
         atlas_type=atlas_type,
-        space="fsaverage5",
+        template="fsaverage",
     )
 
 
@@ -2362,6 +2363,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
             "fetch_atlas_talairach", name=labels
         ),
         atlas_type=atlas_type,
+        template="Talairach",
     )
 
 
@@ -2626,13 +2628,14 @@ class Atlas(Bunch):
         atlas_type,
         labels=None,
         lut=None,
-        space=None,
+        template=None,
         **kwargs,
     ):
         assert atlas_type in ["probabilistic", "deterministic"]
 
-        if space is None:
-            space = "volume"
+        # TODO: improve
+        if template is None:
+            template = "volume"
 
         if atlas_type == "probabilistic":
             super().__init__(
@@ -2640,7 +2643,7 @@ class Atlas(Bunch):
                 labels=labels,
                 description=description,
                 atlas_type=atlas_type,
-                space=space,
+                template=template,
                 **kwargs,
             )
 
@@ -2654,6 +2657,6 @@ class Atlas(Bunch):
             description=description,
             lut=lut,
             atlas_type=atlas_type,
-            space=space,
+            template=template,
             **kwargs,
         )

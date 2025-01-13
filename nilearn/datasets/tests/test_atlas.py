@@ -47,7 +47,7 @@ def validate_atlas(atlas_data):
 
     Atlas must:
     - be a bunch
-    - with descrription and atlas_type attributes
+    - with descrription, template and atlas_type attributes
     - deterministic atlases must have:
       - a labels attribute that is a list
       - a lut attribute that is a pd.DataFrame
@@ -55,12 +55,13 @@ def validate_atlas(atlas_data):
     assert isinstance(atlas_data, Bunch)
     assert isinstance(atlas_data.description, str)
     assert atlas_data.description != ""
+    assert atlas_data.template != ""
     assert atlas_data.atlas_type in {"deterministic", "probabilistic"}
     if atlas_data.atlas_type == "deterministic":
         assert isinstance(atlas_data.labels, list)
         assert all(isinstance(x, str) for x in atlas_data.labels)
         assert isinstance(atlas_data.lut, pd.DataFrame)
-        if "fsaverage" not in atlas_data.space:
+        if "fsaverage" not in atlas_data.template:
             assert "Background" in atlas_data.labels
 
 
