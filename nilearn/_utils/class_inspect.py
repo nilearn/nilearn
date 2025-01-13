@@ -35,7 +35,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_estimator_sparse_array",
     "check_estimator_sparse_data",
     "check_estimator_sparse_matrix",
-    "check_estimator_sparse_tag" "check_f_contiguous_array_estimator",
+    "check_estimator_sparse_tag", "check_f_contiguous_array_estimator",
     "check_fit1d",
     "check_fit2d_1feature",
     "check_fit2d_1sample",
