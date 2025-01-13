@@ -162,9 +162,9 @@ class BaseSlicer:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize, facecolor=facecolor)
         if isinstance(axes, plt.Axes):
-            assert (
-                axes.figure is figure
-            ), "The axes passed are not in the figure"
+            assert axes.figure is figure, (
+                "The axes passed are not in the figure"
+            )
 
         if axes is None:
             axes = [0.0, 0.0, 1.0, 1.0]
@@ -937,8 +937,7 @@ class OrthoSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the display_mode"
+                "The number cut_coords passed does not match the display_mode"
             )
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
@@ -1208,8 +1207,7 @@ class TiledSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the display_mode"
+                "The number cut_coords passed does not match the display_mode"
             )
 
         facecolor = "k" if self._black_bg else "w"
@@ -1980,8 +1978,7 @@ class MosaicSlicer(BaseSlicer):
 
         if len(self.cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the mosaic mode"
+                "The number cut_coords passed does not match the mosaic mode"
             )
         x0, y0, x1, y1 = self.rect
 

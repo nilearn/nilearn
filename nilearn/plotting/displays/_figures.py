@@ -45,8 +45,7 @@ class SurfaceFigure:
         if output_file is None:
             if self.output_file is None:
                 raise ValueError(
-                    "You must provide an output file "
-                    "name to save the figure."
+                    "You must provide an output file name to save the figure."
                 )
         else:
             self.output_file = output_file

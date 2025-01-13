@@ -110,8 +110,7 @@ def _sanitize_tri(tri, allowed_values=None):
         allowed_values = VALID_TRI_VALUES
     if tri not in allowed_values:
         raise ValueError(
-            "Parameter tri needs to be one of: "
-            f"{', '.join(allowed_values)}."
+            f"Parameter tri needs to be one of: {', '.join(allowed_values)}."
         )
 
 

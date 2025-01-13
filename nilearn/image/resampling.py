@@ -856,8 +856,7 @@ def reorder_img(img, resample=None, copy_header=False):
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
         if resample is None:
             raise ValueError(
-                "Cannot reorder the axes: "
-                "the image affine contains rotations"
+                "Cannot reorder the axes: the image affine contains rotations"
             )
 
         # Identify the voxel size using a QR decomposition of the affine
