@@ -11,8 +11,10 @@ This example is an advanced one that requires manipulating the data with numpy.
 Note the difference between images, that lie in brain space, and the
 numpy array, corresponding to the data inside the mask.
 
-See also :ref:`for a similar example using cortical surface input data
-<sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
+.. seealso::
+
+    :ref:`for a similar example using cortical surface input data
+    <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
 
 Author: Franz Liem
 

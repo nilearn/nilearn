@@ -56,13 +56,13 @@ def fetch_haxby(
     Parameters
     ----------
     %(data_dir)s
-    subjects : list or int, default=(2,)
+    subjects : :obj:`list` or :obj:`tuple` or :obj:`int`, default=(2,)
         Either a list of subjects or the number of subjects to load,
         from 1 to 6.
         By default, 2nd subject will be loaded.
         Empty list returns no subject data.
 
-    fetch_stimuli : boolean, default=False
+    fetch_stimuli : :obj:`bool`, default=False
         Indicate if stimuli images must be downloaded.
         They will be presented as a dictionary of categories.
     %(url)s
@@ -271,7 +271,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    n_subjects : int, default=30
+    n_subjects : :obj:`int`, default=30
         The number of subjects to load from maximum of 40 subjects.
         By default, 30 subjects will be loaded. If None is given,
         all 40 subjects will be loaded.
@@ -585,7 +585,6 @@ def fetch_localizer_contrasts(
     data_dir=None,
     resume=True,
     verbose=1,
-    legacy_format=False,
 ):
     """Download and load Brainomics/Localizer dataset (94 subjects).
 
@@ -681,22 +680,24 @@ def fetch_localizer_contrasts(
         - "visual click vs visual sentences"
         - "auditory&visual motor vs cognitive processing"
 
-    n_subjects : int or list, optional
+    n_subjects : :obj:`int` or :obj:`list`, optional
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
-    get_tmaps : boolean, default=False
+    get_tmaps : :obj:`bool`, default=False
         Whether t maps should be fetched or not.
 
-    get_masks : boolean, default=False
+    get_masks : :obj:`bool`, default=False
         Whether individual masks should be fetched or not.
 
-    get_anats : boolean, default=False
+    get_anats : :obj:`bool`, default=False
         Whether individual structural images should be fetched or not.
+
     %(data_dir)s
+
     %(resume)s
+
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -892,8 +893,6 @@ def fetch_localizer_contrasts(
             continue
         subjects_indices.append(subject_names.index(name))
     csv_data = csv_data.iloc[subjects_indices]
-    if legacy_format:
-        csv_data = csv_data.to_records(index=False)
 
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
 
@@ -925,9 +924,7 @@ def _is_valid_path(path, index, verbose):
 
 
 @fill_doc
-def fetch_localizer_calculation_task(
-    n_subjects=1, data_dir=None, verbose=1, legacy_format=True
-):
+def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
     """Fetch calculation task contrast maps from the localizer.
 
     Parameters
@@ -935,9 +932,10 @@ def fetch_localizer_calculation_task(
     n_subjects : :obj:`int`, default=1
         The number of subjects to load. If None is given,
         all 94 subjects are used.
+
     %(data_dir)s
+
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -966,21 +964,20 @@ def fetch_localizer_calculation_task(
         data_dir=data_dir,
         resume=True,
         verbose=verbose,
-        legacy_format=legacy_format,
     )
     return data
 
 
 @fill_doc
-def fetch_localizer_button_task(data_dir=None, verbose=1, legacy_format=True):
+def fetch_localizer_button_task(data_dir=None, verbose=1):
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
     Parameters
     ----------
     %(data_dir)s
+
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -1012,7 +1009,6 @@ def fetch_localizer_button_task(data_dir=None, verbose=1, legacy_format=True):
         data_dir=data_dir,
         resume=True,
         verbose=verbose,
-        legacy_format=legacy_format,
     )
     # Additional keys for backward compatibility
     data["tmap"] = data["tmaps"][0]
@@ -1031,7 +1027,6 @@ def fetch_abide_pcp(
     quality_checked=True,
     url=None,
     verbose=1,
-    legacy_format=False,
     **kwargs,
 ):
     """Fetch ABIDE dataset.
@@ -1074,32 +1069,32 @@ def fetch_abide_pcp(
         passed quality assessment for all raters.
     %(url)s
     %(verbose)s
-    %(legacy_format)s
-    kwargs : parameter list, optional
+
+    kwargs : extra parameters, optional
         Any extra keyword argument will be used to filter downloaded subjects
         according to the CSV phenotypic file. Some examples of filters are
         indicated below.
 
-    SUB_ID : list of integers in [50001, 50607], optional
+    SUB_ID : :obj:`list` of :obj:`int` in [50001, 50607], optional
         Ids of the subjects to be loaded.
 
-    DX_GROUP : integer in {1, 2}, optional
+    DX_GROUP : :obj:`int` in {1, 2}, optional
         1 is autism, 2 is control.
 
-    DSM_IV_TR : integer in [0, 4], optional
+    DSM_IV_TR : :obj:`int` in [0, 4], optional
         O is control, 1 is autism, 2 is Asperger, 3 is PPD-NOS,
         4 is Asperger or PPD-NOS.
 
-    AGE_AT_SCAN : float in [6.47, 64], optional
+    AGE_AT_SCAN : :obj:`float` in [6.47, 64], optional
         Age of the subject.
 
-    SEX : integer in {1, 2}, optional
+    SEX : :obj:`int` in {1, 2}, optional
         1 is male, 2 is female.
 
-    HANDEDNESS_CATEGORY : string in {'R', 'L', 'Mixed', 'Ambi'}, optional
+    HANDEDNESS_CATEGORY : :obj:`str` in {'R', 'L', 'Mixed', 'Ambi'}, optional
         R = Right, L = Left, Ambi = Ambidextrous.
 
-    HANDEDNESS_SCORE : integer in [-100, 100], optional
+    HANDEDNESS_SCORE : :obj:`int` in [-100, 100], optional
         Positive = Right, Negative = Left, 0 = Ambidextrous.
 
     Returns
@@ -1281,9 +1276,6 @@ def fetch_abide_pcp(
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
 
-    if legacy_format:
-        pheno = pheno.to_records(index=False)
-
     results = {
         "description": get_dataset_descr(dataset_name),
         "phenotypic": pheno,
@@ -1365,7 +1357,8 @@ def fetch_mixed_gambles(
 ):
     """Fetch Jimura "mixed gambles" dataset.
 
-    See :footcite:t:`Jimura2012`.
+    See the :ref:`dataset description <mixed_gamble_maps>`
+    for more information.
 
     Parameters
     ----------
@@ -1401,10 +1394,6 @@ def fetch_mixed_gambles(
           :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)``,
           else it is ``None``.
         - 'description': data description
-
-    References
-    ----------
-    .. footbibliography::
 
     """
     if n_subjects > 16:
@@ -1450,11 +1439,23 @@ def fetch_megatrawls_netmats(
     This data can be used to predict relationships between imaging data and
     non-imaging behavioral measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
-    datasets of 461 subjects. Full technical details in references.
+    datasets of 461 subjects.
 
-    More information available in :footcite:t:`Smith2015b`,
-    :footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
-    :footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
+    ..  admonition:: Technical details
+        :class: important
+
+        For more technical details about predicting the measures, refer to:
+        Stephen Smith et al,
+        HCP beta-release of the Functional Connectivity MegaTrawl.
+        April 2015 "HCP500-MegaTrawl" release.
+        https://db.humanconnectome.org/megatrawl/
+
+    ..  admonition:: Terms and conditions
+        :class: attention
+
+        This is open access data. You must agree to Terms and conditions
+        of using this data before using it, available at:
+        http://humanconnectome.org/data/data-use-terms/open-access.html
 
     Parameters
     ----------
@@ -1497,13 +1498,10 @@ def fetch_megatrawls_netmats(
 
         - 'description': data description
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
-    See description for terms & conditions on data usage.
+    For more information
+    see the :ref:`dataset description <megatrawls_maps>`.
 
     """
     url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
@@ -2085,7 +2083,7 @@ def fetch_development_fmri(
     %(data_dir)s
     %(resume)s
     %(verbose)s
-    age_group : str, default='both'
+    age_group : :obj:`str`, default='both'
         Which age group to fetch
 
         - 'adults' = fetch adults only (n=33, ages 18-39)

@@ -40,8 +40,11 @@ class _MaskWarning(UserWarning):
 warnings.simplefilter("always", _MaskWarning)
 
 
+@fill_doc
 def load_mask_img(mask_img, allow_empty=False):
-    """Check that a mask is valid, ie with two values including 0 and load it.
+    """Check that a mask is valid.
+
+    This checks if it contains two values including 0 and load it.
 
     Parameters
     ----------
@@ -778,7 +781,7 @@ def apply_mask(
         See :ref:`extracting_data`.
         3D mask array: True where a :term:`voxel` should be used.
 
-    dtype: numpy dtype or 'f'
+    dtype : numpy dtype or 'f'
         The dtype of the output, if 'f', any float output is acceptable
         and if the data is stored on the disk as floats the data type
         will not be changed.

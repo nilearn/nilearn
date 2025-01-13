@@ -31,7 +31,10 @@ else:
     collect_ignore.extend(
         [
             "plotting",
-            "reporting",
+            "reporting/glm_reporter.py",
+            "reporting/html_report.py",
+            "reporting/tests/test_glm_reporter.py",
+            "reporting/tests/test_html_report.py",
         ]
     )
     matplotlib = None
@@ -102,7 +105,6 @@ def suppress_specific_warning():
     with warnings.catch_warnings():
         messages = (
             "The `darkness` parameter will be deprecated.*|"
-            "`legacy_format` will default to `False`.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"
             "The default strategy for standardize.*|"
             "The 'fetch_bids_langloc_dataset' function will be removed.*|"
@@ -517,6 +519,18 @@ def surf_label_img(surf_mesh):
     data = {
         "left": np.asarray([0, 0, 1, 1]),
         "right": np.asarray([1, 1, 0, 0, 0]),
+    }
+    return SurfaceImage(surf_mesh(), data)
+
+
+@pytest.fixture
+def surf_three_labels_img(surf_mesh):
+    """Return a sample surface label image using the sample mesh.
+    Has 3 regions with values 0, 1 and 2.
+    """
+    data = {
+        "left": np.asarray([0, 0, 1, 1]),
+        "right": np.asarray([1, 1, 0, 2, 0]),
     }
     return SurfaceImage(surf_mesh(), data)
 
