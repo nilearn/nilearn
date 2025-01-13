@@ -218,7 +218,7 @@ def plot_matrix(
     figure=None,
     axes=None,
     colorbar=True,
-    cmap=plt.cm.RdBu_r,
+    cmap="RdBu_r",
     tri="full",
     auto_fit=True,
     grid=False,
@@ -257,8 +257,10 @@ def plot_matrix(
 
     %(colorbar)s
         Default=True.
+
     %(cmap)s
-        Default=`plt.cm.RdBu_r`.
+        default="RdBu_r"
+
     tri : {'full', 'lower', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
 
@@ -641,7 +643,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
-    cmap=plt.cm.RdBu_r,
+    cmap="RdBu_r",
     output_file=None,
     **kwargs,
 ):
@@ -664,7 +666,7 @@ def plot_design_matrix_correlation(
         - ``"full"``: Plot the full matrix
 
     %(cmap)s
-        Default="bwr".
+        default="RdBu_r"
 
         This must be a diverging colormap as the correlation matrix
         will be centered on 0.

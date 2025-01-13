@@ -101,7 +101,7 @@ class OLSModel:
         Y : ndarray
             The dependent variable
 
-        nuisance : dict, optional
+        nuisance : :obj:`dict`, optional
             A dict with key 'sigma', which is an optional estimate of sigma.
             If None, defaults to its maximum likelihood estimate
             (with beta fixed) as

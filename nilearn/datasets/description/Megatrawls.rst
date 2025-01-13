@@ -7,6 +7,13 @@ Access
 ------
 See :func:`nilearn.datasets.fetch_megatrawls_netmats`.
 
+Content
+-------
+:'dimensions': contains given input in dimensions used in fetching data.
+:'timeseries': contains given specific timeseries method used in fetching data.
+:'matrices': contains given specific type of matrices name.
+:'correlation_matrices': contains correlation network matrices data.
+
 Notes
 -----
 Contains network matrices data of two types, full correlation and partial
@@ -27,28 +34,27 @@ More information available in :footcite:t:`Smith2015b`,
 :footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
 :footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
 
-Content
--------
-    :'dimensions': contains given input in dimensions used in fetching data.
-    :'timeseries': contains given specific timeseries method used in fetching data.
-    :'matrices': contains given specific type of matrices name.
-    :'correlation_matrices': contains correlation network matrices data.
-
 References
 ----------
-
 .. footbibliography::
 
-For more technical details about predicting the measures, refer to:
-Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
-April 2015 "HCP500-MegaTrawl" release.
-https://db.humanconnectome.org/megatrawl/
+.. admonition:: Technical details
+   :class: important
+
+   For more technical details about predicting the measures, refer to:
+   Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
+   April 2015 "HCP500-MegaTrawl" release.
+   https://db.humanconnectome.org/megatrawl/
 
 Disclaimer
 ----------
-IMPORTANT: This is open access data. You must agree to Terms and conditions
-of using this data before using it, available at:
-http://humanconnectome.org/data/data-use-terms/open-access.html
+
+.. admonition:: Terms and conditions
+   :class: attention
+
+   This is open access data. You must agree to Terms and conditions
+   of using this data before using it, available at:
+   http://humanconnectome.org/data/data-use-terms/open-access.html
 
 Open Access Data (all imaging data and most of the behavioral data)
 is available to those who register an account at ConnectomeDB and agree to

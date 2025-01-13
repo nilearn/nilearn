@@ -39,6 +39,11 @@ A standard analysis using mass-univariate :term:`GLM`
 (here permuted to have exact correction for multiple comparisons) gives a
 much clearer view of the important regions.
 
+.. seealso::
+
+    For more information
+    see the :ref:`dataset description <oasis_maps>`.
+
 ____
 
 .. include:: ../../../examples/masker_note.rst

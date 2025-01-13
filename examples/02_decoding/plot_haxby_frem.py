@@ -21,19 +21,23 @@ from nilearn.datasets import fetch_haxby
 
 data_files = fetch_haxby()
 
+# %%
 # Load behavioral data
 import pandas as pd
 
 behavioral = pd.read_csv(data_files.session_target[0], sep=" ")
 
+# %%
 # Restrict to face, house, and chair conditions
 conditions = behavioral["labels"]
 condition_mask = conditions.isin(["face", "house", "chair"])
 
+# %%
 # Split data into train and test samples, using the chunks
 condition_mask_train = (condition_mask) & (behavioral["chunks"] <= 6)
 condition_mask_test = (condition_mask) & (behavioral["chunks"] > 6)
 
+# %%
 # Apply this sample mask to X (fMRI data) and y (behavioral labels)
 # Because the data is in one single large 4D image, we need to use
 # index_img to do the split easily
@@ -46,6 +50,7 @@ y_train = conditions[condition_mask_train].to_numpy()
 y_test = conditions[condition_mask_test].to_numpy()
 
 
+# %%
 # Compute the mean EPI to be used for the background of the plotting
 from nilearn.image import mean_img
 
@@ -56,7 +61,15 @@ background_img = mean_img(func_filenames, copy_header=True)
 # --------
 from nilearn.decoding import FREMClassifier
 
-decoder = FREMClassifier(cv=10, standardize="zscore_sample", n_jobs=2)
+# %%
+# Restrict analysis to within the brain mask
+mask = data_files.mask
+
+decoder = FREMClassifier(
+    mask=mask, cv=10, standardize="zscore_sample", n_jobs=2, verbose=1
+)
+
+# %%
 # Fit model on train data and predict on test data
 decoder.fit(X_train, y_train)
 y_pred = decoder.predict(X_test)
@@ -72,6 +85,7 @@ from sklearn.metrics import confusion_matrix
 
 from nilearn.plotting import plot_matrix, plot_stat_map, show
 
+# %%
 # Calculate the confusion matrix
 matrix = confusion_matrix(
     y_test,
@@ -79,6 +93,7 @@ matrix = confusion_matrix(
     normalize="true",
 )
 
+# %%
 # Plot the confusion matrix
 im = plot_matrix(
     matrix,
