@@ -630,6 +630,12 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     debias : :obj:`bool`, optional (default False)
         If set, then the estimated weights maps will be debiased.
 
+    positive : bool, default=False
+        When set to ``True``, forces the coefficients to be positive.
+        This option is only supported for dense arrays.
+
+        .. versionadded:: 0.11.2dev
+
     Attributes
     ----------
     all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
@@ -736,6 +742,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         fit_intercept=True,
         screening_percentile=20.0,
         debias=False,
+        positive=False,
     ):
         self.penalty = penalty
         self.is_classif = is_classif
@@ -762,6 +769,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.mask_args = mask_args
+        self.positive = positive
 
         # sanity check on params
         self.check_params()
