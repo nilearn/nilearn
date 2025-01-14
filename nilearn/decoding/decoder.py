@@ -50,7 +50,7 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
-from nilearn._utils.cache_mixin import _check_memory
+from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
@@ -727,7 +727,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Returns None if non-dummy estimators are provided.
         """
         self.estimator = _check_estimator(self.estimator)
-        self.memory_ = _check_memory(self.memory, self.verbose)
+        self.memory_ = check_memory(self.memory, self.verbose)
 
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)

@@ -22,19 +22,19 @@ def f(x):
 
 
 def test_check_memory(tmp_path):
-    # Test if _check_memory returns a memory object with the location equal to
+    # Test if check_memory returns a memory object with the location equal to
     # input path
 
     mem_none = Memory(location=None)
     mem_temp = Memory(location=str(tmp_path))
 
     for mem in [None, mem_none]:
-        memory = cache_mixin._check_memory(mem, verbose=0)
+        memory = cache_mixin.check_memory(mem, verbose=0)
         assert memory, Memory
         assert memory.location == mem_none.location
 
     for mem in [str(tmp_path), mem_temp]:
-        memory = cache_mixin._check_memory(mem, verbose=0)
+        memory = cache_mixin.check_memory(mem, verbose=0)
         assert memory.location == mem_temp.location
         assert memory, Memory
 

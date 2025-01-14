@@ -238,7 +238,7 @@ def save_glm_to_bids(
         plot_contrast_matrix,
         plot_design_matrix,
     )
-    from nilearn.reporting.glm_reporter import _make_stat_maps
+    from nilearn.reporting.glm_reporter import make_stat_maps
 
     allowed_extra_kwarg = [
         "title",
@@ -354,7 +354,7 @@ def save_glm_to_bids(
     _generate_model_metadata(metadata_file, model)
 
     # Write out contrast-level statistical maps
-    statistical_maps = _make_stat_maps(model, contrasts, output_type="all")
+    statistical_maps = make_stat_maps(model, contrasts, output_type="all")
     for contrast_name, contrast_maps in statistical_maps.items():
         # Extract stat_type
         contrast_matrix = contrasts[contrast_name]
