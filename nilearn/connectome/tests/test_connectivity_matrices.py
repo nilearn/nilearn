@@ -57,6 +57,7 @@ extra_valid_checks = [
     "check_transformers_unfitted",
     "check_fit1d",
     "check_transformer_n_iter",
+    "check_estimator_sparse_tag",
 ]
 
 
