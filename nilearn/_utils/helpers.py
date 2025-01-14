@@ -195,7 +195,7 @@ def remove_parameters(removed_params, reason, end_version="future"):
         def wrapper(*args, **kwargs):
             if found := set(removed_params).intersection(kwargs):
                 message = (
-                    f'Parameter(s) {", ".join(found)} '
+                    f"Parameter(s) {', '.join(found)} "
                     f"will be removed in version {end_version}; "
                     f"{reason}"
                 )

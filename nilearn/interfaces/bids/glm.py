@@ -132,9 +132,7 @@ def _generate_dataset_description(out_file, model_level):
         "Name": "nilearn",
         "Version": __version__,
         "Description": (
-            "A Nilearn "
-            f"{'first' if model_level == 1 else 'second'}"
-            "-level GLM."
+            f"A Nilearn {'first' if model_level == 1 else 'second'}-level GLM."
         ),
         "CodeURL": (f"{repo_url}/releases/tag/{__version__}"),
     }

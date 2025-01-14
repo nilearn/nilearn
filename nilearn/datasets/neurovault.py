@@ -22,7 +22,9 @@ import requests
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
-from ..image import resample_img
+from nilearn._utils import fill_doc
+from nilearn.image import resample_img
+
 from ._utils import (
     fetch_single_file,
     get_dataset_descr,
@@ -1195,7 +1197,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         is supposed to contain the Neurosynth response for a
         particular image).
 
-    verbose : int, default=3
+    verbose : :obj:`int`, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     Keyword arguments are passed on to
@@ -2489,6 +2491,7 @@ def _fetch_neurovault_implementation(
     return _result_list_to_bunch(scroller, download_params)
 
 
+@fill_doc
 def fetch_neurovault(
     max_images=_DEFAULT_MAX_IMAGES,
     collection_terms=None,
@@ -2519,10 +2522,10 @@ def fetch_neurovault(
 
     Parameters
     ----------
-    max_images : int, default=100
+    max_images : :obj:`int`, default=100
         Maximum number of images to fetch.
 
-    collection_terms : dict, default=None
+    collection_terms : :obj:`dict` or None, default=None
         Key, value pairs used to filter collection
         metadata. Collections for which
         ``collection_metadata['key'] == value`` is not ``True`` for
@@ -2535,7 +2538,7 @@ def fetch_neurovault(
         Collections for which `collection_filter(collection_metadata)`
         is ``False`` will be discarded.
 
-    image_terms : dict, default=None
+    image_terms : :obj:`dict` or None, default=None
         Key, value pairs used to filter image metadata. Images for
         which ``image_metadata['key'] == value`` is not ``True`` for
         if image_filter != _empty_filter and image_terms =
@@ -2557,19 +2560,17 @@ def fetch_neurovault(
         - 'overwrite' means ignore files on disk and overwrite them.
         - 'offline' means load only data from disk; don't query server.
 
-    data_dir : str, optional
-        The directory we want to use for nilearn data. A subdirectory
-        named "neurovault" will contain :term:`Neurovault` data.
+    %(data_dir)s
 
-    fetch_neurosynth_words : bool, default=False
+    fetch_neurosynth_words : :obj:`bool`, default=False
         whether to collect words from Neurosynth.
 
-    vectorize_words : bool, default=True
+    vectorize_words : :obj:`bool`, default=True
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    resample : bool, optional (default=False)
+    resample : :obj:`bool`, optional (default=False)
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
@@ -2578,7 +2579,7 @@ def fetch_neurovault(
         method.
         Argument passed to nilearn.image.resample_img.
 
-    verbose : int, default=3
+    verbose : :obj:`int`, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     kwarg_image_filters
@@ -2730,6 +2731,7 @@ def fetch_neurovault(
     )
 
 
+@fill_doc
 def fetch_neurovault_ids(
     collection_ids=(),
     image_ids=(),
@@ -2770,23 +2772,21 @@ def fetch_neurovault_ids(
         - 'overwrite' means ignore files on disk and overwrite them.
         - 'offline' means load only data from disk; don't query server.
 
-    data_dir : str, optional
-        The directory we want to use for nilearn data. A subdirectory
-        named "neurovault" will contain :term:`Neurovault` data.
+    %(data_dir)s
 
-    fetch_neurosynth_words : bool, default=False
+    fetch_neurosynth_words : :obj:`bool`, default=False
         Whether to collect words from Neurosynth.
 
-    resample : bool, optional (default=False)
+    resample : :obj:`bool`, optional (default=False)
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
-    vectorize_words : bool, default=True
+    vectorize_words : :obj:`bool`, default=True
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    verbose : int, default=3
+    verbose : :obj:`int`, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     Returns
@@ -2844,18 +2844,16 @@ def fetch_neurovault_ids(
     )
 
 
+@fill_doc
 def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     """Fetch left vs right button press \
        group :term:`contrast` map from :term:`Neurovault`.
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
+    %(data_dir)s
 
-    verbose : int, default=1
-        Verbosity level (0 means no message).
+    %(verbose)s
 
     Returns
     -------
@@ -2887,18 +2885,16 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     return data
 
 
+@fill_doc
 def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
+    %(data_dir)s
 
-    verbose : int, default=1
-        Verbosity level (0 means no message).
+    %(verbose)s
 
     Returns
     -------

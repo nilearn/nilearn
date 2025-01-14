@@ -390,7 +390,7 @@ hemi : {"left", "right", "both"}, default="left"
 
 # high_pass
 docdict["high_pass"] = """
-high_pass : :obj:`float`, default=None
+high_pass : :obj:`float` or None, default=None
     High cutoff frequency in Hertz.
     If specified, signals below this frequency will be filtered out.
 """
@@ -727,6 +727,15 @@ resampling_interpolation : :obj:`str`, optional
 
 """
 
+# resolution template
+docdict["resolution"] = """
+resolution : :obj:`int`, default=None
+        Resolution in millimeters.
+        If resolution is different from 1,
+        the template is re-sampled with the specified resolution.
+        Default to ``1`` if None is passed.
+"""
+
 # resume
 docdict["resume"] = """
 resume : :obj:`bool`, default=True
@@ -878,11 +887,18 @@ target_shape : :obj:`tuple` or :obj:`list`, default=None
 
 # templateflow
 docdict["templateflow"] = """
-    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
-    release c (MNI152NLin2009cSAsym).
-    The NiLearn template is asymmetrical ICBM152 2009, release a.
-    If you wish to use the exact same release as :term:`fMRIPrep`,
-    please refer to TemplateFlow (https://www.templateflow.org/).
+
+.. admonition:: Nilearn MNI template
+   :class: important
+
+   The Nilearn template is asymmetrical ICBM152 2009, release a.
+
+   The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+   release c (MNI152NLin2009cSAsym).
+
+   If you wish to use the exact same release as :term:`fMRIPrep`,
+   please refer to `TemplateFlow <https://www.templateflow.org>`_.
+
 """
 
 # threshold

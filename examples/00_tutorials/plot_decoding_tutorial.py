@@ -224,8 +224,7 @@ for fold, (train, test) in enumerate(cv.split(conditions), start=1):
         len(conditions[test])
     )
     print(
-        f"CV Fold {fold:01d} | "
-        f"Prediction Accuracy: {predicton_accuracy:.3f}"
+        f"CV Fold {fold:01d} | Prediction Accuracy: {predicton_accuracy:.3f}"
     )
 
 # %%

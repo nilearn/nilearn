@@ -15,7 +15,7 @@ from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
 
 from nilearn import image
-from nilearn._utils import logger
+from nilearn._utils import fill_doc, logger
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -120,8 +120,7 @@ def _permuted_ols_on_chunk(
         Seed for random number generator, to have the same permutations
         in each computing units.
 
-    verbose : int, default=0
-        Defines the verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -296,6 +295,7 @@ def _permuted_ols_on_chunk(
     )
 
 
+@fill_doc
 def permuted_ols(
     tested_vars,
     target_vars,
@@ -386,8 +386,7 @@ def permuted_ols(
         A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
         ones will be used.
 
-    verbose : :obj:`int`, default=0
-        verbosity level (0 means no message).
+    %(verbose0)s
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
             :class:`~nilearn.maskers.MultiNiftiMasker`, optional
@@ -967,7 +966,7 @@ def _check_inputs_permuted_ols(
     n_jobs, n_perm, tfce, masker, threshold, target_vars
 ):
     if not isinstance(n_perm, int):
-        raise TypeError("'n_perm' must be an int. " f"Got {type(n_perm)=}")
+        raise TypeError(f"'n_perm' must be an int. Got {type(n_perm)=}")
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(
