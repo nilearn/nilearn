@@ -289,25 +289,30 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         This parameter is passed to signal.clean. Please see the related
         documentation for details.
 
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    %(low_pass)s
 
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    t_r : float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    %(high_pass)s
 
-    target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    target_shape : 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(t_r)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_affine)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_shape)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
 
@@ -340,8 +345,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose : integer, default=0
-        Indicate the level of verbosity. By default, nothing is printed.
+    %(verbose0)s
 
     Attributes
     ----------
@@ -519,18 +523,21 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 self.masker_.mask_img_,
                 resampling_target="maps",
             )
-            # TODO: remove in 0.11.3
-            self.nifti_maps_masker_ = self.maps_masker_
-            warnings.warn(
-                message="The nifti_maps_masker_ attribute is deprecated and "
-                "will be removed in Nilearn 0.11.3. Please use "
-                "maps_masker_ instead.",
-                category=FutureWarning,
-                stacklevel=2,
-            )
         self.maps_masker_.fit()
 
         return self
+
+    @property
+    def nifti_maps_masker_(self):
+        # TODO: remove in 0.13
+        warnings.warn(
+            message="The 'nifti_maps_masker_' attribute is deprecated "
+            "and will be removed in Nilearn 0.13.0.\n"
+            "Please use 'maps_masker_' instead.",
+            category=FutureWarning,
+            stacklevel=2,
+        )
+        return self.maps_masker_
 
     def _check_components_(self):
         if not hasattr(self, "components_"):

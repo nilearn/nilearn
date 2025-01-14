@@ -23,10 +23,10 @@ from nilearn._utils.niimg_conversions import (
 )
 from nilearn.datasets import load_mni152_template
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 
 
-def _apply_mask_and_get_affinity(
+def apply_mask_and_get_affinity(
     seeds, niimg, radius, allow_overlap, mask_img=None
 ):
     """Get only the rows which are occupied by sphere \
@@ -185,7 +185,7 @@ def _iter_signals_from_spheres(
         Mask to apply to regions before extracting signals.
 
     """
-    X, A = _apply_mask_and_get_affinity(
+    X, A = apply_mask_and_get_affinity(
         seeds, niimg, radius, allow_overlap, mask_img=mask_img
     )
     for row in A.rows:
@@ -260,10 +260,9 @@ class NiftiSpheresMasker(BaseMasker):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+
+    %(dtype)s
+
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
@@ -395,8 +394,7 @@ class NiftiSpheresMasker(BaseMasker):
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -426,7 +424,7 @@ class NiftiSpheresMasker(BaseMasker):
             A list of all displays to be rendered.
         """
         from nilearn import plotting
-        from nilearn.reporting.html_report import _embed_img
+        from nilearn.reporting.html_report import embed_img
 
         if self._reporting_data is not None:
             seeds = self._reporting_data["seeds"]
@@ -495,7 +493,7 @@ class NiftiSpheresMasker(BaseMasker):
         display = plotting.plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embeded_images = [_embed_img(display)]
+        embeded_images = [embed_img(display)]
         display.close()
         for idx, seed in enumerate(seeds):
             regions_summary["seed number"].append(idx)
@@ -514,7 +512,7 @@ class NiftiSpheresMasker(BaseMasker):
                     marker_color="g",
                     marker_size=20 * radius,
                 )
-                embeded_images.append(_embed_img(display))
+                embeded_images.append(embed_img(display))
                 display.close()
         self._report_content["summary"] = regions_summary
 
@@ -698,7 +696,7 @@ class NiftiSpheresMasker(BaseMasker):
         params["clean_kwargs"] = self.clean_kwargs
 
         signals, _ = self._cache(
-            _filter_and_extract, ignore=["verbose", "memory", "memory_level"]
+            filter_and_extract, ignore=["verbose", "memory", "memory_level"]
         )(
             imgs,
             _ExtractionFunctor(
@@ -756,7 +754,7 @@ class NiftiSpheresMasker(BaseMasker):
                 "provide a reference for the inverse_transform."
             )
 
-        _, adjacency = _apply_mask_and_get_affinity(
+        _, adjacency = apply_mask_and_get_affinity(
             self.seeds_, None, self.radius, self.allow_overlap, mask_img=mask
         )
         adjacency = adjacency.tocsr()

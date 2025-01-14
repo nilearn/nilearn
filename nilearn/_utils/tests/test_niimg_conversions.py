@@ -480,9 +480,7 @@ def test_repr_niimgs():
     ]
     # Explicit shortening, all 3 names are displayed, but shortened
     shortened_rep_list_of_size_3 = (
-        "[this-is-a-very-lon...,"
-        " this-is-another-ve...,"
-        " this-is-again-anot...]"
+        "[this-is-a-very-lon..., this-is-another-ve..., this-is-again-anot...]"
     )
 
     assert (

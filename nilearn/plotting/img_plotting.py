@@ -25,12 +25,12 @@ from scipy.ndimage import binary_fill_holes
 from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting.displays import get_projector, get_slicer
-from nilearn.plotting.displays._slicers import _get_cbar_ticks
+from nilearn.plotting.displays._slicers import get_cbar_ticks
 
 from .. import _utils
 from .._utils import (
-    _constrained_layout_kwargs,
     compare_version,
+    constrained_layout_kwargs,
     fill_doc,
     logger,
 )
@@ -313,7 +313,7 @@ def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
         # within an asymmetric cbar
         # and both threshold values are within bounds
         elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
-            new_tick_locs = _get_cbar_ticks(
+            new_tick_locs = get_cbar_ticks(
                 cbar_vmin, cbar_vmax, threshold, n_ticks=len(new_tick_locs)
             )
         # Case where one of the threshold values is out of bounds
@@ -772,7 +772,7 @@ def plot_epi(
         Ex: use "%%i" to display as integers.
 
     %(cmap)s
-        Default=`plt.cm.nipy_spectral`.
+        Default=`plt.cm.gray`.
 
     %(vmin)s
 
@@ -831,8 +831,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         The ROI/mask image, it could be binary mask or an atlas or ROIs
         with integer values.
 
-    cmap : matplotlib colormap
-        The colormap for the atlas maps.
+    %(cmap)s
 
     alpha : :obj:`float` between 0 and 1
         Alpha sets the transparency of the color inside the filled
@@ -1309,7 +1308,7 @@ def plot_stat_map(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap=plt.cm.RdBu_r,
+    cmap="RdBu_r",
     symmetric_cbar="auto",
     dim="auto",
     vmin=None,
@@ -1367,7 +1366,7 @@ def plot_stat_map(
         .. note::
             The colormap *must* be symmetrical.
 
-        Default=`plt.cm.cold_hot`.
+        Default=default="RdBu_r".
 
     %(symmetric_cbar)s
 
@@ -1864,7 +1863,7 @@ def plot_markers(
             "Dimension mismatch: 'node_values' should be vector of length "
             f"{len(node_coords)}, "
             f"but current shape is {node_values.shape} "
-            f"instead of {(node_coords.shape[0], )}"
+            f"instead of {(node_coords.shape[0],)}"
         )
         raise ValueError(msg)
 
@@ -1994,7 +1993,6 @@ def plot_carpet(
     %(vmax)s
     %(title)s
     %(cmap)s
-
         Default=`gray`.
 
     cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
@@ -2264,7 +2262,7 @@ def plot_img_comparison(
                 1,
                 2,
                 figsize=(12, 5),
-                **_constrained_layout_kwargs(),
+                **constrained_layout_kwargs(),
             )
         else:
             (ax1, ax2) = axes

@@ -216,7 +216,7 @@ def _circular_pairwise(iterable):
     return itertools.zip_longest(a, b, fillvalue=next(b, None))
 
 
-def _make_edges_surface(faces, mask):
+def make_edges_surface(faces, mask):
     """Create the edges set: Returns a list of edges for a surface mesh.
 
     Parameters
@@ -280,7 +280,7 @@ def _make_edges_and_weights_surface(X, mask_img):
         else:
             mask_part = mask_img.data.parts[part][:, 0]
 
-        edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
+        edges_unmasked, edges_mask = make_edges_surface(face_part, mask_part)
 
         idxs = np.array(range(mask_part.sum())) + len_previous_mask
         weights_unmasked = _compute_weights_surface(
@@ -522,6 +522,7 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     return reduced_connectivity, reduced_X, labels
 
 
+@fill_doc
 def recursive_neighbor_agglomeration(
     X, mask_img, n_clusters, n_iter=10, threshold=1e-7, verbose=0
 ):
@@ -547,8 +548,7 @@ def recursive_neighbor_agglomeration(
     threshold : :obj:`float` in the close interval [0, 1], default=1e-7
         The threshold is set to handle eccentricities.
 
-    verbose : :obj:`int`, default=0
-        Verbosity level.
+    %(verbose0)s
 
     Returns
     -------

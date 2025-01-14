@@ -85,7 +85,9 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
             with:
+                # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
+                fetch-depth: 0
         -   name: Merge with upstream
             run: ./build_tools/github/merge_upstream.sh
         -   name: Check if we are doing a full or partial build
