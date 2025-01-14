@@ -14,6 +14,7 @@ import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
+from scipy.stats import scoreatpercentile
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
@@ -1846,7 +1847,7 @@ def get_data(img, ensure_finite=False):
     if ensure_finite:
         non_finite_mask = np.logical_not(np.isfinite(data))
         if non_finite_mask.sum() > 0:  # any non_finite_mask values?
-            warn(
+            warnings.warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",
                 stacklevel=3,
@@ -2000,7 +2001,7 @@ def threshold_img(
     cluster_threshold=0,
     two_sided=True,
     mask_img=None,
-    copy=True,
+    copy=True,  # noqa: ARG001
 ):
     """Threshold the given input image, mostly statistical or atlas images.
 
