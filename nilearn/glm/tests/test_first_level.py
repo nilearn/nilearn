@@ -752,8 +752,7 @@ def test_fmri_inputs_errors(tmp_path, shape_4d_default):
     # If paradigms are given
     # then both t_r and slice time ref are required
     match = (
-        "t_r not given to FirstLevelModel object "
-        "to compute design from events"
+        "t_r not given to FirstLevelModel object to compute design from events"
     )
     with pytest.raises(ValueError, match=match):
         FirstLevelModel(mask_img=None).fit(func_img, des)
@@ -796,8 +795,7 @@ def test_fmri_inputs_errors_confounds(tmp_path, shape_4d_default):
     with pytest.raises(
         ValueError,
         match=(
-            "Rows in confounds does not match "
-            "n_scans in run_img at index 0."
+            "Rows in confounds does not match n_scans in run_img at index 0."
         ),
     ):
         FirstLevelModel(mask_img=None, t_r=2.0).fit(func_img, des, conf)

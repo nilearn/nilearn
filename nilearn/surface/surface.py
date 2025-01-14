@@ -970,6 +970,44 @@ def _gifti_img_to_mesh(gifti_img):
     return coords, faces
 
 
+def combine_hemispheres_meshes(mesh):
+    """Combine the left and right hemisphere meshes such that both are
+    represented in the same mesh.
+
+    Parameters
+    ----------
+    mesh : :obj:`~nilearn.surface.PolyMesh`
+        The mesh object containing the left and right hemisphere meshes.
+
+    Returns
+    -------
+    combined_mesh : :obj:`~nilearn.surface.InMemoryMesh`
+        The combined mesh object containing both left and right hemisphere
+        meshes.
+    """
+    # calculate how much the right hemisphere should be offset
+    left_max_x = mesh.parts["left"].coordinates[:, 0].max()
+    right_min_x = mesh.parts["right"].coordinates[:, 0].min()
+    offset = (
+        left_max_x - right_min_x + 1
+    )  # add a small buffer to avoid touching
+
+    combined_coords = np.concatenate(
+        (
+            mesh.parts["left"].coordinates,
+            mesh.parts["right"].coordinates + np.asarray([offset, 0, 0]),
+        )
+    )
+    combined_faces = np.concatenate(
+        (
+            mesh.parts["left"].faces,
+            mesh.parts["right"].faces
+            + mesh.parts["left"].coordinates.shape[0],
+        )
+    )
+    return InMemoryMesh(combined_coords, combined_faces)
+
+
 def check_mesh_is_fsaverage(mesh):
     """Check that :term:`mesh` data is either a :obj:`str`, or a :obj:`dict`
     with sufficient entries. Basically ensures that the mesh data is
@@ -1033,6 +1071,9 @@ def check_mesh_and_data(mesh, data):
         Checked data.
     """
     mesh = load_surf_mesh(mesh)
+
+    _validate_mesh(mesh)
+
     data = load_surf_data(data)
     # Check that mesh coordinates has a number of nodes
     # equal to the size of the data.
@@ -1042,16 +1083,39 @@ def check_mesh_and_data(mesh, data):
             f"in mesh ({len(mesh.coordinates)}) and "
             f"size of surface data ({len(data)})"
         )
-    # Check that the indices of faces are consistent with the
-    # mesh coordinates. That is, we shouldn't have an index
-    # larger or equal to the length of the coordinates array.
-    if mesh.faces.max() >= len(mesh.coordinates):
-        raise ValueError(
-            "Mismatch between the indices of faces and the number of nodes. "
-            f"Maximum face index is {mesh.faces.max()} "
-            f"while coordinates array has length {len(mesh.coordinates)}."
-        )
+
     return mesh, data
+
+
+def _validate_mesh(mesh):
+    """Check mesh coordinates and faces.
+
+    Mesh coordinates and faces must be numpy arrays.
+
+    Coordinates must be finite values.
+
+    Check that the indices of faces are consistent
+    with the mesh coordinates.
+    That is, we shouldn't have an index
+    - larger or equal to the length of the coordinates array
+    - negative
+    """
+    non_finite_mask = np.logical_not(np.isfinite(mesh.coordinates))
+    if non_finite_mask.any():
+        raise ValueError(
+            "Mesh coordinates must be finite. "
+            "Current coordinates contains NaN or Inf values."
+        )
+
+    msg = (
+        "Mismatch between the indices of faces and the number of nodes.\n"
+        "Indices into the points and must be in the "
+        f"range 0 <= i < {len(mesh.coordinates)} but found value "
+    )
+    if mesh.faces.max() >= len(mesh.coordinates):
+        raise ValueError(f"{msg}{mesh.faces.max()}")
+    if mesh.faces.min() < 0:
+        raise ValueError(f"{msg}{mesh.faces.min()}")
 
 
 # function to figure out datatype and load data
@@ -1121,15 +1185,17 @@ def load_surf_mesh(surf_mesh):
         try:
             coords, faces = surf_mesh
             mesh = InMemoryMesh(coordinates=coords, faces=faces)
-        except Exception:
+        except Exception as e:
+            print(str(e))
             raise ValueError(
-                "If a list or tuple is given as input, "
-                "it must have two elements, the first is "
-                "a Numpy array containing the x-y-z coordinates "
-                "of the mesh vertices, the second is a Numpy "
-                "array containing  the indices (into coords) of "
-                "the mesh faces. The input was a list with "
-                f"{len(surf_mesh)} elements."
+                "\nIf a list or tuple is given as input, "
+                "it must have two elements,\n"
+                "the first is a Numpy array containing the x-y-z coordinates "
+                "of the mesh vertices,\n"
+                "the second is a Numpy array "
+                "containing the indices (into coords) of the mesh faces.\n"
+                f"The input was a {surf_mesh.__class__.__name__} with "
+                f"{len(surf_mesh)} elements: {[type(x) for x in surf_mesh]}."
             )
     elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
@@ -1143,8 +1209,7 @@ def load_surf_mesh(surf_mesh):
             "Freesurfer specific files such as "
             f"{_stringify(FREESURFER_MESH_EXTENSIONS)}"
             "or two Numpy arrays organized in a list, tuple or "
-            'a namedtuple with the fields "coordinates" and '
-            '"faces"'
+            'a namedtuple with the fields "coordinates" and "faces"'
         )
 
     return mesh
@@ -1394,9 +1459,17 @@ class InMemoryMesh(SurfaceMesh):
     faces: np.ndarray
 
     def __init__(self, coordinates, faces):
+        if not isinstance(coordinates, np.ndarray) or not isinstance(
+            faces, np.ndarray
+        ):
+            raise TypeError(
+                "Mesh coordinates and faces must be numpy arrays.\n"
+                f"Got {type(coordinates)=} and {type(faces)=}."
+            )
         self.coordinates = coordinates
         self.faces = faces
         self.n_vertices = coordinates.shape[0]
+        _validate_mesh(self)
 
     def __getitem__(self, index):
         if index == 0:
@@ -1439,7 +1512,9 @@ class FileMesh(SurfaceMesh):
         -------
         :obj:`numpy.ndarray`
         """
-        return load_surf_mesh(self.file_path).coordinates
+        mesh = load_surf_mesh(self.file_path)
+        _validate_mesh(mesh)
+        return mesh.coordinates
 
     @property
     def faces(self):
@@ -1449,7 +1524,9 @@ class FileMesh(SurfaceMesh):
         -------
         :obj:`numpy.ndarray`
         """
-        return load_surf_mesh(self.file_path).faces
+        mesh = load_surf_mesh(self.file_path)
+        _validate_mesh(mesh)
+        return mesh.faces
 
     def loaded(self):
         """Load surface mesh into memory.
@@ -1549,8 +1626,7 @@ def _check_data_and_mesh_compat(mesh, data):
     if data_keys != mesh_keys:
         diff = data_keys.symmetric_difference(mesh_keys)
         raise ValueError(
-            "Data and mesh do not have the same keys. "
-            f"Offending keys: {diff}"
+            f"Data and mesh do not have the same keys. Offending keys: {diff}"
         )
     for key in mesh_keys:
         if data.parts[key].shape[0] != mesh.parts[key].n_vertices:
@@ -1725,9 +1801,7 @@ class SurfaceImage:
 
         if not isinstance(data, (PolyData, dict)):
             raise TypeError(
-                "'data' must be one of"
-                "[PolyData, dict].\n"
-                f"Got {type(data)}"
+                f"'data' must be one of[PolyData, dict].\nGot {type(data)}"
             )
 
         if isinstance(data, PolyData):
@@ -1770,7 +1844,7 @@ class SurfaceImage:
              :obj:`pathlib.Path`, default=None
             Inner mesh to pass to :func:`nilearn.surface.vol_to_surf`.
 
-        vol_to_surf_kwargs : dict[str, Any]
+        vol_to_surf_kwargs : :obj:`dict` [ :obj:`str` , Any]
             Dictionary of extra key-words arguments to pass
             to :func:`nilearn.surface.vol_to_surf`.
 

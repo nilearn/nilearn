@@ -12,7 +12,7 @@ from nilearn import _utils, image, masking
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 
 
 class _ExtractionFunctor:
@@ -60,7 +60,7 @@ def _get_mask_strategy(strategy):
         )
 
 
-def _filter_and_mask(
+def filter_and_mask(
     imgs,
     mask_img_,
     parameters,
@@ -125,7 +125,7 @@ def _filter_and_mask(
         parameters["target_shape"] = mask_img_.shape
         parameters["target_affine"] = mask_img_.affine
 
-    data, affine = _filter_and_extract(
+    data, affine = filter_and_extract(
         imgs,
         _ExtractionFunctor(mask_img_),
         parameters,
@@ -191,13 +191,15 @@ class NiftiMasker(BaseMasker):
 
     %(t_r)s
 
-    target_affine : 3x3 or 4x4 :obj:`numpy.ndarray`, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(target_affine)s
 
-    target_shape : 3-:obj:`tuple` of :obj:`int`, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_shape)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
 
@@ -216,10 +218,7 @@ class NiftiMasker(BaseMasker):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     %(memory)s
 
@@ -231,7 +230,7 @@ class NiftiMasker(BaseMasker):
         If set to True, data is saved in order to produce a report.
 
     %(cmap)s
-        default="CMRmap_r"
+        default="gray"
         Only relevant for the report figures.
 
     %(masker_kwargs)s
@@ -281,7 +280,7 @@ class NiftiMasker(BaseMasker):
         memory=None,
         verbose=0,
         reports=True,
-        cmap="CMRmap_r",
+        cmap="gray",
         **kwargs,
     ):
         # Mask is provided or computed
@@ -312,8 +311,7 @@ class NiftiMasker(BaseMasker):
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -605,7 +603,7 @@ class NiftiMasker(BaseMasker):
         params["clean_kwargs"] = self.clean_kwargs
 
         data = self._cache(
-            _filter_and_mask,
+            filter_and_mask,
             ignore=[
                 "verbose",
                 "memory",

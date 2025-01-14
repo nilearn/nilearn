@@ -6,7 +6,7 @@ import warnings
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
 
-def _set_mpl_backend():
+def set_mpl_backend(message=None):
     """Check if matplotlib is installed.
 
     If not installed, raise error and display warning to install necessary
@@ -17,16 +17,25 @@ def _set_mpl_backend():
     the matplotlib backend.
 
     If current backend is not usable, switch to default "Agg" backend.
+
+    Parameters
+    ----------
+    message: str, default=None
+        Message to be prepended to standard warning when matplotlib is not
+    installed.
     """
     # We are doing local imports here to avoid polluting our namespace
     try:
         import matplotlib
     except ImportError:
-        warnings.warn(
+        warning = (
             "Some dependencies of nilearn.plotting package seem to be missing."
             "\nThey can be installed with:\n"
             " pip install 'nilearn[plotting]'"
         )
+        if message is not None:
+            warning = f"{message}\n{warning}"
+        warnings.warn(warning)
         raise
     else:
         # When matplotlib was successfully imported we need to check
@@ -88,9 +97,7 @@ def rename_parameters(
             _warn_deprecated_params(
                 replacement_params, end_version, lib_name, kwargs
             )
-            kwargs = _transfer_deprecated_param_vals(
-                replacement_params, kwargs
-            )
+            kwargs = transfer_deprecated_param_vals(replacement_params, kwargs)
             return func(*args, **kwargs)
 
         return wrapper
@@ -134,7 +141,7 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
         )
 
 
-def _transfer_deprecated_param_vals(replacement_params, kwargs):
+def transfer_deprecated_param_vals(replacement_params, kwargs):
     """Reassigns new parameters \
     the values passed to their corresponding deprecated parameters \
     for the decorator replace_parameters().
@@ -188,7 +195,7 @@ def remove_parameters(removed_params, reason, end_version="future"):
         def wrapper(*args, **kwargs):
             if found := set(removed_params).intersection(kwargs):
                 message = (
-                    f'Parameter(s) {", ".join(found)} '
+                    f"Parameter(s) {', '.join(found)} "
                     f"will be removed in version {end_version}; "
                     f"{reason}"
                 )
@@ -333,7 +340,7 @@ def check_copy_header(copy_header):
 
 
 # TODO: This can be removed once MPL 3.5 is the min
-def _constrained_layout_kwargs():
+def constrained_layout_kwargs():
     import matplotlib
 
     if compare_version(matplotlib.__version__, ">=", "3.5"):

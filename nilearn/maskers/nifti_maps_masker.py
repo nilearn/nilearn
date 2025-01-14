@@ -9,7 +9,7 @@ from nilearn import _utils, image
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 
 
 class _ExtractionFunctor:
@@ -77,10 +77,8 @@ class NiftiMapsMasker(BaseMasker):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+
+    %(dtype)s.
 
     resampling_target : {"data", "mask", "maps", None}, default="data"
         Gives which image gives the final shape/size. For example, if
@@ -202,7 +200,7 @@ class NiftiMapsMasker(BaseMasker):
 
         self.keep_masked_maps = keep_masked_maps
 
-        self.cmap = kwargs.get("cmap", "CMRmap_r")
+        self.cmap = kwargs.get("cmap", "gray")
 
     def generate_report(self, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
@@ -253,8 +251,7 @@ class NiftiMapsMasker(BaseMasker):
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -293,7 +290,7 @@ class NiftiMapsMasker(BaseMasker):
 
         """
         from nilearn import plotting
-        from nilearn.reporting.html_report import _embed_img
+        from nilearn.reporting.html_report import embed_img
 
         if self._reporting_data is not None:
             maps_image = self._reporting_data["maps_image"]
@@ -345,7 +342,7 @@ class NiftiMapsMasker(BaseMasker):
                 display = plotting.plot_stat_map(
                     image.index_img(maps_image, component)
                 )
-                embeded_images.append(_embed_img(display))
+                embeded_images.append(embed_img(display))
                 display.close()
             return embeded_images
 
@@ -372,7 +369,7 @@ class NiftiMapsMasker(BaseMasker):
                 image.index_img(maps_image, component),
                 cmap=plotting.cm.black_blue,
             )
-            embeded_images.append(_embed_img(display))
+            embeded_images.append(embed_img(display))
             display.close()
         return embeded_images
 
@@ -624,7 +621,7 @@ class NiftiMapsMasker(BaseMasker):
         params["clean_kwargs"] = self.clean_kwargs
 
         region_signals, labels_ = self._cache(
-            _filter_and_extract,
+            filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
         )(
             # Images

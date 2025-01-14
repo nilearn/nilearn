@@ -18,8 +18,7 @@ from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.plotting.surf_plotting import (
-    VALID_HEMISPHERES,
-    VALID_VIEWS,
+    MATPLOTLIB_VIEWS,
     _compute_facecolors_matplotlib,
     _get_ticks_matplotlib,
     _get_view_plot_surf_matplotlib,
@@ -31,6 +30,7 @@ from nilearn.plotting.surf_plotting import (
     plot_surf_stat_map,
 )
 from nilearn.surface import (
+    InMemoryMesh,
     SurfaceImage,
     load_surf_data,
     load_surf_mesh,
@@ -196,6 +196,14 @@ EXPECTED_VIEW_MATPLOTLIB = {
         "dorsal": (90, 0),
         "ventral": (270, 0),
     },
+    "both": {
+        "right": (0, 0),
+        "left": (0, 180),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270),
+    },
 }
 
 
@@ -338,6 +346,55 @@ def test_check_surface_plotting_inputs_errors(surf_img_1d):
         )
 
 
+def test_check_surface_plotting_hemi_both_all_inputs(surf_img_1d, surf_mesh):
+    """Test that hemi="both" works as expected when all inputs are provided."""
+    hemi = "both"
+    combined_map, combined_mesh, combined_bg = check_surface_plotting_inputs(
+        surf_map=surf_img_1d,
+        surf_mesh=surf_mesh(),
+        hemi=hemi,
+        bg_map=surf_img_1d,
+    )
+    # check that the data is concatenated
+    for data in [combined_map, combined_bg]:
+        assert_array_equal(
+            data,
+            np.concatenate(
+                (
+                    surf_img_1d.data.parts["left"],
+                    surf_img_1d.data.parts["right"],
+                )
+            ),
+        )
+        assert isinstance(data, np.ndarray)
+    # check that the mesh is concatenated
+    assert combined_mesh.n_vertices == surf_mesh().n_vertices
+    assert isinstance(combined_mesh, InMemoryMesh)
+
+
+def test_check_surface_plotting_hemi_both_mesh_none(surf_img_1d):
+    """Test that hemi="both" works as expected when mesh is not provided."""
+    hemi = "both"
+    combined_map, combined_mesh, combined_bg = check_surface_plotting_inputs(
+        surf_map=surf_img_1d,
+        surf_mesh=None,
+        hemi=hemi,
+    )
+    # check that the mesh is taken from surf_map
+    assert combined_mesh.n_vertices == surf_img_1d.mesh.n_vertices
+    assert isinstance(combined_mesh, InMemoryMesh)
+
+
+def test_check_surface_plotting_hemi_error(surf_img_1d, surf_mesh):
+    """Test that an error is raised when hemi is not valid."""
+    with pytest.raises(
+        ValueError, match="hemi must be one of left, right or both"
+    ):
+        check_surface_plotting_inputs(
+            surf_map=surf_img_1d, surf_mesh=surf_mesh(), hemi="foo"
+        )
+
+
 def test_plot_surf_contours_warning_hemi(in_memory_mesh):
     """Test warning that hemi will be ignored."""
     parcellation = np.zeros((in_memory_mesh.n_vertices,))
@@ -378,17 +435,13 @@ def test_get_view_plot_surf_plotly(full_view):
         )
 
 
-@pytest.fixture
-def expected_view_matplotlib(hemi, view):
-    return EXPECTED_VIEW_MATPLOTLIB[hemi][view]
-
-
-@pytest.mark.parametrize("hemi", VALID_HEMISPHERES)
-@pytest.mark.parametrize("view", VALID_VIEWS)
-def test_get_view_plot_surf_matplotlib(hemi, view, expected_view_matplotlib):
-    assert (
-        _get_view_plot_surf_matplotlib(hemi, view) == expected_view_matplotlib
-    )
+@pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
+def test_get_view_plot_surf_matplotlib(hemi, views):
+    for v in views:
+        assert (
+            _get_view_plot_surf_matplotlib(hemi, v)
+            == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
+        )
 
 
 def test_surface_figure():
@@ -594,12 +647,32 @@ def test_add_contours(plotly, surface_image_roi):
     assert len(figure.figure.to_dict().get("data")) == 4
 
 
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
+def test_add_contours_hemi(
+    plotly,
+    surface_image_roi,
+    hemi,
+):
+    """Test that add_contours works with all hemi inputs."""
+    if hemi == "both":
+        n_vertices = surface_image_roi.mesh.n_vertices
+    else:
+        n_vertices = surface_image_roi.data.parts[hemi].shape[0]
+    figure = plot_surf(
+        surface_image_roi.mesh,
+        engine="plotly",
+        hemi=hemi,
+    )
+    figure.add_contours(surface_image_roi)
+    assert figure._coords.shape[0] == n_vertices
+
+
 def test_add_contours_plotly_surface_image(plotly, surface_image_roi):
     """Test that add_contours works with SurfaceImage."""
     figure = plot_surf(
         surf_map=surface_image_roi, hemi="left", engine="plotly"
     )
-    figure.add_contours(roi_map=surface_image_roi, hemi="left")
+    figure.add_contours(roi_map=surface_image_roi)
 
 
 def test_surface_figure_add_contours_raises_not_implemented(plotly):
@@ -669,6 +742,7 @@ def test_check_view_is_valid(view, is_valid):
     [
         ("left", True),
         ("right", True),
+        ("both", True),
         ("lft", False),
     ],
 )
@@ -691,6 +765,10 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     [
         ("left", "foo", _get_view_plot_surf_matplotlib),
         ("right", "bar", _get_view_plot_surf_plotly),
+        ("both", "lateral", _get_view_plot_surf_matplotlib),
+        ("both", "medial", _get_view_plot_surf_plotly),
+        ("both", "foo", _get_view_plot_surf_matplotlib),
+        ("both", "bar", _get_view_plot_surf_plotly),
     ],
 )
 def test_get_view_plot_surf_view_errors(hemi, view, f):
@@ -776,8 +854,8 @@ def test_plot_surf(pyplot, engine, tmp_path, rng, in_memory_mesh, bg_map):
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-@pytest.mark.parametrize("view", ["lateral", "medial"])
-@pytest.mark.parametrize("hemi", ["left", "right"])
+@pytest.mark.parametrize("view", ["anterior", "posterior"])
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
 def test_plot_surf_hemi_views(
     pyplot, engine, rng, in_memory_mesh, hemi, view, bg_map
 ):
@@ -1334,9 +1412,9 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
     "hemispheres, views",
     [
         (["right"], ["lateral"]),
-        (["left", "right"], ["lateral"]),
+        (["left", "right"], ["anterior"]),
         (["right"], ["medial", "lateral"]),
-        (["left", "right"], ["medial", "lateral"]),
+        (["left", "right"], ["dorsal", "ventral"]),
         # Check that manually set view angles work.
         (["left", "right"], [(210.0, 90.0), (15.0, -45.0)]),
     ],
@@ -1399,7 +1477,7 @@ def test_plot_img_on_surf_surf_mesh(pyplot, img_3d_mni, surf_mesh):
     plot_img_on_surf(
         img_3d_mni,
         hemispheres=["right", "left"],
-        views=["lateral"],
+        views=["anterior"],
         surf_mesh=surf_mesh,
     )
 

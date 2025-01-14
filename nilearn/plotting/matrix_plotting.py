@@ -9,7 +9,7 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
-from nilearn._utils import _constrained_layout_kwargs, fill_doc
+from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.contrasts import expression_to_contrast_vector
@@ -77,7 +77,7 @@ def _sanitize_figure_and_axes(figure, axes):
             if hasattr(fig, "set_layout_engine"):  # can be removed w/mpl 3.5
                 fig.set_layout_engine("constrained")
         else:
-            fig = plt.figure(figsize=figure, **_constrained_layout_kwargs())
+            fig = plt.figure(figsize=figure, **constrained_layout_kwargs())
         axes = plt.gca()
         own_fig = True
     elif axes is None:
@@ -85,7 +85,7 @@ def _sanitize_figure_and_axes(figure, axes):
             1,
             1,
             figsize=(7, 5),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
         own_fig = True
     else:
@@ -110,8 +110,7 @@ def _sanitize_tri(tri, allowed_values=None):
         allowed_values = VALID_TRI_VALUES
     if tri not in allowed_values:
         raise ValueError(
-            "Parameter tri needs to be one of: "
-            f"{', '.join(allowed_values)}."
+            f"Parameter tri needs to be one of: {', '.join(allowed_values)}."
         )
 
 
@@ -218,7 +217,7 @@ def plot_matrix(
     figure=None,
     axes=None,
     colorbar=True,
-    cmap=plt.cm.RdBu_r,
+    cmap="RdBu_r",
     tri="full",
     auto_fit=True,
     grid=False,
@@ -257,8 +256,10 @@ def plot_matrix(
 
     %(colorbar)s
         Default=True.
+
     %(cmap)s
-        Default=`plt.cm.RdBu_r`.
+        default="RdBu_r"
+
     tri : {'full', 'lower', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
 
@@ -376,7 +377,7 @@ def plot_contrast_matrix(
                 0.4 * n_columns_design_matrix,
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
             ),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
 
     maxval = np.max(np.abs(contrast_def))
@@ -493,7 +494,7 @@ def plot_design_matrix(
             fig_height = 10
         _, axes = plt.subplots(
             figsize=(1 + 0.23 * len(names), fig_height),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
 
     axes.imshow(X, interpolation="nearest", aspect="auto")
@@ -561,7 +562,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     n_runs = len(model_event)
     if "layout" not in fig_kwargs and "constrained_layout" not in fig_kwargs:
-        fig_kwargs.update(**_constrained_layout_kwargs())
+        fig_kwargs.update(**constrained_layout_kwargs())
     figure, axes = plt.subplots(1, 1, **fig_kwargs)
 
     # input validation
@@ -641,7 +642,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
-    cmap="bwr",
+    cmap="RdBu_r",
     output_file=None,
     **kwargs,
 ):
@@ -664,7 +665,7 @@ def plot_design_matrix_correlation(
         - ``"full"``: Plot the full matrix
 
     %(cmap)s
-        Default="bwr".
+        default="RdBu_r"
 
         This must be a diverging colormap as the correlation matrix
         will be centered on 0.
@@ -690,7 +691,8 @@ def plot_design_matrix_correlation(
     check_design_matrix(design_matrix)
 
     ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
-    if cmap not in ALLOWED_CMAP:
+    cmap_name = cmap if isinstance(cmap, str) else cmap.name
+    if cmap_name not in ALLOWED_CMAP:
         raise ValueError(f"cmap must be one of {ALLOWED_CMAP}")
 
     columns_to_drop = ["intercept", "constant"]

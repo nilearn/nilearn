@@ -195,7 +195,7 @@ preparation::
    >>> from nilearn import maskers
    >>> masker = maskers.NiftiMasker()
    >>> masker # doctest: +ELLIPSIS +NORMALIZE_WHITESPACE
-   NiftiMasker(cmap='CMRmap_r', detrend=False, dtype=None, high_pass=None,
+   NiftiMasker(cmap='gray', detrend=False, dtype=None, high_pass=None,
          high_variance_confounds=False, low_pass=None, mask_args=None,
          mask_img=None, mask_strategy='background',
          memory=None, memory_level=1, reports=True,

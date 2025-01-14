@@ -275,40 +275,13 @@ def test_fetch_localizer_contrasts_edge_cases(
     subjects,
 ):
     func.fetch_localizer_contrasts(
-        ["checkerboard"],
-        n_subjects=subjects,
-        data_dir=tmp_path,
-        verbose=1,
-        legacy_format=True,
+        ["checkerboard"], n_subjects=subjects, data_dir=tmp_path, verbose=1
     )
 
 
 def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):  # noqa: ARG001
-    # 2 subjects
     dataset = func.fetch_localizer_contrasts(
-        ["checkerboard"],
-        n_subjects=2,
-        data_dir=tmp_path,
-        verbose=1,
-        legacy_format=True,
-    )
-
-    assert isinstance(dataset, Bunch)
-    assert not hasattr(dataset, "anats")
-    assert not hasattr(dataset, "tmaps")
-    assert not hasattr(dataset, "masks")
-    assert isinstance(dataset.cmaps[0], str)
-    assert isinstance(dataset.ext_vars, np.recarray)
-    assert len(dataset.cmaps) == 2
-    assert dataset.ext_vars.size == 2
-    assert dataset.description != ""
-
-    dataset = func.fetch_localizer_contrasts(
-        ["checkerboard"],
-        n_subjects=2,
-        data_dir=tmp_path,
-        verbose=1,
-        legacy_format=False,
+        ["checkerboard"], n_subjects=2, data_dir=tmp_path, verbose=1
     )
 
     assert not hasattr(dataset, "anats")
@@ -330,7 +303,6 @@ def test_fetch_localizer_contrasts_multiple_contrasts(
         n_subjects=2,
         data_dir=tmp_path,
         verbose=1,
-        legacy_format=False,
     )
 
     assert isinstance(dataset.ext_vars, pd.DataFrame)
@@ -349,7 +321,6 @@ def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):  # noqa:
         get_masks=True,
         get_tmaps=True,
         verbose=1,
-        legacy_format=False,
     )
 
     assert isinstance(dataset.ext_vars, pd.DataFrame)
@@ -372,7 +343,6 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  #
         n_subjects=[2, 3, 5],
         data_dir=tmp_path,
         verbose=1,
-        legacy_format=False,
     )
 
     assert len(dataset2["ext_vars"]) == 3
@@ -387,23 +357,13 @@ def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  #
 def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: ARG001
     # 2 subjects
     dataset = func.fetch_localizer_calculation_task(
-        n_subjects=2, data_dir=tmp_path, verbose=1, legacy_format=False
+        n_subjects=2, data_dir=tmp_path, verbose=1
     )
 
     assert isinstance(dataset, Bunch)
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.cmaps[0], str)
     assert len(dataset["ext_vars"]) == 2
-    assert len(dataset.cmaps) == 2
-    assert dataset.description != ""
-
-    dataset = func.fetch_localizer_calculation_task(
-        n_subjects=2, data_dir=tmp_path, verbose=1, legacy_format=True
-    )
-
-    assert isinstance(dataset.ext_vars, np.recarray)
-    assert isinstance(dataset.cmaps[0], str)
-    assert dataset.ext_vars.size == 2
     assert len(dataset.cmaps) == 2
     assert dataset.description != ""
 
@@ -955,21 +915,6 @@ def test_fetch_localizer(tmp_path):
     assert isinstance(dataset["events"], str)
     assert isinstance(dataset.epi_img, str)
     assert dataset.description != ""
-
-
-def _mock_original_spm_auditory_events_file():
-    expected_events_data = {
-        "onset": [factor * 42.0 for factor in range(16)],
-        "duration": [42.0] * 16,
-        "trial_type": ["rest", "active"] * 8,
-    }
-    expected_events_data = pd.DataFrame(expected_events_data)
-    expected_events_data_string = expected_events_data.to_csv(
-        sep="\t",
-        index=0,
-        columns=["onset", "duration", "trial_type"],
-    )
-    return expected_events_data_string
 
 
 @pytest.mark.parametrize("legacy", [True, False])
