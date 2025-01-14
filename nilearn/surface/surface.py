@@ -382,12 +382,12 @@ def _projection_matrix(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is not `None`.
 
-    n_points : :obj:`int` or None, optional
+    n_points : :obj:`int` or None, default=20
         How many samples are drawn around each vertex and averaged. If `None`,
         use a reasonable default for the chosen sampling strategy (20 for
         'ball' or 10 for lines ie using `line` or an `inner_mesh`).
         For performance reasons, if using kind="ball", choose `n_points` in
-        [10, 20, 40, 80, 160] (default is 20), because cached positions are
+        [10, 20, 40, 80, 160], because cached positions are
         available.
 
     mask : :obj:`numpy.ndarray` of shape img_shape or `None`, optional
@@ -613,8 +613,8 @@ def vol_to_surf(
         If `None`, use a reasonable default for the chosen sampling strategy
         (20 for 'ball' or 10 for 'line').
         For performance reasons, if using `kind` ="ball", choose `n_samples` in
-        [10, 20, 40, 80, 160] (default is 20), because cached positions are
-        available.
+        [10, 20, 40, 80, 160] (defaults to 20 if None is passed),
+        because cached positions are available.
 
     mask_img : Niimg-like object or `None`, default=None
         Samples falling out of this mask or out of the image are ignored.

@@ -185,11 +185,11 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         To disable convergence detection based on inertia, set
         max_no_improvement to None.
 
-    random_state : :obj:`int`, RandomState instance or None (default)
+    random_state : :obj:`int`, RandomState instance or None, default=0
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
 
-    scaling : :obj:`bool`, optional (default False)
+    scaling : :obj:`bool`, default=False
         If scaling is True, each cluster is scaled by the square root of its
         size during transform(), preserving the l2-norm of the image.
         inverse_transform() will apply inversed scaling to yield an image with

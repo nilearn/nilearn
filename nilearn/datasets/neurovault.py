@@ -637,7 +637,7 @@ class Pattern(_SpecialValue):
     pattern : str
         The pattern to try to match to candidates.
 
-    flags : int, optional (default=0)
+    flags : int, default=0
         Value for ``re.match`` `flags` parameter,
         e.g. ``re.IGNORECASE``. The default (0), is the default value
         used by ``re.match``.
@@ -1039,7 +1039,7 @@ def _scroll_server_results(
     prefix_msg : str, default=''
         Prefix for all log messages.
 
-    verbose : int, optional (default=3)
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     Yields
@@ -2777,7 +2777,7 @@ def fetch_neurovault_ids(
     fetch_neurosynth_words : :obj:`bool`, default=False
         Whether to collect words from Neurosynth.
 
-    resample : :obj:`bool`, (default=False)
+    resample : :obj:`bool`, default=False
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 

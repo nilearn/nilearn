@@ -1537,15 +1537,15 @@ class FREMRegressor(_BaseDecoder):
         %(regressor_options)s
         Default 'svr'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,
-        (default None)
+    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
+        default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv : :obj:`int` or cross-validation generator, (default 30)
+    cv : :obj:`int` or cross-validation generator, default=30
         If int, number of shuffled splits returned, which is usually the right
         way to train many different classifiers. A good trade-off between
         stability of the aggregated model and computation time is 50 splits.
@@ -1566,7 +1566,7 @@ class FREMRegressor(_BaseDecoder):
 
     clustering_percentile : :obj:`int`, :obj:`float`, \
         in closed interval [0, 100] \
-        (default 10)
+        default=10
         Used to perform a fast ReNA clustering on input data as a first step of
         fit. It agglomerates similar features together to reduce their number
         by this percentile. ReNA is typically efficient for cluster_percentile
@@ -1574,7 +1574,7 @@ class FREMRegressor(_BaseDecoder):
 
     screening_percentile : :obj:`int`, :obj:`float`, \
         in closed interval [0, 100] \
-        (default 20)
+        default=20
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
@@ -1690,20 +1690,20 @@ class FREMClassifier(_BaseDecoder):
 
     Parameters
     ----------
-    estimator : :obj:`str`, optional, (default 'svc')
+    estimator : :obj:`str`, default 'svc')
         The estimator to choose among:
         %(classifier_options)s
 
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,\
-        (default None)
+        default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv : :obj:`int` or cross-validation generator, (default 30)
+    cv : :obj:`int` or cross-validation generator, default=30
         If int, number of stratified shuffled splits returned, which is usually
         the right way to train many different classifiers. A good trade-off
         between stability of the aggregated model and computation time is
@@ -1711,7 +1711,7 @@ class FREMClassifier(_BaseDecoder):
         Can also be a cross-validation generator.
 
     param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such. \
-                 Default None
+                 default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -1723,8 +1723,8 @@ class FREMClassifier(_BaseDecoder):
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
     clustering_percentile : :obj:`int`, :obj:`float`, \
-        in closed interval [0, 100] \
-        (default 10)
+        in closed interval [0, 100], \
+        default=10
         Used to perform a fast ReNA clustering on input data as a first step of
         fit. It agglomerates similar features together to reduce their number
         down to this percentile. ReNA is typically efficient for
@@ -1732,7 +1732,7 @@ class FREMClassifier(_BaseDecoder):
 
     screening_percentile : :obj:`int`, :obj:`float`, \
         in closed interval [0, 100], \
-        (default 20)
+        default=20
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
@@ -1748,7 +1748,7 @@ class FREMClassifier(_BaseDecoder):
         e.g. scorer(estimator, X_test, y_test)
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
-        'recall' or 'roc_auc'. (default 'roc_auc').
+        'recall' or 'roc_auc'; default='roc_auc'
     %(smoothing_fwhm)s
     %(standardize)s
     %(target_affine)s

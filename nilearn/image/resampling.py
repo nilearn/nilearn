@@ -393,7 +393,7 @@ def resample_img(
         Fortran ordering.
 
     clip : :obj:`bool`, default=True
-        If True (default) all resampled image values above max(img) and
+        If True, all resampled image values above max(img) and
         under min(img) are clipped to min(img) and max(img). Note that
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
@@ -761,8 +761,8 @@ def resample_to_img(
         Fortran ordering.
 
     clip : :obj:`bool`, default=False
-        If False (default) no clip is performed.
-        If True all resampled image values above max(img)
+        If False, no clip is performed.
+        If True, all resampled image values above max(img)
         and under min(img) are cllipped to min(img) and max(img).
 
     fill_value : :obj:`float`, default=0
@@ -831,8 +831,8 @@ def reorder_img(img, resample=None, copy_header=False):
 
     resample : None or :obj:`str` in {'continuous', 'linear', 'nearest'}, \
         default=None
-        If resample is None (default), no resampling is performed, the
-        axes are only permuted.
+        If resample is None, no resampling is performed,
+        the axes are only permuted.
         Otherwise resampling is performed and 'resample' will
         be passed as the 'interpolation' argument into
         resample_img.

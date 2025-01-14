@@ -377,7 +377,7 @@ def plot_img(
 
     decimals : :obj:`int` or :obj:`bool`, default=False
         Number of decimal places on slice position annotation.
-        If False (default),
+        If False,
         the slice position is integer without decimal point.
 
     %(cmap)s

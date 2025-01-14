@@ -145,7 +145,7 @@ def prox_tvl1(
     init : array of shape as im
         Starting point for the optimization.
 
-    check_gap_frequency : int, optional (default 4)
+    check_gap_frequency : int, default=4
         Frequency at which duality gap is checked for convergence.
 
     Returns
@@ -320,7 +320,7 @@ def prox_tvl1_with_intercept(
     w : ndarray, shape (w_size,)
         The point at which the prox is being computed
 
-    init : ndarray, shape (w_size - 1,), optional (default None)
+    init : ndarray, shape (w_size - 1,), default=None
         Initialization vector for the prox.
 
     max_iter : int

@@ -129,7 +129,7 @@ def make_glm_report(
 
     height_control :  :obj:`str`, default='fpr'
         false positive control meaning of cluster forming
-        threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or None.
+        threshold: 'fpr' or 'fdr' or 'bonferroni' or None.
 
     two_sided : :obj:`bool`, default=False
         Whether to employ two-sided thresholding or to evaluate positive values
