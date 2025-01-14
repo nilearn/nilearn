@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils import _constrained_layout_kwargs
+from nilearn._utils import constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -310,7 +310,7 @@ def test_show_contrast_matrix_axes():
         frame_times, drift_model="polynomial", drift_order=3
     )
     contrast = np.ones(4)
-    fig, ax = plt.subplots(**_constrained_layout_kwargs())
+    fig, ax = plt.subplots(**constrained_layout_kwargs())
     plot_contrast_matrix(contrast, dmtx, axes=ax)
 
     # to actually check we need get_layout_engine, but even without it the

@@ -14,7 +14,7 @@ from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
 from nilearn._utils import fill_doc, logger
-from nilearn._utils.helpers import _transfer_deprecated_param_vals
+from nilearn._utils.helpers import transfer_deprecated_param_vals
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
@@ -290,7 +290,7 @@ class DictLearning(_BaseDecomposition):
 
         logger.log(" Learning dictionary", verbose=self.verbose, stack_level=2)
 
-        kwargs = _transfer_deprecated_param_vals(
+        kwargs = transfer_deprecated_param_vals(
             {"n_iter": "max_iter"}, {"max_iter": max_iter}
         )
         self.components_, _ = self._cache(dict_learning_online)(

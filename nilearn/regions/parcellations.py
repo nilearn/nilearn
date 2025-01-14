@@ -20,7 +20,7 @@ from ..decomposition._multi_pca import _MultiPCA
 from .hierarchical_kmeans_clustering import HierarchicalKMeans
 from .rena_clustering import (
     ReNA,
-    _make_edges_surface,
+    make_edges_surface,
 )
 
 
@@ -53,7 +53,7 @@ def _connectivity_surface(mask_img):
     for part in mask_img.mesh.parts:
         face_part = mask_img.mesh.parts[part].faces
         mask_part = mask_img.data.parts[part]
-        edges, edge_mask = _make_edges_surface(face_part, mask_part)
+        edges, edge_mask = make_edges_surface(face_part, mask_part)
         # keep only the edges that are in the mask
         edges = edges[:, edge_mask]
         # Reorder the indices of the graph

@@ -21,7 +21,7 @@ from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.cm import cold_hot, mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
-from nilearn.plotting.displays._slicers import _get_cbar_ticks
+from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
@@ -510,7 +510,7 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
     if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
         return np.arange(vmin, vmax + 1)
     else:
-        return _get_cbar_ticks(vmin, vmax, threshold, n_ticks)
+        return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
 def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):

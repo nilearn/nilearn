@@ -216,7 +216,7 @@ def _circular_pairwise(iterable):
     return itertools.zip_longest(a, b, fillvalue=next(b, None))
 
 
-def _make_edges_surface(faces, mask):
+def make_edges_surface(faces, mask):
     """Create the edges set: Returns a list of edges for a surface mesh.
 
     Parameters
@@ -280,7 +280,7 @@ def _make_edges_and_weights_surface(X, mask_img):
         else:
             mask_part = mask_img.data.parts[part][:, 0]
 
-        edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
+        edges_unmasked, edges_mask = make_edges_surface(face_part, mask_part)
 
         idxs = np.array(range(mask_part.sum())) + len_previous_mask
         weights_unmasked = _compute_weights_surface(
