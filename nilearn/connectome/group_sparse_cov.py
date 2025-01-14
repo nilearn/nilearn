@@ -616,7 +616,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
 
         """
         for x in subjects:
-            check_array(x)
+            check_array(x, accept_sparse=False)
 
         if self.memory is None:
             self.memory = Memory(location=None)
@@ -1090,7 +1090,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
 
         """
         for x in subjects:
-            check_array(x)
+            check_array(x, accept_sparse=False)
 
         # Empirical covariances
         emp_covs, n_samples = empirical_covariances(
