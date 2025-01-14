@@ -1,6 +1,7 @@
 """Functions for surface manipulation."""
 
 import abc
+import copy
 import gzip
 import pathlib
 import warnings
@@ -19,7 +20,8 @@ from nilearn import _utils
 from nilearn._utils import stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.image import get_data, load_img, resampling
+from nilearn.image import get_data as get_vol_data
+from nilearn.image import load_img, resampling
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -728,7 +730,7 @@ def vol_to_surf(
     img = load_img(img)
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
-        mask = get_data(
+        mask = get_vol_data(
             resampling.resample_to_img(
                 mask_img,
                 img,
@@ -742,7 +744,7 @@ def vol_to_surf(
         mask = None
     original_dimension = len(img.shape)
     img = _utils.check_niimg(img, atleast_4d=True)
-    frames = np.rollaxis(get_data(img), -1)
+    frames = np.rollaxis(get_vol_data(img), -1)
     mesh = load_surf_mesh(surf_mesh)
     if inner_mesh is not None:
         inner_mesh = load_surf_mesh(inner_mesh)
@@ -858,7 +860,7 @@ def load_surf_data(surf_data):
             )
 
             if surf_data.endswith(("nii", "nii.gz", "mgz")):
-                data_part = np.squeeze(get_data(load(surf_data)))
+                data_part = np.squeeze(get_vol_data(load(surf_data)))
             elif surf_data.endswith(("area", "curv", "sulc", "thickness")):
                 data_part = fs.io.read_morph_data(surf_data)
             elif surf_data.endswith("annot"):
@@ -966,6 +968,44 @@ def _gifti_img_to_mesh(gifti_img):
     return coords, faces
 
 
+def combine_hemispheres_meshes(mesh):
+    """Combine the left and right hemisphere meshes such that both are
+    represented in the same mesh.
+
+    Parameters
+    ----------
+    mesh : :obj:`~nilearn.surface.PolyMesh`
+        The mesh object containing the left and right hemisphere meshes.
+
+    Returns
+    -------
+    combined_mesh : :obj:`~nilearn.surface.InMemoryMesh`
+        The combined mesh object containing both left and right hemisphere
+        meshes.
+    """
+    # calculate how much the right hemisphere should be offset
+    left_max_x = mesh.parts["left"].coordinates[:, 0].max()
+    right_min_x = mesh.parts["right"].coordinates[:, 0].min()
+    offset = (
+        left_max_x - right_min_x + 1
+    )  # add a small buffer to avoid touching
+
+    combined_coords = np.concatenate(
+        (
+            mesh.parts["left"].coordinates,
+            mesh.parts["right"].coordinates + np.asarray([offset, 0, 0]),
+        )
+    )
+    combined_faces = np.concatenate(
+        (
+            mesh.parts["left"].faces,
+            mesh.parts["right"].faces
+            + mesh.parts["left"].coordinates.shape[0],
+        )
+    )
+    return InMemoryMesh(combined_coords, combined_faces)
+
+
 def check_mesh_is_fsaverage(mesh):
     """Check that :term:`mesh` data is either a :obj:`str`, or a :obj:`dict`
     with sufficient entries. Basically ensures that the mesh data is
@@ -1029,6 +1069,9 @@ def check_mesh_and_data(mesh, data):
         Checked data.
     """
     mesh = load_surf_mesh(mesh)
+
+    _validate_mesh(mesh)
+
     data = load_surf_data(data)
     # Check that mesh coordinates has a number of nodes
     # equal to the size of the data.
@@ -1038,16 +1081,39 @@ def check_mesh_and_data(mesh, data):
             f"in mesh ({len(mesh.coordinates)}) and "
             f"size of surface data ({len(data)})"
         )
-    # Check that the indices of faces are consistent with the
-    # mesh coordinates. That is, we shouldn't have an index
-    # larger or equal to the length of the coordinates array.
-    if mesh.faces.max() >= len(mesh.coordinates):
-        raise ValueError(
-            "Mismatch between the indices of faces and the number of nodes. "
-            f"Maximum face index is {mesh.faces.max()} "
-            f"while coordinates array has length {len(mesh.coordinates)}."
-        )
+
     return mesh, data
+
+
+def _validate_mesh(mesh):
+    """Check mesh coordinates and faces.
+
+    Mesh coordinates and faces must be numpy arrays.
+
+    Coordinates must be finite values.
+
+    Check that the indices of faces are consistent
+    with the mesh coordinates.
+    That is, we shouldn't have an index
+    - larger or equal to the length of the coordinates array
+    - negative
+    """
+    non_finite_mask = np.logical_not(np.isfinite(mesh.coordinates))
+    if non_finite_mask.any():
+        raise ValueError(
+            "Mesh coordinates must be finite. "
+            "Current coordinates contains NaN or Inf values."
+        )
+
+    msg = (
+        "Mismatch between the indices of faces and the number of nodes.\n"
+        "Indices into the points and must be in the "
+        f"range 0 <= i < {len(mesh.coordinates)} but found value "
+    )
+    if mesh.faces.max() >= len(mesh.coordinates):
+        raise ValueError(f"{msg}{mesh.faces.max()}")
+    if mesh.faces.min() < 0:
+        raise ValueError(f"{msg}{mesh.faces.min()}")
 
 
 # function to figure out datatype and load data
@@ -1117,15 +1183,17 @@ def load_surf_mesh(surf_mesh):
         try:
             coords, faces = surf_mesh
             mesh = InMemoryMesh(coordinates=coords, faces=faces)
-        except Exception:
+        except Exception as e:
+            print(str(e))
             raise ValueError(
-                "If a list or tuple is given as input, "
-                "it must have two elements, the first is "
-                "a Numpy array containing the x-y-z coordinates "
-                "of the mesh vertices, the second is a Numpy "
-                "array containing  the indices (into coords) of "
-                "the mesh faces. The input was a list with "
-                f"{len(surf_mesh)} elements."
+                "\nIf a list or tuple is given as input, "
+                "it must have two elements,\n"
+                "the first is a Numpy array containing the x-y-z coordinates "
+                "of the mesh vertices,\n"
+                "the second is a Numpy array "
+                "containing the indices (into coords) of the mesh faces.\n"
+                f"The input was a {surf_mesh.__class__.__name__} with "
+                f"{len(surf_mesh)} elements: {[type(x) for x in surf_mesh]}."
             )
     elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
@@ -1139,8 +1207,7 @@ def load_surf_mesh(surf_mesh):
             "Freesurfer specific files such as "
             f"{_stringify(FREESURFER_MESH_EXTENSIONS)}"
             "or two Numpy arrays organized in a list, tuple or "
-            'a namedtuple with the fields "coordinates" and '
-            '"faces"'
+            'a namedtuple with the fields "coordinates" and "faces"'
         )
 
     return mesh
@@ -1242,6 +1309,44 @@ class PolyData:
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.shape}>"
+
+    def _get_min_max(self):
+        """Get min and max across parts.
+
+        Returns
+        -------
+        vmin : float
+
+        vmax : float
+        """
+        vmin = min(x.min() for x in self.parts.values())
+        vmax = max(x.max() for x in self.parts.values())
+        return vmin, vmax
+
+    def _check_ndims(self, dim, var_name="img"):
+        """Check if the data is of a given dimension.
+
+        Raise error if not.
+
+        Parameters
+        ----------
+        dim : int
+            Dimensions the data should have.
+
+        var_name : str, optional
+            Name of the variable to include in the error message.
+
+        Returns
+        -------
+        raise ValueError if the data of the SurfaceImage is not of the given
+        dimension.
+        """
+        if not all(x.ndim == dim for x in self.parts.values()):
+            msg = [f"{v}D for {k}" for k, v in self.parts.items()]
+            raise ValueError(
+                f"Data for each part of {var_name} should be {dim}D. "
+                f"Found: {', '.join(msg)}."
+            )
 
     def to_filename(self, filename):
         """Save data to gifti.
@@ -1352,9 +1457,17 @@ class InMemoryMesh(SurfaceMesh):
     faces: np.ndarray
 
     def __init__(self, coordinates, faces):
+        if not isinstance(coordinates, np.ndarray) or not isinstance(
+            faces, np.ndarray
+        ):
+            raise TypeError(
+                "Mesh coordinates and faces must be numpy arrays.\n"
+                f"Got {type(coordinates)=} and {type(faces)=}."
+            )
         self.coordinates = coordinates
         self.faces = faces
         self.n_vertices = coordinates.shape[0]
+        _validate_mesh(self)
 
     def __getitem__(self, index):
         if index == 0:
@@ -1397,7 +1510,9 @@ class FileMesh(SurfaceMesh):
         -------
         :obj:`numpy.ndarray`
         """
-        return load_surf_mesh(self.file_path).coordinates
+        mesh = load_surf_mesh(self.file_path)
+        _validate_mesh(mesh)
+        return mesh.coordinates
 
     @property
     def faces(self):
@@ -1407,7 +1522,9 @@ class FileMesh(SurfaceMesh):
         -------
         :obj:`numpy.ndarray`
         """
-        return load_surf_mesh(self.file_path).faces
+        mesh = load_surf_mesh(self.file_path)
+        _validate_mesh(mesh)
+        return mesh.faces
 
     def loaded(self):
         """Load surface mesh into memory.
@@ -1507,8 +1624,7 @@ def _check_data_and_mesh_compat(mesh, data):
     if data_keys != mesh_keys:
         diff = data_keys.symmetric_difference(mesh_keys)
         raise ValueError(
-            "Data and mesh do not have the same keys. "
-            f"Offending keys: {diff}"
+            f"Data and mesh do not have the same keys. Offending keys: {diff}"
         )
     for key in mesh_keys:
         if data.parts[key].shape[0] != mesh.parts[key].n_vertices:
@@ -1516,6 +1632,31 @@ def _check_data_and_mesh_compat(mesh, data):
                 f"Data shape does not match number of vertices for '{key}':\n"
                 f"- data shape: {data.parts[key].shape}\n"
                 f"- n vertices: {mesh.parts[key].n_vertices}"
+            )
+
+
+def check_same_n_vertices(mesh_1, mesh_2):
+    """Check that 2 PolyMesh have the same keys and that n vertices match.
+
+    Parameters
+    ----------
+    mesh_1: PolyMesh
+
+    mesh_2: PolyMesh
+    """
+    keys_1, keys_2 = set(mesh_1.parts.keys()), set(mesh_2.parts.keys())
+    if keys_1 != keys_2:
+        diff = keys_1.symmetric_difference(keys_2)
+        raise ValueError(
+            f"Meshes do not have the same keys. Offending keys: {diff}"
+        )
+    for key in keys_1:
+        if mesh_1.parts[key].n_vertices != mesh_2.parts[key].n_vertices:
+            raise ValueError(
+                f"Number of vertices do not match for '{key}'."
+                "number of vertices in mesh_1: "
+                f"{mesh_1.parts[key].n_vertices}; "
+                f"in mesh_2: {mesh_2.parts[key].n_vertices}"
             )
 
 
@@ -1658,9 +1799,7 @@ class SurfaceImage:
 
         if not isinstance(data, (PolyData, dict)):
             raise TypeError(
-                "'data' must be one of"
-                "[PolyData, dict].\n"
-                f"Got {type(data)}"
+                f"'data' must be one of[PolyData, dict].\nGot {type(data)}"
             )
 
         if isinstance(data, PolyData):
@@ -1703,7 +1842,7 @@ class SurfaceImage:
              :obj:`pathlib.Path`, default=None
             Inner mesh to pass to :func:`nilearn.surface.vol_to_surf`.
 
-        vol_to_surf_kwargs : dict[str, Any]
+        vol_to_surf_kwargs : :obj:`dict` [ :obj:`str` , Any]
             Dictionary of extra key-words arguments to pass
             to :func:`nilearn.surface.vol_to_surf`.
 
@@ -1753,3 +1892,160 @@ class SurfaceImage:
         data = PolyData(left=texture_left, right=texture_right)
 
         return cls(mesh=mesh, data=data)
+
+
+def get_data(img):
+    """Concatenate the data of a SurfaceImage across hemispheres and return
+    as a numpy array.
+
+    Parameters
+    ----------
+    img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
+        SurfaceImage whose data to concatenate and extract.
+
+    Returns
+    -------
+    :obj:`~numpy.ndarray`
+        Concatenated data across hemispheres.
+    """
+    if isinstance(img, SurfaceImage):
+        data = img.data
+    return np.concatenate(list(data.parts.values()), axis=0)
+
+
+def concat_imgs(imgs):
+    """Concatenate the data of a list or tuple of SurfaceImages.
+
+    Assumes all images have same meshes.
+
+    Parameters
+    ----------
+    imgs : :obj:`list` or :obj:`tuple` \
+           of :obj:`~nilearn.surface.SurfaceImage` object
+
+    Returns
+    -------
+    SurfaceImage object
+    """
+    if not isinstance(imgs, (tuple, list)) or any(
+        not isinstance(x, SurfaceImage) for x in imgs
+    ):
+        raise TypeError(
+            "'imgs' must be a list or a tuple of SurfaceImage instances."
+        )
+
+    if len(imgs) == 1:
+        return imgs[0]
+
+    for i, img in enumerate(imgs):
+        check_same_n_vertices(img.mesh, imgs[0].mesh)
+        imgs[i] = at_least_2d(img)
+
+    output_data = {}
+    for part in imgs[0].data.parts:
+        tmp = [img.data.parts[part] for img in imgs]
+        output_data[part] = np.concatenate(tmp, axis=1)
+
+    return new_img_like(imgs[0], data=output_data)
+
+
+def mean_img(img):
+    """Compute mean of SurfaceImage over time points (for 'time series').
+
+    Parameters
+    ----------
+    img : SurfaceImage
+
+    Returns
+    -------
+    SurfaceImage
+    """
+    if len(img.shape) < 2 or img.shape[1] < 2:
+        data = img.data
+    else:
+        data = {
+            part: np.mean(value, axis=1).astype(float)
+            for part, value in img.data.parts.items()
+        }
+    return new_img_like(img, data=data)
+
+
+def iter_img(img, return_iterator=True):
+    """Iterate over a SurfaceImage object in the 2nd dimension.
+
+    Parameters
+    ----------
+    imgs : SurfaceImage object
+
+    Returns
+    -------
+    Iterator or list of  SurfaceImage
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    output = (index_img(img, i) for i in range(at_least_2d(img).shape[1]))
+    return output if return_iterator else list(output)
+
+
+def index_img(img, index):
+    """Indexes into a 2D SurfaceImage in the second dimension.
+
+    Common use cases include extracting an image out of `img` or
+    creating a 2D image whose data is a subset of `img` data.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    index : Any type compatible with numpy array indexing
+        Used for indexing the 2D data array in the 2nd dimension.
+
+    Returns
+    -------
+    a SurfaceImage object
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    img = at_least_2d(img)
+    return new_img_like(img, data=_extract_data(img, index))
+
+
+def _extract_data(img, index):
+    """Extract data of a SurfaceImage a specified indices.
+
+    Parameters
+    ----------
+    img : SurfaceImage object
+
+    index : Any type compatible with numpy array indexing
+        Used for indexing the 2D data array in the 2nd dimension.
+
+    Returns
+    -------
+    a dict where each value contains the data extracted
+    for each part
+    """
+    if not isinstance(img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    mesh = img.mesh
+    data = img.data
+
+    last_dim = 1 if isinstance(index, int) else len(index)
+
+    return {
+        hemi: data.parts[hemi][:, index]
+        .copy()
+        .reshape(mesh.parts[hemi].n_vertices, last_dim)
+        for hemi in data.parts
+    }
+
+
+def new_img_like(ref_img, data):
+    """Create a new SurfaceImage instance with new data."""
+    if not isinstance(ref_img, SurfaceImage):
+        raise TypeError("Input must a be SurfaceImage.")
+    mesh = ref_img.mesh
+    return SurfaceImage(
+        mesh=copy.deepcopy(mesh),
+        data=data,
+    )

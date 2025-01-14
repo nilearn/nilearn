@@ -39,6 +39,11 @@ A standard analysis using mass-univariate :term:`GLM`
 (here permuted to have exact correction for multiple comparisons) gives a
 much clearer view of the important regions.
 
+.. seealso::
+
+    For more information
+    see the :ref:`dataset description <oasis_maps>`.
+
 ____
 
 .. include:: ../../../examples/masker_note.rst
@@ -60,12 +65,12 @@ from nilearn.datasets import fetch_oasis_vbm
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker
 
-n_subjects = 100  # more subjects requires more memory
+n_subjects = 200  # more subjects requires more memory
 
 # %%
 # Load Oasis dataset
 # ------------------
-oasis_dataset = fetch_oasis_vbm(n_subjects=n_subjects, legacy_format=False)
+oasis_dataset = fetch_oasis_vbm(n_subjects=n_subjects)
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars["age"].to_numpy()
 
@@ -107,7 +112,7 @@ mask = nifti_masker.inverse_transform(variance_threshold.get_support())
 
 # %%
 # Prediction pipeline with :term:`ANOVA` and SVR using
-# :class:`nilearn.decoding.DecoderRegressor` Object
+# :class:`~nilearn.decoding.DecoderRegressor` Object
 #
 # In nilearn we can benefit from the built-in DecoderRegressor object to
 # do :term:`ANOVA` with SVR instead of manually defining the whole pipeline.
@@ -154,9 +159,13 @@ from nilearn.plotting import plot_stat_map, show
 bg_filename = gray_matter_map_filenames[0]
 z_slice = 0
 display = plot_stat_map(
-    weight_img, bg_img=bg_filename, display_mode="z", cut_coords=[z_slice]
+    weight_img,
+    bg_img=bg_filename,
+    display_mode="z",
+    cut_coords=[z_slice],
+    title="SVM weights",
+    cmap="cold_hot",
 )
-display.title("SVM weights")
 show()
 
 # %%
@@ -206,24 +215,22 @@ signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
 # Show results
 threshold = -np.log10(0.1)  # 10% corrected
 
-fig = plt.figure(figsize=(5.5, 7.5), facecolor="k")
+n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
 
-display = plot_stat_map(
+title = (
+    "Negative $\\log_{10}$ p-values\n(Non-parametric + max-type correction)"
+    f"\n{int(n_detections)} detections"
+)
+
+plot_stat_map(
     signed_neg_log_pvals_unmasked,
     bg_img=bg_filename,
     threshold=threshold,
-    cmap=plt.cm.RdBu_r,
     display_mode="z",
     cut_coords=[z_slice],
-    figure=fig,
+    figure=plt.figure(figsize=(5.5, 7.5), facecolor="k"),
+    title=title,
 )
-title = (
-    "Negative $\\log_{10}$ p-values\n(Non-parametric + max-type correction)"
-)
-display.title(title)
-
-n_detections = (get_data(signed_neg_log_pvals_unmasked) > threshold).sum()
-print(f"\n{int(n_detections)} detections")
 
 show()
 

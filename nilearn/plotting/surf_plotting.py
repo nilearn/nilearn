@@ -21,7 +21,7 @@ from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.cm import cold_hot, mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
-from nilearn.plotting.displays._slicers import _get_cbar_ticks
+from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
@@ -38,8 +38,17 @@ from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
 )
 
-VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
-VALID_HEMISPHERES = "left", "right"
+VALID_VIEWS = (
+    "anterior",
+    "posterior",
+    "medial",
+    "lateral",
+    "dorsal",
+    "ventral",
+    "left",
+    "right",
+)
+VALID_HEMISPHERES = "left", "right", "both"
 
 # subset of data format extensions supported
 DATA_EXTENSIONS = (
@@ -61,6 +70,14 @@ MATPLOTLIB_VIEWS = {
     "right": {
         "lateral": (0, 0),
         "medial": (0, 180),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270),
+    },
+    "both": {
+        "right": (0, 0),
+        "left": (0, 180),
         "dorsal": (90, 0),
         "ventral": (270, 0),
         "anterior": (0, 90),
@@ -129,18 +146,24 @@ LAYOUT = {
 
 def _get_camera_view_from_string_view(hemi, view):
     """Return plotly camera parameters from string view."""
-    if view == "lateral":
-        return CAMERAS[hemi]
-    elif view == "medial":
-        return CAMERAS[
-            (
-                VALID_HEMISPHERES[0]
-                if hemi == VALID_HEMISPHERES[1]
-                else VALID_HEMISPHERES[1]
-            )
-        ]
-    else:
-        return CAMERAS[view]
+    if hemi in ["left", "right"]:
+        if view == "lateral":
+            return CAMERAS[hemi]
+        elif view == "medial":
+            return CAMERAS[
+                (
+                    VALID_HEMISPHERES[0]
+                    if hemi == VALID_HEMISPHERES[1]
+                    else VALID_HEMISPHERES[1]
+                )
+            ]
+    elif hemi == "both" and view in ["lateral", "medial"]:
+        raise ValueError(
+            "Invalid view definition: when hemi is 'both', "
+            "view cannot be 'lateral' or 'medial'.\n"
+            "Maybe you meant 'left' or 'right'?"
+        )
+    return CAMERAS[view]
 
 
 def _get_camera_view_from_elevation_and_azimut(view):
@@ -365,7 +388,9 @@ def _plot_surf_plotly(
     )
 
     # save figure
-    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
+    plotly_figure = PlotlySurfaceFigure(
+        figure=fig, output_file=output_file, hemi=hemi
+    )
 
     if output_file is not None:
         if not is_kaleido_installed():
@@ -388,6 +413,12 @@ def _get_view_plot_surf_matplotlib(hemi, view):
     _check_views([view])
     _check_hemispheres([hemi])
     if isinstance(view, str):
+        if hemi == "both" and view in ["lateral", "medial"]:
+            raise ValueError(
+                "Invalid view definition: when hemi is 'both', "
+                "view cannot be 'lateral' or 'medial'.\n"
+                "Maybe you meant 'left' or 'right'?"
+            )
         return MATPLOTLIB_VIEWS[hemi][view]
     return view
 
@@ -479,7 +510,7 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
     if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
         return np.arange(vmin, vmax + 1)
     else:
-        return _get_cbar_ticks(vmin, vmax, threshold, n_ticks)
+        return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
 def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
@@ -719,6 +750,10 @@ def _plot_surf_matplotlib(
                 orientation="vertical",
             )
 
+        # fix floating point bug causing highest to sometimes surpass 1
+        # (for example 1.0000000000000002)
+        face_colors[face_colors > 1] = 1
+
         p3dcollec.set_facecolors(face_colors)
         p3dcollec.set_edgecolors(face_colors)
 
@@ -736,7 +771,7 @@ def plot_surf(
     surf_map=None,
     bg_map=None,
     hemi="left",
-    view="lateral",
+    view=None,
     engine="matplotlib",
     cmap=None,
     symmetric_cmap=False,
@@ -948,6 +983,9 @@ def plot_surf(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+
     parameters_not_implemented_in_plotly = {
         "avg_method": avg_method,
         "figure": figure,
@@ -1127,7 +1165,7 @@ def plot_surf_contours(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    hemi : {"left", "right", None}, default=None
+    hemi : {"left", "right", "both", None}, default=None
         Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
         is passed as ``roi_map``
         and / or if PolyMesh is passed as ``surf_mesh``.
@@ -1303,13 +1341,13 @@ def plot_surf_stat_map(
     stat_map=None,
     bg_map=None,
     hemi="left",
-    view="lateral",
+    view=None,
     engine="matplotlib",
     threshold=None,
     alpha=None,
     vmin=None,
     vmax=None,
-    cmap="cold_hot",
+    cmap="RdBu_r",
     colorbar=True,
     symmetric_cbar="auto",
     cbar_tick_format="auto",
@@ -1400,6 +1438,7 @@ def plot_surf_stat_map(
         as transparent.
 
     %(cmap)s
+        default="RdBu_r"
 
     %(cbar_tick_format)s
         Default="auto" which will select:
@@ -1489,6 +1528,10 @@ def plot_surf_stat_map(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    # set default view to dorsal if hemi is both and view is not set
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+
     stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
     )
@@ -1685,7 +1728,7 @@ def plot_img_on_surf(
     vmax=None,
     threshold=None,
     symmetric_cbar="auto",
-    cmap="cold_hot",
+    cmap="RdBu_r",
     cbar_tick_format="%i",
     **kwargs,
 ):
@@ -1722,7 +1765,7 @@ def plot_img_on_surf(
 
     hemispheres : :obj:`list` of :obj:`str`, default=None
         Hemispheres to display.
-        Will default to ``['left', 'right']`` if ``None`` is passed.
+        Will default to ``['left', 'right']`` if ``None`` or "both" is passed.
 
     inflate : :obj:`bool`, default=False
         If True, display images in inflated brain.
@@ -1747,7 +1790,7 @@ def plot_img_on_surf(
     %(threshold)s
     %(symmetric_cbar)s
     %(cmap)s
-        Default='cold_hot'.
+        Default="RdBu_r".
     %(cbar_tick_format)s
     kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.
@@ -1763,7 +1806,7 @@ def plot_img_on_surf(
         accepted by plot_img_on_surf.
 
     """
-    if hemispheres is None:
+    if hemispheres in (None, "both"):
         hemispheres = ["left", "right"]
     if views is None:
         views = ["lateral", "medial"]
@@ -1893,7 +1936,7 @@ def plot_surf_roi(
     roi_map=None,
     bg_map=None,
     hemi="left",
-    view="lateral",
+    view=None,
     engine="matplotlib",
     avg_method=None,
     threshold=1e-14,
@@ -2066,6 +2109,10 @@ def plot_surf_roi(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    # set default view to dorsal if hemi is both and view is not set
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+
     roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, bg_map
     )
@@ -2076,6 +2123,7 @@ def plot_surf_roi(
     # preload roi and mesh to determine vmin, vmax and give more useful error
     # messages in case of wrong inputs
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
     roi = load_surf_data(roi_map)
 
     idx_not_na = ~np.isnan(roi)
@@ -2091,7 +2139,7 @@ def plot_surf_roi(
             "roi_map can only have one dimension but has "
             f"{roi.ndim} dimensions"
         )
-    if roi.shape[0] != mesh[0].shape[0]:
+    if roi.shape[0] != mesh.n_vertices:
         raise ValueError(
             "roi_map does not have the same number of vertices "
             "as the mesh. If you have a list of indices for the "

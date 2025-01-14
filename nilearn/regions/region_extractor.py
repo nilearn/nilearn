@@ -309,6 +309,13 @@ class RegionExtractor(NiftiMapsMasker):
         intensities across all maps. A value given in `threshold`
         parameter indicates that we keep only those voxels which have
         intensities more than this value.
+
+    two_sided : :obj:`bool`, default=False
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+
+        .. versionadded:: 0.11.1
+
     %(extractor)s
     %(smoothing_fwhm)s
         Use this parameter to smooth an image
@@ -388,6 +395,7 @@ class RegionExtractor(NiftiMapsMasker):
         min_region_size=1350,
         threshold=1.0,
         thresholding_strategy="ratio_n_voxels",
+        two_sided=False,
         extractor="local_regions",
         smoothing_fwhm=6,
         standardize=False,
@@ -418,6 +426,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.min_region_size = min_region_size
         self.thresholding_strategy = thresholding_strategy
         self.threshold = threshold
+        self.two_sided = two_sided
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
@@ -457,6 +466,7 @@ class RegionExtractor(NiftiMapsMasker):
                     mask_img=self.mask_img,
                     copy=True,
                     threshold=self.threshold,
+                    two_sided=self.two_sided,
                     copy_header=True,
                 )
 

@@ -95,7 +95,12 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
 
 
 def generate_regions_ts(
-    n_features, n_regions, overlap=0, random_state=0, window="boxcar"
+    n_features,
+    n_regions,
+    overlap=0,
+    random_state=0,
+    window="boxcar",
+    negative_regions=False,
 ):
     """Generate some regions as timeseries.
 
@@ -116,6 +121,12 @@ def generate_regions_ts(
 
     window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. e.g. "hamming".
+
+    negative_regions : :obj:`bool`, default=False
+        If True, creates negative and positive valued regions randomly; all
+        generated region values are positive otherwise.
+
+        .. versionadded:: 0.11.1
 
     Returns
     -------
@@ -147,6 +158,8 @@ def generate_regions_ts(
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
         win = scipy.signal.get_window(window, end - start)
         win /= win.mean()  # unity mean
+        if negative_regions and rand_gen.choice(a=[True, False]):
+            win = -1 * win
         regions[n, start:end] = win
 
     return regions
@@ -160,6 +173,7 @@ def generate_maps(
     window="boxcar",
     random_state=0,
     affine=None,
+    negative_regions=False,
 ):
     """Generate a 4D volume containing several maps.
 
@@ -185,6 +199,12 @@ def generate_maps(
     border : :obj:`int`, default=1
         Number of background voxels on each side of the 3D volumes.
 
+    negative_regions : :obj:`bool`, default=False
+        If True, creates negative and positive valued regions randomly; all
+        generated region values are positive otherwise.
+
+        .. versionadded:: 0.11.1
+
     Returns
     -------
     maps : Niimg-like object
@@ -204,6 +224,7 @@ def generate_maps(
         overlap=overlap,
         random_state=random_state,
         window=window,
+        negative_regions=negative_regions,
     )
     mask_img = Nifti1Image(mask, affine)
     return masking.unmask(ts, mask_img), mask_img
@@ -668,8 +689,7 @@ def generate_group_sparse_gaussian_graphs(
                    default=0
         Random number generator, or seed.
 
-    verbose : :obj:`int`, default=0
-        Verbosity level (0 means no message).
+    %(verbose0)s
 
     Returns
     -------

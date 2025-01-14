@@ -6,7 +6,7 @@ from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.surface import SurfaceImage
-from nilearn.surface.surface import load_surf_data
+from nilearn.surface.surface import get_data, load_surf_data
 
 if is_plotly_installed():
     import plotly.graph_objects as go
@@ -24,9 +24,10 @@ class SurfaceFigure:
         Path to output file.
     """
 
-    def __init__(self, figure=None, output_file=None):
+    def __init__(self, figure=None, output_file=None, hemi="left"):
         self.figure = figure
         self.output_file = output_file
+        self.hemi = hemi
 
     def show(self):
         """Show the figure."""
@@ -44,8 +45,7 @@ class SurfaceFigure:
         if output_file is None:
             if self.output_file is None:
                 raise ValueError(
-                    "You must provide an output file "
-                    "name to save the figure."
+                    "You must provide an output file name to save the figure."
                 )
         else:
             self.output_file = output_file
@@ -90,7 +90,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             [self.figure._data[0].get(d) for d in ["x", "y", "z"]]
         ).T
 
-    def __init__(self, figure=None, output_file=None):
+    def __init__(self, figure=None, output_file=None, hemi="left"):
         if not is_plotly_installed():
             raise ImportError(
                 "Plotly is required to use `PlotlySurfaceFigure`."
@@ -101,7 +101,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             raise TypeError(
                 "`PlotlySurfaceFigure` accepts only plotly figure objects."
             )
-        super().__init__(figure=figure, output_file=output_file)
+        super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 
     def show(self, renderer="browser"):
         """Show the figure.
@@ -139,7 +139,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
         labels=None,
         lines=None,
         elevation=0.1,
-        hemi="left",
     ):
         """Draw boundaries around roi.
 
@@ -189,7 +188,10 @@ class PlotlySurfaceFigure(SurfaceFigure):
         """
         if isinstance(roi_map, SurfaceImage):
             assert len(roi_map.shape) == 1 or roi_map.shape[1] == 1
-            roi_map = roi_map.data.parts[hemi]
+            if self.hemi in ["left", "right"]:
+                roi_map = roi_map.data.parts[self.hemi]
+            elif self.hemi == "both":
+                roi_map = get_data(roi_map)
 
         if levels is None:
             levels = np.unique(roi_map)

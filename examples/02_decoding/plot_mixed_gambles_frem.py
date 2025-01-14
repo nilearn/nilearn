@@ -12,6 +12,9 @@ a very robust decoder at a lower computational cost than other spatially
 regularized methods.
 
 To have more details, see: :ref:`frem`.
+
+See the :ref:`dataset description <mixed_gamble_maps>`
+for more information on the data used in this example.
 """
 
 # %%
@@ -36,6 +39,7 @@ frem = FREMRegressor("svr", cv=10, standardize="zscore_sample")
 
 frem.fit(zmap_filenames, behavioral_target)
 
+# %%
 # Visualize FREM weights
 # ----------------------
 
@@ -54,9 +58,13 @@ plot_stat_map(
 # by :term:`FREM` is structured,
 # due to the spatial regularity imposed by working on clusters and model
 # ensembling. Although these maps have been thresholded for display, they are
-# not sparse (i.e. almost all voxels have non-zero coefficients). See also this
-# :ref:`other example <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`
-# using FREM, and related :ref:`section of user guide <frem>`.
+# not sparse (i.e. almost all voxels have non-zero coefficients).
+#
+# .. seealso::
+#
+#   :ref:`other example
+#   <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`
+#   using FREM, and related :ref:`section of user guide <frem>`.
 #
 
 # %%

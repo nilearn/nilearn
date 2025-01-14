@@ -5,8 +5,9 @@ Visualizing Megatrawls Network Matrices from Human Connectome Project
 This example shows how to fetch network matrices data from HCP beta-release
 of the Functional Connectivity Megatrawl project.
 
-See :func:`nilearn.datasets.fetch_megatrawls_netmats`
-documentation for more details.
+See :func:`~nilearn.datasets.fetch_megatrawls_netmats` documentation and
+the :ref:`dataset description <megatrawls_maps>`
+for more details.
 """
 
 # %%

@@ -18,7 +18,7 @@ from .._utils import logger, stringify_path
 from .._utils.cache_mixin import CacheMixin, cache
 
 
-def _filter_and_extract(
+def filter_and_extract(
     imgs,
     extraction_function,
     parameters,
@@ -186,7 +186,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
                 .. versionadded:: 0.8.0
 
-        copy : Boolean, default=True
+        copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
 
         Returns
@@ -311,11 +311,11 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         y : numpy array of shape [n_samples], optional
             Target values.
 
-        confounds : list of confounds, optional
+        confounds : :obj:`list` of confounds, optional
             List of confounds (2D arrays or filenames pointing to CSV
             files). Must be of same length than imgs_list.
 
-        sample_mask : list of sample_mask, optional
+        sample_mask : :obj:`list` of sample_mask, optional
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 
@@ -396,3 +396,33 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "has not been fitted. "
                 "You must call fit() before calling transform()."
             )
+
+
+class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
+    """Class from which all surface maskers should inherit."""
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(surf_img=True, niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
+        return tags

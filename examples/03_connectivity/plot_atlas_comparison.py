@@ -4,19 +4,20 @@ Comparing connectomes on different reference atlases
 
 This examples shows how to turn a :term:`parcellation` into connectome for
 visualization. This requires choosing centers for each parcel
-or network, via :func:`nilearn.plotting.find_parcellation_cut_coords` for
+or network, via :func:`~nilearn.plotting.find_parcellation_cut_coords` for
 :term:`parcellation` based on labels and
-:func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` for
+:func:`~nilearn.plotting.find_probabilistic_atlas_cut_coords` for
 :term:`parcellation` based on probabilistic values.
 
 In the intermediary steps, we make use of
-:class:`nilearn.maskers.MultiNiftiLabelsMasker` and
-:class:`nilearn.maskers.MultiNiftiMapsMasker` to extract time series from nifti
+:class:`~nilearn.maskers.MultiNiftiLabelsMasker` and
+:class:`~nilearn.maskers.MultiNiftiMapsMasker`
+to extract time series from nifti
 objects from multiple subjects using different :term:`parcellation` atlases.
 
 The time series of all subjects of the brain development dataset are
 concatenated and given directly to
-:class:`nilearn.connectome.ConnectivityMeasure` for computing parcel-wise
+:class:`~nilearn.connectome.ConnectivityMeasure` for computing parcel-wise
 correlation matrices for each atlas across all subjects.
 
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
@@ -203,9 +204,7 @@ for lag in [0, 1]:
 # -----------------------------------------------------------------
 
 dim = 64
-difumo = datasets.fetch_atlas_difumo(
-    dimension=dim, resolution_mm=2, legacy_format=False
-)
+difumo = datasets.fetch_atlas_difumo(dimension=dim, resolution_mm=2)
 
 # %%
 # Iterate over fetched atlases to extract coordinates - probabilistic

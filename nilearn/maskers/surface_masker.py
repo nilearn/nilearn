@@ -6,25 +6,23 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs, fill_doc
-from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils import constrained_layout_kwargs, fill_doc
+from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.maskers._utils import (
+from nilearn.maskers.base_masker import _BaseSurfaceMasker
+from nilearn.surface.surface import (
+    SurfaceImage,
     check_same_n_vertices,
-    compute_mean_surface_image,
-    concatenate_surface_images,
-    get_min_max_surface_image,
+    concat_imgs,
+    mean_img,
 )
-from nilearn.surface import SurfaceImage
 
 
 @fill_doc
-class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class SurfaceMasker(_BaseSurfaceMasker):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
     .. versionadded:: 0.11.0
@@ -144,32 +142,6 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "Call fit before calling transform."
             )
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(surf_img=True, niimg_like=False)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
-        return tags
-
     def _fit_mask_img(self, img):
         """Get mask passed during init or compute one from input image.
 
@@ -177,22 +149,26 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         ----------
         img : SurfaceImage object or :obj:`list` of SurfaceImage or None
         """
-        if self.mask_img is not None:
-            if img is not None:
-                check_same_n_vertices(self.mask_img.mesh, img.mesh)
-            self.mask_img_ = self.mask_img
-            return
-
         if img is None:
-            raise ValueError(
-                "Please provide either a mask_img "
-                "when initializing the masker "
-                "or an img when calling fit()."
-            )
+            if self.mask_img is None:
+                raise ValueError(
+                    "Please provide either a mask_img "
+                    "when initializing the masker "
+                    "or an img when calling fit()."
+                )
+
+            if self.mask_img is not None:
+                self.mask_img_ = self.mask_img
+                return
 
         if not isinstance(img, list):
             img = [img]
-        img = concatenate_surface_images(img)
+        img = concat_imgs(img)
+
+        if self.mask_img is not None:
+            check_same_n_vertices(self.mask_img.mesh, img.mesh)
+            self.mask_img_ = self.mask_img
+            return
 
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
@@ -303,7 +279,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         if not isinstance(img, list):
             img = [img]
-        img = concatenate_surface_images(img)
+        img = concat_imgs(img)
 
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
 
@@ -429,8 +405,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -452,7 +427,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # avoid circular import
         import matplotlib.pyplot as plt
 
-        from nilearn.reporting.utils import figure_to_png_base64
+        from nilearn.reporting.utils import figure_to_svg_base64
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
@@ -466,7 +441,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         plt.close()
 
-        init_display = figure_to_png_base64(fig)
+        init_display = figure_to_svg_base64(fig)
 
         return [init_display]
 
@@ -494,8 +469,8 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         vmax = None
         if self._reporting_data["images"]:
             background_data = self._reporting_data["images"]
-            background_data = compute_mean_surface_image(background_data)
-            vmin, vmax = get_min_max_surface_image(background_data)
+            background_data = mean_img(background_data)
+            vmin, vmax = background_data.data._get_min_max()
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
@@ -505,7 +480,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
 

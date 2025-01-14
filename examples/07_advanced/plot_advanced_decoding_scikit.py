@@ -3,7 +3,7 @@ Advanced decoding using scikit learn
 ====================================
 
 This tutorial opens the box of decoding pipelines to bridge integrated
-functionalities provided by the :class:`nilearn.decoding.Decoder` object
+functionalities provided by the :class:`~nilearn.decoding.Decoder` object
 with more advanced usecases. It reproduces basic examples functionalities with
 direct calls to scikit-learn function and gives pointers to more advanced
 objects. If some concepts seem unclear,
@@ -26,7 +26,7 @@ face and cat images.
 # .......................
 #
 
-# The :func:`nilearn.datasets.fetch_haxby` function will download the
+# The :func:`~nilearn.datasets.fetch_haxby` function will download the
 # Haxby dataset composed of fMRI images in a Niimg,
 # a spatial mask and a text document with label of each image
 from nilearn import datasets
@@ -72,7 +72,7 @@ svc = SVC()
 # Masking the data
 # ................
 # To use a scikit-learn estimator on brain images, you should first mask the
-# data using a :class:`nilearn.maskers.NiftiMasker` to extract only the
+# data using a :class:`~nilearn.maskers.NiftiMasker` to extract only the
 # voxels inside the mask of interest,
 # and transform 4D input :term:`fMRI` data to 2D arrays
 # (`shape=(n_timepoints, n_voxels)`) that estimators can work on.
@@ -279,4 +279,4 @@ rfe_svc = Pipeline([("rfe", rfe), ("svc", svc)])
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

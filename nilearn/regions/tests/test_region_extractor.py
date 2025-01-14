@@ -25,6 +25,11 @@ N_REGIONS = 3
 MAP_SHAPE = (30, 30, 30)
 
 
+@pytest.fixture
+def negative_regions():
+    return False
+
+
 @pytest.fixture(scope="module")
 def dummy_map():
     """Generate a small dummy map.
@@ -43,9 +48,12 @@ def labels_img():
 
 
 @pytest.fixture
-def maps():
+def maps(negative_regions):
     return generate_maps(
-        shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+        shape=MAP_SHAPE,
+        n_regions=N_REGIONS,
+        random_state=42,
+        negative_regions=negative_regions,
     )[0]
 
 
@@ -276,6 +284,39 @@ def test_region_extractor_strategy_ratio_n_voxels(maps):
     assert extract_ratio.regions_img_.shape[-1] >= N_REGIONS
 
 
+@pytest.mark.parametrize("negative_regions", [True])
+def test_region_extractor_two_sided(maps):
+    threshold = 0.4
+    thresholding_strategy = "img_value"
+    min_region_size = 5
+
+    extract_ratio1 = RegionExtractor(
+        maps,
+        threshold=threshold,
+        thresholding_strategy=thresholding_strategy,
+        two_sided=False,
+        min_region_size=min_region_size,
+        extractor="connected_components",
+    )
+    extract_ratio1.fit()
+
+    extract_ratio2 = RegionExtractor(
+        maps,
+        threshold=threshold,
+        thresholding_strategy=thresholding_strategy,
+        two_sided=True,
+        min_region_size=min_region_size,
+        extractor="connected_components",
+    )
+
+    extract_ratio2.fit()
+
+    assert not np.array_equal(
+        np.unique(extract_ratio1.regions_img_.get_fdata()),
+        np.unique(extract_ratio2.regions_img_.get_fdata()),
+    )
+
+
 def test_region_extractor_strategy_percentile(maps_and_mask):
     maps, mask_img = maps_and_mask
 
@@ -284,6 +325,7 @@ def test_region_extractor_strategy_percentile(maps_and_mask):
         threshold=30,
         thresholding_strategy="percentile",
         mask_img=mask_img,
+        two_sided=True,
     )
     extractor.fit()
 

@@ -126,7 +126,7 @@ print("Define and fit LSA")
 # Transform the DataFrame for LSA
 lsa_events_df = events_df.copy()
 conditions = lsa_events_df["trial_type"].unique()
-condition_counter = {c: 0 for c in conditions}
+condition_counter = dict.fromkeys(conditions, 0)
 for i_trial, trial in lsa_events_df.iterrows():
     trial_condition = trial["trial_type"]
     condition_counter[trial_condition] += 1
@@ -374,7 +374,6 @@ display = plot_stat_map(
     title="Language",
     figure=fig,
     axes=axes[0],
-    cmap="bwr",
 )
 display.add_markers(
     marker_coords=coords,
@@ -390,7 +389,6 @@ display = plot_stat_map(
     title="String",
     figure=fig,
     axes=axes[1],
-    cmap="bwr",
 )
 display.add_markers(
     marker_coords=coords,
@@ -405,4 +403,4 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

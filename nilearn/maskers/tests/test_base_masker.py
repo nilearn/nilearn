@@ -10,7 +10,7 @@ from nilearn import image
 from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn.maskers.base_masker import BaseMasker
-from nilearn.maskers.nifti_masker import _filter_and_mask
+from nilearn.maskers.nifti_masker import filter_and_mask
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
@@ -87,7 +87,7 @@ def test_cropping_code_paths(rng):
     }
 
     # Now do the two maskings
-    out_data_uncropped = _filter_and_mask(img, mask_img, parameters)
-    out_data_cropped = _filter_and_mask(img, cropped_mask_img, parameters)
+    out_data_uncropped = filter_and_mask(img, mask_img, parameters)
+    out_data_cropped = filter_and_mask(img, cropped_mask_img, parameters)
 
     assert_array_almost_equal(out_data_cropped, out_data_uncropped)

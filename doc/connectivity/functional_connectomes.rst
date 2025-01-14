@@ -231,19 +231,19 @@ A functional connectome: extracting coordinates of regions
 For atlases without readily available label coordinates, center coordinates
 can be computed for each region on hard :term:`parcellation` or probabilistic atlases.
 
- * For hard :term:`parcellation` atlases (eg. :func:`nilearn.datasets.fetch_atlas_destrieux_2009`),
-   use the :func:`nilearn.plotting.find_parcellation_cut_coords`
-   function. See example:
-   :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+* For hard :term:`parcellation` atlases (eg. :func:`nilearn.datasets.fetch_atlas_destrieux_2009`),
+  use the :func:`nilearn.plotting.find_parcellation_cut_coords` function.
+  See example:
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
- * For probabilistic atlases (eg. :func:`nilearn.datasets.fetch_atlas_msdl`), use the
-   :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
-   See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`:
+* For probabilistic atlases (eg. :func:`nilearn.datasets.fetch_atlas_msdl`),
+  use the :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
+  See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`:
 
-   .. code-block:: python
+.. code-block:: python
 
-           from nilearn import plotting
-           atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename)
+         from nilearn import plotting
+         atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename)
 
 |
 

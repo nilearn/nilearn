@@ -1,6 +1,7 @@
 import collections
 import contextlib
 import numbers
+from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -46,7 +47,7 @@ class BaseSlicer:
     """
 
     # This actually encodes the figsize for only one axe
-    _default_figsize = [2.2, 2.6]
+    _default_figsize: ClassVar[list[float, float]] = [2.2, 2.6]
     _axes_class = CutAxes
 
     def __init__(
@@ -161,9 +162,9 @@ class BaseSlicer:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize, facecolor=facecolor)
         if isinstance(axes, plt.Axes):
-            assert (
-                axes.figure is figure
-            ), "The axes passed are not in the figure"
+            assert axes.figure is figure, (
+                "The axes passed are not in the figure"
+            )
 
         if axes is None:
             axes = [0.0, 0.0, 1.0, 1.0]
@@ -545,7 +546,7 @@ class BaseSlicer:
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
         n_ticks = 5 if cbar_vmin != cbar_vmax else 1
-        ticks = _get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
+        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
         bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         # some colormap hacking
@@ -814,7 +815,7 @@ class BaseSlicer:
         )
 
 
-def _get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
+def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
     """Help for BaseSlicer."""
     # edge case where the data has a single value yields
     # a cryptic matplotlib error message when trying to plot the color bar
@@ -895,9 +896,9 @@ class OrthoSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed = "yxz"
+    _cut_displayed: ClassVar[str] = "yxz"
     _axes_class = CutAxes
-    _default_figsize = [2.2, 3.5]
+    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.5]
 
     @classmethod
     @fill_doc  # the fill_doc decorator must be last applied
@@ -936,8 +937,7 @@ class OrthoSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the display_mode"
+                "The number cut_coords passed does not match the display_mode"
             )
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
@@ -1124,9 +1124,9 @@ class TiledSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed = "yxz"
+    _cut_displayed: ClassVar[str] = "yxz"
     _axes_class = CutAxes
-    _default_figsize = [2.0, 7.6]
+    _default_figsize: ClassVar[list[float, float]] = [2.0, 7.6]
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
@@ -1207,8 +1207,7 @@ class TiledSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the display_mode"
+                "The number cut_coords passed does not match the display_mode"
             )
 
         facecolor = "k" if self._black_bg else "w"
@@ -1636,8 +1635,8 @@ class XSlicer(BaseStackedSlicer):
 
     """
 
-    _direction = "x"
-    _default_figsize = [2.6, 2.3]
+    _direction: ClassVar[str] = "x"
+    _default_figsize: ClassVar[list[float, float]] = [2.6, 2.3]
 
 
 class YSlicer(BaseStackedSlicer):
@@ -1675,8 +1674,8 @@ class YSlicer(BaseStackedSlicer):
 
     """
 
-    _direction = "y"
-    _default_figsize = [2.2, 3.0]
+    _direction: ClassVar[str] = "y"
+    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.0]
 
 
 class ZSlicer(BaseStackedSlicer):
@@ -1714,8 +1713,8 @@ class ZSlicer(BaseStackedSlicer):
 
     """
 
-    _direction = "z"
-    _default_figsize = [2.2, 3.2]
+    _direction: ClassVar[str] = "z"
+    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.2]
 
 
 class XZSlicer(OrthoSlicer):
@@ -1829,8 +1828,8 @@ class YZSlicer(OrthoSlicer):
 
     """
 
-    _cut_displayed = "yz"
-    _default_figsize = [2.2, 3.0]
+    _cut_displayed: ClassVar[str] = "yz"
+    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.0]
 
 
 class MosaicSlicer(BaseSlicer):
@@ -1872,9 +1871,9 @@ class MosaicSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed = "yxz"
-    _axes_class = CutAxes
-    _default_figsize = [4.0, 5.0]
+    _cut_displayed: ClassVar[str] = "yxz"
+    _axes_class: ClassVar[CutAxes] = CutAxes
+    _default_figsize: ClassVar[list[float, float]] = [4.0, 5.0]
 
     @classmethod
     def find_cut_coords(
@@ -1979,8 +1978,7 @@ class MosaicSlicer(BaseSlicer):
 
         if len(self.cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the mosaic mode"
+                "The number cut_coords passed does not match the mosaic mode"
             )
         x0, y0, x1, y1 = self.rect
 
@@ -2163,10 +2161,10 @@ def get_slicer(display_mode):
               :class:`~nilearn.plotting.displays.ZSlicer`.
 
     """
-    return _get_create_display_fun(display_mode, SLICERS)
+    return get_create_display_fun(display_mode, SLICERS)
 
 
-def _get_create_display_fun(display_mode, class_dict):
+def get_create_display_fun(display_mode, class_dict):
     """Help for functions \
     :func:`~nilearn.plotting.displays.get_slicer` and \
     :func:`~nilearn.plotting.displays.get_projector`.

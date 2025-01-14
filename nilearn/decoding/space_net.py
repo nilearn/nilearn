@@ -14,6 +14,7 @@ import collections
 import time
 import warnings
 from functools import partial
+from typing import ClassVar
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -324,47 +325,47 @@ def path_scores(
     y : 1D array of length n_samples
         Response vector; one value per sample.
 
-    mask : 3D arrays of boolean
+    mask : 3D arrays of :obj:`bool`
         Mask defining brain regions that we work on.
 
-    alphas : list of floats
+    alphas : :obj:`list` of :obj:`float`
         List of regularization parameters being considered.
 
-    train : array or list of integers
+    train : array or :obj:`list` of :obj:`int`:
         List of indices for the train samples.
 
-    test : array or list of integers
+    test : array or :obj:`list` of :obj:`int`
         List of indices for the test samples.
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
+    l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1];\
         optional (default .5)
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
         l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
 
-    eps : float, optional (default 1e-3)
+    eps : :obj:`float`, optional (default 1e-3)
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : :obj:`int`, optional (default 10).
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
     solver : function handle
        See for example tv.TVl1Classifier documentation.
 
-    solver_params : dict
+    solver_params : :obj:`dict`
        Dictionary of param-value pairs to be passed to solver.
 
-    is_classif : bool, default=False
+    is_classif : :obj:`bool`, default=False
         Indicates whether the loss is a classification loss or a
         regression loss.
 
     key: ??? TODO: Add description.
 
-    debias : bool, default=False
+    debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
 
-    screening_percentile : float in the interval [0, 100], optional\
+    screening_percentile : :obj:`float` in the interval [0, 100], optional\
         (default 20)
         Percentile value for :term:`ANOVA` univariate feature selection.
         A value of 100 means 'keep all features'.
@@ -553,23 +554,23 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : :obj:`str`, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default None)
+    loss : :obj:`str`, optional (default None)
         Loss to be used in the model. Must be an one of "mse", or "logistic".
 
-    is_classif : bool, optional (default False)
+    is_classif : :obj:`bool`, optional (default False)
         Flag telling whether the learning task is classification or regression.
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
+    l1_ratios : float or :obj:`list` of floats in the interval [0, 1];\
         optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : float or list of floats, optional (default None)
+    alphas : float or :obj:`list` of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
         If None or list of floats is provided, then the best value will be
@@ -603,12 +604,12 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         (which is typically smaller). If '100' is given, all the features
         are used, regardless of the number of voxels.
 
-    standardize : bool, optional (default True):
+    standardize : :obj:`bool`, optional (default True):
         If set, then the data (X, y) are centered to have mean zero along
         axis 0. This is here because nearly all linear models will want
         their data to be centered.
 
-    fit_intercept : bool, optional (default True)
+    fit_intercept : :obj:`bool`, optional (default True)
         Fit or not an intercept.
 
     max_iter : int (default 200)
@@ -626,7 +627,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : bool, optional (default False)
+    debias : :obj:`bool`, optional (default False)
         If set, then the estimated weights maps will be debiased.
 
     Attributes
@@ -705,8 +706,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         Standard deviation of X across samples
     """
 
-    SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
-    SUPPORTED_LOSSES = ["mse", "logistic"]
+    SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
+    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
 
     def __init__(
         self,
@@ -827,12 +828,12 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         Parameters
         ----------
-        X : list of Niimg-like objects
+        X : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
-        y : array or list of length n_samples
+        y : array or :obj:`list` of length n_samples
             The dependent variable (age, sex, QI, etc.).
 
         Notes
@@ -1054,7 +1055,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         Parameters
         ----------
-        X : list of Niimg-like objects
+        X : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
@@ -1096,20 +1097,20 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : :obj:`str`, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default "logistic")
+    loss : :obj:`str`, optional (default "logistic")
         Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
+    l1_ratios : float or :obj:`list` of floats in the interval [0, 1];\
         optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : float or list of floats, optional (default None)
+    alphas : float or :obj:`list` of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
         If None or list of floats is provided, then the best value will be
@@ -1143,12 +1144,12 @@ class SpaceNetClassifier(BaseSpaceNet):
         If '100' is given, all the features are used,
         regardless of the number of voxels.
 
-    standardize : bool, optional (default True):
+    standardize : :obj:`bool`, optional (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : bool, optional (default True)
+    fit_intercept : :obj:`bool`, optional (default True)
         Fit or not an intercept.
 
     max_iter : int (default 200)
@@ -1166,7 +1167,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : bool, optional (default False)
+    debias : :obj:`bool`, optional (default False)
         If set, then the estimated weights maps will be debiased.
 
     Attributes
@@ -1322,12 +1323,12 @@ class SpaceNetClassifier(BaseSpaceNet):
 
         Parameters
         ----------
-        X : list of Niimg-like objects
+        X : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
-        y : array or list of length n_samples.
+        y : array or :obj:`list` of length n_samples.
             Labels.
 
         Returns
@@ -1350,17 +1351,17 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : :obj:`str`, optional (default 'graph-net')
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
+    l1_ratios : float or :obj:`list` of floats in the interval [0, 1];\
         optional (default .5)
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : float or list of floats, optional (default None)
+    alphas : float or :obj:`list` of floats, optional (default None)
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
         If None or list of floats is provided, then the best value will be
@@ -1392,12 +1393,12 @@ class SpaceNetRegressor(BaseSpaceNet):
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller).
 
-    standardize : bool, optional (default True):
+    standardize : :obj:`bool`, optional (default True):
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : bool, optional (default True)
+    fit_intercept : :obj:`bool`, optional (default True)
         Fit or not an intercept.
 
     max_iter : int (default 200)
@@ -1415,7 +1416,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : bool, optional (default False)
+    debias : :obj:`bool`, optional (default False)
         If set, then the estimated weights maps will be debiased.
 
     Attributes

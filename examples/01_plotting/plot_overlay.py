@@ -11,13 +11,12 @@ Here we represent the nodes constituting the default mode network in the
 
 The tools that we need to leverage are:
 
- * :func:`nilearn.image.index_img` to retrieve the various maps composing
-   the atlas
+* :func:`~nilearn.image.index_img` to retrieve the various maps composing
+  the atlas
 
- * Adding overlays on an existing brain display, to plot each of these
-   maps
+* Adding overlays on an existing brain display, to plot each of these maps
 
-Alternatively, :func:`nilearn.plotting.plot_prob_atlas` allows
+Alternatively, :func:`~nilearn.plotting.plot_prob_atlas` allows
 to plot the maps in one step that
 with less control over the plot (see below)
 
@@ -41,6 +40,7 @@ display = plotting.plot_stat_map(
     image.index_img(atlas_filename, 4),
     colorbar=False,
     title="DMN nodes in MSDL atlas",
+    cmap="inferno",
 )
 
 # Now add as an overlay the maps for the ACC and the left and right
@@ -62,11 +62,11 @@ plotting.show()
 #
 # Alternatively, we can create a new 4D-image by selecting
 # the 3rd, 4th, 5th and 6th (zero-based) probabilistic map from atlas
-# via :func:`nilearn.image.index_img`
-# and use :func:`nilearn.plotting.plot_prob_atlas` (added in version 0.2)
+# via :func:`~nilearn.image.index_img`
+# and use :func:`~nilearn.plotting.plot_prob_atlas` (added in version 0.2)
 # to plot the selected nodes in one step.
 #
-# Unlike :func:`nilearn.plotting.plot_stat_map` this works with 4D images
+# Unlike :func:`~nilearn.plotting.plot_stat_map` this works with 4D images
 
 dmn_nodes = image.index_img(atlas_filename, [3, 4, 5, 6])
 # Note that dmn_node is now a 4D image

@@ -50,17 +50,17 @@ dev = [
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
-    "furo",
-    "memory_profiler",  # measuring memory during docs building
-    "myst-parser",
-    "numpydoc",
-    "ruamel.yaml",
-    "sphinx",
-    "sphinx-copybutton",
-    "sphinx-design",
-    "sphinx-gallery",
-    "sphinxcontrib-bibtex",
-    "sphinxext-opengraph"
+    "furo>=2024.8.6",
+    "memory_profiler>=0.61.0",  # measuring memory during docs building
+    "myst-parser>=3.0.1",
+    "numpydoc>=1.8.0",
+    "ruamel.yaml>=0.18.6",
+    "sphinx>=7.4.7",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-design>=0.6.1",
+    "sphinx-gallery>=0.18.0",
+    "sphinxcontrib-bibtex>=2.6.3",
+    "sphinxext-opengraph>=0.9.1"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
@@ -83,8 +83,7 @@ test = [
     "pytest-cov",
     "pytest-randomly",
     "pytest-reporter-html1>=0.9.2",
-    "pytest-xdist[psutil]",
-    "tox"
+    "pytest-xdist[psutil]"
 ]
 
 [project.urls]
@@ -164,7 +163,6 @@ ignore = [
     "PIE790",
     "PLR2004",
     "PTH207",
-    "RUF012",
     "UP038",  # https://github.com/astral-sh/ruff/issues/7871
     # Avoid linter rules conflicting with the formatter
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
@@ -218,18 +216,17 @@ max-complexity = 25
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
-"**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
+"**/{tests}/**/test_*" = ["D100", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
-"nilearn/signal.py" = ["B028"]
-"nilearn/{_utils}/*" = ["B028"]
-"nilearn/{connectome}/*" = ["B028"]
-"nilearn/{datasets}/*" = ["B028"]
-"nilearn/{decoding}/*" = ["B028"]
-"nilearn/{glm}/*" = ["B028"]
-"nilearn/{image}/*" = ["B028"]
-"nilearn/{maskers}/*" = ["B028"]
-"nilearn/{mass_univariate}/*" = ["B028"]
-"nilearn/{plotting}/*" = ["B028"]
+"nilearn/signal.py" = ["B028"]  # 11 errors to fix
+"nilearn/{_utils}/*" = ["B028"]  # 7 errors to fix
+"nilearn/{connectome}/*" = ["B028"]  # 5 errors to fix
+"nilearn/{datasets}/*" = ["B028"]  # 23 errors to fix
+"nilearn/{decoding}/*" = ["B028"]  # 5 errors to fix
+"nilearn/{glm}/*" = ["B028"]  # 19 errors to fix
+"nilearn/{maskers}/*" = ["B028"]  # 17 errors to fix
+"nilearn/{mass_univariate}/*" = ["B028"]  # 4 errors to fix
+"nilearn/{plotting}/*" = ["B028"]  # 18 errors to fix
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -242,4 +239,4 @@ max-branches = 27
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 110
+max-statements = 108

@@ -28,7 +28,7 @@ def expression_to_contrast_vector(expression, design_columns):
     expression : :obj:`str`
         The expression to convert to a vector.
 
-    design_columns : :obj:`list` or array of strings
+    design_columns : :obj:`list` or array of :obj:`str`
         The column names of the design matrix.
 
     """
