@@ -430,8 +430,8 @@ def test_generate_report_before_transform_warn(surf_maps_img):
 
 
 @pytest.mark.skipif(
-    not is_plotly_installed() and not is_matplotlib_installed(),
-    reason="Test requires both plotly and matplotlib to be installed.",
+    not is_plotly_installed(),
+    reason="Test requires plotly to be installed.",
 )
 def test_generate_report_plotly_out_figure_type(surf_maps_img, surf_img_2d):
     """Test that the report has a iframe tag when engine is plotly
