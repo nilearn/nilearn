@@ -1,3 +1,4 @@
+import warnings
 from os.path import join
 from pathlib import Path
 
@@ -311,8 +312,16 @@ def test_reports_false(surf_maps_img, surf_img_2d):
     assert masker._reporting_data is None
     # reporting_content does not exist when reports=False
     assert not hasattr(masker, "_report_content")
-    # generate_report should return None when reports=False
-    assert masker.generate_report() == [None]
+    # generate_report should throw warnings
+    with warnings.catch_warnings(record=True) as record:
+        warnings.simplefilter("always")
+        report = masker.generate_report()
+    assert len(record) == 2
+    assert "Report generation not enabled" in record[0].message.args[0]
+    assert "This report was not generated" in record[1].message.args[0]
+    # generated report should have "Empty Report" in it
+    report_str = report.__str__()
+    assert "Empty Report" in report_str
 
 
 @pytest.mark.skipif(

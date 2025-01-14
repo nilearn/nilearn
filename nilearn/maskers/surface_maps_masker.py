@@ -537,8 +537,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "Switching to matplotlib for report generation.",
                 stacklevel=2,
             )
-
-        self._report_content["engine"] = engine
+        if hasattr(self, "_report_content"):
+            self._report_content["engine"] = engine
 
         incorrect_type = not isinstance(
             displayed_maps, (list, np.ndarray, int, str)
