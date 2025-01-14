@@ -9,7 +9,7 @@ from nibabel import Nifti1Image
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 
-from .cache_mixin import _check_memory
+from .cache_mixin import check_memory
 from .class_inspect import get_params
 
 
@@ -76,7 +76,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
     )
 
     if hasattr(estimator, "memory"):
-        new_masker_params["memory"] = _check_memory(estimator.memory)
+        new_masker_params["memory"] = check_memory(estimator.memory)
     else:
         warnings.warn(
             warning_msg.substitute(
@@ -85,7 +85,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
             ),
             stacklevel=3,
         )
-        new_masker_params["memory"] = _check_memory(None)
+        new_masker_params["memory"] = check_memory(None)
 
     if hasattr(estimator, "memory_level"):
         new_masker_params["memory_level"] = max(0, estimator.memory_level - 1)

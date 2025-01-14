@@ -134,8 +134,8 @@ def _prepare_lines_metadata(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    cmap : :obj:`str` or matplotlib colormap, default=cm.bwr
-        Colormap to use.
+    %(cmap)s
+        default=cm.bwr
 
     symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).

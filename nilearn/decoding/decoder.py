@@ -50,7 +50,7 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
-from nilearn._utils.cache_mixin import _check_memory
+from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
@@ -727,7 +727,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Returns None if non-dummy estimators are provided.
         """
         self.estimator = _check_estimator(self.estimator)
-        self.memory_ = _check_memory(self.memory, self.verbose)
+        self.memory_ = check_memory(self.memory, self.verbose)
 
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
@@ -1166,7 +1166,7 @@ class Decoder(ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : str, default='svc'
+    estimator : :obj:`str`, default='svc'
         The estimator to choose among:
         %(classifier_options)s
 
@@ -1191,7 +1191,8 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         is not set to custom CV splitter, default is
         :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
-    param_grid : dict of str to sequence, or sequence of such, default=None
+    param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such, \
+        or None, default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -1212,7 +1213,7 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest scores.
 
-    scoring : str, callable or None, default='roc_auc'
+    scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1347,7 +1348,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : str, optional
+    estimator : :obj:`str`, optional
         The estimator to choose among:
         %(regressor_options)s
         Default 'svr'.
@@ -1368,7 +1369,8 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         is not set to custom CV splitter, default is
         :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
-    param_grid : dict of str to sequence, or sequence of such, default=None
+    param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such, \
+                or None, default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -1391,7 +1393,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : str, callable or None, optional. default='r2'
+    scoring : :obj:`str`, callable or None, optional. default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1530,7 +1532,7 @@ class FREMRegressor(_BaseDecoder):
 
     Parameters
     ----------
-    estimator : str, optional
+    estimator : :obj:`str`, optional
         The estimator to choose among:
         %(regressor_options)s
         Default 'svr'.
@@ -1550,7 +1552,8 @@ class FREMRegressor(_BaseDecoder):
         Shuffled splits are seeded by default for reproducibility.
         Can also be a cross-validation generator.
 
-    param_grid : dict of str to sequence, or sequence of such. Default None
+    param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such. \
+        or None, default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -1576,7 +1579,7 @@ class FREMRegressor(_BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : str, callable or None, default= 'r2'
+    scoring : :obj:`str`, callable or None, default= 'r2'
 
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -1685,7 +1688,7 @@ class FREMClassifier(_BaseDecoder):
 
     Parameters
     ----------
-    estimator : str, optional, (default 'svc')
+    estimator : :obj:`str`, optional, (default 'svc')
         The estimator to choose among:
         %(classifier_options)s
 
@@ -1705,7 +1708,8 @@ class FREMClassifier(_BaseDecoder):
         50 splits. Shuffled splits are seeded by default for reproducibility.
         Can also be a cross-validation generator.
 
-    param_grid : dict of str to sequence, or sequence of such. Default None
+    param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such. \
+                 Default None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -1731,7 +1735,7 @@ class FREMClassifier(_BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : str, callable or None, optional. (default: 'roc_auc')
+    scoring : :obj:`str`, callable or None, optional. default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the

@@ -33,10 +33,6 @@ subject_data = fetch_spm_auditory()
 # ----------------------
 
 # %%
-# print dataset descriptions
-print(subject_data.description)
-
-# %%
 # print paths of func image
 subject_data.func[0]
 
@@ -253,8 +249,7 @@ plot_stat_map(
     clean_map,
     threshold=threshold,
     title=(
-        "listening > rest (Uncorrected p<0.001; "
-        f"threshold: {threshold:.3f})"
+        f"listening > rest (Uncorrected p<0.001; threshold: {threshold:.3f})"
     ),
     figure=plt.figure(figsize=(10, 4)),
     **plotting_config,
@@ -296,8 +291,7 @@ plot_stat_map(
     clean_map,
     threshold=threshold,
     title=(
-        "listening > rest (p<0.05 FDR-corrected; "
-        f"threshold: {threshold:.3f})"
+        f"listening > rest (p<0.05 FDR-corrected; threshold: {threshold:.3f})"
     ),
     figure=plt.figure(figsize=(10, 4)),
     **plotting_config,

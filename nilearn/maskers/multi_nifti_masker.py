@@ -25,7 +25,7 @@ from nilearn._utils.class_inspect import (
 )
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.nifti_masker import NiftiMasker, _filter_and_mask
+from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 
 
 def _get_mask_strategy(strategy):
@@ -97,13 +97,15 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
     %(t_r)s
 
-    target_affine : 3x3 or 4x4 :obj:`numpy.ndarray`, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(target_affine)s
 
-    target_shape : 3-:obj:`tuple` of :obj:`int`, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_shape)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
 
@@ -122,10 +124,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     %(memory)s
 
@@ -434,7 +433,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         params["clean_kwargs"] = self.clean_kwargs
 
         func = self._cache(
-            _filter_and_mask,
+            filter_and_mask,
             ignore=[
                 "verbose",
                 "memory",

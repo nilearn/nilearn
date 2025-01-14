@@ -14,12 +14,19 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 import sys
 
 ##############################################################################
-
+#
+# Parameters definitions
+#
 # Standard documentation entries
 #
 # Entries are listed in alphabetical order.
 #
 docdict = {}
+
+##############################################################################
+#
+# Parameters definitions
+#
 
 # annotate
 docdict["annotate"] = """
@@ -296,6 +303,14 @@ draw_cross : :obj:`bool`, default=True
     to indicate the cut position.
 """
 
+# dtype
+docdict["dtype"] = """
+dtype : dtype like, "auto" or None, default=None
+    Data type toward which the data should be converted.
+    If "auto", the data will be converted to int32
+    if dtype is discrete and float32 if it is continuous.
+"""
+
 # extractor / extract_type
 docdict["extractor"] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
@@ -375,7 +390,7 @@ hemi : {"left", "right", "both"}, default="left"
 
 # high_pass
 docdict["high_pass"] = """
-high_pass : :obj:`float`, default=None
+high_pass : :obj:`float` or None, default=None
     High cutoff frequency in Hertz.
     If specified, signals below this frequency will be filtered out.
 """
@@ -477,6 +492,7 @@ docdict["lower_cutoff"] = """
 lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
+
 
 # mask_strategy
 docdict["mask_strategy"] = """
@@ -711,6 +727,15 @@ resampling_interpolation : :obj:`str`, optional
 
 """
 
+# resolution template
+docdict["resolution"] = """
+resolution : :obj:`int`, default=None
+        Resolution in millimeters.
+        If resolution is different from 1,
+        the template is re-sampled with the specified resolution.
+        Default to ``1`` if None is passed.
+"""
+
 # resume
 docdict["resume"] = """
 resume : :obj:`bool`, default=True
@@ -862,11 +887,18 @@ target_shape : :obj:`tuple` or :obj:`list`, default=None
 
 # templateflow
 docdict["templateflow"] = """
-    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
-    release c (MNI152NLin2009cSAsym).
-    The NiLearn template is asymmetrical ICBM152 2009, release a.
-    If you wish to use the exact same release as :term:`fMRIPrep`,
-    please refer to TemplateFlow (https://www.templateflow.org/).
+
+.. admonition:: Nilearn MNI template
+   :class: important
+
+   The Nilearn template is asymmetrical ICBM152 2009, release a.
+
+   The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+   release c (MNI152NLin2009cSAsym).
+
+   If you wish to use the exact same release as :term:`fMRIPrep`,
+   please refer to `TemplateFlow <https://www.templateflow.org>`_.
+
 """
 
 # threshold
@@ -936,6 +968,32 @@ vmin : :obj:`float`, optional
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
+
+
+##############################################################################
+#
+# Other values definitions
+#
+
+# atlas_type
+docdict["atlas_type"] = """'atlas_type' : :obj:`str`
+        Type of atlas.
+        See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
+
+# dataset description
+docdict["description"] = """'description' : :obj:`str`
+        Description of the dataset."""
+
+# atlas labels
+docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
+        List of the names of the regions."""
+
+# look up table
+docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
 
 ##############################################################################
 

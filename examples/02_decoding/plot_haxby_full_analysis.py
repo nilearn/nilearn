@@ -31,8 +31,7 @@ print(
     f"at: {haxby_dataset.anat[0]}"
 )
 print(
-    "First subject functional nifti image (4D) is located "
-    f"at: {func_filename}"
+    f"First subject functional nifti image (4D) is located at: {func_filename}"
 )
 
 # load labels
