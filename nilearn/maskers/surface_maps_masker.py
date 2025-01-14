@@ -19,7 +19,7 @@ from nilearn.surface.surface import (
     check_same_n_vertices,
     concat_imgs,
     get_data,
-    iter_img,
+    index_img,
     mean_img,
 )
 
@@ -576,7 +576,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         from nilearn.reporting.utils import figure_to_png_base64
 
         maps_img = self._reporting_data["maps_img"]
-        maps_img = iter_img(maps_img, return_iterator=False)
 
         img = self._reporting_data["images"]
         if img:
@@ -621,7 +620,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             )
             warnings.warn(msg, stacklevel=6)
 
-        for roi in maps_img[: self.displayed_maps]:
+        for roi in maps_to_be_displayed:
+            roi = index_img(maps_img, roi)
             fig = self._create_figure_for_report(roi=roi, bg_img=img)
             if self._report_content["engine"] == "plotly":
                 embeded_images.append(fig)

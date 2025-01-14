@@ -300,6 +300,10 @@ def test_surface_maps_masker_sample_mask_to_fit_transform(
 # ------------------ Tests for reporting ------------------
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
 def test_reports_false(surf_maps_img, surf_img_2d):
     """Test when reports=False, corresponding attributes should not exist."""
     masker = SurfaceMapsMasker(surf_maps_img, reports=False)
@@ -307,6 +311,8 @@ def test_reports_false(surf_maps_img, surf_img_2d):
     assert masker._reporting_data is None
     # reporting_content does not exist when reports=False
     assert not hasattr(masker, "_report_content")
+    # generate_report should return None when reports=False
+    assert masker.generate_report() == [None]
 
 
 @pytest.mark.skipif(
@@ -354,6 +360,20 @@ def test_generate_report_engine_no_matplotlib_warning(
     masker.fit_transform(surf_img_2d(10))
     with pytest.warns(ImportWarning, match="Matplotlib not installed"):
         assert masker.generate_report(engine="matplotlib") == [None]
+
+
+@pytest.mark.parametrize("displayed_maps", [4, [1, 3, 4, 5], "all"])
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="Test requires matplotlib to be installed.",
+)
+def test_generate_report_displayed_maps_valid_inputs(
+    surf_maps_img, surf_img_2d, displayed_maps
+):
+    """Test all valid inputs for displayed_maps."""
+    masker = SurfaceMapsMasker(surf_maps_img)
+    masker.fit_transform(surf_img_2d(10))
+    masker.generate_report(displayed_maps=displayed_maps)
 
 
 @pytest.mark.skipif(
