@@ -38,6 +38,11 @@ def figure_to_svg_base64(fig):
     return base64.b64encode(figure_to_svg_bytes(fig)).decode()
 
 
+def figure_to_png_base64(fig):
+    """Save figure as png and return it as 64 bytes."""
+    return base64.b64encode(figure_to_png_bytes(fig)).decode()
+
+
 def figure_to_svg_quoted(fig):
     """Save figure as svg and return it as quoted string."""
     return urllib.parse.quote(figure_to_svg_bytes(fig).decode("utf-8"))
