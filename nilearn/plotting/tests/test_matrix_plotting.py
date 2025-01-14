@@ -83,8 +83,7 @@ def test_sanitize_tri_error(tri):
     with pytest.raises(
         ValueError,
         match=(
-            "Parameter tri needs to be "
-            f"one of: {', '.join(VALID_TRI_VALUES)}"
+            f"Parameter tri needs to be one of: {', '.join(VALID_TRI_VALUES)}"
         ),
     ):
         _sanitize_tri(tri)
@@ -187,9 +186,9 @@ def test_matrix_plotting_reorder(mat, labels):
         int(lbl.get_text()) for lbl in ax.axes.get_xticklabels()
     ]
     # block order does not matter
-    assert (
-        reordered_labels[:3] == idx or reordered_labels[-3:] == idx
-    ), "Clustering does not find block structure."
+    assert reordered_labels[:3] == idx or reordered_labels[-3:] == idx, (
+        "Clustering does not find block structure."
+    )
     plt.close()
     # test if reordering with specific linkage works
     ax = plot_matrix(mat, labels=labels, reorder="complete")

@@ -71,8 +71,8 @@ def write_names_rst(citation: list[dict[str, str]]) -> None:
         for i, author in enumerate(citation["authors"]):
             if "website" in author:
                 line = (
-                    f'.. _{author["given-names"]} {author["family-names"]}: '
-                    f'{author["website"]}'
+                    f".. _{author['given-names']} {author['family-names']}: "
+                    f"{author['website']}"
                 )
                 print(line, file=f)
             if i < len(citation["authors"]) - 1:

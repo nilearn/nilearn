@@ -46,9 +46,9 @@ def _check_affine(affine):
     assert affine[0, 0] > 0
 
     A, b = image.resampling.to_matrix_vector(affine)
-    assert np.all(
-        (np.abs(A) > 0.001).sum(axis=0) == 1
-    ), "the affine transform was not near-diagonal"
+    assert np.all((np.abs(A) > 0.001).sum(axis=0) == 1), (
+        "the affine transform was not near-diagonal"
+    )
 
 
 def test_data_to_sprite():
@@ -223,12 +223,12 @@ def test_resample_stat_map(affine_eye):
     _check_affine(mask_img.affine)
 
     # Check voxel size matches bg_img
-    assert (
-        stat_map_img.affine[0, 0] == bg_img.affine[0, 0]
-    ), "stat_map_img was not resampled at the resolution of background"
-    assert (
-        mask_img.affine[0, 0] == bg_img.affine[0, 0]
-    ), "mask_img was not resampled at the resolution of background"
+    assert stat_map_img.affine[0, 0] == bg_img.affine[0, 0], (
+        "stat_map_img was not resampled at the resolution of background"
+    )
+    assert mask_img.affine[0, 0] == bg_img.affine[0, 0], (
+        "mask_img was not resampled at the resolution of background"
+    )
 
 
 def test_json_view_params(affine_eye):

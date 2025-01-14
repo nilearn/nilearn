@@ -861,8 +861,7 @@ def test_decoder_error_unknown_scoring_metrics(
 
     with pytest.raises(
         ValueError,
-        match="The 'scoring' parameter of check_scoring "
-        "must be a str among",
+        match="The 'scoring' parameter of check_scoring must be a str among",
     ):
         model.fit(X, y)
 
