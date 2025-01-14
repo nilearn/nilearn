@@ -966,7 +966,7 @@ def _check_inputs_permuted_ols(
     n_jobs, n_perm, tfce, masker, threshold, target_vars
 ):
     if not isinstance(n_perm, int):
-        raise TypeError("'n_perm' must be an int. " f"Got {type(n_perm)=}")
+        raise TypeError(f"'n_perm' must be an int. Got {type(n_perm)=}")
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(
