@@ -1624,8 +1624,7 @@ def _check_data_and_mesh_compat(mesh, data):
     if data_keys != mesh_keys:
         diff = data_keys.symmetric_difference(mesh_keys)
         raise ValueError(
-            "Data and mesh do not have the same keys. "
-            f"Offending keys: {diff}"
+            f"Data and mesh do not have the same keys. Offending keys: {diff}"
         )
     for key in mesh_keys:
         if data.parts[key].shape[0] != mesh.parts[key].n_vertices:
@@ -1800,9 +1799,7 @@ class SurfaceImage:
 
         if not isinstance(data, (PolyData, dict)):
             raise TypeError(
-                "'data' must be one of"
-                "[PolyData, dict].\n"
-                f"Got {type(data)}"
+                f"'data' must be one of[PolyData, dict].\nGot {type(data)}"
             )
 
         if isinstance(data, PolyData):

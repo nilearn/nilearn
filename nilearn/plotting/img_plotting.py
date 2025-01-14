@@ -1866,7 +1866,7 @@ def plot_markers(
             "Dimension mismatch: 'node_values' should be vector of length "
             f"{len(node_coords)}, "
             f"but current shape is {node_values.shape} "
-            f"instead of {(node_coords.shape[0], )}"
+            f"instead of {(node_coords.shape[0],)}"
         )
         raise ValueError(msg)
 

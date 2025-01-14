@@ -256,8 +256,7 @@ def prox_tvl1(
                 )
 
                 logger.log(
-                    f"\tProxTVl1: Iteration {i: 2}, "
-                    f"dual gap: {dgap: 6.3e}",
+                    f"\tProxTVl1: Iteration {i: 2}, dual gap: {dgap: 6.3e}",
                     verbose,
                 )
 

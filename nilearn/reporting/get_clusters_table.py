@@ -342,7 +342,7 @@ def get_clusters_table(
         if np.sum(binarized) == 0:
             warnings.warn(
                 "Attention: No clusters "
-                f'with stat {"higher" if sign == 1 else "lower"} '
+                f"with stat {'higher' if sign == 1 else 'lower'} "
                 f"than {stat_threshold * sign}",
                 category=UserWarning,
                 stacklevel=2,

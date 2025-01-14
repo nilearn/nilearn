@@ -1225,8 +1225,7 @@ def fetch_abide_pcp(
 
     if url is None:
         url = (
-            "https://s3.amazonaws.com/fcp-indi/data/Projects/"
-            "ABIDE_Initiative"
+            "https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative"
         )
 
     if quality_checked:
