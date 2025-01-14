@@ -15,6 +15,7 @@ from joblib import Memory, Parallel, delayed
 from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
+from sklearn.utils import check_array
 from sklearn.utils.extmath import fast_logdet
 
 from nilearn._utils import CacheMixin, fill_doc, logger
@@ -612,6 +613,9 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
             the object itself. Useful for chaining operations.
 
         """
+        for x in subjects:
+            check_array(x, accept_sparse=False)
+
         if self.memory is None:
             self.memory = Memory(location=None)
 
@@ -1083,6 +1087,9 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             the object instance itself.
 
         """
+        for x in subjects:
+            check_array(x, accept_sparse=False)
+
         # Empirical covariances
         emp_covs, n_samples = empirical_covariances(
             subjects, assume_centered=False
