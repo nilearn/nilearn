@@ -531,7 +531,7 @@ def tvl1_solver(
         Loss model for regression. Can be "mse" (for squared loss) or
         "logistic" (for logistic loss).
 
-    lipschitz_constant : :obj:`float`, default None
+    lipschitz_constant : :obj:`float`, default=None
         Lipschitz constant (i.e an upper bound of) of gradient of smooth part
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
