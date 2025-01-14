@@ -615,7 +615,8 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
             the object itself. Useful for chaining operations.
 
         """
-        check_array(subjects, accept_sparse=False)
+        for x in subjects:
+            check_array(x)
 
         if self.memory is None:
             self.memory = Memory(location=None)
@@ -1088,7 +1089,8 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             the object instance itself.
 
         """
-        check_array(subjects, accept_sparse=False)
+        for x in subjects:
+            check_array(x)
 
         # Empirical covariances
         emp_covs, n_samples = empirical_covariances(
