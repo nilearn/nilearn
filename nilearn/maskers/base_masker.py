@@ -18,7 +18,7 @@ from .._utils import logger, stringify_path
 from .._utils.cache_mixin import CacheMixin, cache
 
 
-def _filter_and_extract(
+def filter_and_extract(
     imgs,
     extraction_function,
     parameters,

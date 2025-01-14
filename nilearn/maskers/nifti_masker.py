@@ -12,7 +12,7 @@ from nilearn import _utils, image, masking
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 
 
 class _ExtractionFunctor:
@@ -60,7 +60,7 @@ def _get_mask_strategy(strategy):
         )
 
 
-def _filter_and_mask(
+def filter_and_mask(
     imgs,
     mask_img_,
     parameters,
@@ -125,7 +125,7 @@ def _filter_and_mask(
         parameters["target_shape"] = mask_img_.shape
         parameters["target_affine"] = mask_img_.affine
 
-    data, affine = _filter_and_extract(
+    data, affine = filter_and_extract(
         imgs,
         _ExtractionFunctor(mask_img_),
         parameters,
@@ -311,8 +311,7 @@ class NiftiMasker(BaseMasker):
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -604,7 +603,7 @@ class NiftiMasker(BaseMasker):
         params["clean_kwargs"] = self.clean_kwargs
 
         data = self._cache(
-            _filter_and_mask,
+            filter_and_mask,
             ignore=[
                 "verbose",
                 "memory",

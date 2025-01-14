@@ -958,9 +958,7 @@ def test_fetch_atlas_schaefer_2018(
             "o": [0] * (n_rois - 1),
         }
     )
-    basename = (
-        f"Schaefer2018_{n_rois}Parcels_" f"{yeo_networks}Networks_order.txt"
-    )
+    basename = f"Schaefer2018_{n_rois}Parcels_{yeo_networks}Networks_order.txt"
     mock_dir = tmp_path / "schaefer_2018"
     mock_dir.mkdir(exist_ok=True, parents=True)
     mock_file = mock_dir / basename

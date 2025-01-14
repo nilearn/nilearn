@@ -236,7 +236,7 @@ def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
         )
 
 
-def plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
+def test_plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
     """Test for plot_connectome with edge thresholding."""
     # Case 1: Threshold is a number
     thresh = 1.1

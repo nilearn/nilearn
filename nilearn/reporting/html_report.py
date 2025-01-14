@@ -50,7 +50,7 @@ def _get_estimator_template(estimator):
         return ESTIMATOR_TEMPLATES["default"]
 
 
-def _embed_img(display):
+def embed_img(display):
     """Embed an image or just return its instance if already embedded.
 
     Parameters
@@ -268,7 +268,7 @@ def generate_report(estimator):
         return _update_template(
             title="Empty Report",
             docstring="Empty Report",
-            content=_embed_img(None),
+            content=embed_img(None),
             overlay=None,
             parameters={},
             data=data,
@@ -307,9 +307,9 @@ def _create_report(estimator, data):
     html_template = _get_estimator_template(estimator)
     overlay, image = _define_overlay(estimator)
     embeded_images = (
-        [_embed_img(i) for i in image]
+        [embed_img(i) for i in image]
         if isinstance(image, list)
-        else _embed_img(image)
+        else embed_img(image)
     )
     parameters = _str_params(estimator.get_params())
     docstring = estimator.__doc__
@@ -318,7 +318,7 @@ def _create_report(estimator, data):
         title=estimator.__class__.__name__,
         docstring=snippet,
         content=embeded_images,
-        overlay=_embed_img(overlay),
+        overlay=embed_img(overlay),
         parameters=parameters,
         data=data,
         template_name=html_template,

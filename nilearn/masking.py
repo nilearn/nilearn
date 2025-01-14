@@ -297,9 +297,9 @@ def compute_epi_mask(
     logger.log("EPI mask computation", verbose)
 
     # Delayed import to avoid circular imports
-    from .image.image import _compute_mean
+    from .image.image import compute_mean
 
-    mean_epi, affine = cache(_compute_mean, memory)(
+    mean_epi, affine = cache(compute_mean, memory)(
         epi_img,
         target_affine=target_affine,
         target_shape=target_shape,
@@ -487,9 +487,9 @@ def compute_background_mask(
     data_imgs = _utils.check_niimg(data_imgs)
 
     # Delayed import to avoid circular imports
-    from .image.image import _compute_mean
+    from .image.image import compute_mean
 
-    data, affine = cache(_compute_mean, memory)(
+    data, affine = cache(compute_mean, memory)(
         data_imgs,
         target_affine=target_affine,
         target_shape=target_shape,

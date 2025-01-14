@@ -8,7 +8,7 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs, fill_doc
+from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -405,8 +405,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -481,7 +480,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
 

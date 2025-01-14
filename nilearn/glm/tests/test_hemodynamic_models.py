@@ -24,16 +24,6 @@ from nilearn.glm.first_level.hemodynamic_models import (
     spm_time_derivative,
 )
 
-HRF_MODEL_NAMES = [
-    "spm",
-    "glover",
-    "spm + derivative",
-    "glover + derivative",
-    "spm + derivative + dispersion",
-    "glover + derivative + dispersion",
-]
-
-
 HRF_MODELS = [
     spm_hrf,
     glover_hrf,

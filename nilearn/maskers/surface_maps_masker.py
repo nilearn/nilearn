@@ -229,8 +229,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     def _check_fitted(self):
         if not self.__sklearn_is_fitted__():
             raise ValueError(
-                f"It seems that {self.__class__.__name__} "
-                "has not been fitted."
+                f"It seems that {self.__class__.__name__} has not been fitted."
             )
 
     def transform(self, img, confounds=None, sample_mask=None):
