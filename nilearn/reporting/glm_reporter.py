@@ -1176,8 +1176,7 @@ def _make_surface_glm_report(
                 "head_css": head_css,
                 "version": __version__,
                 "page_title": (
-                    "Statistical Report - "
-                    f"{_return_model_type(model)}{title}"
+                    f"Statistical Report - {_return_model_type(model)}{title}"
                 ),
             },
         )
@@ -1274,7 +1273,7 @@ def _make_surface_glm_report(
             "head_css": head_css,
             "version": __version__,
             "page_title": (
-                "Statistical Report - " f"{_return_model_type(model)}{title}"
+                f"Statistical Report - {_return_model_type(model)}{title}"
             ),
         },
     )
