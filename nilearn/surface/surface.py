@@ -1920,7 +1920,7 @@ def get_data(img, ensure_finite=False):
 
     if ensure_finite:
         non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.sum() > 0:  # any non_finite_mask values?
+        if non_finite_mask.any():  # any non_finite_mask values?
             warnings.warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",
@@ -2127,34 +2127,40 @@ def threshold_img(
         is not performed in-place.
 
     """
-    img_data = img.data
-
     if mask_img is not None:
+        if not isinstance(mask_img, SurfaceImage):
+            raise TypeError(
+                "'mask_img' must a be SurfaceImage. "
+                f"Got {mask_img.__class__.name}"
+            )
         check_same_n_vertices(mask_img.mesh, img.mesh)
+        mask_img = load_mask_img(mask_img)
         for hemi in mask_img.data.parts:
-            mask_data = mask_img.data.parts[hemi]
+            mask = mask_img.data.parts[hemi]
             # Set as 0 for the values which are outside of the mask
-            img_data.parts[hemi][mask_data == 0.0] = 0.0
+            img.data.parts[hemi][mask == 0.0] = 0.0
 
     cutoff_threshold = check_threshold(
         threshold,
-        img_data,
+        data=get_data(img, ensure_finite=False),
         percentile_func=scoreatpercentile,
         name="threshold",
     )
 
     # Apply threshold
-    if two_sided:
-        img_data[np.abs(img_data) < cutoff_threshold] = 0.0
-    else:
-        img_data[img_data < cutoff_threshold] = 0.0
+    for hemi in img.data.parts:
+        if two_sided:
+            mask = np.abs(img.data.parts[hemi]) < cutoff_threshold
+        else:
+            mask = img.data.parts[hemi] < cutoff_threshold
+        img.data.parts[hemi][mask] = 0.0
 
     # Perform cluster thresholding, if requested
     if cluster_threshold > 0:
         raise NotImplementedError
 
     # Reconstitute img object
-    thresholded_img = new_img_like(img, img_data)
+    thresholded_img = new_img_like(img, img.data)
 
     return thresholded_img
 
@@ -2199,5 +2205,9 @@ def load_mask_img(mask_img, allow_empty=False):
             "Cannot interpret as true or false."
         )
 
-    mask = as_ndarray(mask, dtype=bool)
-    return mask, mask_img.affine
+    for hemi in mask_img.data.parts:
+        mask_img.data.parts[hemi] = as_ndarray(
+            mask_img.data.parts[hemi], dtype=bool
+        )
+
+    return mask_img
