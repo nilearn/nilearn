@@ -93,7 +93,6 @@ def test_check_mesh_and_data(rng, in_memory_mesh):
     # Generate faces such that max index is larger than
     # the length of coordinates array.
     wrong_faces = rng.integers(in_memory_mesh.n_vertices + 1, size=(30, 3))
-    wrong_mesh = InMemoryMesh(in_memory_mesh.coordinates, wrong_faces)
 
     # Check that check_mesh_and_data raises an error
     # with the resulting wrong mesh
@@ -101,7 +100,7 @@ def test_check_mesh_and_data(rng, in_memory_mesh):
         ValueError,
         match="Mismatch between .* indices of faces .* number of nodes.",
     ):
-        check_mesh_and_data(wrong_mesh, data)
+        InMemoryMesh(in_memory_mesh.coordinates, wrong_faces)
 
     # Alter the data and check that an error is raised
     data = in_memory_mesh.coordinates[::2, 0]
@@ -656,12 +655,14 @@ def test_projection_matrix(affine_eye):
         )
 
 
-def test_sampling_affine(affine_eye):
+def test_sampling_affine(affine_eye, rng):
     # check sampled (projected) values on a toy image
     img = np.ones((4, 4, 4))
     img[1, :, :] = 2
-    nodes = [[1, 1, 2], [10, 10, 20], [30, 30, 30]]
-    mesh = [np.asarray(nodes), None]
+
+    coords = np.asarray([[1, 1, 2], [10, 10, 20], [30, 30, 30]])
+    mesh = [coords, rng.integers(coords.shape[0], size=(30, 3))]
+
     affine = 10 * affine_eye
     affine[-1, -1] = 1
     texture = _nearest_voxel_sampling(
@@ -737,6 +738,58 @@ def test_choose_kind():
     assert kind == "depth"
     with pytest.raises(TypeError, match=".*sampling strategy"):
         kind = _choose_kind("depth", None)
+
+
+def test__validate_mesh(rng):
+    """Ensures that invalid meshes cannot be instantiated."""
+    # valid mesh is fine
+    coords = rng.random((20, 3))
+    faces = rng.integers(coords.shape[0], size=(30, 3))
+    InMemoryMesh(coordinates=coords, faces=faces)
+
+    # Face is None
+    coords = rng.random((20, 3))
+    coords[0] = np.array([np.nan, np.nan, np.nan])
+    faces = None
+
+    with pytest.raises(TypeError, match="must be numpy arrays."):
+        InMemoryMesh(coordinates=coords, faces=faces)
+
+    # coordinates is None
+    faces = rng.integers(20, size=(30, 3))
+    coords = None
+
+    with pytest.raises(TypeError, match="must be numpy arrays."):
+        InMemoryMesh(coordinates=coords, faces=faces)
+
+    # coordinates with non finite values
+    coords = rng.random((20, 3))
+    coords[0] = np.array([np.nan, np.nan, np.nan])
+    faces = rng.integers(coords.shape[0], size=(30, 3))
+
+    with pytest.raises(ValueError, match="Mesh coordinates must be finite."):
+        InMemoryMesh(coordinates=coords, faces=faces)
+
+    # faces with indices that do not correspond to any coordinate
+    coords = rng.random((20, 3))
+
+    # values too high
+    faces = rng.integers(low=30, high=50, size=(30, 3))
+
+    with pytest.raises(
+        ValueError,
+        match="Mismatch between the indices of faces and the number of nodes.",
+    ):
+        InMemoryMesh(coordinates=coords, faces=faces)
+
+    # negative values
+    faces = rng.integers(low=-50, high=-30, size=(30, 3))
+
+    with pytest.raises(
+        ValueError,
+        match="Mismatch between the indices of faces and the number of nodes.",
+    ):
+        InMemoryMesh(coordinates=coords, faces=faces)
 
 
 @pytest.mark.parametrize(

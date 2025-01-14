@@ -5,16 +5,17 @@ from unittest.mock import patch
 import pytest
 
 from nilearn._utils.helpers import (
-    _set_mpl_backend,
-    _transfer_deprecated_param_vals,
     _warn_deprecated_params,
     compare_version,
     is_kaleido_installed,
     is_matplotlib_installed,
     is_plotly_installed,
     rename_parameters,
+    set_mpl_backend,
     stringify_path,
+    transfer_deprecated_param_vals,
 )
+from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 
 
 def _mock_args_for_testing_replace_parameter():
@@ -35,6 +36,10 @@ def _mock_args_for_testing_replace_parameter():
 
 
 @pytest.mark.skipif(
+    on_windows_with_old_mpl_and_new_numpy(),
+    reason="Old matplotlib not compatible with numpy 2.0 on windows.",
+)
+@pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
 )
@@ -49,9 +54,13 @@ def test_should_raise_custom_warning_if_mpl_not_installed():
             ModuleNotFoundError, match="No module named 'matplotlib'"
         ),
     ):
-        _set_mpl_backend(warning)
+        set_mpl_backend(warning)
 
 
+@pytest.mark.skipif(
+    on_windows_with_old_mpl_and_new_numpy(),
+    reason="Old matplotlib not compatible with numpy 2.0 on windows.",
+)
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
@@ -68,7 +77,7 @@ def test_should_raise_warning_if_mpl_not_installed():
             ModuleNotFoundError, match="No module named 'matplotlib'"
         ),
     ):
-        _set_mpl_backend()
+        set_mpl_backend()
 
 
 @pytest.mark.skipif(
@@ -81,7 +90,7 @@ def test_should_raise_warning_if_backend_changes(*_):
     # The backend values returned by matplotlib.get_backend are different.
     # Warning should be raised to inform user of the backend switch.
     with pytest.warns(UserWarning, match="Backend changed to backend_2..."):
-        _set_mpl_backend()
+        set_mpl_backend()
 
 
 @pytest.mark.skipif(
@@ -95,7 +104,7 @@ def test_should_not_raise_warning_if_backend_is_not_changed(*_):
     # Warning should not be raised.
     with warnings.catch_warnings():
         warnings.simplefilter("error")
-        _set_mpl_backend()
+        set_mpl_backend()
 
 
 @pytest.mark.skipif(
@@ -108,7 +117,7 @@ def test_should_not_raise_warning_if_backend_is_not_changed(*_):
 def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
     # First call to `matplotlib.use` raises an exception, hence the default Agg
     # backend should be triggered
-    _set_mpl_backend()
+    set_mpl_backend()
 
     assert use_mock.call_count == 2
     # Check that the most recent call to `matplotlib.use` has arg `Agg`
@@ -122,7 +131,7 @@ def test_should_switch_to_agg_backend_if_current_backend_fails(use_mock):
 @patch("matplotlib.__version__", "0.0.0")
 def test_should_raise_import_error_for_version_check():
     with pytest.raises(ImportError, match="A matplotlib version of at least"):
-        _set_mpl_backend()
+        set_mpl_backend()
 
 
 def test_rename_parameters():
@@ -195,7 +204,7 @@ def test_transfer_deprecated_param_vals():
         "replacement_param_1": "deprecated_param_1_val",
         "unchanged_param_1": "unchanged_param_1_val",
     }
-    actual_ouput = _transfer_deprecated_param_vals(
+    actual_ouput = transfer_deprecated_param_vals(
         replacement_params,
         mock_input,
     )

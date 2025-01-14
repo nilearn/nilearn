@@ -38,6 +38,8 @@ USAGE
     python maint_tools/check_gha_workflow.py $GITHUB_TOKEN
 """
 
+from __future__ import annotations
+
 import sys
 import warnings
 from pathlib import Path
@@ -349,7 +351,7 @@ def _update_jobs_data(
 ) -> dict[str, list[str]]:
     """Collect info for each job in a run."""
     for run in runs:
-        print(f'{run["id"]}: {run["display_title"]}')
+        print(f"{run['id']}: {run['display_title']}")
 
         content = _handle_request(run["jobs_url"], auth)
 

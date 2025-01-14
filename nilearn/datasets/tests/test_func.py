@@ -917,21 +917,6 @@ def test_fetch_localizer(tmp_path):
     assert dataset.description != ""
 
 
-def _mock_original_spm_auditory_events_file():
-    expected_events_data = {
-        "onset": [factor * 42.0 for factor in range(16)],
-        "duration": [42.0] * 16,
-        "trial_type": ["rest", "active"] * 8,
-    }
-    expected_events_data = pd.DataFrame(expected_events_data)
-    expected_events_data_string = expected_events_data.to_csv(
-        sep="\t",
-        index=0,
-        columns=["onset", "duration", "trial_type"],
-    )
-    return expected_events_data_string
-
-
 @pytest.mark.parametrize("legacy", [True, False])
 def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
     data_dir = tmp_path

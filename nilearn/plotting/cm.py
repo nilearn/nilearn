@@ -121,17 +121,17 @@ def alpha_cmap(color, name="", alpha_min=0.5, alpha_max=1.0):
 
     Parameters
     ----------
-    color : (r, g, b), or a string
+    color : (r, g, b), or a :obj:`str`
         A triplet of floats ranging from 0 to 1, or a matplotlib
         color string.
 
-    name : string, default=''
+    name : :obj:`str` , default=''
         Name of the colormap.
 
-    alpha_min : Float, default=0.5
+    alpha_min : :obj:`float`, default=0.5
         Minimum value for alpha.
 
-    alpha_max : Float, default=1.0
+    alpha_max : :obj:`float`, default=1.0
         Maximum value for alpha.
 
     """
@@ -336,9 +336,9 @@ def dim_cmap(cmap, factor=0.3, to_white=True):
 
 def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     """Replace a colormap by another inside a pair of values."""
-    assert (
-        vmin < vmax
-    ), f"'vmin' must be smaller than 'vmax'. Got {vmin=} and {vmax=}."
+    assert vmin < vmax, (
+        f"'vmin' must be smaller than 'vmax'. Got {vmin=} and {vmax=}."
+    )
     assert vmin >= 0, f"'vmin' must be larger than 0, {vmin=} was passed."
     assert vmax <= 1, f"'vmax' must be smaller than 1, {vmax=} was passed."
     outer_cdict = outer_cmap._segmentdata.copy()

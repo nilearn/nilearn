@@ -364,7 +364,7 @@ def report_nifti_labels_masker(build_type):
 
     atlas = fetch_atlas_schaefer_2018()
 
-    atlas.labels = np.insert(atlas.labels, 0, "Background")
+    atlas.labels.insert(0, "Background")
 
     masker = NiftiLabelsMasker(
         atlas.maps,
@@ -570,9 +570,8 @@ def report_surface_label_masker(build_type):
             "right": destrieux["map_right"],
         },
     )
-    label_names = [x.decode("utf-8") for x in destrieux.labels]
 
-    labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
+    labels_masker = SurfaceLabelsMasker(labels_img, destrieux.labels).fit()
     labels_masker_report_unfitted = labels_masker.generate_report()
     labels_masker_report_unfitted.save_as_html(
         REPORTS_DIR / "surface_label_masker_unfitted.html"

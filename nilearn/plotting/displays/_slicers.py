@@ -162,9 +162,9 @@ class BaseSlicer:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize, facecolor=facecolor)
         if isinstance(axes, plt.Axes):
-            assert (
-                axes.figure is figure
-            ), "The axes passed are not in the figure"
+            assert axes.figure is figure, (
+                "The axes passed are not in the figure"
+            )
 
         if axes is None:
             axes = [0.0, 0.0, 1.0, 1.0]
@@ -546,7 +546,7 @@ class BaseSlicer:
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
         n_ticks = 5 if cbar_vmin != cbar_vmax else 1
-        ticks = _get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
+        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
         bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         # some colormap hacking
@@ -815,7 +815,7 @@ class BaseSlicer:
         )
 
 
-def _get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
+def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
     """Help for BaseSlicer."""
     # edge case where the data has a single value yields
     # a cryptic matplotlib error message when trying to plot the color bar
@@ -937,8 +937,7 @@ class OrthoSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the display_mode"
+                "The number cut_coords passed does not match the display_mode"
             )
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
@@ -1208,8 +1207,7 @@ class TiledSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the display_mode"
+                "The number cut_coords passed does not match the display_mode"
             )
 
         facecolor = "k" if self._black_bg else "w"
@@ -1980,8 +1978,7 @@ class MosaicSlicer(BaseSlicer):
 
         if len(self.cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the mosaic mode"
+                "The number cut_coords passed does not match the mosaic mode"
             )
         x0, y0, x1, y1 = self.rect
 
@@ -2164,10 +2161,10 @@ def get_slicer(display_mode):
               :class:`~nilearn.plotting.displays.ZSlicer`.
 
     """
-    return _get_create_display_fun(display_mode, SLICERS)
+    return get_create_display_fun(display_mode, SLICERS)
 
 
-def _get_create_display_fun(display_mode, class_dict):
+def get_create_display_fun(display_mode, class_dict):
     """Help for functions \
     :func:`~nilearn.plotting.displays.get_slicer` and \
     :func:`~nilearn.plotting.displays.get_projector`.
