@@ -10,11 +10,17 @@ from nilearn.connectome.group_sparse_cov import (
 )
 
 extra_valid_checks = [
-    "check_parameters_default_constructible",
-    "check_no_attributes_set_in_init",
+    "check_complex_data",
+    "check_estimator_sparse_tag",
+    "check_estimator_sparse_data",
+    "check_estimator_sparse_matrix",
+    "check_estimator_sparse_array",
+    "check_estimators_empty_data_messages",
     "check_estimators_unfitted",
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimator_sparse_tag",
+    "check_fit1d",
+    "check_no_attributes_set_in_init",
+    "check_parameters_default_constructible",
 ]
 
 
