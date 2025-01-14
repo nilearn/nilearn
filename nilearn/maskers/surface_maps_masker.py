@@ -9,7 +9,7 @@ from joblib import Memory
 from scipy import linalg
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs, fill_doc, logger
+from nilearn._utils import constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
@@ -664,7 +664,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 len(hemispheres),
                 subplot_kw={"projection": "3d"},
                 figsize=(20, 20),
-                **_constrained_layout_kwargs(),
+                **constrained_layout_kwargs(),
             )
             axes = np.atleast_2d(axes)
             for ax_row, view in zip(axes, views):
