@@ -975,7 +975,7 @@ def threshold_img(
 
     Parameters
     ----------
-    img : a 3D/4D Niimg-like object or a :obj:`~nilearn.surfaceSurfaceImage`
+    img : a 3D/4D Niimg-like object or a :obj:`~nilearn.surface.SurfaceImage`
         Image containing statistical or atlas maps which should be thresholded.
 
     threshold : :obj:`float` or :obj:`str`
@@ -1001,7 +1001,8 @@ def threshold_img(
 
         .. versionadded:: 0.9.0
 
-    mask_img : Niimg-like object, default=None
+    mask_img : Niimg-like object or a :obj:`~nilearn.surface.SurfaceImage` \
+        or None, default=None
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
