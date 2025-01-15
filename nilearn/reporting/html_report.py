@@ -282,7 +282,7 @@ def _insert_figure_partial(engine, content, displayed_maps):
     tpl = tempita.HTMLTemplate.from_filename(
         str(HTML_PARTIALS_PATH / "figure.html"), encoding="utf-8"
     )
-    if content is not list:
+    if not isinstance(content, list):
         content = [content]
     return tpl.substitute(
         engine=engine, content=content, displayed_maps=displayed_maps
