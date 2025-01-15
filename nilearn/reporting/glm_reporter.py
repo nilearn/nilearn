@@ -1107,8 +1107,7 @@ def _make_surface_glm_report(
         bg_img = None
     if bg_img and not isinstance(bg_img, SurfaceImage):
         raise TypeError(
-            "'bg_img' must a SurfaceImage instance."
-            f"Got {bg_img.__class__.name}"
+            f"'bg_img' must a SurfaceImage instance.Got {type(bg_img)=}"
         )
 
     title = f"<br>{title}" if title else ""
