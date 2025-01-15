@@ -14,16 +14,12 @@ import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
-from scipy.stats import scoreatpercentile
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
-from nilearn._utils import as_ndarray, stringify_path
+from nilearn._utils import stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_threshold
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.image import get_data as get_vol_data
-from nilearn.image import load_img, resampling
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -112,6 +108,9 @@ def _vertex_outer_normals(mesh):
 def _sample_locations_between_surfaces(
     mesh, inner_mesh, affine, n_points=10, depth=None
 ):
+    #  Avoid circular import
+    from nilearn.image.resampling import coord_transform
+
     outer_vertices = load_surf_mesh(mesh).coordinates
     inner_vertices = load_surf_mesh(inner_mesh).coordinates
 
@@ -126,7 +125,7 @@ def _sample_locations_between_surfaces(
     sample_locations = np.rollaxis(sample_locations, 1)
 
     sample_locations_voxel_space = np.asarray(
-        resampling.coord_transform(
+        coord_transform(
             *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
         )
     ).T.reshape(sample_locations.shape)
@@ -174,6 +173,9 @@ def _ball_sample_locations(
         z in voxel space.
 
     """
+    #  Avoid circular import
+    from nilearn.image.resampling import coord_transform
+
     if depth is not None:
         raise ValueError(
             "The 'ball' sampling strategy does not support "
@@ -185,12 +187,12 @@ def _ball_sample_locations(
         _load_uniform_ball_cloud(n_points=n_points) * ball_radius
     )
     mesh_voxel_space = np.asarray(
-        resampling.coord_transform(*vertices.T, affine=np.linalg.inv(affine))
+        coord_transform(*vertices.T, affine=np.linalg.inv(affine))
     ).T
     linear_map = np.eye(affine.shape[0])
     linear_map[:-1, :-1] = affine[:-1, :-1]
     offsets_voxel_space = np.asarray(
-        resampling.coord_transform(
+        coord_transform(
             *offsets_world_space.T, affine=np.linalg.inv(linear_map)
         )
     ).T
@@ -242,6 +244,9 @@ def _line_sample_locations(
         z in voxel space.
 
     """
+    #  Avoid circular import
+    from nilearn.image.resampling import coord_transform
+
     vertices = load_surf_mesh(mesh).coordinates
     normals = _vertex_outer_normals(mesh)
     if depth is None:
@@ -256,7 +261,7 @@ def _line_sample_locations(
     )
     sample_locations = np.rollaxis(sample_locations, 1)
     sample_locations_voxel_space = np.asarray(
-        resampling.coord_transform(
+        coord_transform(
             *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
         )
     ).T.reshape(sample_locations.shape)
@@ -720,6 +725,11 @@ def vol_to_surf(
      ... )
 
     """
+    # avoid circular import
+    from nilearn.image import get_data as get_vol_data
+    from nilearn.image import load_img
+    from nilearn.image.resampling import resample_to_img
+
     sampling_schemes = {
         "linear": _interpolation_sampling,
         "nearest": _nearest_voxel_sampling,
@@ -733,7 +743,7 @@ def vol_to_surf(
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
         mask = get_vol_data(
-            resampling.resample_to_img(
+            resample_to_img(
                 mask_img,
                 img,
                 interpolation="nearest",
@@ -836,6 +846,9 @@ def load_surf_data(surf_data):
         An array containing surface data
 
     """
+    # avoid circular import
+    from nilearn.image import get_data as get_vol_data
+
     # if the input is a filename, load it
     surf_data = stringify_path(surf_data)
 
@@ -2067,147 +2080,3 @@ def new_img_like(ref_img, data):
         mesh=copy.deepcopy(mesh),
         data=data,
     )
-
-
-def threshold_img(
-    img,
-    threshold,
-    cluster_threshold=0,
-    two_sided=True,
-    mask_img=None,
-    copy=True,  # noqa: ARG001
-):
-    """Threshold the given input image, mostly statistical or atlas images.
-
-    Thresholding can be done based on direct image intensities or selection
-    threshold with given percentile.
-
-    .. versionchanged:: 0.9.0
-        New ``cluster_threshold`` and ``two_sided`` parameters added.
-
-    .. versionadded:: 0.2
-
-    Parameters
-    ----------
-    img : a 1D/2D SurfaceImage
-        Image which should be thresholded.
-
-    threshold : :obj:`float` or :obj:`str`
-        Voxels with intensities less than the requested threshold
-        will be set to zero.
-        Those with intensities greater or equal than the requested threshold
-        will keep their original value.
-        If float, we threshold the image based on image intensities.
-        The given value should be within the range of minimum and maximum
-        intensity of the input image.
-        If string, it should finish with percent sign e.g. "80%"
-        and we threshold based on the score obtained
-        using this percentile on the image data.
-        The given string should be within the range of "0%" to "100%".
-        The percentile rank is computed using
-        :func:`scipy.stats.scoreatpercentile`.
-
-    cluster_threshold : :obj:`float`, default=0
-        Cluster size threshold, in voxels. In the returned thresholded map,
-        sets of connected voxels (``clusters``) with size smaller
-        than this number will be removed.
-
-        Not implemented
-
-    two_sided : :obj:`bool`, default=True
-        Whether the thresholding should yield both positive and negative
-        part of the maps.
-
-    mask_img : Niimg-like object, default=None
-        Mask image applied to mask the input data.
-        If None, no masking will be applied.
-
-    copy : :obj:`bool`, default=True
-        If True, input array is not modified. True by default: the filtering
-        is not performed in-place.
-
-    """
-    if mask_img is not None:
-        if not isinstance(mask_img, SurfaceImage):
-            raise TypeError(
-                "'mask_img' must a be SurfaceImage. "
-                f"Got {mask_img.__class__.name}"
-            )
-        check_same_n_vertices(mask_img.mesh, img.mesh)
-        mask_img = load_mask_img(mask_img)
-        for hemi in mask_img.data.parts:
-            mask = mask_img.data.parts[hemi]
-            # Set as 0 for the values which are outside of the mask
-            img.data.parts[hemi][mask == 0.0] = 0.0
-
-    cutoff_threshold = check_threshold(
-        threshold,
-        data=get_data(img, ensure_finite=False),
-        percentile_func=scoreatpercentile,
-        name="threshold",
-    )
-
-    # Apply threshold
-    for hemi in img.data.parts:
-        if two_sided:
-            mask = np.abs(img.data.parts[hemi]) < cutoff_threshold
-        else:
-            mask = img.data.parts[hemi] < cutoff_threshold
-        img.data.parts[hemi][mask] = 0.0
-
-    # Perform cluster thresholding, if requested
-    if cluster_threshold > 0:
-        raise NotImplementedError
-
-    # Reconstitute img object
-    thresholded_img = new_img_like(img, img.data)
-
-    return thresholded_img
-
-
-def load_mask_img(mask_img, allow_empty=False):
-    """Check that a mask is valid, ie with two values including 0 and load it.
-
-    Parameters
-    ----------
-    mask_img : SurfaceImage object
-        See :ref:`extracting_data`.
-        The mask to check.
-
-    allow_empty : :obj:`bool`, default=False
-        Allow loading an empty mask (full of 0 values).
-
-    Returns
-    -------
-    mask : SurfaceImage
-        Boolean version of the mask.
-    """
-    mask = get_data(mask_img, ensure_finite=True)
-    values = np.unique(mask)
-
-    if len(values) == 1:
-        # We accept a single value if it is not 0 (full true mask).
-        if values[0] == 0 and not allow_empty:
-            raise ValueError(
-                "The mask is invalid as it is empty: it masks all data."
-            )
-    elif len(values) == 2:
-        # If there are 2 different values, one of them must be 0 (background)
-        if 0 not in values:
-            raise ValueError(
-                "Background of the mask must be represented with 0. "
-                f"Given mask contains: {values}."
-            )
-    else:
-        # If there are more than 2 values, the mask is invalid
-        raise ValueError(
-            f"Given mask is not made of 2 values: {values}. "
-            "Cannot interpret as true or false."
-        )
-
-    for hemi in mask_img.data.parts:
-        mask_img.data.parts[hemi] = as_ndarray(
-            mask_img.data.parts[hemi], dtype=bool
-        )
-
-    return mask_img

@@ -48,7 +48,6 @@ from nilearn.surface.surface import (
     load_surf_mesh,
     mean_img,
     new_img_like,
-    threshold_img,
     vol_to_surf,
 )
 
@@ -1250,14 +1249,3 @@ def test_index_img_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         index_img(1, index=1)
-
-
-def test_threshold_img_1d(surf_img_1d):
-    """Check threshold 1D surface image.
-
-    surf_img_1d has all left hemisphere values < 10
-    surf_img_1d has all right hemisphere values > 10
-    """
-    new_img = threshold_img(surf_img_1d, threshold=10)
-    assert (new_img.data.parts["left"] == 0).all()
-    assert (new_img.data.parts["right"] > 0).all()

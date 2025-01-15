@@ -28,9 +28,11 @@ from nilearn.masking import (
     compute_multi_epi_mask,
     extrapolate_out_mask,
     intersect_masks,
+    load_mask_img,
     unmask,
     unmask_from_to_3d_array,
 )
+from nilearn.surface.surface import SurfaceImage
 
 np_version = (
     np.version.full_version
@@ -79,6 +81,24 @@ def _confounds_regression(
         conf = StandardScaler(with_std=False).fit_transform(conf)
     cov_mat = _cov_conf(tseries, conf)
     return np.sum(np.abs(cov_mat))
+
+
+def test_load_mask_img_error_inputs():
+    """Check input validation of load_mask_img."""
+    with pytest.raises(
+        TypeError, match="a 3D/4D Niimg-like object or a SurfaceImage"
+    ):
+        load_mask_img(1)
+
+
+def test_load_mask_img_surface(surf_mask_1d):
+    """Check load_mask_img returns a boolean surface image \
+    when SurfaceImage is used as input.
+    """
+    mask, _ = load_mask_img(surf_mask_1d)
+    assert isinstance(mask, SurfaceImage)
+    for hemi in mask.data.parts.values():
+        assert hemi.dtype == "bool"
 
 
 def test_high_variance_confounds():

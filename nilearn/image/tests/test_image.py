@@ -729,7 +729,51 @@ def test_new_img_like_int64(shape_3d_default):
     assert get_data(new_img).dtype == "int64"
 
 
-def test_validity_threshold_value_in_threshold_img(shape_3d_default):
+def test_input_in_threshold_img(
+    shape_3d_default, surf_img_1d, surf_mask_1d, affine_eye
+):
+    """Check threshold_img only works with surface OR volume."""
+    vol_img, _ = generate_maps(shape_3d_default, n_regions=2)
+    vol_mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
+
+    # All of those should be OK
+    threshold_img(vol_img, threshold=1, mask_img=None)
+    threshold_img(surf_img_1d, threshold=1, mask_img=None)
+    threshold_img(vol_img, threshold=1, mask_img=vol_mask)
+    threshold_img(surf_img_1d, threshold=1, mask_img=surf_mask_1d)
+
+    # invalid input: img is an int
+    with pytest.raises(
+        TypeError, match="3D/4D Niimg-like object or a SurfaceImage"
+    ):
+        threshold_img(img=1, threshold=1)
+
+    # incompatible inputs raise errors
+    with pytest.raises(
+        TypeError,
+        match="should be both be 3D/4D Niimg-like object or a SurfaceImage",
+    ):
+        threshold_img(vol_img, threshold=1, mask_img=surf_mask_1d)
+    with pytest.raises(
+        TypeError,
+        match="should be both be 3D/4D Niimg-like object or a SurfaceImage",
+    ):
+        threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
+
+
+def test_threshold_img_warning(surf_img_1d):
+    """Check warnings thrown by threshold_img."""
+    with pytest.warns(
+        UserWarning,
+        match="Cluster thresholding not implemented for SurfaceImage.",
+    ):
+        threshold_img(surf_img_1d, threshold=1, cluster_threshold=10)
+
+
+@pytest.mark.parametrize("two_sided", [True, False])
+def test_validity_threshold_value_in_threshold_img(
+    shape_3d_default, two_sided
+):
     """Check that invalid values to threshold_img's threshold parameter \
        raise Exceptions.
     """
@@ -743,29 +787,34 @@ def test_validity_threshold_value_in_threshold_img(shape_3d_default):
         threshold_img(maps, threshold=None, copy_header=True)
 
     threshold = object()
-    for two_sided in [True, False]:
-        with pytest.raises(
-            TypeError, match="should be either a number or a string"
-        ):
-            threshold_img(maps, threshold=threshold, two_sided=two_sided)
+    with pytest.raises(
+        TypeError, match="should be either a number or a string"
+    ):
+        threshold_img(maps, threshold=threshold, two_sided=two_sided)
+
     invalid_threshold_values = ["90t%", "s%", "t", "0.1"]
     name = "threshold"
     for thr in invalid_threshold_values:
-        for two_sided in [True, False]:
-            with pytest.raises(
-                ValueError,
-                match=f"{name}.+should be a number followed by the percent",
-            ):
-                threshold_img(
-                    maps, threshold=thr, copy_header=True, two_sided=two_sided
-                )
+        with pytest.raises(
+            ValueError,
+            match=f"{name}.+should be a number followed by the percent",
+        ):
+            threshold_img(
+                maps, threshold=thr, copy_header=True, two_sided=two_sided
+            )
 
-    two_sided = True
+
+def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
+    """Check that negative values to threshold_img's threshold parameter \
+       raise Exceptions.
+    """
+    maps, _ = generate_maps(shape_3d_default, n_regions=2)
+
     # invalid threshold values when two_sided=True
     thresholds = [-10, "-10%"]
     for wrong_threshold in thresholds:
         with pytest.raises(ValueError, match="should not be a negative"):
-            threshold_img(maps, threshold=wrong_threshold, two_sided=two_sided)
+            threshold_img(maps, threshold=wrong_threshold, two_sided=True)
 
     with pytest.raises(ValueError, match="should not be a negative"):
         threshold_img(maps, threshold="-10%", two_sided=False)
@@ -786,6 +835,20 @@ def test_threshold_img(affine_eye):
 
         # when threshold is a percentile
         threshold_img(img, threshold="2%", copy_header=True)
+
+
+def test_threshold_img_1d(surf_img_1d):
+    """Check threshold 1D surface image.
+
+    surf_img_1d has all left hemisphere values < 10
+    surf_img_1d has all right hemisphere values > 10
+    """
+    new_img = threshold_img(surf_img_1d, threshold=9)
+    assert (new_img.data.parts["left"] == 0).all()
+    assert (new_img.data.parts["right"] > 0).all()
+
+    # smoke test with % threshold
+    threshold_img(surf_img_1d, threshold="10%")
 
 
 @pytest.mark.parametrize(
