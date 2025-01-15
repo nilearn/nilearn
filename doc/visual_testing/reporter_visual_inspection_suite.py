@@ -365,8 +365,6 @@ def report_nifti_labels_masker(build_type):
 
     atlas = fetch_atlas_schaefer_2018()
 
-    atlas.labels.insert(0, "Background")
-
     masker = NiftiLabelsMasker(
         atlas.maps,
         labels=atlas.labels,

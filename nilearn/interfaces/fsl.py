@@ -5,6 +5,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+__all__ = ["get_design_from_fslmat"]
+
 
 def get_design_from_fslmat(fsl_design_matrix_path, column_names=None):
     """Extract design matrix dataframe from FSL mat file.

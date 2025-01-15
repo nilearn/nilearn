@@ -113,8 +113,8 @@ def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
     v_max : float, optional (default to 2.)
         Maximal element.
 
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -144,8 +144,8 @@ def random_spd(p, eig_min, cond, random_state=0):
         Condition number, defined as the ratio of the maximum eigenvalue to the
         minimum one.
 
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -327,8 +327,8 @@ def random_non_singular(p, sing_min=1.0, sing_max=2.0, random_state=0):
     sing_max : float, optional (default to 2.)
         Maximal singular value.
 
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------

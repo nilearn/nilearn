@@ -36,9 +36,8 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     res : :obj:`int`, default=30
         Desired resolution, in mm, of output images.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     mask_dilation : :obj:`int`, default=2
         The number of times the binary :term:`dilation<Dilation>` is repeated
@@ -80,9 +79,8 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
     n_features : :obj:`int`
         Number of features
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -115,9 +113,8 @@ def generate_regions_ts(
     overlap : :obj:`int`, default=0
         Number of overlapping voxels between two regions (more or less).
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. e.g. "hamming".
@@ -188,9 +185,8 @@ def generate_maps(
     window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. Used to get non-uniform regions.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     affine : :obj:`numpy.ndarray`, default=None
         Affine transformation to use.
@@ -249,9 +245,8 @@ def generate_labeled_regions(
         Number of regions to generate. By default (if "labels" is None),
         add a background with value zero.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     labels : iterable, optional
         Labels to use for each zone. If provided, n_regions is unused.
@@ -336,9 +331,8 @@ def generate_fake_fmri(
         'classification' or 'regression'.
         Used only if n_blocks is not None.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -443,9 +437,8 @@ def generate_fake_fmri_data_and_design(
         Affine of returned images. Must be a 4x4 array.
         Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -500,9 +493,8 @@ def write_fake_fmri_data_and_design(
         Affine of returned images.
         Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     file_path : :obj:`str` or :obj:`pathlib.Path`, default=None
         Output file path.
@@ -568,9 +560,8 @@ def _write_fake_bold_gifti(
         Shape of output array with m vertices by n timepoints.
         If number of vertices is 0, only a dummy file is created.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
     """
     rand_gen = np.random.default_rng(random_state)
     data = rand_gen.standard_normal((n_time_points, n_vertices))
@@ -596,9 +587,8 @@ def write_fake_bold_img(file_path, shape, affine=None, random_state=0):
         Affine of returned images.
         Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -632,9 +622,8 @@ def _generate_signals_from_precisions(
         The number of samples drawn for each timeseries is taken at random
         between these two numbers. Defaults are 50 and 100.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -685,9 +674,8 @@ def generate_group_sparse_gaussian_graphs(
     density : :obj:`float`, default=0.1
         Density of edges in graph topology.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     %(verbose0)s
 
@@ -806,9 +794,8 @@ def _basic_confounds(length, random_state=0):
     length : :obj:`int`
         Length of basic confounds.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -898,8 +885,8 @@ def generate_random_img(
         The affine of the image
         Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    random_state : int, optional
-        Seed for random number generator.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -986,9 +973,8 @@ def create_fake_bids_dataset(
         but can be other values (e.g. "desc-confounds_regressors" as
         in :term:`fMRIPrep` < 20.2).
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance. \
-                    default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     entities : :obj:`dict`, optional
         Extra entity to add to the :term:`BIDS` filename with a list of values.

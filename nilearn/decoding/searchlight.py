@@ -59,17 +59,17 @@ def search_light(
         adjacency matrix. Defines for each feature the neigbhoring features
         following a given structure of the data.
 
-    groups : array-like, optional, (default None)
+    groups : array-like, default=None
         group label for each sample for cross validation.
 
-    scoring : :obj:`str` or callable or None, optional
+    scoring : :obj:`str` or callable or None, default=None
         The scoring strategy to use. See the scikit-learn documentation
         for possible values.
         If callable, it takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, optional
+    cv : cross-validation generator, default=None
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
@@ -113,7 +113,7 @@ class GroupIterator:
 
     Parameters
     ----------
-    n_features : int
+    n_features : :obj:`int`
         Total number of features
     %(n_jobs)s
 
@@ -251,7 +251,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         Boolean image giving voxels on which searchlight should be
         computed.
 
-    radius : float, default=2.
+    radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
     estimator : 'svr', 'svc', or an estimator object implementing 'fit'
@@ -372,7 +372,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
             Target variable to predict. Must have exactly as many elements as
             3D images in img.
 
-        groups : array-like, optional
+        groups : array-like, default=None
             group label for each sample for cross validation. Must have
             exactly as many elements as 3D images in img. default None
         """
