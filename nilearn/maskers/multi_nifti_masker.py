@@ -24,6 +24,7 @@ from nilearn._utils.class_inspect import (
     get_params,
 )
 from nilearn._utils.niimg_conversions import iter_check_niimg
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 
@@ -205,6 +206,26 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         )
         self.n_jobs = n_jobs
 
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(masker=True, multi_masker=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(masker=True, multi_masker=True)
+        return tags
+
     def fit(
         self,
         imgs=None,
@@ -257,7 +278,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             ):
                 raise ValueError(
                     f"[{self.__class__.__name__}.fit] "
-                    "For multiple processing, you should  provide a list of "
+                    "For multiple processing, you should provide a list of "
                     "data (e.g. Nifti1Image objects or filenames). "
                     f"{imgs} is an invalid input."
                 )
