@@ -118,8 +118,8 @@ def _one_mesh_info(
         vmax=vmax,
         vmin=vmin,
     )
-    info = {"inflated_left": mesh_to_plotly(surf_mesh)}
-    info["vertexcolor_left"] = get_vertexcolor(
+    info = {"inflated_both": mesh_to_plotly(surf_mesh)}
+    info["vertexcolor_both"] = get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
