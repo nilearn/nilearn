@@ -33,6 +33,15 @@ dec_to_hex_nums = pd.DataFrame(
     {"hex": [f"{x:02x}" for x in range(256)]}, dtype=str
 )
 
+deprecation_message = (
+    "From release >={version}, "
+    "instead of returning several atlas image accessible "
+    "via different keys, "
+    "this fetcher will return the atlas as a dictionary "
+    "with a single atlas image, "
+    "accessible through a 'maps' key. "
+)
+
 
 def rgb_to_hex_lookup(
     red: pd.Series, green: pd.Series, blue: pd.Series
@@ -477,9 +486,14 @@ def fetch_atlas_craddock_2012(
 
     warnings.warn(
         category=DeprecationWarning,
-        message="In release 0.13, this fetcher will return a dictionary "
-        "with one map accessed through a 'maps' key. Please use the new "
-        "parameters homogeneity and grp_mean.",
+        message=(
+            deprecation_message.format(version="0.13")
+            + (
+                "To suppress this warning, "
+                "Please use the parameters 'homogeneity' and 'grp_mean' "
+                "to specify the exact atlas image you want."
+            )
+        ),
     )
 
     params = dict(
@@ -1357,9 +1371,14 @@ def fetch_atlas_smith_2009(
 
     warnings.warn(
         category=DeprecationWarning,
-        message="In release 0.13, this fetcher will return a dictionary "
-        "with one map accessed through a 'maps' key. Please use the new "
-        "parameters dimension and resting.",
+        message=(
+            deprecation_message.format(version="0.13")
+            + (
+                "To suppress this warning, "
+                "Please use the parameters 'dimension' and 'resting' "
+                "to specify the exact atlas image you want."
+            )
+        ),
     )
 
     keys = list(files.keys())
@@ -1867,9 +1886,14 @@ def fetch_atlas_basc_multiscale_2015(
 
     warnings.warn(
         category=DeprecationWarning,
-        message="In release 0.13, this fetcher will return a dictionary "
-        "with one map accessed through a 'maps' key. Please use the new "
-        "parameters resolution and version.",
+        message=(
+            deprecation_message.format(version="0.13")
+            + (
+                "To suppress this warning, "
+                "Please use the parameters 'resolution' and 'version' "
+                "to specify the exact atlas image you want."
+            )
+        ),
     )
 
     basenames = [
@@ -2646,7 +2670,27 @@ def fetch_atlas_schaefer_2018(
 
 
 class Atlas(Bunch):
-    """Sub class of Bunch to help standardize atlases."""
+    """Sub class of Bunch to help standardize atlases.
+
+    Parameters
+    ----------
+    maps : Niimg-like object or SurfaceImage object
+        single image or list of images for that atlas
+
+    description : str
+        atlas description
+
+    atlas_type: {"deterministic", "probabilistic"}
+
+    labels: list of str
+        labels for the atlas
+
+    lut: pandas.DataFrame
+        look up table for the atlas
+
+    template: str
+        name of the template used for the atlas
+    """
 
     def __init__(
         self,
