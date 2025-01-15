@@ -83,12 +83,23 @@ def _confounds_regression(
     return np.sum(np.abs(cov_mat))
 
 
-def test_load_mask_img_error_inputs():
+def test_load_mask_img_error_inputs(surf_img_2d, img_4d_ones_eye):
     """Check input validation of load_mask_img."""
     with pytest.raises(
         TypeError, match="a 3D/4D Niimg-like object or a SurfaceImage"
     ):
         load_mask_img(1)
+
+    with pytest.raises(
+        TypeError,
+        match="Expected dimension is 3D and you provided a 4D image.",
+    ):
+        load_mask_img(img_4d_ones_eye)
+
+    with pytest.raises(
+        ValueError, match="Data for each part of .* should be 1D."
+    ):
+        load_mask_img(surf_img_2d())
 
 
 def test_load_mask_img_surface(surf_mask_1d):

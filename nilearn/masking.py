@@ -82,6 +82,7 @@ def load_mask_img(mask_img, allow_empty=False):
         mask_img = _utils.check_niimg_3d(mask_img)
         mask = safe_get_data(mask_img, ensure_finite=True)
     else:
+        mask_img.data._check_ndims(1)
         mask = get_surface_data(mask_img, ensure_finite=True)
 
     values = np.unique(mask)

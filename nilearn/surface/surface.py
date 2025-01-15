@@ -1357,7 +1357,7 @@ class PolyData:
         dimension.
         """
         if not all(x.ndim == dim for x in self.parts.values()):
-            msg = [f"{v}D for {k}" for k, v in self.parts.items()]
+            msg = [f"{v.ndim}D for {k}" for k, v in self.parts.items()]
             raise ValueError(
                 f"Data for each part of {var_name} should be {dim}D. "
                 f"Found: {', '.join(msg)}."
