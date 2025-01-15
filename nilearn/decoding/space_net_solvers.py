@@ -536,7 +536,7 @@ def tvl1_solver(
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
-    callback : callable(dict) -> bool, default None
+    callback : callable(dict) -> bool, default=None
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
