@@ -480,7 +480,11 @@ def _pad_array(array, pad_sizes):
     return padded
 
 
-def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
+def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
+    """Compute the mean of the images over time or the 4th dimension.
+
+    See mean_img for details about the API.
+    """
     from . import resampling
 
     input_repr = repr_niimgs(imgs, shorten=True)
@@ -526,6 +530,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     return mean_data, affine
 
 
+@fill_doc
 def mean_img(
     imgs,
     target_affine=None,
@@ -545,18 +550,11 @@ def mean_img(
         Images to be averaged over time (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
-    target_affine : :class:`numpy.ndarray`, optional
-        If specified, the image is resampled corresponding to this new affine.
-        target_affine can be a 3x3 or a 4x4 matrix.
+    %(target_affine)s
 
-    target_shape : :obj:`tuple` or :obj:`list`, optional
-        If specified, the image will be resized to match this new shape.
-        len(target_shape) must be equal to 3.
-        A target_affine has to be specified jointly with target_shape.
+    %(target_shape)s
 
-    verbose : :obj:`int`, default=0
-        Controls the amount of verbosity: higher numbers give more messages
-        (0 means no messages).
+    %(verbose0)s
 
     n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation (-1 means
@@ -596,7 +594,7 @@ def mean_img(
     # Compute the first mean to retrieve the reference
     # target_affine and target_shape if_needed
     n_imgs = 1
-    running_mean, first_affine = _compute_mean(
+    running_mean, first_affine = compute_mean(
         first_img, target_affine=target_affine, target_shape=target_shape
     )
 
@@ -605,13 +603,13 @@ def mean_img(
         target_shape = running_mean.shape[:3]
 
     for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(_compute_mean)(
+        delayed(compute_mean)(
             n, target_affine=target_affine, target_shape=target_shape
         )
         for n in imgs_iter
     ):
         n_imgs += 1
-        # _compute_mean returns (mean_img, affine)
+        # compute_mean returns (mean_img, affine)
         this_mean = this_mean[0]
         running_mean += this_mean
 
@@ -1311,6 +1309,7 @@ def binarize_img(
     )
 
 
+@fill_doc
 def clean_img(
     imgs,
     runs=None,
@@ -1381,11 +1380,9 @@ def clean_img(
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
 
-    low_pass : :obj:`float`, optional
-        Low cutoff frequencies, in Hertz.
+    %(low_pass)s
 
-    high_pass : :obj:`float`, optional
-        High cutoff frequencies, in Hertz.
+    %(high_pass)s
 
     t_r : :obj:`float`, optional
         Repetition time, in second (sampling period). Set to None if not
@@ -1509,10 +1506,7 @@ def load_img(img, wildcards=True, dtype=None):
         If no file matches the regular expression, a `ValueError` exception is
         raised.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     Returns
     -------
@@ -1526,6 +1520,7 @@ def load_img(img, wildcards=True, dtype=None):
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
+@fill_doc
 def concat_imgs(
     niimgs,
     dtype=np.float32,
@@ -1550,25 +1545,18 @@ def concat_imgs(
     dtype : numpy dtype, default=np.float32
         The dtype of the returned image.
 
-    ensure_ndim : integer, optional
+    ensure_ndim : :obj:`int`, optional
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 
-    auto_resample : boolean, default=False
+    auto_resample : :obj:`bool`, default=False
         Converts all images to the space of the first one.
 
-    verbose : int, default=0
-        Controls the amount of verbosity (0 means no messages).
+    %(verbose0)s
 
-    memory : instance of joblib.Memory or string, default=None
-        Used to cache the resampling process.
-        By default, no caching is done.
-        If a string is given, it is the path to the caching directory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
+    %(memory)s
 
-    memory_level : integer, default=0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+    %(memory_level)s
 
     Returns
     -------

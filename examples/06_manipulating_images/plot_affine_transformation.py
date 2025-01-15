@@ -152,8 +152,7 @@ plt.title("The original data in mm space")
 plt.figure()
 plt.imshow(get_data(img_3d_affine_in_mm_space)[:, :, 0], vmin=0, vmax=vmax)
 plt.title(
-    "Transformed using a 3x3 affine -\n leads to "
-    "re-estimation of bounding box"
+    "Transformed using a 3x3 affine -\n leads to re-estimation of bounding box"
 )
 
 plt.figure()

@@ -40,8 +40,11 @@ class _MaskWarning(UserWarning):
 warnings.simplefilter("always", _MaskWarning)
 
 
+@fill_doc
 def load_mask_img(mask_img, allow_empty=False):
-    """Check that a mask is valid, ie with two values including 0 and load it.
+    """Check that a mask is valid.
+
+    This checks if it contains two values including 0 and load it.
 
     Parameters
     ----------
@@ -294,9 +297,9 @@ def compute_epi_mask(
     logger.log("EPI mask computation", verbose)
 
     # Delayed import to avoid circular imports
-    from .image.image import _compute_mean
+    from .image.image import compute_mean
 
-    mean_epi, affine = cache(_compute_mean, memory)(
+    mean_epi, affine = cache(compute_mean, memory)(
         epi_img,
         target_affine=target_affine,
         target_shape=target_shape,
@@ -484,9 +487,9 @@ def compute_background_mask(
     data_imgs = _utils.check_niimg(data_imgs)
 
     # Delayed import to avoid circular imports
-    from .image.image import _compute_mean
+    from .image.image import compute_mean
 
-    data, affine = cache(_compute_mean, memory)(
+    data, affine = cache(compute_mean, memory)(
         data_imgs,
         target_affine=target_affine,
         target_shape=target_shape,
@@ -778,7 +781,7 @@ def apply_mask(
         See :ref:`extracting_data`.
         3D mask array: True where a :term:`voxel` should be used.
 
-    dtype: numpy dtype or 'f'
+    dtype : numpy dtype or 'f'
         The dtype of the output, if 'f', any float output is acceptable
         and if the data is stored on the disk as floats the data type
         will not be changed.

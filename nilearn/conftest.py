@@ -553,6 +553,18 @@ def surf_label_img(surf_mesh):
 
 
 @pytest.fixture
+def surf_three_labels_img(surf_mesh):
+    """Return a sample surface label image using the sample mesh.
+    Has 3 regions with values 0, 1 and 2.
+    """
+    data = {
+        "left": np.asarray([0, 0, 1, 1]),
+        "right": np.asarray([1, 1, 0, 2, 0]),
+    }
+    return SurfaceImage(surf_mesh(), data)
+
+
+@pytest.fixture
 def flip_surf_img_parts():
     """Flip hemispheres of a surface image data or mesh."""
 

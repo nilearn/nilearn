@@ -12,7 +12,7 @@ from nilearn.plotting import cm
 from nilearn.plotting.displays._axes import GlassBrainAxes
 from nilearn.plotting.displays._slicers import (
     OrthoSlicer,
-    _get_create_display_fun,
+    get_create_display_fun,
 )
 
 
@@ -802,4 +802,4 @@ def get_projector(display_mode):
               :class:`~nilearn.plotting.displays.RProjector`.
 
     """
-    return _get_create_display_fun(display_mode, PROJECTORS)
+    return get_create_display_fun(display_mode, PROJECTORS)
