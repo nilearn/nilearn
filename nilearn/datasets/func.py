@@ -1683,10 +1683,6 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
-    See :footcite:t:`Nooner2012`.
-
-    Direct download link :footcite:t:`NKIdataset`.
-
     .. versionadded:: 0.3
 
     Parameters
@@ -1713,14 +1709,17 @@ def fetch_surf_nki_enhanced(
                          dominant hand and sex for each subject.
         - 'description': data description of the release and references.
 
-    Note that the it may be necessary
-    to coerce to float the data loaded from the Gifti files
-    to avoid issues with scipy >= 0.14.0.
+    ..  admonition:: scipy >= 0.14.0 compatibility
+        :class: important
 
-    References
-    ----------
-    .. footbibliography::
+        It may be necessary
+        to coerce to float the data loaded from the Gifti files
+        to avoid issues with scipy >= 0.14.0.
 
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
     """
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
@@ -1860,6 +1859,11 @@ def load_nki(
     -------
     list of SurfaceImage objects
         One image per subject.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
     """
     if mesh_type not in ALLOWED_MESH_TYPES:
         raise ValueError(
