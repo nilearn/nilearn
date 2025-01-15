@@ -21,7 +21,7 @@ from nilearn._utils.class_inspect import check_estimator, get_params
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
-from nilearn.maskers.nifti_masker import _filter_and_mask
+from nilearn.maskers.nifti_masker import filter_and_mask
 
 extra_valid_checks = [
     "check_parameters_default_constructible",
@@ -453,7 +453,7 @@ def test_filter_and_mask_error(affine_eye):
         "Expected dimension is 3D and you provided "
         "a 4D image.",
     ):
-        _filter_and_mask(data_img, mask_img, params)
+        filter_and_mask(data_img, mask_img, params)
 
 
 def test_filter_and_mask(affine_eye):
@@ -468,7 +468,7 @@ def test_filter_and_mask(affine_eye):
     params["clean_kwargs"] = {}
 
     # Test return_affine = False
-    data = _filter_and_mask(data_img, mask_img, params)
+    data = filter_and_mask(data_img, mask_img, params)
     assert data.shape == (5, 24000)
 
 

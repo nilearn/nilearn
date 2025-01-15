@@ -23,16 +23,6 @@ from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
 
-@pytest.fixture
-def n_regions():
-    return 9
-
-
-@pytest.fixture
-def length():
-    return 93
-
-
 def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
     """Check working of shape/affine checks."""
     shape1 = (*shape_3d_default, length)

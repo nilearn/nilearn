@@ -74,7 +74,7 @@ def high_variance_confounds(
         4D image.
         See :ref:`extracting_data`.
 
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or None, default=None
         If not provided, all voxels are used.
         If provided, confounds are extracted from voxels inside the mask.
         See :ref:`extracting_data`.
@@ -82,7 +82,7 @@ def high_variance_confounds(
     n_confounds : :obj:`int`, default=5
         Number of confounds to return.
 
-    percentile : :obj:`float`, default=2
+    percentile : :obj:`float`, default=2.0
         Highest-variance signals percentile to keep before computing the
         singular value decomposition, 0. <= `percentile` <= 100.
         `mask_img.sum() * percentile / 100` must be greater than `n_confounds`.
@@ -368,7 +368,7 @@ def crop_img(
         Image to be cropped (see :ref:`extracting_data` for a detailed
         description of the valid input types).
 
-    rtol : :obj:`float`, default=1e-8
+    rtol : :obj:`float`, default=1e-08
         relative tolerance (with respect to maximal absolute value of the
         image), under which values are considered negligeable and thus
         croppable.
@@ -480,7 +480,11 @@ def _pad_array(array, pad_sizes):
     return padded
 
 
-def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
+def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
+    """Compute the mean of the images over time or the 4th dimension.
+
+    See mean_img for details about the API.
+    """
     from . import resampling
 
     input_repr = repr_niimgs(imgs, shorten=True)
@@ -526,6 +530,7 @@ def _compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     return mean_data, affine
 
 
+@fill_doc
 def mean_img(
     imgs,
     target_affine=None,
@@ -545,18 +550,11 @@ def mean_img(
         Images to be averaged over time (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
-    target_affine : :class:`numpy.ndarray`, optional
-        If specified, the image is resampled corresponding to this new affine.
-        target_affine can be a 3x3 or a 4x4 matrix.
+    %(target_affine)s
 
-    target_shape : :obj:`tuple` or :obj:`list`, optional
-        If specified, the image will be resized to match this new shape.
-        len(target_shape) must be equal to 3.
-        A target_affine has to be specified jointly with target_shape.
+    %(target_shape)s
 
-    verbose : :obj:`int`, default=0
-        Controls the amount of verbosity: higher numbers give more messages
-        (0 means no messages).
+    %(verbose0)s
 
     n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation (-1 means
@@ -596,7 +594,7 @@ def mean_img(
     # Compute the first mean to retrieve the reference
     # target_affine and target_shape if_needed
     n_imgs = 1
-    running_mean, first_affine = _compute_mean(
+    running_mean, first_affine = compute_mean(
         first_img, target_affine=target_affine, target_shape=target_shape
     )
 
@@ -605,13 +603,13 @@ def mean_img(
         target_shape = running_mean.shape[:3]
 
     for this_mean in Parallel(n_jobs=n_jobs, verbose=verbose)(
-        delayed(_compute_mean)(
+        delayed(compute_mean)(
             n, target_affine=target_affine, target_shape=target_shape
         )
         for n in imgs_iter
     ):
         n_imgs += 1
-        # _compute_mean returns (mean_img, affine)
+        # compute_mean returns (mean_img, affine)
         this_mean = this_mean[0]
         running_mean += this_mean
 
@@ -790,7 +788,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         .. versionchanged:: 0.9.2
             Changed default dtype casting of booleans from 'int8' to 'uint8'.
 
-    affine : 4x4 :class:`numpy.ndarray`, optional
+    affine : 4x4 :class:`numpy.ndarray`, default=None
         Transformation matrix.
 
     copy_header : :obj:`bool`, default=False
@@ -1229,7 +1227,7 @@ def math_img(formula, copy_header_from=None, **imgs):
 
 
 def binarize_img(
-    img, threshold=0, mask_img=None, two_sided=True, copy_header=False
+    img, threshold=0.0, mask_img=None, two_sided=True, copy_header=False
 ):
     """Binarize an image such that its values are either 0 or 1.
 
@@ -1240,7 +1238,7 @@ def binarize_img(
     img : a 3D/4D Niimg-like object
         Image which should be binarized.
 
-    threshold : :obj:`float` or :obj:`str`
+    threshold : :obj:`float` or :obj:`str`, default=0.0
         If float, we threshold the image based on image intensities meaning
         voxels which have intensities greater than this value will be kept.
         The given value should be within the range of minimum and
@@ -1255,7 +1253,7 @@ def binarize_img(
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
-    two_sided : :obj:`bool`
+    two_sided : :obj:`bool`, default=True
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
 
@@ -1311,6 +1309,7 @@ def binarize_img(
     )
 
 
+@fill_doc
 def clean_img(
     imgs,
     runs=None,
@@ -1370,8 +1369,8 @@ def clean_img(
     standardize : :obj:`bool`, default=True
         If True, returned signals are set to unit variance.
 
-    confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of
-        Confounds timeseries. optional
+    confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
+        Confounds timeseries. default=None
         Shape must be (instant number, confound number),
         or just (instant number,)
         The number of time instants in signals and confounds must be
@@ -1381,13 +1380,11 @@ def clean_img(
         If a list is provided, all confounds are removed from the input
         signal, as if all were in the same array.
 
-    low_pass : :obj:`float`, optional
-        Low cutoff frequencies, in Hertz.
+    %(low_pass)s
 
-    high_pass : :obj:`float`, optional
-        High cutoff frequencies, in Hertz.
+    %(high_pass)s
 
-    t_r : :obj:`float`, optional
+    t_r : :obj:`float`, default=None
         Repetition time, in second (sampling period). Set to None if not
         specified. Mandatory if used together with `low_pass` or `high_pass`.
 
@@ -1395,13 +1392,13 @@ def clean_img(
         If True, the non-finite values (NaNs and infs) found in the images
         will be replaced by zeros.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         If provided, signal is only cleaned from voxels inside the mask. If
         mask is provided, it should have same shape and affine as imgs.
         If not provided, all voxels are used.
         See :ref:`extracting_data`.
 
-    kwargs : dict
+    kwargs : :obj:`dict`
         Keyword arguments to be passed to functions called
         within this function.
         Kwargs prefixed with ``'clean__'`` will be passed to
@@ -1486,6 +1483,7 @@ def clean_img(
     return imgs_
 
 
+@fill_doc
 def load_img(img, wildcards=True, dtype=None):
     """Load a Niimg-like object from filenames or list of filenames.
 
@@ -1509,10 +1507,7 @@ def load_img(img, wildcards=True, dtype=None):
         If no file matches the regular expression, a `ValueError` exception is
         raised.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     Returns
     -------
@@ -1526,6 +1521,7 @@ def load_img(img, wildcards=True, dtype=None):
     return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
+@fill_doc
 def concat_imgs(
     niimgs,
     dtype=np.float32,
@@ -1550,25 +1546,18 @@ def concat_imgs(
     dtype : numpy dtype, default=np.float32
         The dtype of the returned image.
 
-    ensure_ndim : integer, optional
+    ensure_ndim : :obj:`int`, default=None
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 
-    auto_resample : boolean, default=False
+    auto_resample : :obj:`bool`, default=False
         Converts all images to the space of the first one.
 
-    verbose : int, default=0
-        Controls the amount of verbosity (0 means no messages).
+    %(verbose0)s
 
-    memory : instance of joblib.Memory or string, default=None
-        Used to cache the resampling process.
-        By default, no caching is done.
-        If a string is given, it is the path to the caching directory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
+    %(memory)s
 
-    memory_level : integer, default=0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+    %(memory_level)s
 
     Returns
     -------

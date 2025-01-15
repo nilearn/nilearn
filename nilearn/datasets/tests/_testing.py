@@ -396,7 +396,7 @@ def dict_to_archive(data, archive_format="gztar"):
           - a `str` or `bytes`: the contents of the file
           - anything else is pickled.
 
-    archive_format : str, optional (default="gztar")
+    archive_format : str, default="gztar"
         The archive format. See `shutil` documentation for available formats.
 
     Returns

@@ -358,16 +358,16 @@ def butterworth(
         Increasing the order sharpens this decay. Be aware that very high
         orders can lead to numerical instability.
 
-    padtype : {"odd", "even", "constant", None}, optional
+    padtype : {"odd", "even", "constant", None}, default="odd"
         Type of padding to use for the Butterworth filter.
         For more information about this, see :func:`scipy.signal.filtfilt`.
 
-    padlen : :obj:`int` or None, optional
+    padlen : :obj:`int` or None, default=None
         The size of the padding to add to the beginning and end of ``signals``.
         If None, the default value from :func:`scipy.signal.filtfilt` will be
         used.
 
-    copy : :obj:`bool`, optional
+    copy : :obj:`bool`, default=False
         If False, `signals` is modified inplace, and memory consumption is
         lower than for ``copy=True``, though computation time is higher.
 
@@ -677,7 +677,7 @@ def clean(
         the signal data will be interpolated before filtering. Otherwise, they
         will be discarded from the band-pass filtering process.
 
-    kwargs : dict
+    kwargs : :obj:`dict`
         Keyword arguments to be passed to functions called within ``clean``.
         Kwargs prefixed with ``'butterworth__'`` will be passed to
         :func:`~nilearn.signal.butterworth`.

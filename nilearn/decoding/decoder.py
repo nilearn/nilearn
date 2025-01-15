@@ -50,7 +50,7 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
-from nilearn._utils.cache_mixin import _check_memory
+from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
@@ -727,7 +727,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Returns None if non-dummy estimators are provided.
         """
         self.estimator = _check_estimator(self.estimator)
-        self.memory_ = _check_memory(self.memory, self.verbose)
+        self.memory_ = check_memory(self.memory, self.verbose)
 
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
@@ -1166,7 +1166,7 @@ class Decoder(ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : str, default='svc'
+    estimator : :obj:`str`, default='svc'
         The estimator to choose among:
         %(classifier_options)s
 
@@ -1182,7 +1182,7 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         :obj:`~nilearn.maskers.SurfaceMasker`
         to check for default parameters.
 
-    cv : cross-validation generator or int, default=10
+    cv : cross-validation generator or :obj:`int`, default=10
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html.
         The default 10 refers to K = 10 folds of
@@ -1191,7 +1191,8 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         is not set to custom CV splitter, default is
         :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
-    param_grid : dict of str to sequence, or sequence of such, default=None
+    param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such, \
+        or None, default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -1205,14 +1206,14 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         For DummyClassifier, parameter grid defaults to empty dictionary, class
         predictions are estimated using default strategy.
 
-    screening_percentile : int, float, optional, \
+    screening_percentile : :obj:`int`, :obj:`float`, optional, \
                           in the closed interval [0, 100], default=20
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest scores.
 
-    scoring : str, callable or None, default='roc_auc'
+    scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1347,7 +1348,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-    estimator : str, optional
+    estimator : :obj:`str`, optional
         The estimator to choose among:
         %(regressor_options)s
         Default 'svr'.
@@ -1359,7 +1360,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv : cross-validation generator or int, default=10
+    cv : cross-validation generator or :obj:`int`, default=10
         A cross-validation generator.
         See: https://scikit-learn.org/stable/modules/cross_validation.html.
         The default 10 refers to K = 10 folds of
@@ -1368,7 +1369,8 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         is not set to custom CV splitter, default is
         :class:`~sklearn.model_selection.LeaveOneGroupOut`.
 
-    param_grid : dict of str to sequence, or sequence of such, default=None
+    param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such, \
+                or None, default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -1382,7 +1384,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         For DummyRegressor, parameter grid defaults to empty dictionary, class
         predictions are estimated using default strategy.
 
-    screening_percentile : int, float, \
+    screening_percentile : :obj:`int`, :obj:`float`, \
                           in the closed interval [0, 100], \
                           default=20
         The percentage of brain volume that will be kept with respect to a full
@@ -1391,7 +1393,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : str, callable or None, optional. default='r2'
+    scoring : :obj:`str`, callable or None, optional. default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1530,27 +1532,28 @@ class FREMRegressor(_BaseDecoder):
 
     Parameters
     ----------
-    estimator : str, optional
+    estimator : :obj:`str`, optional
         The estimator to choose among:
         %(regressor_options)s
         Default 'svr'.
 
-    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,
-        (default None)
+    mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
+        default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv : int or cross-validation generator, optional (default 30)
+    cv : :obj:`int` or cross-validation generator, default=30
         If int, number of shuffled splits returned, which is usually the right
         way to train many different classifiers. A good trade-off between
         stability of the aggregated model and computation time is 50 splits.
         Shuffled splits are seeded by default for reproducibility.
         Can also be a cross-validation generator.
 
-    param_grid : dict of str to sequence, or sequence of such. Default None
+    param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such. \
+        or None, default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -1561,22 +1564,24 @@ class FREMRegressor(_BaseDecoder):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-    clustering_percentile : int, float, optional, in closed interval [0, 100]\
-        (default 10)
+    clustering_percentile : :obj:`int`, :obj:`float`, \
+        in closed interval [0, 100] \
+        default=10
         Used to perform a fast ReNA clustering on input data as a first step of
         fit. It agglomerates similar features together to reduce their number
         by this percentile. ReNA is typically efficient for cluster_percentile
         equal to 10.
 
-    screening_percentile : int, float, optional, in closed interval [0, 100]\
-        (default 20)
+    screening_percentile : :obj:`int`, :obj:`float`, \
+        in closed interval [0, 100] \
+        default=20
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : str, callable or None, default= 'r2'
+    scoring : :obj:`str`, callable or None, default= 'r2'
 
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
@@ -1685,27 +1690,28 @@ class FREMClassifier(_BaseDecoder):
 
     Parameters
     ----------
-    estimator : str, optional, (default 'svc')
+    estimator : :obj:`str`, default 'svc')
         The estimator to choose among:
         %(classifier_options)s
 
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, optional,\
-        (default None)
+        default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask and parameters will be used. If no mask is given, mask
         will be computed automatically from provided images by an inbuilt
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv : int or cross-validation generator, optional (default 30)
+    cv : :obj:`int` or cross-validation generator, default=30
         If int, number of stratified shuffled splits returned, which is usually
         the right way to train many different classifiers. A good trade-off
         between stability of the aggregated model and computation time is
         50 splits. Shuffled splits are seeded by default for reproducibility.
         Can also be a cross-validation generator.
 
-    param_grid : dict of str to sequence, or sequence of such. Default None
+    param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such. \
+                 default=None
         The parameter grid to explore, as a dictionary mapping estimator
         parameters to sequences of allowed values.
 
@@ -1716,22 +1722,24 @@ class FREMClassifier(_BaseDecoder):
         or have no effect. See scikit-learn documentation for more information,
         for example: https://scikit-learn.org/stable/modules/grid_search.html
 
-    clustering_percentile : int, float, optional, in closed interval [0, 100]\
-        (default 10)
+    clustering_percentile : :obj:`int`, :obj:`float`, \
+        in closed interval [0, 100], \
+        default=10
         Used to perform a fast ReNA clustering on input data as a first step of
         fit. It agglomerates similar features together to reduce their number
         down to this percentile. ReNA is typically efficient for
         cluster_percentile equal to 10.
 
-    screening_percentile : int, float, optional, in closed interval [0, 100],\
-        (default 20)
+    screening_percentile : :obj:`int`, :obj:`float`, \
+        in closed interval [0, 100], \
+        default=20
         The percentage of brain volume that will be kept with respect to a full
         MNI template. In particular, if it is lower than 100, a univariate
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
         scores.
 
-    scoring : str, callable or None, optional. (default: 'roc_auc')
+    scoring : :obj:`str`, callable or None, optional. default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
         https://scikit-learn.org/stable/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules
         If callable, takes as arguments the fitted estimator, the
@@ -1740,7 +1748,7 @@ class FREMClassifier(_BaseDecoder):
         e.g. scorer(estimator, X_test, y_test)
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
-        'recall' or 'roc_auc'. (default 'roc_auc').
+        'recall' or 'roc_auc'; default='roc_auc'
     %(smoothing_fwhm)s
     %(standardize)s
     %(target_affine)s

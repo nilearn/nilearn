@@ -58,10 +58,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    dtype : {dtype, "auto"}
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+
+    %(dtype)s
 
     resampling_target : {"data", "labels", None}, default="data"
         Gives which image gives the final shape/size:
@@ -189,7 +187,11 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         ----------
         %(imgs)s
             Images to process. Each element of the list is a 4D image.
+
         %(confounds)s
+
+        %(n_jobs)s
+
         %(sample_mask)s
 
         Returns

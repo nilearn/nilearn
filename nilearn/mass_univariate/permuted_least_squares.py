@@ -15,7 +15,7 @@ from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
 
 from nilearn import image
-from nilearn._utils import logger
+from nilearn._utils import fill_doc, logger
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -116,12 +116,9 @@ def _permuted_ols_on_chunk(
 
         .. versionadded:: 0.9.2
 
-    random_state : int or None, optional
-        Seed for random number generator, to have the same permutations
-        in each computing units.
+    %(random_state)s
 
-    verbose : int, default=0
-        Defines the verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -296,6 +293,7 @@ def _permuted_ols_on_chunk(
     )
 
 
+@fill_doc
 def permuted_ols(
     tested_vars,
     target_vars,
@@ -353,7 +351,7 @@ def permuted_ols(
         while the descriptors will generally be images,
         such as run-wise z-statistic maps.
 
-    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+    confounding_vars : array-like, shape=(n_samples, n_covars), default=None
         Confounding variates (covariates), fitted but not tested.
         If None, no confounding variate is added to the model
         (except maybe a constant column according to the value of
@@ -376,9 +374,7 @@ def permuted_ols(
         If False, only positive effects are considered as relevant. The null
         hypothesis is that the effect is zero or negative.
 
-    random_state : :obj:`int` or np.random.RandomState or None, optional
-        Seed for random number generator, to have the same permutations
-        in each computing units.
+    %(random_state)s
 
     n_jobs : :obj:`int`, default=1
         Number of parallel workers.
@@ -386,11 +382,10 @@ def permuted_ols(
         A negative number indicates that all the CPUs except (abs(n_jobs) - 1)
         ones will be used.
 
-    verbose : :obj:`int`, default=0
-        verbosity level (0 means no message).
+    %(verbose0)s
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
-            :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+            :class:`~nilearn.maskers.MultiNiftiMasker`, default=None
         A mask to be used on the data.
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.
@@ -425,7 +420,7 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    output_type : {'legacy', 'dict'}, optional
+    output_type : {'legacy', 'dict'}, default="legacy"
         Determines how outputs should be returned.
         The two options are:
 
@@ -967,7 +962,7 @@ def _check_inputs_permuted_ols(
     n_jobs, n_perm, tfce, masker, threshold, target_vars
 ):
     if not isinstance(n_perm, int):
-        raise TypeError("'n_perm' must be an int. " f"Got {type(n_perm)=}")
+        raise TypeError(f"'n_perm' must be an int. Got {type(n_perm)=}")
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(

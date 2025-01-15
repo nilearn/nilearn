@@ -382,12 +382,12 @@ def _projection_matrix(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is not `None`.
 
-    n_points : :obj:`int` or None, optional
+    n_points : :obj:`int` or None, default=20
         How many samples are drawn around each vertex and averaged. If `None`,
         use a reasonable default for the chosen sampling strategy (20 for
         'ball' or 10 for lines ie using `line` or an `inner_mesh`).
         For performance reasons, if using kind="ball", choose `n_points` in
-        [10, 20, 40, 80, 160] (default is 20), because cached positions are
+        [10, 20, 40, 80, 160], because cached positions are
         available.
 
     mask : :obj:`numpy.ndarray` of shape img_shape or `None`, optional
@@ -608,19 +608,19 @@ def vol_to_surf(
             Samples are regularly spaced inside a ball centered at the mesh
             vertex.
 
-    n_samples : :obj:`int` or `None`, optional
+    n_samples : :obj:`int` or `None`, default=None
         How many samples are drawn around each :term:`vertex` and averaged.
         If `None`, use a reasonable default for the chosen sampling strategy
         (20 for 'ball' or 10 for 'line').
         For performance reasons, if using `kind` ="ball", choose `n_samples` in
-        [10, 20, 40, 80, 160] (default is 20), because cached positions are
-        available.
+        [10, 20, 40, 80, 160] (defaults to 20 if None is passed),
+        because cached positions are available.
 
-    mask_img : Niimg-like object or `None`, optional
+    mask_img : Niimg-like object or `None`, default=None
         Samples falling out of this mask or out of the image are ignored.
         If `None`, don't apply any mask.
 
-    inner_mesh : :obj:`str` or :obj:`numpy.ndarray`, optional
+    inner_mesh : :obj:`str` or :obj:`numpy.ndarray` or None, default=None
         Either a file containing a surface :term:`mesh` or a pair of ndarrays
         (coordinates, triangles). If provided this is an inner surface that is
         nested inside the one represented by `surf_mesh` -- e.g. `surf_mesh` is
@@ -631,7 +631,7 @@ def vol_to_surf(
         Image values for index i are then sampled along the line
         joining these two points (if `kind` is 'auto' or 'depth').
 
-    depth : sequence of :obj:`float` or `None`, optional
+    depth : sequence of :obj:`float` or `None`, default=None
         The cortical depth of samples. If provided, n_samples is ignored.
         When `inner_mesh` is provided, each element of `depth` is a fraction of
         the distance from `mesh` to `inner_mesh`: 0 is exactly on the outer
@@ -1069,6 +1069,9 @@ def check_mesh_and_data(mesh, data):
         Checked data.
     """
     mesh = load_surf_mesh(mesh)
+
+    _validate_mesh(mesh)
+
     data = load_surf_data(data)
     # Check that mesh coordinates has a number of nodes
     # equal to the size of the data.
@@ -1078,16 +1081,39 @@ def check_mesh_and_data(mesh, data):
             f"in mesh ({len(mesh.coordinates)}) and "
             f"size of surface data ({len(data)})"
         )
-    # Check that the indices of faces are consistent with the
-    # mesh coordinates. That is, we shouldn't have an index
-    # larger or equal to the length of the coordinates array.
-    if mesh.faces.max() >= len(mesh.coordinates):
-        raise ValueError(
-            "Mismatch between the indices of faces and the number of nodes. "
-            f"Maximum face index is {mesh.faces.max()} "
-            f"while coordinates array has length {len(mesh.coordinates)}."
-        )
+
     return mesh, data
+
+
+def _validate_mesh(mesh):
+    """Check mesh coordinates and faces.
+
+    Mesh coordinates and faces must be numpy arrays.
+
+    Coordinates must be finite values.
+
+    Check that the indices of faces are consistent
+    with the mesh coordinates.
+    That is, we shouldn't have an index
+    - larger or equal to the length of the coordinates array
+    - negative
+    """
+    non_finite_mask = np.logical_not(np.isfinite(mesh.coordinates))
+    if non_finite_mask.any():
+        raise ValueError(
+            "Mesh coordinates must be finite. "
+            "Current coordinates contains NaN or Inf values."
+        )
+
+    msg = (
+        "Mismatch between the indices of faces and the number of nodes.\n"
+        "Indices into the points and must be in the "
+        f"range 0 <= i < {len(mesh.coordinates)} but found value "
+    )
+    if mesh.faces.max() >= len(mesh.coordinates):
+        raise ValueError(f"{msg}{mesh.faces.max()}")
+    if mesh.faces.min() < 0:
+        raise ValueError(f"{msg}{mesh.faces.min()}")
 
 
 # function to figure out datatype and load data
@@ -1157,15 +1183,17 @@ def load_surf_mesh(surf_mesh):
         try:
             coords, faces = surf_mesh
             mesh = InMemoryMesh(coordinates=coords, faces=faces)
-        except Exception:
+        except Exception as e:
+            print(str(e))
             raise ValueError(
-                "If a list or tuple is given as input, "
-                "it must have two elements, the first is "
-                "a Numpy array containing the x-y-z coordinates "
-                "of the mesh vertices, the second is a Numpy "
-                "array containing  the indices (into coords) of "
-                "the mesh faces. The input was a list with "
-                f"{len(surf_mesh)} elements."
+                "\nIf a list or tuple is given as input, "
+                "it must have two elements,\n"
+                "the first is a Numpy array containing the x-y-z coordinates "
+                "of the mesh vertices,\n"
+                "the second is a Numpy array "
+                "containing the indices (into coords) of the mesh faces.\n"
+                f"The input was a {surf_mesh.__class__.__name__} with "
+                f"{len(surf_mesh)} elements: {[type(x) for x in surf_mesh]}."
             )
     elif hasattr(surf_mesh, "faces") and hasattr(surf_mesh, "coordinates"):
         coords, faces = surf_mesh.coordinates, surf_mesh.faces
@@ -1179,8 +1207,7 @@ def load_surf_mesh(surf_mesh):
             "Freesurfer specific files such as "
             f"{_stringify(FREESURFER_MESH_EXTENSIONS)}"
             "or two Numpy arrays organized in a list, tuple or "
-            'a namedtuple with the fields "coordinates" and '
-            '"faces"'
+            'a namedtuple with the fields "coordinates" and "faces"'
         )
 
     return mesh
@@ -1430,9 +1457,17 @@ class InMemoryMesh(SurfaceMesh):
     faces: np.ndarray
 
     def __init__(self, coordinates, faces):
+        if not isinstance(coordinates, np.ndarray) or not isinstance(
+            faces, np.ndarray
+        ):
+            raise TypeError(
+                "Mesh coordinates and faces must be numpy arrays.\n"
+                f"Got {type(coordinates)=} and {type(faces)=}."
+            )
         self.coordinates = coordinates
         self.faces = faces
         self.n_vertices = coordinates.shape[0]
+        _validate_mesh(self)
 
     def __getitem__(self, index):
         if index == 0:
@@ -1475,7 +1510,9 @@ class FileMesh(SurfaceMesh):
         -------
         :obj:`numpy.ndarray`
         """
-        return load_surf_mesh(self.file_path).coordinates
+        mesh = load_surf_mesh(self.file_path)
+        _validate_mesh(mesh)
+        return mesh.coordinates
 
     @property
     def faces(self):
@@ -1485,7 +1522,9 @@ class FileMesh(SurfaceMesh):
         -------
         :obj:`numpy.ndarray`
         """
-        return load_surf_mesh(self.file_path).faces
+        mesh = load_surf_mesh(self.file_path)
+        _validate_mesh(mesh)
+        return mesh.faces
 
     def loaded(self):
         """Load surface mesh into memory.
@@ -1585,8 +1624,7 @@ def _check_data_and_mesh_compat(mesh, data):
     if data_keys != mesh_keys:
         diff = data_keys.symmetric_difference(mesh_keys)
         raise ValueError(
-            "Data and mesh do not have the same keys. "
-            f"Offending keys: {diff}"
+            f"Data and mesh do not have the same keys. Offending keys: {diff}"
         )
     for key in mesh_keys:
         if data.parts[key].shape[0] != mesh.parts[key].n_vertices:
@@ -1761,9 +1799,7 @@ class SurfaceImage:
 
         if not isinstance(data, (PolyData, dict)):
             raise TypeError(
-                "'data' must be one of"
-                "[PolyData, dict].\n"
-                f"Got {type(data)}"
+                f"'data' must be one of[PolyData, dict].\nGot {type(data)}"
             )
 
         if isinstance(data, PolyData):
@@ -1806,7 +1842,7 @@ class SurfaceImage:
              :obj:`pathlib.Path`, default=None
             Inner mesh to pass to :func:`nilearn.surface.vol_to_surf`.
 
-        vol_to_surf_kwargs : dict[str, Any]
+        vol_to_surf_kwargs : :obj:`dict` [ :obj:`str` , Any]
             Dictionary of extra key-words arguments to pass
             to :func:`nilearn.surface.vol_to_surf`.
 
@@ -1940,6 +1976,9 @@ def iter_img(img, return_iterator=True):
     Parameters
     ----------
     imgs : SurfaceImage object
+
+    return_iterator : :obj:`bool`, default=True
+        Returns a list if set to False.
 
     Returns
     -------

@@ -48,6 +48,7 @@ def _tfce_design():
 
 
 def compare_to_ref_score(own_score, tested_var, target_var, covars=None):
+    """Compare obtained score to expected score."""
     reference = ref_score(tested_var, target_var, covars)
     assert_array_almost_equal(own_score, reference, decimal=6)
     return reference
@@ -71,6 +72,7 @@ def _create_design(rng, n_samples, n_descriptors, n_regressors):
 
 @pytest.fixture
 def design(rng):
+    """Return a design to run tests on."""
     return _create_design(
         rng, n_samples=N_SAMPLES, n_descriptors=1, n_regressors=1
     )
@@ -84,11 +86,13 @@ def dummy_design(rng):
 
 @pytest.fixture
 def confounding_vars(rng):
+    """Return normally distributed confounds."""
     return rng.standard_normal((N_SAMPLES, N_COVARS))
 
 
 @pytest.fixture()
 def masker(affine_eye):
+    """Return a default masker."""
     mask_img = Nifti1Image(np.ones((5, 5, 5)), affine_eye)
     masker = NiftiMasker(mask_img)
     masker.fit(mask_img)
@@ -97,7 +101,7 @@ def masker(affine_eye):
 
 @pytest.fixture()
 def cluster_level_design(rng):
-    # create design
+    """Create design for cluster level tests."""
     target_var1 = np.arange(0, 10).reshape((-1, 1))  # positive effect
     voxel_vars = np.hstack(
         (
@@ -157,6 +161,7 @@ def run_permutations(tested_var, target_var, model_intercept):
 
 
 def permuted_ols_no_intercept(tested_var, target_var, n_perm, i):
+    """Wrap to run permuted_ols without model_intercept."""
     n_regressors = 1
     output = permuted_ols(
         tested_var,
@@ -173,6 +178,7 @@ def permuted_ols_no_intercept(tested_var, target_var, n_perm, i):
 
 
 def permuted_ols_with_intercept(tested_var, target_var, n_perm, i):
+    """Wrap to run permuted_ols with model_intercept."""
     output = permuted_ols(
         tested_var,
         target_var,
@@ -196,6 +202,7 @@ def ks_stat_and_mse(df, h0_intercept):
 
 
 def mean_squared_error(df, h0_intercept):
+    """Compute meen square error."""
     return np.mean(
         (
             stats.t(df).cdf(np.sort(h0_intercept))
@@ -206,7 +213,7 @@ def mean_squared_error(df, h0_intercept):
 
 
 def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
-    # check that a difference between distributions is not rejected by KS test
+    """Check difference between distributions is not rejected by KS test."""
     all_kstest_pvals = np.array(all_kstest_pvals).reshape(
         (len(PERM_RANGES), -1)
     )
@@ -219,6 +226,7 @@ def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
 
 @pytest.mark.parametrize("model_intercept", [True, False])
 def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
+    """Check distributions of permutations when tested vars are centered."""
     # create dummy design with no effect
     rng = np.random.RandomState(0)
     target_var = rng.randn(N_SAMPLES, 1)
@@ -234,6 +242,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
 
 
 def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
+    """Check distributions of permutations when tested vars are uncentered."""
     # create dummy design with no effect
     rng = np.random.RandomState(0)
     target_var = rng.randn(N_SAMPLES, 1)
@@ -280,6 +289,7 @@ def test_permuted_ols_check_h0_noeffect_signswap():
 
 
 def test_permuted_ols_no_covar(design):
+    """Check output."""
     target_var, tested_var, *_ = design
     output = permuted_ols(
         tested_var,
@@ -294,6 +304,7 @@ def test_permuted_ols_no_covar(design):
 
 
 def test_permuted_ols_no_covar_with_ravelized_tested_var(design):
+    """Check output when tested var is flattened."""
     target_var, tested_var, *_ = design
 
     output = permuted_ols(
@@ -309,7 +320,8 @@ def test_permuted_ols_no_covar_with_ravelized_tested_var(design):
 
 
 def test_permuted_ols_no_covar_with_intercept(design):
-    # Adds intercept (should be equivalent to centering variates)
+    """Check output when modeling intercept with no confounds."""
+    # Add intercept (should be equivalent to centering variates).
     target_var, tested_var, *_ = design
 
     output = permuted_ols(
@@ -330,6 +342,7 @@ def test_permuted_ols_no_covar_with_intercept(design):
 
 
 def test_permuted_ols_with_covar(design, confounding_vars):
+    """Check output when not modeling intercept with normal confounds."""
     target_var, tested_var, n_descriptors, n_regressors = design
 
     output = permuted_ols(
@@ -351,6 +364,7 @@ def test_permuted_ols_with_covar(design, confounding_vars):
 
 
 def test_permuted_ols_with_covar_with_intercept(design, confounding_vars):
+    """Check output when modeling intercept with normal confounds."""
     target_var, tested_var, n_descriptors, n_regressors = design
 
     output = permuted_ols(
@@ -376,6 +390,9 @@ def test_permuted_ols_with_covar_with_intercept(design, confounding_vars):
 def test_permuted_ols_with_covar_with_intercept_in_confonding_vars(
     design, model_intercept
 ):
+    """Check output when modeling intercept or not, \
+        with confounds containing intercept.
+    """
     target_var, tested_var, n_descriptors, n_regressors = design
     confounding_vars = np.ones([N_SAMPLES, 1])
 
@@ -393,6 +410,7 @@ def test_permuted_ols_with_covar_with_intercept_in_confonding_vars(
 
 
 def test_permuted_ols_with_multiple_constants_and_covars(design, rng):
+    """Check output when multiple constants and covariate are passed."""
     target_var, tested_var, n_descriptors, n_regressors = design
 
     n_covars = 2
@@ -465,6 +483,7 @@ def test_permuted_ols_nocovar_multivariate(rng):
 
 
 def test_permuted_ols_intercept_nocovar(rng):
+    """Check output when no covariate is passed."""
     n_descriptors = 10
     n_regressors = 1
     tested_var = np.ones((N_SAMPLES, n_regressors))
@@ -506,6 +525,7 @@ def test_permuted_ols_intercept_nocovar(rng):
 def test_permuted_ols_intercept_statsmodels_withcovar(
     rng,
 ):
+    """Check output when covariate is passed."""
     n_descriptors = 10
     n_regressors = 1
     n_covars = 2
@@ -648,6 +668,7 @@ def test_two_sided_recover_positive_and_negative_effects():
 
 
 def test_tfce_smoke_legacy_smoke():
+    """Check tfce output of dict with or without permutations."""
     (
         target_var,
         tested_var,
@@ -757,6 +778,7 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
 
 
 def test_sanitize_inputs_permuted_ols(design):
+    """Smoke test for input sanitization."""
     target_vars, tested_vars, *_ = design
     _sanitize_inputs_permuted_ols(
         n_jobs=-1,
@@ -884,6 +906,7 @@ def test_permuted_ols_no_covar_warning(rng):
 
 
 def test_permuted_ols_with_multiple_constants_and_covars_warnings(design):
+    """Check warnings for constants and covariates."""
     target_var, tested_var, *_ = design
 
     # Multiple intercepts should raise a warning
@@ -912,6 +935,7 @@ def test_permuted_ols_with_multiple_constants_and_covars_warnings(design):
 
 
 def test_tfce_smoke_legacy_warnings():
+    """Check that requesting a legacy output throws a warning."""
     target_var, tested_var, masker, *_ = _tfce_design()
 
     # tfce is True, but output_type is "legacy".
@@ -983,6 +1007,7 @@ def test_permuted_ols_type_n_perm(dummy_design):
 
 
 def test_tfce_no_masker_error():
+    """Raise error when no masker is passed for TFCE."""
     target_var, tested_var, *_ = _tfce_design()
 
     with pytest.raises(ValueError, match="masker must be provided"):

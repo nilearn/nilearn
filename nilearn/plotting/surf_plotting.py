@@ -21,7 +21,7 @@ from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.cm import cold_hot, mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
-from nilearn.plotting.displays._slicers import _get_cbar_ticks
+from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
@@ -510,7 +510,7 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
     if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
         return np.arange(vmin, vmax + 1)
     else:
-        return _get_cbar_ticks(vmin, vmax, threshold, n_ticks)
+        return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
 def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
@@ -800,7 +800,7 @@ def plot_surf(
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
                 or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1131,7 +1131,7 @@ def plot_surf_contours(
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
                 or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1195,7 +1195,7 @@ def plot_surf_contours(
         default=None
         Colors to be used.
 
-    legend : :obj:`bool`,  optional, default=False
+    legend : :obj:`bool`,  default=False
         Whether to plot a legend of region's labels.
 
     %(cmap)s
@@ -1369,7 +1369,7 @@ def plot_surf_stat_map(
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
                 or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1385,7 +1385,7 @@ def plot_surf_stat_map(
         and the mesh from
         that :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
-    stat_map : :obj:`str` or :class:`numpy.ndarray`
+    stat_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Statistical map to be displayed on the surface :term:`mesh`,
         can be a file
         (valid formats are .gii, .mgz, or
@@ -1962,7 +1962,7 @@ def plot_surf_roi(
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
                 or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -2063,6 +2063,10 @@ def plot_surf_roi(
         .. note::
             This option is currently only implemented for the
             ``matplotlib`` engine.
+
+    %(vmin)s
+
+    %(vmax)s
 
     %(bg_on_data)s
 

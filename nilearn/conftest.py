@@ -9,6 +9,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn import image
+from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
@@ -380,6 +381,34 @@ def img_atlas(shape_3d_default, affine_mni):
     }
 
 
+@pytest.fixture
+def n_regions():
+    """Return a default numher of regions for maps."""
+    return 9
+
+
+@pytest.fixture
+def img_maps(shape_3d_default, n_regions, affine_eye):
+    """Generate a default map image."""
+    return generate_maps(
+        shape=shape_3d_default, n_regions=n_regions, affine=affine_eye
+    )[0]
+
+
+@pytest.fixture
+def length():
+    """Return a default length for 4D images."""
+    return 10
+
+
+@pytest.fixture
+def img_fmri(shape_3d_default, affine_eye, length):
+    """Return a default length for fmri images."""
+    return generate_fake_fmri(
+        shape_3d_default, affine=affine_eye, length=length
+    )[0]
+
+
 # ------------------------ SURFACE ------------------------#
 @pytest.fixture
 def single_mesh(rng):
@@ -519,6 +548,18 @@ def surf_label_img(surf_mesh):
     data = {
         "left": np.asarray([0, 0, 1, 1]),
         "right": np.asarray([1, 1, 0, 0, 0]),
+    }
+    return SurfaceImage(surf_mesh(), data)
+
+
+@pytest.fixture
+def surf_three_labels_img(surf_mesh):
+    """Return a sample surface label image using the sample mesh.
+    Has 3 regions with values 0, 1 and 2.
+    """
+    data = {
+        "left": np.asarray([0, 0, 1, 1]),
+        "right": np.asarray([1, 1, 0, 2, 0]),
     }
     return SurfaceImage(surf_mesh(), data)
 

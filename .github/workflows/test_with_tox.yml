@@ -54,13 +54,15 @@ jobs:
                     py: '3.13'
                     os: ubuntu-latest
                     env: pre
+                # Using macos on the following as tests run faster on macos.
+                # As 'no plotting' run fewer tests, this allows to fail event faster if using macos.
                 -   description: oldest dependencies - no plotting
                     py: '3.9'
-                    os: ubuntu-latest
+                    os: macos-latest
                     env: min
                 -   description: oldest dependencies - no plotly
                     py: '3.9'
-                    os: ubuntu-latest
+                    os: macos-latest
                     env: plot_min
         steps:
         -   uses: actions/checkout@v4
