@@ -60,10 +60,6 @@ data.data_dir
 # To get the first level models we only have to specify the dataset directory
 # and the ``task_label`` as specified in the file names.
 #
-# .. note::
-#
-#       We are only using a subset of participants from the dataset
-#       to lower the run time of the example.
 #
 from nilearn.glm.first_level import first_level_from_bids
 
@@ -72,8 +68,6 @@ models, run_imgs, events, confounds = first_level_from_bids(
     task_label="languagelocalizer",
     space_label="",
     img_filters=[("desc", "preproc")],
-    sub_labels=["01", "02", "05", "08"],  # comment to run all subjects
-    hrf_model="glover",
     n_jobs=2,
 )
 
@@ -101,17 +95,21 @@ models, run_imgs, events, confounds = first_level_from_bids(
 #
 from pathlib import Path
 
-from nilearn.datasets import load_fsaverage
+from nilearn.datasets import load_fsaverage, load_fsaverage_data
 from nilearn.surface import SurfaceImage
 
 fsaverage5 = load_fsaverage()
+
+# let's get the fsaverage curvature data image
+# to use as background for the GLM report.
+curvature = load_fsaverage_data(mesh_type="inflated", data_type="curvature")
 
 # Empty lists in which we are going to store activation values.
 z_scores = []
 z_scores_left = []
 z_scores_right = []
-for first_level_glm, fmri_img, confound, event in zip(
-    models, run_imgs, confounds, events
+for i, (first_level_glm, fmri_img, confound, event) in enumerate(
+    zip(models, run_imgs, confounds, events)
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 
@@ -135,6 +133,17 @@ for first_level_glm, fmri_img, confound, event in zip(
         )
     )
 
+    # Let's only generate a report for the first subject
+    if i == 1:
+        report_flm = first_level_glm.generate_report(
+            contrasts="language-string",
+            threshold=1.96,
+            alpha=0.001,
+            bg_img=curvature,
+        )
+
+# View the GLM report of the first subject
+report_flm
 
 # %%
 # Group level model
@@ -145,7 +154,6 @@ for first_level_glm, fmri_img, confound, event in zip(
 # by passing them as input
 # to :class:`~nilearn.glm.second_level.SecondLevelModel`.
 #
-
 import pandas as pd
 
 from nilearn.glm.second_level import SecondLevelModel
@@ -153,7 +161,16 @@ from nilearn.glm.second_level import SecondLevelModel
 second_level_glm = SecondLevelModel()
 design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
 second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
+
 results = second_level_glm.compute_contrast("intercept", output_type="z_score")
+
+report_slm = second_level_glm.generate_report(
+    contrasts="intercept", threshold=1.96, alpha=0.001, bg_img=curvature
+)
+
+# View the GLM report at the group level
+report_slm
+
 
 # %%
 # Visualization
