@@ -122,10 +122,10 @@ def get_colorbar_and_data_ranges(
         positive_range = stat_map_min >= 0
         if positive_range:
             cbar_vmin = 0 if vmin is None else vmin
-            cbar_vmax = vmax
+            cbar_vmax = stat_map_max if vmax is None else vmax
         elif negative_range:
             cbar_vmax = 0 if vmax is None else vmax
-            cbar_vmin = vmin
+            cbar_vmin = stat_map_min if vmin is None else vmin
         else:
             # limit colorbar to plotted values
             cbar_vmin = vmin
