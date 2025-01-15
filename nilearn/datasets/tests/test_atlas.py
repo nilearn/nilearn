@@ -47,7 +47,7 @@ def validate_atlas(atlas_data):
 
     Atlas must:
     - be a bunch
-    - with descrription, template and atlas_type attributes
+    - with description, template and atlas_type attributes
     - deterministic atlases must have:
       - a labels attribute that is a list
       - a lut attribute that is a pd.DataFrame
