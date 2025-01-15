@@ -312,6 +312,8 @@ def test_reports_false(surf_maps_img, surf_img_2d):
     assert masker._reporting_data is None
     # reporting_content does not exist when reports=False
     assert not hasattr(masker, "_report_content")
+    # check _reporting methods returns [None]
+    assert masker._reporting() == [None]
     # generate_report should throw warnings
     with warnings.catch_warnings(record=True) as record:
         warnings.simplefilter("always")

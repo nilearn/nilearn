@@ -575,16 +575,16 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         from nilearn.reporting.utils import figure_to_png_base64
 
+        # Handle the edge case where this function is
+        # called with a masker having report capabilities disabled
+        if self._reporting_data is None:
+            return [None]
+
         maps_img = self._reporting_data["maps_img"]
 
         img = self._reporting_data["images"]
         if img:
             img = mean_img(img)
-
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
 
         n_maps = self.maps_img_.shape[1]
         maps_to_be_displayed = range(n_maps)
