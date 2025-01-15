@@ -15,6 +15,8 @@ from nilearn._utils.helpers import compare_version
 
 # mypy: disable_error_code="attr-defined"
 
+__all__ = ["_cmap_d"]
+
 
 def mix_colormaps(fg, bg):
     """Mixes foreground and background arrays of RGBA colors.
