@@ -1017,7 +1017,6 @@ def create_fake_bids_dataset(
         n_runs = [1, 3]
     if spaces is None:
         spaces = ("MNI", "T1w")
-    n_voxels = 4
 
     bids_dataset_dir = "bids_dataset"
     bids_path = Path(base_dir) / bids_dataset_dir
