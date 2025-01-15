@@ -596,8 +596,8 @@ def report_surface_maps_masker(build_type):
     if build_type == "partial":
         _generate_dummy_html(
             filenames=[
-                "surface_maps_masker_unfitted.html",
-                "surface_maps_masker.html",
+                "surface_maps_masker_plotly.html",
+                "surface_maps_masker_matplotlib.html",
             ]
         )
         return None, None
@@ -629,7 +629,8 @@ def report_surface_maps_masker(build_type):
 def _generate_dummy_html(filenames: list[str]):
     for x in filenames:
         with (REPORTS_DIR / x).open("w") as f:
-            f.write("""
+            f.write(
+                """
 <!doctype html>
 <html lang="en">
 <head>
@@ -643,7 +644,8 @@ def _generate_dummy_html(filenames: list[str]):
 <body>
     <p>Not content displayed on partial doc build.</p>
 </body>
-</html>""")
+</html>"""
+            )
 
 
 def main(args=sys.argv):
