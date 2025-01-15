@@ -8,17 +8,8 @@ information.
 The protocol described is the so-called "ARCHI Standard" functional localizer
 task.
 
-For details on the task, please see:
-
-Pinel, P., Thirion, B., Meriaux, S. et al.
-Fast reproducible identification and large-scale databasing of individual
-functional cognitive networks.
-BMC Neurosci 8, 91 (2007). https://doi.org/10.1186/1471-2202-8-91
+For details on the task, please see :footcite:t:`Pinel2007`.
 """
-
-# %%
-print(__doc__)
-
 # %%
 # Define the onset times in seconds. These are typically extracted from
 # the stimulation software used, but we will use hardcoded values in this
@@ -26,9 +17,9 @@ print(__doc__)
 
 # fmt: off
 onsets = [
-    0.0,   2.4,   8.7,   11.4,  15.0,  18.0,  20.7,  23.7,  26.7,  29.7, # noqa
-    33.0,  35.4,  39.0,  41.7,  44.7,  48.0,  56.4,  59.7,  62.4,  69.0, # noqa
-    71.4,  75.0,  83.4,  87.0,  89.7,  96.0,  108.0, 116.7, 119.4, 122.7, # noqa
+    0.0,   2.4,   8.7,   11.4,  15.0,  18.0,  20.7,  23.7,  26.7,  29.7,
+    33.0,  35.4,  39.0,  41.7,  44.7,  48.0,  56.4,  59.7,  62.4,  69.0,
+    71.4,  75.0,  83.4,  87.0,  89.7,  96.0,  108.0, 116.7, 119.4, 122.7,
     125.4, 131.4, 135.0, 137.7, 140.4, 143.4, 146.7, 149.4, 153.0, 156.0,
     159.0, 162.0, 164.4, 167.7, 170.4, 173.7, 176.7, 188.4, 191.7, 195.0,
     198.0, 201.0, 203.7, 207.0, 210.0, 212.7, 215.7, 218.7, 221.4, 224.7,
@@ -102,19 +93,74 @@ events
 # Export them to a tsv file.
 from pathlib import Path
 
-outdir = Path("results")
-if not outdir.exists():
-    outdir.mkdir()
-tsvfile = outdir / "localizer_events.tsv"
+output_dir = Path.cwd() / "results" / "plot_write_events_file"
+output_dir.mkdir(exist_ok=True, parents=True)
+tsvfile = output_dir / "localizer_events.tsv"
 events.to_csv(tsvfile, sep="\t", index=False)
 print(f"The event information has been saved to {tsvfile}")
 
 # %%
 # Optionally, the events can be visualized using the
 # :func:`~nilearn.plotting.plot_event` function.
-import matplotlib.pyplot as plt
+from nilearn.plotting import plot_event, show
 
-from nilearn.plotting import plot_event
+fig = plot_event(events, figsize=(15, 5))
+fig.suptitle("Events")
+show()
 
-plot_event(events, figsize=(15, 5))
-plt.show()
+# %%
+# Parametric modulation
+# ---------------------
+# We may want to modulate the way we model our events in our fMRI analysis.
+# This type of parametric modulation can be done
+# by adding a "modulation" column to the dataframe containing our events.
+#
+# Here we will assume that when a trial
+# is the same condition as the previous one,
+# it will elicit a less intense response.
+
+modulations = []
+conditions_to_modulate = [
+    "horizontal checkerboard",
+    "vertical checkerboard",
+    "mental computation, auditory instructions",
+    "mental computation, visual instructions",
+    "visual sentence",
+    "auditory sentence",
+]
+for i, trial in enumerate(trial_types):
+    if (
+        i > 0
+        and trial in conditions_to_modulate
+        and trial == trial_types[i - 1]
+    ):
+        modulations.append(0.5)
+    else:
+        modulations.append(1)
+
+modulated_events = pd.DataFrame(
+    {
+        "trial_type": trial_types,
+        "onset": onsets,
+        "duration": durations,
+        "modulation": modulations,
+    }
+)
+
+# Now lets plot the modulated and unmodulated events.
+fig = plot_event([events, modulated_events], figsize=(15, 5))
+fig.suptitle("Events and modulated events")
+show()
+
+# %%
+#
+# ..  note::
+#
+#       See how the modulation affects the height of the events.
+#
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::

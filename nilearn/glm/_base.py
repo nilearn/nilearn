@@ -4,10 +4,13 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from nilearn._utils import CacheMixin
 
 
-class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
+class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
     """Implement a base class \
-    for the :term:`General Linear Model<GLM>`."""
+    for the :term:`General Linear Model<GLM>`.
+    """
 
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property
     @auto_attr
     def residuals(self):
         """Transform voxelwise residuals to the same shape \
@@ -152,12 +155,12 @@ class BaseGLM(BaseEstimator, TransformerMixin, CacheMixin):
         'lr', 'lzr', 'lyr', 'lzry', 'lyrz'}, optional
             Choose the direction of the cuts:
 
-                - 'x' - sagittal
-                - 'y' - coronal
-                - 'z' - axial
-                - 'l' - sagittal left hemisphere only
-                - 'r' - sagittal right hemisphere only
-                - 'ortho' - three cuts are performed in orthogonal directions
+            - 'x' - sagittal
+            - 'y' - coronal
+            - 'z' - axial
+            - 'l' - sagittal left hemisphere only
+            - 'r' - sagittal right hemisphere only
+            - 'ortho' - three cuts are performed in orthogonal directions
 
             Default is 'z' if ``plot_type`` is 'slice'; 'ortho' if
             ``plot_type`` is 'glass'.

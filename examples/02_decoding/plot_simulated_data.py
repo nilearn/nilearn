@@ -1,5 +1,4 @@
 """
-================================================
 Example of pattern recognition on simulated data
 ================================================
 
@@ -7,8 +6,8 @@ This example simulates data according to a very simple sketch of brain
 imaging data and applies machine learning techniques to predict output
 values.
 
-We use a very simple generating function to simulate data, as in `Michel
-et al. 2012 <https://doi.org/10.1109/TMI.2011.2113378>`_ , a linear
+We use a very simple generating function to simulate data,
+as in :footcite:t:`Michel2011`, a linear
 model with a random design matrix **X**:
 
 .. math::
@@ -27,14 +26,15 @@ model with a random design matrix **X**:
 
 """
 
-# %%
-print(__doc__)
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 from time import time
 
 import matplotlib.pyplot as plt
-import nibabel
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import linalg
 from scipy.ndimage import gaussian_filter
 from sklearn import linear_model, svm
@@ -131,12 +131,12 @@ X_train, X_test, y_train, y_test, snr, coefs, size = create_simulation_data(
 # computation is performed. It is a subset of the brain mask, just to reduce
 # computation time.
 mask = np.ones((size, size, size), dtype=bool)
-mask_img = nibabel.Nifti1Image(mask.astype("uint8"), np.eye(4))
+mask_img = Nifti1Image(mask.astype("uint8"), np.eye(4))
 process_mask = np.zeros((size, size, size), dtype=bool)
 process_mask[:, :, 0] = True
 process_mask[:, :, 6] = True
 process_mask[:, :, 11] = True
-process_mask_img = nibabel.Nifti1Image(process_mask.astype("uint8"), np.eye(4))
+process_mask_img = Nifti1Image(process_mask.astype("uint8"), np.eye(4))
 
 coefs = np.reshape(coefs, [size, size, size])
 plot_slices(coefs, title="Ground truth")
@@ -148,11 +148,9 @@ plot_slices(coefs, title="Ground truth")
 # We can now run different estimators and look at their prediction score,
 # as well as the feature maps that they recover. Namely, we will use
 #
-# * A support vector regression (`SVM
-#   <https://scikit-learn.org/stable/modules/svm.html>`_)
+# * A :sklearn:`support vector regression </modules/svm.html>`
 #
-# * An `elastic-net
-#   <https://scikit-learn.org/stable/modules/linear_model.html#elastic-net>`_
+# * An :sklearn:`elastic-net <modules/linear_model.html#elastic-net>`
 #
 # * A *Bayesian* ridge estimator, i.e. a ridge estimator that sets its
 #   parameter according to a metaprior
@@ -183,7 +181,7 @@ estimators = [
             estimator=svm.SVR(kernel="linear"),
             cv=KFold(n_splits=4),
             verbose=1,
-            n_jobs=1,
+            n_jobs=2,
         ),
     ),
 ]
@@ -245,7 +243,7 @@ show()
 # An exercise to go further
 # -------------------------
 #
-# As an exercice, you can use recursive feature elimination (RFE) with
+# As an exercise, you can use recursive feature elimination (RFE) with
 # the SVM
 #
 # Read the object's documentation to find out how to use RFE.
@@ -254,3 +252,10 @@ show()
 # slow.
 
 # from sklearn.feature_selection import RFE
+
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::

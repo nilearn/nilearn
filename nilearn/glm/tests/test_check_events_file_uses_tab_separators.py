@@ -1,7 +1,9 @@
 import pandas as pd
 import pytest
 
-from nilearn.glm._utils import _check_events_file_uses_tab_separators
+from nilearn.glm.first_level.first_level import (
+    _check_events_file_uses_tab_separators,
+)
 
 
 def make_data_for_test_runs():
@@ -56,7 +58,7 @@ def test_for_invalid_separator(tmp_path):
         )
 
 
-def test_with_2D_dataframe():
+def test_with_2d_dataframe():
     data_for_pandas_dataframe, _ = make_data_for_test_runs()
     events_pandas_dataframe = pd.DataFrame(data_for_pandas_dataframe)
     result = _check_events_file_uses_tab_separators(
@@ -65,7 +67,7 @@ def test_with_2D_dataframe():
     assert result is None
 
 
-def test_with_1D_dataframe():
+def test_with_1d_dataframe():
     data_for_pandas_dataframe, _ = make_data_for_test_runs()
     for dataframe_ in data_for_pandas_dataframe:
         events_pandas_dataframe = pd.DataFrame(dataframe_)
@@ -92,7 +94,7 @@ def test_for_pandas_dataframe():
 def test_binary_bytearray_of_ints_data_error(tmp_path):
     temp_data_bytearray_from_ints = bytearray([0, 1, 0, 11, 10])
     temp_bin_file = tmp_path / "temp_bin.bin"
-    with open(temp_bin_file, "wb") as temp_bin_obj:
+    with temp_bin_file.open("wb") as temp_bin_obj:
         temp_bin_obj.write(temp_data_bytearray_from_ints)
     with pytest.raises(
         ValueError,

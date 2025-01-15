@@ -11,7 +11,6 @@ from numpy.testing import (
 from nilearn.glm.first_level.hemodynamic_models import (
     _calculate_tr,
     _hrf_kernel,
-    _orthogonalize,
     _regressor_names,
     _resample_regressor,
     _sample_condition,
@@ -19,20 +18,11 @@ from nilearn.glm.first_level.hemodynamic_models import (
     glover_dispersion_derivative,
     glover_hrf,
     glover_time_derivative,
+    orthogonalize,
     spm_dispersion_derivative,
     spm_hrf,
     spm_time_derivative,
 )
-
-HRF_MODEL_NAMES = [
-    "spm",
-    "glover",
-    "spm + derivative",
-    "glover + derivative",
-    "spm + derivative + dispersion",
-    "glover + derivative + dispersion",
-]
-
 
 HRF_MODELS = [
     spm_hrf,
@@ -50,18 +40,26 @@ def expected_integral(hrf_model):
 
 
 @pytest.fixture
-def expected_length(tr):
-    return int(32 / tr * 50)
+def expected_length(t_r):
+    return int(32 / t_r * 50)
 
 
 @pytest.mark.parametrize("hrf_model", HRF_MODELS)
-@pytest.mark.parametrize("tr", [2, 3])
+def test_hrf_tr_deprecation(hrf_model):
+    """Test that using tr throws a warning."""
+    with pytest.deprecated_call(match='"tr" will be removed in'):
+        hrf_model(tr=2)
+
+
+@pytest.mark.parametrize("hrf_model", HRF_MODELS)
+@pytest.mark.parametrize("t_r", [2, 3])
 def test_hrf_norm_and_length(
-    hrf_model, tr, expected_integral, expected_length
+    hrf_model, t_r, expected_integral, expected_length
 ):
     """Test that the hrf models are correctly normalized and \
-    have correct lengths."""
-    h = hrf_model(tr)
+    have correct lengths.
+    """
+    h = hrf_model(t_r)
 
     assert_almost_equal(h.sum(), expected_integral)
     assert len(h) == expected_length
@@ -91,7 +89,7 @@ def test_orthogonalize(rng):
     """Test that the orthogonalization is OK."""
     X = rng.standard_normal(size=(100, 5))
 
-    X = _orthogonalize(X)
+    X = orthogonalize(X)
 
     K = np.dot(X.T, X)
     K -= np.diag(np.diag(K))
@@ -104,7 +102,7 @@ def test_orthogonalize_trivial(rng):
     X = rng.standard_normal(size=100)
     Y = X.copy()
 
-    X = _orthogonalize(X)
+    X = orthogonalize(X)
 
     assert_array_equal(Y, X)
 
@@ -197,7 +195,8 @@ def test_sample_condition_5():
 
 def test_sample_condition_6():
     """Test the experimental condition sampling -- overalapping onsets, \
-    different durations."""
+    different durations.
+    """
     condition = ([0, 0, 10], [1, 2, 1], [1.0, 1.0, 1.0])
     frame_times = np.linspace(0, 49, 50)
 
@@ -211,7 +210,8 @@ def test_sample_condition_6():
 
 def test_sample_condition_7():
     """Test the experimental condition sampling -- different onsets, \
-    overlapping offsets."""
+    overlapping offsets.
+    """
     condition = ([0, 10, 20], [11, 1, 1], [1.0, 1.0, 1.0])
     frame_times = np.linspace(0, 49, 50)
 
@@ -255,8 +255,8 @@ def test_names():
         f"{name}_1",
     ]
 
-    def custom_rf(tr, ov):
-        return np.ones(int(tr * ov))
+    def custom_rf(t_r, ov):
+        return np.ones(int(t_r * ov))
 
     assert _regressor_names(name, custom_rf) == [
         f"{name}_{custom_rf.__name__}"
@@ -271,8 +271,8 @@ def test_names():
         _regressor_names(
             name,
             [
-                lambda tr, ov: np.ones(int(tr * ov)),
-                lambda tr, ov: np.ones(int(tr * ov)),
+                lambda t_r, ov: np.ones(int(t_r * ov)),
+                lambda t_r, ov: np.ones(int(t_r * ov)),
             ],
         )
 
@@ -291,70 +291,70 @@ def test_names():
 )
 def test_hkernel_length(hrf_model, expected_len):
     """Test the hrf computation."""
-    tr = 2.0
-    assert len(_hrf_kernel(hrf_model, tr)) == expected_len
+    t_r = 2.0
+    assert len(_hrf_kernel(hrf_model, t_r)) == expected_len
 
 
 def test_hkernel_length_fir_lambda():
     """Test the hrf computation."""
-    tr = 2.0
+    t_r = 2.0
 
-    h = _hrf_kernel("fir", tr, fir_delays=np.arange(4))
+    h = _hrf_kernel("fir", t_r, fir_delays=np.arange(4))
     assert len(h) == 4
 
-    h = _hrf_kernel(lambda tr, ov: np.ones(int(tr * ov)), tr)
+    h = _hrf_kernel(lambda t_r, ov: np.ones(int(t_r * ov)), t_r)
     assert len(h) == 1
 
-    h = _hrf_kernel([lambda tr, ov: np.ones(int(tr * ov))], tr)
+    h = _hrf_kernel([lambda t_r, ov: np.ones(int(t_r * ov))], t_r)
     assert len(h) == 1
 
 
 def test_hkernel():
     """Test the hrf computation."""
-    tr = 2.0
+    t_r = 2.0
 
-    h = _hrf_kernel("spm", tr)
-    assert_almost_equal(h[0], spm_hrf(tr))
+    h = _hrf_kernel("spm", t_r)
+    assert_almost_equal(h[0], spm_hrf(t_r))
 
-    h = _hrf_kernel("spm + derivative", tr)
-    assert_almost_equal(h[1], spm_time_derivative(tr))
+    h = _hrf_kernel("spm + derivative", t_r)
+    assert_almost_equal(h[1], spm_time_derivative(t_r))
 
-    h = _hrf_kernel("spm + derivative + dispersion", tr)
-    assert_almost_equal(h[2], spm_dispersion_derivative(tr))
+    h = _hrf_kernel("spm + derivative + dispersion", t_r)
+    assert_almost_equal(h[2], spm_dispersion_derivative(t_r))
 
-    h = _hrf_kernel("glover", tr)
-    assert_almost_equal(h[0], glover_hrf(tr))
+    h = _hrf_kernel("glover", t_r)
+    assert_almost_equal(h[0], glover_hrf(t_r))
 
-    h = _hrf_kernel("glover + derivative", tr)
-    assert_almost_equal(h[1], glover_time_derivative(tr))
-    assert_almost_equal(h[0], glover_hrf(tr))
+    h = _hrf_kernel("glover + derivative", t_r)
+    assert_almost_equal(h[1], glover_time_derivative(t_r))
+    assert_almost_equal(h[0], glover_hrf(t_r))
 
-    h = _hrf_kernel("glover + derivative + dispersion", tr)
-    assert_almost_equal(h[2], glover_dispersion_derivative(tr))
-    assert_almost_equal(h[1], glover_time_derivative(tr))
-    assert_almost_equal(h[0], glover_hrf(tr))
+    h = _hrf_kernel("glover + derivative + dispersion", t_r)
+    assert_almost_equal(h[2], glover_dispersion_derivative(t_r))
+    assert_almost_equal(h[1], glover_time_derivative(t_r))
+    assert_almost_equal(h[0], glover_hrf(t_r))
 
-    h = _hrf_kernel("fir", tr, fir_delays=np.arange(4))
+    h = _hrf_kernel("fir", t_r, fir_delays=np.arange(4))
     for dh in h:
         assert_almost_equal(dh.sum(), 1.0)
 
-    h = _hrf_kernel(None, tr)
+    h = _hrf_kernel(None, t_r)
     assert_almost_equal(h[0], np.hstack((1, np.zeros(49))))
 
     with pytest.raises(
         ValueError, match="Could not process custom HRF model provided."
     ):
-        _hrf_kernel(lambda x: np.ones(int(x)), tr)
-        _hrf_kernel([lambda x, y, z: x + y + z], tr)
-        _hrf_kernel([lambda x: np.ones(int(x))] * 2, tr)
+        _hrf_kernel(lambda x: np.ones(int(x)), t_r)
+        _hrf_kernel([lambda x, y, z: x + y + z], t_r)
+        _hrf_kernel([lambda x: np.ones(int(x))] * 2, t_r)
 
-    h = _hrf_kernel(lambda tr, ov: np.ones(int(tr * ov)), tr)
+    h = _hrf_kernel(lambda t_r, ov: np.ones(int(t_r * ov)), t_r)
     assert_almost_equal(h[0], np.ones(100))
 
-    h = _hrf_kernel([lambda tr, ov: np.ones(int(tr * ov))], tr)
+    h = _hrf_kernel([lambda t_r, ov: np.ones(int(t_r * ov))], t_r)
     assert_almost_equal(h[0], np.ones(100))
     with pytest.raises(ValueError, match="is not a known hrf model."):
-        _hrf_kernel("foo", tr)
+        _hrf_kernel("foo", t_r)
 
 
 def test_make_regressor_1():
@@ -429,7 +429,8 @@ def test__regressor_names():
 
 def test_design_warnings():
     """Test that warnings are correctly raised \
-    upon weird design specification."""
+    upon weird design specification.
+    """
     condition = ([-25, 20, 36.5], [0, 0, 0], [1, 1, 1])
     frame_times = np.linspace(0, 69, 70)
     hrf_model = "spm"

@@ -1,10 +1,9 @@
 from pathlib import Path
 
 import joblib
-import nibabel as nb
 import numpy as np
 import pytest
-from nibabel import Nifti1Header, Nifti1Image
+from nibabel import Nifti1Header, Nifti1Image, load
 
 from nilearn._utils import load_niimg, niimg, testing
 from nilearn.image import get_data, new_img_like
@@ -14,18 +13,6 @@ from nilearn.image import get_data, new_img_like
 def img1(affine_eye):
     data = np.ones((2, 2, 2, 2))
     return Nifti1Image(data, affine=affine_eye)
-
-
-def test_copy_img():
-    with pytest.raises(ValueError, match="Input value is not an image"):
-        niimg.copy_img(3)
-
-
-def test_copy_img_side_effect(img1):
-    hash1 = joblib.hash(img1)
-    niimg.copy_img(img1)
-    hash2 = joblib.hash(img1)
-    assert hash1 == hash2
 
 
 def test_new_img_like_side_effect(img1):
@@ -82,7 +69,7 @@ def test_img_data_dtype(rng, affine_eye, tmp_path):
             hdr.set_data_dtype(on_disk_dtype)
             img = Nifti1Image(dataobj, affine_eye, header=hdr)
             img.to_filename(tmp_path / "test.nii")
-            loaded = nb.load(tmp_path / "test.nii")
+            loaded = load(tmp_path / "test.nii")
             # To verify later that sometimes these differ meaningfully
             dtype_matches.append(
                 loaded.get_data_dtype() == niimg.img_data_dtype(loaded)
@@ -95,7 +82,9 @@ def test_img_data_dtype(rng, affine_eye, tmp_path):
     assert not all(dtype_matches)
 
 
-def test_load_niimg(img1):
-    with testing.write_tmp_imgs(img1, create_files=True) as filename:
-        filename = Path(filename)
-        load_niimg(filename)
+def test_load_niimg(img1, tmp_path):
+    filename = testing.write_imgs_to_path(
+        img1, file_path=tmp_path, create_files=True
+    )
+    filename = Path(filename)
+    load_niimg(filename)

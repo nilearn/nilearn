@@ -7,7 +7,8 @@
    :no-members:
    :no-inherited-members:
 
-**Functions**:
+Functions
+---------
 
 .. currentmodule:: nilearn.image
 

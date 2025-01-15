@@ -9,14 +9,16 @@ cross-validated accuracy and the confusion matrix.
 
 """
 
-# %%
-# Load the Haxby data dataset
-# ---------------------------
-
 import numpy as np
 import pandas as pd
 
 from nilearn import datasets
+from nilearn.plotting import plot_matrix, show
+
+# %%
+# Load the Haxby data dataset
+# ---------------------------
+
 
 # By default 2nd subject from haxby datasets will be fetched.
 haxby_dataset = datasets.fetch_haxby()
@@ -31,7 +33,7 @@ mask_filename = haxby_dataset.mask
 # Load the behavioral data that we will predict
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels["labels"]
-session = labels["chunks"]
+run = labels["chunks"]
 
 # Remove the rest condition, it is not very interesting
 non_rest = y != "rest"
@@ -42,7 +44,7 @@ unique_conditions, order = np.unique(y, return_index=True)
 # Sort the conditions by the order of appearance
 unique_conditions = unique_conditions[np.argsort(order)]
 
-# %%#
+# %%
 # Prepare the :term:`fMRI` data
 # -----------------------------
 from nilearn.maskers import NiftiMasker
@@ -51,7 +53,7 @@ from nilearn.maskers import NiftiMasker
 nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     standardize="zscore_sample",
-    runs=session,
+    runs=run,
     smoothing_fwhm=4,
     memory="nilearn_cache",
     memory_level=1,
@@ -60,7 +62,7 @@ X = nifti_masker.fit_transform(func_filename)
 
 # Remove the "rest" condition
 X = X[non_rest]
-session = session[non_rest]
+run = run[non_rest]
 
 # %%
 # Build the decoders, using scikit-learn
@@ -116,30 +118,28 @@ plt.title("Prediction: accuracy score")
 # %%
 # Plot a confusion matrix
 # -----------------------
-# We fit on the first 10 sessions and plot a confusion matrix on the
-# last 2 sessions
+# We fit on the first 10 runs and plot a confusion matrix on the
+# last 2 runs
 from sklearn.metrics import confusion_matrix
 
-from nilearn.plotting import plot_matrix, show
-
-svc_ovo.fit(X[session < 10], y[session < 10])
-y_pred_ovo = svc_ovo.predict(X[session >= 10])
+svc_ovo.fit(X[run < 10], y[run < 10])
+y_pred_ovo = svc_ovo.predict(X[run >= 10])
 
 plot_matrix(
-    confusion_matrix(y_pred_ovo, y[session >= 10]),
+    confusion_matrix(y_pred_ovo, y[run >= 10]),
     labels=unique_conditions,
     title="Confusion matrix: One vs One",
-    cmap="hot_r",
+    cmap="inferno",
 )
 
-svc_ova.fit(X[session < 10], y[session < 10])
-y_pred_ova = svc_ova.predict(X[session >= 10])
+svc_ova.fit(X[run < 10], y[run < 10])
+y_pred_ova = svc_ova.predict(X[run >= 10])
 
 plot_matrix(
-    confusion_matrix(y_pred_ova, y[session >= 10]),
+    confusion_matrix(y_pred_ova, y[run >= 10]),
     labels=unique_conditions,
     title="Confusion matrix: One vs All",
-    cmap="hot_r",
+    cmap="inferno",
 )
 
 show()

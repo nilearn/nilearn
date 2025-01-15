@@ -1,4 +1,4 @@
-""" # noqa
+"""
 Machine Learning module for NeuroImaging in python.
 ---------------------------------------------------
 
@@ -16,14 +16,15 @@ visualization tools.
 Submodules
 ---------
 
-datasets                --- Utilities to download NeuroImaging datasets
-decoding                --- Decoding tools and algorithms
-decomposition           --- Includes a subject level variant of the ICA
-                            algorithm called Canonical ICA
 connectome              --- Set of tools for computing functional
                             connectivity matrices
                             and for sparse multi-subjects learning
                             of Gaussian graphical models
+datasets                --- Utilities to download NeuroImaging datasets
+decoding                --- Decoding tools and algorithms
+decomposition           --- Includes a subject level variant of the ICA
+                            algorithm called Canonical ICA
+glm                     --- Analyzing fMRI data using GLMs
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
 maskers                 --- Includes scikit-learn transformers.
@@ -36,37 +37,17 @@ plotting                --- Plotting code for nilearn
 region                  --- Set of functions for extracting region-defined
                             signals, clustering methods,
                             connected regions extraction
+reporting               --- Implements functions useful
+                            to report analysis results
 signal                  --- Set of preprocessing functions for time series
 """
 
 import gzip
-import sys
-import warnings
 
 try:
-    from ._version import __version__  # noqa: F401
+    from ._version import __version__
 except ImportError:
     __version__ = "0+unknown"
-
-
-def _py37_deprecation_warning():
-    py37_warning = (
-        "Python 3.7 support is deprecated and will be removed in "
-        "release 0.12 of Nilearn. Consider switching to "
-        "Python 3.9 or 3.10."
-    )
-    warnings.filterwarnings("once", message=py37_warning)
-    warnings.warn(
-        message=py37_warning, category=DeprecationWarning, stacklevel=3
-    )
-
-
-def _python_deprecation_warnings():
-    if sys.version_info.major == 3 and sys.version_info.minor == 7:
-        _py37_deprecation_warning()
-
-
-_python_deprecation_warnings()
 
 
 # Monkey-patch gzip to have faster reads on large gzip files
@@ -81,18 +62,18 @@ EXPAND_PATH_WILDCARDS = True
 
 # list all submodules available in nilearn and version
 __all__ = [
+    "__version__",
+    "connectome",
     "datasets",
     "decoding",
     "decomposition",
-    "connectome",
     "image",
+    "interfaces",
     "maskers",
     "masking",
-    "interfaces",
     "mass_univariate",
     "plotting",
     "regions",
     "signal",
     "surface",
-    "__version__",
 ]

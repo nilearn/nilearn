@@ -29,7 +29,6 @@ def plot_matrices(cov, prec, title, labels):
     # Display covariance matrix
     plotting.plot_matrix(
         cov,
-        cmap=plotting.cm.bwr,
         vmin=-1,
         vmax=1,
         title=f"{title} / covariance",
@@ -38,7 +37,6 @@ def plot_matrices(cov, prec, title, labels):
     # Display precision matrix
     plotting.plot_matrix(
         prec,
-        cmap=plotting.cm.bwr,
         vmin=-span,
         vmax=span,
         title=f"{title} / precision",
@@ -101,11 +99,8 @@ from nilearn.connectome import GroupSparseCovarianceCV
 gsc = GroupSparseCovarianceCV(verbose=2)
 gsc.fit(subject_time_series)
 
-try:
-    from sklearn.covariance import GraphicalLassoCV
-except ImportError:
-    # for Scitkit-Learn < v0.20.0
-    from sklearn.covariance import GraphLassoCV as GraphicalLassoCV
+
+from sklearn.covariance import GraphicalLassoCV
 
 gl = GraphicalLassoCV(verbose=2)
 gl.fit(np.concatenate(subject_time_series))

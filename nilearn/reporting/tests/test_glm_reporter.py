@@ -3,7 +3,10 @@ import pandas as pd
 import pytest
 from nibabel import load
 
-from nilearn._utils.data_gen import write_fake_fmri_data_and_design
+from nilearn._utils.data_gen import (
+    basic_paradigm,
+    write_fake_fmri_data_and_design,
+)
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -11,77 +14,82 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import glm_reporter as glmr
-
-try:
-    import matplotlib as mpl  # noqa: F401
-except ImportError:
-    not_have_mpl = True
-else:
-    not_have_mpl = False
+from nilearn.reporting import make_glm_report
 
 
-@pytest.mark.skipif(
-    not_have_mpl, reason="Matplotlib not installed; required for this test"
-)
-@pytest.mark.parametrize("use_method", [True, False])
-def test_flm_reporting(tmp_path, use_method):
-    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+@pytest.fixture()
+def flm(tmp_path):
+    """Generate first level model."""
+    shapes, rk = ((7, 7, 7, 5),), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
-    flm = FirstLevelModel(mask_img=mask).fit(
+    return FirstLevelModel(mask_img=mask).fit(
         fmri_data, design_matrices=design_matrices
     )
+
+
+@pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
+def test_flm_reporting(flm, height_control):
+    """Smoke test for first level model reporting."""
     contrast = np.eye(3)[1]
-    if use_method:
-        report_flm = flm.generate_report(
-            contrast,
-            plot_type="glass",
-            height_control=None,
-            min_distance=15,
-            alpha=0.001,
-            threshold=2.78,
-        )
-    else:
-        report_flm = glmr.make_glm_report(
-            flm,
-            contrast,
-            plot_type="glass",
-            height_control=None,
-            min_distance=15,
-            alpha=0.001,
-            threshold=2.78,
-        )
-    """
-    catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-    in case certain unicode characters are mishandled,
-    like the greek alpha symbol.
-    """
+    report_flm = glmr.make_glm_report(
+        flm,
+        contrast,
+        plot_type="glass",
+        height_control=height_control,
+        min_distance=15,
+        alpha=0.01,
+        threshold=2,
+    )
+    # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
+    # in case certain unicode characters are mishandled,
+    # like the greek alpha symbol.
     report_flm.get_iframe()
 
 
-@pytest.mark.skipif(
-    not_have_mpl, reason="Matplotlib not installed; required for this test"
-)
-@pytest.mark.parametrize("use_method", [True, False])
-def test_slm_reporting(tmp_path, use_method):
-    shapes = ((7, 8, 9, 1),)
+def test_flm_reporting_method(flm):
+    """Smoke test for the first level generate method."""
+    contrast = np.eye(3)[1]
+    flm.generate_report(
+        contrast,
+        plot_type="glass",
+        min_distance=15,
+        alpha=0.01,
+        threshold=2,
+    )
+
+
+@pytest.fixture()
+def slm(tmp_path):
+    """Generate a fitted second level model."""
+    shapes = ((7, 7, 7, 1),)
     _, FUNCFILE, _ = write_fake_fmri_data_and_design(
         shapes, file_path=tmp_path
     )
     FUNCFILE = FUNCFILE[0]
     func_img = load(FUNCFILE)
     model = SecondLevelModel()
-    Y = [func_img] * 4
-    X = pd.DataFrame([[1]] * 4, columns=["intercept"])
-    model = model.fit(Y, design_matrix=X)
-    c1 = np.eye(len(model.design_matrix_.columns))[0]
-    if use_method:
-        report_slm = glmr.make_glm_report(model, c1)
-    else:
-        report_slm = model.generate_report(c1)
+    Y = [func_img] * 2
+    X = pd.DataFrame([[1]] * 2, columns=["intercept"])
+    return model.fit(Y, design_matrix=X)
+
+
+@pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
+def test_slm_reporting_method(slm, height_control):
+    """Smoke test for the second level reporting."""
+    c1 = np.eye(len(slm.design_matrix_.columns))[0]
+    report_slm = glmr.make_glm_report(
+        slm, c1, height_control=height_control, threshold=2, alpha=0.01
+    )
     # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
     report_slm.get_iframe()
+
+
+def test_slm_reporting(slm):
+    """Smoke test for the second level model generate method."""
+    c1 = np.eye(len(slm.design_matrix_.columns))[0]
+    slm.generate_report(c1, threshold=2, alpha=0.01)
 
 
 def test_check_report_dims():
@@ -209,6 +217,7 @@ def test_stat_map_to_svg_slice_z(img_3d_mni, cut_coords):
         display_mode="ortho",
         plot_type="slice",
         table_details=table_details,
+        threshold=2.76,
     )
 
 
@@ -222,6 +231,7 @@ def test_stat_map_to_svg_glass_z(img_3d_mni, cut_coords):
         display_mode="z",
         plot_type="glass",
         table_details=table_details,
+        threshold=2.76,
     )
 
 
@@ -239,6 +249,7 @@ def test_stat_map_to_svg_invalid_plot_type(img_3d_mni, cut_coords):
             display_mode="z",
             plot_type="junk",
             table_details={"junk": 0},
+            threshold=2.76,
         )
 
 
@@ -262,12 +273,10 @@ def test_plot_contrasts():
 
 
 def test_masking_first_level_model(tmp_path):
+    """Check that using NiftiMasker when instantiating FirstLevelModel \
+       doesn't raise Error when calling generate_report().
     """
-    Checks that using NiftiMasker when instantiating
-    FirstLevelModel doesn't raise Error when calling
-    generate_report().
-    """
-    shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 16)), 3
+    shapes, rk = ((7, 7, 7, 5),), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -283,8 +292,26 @@ def test_masking_first_level_model(tmp_path):
         plot_type="glass",
         height_control=None,
         min_distance=15,
-        alpha=0.001,
-        threshold=2.78,
+        alpha=0.01,
+        threshold=2,
     )
 
     report_flm.get_iframe()
+
+
+# -----------------------surface tests--------------------------------------- #
+
+
+def test_flm_generate_report_error_with_surface_data(
+    surf_mask_1d, surf_img_2d
+):
+    """Raise NotImplementedError when generate report is called on surface."""
+    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0)
+    events = basic_paradigm()
+    model.fit(surf_img_2d(9), events=events)
+
+    with pytest.raises(NotImplementedError):
+        model.generate_report("c0")
+
+    with pytest.raises(NotImplementedError):
+        make_glm_report(model, "c0")

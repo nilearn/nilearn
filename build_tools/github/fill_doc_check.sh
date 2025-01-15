@@ -13,6 +13,7 @@
 #
 # See nilearn/_utils/docs.py.
 
+set -e
 set -x
 
 mkdir -p doc/tmp

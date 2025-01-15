@@ -11,11 +11,15 @@ from .nifti_labels_masker import NiftiLabelsMasker
 
 @fill_doc
 class MultiNiftiLabelsMasker(NiftiLabelsMasker):
-    """Class for masking of Niimg-like objects.
+    """Class for extracting data from multiple Niimg-like objects \
+       using labels of non-overlapping brain regions.
 
     MultiNiftiLabelsMasker is useful when data from non-overlapping volumes
     and from different subjects should be extracted (contrary to
     :class:`nilearn.maskers.NiftiLabelsMasker`).
+
+    For more details on the definitions of labels in Nilearn,
+    see the :ref:`region` section.
 
     Parameters
     ----------
@@ -33,8 +37,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
-        Warning: This value must be consistent with label values and
-        image provided.
+
+        .. warning::
+
+            This value must be consistent with label values and image provided.
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
@@ -50,10 +56,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    dtype : {dtype, "auto"}
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+
+    %(dtype)s
 
     resampling_target : {"data", "labels", None}, default="data"
         Gives which image gives the final shape/size:
@@ -64,7 +68,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
               resampled to the shape and affine of maps_img
             - None means no resampling: if shapes and affines do not match, a
               ValueError is raised
-
 
     %(memory)s
     %(memory_level1)s
@@ -118,7 +121,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        memory=Memory(location=None, verbose=0),
+        memory=None,
         memory_level=1,
         verbose=0,
         strategy="mean",
@@ -126,6 +129,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         n_jobs=1,
         **kwargs,
     ):
+        if memory is None:
+            memory = Memory(location=None, verbose=0)
         self.n_jobs = n_jobs
         super().__init__(
             labels_img,
@@ -160,7 +165,11 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         ----------
         %(imgs)s
             Images to process. Each element of the list is a 4D image.
+
         %(confounds)s
+
+        %(n_jobs)s
+
         %(sample_mask)s
 
         Returns
@@ -180,7 +189,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             atleast_4d=False,
             memory=self.memory,
             memory_level=self.memory_level,
-            verbose=self.verbose,
         )
 
         if confounds is None:

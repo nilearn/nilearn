@@ -1,23 +1,25 @@
 """Functions for surface manipulation."""
 
 from .surface import (
-    Mesh,
-    Surface,
-    check_mesh_and_data,
-    check_surface,
+    FileMesh,
+    InMemoryMesh,
+    PolyData,
+    PolyMesh,
+    SurfaceImage,
+    SurfaceMesh,
     load_surf_data,
     load_surf_mesh,
-    load_surface,
     vol_to_surf,
 )
 
 __all__ = [
-    "vol_to_surf",
+    "FileMesh",
+    "InMemoryMesh",
+    "PolyData",
+    "PolyMesh",
+    "SurfaceImage",
+    "SurfaceMesh",
     "load_surf_data",
     "load_surf_mesh",
-    "load_surface",
-    "check_surface",
-    "check_mesh_and_data",
-    "Mesh",
-    "Surface",
+    "vol_to_surf",
 ]

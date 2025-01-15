@@ -20,19 +20,21 @@ jobs:
             uses: actions/checkout@v4
 
         -   name: Set up Python
-            uses: actions/setup-python@v4
+            uses: actions/setup-python@v5
             with:
                 python-version: '3.12'
                 allow-prereleases: false
 
         -   name: Install dependencies
-            run: python -m pip install --upgrade pip ruamel.yaml
+            run: |
+                python -m pip install --upgrade pip ruamel.yaml
+                python -m pip install -e .
 
         -   name: Update AUTHORS.rst and doc/changes/names.rst
             run: python maint_tools/citation_cff_maint.py
 
         -   name: Create Pull Request
-            uses: peter-evans/create-pull-request@v5
+            uses: peter-evans/create-pull-request@v7
             with:
                 commit-message: update AUTHORS.rst and doc/changes/names.rst
                 base: main

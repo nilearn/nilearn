@@ -2,7 +2,13 @@
 
 Check rst files in doc, py files in examples and py files in nilearn.
 
+requirements:
+
+docstring_parser
+rich
+
 """
+
 from __future__ import annotations
 
 import ast
@@ -11,11 +17,9 @@ from pathlib import Path
 from docstring_parser import parse
 from docstring_parser.common import DocstringStyle
 from rich import print
+from utils import list_classes, list_functions, list_modules, root_dir
 
-
-def root_dir() -> Path:
-    """Return path to root directory."""
-    return Path(__file__).parent.parent
+SEARCH = []
 
 
 def glossary_file() -> Path:
@@ -25,10 +29,13 @@ def glossary_file() -> Path:
 
 def get_terms_in_glossary() -> list[str]:
     """Return list of terms in glossary.rst."""
+    if len(SEARCH) > 0:
+        return SEARCH
+
     terms = []
 
     track = False
-    with open(glossary_file(), encoding="utf-8") as file:
+    with glossary_file().open(encoding="utf-8") as file:
         for line in file:
             if line.startswith(".. glossary::"):
                 track = True
@@ -80,7 +87,7 @@ def check_file_content(file, term):
 
     count = 0
 
-    with open(file, encoding="utf-8") as f:
+    with file.open(encoding="utf-8") as f:
         if file.suffix == ".py":
             is_rendered_section = False
             is_docstring = False
@@ -158,7 +165,7 @@ def check_docstring(docstring, terms):
 def check_description(docstring, terms):
     """Check docstring description."""
     text = ""
-    if docstring.short_description is not None:
+    if docstring.short_description is not None:  # noqa: SIM102
         if tmp := [
             term
             for term in terms
@@ -166,7 +173,7 @@ def check_description(docstring, terms):
         ]:
             text += f" terms: '{', '.join(tmp)}' in short description\n"
 
-    if docstring.long_description is not None:
+    if docstring.long_description is not None:  # noqa: SIM102
         if tmp := [
             term
             for term in terms
@@ -177,15 +184,9 @@ def check_description(docstring, terms):
     return text
 
 
-def check_functions(body, terms, file):
+def check_functions(functions_ast, terms, file):
     """Check functions of a module or methods of a class."""
-    function_definitions = [
-        node for node in body if isinstance(node, ast.FunctionDef)
-    ]
-    for f in function_definitions:
-        if f.name.startswith("_"):
-            continue
-
+    for f in functions_ast:
         docstring = ast.get_docstring(f)
         if text := check_docstring(docstring, terms):
             print(f"function '{f.name}' in {file}:{f.lineno}")
@@ -205,6 +206,7 @@ def check_doc(terms):
         "sphinxext",
         "templates",
         "themes",
+        "description",
     ]
 
     print("\n\nCheck .rst files in doc\n")
@@ -213,10 +215,16 @@ def check_doc(terms):
 
     doc_folder = root_dir() / "doc"
 
+    print(f"Checking: {doc_folder}")
+
     files = list(doc_folder.glob("*.rst"))
     for folder in doc_folder.glob("*"):
         if folder.is_dir() and folder.name not in folders_to_skip:
             files.extend(f for f in folder.glob("*.rst") if f is not None)
+
+    files.extend(
+        (root_dir() / "nilearn" / "datasets" / "description").glob("*.rst")
+    )
 
     count = check_files(files, terms, files_to_skip)
 
@@ -252,24 +260,13 @@ def main():
 
     print("\n\nCheck .py files in nilearn\n")
 
-    modules = (root_dir() / "nilearn").glob("**/*.py")
-
-    files_to_skip = ["test_", "conftest.py", "_"]
+    modules = list_modules()
 
     for file in modules:
-        if any(file.name.startswith(s) for s in files_to_skip):
-            continue
-        if file.parent.name.startswith("_"):
-            continue
+        functions_ast = list_functions(file)
+        check_functions(functions_ast, terms, file)
 
-        with open(file) as f:
-            module = ast.parse(f.read())
-
-        check_functions(module.body, terms, file)
-
-        class_definitions = [
-            node for node in module.body if isinstance(node, ast.ClassDef)
-        ]
+        class_definitions = list_classes(file)
 
         for class_def in class_definitions:
             docstring = ast.get_docstring(class_def)
@@ -278,7 +275,8 @@ def main():
             if text := check_description(docstring, terms):
                 print(f"class '{class_def.name}' in {file}:{class_def.lineno}")
                 print(text)
-            check_functions(class_def.body, terms, file)
+            methods_ast = list_functions(class_def)
+            check_functions(methods_ast, terms, file)
 
 
 if __name__ == "__main__":

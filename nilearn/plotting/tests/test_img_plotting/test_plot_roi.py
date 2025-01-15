@@ -1,5 +1,7 @@
 """Tests for :func:`nilearn.plotting.plot_roi`."""
 
+# ruff: noqa: ARG001
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -24,7 +26,7 @@ def demo_plot_roi(**kwargs):
         int(z_map) - 10 : int(z_map) + 10,
     ] = 1
     img = Nifti1Image(data, _affine_mni())
-    return plot_roi(img, title="Broca's area", **kwargs)
+    plot_roi(img, title="Broca's area", **kwargs)
 
 
 @pytest.mark.parametrize("view_type", ["contours", "continuous"])
@@ -35,14 +37,14 @@ def demo_plot_roi(**kwargs):
     "display_mode,cut_coords", [("ortho", None), ("z", 3), ("x", [2.0, 10])]
 )
 def test_plot_roi_view_types(
-    view_type, black_bg, threshold, alpha, display_mode, cut_coords
+    pyplot, view_type, black_bg, threshold, alpha, display_mode, cut_coords
 ):
     """Smoke-test for plot_roi.
 
     Tests different combinations of parameters `view_type`, `black_bg`,
     `threshold`, and `alpha`.
     """
-    kwargs = dict()
+    kwargs = {}
     if view_type == "contours":
         kwargs["linewidth"] = 2.0
     demo_plot_roi(
@@ -54,18 +56,44 @@ def test_plot_roi_view_types(
         cut_coords=cut_coords,
         **kwargs,
     )
-    plt.close()
 
 
-def test_plot_roi_view_type_error():
+def test_plot_roi_no_int_64_warning(pyplot, recwarn):
+    """Make sure that no int64 warning is thrown."""
+    demo_plot_roi()
+    for _ in range(len(recwarn)):
+        x = recwarn.pop()
+        if issubclass(x.category, UserWarning):
+            assert "image contains 64-bit ints" not in str(x.message)
+
+
+def test_plot_roi_view_type_error(pyplot):
     """Test error message for invalid view_type."""
     with pytest.raises(ValueError, match="Unknown view type:"):
         demo_plot_roi(view_type="flled")
 
 
-def test_demo_plot_roi_output_file(tmp_path):
+def test_demo_plot_roi_output_file(pyplot, tmp_path):
     """Tests plot_roi file saving capabilities."""
     filename = tmp_path / "test.png"
-    with open(filename, "wb") as fp:
+    with filename.open("wb") as fp:
         out = demo_plot_roi(output_file=fp)
     assert out is None
+
+
+def test_cmap_with_one_level(pyplot, shape_3d_default, affine_eye):
+    """Test we can handle cmap with only 1 level.
+
+    Regression test for
+    https://github.com/nilearn/nilearn/issues/4255
+    """
+    array_data = np.zeros(shape_3d_default)
+    array_data[0, 1, 1] = 1
+
+    img = Nifti1Image(array_data, affine_eye)
+
+    clust_ids = list(np.unique(img.get_fdata())[1:])
+
+    cmap = plt.get_cmap("tab20", len(clust_ids))
+
+    plot_roi(img, alpha=0.8, colorbar=True, cmap=cmap)

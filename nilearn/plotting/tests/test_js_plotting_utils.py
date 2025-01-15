@@ -1,8 +1,5 @@
 import base64
-import os
 import re
-import tempfile
-import webbrowser
 
 import numpy as np
 import pytest
@@ -39,16 +36,13 @@ def test_add_js_lib():
     html = get_html_template("surface_plot_template.html")
     cdn = add_js_lib(html, embed_js=False)
     assert "decodeBase64" in cdn
-    assert (
-        _normalize_ws(
-            """<script
+    assert _normalize_ws(
+        """<script
     src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
     </script>
     <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
     """
-        )
-        in _normalize_ws(cdn)
-    )
+    ) in _normalize_ws(cdn)
     inline = _normalize_ws(add_js_lib(html, embed_js=True))
     assert (
         _normalize_ws(
@@ -68,7 +62,7 @@ def test_add_js_lib():
 
 
 def check_colors(colors):
-    """Performs several checks on colors obtained from function colorscale."""
+    """Perform several checks on colors obtained from function colorscale."""
     assert len(colors) == 100
     val, cstring = zip(*colors)
     assert np.allclose(np.linspace(0, 1, 100), val, atol=1e-3)
@@ -92,9 +86,13 @@ def test_colorscale_no_threshold():
 
 @pytest.fixture
 def expected_abs_threshold(threshold):
-    """Returns the expected absolute threshold."""
+    """Return the expected absolute threshold."""
     expected = {"0%": 1.5, "50%": 7.55, "99%": 13}
-    return expected[threshold] if threshold in expected else abs(threshold)
+    return (
+        expected.get(threshold)
+        if isinstance(threshold, str)
+        else abs(threshold)
+    )
 
 
 @pytest.mark.parametrize("threshold", ["0%", "50%", "99%", 0.5, 7.25])
@@ -122,7 +120,7 @@ def test_colorscale_symmetric_cmap(vmin, vmax):
 
 @pytest.fixture
 def expected_vmin_vmax(values, vmax, vmin):
-    """Returns expected vmin and vmax."""
+    """Return expected vmin and vmax."""
     if vmax is None:
         return (min(values), max(values))
     if min(values) < 0:
@@ -188,27 +186,24 @@ def test_mesh_to_plotly(hemi):
 
 
 def check_html(
-    html, check_selects=True, plot_div_id="surface-plot", title=None
+    tmp_path, html, check_selects=True, plot_div_id="surface-plot", title=None
 ):
-    """Performs several checks on raw HTML code."""
-    fd, tmpfile = tempfile.mkstemp()
-    try:
-        os.close(fd)
-        html.save_as_html(tmpfile)
-        with open(tmpfile) as f:
-            saved = f.read()
-        # If present, replace Windows line-end '\r\n' with Unix's '\n'
-        saved = saved.replace("\r\n", "\n")
-        standalone = html.get_standalone().replace("\r\n", "\n")
-        assert saved == standalone
-    finally:
-        os.remove(tmpfile)
+    """Perform several checks on raw HTML code."""
+    tmpfile = tmp_path / "test.html"
+
+    html.save_as_html(tmpfile)
+    with tmpfile.open() as f:
+        saved = f.read()
+    # If present, replace Windows line-end '\r\n' with Unix's '\n'
+    saved = saved.replace("\r\n", "\n")
+    standalone = html.get_standalone().replace("\r\n", "\n")
+    assert saved == standalone
+
     assert "INSERT" not in html.html
     assert html.get_standalone() == html.html
     assert html._repr_html_() == html.get_iframe()
     assert str(html) == html.get_standalone()
     assert '<meta charset="UTF-8" />' in str(html)
-    _check_open_in_browser(html)
     resized = html.resize(3, 17)
     assert resized is html
     assert (html.width, html.height) == (3, 17)
@@ -232,39 +227,13 @@ def check_html(
     assert len(selects) == 3
     hemi = selects[0]
     assert ("id", "select-hemisphere") in hemi.items()
-    assert len(hemi.findall("option")) == 2
+    assert len(hemi.findall("option")) == 3
     kind = selects[1]
     assert ("id", "select-kind") in kind.items()
     assert len(kind.findall("option")) == 2
     view = selects[2]
     assert ("id", "select-view") in view.items()
     assert len(view.findall("option")) == 7
-
-
-def _open_mock(f):
-    print(f"opened {f}")
-
-
-def _check_open_in_browser(html):
-    wb_open = webbrowser.open
-    webbrowser.open = _open_mock
-    try:
-        html.open_in_browser(temp_file_lifetime=None)
-        temp_file = html._temp_file
-        assert html._temp_file is not None
-        assert os.path.isfile(temp_file)
-        html.remove_temp_file()
-        assert html._temp_file is None
-        assert not os.path.isfile(temp_file)
-        html.remove_temp_file()
-        html._temp_file = "aaaaaaaaaaaaaaaaaaaaaa"
-        html.remove_temp_file()
-    finally:
-        webbrowser.open = wb_open
-        try:
-            os.remove(temp_file)
-        except Exception:
-            pass
 
 
 @pytest.mark.parametrize(

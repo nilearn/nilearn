@@ -1,7 +1,7 @@
 """Brain schematics plotting for glass brain functionality."""
 
 import json
-import os
+import pathlib
 
 from matplotlib import colors, patches, transforms
 from matplotlib.path import Path
@@ -12,10 +12,11 @@ def _codes_bezier(pts):
     # Next two lines are meant to handle both Bezier 3 and 4
     path_attr = f"CURVE{bezier_num}"
     codes = [getattr(Path, path_attr)] * (bezier_num - 1)
-    return [Path.MOVETO] + codes
+    return [Path.MOVETO, *codes]
 
 
-def _codes_segment(pts):
+def _codes_segment(pts):  # noqa: ARG001
+    # pts is needed for API consistency with _codes_bezier
     return [Path.MOVETO, Path.LINETO]
 
 
@@ -80,7 +81,8 @@ def _get_mpl_patches(
 
 def _get_json_and_transform(direction):
     """Return the json filename and an affine transform, which has \
-    been tweaked by hand to fit the MNI template."""
+    been tweaked by hand to fit the MNI template.
+    """
     direction_to_view_name = {
         "x": "side",
         "y": "back",
@@ -97,10 +99,9 @@ def _get_json_and_transform(direction):
         "r": [0.38, 0, 0, 0.38, -108, -70],
     }
 
-    dirname = os.path.dirname(os.path.abspath(__file__))
-    dirname = os.path.join(dirname, "glass_brain_files")
+    dirname = pathlib.Path(__file__).resolve().parent / "glass_brain_files"
     direction_to_filename = {
-        _direction: os.path.join(dirname, f"brain_schematics_{view_name}.json")
+        _direction: dirname / f"brain_schematics_{view_name}.json"
         for _direction, view_name in direction_to_view_name.items()
     }
 
@@ -173,8 +174,8 @@ def plot_brain_schematics(ax, direction, **kwargs):
     ) == colors.colorConverter.to_rgba("k")
 
     json_filename, transform = _get_json_and_transform(direction)
-    with open(json_filename) as json_file:
-        json_content = json.loads(json_file.read())
+    with json_filename.open() as json_file:
+        json_content = json.load(json_file)
 
     mpl_patches = _get_mpl_patches(
         json_content,

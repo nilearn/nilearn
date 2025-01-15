@@ -3,7 +3,6 @@
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import gaussian_filter
-from sklearn.utils import check_random_state
 
 
 def create_graph_net_simulation_data(
@@ -16,14 +15,14 @@ def create_graph_net_simulation_data(
     smooth_X=1,
 ):
     """Generate graph net simulation data."""
-    generator = check_random_state(random_state)
+    generator = np.random.default_rng(random_state)
     # Coefs
     w = np.zeros((size, size, size))
     for _ in range(n_points):
         point = (
-            generator.randint(0, size),
-            generator.randint(0, size),
-            generator.randint(0, size),
+            generator.integers(0, size),
+            generator.integers(0, size),
+            generator.integers(0, size),
         )
         w[point] = 1.0
     mask = np.ones((size, size, size), dtype=bool)
@@ -31,7 +30,7 @@ def create_graph_net_simulation_data(
     w = w[mask]
 
     # Generate smooth background noise
-    XX = generator.randn(n_samples, size, size, size)
+    XX = generator.standard_normal((n_samples, size, size, size))
     noise = []
     for i in range(n_samples):
         Xi = gaussian_filter(XX[i, :, :, :], smooth_X)
@@ -41,7 +40,7 @@ def create_graph_net_simulation_data(
 
     # Generate the signal y
     if task == "regression":
-        y = generator.randn(n_samples)
+        y = generator.standard_normal(n_samples)
     elif task == "classification":
         y = np.ones(n_samples)
         y[::2] = -1

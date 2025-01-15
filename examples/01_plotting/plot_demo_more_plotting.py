@@ -14,7 +14,7 @@ returned, as well as how many cuts will be shown for example.
 As we will see in the first part of this example, depending on the values of
 the parameters ``display_mode`` and ``cut_coords``, plotting functions return
 different display objects, all subclasses of
-:class:`nilearn.plotting.displays.OrthoSlicer`.
+:class:`~nilearn.plotting.displays.OrthoSlicer`.
 
 These objects implement various methods to interact with the figures. In the
 second part of this example, we show how to use these methods to further
@@ -276,7 +276,7 @@ from nilearn import image
 
 # Compute voxel-wise mean functional image across time dimension. Now we have
 # functional image in 3D assigned in mean_haxby_img
-mean_haxby_img = image.mean_img(haxby_func_filename)
+mean_haxby_img = image.mean_img(haxby_func_filename, copy_header=True)
 
 # %%
 # Showing how to use `add_edges`
@@ -287,7 +287,7 @@ mean_haxby_img = image.mean_img(haxby_func_filename)
 # coregistration by overlaying anatomical image as edges (red) on top of
 # mean functional image (background), both being of same subject.
 #
-# First, we call the :func:`nilearn.plotting.plot_anat` plotting function,
+# First, we call the :func:`~nilearn.plotting.plot_anat` plotting function,
 # with a background image as first argument, in this case the mean
 # :term:`fMRI` image.
 #
@@ -400,14 +400,19 @@ display.annotate(scalebar=True, scale_size=25, scale_units="mm")
 # Finally, we can save a plot to file in two different ways:
 #
 # First, we can save the :term:`contrast` maps plotted with the function
-# :func:`nilearn.plotting.plot_stat_map` using the built-in parameter
+# :func:`~nilearn.plotting.plot_stat_map` using the built-in parameter
 # ``output_file``. We provide the filename and the file extension as
 # a string (supported extensions are .png, .pdf, .svg).
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_demo_more_plotting"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
 
 plotting.plot_stat_map(
     stat_img,
     title="Using plot_stat_map output_file",
-    output_file="plot_stat_map.png",
+    output_file=output_dir / "plot_stat_map.png",
 )
 
 # %%
@@ -417,7 +422,7 @@ plotting.plot_stat_map(
 
 display = plotting.plot_stat_map(stat_img, title="Using display savefig")
 
-display.savefig("plot_stat_map_from_display.png")
+display.savefig(output_dir / "plot_stat_map_from_display.png")
 
 # In non-interactive settings make sure you close your displays
 display.close()

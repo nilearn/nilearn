@@ -38,13 +38,13 @@ func_img = index_img(func_img, condition_mask)
 # Confirm that we now have 2 conditions
 print(conditions.unique())
 
-# The number of the session is stored in the CSV file giving the behavioral
-# data. We have to apply our session mask, to select only faces and houses.
-session_label = behavioral["chunks"][condition_mask]
+# The number of the run is stored in the CSV file giving the behavioral data.
+# We have to apply our run mask, to select only faces and houses.
+run_label = behavioral["chunks"][condition_mask]
 
 # %%
-# :term:`ANOVA` pipeline with :class:`nilearn.decoding.Decoder` object
-# --------------------------------------------------------------------
+# :term:`ANOVA` pipeline with :class:`~nilearn.decoding.Decoder` object
+# ---------------------------------------------------------------------
 #
 # Nilearn Decoder object aims to provide smooth user experience by acting as a
 # pipeline of several tasks: preprocessing with NiftiMasker, reducing dimension
@@ -76,12 +76,11 @@ y_pred = decoder.predict(func_img)
 # Obtain prediction scores via cross validation
 # ---------------------------------------------
 # Define the cross-validation scheme used for validation. Here we use a
-# LeaveOneGroupOut cross-validation on the session group which corresponds to a
-# leave a session out scheme, then pass the cross-validator object to the cv
-# parameter of decoder.leave-one-session-out For more details please take a
-# look at:
-# `Measuring prediction scores using cross-validation\
-# <../00_tutorials/plot_decoding_tutorial.html#measuring-prediction-scores-using-cross-validation>`_
+# LeaveOneGroupOut cross-validation on the run group which corresponds to a
+# leave a run out scheme, then pass the cross-validator object
+# to the cv parameter of decoder.leave-one-session-out.
+# For more details please take a look at:
+# :ref:`sphx_glr_auto_examples_00_tutorials_plot_decoding_tutorial.py`.
 from sklearn.model_selection import LeaveOneGroupOut
 
 cv = LeaveOneGroupOut()
@@ -94,8 +93,8 @@ decoder = Decoder(
     scoring="accuracy",
     cv=cv,
 )
-# Compute the prediction accuracy for the different folds (i.e. session)
-decoder.fit(func_img, conditions, groups=session_label)
+# Compute the prediction accuracy for the different folds (i.e. run)
+decoder.fit(func_img, conditions, groups=run_label)
 
 # Print the CV scores
 print(decoder.cv_scores_["face"])
@@ -104,7 +103,7 @@ print(decoder.cv_scores_["face"])
 # Visualize the results
 # ---------------------
 # Look at the SVC's discriminating weights using
-# :class:`nilearn.plotting.plot_stat_map`
+# :class:`~nilearn.plotting.plot_stat_map`
 weight_img = decoder.coef_img_["face"]
 from nilearn.plotting import plot_stat_map, show
 
@@ -112,13 +111,18 @@ plot_stat_map(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights")
 
 show()
 # %%
-# Or we can plot the weights using :class:`nilearn.plotting.view_img` as a
+# Or we can plot the weights using :class:`~nilearn.plotting.view_img` as a
 # dynamic html viewer
 from nilearn.plotting import view_img
 
 view_img(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights", dim=-1)
 # %%
 # Saving the results as a Nifti file may also be important
-weight_img.to_filename("haxby_face_vs_house.nii")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_haxby_anova_svm"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+weight_img.to_filename(output_dir / "haxby_face_vs_house.nii")
 
 # sphinx_gallery_dummy_images=1

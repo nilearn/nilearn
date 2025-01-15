@@ -3,7 +3,7 @@ Breaking an atlas of labels in separated regions
 ================================================
 
 This example shows how to use
-:class:`nilearn.regions.connected_label_regions`
+:class:`~nilearn.regions.connected_label_regions`
 to assign each spatially-separated region of the atlas a unique label.
 
 Indeed, often in a given atlas of labels, the same label (number) may
@@ -14,7 +14,7 @@ label to each region. We end up with a new atlas that has more labels,
 but each one points to a single region.
 
 We use the Yeo atlas as an example for labeling regions,
-:func:`nilearn.datasets.fetch_atlas_yeo_2011`
+:func:`~nilearn.datasets.fetch_atlas_yeo_2011`
 
 """
 
@@ -80,13 +80,13 @@ plotting.plot_roi(
 # ROIs.
 #
 # You can save the new atlas to a nifti file using to_filename method.
-region_labels.to_filename("relabeled_yeo_atlas.nii.gz")
+from pathlib import Path
 
-# The images are saved to the current folder. It is possible to specify the
-# folder for saving the results, i.e.
-# import os
-# region_labels.to_filename(os.path.join(folder_path,
-#                                        'relabeled_yeo_atlas.nii.gz'))
+output_dir = Path.cwd() / "results" / "plot_extract_regions_labels_image"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+
+region_labels.to_filename(output_dir / "relabeled_yeo_atlas.nii.gz")
 
 
 # %%

@@ -1,12 +1,55 @@
 import numpy as np
 import pytest
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.group_sparse_cov import (
     group_sparse_covariance,
     group_sparse_scores,
 )
+
+extra_valid_checks = [
+    "check_complex_data",
+    "check_estimator_sparse_tag",
+    "check_estimators_unfitted",
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_fit1d",
+    "check_no_attributes_set_in_init",
+    "check_parameters_default_constructible",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    (
+        check_estimator(
+            estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
+            extra_valid_checks=extra_valid_checks,
+        )
+    ),
+)
+def test_check_estimator_group_sparse_covariance(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid_group_sparse_covariance(
+    estimator,
+    check,
+    name,  # noqa: ARG001
+):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_group_sparse_covariance(rng):
@@ -26,7 +69,7 @@ def test_group_sparse_covariance(rng):
 
     # These executions must hit the tolerance limit
     _, omega = group_sparse_covariance(
-        signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=0
+        signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=1
     )
     _, omega2 = group_sparse_covariance(
         signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=0
@@ -35,7 +78,8 @@ def test_group_sparse_covariance(rng):
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
 
 
-def test_group_sparse_covariance_with_probe_function(rng):
+@pytest.mark.parametrize("duality_gap", [True, False])
+def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
@@ -56,16 +100,29 @@ def test_group_sparse_covariance_with_probe_function(rng):
             emp_covs,
             n_samples,
             alpha,
-            max_iter,
-            tol,
+            max_iter,  # noqa: ARG002
+            tol,  # noqa: ARG002
             n,
             omega,
-            omega_diff,
+            omega_diff,  # noqa: ARG002
         ):
             if n >= 0:
-                _, objective = group_sparse_scores(
-                    omega, n_samples, emp_covs, alpha
-                )
+                if duality_gap:
+                    _, objective, _ = group_sparse_scores(
+                        omega,
+                        n_samples,
+                        emp_covs,
+                        alpha,
+                        duality_gap=duality_gap,
+                    )
+                else:
+                    _, objective = group_sparse_scores(
+                        omega,
+                        n_samples,
+                        emp_covs,
+                        alpha,
+                        duality_gap=duality_gap,
+                    )
                 self.objective.append(objective)
 
     # Use a probe to test for number of iterations and decreasing objective.

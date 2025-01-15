@@ -31,11 +31,11 @@ The nilearn core developers are:
 * `Bertrand Thirion`_
 * `Elizabeth DuPre`_
 * `Hao-Ting Wang`_
+* `Himanshu Aggarwal`_
 * `Jerome Dockes`_
 * `Nicolas Gensollen`_
 * `Rémi Gau`_
 * `Taylor Salo`_
-* `Yasmin Mzayek`_
 
 .. CORE DEV SECTION ENDS HERE
 
@@ -56,12 +56,15 @@ Some other past or present contributors are:
 * `Alexandre Gramfort`_: Meta, France
 * `Alexandre Savio`_
 * `Alexandre Cionca`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
+* `Alexandre Sayal`_: CIBIT, University of Coimbra, Portugal
 * `Alexis Thual`_: Inria, Saclay, France
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
-* `Amadeus Kanaan`_
+* Amadeus Kanaan
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
+* `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrés Hoyos Idrobo`_: Rakuten, France
 * `Anne-Sophie Kieslinger`_: Max Planck Institute for Human Cognitive and Brain Sciences, Leipzig, Germnay
+* `Anupriya Kumari`_: Indian Institute of Technology, Roorkee, India
 * `Ariel Rokem`_: University of Washington, Psychology, Seattle, Washington, 98107, USA
 * `Arthur Mensch`_
 * `Aswin Vijayan`_
@@ -74,6 +77,7 @@ Some other past or present contributors are:
 * `Chris Markiewicz`_: Stanford University, Stanford, California, USA
 * `Christian Horea`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Christian Gerloff`_
+* `Christina Roßmanith`_: Dept. of Neurology, Medical Faculty Mannheim, University of Heidelberg, Germany
 * `Colin Reininger`_: Denver, Colorado, USA
 * `Connor Lane`_: Child Mind Institute, Baltimore, MD, USA
 * `Czarina Sy`_
@@ -90,6 +94,7 @@ Some other past or present contributors are:
 * `Eric Larson`_: Institute for Learning and Brain Sciences, University of Washington, Washington, USA
 * `Evan Edmond`_: University of Oxford, Oxford, UK
 * `Fabian Pedregosa`_: @google, Geneva, Switzerland
+* `Florent Pollet`_: ENS Paris-Saclay, Saclay, France
 * `Franz Liem`_
 * `François Paugam`_
 * `Gael Varoquaux`_: Inria, Saclay, France
@@ -97,13 +102,16 @@ Some other past or present contributors are:
 * `Greg Kiar`_: Child Mind Institute
 * `Greydon Gilmore`_: Department of Mathematics, Western University, Toronto, Canada
 * `Guillaume Lemaitre`_: Inria, Saclay, France
+* `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Ian Abenes`_
+* `Idrissa Traore`_: IMT Atlantique, Brest, France
 * `Jake Vogel`_: Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
 * `Jason Gors`_: Insight Data Science, Mountain View, California, USA
+* `Jason Kai`_: Child Mind Institute
 * `Javier Rasero`_: School of Data Science, University of Virginia, Viginia, USA
 * `Jean Kossaifi`_: Imperial College London, London, UK
 * `Jean-Rémi King`_: Meta AI, CNRS, Paris
@@ -114,6 +122,7 @@ Some other past or present contributors are:
 * `Johannes Wiesner`_: Central Institute of Mental Health, Mannheim, Germany
 * `Jon Haitz Legarreta Gorrono`_: Brigham and Women's Hospital, Mass General Brigham/Harvard Medical School, Boston, Massachusetts, USA
 * `Jona Sassenhagen`_
+* `Jordi Huguet`_: BarcelonaBeta Brain Research Center
 * `Joshua Teves`_
 * `Julia Huntenburg`_: International Brain Laboratory, Berlin, Germany
 * `Julio A Peraza`_: Florida International University, Miami, Florida, USA
@@ -137,6 +146,8 @@ Some other past or present contributors are:
 * `Matthieu Joulot`_: Aramis, Paris Brain Institute, Paris, France
 * `Maximilian Cosmo Sitter`_
 * `Mehdi Rahim`_: Air Liquide, France
+* `Mia Zwally`_: DSST, National Institute of Mental Health, USA
+* `Micha Burkhardt`_: University of Oldenburg, Germany
 * `Michael Eickenberg`_: Flatiron Institute, New-York, New-York, USA
 * `Michael Hanke`_: Psychoinformatics, Forschungszentrum Jülich GmbH, Jülich, Germany
 * `Michael Notter`_: ams OSRAM, Martigny, Lausanne, Switzerland
@@ -144,6 +155,7 @@ Some other past or present contributors are:
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
 * `Mohammad Torabi`_: Origami lab, McGill University, Montréal, Canada
 * `Moritz Boos`_
+* `Mudassir Chapra`_
 * `Myeong Seop Song`_
 * `Natasha Clarke`_: @SIMEXP, Montréal, Canada
 * `Neelay Shah`_: Max Planck Institute for Intelligent Systems, Germany
@@ -153,6 +165,7 @@ Some other past or present contributors are:
 * `Oscar Esteban`_: Centre Hospitalier Universitaire Vaudoise, Lausanne, Switzerland
 * `Patrick Sadil`_: Department of Biostatistics, Johns Hopkins Bloomberg School of Public Health, USA
 * `Paul Bogdan`_
+* `Paul Reiners`_: Masonic Institute for the Developing Brain, University of Minnesota, USA
 * `Paula Sanz-Leon`_: Medical Research Institute, Brisbane, Australia
 * `Peer Herholz`_: Origami lab, McGill University, Montréal, Canada
 * `Philippe Gervais`_: Zurich, Switzerland
@@ -160,6 +173,7 @@ Some other past or present contributors are:
 * `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
+* `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
 * `Raphael Meudec`_: Inria, Saclay, France
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
@@ -174,19 +188,26 @@ Some other past or present contributors are:
 * `Sam Buck Johnson`_
 * `Sami Jawhar`_
 * `Simon Steinkamp`_: Danish Research Centre for Magnetic Resonance, Copenhagen University Hospital Amager & Hvidovre, Copenhagen, Denmark.
+* `Sin Kim`_: Korea Advanced Institute of Science and Technology: Daejeon, KR
 * `Sourav Singh`_
 * `Steven Meisler`_: Harvard-MIT Division of Health Sciences and Technology, Cambridge, Massachusetts, USA
+* `Suramya Pokharel`_: Tribhuvan University, Kathmandu, Nepal
 * `Sylvain Lan`_
 * `Sylvain Takerkart`_: CNRS, Institut des Neurosciences de la Timone, Marseille, France
+* `Tamer Gezici`_: Bilkent University
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
+* `Tharun K`_
+* `Thiti Premrudeepreechacharn`_
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
+* `Victoria Shevchenko`_: Inria Saclay, Université Paris Cité, France
 * `Vincent Michel`_: https://www.logilab.fr/
 * `Virgile Fritsch`_: Inria, Saclay, France
 * `Yaroslav Halchenko`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
 * `Yasmin Mzayek`_: Inria, Saclay, France
+* `Yichun Huang`_: Peking University, Beijing, China
 * `Zvi Baratz`_: Tel-Aviv University, Israel
 * `Óscar Nájera`_: Checkmk
 
@@ -195,6 +216,8 @@ Some other past or present contributors are:
 Funding
 .......
 
+`Himanshu Aggarwal`_ is paid by `INRIA <https://www.inria.fr/en>`_.
+
 `Rémi Gau`_ is paid by a grant from the
 `Chan Zuckerberg Initiative <https://chanzuckerberg.com/eoss/proposals/improving-standard-practice-for-neuroimaging-analyses-with-nilearn/>`_
 
@@ -202,28 +225,39 @@ Funding
 `Mehdi Rahim`_, `Philippe Gervais`_ were paid by the
 :inria:`NiConnect <parietal/research/spatial_patterns/niconnect/>`.
 project, funded by the French `Investissement d'Avenir
-<https://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
+<https://www.info.gouv.fr/organisation/secretariat-general-pour-l-investissement-sgpi>`_.
 
 `Kshitij Chawla`_ was paid by `INRIA <https://www.inria.fr/en>`_.
 
-`Yasmin Mzayek`_ is paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
-|HBP logo|. Previously `Nicolas Gensollen`_ was funded by HBP.
+`Yasmin Mzayek`_ and `Nicolas Gensollen`_ were paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
+|HBP logo|.
 
-NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
-|digicosme logo| and `DataIA <https://dataia.eu/en>`_ |dataia_logo|.
+NiLearn is also supported by `DigiCosme <https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/>`_
+|digicosme logo| and `DataIA <https://www.dataia.eu/en>`_ |dataia_logo|.
 
 .. _citing:
 
 Citing nilearn
 --------------
 
-There is no paper published yet about nilearn. We are waiting for the
-package to mature a bit. However, the patterns underlying the package
-have been described in: `Machine learning for neuroimaging with
-scikit-learn
-<https://doi.org/10.3389/fninf.2014.00014>`_.
+If you want to cite Nilearn, we suggest you do it using our Zenodo DOI:
 
-We suggest that you read and cite the paper. Thank you.
+.. code-block:: bibtex
+
+    @software{Nilearn,
+        author = {Nilearn contributors},
+        license = {BSD-4-Clause},
+        title = {{nilearn}},
+        url = {https://github.com/nilearn/nilearn},
+        doi = {https://doi.org/10.5281/zenodo.8397156}
+    }
+
+Nilearn's Research Resource Identifier (RRID) is:
+`RRID:SCR_001362 <https://rrid.site/data/record/nlx_144509-1/SCR_001362/resolver?q=nilearn&l=nilearn&i=rrid:scr_001362>`_
+
+There is no paper published about nilearn.
+However, the patterns underlying the package have been described in:
+`Machine learning for neuroimaging with scikit-learn <https://doi.org/10.3389/fninf.2014.00014>`_.
 
 
 Citing scikit-learn

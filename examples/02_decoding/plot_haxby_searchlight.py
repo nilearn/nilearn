@@ -29,7 +29,7 @@ print(f"Functional nifti image (4D) is located at: {haxby_dataset.func[0]}")
 fmri_filename = haxby_dataset.func[0]
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
 y = labels["labels"]
-session = labels["chunks"]
+run = labels["chunks"]
 
 # %%
 # Restrict to faces and houses
@@ -39,7 +39,7 @@ from nilearn.image import index_img
 condition_mask = y.isin(["face", "house"])
 
 fmri_img = index_img(fmri_filename, condition_mask)
-y, session = y[condition_mask], session[condition_mask]
+y, run = y[condition_mask], run[condition_mask]
 
 # %%
 # Prepare masks
@@ -67,10 +67,10 @@ process_mask_img = new_img_like(mask_img, process_mask)
 # Make processing parallel
 # /!\ As each thread will print its progress, n_jobs > 1 could mess up the
 #     information output.
-n_jobs = 1
+n_jobs = 2
 
 # Define the cross-validation scheme used for validation.
-# Here we use a KFold cross-validation on the session, which corresponds to
+# Here we use a KFold cross-validation on the run, which corresponds to
 # splitting the samples in 4 folds and make 4 runs using each fold as a test
 # set once and the others as learning sets
 from sklearn.model_selection import KFold
@@ -91,52 +91,54 @@ searchlight = nilearn.decoding.SearchLight(
 searchlight.fit(fmri_img, y)
 
 # %%
+# Visualization
+# -------------
+from nilearn import image
+from nilearn.plotting import plot_img, plot_stat_map, show
+
+# After fitting the searchlight, we can access the searchlight scores
+# as a NIfTI image using the `scores_img_` attribute.
+scores_img = searchlight.scores_img_
+
+# Use the :term:`fMRI` mean image as a surrogate of anatomical data
+mean_fmri = image.mean_img(fmri_img, copy_header=True)
+
+# Because scores are not a zero-center test statistics,
+# we cannot use plot_stat_map
+plot_img(
+    scores_img,
+    bg_img=mean_fmri,
+    title="Searchlight scores image",
+    display_mode="z",
+    cut_coords=[-9],
+    vmin=0.2,
+    cmap="inferno",
+    threshold=0.2,
+    black_bg=True,
+    colorbar=True,
+)
+
+# %%
 # F-scores computation
 # --------------------
+from sklearn.feature_selection import f_classif
+
 from nilearn.maskers import NiftiMasker
 
 # For decoding, standardizing is often very important
 nifti_masker = NiftiMasker(
     mask_img=mask_img,
-    runs=session,
+    runs=run,
     standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
 )
 fmri_masked = nifti_masker.fit_transform(fmri_img)
 
-from sklearn.feature_selection import f_classif
-
 _, p_values = f_classif(fmri_masked, y)
 p_values = -np.log10(p_values)
 p_values[p_values > 10] = 10
 p_unmasked = get_data(nifti_masker.inverse_transform(p_values))
-
-# %%
-# Visualization
-# -------------
-# Use the :term:`fMRI` mean image as a surrogate of anatomical data
-from nilearn import image
-
-mean_fmri = image.mean_img(fmri_img)
-
-from nilearn.plotting import plot_img, plot_stat_map, show
-
-searchlight_img = new_img_like(mean_fmri, searchlight.scores_)
-
-# Because scores are not a zero-center test statistics, we cannot use
-# plot_stat_map
-plot_img(
-    searchlight_img,
-    bg_img=mean_fmri,
-    title="Searchlight",
-    display_mode="z",
-    cut_coords=[-9],
-    vmin=0.42,
-    cmap="hot",
-    threshold=0.2,
-    black_bg=True,
-)
 
 # F_score results
 p_ma = np.ma.array(p_unmasked, mask=np.logical_not(process_mask))
@@ -147,7 +149,7 @@ plot_stat_map(
     title="F-scores",
     display_mode="z",
     cut_coords=[-9],
-    colorbar=False,
+    cmap="inferno",
 )
 
 show()

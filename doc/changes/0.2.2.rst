@@ -19,13 +19,13 @@ New
 Enhancements
 ------------
 
+- :bdg-success:`API` The default ``n_subjects=None`` in function :func:`~datasets.fetch_adhd` is now changed to ``n_subjects=30``.
+
 - :bdg-secondary:`Maint` Flake8 is now run on pull requests.
 
 - :bdg-secondary:`Maint` Reworking of the documentation organization.
 
 - :bdg-secondary:`Maint` ``Sphinx-gallery`` updated to version ``0.1.1``.
-
-- :bdg-success:`API` The default ``n_subjects=None`` in function :func:`~datasets.fetch_adhd` is now changed to ``n_subjects=30``.
 
 Fixes
 -----
@@ -33,12 +33,6 @@ Fixes
 - :bdg-dark:`Code` Fix ``symmetric_split`` behavior in function :func:`~datasets.fetch_atlas_harvard_oxford`.
 
 - :bdg-dark:`Code` Fix casting errors when providing integer data to function :func:`~image.high_variance_confounds`.
-
-- :bdg-secondary:`Maint` Fix matplotlib ``1.5.0`` compatibility in function :func:`~plotting.plot_prob_atlas`.
-
-- :bdg-secondary:`Maint` Fix matplotlib backend choice on Mac OS X.
-
-- :bdg-info:`Plotting` Function :func:`~plotting.find_xyz_cut_coords` raises a meaningful error when 4D data is provided instead of 3D.
 
 - :bdg-dark:`Code` Class :class:`~maskers.NiftiSpheresMasker` handles radius smaller than the size of a :term:`voxel`.
 
@@ -50,26 +44,32 @@ Fixes
 
 - :bdg-dark:`Code` Function ``nilearn._utils.numpy_conversions.csv_to_array`` could consider valid CSV files as invalid.
 
+- :bdg-secondary:`Maint` Fix matplotlib ``1.5.0`` compatibility in function :func:`~plotting.plot_prob_atlas`.
+
+- :bdg-secondary:`Maint` Fix matplotlib backend choice on Mac OS X.
+
+- :bdg-info:`Plotting` Function :func:`~plotting.find_xyz_cut_coords` raises a meaningful error when 4D data is provided instead of 3D.
+
 Changes
 -------
 
-- :bdg-danger:`Deprecation` Deprecated dataset downloading function have been removed.
-
 - :bdg-dark:`Code` Download progression message refreshing rate has been lowered to sparsify CircleCI logs.
+
+- :bdg-danger:`Deprecation` Deprecated dataset downloading function have been removed.
 
 Contributors
 ------------
 
 Contributors (from ``git shortlog -ns 0.2.1..0.2.2``):
 
-    * `Kamalakar Reddy Daddy`_ (39)
-    * `Alexandre Abraham`_ (22)
-    * `Loic Estève`_ (21)
-    * `Gael Varoquaux`_ (19)
-    * `Alexandre Abadie`_ (12)
-    * `Salma Bougacha`_ (7)
-    * `Danilo Bzdok`_ (3)
-    * `Arthur Mensch`_ (1)
-    * `Ben Cipollini`_ (1)
-    * `Elvis Dohmatob`_ (1)
-    * `Óscar Nájera`_ (1)
+* `Kamalakar Reddy Daddy`_ (39)
+* `Alexandre Abraham`_ (22)
+* `Loic Estève`_ (21)
+* `Gael Varoquaux`_ (19)
+* `Alexandre Abadie`_ (12)
+* `Salma Bougacha`_ (7)
+* `Danilo Bzdok`_ (3)
+* `Arthur Mensch`_ (1)
+* `Ben Cipollini`_ (1)
+* `Elvis Dohmatob`_ (1)
+* `Óscar Nájera`_ (1)

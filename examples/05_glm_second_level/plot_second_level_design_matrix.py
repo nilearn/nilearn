@@ -13,11 +13,11 @@ This example requires matplotlib.
 
 """
 
-# %%
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
+import matplotlib.pyplot as plt
 
 # %%
 # Create a simple experimental paradigm
@@ -53,8 +53,9 @@ design_matrix = make_second_level_design_matrix(
 # Let's plot it.
 from nilearn.plotting import plot_design_matrix
 
-ax = plot_design_matrix(design_matrix)
-ax.set_title("Second level design matrix", fontsize=12)
+fig, ax1 = plt.subplots(1, 1, figsize=(3, 4), constrained_layout=True)
+
+ax = plot_design_matrix(design_matrix, axes=ax1)
 ax.set_ylabel("maps")
-plt.tight_layout()
+ax.set_title("Second level design matrix", fontsize=12)
 plt.show()

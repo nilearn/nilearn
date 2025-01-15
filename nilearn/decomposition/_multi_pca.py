@@ -2,8 +2,8 @@
 
 This is a good initialization method for ICA.
 """
+
 import numpy as np
-from joblib import Memory
 from sklearn.utils.extmath import randomized_svd
 
 from nilearn._utils import fill_doc
@@ -28,15 +28,17 @@ class _MultiPCA(_BaseDecomposition):
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    random_state : int or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
+
     %(smoothing_fwhm)s
+
     mask : Niimg-like object, instance of NiftiMasker
         or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default
         parameters.
+
     %(mask_strategy)s
 
         .. note::
@@ -49,9 +51,10 @@ class _MultiPCA(_BaseDecomposition):
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     standardize : boolean, default=False
         If standardize is True, the time-series are centered and normed:
@@ -65,30 +68,36 @@ class _MultiPCA(_BaseDecomposition):
         If detrend is True, the time-series will be detrended before
         components extraction.
 
-    target_affine : 3x3 or 4x4 matrix, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+    %(target_affine)s
 
-    target_shape : 3-tuple of integers, optional
-        This parameter is passed to image.resample_img. Please see the
-        related documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    low_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    %(target_shape)s
 
-    high_pass : None or float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
 
-    t_r : float, optional
-        This parameter is passed to signal.clean. Please see the related
-        documentation for details
+    %(low_pass)s
 
-    memory : instance of joblib.Memory or string, optional
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(high_pass)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(t_r)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
-        By default, no caching is done. If a string is given, it is the
-        path to the caching directory.
+        By default, no caching is done.
+        If a string is given, it is the path to the caching directory.
+        If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, default=0
         Rough estimator of the amount of memory used by caching. Higher value
@@ -98,8 +107,7 @@ class _MultiPCA(_BaseDecomposition):
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
 
-    verbose : integer, default=0
-        Indicate the level of verbosity. By default, nothing is printed.
+    %(verbose0)s
 
     Attributes
     ----------
@@ -150,7 +158,7 @@ class _MultiPCA(_BaseDecomposition):
         target_shape=None,
         mask_strategy="epi",
         mask_args=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,

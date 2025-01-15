@@ -13,9 +13,8 @@ Region Extraction for better brain parcellations
 
 .. topic:: **References**
 
-   * `Abraham et al. "Region segmentation for sparse decompositions: better
-     brain parcellations from rest fMRI", Sparsity Techniques in Medical Imaging,
-     Sep 2014 <https://hal.inria.fr/hal-01093944>`_
+   * Region segmentation for sparse decompositions:
+     better brain parcellations from rest fMRI :footcite:p:`Abraham2014`
 
 .. currentmodule:: nilearn.datasets
 
@@ -166,7 +165,8 @@ connectivity relations to brain regions plotted using :func:`plot_connectome`
 Validating results
 ==================
 
-Showing only one specific network regions before and after region extraction. The first image displays the regions of one specific functional network without region extraction.
+Showing only one specific network regions before and after region extraction.
+The first image displays the regions of one specific functional network without region extraction.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # without region extraction (left plot).
@@ -195,3 +195,9 @@ color.
 
    The full code can be found as an example:
    :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`
+
+
+References
+----------
+
+.. footbibliography::

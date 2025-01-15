@@ -1,25 +1,40 @@
 """Tests for the data generation utilities."""
+
 from __future__ import annotations
 
 import json
 
 import numpy as np
+import pandas as pd
 import pytest
+from nibabel import load
+from numpy.testing import assert_almost_equal
+from pandas.api.types import is_numeric_dtype, is_object_dtype
+from pandas.testing import assert_frame_equal
 
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
+    basic_paradigm,
     create_fake_bids_dataset,
     generate_fake_fmri,
+    generate_fake_fmri_data_and_design,
+    generate_group_sparse_gaussian_graphs,
     generate_labeled_regions,
     generate_maps,
+    generate_mni_space_img,
+    generate_random_img,
     generate_regions_ts,
+    generate_timeseries,
+    write_fake_bold_img,
+    write_fake_fmri_data_and_design,
 )
 from nilearn.image import get_data
 
 
 def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
     """Check the filename created is the default value \
-    of add_metadata_to_bids_dataset."""
+    of add_metadata_to_bids_dataset.
+    """
     target_dir = tmp_path / "derivatives" / "sub-01" / "ses-01" / "func"
     target_dir.mkdir(parents=True)
     json_file = add_metadata_to_bids_dataset(
@@ -30,7 +45,7 @@ def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
         json_file.name
         == "sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json"
     )
-    with open(json_file) as f:
+    with json_file.open() as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
 
@@ -45,9 +60,36 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     )
     assert json_file.exists()
     assert json_file.name == "sub-02_task-main_bold.json"
-    with open(json_file) as f:
+    with json_file.open() as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
+
+
+@pytest.mark.parametrize("have_spaces", [False, True])
+def test_basic_paradigm(have_spaces):
+    events = basic_paradigm(condition_names_have_spaces=have_spaces)
+
+    assert events.columns.equals(pd.Index(["trial_type", "onset", "duration"]))
+    assert is_object_dtype(events["trial_type"])
+    assert is_numeric_dtype(events["onset"])
+    assert is_numeric_dtype(events["duration"])
+    assert events["trial_type"].str.contains(" ").any() == have_spaces
+
+
+@pytest.mark.parametrize("shape", [(3, 4, 5), (2, 3, 5, 7)])
+@pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
+def test_write_fake_bold_img(tmp_path, shape, affine, rng):
+    img_file = write_fake_bold_img(
+        file_path=tmp_path / "fake_bold.nii",
+        shape=shape,
+        affine=affine,
+        random_state=rng,
+    )
+    img = load(img_file)
+
+    assert img.get_fdata().shape == shape
+    if affine is not None:
+        assert_almost_equal(img.affine, affine)
 
 
 def _bids_path_template(
@@ -120,7 +162,7 @@ def test_fake_bids_raw_with_session_and_runs(
     assert len(all_files) == n_raw_files_expected
 
 
-def _check_nb_files_derivatives_for_task(
+def _check_n_files_derivatives_for_task(
     bids_path,
     n_sub,
     n_ses,
@@ -202,7 +244,7 @@ def test_fake_bids_derivatives_with_session_and_runs(
 
     # derivatives
     for task, n_run in zip(tasks, n_runs):
-        _check_nb_files_derivatives_for_task(
+        _check_n_files_derivatives_for_task(
             bids_path=bids_path,
             n_sub=n_sub,
             n_ses=n_ses,
@@ -211,8 +253,8 @@ def test_fake_bids_derivatives_with_session_and_runs(
         )
 
     all_files = list(bids_path.glob("derivatives/sub-*/ses-*/*/*"))
-    # per subject: (1 confound + 3 bold + 2 gifti) per run per session
-    n_derivatives_files_expected = n_sub * (6 * sum(n_runs) * n_ses)
+    # per subject: (2 confound + 3 bold + 2 gifti) per run per session
+    n_derivatives_files_expected = n_sub * (7 * sum(n_runs) * n_ses)
     assert len(all_files) == n_derivatives_files_expected
 
 
@@ -365,7 +407,7 @@ def test_fake_bids_extra_raw_entity(tmp_path):
     # derivatives
     for label in entities["acq"]:
         for task, n_run in zip(tasks, n_runs):
-            _check_nb_files_derivatives_for_task(
+            _check_n_files_derivatives_for_task(
                 bids_path=bids_path,
                 n_sub=n_sub,
                 n_ses=n_ses,
@@ -375,10 +417,10 @@ def test_fake_bids_extra_raw_entity(tmp_path):
             )
 
     all_files = list(bids_path.glob("derivatives/sub-*/ses-*/*/*"))
-    # per subject: (1 confound + 3 bold + 2 gifti)
+    # per subject: (2 confound + 3 bold + 2 gifti)
     #              per run per session per entity
     n_derivatives_files_expected = (
-        n_sub * (6 * sum(n_runs) * n_ses) * len(entities["acq"])
+        n_sub * (7 * sum(n_runs) * n_ses) * len(entities["acq"])
     )
     assert len(all_files) == n_derivatives_files_expected
 
@@ -406,7 +448,7 @@ def test_fake_bids_extra_derivative_entity(tmp_path):
     # derivatives
     for label in entities["res"]:
         for task, n_run in zip(tasks, n_runs):
-            _check_nb_files_derivatives_for_task(
+            _check_n_files_derivatives_for_task(
                 bids_path=bids_path,
                 n_sub=n_sub,
                 n_ses=n_ses,
@@ -420,7 +462,7 @@ def test_fake_bids_extra_derivative_entity(tmp_path):
     # 1 confound per run per session
     # + (3 bold + 2 gifti) per run per session per entity
     n_derivatives_files_expected = n_sub * (
-        1 * sum(n_runs) * n_ses
+        2 * sum(n_runs) * n_ses
         + 5 * sum(n_runs) * n_ses * len(entities["res"])
     )
     assert len(all_files) == n_derivatives_files_expected
@@ -488,7 +530,7 @@ def test_generate_maps():
     n_regions = 9
     maps_img, _ = generate_maps(shape, n_regions, border=1)
     maps = get_data(maps_img)
-    assert maps.shape == shape + (n_regions,)
+    assert maps.shape == (*shape, n_regions)
     # no empty map
     assert np.all(abs(maps).sum(axis=0).sum(axis=0).sum(axis=0) > 0)
     # check border
@@ -500,9 +542,15 @@ def test_generate_maps():
 @pytest.mark.parametrize("shape", [(10, 11, 12), (6, 6, 7)])
 @pytest.mark.parametrize("length", [16, 20])
 @pytest.mark.parametrize("kind", ["noise", "step"])
-@pytest.mark.parametrize("n_block", [None, 1, 4])
-@pytest.mark.parametrize("block_size", [None, 4])
-@pytest.mark.parametrize("block_type", ["classification", "regression"])
+@pytest.mark.parametrize(
+    "n_block,block_size,block_type",
+    [
+        (None, None, None),
+        (1, 1, "classification"),
+        (4, 3, "classification"),
+        (4, 4, "regression"),
+    ],
+)
 def test_generate_fake_fmri(
     shape, length, kind, n_block, block_size, block_type, rng
 ):
@@ -527,6 +575,131 @@ def test_generate_fake_fmri_error(rng):
         generate_fake_fmri(
             length=10,
             n_blocks=10,
-            block_size=None,
+            block_size=3,
             random_state=rng,
         )
+
+
+@pytest.mark.parametrize(
+    "shapes", [[(2, 3, 5, 7)], [(5, 5, 5, 3), (5, 5, 5, 5)]]
+)
+@pytest.mark.parametrize("rank", [1, 3, 5])
+@pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
+def test_fake_fmri_data_and_design_generate(shapes, rank, affine):
+    # test generate
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rank, affine=affine, random_state=42
+    )
+
+    for fmri, shape in zip(fmri_data, shapes):
+        assert mask.shape == shape[:3]
+        assert fmri.shape == shape
+        if affine is not None:
+            assert_almost_equal(fmri.affine, affine)
+
+    for design, shape in zip(design_matrices, shapes):
+        assert design.shape == (shape[3], rank)
+
+
+@pytest.mark.parametrize(
+    "shapes", [[(2, 3, 5, 7)], [(5, 5, 5, 3), (5, 5, 5, 5)]]
+)
+@pytest.mark.parametrize("rank", [1, 3, 5])
+@pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
+def test_fake_fmri_data_and_design_write(tmp_path, shapes, rank, affine):
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rank, affine=affine, random_state=42
+    )
+    mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
+        shapes, rk=rank, affine=affine, random_state=42, file_path=tmp_path
+    )
+
+    mask_img = load(mask_file)
+    assert_almost_equal(mask_img.get_fdata(), mask.get_fdata())
+    assert_almost_equal(mask_img.affine, mask.affine)
+
+    for fmri_file, fmri in zip(fmri_files, fmri_data):
+        fmri_img = load(fmri_file)
+        assert_almost_equal(fmri_img.get_fdata(), fmri.get_fdata())
+        assert_almost_equal(fmri_img.affine, fmri.affine)
+
+    for design_file, design in zip(design_files, design_matrices):
+        assert_frame_equal(
+            pd.read_csv(design_file, sep="\t"), design, check_exact=False
+        )
+
+
+@pytest.mark.parametrize("shape", [(3, 4, 5), (2, 3, 5, 7)])
+@pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
+def test_generate_random_img(shape, affine, rng):
+    img, mask = generate_random_img(
+        shape=shape, affine=affine, random_state=rng
+    )
+
+    assert img.shape == shape
+    assert mask.shape == shape[:3]
+    if affine is not None:
+        assert_almost_equal(img.affine, affine)
+        assert_almost_equal(mask.affine, affine)
+
+
+@pytest.mark.parametrize("n_subjects", [5, 9])
+@pytest.mark.parametrize("n_features", [30, 9])
+@pytest.mark.parametrize("n_samples_range", [(30, 50), (9, 9)])
+@pytest.mark.parametrize("density", [0.1, 1])
+def test_generate_group_sparse_gaussian_graphs(
+    n_subjects, n_features, n_samples_range, density, rng
+):
+    signals, precisions, topology = generate_group_sparse_gaussian_graphs(
+        n_subjects=n_subjects,
+        n_features=n_features,
+        min_n_samples=n_samples_range[0],
+        max_n_samples=n_samples_range[1],
+        density=density,
+        random_state=rng,
+    )
+
+    assert len(signals) == n_subjects
+    assert len(precisions) == n_subjects
+
+    signal_shapes = np.array([s.shape for s in signals])
+    precision_shapes = np.array([p.shape for p in precisions])
+    assert np.all(
+        (signal_shapes[:, 0] >= n_samples_range[0])
+        & (signal_shapes[:, 0] <= n_samples_range[1])
+    )
+    assert np.all(signal_shapes[:, 1] == n_features)
+    assert np.all(precision_shapes == (n_features, n_features))
+    assert topology.shape == (n_features, n_features)
+
+    eigenvalues = np.array([np.linalg.eigvalsh(p) for p in precisions])
+    assert np.all(eigenvalues >= 0)
+
+
+@pytest.mark.parametrize("n_timepoints", [1, 9])
+@pytest.mark.parametrize("n_features", [1, 9])
+def test_generate_timeseries(n_timepoints, n_features, rng):
+    timeseries = generate_timeseries(n_timepoints, n_features, rng)
+    assert timeseries.shape == (n_timepoints, n_features)
+
+
+@pytest.mark.parametrize("n_scans", [1, 5])
+@pytest.mark.parametrize("res", [1, 30])
+@pytest.mark.parametrize("mask_dilation", [1, 2])
+def test_generate_mni_space_img(n_scans, res, mask_dilation, rng):
+    inverse_img, mask_img = generate_mni_space_img(
+        n_scans=n_scans, res=res, mask_dilation=mask_dilation, random_state=rng
+    )
+
+    def resample_dim(orig, res):
+        return (orig - 2) // res + 2
+
+    expected_shape = (
+        resample_dim(197, res),
+        resample_dim(233, res),
+        resample_dim(189, res),
+    )
+    assert inverse_img.shape[:3] == expected_shape
+    assert inverse_img.shape[3] == n_scans
+    assert mask_img.shape == expected_shape
+    assert_almost_equal(inverse_img.affine, mask_img.affine)

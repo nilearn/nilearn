@@ -12,9 +12,7 @@ Extracting times series to build a functional connectome
 
 .. topic:: **References**
 
-   * `Varoquaux and Craddock, "Learning and comparing functional
-     connectomes across subjects", NeuroImage 2013
-     <https://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+   * Learning and comparing functional connectomes across subjects :footcite:p:`Varoquaux2013`
 
 .. _parcellation_time_series:
 
@@ -80,14 +78,13 @@ filenames or `NiftiImage objects
 
 Note that confound signals can be specified in the call. Indeed, to
 obtain time series that capture well the functional interactions between
-regions, regressing out noise sources is very important
-`[Varoquaux & Craddock 2013] <https://hal.inria.fr/hal-00812911/>`_.
+regions, regressing out noise sources is very important (:footcite:t:`Varoquaux2013`).
 For data processed by :term:`fMRIPrep`,
 :func:`~nilearn.interfaces.fmriprep.load_confounds` and
 :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` can help you
 retrieve confound variables.
 :func:`~nilearn.interfaces.fmriprep.load_confounds_strategy` selects confounds
-based on past literature with limited parameters for customisation.
+based on past literature with limited parameters for customization.
 For more freedoms of confounds selection,
 :func:`~nilearn.interfaces.fmriprep.load_confounds` groups confound variables as
 sets of noise components and one can fine tune each of the parameters.
@@ -145,7 +142,7 @@ better our imperfect knowledge of boundaries in brain images (notably
 because of inter-subject registration errors). One example of such an
 atlas well suited to :term:`resting-state` or naturalistic-stimuli data analysis is
 the `MSDL atlas
-<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
 (:func:`nilearn.datasets.fetch_atlas_msdl`).
 
 Probabilistic atlases are represented as a set of continuous maps, in a
@@ -177,8 +174,8 @@ The ``fit_transform`` method turns filenames or `NiftiImage objects
 
     time_series = masker.fit_transform(frmi_files, confounds=csv_file)
 
-The procedure is the same as with `brain parcellations
-<parcellation_time_series>`_ but using the :class:`NiftiMapsMasker`, and
+The procedure is the same as with :ref:`brain parcellations <parcellation_time_series>`
+but using the :class:`NiftiMapsMasker`, and
 the same considerations on using confounds regressors apply.
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_probabilistic_atlas_extraction_001.png
@@ -234,26 +231,29 @@ A functional connectome: extracting coordinates of regions
 For atlases without readily available label coordinates, center coordinates
 can be computed for each region on hard :term:`parcellation` or probabilistic atlases.
 
- * For hard :term:`parcellation` atlases (eg. :func:`nilearn.datasets.fetch_atlas_destrieux_2009`),
-   use the :func:`nilearn.plotting.find_parcellation_cut_coords`
-   function. See example:
-   :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
+* For hard :term:`parcellation` atlases (eg. :func:`nilearn.datasets.fetch_atlas_destrieux_2009`),
+  use the :func:`nilearn.plotting.find_parcellation_cut_coords` function.
+  See example:
+  :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
- * For probabilistic atlases (eg. :func:`nilearn.datasets.fetch_atlas_msdl`), use the
-   :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
-   See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`:
+* For probabilistic atlases (eg. :func:`nilearn.datasets.fetch_atlas_msdl`),
+  use the :func:`nilearn.plotting.find_probabilistic_atlas_cut_coords` function.
+  See example: :ref:`sphx_glr_auto_examples_03_connectivity_plot_multi_subject_connectome.py`:
 
-   .. code-block:: default
+.. code-block:: python
 
-           from nilearn import plotting
-           atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename)
+         from nilearn import plotting
+         atlas_region_coords = plotting.find_probabilistic_atlas_cut_coords(atlas_filename)
 
 |
 
 .. topic:: **References**
 
-  * `Zalesky et al., NeuroImage 2012, "On the use of correlation as a measure of
-    network connectivity" <https://www.sciencedirect.com/science/article/pii/S1053811912001784>`_.
+   * On the use of correlation as a measure of network connectivity :footcite:p:`zalesky2012use`
 
-  * `Varoquaux et al., NeuroImage 2013, "Learning and comparing functional
-    connectomes across subjects" <https://www.sciencedirect.com/science/article/pii/S1053811913003340>`_.
+   * Learning and comparing functional connectomes across subjects :footcite:p:`Varoquaux2013`
+
+References
+----------
+
+.. footbibliography::

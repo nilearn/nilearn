@@ -1,4 +1,5 @@
 """Test the thresholding utilities."""
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -23,7 +24,7 @@ def test_fdr(rng):
     rng.shuffle(x)
 
     assert_almost_equal(fdr_threshold(x, 0.1), norm.isf(0.0005))
-    assert fdr_threshold(x, 0.001) == np.infty
+    assert fdr_threshold(x, 0.001) == np.inf
 
     # addresses #2879
     n = 10
@@ -220,7 +221,7 @@ def test_all_resolution_inference(data_norm_isf, affine_eye):
 
     # verbose mode
     th_map = cluster_level_inference(
-        stat_img, threshold=3, alpha=0.05, verbose=True
+        stat_img, threshold=3, alpha=0.05, verbose=1
     )
 
 

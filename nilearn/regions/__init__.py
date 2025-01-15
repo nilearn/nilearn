@@ -1,5 +1,6 @@
 """The :mod:`nilearn.regions` class module includes region extraction \
-procedure on a 4D statistical/atlas maps and its function."""
+procedure on a 4D statistical/atlas maps and its function.
+"""
 
 from .hierarchical_kmeans_clustering import HierarchicalKMeans
 from .parcellations import Parcellations
@@ -17,15 +18,15 @@ from .signal_extraction import (
 )
 
 __all__ = [
-    "connected_regions",
-    "RegionExtractor",
-    "connected_label_regions",
-    "img_to_signals_labels",
-    "signals_to_img_labels",
-    "img_to_signals_maps",
-    "signals_to_img_maps",
+    "HierarchicalKMeans",
     "Parcellations",
     "ReNA",
+    "RegionExtractor",
+    "connected_label_regions",
+    "connected_regions",
+    "img_to_signals_labels",
+    "img_to_signals_maps",
     "recursive_neighbor_agglomeration",
-    "HierarchicalKMeans",
+    "signals_to_img_labels",
+    "signals_to_img_maps",
 ]

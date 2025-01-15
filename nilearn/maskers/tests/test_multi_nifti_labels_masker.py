@@ -1,13 +1,70 @@
 """Test the multi_nifti_labels_masker module."""
 
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
+from nilearn.conftest import _affine_eye, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
+
+extra_valid_checks = [
+    "check_estimators_unfitted",
+    "check_get_params_invariance",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            MultiNiftiLabelsMasker(
+                data_gen.generate_labeled_regions(
+                    _shape_3d_default(), affine=_affine_eye(), n_regions=9
+                )
+            ),
+            NiftiLabelsMasker(
+                data_gen.generate_labeled_regions(
+                    _shape_3d_default(), affine=_affine_eye(), n_regions=9
+                )
+            ),
+        ],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            MultiNiftiLabelsMasker(
+                data_gen.generate_labeled_regions(
+                    _shape_3d_default(), affine=_affine_eye(), n_regions=9
+                )
+            ),
+            NiftiLabelsMasker(
+                data_gen.generate_labeled_regions(
+                    _shape_3d_default(), affine=_affine_eye(), n_regions=9
+                )
+            ),
+        ],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_multi_nifti_labels_masker():
@@ -35,7 +92,7 @@ def test_multi_nifti_labels_masker():
         shape1, affine=affine1, n_regions=n_regions
     )
 
-    mask_img_4d = nibabel.Nifti1Image(
+    mask_img_4d = Nifti1Image(
         np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
     )
 
@@ -128,9 +185,10 @@ def test_multi_nifti_labels_masker():
 
 
 def test_multi_nifti_labels_masker_reduction_strategies():
-    """Tests:
-    1. whether the usage of different reduction strategies work.
-    2. whether unrecognised strategies raise a ValueError
+    """Tests strategies of MultiNiftiLabelsMasker.
+
+    1. whether the usage of different reduction strategies work
+    2. whether unrecognized strategies raise a ValueError
     3. whether the default option is backwards compatible (calls "mean")
     """
     test_values = [-2.0, -1.0, 0.0, 1.0, 2]
@@ -140,8 +198,8 @@ def test_multi_nifti_labels_masker_reduction_strategies():
     labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
 
     affine = np.eye(4)
-    img = nibabel.Nifti1Image(img_data, affine)
-    labels = nibabel.Nifti1Image(labels_data, affine)
+    img = Nifti1Image(img_data, affine)
+    labels = Nifti1Image(labels_data, affine)
 
     # What MultiNiftiLabelsMasker should return for each reduction strategy?
     expected_results = {
@@ -169,7 +227,7 @@ def test_multi_nifti_labels_masker_reduction_strategies():
     assert default_masker.strategy == "mean"
 
 
-def test_multi_nifti_labels_masker_resampling():
+def test_multi_nifti_labels_masker_resampling(tmp_path):
     # Test resampling in MultiNiftiLabelsMasker
     shape1 = (10, 11, 12)
     affine = np.eye(4)
@@ -309,9 +367,9 @@ def test_multi_nifti_labels_masker_resampling():
     )
 
     # Test with filenames
-    with testing.write_tmp_imgs(fmri22_img) as filename:
-        masker = MultiNiftiLabelsMasker(labels33_img, resampling_target="data")
-        masker.fit_transform(filename)
+    filename = testing.write_imgs_to_path(fmri22_img, file_path=tmp_path)
+    masker = MultiNiftiLabelsMasker(labels33_img, resampling_target="data")
+    masker.fit_transform(filename)
 
     # test labels masker with resampling target in 'data', 'labels' to return
     # resampled labels having number of labels equal with transformed shape of

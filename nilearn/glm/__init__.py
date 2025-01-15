@@ -1,4 +1,5 @@
-"""Analysing fMRI data using GLMs."""
+"""Analyzing fMRI data using GLMs."""
+
 from nilearn.glm import first_level, second_level
 from nilearn.glm.contrasts import (
     Contrast,
@@ -24,22 +25,20 @@ from nilearn.glm.thresholding import (
 )
 
 __all__ = [
-    "first_level",
-    "second_level",
-    "compute_contrast",
-    "compute_fixed_effects",
-    "Contrast",
-    "expression_to_contrast_vector",
-    "LikelihoodModelResults",
-    "TContrastResults",
-    "FContrastResults",
-    "OLSModel",
     "ARModel",
+    "Contrast",
+    "FContrastResults",
+    "LikelihoodModelResults",
+    "OLSModel",
     "RegressionResults",
     "SimpleRegressionResults",
-    "fdr_threshold",
+    "TContrastResults",
     "cluster_level_inference",
-    "threshold_stats_img",
+    "compute_contrast",
+    "compute_fixed_effects",
+    "expression_to_contrast_vector",
+    "fdr_threshold",
     "first_level",
     "second_level",
+    "threshold_stats_img",
 ]

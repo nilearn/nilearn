@@ -44,7 +44,6 @@ h3 {
   }
 }
 
-
 div.sphx-glr-download a {
   background-color: transparent;
   background-image: none;
@@ -148,10 +147,4 @@ table.plotting-table img {
 
 .announcement-content {
   white-space: normal;
-}
-
-/* Wrap code blocks */
-pre {
-  white-space: pre-wrap !important;
-  word-break: break-all;
 }

@@ -4,10 +4,12 @@ Functions for extracting region-defined signals.
 Two ways of defining regions are supported: as labels in a single 3D image,
 or as weights in one image per region (maps).
 """
+
 # Author: Philippe Gervais
 import warnings
 
 import numpy as np
+from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
 from .. import _utils, masking
@@ -181,13 +183,13 @@ def _get_labels_data(
         mask_img = _utils.check_niimg_3d(mask_img)
         mask_data = safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
-        labels_before_mask = set(np.unique(labels_data))
+        labels_before_mask = {int(label) for label in np.unique(labels_data)}
         # Applying mask on labels_data
         labels_data[np.logical_not(mask_data)] = background_label
-        labels_after_mask = set(np.unique(labels_data))
+        labels_after_mask = {int(label) for label in np.unique(labels_data)}
         labels_diff = labels_before_mask.difference(labels_after_mask)
         # Raising a warning if any label is removed due to the mask
-        if len(labels_diff) > 0 and (not keep_masked_labels):
+        if labels_diff and not keep_masked_labels:
             warnings.warn(
                 "After applying mask to the labels image, "
                 "the following labels were "
@@ -246,6 +248,7 @@ def img_to_signals_labels(
     order="F",
     strategy="mean",
     keep_masked_labels=True,
+    return_masked_atlas=False,
 ):
     """Extract region signals from image.
 
@@ -264,7 +267,7 @@ def img_to_signals_labels(
         Regions definition as labels. By default, the label zero is used to
         denote an absence of region. Use background_label to change it.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Mask to apply to labels before extracting signals.
         Every point outside the mask is considered
@@ -273,7 +276,7 @@ def img_to_signals_labels(
     background_label : number, default=0
         Number representing background in labels_img.
 
-    order : :obj:`str`, default="F"
+    order : :obj:`str`, default='F'
         Ordering of output array ("C" or "F").
 
     strategy : :obj:`str`, default="mean"
@@ -281,6 +284,11 @@ def img_to_signals_labels(
         Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation.
     %(keep_masked_labels)s
+
+    return_masked_atlas : :obj:`bool`, default=False
+        If True, the masked atlas is returned.
+        deprecated in version 0.13, to be removed in 0.15.
+        after 0.13, the masked atlas will always be returned.
 
     Returns
     -------
@@ -293,6 +301,10 @@ def img_to_signals_labels(
     labels : :obj:`list` or :obj:`tuple`
         Corresponding labels for each signal. signal[:, n] was extracted from
         the region with label labels[n].
+
+    masked_atlas : Niimg-like object
+        Regions definition as labels after applying the mask.
+        returned if `return_masked_atlas` is True.
 
     See Also
     --------
@@ -328,13 +340,29 @@ def img_to_signals_labels(
         signals[n] = np.asarray(
             reduction_function(img, labels=labels_data, index=labels)
         )
-    # Set to zero signals for missing labels. Workaround for Scipy behaviour
+    # Set to zero signals for missing labels. Workaround for Scipy behavior
     if keep_masked_labels:
         missing_labels = set(labels) - set(np.unique(labels_data))
         labels_index = {l: n for n, l in enumerate(labels)}
         for this_label in missing_labels:
             signals[:, labels_index[this_label]] = 0
-    return signals, labels
+
+    if return_masked_atlas:
+        # finding the new labels image
+        masked_atlas = Nifti1Image(
+            labels_data.astype(np.int8), labels_img.affine
+        )
+        return signals, labels, masked_atlas
+    else:
+        warnings.warn(
+            'After version 0.13. "img_to_signals_labels" will also return the '
+            '"masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
+            "used to toggle this behavior. In version 0.15, "
+            '"return_masked_atlas" parameter will be removed.',
+            DeprecationWarning,
+            stacklevel=1,
+        )
+        return signals, labels
 
 
 def signals_to_img_labels(
@@ -363,7 +391,7 @@ def signals_to_img_labels(
         See :ref:`extracting_data`.
         Region definitions using labels.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Boolean array giving voxels to process. integer arrays also accepted,
         In this array, zero means False, non-zero means True.
@@ -371,7 +399,7 @@ def signals_to_img_labels(
     background_label : number, default=0
         Label to use for "no region".
 
-    order : :obj:`str`, default="F"
+    order : :obj:`str`, default='F'
         Ordering of output array ("C" or "F").
 
     Returns
@@ -402,7 +430,7 @@ def signals_to_img_labels(
     # for n, label in enumerate(labels):
     #     data[labels_data == label, :] = signals[:, n]
     if signals.ndim == 2:
-        target_shape = target_shape + (signals.shape[0],)
+        target_shape = (*target_shape, signals.shape[0])
 
     data = np.zeros(target_shape, dtype=signals.dtype, order=order)
     labels_dict = {label: n for n, label in enumerate(labels)}
@@ -437,7 +465,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         Regions definition as maps (array of weights).
         shape: imgs.shape + (region number, )
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
         Every point outside the mask is considered
@@ -474,7 +502,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
         mask_img = _utils.check_niimg_3d(mask_img)
-        labels_before_mask = set(labels)
+        labels_before_mask = {int(label) for label in labels}
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
             safe_get_data(mask_img, ensure_finite=True),
@@ -495,10 +523,10 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
                 stacklevel=2,
             )
         else:
-            labels_after_mask = set(labels)
+            labels_after_mask = {int(label) for label in labels}
             labels_diff = labels_before_mask.difference(labels_after_mask)
             # Raising a warning if any map is removed due to the mask
-            if len(labels_diff) > 0:
+            if labels_diff:
                 warnings.warn(
                     "After applying mask to the maps image, "
                     "maps with the following indices were "
@@ -536,7 +564,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         See :ref:`extracting_data`.
         Region definitions using maps.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Boolean array giving :term:`voxels<voxel>` to process.
         Integer arrays also accepted, zero meaning False.

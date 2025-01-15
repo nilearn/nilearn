@@ -2,6 +2,7 @@
 
 For example: TV-L1, Graph-Net, etc
 """
+
 # Author: DOHMATOB Elvis Dopgima,
 #         PIZARRO Gaspar,
 #         VAROQUAUX Gael,
@@ -10,10 +11,10 @@ For example: TV-L1, Graph-Net, etc
 #         THIRION Bertrand
 
 import collections
-import sys
 import time
 import warnings
 from functools import partial
+from typing import ClassVar
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -28,23 +29,26 @@ from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
+from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn.image import get_data
-from nilearn.maskers._masker_validation import _check_embedded_nifti_masker
-from nilearn.masking import _unmask_from_to_3d_array
+from nilearn.maskers import SurfaceMasker
+from nilearn.masking import unmask_from_to_3d_array
+from nilearn.surface import SurfaceImage
 
-from .._utils import fill_doc
+from .._utils import fill_doc, logger
 from .._utils.cache_mixin import CacheMixin
 from .._utils.param_validation import adjust_screening_percentile
 from .space_net_solvers import (
-    _graph_net_logistic,
-    _graph_net_squared_loss,
+    graph_net_logistic,
+    graph_net_squared_loss,
     tvl1_solver,
 )
 
 
 def _crop_mask(mask):
     """Crops input mask to produce tighter (i.e smaller) bounding box \
-    with the same support (active voxels)."""
+    with the same support (active voxels).
+    """
     idx = np.where(mask)
     if idx[0].size == 0:
         raise ValueError(
@@ -76,10 +80,10 @@ def _univariate_feature_screening(
     y : ndarray, shape (n_samples,)
         Response Vector.
 
-    mask: ndarray or booleans, shape (nx, ny, nz)
+    mask : ndarray or booleans, shape (nx, ny, nz)
         Mask defining brain Rois.
 
-    is_classif: bool
+    is_classif : bool
         Flag telling whether the learning task is classification or regression.
 
     screening_percentile : float in the closed interval [0., 100.]
@@ -90,7 +94,7 @@ def _univariate_feature_screening(
 
     Returns
     -------
-    X_: ndarray, shape (n_samples, n_features_)
+    X_ : ndarray, shape (n_samples, n_features_)
         Reduced design matrix with only columns corresponding to the voxels
         retained after screening.
 
@@ -107,8 +111,9 @@ def _univariate_feature_screening(
         sX = np.empty(X.shape)
         for sample in range(sX.shape[0]):
             sX[sample] = gaussian_filter(
-                _unmask_from_to_3d_array(
-                    X[sample].copy(), mask  # avoid modifying X
+                unmask_from_to_3d_array(
+                    X[sample].copy(),  # avoid modifying X
+                    mask,
                 ),
                 (smoothing_fwhm, smoothing_fwhm, smoothing_fwhm),
             )[mask]
@@ -222,7 +227,7 @@ class _EarlyStoppingCallback:
         """Perform callback."""
         # misc
         if not isinstance(variables, dict):
-            variables = dict(w=variables)
+            variables = {"w": variables}
         self.counter += 1
         w = variables["w"]
 
@@ -238,18 +243,17 @@ class _EarlyStoppingCallback:
             len(self.test_scores) > 4
             and np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol
         ):
-            if self.verbose:
-                if self.verbose > 1:
-                    print(
-                        "Early stopping. "
-                        f"Test score: {score:.8f} {40 * '-'}"
-                    )
-                else:
-                    sys.stderr.write(".")
+            message = "."
+            if self.verbose > 1:
+                message = (
+                    f"Early stopping.\nTest score: {score:.8f} {40 * '-'}"
+                )
+            logger.log(message, verbose=self.verbose, stack_level=2)
             return True
 
-        if self.verbose > 1:
-            print(f"Test score: {score:.8f}")
+        logger.log(
+            f"Test score: {score:.8f}", verbose=self.verbose, msg_level=1
+        )
         return False
 
     def _debias(self, w):
@@ -279,7 +283,7 @@ class _EarlyStoppingCallback:
         """
         if self.is_classif:
             w = w[:-1]
-        if w.ptp() == 0:
+        if np.ptp(w) == 0:
             # constant map, there is nothing
             return (-np.inf, -np.inf)
         y_pred = np.dot(self.X_test, w)
@@ -307,7 +311,6 @@ def path_scores(
     eps=1e-3,
     key=None,
     debias=False,
-    Xmean=None,
     screening_percentile=20.0,
     verbose=1,
 ):
@@ -322,50 +325,47 @@ def path_scores(
     y : 1D array of length n_samples
         Response vector; one value per sample.
 
-    mask : 3D arrays of boolean
+    mask : 3D arrays of :obj:`bool`
         Mask defining brain regions that we work on.
 
-    alphas : list of floats
+    alphas : :obj:`list` of :obj:`float`
         List of regularization parameters being considered.
 
-    train : array or list of integers
+    train : array or :obj:`list` of :obj:`int`:
         List of indices for the train samples.
 
-    test : array or list of integers
+    test : array or :obj:`list` of :obj:`int`
         List of indices for the test samples.
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
-        optional (default .5)
+    l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]
         Constant that mixes L1 and TV (resp. Graph-Net) penalization.
         l1_ratios == 0: just smooth. l1_ratios == 1: just lasso.
 
-    eps : float, optional (default 1e-3)
+    eps : :obj:`float`, default=1e-3
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
     solver : function handle
        See for example tv.TVl1Classifier documentation.
 
-    solver_params : dict
+    solver_params : :obj:`dict`
        Dictionary of param-value pairs to be passed to solver.
 
-    is_classif : bool, default=False
+    is_classif : :obj:`bool`, default=False
         Indicates whether the loss is a classification loss or a
         regression loss.
 
-    Xmean: ??? TODO: Add description.
-
     key: ??? TODO: Add description.
 
-    debias : bool, default=False
+    debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
 
-    screening_percentile : float in the interval [0, 100], optional\
-        (default 20)
+    screening_percentile : :obj:`float` in the interval [0, 100], \
+        default=20.0
         Percentile value for :term:`ANOVA` univariate feature selection.
         A value of 100 means 'keep all features'.
         This percentile is expressed
@@ -401,7 +401,7 @@ def path_scores(
 
     # it is essential to center the data in regression
     X_train, y_train, _, y_train_mean, _ = center_data(
-        X_train, y_train, fit_intercept=True, normalize=False, copy=False
+        X_train, y_train, fit_intercept=True, copy=False
     )
 
     # misc
@@ -527,7 +527,7 @@ def path_scores(
         best_w = w_
 
     if len(best_w) == n_features:
-        # TODO: do something with Xmean
+        # TODO: implement with Xmean
         best_w = np.append(best_w, 0.0)
 
     all_test_scores = np.array(all_test_scores)
@@ -543,7 +543,7 @@ def path_scores(
 
 
 @fill_doc
-class BaseSpaceNet(LinearRegression, CacheMixin):
+class BaseSpaceNet(CacheMixin, LinearRegression):
     """Regression and classification learners with sparsity and spatial priors.
 
     `SpaceNet` implements Graph-Net and TV-L1 priors /
@@ -553,37 +553,37 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : :obj:`str`, default='graph-net'
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default None)
+    loss : :obj:`str`, default=None
         Loss to be used in the model. Must be an one of "mse", or "logistic".
 
-    is_classif : bool, optional (default False)
+    is_classif : :obj:`bool`, default=False
         Flag telling whether the learning task is classification or regression.
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
-        optional (default .5)
+    l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]; \
+        default=0.5
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : float or list of floats, optional (default None)
+    alphas : :obj:`float` or :obj:`list` of floats, default=None
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
         If None or list of floats is provided, then the best value will be
         selected by cross-validation.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional (default 1e-3)
+    eps : :obj:`float`, default=1e-3
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    mask : filename, niimg, NiftiMasker instance, optional (default None)
+    mask : filename, niimg, NiftiMasker instance, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
@@ -594,7 +594,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : float in the interval [0, 100]; Optional (\
+    screening_percentile : :obj:`float` in the interval [0, 100]; Optional (\
         default 20)
         Percentile value for ANOVA univariate feature selection. A value of
         100 means 'keep all features'. This percentile is expressed
@@ -603,31 +603,37 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         (which is typically smaller). If '100' is given, all the features
         are used, regardless of the number of voxels.
 
-    standardize : bool, optional (default True):
+    standardize : :obj:`bool`, default=True
         If set, then the data (X, y) are centered to have mean zero along
         axis 0. This is here because nearly all linear models will want
         their data to be centered.
 
-    fit_intercept : bool, optional (default True)
+    fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
 
-    max_iter : int (default 200)
+    max_iter : :obj:`int`, default=200
         Defines the iterations for the solver.
 
-    tol : float, optional (default 5e-4)
+    tol : :obj:`float`, default=5e-4
         Defines the tolerance for convergence for the backend FISTA solver.
     %(verbose)s
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : int, a cv generator instance, or None (default 8)
+    cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : bool, optional (default False)
+    debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
+
+    positive : bool, default=False
+        When set to ``True``, forces the coefficients to be positive.
+        This option is only supported for dense arrays.
+
+        .. versionadded:: 0.11.2dev
 
     Attributes
     ----------
@@ -705,8 +711,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         Standard deviation of X across samples
     """
 
-    SUPPORTED_PENALTIES = ["graph-net", "tv-l1"]
-    SUPPORTED_LOSSES = ["mse", "logistic"]
+    SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
+    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
 
     def __init__(
         self,
@@ -735,6 +741,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         fit_intercept=True,
         screening_percentile=20.0,
         debias=False,
+        positive=False,
     ):
         self.penalty = penalty
         self.is_classif = is_classif
@@ -761,6 +768,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.mask_args = mask_args
+        self.positive = positive
 
         # sanity check on params
         self.check_params()
@@ -794,7 +802,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
                 f"{self.SUPPORTED_PENALTIES}. "
                 f"Got {self.penalty}."
             )
-        if not (self.loss is None or self.loss in self.SUPPORTED_LOSSES):
+        if self.loss is not None and self.loss not in self.SUPPORTED_LOSSES:
             raise ValueError(
                 f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
                 f"Got {self.loss}."
@@ -811,7 +819,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
     def _set_coef_and_intercept(self, w):
         """Set the loadings vector (coef) and the intercept of the fitted \
-        model."""
+        model.
+        """
         self.w_ = np.array(w)
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
@@ -826,12 +835,12 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
         Parameters
         ----------
-        X : list of Niimg-like objects
+        X : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
-        y : array or list of length n_samples
+        y : array or :obj:`list` of length n_samples
             The dependent variable (age, sex, QI, etc.).
 
         Notes
@@ -839,6 +848,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self : `SpaceNet` object
             Model selection is via cross-validation with bagging.
         """
+        if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
+            raise NotImplementedError(
+                "Running space net on surface objects is not supported."
+            )
+
         # misc
         self.check_params()
         if self.memory is None or isinstance(self.memory, str):
@@ -847,11 +861,10 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             )
         else:
             self.memory_ = self.memory
-        if self.verbose:
-            tic = time.time()
 
-        # nifti masking
-        self.masker_ = _check_embedded_nifti_masker(self, multi_subject=False)
+        tic = time.time()
+
+        self.masker_ = check_embedded_masker(self, masker_type="nii")
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(
@@ -896,14 +909,13 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         # set backend solver
         if self.penalty.lower() == "graph-net":
             if not self.is_classif or loss == "mse":
-                solver = _graph_net_squared_loss
+                solver = graph_net_squared_loss
             else:
-                solver = _graph_net_logistic
+                solver = graph_net_logistic
+        elif not self.is_classif or loss == "mse":
+            solver = partial(tvl1_solver, loss="mse")
         else:
-            if not self.is_classif or loss == "mse":
-                solver = partial(tvl1_solver, loss="mse")
-            else:
-                solver = partial(tvl1_solver, loss="logistic")
+            solver = partial(tvl1_solver, loss="logistic")
 
         # generate fold indices
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
@@ -939,7 +951,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         )
 
         # main loop: loop on classes and folds
-        solver_params = dict(tol=self.tol, max_iter=self.max_iter)
+        solver_params = {"tol": self.tol, "max_iter": self.max_iter}
         self.best_model_params_ = []
         self.alpha_grids_ = []
         for (
@@ -1001,11 +1013,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         self.coef_img_ = self.masker_.inverse_transform(self.coef_)
 
         # report time elapsed
-        if self.verbose:
-            duration = time.time() - tic
-            print(
-                f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes."
-            )
+        duration = time.time() - tic
+        logger.log(
+            f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes.",
+            self.verbose,
+        )
 
         return self
 
@@ -1050,7 +1062,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
         Parameters
         ----------
-        X : list of Niimg-like objects
+        X : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
@@ -1092,34 +1104,34 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : :obj:`str`, default='graph-net'
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : string, optional (default "logistic")
+    loss : :obj:`str`, default="logistic"
         Loss to be used in the classifier. Must be one of "mse", or "logistic".
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
-        optional (default .5)
+    l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]; \
+        default=0.5
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : float or list of floats, optional (default None)
+    alphas : :obj:`float` or :obj:`list` of floats, default=None
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
         If None or list of floats is provided, then the best value will be
         selected by cross-validation.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional (default 1e-3)
+    eps : :obj:`float`, default=1e-3
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    mask : filename, niimg, NiftiMasker instance, optional (default None)
+    mask : filename, niimg, NiftiMasker instance, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
@@ -1128,8 +1140,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : float in the interval [0, 100]; Optional\
-        (default 20)
+    screening_percentile : :obj:`float` in the interval [0, 100]; \
+        default=20
         Percentile value for ANOVA univariate feature selection.
         A value of 100 means 'keep all features'.
         This percentile is expressed w.r.t the volume
@@ -1139,30 +1151,30 @@ class SpaceNetClassifier(BaseSpaceNet):
         If '100' is given, all the features are used,
         regardless of the number of voxels.
 
-    standardize : bool, optional (default True):
+    standardize : :obj:`bool`, default=True
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : bool, optional (default True)
+    fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
 
-    max_iter : int (default 200)
+    max_iter : :obj:`int`, default=200
         Defines the iterations for the solver.
 
-    tol : float, default=1e-4.
+    tol : :obj:`float`, default=1e-4.
         Defines the tolerance for convergence.
     %(verbose)s
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : int, a cv generator instance, or None (default 8)
+    cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : bool, optional (default False)
+    debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
 
     Attributes
@@ -1259,7 +1271,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         t_r=None,
         max_iter=200,
         tol=1e-4,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=True,
         verbose=1,
@@ -1270,6 +1282,8 @@ class SpaceNetClassifier(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=True,
@@ -1316,12 +1330,12 @@ class SpaceNetClassifier(BaseSpaceNet):
 
         Parameters
         ----------
-        X : list of Niimg-like objects
+        X : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
-        y : array or list of length n_samples.
+        y : array or :obj:`list` of length n_samples.
             Labels.
 
         Returns
@@ -1344,31 +1358,31 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     Parameters
     ----------
-    penalty : string, optional (default 'graph-net')
+    penalty : :obj:`str`, default='graph-net'
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    l1_ratios : float or list of floats in the interval [0, 1];\
-        optional (default .5)
+    l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]; \
+        default=0.5
         Constant that mixes L1 and spatial prior terms in penalization.
         l1_ratios == 1 corresponds to pure LASSO. The larger the value of this
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : float or list of floats, optional (default None)
+    alphas : :obj:`float` or :obj:`list` of floats or None, default=None
         Choices for the constant that scales the overall regularization term.
         This parameter is mutually exclusive with the `n_alphas` parameter.
         If None or list of floats is provided, then the best value will be
         selected by cross-validation.
 
-    n_alphas : int, optional (default 10).
+    n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : float, optional (default 1e-3)
+    eps : :obj:`float`, default=1e-3
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    mask : filename, niimg, NiftiMasker instance, optional (default None)
+    mask : filename, niimg, NiftiMasker instance, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
@@ -1377,8 +1391,8 @@ class SpaceNetRegressor(BaseSpaceNet):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : float in the interval [0, 100]; Optional\
-        (default 20)
+    screening_percentile : :obj:`float` in the interval [0, 100]; \
+        default=20
         Percentile value for ANOVA univariate feature selection.
         A value of 100 means 'keep all features'.
         This percentile is expressed w.r.t the volume
@@ -1386,30 +1400,30 @@ class SpaceNetRegressor(BaseSpaceNet):
         at runtime to correspond to the volume of the user-supplied mask
         (which is typically smaller).
 
-    standardize : bool, optional (default True):
+    standardize : :obj:`bool`, default=True
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : bool, optional (default True)
+    fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
 
-    max_iter : int (default 200)
+    max_iter : :obj:`int`, default=200
         Defines the iterations for the solver.
 
-    tol : float, default=1e-4
+    tol : :obj:`float`, default=1e-4
         Defines the tolerance for convergence.
     %(verbose)s
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : int, a cv generator instance, or None, default=8
+    cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias: bool, optional (default False)
+    debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
 
     Attributes
@@ -1455,7 +1469,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         or (n_l1_ratios, n_folds, n_alphas)
         Scores (misclassification) for each alpha, and on each fold
 
-    screening_percentile_ : float
+    screening_percentile_ : :obj:`float`
         Screening percentile corrected according to volume of mask,
         relative to the volume of standard brain.
 
@@ -1491,7 +1505,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         t_r=None,
         max_iter=200,
         tol=1e-4,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         standardize=True,
         verbose=1,
@@ -1502,6 +1516,8 @@ class SpaceNetRegressor(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=False,

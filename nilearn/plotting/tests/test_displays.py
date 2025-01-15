@@ -127,8 +127,8 @@ def test_glass_brain_axes():
 
 
 def test_get_index_from_direction_exception():
-    """Tests that a ValueError is raised when an invalid direction
-    is given to function ``_get_index_from_direction``.
+    """Tests that a ValueError is raised when an invalid direction \
+       is given to function ``_get_index_from_direction``.
     """
     from nilearn.plotting.displays._axes import _get_index_from_direction
 
@@ -144,7 +144,7 @@ def img():
 
 @pytest.fixture
 def cut_coords(name):
-    """Selects appropriate cut coords."""
+    """Select appropriate cut coords."""
     if name == "mosaic":
         return 3
     if name in ["yx", "yz", "xz"]:
@@ -161,6 +161,7 @@ def cut_coords(name):
 )
 def test_display_basics(display, name, img, cut_coords):
     """Basic smoke tests for all displays (slicers + projectors).
+
     Each object is instantiated, ``add_overlay``, ``title``,
     and ``close`` are then called.
     """
@@ -226,8 +227,8 @@ def test_mosaic_slicer_tuple_cut_coords(cut_coords, img):
 
 @pytest.mark.parametrize("cut_coords", [None, 5, (1, 1, 1)])
 def test_mosaic_slicer_img_none_false(cut_coords, img):
-    """Tests for MosaicSlicer when img is ``None`` or ``False``
-    while initializing the figure.
+    """Tests for MosaicSlicer when img is ``None`` or ``False`` \
+       while initializing the figure.
     """
     slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=cut_coords)
     slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
@@ -251,7 +252,7 @@ def test_mosaic_slicer_wrong_inputs(cut_coords):
 
 @pytest.fixture
 def expected_cuts(cut_coords):
-    """Expected cut with test_demo_mosaic_slicer."""
+    """Return expected cut with test_demo_mosaic_slicer."""
     if cut_coords == (1, 1, 1):
         return {"x": [-40.0], "y": [-30.0], "z": [-30.0]}
     if cut_coords == 5:
@@ -319,6 +320,7 @@ def test_user_given_cmap_with_colorbar(img):
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
 def test_data_complete_mask(affine_eye, display):
     """Test for a special case due to matplotlib 2.1.0.
+
     When the data is completely masked, then we have plotting issues
     See similar issue #9280 reported in matplotlib. This function
     tests the patch added for this particular issue.
@@ -334,6 +336,7 @@ def test_data_complete_mask(affine_eye, display):
 
 def test_add_markers_cut_coords_is_none():
     """Tests a special case for ``add_markers`` when ``cut_coords`` are None.
+
     This case is used when coords are placed on glass brain.
     """
     orthoslicer = OrthoSlicer(cut_coords=(None, None, None))
@@ -343,6 +346,7 @@ def test_add_markers_cut_coords_is_none():
 
 def test_annotations():
     """Tests for ``display.annotate()``.
+
     In particular, exercise some of the keyword arguments for scale bars.
     """
     orthoslicer = OrthoSlicer(cut_coords=(None, None, None))

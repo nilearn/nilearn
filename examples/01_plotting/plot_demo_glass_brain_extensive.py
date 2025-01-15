@@ -13,7 +13,7 @@ See :ref:`plotting` for more plotting functionalities and
 :ref:`Section 4.3 <display_modules>` for more details about display objects
 in Nilearn.
 
-Also, see :func:`nilearn.datasets.fetch_neurovault_motor_task` for details
+Also, see :func:`~nilearn.datasets.fetch_neurovault_motor_task` for details
 about the plotting data and associated meta-data.
 """
 
@@ -40,16 +40,16 @@ stat_img
 # value of ``display_mode``, different display objects are returned. Here,
 # a :class:`~nilearn.plotting.displays.OrthoProjector` is returned.
 
-from nilearn import plotting
-from nilearn.plotting import plot_glass_brain
+from nilearn.plotting import plot_glass_brain, show
 
 # Whole brain sagittal cuts and map is thresholded at 3
+
 plot_glass_brain(stat_img, threshold=3)
 
 
 # %%
-# The same figure, with a colorbar, can be produced by
-# setting ``colorbar=True``.
+# The same figure, with a colorbar,
+# can be produced by setting ``colorbar=True``.
 
 plot_glass_brain(stat_img, threshold=3, colorbar=True)
 
@@ -89,11 +89,12 @@ plot_glass_brain(
 
 # %%
 # We can control the limits of the colormap and colorbar by setting ``vmin``
-# and ``vmax``. Note that we use a non-diverging colormap here since the
-# colorbar will not be centered around zero.
+# and ``vmax``.
+# Note that we use a non-diverging colormap here
+# since the colorbar will not be centered around zero.
 
 # only plot positive values
-plotting.plot_glass_brain(
+plot_glass_brain(
     stat_img,
     colorbar=True,
     plot_abs=False,
@@ -101,13 +102,14 @@ plotting.plot_glass_brain(
     vmin=0,
     threshold=2,
     symmetric_cbar=False,
-    cmap="viridis",
+    cmap="inferno",
+    title="only plot positive values",
 )
 
 # %%
 # Here we set ``vmin`` to the threshold to use the full color range instead of
-# losing colours due to the thresholding.
-plotting.plot_glass_brain(
+# losing colors due to the thresholding.
+plot_glass_brain(
     stat_img,
     colorbar=True,
     plot_abs=False,
@@ -115,7 +117,8 @@ plotting.plot_glass_brain(
     vmin=2,
     threshold=2,
     symmetric_cbar=False,
-    cmap="viridis",
+    cmap="inferno",
+    title="vmin == threshold",
 )
 
 # %%
@@ -166,7 +169,7 @@ plot_glass_brain(
     threshold=0,
     colorbar=True,
     title='display_mode="x"',
-    plot_abs=False,
+    plot_abs=True,
     display_mode="x",
 )
 
@@ -177,7 +180,7 @@ plot_glass_brain(
 #
 # The display objects returned by :func:`~nilearn.plotting.plot_glass_brain`
 # all inherit from the :class:`~nilearn.plotting.displays.OrthoProjector`
-# and enable further customisation of the figures.
+# and enable further customization of the figures.
 #
 # In this example, we focus on using methods
 # :meth:`~nilearn.plotting.displays.OrthoProjector.add_contours` and
@@ -330,6 +333,6 @@ display.add_contours(stat_img, filled=True, levels=[-np.inf, -2.8], colors="b")
 display.add_contours(stat_img, filled=True, levels=[3.0], colors="r")
 display.title("Now same plotting but with filled contours")
 # Finally, displaying them
-plotting.show()
+show()
 
 # sphinx_gallery_dummy_images=7

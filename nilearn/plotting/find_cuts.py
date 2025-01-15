@@ -18,7 +18,7 @@ from .._utils.numpy_conversions import as_ndarray
 
 # Local imports
 from ..image import iter_img, new_img_like, reorder_img
-from ..image.image import _smooth_array
+from ..image.image import smooth_array
 from ..image.resampling import coord_transform, get_mask_bounds
 
 ###############################################################################
@@ -36,23 +36,23 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     img : 3D Nifti1Image
         The brain map.
 
-    mask_img : 3D Nifti1Image, optional
+    mask_img : 3D Nifti1Image or None, default=None
         An optional brain mask, provided mask_img should not be empty.
 
-    activation_threshold : float, optional
+    activation_threshold : :obj:`float` or None, default=None
         The lower threshold to the positive activation. If None, the
         activation threshold is computed using the 80% percentile of
         the absolute value of the map.
 
     Returns
     -------
-    x : float
+    x : :obj:`float`
         The x world coordinate.
 
-    y : float
+    y : :obj:`float`
         The y world coordinate.
 
-    z : float
+    z : :obj:`float`
         The z world coordinate.
 
     """
@@ -78,8 +78,8 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         mask = safe_get_data(mask_img)
         if not np.allclose(mask_img.affine, img.affine):
             raise ValueError(
-                f"Mask affine: \n{mask_img.affine}\n "
-                f"is different from img affine: \n{img.affine}"
+                f"Mask affine:\n{mask_img.affine}\n "
+                f"is different from img affine:\n{img.affine}"
             )
     else:
         mask = None
@@ -199,7 +199,7 @@ def _get_auto_mask_bounds(img):
             + data[-1, -1, -1]
         )
         edge_value /= 6
-        mask = np.abs(data - edge_value) > 0.005 * data.ptp()
+        mask = np.abs(data - edge_value) > 0.005 * np.ptp(data)
     xmin, xmax, ymin, ymax, zmin, zmax = get_mask_bounds(
         new_img_like(img, mask, affine)
     )
@@ -214,7 +214,7 @@ def _transform_cut_coords(cut_coords, direction, affine):
     cut_coords : 1D array of length n_cuts
         The coordinates to be transformed.
 
-    direction : string
+    direction : :obj:`str`
         Sectional direction; possible values are "x", "y", or "z".
 
     affine : 2D array of shape (4, 4)
@@ -228,9 +228,7 @@ def _transform_cut_coords(cut_coords, direction, affine):
     """
     # make kwargs
     axis = "xyz".index(direction)
-    kwargs = {}
-    for name in "xyz":
-        kwargs[name] = np.zeros(len(cut_coords))
+    kwargs = {name: np.zeros(len(cut_coords)) for name in "xyz"}
     kwargs[direction] = cut_coords
     kwargs["affine"] = affine
 
@@ -249,13 +247,13 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         See :ref:`extracting_data`.
         The brain map.
 
-    direction : string, default='z'
+    direction : :obj:`str`, default='z'
         Sectional direction; possible values are "x", "y", or "z".
 
-    n_cuts : int, default=7
+    n_cuts : :obj:`int`, default=7
         Number of cuts in the plot.
 
-    spacing : 'auto' or int, default='auto'
+    spacing : 'auto' or :obj:`int`, default='auto'
         Minimum spacing between cuts (in voxels, not millimeters)
         if 'auto', the spacing is .5 / n_cuts * img_length.
 
@@ -295,7 +293,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         )
         # resample is set to avoid issues with an image having a non-diagonal
         # affine and rotation.
-        img = reorder_img(img, resample="nearest")
+        img = reorder_img(img, resample="nearest", copy_header=True)
         affine = img.affine
     # note: orig_data is a copy of img._data_cache thanks to np.abs
     orig_data = np.abs(safe_get_data(img))
@@ -324,7 +322,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
     if data.dtype.kind in ("i", "u"):
         data = data.astype(np.float64)
 
-    data = _smooth_array(data, affine, fwhm="fast")
+    data = smooth_array(data, affine, fwhm="fast")
 
     # to control floating point error problems
     # during given input value "n_cuts"
@@ -346,7 +344,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
 
     slices = [slice(None, None), slice(None, None), slice(None, None)]
 
-    cut_coords = list()
+    cut_coords = []
 
     for _ in range(n_cuts):
         # Find a peak
@@ -419,10 +417,10 @@ def find_parcellation_cut_coords(
         A brain :term:`parcellation` atlas with specific mask labels for each
         parcellated region.
 
-    background_label : int, default=0
+    background_label : :obj:`int`, default=0
         Label value used in labels_img to represent background.
 
-    return_label_names : bool, default=False
+    return_label_names : :obj:`bool`, default=False
         Returns list of labels.
 
     label_hemisphere : 'left' or 'right', default='left'
@@ -435,7 +433,7 @@ def find_parcellation_cut_coords(
     coords : numpy.ndarray of shape (n_labels, 3)
         Label regions cut coordinates in image space (mm).
 
-    labels_list : list, optional
+    labels_list : :obj:`list`, optional
         Label region. Returned only when return_label_names is True.
 
     See Also
@@ -451,7 +449,7 @@ def find_parcellation_cut_coords(
             "Should be one of these 'left' or 'right'."
         )
     # Grab data and affine
-    labels_img = reorder_img(check_niimg_3d(labels_img))
+    labels_img = reorder_img(check_niimg_3d(labels_img), copy_header=True)
     labels_data = get_data(labels_img)
     labels_affine = labels_img.affine
 
@@ -475,16 +473,16 @@ def find_parcellation_cut_coords(
         right_hemi[: int(x)] = 0
 
         # Two connected component in both hemispheres
-        if not np.all(left_hemi == False) or np.all(  # noqa: E712
-            right_hemi == False  # noqa: E712
-        ):
+        left_hemi_has_values = np.any(left_hemi)
+        right_hemi_all_zero = not np.any(right_hemi)
+        if left_hemi_has_values or right_hemi_all_zero:
             if label_hemisphere == "left":
                 cur_img = left_hemi.astype(int)
             elif label_hemisphere == "right":
                 cur_img = right_hemi.astype(int)
 
         # Take the largest connected component
-        labels, label_nb = label(cur_img)
+        labels, _ = label(cur_img)
         label_count = np.bincount(labels.ravel().astype(int))
         label_count[0] = 0
         component = labels == label_count.argmax()
@@ -520,7 +518,7 @@ def find_probabilistic_atlas_cut_coords(maps_img):
 
     Returns
     -------
-    coords : numpy.ndarray of shape (n_maps, 3)
+    coords : :class:`numpy.ndarray` of shape (n_maps, 3)
         Label regions cut coordinates in image space (mm).
 
     See Also

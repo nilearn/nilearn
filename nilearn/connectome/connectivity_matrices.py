@@ -112,7 +112,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
 
     In case of positive numbers, this mean is the usual geometric mean.
 
-    See Algorithm 3 of :footcite:`Fletcher2007`.
+    See Algorithm 3 of :footcite:t:`Fletcher2007`.
 
     References
     ----------
@@ -220,11 +220,11 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
 
     Parameters
     ----------
-    symmetric : numpy.ndarray or list of numpy arrays, shape\
+    symmetric : numpy.ndarray or :obj:`list` of numpy arrays, shape\
         (..., n_features, n_features)
         Input array.
 
-    discard_diagonal : boolean, default=False
+    discard_diagonal : :obj:`bool`, default=False
         If True, the values of the diagonal are not returned.
 
     Returns
@@ -256,12 +256,12 @@ def vec_to_sym_matrix(vec, diagonal=None):
 
     Parameters
     ----------
-    vec : numpy.ndarray or list of numpy arrays, shape \
+    vec : numpy.ndarray or :obj:`list` of numpy arrays, shape \
         (..., n_columns * (n_columns + 1) /2) or
         (..., (n_columns - 1) * n_columns / 2) if diagonal is given separately.
         The input array.
 
-    diagonal : numpy.ndarray, shape (..., n_columns), optional
+    diagonal : numpy.ndarray, shape (..., n_columns), default=None
         The diagonal array to be stacked to vec. If None, the diagonal is
         assumed to be included in vec.
 
@@ -305,7 +305,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
             f"with vector of shape {vec.shape}"
         )
 
-    sym = np.zeros(first_shape + (n_columns, n_columns))
+    sym = np.zeros((*first_shape, n_columns, n_columns))
 
     # Fill lower triangular part
     skip_diagonal = diagonal is not None
@@ -370,7 +370,7 @@ def prec_to_partial(precision):
 
 
 @fill_doc
-class ConnectivityMeasure(BaseEstimator, TransformerMixin):
+class ConnectivityMeasure(TransformerMixin, BaseEstimator):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 
@@ -387,13 +387,13 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
     kind : {"covariance", "correlation", "partial correlation",\
             "tangent", "precision"}, default='covariance'
         The matrix kind.
-        For the use of "tangent" see :footcite:`Varoquaux2010b`.
+        For the use of "tangent" see :footcite:t:`Varoquaux2010b`.
 
-    vectorize : bool, default=False
+    vectorize : :obj:`bool`, default=False
         If True, connectivity matrices are reshaped into 1D arrays and only
         their flattened lower triangular parts are returned.
 
-    discard_diagonal : bool, default=False
+    discard_diagonal : :obj:`bool`, default=False
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
 
@@ -408,8 +408,10 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    cov_estimator_ : estimator object
+    cov_estimator_ : estimator object, default=None
         A new covariance estimator with the same parameters as cov_estimator.
+        If ``None`` is passed,
+        defaults to ``LedoitWolf(store_precision=False)``.
 
     mean_ : numpy.ndarray
         The mean connectivity matrix across subjects. For 'tangent' kind,
@@ -429,7 +431,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
     def __init__(
         self,
-        cov_estimator=LedoitWolf(store_precision=False),
+        cov_estimator=None,
         kind="covariance",
         vectorize=False,
         discard_diagonal=False,
@@ -475,13 +477,18 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
                 f"You provided {confounds.__class__}"
             )
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Fit the covariance estimator to the given time series for each \
         subject.
 
         Parameters
         ----------
-        X : list of numpy.ndarray, shape for each (n_samples, n_features)
+        X : :obj:`list` of numpy.ndarray, \
+            shape for each (n_samples, n_features)
             The input subjects time series. The number of samples may differ
             from one subject to another.
 
@@ -498,7 +505,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self, X, do_transform=False, do_fit=False, confounds=None
     ):
         """Avoid duplication of computation."""
+        if self.cov_estimator is None:
+            self.cov_estimator = LedoitWolf(store_precision=False)
+
         self._check_input(X, confounds=confounds)
+
         if do_fit:
             self.cov_estimator_ = clone(self.cov_estimator)
 
@@ -506,7 +517,7 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         if self.kind == "correlation":
             covariances_std = [
                 self.cov_estimator_.fit(
-                    signal._standardize(
+                    signal.standardize_signal(
                         x,
                         detrend=False,
                         standardize=self.standardize,
@@ -585,20 +596,25 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
         return connectivities
 
-    def fit_transform(self, X, y=None, confounds=None):
+    def fit_transform(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+        confounds=None,
+    ):
         """Fit the covariance estimator to the given time series \
         for each subject. \
         Then apply transform to covariance matrices for the chosen kind.
 
         Parameters
         ----------
-        X : list of n_subjects numpy.ndarray with shapes \
+        X : :obj:`list` of n_subjects numpy.ndarray with shapes \
             (n_samples, n_features)
             The input subjects time series. The number of samples may differ
             from one subject to another.
 
         confounds : np.ndarray with shape (n_samples) or \
-                    (n_samples, n_confounds), or pandas DataFrame, optional
+                    (n_samples, n_confounds), or pandas DataFrame, default=None
             Confounds to be cleaned on the vectorized matrices. Only takes
             into effect when vetorize=True.
             This parameter is passed to signal.clean. Please see the related
@@ -633,13 +649,13 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        X : list of n_subjects numpy.ndarray with shapes \
+        X : :obj:`list` of n_subjects numpy.ndarray with shapes \
             (n_samples, n_features)
             The input subjects time series. The number of samples may differ
             from one subject to another.
 
         confounds : numpy.ndarray with shape (n_samples) or \
-                    (n_samples, n_confounds), optional
+                    (n_samples, n_confounds), default=None
             Confounds to be cleaned on the vectorized matrices. Only takes
             into effect when vetorize=True.
             This parameter is passed to signal.clean. Please see the related
@@ -657,8 +673,11 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
         self._check_fitted()
         return self._fit_transform(X, do_transform=True, confounds=confounds)
 
+    def __sklearn_is_fitted__(self):
+        return not hasattr(self, "cov_estimator_")
+
     def _check_fitted(self):
-        if not hasattr(self, "cov_estimator_"):
+        if self.__sklearn_is_fitted__():
             raise ValueError(
                 f"It seems that {self.__class__.__name__} "
                 "has not been fitted. "
@@ -673,12 +692,12 @@ class ConnectivityMeasure(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        connectivities : list of n_subjects numpy.ndarray with shapes\
+        connectivities : :obj:`list` of n_subjects numpy.ndarray with shapes \
             (n_features, n_features) or (n_features * (n_features + 1) / 2,)
             or ((n_features - 1) * n_features / 2,)
             Connectivities of each subject, vectorized or not.
 
-        diagonal : numpy.ndarray, shape (n_subjects, n_features), optional
+        diagonal : numpy.ndarray, shape (n_subjects, n_features), default=None
             The diagonals of the connectivity matrices.
 
         Returns

@@ -19,7 +19,7 @@ from nilearn import datasets
 
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
-    n_subjects=n_samples, legacy_format=False
+    n_subjects=n_samples,
 )
 
 # %%
@@ -40,7 +40,7 @@ design_matrix = pd.DataFrame([1] * n_samples, columns=["intercept"])
 # Next, we specify and estimate the model.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel().fit(
+second_level_model = SecondLevelModel(n_jobs=2).fit(
     cmap_filenames, design_matrix=design_matrix
 )
 
@@ -59,6 +59,7 @@ threshold_img(
     threshold=3.29,
     cluster_threshold=10,
     two_sided=True,
+    copy_header=True,
 )
 
 # %%

@@ -38,28 +38,28 @@ information on the corresponding category.
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_007.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
-   :align: left
+   :align: center
 
    Face stimuli
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_stimuli_004.png
    :target: ../auto_examples/02_decoding/plot_haxby_stimuli.html
    :scale: 30
-   :align: left
+   :align: center
 
    Cat stimuli
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_haxby_masks_001.png
    :target: ../auto_examples/01_plotting/plot_haxby_masks.html
    :scale: 30
-   :align: left
+   :align: center
 
    Masks
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_full_analysis.html
    :scale: 35
-   :align: left
+   :align: center
 
    Decoding scores per mask
 
@@ -77,11 +77,9 @@ _____
    :ref:`general linear model (or GLM) <glm_intro>` to retrieve one response
    map (a beta map) per trial as shown in
    :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_glm_decoding.py`.
-   This is sometimes known as "beta-series regressions" (see Mumford et al,
-   *Deconvolving bold activation in event-related designs for multivoxel
-   pattern classification analyses*, NeuroImage 2012). These maps can
-   then be input to the decoder as below, predicting the conditions
-   associated to trial.
+   This is sometimes known as "beta-series regressions" (see :footcite:t:`Mumford2012`).
+   These maps can then be input to the decoder as below,
+   predicting the conditions associated to trial.
 
    For simplicity, we will work on the raw time-series of the data.
    However, **it is strongly recommended that you fit a first-level model to
@@ -115,7 +113,7 @@ Loading the data into nilearn
 
 * **Loading the behavioral labels**: Behavioral information is often stored
   in a text file such as a CSV, and must be load with
-  **numpy.recfromcsv** or `pandas <https://pandas.pydata.org/>`_
+  **numpy.genfromtxt** or `pandas <https://pandas.pydata.org/>`_
 
 * **Sample mask**: Masking some of the time points
   may be useful to
@@ -128,7 +126,7 @@ Loading the data into nilearn
     explicitly define a masker :  :class:`nilearn.maskers.NiftiMasker`.
     This object extracts :term:`voxels<voxel>` belonging to a given spatial mask and converts
     their signal to a 2D data matrix with a shape (n_timepoints, n_voxels)
-    (see :ref:`mask_4d_2_3d` for a discussion on using
+    (see :ref:`mask_4d_2_3d` for a discussion on using masks).
 
 .. note::
   Seemingly minor data preparation can matter a lot on the final score,
@@ -187,14 +185,14 @@ two lines. The additional ``standardize=True`` argument adds a normalization
 of images signal to a zero mean and unit variance, which will improve
 performance of most estimators.
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn.decoding import Decoder
      decoder = Decoder(estimator='svc', mask=mask_filename)
 
 Then we can fit it on the images and the conditions we chose before.
 
-.. code-block:: default
+.. code-block:: python
 
      decoder.fit(fmri_niimgs, conditions)
 
@@ -232,7 +230,7 @@ During the ``fit``, :class:`nilearn.decoding.Decoder` object implicitly used a
 cross-validation: Stratified K-fold by default. You can easily inspect
 the prediction "score" it got in each fold.
 
-.. code-block:: default
+.. code-block:: python
 
      print(decoder.cv_scores_)
 
@@ -248,21 +246,20 @@ rule of thumb).
 
 As a general advice :
 
-* To train a decoder on one subject data, try to leave at least one session
+* To train a decoder on one subject data, try to leave at least one run
   out to have an independent test.
 
 * To train a decoder across different subject data, leaving some subjects data
   out is often a good option.
 
 * In any case leaving only one image as test set (leave-one-out) is often
-  the worst option (see Varoquaux et al, *Assessing and tuning brain decoders:
-  cross-validation, caveats, and guidelines*, Neuroimage 2017).
+  the worst option (see :footcite:t:`Varoquaux2017`).
 
 
 To improve our first pipeline for the Haxby example, we can leave one entire
-session out. To do this, we can pass a ``LeaveOneGroupOut`` cross-validation
+run out. To do this, we can pass a ``LeaveOneGroupOut`` cross-validation
 object from scikit-learn to our ``Decoder``. Fitting it with the information of
-groups=`session_labels` will use one session as test set.
+groups=`run_labels` will use one run as test set.
 
 .. note::
   Full code example can be found at :
@@ -286,7 +283,7 @@ Other metrics, such as the :term:`AUC` (Area Under the Curve, for the
 
 .. seealso::
   the `list of scoring options
-  <https://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_
+  <https://scikit-learn.org/stable/modules/model_evaluation.html>`_
 
 Prediction accuracy at chance using simple strategies
 .....................................................
@@ -317,7 +314,7 @@ model is better than chance or not.
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_haxby_masks_001.png
    :target: ../auto_examples/01_plotting/plot_haxby_masks.html
    :scale: 55
-   :align: left
+   :align: center
 
    Masks
 
@@ -325,7 +322,7 @@ model is better than chance or not.
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_full_analysis_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_full_analysis.html
    :scale: 70
-   :align: left
+   :align: center
 
 
 Visualizing the decoder's weights
@@ -337,6 +334,7 @@ coefficients of best models for each class in ``decoder.coef_img_``.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: ../auto_examples/plot_decoding_tutorial.html
+   :align: center
    :scale: 65
 
 .. note::
@@ -386,6 +384,7 @@ To visualize the results, :class:`nilearn.decoding.Decoder` handles two main ste
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_anova_svm_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_anova_svm.html
+   :align: center
    :scale: 65
 
 .. seealso::
@@ -401,3 +400,9 @@ To visualize the results, :class:`nilearn.decoding.Decoder` handles two main ste
   * :ref:`frem`
   * :ref:`space_net`
   * :ref:`searchlight`
+
+
+References
+----------
+
+.. footbibliography::

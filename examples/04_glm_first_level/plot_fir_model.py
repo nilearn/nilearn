@@ -23,6 +23,7 @@ presented : ['audio_computation', 'audio_left_hand_button_press',
 import pandas as pd
 
 from nilearn.datasets import func
+from nilearn.plotting import plot_stat_map
 
 data = func.fetch_localizer_first_level()
 fmri_img = data.epi_img
@@ -133,8 +134,6 @@ plot_contrast_matrix(contrasts["left-right"], design_matrix)
 #
 # We can now  proceed by estimating the contrasts and displaying them.
 import matplotlib.pyplot as plt
-
-from nilearn.plotting import plot_stat_map
 
 fig = plt.figure(figsize=(11, 3))
 for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):

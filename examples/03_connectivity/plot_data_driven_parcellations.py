@@ -14,30 +14,23 @@ Also, these methods can be used to learn functional connectomes
 and subsequently for classification tasks or to analyze data at a local
 level.
 
-References
-----------
-Which clustering method to use, an empirical comparison can be found in this
-paper:
+.. seealso::
 
-Bertrand Thirion, Gael Varoquaux, Elvis Dohmatob, Jean-Baptiste Poline.
-  `Which fMRI clustering gives good brain parcellations ?
-  <https://doi.org/10.3389/fnins.2014.00167>`_ Frontiers in Neuroscience,
-  2014.
+    Which clustering method to use, an empirical comparison can be found
+    in :footcite:t:`Thirion2014`.
 
-This :term:`parcellation` may be useful in a supervised learning,
-see for instance:
+    This :term:`parcellation` may be useful in a supervised learning,
+    see for instance :footcite:t:`Michel2011b`.
 
-Vincent Michel, Alexandre Gramfort, Gael Varoquaux, Evelyn Eger,
-  Christine Keribin, Bertrand Thirion. `A supervised clustering approach
-  for fMRI-based inference of brain states.
-  <https://doi.org/10.1016/j.patcog.2011.04.006>`_.
-  Pattern Recognition, Elsevier, 2011.
-
-The big picture discussion corresponding to this example can be found
-in the documentation section :ref:`parcellating_brain`.
+    The big picture discussion corresponding to this example can be found
+    in the documentation section :ref:`parcellating_brain`.
 """
 
-# %%####
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
+# %%
 # Download a brain development fMRI dataset and turn it to a data matrix
 # ----------------------------------------------------------------------
 #
@@ -45,7 +38,6 @@ in the documentation section :ref:`parcellating_brain`.
 
 import time
 
-import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import patches, ticker
 
@@ -116,12 +108,19 @@ ward_labels_img = ward.labels_img_
 
 # Now, ward_labels_img are Nifti1Image object, it can be saved to file
 # with the following code:
-ward_labels_img.to_filename("ward_parcellation.nii.gz")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_data_driven_parcellations"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+ward_labels_img.to_filename(output_dir / "ward_parcellation.nii.gz")
 
 
 first_plot = plotting.plot_roi(
     ward_labels_img, title="Ward parcellation", display_mode="xz"
 )
+
+plotting.show()
 
 # Grab cut coordinates from this plot to use as a common for all plots
 cut_coords = first_plot.cut_coords
@@ -139,7 +138,7 @@ original_voxels = np.sum(get_data(ward.mask_img_))
 
 # Compute mean over time on the functional image to use the mean
 # image for compressed representation comparisons
-mean_func_img = mean_img(dataset.func[0])
+mean_func_img = mean_img(dataset.func[0], copy_header=True)
 
 # Compute common vmin and vmax
 vmin = np.min(get_data(mean_func_img))
@@ -173,6 +172,9 @@ plotting.plot_epi(
     vmax=vmax,
     display_mode="xz",
 )
+
+plotting.show()
+
 # As you can see below, this approximation is almost good, although there
 # are only 2000 parcels, instead of the original 60000 voxels
 
@@ -217,9 +219,11 @@ display = plotting.plot_roi(
     display_mode="xz",
 )
 
+plotting.show()
+
 # kmeans_labels_img is a Nifti1Image object, it can be saved to file with
 # the following code:
-kmeans_labels_img.to_filename("kmeans_parcellation.nii.gz")
+kmeans_labels_img.to_filename(output_dir / "kmeans_parcellation.nii.gz")
 
 # %%
 # Brain parcellations with Hierarchical KMeans Clustering
@@ -266,9 +270,13 @@ plotting.plot_roi(
     cut_coords=display.cut_coords,
 )
 
+plotting.show()
+
 # kmeans_labels_img is a :class:`nibabel.nifti1.Nifti1Image` object, it can be
 # saved to file with the following code:
-hkmeans_labels_img.to_filename("hierarchical_kmeans_parcellation.nii.gz")
+hkmeans_labels_img.to_filename(
+    output_dir / "hierarchical_kmeans_parcellation.nii.gz"
+)
 
 # %%
 # Compare Hierarchical Kmeans clusters with those from Kmeans
@@ -295,7 +303,7 @@ print(f"... each cluster should contain {voxel_ratio} voxels")
 # Let's plot clusters sizes distributions for both algorithms
 #
 # You can just skip the plotting code, the important part is the figure
-
+import matplotlib.pyplot as plt
 
 bins = np.concatenate(
     [
@@ -322,6 +330,9 @@ handles = [
 ]
 labels = ["Kmeans", "Hierarchical Kmeans"]
 fig.legend(handles, labels, loc=(0.5, 0.8))
+
+plotting.show()
+
 # %%
 # As we can see, half of the 50 KMeans clusters contain less than
 # 100 voxels whereas three contain several thousands voxels
@@ -339,16 +350,9 @@ fig.legend(handles, labels, loc=(0.5, 0.8))
 # As before, the :term:`parcellation` is done with a ``Parcellations`` object.
 # The spatial constraints are implemented inside the ``Parcellations`` object.
 #
-# References
-# ..........
+# More about :term:`ReNA` clustering algorithm
+# in the original paper (:footcite:t:`Hoyos2019`).
 #
-# More about :term:`ReNA` clustering algorithm in the original paper
-#
-#     * A. Hoyos-Idrobo, G. Varoquaux, J. Kahn and B. Thirion, "Recursive
-#       Nearest Agglomeration (ReNA): Fast Clustering for Approximation of
-#       Structured Signals," in IEEE Transactions on Pattern Analysis and
-#       Machine Intelligence, vol. 41, no. 3, pp. 669-681, 1 March 2019.
-#       https://hal.archives-ouvertes.fr/hal-01366651/
 start = time.time()
 rena = Parcellations(
     method="rena",
@@ -374,7 +378,7 @@ rena_labels_img = rena.labels_img_
 
 # Now, rena_labels_img are Nifti1Image object, it can be saved to file
 # with the following code:
-rena_labels_img.to_filename("rena_parcellation.nii.gz")
+rena_labels_img.to_filename(output_dir / "rena_parcellation.nii.gz")
 
 plotting.plot_roi(
     ward_labels_img,
@@ -382,6 +386,8 @@ plotting.plot_roi(
     display_mode="xz",
     cut_coords=cut_coords,
 )
+
+plotting.show()
 
 # %%
 # Compressed representation of :term:`ReNA` clustering
@@ -404,6 +410,8 @@ plotting.plot_epi(
     display_mode="xz",
 )
 
+plotting.show()
+
 # A reduced data can be created by taking the parcel-level average:
 # Note that, as many scikit-learn objects, the ``rena`` object exposes
 # a transform method that modifies input features. Here it reduces their
@@ -424,6 +432,8 @@ plotting.plot_epi(
     display_mode="xz",
 )
 
+plotting.show()
+
 # %%
 # Even if the compressed signal is relatively close
 # to the original signal, we can notice that Ward Clustering
@@ -431,5 +441,12 @@ plotting.plot_epi(
 # However, as said in the previous section, the computation time is
 # reduced which could still make :term:`ReNA` more relevant than Ward in
 # some cases.
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=3

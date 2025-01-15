@@ -1,14 +1,29 @@
-"""Functions to noise components based on selected strategey."""
+"""Functions to noise components based on selected strategey.
+
+
+The _load_* functions  of this module are indirectly used
+in nilearn.interfaces.fmriprep._load_noise_component.
+
+See an example below:
+
+.. code-block:: python
+
+    loaded_confounds = getattr(components, f"_load_{component}")(
+        confounds_raw, **params
+    )
+
+"""
+
 import numpy as np
 import pandas as pd
 
-from .load_confounds_compcor import _find_compcor
-from .load_confounds_scrub import _optimize_scrub
+from .load_confounds_compcor import find_compcor
+from .load_confounds_scrub import optimize_scrub
 from .load_confounds_utils import (
-    MissingConfound,
-    _add_suffix,
-    _check_params,
-    _find_confounds,
+    MissingConfoundError,
+    add_suffix,
+    check_params,
+    find_confounds,
 )
 
 
@@ -31,22 +46,22 @@ def _load_motion(confounds_raw, motion):
 
     Raises
     ------
-    MissingConfound
+    MissingConfoundError
         When motion regressors are not found or incomplete, raise error
         as motion is not a valid choice of strategy.
     """
-    motion_params = _add_suffix(
+    motion_params = add_suffix(
         ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
         motion,
     )
-    motion_regressor_check = _check_params(confounds_raw, motion_params)
+    motion_regressor_check = check_params(confounds_raw, motion_params)
     if isinstance(motion_regressor_check, list):
-        raise MissingConfound(params=motion_regressor_check)
+        raise MissingConfoundError(params=motion_regressor_check)
 
     if motion_regressor_check:
         return confounds_raw[motion_params]
     else:
-        raise MissingConfound(keywords=["motion"])
+        raise MissingConfoundError(keywords=["motion"])
 
 
 def _load_high_pass(confounds_raw):
@@ -63,11 +78,10 @@ def _load_high_pass(confounds_raw):
         DataFrame of high pass filter regressors.
         If not present in file, return an empty DataFrame.
     """
-    high_pass_params = _find_confounds(confounds_raw, ["cosine"])
-    if high_pass_params:
-        return confounds_raw[high_pass_params]
-    else:
-        return pd.DataFrame()
+    high_pass_params = find_confounds(confounds_raw, ["cosine"])
+    return (
+        confounds_raw[high_pass_params] if high_pass_params else pd.DataFrame()
+    )
 
 
 def _load_wm_csf(confounds_raw, wm_csf):
@@ -89,15 +103,15 @@ def _load_wm_csf(confounds_raw, wm_csf):
 
     Raises
     ------
-    MissingConfound
+    MissingConfoundError
         When white matter and CSF regressors are not found, raise error as
         wm_csf is not a valid choice of strategy.
     """
-    wm_csf_params = _add_suffix(["csf", "white_matter"], wm_csf)
-    if _check_params(confounds_raw, wm_csf_params):
+    wm_csf_params = add_suffix(["csf", "white_matter"], wm_csf)
+    if check_params(confounds_raw, wm_csf_params):
         return confounds_raw[wm_csf_params]
     else:
-        raise MissingConfound(keywords=["wm_csf"])
+        raise MissingConfoundError(keywords=["wm_csf"])
 
 
 def _load_global_signal(confounds_raw, global_signal):
@@ -119,15 +133,15 @@ def _load_global_signal(confounds_raw, global_signal):
 
     Raises
     ------
-    MissingConfound
+    MissingConfoundError
         When global signal regressors are not found, raise error as global
         signal is not a valid choice of strategy.
     """
-    global_params = _add_suffix(["global_signal"], global_signal)
-    if _check_params(confounds_raw, global_params):
+    global_params = add_suffix(["global_signal"], global_signal)
+    if check_params(confounds_raw, global_params):
         return confounds_raw[global_params]
     else:
-        raise MissingConfound(keywords=["global_signal"])
+        raise MissingConfoundError(keywords=["global_signal"])
 
 
 def _load_compcor(confounds_raw, meta_json, compcor, n_compcor):
@@ -156,15 +170,15 @@ def _load_compcor(confounds_raw, meta_json, compcor, n_compcor):
 
     Raises
     ------
-    MissingConfound
+    MissingConfoundError
         When compcor regressors are not found, raise error as compcor is
         not a valid choice of strategy.
     """
-    compcor_cols = _find_compcor(meta_json, compcor, n_compcor)
-    if _check_params(confounds_raw, compcor_cols):
+    compcor_cols = find_compcor(meta_json, compcor, n_compcor)
+    if check_params(confounds_raw, compcor_cols):
         return confounds_raw[compcor_cols]
     else:
-        raise MissingConfound(keywords=["compcor"])
+        raise MissingConfoundError(keywords=["compcor"])
 
 
 def _load_ica_aroma(confounds_raw, ica_aroma):
@@ -194,9 +208,9 @@ def _load_ica_aroma(confounds_raw, ica_aroma):
     if ica_aroma == "full":
         return pd.DataFrame()
     elif ica_aroma == "basic":
-        ica_aroma_params = _find_confounds(confounds_raw, ["aroma"])
+        ica_aroma_params = find_confounds(confounds_raw, ["aroma"])
         if not ica_aroma_params:
-            raise MissingConfound(keywords=["ica_aroma"])
+            raise MissingConfoundError(keywords=["ica_aroma"])
         return confounds_raw[ica_aroma_params]
     else:
         raise ValueError(
@@ -244,7 +258,7 @@ def _load_scrub(confounds_raw, scrub, fd_threshold, std_dvars_threshold):
     # when motion outliers were detected, remove segments with too few
     # timeframes if desired
     if scrub > 0 and len(motion_outliers_index) > 0:
-        motion_outliers_index = _optimize_scrub(
+        motion_outliers_index = optimize_scrub(
             motion_outliers_index, n_scans, scrub
         )
     # Make one-hot encoded motion outlier regressors
@@ -273,8 +287,5 @@ def _load_non_steady_state(confounds_raw):
         DataFrame of non steady state regressors generated by fMRIPrep.
         If none were found, return an empty DataFrame.
     """
-    nss_outliers = _find_confounds(confounds_raw, ["non_steady_state"])
-    if nss_outliers:
-        return confounds_raw[nss_outliers]
-    else:
-        return pd.DataFrame()
+    nss_outliers = find_confounds(confounds_raw, ["non_steady_state"])
+    return confounds_raw[nss_outliers] if nss_outliers else pd.DataFrame()

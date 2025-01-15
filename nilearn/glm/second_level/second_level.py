@@ -4,18 +4,22 @@ first level contrasts or directly on fitted first level models.
 Author: Martin Perez-Guevara, 2016
 """
 
-import sys
+import operator
 import time
+from pathlib import Path
 from warnings import warn
 
 import numpy as np
 import pandas as pd
 from joblib import Memory
 from nibabel import Nifti1Image
+from nibabel.funcs import four_to_three
 from sklearn.base import clone
 
-from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -27,14 +31,37 @@ from nilearn.glm.first_level.design_matrix import (
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image import mean_img
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.mass_univariate import permuted_ols
+from nilearn.surface.surface import (
+    SurfaceImage,
+    check_same_n_vertices,
+    concat_imgs,
+    iter_img,
+)
+from nilearn.surface.surface import mean_img as surf_mean_img
+
+
+def _input_type_error_message(second_level_input):
+    return (
+        "second_level_input must be either:\n"
+        "- a pandas DataFrame,\n"
+        "- a Niimg-like object\n"
+        "- a pandas Series of Niimg-like object\n"
+        "- a list of Niimg-like objects\n"
+        "- a list of 2D SurfaceImage objects\n"
+        "- a 3D SurfaceImage object\n"
+        "- a list of FirstLevelModel objects.\n"
+        f"Got {_return_type(second_level_input)} instead."
+    )
 
 
 def _check_second_level_input(
     second_level_input, design_matrix, confounds=None
 ):
     """Check second_level_input type."""
+    _check_design_matrix(design_matrix)
+
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
         second_level_input,
@@ -52,17 +79,11 @@ def _check_input_type(second_level_input):
         return "pd_series"
     if isinstance(second_level_input, (str, Nifti1Image)):
         return "nii_object"
+    if isinstance(second_level_input, SurfaceImage):
+        return "surf_img_object"
     if isinstance(second_level_input, list):
         return _check_input_type_when_list(second_level_input)
-    raise TypeError(
-        "second_level_input must be "
-        "either a pandas DataFrame, "
-        "a Niimg-like object, "
-        "a pandas Series of Niimg-like object, "
-        "a list of Niimg-like object or "
-        "a list of FirstLevelModel objects. "
-        f"Got {_return_type(second_level_input)} instead"
-    )
+    raise TypeError(_input_type_error_message(second_level_input))
 
 
 def _return_type(second_level_input):
@@ -77,21 +98,19 @@ def _check_input_type_when_list(second_level_input):
     if len(second_level_input) < 2:
         raise TypeError(
             "A second level model requires a list with at"
-            " least two first level models or niimgs"
+            " least two first level models or niimgs or surface images."
         )
+
     _check_all_elements_of_same_type(second_level_input)
-    if all(isinstance(x, (str, Nifti1Image)) for x in second_level_input):
+
+    # Can now only check first element
+    if isinstance(second_level_input[0], (str, Nifti1Image)):
         return "nii_object"
-    if all(isinstance(x, FirstLevelModel) for x in second_level_input):
+    if isinstance(second_level_input[0], (FirstLevelModel)):
         return "flm_object"
-    raise TypeError(
-        "second_level_input must be "
-        "either a pandas DataFrame, "
-        "a Niimg-like object, "
-        "a list of Niimg-like object or "
-        "a list of FirstLevelModel objects. "
-        f"Got {_return_type(second_level_input)} instead"
-    )
+    if isinstance(second_level_input[0], (SurfaceImage)):
+        return "surf_img_object"
+    raise TypeError(_input_type_error_message(second_level_input))
 
 
 def _check_all_elements_of_same_type(data):
@@ -113,6 +132,8 @@ def _check_input_as_type(
         _check_input_as_nifti_images(second_level_input, none_design_matrix)
     elif input_type == "nii_object":
         _check_input_as_nifti_images(second_level_input, none_design_matrix)
+    elif input_type == "surf_img_object":
+        _check_input_as_surface_images(second_level_input, none_design_matrix)
     else:
         _check_input_as_dataframe(second_level_input)
 
@@ -125,15 +146,16 @@ def _check_input_as_first_level_model(second_level_input, none_confounds):
 
     - must have been fit
     - must all have a subject label in case confounds are passed
-    - must all have the same affine / shape
-      (checking all against those of the first model)
+    - for volumetric analysis
+        - must all have the same affine / shape
+          (checking all against those of the first model)
 
     """
     ref_affine = None
     ref_shape = None
 
     for model_idx, first_level in enumerate(second_level_input):
-        if first_level.labels_ is None or first_level.results_ is None:
+        if not first_level.__sklearn_is_fitted__():
             raise ValueError(
                 f"Model {first_level.subject_label} "
                 f"at index {model_idx} has not been fit yet."
@@ -184,15 +206,15 @@ def _check_input_as_dataframe(second_level_input):
     for col in ("subject_label", "map_name", "effects_map_path"):
         if col not in second_level_input.columns:
             raise ValueError(
-                "second_level_input DataFrame must have"
-                " columns subject_label, map_name and"
-                " effects_map_path."
+                "'second_level_input' DataFrame must have"
+                " columns 'subject_label', 'map_name' and"
+                " 'effects_map_path'."
             )
     if not all(
         isinstance(_, str)
         for _ in second_level_input["subject_label"].tolist()
     ):
-        raise ValueError("subject_label column must contain only strings")
+        raise ValueError("'subject_label' column must contain only strings.")
 
 
 def _check_input_as_nifti_images(second_level_input, none_design_matrix):
@@ -203,8 +225,28 @@ def _check_input_as_nifti_images(second_level_input, none_design_matrix):
     if none_design_matrix:
         raise ValueError(
             "List of niimgs as second_level_input"
-            " require a design matrix to be provided"
+            " require a design matrix to be provided."
         )
+
+
+def _check_input_as_surface_images(second_level_input, none_design_matrix):
+    if isinstance(second_level_input, SurfaceImage) and (
+        len(second_level_input.shape) == 1 or second_level_input.shape[1] == 1
+    ):
+        raise TypeError(
+            "If a single SurfaceImage object is passed "
+            "as second_level_input,"
+            "it must be a 3D SurfaceImage."
+        )
+
+    if isinstance(second_level_input, list):
+        for img in second_level_input[1:]:
+            check_same_n_vertices(second_level_input[0].mesh, img.mesh)
+        if none_design_matrix:
+            raise ValueError(
+                "List of SurfaceImage objects as second_level_input"
+                " require a design matrix to be provided."
+            )
 
 
 def _check_confounds(confounds):
@@ -251,12 +293,17 @@ def _check_output_type(output_type, valid_types):
 def _check_design_matrix(design_matrix):
     """Check design_matrix type."""
     if design_matrix is not None and not isinstance(
-        design_matrix, pd.DataFrame
+        design_matrix, (str, Path, pd.DataFrame)
     ):
-        raise ValueError("design matrix must be a pandas DataFrame")
+        raise TypeError(
+            "'design_matrix' must be a "
+            "str, pathlib.Path or a pandas.DataFrame.\n"
+            f"Got {type(design_matrix)}"
+        )
 
 
-def _check_effect_maps(effect_maps, design_matrix):
+def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix):
+    """Check design matrix and effect maps agree on number of rows."""
     if len(effect_maps) != design_matrix.shape[0]:
         raise ValueError(
             "design_matrix does not match the number of maps considered. "
@@ -267,16 +314,21 @@ def _check_effect_maps(effect_maps, design_matrix):
 
 def _get_con_val(second_level_contrast, design_matrix):
     """Check the contrast and return con_val \
-    when testing one contrast or more."""
+    when testing one contrast or more.
+    """
     if second_level_contrast is None:
         if design_matrix.shape[1] == 1:
             second_level_contrast = np.ones([1])
         else:
             raise ValueError("No second-level contrast is specified.")
     if not isinstance(second_level_contrast, str):
-        con_val = second_level_contrast
-        if np.all(con_val == 0):
-            raise ValueError("Contrast is null")
+        con_val = np.array(second_level_contrast)
+        if np.all(con_val == 0) or len(con_val) == 0:
+            raise ValueError(
+                "Contrast is null. Second_level_contrast must be a valid "
+                "contrast vector, a list/array of 0s and 1s, a string, or a "
+                "string expression."
+            )
     else:
         design_columns = design_matrix.columns.tolist()
         con_val = expression_to_contrast_vector(
@@ -285,34 +337,15 @@ def _get_con_val(second_level_contrast, design_matrix):
     return con_val
 
 
-def _get_contrast(second_level_contrast, design_matrix):
-    """Check and return contrast when testing one contrast at the time."""
-    if isinstance(second_level_contrast, str):
-        if second_level_contrast in design_matrix.columns.tolist():
-            contrast = second_level_contrast
-        else:
-            raise ValueError(
-                f'"{second_level_contrast}" is not a valid contrast name'
-            )
-    else:
-        # Check contrast definition
-        if second_level_contrast is None:
-            if design_matrix.shape[1] == 1:
-                second_level_contrast = np.ones([1])
-            else:
-                raise ValueError("No second-level contrast is specified.")
-        elif (np.nonzero(second_level_contrast)[0]).size != 1:
-            raise ValueError(
-                "second_level_contrast must be a list of 0s and 1s."
-            )
-        con_val = np.asarray(second_level_contrast, dtype=bool)
-        contrast = np.asarray(design_matrix.columns.tolist())[con_val][0]
-    return contrast
-
-
 def _infer_effect_maps(second_level_input, contrast_def):
     """Deal with the different possibilities of second_level_input."""
-    # Build the design matrix X and list of imgs Y for GLM fit
+    if isinstance(second_level_input, SurfaceImage):
+        return iter_img(second_level_input, return_iterator=False)
+    if isinstance(second_level_input, list) and isinstance(
+        second_level_input[0], SurfaceImage
+    ):
+        return second_level_input
+
     if isinstance(second_level_input, pd.DataFrame):
         # If a Dataframe was given, we expect contrast_def to be in map_name
         def _is_contrast_def(x):
@@ -321,7 +354,9 @@ def _infer_effect_maps(second_level_input, contrast_def):
         is_con = second_level_input.apply(_is_contrast_def, axis=1)
         effect_maps = second_level_input[is_con]["effects_map_path"].tolist()
 
-    elif isinstance(second_level_input[0], FirstLevelModel):
+    elif isinstance(second_level_input, list) and isinstance(
+        second_level_input[0], FirstLevelModel
+    ):
         # Get the first level model maps
         effect_maps = []
         for model in second_level_input:
@@ -329,7 +364,6 @@ def _infer_effect_maps(second_level_input, contrast_def):
                 contrast_def, output_type="effect_size"
             )
             effect_maps.append(effect_map)
-
     else:
         effect_maps = second_level_input
 
@@ -350,33 +384,40 @@ def _process_second_level_input(second_level_input):
         return _process_second_level_input_as_firstlevelmodels(
             second_level_input
         )
+    elif (
+        hasattr(second_level_input, "__iter__")
+        and isinstance(second_level_input[0], SurfaceImage)
+    ) or isinstance(second_level_input, SurfaceImage):
+        return _process_second_level_input_as_surface_image(second_level_input)
     else:
-        return mean_img(second_level_input), None
+        return mean_img(second_level_input, copy_header=True), None
 
 
 def _process_second_level_input_as_dataframe(second_level_input):
     """Process second_level_input provided as a pandas DataFrame."""
     sample_map = second_level_input["effects_map_path"][0]
     labels = second_level_input["subject_label"]
-    subjects_label = labels.values.tolist()
+    subjects_label = labels.to_list()
     return sample_map, subjects_label
 
 
 def _sort_input_dataframe(second_level_input):
     """Sort the pandas dataframe by subject_label to \
     avoid inconsistencies with the design matrix row order when \
-    automatically extracting maps."""
+    automatically extracting maps.
+    """
     columns = second_level_input.columns.tolist()
     column_index = columns.index("subject_label")
     sorted_matrix = sorted(
-        second_level_input.values, key=lambda x: x[column_index]
+        second_level_input.values, key=operator.itemgetter(column_index)
     )
     return pd.DataFrame(sorted_matrix, columns=columns)
 
 
 def _process_second_level_input_as_firstlevelmodels(second_level_input):
     """Process second_level_input provided \
-    as a list of FirstLevelModel objects."""
+    as a list of FirstLevelModel objects.
+    """
     sample_model = second_level_input[0]
     sample_condition = sample_model.design_matrices_[0].columns[0]
     sample_map = sample_model.compute_contrast(
@@ -386,6 +427,25 @@ def _process_second_level_input_as_firstlevelmodels(second_level_input):
     return sample_map, labels
 
 
+def _process_second_level_input_as_surface_image(second_level_input):
+    """Compute mean image across sample maps.
+
+    All should have the same underlying meshes.
+
+    Returns
+    -------
+    sample_map: SurfaceImage with 3 dimensions
+
+    None
+    """
+    if isinstance(second_level_input, SurfaceImage):
+        return second_level_input, None
+
+    second_level_input = [surf_mean_img(x) for x in second_level_input]
+    sample_map = concat_imgs(second_level_input)
+    return sample_map, None
+
+
 @fill_doc
 class SecondLevelModel(BaseGLM):
     """Implement the :term:`General Linear Model<GLM>` for multiple \
@@ -393,37 +453,58 @@ class SecondLevelModel(BaseGLM):
 
     Parameters
     ----------
-    mask_img : Niimg-like, :class:`~nilearn.maskers.NiftiMasker` or\
-             :class:`~nilearn.maskers.MultiNiftiMasker`, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
-        it will be computed automatically by a
-        :class:`~nilearn.maskers.MultiNiftiMasker` with default
-        parameters. Automatic mask computation assumes first level imgs have
-        already been masked.
+    mask_img : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or\
+             :obj:`~nilearn.maskers.MultiNiftiMasker` or\
+             :obj:`~nilearn.maskers.SurfaceMasker` object or None,\
+             default=None
+        Mask to be used on data.
+        If an instance of masker is passed,
+        then its mask will be used.
+        If no mask is given,
+        it will be computed automatically
+        by a :class:`~nilearn.maskers.NiftiMasker`,
+        or a :obj:`~nilearn.maskers.SurfaceMasker`
+        (depending on the type passed at fit time)
+        with default parameters.
+        Automatic mask computation assumes first level imgs
+        have already been masked.
+
     %(target_affine)s
 
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
+
+        .. note::
+            This parameter is ignored when fitting surface images.
 
     %(target_shape)s
 
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+        .. note::
+            This parameter is ignored when fitting surface images.
+
     %(smoothing_fwhm)s
+
+        .. note::
+            This parameter is ignored when fitting surface images.
+
     %(memory)s
+
     %(memory_level1)s
+
     %(verbose0)s
         If 0 prints nothing. If 1 prints final computation time.
         If 2 prints masker computation details.
+
     %(n_jobs)s
+
     minimize_memory : :obj:`bool`, default=True
         Gets rid of some variables on the model fit results that are not
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption.
-
     """
 
     def __init__(
@@ -432,7 +513,7 @@ class SecondLevelModel(BaseGLM):
         target_affine=None,
         target_shape=None,
         smoothing_fwhm=None,
-        memory=Memory(None),
+        memory=None,
         memory_level=1,
         verbose=0,
         n_jobs=1,
@@ -442,8 +523,7 @@ class SecondLevelModel(BaseGLM):
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
-        memory = stringify_path(memory)
-        self.memory = Memory(memory) if isinstance(memory, str) else memory
+        self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -452,6 +532,33 @@ class SecondLevelModel(BaseGLM):
         self.confounds_ = None
         self.labels_ = None
         self.results_ = None
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(surf_img=True, niimg_like=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=True)
+        return tags
 
     @fill_doc
     def fit(self, second_level_input, confounds=None, design_matrix=None):
@@ -464,7 +571,8 @@ class SecondLevelModel(BaseGLM):
         Parameters
         ----------
         %(second_level_input)s
-        confounds : :class:`pandas.DataFrame`, optional
+
+        confounds : :obj:`pandas.DataFrame` or None, default=None
             Must contain a ``subject_label`` column. All other columns are
             considered as confounds and included in the model. If
             ``design_matrix`` is provided then this argument is ignored.
@@ -473,14 +581,22 @@ class SecondLevelModel(BaseGLM):
             At least two columns are expected, ``subject_label`` and at
             least one confound.
 
-        design_matrix : :class:`pandas.DataFrame`, optional
-            Design matrix to fit the :term:`GLM`. The number of rows
-            in the design matrix must agree with the number of maps derived
-            from ``second_level_input``.
+        design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
+                        or :obj:`pathlib.Path` to a CSV or TSV file, \
+                        or None, default=None
+            Design matrix to fit the :term:`GLM`.
+            The number of rows in the design matrix
+            must agree with the number of maps
+            derived from ``second_level_input``.
             Ensure that the order of maps given by a ``second_level_input``
             list of Niimgs matches the order of the rows in the design matrix.
-
         """
+        if self.memory is None:
+            self.memory = Memory(None)
+        self.memory = stringify_path(self.memory)
+        if isinstance(self.memory, str):
+            self.memory = Memory(self.memory)
+
         # check second_level_input
         _check_second_level_input(
             second_level_input, design_matrix, confounds=confounds
@@ -489,42 +605,68 @@ class SecondLevelModel(BaseGLM):
         # check confounds
         _check_confounds(confounds)
 
-        # check design matrix
-        _check_design_matrix(design_matrix)
-
         if isinstance(second_level_input, pd.DataFrame):
             second_level_input = _sort_input_dataframe(second_level_input)
+        if isinstance(second_level_input, Nifti1Image):
+            check_niimg(second_level_input, ensure_ndim=4)
+            second_level_input = four_to_three(second_level_input)
         self.second_level_input_ = second_level_input
+
         self.confounds_ = confounds
+
         sample_map, subjects_label = _process_second_level_input(
             second_level_input
         )
 
         # Report progress
         t0 = time.time()
-        if self.verbose > 0:
-            sys.stderr.write(
-                "Fitting second level model. Take a deep breath.\r"
-            )
+        logger.log(
+            "Fitting second level model. Take a deep breath.\r",
+            verbose=self.verbose,
+        )
 
         # Create and set design matrix, if not given
         if design_matrix is None:
             design_matrix = make_second_level_design_matrix(
                 subjects_label, confounds
             )
+        elif isinstance(design_matrix, (str, Path, pd.DataFrame)):
+            design_matrix = check_and_load_tables(
+                design_matrix, "design_matrix"
+            )[0]
         self.design_matrix_ = design_matrix
 
-        # Learn the mask. Assume the first level imgs have been masked.
-        if not isinstance(self.mask_img, NiftiMasker):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                target_affine=self.target_affine,
-                target_shape=self.target_shape,
-                smoothing_fwhm=self.smoothing_fwhm,
-                memory=self.memory,
-                verbose=max(0, self.verbose - 1),
-                memory_level=self.memory_level,
+        if (
+            isinstance(sample_map, SurfaceImage)
+            and self.smoothing_fwhm is not None
+        ):
+            warn(
+                "Parameter smoothing_fwhm is not "
+                "yet supported for surface data",
+                UserWarning,
+                stacklevel=2,
             )
+
+        # Learn the mask. Assume the first level imgs have been masked.
+        if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):
+            if isinstance(sample_map, SurfaceImage):
+                self.masker_ = SurfaceMasker(
+                    mask_img=self.mask_img,
+                    smoothing_fwhm=self.smoothing_fwhm,
+                    memory=self.memory,
+                    verbose=max(0, self.verbose - 1),
+                    memory_level=self.memory_level,
+                )
+            else:
+                self.masker_ = NiftiMasker(
+                    mask_img=self.mask_img,
+                    target_affine=self.target_affine,
+                    target_shape=self.target_shape,
+                    smoothing_fwhm=self.smoothing_fwhm,
+                    memory=self.memory,
+                    verbose=max(0, self.verbose - 1),
+                    memory_level=self.memory_level,
+                )
         else:
             self.masker_ = clone(self.mask_img)
             for param_name in ["smoothing_fwhm", "memory", "memory_level"]:
@@ -537,11 +679,11 @@ class SecondLevelModel(BaseGLM):
         self.masker_.fit(sample_map)
 
         # Report progress
-        if self.verbose > 0:
-            sys.stderr.write(
-                "\nComputation of second level model done in "
-                f"{time.time() - t0} seconds.\n"
-            )
+        logger.log(
+            "\nComputation of second level model done in "
+            f"{time.time() - t0:0.2f} seconds.\n",
+            verbose=self.verbose,
+        )
 
         return self
 
@@ -559,34 +701,39 @@ class SecondLevelModel(BaseGLM):
         Parameters
         ----------
         %(second_level_contrast)s
-        first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of\
-        shape (n_col) with respect to\
-        :class:`~nilearn.glm.first_level.FirstLevelModel`, optional
+
+        first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
+                            shape (n_col) with respect to \
+                            :class:`~nilearn.glm.first_level.FirstLevelModel`,
+                            default=None
 
             - In case a :obj:`list` of
               :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
               as ``second_level_input``,
-              we have to provide a :term:`contrast` to
-              apply to the first level models to get the corresponding list
-              of images desired, that would be tested at the second level.
-            - In case a :class:`~pandas.DataFrame` was provided as
-              ``second_level_input`` this is the map name to extract from the
-              :class:`~pandas.DataFrame` ``map_name`` column. It has to be
-              a 't' contrast.
+              we have to provide a :term:`contrast`
+              to apply to the first level models
+              to get the corresponding list of images desired,
+              that would be tested at the second level.
+            - In case a :class:`~pandas.DataFrame` was provided
+              as ``second_level_input`` this is the map name to extract
+              from the :class:`~pandas.DataFrame` ``map_name`` column.
+              It has to be a 't' contrast.
 
         second_level_stat_type : {'t', 'F'} or None, default=None
             Type of the second level contrast.
 
         output_type : {'z_score', 'stat', 'p_value', \
                       :term:`'effect_size'<Parameter Estimate>`, \
-                      'effect_variance', 'all'}, default='z-score'
+                      'effect_variance', 'all'}, default='z_score'
             Type of the output map.
 
         Returns
         -------
         output_image : :class:`~nibabel.nifti1.Nifti1Image`
-            The desired output image(s). If ``output_type == 'all'``, then
-            the output is a dictionary of images, keyed by the type of image.
+            The desired output image(s).
+            If ``output_type == 'all'``,
+            then the output is a dictionary of images,
+            keyed by the type of image.
 
         """
         if self.second_level_input_ is None:
@@ -617,8 +764,8 @@ class SecondLevelModel(BaseGLM):
         effect_maps = _infer_effect_maps(
             self.second_level_input_, first_level_contrast
         )
-        # Check design matrix X and effect maps Y agree on number of rows
-        _check_effect_maps(effect_maps, self.design_matrix_)
+
+        _check_n_rows_desmat_vs_n_effect_maps(effect_maps, self.design_matrix_)
 
         # Fit an Ordinary Least Squares regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
@@ -660,9 +807,10 @@ class SecondLevelModel(BaseGLM):
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_val)
-            output.header[
-                "descrip"
-            ] = f"{output_type} of contrast {contrast_name}"
+            if not isinstance(output, SurfaceImage):
+                output.header["descrip"] = (
+                    f"{output_type} of contrast {contrast_name}"
+                )
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output
@@ -675,18 +823,18 @@ class SecondLevelModel(BaseGLM):
 
         Parameters
         ----------
-        attribute : str
+        attribute : :obj:`str`
             an attribute of a RegressionResults instance.
             possible values include: 'residuals', 'normalized_residuals',
             'predicted', SSE, r_square, MSE.
 
-        result_as_time_series : bool
+        result_as_time_series : :obj:`bool`
             whether the RegressionResult attribute has a value
             per timepoint of the input nifti image.
 
         Returns
         -------
-        output : list
+        output : :obj:`list`
             A list of Nifti1Image(s).
 
         """
@@ -761,7 +909,7 @@ def non_parametric_inference(
     ----------
     %(second_level_input)s
 
-    confounds : :obj:`pandas.DataFrame` or None, optional
+    confounds : :obj:`pandas.DataFrame` or None, default=None
         Must contain a subject_label column. All other columns are
         considered as confounds and included in the model. If
         ``design_matrix`` is provided then this argument is ignored.
@@ -770,7 +918,7 @@ def non_parametric_inference(
         At least two columns are expected, ``subject_label`` and at
         least one confound.
 
-    design_matrix : :obj:`pandas.DataFrame` or None, optional
+    design_matrix : :obj:`pandas.DataFrame` or None, default=None
         Design matrix to fit the :term:`GLM`. The number of rows
         in the design matrix must agree with the number of maps derived
         from ``second_level_input``.
@@ -779,7 +927,7 @@ def non_parametric_inference(
 
     %(second_level_contrast)s
 
-    first_level_contrast : :obj:`str`, optional
+    first_level_contrast : :obj:`str` or None, default=None
         In case a pandas DataFrame was provided as second_level_input this
         is the map name to extract from the pandas dataframe map_name column.
         It has to be a 't' contrast.
@@ -787,7 +935,8 @@ def non_parametric_inference(
         .. versionadded:: 0.9.0
 
     mask : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or \
-            :obj:`~nilearn.maskers.MultiNiftiMasker` object, optional
+            :obj:`~nilearn.maskers.MultiNiftiMasker` object \
+            or None, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, it will be computed
         automatically by a :class:`~nilearn.maskers.MultiNiftiMasker` with
@@ -865,7 +1014,7 @@ def non_parametric_inference(
         to the regressors.
 
         .. note::
-            This is returned if ``tfce`` is False or ``threshold`` is not None.
+            This is returned if ``tfce`` is True or ``threshold`` is not None.
 
         .. versionadded:: 0.9.2
 
@@ -930,7 +1079,7 @@ def non_parametric_inference(
     """
     _check_second_level_input(second_level_input, design_matrix)
     _check_confounds(confounds)
-    _check_design_matrix(design_matrix)
+    design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
     if isinstance(second_level_input, pd.DataFrame):
         second_level_input = _sort_input_dataframe(second_level_input)
@@ -938,8 +1087,7 @@ def non_parametric_inference(
 
     # Report progress
     t0 = time.time()
-    if verbose > 0:
-        sys.stderr.write("Fitting second level model...")
+    logger.log("Fitting second level model...", verbose=verbose)
 
     # Learn the mask. Assume the first level imgs have been masked.
     if not isinstance(mask, NiftiMasker):
@@ -953,40 +1101,38 @@ def non_parametric_inference(
 
     else:
         masker = clone(mask)
-        if (
-            smoothing_fwhm is not None
-            and getattr(masker, "smoothing_fwhm") is not None
-        ):
+        if smoothing_fwhm is not None and masker.smoothing_fwhm is not None:
             warn("Parameter smoothing_fwhm of the masker overridden")
-            setattr(masker, "smoothing_fwhm", smoothing_fwhm)
+            masker.smoothing_fwhm = smoothing_fwhm
 
     masker.fit(sample_map)
 
     # Report progress
-    if verbose > 0:
-        sys.stderr.write(
-            "\nComputation of second level model done in "
-            f"{time.time() - t0} seconds\n"
-        )
+    logger.log(
+        "\nComputation of second level model done in "
+        f"{time.time() - t0} seconds\n",
+        verbose=verbose,
+    )
 
     # Check and obtain the contrast
-    contrast = _get_contrast(second_level_contrast, design_matrix)
+    contrast = _get_con_val(second_level_contrast, design_matrix)
     # Get first-level effect_maps
     effect_maps = _infer_effect_maps(second_level_input, first_level_contrast)
 
-    # Check design matrix and effect maps agree on number of rows
-    _check_effect_maps(effect_maps, design_matrix)
+    _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix)
 
     # Obtain design matrix vars
     var_names = design_matrix.columns.tolist()
 
     # Obtain tested_var
-    tested_var = np.asarray(design_matrix[contrast])
+    column_mask = [bool(val) for val in contrast]
+    tested_var = np.dot(design_matrix, contrast)
+
     # Remove tested var from remaining var names
-    var_names.remove(contrast)
+    var_names = [var for var, mask in zip(var_names, column_mask) if not mask]
 
     # Obtain confounding vars
-    if len(var_names) == 0:
+    if not var_names:
         # No other vars in design matrix
         confounding_vars = None
     else:

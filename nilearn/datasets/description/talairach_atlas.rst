@@ -1,4 +1,19 @@
+.. _talairach_atlas:
+
 Talairach atlas
+===============
+
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_talairach`.
+
+Notes
+-----
+
+For more information,
+see :footcite:t:`talairach_atlas`,
+:footcite:t:`Lancaster2000`,
+and :footcite:t:`Lancaster1997`.
 
 Content
 -------
@@ -9,13 +24,10 @@ Content
 
 References
 ----------
-http://talairach.org/about.html#Labels
 
-`Lancaster JL, Woldorff MG, Parsons LM, Liotti M, Freitas CS, Rainey L, Kochunov
-PV, Nickerson D, Mikiten SA, Fox PT, "Automated Talairach Atlas labels for
-functional brain mapping". Human Brain Mapping 10:120-131, 2000.`
+.. footbibliography::
 
-`Lancaster JL, Rainey LH, Summerlin JL, Freitas CS, Fox PT, Evans AC, Toga AW,
-Mazziotta JC. Automated labeling of the human brain: A preliminary report on the
-development and evaluation of a forward-transform method. Hum Brain Mapp 5,
-238-242, 1997.`
+
+License
+-------
+unknown

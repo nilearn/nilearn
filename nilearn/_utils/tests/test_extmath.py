@@ -1,4 +1,5 @@
 """Test the _utils.extmath module."""
+
 import numpy as np
 
 from nilearn._utils.extmath import fast_abs_percentile, is_spd

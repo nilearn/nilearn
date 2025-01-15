@@ -1,13 +1,11 @@
-import warnings
-
-import nibabel
 import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
 from nilearn._utils.testing import (
     assert_memory_less_than,
-    check_deprecation,
     with_memory_profiler,
+    write_imgs_to_path,
 )
 
 
@@ -39,20 +37,37 @@ def test_memory_usage():
 def test_int64_niftis(affine_eye, tmp_path):
     data = np.ones((3, 3, 3), dtype=bool)
     for dtype in "uint8", "int32", "float32":
-        img = nibabel.Nifti1Image(data.astype(dtype), affine_eye)
+        img = Nifti1Image(data.astype(dtype), affine_eye)
         img.to_filename(tmp_path.joinpath("img.nii.gz"))
     for dtype in "int64", "uint64":
         with pytest.raises(AssertionError):
-            nibabel.Nifti1Image(data.astype(dtype), affine_eye)
+            Nifti1Image(data.astype(dtype), affine_eye)
 
 
-def dummy_deprecation(start_version, end_version):
-    warnings.warn(
-        f"Deprecated in {start_version}."
-        f"and will be removed in version {end_version}.",
-        DeprecationWarning,
+@pytest.mark.parametrize("create_files", [True, False])
+@pytest.mark.parametrize("use_wildcards", [True, False])
+def test_write_tmp_imgs_default(
+    monkeypatch, tmp_path, img_3d_mni, create_files, use_wildcards
+):
+    """Write imgs to default location."""
+    monkeypatch.chdir(tmp_path)
+
+    write_imgs_to_path(
+        img_3d_mni,
+        create_files=create_files,
+        use_wildcards=use_wildcards,
     )
 
 
-def test_check_deprecation():
-    check_deprecation(dummy_deprecation, "Deprecated")("0.0.1", "0.0.2")
+@pytest.mark.parametrize("create_files", [True, False])
+@pytest.mark.parametrize("use_wildcards", [True, False])
+def test_write_tmp_imgs_set_path(
+    tmp_path, img_3d_mni, create_files, use_wildcards
+):
+    """Write imgs to a specified location."""
+    write_imgs_to_path(
+        img_3d_mni,
+        file_path=tmp_path,
+        create_files=create_files,
+        use_wildcards=use_wildcards,
+    )

@@ -17,9 +17,16 @@ More specifically:
 3. Fit a second level model on the fitted first level models.
    Notice that in this case the preprocessed :term:`bold<BOLD>`
    images were already normalized to the same :term:`MNI` space.
+
+.. note::
+
+      We are only using a subset of participants from the dataset
+      to lower the run time of the example.
 """
 
-# %%#
+from nilearn import plotting
+
+# %%
 # Fetch example :term:`BIDS` dataset
 # ----------------------------------
 # We download a simplified :term:`BIDS` dataset made available for illustrative
@@ -30,11 +37,11 @@ More specifically:
 # confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data_dir, _ = fetch_language_localizer_demo_dataset()
+data = fetch_language_localizer_demo_dataset(legacy_output=False)
 
 # %%
 # Here is the location of the dataset on disk.
-print(data_dir)
+print(data.data_dir)
 
 # %%
 # Obtain automatically FirstLevelModel objects and fit arguments
@@ -57,7 +64,13 @@ task_label = "languagelocalizer"
     models_events,
     models_confounds,
 ) = first_level_from_bids(
-    data_dir, task_label, img_filters=[("desc", "preproc")]
+    data.data_dir,
+    task_label,
+    img_filters=[("desc", "preproc")],
+    n_jobs=2,
+    space_label="",
+    sub_labels=["01", "02", "05", "08"],  # comment to run all subjects
+    smoothing_fwhm=8,
 )
 
 # %%
@@ -68,9 +81,9 @@ task_label = "languagelocalizer"
 
 # %%
 # We just expect one run_img per subject.
-import os
+from pathlib import Path
 
-print([os.path.basename(run) for run in models_run_imgs[0]])
+print([Path(run).name for run in models_run_imgs[0]])
 
 # %%
 # The only confounds stored are regressors obtained from motion correction. As
@@ -101,11 +114,16 @@ p001_unc = norm.isf(0.001)
 
 # %%
 # Prepare figure for concurrent plot of individual maps.
+from math import ceil
+
 import matplotlib.pyplot as plt
+import numpy as np
 
-from nilearn import plotting
+ncols = 2
+nrows = ceil(len(models) / ncols)
 
-fig, axes = plt.subplots(nrows=2, ncols=5, figsize=(8, 4.5))
+fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 4.5))
+axes = np.atleast_2d(axes)
 model_and_args = zip(models, models_run_imgs, models_events, models_confounds)
 for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     # fit the GLM
@@ -114,12 +132,14 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     zmap = model.compute_contrast("language-string")
     plotting.plot_glass_brain(
         zmap,
-        colorbar=False,
+        colorbar=True,
         threshold=p001_unc,
         title=f"sub-{model.subject_label}",
-        axes=axes[int(midx / 5), int(midx % 5)],
+        axes=axes[int(midx / ncols), int(midx % ncols)],
         plot_abs=False,
         display_mode="x",
+        vmin=-12,
+        vmax=12,
     )
 fig.suptitle("subjects z_map language network (unc p<0.001)")
 plotting.show()
@@ -137,7 +157,7 @@ second_level_input = models
 
 # %%
 # Note that we apply a smoothing of 8mm.
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
 second_level_model = second_level_model.fit(second_level_input)
 
 # %%

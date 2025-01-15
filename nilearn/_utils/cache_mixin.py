@@ -1,24 +1,26 @@
 """Mixin for cache with joblib."""
+
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 
 import os
 import warnings
+from pathlib import Path
 
 from joblib import Memory
-
-MEMORY_CLASSES = (Memory,)
 
 import nilearn
 
 from .helpers import stringify_path
 
+MEMORY_CLASSES = (Memory,)
 
-def _check_memory(memory, verbose=0):
+
+def check_memory(memory, verbose=0):
     """Ensure an instance of a joblib.Memory object.
 
     Parameters
     ----------
-    memory : None,instance of joblib.Memory, str or pathlib.Path
+    memory : None, instance of joblib.Memory, str or pathlib.Path
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
@@ -32,16 +34,17 @@ def _check_memory(memory, verbose=0):
     """
     if memory is None:
         memory = Memory(location=None, verbose=verbose)
+    # TODO make Path the default here
     memory = stringify_path(memory)
     if isinstance(memory, str):
         cache_dir = memory
         if nilearn.EXPAND_PATH_WILDCARDS:
-            cache_dir = os.path.expanduser(cache_dir)
+            cache_dir = Path(cache_dir).expanduser()
 
         # Perform some verifications on given path.
         split_cache_dir = os.path.split(cache_dir)
         if len(split_cache_dir) > 1 and (
-            not os.path.exists(split_cache_dir[0]) and split_cache_dir[0] != ""
+            not Path(split_cache_dir[0]).exists() and split_cache_dir[0] != ""
         ):
             if not nilearn.EXPAND_PATH_WILDCARDS and cache_dir.startswith("~"):
                 # Maybe the user want to enable expanded user path.
@@ -69,7 +72,7 @@ def _check_memory(memory, verbose=0):
                 )
             raise ValueError(error_msg)
 
-        memory = Memory(location=cache_dir, verbose=verbose)
+        memory = Memory(location=str(cache_dir), verbose=verbose)
     return memory
 
 
@@ -78,7 +81,7 @@ class _ShelvedFunc:
 
     def __init__(self, func):
         self.func = func
-        self.func_name = func.__name__ + "_shelved"
+        self.func_name = f"{func.__name__}_shelved"
 
     def __call__(self, *args, **kwargs):
         return self.func.call_and_shelve(*args, **kwargs)
@@ -232,7 +235,7 @@ class CacheMixin:
             self.memory_level = 0
         if not hasattr(self, "memory"):
             self.memory = Memory(location=None, verbose=verbose)
-        self.memory = _check_memory(self.memory, verbose=verbose)
+        self.memory = check_memory(self.memory, verbose=verbose)
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
@@ -240,7 +243,8 @@ class CacheMixin:
             warnings.warn(
                 "memory_level is currently set to 0 but "
                 "a Memory object has been provided. "
-                "Setting memory_level to 1."
+                "Setting memory_level to 1.",
+                stacklevel=3,
             )
             self.memory_level = 1
 

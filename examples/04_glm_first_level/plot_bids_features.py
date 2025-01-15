@@ -18,13 +18,14 @@ More specifically:
    with derivatives from openneuro.
 2. Extract first level model objects automatically
    from the :term:`BIDS` dataset.
-3. Demonstrate Quality assurance of Nistats estimation against available FSL.
+3. Demonstrate Quality assurance of Nilearn estimation against available FSL.
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
 """
 
+from nilearn import plotting
 
-# %%#
+# %%
 # Fetch openneuro :term:`BIDS` dataset
 # ------------------------------------
 # We download one subject from the stopsignal task
@@ -90,6 +91,7 @@ derivatives_folder = "derivatives/fmriprep"
     space_label,
     smoothing_fwhm=5.0,
     derivatives_folder=derivatives_folder,
+    n_jobs=2,
 )
 
 # %%
@@ -104,12 +106,17 @@ model, imgs, events, confounds = (
 subject = f"sub-{model.subject_label}"
 model.minimize_memory = False  # override default
 
-import os
+from pathlib import Path
 
 from nilearn.interfaces.fsl import get_design_from_fslmat
 
-fsl_design_matrix_path = os.path.join(
-    data_dir, "derivatives", "task", subject, "stopsignal.feat", "design.mat"
+fsl_design_matrix_path = (
+    Path(data_dir)
+    / "derivatives"
+    / "task"
+    / subject
+    / "stopsignal.feat"
+    / "design.mat"
 )
 design_matrix = get_design_from_fslmat(
     fsl_design_matrix_path, column_names=None
@@ -143,21 +150,17 @@ z_map = model.compute_contrast("StopSuccess - Go")
 import nibabel as nib
 
 fsl_z_map = nib.load(
-    os.path.join(
-        data_dir,
-        "derivatives",
-        "task",
-        subject,
-        "stopsignal.feat",
-        "stats",
-        "zstat12.nii.gz",
-    )
+    Path(data_dir)
+    / "derivatives"
+    / "task"
+    / subject
+    / "stopsignal.feat"
+    / "stats"
+    / "zstat12.nii.gz"
 )
 
 import matplotlib.pyplot as plt
 from scipy.stats import norm
-
-from nilearn import plotting
 
 plotting.plot_glass_brain(
     z_map,
@@ -210,10 +213,36 @@ table = get_clusters_table(z_map, norm.isf(0.001), 10)
 print(table.to_latex())
 
 # %%
-# Generating a report
-# -------------------
+# Saving model outputs to disk
+# ----------------------------
+#
+# We can now easily save the main results,
+# the model metadata and an HTML report to the disk.
+#
+output_dir = Path.cwd() / "results" / "plot_bids_features"
+output_dir.mkdir(exist_ok=True, parents=True)
+
+from nilearn.interfaces.bids import save_glm_to_bids
+
+save_glm_to_bids(
+    model,
+    contrasts="StopSuccess - Go",
+    contrast_types={"StopSuccess - Go": "t"},
+    out_dir=output_dir / "derivatives" / "nilearn_glm",
+    prefix=f"{subject}_task-stopsignal",
+)
+
+# %%
+# View the generated files
+files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
+print("\n".join([str(x.relative_to(output_dir)) for x in files]))
+
+# %%
+# Only generating the HTML report
+# -------------------------------
+#
 # Using the computed FirstLevelModel and :term:`contrast` information,
-# we can quickly create a summary report.
+# we can quickly also also only create a summary report.
 from nilearn.reporting import make_glm_report
 
 report = make_glm_report(
@@ -225,24 +254,7 @@ report = make_glm_report(
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
-# report.save_as_html('report.html')
 # report.open_in_browser()
 
-# %%
-# Saving model outputs to disk
-# ----------------------------
-from nilearn.interfaces.bids import save_glm_to_bids
-
-save_glm_to_bids(
-    model,
-    contrasts="StopSuccess - Go",
-    contrast_types={"StopSuccess - Go": "t"},
-    out_dir="derivatives/nilearn_glm/",
-    prefix=f"{subject}_task-stopsignal",
-)
-
-# %%
-# View the generated files
-from glob import glob
-
-print("\n".join(sorted(glob("derivatives/nilearn_glm/*"))))
+# or we can save as an html file
+# report.save_as_html(output_dir / 'report.html')

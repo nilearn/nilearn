@@ -2,44 +2,22 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 
+ci:
+    autoupdate_commit_msg: 'chore: update pre-commit hooks'
+    autofix_prs: false
+
+#  Files that should not be checked
 exclude: |
     (?x)^(
         nilearn/datasets/tests/data/localizer_behavioural.tsv
         | nilearn/externals/.*
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
-        | examples/01_plotting/plot_3d_map_to_surface_projection.py
-        | examples/01_plotting/plot_surf_atlas.py
-        | examples/01_plotting/plot_surf_stat_map.py
-        | examples/01_plotting/plot_surface_projection_strategies.py
-        | examples/04_glm_first_level/plot_fiac_analysis.py
-        | examples/04_glm_first_level/plot_fixed_effects.py
-        | examples/04_glm_first_level/plot_localizer_surface_analysis.py
-        | examples/07_advanced/plot_surface_bids_analysis.py
-        | nilearn/_utils/helpers.py
-        | nilearn/_utils/data_gen.py
-        | nilearn/reporting/html_report.py
-        | nilearn/reporting/tests/test_html_report.py
-        | nilearn/interfaces/fmriprep/load_confounds_compcor.py
-        | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
-        | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
-        | nilearn/interfaces/fmriprep/tests/utils.py
-        | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
-        | nilearn/maskers/nifti_spheres_masker.py
-        | nilearn/maskers/nifti_labels_masker.py
-        | nilearn/plotting/html_surface.py
-        | nilearn/plotting/img_plotting.py
-        | nilearn/plotting/js_plotting_utils.py
-        | nilearn/plotting/surf_plotting.py
-        | nilearn/plotting/tests/test_html_surface.py
-        | nilearn/plotting/tests/test_surf_plotting.py
-        | nilearn/surface/surface.py
-        | nilearn/surface/tests/test_surface.py
     )$
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
     -   id: check-ast
     -   id: check-case-conflict
@@ -51,69 +29,64 @@ repos:
     -   id: mixed-line-ending
     -   id: trailing-whitespace
 
--   repo: https://github.com/pycqa/isort
-    rev: 5.12.0
-    hooks:
-    -   id: isort
-        args: [--profile, black]
-
--   repo: https://github.com/ikamensh/flynt/
-    rev: 1.0.1
-    hooks:
-    -   id: flynt
-
--   repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.0
-    hooks:
-    -   id: pyupgrade
-        args: [--py36-plus]
-
+    # Checks for .rst files
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
     -   id: rst-directive-colons
     -   id: rst-inline-touching-normal
-
--   repo: https://github.com/psf/black-pre-commit-mirror
-    rev: 23.10.0
+-   repo: https://github.com/pre-commit/pygrep-hooks
+    rev: v1.10.0
     hooks:
-    -   id: black
-        args: [--config, pyproject.toml]
+    -   id: rst-backticks
 
--   repo: https://github.com/adamchainz/blacken-docs
-    rev: 1.16.0
-    hooks:
-    -   id: blacken-docs
-        additional_dependencies:
-        -   black==23.9.1
-
+    # Checks for spelling errors
 -   repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.3.0
     hooks:
     -   id: codespell
         args: [--toml, pyproject.toml]
         additional_dependencies: [tomli]
 
+    # Format YAML files
 -   repo: https://github.com/jumanjihouse/pre-commit-hook-yamlfmt
     rev: 0.2.3
     hooks:
     -   id: yamlfmt
         args: [--mapping, '4', --sequence, '4', --offset, '0']
 
+    # Format TOML files
 -   repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.11.0
+    rev: v2.14.0
     hooks:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
 
--   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
+    # Check formatting of CSS and HTML
+    # prettier: https://prettier.io/
+-   repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.4.2
     hooks:
-    -   id: rst-backticks
+    -   id: prettier
+        types_or: [css, html]
+        exclude: |
+            (?x)^(
+                maint_tools/templates/index.html
+            )$
 
--   repo: https://github.com/pyCQA/flake8
-    rev: 6.1.0
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.1
     hooks:
-    -   id: flake8
-        args: [--config, .flake8, --verbose]
-        additional_dependencies: [flake8-docstrings, flake8-use-fstring, flake8-functions]
+    # Run the linter.
+    -   id: ruff
+        # args: [--statistics]
+        args: [--fix, --show-fixes]
+    # Run the formatter.
+    -   id: ruff-format
+
+
+-   repo: https://github.com/PyCQA/doc8
+    rev: v1.1.2
+    hooks:
+    -   id: doc8
+        args: [--config=pyproject.toml, nilearn]

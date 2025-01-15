@@ -2,21 +2,22 @@
 A introduction tutorial to fMRI decoding
 ========================================
 
-Here is a simple tutorial on decoding with nilearn. It reproduces the
-Haxby 2001 study on a face vs cat discrimination task in a mask of the
-ventral stream.
-
-    * J.V. Haxby et al. "Distributed and Overlapping Representations of Faces
-      and Objects in Ventral Temporal Cortex", Science vol 293 (2001), p
-      2425.-2430.
+Here is a simple tutorial on decoding with nilearn.
+It reproduces the :footcite:t:`Haxby2001` study
+on a face vs cat discrimination task in a mask of the ventral stream.
 
 This tutorial is meant as an introduction to the various steps of a decoding
-analysis using Nilearn meta-estimator: :class:`nilearn.decoding.Decoder`
+analysis using Nilearn meta-estimator: :class:`~nilearn.decoding.Decoder`
 
 It is not a minimalistic example, as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
 """
 
+import warnings
+
+warnings.filterwarnings(
+    "ignore", message="The provided image has no sform in its header."
+)
 
 # %%
 # Retrieve and load the :term:`fMRI` data from the Haxby study
@@ -25,7 +26,7 @@ meant to be copied to analyze new data: many of the steps are unnecessary.
 # First download the data
 # .......................
 #
-# The :func:`nilearn.datasets.fetch_haxby` function will download the
+# The :func:`~nilearn.datasets.fetch_haxby` function will download the
 # Haxby dataset if not present on the disk, in the nilearn data directory.
 # It can take a while to download about 310 Mo of data from the Internet.
 from nilearn import datasets
@@ -43,21 +44,23 @@ print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 # ...................................
 #
 # One way to visualize a :term:`fMRI` volume is
-# using :func:`nilearn.plotting.plot_epi`.
+# using :func:`~nilearn.plotting.plot_epi`.
 # We will visualize the previously fetched :term:`fMRI`
 # data from Haxby dataset.
 #
 # Because :term:`fMRI` data are 4D
 # (they consist of many 3D :term:`EPI` images),
-# we cannot plot them directly using :func:`nilearn.plotting.plot_epi`
+# we cannot plot them directly using :func:`~nilearn.plotting.plot_epi`
 # (which accepts just 3D input).
-# Here we are using :func:`nilearn.image.mean_img` to
+# Here we are using :func:`~nilearn.image.mean_img` to
 # extract a single 3D :term:`EPI` image from the :term:`fMRI` data.
 #
-from nilearn import plotting
 from nilearn.image import mean_img
+from nilearn.plotting import plot_epi, plot_roi, show, view_img
 
-plotting.view_img(mean_img(fmri_filename), threshold=None)
+plot_epi(mean_img(fmri_filename, copy_header=True))
+
+show()
 
 # %%
 # Feature extraction: from :term:`fMRI` volumes to a data matrix
@@ -65,7 +68,7 @@ plotting.view_img(mean_img(fmri_filename), threshold=None)
 #
 # These are some really lovely images, but for machine learning
 # we need matrices to work with the actual data. Fortunately, the
-# :class:`nilearn.decoding.Decoder` object we will use later on can
+# :class:`~nilearn.decoding.Decoder` object we will use later on can
 # automatically transform Nifti images into matrices.
 # All we have to do for now is define a mask filename.
 #
@@ -75,7 +78,9 @@ mask_filename = haxby_dataset.mask_vt[0]
 
 # Let's visualize it, using the subject's anatomical image as a
 # background
-plotting.plot_roi(mask_filename, bg_img=haxby_dataset.anat[0], cmap="Paired")
+plot_roi(mask_filename, bg_img=haxby_dataset.anat[0], cmap="Paired")
+
+show()
 
 # %%
 # Load the behavioral labels
@@ -128,16 +133,15 @@ fmri_niimgs = index_img(fmri_filename, condition_mask)
 # %%
 # We apply the same mask to the targets
 conditions = conditions[condition_mask]
-# Convert to numpy array
-conditions = conditions.values
-print(conditions.shape)
+conditions = conditions.to_numpy()
+print(f"{conditions.shape=}")
 
 # %%
 # Decoding with Support Vector Machine
 # ------------------------------------
 #
 # As a decoder, we use a Support Vector Classifier with a linear kernel. We
-# first create it using by using :class:`nilearn.decoding.Decoder`.
+# first create it using by using :class:`~nilearn.decoding.Decoder`.
 from nilearn.decoding import Decoder
 
 decoder = Decoder(
@@ -154,7 +158,7 @@ decoder.fit(fmri_niimgs, conditions)
 # %%
 # We can then predict the labels from the data
 prediction = decoder.predict(fmri_niimgs)
-print(prediction)
+print(f"{prediction=}")
 
 # %%
 # Note that for this classification task both classes contain the same number
@@ -220,8 +224,7 @@ for fold, (train, test) in enumerate(cv.split(conditions), start=1):
         len(conditions[test])
     )
     print(
-        f"CV Fold {fold:01d} | "
-        f"Prediction Accuracy: {predicton_accuracy:.3f}"
+        f"CV Fold {fold:01d} | Prediction Accuracy: {predicton_accuracy:.3f}"
     )
 
 # %%
@@ -244,8 +247,8 @@ decoder.fit(fmri_niimgs, conditions)
 
 # %%
 # Cross-validation pipeline can also be implemented manually. More details can
-# be found on `scikit-learn website
-# <https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html>`_.
+# be found on :sklearn:`scikit-learn website
+# <modules/generated/sklearn.model_selection.cross_val_score.html>`.
 #
 # Then we can check the best performing parameters per fold.
 print(decoder.cv_params_["face"])
@@ -255,20 +258,20 @@ print(decoder.cv_params_["face"])
 # 	We can speed things up to use all the CPUs of our computer with the
 # 	n_jobs parameter.
 #
-# The best way to do cross-validation is to respect the structure of
-# the experiment, for instance by leaving out full sessions of
-# acquisition.
+# The best way to do cross-validation is to respect
+# the structure of the experiment,
+# for instance by leaving out full runs of acquisition.
 #
-# The number of the session is stored in the CSV file giving the
-# behavioral data. We have to apply our session mask, to select only cats
-# and faces.
-session_label = behavioral["chunks"][condition_mask]
+# The number of the run is stored in the CSV file giving
+# the behavioral data.
+# We have to apply our run mask, to select only cats and faces.
+run_label = behavioral["chunks"][condition_mask]
 
 # %%
-# The :term:`fMRI` data is acquired by sessions,
-# and the noise is autocorrelated in a
-# given session. Hence, it is better to predict across sessions when doing
-# cross-validation. To leave a session out, pass the cross-validator object
+# The :term:`fMRI` data is acquired by runs,
+# and the noise is autocorrelated in a given run.
+# Hence, it is better to predict across runs when doing cross-validation.
+# To leave a run out, pass the cross-validator object
 # to the cv parameter of decoder.
 from sklearn.model_selection import LeaveOneGroupOut
 
@@ -277,9 +280,9 @@ cv = LeaveOneGroupOut()
 decoder = Decoder(
     estimator="svc", mask=mask_filename, standardize="zscore_sample", cv=cv
 )
-decoder.fit(fmri_niimgs, conditions, groups=session_label)
+decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
-print(decoder.cv_scores_)
+print(f"{decoder.cv_scores_=}")
 
 # %%
 # Inspecting the model weights
@@ -292,11 +295,11 @@ print(decoder.cv_scores_)
 #
 # We retrieve the SVC discriminating weights
 coef_ = decoder.coef_
-print(coef_)
+print(f"{coef_=}")
 
 # %%
 # It's a numpy array with only one coefficient per voxel:
-print(coef_.shape)
+print(f"{coef_.shape=}")
 
 # %%
 # To get the Nifti image of these coefficients, we only need retrieve the
@@ -306,14 +309,19 @@ coef_img = decoder.coef_img_["face"]
 
 # %%
 # coef_img is now a NiftiImage.  We can save the coefficients as a nii.gz file:
-decoder.coef_img_["face"].to_filename("haxby_svc_weights.nii.gz")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_decoding_tutorial"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 
 # %%
 # Plotting the :term:`SVM` weights
 # ................................
 #
 # We can plot the weights, using the subject's anatomical as a background
-plotting.view_img(
+view_img(
     decoder.coef_img_["face"],
     bg_img=haxby_dataset.anat[0],
     title="SVM weights",
@@ -326,8 +334,9 @@ plotting.view_img(
 #
 # Does the model above perform better than chance?
 # To answer this question, we measure a score at random using simple strategies
-# that are implemented in the :class:`nilearn.decoding.Decoder` object. This is
-# useful to inspect the decoding performance by comparing to a score at chance.
+# that are implemented in the :class:`~nilearn.decoding.Decoder` object.
+# This is useful to inspect the decoding performance
+# by comparing to a score at chance.
 
 # %%
 # Let's define a object with Dummy estimator replacing 'svc' for classification
@@ -338,23 +347,32 @@ dummy_decoder = Decoder(
     cv=cv,
     standardize="zscore_sample",
 )
-dummy_decoder.fit(fmri_niimgs, conditions, groups=session_label)
+dummy_decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
 # Now, we can compare these scores by simply taking a mean over folds
-print(dummy_decoder.cv_scores_)
+print(f"{dummy_decoder.cv_scores_=}")
 
 # %%
-# Further reading
-# ---------------
+# References
+# ----------
 #
-# * The :ref:`section of the documentation on decoding <decoding>`
+# .. footbibliography::
 #
-# * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
-#   For decoding without a precomputed mask
+# .. seealso::
 #
-# * :ref:`frem`
+#   * The :ref:`section of the documentation on decoding <decoding>`
 #
-# * :ref:`space_net`
+#   * :ref:`sphx_glr_auto_examples_02_decoding_\
+#     plot_haxby_understand_decoder.py`
+#     For a more in-depth understanding
+#     of the :class:`~nilearn.decoding.Decoder`
+#
+#   * :ref:`sphx_glr_auto_examples_02_decoding_plot_haxby_anova_svm.py`
+#     For decoding without a precomputed mask
+#
+#   * :ref:`frem`
+#
+#   * :ref:`space_net`
 #
 # ______________
 

@@ -18,6 +18,8 @@ hemisphere, negative in the left hemisphere).
 
 """
 
+from nilearn import plotting
+
 # %%
 # Fetch dataset
 # -------------
@@ -32,7 +34,6 @@ data = fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects,
     get_tmaps=True,
-    legacy_format=False,
 )
 
 # %%
@@ -43,10 +44,8 @@ data = fetch_localizer_contrasts(
 # subjects.
 import matplotlib.pyplot as plt
 
-from nilearn import plotting
-
 subjects = data["ext_vars"]["participant_id"].tolist()
-fig, axes = plt.subplots(nrows=4, ncols=4)
+fig, axes = plt.subplots(nrows=4, ncols=4, figsize=(8, 8))
 for cidx, tmap in enumerate(data["tmaps"]):
     plotting.plot_glass_brain(
         tmap,
@@ -56,6 +55,8 @@ for cidx, tmap in enumerate(data["tmaps"]):
         axes=axes[int(cidx / 4), int(cidx % 4)],
         plot_abs=False,
         display_mode="z",
+        vmin=-8.5,
+        vmax=8.5,
     )
 fig.suptitle("subjects t_map left-right button press")
 plt.show()
@@ -80,7 +81,7 @@ design_matrix = pd.DataFrame(
 # Next, we specify the model and fit it.
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
 second_level_model = second_level_model.fit(
     second_level_input,
     design_matrix=design_matrix,
@@ -94,7 +95,7 @@ z_map = second_level_model.compute_contrast(
     output_type="z_score",
 )
 
-# %%##
+# %%
 # We threshold the second level :term:`contrast`
 # at uncorrected p < 0.001 and plot it.
 from scipy.stats import norm
@@ -126,7 +127,7 @@ p_val = second_level_model.compute_contrast(output_type="p_value")
 n_voxels = np.sum(get_data(second_level_model.masker_.mask_img_))
 # Correcting the p-values for multiple testing and taking negative logarithm
 neg_log_pval = math_img(
-    f"-np.log10(np.minimum(1, img * {str(n_voxels)}))",
+    f"-np.log10(np.minimum(1, img * {n_voxels!s}))",
     img=p_val,
 )
 
@@ -167,7 +168,7 @@ out_dict = non_parametric_inference(
     n_perm=500,  # 500 for the sake of time. Ideally, this should be 10,000.
     two_sided_test=False,
     smoothing_fwhm=8.0,
-    n_jobs=1,
+    n_jobs=2,
     threshold=0.001,
 )
 
@@ -213,12 +214,14 @@ for img_counter, (i_row, j_col) in enumerate(
         IMAGES[img_counter],
         colorbar=True,
         vmax=vmax,
+        vmin=threshold,
         display_mode="z",
         plot_abs=False,
         cut_coords=cut_coords,
         threshold=threshold,
         figure=fig,
         axes=ax,
+        cmap="inferno",
     )
     ax.set_title(TITLES[img_counter])
 fig.suptitle("Group left-right button press\n(negative log10 p-values)")

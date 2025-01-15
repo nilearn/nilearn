@@ -1,4 +1,5 @@
 """Test for "region" module."""
+
 # Author: Ph. Gervais
 
 import warnings
@@ -15,7 +16,7 @@ from nilearn._utils.data_gen import (
     generate_timeseries,
 )
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _shape_3d_default
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker
@@ -53,7 +54,9 @@ N_REGIONS = 8
 N_TIMEPOINTS = 17
 
 
-def _make_label_data(shape=_shape_3d_default()):
+def _make_label_data(shape=None):
+    if shape is None:
+        shape = _shape_3d_default()
     labels_data = np.zeros(shape, dtype="int32")
     h0, h1, h2 = (s // 2 for s in shape)
     labels_data[:h0, :h1, :h2] = 1
@@ -120,7 +123,7 @@ def _all_voxel_of_each_region_have_same_values(
 
 
 def test_check_shape_and_affine_compatibility_without_dim(img_3d_zeros_eye):
-    """Ensure correct behaviour for valid data without dim"""
+    """Ensure correct behavior for valid data without dim."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         _check_shape_and_affine_compatibility(
@@ -131,7 +134,7 @@ def test_check_shape_and_affine_compatibility_without_dim(img_3d_zeros_eye):
 def test_check_shape_and_affine_compatibility_with_dim(
     img_3d_zeros_eye, img_4d_zeros_eye
 ):
-    """Ensure correct behaviour for valid data without dim"""
+    """Ensure correct behavior for valid data without dim."""
     with warnings.catch_warnings():
         warnings.simplefilter("error")
         _check_shape_and_affine_compatibility(
@@ -155,7 +158,7 @@ def test_check_shape_and_affine_compatibility_error(
         _check_shape_and_affine_compatibility(img1=img_3d_zeros_eye, img2=img2)
 
 
-def test_errors_3D(img_3d_zeros_eye, img_4d_zeros_eye):
+def test_errors_3d(img_3d_zeros_eye, img_4d_zeros_eye):
     """Verify that 3D images are refused."""
     wrong_dim_image = img_3d_zeros_eye
 
@@ -168,7 +171,7 @@ def test_errors_3D(img_3d_zeros_eye, img_4d_zeros_eye):
         img_to_signals_maps(imgs=img_4d_zeros_eye, maps_img=wrong_dim_image)
 
 
-def test_errors_4D_labels(img_4d_zeros_eye):
+def test_errors_4d_labels(img_4d_zeros_eye):
     """Verify that 4D images are refused."""
     wrong_dim_label_img = img_4d_zeros_eye
 
@@ -183,7 +186,7 @@ def test_errors_4D_labels(img_4d_zeros_eye):
         )
 
 
-def test_errors_4D_masks(img_3d_zeros_eye, img_4d_zeros_eye):
+def test_errors_4d_masks(img_3d_zeros_eye, img_4d_zeros_eye):
     """Verify that 4D images are refused."""
     wrong_dim_mask_img = img_4d_zeros_eye
 
@@ -298,7 +301,7 @@ def test_signals_to_img_labels_bad_mask_input(
     "shape, affine, error_msg",
     [
         ((8, 9, 11, 7), _affine_eye(), SHAPE_ERROR_MSG),
-        (_shape_3d_default() + (7,), 2 * _affine_eye(), AFFINE_ERROR_MSG),
+        ((*_shape_3d_default(), 7), 2 * _affine_eye(), AFFINE_ERROR_MSG),
     ],
 )
 def test_img_to_signals_maps_bad_maps(
@@ -332,13 +335,14 @@ def test_img_to_signals_maps_bad_masks(
 
 
 def test_signals_extraction_with_labels_without_mask(
-    signals, labels_data, labels_img, shape_3d_default
+    signals, labels_data, labels_img, shape_3d_default, tmp_path
 ):
     """Test conversion between signals and images \
-    using regions defined by labels."""
+    using regions defined by labels.
+    """
     data_img = signals_to_img_labels(signals=signals, labels_img=labels_img)
 
-    assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
+    assert data_img.shape == (*shape_3d_default, N_TIMEPOINTS)
     data = get_data(data_img)
     assert np.all(data.std(axis=-1) > 0)
     # There must be non-zero data (safety net)
@@ -356,25 +360,56 @@ def test_signals_extraction_with_labels_without_mask(
     assert_almost_equal(signals_r, signals)
     assert labels_r == list(range(1, 9))
 
-    with write_tmp_imgs(data_img) as filenames:
-        signals_r, labels_r = img_to_signals_labels(
-            imgs=filenames, labels_img=labels_img
-        )
+    filenames = write_imgs_to_path(data_img, file_path=tmp_path)
+    signals_r, labels_r = img_to_signals_labels(
+        imgs=filenames, labels_img=labels_img
+    )
 
-        assert_almost_equal(signals_r, signals)
-        assert labels_r == list(range(1, 9))
+    assert_almost_equal(signals_r, signals)
+    assert labels_r == list(range(1, 9))
+
+
+def test_signals_extraction_with_labels_without_mask_return_masked_atlas(
+    signals, labels_img
+):
+    """Test masked_atlas is correct in conversion between signals and images \
+    using regions defined by labels.
+    """
+    data_img = signals_to_img_labels(signals=signals, labels_img=labels_img)
+
+    # test return_masked_atlas
+    (
+        _,
+        _,
+        masked_atlas_r,
+    ) = img_to_signals_labels(
+        imgs=data_img,
+        labels_img=labels_img,
+        return_masked_atlas=True,
+    )
+
+    labels_data = get_data(labels_img)
+    labels_data_r = get_data(masked_atlas_r)
+
+    # masked_atlas_r should be the same as labels_img
+    assert_equal(labels_data_r, labels_data)
+
+    # labels should be the same as before
+    # the labels_img does not contain background
+    assert list(np.unique(labels_data_r)) == list(range(1, 9))
 
 
 def test_signals_extraction_with_labels_with_mask(
-    signals, labels_img, labels_data, mask_img, shape_3d_default
+    signals, labels_img, labels_data, mask_img, shape_3d_default, tmp_path
 ):
     """Test conversion between signals and images \
-    using regions defined by labels with a mask."""
+    using regions defined by labels with a mask.
+    """
     data_img = signals_to_img_labels(
         signals=signals, labels_img=labels_img, mask_img=mask_img
     )
 
-    assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
+    assert data_img.shape == (*shape_3d_default, N_TIMEPOINTS)
     # There must be non-zero data (safety net)
     data = get_data(data_img)
     assert abs(data).max() > 1e-9
@@ -382,18 +417,16 @@ def test_signals_extraction_with_labels_with_mask(
     # Zero outside of the mask
     assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS)
 
-    with write_tmp_imgs(labels_img, mask_img) as filenames:
-        data_img = signals_to_img_labels(
-            signals=signals, labels_img=filenames[0], mask_img=filenames[1]
-        )
+    filenames = write_imgs_to_path(labels_img, mask_img, file_path=tmp_path)
+    data_img = signals_to_img_labels(
+        signals=signals, labels_img=filenames[0], mask_img=filenames[1]
+    )
 
-        assert data_img.shape == (shape_3d_default + (N_TIMEPOINTS,))
-        data = get_data(data_img)
-        assert abs(data).max() > 1e-9
-        # Zero outside of the mask
-        assert np.all(
-            data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS
-        )
+    assert data_img.shape == (*shape_3d_default, N_TIMEPOINTS)
+    data = get_data(data_img)
+    assert abs(data).max() > 1e-9
+    # Zero outside of the mask
+    assert np.all(data[np.logical_not(get_data(mask_img))].std(axis=-1) < EPS)
 
     # mask labels before checking
     masked_labels_data = labels_data.copy()
@@ -411,11 +444,45 @@ def test_signals_extraction_with_labels_with_mask(
     assert labels_r == list(range(1, 9))
 
 
+def test_signals_extraction_with_labels_with_mask_return_masked_atlas(
+    signals, labels_img, mask_img
+):
+    """Test masked_atlas is correct in conversion between signals and images \
+    using regions defined by labels and a mask.
+    """
+    data_img = signals_to_img_labels(
+        signals=signals, labels_img=labels_img, mask_img=mask_img
+    )
+
+    # test return_masked_atlas
+    # create a mask_img with only 3 regions
+    mask_img = _create_mask_with_3_regions_from_labels_data(
+        get_data(labels_img), labels_img.affine
+    )
+
+    (
+        _,
+        _,
+        masked_atlas_r,
+    ) = img_to_signals_labels(
+        imgs=data_img,
+        labels_img=labels_img,
+        mask_img=mask_img,
+        return_masked_atlas=True,
+    )
+
+    labels_data_r = get_data(masked_atlas_r)
+
+    # labels should be masked and only contain 3 regions
+    # and the background
+    assert list(np.unique(labels_data_r)) == [0, 1, 2, 5]
+
+
 def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     # Generate signal imgs
     maps_img, mask_img = generate_maps(shape_3d_default, N_REGIONS)
     maps_data = get_data(maps_img)
-    data = np.zeros(shape_3d_default + (N_TIMEPOINTS,))
+    data = np.zeros((*shape_3d_default, N_TIMEPOINTS))
     signals = np.zeros((N_TIMEPOINTS, maps_data.shape[-1]))
     for n in range(maps_data.shape[-1]):
         signals[:, n] = rng.standard_normal(size=N_TIMEPOINTS)
@@ -445,7 +512,7 @@ def test_signal_extraction_with_maps_and_labels(
     labels = list(range(N_REGIONS + 1))
     labels_data = get_data(labeled_regions)
     # Convert to maps
-    maps_data = np.zeros(shape_3d_default + (N_REGIONS,))
+    maps_data = np.zeros((*shape_3d_default, N_REGIONS))
     for n, l in enumerate(labels):
         if n == 0:
             continue
@@ -481,10 +548,10 @@ def test_signal_extraction_with_maps_and_labels(
     labels_img_r = signals_to_img_labels(
         labels_signals, labeled_regions, mask_img=mask_img
     )
-    assert labels_img_r.shape == shape_3d_default + (N_TIMEPOINTS,)
+    assert labels_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
 
     maps_img_r = signals_to_img_maps(maps_signals, maps_img, mask_img=mask_img)
-    assert maps_img_r.shape == shape_3d_default + (N_TIMEPOINTS,)
+    assert maps_img_r.shape == (*shape_3d_default, N_TIMEPOINTS)
 
 
 def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
@@ -545,6 +612,22 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     assert labels_signals.shape == (N_TIMEPOINTS, 8)
     assert len(labels_labels) == 8
 
+    # test return_masked_atlas deprecation warning
+    with pytest.warns(
+        DeprecationWarning,
+        match='After version 0.13. "img_to_signals_labels" will also return '
+        'the "masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
+        "used to toggle this behavior. In version 0.15, "
+        '"return_masked_atlas" parameter will be removed.',
+    ):
+        img_to_signals_labels(
+            imgs=fmri_img,
+            labels_img=labeled_regions,
+            mask_img=mask_img,
+            keep_masked_labels=False,
+            return_masked_atlas=False,
+        )
+
 
 def test_img_to_signals_maps_warnings(
     labeled_regions, fmri_img, shape_3d_default
@@ -552,7 +635,7 @@ def test_img_to_signals_maps_warnings(
     labels = list(range(N_REGIONS + 1))
     labels_data = get_data(labeled_regions)
     # Convert to maps
-    maps_data = np.zeros(shape_3d_default + (N_REGIONS,))
+    maps_data = np.zeros((*shape_3d_default, N_REGIONS))
     for n, l in enumerate(labels):
         if n == 0:
             continue
@@ -634,7 +717,7 @@ def test_signal_extraction_nans_in_regions_are_replaced_with_zeros():
 
 def test_trim_maps(shape_3d_default):
     # maps
-    maps_data = np.zeros(shape_3d_default + (N_REGIONS,), dtype=np.float32)
+    maps_data = np.zeros((*shape_3d_default, N_REGIONS), dtype=np.float32)
     h0, h1, h2 = (s // 2 for s in shape_3d_default)
     maps_data[:h0, :h1, :h2, 0] = 1
     maps_data[:h0, :h1, h2:, 1] = 1.1

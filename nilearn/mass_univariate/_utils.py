@@ -1,10 +1,11 @@
 """Utility functions for the permuted least squares method."""
+
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
 
 
-def _calculate_tfce(
+def calculate_tfce(
     arr4d,
     bin_struct,
     E=0.5,
@@ -83,7 +84,7 @@ def _calculate_tfce(
         # If we apply the sign first...
         for sign in signs:
             # Init a temp copy of arr3d with the current sign applied,
-            # which can then be re-used by incrementally setting more
+            # which can then be reused by incrementally setting more
             # voxel's to background, by taking advantage that each score_thresh
             # is incrementally larger
             temp_arr3d = arr3d * sign
@@ -93,7 +94,7 @@ def _calculate_tfce(
                 temp_arr3d[temp_arr3d < score_thresh] = 0
 
                 # Label into clusters - importantly (for the next step)
-                # this returns clusters labelled ordinally
+                # this returns clusters labeled ordinally
                 # from 1 to n_clusters+1,
                 # which allows us to use bincount to count
                 # frequencies directly.
@@ -120,9 +121,7 @@ def _calculate_tfce(
                 # (via the current score_thresh)
                 # NOTE: We do not multiply by dh, based on fslmaths'
                 # implementation. This differs from the original paper.
-                cluster_tfces = (
-                    sign * (cluster_counts**E) * (score_thresh**H)
-                )
+                cluster_tfces = sign * (cluster_counts**E) * (score_thresh**H)
 
                 # Before we can add these values to tfce_4d, we need to
                 # map cluster-wise tfce values back to a voxel-wise array,
@@ -141,7 +140,7 @@ def _calculate_tfce(
     return tfce_4d
 
 
-def _null_to_p(test_values, null_array, alternative="two-sided"):
+def null_to_p(test_values, null_array, alternative="two-sided"):
     """Return p-value for test value(s) against null array.
 
     Parameters
@@ -214,7 +213,7 @@ def _null_to_p(test_values, null_array, alternative="two-sided"):
     return result[0] if return_first else result
 
 
-def _calculate_cluster_measures(
+def calculate_cluster_measures(
     arr4d,
     threshold,
     bin_struct,
@@ -288,7 +287,7 @@ def _calculate_cluster_measures(
     return max_sizes, max_masses
 
 
-def _normalize_matrix_on_axis(m, axis=0):
+def normalize_matrix_on_axis(m, axis=0):
     """Normalize a 2D matrix on an axis.
 
     Parameters
@@ -296,7 +295,7 @@ def _normalize_matrix_on_axis(m, axis=0):
     m : numpy 2D array,
         The matrix to normalize.
 
-    axis : integer in {0, 1}, default=0
+    axis : :obj`int` in {0, 1}, default=0
         A valid axis to normalize across.
 
     Returns
@@ -308,12 +307,13 @@ def _normalize_matrix_on_axis(m, axis=0):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     _normalize_matrix_on_axis)
+    ...     normalize_matrix_on_axis,
+    ... )
     >>> X = np.array([[0, 4], [1, 0]])
-    >>> _normalize_matrix_on_axis(X)
+    >>> normalize_matrix_on_axis(X)
     array([[0., 1.],
            [1., 0.]])
-    >>> _normalize_matrix_on_axis(X, axis=1)
+    >>> normalize_matrix_on_axis(X, axis=1)
     array([[0., 1.],
            [1., 0.]])
 
@@ -328,13 +328,13 @@ def _normalize_matrix_on_axis(m, axis=0):
         # array transposition preserves the contiguity flag of that array
         ret = (m.T / np.sqrt(np.sum(m**2, axis=0))[:, np.newaxis]).T
     elif axis == 1:
-        ret = _normalize_matrix_on_axis(m.T).T
+        ret = normalize_matrix_on_axis(m.T).T
     else:
         raise ValueError(f"axis(={int(axis)}) out of bounds")
     return ret
 
 
-def _orthonormalize_matrix(m, tol=1.0e-12):
+def orthonormalize_matrix(m, tol=1.0e-12):
     """Orthonormalize a matrix.
 
     Uses a Singular Value Decomposition.
@@ -357,14 +357,15 @@ def _orthonormalize_matrix(m, tol=1.0e-12):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     _orthonormalize_matrix)
+    ...     orthonormalize_matrix,
+    ... )
     >>> X = np.array([[1, 2], [0, 1], [1, 1]])
-    >>> _orthonormalize_matrix(X)
+    >>> orthonormalize_matrix(X)
     array([[-0.81049889, -0.0987837 ],
            [-0.31970025, -0.75130448],
            [-0.49079864,  0.65252078]])
     >>> X = np.array([[0, 1], [4, 0]])
-    >>> _orthonormalize_matrix(X)
+    >>> orthonormalize_matrix(X)
     array([[ 0., -1.],
            [-1.,  0.]])
 
@@ -374,7 +375,7 @@ def _orthonormalize_matrix(m, tol=1.0e-12):
     return np.ascontiguousarray(U[:, :n_eig])
 
 
-def _t_score_with_covars_and_normalized_design(
+def t_score_with_covars_and_normalized_design(
     tested_vars, target_vars, covars_orthonormalized=None
 ):
     """t-score in the regression of tested variates against target variates.

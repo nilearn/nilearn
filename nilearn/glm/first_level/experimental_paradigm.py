@@ -12,10 +12,13 @@ It can also contain:
 Author: Bertrand Thirion, 2015
 
 """
+
 import warnings
 
 import pandas as pd
 from pandas.api.types import is_numeric_dtype
+
+from nilearn._utils import logger
 
 
 def check_events(events):
@@ -107,7 +110,7 @@ def _check_columns(events):
             raise ValueError(
                 f"The provided events data has no {col_name} column."
             )
-        if events[col_name].isnull().any():
+        if events[col_name].isna().any():
             raise ValueError(
                 f"The following column must not contain nan values: {col_name}"
             )
@@ -138,18 +141,26 @@ def _check_null_duration(events):
         events["duration"] == 0
     ].unique()
     if len(conditions_with_null_duration) > 0:
+        ordered_list = [
+            f"- '{x}'\n" for x in sorted(conditions_with_null_duration)
+        ]
+        ordered_list = "".join(ordered_list)
         warnings.warn(
-            "The following conditions contain events with null duration:\n"
-            f"{', '.join(conditions_with_null_duration)}."
+            (
+                "The following conditions contain events with null duration:\n"
+                f"{ordered_list}"
+            ),
+            stacklevel=4,
         )
 
 
 def _handle_modulation(events):
     """Set the modulation column to 1 if it is not present."""
     if "modulation" in events.columns:
-        print(
+        logger.log(
             "A 'modulation' column was found in "
-            "the given events data and is used."
+            "the given events data and is used.",
+            stack_level=2,
         )
     else:
         events["modulation"] = 1

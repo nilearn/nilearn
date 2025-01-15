@@ -36,7 +36,7 @@ plotting.plot_img(MNI152_FILE_PATH)
 # ------------------------------------
 #
 # Let's use an image-smoothing function from nilearn:
-# :func:`nilearn.image.smooth_img`
+# :func:`~nilearn.image.smooth_img`
 #
 # Functions containing 'img' can take either a filename or an image as input.
 #
@@ -59,12 +59,49 @@ plotting.plot_img(smooth_anat_img)
 more_smooth_anat_img = image.smooth_img(smooth_anat_img, fwhm=3)
 plotting.plot_img(more_smooth_anat_img)
 
+
+# %%
+# Globbing over multiple 3D volumes
+# ---------------------------------
+# Nilearn also supports reading multiple volumes at once,
+# using glob-style patterns.
+# For instance, we can smooth volumes from many subjects
+# at once and get a 4D image as output.
+
+# %%
+# First let's fetch Haxby dataset for subject 1 and 2
+from nilearn import datasets
+
+haxby = datasets.fetch_haxby(subjects=[1, 2])
+
+# %%
+# Now we can find the anatomical images from both
+# subjects using the `*` wildcard
+from pathlib import Path
+
+anats_all_subjects = (
+    Path(datasets.get_data_dirs()[0]) / "haxby2001" / "subj*" / "anat*"
+)
+
+# %%
+# Now we can smooth all the anatomical images at once
+anats_all_subjects_smooth = image.smooth_img(anats_all_subjects, fwhm=5)
+
+# %%
+# This is a 4D image containing one volume per subject
+print(anats_all_subjects_smooth.shape)
+
 # %%
 # Saving results to a file
 # -------------------------
 #
 # We can save any in-memory object as follows:
-more_smooth_anat_img.to_filename("more_smooth_anat_img.nii.gz")
+output_dir = Path.cwd() / "results" / "plot_nilearn_101"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+anats_all_subjects_smooth.to_filename(
+    output_dir / "anats_all_subjects_smooth.nii.gz"
+)
 
 # %%
 # Finally, calling plotting.show() is necessary to display the figure
@@ -76,8 +113,9 @@ plotting.show()
 #
 # ______
 #
-# To recap, all the nilearn tools can take data as filenames or in-memory
-# objects, and return brain volumes as in-memory objects. These can be
+# To recap, all the nilearn tools can take data as filenames or
+# glob-style patterns or in-memory objects, and return brain
+# volumes as in-memory objects. These can be
 # passed on to other nilearn tools, or saved to disk.
 
 # sphinx_gallery_dummy_images=1

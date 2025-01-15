@@ -2,15 +2,12 @@
 Second-level fMRI model: true positive proportion in clusters
 =============================================================
 
-This script showcases the so-called "All resolution inference" procedure, in
-which the proportion of true discoveries in arbitrary clusters is estimated.
+This script showcases
+the so-called "All resolution inference" procedure
+(:footcite:t:`Rosenblatt2018`),
+in which the proportion of true discoveries in arbitrary clusters is estimated.
 The clusters can be defined from the input image, i.e. in a circular way, as
 the error control accounts for arbitrary cluster selection.
-
-Rosenblatt JD, Finos L, Weeda WD, Solari A, Goeman JJ. All-Resolutions
-Inference for brain imaging. Neuroimage. 2018 Nov 1;181:786-796. doi:
-10.1016/j.neuroimage.2018.07.060
-
 """
 
 # %%
@@ -26,8 +23,6 @@ n_subjects = 16
 data = fetch_localizer_contrasts(
     ["left vs right button press"],
     n_subjects,
-    get_tmaps=True,
-    legacy_format=False,
 )
 # %%
 # Estimate second level model
@@ -45,12 +40,12 @@ design_matrix = pd.DataFrame(
 # Model specification and fit
 from nilearn.glm.second_level import SecondLevelModel
 
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0)
+second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
 second_level_model = second_level_model.fit(
     second_level_input, design_matrix=design_matrix
 )
 
-# %%#
+# %%
 # To estimate the :term:`contrast` is very simple.
 # We can just provide the column name of the design matrix.
 z_map = second_level_model.compute_contrast(output_type="z_score")
@@ -77,6 +72,7 @@ plotting.plot_stat_map(
     display_mode="z",
     vmax=1,
     colorbar=True,
+    cmap="inferno",
     title="group left-right button press, proportion true positives",
 )
 
@@ -89,3 +85,9 @@ plotting.plot_stat_map(
 )
 
 plotting.show()
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::

@@ -7,20 +7,19 @@ between regions of interest : correlation, partial correlation,
 and tangent space embedding.
 
 The resulting connectivity coefficients can be used to
-discriminate children from adults. In general, the tangent space embedding
-**outperforms** the standard correlations: see `Dadi et al 2019
-<https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
+discriminate children from adults.In general, the tangent space embedding
+**outperforms** the standard correlations: see :footcite:t:`Dadi2019`
 for a careful study.
 
 .. include:: ../../../examples/masker_note.rst
 
 """
 
-# %%##
+# %%
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
-from nilearn import datasets
+from nilearn import datasets, plotting
 
 development_dataset = datasets.fetch_development_fmri(n_subjects=30)
 
@@ -38,7 +37,7 @@ print(
 # Region signals extraction
 # -------------------------
 # To extract regions time series, we instantiate a
-# :class:`nilearn.maskers.NiftiMapsMasker` object and pass the atlas the
+# :class:`~nilearn.maskers.NiftiMapsMasker` object and pass the atlas the
 # file name to it, as well as filtering band-width and detrending option.
 from nilearn.maskers import NiftiMapsMasker
 
@@ -78,7 +77,7 @@ print(f"Data has {len(children)} children.")
 # -----------------------------------
 # The simpler and most commonly used kind of connectivity is correlation. It
 # models the full (marginal) connectivity between pairwise ROIs. We can
-# estimate it using :class:`nilearn.connectome.ConnectivityMeasure`.
+# estimate it using :class:`~nilearn.connectome.ConnectivityMeasure`.
 from nilearn.connectome import ConnectivityMeasure
 
 correlation_measure = ConnectivityMeasure(
@@ -102,20 +101,23 @@ print(
 mean_correlation_matrix = correlation_measure.mean_
 print(f"Mean correlation has shape {mean_correlation_matrix.shape}.")
 
-from matplotlib import pyplot as plt
 
 # %%
 # We display the connectome matrices of the first 3 children
-from nilearn import plotting
+import numpy as np
+from matplotlib import pyplot as plt
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
+vmax = np.absolute(correlation_matrices).max()
 for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
     plotting.plot_matrix(
         matrix,
         tri="lower",
-        colorbar=False,
+        colorbar=True,
         axes=ax,
         title=f"correlation, child {i}",
+        vmax=vmax,
+        vmin=-vmax,
     )
 # %%
 # The blocks structure that reflect functional networks are visible.
@@ -145,13 +147,16 @@ partial_correlation_matrices = partial_correlation_measure.fit_transform(
 # Most of direct connections are weaker than full connections.
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
+vmax = np.absolute(partial_correlation_matrices).max()
 for i, (matrix, ax) in enumerate(zip(partial_correlation_matrices, axes)):
     plotting.plot_matrix(
         matrix,
         tri="lower",
-        colorbar=False,
+        colorbar=True,
         axes=ax,
         title=f"partial correlation, child {i}",
+        vmax=vmax,
+        vmin=-vmax,
     )
 # %%
 plotting.plot_connectome(
@@ -188,7 +193,7 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
     plotting.plot_matrix(
         matrix,
         tri="lower",
-        colorbar=False,
+        colorbar=True,
         axes=ax,
         title=f"tangent offset, child {i}",
     )
@@ -207,7 +212,6 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
 # We use random splits of the subjects into training/testing sets.
 # StratifiedShuffleSplit allows preserving the proportion of children in the
 # test set.
-import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.svm import LinearSVC
@@ -246,7 +250,8 @@ for kind in kinds:
 mean_scores = [np.mean(scores[kind]) for kind in kinds]
 scores_std = [np.std(scores[kind]) for kind in kinds]
 
-plt.figure(figsize=(6, 4))
+plt.figure(figsize=(6, 4), constrained_layout=True)
+
 positions = np.arange(len(kinds)) * 0.1 + 0.1
 plt.barh(positions, mean_scores, align="center", height=0.05, xerr=scores_std)
 yticks = [k.replace(" ", "\n") for k in kinds]
@@ -255,16 +260,20 @@ plt.gca().grid(True)
 plt.gca().set_axisbelow(True)
 plt.gca().axvline(0.8, color="red", linestyle="--")
 plt.xlabel("Classification accuracy\n(red line = chance level)")
-plt.tight_layout()
 
 
 # %%
 # This is a small example to showcase nilearn features. In practice such
 # comparisons need to be performed on much larger cohorts and several
 # datasets.
-# `Dadi et al 2019
-# <https://www.sciencedirect.com/science/article/pii/S1053811919301594>`_
-# Showed that across many cohorts and clinical questions, the tangent
-# kind should be preferred.
+# :footcite:t:`Dadi2019` showed that
+# across many cohorts and clinical questions,
+# the tangent kind should be preferred.
 
 plotting.show()
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::

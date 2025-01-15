@@ -2,11 +2,11 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn._utils.testing import write_tmp_imgs
+from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.decomposition.tests.test_canica import _make_canica_test_data
-from nilearn.decomposition.tests.test_multi_pca import _tmp_dir
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
 
@@ -29,6 +29,42 @@ def mask_img():
 def canica_data():
     """Create a canonical ICA data for testing purposes."""
     return _make_canica_test_data()[0]
+
+
+extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_estimators_unfitted",
+    "check_get_params_invariance",
+    "check_no_attributes_set_in_init",
+    "check_transformers_unfitted",
+    "check_transformer_n_iter",
+    "check_parameters_default_constructible",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DictLearning()], extra_valid_checks=extra_valid_checks
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DictLearning()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
@@ -193,7 +229,7 @@ def test_components_img(canica_data, mask_img):
 
 
 @pytest.mark.parametrize("n_subjects", [1, 3])
-def test_with_globbing_patterns(mask_img, n_subjects):
+def test_with_globbing_patterns(mask_img, n_subjects, tmp_path):
     data, *_ = _make_canica_test_data(n_subjects=n_subjects)
 
     n_components = 3
@@ -205,17 +241,18 @@ def test_with_globbing_patterns(mask_img, n_subjects):
     elif n_subjects == 3:
         data = [data[0], data[1], data[2]]
 
-    with write_tmp_imgs(*data, create_files=True, use_wildcards=True) as img:
-        input_image = _tmp_dir() + img
+    img = write_imgs_to_path(
+        *data, file_path=tmp_path, create_files=True, use_wildcards=True
+    )
 
-        dict_learning.fit(input_image)
-        components_img = dict_learning.components_img_
+    dict_learning.fit(img)
+    components_img = dict_learning.components_img_
 
-        assert isinstance(components_img, Nifti1Image)
+    assert isinstance(components_img, Nifti1Image)
 
-        check_shape = data[0].shape[:3] + (n_components,)
+    check_shape = data[0].shape[:3] + (n_components,)
 
-        assert components_img.shape, check_shape
+    assert components_img.shape, check_shape
 
 
 def test_dictlearning_score(canica_data, mask_img):
@@ -231,7 +268,7 @@ def test_dictlearning_score(canica_data, mask_img):
     scores = dict_learning.score(canica_data, per_component=False)
 
     assert scores <= 1
-    assert 0 <= scores
+    assert scores >= 0
 
     # Per component score
     scores = dict_learning.score(canica_data, per_component=True)

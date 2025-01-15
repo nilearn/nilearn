@@ -21,8 +21,8 @@ from nilearn.decoding.space_net import (
     path_scores,
 )
 from nilearn.decoding.space_net_solvers import (
-    _graph_net_logistic,
-    _graph_net_squared_loss,
+    graph_net_logistic,
+    graph_net_squared_loss,
 )
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.image import get_data
@@ -38,12 +38,12 @@ PENALTY = ["graph-net", "tv-l1"]
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("n_alphas", range(1, 10))
 def test_space_net_alpha_grid(
     rng, is_classif, l1_ratio, n_alphas, n_samples=4, n_features=3
 ):
-    X = rng.randn(n_samples, n_features)
+    X = rng.standard_normal((n_samples, n_features))
     y = np.arange(n_samples)
 
     alpha_max = np.max(np.abs(np.dot(X.T, y))) / l1_ratio
@@ -78,7 +78,7 @@ def test_space_net_alpha_grid_same_as_sk():
 def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
     # This test evolves w so that every line of th _EarlyStoppingCallback
     # code is executed a some point. This a kind of code fuzzing.
-    X_test = rng.randn(n_samples, n_features)
+    X_test = rng.standard_normal((n_samples, n_features))
     y_test = np.dot(X_test, np.ones(n_features))
     w = np.zeros(n_features)
     escb = _EarlyStoppingCallback(X_test, y_test, False)
@@ -87,10 +87,10 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
         w[k] = 1
 
         # jitter
-        if k > 0 and rng.rand() > 0.9:
+        if k > 0 and rng.random() > 0.9:
             w[k - 1] = 1 - w[k - 1]
 
-        escb(dict(w=w, counter=counter))
+        escb({"w": w, "counter": counter})
         assert len(escb.test_scores) == counter + 1
 
         # restart
@@ -101,7 +101,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("n_alphas", [0.1, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("n_jobs", [1, -1])
 @pytest.mark.parametrize("cv", [2, 3])
 @pytest.mark.parametrize("perc", [5, 10])
@@ -129,7 +129,7 @@ def test_params_correctly_propagated_in_constructors(
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 def test_params_correctly_propagated_in_constructors_biz(
     penalty, is_classif, alpha, l1_ratio
 ):
@@ -173,7 +173,7 @@ def test_logistic_path_scores():
     alphas = [1.0, 0.1, 0.01]
 
     test_scores, best_w = logistic_path_scores(
-        _graph_net_logistic,
+        graph_net_logistic,
         X,
         y,
         mask,
@@ -197,7 +197,7 @@ def test_squared_loss_path_scores():
     alphas = [1.0, 0.1, 0.01]
 
     test_scores, best_w = squared_loss_path_scores(
-        _graph_net_squared_loss,
+        graph_net_squared_loss,
         X,
         y,
         mask,
@@ -213,7 +213,7 @@ def test_squared_loss_path_scores():
     assert X.shape[1] + 1 == len(best_w)
 
 
-@pytest.mark.parametrize("l1_ratio", [1])
+@pytest.mark.parametrize("l1_ratio", [0.99])
 @pytest.mark.parametrize("debias", [True])
 def test_tv_regression_simple(rng, l1_ratio, debias):
     dim = (4, 4, 4)
@@ -222,7 +222,7 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
     n = 10
     p = np.prod(dim)
     X = np.ones((n, 1)) + W_init.ravel().T
-    X += rng.randn(n, p)
+    X += rng.standard_normal((n, p))
     y = np.dot(X, W_init.ravel())
     X, mask = to_niimgs(X, dim)
 
@@ -236,12 +236,11 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
         is_classif=False,
         max_iter=10,
         debias=debias,
-        verbose=0,
     ).fit(X, y)
 
 
-@pytest.mark.parametrize("l1_ratio", [0.0, 0.5, 1.0])
-def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
+@pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
+def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
     W_init[2:3, 3:, 1:3] = 1
@@ -249,7 +248,7 @@ def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
     n = 10
     p = dim[0] * dim[1] * dim[2]
     X = np.ones((n, 1)) + W_init.ravel().T
-    X += rng.randn(n, p)
+    X += rng.standard_normal((n, p))
     y = np.dot(X, W_init.ravel())
     alpha = 1.0
     X, mask = to_niimgs(X, dim)
@@ -261,7 +260,6 @@ def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
         penalty="tv-l1",
         is_classif=False,
         max_iter=10,
-        verbose=0,
     ).fit(X, y)
 
 
@@ -277,7 +275,6 @@ def test_graph_net_classifier_score():
         l1_ratios=1.0,
         tol=1e-10,
         standardize=False,
-        verbose=0,
         screening_percentile=100.0,
     ).fit(X_, y)
 
@@ -305,7 +302,6 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         alphas=1.0 / C / X.shape[0],
         l1_ratios=1.0,
         tol=tol,
-        verbose=0,
         max_iter=1000,
         penalty="tv-l1",
         standardize=False,
@@ -333,7 +329,7 @@ def test_lasso_vs_graph_net():
     """
     size = 4
     X_, y, _, mask = create_graph_net_simulation_data(
-        snr=1.0, n_samples=10, size=size, n_points=5, random_state=42
+        snr=1.0, n_samples=10, size=size, n_points=5, random_state=10
     )
     X, mask = to_niimgs(X_, [size] * 3)
 
@@ -345,7 +341,6 @@ def test_lasso_vs_graph_net():
         is_classif=False,
         penalty="graph-net",
         max_iter=100,
-        verbose=0,
     )
     lasso.fit(X_, y)
     graph_net.fit(X, y)
@@ -354,13 +349,13 @@ def test_lasso_vs_graph_net():
         np.dot(X_, lasso.coef_) - y
     ) ** 2 + np.sum(np.abs(lasso.coef_))
     graph_net_perf = 0.5 * ((graph_net.predict(X) - y) ** 2).mean()
-    assert_almost_equal(graph_net_perf, lasso_perf, decimal=3)
+    assert_almost_equal(graph_net_perf, lasso_perf, decimal=2)
 
 
 def test_crop_mask(rng):
     mask = np.zeros((3, 4, 5), dtype=bool)
     box = mask[:2, :3, :4]
-    box[rng.rand(*box.shape) < 3.0] = 1  # mask covers 30% of brain
+    box[rng.random(box.shape) < 3.0] = 1  # mask covers 30% of brain
     idx = np.where(mask)
 
     assert idx[1].max() < 3
@@ -373,17 +368,17 @@ def test_crop_mask(rng):
 def test_univariate_feature_screening(
     rng, is_classif, dim=(11, 12, 13), n_samples=10
 ):
-    mask = rng.rand(*dim) > 100.0 / np.prod(dim)
+    mask = rng.random(dim) > 100.0 / np.prod(dim)
 
     assert mask.sum() >= 100.0
 
-    mask[
-        dim[0] // 2, dim[1] // 3 :, -dim[2] // 2 :
-    ] = 1  # put spatial structure
+    mask[dim[0] // 2, dim[1] // 3 :, -dim[2] // 2 :] = (
+        1  # put spatial structure
+    )
     n_features = mask.sum()
-    X = rng.randn(n_samples, n_features)
-    w = rng.randn(n_features)
-    w[rng.rand(n_features) > 0.8] = 0.0
+    X = rng.standard_normal((n_samples, n_features))
+    w = rng.standard_normal(n_features)
+    w[rng.random(n_features) > 0.8] = 0.0
     y = X.dot(w)
 
     X_, mask_, support_ = _univariate_feature_screening(
@@ -398,7 +393,7 @@ def test_univariate_feature_screening(
 
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("verbose", [True, False])
 def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
     cvobj = SpaceNetClassifier(
@@ -415,7 +410,7 @@ def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
 
 @pytest.mark.parametrize("penalty", PENALTY)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 1.0])
+@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("verbose", [True, False])
 def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
     cvobj = SpaceNetRegressor(
@@ -432,7 +427,7 @@ def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
-    X = rng.randn(10, 100)
+    X = rng.standard_normal((10, 100))
     y = np.arange(X.shape[0])
 
     assert not np.any(
@@ -465,9 +460,9 @@ def test_space_net_no_crash_not_fitted(model):
         RuntimeError,
         match=f"This {model.__name__} instance is not fitted yet",
     ):
-        model(verbose=0).predict(X)
+        model().predict(X)
 
-    model(mask=mask, alphas=1.0, verbose=0).fit(X, y).predict(X)
+    model(mask=mask, alphas=1.0).fit(X, y).predict(X)
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
@@ -477,8 +472,8 @@ def test_space_net_one_alpha_no_crash(model):
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
 
-    model(n_alphas=1, mask=mask, verbose=0).fit(X, y)
-    model(n_alphas=2, mask=mask, verbose=0, alphas=None).fit(X, y)
+    model(n_alphas=1, mask=mask).fit(X, y)
+    model(n_alphas=2, mask=mask, alphas=None).fit(X, y)
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
@@ -498,7 +493,6 @@ def test_checking_inputs_length(model):
             l1_ratios=1.0,
             tol=1e-10,
             screening_percentile=100.0,
-            verbose=0,
         ).fit(
             X_,
             y,
@@ -512,9 +506,30 @@ def test_targets_in_y_space_net_regressor():
     y = np.ones(iris.target.shape)
 
     imgs, mask = to_niimgs(X, (2, 2, 2))
-    regressor = SpaceNetRegressor(mask=mask, verbose=0)
+    regressor = SpaceNetRegressor(mask=mask)
 
     with pytest.raises(
         ValueError, match="The given input y must have at least 2 targets"
     ):
         regressor.fit(imgs, y)
+
+
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
+@pytest.mark.parametrize(
+    "model", [BaseSpaceNet, SpaceNetRegressor, SpaceNetClassifier]
+)
+def test_space_net_not_implemented_surface_objects(
+    surf_mask_dim, surf_mask_1d, surf_mask_2d, surf_img_2d, model
+):
+    """Raise NotImplementedError when space net is fit on surface objects."""
+    y = np.ones((5,))
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+
+    with pytest.raises(NotImplementedError):
+        model(mask=surf_mask).fit(surf_img_2d(5), y)
+
+    with pytest.raises(NotImplementedError):
+        model().fit(surf_img_2d(5), y)

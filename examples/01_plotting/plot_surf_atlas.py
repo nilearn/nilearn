@@ -2,112 +2,124 @@
 Loading and plotting of a cortical surface atlas
 ================================================
 
-The Destrieux :term:`parcellation` (Destrieux et al, 2010)
+The Destrieux :term:`parcellation` (:footcite:t:`Destrieux2010`)
 in fsaverage5 space as distributed with Freesurfer is used as the chosen atlas.
 
-The :func:`nilearn.plotting.plot_surf_roi` function is used
+The :func:`~nilearn.plotting.plot_surf_roi` function is used
 to plot the :term:`parcellation` on the pial surface.
 
 See :ref:`plotting` for more details.
-
-References
-----------
-Destrieux et al, (2010). Automatic parcellation of human cortical gyri and
-sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
-URL https://doi.org/10.1016/j.neuroimage.2010.06.010.
 """
 
 # %%
 # Data fetcher
 # ------------
-
 # Retrieve destrieux parcellation in fsaverage5 space from nilearn
-from nilearn import datasets
+# and create a :obj:`~nilearn.surface.SurfaceImage` instance with it.
+from nilearn.datasets import (
+    fetch_atlas_surf_destrieux,
+    load_fsaverage,
+    load_fsaverage_data,
+)
+from nilearn.surface import SurfaceImage
 
-destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
+fsaverage = load_fsaverage("fsaverage5")
+destrieux = fetch_atlas_surf_destrieux()
+destrieux_atlas = SurfaceImage(
+    mesh=fsaverage["pial"],
+    data={
+        "left": destrieux["map_left"],
+        "right": destrieux["map_right"],
+    },
+)
 
-# The parcellation is already loaded into memory
-parcellation = destrieux_atlas['map_left']
+# Retrieve fsaverage5 surface dataset for the plotting background.
+# It contains the surface template as pial and inflated version.
+fsaverage_meshes = load_fsaverage()
 
-# Retrieve fsaverage5 surface dataset for the plotting background. It contains
-# the surface template as pial and inflated version and a sulcal depth maps
-# which is used for shading
-fsaverage = datasets.fetch_surf_fsaverage()
+# The fsaverage meshes contains the FileMesh objects:
+print(f"{fsaverage_meshes['pial'].parts['left']=}")
+print(f"{fsaverage_meshes['inflated'].parts['left']=}")
 
-# The fsaverage dataset contains file names pointing to the file locations
-print("Fsaverage5 pial surface of left hemisphere is at: "
-      f"{fsaverage['pial_left']}")
-print("Fsaverage5 inflated surface of left hemisphere is at: "
-      f"{fsaverage['infl_left']}")
-print("Fsaverage5 sulcal depth map of left hemisphere is at: "
-      f"{fsaverage['sulc_left']}")
+# The fsaverage data contains file names pointing to the file locations
+# The sulcal depth maps will be is used for shading.
+fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+print(f"{fsaverage_sulcal=}")
 
 # %%
 # Visualization
 # -------------
 
-# Display Destrieux parcellation on fsaverage5 pial surface using nilearn
-from nilearn import plotting
+# %%
+# Destrieux parcellation on pial surface
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+from nilearn.plotting import plot_surf_roi, show
 
-plotting.plot_surf_roi(fsaverage['pial_left'], roi_map=parcellation,
-                       hemi='left', view='lateral',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       darkness=.5)
+plot_surf_roi(
+    roi_map=destrieux_atlas,
+    hemi="left",
+    view="lateral",
+    bg_map=fsaverage_sulcal,
+    bg_on_data=True,
+    darkness=0.5,
+    title="Destrieux parcellation on sulcal surface",
+)
 
 # %%
-# Display Destrieux :term:`parcellation` on inflated fsaverage5 surface
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view='lateral',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       darkness=.5)
+# Destrieux parcellation on inflated surface with different views
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+for view in ["lateral", "posterior", "ventral"]:
+    plot_surf_roi(
+        surf_mesh=fsaverage_meshes["inflated"],
+        roi_map=destrieux_atlas,
+        hemi="left",
+        view=view,
+        bg_map=fsaverage_sulcal,
+        bg_on_data=True,
+        darkness=0.5,
+        title=f"Destrieux parcellation on inflated surface\n{view} view",
+    )
+
+show()
 
 # %%
-# Display Destrieux :term:`parcellation` with different views: posterior
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view='posterior',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       darkness=.5)
-
-# %%
-# Display Destrieux :term:`parcellation` with different views: ventral
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view='ventral',
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       darkness=.5)
-plotting.show()
-
-# %%
-# Display Destrieux :term:`parcellation` with custom view: explicitly set angle
+# Destrieux parcellation with custom view: explicitly set angle
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 elev, azim = 210.0, 90.0  # appropriate for visualizing, e.g., the OTS
-plotting.plot_surf_roi(fsaverage['infl_left'], roi_map=parcellation,
-                       hemi='left', view=(elev, azim),
-                       bg_map=fsaverage['sulc_left'], bg_on_data=True,
-                       darkness=.5)
+plot_surf_roi(
+    surf_mesh=fsaverage_meshes["inflated"],
+    roi_map=destrieux_atlas,
+    hemi="left",
+    view=(elev, azim),
+    bg_map=fsaverage_sulcal,
+    bg_on_data=True,
+    darkness=0.5,
+    title="Arbitrary view of Destrieux parcellation",
+)
 
 # %%
 # Display connectome from surface parcellation
-#
-# The following code extracts 3D coordinates of surface parcels (a.k.a. labels
-# in the Freesurfer naming convention). To do so we load the pial surface
-# of fsaverage subject, get the vertices contained in each parcel and compute
-# the mean location to obtain the coordinates.
-
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# The following code extracts 3D coordinates of surface parcels
+# (also known as labels in the Freesurfer naming convention).
+# To do so we get the pial surface of fsaverage subject,
+# get the :term:`vertices<vertex>` contained in each parcel
+# and compute the mean location to obtain the coordinates.
 import numpy as np
 
-from nilearn import surface
+from nilearn.plotting import plot_connectome, view_connectome
 
-atlas = destrieux_atlas
 coordinates = []
-labels = destrieux_atlas['labels']
-for hemi in ['left', 'right']:
-    vert = destrieux_atlas[f'map_{hemi}']
-    rr, _ = surface.load_surf_mesh(fsaverage[f'pial_{hemi}'])
-    for k, label in enumerate(labels):
-        if "Unknown" not in str(label):  # Omit the Unknown label.
-            # Compute mean location of vertices in label of index k
-            coordinates.append(np.mean(rr[vert == k], axis=0))
-
-coordinates = np.array(coordinates)  # 3D coordinates of parcels
+for hemi in ["left", "right"]:
+    data = destrieux_atlas.data.parts[hemi]
+    mesh_coordinates = destrieux_atlas.mesh.parts[hemi].coordinates
+    coordinates.extend(
+        np.mean(mesh_coordinates[data == k], axis=0)
+        for k, label in enumerate(destrieux.labels)
+        if "Unknown" not in str(label)
+    )
+# 3D coordinates of parcels
+coordinates = np.array(coordinates)
 
 # We now make a synthetic connectivity matrix that connects labels
 # between left and right hemispheres.
@@ -117,37 +129,56 @@ n_parcels_hemi = n_parcels // 2
 corr[np.arange(n_parcels_hemi), np.arange(n_parcels_hemi) + n_parcels_hemi] = 1
 corr = corr + corr.T
 
-plotting.plot_connectome(corr, coordinates,
-                         edge_threshold="90%",
-                         title='fsaverage Destrieux atlas')
-plotting.show()
+plot_connectome(
+    adjacency_matrix=corr,
+    node_coords=coordinates,
+    edge_threshold="90%",
+    title="Connectome Destrieux atlas",
+)
+show()
 
 # %%
 # 3D visualization in a web browser
 # ---------------------------------
-# An alternative to :func:`nilearn.plotting.plot_surf_roi` is to use
-# :func:`nilearn.plotting.view_surf` for more interactive
-# visualizations in a web browser. See :ref:`interactive-surface-plotting` for
-# more details.
+# An alternative to :func:`~nilearn.plotting.plot_surf_roi` is to use
+# :func:`~nilearn.plotting.view_surf`
+# for more interactive visualizations in a web browser.
+# See :ref:`interactive-surface-plotting` for more details.
+from nilearn.plotting import view_surf
 
-view = plotting.view_surf(fsaverage.infl_left, parcellation,
-                          cmap='gist_ncar', symmetric_cmap=False)
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
-# be displayed below the cell
-
+view = view_surf(
+    surf_mesh=fsaverage_meshes["inflated"],
+    surf_map=destrieux_atlas,
+    cmap="gist_ncar",
+    symmetric_cmap=False,
+    colorbar=False,
+)
+# In a Jupyter notebook, if ``view`` is the output of a cell,
+# it will be displayed below the cell
 view
-# %%
 
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 
 # %%
-# you can also use :func:`nilearn.plotting.view_connectome` to open an
-# interactive view of the connectome.
+# you can also use :func:`~nilearn.plotting.view_connectome`
+# to open an interactive view of the connectome.
+view = view_connectome(
+    corr,
+    coordinates,
+    edge_threshold="90%",
+    colorbar=False,
+)
 
-view = plotting.view_connectome(corr, coordinates, edge_threshold='90%')
 # uncomment this to open the plot in a web browser:
 # view.open_in_browser()
 view
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=1

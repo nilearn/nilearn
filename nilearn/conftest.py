@@ -1,30 +1,47 @@
 """Configuration and extra fixtures for pytest."""
-import os
+
 import warnings
 
 import nibabel
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
 from nilearn import image
+from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
+from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
-from nilearn.datasets.tests._testing import request_mocker  # noqa: F401
-from nilearn.datasets.tests._testing import temp_nilearn_data_dir  # noqa: F401
+from nilearn.datasets.tests._testing import (
+    request_mocker,  # noqa: F401
+    temp_nilearn_data_dir,  # noqa: F401
+)
+from nilearn.surface import (
+    InMemoryMesh,
+    PolyMesh,
+    SurfaceImage,
+)
 
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
 
-
-try:
-    import matplotlib  # noqa: F401
-except ImportError:
-    collect_ignore.extend(["plotting", "reporting"])
+if is_matplotlib_installed():
+    import matplotlib
+else:
+    collect_ignore.extend(
+        [
+            "plotting",
+            "reporting/glm_reporter.py",
+            "reporting/html_report.py",
+            "reporting/tests/test_glm_reporter.py",
+            "reporting/tests/test_html_report.py",
+        ]
+    )
     matplotlib = None
 
 
-def pytest_configure(config):
+def pytest_configure(config):  # noqa: ARG001
     """Use Agg so that no figures pop up."""
     if matplotlib is not None:
         matplotlib.use("Agg", force=True)
@@ -84,42 +101,14 @@ def close_all():
 
 
 @pytest.fixture(autouse=True)
-def warnings_as_errors():
-    """Raise errors on deprecations from external library prereleases."""
-    flag = os.environ.get("WARN_DEPRECATION_ERRORS")
-    if flag == "true":
-        with warnings.catch_warnings():
-            warnings.filterwarnings(
-                "error",
-                message=".*numpy.*|.*scipy.*|.*nibabel.*|"
-                ".*joblib.*|.*pandas.*|.*scikit-learn.*",
-                category=DeprecationWarning,
-            )
-            if matplotlib is not None:
-                warnings.filterwarnings(
-                    "error",
-                    category=matplotlib.MatplotlibDeprecationWarning,
-                )
-            # Ignore internal DeprecationWarnings that reference a dependency
-            pattern = '.*The "C" parameter.*'
-            warnings.filterwarnings(
-                "ignore",
-                message=pattern,
-                category=DeprecationWarning,
-            )
-            yield
-    else:
-        yield
-
-
-@pytest.fixture(autouse=True)
 def suppress_specific_warning():
     """Ignore internal deprecation warnings."""
     with warnings.catch_warnings():
         messages = (
             "The `darkness` parameter will be deprecated.*|"
-            "`legacy_format` will default to `False`.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"
+            "The default strategy for standardize.*|"
+            "The 'fetch_bids_langloc_dataset' function will be removed.*|"
         )
         warnings.filterwarnings(
             "ignore",
@@ -132,8 +121,8 @@ def suppress_specific_warning():
 # ------------------------   RNG   ------------------------#
 
 
-def _rng():
-    return np.random.RandomState(42)
+def _rng(seed=42):
+    return np.random.default_rng(seed)
 
 
 @pytest.fixture()
@@ -188,7 +177,9 @@ def _shape_3d_default():
 
     Mostly used for set up in other fixtures in other testing modules.
     """
-    return (10, 10, 10)
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (7, 8, 9)
 
 
 def _shape_4d_default():
@@ -196,12 +187,16 @@ def _shape_4d_default():
 
     Mostly used for set up in other fixtures in other testing modules.
     """
-    return (10, 10, 10, 10)
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (7, 8, 9, 5)
 
 
 def _shape_4d_long():
     """Return default shape for a long 4D image."""
-    return (10, 10, 10, 1500)
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (7, 8, 9, 1500)
 
 
 @pytest.fixture()
@@ -233,12 +228,14 @@ def _img_ones(shape, affine):
 # ------------------------ 3D IMAGES ------------------------#
 
 
-def _img_3d_rand(affine=_affine_eye()):
+def _img_3d_rand(affine=None):
     """Return random 3D Nifti1Image in MNI space.
 
     Mostly used for set up in other fixtures in other testing modules.
     """
-    data = _rng().rand(*_shape_3d_default())
+    if affine is None:
+        affine = _affine_eye()
+    data = _rng().random(_shape_3d_default())
     return Nifti1Image(data, affine)
 
 
@@ -248,10 +245,12 @@ def img_3d_rand_eye():
     return _img_3d_rand()
 
 
-def _img_3d_mni(affine=_affine_mni()):
+def _img_3d_mni(affine=None):
+    if affine is None:
+        affine = _affine_mni()
     data_positive = np.zeros((7, 7, 3))
     rng = _rng()
-    data_rng = rng.rand(7, 7, 3)
+    data_rng = rng.random((7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     return Nifti1Image(data_positive, affine)
 
@@ -262,11 +261,23 @@ def img_3d_mni():
     return _img_3d_mni()
 
 
-def _img_3d_zeros(shape=_shape_3d_default(), affine=_affine_eye()):
+@pytest.fixture()
+def img_3d_mni_as_file(tmp_path):
+    """Return path to a random 3D Nifti1Image in MNI space saved to disk."""
+    filename = tmp_path / "img.nii"
+    _img_3d_mni().to_filename(filename)
+    return filename
+
+
+def _img_3d_zeros(shape=None, affine=None):
     """Return a default zeros filled 3D Nifti1Image (identity affine).
 
     Mostly used for set up in other fixtures in other testing modules.
     """
+    if shape is None:
+        shape = _shape_3d_default()
+    if affine is None:
+        affine = _affine_eye()
     return _img_zeros(shape, affine)
 
 
@@ -276,11 +287,15 @@ def img_3d_zeros_eye():
     return _img_3d_zeros()
 
 
-def _img_3d_ones(shape=_shape_3d_default(), affine=_affine_eye()):
+def _img_3d_ones(shape=None, affine=None):
     """Return a ones-filled 3D Nifti1Image (identity affine).
 
     Mostly used for set up in other fixtures in other testing modules.
     """
+    if shape is None:
+        shape = _shape_3d_default()
+    if affine is None:
+        affine = _affine_eye()
     return _img_ones(shape, affine)
 
 
@@ -299,15 +314,23 @@ def img_3d_ones_mni():
 # ------------------------ 4D IMAGES ------------------------#
 
 
-def _img_4d_zeros(shape=_shape_4d_default(), affine=_affine_eye()):
+def _img_4d_zeros(shape=None, affine=None):
     """Return a default zeros filled 4D Nifti1Image (identity affine).
 
     Mostly used for set up in other fixtures in other testing modules.
     """
+    if shape is None:
+        shape = _shape_4d_default()
+    if affine is None:
+        affine = _affine_eye()
     return _img_zeros(shape, affine)
 
 
-def _img_4d_mni(shape=_shape_4d_default(), affine=_affine_mni()):
+def _img_4d_mni(shape=None, affine=None):
+    if shape is None:
+        shape = _shape_4d_default()
+    if affine is None:
+        affine = _affine_mni()
     return Nifti1Image(_rng().uniform(size=shape), affine=affine)
 
 
@@ -326,7 +349,7 @@ def img_4d_ones_eye():
 @pytest.fixture
 def img_4d_rand_eye():
     """Return a default random filled 4D Nifti1Image (identity affine)."""
-    data = _rng().rand(*_shape_4d_default())
+    data = _rng().random(_shape_4d_default())
     return Nifti1Image(data, _affine_eye())
 
 
@@ -356,3 +379,237 @@ def img_atlas(shape_3d_default, affine_mni):
             "csf": 3,
         },
     }
+
+
+@pytest.fixture
+def n_regions():
+    """Return a default numher of regions for maps."""
+    return 9
+
+
+@pytest.fixture
+def img_maps(shape_3d_default, n_regions, affine_eye):
+    """Generate a default map image."""
+    return generate_maps(
+        shape=shape_3d_default, n_regions=n_regions, affine=affine_eye
+    )[0]
+
+
+@pytest.fixture
+def length():
+    """Return a default length for 4D images."""
+    return 10
+
+
+@pytest.fixture
+def img_fmri(shape_3d_default, affine_eye, length):
+    """Return a default length for fmri images."""
+    return generate_fake_fmri(
+        shape_3d_default, affine=affine_eye, length=length
+    )[0]
+
+
+# ------------------------ SURFACE ------------------------#
+@pytest.fixture
+def single_mesh(rng):
+    """Create random coordinates and faces for a single mesh.
+
+    This does not generate meaningful surfaces.
+    """
+    coords = rng.random((20, 3))
+    faces = rng.integers(coords.shape[0], size=(30, 3))
+    return [coords, faces]
+
+
+@pytest.fixture
+def in_memory_mesh(single_mesh):
+    """Create a random InMemoryMesh.
+
+    This does not generate meaningful surfaces.
+    """
+    coords, faces = single_mesh
+    return InMemoryMesh(coordinates=coords, faces=faces)
+
+
+def _make_mesh():
+    """Create a sample mesh with two parts: left and right, and total of
+    9 vertices and 10 faces.
+
+    The left part is a tetrahedron with four vertices and four faces.
+    The right part is a pyramid with five vertices and six faces.
+    """
+    left_coords = np.asarray([[0.0, 0, 0], [1, 0, 0], [0, 1, 0], [0, 0, 1]])
+    left_faces = np.asarray([[1, 0, 2], [0, 1, 3], [0, 3, 2], [1, 2, 3]])
+    right_coords = (
+        np.asarray([[0.0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 1]])
+        + 2.0
+    )
+    right_faces = np.asarray(
+        [
+            [0, 1, 4],
+            [0, 3, 1],
+            [1, 3, 2],
+            [1, 2, 4],
+            [2, 3, 4],
+            [0, 4, 3],
+        ]
+    )
+    return PolyMesh(
+        left=InMemoryMesh(left_coords, left_faces),
+        right=InMemoryMesh(right_coords, right_faces),
+    )
+
+
+@pytest.fixture()
+def surf_mesh():
+    """Return _make_mesh as a function allowing it to be used as a fixture."""
+    return _make_mesh
+
+
+def _make_surface_img(n_samples=1):
+    mesh = _make_mesh()
+    data = {}
+    for i, (key, val) in enumerate(mesh.parts.items()):
+        data_shape = (val.n_vertices, n_samples)
+        data_part = (
+            np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
+        ) * 10**i
+        data[key] = data_part.T
+    return SurfaceImage(mesh, data)
+
+
+@pytest.fixture
+def surf_img_2d():
+    """Create a sample surface image using the sample mesh.
+    This will add some random data to the vertices of the mesh.
+    The shape of the data will be (n_vertices, n_samples).
+    n_samples by default is 1.
+    """
+    return _make_surface_img
+
+
+@pytest.fixture
+def surf_img_1d():
+    """Create a sample surface image using the sample mesh.
+    This will add some random data to the vertices of the mesh.
+    The shape of the data will be (n_vertices,).
+    """
+    img = _make_surface_img(n_samples=1)
+    img.data.parts["left"] = np.squeeze(img.data.parts["left"])
+    img.data.parts["right"] = np.squeeze(img.data.parts["right"])
+    return img
+
+
+def _make_surface_mask(n_zeros=4):
+    mesh = _make_mesh()
+    data = {}
+    for key, val in mesh.parts.items():
+        data_shape = (val.n_vertices, 1)
+        data_part = np.ones(data_shape, dtype=int)
+        for i in range(n_zeros // 2):
+            data_part[i, ...] = 0
+        data_part = data_part.astype(bool)
+        data[key] = data_part
+    return SurfaceImage(mesh, data)
+
+
+@pytest.fixture
+def surf_mask_1d():
+    """Create a sample surface mask using the sample mesh.
+    This will create a mask with n_zeros zeros (default is 4) and the
+    rest ones.
+
+    The shape of the data will be (n_vertices,).
+    """
+    mask = _make_surface_mask()
+    mask.data.parts["left"] = np.squeeze(mask.data.parts["left"])
+    mask.data.parts["right"] = np.squeeze(mask.data.parts["right"])
+
+    return mask
+
+
+@pytest.fixture
+def surf_mask_2d():
+    """Create a sample surface mask using the sample mesh.
+    This will create a mask with n_zeros zeros (default is 4) and the
+    rest ones.
+
+    The shape of the data will be (n_vertices, 1). Could be useful for testing
+    input validation where we throw an error if the mask is not 1D.
+    """
+    return _make_surface_mask
+
+
+@pytest.fixture
+def surf_label_img(surf_mesh):
+    """Return a sample surface label image using the sample mesh.
+    Has two regions with values 0 and 1 respectively.
+    """
+    data = {
+        "left": np.asarray([0, 0, 1, 1]),
+        "right": np.asarray([1, 1, 0, 0, 0]),
+    }
+    return SurfaceImage(surf_mesh(), data)
+
+
+@pytest.fixture
+def surf_three_labels_img(surf_mesh):
+    """Return a sample surface label image using the sample mesh.
+    Has 3 regions with values 0, 1 and 2.
+    """
+    data = {
+        "left": np.asarray([0, 0, 1, 1]),
+        "right": np.asarray([1, 1, 0, 2, 0]),
+    }
+    return SurfaceImage(surf_mesh(), data)
+
+
+@pytest.fixture
+def flip_surf_img_parts():
+    """Flip hemispheres of a surface image data or mesh."""
+
+    def f(poly_obj):
+        keys = list(poly_obj.parts.keys())
+        keys = [keys[-1]] + keys[:-1]
+        return dict(zip(keys, poly_obj.parts.values()))
+
+    return f
+
+
+@pytest.fixture
+def flip_surf_img(flip_surf_img_parts):
+    """Flip hemispheres of a surface image."""
+
+    def f(img):
+        return SurfaceImage(
+            flip_surf_img_parts(img.mesh), flip_surf_img_parts(img.data)
+        )
+
+    return f
+
+
+@pytest.fixture
+def drop_surf_img_part():
+    """Remove one hemisphere from a SurfaceImage."""
+
+    def f(img, part_name="right"):
+        mesh_parts = img.mesh.parts.copy()
+        mesh_parts.pop(part_name)
+        data_parts = img.data.parts.copy()
+        data_parts.pop(part_name)
+        return SurfaceImage(mesh_parts, data_parts)
+
+    return f
+
+
+@pytest.fixture()
+def surface_glm_data(rng, surf_img_2d):
+    """Create a surface image and design matrix for testing."""
+
+    def _make_surface_img_and_design(n_samples=5):
+        des = pd.DataFrame(
+            rng.standard_normal((n_samples, 3)), columns=["", "", ""]
+        )
+        return surf_img_2d(n_samples), des
+
+    return _make_surface_img_and_design

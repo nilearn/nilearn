@@ -6,10 +6,10 @@ This simple example shows how to extract regions from Smith atlas
 resting state networks.
 
 In particular, we show how Default Mode Network regions are extracted
-using :class:`nilearn.regions.RegionExtractor` from regions module
+using :class:`~nilearn.regions.RegionExtractor` from regions module
 """
 
-# %%#
+# %%
 # Fetching the smith :term:`ICA` 10 RSN by importing datasets utilities
 from nilearn import datasets
 
@@ -72,6 +72,8 @@ for index in regions_indices_network3[0]:
         cut_coords=coords[2:3],
         title="Blob of network3",
         colorbar=False,
+        cmap="inferno",
+        vmax=15,
     )
 
 plotting.show()

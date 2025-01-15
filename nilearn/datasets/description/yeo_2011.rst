@@ -1,5 +1,11 @@
-Yeo 2011 Atlas
+.. _yeo_atlas:
 
+Yeo 2011 atlas
+==============
+
+Access
+------
+See :func:`nilearn.datasets.fetch_atlas_yeo_2011`.
 
 Notes
 -----
@@ -9,6 +15,10 @@ space.
 Four versions of the atlas are available, according to the cortical
 model (thick or thin cortical surface) and to the number of regions
 considered (7 or 17).
+
+For more information on this dataset's structure,
+see :footcite:t:`CorticalParcellation_Yeo2011`,
+and :footcite:t:`Yeo2011`.
 
 Content
 -------
@@ -23,12 +33,10 @@ Content
 
 References
 ----------
-For more information on this dataset's structure, see
-http://surfer.nmr.mgh.harvard.edu/fswiki/CorticalParcellation_Yeo2011
 
-Yeo BT, Krienen FM, Sepulcre J, Sabuncu MR, Lashkari D, Hollinshead M,
-Roffman JL, Smoller JW, Zollei L., Polimeni JR, Fischl B, Liu H,
-Buckner RL. The organization of the human cerebral cortex estimated by
-intrinsic functional connectivity. J Neurophysiol 106(3):1125-65, 2011.
+.. footbibliography::
 
-Licence: unknown.
+
+License
+-------
+unknown

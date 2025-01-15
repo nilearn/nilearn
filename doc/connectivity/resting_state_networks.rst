@@ -20,9 +20,7 @@ Multi-subject ICA: CanICA
 
 .. topic:: **References**
 
-    * G. Varoquaux et al. "A group model for stable multi-subject ICA on
-      fMRI datasets", `NeuroImage Vol 51 (2010)
-      <https://www.sciencedirect.com/science/article/pii/S1053811910001618>`_, p. 288-299
+    * A group model for stable multi-subject ICA on fMRI datasets :footcite:p:`Varoquaux2010c`
 
 Objective
 ----------
@@ -109,8 +107,8 @@ which constitute good extracted maps.
 
 .. topic:: **References**
 
-    * Arthur Mensch et al. `Compressed online dictionary learning for fast resting-state fMRI decomposition <https://hal.archives-ouvertes.fr/hal-01271033/>`_,
-      ISBI 2016, Lecture Notes in Computer Science
+    * Compressed online dictionary learning
+      for fast resting-state fMRI decomposition :footcite:p:`Mensch2016`
 
 :class:`DictLearning` is a ready-to-use class with the same interface as
 :class:`CanICA`. Sparsity of output map is controlled by a parameter alpha: using
@@ -161,3 +159,8 @@ in a variety of classification tasks.
    Learn how to extract :term:`fMRI` data from regions created with
    :term:`Dictionary learning` with this example:
    :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`
+
+References
+----------
+
+.. footbibliography::

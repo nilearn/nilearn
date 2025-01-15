@@ -43,7 +43,7 @@ from nilearn.image.image import mean_img
 from nilearn.plotting import plot_roi
 
 # calculate mean image for the background
-mean_func_img = mean_img(func_filename)
+mean_func_img = mean_img(func_filename, copy_header=True)
 
 plot_roi(mask_img, mean_func_img, display_mode="y", cut_coords=4, title="Mask")
 
@@ -74,13 +74,12 @@ components_masked = ica.fit_transform(fmri_masked.T).T
 components = nifti_masker.inverse_transform(components_masked)
 
 from nilearn.image import index_img
-from nilearn.image.image import mean_img
 
 # Visualize results
 from nilearn.plotting import plot_stat_map, show
 
 # calculate mean image for the background
-mean_func_img = mean_img(func_filename)
+mean_func_img = mean_img(func_filename, copy_header=True)
 
 plot_stat_map(
     index_img(components, 0),

@@ -9,7 +9,8 @@
 
 **User guide:** See the :ref:`nifti_masker` section for further details.
 
-**Classes**:
+Classes
+-------
 
 .. currentmodule:: nilearn.maskers
 
@@ -25,3 +26,10 @@
    NiftiMapsMasker
    MultiNiftiMapsMasker
    NiftiSpheresMasker
+   SurfaceLabelsMasker
+   SurfaceMasker
+   SurfaceMapsMasker
+
+.. toctree::
+
+   generated_reports/masker_reports_examples.rst
