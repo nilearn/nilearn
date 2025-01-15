@@ -19,18 +19,6 @@ def null():
     return [-10, -9, -9, -3, -2, -1, -1, 0, 1, 1, 1, 2, 3, 3, 4, 4, 7, 8, 8, 9]
 
 
-@pytest.fixture
-def test_arr4d():
-    test_arr4d = np.zeros((10, 10, 10, 1))
-    test_arr4d[:2, :2, :2, 0] = 5  # 8-voxel cluster, high intensity
-    test_arr4d[7:, 7:, 7:, 0] = 1  # 27-voxel cluster, low intensity
-    test_arr4d[6, 6, 6, 0] = 1  # corner touching second cluster
-    test_arr4d[6, 6, 8, 0] = 1  # edge touching second cluster
-    test_arr4d[3:5, 3:5, 3:5, 0] = -10  # negative cluster, very high intensity
-    test_arr4d[5:6, 3:5, 3:5, 0] = 1  # cluster touching negative one
-    return test_arr4d
-
-
 @pytest.mark.parametrize(
     "two_sided_test, dh, true_max_tfce",
     [
@@ -49,21 +37,21 @@ def test_arr4d():
 )
 def test_calculate_tfce(two_sided_test, dh, true_max_tfce):
     """Test calculate_tfce."""
-    test_arr4d = np.zeros((10, 10, 10, 1))
+    arr4d = np.zeros((10, 10, 10, 1))
     bin_struct = generate_binary_structure(3, 1)
 
     # 10-voxel positive cluster, high intensity
-    test_arr4d[:2, :2, :2, 0] = 10
-    test_arr4d[0, 2, 0, 0] = 10
-    test_arr4d[2, 0, 0, 0] = 10
+    arr4d[:2, :2, :2, 0] = 10
+    arr4d[0, 2, 0, 0] = 10
+    arr4d[2, 0, 0, 0] = 10
 
     # 10-voxel negative cluster, higher intensity
-    test_arr4d[3:5, 3:5, 3:5, 0] = -11
-    test_arr4d[3, 5, 3, 0] = -11
-    test_arr4d[5, 3, 3, 0] = -11
+    arr4d[3:5, 3:5, 3:5, 0] = -11
+    arr4d[3, 5, 3, 0] = -11
+    arr4d[5, 3, 3, 0] = -11
 
     test_tfce_arr4d = _utils.calculate_tfce(
-        test_arr4d,
+        arr4d,
         bin_struct=bin_struct,
         E=1,
         H=1,
@@ -71,7 +59,7 @@ def test_calculate_tfce(two_sided_test, dh, true_max_tfce):
         two_sided_test=two_sided_test,
     )
 
-    assert test_tfce_arr4d.shape == test_arr4d.shape
+    assert test_tfce_arr4d.shape == arr4d.shape
     assert np.max(np.abs(test_tfce_arr4d)) == true_max_tfce
 
 
@@ -123,7 +111,10 @@ def test_null_to_p_float_2_tailed(test_values, expected_p_value, null):
 
 
 def test_null_to_p_float_error(null):
-    with pytest.raises(ValueError):
+    """Check invalid alternative parameter."""
+    with pytest.raises(
+        ValueError, match='Argument "alternative" must be one of'
+    ):
         _utils.null_to_p(9, null, alternative="raise")
 
 
@@ -160,6 +151,18 @@ def test_null_to_p_array(rng):
     assert np.abs(p.var() - 1 / 12) < 0.02
 
 
+@pytest.fixture
+def _arr4d():
+    _arr4d = np.zeros((10, 10, 10, 1))
+    _arr4d[:2, :2, :2, 0] = 5  # 8-voxel cluster, high intensity
+    _arr4d[7:, 7:, 7:, 0] = 1  # 27-voxel cluster, low intensity
+    _arr4d[6, 6, 6, 0] = 1  # corner touching second cluster
+    _arr4d[6, 6, 8, 0] = 1  # edge touching second cluster
+    _arr4d[3:5, 3:5, 3:5, 0] = -10  # negative cluster, very high intensity
+    _arr4d[5:6, 3:5, 3:5, 0] = 1  # cluster touching negative one
+    return _arr4d
+
+
 @pytest.mark.parametrize(
     "bin_struct, two_sided_test, true_size, true_mass",
     [
@@ -192,14 +195,14 @@ def test_null_to_p_array(rng):
     ],
 )
 def test_calculate_cluster_measures(
-    test_arr4d, bin_struct, two_sided_test, true_size, true_mass
+    _arr4d, bin_struct, two_sided_test, true_size, true_mass
 ):
     """Test calculate_cluster_measures.
 
     true_mass : (8 vox * 5 intensity) - (8 vox * 0.001 thresh)
     """
     test_size, test_mass = _utils.calculate_cluster_measures(
-        test_arr4d,
+        _arr4d,
         threshold=0.001,
         bin_struct=bin_struct,
         two_sided_test=two_sided_test,
@@ -210,6 +213,7 @@ def test_calculate_cluster_measures(
 
 
 def test_calculate_cluster_measures_on_empty_array():
+    """Check that empty array have 0 mass and size."""
     test_size, test_mass = _utils.calculate_cluster_measures(
         np.zeros((10, 10, 10, 1)),
         threshold=0.001,
