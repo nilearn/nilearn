@@ -28,15 +28,17 @@ class _MultiPCA(_BaseDecomposition):
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    random_state : int or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
+
     %(smoothing_fwhm)s
+
     mask : Niimg-like object, instance of NiftiMasker
         or MultiNiftiMasker, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given,
         it will be computed automatically by a MultiNiftiMasker with default
         parameters.
+
     %(mask_strategy)s
 
         .. note::

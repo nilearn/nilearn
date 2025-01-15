@@ -42,8 +42,8 @@ def _fast_svd(X, n_components, random_state=None):
     n_components : integer
         The order of the dimensionality of the truncated SVD
 
-    random_state : int or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -132,8 +132,8 @@ def _mask_and_reduce(
     n_components : integer, optional
         Number of components per subject to be extracted by dimension reduction
 
-    random_state : int or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
+        default=0
 
     memory_level : integer, default=0
         Integer indicating the level of memorization. The higher, the more
@@ -266,8 +266,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     n_components : int, default=20
         Number of components to extract, for each 4D-Niimage
 
-    random_state : int or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
 
     mask : Niimg-like object or MultiNiftiMasker instance or
            :obj:`~nilearn.surface.SurfaceImage` or

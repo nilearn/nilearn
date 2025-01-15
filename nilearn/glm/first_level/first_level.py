@@ -918,7 +918,7 @@ class FirstLevelModel(BaseGLM):
             this case, the string defining the contrasts must be a valid
             expression for compatibility with :meth:`pandas.DataFrame.eval`.
 
-        stat_type : {'t', 'F'}, optional
+        stat_type : {'t', 'F'}, default=None
             Type of the contrast.
 
         output_type : :obj:`str`, default='z_score'

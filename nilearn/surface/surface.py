@@ -382,12 +382,12 @@ def _projection_matrix(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is not `None`.
 
-    n_points : :obj:`int` or None, optional
+    n_points : :obj:`int` or None, default=20
         How many samples are drawn around each vertex and averaged. If `None`,
         use a reasonable default for the chosen sampling strategy (20 for
         'ball' or 10 for lines ie using `line` or an `inner_mesh`).
         For performance reasons, if using kind="ball", choose `n_points` in
-        [10, 20, 40, 80, 160] (default is 20), because cached positions are
+        [10, 20, 40, 80, 160], because cached positions are
         available.
 
     mask : :obj:`numpy.ndarray` of shape img_shape or `None`, optional
@@ -608,19 +608,19 @@ def vol_to_surf(
             Samples are regularly spaced inside a ball centered at the mesh
             vertex.
 
-    n_samples : :obj:`int` or `None`, optional
+    n_samples : :obj:`int` or `None`, default=None
         How many samples are drawn around each :term:`vertex` and averaged.
         If `None`, use a reasonable default for the chosen sampling strategy
         (20 for 'ball' or 10 for 'line').
         For performance reasons, if using `kind` ="ball", choose `n_samples` in
-        [10, 20, 40, 80, 160] (default is 20), because cached positions are
-        available.
+        [10, 20, 40, 80, 160] (defaults to 20 if None is passed),
+        because cached positions are available.
 
-    mask_img : Niimg-like object or `None`, optional
+    mask_img : Niimg-like object or `None`, default=None
         Samples falling out of this mask or out of the image are ignored.
         If `None`, don't apply any mask.
 
-    inner_mesh : :obj:`str` or :obj:`numpy.ndarray`, optional
+    inner_mesh : :obj:`str` or :obj:`numpy.ndarray` or None, default=None
         Either a file containing a surface :term:`mesh` or a pair of ndarrays
         (coordinates, triangles). If provided this is an inner surface that is
         nested inside the one represented by `surf_mesh` -- e.g. `surf_mesh` is
@@ -631,7 +631,7 @@ def vol_to_surf(
         Image values for index i are then sampled along the line
         joining these two points (if `kind` is 'auto' or 'depth').
 
-    depth : sequence of :obj:`float` or `None`, optional
+    depth : sequence of :obj:`float` or `None`, default=None
         The cortical depth of samples. If provided, n_samples is ignored.
         When `inner_mesh` is provided, each element of `depth` is a fraction of
         the distance from `mesh` to `inner_mesh`: 0 is exactly on the outer
@@ -1976,6 +1976,9 @@ def iter_img(img, return_iterator=True):
     Parameters
     ----------
     imgs : SurfaceImage object
+
+    return_iterator : :obj:`bool`, default=True
+        Returns a list if set to False.
 
     Returns
     -------
