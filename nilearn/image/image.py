@@ -975,7 +975,7 @@ def threshold_img(
 
     Parameters
     ----------
-    img : a 3D/4D Niimg-like object
+    img : a 3D/4D Niimg-like object or a :obj:`~nilearn.surfaceSurfaceImage`
         Image containing statistical or atlas maps which should be thresholded.
 
     threshold : :obj:`float` or :obj:`str`
@@ -990,6 +990,8 @@ def threshold_img(
         Cluster size threshold, in voxels. In the returned thresholded map,
         sets of connected voxels (``clusters``) with size smaller than this
         number will be removed.
+
+        Not implemented for SurfaceImage.
 
         .. versionadded:: 0.9.0
 
@@ -1009,6 +1011,8 @@ def threshold_img(
 
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
+
+        Not applicable for SurfaceImage.
 
         .. versionadded:: 0.11.0
 
@@ -1147,7 +1151,11 @@ def threshold_img(
     if isinstance(img, NiimgLike):
         return new_img_like(img, img_data, affine, copy_header=copy_header)
 
-    return new_surface_img_like(img, img_data.data)
+    if copy:
+        return new_surface_img_like(img, img_data.data)
+    else:
+        img.data = img_data.data
+        return img
 
 
 def _get_img_data_for_cutoff(img, mask_img, data=None, mask_data=None):

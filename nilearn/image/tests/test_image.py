@@ -733,14 +733,27 @@ def test_input_in_threshold_img(
     shape_3d_default, surf_img_1d, surf_mask_1d, affine_eye
 ):
     """Check threshold_img only works with surface OR volume."""
+    # setting copy_header to True to avoid warnings
+    # TODO remove when bumping to nilearn > 0.13
+    copy_header = True
+
     vol_img, _ = generate_maps(shape_3d_default, n_regions=2)
     vol_mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
 
     # All of those should be OK
-    threshold_img(vol_img, threshold=1, mask_img=None)
-    threshold_img(surf_img_1d, threshold=1, mask_img=None)
-    threshold_img(vol_img, threshold=1, mask_img=vol_mask)
-    threshold_img(surf_img_1d, threshold=1, mask_img=surf_mask_1d)
+    threshold_img(vol_img, threshold=1, mask_img=None, copy_header=copy_header)
+    threshold_img(
+        surf_img_1d, threshold=1, mask_img=None, copy_header=copy_header
+    )
+    threshold_img(
+        vol_img, threshold=1, mask_img=vol_mask, copy_header=copy_header
+    )
+    threshold_img(
+        surf_img_1d,
+        threshold=1,
+        mask_img=surf_mask_1d,
+        copy_header=copy_header,
+    )
 
     # invalid input: img is an int
     with pytest.raises(
@@ -777,6 +790,9 @@ def test_validity_threshold_value_in_threshold_img(
     """Check that invalid values to threshold_img's threshold parameter \
        raise Exceptions.
     """
+    # setting copy_header to True to avoid warnings
+    # TODO remove when bumping to nilearn > 0.13
+    copy_header = True
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
     # testing to raise same error when threshold=None case
@@ -784,13 +800,18 @@ def test_validity_threshold_value_in_threshold_img(
         TypeError,
         match="threshold should be either a number or a string",
     ):
-        threshold_img(maps, threshold=None, copy_header=True)
+        threshold_img(maps, threshold=None, copy_header=copy_header)
 
     threshold = object()
     with pytest.raises(
         TypeError, match="should be either a number or a string"
     ):
-        threshold_img(maps, threshold=threshold, two_sided=two_sided)
+        threshold_img(
+            maps,
+            threshold=threshold,
+            two_sided=two_sided,
+            copy_header=copy_header,
+        )
 
     invalid_threshold_values = ["90t%", "s%", "t", "0.1"]
     name = "threshold"
@@ -800,7 +821,10 @@ def test_validity_threshold_value_in_threshold_img(
             match=f"{name}.+should be a number followed by the percent",
         ):
             threshold_img(
-                maps, threshold=thr, copy_header=True, two_sided=two_sided
+                maps,
+                threshold=thr,
+                copy_header=copy_header,
+                two_sided=two_sided,
             )
 
 
@@ -808,47 +832,106 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
     """Check that negative values to threshold_img's threshold parameter \
        raise Exceptions.
     """
+    # setting copy_header to True to avoid warnings
+    # TODO remove when bumping to nilearn > 0.13
+    copy_header = True
+
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
     # invalid threshold values when two_sided=True
     thresholds = [-10, "-10%"]
     for wrong_threshold in thresholds:
         with pytest.raises(ValueError, match="should not be a negative"):
-            threshold_img(maps, threshold=wrong_threshold, two_sided=True)
+            threshold_img(
+                maps,
+                threshold=wrong_threshold,
+                two_sided=True,
+                copy_header=copy_header,
+            )
 
     with pytest.raises(ValueError, match="should not be a negative"):
-        threshold_img(maps, threshold="-10%", two_sided=False)
+        threshold_img(
+            maps, threshold="-10%", two_sided=False, copy_header=copy_header
+        )
 
 
 def test_threshold_img(affine_eye):
     """Smoke test for threshold_img with valid threshold inputs."""
+    # setting copy_header to True to avoid warnings
+    # TODO remove when bumping to nilearn > 0.13
+    copy_header = True
+
     shape = (10, 20, 30)
     maps, _ = generate_maps(shape, n_regions=4)
     mask_img = Nifti1Image(np.ones((shape), dtype=np.int8), affine_eye)
 
     for img in iter_img(maps):
         # when threshold is a float value
-        threshold_img(img, threshold=0.8, copy_header=True)
+        threshold_img(img, threshold=0.8, copy_header=copy_header)
 
         # when we provide mask image
-        threshold_img(img, threshold=1, mask_img=mask_img, copy_header=True)
+        threshold_img(
+            img, threshold=1, mask_img=mask_img, copy_header=copy_header
+        )
 
         # when threshold is a percentile
-        threshold_img(img, threshold="2%", copy_header=True)
+        threshold_img(img, threshold="2%", copy_header=copy_header)
 
 
-def test_threshold_img_1d(surf_img_1d):
-    """Check threshold 1D surface image.
+@pytest.mark.parametrize(
+    "threshold, expected_n_non_zero",
+    [
+        (0.9, {"left": 4, "right": 5}),
+        (9, {"left": 0, "right": 5}),
+        (51, {"left": 0, "right": 0}),
+        ("50%", {"left": 0, "right": 4}),
+    ],
+)
+def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
+    """Check number of elements surviving thresholding 1D surface image.
 
-    surf_img_1d has all left hemisphere values < 10
-    surf_img_1d has all right hemisphere values > 10
+    For left hemisphere: 1 <= values < 10
+    For right hemisphere: 10 <= values < 51
     """
-    new_img = threshold_img(surf_img_1d, threshold=9)
-    assert (new_img.data.parts["left"] == 0).all()
-    assert (new_img.data.parts["right"] > 0).all()
+    new_img = threshold_img(surf_img_1d, threshold=threshold)
+    for hemi in new_img.data.parts:
+        data = new_img.data.parts[hemi]
+        assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
-    # smoke test with % threshold
-    threshold_img(surf_img_1d, threshold="10%")
+
+@pytest.mark.parametrize(
+    "threshold, expected_n_non_zero, two_sided",
+    [
+        (1, {"left": 0, "right": 5}, False),
+        (39, {"left": 0, "right": 2}, False),
+        (51, {"left": 0, "right": 0}, False),
+        ("50%", {"left": 0, "right": 2}, False),
+        (1, {"left": 4, "right": 5}, True),
+        (39, {"left": 1, "right": 2}, True),
+        (51, {"left": 0, "right": 0}, True),
+        ("50%", {"left": 1, "right": 2}, True),
+    ],
+)
+def test_threshold_surf_img_1d_negative_values(
+    surf_img_1d, threshold, expected_n_non_zero, two_sided
+):
+    """Check number of elements surviving thresholding 1D surface image.
+
+    Data also includes negative values.
+
+    Also test 2 sided thresholding.
+
+    For left hemisphere: -41 < values < -9
+    For right hemisphere: 9 < values < 51
+    """
+    surf_img_1d.data.parts["left"] *= -10
+
+    new_img = threshold_img(
+        surf_img_1d, threshold=threshold, two_sided=two_sided
+    )
+    for hemi in new_img.data.parts:
+        data = new_img.data.parts[hemi]
+        assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
 
 @pytest.mark.parametrize(
