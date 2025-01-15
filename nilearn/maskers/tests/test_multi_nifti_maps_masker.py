@@ -63,7 +63,12 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 def test_multi_nifti_maps_masker(
     affine_eye, length, n_regions, shape_3d_default, img_maps
 ):
-    # Check working of shape/affine checks
+    """Check basic functions of MultiNiftiMapsMasker.
+
+    - fit, transform, fit_transform, inverse_transform.
+    - 4D and list[4D] inputs
+    - smoothing
+    """
     fmri11_img, mask11_img = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
@@ -114,7 +119,7 @@ def test_multi_nifti_maps_masker(
 def test_multi_nifti_maps_masker_fit_files(
     tmp_path, length, n_regions, create_files, img_maps, img_fmri
 ):
-    # Check working of shape/affine checks
+    """Check fit / transform on both nifti object and files."""
     labels11 = write_imgs_to_path(
         img_maps, file_path=tmp_path, create_files=create_files
     )
@@ -155,6 +160,7 @@ def test_multi_nifti_maps_masker_data_atlas_different_shape(
 def test_multi_nifti_maps_masker_errors(
     affine_eye, length, shape_3d_default, img_maps
 ):
+    """Check errors raised by MultiNiftiMapsMasker."""
     fmri11_img, mask11_img = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )

@@ -510,6 +510,10 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
 
 
 def non_overlapping_maps():
+    """Generate maps with non-overlapping regions.
+
+    All voxels belong to only 1 region.
+    """
     non_overlapping_data = np.zeros((*_shape_3d_default(), 2))
     non_overlapping_data[:2, :, :, 0] = 1.0
     non_overlapping_data[2:, :, :, 1] = 1.0
@@ -520,6 +524,10 @@ def non_overlapping_maps():
 
 
 def overlapping_maps():
+    """Generate maps with overlapping regions.
+
+    Same voxel has non null value for 2 different regions.
+    """
     overlapping_data = np.zeros((*_shape_3d_default(), 2))
     overlapping_data[:3, :, :, 0] = 1.0
     overlapping_data[2:, :, :, 1] = 1.0
@@ -542,6 +550,7 @@ def test_nifti_maps_masker_overlap(maps_img_fn, allow_overlap, img_fmri):
 
 
 def test_standardization(rng, affine_eye, shape_3d_default):
+    """Check output properly standardized with 'standardize' parameter."""
     length = 500
 
     signals = rng.standard_normal(size=(np.prod(shape_3d_default), length))
@@ -581,7 +590,7 @@ def test_standardization(rng, affine_eye, shape_3d_default):
 
 
 def test_3d_images(affine_eye, n_regions, shape_3d_default):
-    # Test that the NiftiMapsMasker works with 3D images
+    """Test that the NiftiMapsMasker works with 3D images."""
     maps33_img, _ = generate_maps(shape_3d_default, n_regions)
     mask_img = Nifti1Image(
         np.ones(shape_3d_default, dtype=np.int8),
