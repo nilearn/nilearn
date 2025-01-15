@@ -15,7 +15,7 @@ Enhanced Nathan Kline Institute-Rockland Sample resting state fMRI data
 according to https://github.com/fliem/nki_nilearn.
 Contains phenotypical metadata.
 
-Direct download link :footcite:t:`NKIdataset`.
+Direct download link: http://fcon_1000.projects.nitrc.org/indi/enhanced/.
 
 See :footcite:t:`Nooner2012`.
 
