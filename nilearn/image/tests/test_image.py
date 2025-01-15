@@ -900,6 +900,33 @@ def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
 
 
 @pytest.mark.parametrize(
+    "threshold, expected_n_non_zero",
+    [
+        (0.9, {"left": 2, "right": 3}),
+        (9, {"left": 0, "right": 3}),
+        (51, {"left": 0, "right": 0}),
+        ("50%", {"left": 0, "right": 2}),
+    ],
+)
+def test_threshold_surf_img_1d_with_mask(
+    surf_img_1d, threshold, expected_n_non_zero, surf_mask_1d
+):
+    """Check number of elements surviving thresholding 1D surface image.
+
+    Fewer elements survive thresholding when a mask is provided.
+
+    For left hemisphere: 1 <= values < 10
+    For right hemisphere: 10 <= values < 51
+    """
+    new_img = threshold_img(
+        surf_img_1d, threshold=threshold, mask_img=surf_mask_1d
+    )
+    for hemi in new_img.data.parts:
+        data = new_img.data.parts[hemi]
+        assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
+
+
+@pytest.mark.parametrize(
     "threshold, expected_n_non_zero, two_sided",
     [
         (1, {"left": 0, "right": 5}, False),
