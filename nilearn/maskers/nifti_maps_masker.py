@@ -66,16 +66,24 @@ class NiftiMapsMasker(BaseMasker):
     allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
+
     %(smoothing_fwhm)s
+
     %(standardize_maskers)s
+
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
+
     %(detrend)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(dtype)s.
@@ -86,13 +94,21 @@ class NiftiMapsMasker(BaseMasker):
         fit() are resampled to the shape and affine of mask_img. "None" means
         no resampling: if shapes and affines do not match, a ValueError is
         raised.
+
     %(memory)s
+
     %(memory_level)s
+
     %(verbose0)s
+
     %(keep_masked_maps)s
 
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
 
     %(masker_kwargs)s
 
@@ -185,7 +201,6 @@ class NiftiMapsMasker(BaseMasker):
 
         self.keep_masked_maps = keep_masked_maps
 
-        
     def generate_report(self, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 

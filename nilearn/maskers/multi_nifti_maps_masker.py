@@ -71,11 +71,20 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
 
     %(memory)s
+
     %(memory_level)s
+
     %(n_jobs)s
+
     %(verbose0)s
+
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
+
     %(masker_kwargs)s
 
     Attributes
@@ -124,6 +133,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         memory_level=0,
         verbose=0,
         reports=True,
+        cmap="CMRmap_r",
         n_jobs=1,
         **kwargs,
     ):
@@ -146,6 +156,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             memory_level=memory_level,
             verbose=verbose,
             reports=reports,
+            cmap=cmap,
             **kwargs,
         )
 
