@@ -30,7 +30,7 @@ class CanICA(_MultiPCA):
         it will be computed automatically by a MultiNiftiMasker with default
         parameters.
 
-    n_components : int, default=20
+    n_components : :obj:`int`, default=20
         Number of components to extract.
     %(smoothing_fwhm)s
         Default=6mm.
@@ -51,7 +51,7 @@ class CanICA(_MultiPCA):
         If detrend is True, the time-series will be detrended before
         components extraction.
 
-    threshold : None, 'auto' or float, default='auto'
+    threshold : None, 'auto' or :obj:`float`, default='auto'
         If None, no thresholding is applied. If 'auto',
         then we apply a thresholding that will keep the n_voxels,
         more intense voxels across all the maps, n_voxels being the number
@@ -60,11 +60,10 @@ class CanICA(_MultiPCA):
         have 2 x n_voxels non-zero voxels ). The float value
         must be bounded by [0. and n_components].
 
-    n_init : int, default=10
+    n_init : :obj:`int`, default=10
         The number of times the fastICA algorithm is restarted
 
-    random_state : int or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
 
     %(target_affine)s
 

@@ -680,7 +680,7 @@ def fetch_localizer_contrasts(
         - "visual click vs visual sentences"
         - "auditory&visual motor vs cognitive processing"
 
-    n_subjects : :obj:`int` or :obj:`list`, optional
+    n_subjects : :obj:`int` or :obj:`list` or None, default=None
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
@@ -1039,7 +1039,7 @@ def fetch_abide_pcp(
     Parameters
     ----------
     %(data_dir)s
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=None
         The number of subjects to load. If None is given,
         all available subjects are used (this number depends on the
         preprocessing pipeline used).
@@ -1055,7 +1055,7 @@ def fetch_abide_pcp(
         Indicates if global signal regression should be applied on the
         signals.
 
-    derivatives : :obj:`list` of :obj:`str`, default=['func_preproc']
+    derivatives : :obj:`list` of :obj:`str`, default=None
         Types of downloaded files. Possible values are: alff, degree_binarize,
         degree_weighted, dual_regression, eigenvector_binarize,
         eigenvector_weighted, falff, func_mask, func_mean, func_preproc, lfcd,
@@ -2068,7 +2068,7 @@ def fetch_development_fmri(
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=None
         The number of subjects to load. If None, all the subjects are
         loaded. Total 155 subjects.
 
@@ -2468,7 +2468,7 @@ def select_from_index(
     urls : :obj:`list` of :obj:`str`
         List of dataset urls obtained from index download.
 
-    inclusion_filters : :obj:`list` of :obj:`str`, optional
+    inclusion_filters : :obj:`list` of :obj:`str` or None, default=None
         List of unix shell-style wildcard strings
         that will be used to filter the url list.
         If a filter matches the url it is retained for download.
@@ -2478,7 +2478,7 @@ def select_from_index(
         For example the filter '*task-rest*'' would keep only urls
         that contain the 'task-rest' string.
 
-    exclusion_filters : :obj:`list` of :obj:`str`, optional
+    exclusion_filters : :obj:`list` of :obj:`str` or None, default=None
         List of unix shell-style wildcard strings
         that will be used to filter the url list.
         If a filter matches the url it is discarded for download.
@@ -2488,7 +2488,7 @@ def select_from_index(
         For example the filter '*task-rest*' would discard all urls
         that contain the 'task-rest' string.
 
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=None
         Number of subjects to download from the dataset. All by default.
 
     Returns
@@ -2578,7 +2578,7 @@ def fetch_openneuro_dataset(
 
     Parameters
     ----------
-    urls : :obj:`list` of :obj:`str`, optional
+    urls : :obj:`list` of :obj:`str`, default=None
         List of URLs to dataset files to download.
         If not specified, all files from the default dataset
         (``ds000030_R1.0.4``) will be downloaded.

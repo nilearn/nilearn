@@ -533,7 +533,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         Parameters
         ----------
-        imgs : :obj:`list` of Niimg-like objects
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
             See :ref:`extracting_data`.
             Image data passed to the reporter.
 
@@ -682,12 +682,14 @@ class NiftiLabelsMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
+        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
+            default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
@@ -725,12 +727,14 @@ class NiftiLabelsMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
+        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
+            default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.

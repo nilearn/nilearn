@@ -587,7 +587,6 @@ def view_img(
         Default='continuous'.
 
     width_view : :obj:`int`, default=600
-        Default=600.
         Width of the viewer in pixels.
 
     opacity : :obj:`float` in [0,1], default=1

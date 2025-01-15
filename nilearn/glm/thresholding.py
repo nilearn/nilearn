@@ -217,7 +217,7 @@ def threshold_stats_img(
        Desired threshold in z-scale.
        This is used only if height_control is None.
 
-    height_control : :obj:`str`, or None optional, default='fpr'
+    height_control : :obj:`str`, or None, default='fpr'
         False positive control meaning of cluster forming
         threshold: None|'fpr'|'fdr'|'bonferroni'
 

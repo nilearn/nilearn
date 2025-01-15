@@ -637,7 +637,7 @@ class Pattern(_SpecialValue):
     pattern : str
         The pattern to try to match to candidates.
 
-    flags : int, optional (default=0)
+    flags : int, default=0
         Value for ``re.match`` `flags` parameter,
         e.g. ``re.IGNORECASE``. The default (0), is the default value
         used by ``re.match``.
@@ -733,7 +733,7 @@ class ResultFilter:
 
     Attributes
     ----------
-    query_terms_ : dict
+    query_terms_ : :obj:`dict`
         In order to pass through the filter, metadata must verify
         ``metadata[key] == value`` for each ``key``, ``value`` pair in
         `query_terms_`.
@@ -1039,7 +1039,7 @@ def _scroll_server_results(
     prefix_msg : str, default=''
         Prefix for all log messages.
 
-    verbose : int, optional (default=3)
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     Yields
@@ -2551,7 +2551,7 @@ def fetch_neurovault(
         Images for which `image_filter(image_metadata)` is ``False``
         will be discarded.
 
-    mode : {'download_new', 'overwrite', 'offline'}
+    mode : {'download_new', 'overwrite', 'offline'}, default="download_new"
         When to fetch an image from the server rather than the local
         disk.
 
@@ -2570,7 +2570,7 @@ def fetch_neurovault(
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    resample : :obj:`bool`, optional (default=False)
+    resample : :obj:`bool`, default=False
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
@@ -2777,7 +2777,7 @@ def fetch_neurovault_ids(
     fetch_neurosynth_words : :obj:`bool`, default=False
         Whether to collect words from Neurosynth.
 
-    resample : :obj:`bool`, optional (default=False)
+    resample : :obj:`bool`, default=False
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 

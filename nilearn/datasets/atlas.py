@@ -368,11 +368,10 @@ def fetch_atlas_craddock_2012(
 
     %(verbose)s
 
-    homogeneity : :obj:`str`, optional
+    homogeneity : :obj:`str`,  default=None
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
     grp_mean : :obj:`bool`, default=True
         The choice of the :term:`parcellation` (with group_mean or without)
-        Default=True.
 
 
     Returns
@@ -1269,7 +1268,7 @@ def fetch_atlas_smith_2009(
         atlas. Specifying "nitrc" will force download from a mirror, with
         potentially higher bandwidth.
 
-    dimension : :obj:`int`, optional
+    dimension : :obj:`int`, default=None
         Number of dimensions in the dictionary. Valid resolutions
         available are {10, 20, 70}.
 
@@ -1786,7 +1785,7 @@ def fetch_atlas_basc_multiscale_2015(
 
     %(verbose)s
 
-    resolution : :obj:`int`, optional
+    resolution : :obj:`int`, default=None
         Number of networks in the dictionary.
         Valid resolutions  available are
         {7, 12, 20, 36, 64, 122, 197, 325, 444}
@@ -2594,7 +2593,7 @@ def fetch_atlas_schaefer_2018(
     resolution_mm : {1, 2}, default=1mm
         Spatial resolution of atlas image in mm.
     %(data_dir)s
-    base_url : :obj:`str`, optional
+    base_url : :obj:`str`,  default=None
         Base URL of files to download (``None`` results in
         default ``base_url``).
     %(resume)s
