@@ -24,11 +24,12 @@ from nilearn.surface import (
     SurfaceImage,
     load_surf_data,
     load_surf_mesh,
-    vol_to_surf,
 )
 from nilearn.surface.surface import (
     check_mesh_and_data,
     check_mesh_is_fsaverage,
+    combine_hemispheres_meshes,
+    get_data,
 )
 
 
@@ -170,6 +171,20 @@ def one_mesh_info(
     )
 
 
+def _get_combined_curvature_map(mesh_left, mesh_right):
+    """Get combined curvature map from left and right hemisphere maps.
+    Only used in _full_brain_info.
+    """
+    curv_left = load_surf_data(mesh_left)
+    curv_right = load_surf_data(mesh_right)
+    curv_left_sign = np.sign(curv_left)
+    curv_right_sign = np.sign(curv_right)
+    curv_left_sign[np.isnan(curv_left)] = 0
+    curv_right_sign[np.isnan(curv_right)] = 0
+    curv_combined = np.concatenate([curv_left_sign, curv_right_sign])
+    return curv_combined
+
+
 def _full_brain_info(
     volume_img,
     mesh="fsaverage5",
@@ -194,25 +209,28 @@ def _full_brain_info(
         vol_to_surf_kwargs = {}
     info = {}
     mesh = check_mesh_is_fsaverage(mesh)
-    surface_maps = {
-        h: vol_to_surf(
-            volume_img,
-            mesh[f"pial_{h}"],
-            inner_mesh=mesh.get(f"white_{h}", None),
-            **vol_to_surf_kwargs,
-        )
-        for h in ["left", "right"]
-    }
+    surface_maps = SurfaceImage.from_volume(
+        mesh=PolyMesh(
+            left=mesh["pial_left"],
+            right=mesh["pial_right"],
+        ),
+        volume_img=volume_img,
+        inner_mesh=PolyMesh(
+            left=mesh.get("white_left", None),
+            right=mesh.get("white_right", None),
+        ),
+        **vol_to_surf_kwargs,
+    )
     colors = colorscale(
         cmap,
-        np.asarray(list(surface_maps.values())).ravel(),
+        get_data(surface_maps).ravel(),
         threshold,
         symmetric_cmap=symmetric_cmap,
         vmax=vmax,
         vmin=vmin,
     )
 
-    for hemi, surf_map in surface_maps.items():
+    for hemi, surf_map in surface_maps.data.parts.items():
         curv_map = load_surf_data(mesh[f"curv_{hemi}"])
         bg_map = np.sign(curv_map)
 
@@ -228,6 +246,38 @@ def _full_brain_info(
             bg_on_data=bg_on_data,
             darkness=darkness,
         )
+
+    # also add info for both hemispheres
+    for mesh_type in ["infl", "pial"]:
+        if mesh_type == "infl":
+            info["inflated_both"] = mesh_to_plotly(
+                combine_hemispheres_meshes(
+                    PolyMesh(
+                        left=mesh[f"{mesh_type}_left"],
+                        right=mesh[f"{mesh_type}_right"],
+                    )
+                )
+            )
+        else:
+            info[f"{mesh_type}_both"] = mesh_to_plotly(
+                combine_hemispheres_meshes(
+                    PolyMesh(
+                        left=mesh[f"{mesh_type}_left"],
+                        right=mesh[f"{mesh_type}_right"],
+                    )
+                )
+            )
+    info["vertexcolor_both"] = get_vertexcolor(
+        get_data(surface_maps),
+        colors["cmap"],
+        colors["norm"],
+        absolute_threshold=colors["abs_threshold"],
+        bg_map=_get_combined_curvature_map(
+            mesh["curv_left"], mesh["curv_right"]
+        ),
+        bg_on_data=bg_on_data,
+        darkness=darkness,
+    )
     info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
     info["black_bg"] = black_bg
     info["full_brain_mesh"] = True
@@ -288,7 +338,7 @@ def view_img_on_surf(
     stat_map_img,
     surf_mesh="fsaverage5",
     threshold=None,
-    cmap=cm.cold_hot,
+    cmap="RdBu_r",
     black_bg=False,
     vmax=None,
     vmin=None,
@@ -326,8 +376,8 @@ def view_img_on_surf(
         e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : :obj:`str` or matplotlib colormap, default=cm.cold_hot
-        Colormap to use.
+    %(cmap)s
+        default="RdBu_r"
 
     black_bg : :obj:`bool`, default=False
         If True, image is plotted on a black background. Otherwise on a
@@ -422,7 +472,7 @@ def view_surf(
     bg_map=None,
     hemi=None,
     threshold=None,
-    cmap=cm.cold_hot,
+    cmap="RdBu_r",
     black_bg=False,
     vmax=None,
     vmin=None,
@@ -441,7 +491,7 @@ def view_surf(
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`, \
                 or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file
         (valid formats are .gii or Freesurfer specific files
         such as .orig, .pial, .sphere, .white, .inflated) or
@@ -478,7 +528,7 @@ def view_surf(
         it will be rescaled such that all values are in [0, 1].
         Otherwise, it will not be modified.
 
-    hemi : {"left", "right", None}, default=None
+    hemi : {"left", "right", "both", None}, default=None
         Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
         is passed as ``surf_map``
         and / or if :obj:`~nilearn.surface.PolyMesh`
@@ -500,9 +550,8 @@ def view_surf(
         e.g. "25.3%%", and only values of amplitude above the
         given percentile will be shown.
 
-    cmap : :obj:`str` or matplotlib colormap, default=cm.cold_hot
-        You might want to change it to 'gnist_ncar' if plotting a
-        surface atlas.
+    %(cmap)s
+        default="RdBu_r"
 
     black_bg : :obj:`bool`, default=False
         If True, image is plotted on a black background. Otherwise on a

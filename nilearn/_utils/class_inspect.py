@@ -1,6 +1,8 @@
 """Small utilities to inspect classes."""
 
+import numpy as np
 from sklearn import __version__ as sklearn_version
+from sklearn import clone
 from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
@@ -19,6 +21,9 @@ VALID_CHECKS = [
     "check_mixin_order",
     "check_non_transformer_estimators_n_iter",
     "check_set_params",
+    # Nilearn checks
+    "check_masker_fitted",
+    "check_nifti_masker_fit_list_3d",
 ]
 
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -35,6 +40,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_estimator_sparse_array",
     "check_estimator_sparse_data",
     "check_estimator_sparse_matrix",
+    "check_estimator_sparse_tag",
     "check_f_contiguous_array_estimator",
     "check_fit1d",
     "check_fit2d_1feature",
@@ -121,6 +127,60 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
                 yield e, check, check.func.__name__
             if not valid and check.func.__name__ not in valid_checks:
                 yield e, check, check.func.__name__
+
+    if valid:
+        for est in estimator:
+            for e, check in nilearn_check_estimator(estimator=est):
+                yield e, check, check.__name__
+
+
+def nilearn_check_estimator(estimator):
+    tags = estimator._more_tags()
+
+    niimg_input = False
+    is_masker = False
+    # TODO remove first if when dropping sklearn 1.5
+    #  for sklearn >= 1.6 tags are always a dataclass
+    if isinstance(tags, dict) and "X_types" in tags:
+        niimg_input = "niimg_like" in tags["X_types"]
+        is_masker = "masker" in tags["X_types"]
+    else:
+        niimg_input = getattr(tags.input_tags, "niimg_like", False)
+        is_masker = getattr(tags.input_tags, "masker", False)
+
+    if is_masker:
+        yield (clone(estimator), check_masker_fitted)
+
+    if is_masker and niimg_input:
+        yield (clone(estimator), check_nifti_masker_fit_list_3d)
+
+
+def check_masker_fitted(estimator):
+    """Check that transform() and inverse_transform() \
+       fail for maskers if they have not been fitted.
+    """
+    import pytest
+
+    from nilearn._utils.data_gen import generate_random_img
+
+    # Failure should happen before the input type is determined
+    # so we can pass nifti image to surface maskers.
+    img_3d_rand_eye = generate_random_img(shape=(7, 8, 9), affine=np.eye(4))
+    with pytest.raises(ValueError, match="has not been fitted."):
+        estimator.transform(img_3d_rand_eye)
+
+    # Failure should happen before the size of the input type is determined
+    # so we can pass any array here.
+    signals = np.ones((10, 11))
+    with pytest.raises(ValueError, match="has not been fitted."):
+        estimator.inverse_transform(signals)
+
+
+def check_nifti_masker_fit_list_3d(estimator):
+    """Check that list of 3D image can be fitted."""
+    from nilearn.conftest import _img_3d_rand
+
+    estimator.fit([_img_3d_rand(), _img_3d_rand()])
 
 
 def get_params(cls, instance, ignore=None):

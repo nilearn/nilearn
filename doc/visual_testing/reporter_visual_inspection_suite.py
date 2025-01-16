@@ -323,6 +323,21 @@ def report_slm_oasis(build_type):
     return report
 
 
+def report_surface_glm(build_type):
+    flm = FirstLevelModel(mask_img=SurfaceMasker())
+    report_flm_empty = flm.generate_report()
+    report_flm_empty.save_as_html(REPORTS_DIR / "flm_surf_empty.html")
+
+    flm = SecondLevelModel(mask_img=SurfaceMasker())
+    report_slm_empty = flm.generate_report()
+    report_slm_empty.save_as_html(REPORTS_DIR / "slm_surf_empty.html")
+
+    if build_type == "partial":
+        _generate_dummy_html(filenames=["flm_surf.html"])
+        _generate_dummy_html(filenames=["flm_surf.html"])
+        return report_flm_empty, report_slm_empty
+
+
 # %%
 # Adapted from examples/03_connectivity/plot_probabilistic_atlas_extraction.py
 def report_nifti_maps_masker(build_type):
@@ -363,8 +378,6 @@ def report_nifti_labels_masker(build_type):
         return None
 
     atlas = fetch_atlas_schaefer_2018()
-
-    atlas.labels = np.insert(atlas.labels, 0, "Background")
 
     masker = NiftiLabelsMasker(
         atlas.maps,
@@ -486,9 +499,7 @@ def report_multi_nifti_maps_masker(build_type):
         )
         return None, None
 
-    difumo = fetch_atlas_difumo(
-        dimension=64, resolution_mm=2, legacy_format=False
-    )
+    difumo = fetch_atlas_difumo(dimension=64, resolution_mm=2)
 
     data = fetch_development_fmri(n_subjects=2)
 
@@ -572,9 +583,8 @@ def report_surface_label_masker(build_type):
             "right": destrieux["map_right"],
         },
     )
-    label_names = [x.decode("utf-8") for x in destrieux.labels]
 
-    labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
+    labels_masker = SurfaceLabelsMasker(labels_img, destrieux.labels).fit()
     labels_masker_report_unfitted = labels_masker.generate_report()
     labels_masker_report_unfitted.save_as_html(
         REPORTS_DIR / "surface_label_masker_unfitted.html"
@@ -632,7 +642,7 @@ def main(args=sys.argv):
     report_multi_nifti_maps_masker(build_type)
 
     t1 = time.time()
-    print(f"\nTook: {t1 - t0 :0.2f} seconds\n")
+    print(f"\nTook: {t1 - t0:0.2f} seconds\n")
 
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
@@ -641,9 +651,10 @@ def main(args=sys.argv):
     report_flm_bids_features(build_type)
     report_flm_fiac(build_type)
     report_slm_oasis(build_type)
+    report_surface_glm(build_type)
 
     t1 = time.time()
-    print(f"\nTook: {t1 - t0 :0.2f} seconds\n")
+    print(f"\nTook: {t1 - t0:0.2f} seconds\n")
 
 
 if __name__ == "__main__":

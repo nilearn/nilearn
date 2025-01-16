@@ -61,7 +61,6 @@ coverage.xml
 nosetests_coverage/
 
 # documentation
-doc/.nojekyll
 doc/_build/
 doc/auto_examples/
 doc/building_blocks/generated/
@@ -74,6 +73,9 @@ doc/themes/nilearn/static/jquery.js
 log.txt
 build.txt
 pattern.txt
+examples.txt
+gitlog.txt
+merge.txt
 
 # examples
 results/

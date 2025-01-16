@@ -14,20 +14,21 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+from nilearn.maskers import MultiNiftiMasker
 
 extra_valid_checks = [
     "check_estimators_unfitted",
     "check_get_params_invariance",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
+    "check_parameters_default_constructible",
 ]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[MultiNiftiMasker(), NiftiMasker()],
+        estimator=[MultiNiftiMasker()],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -40,7 +41,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[MultiNiftiMasker(), NiftiMasker()],
+        estimator=[MultiNiftiMasker()],
         extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
@@ -85,25 +86,14 @@ def test_auto_mask(data_1, img_1, data_2, img_2):
     masker.transform(img_1)
 
 
-def test_auto_mask_errors(img_3d_rand_eye, img_2):
-    masker = MultiNiftiMasker(mask_args={"opening": 0})
-    # Check that if we have not fit the masker we get a intelligible
-    # error
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker.transform(
-            [[img_3d_rand_eye]],
-        )
+def test_auto_mask_errors(img_3d_rand_eye):
+    masker = MultiNiftiMasker()
     # Check error return due to bad data format
     with pytest.raises(
         ValueError,
-        match="For multiple processing, you should  provide a list of data",
+        match="For multiple processing, you should provide a list of data",
     ):
         masker.fit(img_3d_rand_eye)
-
-    # check exception when transform() called without prior fit()
-    masker2 = MultiNiftiMasker(mask_img=img_3d_rand_eye)
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker2.transform(img_2)
 
 
 def test_nan():
@@ -208,9 +198,10 @@ def test_shelving():
             memory=Memory(location=cachedir, mmap_mode="r", verbose=0),
         )
         masker_shelved._shelving = True
-        masker = MultiNiftiMasker(mask_img=mask_img)
         epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
+        masker = MultiNiftiMasker(mask_img=mask_img)
         epis = masker.fit_transform([epi_img1, epi_img2])
+
         for epi_shelved, epi in zip(epis_shelved, epis):
             epi_shelved = epi_shelved.get()
             assert_array_equal(epi_shelved, epi)

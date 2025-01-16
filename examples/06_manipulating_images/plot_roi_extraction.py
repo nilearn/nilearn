@@ -17,8 +17,11 @@ libraries. Here we give clear guidelines about these steps, starting with
 pre-image operations to post-image operations. The main point is that
 visualization & results checking be possible at each step.
 
-See also :doc:`plot_extract_rois_smith_atlas` for automatic ROI extraction
-of brain connected networks given in 4D image.
+.. seealso::
+
+    :doc:`plot_extract_rois_smith_atlas`
+    for automatic ROI extraction of brain connected networks
+    given in 4D image.
 
 .. include:: ../../../examples/masker_note.rst
 
@@ -88,10 +91,10 @@ haxby_labels = run_target["labels"]
 # spatial filtering kernel on the data. Such data smoothing is usually applied
 # using a Gaussian function with 4mm to 12mm
 # :term:`full-width at half-maximum<FWHM>` (this is where the :term:`FWHM`
-# comes from). The function :func:`nilearn.image.smooth_img` accounts for
+# comes from). The function :func:`~nilearn.image.smooth_img` accounts for
 # potential anisotropy in the image affine (i.e., non-indentical
 # :term:`voxel` size in all the three dimensions). Analogous to the
-# majority of nilearn functions, :func:`nilearn.image.smooth_img` can
+# majority of nilearn functions, :func:`~nilearn.image.smooth_img` can
 # also use file names as input parameters.
 
 # Smooth the data using image processing module from nilearn
@@ -178,7 +181,11 @@ log_p_values_img = new_img_like(fmri_img, log_p_values)
 # with coordinates given manually and colorbar on the right side of plot (by
 # default colorbar=True)
 plot_stat_map(
-    log_p_values_img, mean_img, title="p-values", cut_coords=cut_coords
+    log_p_values_img,
+    mean_img,
+    title="p-values",
+    cut_coords=cut_coords,
+    cmap="inferno",
 )
 
 # %%
@@ -202,15 +209,16 @@ log_p_values[log_p_values < 5] = 0
 # function. As shown above, we first transform data in array to Nifti image.
 log_p_values_img = new_img_like(fmri_img, log_p_values)
 
-# Now, visualizing the created log p-values to image without colorbar and
+# Now, visualizing the created log p-values to image
 # without Left - 'L', Right - 'R' annotation
 plot_stat_map(
     log_p_values_img,
     mean_img,
     title="Thresholded p-values",
     annotate=False,
-    colorbar=False,
+    colorbar=True,
     cut_coords=cut_coords,
+    cmap="inferno",
 )
 
 # %%

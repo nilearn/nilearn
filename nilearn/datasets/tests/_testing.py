@@ -396,7 +396,7 @@ def dict_to_archive(data, archive_format="gztar"):
           - a `str` or `bytes`: the contents of the file
           - anything else is pickled.
 
-    archive_format : str, optional (default="gztar")
+    archive_format : str, default="gztar"
         The archive format. See `shutil` documentation for available formats.
 
     Returns
@@ -447,5 +447,5 @@ def list_to_archive(sequence, archive_format="gztar", content=""):
 
     """
     return dict_to_archive(
-        {item: content for item in sequence}, archive_format=archive_format
+        dict.fromkeys(sequence, content), archive_format=archive_format
     )

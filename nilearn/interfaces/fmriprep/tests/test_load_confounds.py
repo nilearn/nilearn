@@ -632,7 +632,7 @@ def test_ica_aroma(tmp_path, fmriprep_version):
     )
     for col_name in conf.columns:
         # only aroma and non-steady state columns will be present
-        assert re.match("(?:aroma_motion_+|non_steady_state+)", col_name)
+        assert re.match(r"(?:aroma_motion_+|non_steady_state+)", col_name)
 
     # Non-aggressive strategy
     conf, _ = load_confounds(

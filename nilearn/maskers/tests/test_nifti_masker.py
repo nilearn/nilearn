@@ -17,11 +17,45 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
 from nilearn._utils import data_gen, exceptions, testing
-from nilearn._utils.class_inspect import get_params
+from nilearn._utils.class_inspect import check_estimator, get_params
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
-from nilearn.maskers.nifti_masker import _filter_and_mask
+from nilearn.maskers.nifti_masker import filter_and_mask
+
+extra_valid_checks = [
+    "check_parameters_default_constructible",
+    "check_estimators_unfitted",
+    "check_get_params_invariance",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiMasker()],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiMasker()],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_auto_mask(img_3d_rand_eye):
@@ -34,11 +68,6 @@ def test_auto_mask(img_3d_rand_eye):
     masker.transform([img_3d_rand_eye])
     # With a 3D img
     masker.transform(img_3d_rand_eye)
-
-    # check exception when transform() called without prior fit()
-    masker2 = NiftiMasker(mask_img=img_3d_rand_eye)
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker2.transform(img_3d_rand_eye)
 
 
 def test_detrend(img_3d_rand_eye, mask_img_1):
@@ -424,7 +453,7 @@ def test_filter_and_mask_error(affine_eye):
         "Expected dimension is 3D and you provided "
         "a 4D image.",
     ):
-        _filter_and_mask(data_img, mask_img, params)
+        filter_and_mask(data_img, mask_img, params)
 
 
 def test_filter_and_mask(affine_eye):
@@ -439,7 +468,7 @@ def test_filter_and_mask(affine_eye):
     params["clean_kwargs"] = {}
 
     # Test return_affine = False
-    data = _filter_and_mask(data_img, mask_img, params)
+    data = filter_and_mask(data_img, mask_img, params)
     assert data.shape == (5, 24000)
 
 

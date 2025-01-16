@@ -13,7 +13,7 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.rena_clustering import (
     ReNA,
     _make_edges_and_weights_surface,
-    _make_edges_surface,
+    make_edges_surface,
 )
 from nilearn.surface import SurfaceImage
 
@@ -123,7 +123,7 @@ def test_make_edges_surface(surf_mask_1d, part):
     # the mask for left part has total 4 vertices out of which 2 are True
     # and for right part it has total 5 vertices out of which 3 are True
     mask = surf_mask_1d.data.parts[part]
-    edges_unmasked, edges_mask = _make_edges_surface(faces, mask)
+    edges_unmasked, edges_mask = make_edges_surface(faces, mask)
 
     # only one edge remains after masking the left part (between 2 vertices)
     if part == "left":

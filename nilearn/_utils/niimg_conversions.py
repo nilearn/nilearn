@@ -109,10 +109,7 @@ def iter_check_niimg(
     target_fov : tuple of affine and shape, optional
        If specified, images are resampled to this field of view.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
@@ -232,10 +229,8 @@ def check_niimg(
     atleast_4d : boolean, default=False
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
 
-    dtype : {None, dtype, "auto"}, default=None
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous. If None, data will not be converted to a new data type.
+    %(dtype)s
+        If None, data will not be converted to a new data type.
 
     return_iterator : boolean, default=False
         Returns an iterator on the content of the niimg file input.
@@ -275,24 +270,27 @@ def check_niimg(
 
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
-            # Ascending sorting + expand user path
-            filenames = sorted(glob.glob(str(Path(niimg).expanduser())))
+            # Expand user path
+            expanded_niimg = str(Path(niimg).expanduser())
+            # Ascending sorting
+            filenames = sorted(glob.glob(expanded_niimg))
 
             # processing filenames matching globbing expression
             if len(filenames) >= 1 and glob.has_magic(niimg):
                 niimg = filenames  # iterable case
             # niimg is an existing filename
-            elif [niimg] == filenames:
+            elif [expanded_niimg] == filenames:
                 niimg = filenames[0]
             # No files found by glob
             elif glob.has_magic(niimg):
                 # No files matching the glob expression, warn the user
                 message = (
                     "No files matching the entered niimg expression: "
-                    f"'{niimg}'.\n You may have left wildcards usage "
-                    "activated: please set the global constant "
-                    "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
-                    "deactivate this behavior."
+                    f"'{niimg}'.\n"
+                    "You may have left wildcards usage activated: "
+                    "please set the global constant "
+                    "'nilearn.EXPAND_PATH_WILDCARDS' to False "
+                    "to deactivate this behavior."
                 )
                 raise ValueError(message)
             else:
@@ -344,10 +342,7 @@ def check_niimg_3d(niimg, dtype=None):
         If it is an object, check if the affine attribute present and that
         nilearn.image.get_data returns a result, raise TypeError otherwise.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     Returns
     -------

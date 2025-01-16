@@ -4,6 +4,7 @@ first level contrasts or directly on fitted first level models.
 Author: Martin Perez-Guevara, 2016
 """
 
+import operator
 import time
 from pathlib import Path
 from warnings import warn
@@ -31,14 +32,14 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.image import mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.maskers._utils import (
-    check_same_n_vertices,
-    compute_mean_surface_image,
-    concatenate_surface_images,
-    deconcatenate_surface_images,
-)
 from nilearn.mass_univariate import permuted_ols
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import (
+    SurfaceImage,
+    check_same_n_vertices,
+    concat_imgs,
+    iter_img,
+)
+from nilearn.surface.surface import mean_img as surf_mean_img
 
 
 def _input_type_error_message(second_level_input):
@@ -59,6 +60,8 @@ def _check_second_level_input(
     second_level_input, design_matrix, confounds=None
 ):
     """Check second_level_input type."""
+    _check_design_matrix(design_matrix)
+
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
         second_level_input,
@@ -290,9 +293,13 @@ def _check_output_type(output_type, valid_types):
 def _check_design_matrix(design_matrix):
     """Check design_matrix type."""
     if design_matrix is not None and not isinstance(
-        design_matrix, pd.DataFrame
+        design_matrix, (str, Path, pd.DataFrame)
     ):
-        raise ValueError("design matrix must be a pandas DataFrame")
+        raise TypeError(
+            "'design_matrix' must be a "
+            "str, pathlib.Path or a pandas.DataFrame.\n"
+            f"Got {type(design_matrix)}"
+        )
 
 
 def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix):
@@ -333,7 +340,7 @@ def _get_con_val(second_level_contrast, design_matrix):
 def _infer_effect_maps(second_level_input, contrast_def):
     """Deal with the different possibilities of second_level_input."""
     if isinstance(second_level_input, SurfaceImage):
-        return deconcatenate_surface_images(second_level_input)
+        return iter_img(second_level_input, return_iterator=False)
     if isinstance(second_level_input, list) and isinstance(
         second_level_input[0], SurfaceImage
     ):
@@ -402,7 +409,7 @@ def _sort_input_dataframe(second_level_input):
     columns = second_level_input.columns.tolist()
     column_index = columns.index("subject_label")
     sorted_matrix = sorted(
-        second_level_input.values, key=lambda x: x[column_index]
+        second_level_input.values, key=operator.itemgetter(column_index)
     )
     return pd.DataFrame(sorted_matrix, columns=columns)
 
@@ -434,10 +441,8 @@ def _process_second_level_input_as_surface_image(second_level_input):
     if isinstance(second_level_input, SurfaceImage):
         return second_level_input, None
 
-    second_level_input = [
-        compute_mean_surface_image(x) for x in second_level_input
-    ]
-    sample_map = concatenate_surface_images(second_level_input)
+    second_level_input = [surf_mean_img(x) for x in second_level_input]
+    sample_map = concat_imgs(second_level_input)
     return sample_map, None
 
 
@@ -629,12 +634,6 @@ class SecondLevelModel(BaseGLM):
             design_matrix = check_and_load_tables(
                 design_matrix, "design_matrix"
             )[0]
-        else:
-            raise TypeError(
-                "'design_matrix' must be a "
-                "str, pathlib.Path or a pandas.DataFrame.\n"
-                f"Got {type(design_matrix)}"
-            )
         self.design_matrix_ = design_matrix
 
         if (
@@ -682,11 +681,17 @@ class SecondLevelModel(BaseGLM):
         # Report progress
         logger.log(
             "\nComputation of second level model done in "
-            f"{time.time() - t0 :0.2f} seconds.\n",
+            f"{time.time() - t0:0.2f} seconds.\n",
             verbose=self.verbose,
         )
 
         return self
+
+    def __sklearn_is_fitted__(self):
+        return (
+            hasattr(self, "second_level_input_")
+            and self.second_level_input_ is not None
+        )
 
     @fill_doc
     def compute_contrast(
@@ -725,7 +730,7 @@ class SecondLevelModel(BaseGLM):
 
         output_type : {'z_score', 'stat', 'p_value', \
                       :term:`'effect_size'<Parameter Estimate>`, \
-                      'effect_variance', 'all'}, default='z-score'
+                      'effect_variance', 'all'}, default='z_score'
             Type of the output map.
 
         Returns

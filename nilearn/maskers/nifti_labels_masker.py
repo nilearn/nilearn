@@ -10,7 +10,7 @@ from nilearn import _utils, image, masking
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 
 
 class _ExtractionFunctor:
@@ -103,10 +103,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     %(t_r)s
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     resampling_target : {"data", "labels", None}, default="data"
         Gives which image gives the final shape/size.
@@ -218,7 +215,9 @@ class NiftiLabelsMasker(BaseMasker):
     ):
         self.labels_img = labels_img
         self.background_label = background_label
+
         self.labels = labels
+
         self.mask_img = mask_img
         self.keep_masked_labels = keep_masked_labels
 
@@ -255,30 +254,24 @@ class NiftiLabelsMasker(BaseMasker):
         labels_image_data = image.get_data(labels_image)
         return np.unique(labels_image_data)
 
-    def _sanitize_labels(self, labels):
+    def _check_labels(self):
         """Check and clean labels.
 
         - checks that labels is a list of strings.
         - cast all items of the list into strings if they are bytestrings.
         """
+        labels = self.labels
         if labels is not None:
             if not isinstance(labels, list):
-                warnings.warn(
+                raise TypeError(
                     f"'labels' must be a list. Got: {type(labels)}",
-                    stacklevel=3,
                 )
             if not all(isinstance(x, str) for x in labels):
                 types_labels = {type(x) for x in labels}
-                warnings.warn(
+                raise TypeError(
                     "All elements of 'labels' must be a string.\n"
                     f"Got a list of {types_labels}",
-                    stacklevel=3,
                 )
-            labels = [
-                x.decode("utf-8") if isinstance(x, bytes) else str(x)
-                for x in labels
-            ]
-        return labels
 
     def _check_mismatch_labels_regions(
         self, region_ids, tolerant=True, resampling_done=False
@@ -378,8 +371,7 @@ class NiftiLabelsMasker(BaseMasker):
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -522,7 +514,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         Parameters
         ----------
-        imgs : :obj:`list` of Niimg-like objects
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
             See :ref:`extracting_data`.
             Image data passed to the reporter.
 
@@ -573,6 +565,8 @@ class NiftiLabelsMasker(BaseMasker):
             ),
             "warning_message": None,
         }
+
+        self._check_labels()
 
         repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
@@ -713,12 +707,14 @@ class NiftiLabelsMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
+        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
+            default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
@@ -756,12 +752,14 @@ class NiftiLabelsMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, optional
+        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
+            default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
@@ -839,7 +837,7 @@ class NiftiLabelsMasker(BaseMasker):
         params["clean_kwargs"] = self.clean_kwargs
 
         region_signals, (ids, masked_atlas) = self._cache(
-            _filter_and_extract,
+            filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
         )(
             # Images

@@ -14,6 +14,9 @@ This shows:
     and to compute a connectome with surface data.
 
 -   how to use run some decoding directly on surface data.
+
+See the :ref:`dataset description <nki_dataset>`
+for more information on the data used in this example.
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -58,10 +61,7 @@ views = [
     "anterior",
     "posterior",
 ]
-hemispheres = [
-    "left",
-    "right",
-]
+hemispheres = ["left", "right", "both"]
 
 # for our plots we will be using the fsaverage sulcal data as background map
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
@@ -81,6 +81,10 @@ vmin = -vmax
 
 for view, ax_row in zip(views, axes):
     for ax, hemi in zip(ax_row, hemispheres):
+        if hemi == "both" and view == "lateral":
+            view = "left"
+        elif hemi == "both" and view == "medial":
+            view = "right"
         plot_surf(
             surf_map=mean_img,
             hemi=hemi,
@@ -89,14 +93,14 @@ for view, ax_row in zip(views, axes):
             axes=ax,
             title=f"mean image - {hemi} - {view}",
             colorbar=False,
-            cmap="bwr",
             symmetric_cmap=True,
             bg_on_data=True,
             vmin=vmin,
             vmax=vmax,
             bg_map=fsaverage_sulcal,
+            cmap="seismic",
         )
-fig.set_size_inches(6, 8)
+fig.set_size_inches(12, 8)
 
 show()
 
@@ -129,26 +133,35 @@ labels_img = SurfaceImage(
     },
 )
 
-# The labels are stored as bytes for the Destrieux atlas.
-# For convenience we decode them to string.
-label_names = [x.decode("utf-8") for x in destrieux.labels]
-
 labels_masker = SurfaceLabelsMasker(
     labels_img=labels_img,
-    labels=label_names,
+    labels=destrieux.labels,
 ).fit()
 
 masked_data = labels_masker.transform(surf_img_nki)
 print(f"Masked data shape: {masked_data.shape}")
 
 # %%
+# Plot connectivity matrix
+# ------------------------
 connectome_measure = ConnectivityMeasure(kind="correlation")
 connectome = connectome_measure.fit([masked_data])
+
 vmax = np.absolute(connectome.mean_).max()
 vmin = -vmax
+
+# We only print every 3rd label
+# for a more legible figure.
+labels = []
+for i, label in enumerate(labels_masker.label_names_):
+    if i % 3 == 1:
+        labels.append(label)
+    else:
+        labels.append("")
+
 plot_matrix(
     connectome.mean_,
-    labels=labels_masker.label_names_,
+    labels=labels,
     vmax=vmax,
     vmin=vmin,
 )
@@ -156,10 +169,10 @@ plot_matrix(
 show()
 
 # %%
-# Using the `Decoder`
-# -------------------
+# Using the decoder
+# -----------------
 # Now using the appropriate masker
-# we can use a `Decoder` on surface data
+# we can use a ``Decoder`` on surface data
 # just as we do for volume images.
 #
 # .. note::
@@ -197,7 +210,7 @@ plot_surf(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     colorbar=True,
-    cmap="black_red",
+    cmap="inferno",
     vmin=0,
 )
 show()
@@ -223,7 +236,7 @@ vmax = max(np.absolute(hemi).max() for hemi in coef_img.data.parts.values())
 vmin = -vmax
 plot_surf(
     surf_map=coef_img,
-    cmap="bwr",
+    cmap="RdBu_r",
     vmin=vmin,
     vmax=vmax,
     threshold=1e-6,

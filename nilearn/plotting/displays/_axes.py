@@ -484,7 +484,7 @@ class GlassBrainAxes(BaseAxes):
             ):
                 marker_color = np.asarray(marker_color)
             relevant_coords = []
-            xcoords, ycoords, zcoords = marker_coords.T
+            xcoords, _, _ = marker_coords.T
             relevant_coords.extend(
                 cidx
                 for cidx, xc in enumerate(xcoords)
@@ -530,7 +530,7 @@ class GlassBrainAxes(BaseAxes):
         line_values : array_like
             Values of the lines.
 
-        cmap : :class:`~matplotlib.colors.Colormap`
+        %(cmap)s
             Colormap used to map ``line_values`` to a color.
 
         vmin, vmax : :obj:`float`, optional

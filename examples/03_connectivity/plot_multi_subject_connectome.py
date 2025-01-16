@@ -29,7 +29,6 @@ def plot_matrices(cov, prec, title, labels):
     # Display covariance matrix
     plotting.plot_matrix(
         cov,
-        cmap=plotting.cm.bwr,
         vmin=-1,
         vmax=1,
         title=f"{title} / covariance",
@@ -38,7 +37,6 @@ def plot_matrices(cov, prec, title, labels):
     # Display precision matrix
     plotting.plot_matrix(
         prec,
-        cmap=plotting.cm.bwr,
         vmin=-span,
         vmax=span,
         title=f"{title} / precision",

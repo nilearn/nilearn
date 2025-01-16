@@ -2,22 +2,37 @@
 
 .. include:: names.rst
 
-0.11.1.dev
+0.11.2.dev
 ==========
+
+NEW
+---
 
 Fixes
 -----
 
-- :bdg-dark:`Code` Allow using ``confounds`` and ``sample_mask`` via ``.fit_transform`` in :obj:`~nilearn.maskers.SurfaceLabelsMasker` (:gh:`4926` by `Himanshu Aggarwal`_).
+- :bdg-dark:`Code` Fix ``two_sided`` image thresholding. (:gh:`4951` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Ensure that only valid surface meshes can be instantiated. (:gh:`5036` by `Rémi Gau`_).
 
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Allow pathlike type for ``design matrix`` in :obj:`~nilearn.plotting.plot_design_matrix` and :obj:`~nilearn.plotting.plot_design_matrix_correlation`, as well as for ``model_event`` in :obj:`~nilearn.plotting.plot_event` (:gh:`4807` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add reports for the surface based GLMs (:gh:`4442` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Ensure that ``design matrix`` and / or ``events`` can be pathlike objects in :meth:`nilearn.glm.first_level.FirstLevelModel.fit`, :meth:`nilearn.glm.second_level.SecondLevelModel.fit`, :meth:`~nilearn.glm.first_level.make_first_level_design_matrix`  (:gh:`4807` by `Rémi Gau`_).
+- :bdg-dark:`Code` Allow plotting both hemispheres together (:gh:`4991` by `Himanshu Aggarwal`_).
 
-- :bdg-primary:`Doc` Add a :ref:`page <meaning_difference>` in the user guide to explain GLM terminology across software (Nilearn, SPM, FSL) regarding the meaning of 'levels'  (:gh:`4287` by `Thiti Premrudeepreechacharn`_).
+- :bdg-dark:`Code` Add a look up table to each of the deterministic atlas (:gh:`4820` by `Rémi Gau`_).
+-
+- :bdg-dark:`Code` Add a ``"template"`` to each atlas to describe the space they are provided in (:gh:`5041` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add an 'atlas_type' metadata to each atlas (:gh:`4820` by `Rémi Gau`_).
 
 Changes
 -------
+
+- :bdg-dark:`Code` Fix labels of all deterministic atlases to be list of strings that contain a ``"Background"`` label (:gh:`4820`, :gh:`5006`, :gh:`5013`, :gh:`5041` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` Remove the ``legacy_format`` parameter from several dataset fetcher functions as it was due for deprecation in version 0.11.0  (:gh:`5004` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Change the default map to be ``"RdBu_r"`` or ``"gray"`` for most plotting functions. In several examples, use the "inferno" colormap when a sequential colormap is preferable (:gh:`4807` by `Rémi Gau`_).

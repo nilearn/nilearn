@@ -14,12 +14,19 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 import sys
 
 ##############################################################################
-
+#
+# Parameters definitions
+#
 # Standard documentation entries
 #
 # Entries are listed in alphabetical order.
 #
 docdict = {}
+
+##############################################################################
+#
+# Parameters definitions
+#
 
 # annotate
 docdict["annotate"] = """
@@ -296,6 +303,14 @@ draw_cross : :obj:`bool`, default=True
     to indicate the cut position.
 """
 
+# dtype
+docdict["dtype"] = """
+dtype : dtype like, "auto" or None, default=None
+    Data type toward which the data should be converted.
+    If "auto", the data will be converted to int32
+    if dtype is discrete and float32 if it is continuous.
+"""
+
 # extractor / extract_type
 docdict["extractor"] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
@@ -369,13 +384,13 @@ or 'fast' or None, optional
 
 # hemi
 docdict["hemi"] = """
-hemi : {"left", "right"}, default="left"
+hemi : {"left", "right", "both"}, default="left"
     Hemisphere to display.
 """
 
 # high_pass
 docdict["high_pass"] = """
-high_pass : :obj:`float`, default=None
+high_pass : :obj:`float` or None, default=None
     High cutoff frequency in Hertz.
     If specified, signals below this frequency will be filtered out.
 """
@@ -457,13 +472,6 @@ imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
-# legacy_format
-docdict["legacy_format"] = """
-legacy_format : :obj:`bool`, default=True
-    If set to `True`, the fetcher will return recarrays.
-    Otherwise, it will return pandas dataframes.
-"""
-
 # linewidth
 docdict["linewidths"] = """
 linewidths : :obj:`float`, optional
@@ -484,6 +492,7 @@ docdict["lower_cutoff"] = """
 lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
+
 
 # mask_strategy
 docdict["mask_strategy"] = """
@@ -653,7 +662,7 @@ radiological : :obj:`bool`, default=False
 
 # random_state
 docdict["random_state"] = """
-random_state : :obj:`int` or RandomState, optional
+random_state : :obj:`int` or np.random.RandomState, optional
     Pseudo-random number generator state used for random sampling.
 """
 
@@ -716,6 +725,15 @@ resampling_interpolation : :obj:`str`, optional
 
         ``"nearest"`` is faster but can be noisier in some cases.
 
+"""
+
+# resolution template
+docdict["resolution"] = """
+resolution : :obj:`int`, default=None
+        Resolution in millimeters.
+        If resolution is different from 1,
+        the template is re-sampled with the specified resolution.
+        Default to ``1`` if None is passed.
 """
 
 # resume
@@ -869,11 +887,18 @@ target_shape : :obj:`tuple` or :obj:`list`, default=None
 
 # templateflow
 docdict["templateflow"] = """
-    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
-    release c (MNI152NLin2009cSAsym).
-    The NiLearn template is asymmetrical ICBM152 2009, release a.
-    If you wish to use the exact same release as :term:`fMRIPrep`,
-    please refer to TemplateFlow (https://www.templateflow.org/).
+
+.. admonition:: Nilearn MNI template
+   :class: important
+
+   The Nilearn template is asymmetrical ICBM152 2009, release a.
+
+   The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+   release c (MNI152NLin2009cSAsym).
+
+   If you wish to use the exact same release as :term:`fMRIPrep`,
+   please refer to `TemplateFlow <https://www.templateflow.org>`_.
+
 """
 
 # threshold
@@ -916,9 +941,12 @@ docdict["verbose0"] = verbose.format(0)
 
 # view
 docdict["view"] = """
-view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"
-    If a string, must be in
+view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"\
+    if `hemi` is "left" or "right", if `hemi` is "both" "dorsal"
+    If a string, and `hemi` is "left" or "right" must be in
     {"lateral", "medial", "dorsal", "ventral", "anterior", "posterior"}.
+    If `hemi` is "both", must be in {"left", "right", "dorsal", "ventral",
+    "anterior", "posterior"}.
     If a sequence, must be a pair (elev, azim) of :obj:`float` or :obj:`int`
     angles in degrees that will manually set a custom view.
     E.g., view=[270.0, 90] or view=(0, -180.0).
@@ -939,6 +967,50 @@ vmin : :obj:`float`, optional
     Lower bound of the colormap.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
+"""
+
+
+##############################################################################
+#
+# Other values definitions
+#
+
+# atlas_type
+docdict["atlas_type"] = """'atlas_type' : :obj:`str`
+        Type of atlas.
+        See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
+
+# dataset description
+docdict["description"] = """'description' : :obj:`str`
+        Description of the dataset."""
+
+# atlas labels
+docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
+        List of the names of the regions."""
+
+# look up table
+docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
+# template
+docdict["template"] = """'template' : :obj:`str`
+        The standardized space of analysis
+        in which the atlas results are provided.
+        When known it should be a valid template name
+        taken from the spaces described in
+        `the BIDS specification <https://bids-specification.readthedocs.io/en/latest/appendices/coordinate-systems.html#image-based-coordinate-systems>`_."""
+
+
+# templateflow
+docdict["templateflow"] = """
+    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+    release c (MNI152NLin2009cSAsym).
+    The NiLearn template is asymmetrical ICBM152 2009, release a.
+    If you wish to use the exact same release as :term:`fMRIPrep`,
+    please refer to TemplateFlow (https://www.templateflow.org/).
 """
 
 ##############################################################################

@@ -24,16 +24,6 @@ from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
 
-@pytest.fixture
-def n_regions():
-    return 9
-
-
-@pytest.fixture
-def length():
-    return 93
-
-
 def _labels_img():
     return generate_labeled_regions(
         shape=(7, 8, 9),
@@ -193,8 +183,6 @@ def test_nifti_labels_masker_errors(
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker11.transform(fmri11_img)
 
     # Test all kinds of mismatch between shapes and between affines
     masker11.fit()
@@ -224,10 +212,7 @@ def test_nifti_labels_masker_errors(
     masker11 = NiftiLabelsMasker(
         labels11_img, smoothing_fwhm=3, resampling_target=None
     )
-    signals11 = masker11.fit_transform(fmri11_img)
-
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        NiftiLabelsMasker(labels11_img).inverse_transform(signals11)
+    masker11.fit_transform(fmri11_img)
 
 
 def test_nifti_labels_masker_io_shapes(
@@ -792,20 +777,28 @@ def test_warning_n_labels_not_equal_n_regions(
         masker.fit()
 
 
-def test_sanitize_labels_warnings(shape_3d_default, affine_eye, n_regions):
+def test_sanitize_labels_errors(shape_3d_default, affine_eye):
     labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
-        n_regions=n_regions,
+        n_regions=2,
     )
+
     with pytest.warns(UserWarning, match="'labels' must be a list."):
         masker = NiftiLabelsMasker(
             labels_img,
             labels="foo",
         )
         masker.fit()
-    with pytest.warns(
-        UserWarning, match="All elements of 'labels' must be a string"
+
+    with pytest.raises(TypeError, match="'labels' must be a list."):
+        NiftiLabelsMasker(
+            labels_img,
+            labels={"foo", "bar", "baz"},
+        ).fit()
+
+    with pytest.raises(
+        TypeError, match="All elements of 'labels' must be a string"
     ):
         masker = NiftiLabelsMasker(
             labels_img,

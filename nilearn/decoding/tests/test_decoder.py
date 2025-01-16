@@ -21,7 +21,6 @@ import warnings
 
 import numpy as np
 import pytest
-import sklearn
 from nibabel import save
 from numpy.testing import assert_array_almost_equal
 from sklearn.datasets import load_iris, make_classification, make_regression
@@ -45,7 +44,6 @@ from sklearn.model_selection import KFold, LeaveOneGroupOut, ParameterGrid
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
-from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.param_validation import (
     _get_mask_extent,
@@ -861,18 +859,11 @@ def test_decoder_error_unknown_scoring_metrics(
 
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
-    if compare_version(sklearn.__version__, ">", "1.2.2"):
-        with pytest.raises(
-            ValueError,
-            match="The 'scoring' parameter of check_scoring "
-            "must be a str among",
-        ):
-            model.fit(X, y)
-    else:
-        with pytest.raises(
-            ValueError, match="'foo' is not a valid scoring value"
-        ):
-            model.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match="The 'scoring' parameter of check_scoring must be a str among",
+    ):
+        model.fit(X, y)
 
 
 def test_decoder_dummy_classifier_default_scoring():

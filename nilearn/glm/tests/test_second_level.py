@@ -20,7 +20,6 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
-from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.conftest import _shape_3d_default
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
@@ -38,13 +37,9 @@ from nilearn.glm.second_level.second_level import (
 )
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker
-from nilearn.maskers._utils import (
-    concatenate_surface_images,
-)
+from nilearn.reporting import get_clusters_table
 from nilearn.surface._testing import assert_surface_image_equal
-
-if is_matplotlib_installed():
-    from nilearn.reporting import get_clusters_table
+from nilearn.surface.surface import concat_imgs as surf_concat_imgs
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
@@ -567,7 +562,7 @@ def test_high_level_glm_with_paths_errors(tmp_path):
     X = pd.DataFrame([[1]] * 4, columns=["intercept"])
 
     # Provide a masker as mask_img
-    masker = NiftiMasker(mask)
+    masker = NiftiMasker(mask).fit()
     with pytest.warns(
         UserWarning, match="Parameter memory of the masker overridden"
     ):
@@ -1066,10 +1061,6 @@ def test_non_parametric_inference_cluster_level(tmp_path):
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 def test_non_parametric_inference_cluster_level_with_covariates(
     shape_3d_default,
     tmp_path,
@@ -1128,10 +1119,6 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     assert logp_unc_cluster_sizes == logp_max_cluster_sizes
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Matplotlib not installed; required for this test",
-)
 def test_non_parametric_inference_cluster_level_with_single_covariates(
     shape_3d_default,
     tmp_path,
@@ -1487,7 +1474,7 @@ def test_second_level_input_as_surface_image_3d_same_as_list_2d(surf_img_1d):
     model.fit(second_level_input, design_matrix=design_matrix)
     result_2d = model.compute_contrast()
 
-    second_level_input_3d = concatenate_surface_images(second_level_input)
+    second_level_input_3d = surf_concat_imgs(second_level_input)
     model.fit(second_level_input_3d, design_matrix=design_matrix)
     result_3d = model.compute_contrast()
 

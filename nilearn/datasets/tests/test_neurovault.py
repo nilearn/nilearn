@@ -783,7 +783,7 @@ def test_fetch_neurovault_errors(capsys, request_mocker):
     data = neurovault.fetch_neurovault()
 
     captured = capsys.readouterr()
-    match = re.search("500 Error", captured.err)
+    match = re.search(r"500 Error", captured.err)
     assert match is not None
 
     assert len(data.images) == 0
