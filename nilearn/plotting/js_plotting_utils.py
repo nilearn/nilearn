@@ -67,7 +67,7 @@ def add_js_lib(html, libraries=None, embed_js=True):
             )
 
     # Add our custom js library
-    with (js_dir, "surface-plot-utils.js").open() as f:
+    with (js_dir / "surface-plot-utils.js").open() as f:
         js_lib += f"<script>{f.read()}</script>\n"
 
     if not isinstance(html, Template):

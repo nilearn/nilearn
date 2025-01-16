@@ -8,9 +8,7 @@ from warnings import warn
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import nibabel as nib
 import numpy as np
-from matplotlib._cm import datad
 
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
@@ -24,17 +22,16 @@ from nilearn.plotting.js_plotting_utils import (
     mesh_to_plotly,
     to_color_strings,
 )
-from nilearn.surface import (
+from nilearn.surface.surface import (
     PolyMesh,
     SurfaceImage,
-    load_surf_data,
-    load_surf_mesh,
-)
-from nilearn.surface.surface import (
+    _data_to_gifti,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     combine_hemispheres_meshes,
     get_data,
+    load_surf_data,
+    load_surf_mesh,
 )
 
 
@@ -169,15 +166,17 @@ def _matplotlib_cm_to_niivue_cm(cmap):
 
     if isinstance(cmap, str):
         name = cmap
-        if name[-2:] == "_r":
+
+        if name.endswith("_r"):
             name = name[:-2]
             reverse = True
 
-        if name not in datad:
+        if name not in plt.cm.datad:
             print(f"Colormap not available 0 {name}")
             return None
 
-        spec = datad[cmap]
+        spec = plt.cm.datad[name]
+
     elif isinstance(cmap, mpl.colors.Colormap):
         spec = cmap
         name = cmap.name
@@ -192,8 +191,6 @@ def _matplotlib_cm_to_niivue_cm(cmap):
     if type(spec[0][1]) is tuple:
         print(f"Colormap not available 2 {name}")
         return None
-
-    print(f"Converting {name} with {n_nodes} nodes")
 
     js = {"R": [], "G": [], "B": [], "A": [], "I": []}
     for i in range(n_nodes):
@@ -212,7 +209,13 @@ def _matplotlib_cm_to_niivue_cm(cmap):
 
 
 def _one_mesh_info_niivue(
-    surf_map, surf_mesh, threshold=None, bg_map=None, cmap=None, colorbar=None
+    surf_map,
+    surf_mesh,
+    threshold=None,
+    bg_map=None,
+    cmap=None,
+    colorbar=None,
+    hemi="left",
 ):
     """Build dict for plotting one surface map on a single mesh."""
     info = {}
@@ -221,27 +224,22 @@ def _one_mesh_info_niivue(
     with Path(tempfile.mkdtemp()) as output_path:
         # Handle mesh
         surf_mesh_path = output_path / "surf_mesh.gii"
-        surf_mesh_gifti = nib.gifti.GiftiImage()
-        surf_mesh_gifti.add_gifti_data_array(
-            nib.gifti.GiftiDataArray(surf_mesh[0], "NIFTI_INTENT_POINTSET")
-        )
-        surf_mesh_gifti.add_gifti_data_array(
-            nib.gifti.GiftiDataArray(surf_mesh[1], "NIFTI_INTENT_TRIANGLE")
-        )
-        nib.save(surf_mesh_gifti, surf_mesh_path)
+        surf_mesh.to_gifti(output_path / "surf_mesh.gii")
+
+        if hemi == "left":
+            surf_mesh_path.with_stem(f"{surf_mesh_path.stem}_hemi-L")
+        elif hemi == "right":
+            surf_mesh_path.with_stem(f"{surf_mesh_path.stem}_hemi-R")
+        else:
+            raise ValueError
+
         info["surf_mesh"] = base64.b64encode(
             surf_mesh_path.read_bytes()
         ).decode("UTF-8")
 
         # Handle surface data
         surf_map_path = output_path / "surf_map.gii"
-        surf_map_gifti = nib.gifti.gifti.GiftiImage()
-        surf_map_gifti.add_gifti_data_array(
-            nib.gifti.gifti.GiftiDataArray(
-                surf_map, intent="NIFTI_INTENT_ZSCORE", datatype="float32"
-            )
-        )
-        nib.save(surf_map_gifti, surf_map_path)
+        _data_to_gifti(surf_map, surf_map_path)
         info["surf_map"] = base64.b64encode(surf_map_path.read_bytes()).decode(
             "UTF-8"
         )
@@ -257,11 +255,7 @@ def _one_mesh_info_niivue(
         # Handle background map
         if bg_map is not None:
             bg_map_path = output_path / "bg_map.gii"
-            bg_map_gifti = nib.gifti.GiftiImage()
-            bg_map_gifti.add_gifti_data_array(
-                nib.gifti.GiftiDataArray(bg_map, "NIFTI_INTENT_NONE")
-            )
-            nib.save(bg_map_gifti, bg_map_path)
+            _data_to_gifti(bg_map, bg_map_path)
             info["bg_map"] = base64.b64encode(bg_map_path.read_bytes()).decode(
                 "UTF-8"
             )
@@ -821,6 +815,7 @@ def view_surf(
             cmap=cmap,
             colorbar=colorbar,
             threshold=threshold,
+            hemi=hemi,
         )
         info["title"] = title
         return _fill_html_template_niivue(info, embed_js=True)
