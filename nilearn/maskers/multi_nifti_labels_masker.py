@@ -25,7 +25,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     Parameters
     ----------
-    labels_img : Niimg-like object
+    labels_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
@@ -109,7 +109,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     def __init__(
         self,
-        labels_img,
+        labels_img=None,
         labels=None,
         background_label=0,
         mask_img=None,
