@@ -22,7 +22,7 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.testing import write_imgs_to_path
-from nilearn.conftest import _shape_3d_default
+from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 
@@ -34,18 +34,10 @@ extra_valid_checks = [
 ]
 
 
-@pytest.mark.parametrize
-def simple_map():
-    """Generate maps for using with check_estimator."""
-    return generate_maps(
-        shape=_shape_3d_default(), n_regions=9, affine=np.eye(4)
-    )[0]
-
-
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiMapsMasker(maps_img=simple_map)],
+        estimator=[NiftiMapsMasker(maps_img=_img_maps())],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -58,7 +50,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiMapsMasker(maps_img=simple_map)],
+        estimator=[NiftiMapsMasker(maps_img=_img_maps())],
         valid=False,
         extra_valid_checks=extra_valid_checks,
     ),

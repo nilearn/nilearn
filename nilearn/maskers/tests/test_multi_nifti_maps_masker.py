@@ -9,7 +9,7 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
-from nilearn.conftest import _shape_3d_default
+from nilearn.conftest import _img_maps
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
 extra_valid_checks = [
@@ -25,12 +25,8 @@ extra_valid_checks = [
     "estimator, check, name",
     check_estimator(
         estimator=[
-            MultiNiftiMapsMasker(
-                generate_maps(_shape_3d_default(), n_regions=9)[0]
-            ),
-            NiftiMapsMasker(
-                generate_maps(_shape_3d_default(), n_regions=9)[0]
-            ),
+            MultiNiftiMapsMasker(_img_maps()),
+            NiftiMapsMasker(_img_maps()),
         ],
         extra_valid_checks=extra_valid_checks,
     ),
@@ -45,12 +41,8 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[
-            MultiNiftiMapsMasker(
-                generate_maps(_shape_3d_default(), n_regions=9)[0]
-            ),
-            NiftiMapsMasker(
-                generate_maps(_shape_3d_default(), n_regions=9)[0]
-            ),
+            MultiNiftiMapsMasker(_img_maps()),
+            NiftiMapsMasker(_img_maps()),
         ],
         extra_valid_checks=extra_valid_checks,
         valid=False,
