@@ -23,12 +23,14 @@ from .._utils.param_validation import check_threshold
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 
+NIIVUE_VERSION = "0.27.0"
+
 LIBRARY_URL = {
     "plotly": "https://cdn.plot.ly/plotly-gl3d-latest.min.js",
     "jquery": (
         "https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"
     ),
-    "niivue": "https://niivue.github.io/niivue/features/niivue.umd.js",
+    "niivue": f"https://unpkg.com/browse/@niivue/niivue@{NIIVUE_VERSION}/dist/index.js",
 }
 
 LIBRARY_FILE = {
