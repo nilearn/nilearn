@@ -169,6 +169,13 @@ def test_nifti_maps_masker_errors(
     length, n_regions, affine_eye, shape_3d_default, img_maps
 ):
     """Check fitting errors."""
+    masker = NiftiMapsMasker()
+    with pytest.raises(
+        TypeError,
+        match="Please provide a valid 4D Nifti-like object for 'maps_img'.",
+    ):
+        masker.fit()
+
     fmri11_img, mask11_img = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )

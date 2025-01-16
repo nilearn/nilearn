@@ -54,7 +54,7 @@ class NiftiMapsMasker(BaseMasker):
 
     Parameters
     ----------
-    maps_img : 4D niimg-like object
+    maps_img : 4D niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
@@ -140,7 +140,7 @@ class NiftiMapsMasker(BaseMasker):
 
     def __init__(
         self,
-        maps_img,
+        maps_img=None,
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
@@ -389,6 +389,11 @@ class NiftiMapsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        if self.maps_img is None:
+            raise TypeError(
+                "Please provide a valid 4D Nifti-like object for 'maps_img'."
+            )
+
         if self.resampling_target not in ("mask", "maps", "data", None):
             raise ValueError(
                 "invalid value for 'resampling_target' "
