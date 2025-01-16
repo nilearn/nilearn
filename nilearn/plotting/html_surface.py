@@ -237,28 +237,23 @@ def _one_mesh_info_niivue(
             surf_mesh_path.read_bytes()
         ).decode("UTF-8")
 
-        # Handle surface data
-        surf_map_path = output_path / "surf_map.gii"
-        _data_to_gifti(surf_map, surf_map_path)
-        info["surf_map"] = base64.b64encode(surf_map_path.read_bytes()).decode(
-            "UTF-8"
-        )
+    # Handle surface data
+    gii = _data_to_gifti(surf_map)
+    info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
 
-        if isinstance(cmap, (mpl.colors.Colormap, str)):
-            info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
+    if isinstance(cmap, (mpl.colors.Colormap, str)):
+        info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
 
-        if isinstance(colorbar, bool):
-            info["colorbar"] = str(colorbar).lower()
+    if isinstance(colorbar, bool):
+        info["colorbar"] = str(colorbar).lower()
 
-        info["threshold"] = threshold
+    info["threshold"] = threshold
 
-        # Handle background map
-        if bg_map is not None:
-            bg_map_path = output_path / "bg_map.gii"
-            _data_to_gifti(bg_map, bg_map_path)
-            info["bg_map"] = base64.b64encode(bg_map_path.read_bytes()).decode(
-                "UTF-8"
-            )
+    # Handle background map
+    if bg_map is not None:
+        gii = _data_to_gifti(bg_map)
+        info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
+
     return info
 
 

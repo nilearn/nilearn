@@ -1687,8 +1687,10 @@ def _mesh_to_gifti(coordinates, faces, gifti_file):
     gifti_img.to_filename(gifti_file)
 
 
-def _data_to_gifti(data, gifti_file):
-    """Save data from Polydata to a gifti file.
+def _data_to_gifti(data, gifti_file=None):
+    """Convert array to a gifti.
+
+    Can also save it to file.
 
     Parameters
     ----------
@@ -1721,7 +1723,11 @@ def _data_to_gifti(data, gifti_file):
     darray = gifti.GiftiDataArray(data=data, datatype=datatype)
 
     gii = gifti.GiftiImage(darrays=[darray])
-    gii.to_filename(Path(gifti_file))
+
+    if gifti_file is not None:
+        gii.to_filename(Path(gifti_file))
+
+    return gii
 
 
 def _sanitize_filename(filename):
