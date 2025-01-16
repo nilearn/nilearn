@@ -234,7 +234,8 @@ class NiftiSpheresMasker(BaseMasker):
 
     Parameters
     ----------
-    seeds : :obj:`list` of triplet of coordinates in native space
+    seeds : :obj:`list` of triplet of coordinates in native space or None, \
+          default=None
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
@@ -290,7 +291,7 @@ class NiftiSpheresMasker(BaseMasker):
     # memory and memory_level are used by CacheMixin.
     def __init__(
         self,
-        seeds,
+        seeds=None,
         radius=None,
         mask_img=None,
         allow_overlap=False,
