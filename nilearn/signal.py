@@ -574,7 +574,7 @@ def clean(
 
     When performing scrubbing (censoring high-motion volumes) with butterworth
     filtering, the signal is processed in the following order, based on the
-    second recommendation in :footcite:t:`Lindquist2019`:
+    second recommendation in :footcite:t:`Lindquist2018`:
 
     - interpolate high motion volumes with cubic spline interpolation
     - detrend
@@ -583,14 +583,14 @@ def clean(
     - remove confounds
     - standardize
 
-    According to :footcite:t:`Lindquist2019`, removal of confounds will be done
+    According to :footcite:t:`Lindquist2018`, removal of confounds will be done
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified. The censored volumes should be removed in both signals and
     confounds before the nuisance regression.
 
     When performing scrubbing with cosine drift term filtering, the signal is
     processed in the following order, based on the first recommendation in
-    :footcite:t:`Lindquist2019`:
+    :footcite:t:`Lindquist2018`:
 
     - generate cosine drift term
     - censor high motion volumes in both signal and confounds
@@ -695,7 +695,7 @@ def clean(
     of the signal space. See :footcite:t:`Friston1994`.
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in :footcite:t:`Lindquist2019`.
+    suggestions in :footcite:t:`Lindquist2018`.
 
     References
     ----------

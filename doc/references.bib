@@ -826,19 +826,15 @@
 	year = {1997}
 }
 
-@article{Lindquist2019,
+@article {Lindquist2018,
 	author = {Lindquist, Martin A. and Geuter, Stephan and Wager, Tor D. and Caffo, Brian S.},
 	title = {Modular preprocessing pipelines can reintroduce artifacts into fMRI data},
-	journal = {Human Brain Mapping},
-	volume = {40},
-	number = {8},
-	pages = {2358-2376},
-	keywords = {preprocessing, resting-state, fMRI, artifacts, motion},
-	doi = {https://doi.org/10.1002/hbm.24528},
-	url = {https://onlinelibrary.wiley.com/doi/abs/10.1002/hbm.24528},
-	eprint = {https://onlinelibrary.wiley.com/doi/pdf/10.1002/hbm.24528},
-	abstract = {Abstract The preprocessing pipelines typically used in both task and resting-state functional magnetic resonance imaging (rs-fMRI) analysis are modular in nature: They are composed of a number of separate filtering/regression steps, including removal of head motion covariates and band-pass filtering, performed sequentially and in a flexible order. In this article, we illustrate the shortcomings of this approach, as we show how later preprocessing steps can reintroduce artifacts previously removed from the data in prior preprocessing steps. We show that each regression step is a geometric projection of data onto a subspace, and that performing a sequence of projections can move the data into subspaces no longer orthogonal to those previously removed, reintroducing signal related to nuisance covariates. Thus, linear filtering operations are not commutative, and the order in which the preprocessing steps are performed is critical. These issues can arise in practice when any combination of standard preprocessing steps including motion regression, scrubbing, component-based correction, physiological correction, global signal regression, and temporal filtering are performed sequentially. In this work, we focus primarily on rs-fMRI. We illustrate the problem both theoretically and empirically through application to a test–retest rs-fMRI data set, and suggest remedies. These include (a) combining all steps into a single linear filter, or (b) sequential orthogonalization of covariates/linear filters performed in series.},
-	year = {2019}
+	year = {2018},
+	doi = {10.1101/407676},
+	publisher = {Cold Spring Harbor Laboratory},
+	abstract = {The preprocessing pipelines typically used in both task and restingstate fMRI (rs-fMRI) analysis are modular in nature: They are composed of a number of separate filtering/regression steps, including removal of head motion covariates and band-pass filtering, performed sequentially and in a flexible order. In this paper we illustrate the shortcomings of this approach, as we show how later preprocessing steps can reintroduce artifacts previously removed from the data in prior preprocessing steps. We show that each regression step is a geometric projection of data onto a subspace, and that performing a sequence of projections can move the data into subspaces no longer orthogonal to those previously removed, reintroducing signal related to nuisance covariates. Thus, linear filtering operations are not commutative, and the order in which the preprocessing steps are performed is critical. These issues can arise in practice when any combination of standard preprocessing steps{\textemdash}including motion regression, scrubbing, component-based correction, global signal regression, and temporal filtering{\textemdash}are performed sequentially. In this work we focus primarily on rs-fMRI. We illustrate the problem both theoretically and empirically through application to a test-retest rs-fMRI data set, and suggest remedies. These include (a) combining all steps into a single linear filter, or (b) sequential orthogonalization of covariates/linear filters performed in series.},
+	pdf = {https://www.biorxiv.org/content/early/2018/09/04/407676.full.pdf},
+	journal = {bioRxiv}
 }
 
 @article{Liu2009,

@@ -1418,7 +1418,7 @@ def clean_img(
     of the signal space from :footcite:t:`Friston1994`.
 
     Orthogonalization between temporal filters and confound removal is based on
-    suggestions in :footcite:t:`Lindquist2019`.
+    suggestions in :footcite:t:`Lindquist2018`.
 
     References
     ----------
