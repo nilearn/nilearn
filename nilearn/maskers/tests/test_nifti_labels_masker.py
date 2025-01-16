@@ -142,6 +142,13 @@ def test_nifti_labels_masker_errors(
     affine_eye, shape_3d_default, n_regions, length
 ):
     """Check working of shape/affine checks."""
+    masker = NiftiLabelsMasker()
+    with pytest.raises(
+        TypeError,
+        match="Please provide a valid Nifti-like object for 'labels_img'.",
+    ):
+        masker.fit()
+
     shape1 = (*shape_3d_default, length)
 
     shape2 = (12, 10, 14, length)
