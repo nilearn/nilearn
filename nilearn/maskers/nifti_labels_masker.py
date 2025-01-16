@@ -62,7 +62,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     Parameters
     ----------
-    labels_img : Niimg-like object
+    labels_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
@@ -190,7 +190,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     def __init__(
         self,
-        labels_img,
+        labels_img=None,
         labels=None,
         background_label=0,
         mask_img=None,
@@ -521,6 +521,11 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        if self.labels_img is None:
+            raise TypeError(
+                "Please provide a valid Nifti-like object for 'labels_img'."
+            )
+
         available_reduction_strategies = {
             "mean",
             "median",
