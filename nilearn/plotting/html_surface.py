@@ -214,7 +214,6 @@ def _one_mesh_info_niivue(
     bg_map=None,
     cmap=None,
     colorbar=None,
-    hemi="left",
 ):
     """Build dict for plotting one surface map on a single mesh."""
     info = {}
@@ -798,7 +797,6 @@ def view_surf(
             cmap=cmap,
             colorbar=colorbar,
             threshold=threshold,
-            hemi=hemi,
         )
         info["title"] = title
         return _fill_html_template_niivue(info, embed_js=True)
