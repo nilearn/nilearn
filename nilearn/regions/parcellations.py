@@ -1,24 +1,92 @@
 """Parcellation tools such as KMeans or Ward for fMRI images."""
 
 import warnings
+from typing import ClassVar
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
+from scipy.sparse import coo_matrix
 from sklearn.base import clone
 from sklearn.feature_extraction import image
 
-from nilearn.maskers import NiftiLabelsMasker
+from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
+from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
+from nilearn.surface import SurfaceImage
 
 from .._utils import fill_doc, logger, stringify_path
 from .._utils.niimg import safe_get_data
 from .._utils.niimg_conversions import iter_check_niimg
 from ..decomposition._multi_pca import _MultiPCA
 from .hierarchical_kmeans_clustering import HierarchicalKMeans
-from .rena_clustering import ReNA
+from .rena_clustering import (
+    ReNA,
+    make_edges_surface,
+)
+
+
+def _connectivity_surface(mask_img):
+    """Compute connectivity matrix for surface data, used for Agglomerative
+    Clustering method.
+
+    Based on surface part of
+    :func:`~nilearn.regions.rena_clustering._weighted_connectivity_graph`.
+    The difference is that this function returns a non-weighted connectivity
+    matrix with diagonal set to 1 (because that's what use with volumes).
+
+    Parameters
+    ----------
+    mask_img : :class:`~nilearn.surface.SurfaceImage` object
+        Mask image provided to the Parcellation object.
+
+    Returns
+    -------
+    connectivity : a sparse matrix
+        Connectivity or adjacency matrix for the mask.
+
+    """
+    # total True vertices in the mask
+    n_vertices = (
+        mask_img.data.parts["left"].sum() + mask_img.data.parts["right"].sum()
+    )
+    connectivity = coo_matrix((n_vertices, n_vertices))
+    len_previous_mask = 0
+    for part in mask_img.mesh.parts:
+        face_part = mask_img.mesh.parts[part].faces
+        mask_part = mask_img.data.parts[part]
+        edges, edge_mask = make_edges_surface(face_part, mask_part)
+        # keep only the edges that are in the mask
+        edges = edges[:, edge_mask]
+        # Reorder the indices of the graph
+        max_index = edges.max()
+        order = np.searchsorted(
+            np.unique(edges.ravel()), np.arange(max_index + 1)
+        )
+        # increasing the order by the number of vertices in the previous mask
+        # to avoid overlapping indices
+        order += len_previous_mask
+        # reorder the edges such that the first True edge in the mask is the
+        # is the first edge in the matrix (even if it is not the first edge in
+        # the mask) and so on...
+        edges = order[edges]
+        len_previous_mask += mask_part.sum()
+        # update the connectivity matrix
+        conn_temp = coo_matrix(
+            (np.ones((edges.shape[1])), edges),
+            (n_vertices, n_vertices),
+        ).tocsr()
+        connectivity += conn_temp
+    # make symmetric
+    connectivity = connectivity + connectivity.T
+    # set diagonal to 1 for connectivity matrix
+    connectivity[np.diag_indices_from(connectivity)] = 1
+    return connectivity
 
 
 def _estimator_fit(data, estimator, method=None):
     """Estimator to fit on the data matrix.
+    Mostly just choosing which methods to transpose the data for because
+    KMeans, AgglomerativeClustering cluster first dimension of data (samples)
+    but we want to cluster features (voxels).
 
     Parameters
     ----------
@@ -28,7 +96,7 @@ def _estimator_fit(data, estimator, method=None):
     estimator : instance of estimator from sklearn
         MiniBatchKMeans or AgglomerativeClustering.
 
-    method: str,
+    method : str,
     {'kmeans', 'ward', 'complete', 'average', 'rena', 'hierarchical_kmeans'},
     optional
 
@@ -40,24 +108,15 @@ def _estimator_fit(data, estimator, method=None):
         labels_ estimated from estimator.
 
     """
-    if method == "rena":
-        rena = ReNA(
-            mask_img=estimator.mask_img,
-            n_clusters=estimator.n_clusters,
-            scaling=estimator.scaling,
-            n_iter=estimator.n_iter,
-            threshold=estimator.threshold,
-            memory=estimator.memory,
-            memory_level=estimator.memory_level,
-            verbose=estimator.verbose,
-        )
-        rena.fit(data)
-        labels_ = rena.labels_
-
+    estimator = clone(estimator)
+    if method in ["rena", "hierarchical_kmeans"]:
+        estimator.fit(data)
+    # transpose data for KMeans, AgglomerativeClustering because
+    # they cluster first dimension of data (samples) but we want to cluster
+    # features (voxels)
     else:
-        estimator = clone(estimator)
         estimator.fit(data.T)
-        labels_ = estimator.labels_
+    labels_ = estimator.labels_
 
     return labels_
 
@@ -116,6 +175,19 @@ def _labels_masker_extraction(img, masker, confound):
     return signals
 
 
+def _get_unique_labels(labels_img):
+    """Get unique labels from labels image."""
+    # remove singleton dimension if present
+    for part in labels_img.data.parts:
+        if (
+            labels_img.data.parts[part].ndim == 2
+            and labels_img.data.parts[part].shape[-1] == 1
+        ):
+            labels_img.data.parts[part] = labels_img.data.parts[part].squeeze()
+    labels_data = np.concatenate(list(labels_img.data.parts.values()), axis=0)
+    return np.unique(labels_data)
+
+
 @fill_doc
 class Parcellations(_MultiPCA):
     """Learn :term:`parcellations<parcellation>` \
@@ -148,15 +220,19 @@ class Parcellations(_MultiPCA):
     %(random_state)s
         Default=0.
 
-    mask : Niimg-like object or :class:`nilearn.maskers.NiftiMasker`,\
-           :class:`nilearn.maskers.MultiNiftiMasker`, optional
+    mask : Niimg-like object or :class:`~nilearn.surface.SurfaceImage`,\
+           or :class:`nilearn.maskers.NiftiMasker`,\
+           :class:`nilearn.maskers.MultiNiftiMasker` or \
+           :class:`nilearn.maskers.SurfaceMasker`, optional
         Mask/Masker used for masking the data.
-        If mask image if provided, it will be used in the MultiNiftiMasker.
-        If an instance of MultiNiftiMasker is provided, then this instance
+        If mask image if provided, it will be used in the MultiNiftiMasker or
+        SurfaceMasker (depending on the type of mask image).
+        If an instance of either maskers is provided, then this instance
         parameters will be used in masking the data by overriding the default
         masker parameters.
         If None, mask will be automatically computed by a MultiNiftiMasker
-        with default parameters.
+        with default parameters for Nifti images and no mask will be used for
+        SurfaceImage.
     %(smoothing_fwhm)s
         Default=4.0.
     %(standardize_false)s
@@ -213,9 +289,10 @@ class Parcellations(_MultiPCA):
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
-        masking.compute_background_mask or masking.compute_epi_mask
-        to fine-tune mask computation. Please see the related documentation
-        for details.
+        :func:`nilearn.masking.compute_background_mask`,
+        or :func:`nilearn.masking.compute_epi_mask`
+        to fine-tune mask computation.
+        Please see the related documentation for details.
 
     scaling : :obj:`bool`, default=False
         Used only when the method selected is 'rena'. If scaling is True, each
@@ -246,7 +323,7 @@ class Parcellations(_MultiPCA):
 
     Notes
     -----
-    * Transforming list of Nifti images to data matrix takes few steps.
+    * Transforming list of images to data matrix takes few steps.
       Reducing the data dimensionality using randomized SVD, build brain
       parcellations using KMeans or various Agglomerative methods.
 
@@ -258,14 +335,14 @@ class Parcellations(_MultiPCA):
 
     """
 
-    VALID_METHODS = [
+    VALID_METHODS: ClassVar[tuple[str, ...]] = (
         "kmeans",
         "ward",
         "complete",
         "average",
         "rena",
         "hierarchical_kmeans",
-    ]
+    )
 
     def __init__(
         self,
@@ -389,9 +466,8 @@ class Parcellations(_MultiPCA):
             )
             # data ou data.T
             labels = self._cache(_estimator_fit, func_memory_level=1)(
-                components.T, hkmeans
+                components.T, hkmeans, self.method
             )
-
         elif self.method == "rena":
             rena = ReNA(
                 mask_img_,
@@ -408,12 +484,14 @@ class Parcellations(_MultiPCA):
             )
 
         else:
-            mask_ = safe_get_data(mask_img_).astype(bool)
-            shape = mask_.shape
-            connectivity = image.grid_to_graph(
-                n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
-            )
-
+            if isinstance(mask_img_, SurfaceImage):
+                connectivity = _connectivity_surface(mask_img_)
+            else:
+                mask_ = safe_get_data(mask_img_).astype(bool)
+                shape = mask_.shape
+                connectivity = image.grid_to_graph(
+                    n_x=shape[0], n_y=shape[1], n_z=shape[2], mask=mask_
+                )
             from sklearn.cluster import AgglomerativeClustering
 
             agglomerative = AgglomerativeClustering(
@@ -441,7 +519,9 @@ class Parcellations(_MultiPCA):
             warnings.warn(
                 message=n_parcels_warning, category=UserWarning, stacklevel=3
             )
-        self.labels_img_ = self.masker_.inverse_transform(labels)
+        self.labels_img_ = self.masker_.inverse_transform(
+            labels.astype(np.int32)
+        )
 
         return self
 
@@ -464,7 +544,7 @@ class Parcellations(_MultiPCA):
             Images to process.
 
         confounds : :obj:`list` of CSV files, arrays-like,\
- or :class:`pandas.DataFrame`, optional
+            or :class:`pandas.DataFrame`, default=None
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds)
             Must be of same length as imgs.
@@ -485,24 +565,39 @@ class Parcellations(_MultiPCA):
         imgs, confounds, single_subject = _check_parameters_transform(
             imgs, confounds
         )
-        # Requires for special cases like extracting signals on list of
-        # 3D images
-        imgs_list = iter_check_niimg(imgs, atleast_4d=True)
-
-        masker = NiftiLabelsMasker(
-            self.labels_img_,
-            mask_img=self.masker_.mask_img_,
-            smoothing_fwhm=self.smoothing_fwhm,
-            standardize=self.standardize,
-            detrend=self.detrend,
-            low_pass=self.low_pass,
-            high_pass=self.high_pass,
-            t_r=self.t_r,
-            resampling_target="data",
-            memory=self.memory,
-            memory_level=self.memory_level,
-            verbose=self.verbose,
-        )
+        # Required for special cases like extracting signals on list of
+        # 3D images or SurfaceImages.
+        if isinstance(self.masker_.mask_img_, SurfaceImage):
+            imgs_list = imgs.copy()
+            masker = SurfaceLabelsMasker(
+                self.labels_img_,
+                mask_img=self.masker_.mask_img_,
+                smoothing_fwhm=self.smoothing_fwhm,
+                standardize=self.standardize,
+                detrend=self.detrend,
+                low_pass=self.low_pass,
+                high_pass=self.high_pass,
+                t_r=self.t_r,
+                memory=self.memory,
+                memory_level=self.memory_level,
+                verbose=self.verbose,
+            )
+        else:
+            imgs_list = iter_check_niimg(imgs, atleast_4d=True)
+            masker = NiftiLabelsMasker(
+                self.labels_img_,
+                mask_img=self.masker_.mask_img_,
+                smoothing_fwhm=self.smoothing_fwhm,
+                standardize=self.standardize,
+                detrend=self.detrend,
+                low_pass=self.low_pass,
+                high_pass=self.high_pass,
+                t_r=self.t_r,
+                resampling_target="data",
+                memory=self.memory,
+                memory_level=self.memory_level,
+                verbose=self.verbose,
+            )
 
         region_signals = Parallel(n_jobs=self.n_jobs)(
             delayed(
@@ -524,7 +619,7 @@ class Parcellations(_MultiPCA):
             Images for process for fit as well for transform to signals.
 
         confounds : :obj:`list` of CSV files, arrays-like or\
- :class:`pandas.DataFrame`, optional
+            :class:`pandas.DataFrame`, default=None
             Each file or numpy array in a list should have shape
             (number of scans, number of confounds).
             Given confounds should have same length as images if
@@ -580,11 +675,22 @@ class Parcellations(_MultiPCA):
         else:
             single_subject = False
 
-        imgs = Parallel(n_jobs=self.n_jobs)(
-            delayed(self._cache(signals_to_img_labels, func_memory_level=2))(
-                each_signal, self.labels_img_, self.mask_img_
+        if isinstance(self.mask_img_, SurfaceImage):
+            labels = _get_unique_labels(self.labels_img_)
+            imgs = Parallel(n_jobs=self.n_jobs)(
+                delayed(
+                    self._cache(
+                        signals_to_surf_img_labels, func_memory_level=2
+                    )
+                )(each_signal, labels, self.labels_img_, self.mask_img_)
+                for each_signal in signals
             )
-            for each_signal in signals
-        )
+        else:
+            imgs = Parallel(n_jobs=self.n_jobs)(
+                delayed(
+                    self._cache(signals_to_img_labels, func_memory_level=2)
+                )(each_signal, self.labels_img_, self.mask_img_)
+                for each_signal in signals
+            )
 
         return imgs[0] if single_subject else imgs

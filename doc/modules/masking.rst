@@ -9,7 +9,8 @@
 
 **User guide:** See the :ref:`masking` section for further details.
 
-**Functions**:
+Functions
+---------
 
 .. currentmodule:: nilearn.masking
 

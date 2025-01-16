@@ -255,4 +255,4 @@ report = fmri_glm_multirun.generate_report(
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

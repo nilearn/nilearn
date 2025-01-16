@@ -6,6 +6,7 @@ import webbrowser
 from html import escape
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler
+from pathlib import Path
 from queue import Empty, Queue
 from socketserver import TCPServer
 from threading import Thread
@@ -37,7 +38,7 @@ def _open_in_browser(content):
         def log_message(self, *args):
             del args
 
-        def do_GET(self):
+        def do_GET(self):  # noqa: N802
             if not self.path.endswith("index.html"):
                 self.send_error(HTTPStatus.NOT_FOUND, "File not found")
                 return
@@ -196,7 +197,7 @@ class HTMLDocument:
             Path to the HTML file used for saving.
 
         """
-        with open(file_name, "wb") as f:
+        with Path(file_name).open("wb") as f:
             f.write(self.get_standalone().encode("utf-8"))
 
     @remove_parameters(
@@ -207,7 +208,11 @@ class HTMLDocument:
         ),
         end_version="0.13.0",
     )
-    def open_in_browser(self, file_name=None, temp_file_lifetime="deprecated"):
+    def open_in_browser(
+        self,
+        file_name=None,
+        temp_file_lifetime="deprecated",  # noqa: ARG002
+    ):
         """Save the plot to a temporary HTML file and open it in a browser.
 
         Parameters

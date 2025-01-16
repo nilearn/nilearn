@@ -20,7 +20,7 @@ message = (
     "Importing from 'nilearn.input_data' will be possible at least until "
     "release 0.13.0. Please import from 'nilearn.maskers' instead."
 )
-warnings.warn(message, DeprecationWarning)
+warnings.warn(message, DeprecationWarning, stacklevel=1)
 
 
 from .base_masker import BaseMasker
@@ -32,9 +32,9 @@ from .nifti_spheres_masker import NiftiSpheresMasker
 
 __all__ = [
     "BaseMasker",
+    "MultiNiftiMasker",
     "NiftiLabelsMasker",
     "NiftiMapsMasker",
     "NiftiMasker",
-    "MultiNiftiMasker",
     "NiftiSpheresMasker",
 ]

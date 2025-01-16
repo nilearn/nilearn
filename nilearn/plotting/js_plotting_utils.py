@@ -1,9 +1,10 @@
 """Helps for views, i.e. interactive plots from html_surface and \
-html_connectome."""
+html_connectome.
+"""
 
 import base64
-import os
 import warnings
+from pathlib import Path
 from string import Template
 
 import matplotlib as mpl
@@ -15,8 +16,8 @@ from nilearn.plotting.html_document import (  # noqa: F401
     HTMLDocument,
     set_max_img_views_before_warning,
 )
+from nilearn.surface import load_surf_mesh
 
-from .. import surface
 from .._utils.extmath import fast_abs_percentile
 from .._utils.param_validation import check_threshold
 
@@ -47,25 +48,26 @@ def add_js_lib(html, libraries=None, embed_js=True):
     if libraries is None:
         libraries = ["plotly", "jquery"]
 
-    js_dir = os.path.join(os.path.dirname(__file__), "data", "js")
+    js_dir = Path(__file__).parent / "data" / "js"
 
     js_lib = ""
 
     # Add each third-party js library
     for library in libraries:
-        if library in LIBRARY_URL.keys():
+        if library in LIBRARY_URL:
             if not embed_js:
                 js_lib += f'<script src="{LIBRARY_URL[library]}"></script>\n'
             else:
-                with open(os.path.join(js_dir, LIBRARY_FILE[library])) as f:
+                with (js_dir / LIBRARY_FILE[library]).open() as f:
                     js_lib += f"<script>{f.read()}</script>\n"
         else:
             raise ValueError(
                 f"Unknown library {library}."
                 f"Valid libraries are {LIBRARY_URL.keys()}"
             )
+
     # Add our custom js library
-    with open(os.path.join(js_dir, "surface-plot-utils.js")) as f:
+    with (js_dir, "surface-plot-utils.js").open() as f:
         js_lib += f"<script>{f.read()}</script>\n"
 
     if not isinstance(html, Template):
@@ -75,10 +77,9 @@ def add_js_lib(html, libraries=None, embed_js=True):
 
 def get_html_template(template_name):
     """Get an HTML file from package data."""
-    template_path = os.path.join(
-        os.path.dirname(__file__), "data", "html", template_name
-    )
-    with open(template_path, "rb") as f:
+    template_path = Path(__file__).parent / "data" / "html" / template_name
+
+    with template_path.open("rb") as f:
         return Template(f.read().decode("utf-8"))
 
 
@@ -124,9 +125,10 @@ def colorscale(
     x = np.linspace(0, 1, 100)
     rgb = our_cmap(x, bytes=True)[:, :3]
     rgb = np.array(rgb, dtype=int)
-    colors = []
-    for i, col in zip(x, rgb):
-        colors.append([np.round(i, 3), f"rgb({col[0]}, {col[1]}, {col[2]})"])
+    colors = [
+        [np.round(i, 3), f"rgb({col[0]}, {col[1]}, {col[2]})"]
+        for i, col in zip(x, rgb)
+    ]
     return {
         "colors": colors,
         "vmin": vmin,
@@ -155,9 +157,9 @@ def decode(b, dtype):
 
 def mesh_to_plotly(mesh):
     """Convert a :term:`mesh` to plotly format."""
-    mesh = surface.load_surf_mesh(mesh)
-    x, y, z = map(encode, np.asarray(mesh[0].T, dtype="<f4"))
-    i, j, k = map(encode, np.asarray(mesh[1].T, dtype="<i4"))
+    mesh = load_surf_mesh(mesh)
+    x, y, z = map(encode, np.asarray(mesh.coordinates.T, dtype="<f4"))
+    i, j, k = map(encode, np.asarray(mesh.faces.T, dtype="<i4"))
     info = {
         "_x": x,
         "_y": y,

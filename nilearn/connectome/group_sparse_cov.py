@@ -1,5 +1,6 @@
 """Implementation of algorithm for sparse multi-subjects learning of Gaussian \
-graphical models."""
+graphical models.
+"""
 
 # Authors: Philippe Gervais
 
@@ -14,10 +15,11 @@ from joblib import Memory, Parallel, delayed
 from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
+from sklearn.utils import check_array
 from sklearn.utils.extmath import fast_logdet
 
-from .._utils import CacheMixin, logger
-from .._utils.extmath import is_spd
+from nilearn._utils import CacheMixin, fill_doc, logger
+from nilearn._utils.extmath import is_spd
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -128,6 +130,7 @@ def _assert_submatrix(full, sub, n):
     np.testing.assert_almost_equal(true_sub, sub)
 
 
+@fill_doc
 def group_sparse_covariance(
     subjects,
     alpha,
@@ -148,32 +151,31 @@ def group_sparse_covariance(
     Running time is linear on max_iter, and number of subjects (len(subjects)),
     but cubic on number of features (subjects[0].shape[1]).
 
-    The present algorithm is based on :footcite:t:`Honorio2015`.
+    The present algorithm is based on :footcite:t:`Honorio2012`.
 
     Parameters
     ----------
-    subjects : list of numpy.ndarray
+    subjects : :obj:`list` of numpy.ndarray
         input subjects. Each subject is a 2D array, whose columns contain
         signals. Each array shape must be (sample number, feature number).
         The sample number can vary from subject to subject, but all subjects
         must have the same number of features (i.e. of columns).
 
-    alpha : float
+    alpha : :obj:`float`
         regularization parameter. With normalized covariances matrices and
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    max_iter : int, default=50
+    max_iter : :obj:`int`, default=50
         maximum number of iterations.
 
-    tol : positive float or None, default=1e-3
+    tol : positive :obj:`float` or None, default=0.001
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
 
-    verbose : int, default=0
-        verbosity level. Zero means "no message".
+    %(verbose0)s
 
-    probe_function : callable or None, optional
+    probe_function : callable or None,  default=None
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.
@@ -188,11 +190,11 @@ def group_sparse_covariance(
         - current value of precisions (ndarray).
         - previous value of precisions (ndarray). None before first iteration.
 
-    precisions_init : numpy.ndarray, optional
+    precisions_init : numpy.ndarray,  default=None
         initial value of the precision matrices. If not provided, a diagonal
         matrix with the variances of each input signal is used.
 
-    debug : bool, default=False
+    debug : :obj:`bool`, default=False
         if True, perform checks during computation. It can help find
         numerical problems, but increases computation time a lot.
 
@@ -246,29 +248,15 @@ def _group_sparse_covariance(
     """
     if tol == -1:
         tol = None
-    if not isinstance(alpha, (int, float)) or alpha < 0:
-        raise ValueError(
-            "Regularization parameter alpha must be a "
-            "positive number.\n"
-            f"You provided: {alpha}"
-        )
+
+    _check_alpha(alpha)
 
     n_subjects = emp_covs.shape[-1]
     n_features = emp_covs[0].shape[0]
     n_samples = np.asarray(n_samples)
     n_samples /= n_samples.sum()  # essential for numerical stability
 
-    # Check diagonal normalization.
-    ones = np.ones(emp_covs.shape[0])
-    for k in range(n_subjects):
-        if (
-            abs(emp_covs[..., k].flat[:: emp_covs.shape[0] + 1] - ones) > 0.1
-        ).any():
-            warnings.warn(
-                "input signals do not all have unit variance. This "
-                "can lead to numerical instability."
-            )
-            break
+    _check_diagonal_normalization(emp_covs, n_subjects)
 
     if precisions_init is None:
         # Fortran order make omega[..., k] contiguous, which is often useful.
@@ -304,11 +292,13 @@ def _group_sparse_covariance(
     max_norm = None
 
     omega_old = np.empty_like(omega)
+
     if probe_function is not None:
         # iteration number -1 means called before iteration loop.
         probe_function(
             emp_covs, n_samples, alpha, max_iter, tol, -1, omega, None
         )
+
     probe_interrupted = False
 
     # Start optimization loop. Variables are named following (mostly) the
@@ -318,53 +308,31 @@ def _group_sparse_covariance(
     alpha2 = alpha**2
 
     for n in range(max_iter):
-        if max_norm is not None:
-            suffix = f" variation (max norm): {max_norm:.3e} "
-        else:
-            suffix = ""
-        if verbose > 1:
-            logger.log(
-                f"* iteration {n:d} "
-                f"({100.0 * n / max_iter:.0f} %){suffix} ...",
-                verbose=verbose,
-                stack_level=2,
-            )
+        suffix = (
+            f" variation (max norm): {max_norm:.3e} "
+            if max_norm is not None
+            else ""
+        )
+
+        logger.log(
+            f"* iteration {n:d} ({100.0 * n / max_iter:.0f} %){suffix} ...",
+            verbose=verbose,
+            stack_level=2,
+        )
 
         omega_old[...] = omega
         for p in range(n_features):
             if p == 0:
-                # Initial state: remove first col/row
-                W = omega[1:, 1:, :].copy()  # stack of W(k)
-                W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
-                for k in range(W.shape[2]):
-                    # stack of W^-1(k)
-                    W_inv[..., k] = scipy.linalg.inv(W[..., k])
-                    if debug:
-                        np.testing.assert_almost_equal(
-                            np.dot(W_inv[..., k], W[..., k]),
-                            np.eye(W_inv[..., k].shape[0]),
-                            decimal=10,
-                        )
-                        _assert_submatrix(omega[..., k], W[..., k], p)
-                        assert is_spd(W_inv[..., k])
+                W, W_inv = _set_initial_state_w_and_w_inv(omega, debug, p)
+
             else:
-                # Update W and W_inv
                 if debug:
                     omega_orig = omega.copy()
 
-                for k in range(n_subjects):
-                    _update_submatrix(
-                        omega[..., k], W[..., k], W_inv[..., k], p, h, v
-                    )
+                _update_w_and_w_inv(
+                    omega, debug, W, W_inv, n_subjects, p, h, v
+                )
 
-                    if debug:
-                        _assert_submatrix(omega[..., k], W[..., k], p)
-                        assert is_spd(W_inv[..., k], decimal=14)
-                        np.testing.assert_almost_equal(
-                            np.dot(W[..., k], W_inv[..., k]),
-                            np.eye(W_inv[..., k].shape[0]),
-                            decimal=10,
-                        )
                 if debug:
                     # Check that omega has not been modified.
                     np.testing.assert_almost_equal(omega_orig, omega)
@@ -403,6 +371,7 @@ def _group_sparse_covariance(
                     # q(k) -> T(k) * v(k) * h_22(k)
                     # \lambda -> gamma   (lambda is a Python keyword)
                     q[:] = n_samples * emp_covs[p, p, :] * W_inv[m, m, :]
+
                     if debug:
                         assert np.all(q > 0)
                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
@@ -436,12 +405,12 @@ def _group_sparse_covariance(
                     if abs(fval) > 0.1:
                         warnings.warn(
                             "Newton-Raphson step did not converge.\n"
-                            "This may indicate a badly conditioned "
-                            "system."
+                            "This may indicate a badly conditioned system."
                         )
 
                     if debug:
                         assert gamma >= 0.0, gamma
+
                     y[:, m] = (gamma * c) / aq  # x*
 
             # Copy back y in omega (column and row)
@@ -458,39 +427,34 @@ def _group_sparse_covariance(
                 if debug:
                     assert is_spd(omega[..., k])
 
-        if probe_function is not None:
-            if probe_function(
-                emp_covs,
-                n_samples,
-                alpha,
-                max_iter,
-                tol,
-                n,
-                omega,
-                omega_old,
-            ):
-                probe_interrupted = True
-                logger.log(
-                    "probe_function interrupted loop",
-                    verbose=verbose,
-                    msg_level=2,
-                    stack_level=2,
-                )
-                break
+        if probe_function is not None and probe_function(
+            emp_covs,
+            n_samples,
+            alpha,
+            max_iter,
+            tol,
+            n,
+            omega,
+            omega_old,
+        ):
+            probe_interrupted = True
+            logger.log(
+                "probe_function interrupted loop",
+                verbose=verbose,
+                msg_level=2,
+                stack_level=2,
+            )
+            break
 
         # Compute max of variation
         omega_old -= omega
         omega_old = abs(omega_old)
         max_norm = omega_old.max()
 
-        if tol is not None and max_norm < tol:
-            logger.log(
-                f"tolerance reached at iteration number {n + 1:d}: "
-                f"{max_norm:.3e}",
-                verbose=verbose,
-                stack_level=2,
-            )
-            tolerance_reached = True
+        tolerance_reached = _check_if_tolerance_reached(
+            tol, max_norm, verbose, n
+        )
+        if tolerance_reached:
             break
 
     if tol is not None and not tolerance_reached and not probe_interrupted:
@@ -502,38 +466,99 @@ def _group_sparse_covariance(
     return omega
 
 
-class GroupSparseCovariance(BaseEstimator, CacheMixin):
+def _check_alpha(alpha):
+    if not isinstance(alpha, (int, float)) or alpha < 0:
+        raise ValueError(
+            "Regularization parameter alpha must be a positive number.\n"
+            f"You provided: {alpha=}"
+        )
+
+
+def _check_diagonal_normalization(emp_covs, n_subjects):
+    ones = np.ones(emp_covs.shape[0])
+    for k in range(n_subjects):
+        if (
+            abs(emp_covs[..., k].flat[:: emp_covs.shape[0] + 1] - ones) > 0.1
+        ).any():
+            warnings.warn(
+                "Input signals do not all have unit variance. "
+                "This can lead to numerical instability."
+            )
+            break
+
+
+def _set_initial_state_w_and_w_inv(omega, debug, p):
+    """Set initial state by removing first col/row."""
+    W = omega[1:, 1:, :].copy()  # stack of W(k)
+    W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
+    for k in range(W.shape[2]):
+        # stack of W^-1(k)
+        W_inv[..., k] = scipy.linalg.inv(W[..., k])
+
+        if debug:
+            np.testing.assert_almost_equal(
+                np.dot(W_inv[..., k], W[..., k]),
+                np.eye(W_inv[..., k].shape[0]),
+                decimal=10,
+            )
+            _assert_submatrix(omega[..., k], W[..., k], p)
+            assert is_spd(W_inv[..., k])
+
+    return W, W_inv
+
+
+def _update_w_and_w_inv(omega, debug, W, W_inv, n_subjects, p, h, v):
+    for k in range(n_subjects):
+        _update_submatrix(omega[..., k], W[..., k], W_inv[..., k], p, h, v)
+
+        if debug:
+            _assert_submatrix(omega[..., k], W[..., k], p)
+            assert is_spd(W_inv[..., k], decimal=14)
+            np.testing.assert_almost_equal(
+                np.dot(W[..., k], W_inv[..., k]),
+                np.eye(W_inv[..., k].shape[0]),
+                decimal=10,
+            )
+
+
+def _check_if_tolerance_reached(tol, max_norm, verbose, n):
+    tolerance_reached = tol is not None and max_norm < tol
+    if tolerance_reached:
+        logger.log(
+            f"tolerance reached at iteration number {n + 1:d}: {max_norm:.3e}",
+            verbose=verbose,
+            stack_level=2,
+        )
+    return tolerance_reached
+
+
+@fill_doc
+class GroupSparseCovariance(CacheMixin, BaseEstimator):
     """Covariance and precision matrix estimator.
 
     The model used has been introduced in :footcite:t:`Varoquaux2010a`, and the
-    algorithm used is based on what is described in :footcite:t:`Honorio2015`.
+    algorithm used is based on what is described in :footcite:t:`Honorio2012`.
 
     Parameters
     ----------
-    alpha : float, default=0.1
+    alpha : :obj:`float`, default=0.1
         regularization parameter. With normalized covariances matrices and
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse).
 
-    tol : positive float, default=1e-3
+    tol : positive :obj:`float`, default=1e-3
         The tolerance to declare convergence: if the dual gap goes below
         this value, iterations are stopped.
 
-    max_iter : int, default=10
+    max_iter : :obj:`int`, default=10
         maximum number of iterations. The default value is rather
         conservative.
 
-    verbose : int, default=0
-        verbosity level. Zero means "no message".
+    %(verbose0)s
 
-    memory : instance of joblib.Memory or string, default=None
-        Used to cache the masking process.
-        By default, no caching is done.
-        If a string is given, it is the path to the caching directory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
+    %(memory)s
 
-    memory_level : int, default=0
-        Caching aggressiveness. Higher values mean more caching.
+    %(memory_level)s
 
     Attributes
     ----------
@@ -558,8 +583,6 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         memory=None,
         memory_level=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         self.alpha = alpha
         self.tol = tol
         self.max_iter = max_iter
@@ -568,13 +591,18 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def fit(self, subjects, y=None):
+    def fit(
+        self,
+        subjects,
+        y=None,  # noqa: ARG002
+    ):
         """Fits the group sparse precision model according \
         to the given training data and parameters.
 
         Parameters
         ----------
-        subjects : list of numpy.ndarray with shapes (n_samples, n_features)
+        subjects : :obj:`list` of numpy.ndarray \
+                   with shapes (n_samples, n_features)
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns).
@@ -585,6 +613,12 @@ class GroupSparseCovariance(BaseEstimator, CacheMixin):
             the object itself. Useful for chaining operations.
 
         """
+        for x in subjects:
+            check_array(x, accept_sparse=False)
+
+        if self.memory is None:
+            self.memory = Memory(location=None)
+
         logger.log("Computing covariance matrices", verbose=self.verbose)
         self.covariances_, n_samples = empirical_covariances(
             subjects, assume_centered=False
@@ -610,16 +644,17 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
 
     Parameters
     ----------
-    subjects : list of numpy.ndarray, shape for each (n_samples, n_features)
+    subjects : :obj:`list` of numpy.ndarray, \
+        shape for each (n_samples, n_features)
         input subjects. Each subject is a 2D array, whose columns contain
         signals. Sample number can vary from subject to subject, but all
         subjects must have the same number of features (i.e. of columns).
 
-    assume_centered : bool, default=False
+    assume_centered : :obj:`bool`, default=False
         if True, assume that all input signals are centered. This slightly
         decreases computation time by avoiding useless computation.
 
-    standardize : bool, default=False
+    standardize : :obj:`bool`, default=False
         if True, set every signal variance to one before computing their
         covariance matrix (i.e. compute a correlation matrix).
 
@@ -686,13 +721,13 @@ def group_sparse_scores(
     emp_covs : numpy.ndarray, shape (n_features, n_features, n_subjects)
         empirical covariance matrix
 
-    alpha : float
+    alpha : :obj:`float`
         regularization parameter
 
-    duality_gap : bool, default=False
+    duality_gap : :obj:`bool`, default=False
         if True, also returns a duality gap upper bound.
 
-    debug : bool, default=False
+    debug : :obj:`bool`, default=False
         if True, some consistency checks are performed to help solving
         numerical problems.
 
@@ -776,10 +811,11 @@ def group_sparse_scores(
                 dual_obj += n_samples[k] * (n_features + fast_logdet(B))
 
         gap = objective - dual_obj
-        ret = ret + (gap,)
+        ret = (*ret, gap)
     return ret
 
 
+@fill_doc
 def group_sparse_covariance_path(
     train_subjs,
     alphas,
@@ -799,24 +835,23 @@ def group_sparse_covariance_path(
 
     Parameters
     ----------
-    train_subjs : list of numpy.ndarray
+    train_subjs : :obj:`list` of numpy.ndarray
         list of signals.
 
-    alphas : list of float
+    alphas : :obj:`list` of :obj:`float`
          values of alpha to use. Best results for sorted values (decreasing)
 
-    test_subjs : list of numpy.ndarray, optional
+    test_subjs : :obj:`list` of numpy.ndarray, default=None
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
-    verbose : int, default=0
-        verbosity level.
+    %(verbose0)s
 
     tol, max_iter, debug, precisions_init :
         Passed to group_sparse_covariance(). See the corresponding docstring
         for details.
 
-    probe_function : callable, optional
+    probe_function : callable, default=None
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.
@@ -833,11 +868,11 @@ def group_sparse_covariance_path(
 
     Returns
     -------
-    precisions_list : list of numpy.ndarray
+    precisions_list : :obj:`list` of numpy.ndarray
         estimated precisions for each value of alpha provided. The length of
         this list is the same as that of parameter "alphas".
 
-    scores : list of float
+    scores : :obj:`list` of float
         for each estimated precision, score obtained on the test set. Output
         only if test_subjs is not None.
 
@@ -896,14 +931,14 @@ class EarlyStopProbe:
 
     def __call__(  # noqa: D102
         self,
-        emp_covs,
+        emp_covs,  # noqa: ARG002
         n_samples,
         alpha,
-        max_iter,
-        tol,
+        max_iter,  # noqa: ARG002
+        tol,  # noqa: ARG002
         iter_n,
         omega,
-        prev_omega,
+        prev_omega,  # noqa: ARG002
     ):
         log_lik, _ = group_sparse_scores(
             omega, n_samples, self.test_emp_covs, alpha
@@ -918,7 +953,8 @@ class EarlyStopProbe:
         self.last_log_lik = log_lik
 
 
-class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
+@fill_doc
+class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
 
     A cross-validated value for the regularization parameter is first
@@ -930,44 +966,40 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
     Parameters
     ----------
-    alphas : integer, default=4
+    alphas : :obj:`int`, default=4
         initial number of points in the grid of regularization parameter
         values. Each step of grid refinement adds that many points as well.
 
-    n_refinements : integer, default=4
+    n_refinements : :obj:`int`, default=4
         number of times the initial grid should be refined.
 
-    cv : integer, default=3
+    cv : :obj:`int`, default=None
         number of folds in a K-fold cross-validation scheme.
 
-    tol_cv : float, default=1e-2
+    tol_cv : :obj:`float`, default=1e-2
         tolerance used to get the optimal alpha value. It has the same meaning
         as the `tol` parameter in :func:`group_sparse_covariance`.
 
-    max_iter_cv : integer, default=50
+    max_iter_cv : :obj:`int`, default=50
         maximum number of iterations for each optimization, during the alpha-
         selection phase.
 
-    tol : float, default=1e-3
+    tol : :obj:`float`, default=1e-3
         tolerance used during the final optimization for determining precision
         matrices value.
 
-    max_iter : integer, default=100
+    max_iter : :obj:`int`, default=100
         maximum number of iterations in the final optimization.
 
-    verbose : integer, default=0
-        verbosity level. 0 means nothing is printed to the user.
+    %(verbose0)s
 
-    n_jobs : integer, default=1
-        maximum number of cpu cores to use. The number of cores actually used
-        at the same time cannot exceed the number of folds in folding strategy
-        (that is, the value of cv).
+    %(n_jobs)s
 
-    debug : bool, default=False
+    debug : :obj:`bool`, default=False
         if True, activates some internal checks for consistency. Only useful
         for nilearn developers, not users.
 
-    early_stopping : bool, default=True
+    early_stopping : :obj:`bool`, default=True
         if True, reduce computation time by using a heuristic to reduce the
         number of iterations required to get the optimal value for alpha. Be
         aware that this can lead to slightly different values for the optimal
@@ -1034,12 +1066,17 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         self.debug = debug
         self.early_stopping = early_stopping
 
-    def fit(self, subjects, y=None):
+    def fit(
+        self,
+        subjects,
+        y=None,  # noqa: ARG002
+    ):
         """Compute cross-validated group-sparse precisions.
 
         Parameters
         ----------
-        subjects : list of numpy.ndarray with shapes (n_samples, n_features)
+        subjects : :obj:`list` of numpy.ndarray \
+            with shapes (n_samples, n_features)
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns.)
@@ -1050,6 +1087,9 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
             the object instance itself.
 
         """
+        for x in subjects:
+            check_array(x, accept_sparse=False)
+
         # Empirical covariances
         emp_covs, n_samples = empirical_covariances(
             subjects, assume_centered=False
@@ -1058,14 +1098,13 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
 
         # One cv generator per subject must be created, because each subject
         # can have a different number of samples from the others.
-        cv = []
-        for k in range(n_subjects):
-            cv.append(
-                check_cv(
-                    self.cv, np.ones(subjects[k].shape[0]), classifier=False
-                ).split(subjects[k])
-            )
-        path = list()  # List of (alpha, scores, covs)
+        cv = [
+            check_cv(
+                self.cv, np.ones(subjects[k].shape[0]), classifier=False
+            ).split(subjects[k])
+            for k in range(n_subjects)
+        ]
+        path = []  # List of (alpha, scores, covs)
         n_alphas = self.alphas
 
         if isinstance(n_alphas, collections.abc.Sequence):
@@ -1166,10 +1205,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                 alpha_1 = path[0][0]
                 alpha_0 = path[1][0]
                 covs_init = path[0][2]
-            elif (
-                best_index == last_finite_idx
-                and not best_index == len(path) - 1
-            ):
+            elif best_index == last_finite_idx and best_index != len(path) - 1:
                 # We have non-converged models on the upper bound of the
                 # grid, we need to refine the grid there
                 alpha_1 = path[best_index][0]

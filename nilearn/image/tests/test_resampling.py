@@ -19,7 +19,7 @@ from numpy.testing import (
 
 from nilearn import _utils
 from nilearn._utils import testing
-from nilearn.conftest import _affine_eye, _rng
+from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.image.image import _pad_array, crop_img
 from nilearn.image.resampling import (
@@ -27,6 +27,7 @@ from nilearn.image.resampling import (
     coord_transform,
     from_matrix_vector,
     get_bounds,
+    get_mask_bounds,
     reorder_img,
     resample_img,
     resample_to_img,
@@ -36,15 +37,6 @@ from nilearn.image.tests._testing import match_headers_keys
 ANGLES_TO_TEST = (0, np.pi, np.pi / 2.0, np.pi / 4.0, np.pi / 3.0)
 
 SHAPE = (3, 2, 5, 2)
-
-
-def _make_resampling_test_data():
-    rng = _rng()
-    shape = SHAPE
-    affine = _affine_eye()
-    data = rng.integers(0, 10, shape, dtype="int32")
-    img = Nifti1Image(data, affine)
-    return img, affine, data
 
 
 def rotation(theta, phi):
@@ -65,9 +57,13 @@ def shape():
     return SHAPE
 
 
-def test_resample_deprecation_force_resample(shape, affine_eye, rng):
+@pytest.fixture
+def data(rng, shape):
+    return rng.random(shape)
+
+
+def test_resample_deprecation_force_resample(data, shape, affine_eye):
     """Test change of value of force_resample."""
-    data = rng.integers(0, 10, shape, dtype="int32")
     affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
 
     with pytest.warns(FutureWarning, match="force_resample"):
@@ -80,9 +76,8 @@ def test_resample_deprecation_force_resample(shape, affine_eye, rng):
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_identity_resample(force_resample, shape, affine_eye, rng):
+def test_identity_resample(data, force_resample, shape, affine_eye):
     """Test resampling with an identity affine."""
-    data = rng.integers(0, 10, shape, dtype="int32")
     affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
 
     rot_img = resample_img(
@@ -120,14 +115,13 @@ def test_identity_resample(force_resample, shape, affine_eye, rng):
 @pytest.mark.parametrize("endian_type", [">f8", "<f8"])
 @pytest.mark.parametrize("interpolation", ["nearest", "linear", "continuous"])
 def test_identity_resample_non_native_endians(
-    force_resample, shape, affine_eye, endian_type, interpolation, rng
+    data, force_resample, shape, affine_eye, endian_type, interpolation
 ):
     """Test resampling with an identity affine with non native endians.
 
     with big endian data ('>f8')
     with little endian data ('<f8')
     """
-    data = rng.integers(0, 10, shape, dtype="int32")
     affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
 
     rot_img = resample_img(
@@ -142,10 +136,8 @@ def test_identity_resample_non_native_endians(
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_downsample(force_resample, shape, affine_eye, rng):
+def test_downsample(data, force_resample, affine_eye):
     """Test resampling with a 1/2 down-sampling affine."""
-    data = rng.random(shape)
-
     rot_img = resample_img(
         Nifti1Image(data, affine_eye),
         target_affine=2 * affine_eye,
@@ -174,7 +166,7 @@ def test_downsample(force_resample, shape, affine_eye, rng):
 @pytest.mark.parametrize("copy_data", [True, False])
 @pytest.mark.parametrize("force_resample", [True, False])
 def test_downsample_non_native_endian_data(
-    shape, affine_eye, endian_type, copy_data, force_resample, rng
+    data, affine_eye, endian_type, copy_data, force_resample
 ):
     """Test resampling with a 1/2 down-sampling affine with non native endians.
 
@@ -184,8 +176,6 @@ def test_downsample_non_native_endian_data(
     Big endian data ">f8"
     Little endian data "<f8"
     """
-    data = rng.random(shape)
-
     rot_img = resample_img(
         Nifti1Image(data, affine_eye),
         target_affine=2 * affine_eye,
@@ -214,13 +204,11 @@ def test_downsample_non_native_endian_data(
 @pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize("shape", [(1, 4, 4), (1, 4, 4, 3)])
 @pytest.mark.parametrize("value", [-3.75, 0])
-def test_resampling_fill_value(affine_eye, shape, value, rng, force_resample):
+def test_resampling_fill_value(data, affine_eye, value, force_resample):
     """Test resampling with a non-zero fill value.
 
     Check on 3D and 4D data.
     """
-    data = rng.uniform(size=shape)
-
     angle = np.pi / 4
     rot = rotation(0, angle)
 
@@ -261,12 +249,11 @@ def test_resampling_fill_value(affine_eye, shape, value, rng, force_resample):
 @pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize("shape", [(1, 4, 4), (1, 4, 4, 3)])
 @pytest.mark.parametrize("angle", ANGLES_TO_TEST)
-def test_resampling_with_affine(affine_eye, shape, angle, rng, force_resample):
+def test_resampling_with_affine(data, affine_eye, angle, force_resample):
     """Test resampling with a given rotation part of the affine.
 
     Check on 3D and 4D data.
     """
-    data = rng.integers(4, size=shape, dtype="int32")
     rot = rotation(0, angle)
 
     rot_img = resample_img(
@@ -300,9 +287,8 @@ def test_resampling_with_affine(affine_eye, shape, angle, rng, force_resample):
 @pytest.mark.parametrize("shape", [(1, 10, 10), (1, 10, 10, 3)])
 @pytest.mark.parametrize("angle", (0, np.pi / 2.0, np.pi, 3 * np.pi / 2.0))
 def test_resampling_continuous_with_affine(
-    affine_eye, shape, angle, rng, force_resample
+    data, affine_eye, angle, force_resample
 ):
-    data = rng.integers(1, 4, size=shape, dtype="int32")
     rot = rotation(0, angle)
     img = Nifti1Image(data, affine_eye)
 
@@ -332,21 +318,21 @@ def test_resampling_continuous_with_affine(
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_resampling_error_checks(tmp_path, force_resample):
-    img, affine, _ = _make_resampling_test_data()
+def test_resampling_error_checks(tmp_path, force_resample, data, affine_eye):
+    img = Nifti1Image(data, affine_eye)
     target_shape = (5, 3, 2)
 
     # Correct parameters: no exception
     resample_img(
         img,
         target_shape=target_shape,
-        target_affine=affine,
+        target_affine=affine_eye,
         force_resample=force_resample,
         copy_header=True,
     )
     resample_img(
         img,
-        target_affine=affine,
+        target_affine=affine_eye,
         force_resample=force_resample,
         copy_header=True,
     )
@@ -355,7 +341,7 @@ def test_resampling_error_checks(tmp_path, force_resample):
     resample_img(
         filename,
         target_shape=target_shape,
-        target_affine=affine,
+        target_affine=affine_eye,
         force_resample=force_resample,
         copy_header=True,
     )
@@ -374,7 +360,7 @@ def test_resampling_error_checks(tmp_path, force_resample):
         resample_img(
             img,
             target_shape=(2, 3),
-            target_affine=affine,
+            target_affine=affine_eye,
             force_resample=force_resample,
             copy_header=True,
         )
@@ -384,7 +370,7 @@ def test_resampling_error_checks(tmp_path, force_resample):
         resample_img(
             img,
             target_shape=target_shape,
-            target_affine=affine,
+            target_affine=affine_eye,
             interpolation="an_invalid_interpolation",
             force_resample=force_resample,
             copy_header=True,
@@ -393,10 +379,12 @@ def test_resampling_error_checks(tmp_path, force_resample):
 
 @pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize("target_shape", [None, (3, 2, 5)])
-def test_resampling_copy_has_no_shared_memory(target_shape, force_resample):
+def test_resampling_copy_has_no_shared_memory(
+    target_shape, force_resample, data, affine_eye
+):
     """copy=true guarantees output array shares no memory with input array."""
-    img, affine, _ = _make_resampling_test_data()
-    target_affine = None if target_shape is None else affine
+    img = Nifti1Image(data, affine_eye)
+    target_affine = None if target_shape is None else affine_eye
 
     img_r = resample_img(
         img,
@@ -427,8 +415,7 @@ def test_resampling_copy_has_no_shared_memory(target_shape, force_resample):
     "force_resample",
     [False, True],
 )
-def test_resampling_warning_s_form(affine_eye, shape, rng, force_resample):
-    data = rng.integers(0, 10, shape, dtype="int32")
+def test_resampling_warning_s_form(data, affine_eye, force_resample):
     img_no_sform = Nifti1Image(data, affine_eye)
     img_no_sform.set_sform(None)
 
@@ -448,7 +435,7 @@ def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
     data_binary = rng.integers(4, size=(1, 4, 4), dtype="int32")
     data_binary[data_binary > 0] = 1
 
-    assert sorted(list(np.unique(data_binary))) == [0, 1]
+    assert sorted(np.unique(data_binary)) == [0, 1]
 
     rot = rotation(0, np.pi / 4)
     img_binary = Nifti1Image(data_binary, affine_eye)
@@ -739,7 +726,8 @@ def test_resampling_result_axis_permutation(
 @pytest.mark.parametrize("core_shape", [(3, 5, 4), (3, 5, 4, 2)])
 def test_resampling_nan(affine_eye, core_shape, force_resample):
     """Test that when the data has NaNs they do not propagate to the \
-    whole image."""
+    whole image.
+    """
     # create deterministic data, padded with one
     # voxel thickness of zeros
     core_data = (
@@ -788,7 +776,7 @@ def test_resampling_nan_big(affine_eye, force_resample):
 
     This checks the extrapolation mechanism: if we don't do any
     extrapolation before resampling, the hole creates big
-    artefacts
+    artifacts
     """
     data = 10 * np.ones((10, 10, 10))
     data[4:6, 4:6, 4:6] = np.nan
@@ -807,9 +795,7 @@ def test_resampling_nan_big(affine_eye, force_resample):
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
-def test_resample_to_img(affine_eye, shape, rng, force_resample):
-    data = rng.random(shape)
-
+def test_resample_to_img(data, affine_eye, force_resample):
     source_affine = affine_eye
     source_img = Nifti1Image(data, source_affine)
 
@@ -1184,7 +1170,7 @@ def test_resample_img_segmentation_fault(force_resample):
     fourth_dim = 1025
 
     try:
-        data = np.ones(shape_in + (fourth_dim,), dtype=np.float64)
+        data = np.ones((*shape_in, fourth_dim), dtype=np.float64)
     except MemoryError:
         # This can happen on AppVeyor and for 32-bit Python on Windows
         pytest.skip("Not enough RAM to run this test")
@@ -1281,3 +1267,20 @@ def test_smoke_resampling_non_nifti(affine_eye, shape, rng, force_resample):
         force_resample=force_resample,
         copy_header=True,
     )
+
+
+@pytest.mark.parametrize("shape", [(1, 4, 4)])
+def test_get_mask_bounds(data, affine_eye):
+    img = Nifti1Image(data, affine_eye)
+    assert_allclose((0.0, 0.0, 0.0, 3.0, 0.0, 3.0), get_mask_bounds(img))
+
+
+def test_get_mask_bounds_error(data, affine_eye):
+    with pytest.raises(TypeError, match="Data given cannot be loaded because"):
+        get_mask_bounds(None)
+
+    with pytest.raises(
+        DimensionError, match="Expected dimension is 3D and you provided a 4D"
+    ):
+        img = Nifti1Image(data, affine_eye)
+        get_mask_bounds(img)

@@ -6,10 +6,11 @@ In this script we plot an overview of the stimuli used
 in :footcite:t:`Haxby2001`.
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
+import matplotlib.pyplot as plt
 
 # %%
 from nilearn import datasets
@@ -40,7 +41,7 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 
 
 # sphinx_gallery_dummy_images=7

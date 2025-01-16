@@ -1,5 +1,7 @@
 """Helper functions for load_scrub and sample_mask functions."""
 
+import warnings
+
 import numpy as np
 import pandas as pd
 
@@ -13,10 +15,10 @@ def optimize_scrub(motion_outliers_index, n_scans, scrub):
         Index array of shape (n_motion_outliers) indicating the volumes
         that are motion outliers.
 
-    n_scans : int
+    n_scans : :obj:`int`
         Number of volumes in the functional image.
 
-    scrub : int, default=5
+    scrub : :obj:`int`, default=5
         Minimal segment length.
 
     Returns
@@ -87,6 +89,15 @@ def extract_outlier_regressors(confounds):
         outliers = pd.DataFrame()
     confounds = confounds.loc[:, confounds_cols]
     sample_mask = _outlier_to_sample_mask(outliers)
+
+    if sample_mask is not None and sample_mask.size == 0:
+        warnings.warn(
+            category=RuntimeWarning,
+            message="All volumes were marked as motion outliers. "
+            "This would lead to all volumes in the time "
+            "series to be scrubbed.",
+            stacklevel=4,
+        )
     return sample_mask, confounds, outliers
 
 
@@ -133,5 +144,5 @@ def _outlier_to_sample_mask(outliers):
     outliers_one_hot = outliers.copy()
     if outliers_one_hot.size == 0:  # Do not supply sample mask
         return None  # consistency with nilearn sample_mask
-    outliers_one_hot = outliers_one_hot.sum(axis=1).values
+    outliers_one_hot = outliers_one_hot.sum(axis=1).to_numpy()
     return np.where(outliers_one_hot == 0)[0]

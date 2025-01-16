@@ -3,13 +3,18 @@ import json
 import numpy as np
 import pytest
 
-from nilearn import datasets, image, surface
+from nilearn import datasets, image
 from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.image import get_data
 from nilearn.plotting import html_surface
 from nilearn.plotting.html_surface import view_img_on_surf
 from nilearn.plotting.js_plotting_utils import decode
+from nilearn.surface.surface import (
+    check_mesh_is_fsaverage,
+    load_surf_data,
+    load_surf_mesh,
+)
 
 from .test_js_plotting_utils import check_colors, check_html
 
@@ -21,8 +26,8 @@ def mni152_template_res_2():
 
 def test_get_vertexcolor():
     fsaverage = fetch_surf_fsaverage()
-    mesh = surface.load_surf_mesh(fsaverage["pial_left"])
-    surf_map = np.arange(len(mesh[0]))
+    mesh = load_surf_mesh(fsaverage["pial_left"])
+    surf_map = np.arange(len(mesh.coordinates))
     colors = html_surface.colorscale("jet", surf_map, 10)
     vertexcolors = html_surface.get_vertexcolor(
         surf_map,
@@ -31,19 +36,19 @@ def test_get_vertexcolor():
         absolute_threshold=colors["abs_threshold"],
         bg_map=fsaverage["sulc_left"],
     )
-    assert len(vertexcolors) == len(mesh[0])
+    assert len(vertexcolors) == len(mesh.coordinates)
     vertexcolors = html_surface.get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
         absolute_threshold=colors["abs_threshold"],
     )
-    assert len(vertexcolors) == len(mesh[0])
+    assert len(vertexcolors) == len(mesh.coordinates)
     # Surface map whose value in each vertex is
     # 1 if this vertex's curv > 0
     # 0 if this vertex's curv is 0
     # -1 if this vertex's curv < 0
-    bg_map = np.sign(surface.load_surf_data(fsaverage["curv_left"]))
+    bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert bg_min < 0 or bg_max > 1
     vertexcolors_auto_normalized = html_surface.get_vertexcolor(
@@ -53,7 +58,7 @@ def test_get_vertexcolor():
         absolute_threshold=colors["abs_threshold"],
         bg_map=bg_map,
     )
-    assert len(vertexcolors_auto_normalized) == len(mesh[0])
+    assert len(vertexcolors_auto_normalized) == len(mesh.coordinates)
     # Manually set values of background map between 0 and 1
     bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
     assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
@@ -64,7 +69,7 @@ def test_get_vertexcolor():
         absolute_threshold=colors["abs_threshold"],
         bg_map=bg_map_normalized,
     )
-    assert len(vertexcolors_manually_normalized) == len(mesh[0])
+    assert len(vertexcolors_manually_normalized) == len(mesh.coordinates)
     assert vertexcolors_manually_normalized == vertexcolors_auto_normalized
     # Scale background map between 0.25 and 0.75
     bg_map_scaled = bg_map_normalized / 2 + 0.25
@@ -76,7 +81,7 @@ def test_get_vertexcolor():
         absolute_threshold=colors["abs_threshold"],
         bg_map=bg_map_scaled,
     )
-    assert len(vertexcolors_manually_rescaled) == len(mesh[0])
+    assert len(vertexcolors_manually_rescaled) == len(mesh.coordinates)
     assert vertexcolors_manually_rescaled != vertexcolors_auto_normalized
     with pytest.warns(
         DeprecationWarning,
@@ -96,24 +101,24 @@ def test_get_vertexcolor():
 
 
 def test_check_mesh():
-    mesh = html_surface.check_mesh("fsaverage5")
-    assert mesh is html_surface.check_mesh(mesh)
+    mesh = check_mesh_is_fsaverage("fsaverage5")
+    assert mesh is check_mesh_is_fsaverage(mesh)
     with pytest.raises(ValueError):
-        html_surface.check_mesh("fsaverage2")
+        check_mesh_is_fsaverage("fsaverage2")
     mesh.pop("pial_left")
     with pytest.raises(ValueError):
-        html_surface.check_mesh(mesh)
+        check_mesh_is_fsaverage(mesh)
     with pytest.raises(TypeError):
-        html_surface.check_mesh(surface.load_surf_mesh(mesh["pial_right"]))
+        check_mesh_is_fsaverage(load_surf_mesh(mesh["pial_right"]))
     mesh = datasets.fetch_surf_fsaverage()
-    assert mesh is html_surface.check_mesh(mesh)
+    assert mesh is check_mesh_is_fsaverage(mesh)
 
 
 def test_one_mesh_info():
     fsaverage = datasets.fetch_surf_fsaverage()
     mesh = fsaverage["pial_left"]
-    surf_map = surface.load_surf_data(fsaverage["sulc_left"])
-    mesh = surface.load_surf_mesh(mesh)
+    surf_map = load_surf_data(fsaverage["sulc_left"])
+    mesh = load_surf_mesh(mesh)
     info = html_surface._one_mesh_info(
         surf_map, mesh, "90%", black_bg=True, bg_map=surf_map
     )
@@ -158,12 +163,14 @@ def test_full_brain_info(mni152_template_res_2):
     assert isinstance(info["cmax"], float)
     json.dumps(info)
     for hemi in ["left", "right"]:
-        mesh = surface.load_surf_mesh(surfaces[f"pial_{hemi}"])
-        assert len(info[f"vertexcolor_{hemi}"]) == len(mesh[0])
+        mesh = load_surf_mesh(surfaces[f"pial_{hemi}"])
+        assert len(info[f"vertexcolor_{hemi}"]) == len(mesh.coordinates)
         assert len(decode(info[f"inflated_{hemi}"]["_z"], "<f4")) == len(
-            mesh[0]
+            mesh.coordinates
         )
-        assert len(decode(info[f"pial_{hemi}"]["_j"], "<i4")) == len(mesh[1])
+        assert len(decode(info[f"pial_{hemi}"]["_j"], "<i4")) == len(
+            mesh.faces
+        )
 
     with pytest.warns(
         DeprecationWarning,
@@ -174,10 +181,10 @@ def test_full_brain_info(mni152_template_res_2):
         html_surface.full_brain_info(mni152_template_res_2)
 
 
-def test_fill_html_template(mni152_template_res_2):
+def test_fill_html_template(tmp_path, mni152_template_res_2):
     fsaverage = fetch_surf_fsaverage()
-    mesh = surface.load_surf_mesh(fsaverage["pial_right"])
-    surf_map = mesh[0][:, 0]
+    mesh = load_surf_mesh(fsaverage["pial_right"])
+    surf_map = mesh.coordinates[:, 0]
     info = html_surface._one_mesh_info(
         surf_map,
         fsaverage["pial_right"],
@@ -187,18 +194,18 @@ def test_fill_html_template(mni152_template_res_2):
     )
     info["title"] = None
     html = html_surface._fill_html_template(info, embed_js=False)
-    check_html(html)
+    check_html(tmp_path, html)
     assert "jquery.min.js" in html.html
     info = html_surface._full_brain_info(mni152_template_res_2)
     info["title"] = None
     html = html_surface._fill_html_template(info)
-    check_html(html)
+    check_html(tmp_path, html)
     assert "* plotly.js (gl3d - minified) v1." in html.html
 
 
 def test_niivue_smoke():
     fsaverage = fetch_surf_fsaverage()
-    mesh = surface.load_surf_mesh(fsaverage["pial_right"])
+    mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh[0][:, 0]
     html_surface.view_surf(
         fsaverage["pial_right"],
@@ -210,11 +217,10 @@ def test_niivue_smoke():
 
 
 @pytest.mark.parametrize("engine", ["plotly"])  # TODO test with niivue
-def test_view_surf(rng, engine):
+def test_view_surf(tmp_path, rng, engine):
     fsaverage = fetch_surf_fsaverage()
-    mesh = surface.load_surf_mesh(fsaverage["pial_right"])
-    surf_map = mesh[0][:, 0]
-
+    mesh = load_surf_mesh(fsaverage["pial_right"])
+    surf_map = mesh.coordinates[:, 0]
     html = html_surface.view_surf(
         fsaverage["pial_right"],
         surf_map,
@@ -222,7 +228,7 @@ def test_view_surf(rng, engine):
         "90%",
         engine=engine,
     )
-    check_html(html, title="Surface plot")
+    check_html(tmp_path, html, title="Surface plot")
 
     html = html_surface.view_surf(
         fsaverage["pial_right"],
@@ -232,17 +238,16 @@ def test_view_surf(rng, engine):
         title="SOME_TITLE",
         engine=engine,
     )
-    check_html(html, title="SOME_TITLE")
-    assert "SOME_TITLE" in html.html
+    check_html(tmp_path, html, title="SOME_TITLE")
 
     html = html_surface.view_surf(fsaverage["pial_right"], engine=engine)
-    check_html(html)
+    check_html(tmp_path, html)
 
-    atlas = rng.integers(0, 10, size=len(mesh[0]))
+    atlas = rng.integers(0, 10, size=len(mesh.coordinates))
     html = html_surface.view_surf(
         fsaverage["pial_left"], atlas, symmetric_cmap=False, engine=engine
     )
-    check_html(html)
+    check_html(tmp_path, html)
 
     html = html_surface.view_surf(
         fsaverage["pial_right"],
@@ -251,41 +256,44 @@ def test_view_surf(rng, engine):
         cmap="Greys",
         engine=engine,
     )
-    check_html(html)
+    check_html(tmp_path, html)
 
 
 @pytest.mark.parametrize("engine", ["plotly", "niivue"])
 def test_view_surf_errors(engine):
     fsaverage = fetch_surf_fsaverage()
-    mesh = surface.load_surf_mesh(fsaverage["pial_right"])
+    mesh = load_surf_mesh(fsaverage["pial_right"])
     with pytest.raises(ValueError):
-        html_surface.view_surf(mesh, mesh[0][::2, 0], engine=engine)
+        html_surface.view_surf(mesh, mesh.coordinates[::2, 0], engine=engine)
     with pytest.raises(ValueError):
         html_surface.view_surf(
-            mesh, mesh[0][:, 0], bg_map=mesh[0][::2, 0], engine=engine
+            mesh,
+            mesh.coordinates[:, 0],
+            bg_map=mesh.coordinates[::2, 0],
+            engine=engine,
         )
 
 
-def test_view_img_on_surf(mni152_template_res_2):
+def test_view_img_on_surf(tmp_path, mni152_template_res_2):
     html = view_img_on_surf(mni152_template_res_2, threshold="92.3%")
-    check_html(html)
+    check_html(tmp_path, html)
 
     surfaces = datasets.fetch_surf_fsaverage()
     html = view_img_on_surf(
         mni152_template_res_2, threshold=0, surf_mesh=surfaces
     )
-    check_html(html)
+    check_html(tmp_path, html)
 
     html = view_img_on_surf(
         mni152_template_res_2, threshold=0.4, title="SOME_TITLE"
     )
     assert "SOME_TITLE" in html.html
-    check_html(html)
+    check_html(tmp_path, html)
 
     html = view_img_on_surf(
         mni152_template_res_2, threshold=0.4, cmap="hot", black_bg=True
     )
-    check_html(html)
+    check_html(tmp_path, html)
 
     img_4d = image.new_img_like(
         mni152_template_res_2,
@@ -300,7 +308,7 @@ def test_view_img_on_surf(mni152_template_res_2):
         out=get_data(mni152_template_res_2),
     )
     html = view_img_on_surf(mni152_template_res_2, symmetric_cmap=False)
-    check_html(html)
+    check_html(tmp_path, html)
 
     html = view_img_on_surf(
         mni152_template_res_2,
@@ -311,7 +319,7 @@ def test_view_img_on_surf(mni152_template_res_2):
             "interpolation": "nearest",
         },
     )
-    check_html(html)
+    check_html(tmp_path, html)
 
 
 def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):

@@ -32,6 +32,6 @@ class B(A):
 def test_get_params():
     b = B()
     params_a_in_b = class_inspect.get_params(A, b)
-    assert params_a_in_b == dict(a=1)
+    assert params_a_in_b == {"a": 1}
     params_a_in_b = class_inspect.get_params(A, b, ignore=["a"])
     assert params_a_in_b == {}

@@ -88,9 +88,13 @@ for i, cur_img in enumerate(iter_img(canica_components_img)):
         display_mode="z",
         title=f"IC {int(i)}",
         cut_coords=1,
+        vmax=0.05,
+        vmin=-0.05,
         colorbar=False,
     )
 
+
+show()
 
 # %%
 # Compare :term:`CanICA` to dictionary learning
@@ -150,6 +154,8 @@ for i, cur_img in enumerate(iter_img(dictlearning_components_img)):
         display_mode="z",
         title=f"Comp {int(i)}",
         cut_coords=1,
+        vmax=0.1,
+        vmin=-0.1,
         colorbar=False,
     )
 
@@ -165,14 +171,14 @@ import numpy as np
 from matplotlib import pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 
-plt.figure(figsize=(4, 4))
+plt.figure(figsize=(4, 4), constrained_layout=True)
+
 positions = np.arange(len(scores))
 plt.barh(positions, scores)
 plt.ylabel("Component #", size=12)
 plt.xlabel("Explained variance", size=12)
 plt.yticks(np.arange(20))
 plt.gca().xaxis.set_major_formatter(FormatStrFormatter("%.3f"))
-plt.tight_layout()
 
 show()
 
@@ -182,13 +188,14 @@ show()
 #     To see how to extract subject-level timeseries' from regions
 #     created using :term:`Dictionary learning`, see :ref:`example Regions
 #     extraction using dictionary learning and functional connectomes
-#     <sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py>`.
+#     <sphx_glr_auto_examples_03_connectivity\
+#     _plot_extract_regions_dictlearning_maps.py>`.
 
 # %%
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 
 
 # sphinx_gallery_dummy_images=5

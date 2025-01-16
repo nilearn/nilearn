@@ -4,6 +4,8 @@ import itertools
 
 from joblib import Memory, Parallel, delayed
 
+from nilearn._utils.tags import SKLEARN_LT_1_6
+
 from .._utils import fill_doc
 from .._utils.niimg_conversions import iter_check_niimg
 from .nifti_labels_masker import NiftiLabelsMasker
@@ -37,8 +39,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
-        Warning: This value must be consistent with label values and
-        image provided.
+
+        .. warning::
+
+            This value must be consistent with label values and image provided.
 
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
@@ -54,10 +58,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    dtype : {dtype, "auto"}
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+
+    %(dtype)s
 
     resampling_target : {"data", "labels", None}, default="data"
         Gives which image gives the final shape/size:
@@ -155,6 +157,26 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             **kwargs,
         )
 
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(masker=True, multi_masker=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(masker=True, multi_masker=True)
+        return tags
+
     @fill_doc
     def transform_imgs(
         self, imgs_list, confounds=None, n_jobs=1, sample_mask=None
@@ -165,7 +187,11 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         ----------
         %(imgs)s
             Images to process. Each element of the list is a 4D image.
+
         %(confounds)s
+
+        %(n_jobs)s
+
         %(sample_mask)s
 
         Returns

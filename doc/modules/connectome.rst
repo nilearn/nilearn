@@ -7,7 +7,8 @@
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+Classes
+-------
 
 .. currentmodule:: nilearn.connectome
 
@@ -19,7 +20,8 @@
    GroupSparseCovariance
    GroupSparseCovarianceCV
 
-**Functions**:
+Functions
+---------
 
 .. currentmodule:: nilearn.connectome
 

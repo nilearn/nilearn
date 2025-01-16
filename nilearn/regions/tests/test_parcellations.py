@@ -12,6 +12,8 @@ from nilearn.regions.parcellations import (
     Parcellations,
     _check_parameters_transform,
 )
+from nilearn.surface import SurfaceImage
+from nilearn.surface.tests.test_surface import flat_mesh
 
 METHODS = [
     "kmeans",
@@ -89,7 +91,16 @@ def test_parcellations_no_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
     with warnings.catch_warnings(record=True) as record:
         parcellator.fit(img_4d_zeros_eye)
-    assert all([r.category is not UserWarning for r in record])
+    assert all(r.category is not UserWarning for r in record)
+
+
+def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
+    parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
+    with warnings.catch_warnings(record=True) as record:
+        parcellator.fit(img_4d_zeros_eye)
+    for r in record:
+        if issubclass(r.category, UserWarning):
+            assert "image contains 64-bit ints" not in str(r.message)
 
 
 @pytest.mark.parametrize("method", METHODS)
@@ -118,7 +129,8 @@ def test_parcellations_transform_single_nifti_image(
     method, n_parcel, test_image_2
 ):
     """Test with NiftiLabelsMasker extraction of timeseries data \
-       after building a parcellations image."""
+       after building a parcellations image.
+    """
     parcellator = Parcellations(method=method, n_parcels=n_parcel, verbose=0)
     parcellator.fit(test_image_2)
     # transform to signals
@@ -172,7 +184,7 @@ def test_check_parameters_transform(test_image_2, rng):
 
     assert isinstance(imgs, (list, tuple))
     assert isinstance(confounds, (list, tuple))
-    assert single_subject, True
+    assert single_subject
 
     # confounds as pandas DataFrame
     imgs, confounds, single_subject = _check_parameters_transform(
@@ -234,7 +246,7 @@ def test_fit_transform(method, n_parcel, test_image_2):
 
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
-def test_fit_transform_with_condounds(method, n_parcel, test_image_2, rng):
+def test_fit_transform_with_confounds(method, n_parcel, test_image_2, rng):
     fmri_imgs = [test_image_2] * 3
     confounds = rng.standard_normal(size=(10, 3))
     confounds_list = [confounds] * 3
@@ -300,3 +312,113 @@ def test_transform_3d_input_images(affine_eye):
     X = parcellate.fit_transform(imgs[0])
     assert isinstance(X, np.ndarray)
     assert X.shape == (1, 20)
+
+
+@pytest.mark.parametrize("method", METHODS)
+@pytest.mark.parametrize("n_parcels", [5, 25])
+def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
+    """Test if all parcellation methods work on surface."""
+    n_samples = 35
+    mesh = {
+        "left": flat_mesh(10, 8),
+        "right": flat_mesh(9, 7),
+    }
+    data = {
+        "left": rng.standard_normal(
+            size=(mesh["left"].coordinates.shape[0], n_samples)
+        ),
+        "right": rng.standard_normal(
+            size=(mesh["right"].coordinates.shape[0], n_samples)
+        ),
+    }
+    surf_img = SurfaceImage(mesh=mesh, data=data)
+    parcellate = Parcellations(method=method, n_parcels=n_parcels)
+    # fit and transform the data
+    X_transformed = parcellate.fit_transform(surf_img)
+    # inverse transform the transformed data
+    X_inverse = parcellate.inverse_transform(X_transformed)
+
+    # make sure the n_features in transformed data were reduced to n_clusters
+    assert X_transformed.shape == (n_samples, n_parcels)
+
+    # make sure the inverse transformed data has the same shape as the original
+    assert X_inverse.shape == surf_img.shape
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_parcellation_with_surface_and_confounds(method, rng):
+    """Test if parcellation works on surface with confounds."""
+    n_samples = 36
+    mesh = {
+        "left": flat_mesh(10, 8),
+        "right": flat_mesh(9, 7),
+    }
+    data = {
+        "left": rng.standard_normal(
+            size=(mesh["left"].coordinates.shape[0], n_samples)
+        ),
+        "right": rng.standard_normal(
+            size=(mesh["right"].coordinates.shape[0], n_samples)
+        ),
+    }
+    surf_img = SurfaceImage(mesh=mesh, data=data)
+    confounds = rng.standard_normal(size=(n_samples, 3))
+    parcellate = Parcellations(method=method, n_parcels=5)
+    X_transformed = parcellate.fit_transform(surf_img, confounds=[confounds])
+
+    assert X_transformed.shape == (n_samples, 5)
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_parcellation_with_multi_surface(method, rng):
+    """Test if parcellation works with surface data from multiple
+    'subjects'.
+    """
+    n_samples = 36
+    mesh = {
+        "left": flat_mesh(10, 8),
+        "right": flat_mesh(9, 7),
+    }
+    data = {
+        "left": rng.standard_normal(
+            size=(mesh["left"].coordinates.shape[0], n_samples)
+        ),
+        "right": rng.standard_normal(
+            size=(mesh["right"].coordinates.shape[0], n_samples)
+        ),
+    }
+    surf_img = SurfaceImage(mesh=mesh, data=data)
+    surf_imgs = [surf_img] * 3
+    parcellate = Parcellations(method=method, n_parcels=5)
+    X_transformed = parcellate.fit_transform(surf_imgs)
+
+    assert X_transformed[0].shape == (n_samples, 5)
+    assert len(X_transformed) == 3
+
+
+@pytest.mark.parametrize("method", METHODS)
+def test_parcellation_with_surface_mask(method, rng):
+    """Test if parcellation works with surface data and a mask."""
+    n_samples = 36
+    mesh = {
+        "left": flat_mesh(10, 8),
+        "right": flat_mesh(9, 7),
+    }
+    data = {
+        "left": rng.standard_normal(
+            size=(mesh["left"].coordinates.shape[0], n_samples)
+        ),
+        "right": rng.standard_normal(
+            size=(mesh["right"].coordinates.shape[0], n_samples)
+        ),
+    }
+    surf_img = SurfaceImage(mesh=mesh, data=data)
+    mask_data = {
+        "left": np.ones(mesh["left"].coordinates.shape[0]).astype(bool),
+        "right": np.ones(mesh["right"].coordinates.shape[0]).astype(bool),
+    }
+    surf_mask = SurfaceImage(mesh=mesh, data=mask_data)
+    parcellate = Parcellations(method=method, n_parcels=5, mask=surf_mask)
+    X_transformed = parcellate.fit_transform(surf_img)
+
+    assert X_transformed.shape == (n_samples, 5)

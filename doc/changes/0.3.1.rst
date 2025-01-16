@@ -34,7 +34,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` New functions :func:`~datasets.fetch_neurovault` and :func:`~datasets.fetch_neurovault_ids` help you download statistical maps from the `Neurovault <http://neurovault.org>`_ platform.
+- :bdg-success:`API` New functions :func:`~datasets.fetch_neurovault` and :func:`~datasets.fetch_neurovault_ids` help you download statistical maps from the `Neurovault <https://neurovault.org>`_ platform.
 
 - :bdg-success:`API` New function :func:`~connectome.vec_to_sym_matrix` reshapes vectors to symmetric matrices. It acts as the reverse of function :func:`~connectome.sym_matrix_to_vec`.
 

@@ -3,7 +3,7 @@ Advanced decoding using scikit learn
 ====================================
 
 This tutorial opens the box of decoding pipelines to bridge integrated
-functionalities provided by the :class:`nilearn.decoding.Decoder` object
+functionalities provided by the :class:`~nilearn.decoding.Decoder` object
 with more advanced usecases. It reproduces basic examples functionalities with
 direct calls to scikit-learn function and gives pointers to more advanced
 objects. If some concepts seem unclear,
@@ -26,7 +26,7 @@ face and cat images.
 # .......................
 #
 
-# The :func:`nilearn.datasets.fetch_haxby` function will download the
+# The :func:`~nilearn.datasets.fetch_haxby` function will download the
 # Haxby dataset composed of fMRI images in a Niimg,
 # a spatial mask and a text document with label of each image
 from nilearn import datasets
@@ -49,8 +49,7 @@ conditions = behavioral["labels"]
 condition_mask = conditions.isin(["face", "cat"])
 fmri_niimgs = index_img(fmri_filename, condition_mask)
 conditions = conditions[condition_mask]
-# Convert to numpy array
-conditions = conditions.values
+conditions = conditions.to_numpy()
 run_label = behavioral["chunks"][condition_mask]
 
 # %%
@@ -63,7 +62,7 @@ run_label = behavioral["chunks"][condition_mask]
 # decoding pipelines. They are all used with the same `fit()` and `predict()`
 # functions.
 # Let's define a Support Vector Classifier
-# (or `SVC <https://scikit-learn.org/stable/modules/svm.html >`_).
+# (or :sklearn:`SVC <modules/svm.html>`).
 
 from sklearn.svm import SVC
 
@@ -73,7 +72,7 @@ svc = SVC()
 # Masking the data
 # ................
 # To use a scikit-learn estimator on brain images, you should first mask the
-# data using a :class:`nilearn.maskers.NiftiMasker` to extract only the
+# data using a :class:`~nilearn.maskers.NiftiMasker` to extract only the
 # voxels inside the mask of interest,
 # and transform 4D input :term:`fMRI` data to 2D arrays
 # (`shape=(n_timepoints, n_voxels)`) that estimators can work on.
@@ -227,7 +226,8 @@ plot_stat_map(weight_img, title="Anova+SVC weights")
 # To change the prediction engine, we just need to import it and use in our
 # pipeline instead of the SVC.
 # We can try Fisher's
-# `Linear Discriminant Analysis (LDA) <https://scikit-learn.org/stable/auto_examples/decomposition/plot_pca_vs_lda.html>`_ # noqa
+# :sklearn:`Linear Discriminant Analysis (LDA)
+# <auto_examples/decomposition/plot_pca_vs_lda.html>`
 
 # Construct the new estimator object and use it in a new pipeline after anova
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
@@ -245,8 +245,8 @@ cv_scores = cross_val_score(
 classification_accuracy = np.mean(cv_scores)
 n_conditions = len(set(conditions))  # number of target classes
 print(
-    "ANOVA + LDA classification accuracy: %.4f / Chance Level: %.4f"
-    % (classification_accuracy, 1.0 / n_conditions)
+    f"ANOVA + LDA classification accuracy: {classification_accuracy:.4f} "
+    f"/ Chance Level: {1.0 / n_conditions:.4f}"
 )
 
 # %%
@@ -279,4 +279,4 @@ rfe_svc = Pipeline([("rfe", rfe), ("svc", svc)])
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

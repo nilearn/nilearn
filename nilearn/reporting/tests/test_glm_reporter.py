@@ -7,14 +7,17 @@ from nilearn._utils.data_gen import (
     basic_paradigm,
     write_fake_fmri_data_and_design,
 )
-from nilearn.conftest import have_mpl
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
-from nilearn.reporting import glm_reporter as glmr, make_glm_report
+from nilearn.reporting import HTMLReport, make_glm_report
+from nilearn.reporting import glm_reporter as glmr
+from nilearn.reporting.glm_reporter import (
+    _make_surface_glm_report,
+)
 
 
 @pytest.fixture()
@@ -29,9 +32,6 @@ def flm(tmp_path):
     )
 
 
-@pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
-)
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_flm_reporting(flm, height_control):
     """Smoke test for first level model reporting."""
@@ -45,17 +45,12 @@ def test_flm_reporting(flm, height_control):
         alpha=0.01,
         threshold=2,
     )
-    """
-    catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-    in case certain unicode characters are mishandled,
-    like the greek alpha symbol.
-    """
+    # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
+    # in case certain unicode characters are mishandled,
+    # like the greek alpha symbol.
     report_flm.get_iframe()
 
 
-@pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
-)
 def test_flm_reporting_method(flm):
     """Smoke test for the first level generate method."""
     contrast = np.eye(3)[1]
@@ -83,9 +78,6 @@ def slm(tmp_path):
     return model.fit(Y, design_matrix=X)
 
 
-@pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
-)
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
     """Smoke test for the second level reporting."""
@@ -97,9 +89,6 @@ def test_slm_reporting_method(slm, height_control):
     report_slm.get_iframe()
 
 
-@pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
-)
 def test_slm_reporting(slm):
     """Smoke test for the second level model generate method."""
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
@@ -120,7 +109,7 @@ def test_check_report_dims():
 def test_coerce_to_dict_with_string():
     test_input = "StopSuccess - Go"
     expected_output = {"StopSuccess - Go": "StopSuccess - Go"}
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert actual_output == expected_output
 
 
@@ -130,21 +119,21 @@ def test_coerce_to_dict_with_list_of_strings():
         "contrast_name_0": "contrast_name_0",
         "contrast_name_1": "contrast_name_1",
     }
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert actual_output == expected_output
 
 
 def test_coerce_to_dict_with_dict():
     test_input = {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]}
     expected_output = {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]}
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert actual_output == expected_output
 
 
 def test_coerce_to_dict_with_list_of_lists():
     test_input = [[0, 0, 1], [0, 1, 0]]
     expected_output = {"[0, 0, 1]": [0, 0, 1], "[0, 1, 0]": [0, 1, 0]}
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert actual_output == expected_output
 
 
@@ -154,7 +143,7 @@ def test_coerce_to_dict_with_list_of_arrays():
         "[0 0 1]": np.array([0, 0, 1]),
         "[0 1 0]": np.array([0, 1, 0]),
     }
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert actual_output.keys() == expected_output.keys()
     for key in actual_output:
         assert np.array_equal(actual_output[key], expected_output[key])
@@ -163,7 +152,7 @@ def test_coerce_to_dict_with_list_of_arrays():
 def test_coerce_to_dict_with_list_of_ints():
     test_input = [1, 0, 1]
     expected_output = {"[1, 0, 1]": [1, 0, 1]}
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert np.array_equal(
         actual_output["[1, 0, 1]"], expected_output["[1, 0, 1]"]
     )
@@ -172,7 +161,7 @@ def test_coerce_to_dict_with_list_of_ints():
 def test_coerce_to_dict_with_array_of_ints():
     test_input = np.array([1, 0, 1])
     expected_output = {"[1 0 1]": np.array([1, 0, 1])}
-    actual_output = glmr._coerce_to_dict(test_input)
+    actual_output = glmr.coerce_to_dict(test_input)
     assert expected_output.keys() == actual_output.keys()
     assert np.array_equal(actual_output["[1 0 1]"], expected_output["[1 0 1]"])
 
@@ -286,12 +275,10 @@ def test_plot_contrasts():
     )
 
 
-@pytest.mark.skipif(
-    not have_mpl, reason="Matplotlib not installed; required for this test"
-)
 def test_masking_first_level_model(tmp_path):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
-       doesn't raise Error when calling generate_report()."""
+       doesn't raise Error when calling generate_report().
+    """
     shapes, rk = ((7, 7, 7, 5),), 3
     mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
@@ -318,15 +305,36 @@ def test_masking_first_level_model(tmp_path):
 # -----------------------surface tests--------------------------------------- #
 
 
-def test_flm_generate_report_error_with_surface_data(mini_mask, make_mini_img):
-    """Raise NotImplementedError when generate report is called on surface."""
-    mini_img = make_mini_img((5,))
-    model = FirstLevelModel(mask_img=mini_mask, t_r=2.0)
+def test_flm_generate_report_error_with_surface_data(
+    surf_mask_1d, surf_img_2d
+):
+    """Generate report from flm fitted surface."""
+    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0)
     events = basic_paradigm()
-    model.fit(mini_img, events=events)
+    model.fit(surf_img_2d(9), events=events)
+    report = model.generate_report("c0")
 
-    with pytest.raises(NotImplementedError):
-        model.generate_report("c0")
+    assert isinstance(report, HTMLReport)
 
-    with pytest.raises(NotImplementedError):
-        make_glm_report(model, "c0")
+    report = make_glm_report(model, "c0")
+
+    assert isinstance(report, HTMLReport)
+
+
+@pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
+def test_empty_surface_reports(tmp_path, model, surf_img_1d):
+    """Test that empty surface reports on unfitted model can be generated."""
+    report = _make_surface_glm_report(model(), bg_img=surf_img_1d)
+
+    assert isinstance(report, HTMLReport)
+
+    report.save_as_html(tmp_path / "tmp.html")
+    assert (tmp_path / "tmp.html").exists()
+
+
+def test_empty_surface_reports_errors():
+    """Test errors surface reports."""
+    with pytest.raises(TypeError, match="must a SurfaceImage instance"):
+        _make_surface_glm_report(
+            FirstLevelModel(), bg_img="not a surface image"
+        )

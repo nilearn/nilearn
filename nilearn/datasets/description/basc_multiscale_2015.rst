@@ -17,7 +17,8 @@ from :term:`resting-state` functional magnetic resonance images
 for about 200 young healthy subjects. Multiple scales (number of networks) are available,
 and includes 7, 12, 20, 36, 64, 122, 197, 325, 444.
 The brain parcellations have been generated using a method called bootstrap analysis of stable clusters
-(BASC, :footcite:t:`Bellec2010`) and the scales have been selected using a data-driven method called MSTEPS (:footcite:t:`Bellec2013`).
+(BASC, :footcite:t:`Bellec2010`) and the scales have been selected
+using a data-driven method called MSTEPS (:footcite:t:`Bellec2013`).
 
 
 This release more specifically contains the following files:
@@ -41,7 +42,7 @@ homotopic regions simply consists of flipping the x-axis of the template.
 
 Preprocessing
 -------------
-The datasets were analysed using
+The datasets were analyzed using
 the NeuroImaging Analysis Kit (`NIAK <https://github.com/SIMEXP/niak>`_) version 0.12.14,
 under CentOS version 6.3
 with `Octave <https://octave.org>`_ version 3.8.1

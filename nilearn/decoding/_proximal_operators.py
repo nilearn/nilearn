@@ -145,7 +145,7 @@ def prox_tvl1(
     init : array of shape as im
         Starting point for the optimization.
 
-    check_gap_frequency : int, optional (default 4)
+    check_gap_frequency : int, default=4
         Frequency at which duality gap is checked for convergence.
 
     Returns
@@ -182,9 +182,9 @@ def prox_tvl1(
     input_img_flat = input_img.view()
     input_img_flat.shape = input_img.size
     input_img_norm = np.dot(input_img_flat, input_img_flat)
-    if not input_img.dtype.kind == "f":
+    if input_img.dtype.kind != "f":
         input_img = input_img.astype(np.float64)
-    shape = [len(input_img.shape) + 1] + list(input_img.shape)
+    shape = [len(input_img.shape) + 1, *input_img.shape]
     grad_im = np.zeros(shape)
     grad_aux = np.zeros(shape)
     t = 1.0
@@ -256,8 +256,7 @@ def prox_tvl1(
                 )
 
                 logger.log(
-                    f"\tProxTVl1: Iteration {i: 2}, "
-                    f"dual gap: {dgap: 6.3e}",
+                    f"\tProxTVl1: Iteration {i: 2}, dual gap: {dgap: 6.3e}",
                     verbose,
                 )
 
@@ -296,7 +295,7 @@ def prox_tvl1(
     output = input_img - weight * divergence_id(grad_im, l1_ratio=l1_ratio)
     if val_min is not None or val_max is not None:
         output = output.clip(val_min, val_max, out=output)
-    return output, dict(converged=(i < max_iter))
+    return output, {"converged": (i < max_iter)}
 
 
 def prox_tvl1_with_intercept(
@@ -320,7 +319,7 @@ def prox_tvl1_with_intercept(
     w : ndarray, shape (w_size,)
         The point at which the prox is being computed
 
-    init : ndarray, shape (w_size - 1,), optional (default None)
+    init : ndarray, shape (w_size - 1,), default=None
         Initialization vector for the prox.
 
     max_iter : int

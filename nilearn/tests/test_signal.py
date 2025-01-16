@@ -2,18 +2,31 @@
 
 # Author: Gael Varoquaux, Alexandre Abraham
 
-import os.path
+from pathlib import Path
 
 import numpy as np
 import pytest
 import scipy.signal
+from numpy import array_equal
+from numpy.testing import assert_almost_equal
 from pandas import read_csv
 
-# Use nisignal here to avoid name collisions (using nilearn.signal is
-# not possible)
-from nilearn import signal as nisignal
+from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn.conftest import _rng
-from nilearn.signal import clean
+from nilearn.signal import (
+    _censor_signals,
+    _create_cosine_drift_terms,
+    _detrend,
+    _handle_scrubbed_volumes,
+    _mean_of_squares,
+    butterworth,
+    clean,
+    high_variance_confounds,
+    row_sum_of_squares,
+    standardize_signal,
+)
+
+EPS = np.finfo(np.float64).eps
 
 
 def generate_signals(
@@ -135,18 +148,18 @@ def test_butterworth(data_butterworth_single_timeseries):
     data = data_butterworth_single_timeseries
     data_original = data.copy()
 
-    out_single = nisignal.butterworth(
+    out_single = butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=True
     )
 
-    np.testing.assert_almost_equal(data, data_original)
+    assert_almost_equal(data, data_original)
 
-    nisignal.butterworth(
+    butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=False
     )
 
-    np.testing.assert_almost_equal(out_single, data)
-    np.testing.assert_(id(out_single) != id(data))
+    assert_almost_equal(out_single, data)
+    assert id(out_single) != id(data)
 
 
 def test_butterworth_multiple_timeseries(
@@ -159,7 +172,7 @@ def test_butterworth_multiple_timeseries(
     data = data_butterworth_multiple_timeseries
     data_original = data.copy()
 
-    out_single = nisignal.butterworth(
+    out_single = butterworth(
         data_butterworth_single_timeseries,
         sampling,
         low_pass=low_pass,
@@ -167,26 +180,29 @@ def test_butterworth_multiple_timeseries(
         copy=True,
     )
 
-    out1 = nisignal.butterworth(
+    out1 = butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=True
     )
-    np.testing.assert_almost_equal(data, data_original)
-    np.testing.assert_(id(out1) != id(data_original))
+    assert_almost_equal(data, data_original)
+    assert id(out1) != id(data_original)
 
     # check that multiple- and single-timeseries filtering do the same thing.
-    np.testing.assert_almost_equal(out1[:, 0], out_single)
-    nisignal.butterworth(
+    assert_almost_equal(out1[:, 0], out_single)
+    butterworth(
         data, sampling, low_pass=low_pass, high_pass=high_pass, copy=False
     )
-    np.testing.assert_almost_equal(out1, data)
+    assert_almost_equal(out1, data)
 
     # Test nyquist frequency clipping, issue #482
-    out1 = nisignal.butterworth(data, sampling, low_pass=50.0, copy=True)
-    out2 = nisignal.butterworth(
-        data, sampling, low_pass=80.0, copy=True  # Greater than nyq frequency
+    out1 = butterworth(data, sampling, low_pass=50.0, copy=True)
+    out2 = butterworth(
+        data,
+        sampling,
+        low_pass=80.0,
+        copy=True,  # Greater than nyq frequency
     )
-    np.testing.assert_almost_equal(out1, out2)
-    np.testing.assert_(id(out1) != id(out2))
+    assert_almost_equal(out1, out2)
+    assert id(out1) != id(out2)
 
 
 def test_butterworth_warnings_critical_frequencies(
@@ -207,7 +223,7 @@ def test_butterworth_warnings_critical_frequencies(
             "low_pass, and high_pass are valid."
         ),
     ):
-        out = nisignal.butterworth(
+        out = butterworth(
             data,
             sampling,
             low_pass=low_pass,
@@ -217,7 +233,7 @@ def test_butterworth_warnings_critical_frequencies(
     assert (out == data).all()
 
 
-def test_butterworth_warnings_LPF_too_high(data_butterworth_single_timeseries):
+def test_butterworth_warnings_lpf_too_high(data_butterworth_single_timeseries):
     """Check for frequency higher than allowed (>=Nyquist).
 
     The frequency should be modified and the filter should be run.
@@ -231,17 +247,17 @@ def test_butterworth_warnings_LPF_too_high(data_butterworth_single_timeseries):
         UserWarning,
         match="The frequency specified for the low pass filter is too high",
     ):
-        out = nisignal.butterworth(
+        out = butterworth(
             data,
             sampling,
             low_pass=low_pass,
             high_pass=high_pass,
             copy=True,
         )
-    assert not np.array_equal(data, out)
+    assert not array_equal(data, out)
 
 
-def test_butterworth_warnings_HPF_too_low(data_butterworth_single_timeseries):
+def test_butterworth_warnings_hpf_too_low(data_butterworth_single_timeseries):
     """Check for frequency lower than allowed (<0).
 
     The frequency should be modified and the filter should be run.
@@ -255,14 +271,14 @@ def test_butterworth_warnings_HPF_too_low(data_butterworth_single_timeseries):
         UserWarning,
         match="The frequency specified for the high pass filter is too low",
     ):
-        out = nisignal.butterworth(
+        out = butterworth(
             data,
             sampling,
             low_pass=low_pass,
             high_pass=high_pass,
             copy=True,
         )
-    assert not np.array_equal(data, out)
+    assert not array_equal(data, out)
 
 
 def test_butterworth_errors(data_butterworth_single_timeseries):
@@ -277,7 +293,7 @@ def test_butterworth_errors(data_butterworth_single_timeseries):
             r"equal to low pass filter frequency \([0-9.]+\)\."
         ),
     ):
-        nisignal.butterworth(
+        butterworth(
             data_butterworth_single_timeseries,
             sampling,
             low_pass=low_pass,
@@ -290,43 +306,45 @@ def test_standardize(rng):
     n_features = 10
     n_samples = 17
 
-    # Create random signals with offsets
+    # Create random signals with offsets and and negative mean
     a = rng.random((n_samples, n_features))
     a += np.linspace(0, 2.0, n_features)
 
     # Test raise error when strategy is not valid option
     with pytest.raises(ValueError, match="no valid standardize strategy"):
-        nisignal.standardize_signal(a, standardize="foo")
+        standardize_signal(a, standardize="foo")
 
     # test warning for strategy that will be removed
     with pytest.warns(
         DeprecationWarning, match="default strategy for standardize"
     ):
-        nisignal.standardize_signal(a, standardize="zscore")
+        standardize_signal(a, standardize="zscore")
+
+    # ensure PSC rescaled correctly, correlation should be 1
+    z = standardize_signal(a, standardize="zscore_sample")
+    psc = standardize_signal(a, standardize="psc")
+    corr_coef_feature = np.corrcoef(z[:, 0], psc[:, 0])[0, 1]
+    assert corr_coef_feature.mean() == 1
 
     # transpose array to fit standardize input.
     # Without trend removal
-    b = nisignal.standardize_signal(a, standardize="zscore_sample")
+    b = standardize_signal(a, standardize="zscore_sample")
     stds = np.std(b)
-    np.testing.assert_almost_equal(stds, np.ones(n_features), decimal=1)
-    np.testing.assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
+    assert_almost_equal(stds, np.ones(n_features), decimal=1)
+    assert_almost_equal(b.sum(axis=0), np.zeros(n_features))
 
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2.0, n_features)).T
-    b = nisignal.standardize_signal(a, detrend=True, standardize=False)
-    np.testing.assert_almost_equal(b, np.zeros(b.shape))
+    b = standardize_signal(a, detrend=True, standardize=False)
+    assert_almost_equal(b, np.zeros(b.shape))
 
-    b = nisignal.standardize_signal(
-        a, detrend=True, standardize="zscore_sample"
-    )
-    np.testing.assert_almost_equal(b, np.zeros(b.shape))
+    b = standardize_signal(a, detrend=True, standardize="zscore_sample")
+    assert_almost_equal(b, np.zeros(b.shape))
 
     length_1_signal = np.atleast_2d(np.linspace(0, 2.0, n_features))
     np.testing.assert_array_equal(
         length_1_signal,
-        nisignal.standardize_signal(
-            length_1_signal, standardize="zscore_sample"
-        ),
+        standardize_signal(length_1_signal, standardize="zscore_sample"),
     )
 
 
@@ -342,37 +360,33 @@ def test_detrend():
     original = x.copy()
 
     # Mean removal only (out-of-place)
-    detrended = nisignal._detrend(x, inplace=False, type="constant")
+    detrended = _detrend(x, inplace=False, type="constant")
     assert abs(detrended.mean(axis=0)).max() < 15.0 * np.finfo(np.float64).eps
 
     # out-of-place detrending. Use scipy as a reference implementation
-    detrended = nisignal._detrend(x, inplace=False)
+    detrended = _detrend(x, inplace=False)
     detrended_scipy = scipy.signal.detrend(x, axis=0)
 
     # "x" must be left untouched
-    np.testing.assert_almost_equal(original, x, decimal=14)
+    assert_almost_equal(original, x, decimal=14)
     assert abs(detrended.mean(axis=0)).max() < 15.0 * np.finfo(np.float64).eps
-    np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
+    assert_almost_equal(detrended_scipy, detrended, decimal=14)
     # for this to work, there must be no trends at all in "signals"
-    np.testing.assert_almost_equal(detrended, signals, decimal=14)
+    assert_almost_equal(detrended, signals, decimal=14)
 
     # inplace detrending
-    nisignal._detrend(x, inplace=True)
+    _detrend(x, inplace=True)
     assert abs(x.mean(axis=0)).max() < 15.0 * np.finfo(np.float64).eps
     # for this to work, there must be no trends at all in "signals"
-    np.testing.assert_almost_equal(detrended_scipy, detrended, decimal=14)
-    np.testing.assert_almost_equal(x, signals, decimal=14)
+    assert_almost_equal(detrended_scipy, detrended, decimal=14)
+    assert_almost_equal(x, signals, decimal=14)
 
     length_1_signal = x[0]
     length_1_signal = length_1_signal[np.newaxis, :]
-    np.testing.assert_array_equal(
-        length_1_signal, nisignal._detrend(length_1_signal)
-    )
+    np.testing.assert_array_equal(length_1_signal, _detrend(length_1_signal))
 
     # Mean removal on integers
-    detrended = nisignal._detrend(
-        x.astype(np.int64), inplace=True, type="constant"
-    )
+    detrended = _detrend(x.astype(np.int64), inplace=True, type="constant")
     assert abs(detrended.mean(axis=0)).max() < 20.0 * np.finfo(np.float64).eps
 
 
@@ -388,9 +402,9 @@ def test_mean_of_squares():
     var1 **= 2
     var1 = var1.mean(axis=0)
 
-    var2 = nisignal._mean_of_squares(signals)
+    var2 = _mean_of_squares(signals)
 
-    np.testing.assert_almost_equal(var1, var2)
+    assert_almost_equal(var1, var2)
 
 
 def test_row_sum_of_squares():
@@ -404,9 +418,9 @@ def test_row_sum_of_squares():
     var1 = signals**2
     var1 = var1.sum(axis=0)
 
-    var2 = nisignal.row_sum_of_squares(signals)
+    var2 = row_sum_of_squares(signals)
 
-    np.testing.assert_almost_equal(var1, var2)
+    assert_almost_equal(var1, var2)
 
 
 # This test is inspired from Scipy docstring of detrend function
@@ -425,33 +439,33 @@ def test_clean_detrending():
     y[15, 14] = np.inf
     y_orig = y.copy()
 
-    y_clean = nisignal.clean(y, ensure_finite=True)
-    assert np.any(np.isfinite(y_clean)), True
+    y_clean = clean(y, ensure_finite=True)
+    assert np.any(np.isfinite(y_clean))
     # clean should not modify inputs
     # using assert_almost_equal instead of array_equal due to NaNs
-    np.testing.assert_almost_equal(y_orig, y, decimal=13)
+    assert_almost_equal(y_orig, y, decimal=13)
 
     # test boolean is not given to signal.clean
     with pytest.raises(TypeError):
-        nisignal.clean(x, low_pass=False)
+        clean(x, low_pass=False)
     with pytest.raises(TypeError):
-        nisignal.clean(x, high_pass=False)
+        clean(x, high_pass=False)
 
     # This should remove trends
-    x_detrended = nisignal.clean(
+    x_detrended = clean(
         x, standardize=False, detrend=True, low_pass=None, high_pass=None
     )
-    np.testing.assert_almost_equal(x_detrended, signals, decimal=13)
+    assert_almost_equal(x_detrended, signals, decimal=13)
     # clean should not modify inputs
-    assert np.array_equal(x_orig, x)
+    assert array_equal(x_orig, x)
 
     # This should do nothing
-    x_undetrended = nisignal.clean(
+    x_undetrended = clean(
         x, standardize=False, detrend=False, low_pass=None, high_pass=None
     )
-    assert not abs(x_undetrended - signals).max() < 0.06
+    assert abs(x_undetrended - signals).max() >= 0.06
     # clean should not modify inputs
-    assert np.array_equal(x_orig, x)
+    assert array_equal(x_orig, x)
 
 
 def test_clean_t_r(rng):
@@ -470,10 +484,10 @@ def test_clean_t_r(rng):
         for low_cutoff, high_cutoff in zip(
             low_pass_freq_list, high_pass_freq_list
         ):
-            det_one_tr = nisignal.clean(
+            det_one_tr = clean(
                 x_orig, t_r=tr1, low_pass=low_cutoff, high_pass=high_cutoff
             )
-            det_diff_tr = nisignal.clean(
+            det_diff_tr = clean(
                 x_orig, t_r=tr2, low_pass=low_cutoff, high_pass=high_cutoff
             )
 
@@ -485,9 +499,7 @@ def test_clean_t_r(rng):
                     f"high_pass={high_cutoff} "
                     f"n_samples={n_samples}, n_features={n_features}"
                 )
-                np.testing.assert_(
-                    np.any(np.not_equal(det_one_tr, det_diff_tr)), msg
-                )
+                assert np.any(np.not_equal(det_one_tr, det_diff_tr)), msg
                 del det_one_tr, det_diff_tr
 
 
@@ -517,11 +529,11 @@ def test_clean_kwargs():
     ]
     # Base result
     t_r, high_pass, low_pass = 0.8, 0.01, 0.08
-    base_filtered = nisignal.clean(
+    base_filtered = clean(
         x_orig, t_r=t_r, low_pass=low_pass, high_pass=high_pass
     )
     for kwarg_set in kwargs:
-        test_filtered = nisignal.clean(
+        test_filtered = clean(
             x_orig,
             t_r=t_r,
             low_pass=low_pass,
@@ -529,7 +541,7 @@ def test_clean_kwargs():
             **kwarg_set,
         )
         # Check that results are **not** the same.
-        np.testing.assert_(np.any(np.not_equal(base_filtered, test_filtered)))
+        assert np.any(np.not_equal(base_filtered, test_filtered))
 
 
 def test_clean_frequencies():
@@ -556,7 +568,7 @@ def test_clean_frequencies():
 
     # clean should not modify inputs
     _ = clean(sx, standardize=False, detrend=False, low_pass=0.2, t_r=2.5)
-    assert np.array_equal(sx_orig, sx)
+    assert array_equal(sx_orig, sx)
 
 
 def test_clean_runs():
@@ -570,8 +582,8 @@ def test_clean_runs():
     x_orig = x.copy()
     # Create run info
     runs = np.ones(n_samples)
-    runs[0 : n_samples // 2] = 0
-    x_detrended = nisignal.clean(
+    runs[: n_samples // 2] = 0
+    x_detrended = clean(
         x,
         confounds=confounds,
         standardize=False,
@@ -581,10 +593,10 @@ def test_clean_runs():
         runs=runs,
     )
     # clean should not modify inputs
-    assert np.array_equal(x_orig, x)
+    assert array_equal(x_orig, x)
 
     # check the runs are individually cleaned
-    x_run1 = nisignal.clean(
+    x_run1 = clean(
         x[0 : n_samples // 2, :],
         confounds=confounds[0 : n_samples // 2, :],
         standardize=False,
@@ -592,7 +604,72 @@ def test_clean_runs():
         low_pass=None,
         high_pass=None,
     )
-    assert np.array_equal(x_run1, x_detrended[0 : n_samples // 2, :])
+    assert array_equal(x_run1, x_detrended[0 : n_samples // 2, :])
+
+
+@pytest.fixture
+def signals():
+    return generate_signals(n_features=41, n_confounds=5, length=45)[0]
+
+
+@pytest.fixture
+def confounds():
+    return generate_signals(n_features=41, n_confounds=5, length=45)[2]
+
+
+def test_clean_confounds_errros(signals):
+    """Test error handling."""
+    with pytest.raises(
+        TypeError, match="confounds keyword has an unhandled type"
+    ):
+        clean(signals, confounds=1)
+
+    with pytest.raises(TypeError, match="confound has an unhandled type"):
+        clean(signals, confounds=[None])
+
+    with pytest.raises(
+        ValueError, match="Confound signal has an incorrect length"
+    ):
+        clean(signals, confounds=np.zeros(2))
+    with pytest.raises(
+        ValueError, match="Confound signal has an incorrect length"
+    ):
+        clean(signals, confounds=np.zeros((2, 2)))
+    with pytest.raises(
+        ValueError, match="Confound signal has an incorrect length."
+    ):
+        current_dir = Path(__file__).parent
+        filename1 = current_dir / "data" / "spm_confounds.txt"
+        clean(signals[:-1, :], confounds=filename1)
+
+    with pytest.raises(
+        ValueError,
+        match="confound array has an incorrect number of dimensions",
+    ):
+        clean(signals, confounds=np.zeros((2, 3, 4)))
+
+    with pytest.raises(
+        ValueError,
+        match="Repetition time .* and low cutoff frequency .*",
+    ):
+        clean(signals, filter="cosine", t_r=None, high_pass=0.008)
+
+    with pytest.raises(
+        ValueError,
+        match="Repetition time .* must be specified for butterworth.",
+    ):
+        # using butterworth filter here
+        clean(signals, t_r=None, low_pass=0.01)
+
+    with pytest.raises(
+        ValueError, match="Filter method not_implemented not implemented."
+    ):
+        clean(signals, filter="not_implemented")
+
+    with pytest.raises(
+        ValueError, match="'ensure_finite' must be boolean type True or False"
+    ):
+        clean(signals, ensure_finite=None)
 
 
 def test_clean_confounds():
@@ -602,32 +679,32 @@ def test_clean_confounds():
     # No signal: output must be zero.
     eps = np.finfo(np.float64).eps
     noises1 = noises.copy()
-    cleaned_signals = nisignal.clean(
+    cleaned_signals = clean(
         noises, confounds=confounds, detrend=True, standardize=False
     )
     assert abs(cleaned_signals).max() < 100.0 * eps
     # clean should not modify inputs
-    assert np.array_equal(noises, noises1)
+    assert array_equal(noises, noises1)
 
     # With signal: output must be orthogonal to confounds
-    cleaned_signals = nisignal.clean(
+    cleaned_signals = clean(
         signals + noises, confounds=confounds, detrend=False, standardize=True
     )
     assert abs(np.dot(confounds.T, cleaned_signals)).max() < 1000.0 * eps
 
     # Same output when a constant confound is added
     confounds1 = np.hstack((np.ones((45, 1)), confounds))
-    cleaned_signals1 = nisignal.clean(
+    cleaned_signals1 = clean(
         signals + noises, confounds=confounds1, detrend=False, standardize=True
     )
-    np.testing.assert_almost_equal(cleaned_signals1, cleaned_signals)
+    assert_almost_equal(cleaned_signals1, cleaned_signals)
 
     # Test detrending. No trend should exist in the output.
     # Use confounds with a trend.
     temp = confounds.T
     temp += np.arange(confounds.shape[0])
 
-    cleaned_signals = nisignal.clean(
+    cleaned_signals = clean(
         signals + noises, confounds=confounds, detrend=False, standardize=False
     )
     coeffs = np.polyfit(
@@ -635,7 +712,7 @@ def test_clean_confounds():
     )
     assert (abs(coeffs) > 1e-3).any()  # trends remain
 
-    cleaned_signals = nisignal.clean(
+    cleaned_signals = clean(
         signals + noises, confounds=confounds, detrend=True, standardize=False
     )
     coeffs = np.polyfit(
@@ -645,96 +722,67 @@ def test_clean_confounds():
 
     # Test no-op
     input_signals = 10 * signals
-    cleaned_signals = nisignal.clean(
-        input_signals, detrend=False, standardize=False
-    )
-    np.testing.assert_almost_equal(cleaned_signals, input_signals)
+    cleaned_signals = clean(input_signals, detrend=False, standardize=False)
+    assert_almost_equal(cleaned_signals, input_signals)
 
-    cleaned_signals = nisignal.clean(
-        input_signals, detrend=False, standardize=True
-    )
-    np.testing.assert_almost_equal(
+    cleaned_signals = clean(input_signals, detrend=False, standardize=True)
+    assert_almost_equal(
         cleaned_signals.var(axis=0), np.ones(cleaned_signals.shape[1])
     )
 
-    # Test with confounds read from a file. Smoke test only (result has
-    # no meaning).
-    current_dir = os.path.split(__file__)[0]
 
+def test_clean_confounds_inputs():
+    """Check several types of supported inputs."""
     signals, _, confounds = generate_signals(
         n_features=41, n_confounds=3, length=20
     )
-    filename1 = os.path.join(current_dir, "data", "spm_confounds.txt")
-    filename2 = os.path.join(current_dir, "data", "confounds_with_header.csv")
+    # Test with confounds read from a file.
+    # Smoke test only (result has no meaning).
+    current_dir = Path(__file__).parent
+    filename1 = current_dir / "data" / "spm_confounds.txt"
+    filename2 = current_dir / "data" / "confounds_with_header.csv"
 
-    nisignal.clean(
-        signals, detrend=False, standardize=False, confounds=filename1
-    )
-    nisignal.clean(
-        signals, detrend=False, standardize=False, confounds=filename2
-    )
-    nisignal.clean(
-        signals, detrend=False, standardize=False, confounds=confounds[:, 1]
-    )
+    clean(signals, detrend=False, standardize=False, confounds=filename1)
+    clean(signals, detrend=False, standardize=False, confounds=filename2)
+    clean(signals, detrend=False, standardize=False, confounds=confounds[:, 1])
 
     # test with confounds as a pandas DataFrame
     confounds_df = read_csv(filename2, sep="\t")
-    nisignal.clean(
+    clean(
         signals,
         detrend=False,
         standardize=False,
         confounds=confounds_df.values,
     )
-    nisignal.clean(
-        signals, detrend=False, standardize=False, confounds=confounds_df
-    )
+    clean(signals, detrend=False, standardize=False, confounds=confounds_df)
 
     # test array-like signals
     list_signal = signals.tolist()
-    nisignal.clean(list_signal)
+    clean(list_signal)
 
     # Use a list containing two filenames, a 2D array and a 1D array
-    nisignal.clean(
+    clean(
         signals,
         detrend=False,
         standardize=False,
         confounds=[filename1, confounds[:, 0:2], filename2, confounds[:, 2]],
     )
 
-    # Test error handling
-    with pytest.raises(TypeError):
-        nisignal.clean(signals, confounds=1)
-    with pytest.raises(ValueError):
-        nisignal.clean(signals, confounds=np.zeros(2))
-    with pytest.raises(ValueError):
-        nisignal.clean(signals, confounds=np.zeros((2, 2)))
-    with pytest.raises(ValueError):
-        nisignal.clean(signals, confounds=np.zeros((2, 3, 4)))
-    with pytest.raises(ValueError):
-        nisignal.clean(signals[:-1, :], confounds=filename1)
-    with pytest.raises(TypeError):
-        nisignal.clean(signals, confounds=[None])
-    with pytest.raises(ValueError, match="t_r='None'"):
-        nisignal.clean(signals, filter="cosine", t_r=None, high_pass=0.008)
-    with pytest.raises(ValueError):
-        # using butterworth filter here
-        nisignal.clean(signals, t_r=None, low_pass=0.01)
-    with pytest.raises(ValueError):
-        nisignal.clean(signals, filter="not_implemented")
-    with pytest.raises(ValueError):
-        nisignal.clean(signals, ensure_finite=None)
+
+def test_clean_warning(signals):
+    """Check warnings are thrown."""
     # Check warning message when no confound methods were specified,
     # but cutoff frequency provided.
     with pytest.warns(UserWarning, match="not perform filtering"):
-        nisignal.clean(signals, t_r=2.5, filter=False, low_pass=0.01)
+        clean(signals, t_r=2.5, filter=False, low_pass=0.01)
 
     # Test without standardizing that constant parts of confounds are
     # accounted for
     # passing standardize_confounds=False, detrend=False should raise warning
     warning_message = r"must perform detrend and/or standardize confounds"
     with pytest.warns(UserWarning, match=warning_message):
-        np.testing.assert_almost_equal(
-            nisignal.clean(
+        assert_almost_equal(
+            clean(
                 np.ones((20, 2)),
                 standardize=False,
                 confounds=np.ones(20),
@@ -744,12 +792,17 @@ def test_clean_confounds():
             np.zeros((20, 2)),
         )
 
-    # Test to check that confounders effects are effectively removed from
-    # the signals when having a detrending and filtering operation together.
-    # This did not happen originally due to a different order in which
-    # these operations were being applied to the data and confounders
-    # (it thus solves issue # 2730).
-    signals_clean = nisignal.clean(
+
+def test_clean_confounds_are_removed(signals, confounds):
+    """Check that confounders effects are effectively removed.
+
+    Check that confounders effects are effectively removed from
+    the signals when having a detrending and filtering operation together.
+    This did not happen originally due to a different order in which
+    these operations were being applied to the data and confounders.
+    see https://github.com/nilearn/nilearn/issues/2730
+    """
+    signals_clean = clean(
         signals,
         detrend=True,
         high_pass=0.01,
@@ -757,10 +810,10 @@ def test_clean_confounds():
         standardize=True,
         confounds=confounds,
     )
-    confounds_clean = nisignal.clean(
+    confounds_clean = clean(
         confounds, detrend=True, high_pass=0.01, standardize=True
     )
-    assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * eps
+    assert abs(np.dot(confounds_clean.T, signals_clean)).max() < 1000.0 * EPS
 
 
 def test_clean_frequencies_using_power_spectrum_density():
@@ -823,6 +876,37 @@ def test_clean_frequencies_using_power_spectrum_density():
     assert np.sum(Pxx_den_cos[f <= high_pass / 2.0]) <= 1e-4
 
 
+@pytest.mark.parametrize("t_r", [1, 1.0])
+@pytest.mark.parametrize("high_pass", [1, 1.0])
+def test_clean_t_r_highpass_float_int(t_r, high_pass):
+    """Make sure t_r and high_pass can be int.
+
+    Regression test for: https://github.com/nilearn/nilearn/issues/4803
+    """
+    # Create signal
+    sx = np.array(
+        [
+            np.sin(np.linspace(0, 100, 100) * 1.5),
+            np.sin(np.linspace(0, 100, 100) * 3.0),
+            np.sin(np.linspace(0, 100, 100) / 8.0),
+        ]
+    ).T
+
+    # Create confound
+    _, _, confounds = generate_signals(
+        n_features=10, n_confounds=10, length=100
+    )
+    clean(
+        sx,
+        detrend=False,
+        standardize=False,
+        filter="cosine",
+        low_pass=None,
+        high_pass=high_pass,
+        t_r=t_r,
+    )
+
+
 def test_clean_finite_no_inplace_mod():
     """Test for verifying that the passed in signal array is not modified.
 
@@ -839,7 +923,7 @@ def test_clean_finite_no_inplace_mod():
     x_orig_with_nans_initial_copy = x_orig_with_nans.copy()
 
     _ = clean(x_orig)
-    assert np.array_equal(x_orig, x_orig_inital_copy)
+    assert array_equal(x_orig, x_orig_inital_copy)
 
     _ = clean(x_orig_with_nans, ensure_finite=True)
     assert np.isnan(x_orig_with_nans_initial_copy[0, 0])
@@ -859,36 +943,34 @@ def test_high_variance_confounds():
         n_features=n_features, length=length, order="F"
     )
 
-    np.testing.assert_almost_equal(seriesC, seriesF, decimal=13)
-    outC = nisignal.high_variance_confounds(
+    assert_almost_equal(seriesC, seriesF, decimal=13)
+    outC = high_variance_confounds(
         seriesC, n_confounds=n_confounds, detrend=False
     )
-    outF = nisignal.high_variance_confounds(
+    outF = high_variance_confounds(
         seriesF, n_confounds=n_confounds, detrend=False
     )
-    np.testing.assert_almost_equal(outC, outF, decimal=13)
+    assert_almost_equal(outC, outF, decimal=13)
 
     # Result must not be influenced by global scaling
     seriesG = 2 * seriesC
-    outG = nisignal.high_variance_confounds(
+    outG = high_variance_confounds(
         seriesG, n_confounds=n_confounds, detrend=False
     )
-    np.testing.assert_almost_equal(outC, outG, decimal=13)
+    assert_almost_equal(outC, outG, decimal=13)
     assert outG.shape == (length, n_confounds)
 
     # Changing percentile changes the result
     seriesG = seriesC
-    outG = nisignal.high_variance_confounds(
+    outG = high_variance_confounds(
         seriesG, percentile=1.0, n_confounds=n_confounds, detrend=False
     )
     with pytest.raises(AssertionError):
-        np.testing.assert_almost_equal(outC, outG, decimal=13)
+        assert_almost_equal(outC, outG, decimal=13)
     assert outG.shape == (length, n_confounds)
 
     # Check shape of output
-    out = nisignal.high_variance_confounds(
-        seriesG, n_confounds=7, detrend=False
-    )
+    out = high_variance_confounds(seriesG, n_confounds=7, detrend=False)
     assert out.shape == (length, 7)
 
     # Adding a trend and detrending should give same results as with no trend.
@@ -896,38 +978,65 @@ def test_high_variance_confounds():
     trends = generate_trends(n_features=n_features, length=length)
     seriesGt = seriesG + trends
 
-    outG = nisignal.high_variance_confounds(
+    outG = high_variance_confounds(
         seriesG, detrend=False, n_confounds=n_confounds
     )
-    outGt = nisignal.high_variance_confounds(
+    outGt = high_variance_confounds(
         seriesGt, detrend=True, n_confounds=n_confounds
     )
     # Since sign flips could occur, we look at the absolute values of the
     # covariance, rather than the absolute difference, and compare this to
     # the identity matrix
-    np.testing.assert_almost_equal(
+    assert_almost_equal(
         np.abs(outG.T.dot(outG)), np.identity(outG.shape[1]), decimal=13
     )
     # Control for sign flips by taking the min of both possibilities
-    np.testing.assert_almost_equal(
+    assert_almost_equal(
         np.min(np.abs(np.dstack([outG - outGt, outG + outGt])), axis=2),
         np.zeros(outG.shape),
     )
 
     # Control robustness to NaNs
     seriesG[:, 0] = 0
-    out1 = nisignal.high_variance_confounds(seriesG, n_confounds=n_confounds)
+    out1 = high_variance_confounds(seriesG, n_confounds=n_confounds)
     seriesG[:, 0] = np.nan
-    out2 = nisignal.high_variance_confounds(seriesG, n_confounds=n_confounds)
-    np.testing.assert_almost_equal(out1, out2, decimal=13)
+    out2 = high_variance_confounds(seriesG, n_confounds=n_confounds)
+    assert_almost_equal(out1, out2, decimal=13)
+
+
+def test_clean_standardize_false():
+    n_samples = 500
+    n_features = 5
+    t_r = 2
+
+    signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
+    cleaned_signals = clean(signals, standardize=False, detrend=False)
+    assert_almost_equal(cleaned_signals, signals)
+
+    # these show return the same results
+    cleaned_butterworth_signals = clean(
+        signals,
+        detrend=False,
+        standardize=False,
+        filter="butterworth",
+        high_pass=0.01,
+        t_r=t_r,
+    )
+    butterworth_signals = butterworth(
+        signals,
+        sampling_rate=1 / t_r,
+        high_pass=0.01,
+    )
+    np.testing.assert_equal(cleaned_butterworth_signals, butterworth_signals)
 
 
 def test_clean_psc(rng):
     n_samples = 500
     n_features = 5
 
-    signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
-
+    signals = generate_signals_plus_trends(
+        n_features=n_features, n_samples=n_samples
+    )
     # positive mean signal
     means = rng.standard_normal((1, n_features))
     signals_pos_mean = signals + means
@@ -937,15 +1046,32 @@ def test_clean_psc(rng):
 
     # both types should pass
     for s in [signals_pos_mean, signals_mixed_mean]:
+        # no detrend
         cleaned_signals = clean(s, standardize="psc", detrend=False)
-        np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
+        ss_signals = standardize_signal(s, detrend=False, standardize="psc")
+        assert_almost_equal(cleaned_signals.mean(0), 0)
+        assert_almost_equal(cleaned_signals, ss_signals)
 
-        tmp = (s - s.mean(0)) / np.abs(s.mean(0))
-        tmp *= 100
-        np.testing.assert_almost_equal(cleaned_signals, tmp)
+        # psc signal should correlate with z score, since it's just difference
+        # in scaling
+        z_signals = clean(s, standardize="zscore_sample", detrend=False)
+        assert_almost_equal(
+            np.corrcoef(z_signals[:, 0], cleaned_signals[:, 0])[0, 1],
+            0.99999,
+            decimal=5,
+        )
+
+        cleaned_signals = clean(s, standardize="psc", detrend=True)
+        z_signals = clean(s, standardize="zscore_sample", detrend=True)
+        assert_almost_equal(cleaned_signals.mean(0), 0)
+        assert_almost_equal(
+            np.corrcoef(z_signals[:, 0], cleaned_signals[:, 0])[0, 1],
+            0.99999,
+            decimal=5,
+        )
 
         # test with high pass with butterworth
-        butterworth_signals = clean(
+        hp_butterworth_signals = clean(
             s,
             detrend=False,
             filter="butterworth",
@@ -953,7 +1079,22 @@ def test_clean_psc(rng):
             t_r=2,
             standardize="psc",
         )
-        np.testing.assert_almost_equal(butterworth_signals.mean(0), 0)
+        z_butterworth_signals = clean(
+            s,
+            detrend=False,
+            filter="butterworth",
+            high_pass=0.01,
+            t_r=2,
+            standardize="zscore_sample",
+        )
+        assert_almost_equal(hp_butterworth_signals.mean(0), 0)
+        assert_almost_equal(
+            np.corrcoef(
+                z_butterworth_signals[:, 0], hp_butterworth_signals[:, 0]
+            )[0, 1],
+            0.99999,
+            decimal=5,
+        )
 
     # leave out the last 3 columns with a mean of zero to test user warning
     signals_w_zero = signals + np.append(means[:, :-3], np.zeros((1, 3)))
@@ -974,13 +1115,13 @@ def test_clean_zscore(rng):
 
     signals += rng.standard_normal(size=(1, n_features))
     cleaned_signals_ = clean(signals, standardize="zscore")
-    np.testing.assert_almost_equal(cleaned_signals_.mean(0), 0)
-    np.testing.assert_almost_equal(cleaned_signals_.std(0), 1)
+    assert_almost_equal(cleaned_signals_.mean(0), 0)
+    assert_almost_equal(cleaned_signals_.std(0), 1)
 
     # Repeating test above but for new correct strategy
     cleaned_signals = clean(signals, standardize="zscore_sample")
-    np.testing.assert_almost_equal(cleaned_signals.mean(0), 0)
-    np.testing.assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
+    assert_almost_equal(cleaned_signals.mean(0), 0)
+    assert_almost_equal(cleaned_signals.std(0), 1, decimal=3)
 
     # Show outcome from two zscore strategies is not equal
     with pytest.raises(AssertionError):
@@ -1002,22 +1143,20 @@ def test_create_cosine_drift_terms():
     cosine_drift = create_cosine_drift(high_pass, frame_times)[:, :-1]
     confounds_with_drift = np.hstack((confounds, cosine_drift))
 
-    cosine_confounds = nisignal._create_cosine_drift_terms(
+    cosine_confounds = _create_cosine_drift_terms(
         signals, confounds, high_pass, t_r
     )
-    np.testing.assert_almost_equal(
-        cosine_confounds, np.hstack((confounds, cosine_drift))
-    )
+    assert_almost_equal(cosine_confounds, np.hstack((confounds, cosine_drift)))
 
     # Not passing confounds it will return drift terms only
-    drift_terms_only = nisignal._create_cosine_drift_terms(
+    drift_terms_only = _create_cosine_drift_terms(
         signals, None, high_pass, t_r
     )
-    np.testing.assert_almost_equal(drift_terms_only, cosine_drift)
+    assert_almost_equal(drift_terms_only, cosine_drift)
 
     # drift terms in confounds will create warning and no change to confounds
     with pytest.warns(UserWarning, match="user supplied confounds"):
-        cosine_confounds = nisignal._create_cosine_drift_terms(
+        cosine_confounds = _create_cosine_drift_terms(
             signals, confounds_with_drift, high_pass, t_r
         )
     np.testing.assert_array_equal(cosine_confounds, confounds_with_drift)
@@ -1025,7 +1164,7 @@ def test_create_cosine_drift_terms():
     # raise warning if cosine drift term is not created
     high_pass_fail = 0.002
     with pytest.warns(UserWarning, match="Cosine filter was not created"):
-        cosine_confounds = nisignal._create_cosine_drift_terms(
+        cosine_confounds = _create_cosine_drift_terms(
             signals, confounds, high_pass_fail, t_r
         )
     np.testing.assert_array_equal(cosine_confounds, confounds)
@@ -1128,7 +1267,7 @@ def test_handle_scrubbed_volumes():
         interpolated_signals,
         interpolated_confounds,
         sample_mask,
-    ) = nisignal._handle_scrubbed_volumes(
+    ) = _handle_scrubbed_volumes(
         signals, confounds, sample_mask, "butterworth", 2.5, True
     )
     np.testing.assert_equal(
@@ -1142,7 +1281,7 @@ def test_handle_scrubbed_volumes():
         scrubbed_signals,
         scrubbed_confounds,
         sample_mask,
-    ) = nisignal._handle_scrubbed_volumes(
+    ) = _handle_scrubbed_volumes(
         signals, confounds, sample_mask, "cosine", 2.5, True
     )
     np.testing.assert_equal(scrubbed_signals, signals[sample_mask, :])
@@ -1173,7 +1312,7 @@ def test_handle_scrubbed_volumes_with_extrapolation():
             extrapolated_signals,
             extrapolated_confounds,
             extrapolated_sample_mask,
-        ) = nisignal._handle_scrubbed_volumes(
+        ) = _handle_scrubbed_volumes(
             signals, confounds, sample_mask, "butterworth", 2.5, True
         )
     np.testing.assert_equal(signals.shape[0], extrapolated_signals.shape[0])
@@ -1203,7 +1342,7 @@ def test_handle_scrubbed_volumes_without_extrapolation():
         interpolated_signals,
         interpolated_confounds,
         interpolated_sample_mask,
-    ) = nisignal._handle_scrubbed_volumes(
+    ) = _handle_scrubbed_volumes(
         signals, confounds, sample_mask, "butterworth", 2.5, False
     )
     np.testing.assert_equal(
@@ -1222,7 +1361,7 @@ def test_handle_scrubbed_volumes_without_extrapolation():
     (
         censored_signals,
         censored_confounds,
-    ) = nisignal._censor_signals(
+    ) = _censor_signals(
         interpolated_signals, interpolated_confounds, interpolated_sample_mask
     )
     np.testing.assert_equal(
@@ -1231,3 +1370,24 @@ def test_handle_scrubbed_volumes_without_extrapolation():
     np.testing.assert_equal(
         confounds.shape[0], censored_confounds.shape[0] + total_samples
     )
+
+
+def test_handle_scrubbed_volumes_exception():
+    """Check if an exception is raised when the sample mask is empty."""
+    signals, _, confounds = generate_signals(
+        n_features=11, n_confounds=5, length=40
+    )
+
+    sample_mask = np.arange(signals.shape[0])
+    scrub_index = np.arange(signals.shape[0])
+    sample_mask = np.delete(sample_mask, scrub_index)
+
+    with pytest.raises(
+        AllVolumesRemovedError,
+        match="The size of the sample mask is 0. "
+        "All volumes were marked as motion outliers "
+        "can not proceed. ",
+    ):
+        _handle_scrubbed_volumes(
+            signals, confounds, sample_mask, "butterworth", 2.5, True
+        )

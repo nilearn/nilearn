@@ -6,7 +6,6 @@ from nilearn import datasets
 
 
 def main(args=sys.argv) -> None:
-
     build_type = args[1] if len(args) > 1 else "partial"
 
     print(f"Getting data for a build: {build_type}")
@@ -19,9 +18,7 @@ def main(args=sys.argv) -> None:
 
     datasets.fetch_icbm152_2009()
 
-    datasets.fetch_atlas_difumo(
-        dimension=64, resolution_mm=2, legacy_format=False
-    )
+    datasets.fetch_atlas_difumo(dimension=64, resolution_mm=2)
     datasets.fetch_atlas_msdl()
     datasets.fetch_atlas_schaefer_2018()
     datasets.fetch_atlas_yeo_2011()

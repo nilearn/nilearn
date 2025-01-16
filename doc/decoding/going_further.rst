@@ -10,7 +10,8 @@ scikit-learn. This builds on the :ref:`didactic introduction to decoding <decodi
 .. note::
 
    This documentation gives links and additional definitions needed to work
-   correctly with scikit-learn. For a full code example, please check out: :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
+   correctly with scikit-learn. For a full code example,
+   please check out: :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
 
 
 Performing decoding with scikit-learn
@@ -22,9 +23,11 @@ Using scikit-learn estimators
 You can easily import estimators from the `scikit-learn <https://scikit-learn.org>`_ machine-learning library,
 those available in the ``Decoder`` object and many others.
 They all have the ``fit`` and ``predict`` functions.
-For example you can directly import the versatile `Support Vector Classifier <https://scikit-learn.org/stable/modules/svm.html>`_ (or SVC).
+For example you can directly import the versatile
+`Support Vector Classifier <https://scikit-learn.org/stable/modules/svm.html>`_ (or SVC).
 
-To learn more about the variety of classifiers available in scikit-learn, see the `scikit-learn documentation on supervised learning <https://scikit-learn.org/stable/supervised_learning.html>`_.
+To learn more about the variety of classifiers available in scikit-learn, see the
+`scikit-learn documentation on supervised learning <https://scikit-learn.org/stable/supervised_learning.html>`_.
 
 
 Cross-validation with scikit-learn
@@ -59,15 +62,17 @@ You can change many parameters of the cross_validation here, for example:
      see `here <https://scikit-learn.org/stable/modules/cross_validation.html>`_.
 
    * `How to evaluate a model using scikit-learn
-     <https://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_.
+     <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
 
 Measuring the chance level
 ---------------------------
 
-**Dummy estimators**: The simplest way to measure prediction performance at chance is to use a *"dummy"* classifier: :class:`sklearn.dummy.DummyClassifier`.
+**Dummy estimators**: The simplest way to measure prediction performance at chance
+is to use a *"dummy"* classifier: :class:`sklearn.dummy.DummyClassifier`.
 
-**Permutation testing**: A more controlled way, but slower, is to do permutation testing on the labels, with :func:`sklearn.model_selection.permutation_test_score`.
+**Permutation testing**: A more controlled way, but slower,
+is to do permutation testing on the labels, with :func:`sklearn.model_selection.permutation_test_score`.
 
 .. topic:: **Decoding on simulated data**
 
@@ -147,4 +152,4 @@ CPUs.
 .. seealso::
 
    `The scikit-learn documentation on choosing estimators and their parameters
-   selection <https://scikit-learn.org/stable/tutorial/statistical_inference/model_selection.html>`_
+   selection <https://scikit-learn.org/stable/auto_examples/model_selection/index.html>`_

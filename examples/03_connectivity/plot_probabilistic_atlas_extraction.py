@@ -6,11 +6,11 @@ This example extracts the signal on regions defined via a probabilistic
 atlas, to construct a functional connectome.
 
 We use the `MSDL atlas
-<https://team.inria.fr/parietal/18-2/spatial_patterns/spatial-patterns-in-resting-state/>`_
+<https://team.inria.fr/parietal/research/spatial_patterns/spatial-patterns-in-resting-state/>`_
 of functional regions in movie-watching.
 
 The key to extract signals is to use the
-:class:`nilearn.maskers.NiftiMapsMasker` that can transform nifti
+:class:`~nilearn.maskers.NiftiMapsMasker` that can transform nifti
 objects to time series using a probabilistic atlas.
 
 As the MSDL atlas comes with (x, y, z) :term:`MNI` coordinates for the
@@ -94,8 +94,6 @@ plotting.plot_matrix(
 # %%
 # And now display the corresponding graph
 # ---------------------------------------
-from nilearn import plotting
-
 coords = atlas.region_coords
 
 # We threshold to keep only the 20% of edges with the highest value
@@ -109,8 +107,8 @@ plotting.show()
 # %%
 # 3D visualization in a web browser
 # ---------------------------------
-# An alternative to :func:`nilearn.plotting.plot_connectome` is to use
-# :func:`nilearn.plotting.view_connectome` that gives more interactive
+# An alternative to :func:`~nilearn.plotting.plot_connectome` is to use
+# :func:`~nilearn.plotting.view_connectome` that gives more interactive
 # visualizations in a web browser. See :ref:`interactive-connectome-plotting`
 # for more details.
 

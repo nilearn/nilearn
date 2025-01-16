@@ -41,7 +41,7 @@ def test_full_rank(rng):
 
 
 def test_z_score_t_values(rng):
-    # Randomly draw samples from the standard Student’s t distribution
+    # Randomly draw samples from the standard Student's t distribution
     t_val = rng.standard_t(10, size=10)
     # Estimate the p-values using the Survival Function (SF)
     p_val = sps.t.sf(t_val, 1e10)
@@ -260,7 +260,7 @@ def test_pad_contrast(rng, val, stat_type):
 
 
 @pytest.mark.parametrize("val", [[[1, 0], [0, 1]], [[1, 0, 0], [0, 1, 0]]])
-def test_pad_F_contrast(rng, val):
+def test_pad_f_contrast(rng, val):
     """Check padding of matrix contrasts."""
     theta = rng.random((4, 1))
     con_val = np.array(val)

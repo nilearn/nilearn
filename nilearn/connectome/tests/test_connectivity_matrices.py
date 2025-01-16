@@ -8,7 +8,11 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pandas import DataFrame
 from scipy import linalg
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
+from sklearn.utils.estimator_checks import (
+    check_estimator as sklearn_check_estimator,
+)
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
@@ -36,6 +40,65 @@ N_FEATURES = 49
 N_SUBJECTS = 5
 
 
+@pytest.mark.parametrize(
+    "estimator",
+    [EmpiricalCovariance(), LedoitWolf()],
+)
+def test_check_estimator_cov_estimator(estimator):
+    """Check compliance with sklearn estimators."""
+    sklearn_check_estimator(estimator)
+
+
+extra_valid_checks = [
+    "check_parameters_default_constructible",
+    "check_no_attributes_set_in_init",
+    "check_estimators_unfitted",
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_transformers_unfitted",
+    "check_fit1d",
+    "check_transformer_n_iter",
+    "check_estimator_sparse_tag",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    (
+        check_estimator(
+            estimator=[
+                ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
+            ],
+            extra_valid_checks=extra_valid_checks,
+        )
+    ),
+)
+def test_check_estimator_group_sparse_covariance(
+    estimator,
+    check,
+    name,  # noqa: ARG001
+):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[ConnectivityMeasure(cov_estimator=EmpiricalCovariance())],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid_group_sparse_covariance(
+    estimator,
+    check,
+    name,  # noqa: ARG001
+):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
 def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
     """Generate a random diagonal matrix.
 
@@ -50,8 +113,8 @@ def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
     v_max : float, optional (default to 2.)
         Maximal element.
 
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -81,8 +144,8 @@ def random_spd(p, eig_min, cond, random_state=0):
         Condition number, defined as the ratio of the maximum eigenvalue to the
         minimum one.
 
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -101,7 +164,8 @@ def random_spd(p, eig_min, cond, random_state=0):
 
 def _signals(n_subjects=N_SUBJECTS):
     """Generate signals and compute covariances \
-    and apply confounds while computing covariances."""
+    and apply confounds while computing covariances.
+    """
     n_features = N_FEATURES
     signals = []
     for k in range(n_subjects):
@@ -263,8 +327,8 @@ def random_non_singular(p, sing_min=1.0, sing_max=2.0, random_state=0):
     sing_max : float, optional (default to 2.)
         Maximal singular value.
 
-    random_state : int or numpy.random.RandomState instance, optional
-        random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -358,8 +422,7 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
         ).dot(gmean_sqrt)
 
         # Update the norm and the step size
-        if norm < norm_old:
-            norm_old = norm
+        norm_old = min(norm, norm_old)
         if norm > norm_old:
             step = step / 2.0
             norm = norm_old
@@ -646,7 +709,8 @@ def _assert_connectivity_precision(connectivities, covs):
     """Estimated precision matrix: \
     - is positive definite, \
     - its product with the true covariance matrix \
-      is close to the identity matrix."""
+      is close to the identity matrix.
+    """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
         covs, connectivities
     ):
@@ -938,7 +1002,7 @@ def test_connectivity_measure_standardize(signals):
     """Check warning is raised and then suppressed with setting standardize."""
     match = "default strategy for standardize"
 
-    with pytest.warns(DeprecationWarning, match=match):
+    with pytest.deprecated_call(match=match):
         ConnectivityMeasure(kind="correlation").fit_transform(signals)
 
     with warnings.catch_warnings(record=True) as record:

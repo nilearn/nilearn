@@ -25,7 +25,11 @@ def _check_html(html_view, title=None):
 def _simulate_img(affine=None):
     """Simulate data with one "spot".
 
-    Returns: img, data
+    Returns
+    -------
+    img
+
+    data
     """
     if affine is None:
         affine = np.eye(4)
@@ -42,9 +46,9 @@ def _check_affine(affine):
     assert affine[0, 0] > 0
 
     A, b = image.resampling.to_matrix_vector(affine)
-    assert np.all(
-        (np.abs(A) > 0.001).sum(axis=0) == 1
-    ), "the affine transform was not near-diagonal"
+    assert np.all((np.abs(A) > 0.001).sum(axis=0) == 1), (
+        "the affine transform was not near-diagonal"
+    )
 
 
 def test_data_to_sprite():
@@ -106,7 +110,7 @@ def test_threshold_data():
 
 
 def test_save_sprite(rng):
-    """Test covers _save_sprite as well as _bytesIO_to_base64."""
+    """Test covers _save_sprite as well as _bytes_io_to_base64."""
     # Generate a simulated volume with a square inside
     data = rng.uniform(size=140).reshape(7, 5, 4)
     mask = np.zeros((7, 5, 4), dtype=int)
@@ -118,7 +122,7 @@ def test_save_sprite(rng):
     )
 
     # Load the sprite back in base64
-    sprite_base64 = html_stat_map._bytesIO_to_base64(sprite_io)
+    sprite_base64 = html_stat_map._bytes_io_to_base64(sprite_io)
 
     decoded_io = BytesIO()
     decoded_io.write(base64.b64decode(sprite_base64))
@@ -136,13 +140,13 @@ def test_save_sprite(rng):
 @pytest.mark.parametrize("cmap", ["tab10", "cold_hot"])
 @pytest.mark.parametrize("n_colors", [7, 20])
 def test_save_cmap(cmap, n_colors):
-    """Test covers _save_cmap as well as _bytesIO_to_base64."""
+    """Test covers _save_cmap as well as _bytes_io_to_base64."""
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
     html_stat_map._save_cm(cmap_io, cmap, format="png", n_colors=n_colors)
 
     # Load the colormap back in base64
-    cmap_base64 = html_stat_map._bytesIO_to_base64(cmap_io)
+    cmap_base64 = html_stat_map._bytes_io_to_base64(cmap_io)
 
     decoded_io = BytesIO()
     decoded_io.write(base64.b64decode(cmap_base64))
@@ -219,12 +223,12 @@ def test_resample_stat_map(affine_eye):
     _check_affine(mask_img.affine)
 
     # Check voxel size matches bg_img
-    assert (
-        stat_map_img.affine[0, 0] == bg_img.affine[0, 0]
-    ), "stat_map_img was not resampled at the resolution of background"
-    assert (
-        mask_img.affine[0, 0] == bg_img.affine[0, 0]
-    ), "mask_img was not resampled at the resolution of background"
+    assert stat_map_img.affine[0, 0] == bg_img.affine[0, 0], (
+        "stat_map_img was not resampled at the resolution of background"
+    )
+    assert mask_img.affine[0, 0] == bg_img.affine[0, 0], (
+        "mask_img was not resampled at the resolution of background"
+    )
 
 
 def test_json_view_params(affine_eye):

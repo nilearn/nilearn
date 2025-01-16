@@ -1,7 +1,11 @@
 """Functions for working with the FSL library."""
 
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
+
+__all__ = ["get_design_from_fslmat"]
 
 
 def get_design_from_fslmat(fsl_design_matrix_path, column_names=None):
@@ -19,7 +23,7 @@ def get_design_from_fslmat(fsl_design_matrix_path, column_names=None):
     design_matrix : :obj:`pandas.DataFrame`
         A DataFrame containing the design matrix.
     """
-    with open(fsl_design_matrix_path) as design_matrix_file:
+    with Path(fsl_design_matrix_path).open() as design_matrix_file:
         # Based on the openneuro example this seems to be the right
         # marker to start extracting the matrix until the end of the file
         # Conventions of FSL mat files should be verified in more detail for

@@ -1,7 +1,5 @@
 import base64
-import os
 import re
-import tempfile
 
 import numpy as np
 import pytest
@@ -38,21 +36,14 @@ def test_add_js_lib():
     html = get_html_template("surface_plot_template.html")
     cdn = add_js_lib(html, embed_js=False)
     assert "decodeBase64" in cdn
-    assert (
-        _normalize_ws(
-            """<script
+    assert _normalize_ws(
+        """<script
     src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">"""
-        )
-        in _normalize_ws(cdn)
-    )
-    assert (
-        _normalize_ws(
-            """<script
+    ) in _normalize_ws(cdn)
+    assert _normalize_ws(
+        """<script
     src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>"""
-        )
-        in _normalize_ws(cdn)
-    )
-
+    ) in _normalize_ws(cdn)
     inline = _normalize_ws(add_js_lib(html, embed_js=True))
     assert (
         _normalize_ws(
@@ -98,7 +89,11 @@ def test_colorscale_no_threshold():
 def expected_abs_threshold(threshold):
     """Return the expected absolute threshold."""
     expected = {"0%": 1.5, "50%": 7.55, "99%": 13}
-    return expected[threshold] if threshold in expected else abs(threshold)
+    return (
+        expected.get(threshold)
+        if isinstance(threshold, str)
+        else abs(threshold)
+    )
 
 
 @pytest.mark.parametrize("threshold", ["0%", "50%", "99%", 0.5, 7.25])
@@ -192,21 +187,19 @@ def test_mesh_to_plotly(hemi):
 
 
 def check_html(
-    html, check_selects=True, plot_div_id="surface-plot", title=None
+    tmp_path, html, check_selects=True, plot_div_id="surface-plot", title=None
 ):
     """Perform several checks on raw HTML code."""
-    fd, tmpfile = tempfile.mkstemp()
-    try:
-        os.close(fd)
-        html.save_as_html(tmpfile)
-        with open(tmpfile) as f:
-            saved = f.read()
-        # If present, replace Windows line-end '\r\n' with Unix's '\n'
-        saved = saved.replace("\r\n", "\n")
-        standalone = html.get_standalone().replace("\r\n", "\n")
-        assert saved == standalone
-    finally:
-        os.remove(tmpfile)
+    tmpfile = tmp_path / "test.html"
+
+    html.save_as_html(tmpfile)
+    with tmpfile.open() as f:
+        saved = f.read()
+    # If present, replace Windows line-end '\r\n' with Unix's '\n'
+    saved = saved.replace("\r\n", "\n")
+    standalone = html.get_standalone().replace("\r\n", "\n")
+    assert saved == standalone
+
     assert "INSERT" not in html.html
     assert html.get_standalone() == html.html
     assert html._repr_html_() == html.get_iframe()
@@ -235,7 +228,7 @@ def check_html(
     assert len(selects) == 3
     hemi = selects[0]
     assert ("id", "select-hemisphere") in hemi.items()
-    assert len(hemi.findall("option")) == 2
+    assert len(hemi.findall("option")) == 3
     kind = selects[1]
     assert ("id", "select-kind") in kind.items()
     assert len(kind.findall("option")) == 2

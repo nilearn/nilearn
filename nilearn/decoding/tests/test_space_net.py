@@ -90,7 +90,7 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
         if k > 0 and rng.random() > 0.9:
             w[k - 1] = 1 - w[k - 1]
 
-        escb(dict(w=w, counter=counter))
+        escb({"w": w, "counter": counter})
         assert len(escb.test_scores) == counter + 1
 
         # restart
@@ -240,7 +240,7 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
 
 
 @pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
-def test_tv_regression_3D_image_doesnt_crash(rng, l1_ratio):
+def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     dim = (3, 4, 5)
     W_init = np.zeros(dim)
     W_init[2:3, 3:, 1:3] = 1
@@ -512,3 +512,24 @@ def test_targets_in_y_space_net_regressor():
         ValueError, match="The given input y must have at least 2 targets"
     ):
         regressor.fit(imgs, y)
+
+
+# ------------------------ surface tests ------------------------------------ #
+
+
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
+@pytest.mark.parametrize(
+    "model", [BaseSpaceNet, SpaceNetRegressor, SpaceNetClassifier]
+)
+def test_space_net_not_implemented_surface_objects(
+    surf_mask_dim, surf_mask_1d, surf_mask_2d, surf_img_2d, model
+):
+    """Raise NotImplementedError when space net is fit on surface objects."""
+    y = np.ones((5,))
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+
+    with pytest.raises(NotImplementedError):
+        model(mask=surf_mask).fit(surf_img_2d(5), y)
+
+    with pytest.raises(NotImplementedError):
+        model().fit(surf_img_2d(5), y)

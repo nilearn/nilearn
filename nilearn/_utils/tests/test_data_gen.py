@@ -33,7 +33,8 @@ from nilearn.image import get_data
 
 def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
     """Check the filename created is the default value \
-    of add_metadata_to_bids_dataset."""
+    of add_metadata_to_bids_dataset.
+    """
     target_dir = tmp_path / "derivatives" / "sub-01" / "ses-01" / "func"
     target_dir.mkdir(parents=True)
     json_file = add_metadata_to_bids_dataset(
@@ -44,7 +45,7 @@ def test_add_metadata_to_bids_derivatives_default_path(tmp_path):
         json_file.name
         == "sub-01_ses-01_task-main_run-01_space-MNI_desc-preproc_bold.json"
     )
-    with open(json_file) as f:
+    with json_file.open() as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
 
@@ -59,7 +60,7 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
     )
     assert json_file.exists()
     assert json_file.name == "sub-02_task-main_bold.json"
-    with open(json_file) as f:
+    with json_file.open() as f:
         metadata = json.load(f)
         assert metadata == {"foo": "bar"}
 
@@ -161,7 +162,7 @@ def test_fake_bids_raw_with_session_and_runs(
     assert len(all_files) == n_raw_files_expected
 
 
-def _check_nb_files_derivatives_for_task(
+def _check_n_files_derivatives_for_task(
     bids_path,
     n_sub,
     n_ses,
@@ -243,7 +244,7 @@ def test_fake_bids_derivatives_with_session_and_runs(
 
     # derivatives
     for task, n_run in zip(tasks, n_runs):
-        _check_nb_files_derivatives_for_task(
+        _check_n_files_derivatives_for_task(
             bids_path=bids_path,
             n_sub=n_sub,
             n_ses=n_ses,
@@ -406,7 +407,7 @@ def test_fake_bids_extra_raw_entity(tmp_path):
     # derivatives
     for label in entities["acq"]:
         for task, n_run in zip(tasks, n_runs):
-            _check_nb_files_derivatives_for_task(
+            _check_n_files_derivatives_for_task(
                 bids_path=bids_path,
                 n_sub=n_sub,
                 n_ses=n_ses,
@@ -447,7 +448,7 @@ def test_fake_bids_extra_derivative_entity(tmp_path):
     # derivatives
     for label in entities["res"]:
         for task, n_run in zip(tasks, n_runs):
-            _check_nb_files_derivatives_for_task(
+            _check_n_files_derivatives_for_task(
                 bids_path=bids_path,
                 n_sub=n_sub,
                 n_ses=n_ses,
@@ -529,7 +530,7 @@ def test_generate_maps():
     n_regions = 9
     maps_img, _ = generate_maps(shape, n_regions, border=1)
     maps = get_data(maps_img)
-    assert maps.shape == shape + (n_regions,)
+    assert maps.shape == (*shape, n_regions)
     # no empty map
     assert np.all(abs(maps).sum(axis=0).sum(axis=0).sum(axis=0) > 0)
     # check border
@@ -582,12 +583,12 @@ def test_generate_fake_fmri_error(rng):
 @pytest.mark.parametrize(
     "shapes", [[(2, 3, 5, 7)], [(5, 5, 5, 3), (5, 5, 5, 5)]]
 )
-@pytest.mark.parametrize("rk", [1, 3])
+@pytest.mark.parametrize("rank", [1, 3, 5])
 @pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
-def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
+def test_fake_fmri_data_and_design_generate(shapes, rank, affine):
     # test generate
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes, rk=rk, affine=affine, random_state=42
+        shapes, rk=rank, affine=affine, random_state=42
     )
 
     for fmri, shape in zip(fmri_data, shapes):
@@ -597,11 +598,20 @@ def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
             assert_almost_equal(fmri.affine, affine)
 
     for design, shape in zip(design_matrices, shapes):
-        assert design.shape == (shape[3], rk)
+        assert design.shape == (shape[3], rank)
 
-    # test write
+
+@pytest.mark.parametrize(
+    "shapes", [[(2, 3, 5, 7)], [(5, 5, 5, 3), (5, 5, 5, 5)]]
+)
+@pytest.mark.parametrize("rank", [1, 3, 5])
+@pytest.mark.parametrize("affine", [None, np.diag([0.5, 0.3, 1, 1])])
+def test_fake_fmri_data_and_design_write(tmp_path, shapes, rank, affine):
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rank, affine=affine, random_state=42
+    )
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
-        shapes, rk=rk, affine=affine, random_state=42, file_path=tmp_path
+        shapes, rk=rank, affine=affine, random_state=42, file_path=tmp_path
     )
 
     mask_img = load(mask_file)
@@ -615,7 +625,7 @@ def test_fake_fmri_data_and_design(tmp_path, shapes, rk, affine):
 
     for design_file, design in zip(design_files, design_matrices):
         assert_frame_equal(
-            pd.read_csv(design_file, index_col=0), design, check_exact=False
+            pd.read_csv(design_file, sep="\t"), design, check_exact=False
         )
 
 

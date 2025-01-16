@@ -102,8 +102,12 @@ def _identify_subpeaks(data):
     )
     if np.any(subpeaks_outside_cluster):
         warnings.warn(
-            "Attention: At least one of the (sub)peaks falls outside of the "
-            "cluster body. Identifying the nearest in-cluster voxel."
+            (
+                "Attention: At least one of the (sub)peaks "
+                "falls outside of the cluster body. "
+                "Identifying the nearest in-cluster voxel."
+            ),
+            stacklevel=4,
         )
         # Replace centers of mass with their nearest neighbor points in the
         # corresponding clusters. Note this is also equivalent to computing the
@@ -250,7 +254,7 @@ def get_clusters_table(
         Whether to employ two-sided thresholding or to evaluate positive values
         only.
 
-    min_distance : :obj:`float`, default=8
+    min_distance : :obj:`float`, default=8.0
         Minimum distance between subpeaks, in millimeters.
 
         .. note::
@@ -264,9 +268,9 @@ def get_clusters_table(
 
     Returns
     -------
-    df : :obj:`pandas.DataFrame`
-        Table with peaks and subpeaks from thresholded ``stat_img``.
-        The columns in this table include:
+    result_table : :obj:`pandas.DataFrame`
+                   Table with peaks and subpeaks from thresholded ``stat_img``.
+                   The columns in this table include:
 
         ================== ====================================================
         Cluster ID         The cluster number. Subpeaks have letters after the
@@ -314,7 +318,7 @@ def get_clusters_table(
     stat_map = safe_get_data(
         stat_img,
         ensure_finite=True,
-        copy_data=(cluster_threshold is not None),
+        copy_data=(cluster_threshold != 0),
     )
 
     # Define array for 6-connectivity, aka NN1 or "faces"
@@ -338,7 +342,7 @@ def get_clusters_table(
         if np.sum(binarized) == 0:
             warnings.warn(
                 "Attention: No clusters "
-                f'with stat {"higher" if sign == 1 else "lower"} '
+                f"with stat {'higher' if sign == 1 else 'lower'} "
                 f"than {stat_threshold * sign}",
                 category=UserWarning,
                 stacklevel=2,
@@ -347,7 +351,7 @@ def get_clusters_table(
 
         # Now re-label and create table
         label_map = label(binarized, bin_struct)[0]
-        clust_ids = sorted(list(np.unique(label_map)[1:]))
+        clust_ids = sorted(np.unique(label_map)[1:])
         peak_vals = np.array(
             [np.max(temp_stat_map * (label_map == c)) for c in clust_ids]
         )
@@ -416,8 +420,8 @@ def get_clusters_table(
         no_clusters_found = False
 
     if no_clusters_found:
-        df = pd.DataFrame(columns=cols)
+        result_table = pd.DataFrame(columns=cols)
     else:
-        df = pd.DataFrame(columns=cols, data=rows)
+        result_table = pd.DataFrame(columns=cols, data=rows)
 
-    return (df, label_maps) if return_label_maps else df
+    return (result_table, label_maps) if return_label_maps else result_table

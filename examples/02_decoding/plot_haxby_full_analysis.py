@@ -10,8 +10,6 @@ three different masks: the full ventral stream (mask_vt), the house
 selective areas (mask_house) and the face selective areas (mask_face),
 that have been defined via a standard GLM-based analysis.
 
-.. include:: ../../../examples/masker_note.rst
-
 """
 
 # Fetch data using nilearn dataset fetcher
@@ -33,8 +31,7 @@ print(
     f"at: {haxby_dataset.anat[0]}"
 )
 print(
-    "First subject functional nifti image (4D) is located "
-    f"at: {func_filename}"
+    f"First subject functional nifti image (4D) is located at: {func_filename}"
 )
 
 # load labels
@@ -63,8 +60,9 @@ task_data = index_img(func_filename, task_mask)
 # Decoding on the different masks
 # -------------------------------
 #
-# The classifier used here is a support vector classifier (svc). We use
-# class:`nilearn.decoding.Decoder` and specify the classifier.
+# The classifier used here is a support vector classifier (svc).
+# We use
+# :class:`~nilearn.decoding.Decoder` and specify the classifier.
 import numpy as np
 
 # Make a data splitting object for cross validation
@@ -75,7 +73,7 @@ from nilearn.decoding import Decoder
 cv = LeaveOneGroupOut()
 
 # %%
-# We use :class:`nilearn.decoding.Decoder` to estimate a baseline.
+# We use :class:`~nilearn.decoding.Decoder` to estimate a baseline.
 
 mask_names = ["mask_vt", "mask_face", "mask_house"]
 
@@ -129,7 +127,7 @@ for mask_name in mask_names:
 # --------------------------------------------------
 import matplotlib.pyplot as plt
 
-plt.figure()
+plt.figure(constrained_layout=True)
 
 tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
@@ -161,7 +159,6 @@ plt.xlabel("Visual stimuli category")
 plt.ylim(0.3, 1)
 plt.legend(loc="lower right")
 plt.title("Category-specific classification accuracy for different masks")
-plt.tight_layout()
 
 show()
 
@@ -169,7 +166,7 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 
 
 # sphinx_gallery_dummy_images=1

@@ -20,18 +20,25 @@ from the binary pixel-values of the presented images. Then we extract the
 receptive fields for a set of voxels to see which pixel location a
 :term:`voxel` is most sensitive to.
 
-See also :doc:`plot_miyawaki_reconstruction` for a decoding
-approach for the same dataset.
+.. seealso::
+
+    :doc:`plot_miyawaki_reconstruction` for a decoding approach
+    for the same dataset.
 
 .. include:: ../../../examples/masker_note.rst
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
+import matplotlib.pyplot as plt
+
 # %%
 # Loading the data
 # ----------------
 # Now we can load the data set:
-
 from nilearn.datasets import fetch_miyawaki2008
 
 dataset = fetch_miyawaki2008()
@@ -45,7 +52,7 @@ fmri_random_runs_filenames = dataset.func[12:]
 stimuli_random_runs_filenames = dataset.label[12:]
 
 # %%
-# We can use :func:`nilearn.maskers.MultiNiftiMasker` to load the fMRI
+# We can use :func:`~nilearn.maskers.MultiNiftiMasker` to load the fMRI
 # data, clean and mask it.
 
 import numpy as np
@@ -61,34 +68,31 @@ masker = MultiNiftiMasker(
 masker.fit()
 fmri_data = masker.transform(fmri_random_runs_filenames)
 
-# shape of the binary (i.e. black and wihte values) image in pixels
+# shape of the binary (i.e. black and white values) image in pixels
 stimulus_shape = (10, 10)
 
 # We load the visual stimuli from csv files
-stimuli = []
-for stimulus_run in stimuli_random_runs_filenames:
-    stimuli.append(
-        np.reshape(
-            np.loadtxt(stimulus_run, dtype=int, delimiter=","),
-            (-1,) + stimulus_shape,
-            order="F",
-        )
+stimuli = [
+    np.reshape(
+        np.loadtxt(stimulus_run, dtype=int, delimiter=","),
+        (-1, *stimulus_shape),
+        order="F",
     )
+    for stimulus_run in stimuli_random_runs_filenames
+]
+
 
 # %%
 # Let's take a look at some of these binary images:
-
-import pylab as plt
-
 plt.figure(figsize=(8, 4))
 plt.subplot(1, 2, 1)
 plt.imshow(stimuli[0][124], interpolation="nearest", cmap="gray")
 plt.axis("off")
-plt.title(f"Run {1}, Stimulus {125}")
+plt.title("Run 1, Stimulus 125")
 plt.subplot(1, 2, 2)
 plt.imshow(stimuli[2][101], interpolation="nearest", cmap="gray")
 plt.axis("off")
-plt.title(f"Run {3}, Stimulus {102}")
+plt.title("Run 3, Stimulus 102")
 plt.subplots_adjust(wspace=0.5)
 
 # %%
@@ -103,7 +107,7 @@ stimuli = np.vstack([stimuli_run[:-2] for stimuli_run in stimuli]).astype(
 # %%
 # fmri_data is a matrix of *samples* x *voxels*
 
-print(fmri_data.shape)
+print(f"{fmri_data.shape=}")
 
 # %%
 # We flatten the last two dimensions of stimuli
@@ -112,7 +116,7 @@ print(fmri_data.shape)
 # Flatten the stimuli
 stimuli = np.reshape(stimuli, (-1, stimulus_shape[0] * stimulus_shape[1]))
 
-print(stimuli.shape)
+print(f"{stimuli.shape=}")
 
 # %%
 # Building the encoding models
@@ -170,7 +174,7 @@ thresholded_score_map_img = threshold_img(
 # Plotting the statistical map on a background brain, we mark four voxels
 # which we will inspect more closely later on.
 from nilearn.image import coord_transform
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 
 def index_to_xy_coord(x, y, z=10):
@@ -188,6 +192,7 @@ display = plot_stat_map(
     display_mode="z",
     aspect=1.25,
     title="Explained variance per voxel",
+    cmap="inferno",
 )
 
 # creating a marker for each voxel and adding it to the statistical map
@@ -208,6 +213,7 @@ for i, (x, y) in enumerate(xy_indices_of_special_voxels):
 fig = plt.gcf()
 fig.set_size_inches(12, 12)
 
+show()
 
 # %%
 # Estimating receptive fields
@@ -313,4 +319,4 @@ plt.colorbar(ax_im, ax=ax)
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

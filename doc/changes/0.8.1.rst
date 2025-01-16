@@ -12,7 +12,7 @@ HIGHLIGHTS
 
 - :bdg-success:`API` New atlas fetcher :func:`~datasets.fetch_atlas_juelich` to download Juelich atlas from FSL (:gh:`2723` by `Ahmad Chamma`_).
 
-- :bdg-success:`API` New grey and white-matter template and mask loading functions: :func:`~datasets.load_mni152_gm_template`, :func:`~datasets.load_mni152_wm_template`, :func:`~datasets.load_mni152_gm_mask`, and :func:`~datasets.load_mni152_wm_mask` (:gh:`2738` by `Ana Luisa Pinho`_).
+- :bdg-success:`API` New gray and white-matter template and mask loading functions: :func:`~datasets.load_mni152_gm_template`, :func:`~datasets.load_mni152_wm_template`, :func:`~datasets.load_mni152_gm_mask`, and :func:`~datasets.load_mni152_wm_mask` (:gh:`2738` by `Ana Luisa Pinho`_).
 
 - :bdg-dark:`Code` Function :func:`~image.binarize_img` binarizes images into 0 and 1 (:gh:`2900` by `Daniel Gomez`_).
 

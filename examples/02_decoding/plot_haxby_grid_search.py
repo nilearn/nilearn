@@ -21,7 +21,7 @@ parameters are set separately on each fold, never using the data used to
 measure performance.
 
 For decoding tasks, in nilearn, this can be done using the
-:class:`nilearn.decoding.Decoder` object, which will automatically select
+:class:`~nilearn.decoding.Decoder` object, which will automatically select
 the best parameters of an estimator from a grid of parameter values.
 
 One difficulty is that the Decoder object is a composite estimator: a
@@ -64,8 +64,8 @@ y = y[condition_mask]
 run = labels["chunks"][condition_mask]
 
 # %%
-# :term:`ANOVA` pipeline with :class:`nilearn.decoding.Decoder` object
-# --------------------------------------------------------------------
+# :term:`ANOVA` pipeline with :class:`~nilearn.decoding.Decoder` object
+# ---------------------------------------------------------------------
 #
 # Nilearn Decoder object aims to provide smooth user experience by acting as a
 # pipeline of several tasks: preprocessing with NiftiMasker, reducing dimension
@@ -117,7 +117,7 @@ decoder = Decoder(
 decoder.fit(fmri_niimgs, y)
 
 # Print the best parameters for each fold
-for i, (best_C, best_penalty, best_dual, cv_score) in enumerate(
+for i, (best_c, best_penalty, best_dual, cv_score) in enumerate(
     zip(
         decoder.cv_params_["shoe"]["C"],
         decoder.cv_params_["shoe"]["penalty"],
@@ -126,7 +126,7 @@ for i, (best_C, best_penalty, best_dual, cv_score) in enumerate(
     )
 ):
     print(
-        f"Fold {i + 1} | Best SVM parameters: C={best_C}"
+        f"Fold {i + 1} | Best SVM parameters: C={best_c}"
         f", penalty={best_penalty}, dual={best_dual} with score: {cv_score}"
     )
 

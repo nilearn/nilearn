@@ -5,9 +5,66 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn._utils import data_gen, testing
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
+from nilearn.conftest import _affine_eye, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
+
+extra_valid_checks = [
+    "check_estimators_unfitted",
+    "check_get_params_invariance",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            MultiNiftiLabelsMasker(
+                data_gen.generate_labeled_regions(
+                    _shape_3d_default(), affine=_affine_eye(), n_regions=9
+                )
+            ),
+            NiftiLabelsMasker(
+                data_gen.generate_labeled_regions(
+                    _shape_3d_default(), affine=_affine_eye(), n_regions=9
+                )
+            ),
+        ],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            MultiNiftiLabelsMasker(
+                data_gen.generate_labeled_regions(
+                    _shape_3d_default(), affine=_affine_eye(), n_regions=9
+                )
+            ),
+            NiftiLabelsMasker(
+                data_gen.generate_labeled_regions(
+                    _shape_3d_default(), affine=_affine_eye(), n_regions=9
+                )
+            ),
+        ],
+        extra_valid_checks=extra_valid_checks,
+        valid=False,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_multi_nifti_labels_masker():
@@ -51,8 +108,6 @@ def test_multi_nifti_labels_masker():
 
     # check exception when transform() called without prior fit()
     masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker11.transform(fmri11_img)
 
     # No exception raised here
     signals11 = masker11.fit().transform(fmri11_img)
@@ -117,9 +172,6 @@ def test_multi_nifti_labels_masker():
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
 
-        with pytest.raises(ValueError, match="has not been fitted. "):
-            MultiNiftiLabelsMasker(labels11_img).inverse_transform(signals)
-
     # Call inverse transform (smoke test)
     for signals in signals11_list:
         fmri11_img_r = masker11.inverse_transform(signals)
@@ -131,7 +183,7 @@ def test_multi_nifti_labels_masker_reduction_strategies():
     """Tests strategies of MultiNiftiLabelsMasker.
 
     1. whether the usage of different reduction strategies work
-    2. whether unrecognised strategies raise a ValueError
+    2. whether unrecognized strategies raise a ValueError
     3. whether the default option is backwards compatible (calls "mean")
     """
     test_values = [-2.0, -1.0, 0.0, 1.0, 2]

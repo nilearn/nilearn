@@ -18,8 +18,12 @@ import numpy as np
 
 from nilearn.plotting import plot_design_matrix
 
-t_r = 1.0  # repetition time is 1 second
-n_scans = 128  # the acquisition comprises 128 scans
+t_r = 1
+n_scans = 128
+
+print(f"repetition time is {t_r} second")
+print(f"the acquisition comprises {n_scans} scans")
+
 frame_times = (
     np.arange(n_scans) * t_r
 )  # here are the corresponding frame times
@@ -29,11 +33,12 @@ frame_times = (
 
 # these are the types of the different trials
 conditions = ["c0", "c0", "c0", "c1", "c1", "c1", "c3", "c3", "c3"]
-duration = [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+duration = [0.1, 0.0, 0.1, 0.1, 0.0, 0.1, 0.1, 0.0, 0.1]
 # these are the corresponding onset times
 onsets = [30.0, 70.0, 100.0, 10.0, 30.0, 90.0, 30.0, 40.0, 60.0]
 # Next, we simulate 6 motion parameters jointly observed with fMRI acquisitions
-motion = np.cumsum(np.random.randn(n_scans, 6), 0)
+rng = np.random.default_rng(42)
+motion = np.cumsum(rng.standard_normal((n_scans, 6)), 0)
 # The 6 parameters correspond to three translations and three
 # rotations describing rigid body motion
 add_reg_names = ["tx", "ty", "tz", "rx", "ry", "rz"]
@@ -50,8 +55,8 @@ events = pd.DataFrame(
 )
 
 # %%
-# We sample the events into a design matrix, also including additional
-# regressors.
+# We sample the events into a design matrix,
+# also including additional regressors.
 from nilearn.glm.first_level import make_first_level_design_matrix
 
 hrf_model = "glover"
@@ -104,9 +109,18 @@ X3 = make_first_level_design_matrix(
 
 # %%
 # Here are the three designs side by side.
+#
+# .. note::
+#
+#     The events with a duration of 0 seconds are be modeled
+#     using a 'delta function' in the event-related design matrix.
+#
 import matplotlib.pyplot as plt
 
-fig, (ax1, ax2, ax3) = plt.subplots(figsize=(10, 6), nrows=1, ncols=3)
+fig, (ax1, ax2, ax3) = plt.subplots(
+    figsize=(10, 6), nrows=1, ncols=3, constrained_layout=True
+)
+
 plot_design_matrix(X1, axes=ax1)
 ax1.set_title("Event-related design matrix", fontsize=12)
 plot_design_matrix(X2, axes=ax2)
@@ -122,12 +136,14 @@ plt.show()
 # We can plot the correlation between the regressors of our design matrix.
 # This is important to check as highly correlated regressors can affect
 # the effficieny of
-# `your design <https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency#Correlation_between_regressors>`_. # noqa
+# `your design <https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency>`_.
 #
-
 from nilearn.plotting import plot_design_matrix_correlation
 
-fig3, (ax1, ax2, ax3) = plt.subplots(figsize=(15, 5), nrows=1, ncols=3)
+fig, (ax1, ax2, ax3) = plt.subplots(
+    figsize=(16, 5), nrows=1, ncols=3, constrained_layout=True
+)
+
 plot_design_matrix_correlation(X1, axes=ax1)
 ax1.set_title("Event-related correlation matrix", fontsize=12)
 plot_design_matrix_correlation(X2, axes=ax2)
@@ -177,7 +193,10 @@ X4 = make_first_level_design_matrix(
 )
 
 # Let's compare it to the unmodulated block design
-fig, (ax1, ax2) = plt.subplots(figsize=(10, 6), nrows=1, ncols=2)
+fig, (ax1, ax2) = plt.subplots(
+    figsize=(10, 6), nrows=1, ncols=2, constrained_layout=True
+)
+
 plot_design_matrix(X2, axes=ax1)
 ax1.set_title("Block design matrix", fontsize=12)
 plot_design_matrix(X4, axes=ax2)

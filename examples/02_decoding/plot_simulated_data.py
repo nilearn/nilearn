@@ -26,13 +26,13 @@ model with a random design matrix **X**:
 
 """
 
-try:
-    import matplotlib.pyplot as plt
-except ImportError:
-    raise RuntimeError("This script needs the matplotlib library")
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
 
 from time import time
 
+import matplotlib.pyplot as plt
 import numpy as np
 from nibabel import Nifti1Image
 from scipy import linalg
@@ -148,11 +148,9 @@ plot_slices(coefs, title="Ground truth")
 # We can now run different estimators and look at their prediction score,
 # as well as the feature maps that they recover. Namely, we will use
 #
-# * A support vector regression (`SVM
-#   <https://scikit-learn.org/stable/modules/svm.html>`_)
+# * A :sklearn:`support vector regression </modules/svm.html>`
 #
-# * An `elastic-net
-#   <https://scikit-learn.org/stable/modules/linear_model.html#elastic-net>`_
+# * An :sklearn:`elastic-net <modules/linear_model.html#elastic-net>`
 #
 # * A *Bayesian* ridge estimator, i.e. a ridge estimator that sets its
 #   parameter according to a metaprior
@@ -260,4 +258,4 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

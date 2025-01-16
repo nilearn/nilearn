@@ -32,7 +32,7 @@ class BaseAxes:
         self.ax = ax
         self.direction = direction
         self.coord = coord
-        self._object_bounds = list()
+        self._object_bounds = []
         self.shape = None
         self.radiological = radiological
 
@@ -77,7 +77,6 @@ class BaseAxes:
 
         self.add_object_bounds((xmin_, xmax_, zmin_, zmax_))
         self.shape = data_2d.T.shape
-
         # The bounds of the object do not take into account a possible
         # inversion of the axis. As such, we check that the axis is properly
         # inverted when direction is left
@@ -116,7 +115,6 @@ class BaseAxes:
         annotation_on_left = "L"
         annotation_on_right = "R"
         if self.radiological:
-            ax.invert_xaxis()
             annotation_on_left = "R"
             annotation_on_right = "L"
         ax.text(
@@ -127,9 +125,12 @@ class BaseAxes:
             horizontalalignment="left",
             verticalalignment="top",
             size=size,
-            bbox=dict(
-                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
-            ),
+            bbox={
+                "boxstyle": "square,pad=0",
+                "ec": bg_color,
+                "fc": bg_color,
+                "alpha": 1,
+            },
             **kwargs,
         )
 
@@ -141,7 +142,7 @@ class BaseAxes:
             horizontalalignment="right",
             verticalalignment="top",
             size=size,
-            bbox=dict(boxstyle="square,pad=0", ec=bg_color, fc=bg_color),
+            bbox={"boxstyle": "square,pad=0", "ec": bg_color, "fc": bg_color},
             **kwargs,
         )
 
@@ -185,11 +186,9 @@ class BaseAxes:
             Whether the scale bar is plotted with a border.
 
         loc : :obj:`int`, default=4
-            Location of this scale bar. Valid location codes are documented
-            `here <https://matplotlib.org/mpl_toolkits/axes_grid/\
-            api/anchored_artists_api.html#mpl_toolkits.axes_grid1.\
-            anchored_artists.AnchoredSizeBar>`__.
-
+            Location of this scale bar.
+            Valid location codes are documented in
+            :class:`~mpl_toolkits.axes_grid1.anchored_artists.AnchoredSizeBar`
 
         pad : :obj:`int` or :obj:`float`, default=0.1
             Padding around the label and scale bar, in fraction of the font
@@ -253,7 +252,8 @@ class BaseAxes:
 
     def draw_position(self, size, bg_color, **kwargs):
         """``draw_position`` is not implemented in base class and \
-        should be implemented in derived classes."""
+        should be implemented in derived classes.
+        """
         raise NotImplementedError(
             "'draw_position' should be implemented in derived classes"
         )
@@ -335,9 +335,12 @@ class CutAxes(BaseAxes):
             horizontalalignment="left",
             verticalalignment="bottom",
             size=size,
-            bbox=dict(
-                boxstyle="square,pad=0", ec=bg_color, fc=bg_color, alpha=1
-            ),
+            bbox={
+                "boxstyle": "square,pad=0",
+                "ec": bg_color,
+                "fc": bg_color,
+                "alpha": 1,
+            },
             **kwargs,
         )
 
@@ -347,10 +350,7 @@ def _get_index_from_direction(direction):
     directions = ["x", "y", "z"]
     try:
         # l and r are subcases of x
-        if direction in "lr":
-            index = 0
-        else:
-            index = directions.index(direction)
+        index = 0 if direction in "lr" else directions.index(direction)
     except ValueError:
         message = (
             f"{direction} is not a valid direction. "
@@ -411,11 +411,9 @@ class GlassBrainAxes(BaseAxes):
             The affine of the volume.
 
         """
-        if self.direction in "xlr":
-            max_axis = 0
-        else:
-            max_axis = ".yz".index(self.direction)
-
+        max_axis = (
+            0 if self.direction in "xlr" else ".yz".index(self.direction)
+        )
         # set unselected brain hemisphere activations to 0
         if self.direction == "l":
             x_center, _, _, _ = np.dot(
@@ -466,7 +464,8 @@ class GlassBrainAxes(BaseAxes):
     def draw_position(self, size, bg_color, **kwargs):
         """Not implemented as it does not make sense to draw crosses for \
         the position of the cuts \
-        since we are taking the max along one axis."""
+        since we are taking the max along one axis.
+        """
         pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
@@ -485,12 +484,13 @@ class GlassBrainAxes(BaseAxes):
             ):
                 marker_color = np.asarray(marker_color)
             relevant_coords = []
-            xcoords, ycoords, zcoords = marker_coords.T
-            for cidx, xc in enumerate(xcoords):
-                if self.direction == "r" and xc >= 0:
-                    relevant_coords.append(cidx)
-                elif self.direction == "l" and xc <= 0:
-                    relevant_coords.append(cidx)
+            xcoords, _, _ = marker_coords.T
+            relevant_coords.extend(
+                cidx
+                for cidx, xc in enumerate(xcoords)
+                if (self.direction == "r" and xc >= 0)
+                or (self.direction == "l" and xc <= 0)
+            )
             xdata = xdata[relevant_coords]
             ydata = ydata[relevant_coords]
             # if marker_color is string for example 'red' or 'blue', then
@@ -530,7 +530,7 @@ class GlassBrainAxes(BaseAxes):
         line_values : array_like
             Values of the lines.
 
-        cmap : :class:`~matplotlib.colors.Colormap`
+        %(cmap)s
             Colormap used to map ``line_values`` to a color.
 
         vmin, vmax : :obj:`float`, optional
@@ -579,14 +579,18 @@ class GlassBrainAxes(BaseAxes):
 
         # Allow lines only in their respective hemisphere when appropriate
         if self.direction in "lr":
-            relevant_lines = []
-            for lidx, line in enumerate(line_coords):
-                if self.direction == "r":
-                    if line[0, 0] >= 0 and line[1, 0] >= 0:
-                        relevant_lines.append(lidx)
-                elif self.direction == "l":
-                    if line[0, 0] < 0 and line[1, 0] < 0:
-                        relevant_lines.append(lidx)
+            relevant_lines = [
+                lidx
+                for lidx, line in enumerate(line_coords)
+                if (
+                    self.direction == "r"
+                    and line[0, 0] >= 0
+                    and line[1, 0] >= 0
+                )
+                or (
+                    self.direction == "l" and line[0, 0] < 0 and line[1, 0] < 0
+                )
+            ]
             line_coords = np.array(line_coords)[relevant_lines]
             line_values = line_values[relevant_lines]
 

@@ -21,12 +21,10 @@ haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print(
-    "First subject anatomical nifti image (3D) is "
-    f"at: {haxby_dataset.anat[0]}"
+    f"First subject anatomical nifti image (3D) is at: {haxby_dataset.anat[0]}"
 )
 print(
-    "First subject functional nifti image (4D) is "
-    f"at: {haxby_dataset.func[0]}"
+    f"First subject functional nifti image (4D) is at: {haxby_dataset.func[0]}"
 )
 
 haxby_anat_filename = haxby_dataset.anat[0]
@@ -63,8 +61,8 @@ plotting.plot_stat_map(
 # %%
 # Making interactive visualizations with function `view_img`
 # ----------------------------------------------------------
-# An alternative to :func:`nilearn.plotting.plot_stat_map` is to use
-# :func:`nilearn.plotting.view_img` that gives more interactive
+# An alternative to :func:`~nilearn.plotting.plot_stat_map` is to use
+# :func:`~nilearn.plotting.view_img` that gives more interactive
 # visualizations in a web browser. See :ref:`interactive-stat-map-plotting`
 # for more details.
 

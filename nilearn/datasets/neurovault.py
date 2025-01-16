@@ -1,5 +1,6 @@
 """Download statistical maps available \
-on Neurovault (https://neurovault.org)."""
+on Neurovault (https://neurovault.org).
+"""
 
 # Author: Jerome Dockes
 
@@ -12,7 +13,7 @@ import uuid
 import warnings
 from collections.abc import Container
 from copy import copy, deepcopy
-from glob import glob
+from pathlib import Path
 from tempfile import mkdtemp
 from urllib.parse import urlencode, urljoin
 
@@ -21,7 +22,9 @@ import requests
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
-from ..image import resample_img
+from nilearn._utils import fill_doc
+from nilearn.image import resample_img
+
 from ._utils import (
     fetch_single_file,
     get_dataset_descr,
@@ -84,7 +87,7 @@ class _SpecialValue:
     """
 
     def __eq__(self, other):
-        raise NotImplementedError("Use a derived class for _SpecialValue")
+        return NotImplemented
 
     def __req__(self, other):
         return self.__eq__(other)
@@ -128,11 +131,11 @@ class IsNull(_SpecialValue):
     >>> null = IsNull()
     >>> null == 0
     True
-    >>> null == ''
+    >>> null == ""
     True
     >>> null == None
     True
-    >>> null == 'a'
+    >>> null == "a"
     False
 
     """
@@ -168,11 +171,11 @@ class NotNull(_SpecialValue):
     >>> not_null = NotNull()
     >>> not_null == 0
     False
-    >>> not_null == ''
+    >>> not_null == ""
     False
     >>> not_null == None
     False
-    >>> not_null == 'a'
+    >>> not_null == "a"
     True
 
     """
@@ -214,7 +217,7 @@ class NotEqual(_SpecialValue):
     >>> not_0 = NotEqual(0)
     >>> not_0 == 0
     False
-    >>> not_0 == '0'
+    >>> not_0 == "0"
     True
 
     """
@@ -272,12 +275,12 @@ class GreaterOrEqual(_OrderComp):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import GreaterOrEqual
-    >>> nonnegative = GreaterOrEqual(0.)
-    >>> nonnegative == -.1
+    >>> nonnegative = GreaterOrEqual(0.0)
+    >>> nonnegative == -0.1
     False
     >>> nonnegative == 0
     True
-    >>> nonnegative == .1
+    >>> nonnegative == 0.1
     True
 
     """
@@ -316,12 +319,12 @@ class GreaterThan(_OrderComp):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import GreaterThan
-    >>> positive = GreaterThan(0.)
-    >>> positive == 0.
+    >>> positive = GreaterThan(0.0)
+    >>> positive == 0.0
     False
-    >>> positive == 1.
+    >>> positive == 1.0
     True
-    >>> positive == -1.
+    >>> positive == -1.0
     False
 
     """
@@ -360,12 +363,12 @@ class LessOrEqual(_OrderComp):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import LessOrEqual
-    >>> nonpositive = LessOrEqual(0.)
-    >>> nonpositive == -1.
+    >>> nonpositive = LessOrEqual(0.0)
+    >>> nonpositive == -1.0
     True
-    >>> nonpositive == 0.
+    >>> nonpositive == 0.0
     True
-    >>> nonpositive == 1.
+    >>> nonpositive == 1.0
     False
 
     """
@@ -404,12 +407,12 @@ class LessThan(_OrderComp):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import LessThan
-    >>> negative = LessThan(0.)
-    >>> negative == -1.
+    >>> negative = LessThan(0.0)
+    >>> negative == -1.0
     True
-    >>> negative == 0.
+    >>> negative == 0.0
     False
-    >>> negative == 1.
+    >>> negative == 1.0
     False
 
     """
@@ -448,10 +451,10 @@ class IsIn(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import IsIn
-    >>> vowels = IsIn('a', 'e', 'i', 'o', 'u', 'y')
-    >>> 'a' == vowels
+    >>> vowels = IsIn("a", "e", "i", "o", "u", "y")
+    >>> "a" == vowels
     True
-    >>> vowels == 'b'
+    >>> vowels == "b"
     False
 
     """
@@ -496,10 +499,10 @@ class NotIn(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import NotIn
-    >>> consonants = NotIn('a', 'e', 'i', 'o', 'u', 'y')
-    >>> 'b' == consonants
+    >>> consonants = NotIn("a", "e", "i", "o", "u", "y")
+    >>> "b" == consonants
     True
-    >>> consonants == 'a'
+    >>> consonants == "a"
     False
 
     """
@@ -545,10 +548,10 @@ class Contains(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import Contains
-    >>> contains = Contains('house', 'face')
-    >>> 'face vs house' == contains
+    >>> contains = Contains("house", "face")
+    >>> "face vs house" == contains
     True
-    >>> 'smiling face vs frowning face' == contains
+    >>> "smiling face vs frowning face" == contains
     False
 
     """
@@ -598,10 +601,10 @@ class NotContains(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import NotContains
-    >>> no_garbage = NotContains('bad', 'test')
-    >>> no_garbage == 'test image'
+    >>> no_garbage = NotContains("bad", "test")
+    >>> no_garbage == "test image"
     False
-    >>> no_garbage == 'good image'
+    >>> no_garbage == "good image"
     True
 
     """
@@ -634,7 +637,7 @@ class Pattern(_SpecialValue):
     pattern : str
         The pattern to try to match to candidates.
 
-    flags : int, optional (default=0)
+    flags : int, default=0
         Value for ``re.match`` `flags` parameter,
         e.g. ``re.IGNORECASE``. The default (0), is the default value
         used by ``re.match``.
@@ -658,10 +661,10 @@ class Pattern(_SpecialValue):
     Examples
     --------
     >>> from nilearn.datasets.neurovault import Pattern
-    >>> poker = Pattern(r'[0-9akqj]{5}$')
-    >>> 'ak05q' == poker
+    >>> poker = Pattern(r"[0-9akqj]{5}$")
+    >>> "ak05q" == poker
     True
-    >>> 'ak05e' == poker
+    >>> "ak05e" == poker
     False
 
     """
@@ -685,7 +688,7 @@ class Pattern(_SpecialValue):
         )
 
 
-def _empty_filter(result):
+def _empty_filter(result):  # noqa: ARG001
     """Place holder for a filter which always returns True.
 
     This is the default ``image_filter`` and ``collection_filter``
@@ -730,7 +733,7 @@ class ResultFilter:
 
     Attributes
     ----------
-    query_terms_ : dict
+    query_terms_ : :obj:`dict`
         In order to pass through the filter, metadata must verify
         ``metadata[key] == value`` for each ``key``, ``value`` pair in
         `query_terms_`.
@@ -765,9 +768,9 @@ class ResultFilter:
     --------
     >>> from nilearn.datasets.neurovault import ResultFilter
     >>> filt = ResultFilter(a=0).AND(ResultFilter(b=1).OR(ResultFilter(b=2)))
-    >>> filt({'a': 0, 'b': 1})
+    >>> filt({"a": 0, "b": 1})
     True
-    >>> filt({'a': 0, 'b': 0})
+    >>> filt({"a": 0, "b": 0})
     False
 
     """
@@ -805,7 +808,7 @@ class ResultFilter:
             for callable_filter in self.callable_filters_
         )
 
-    def OR(self, other_filter):
+    def OR(self, other_filter):  # noqa: N802
         """Implement the OR operator between two filters."""
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
         new_filter = ResultFilter(
@@ -813,7 +816,7 @@ class ResultFilter:
         )
         return new_filter
 
-    def AND(self, other_filter):
+    def AND(self, other_filter):  # noqa: N802
         """Implement the AND operator between two filters."""
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
         new_filter = ResultFilter(
@@ -821,7 +824,7 @@ class ResultFilter:
         )
         return new_filter
 
-    def XOR(self, other_filter):
+    def XOR(self, other_filter):  # noqa: N802
         """Implement the XOR operator between two filters."""
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
         new_filter = ResultFilter(
@@ -829,7 +832,7 @@ class ResultFilter:
         )
         return new_filter
 
-    def NOT(self):
+    def NOT(self):  # noqa: N802
         """Implement the NOT operator between two filters."""
         filt = deepcopy(self)
         new_filter = ResultFilter(callable_filter=lambda r: not filt(r))
@@ -885,7 +888,7 @@ class _TemporaryDirectory:
 
     def __enter__(self):
         self.temp_dir_ = mkdtemp()
-        return self.temp_dir_
+        return Path(self.temp_dir_)
 
     def __exit__(self, *args):
         if self.temp_dir_ is None:
@@ -1036,7 +1039,7 @@ def _scroll_server_results(
     prefix_msg : str, default=''
         Prefix for all log messages.
 
-    verbose : int, optional (default=3)
+    verbose : int, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     Yields
@@ -1131,7 +1134,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     target_file : str
         Location of the downloaded file on filesystem.
 
-    temp_dir : str
+    temp_dir : pathlib.Path
         Location of sandbox directory used by ``fetch_single_file``.
 
     verbose : int, default=3
@@ -1194,7 +1197,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         is supposed to contain the Neurosynth response for a
         particular image).
 
-    verbose : int, default=3
+    verbose : :obj:`int`, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     Keyword arguments are passed on to
@@ -1223,7 +1226,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     voc_empty = True
     for file_name in word_files:
         try:
-            with open(file_name, "rb") as word_file:
+            with Path(file_name).open("rb") as word_file:
                 info = json.loads(word_file.read().decode("utf-8"))
                 words.append(info["data"]["values"])
                 if info["data"]["values"] != {}:
@@ -1261,7 +1264,7 @@ def _remove_none_strings(metadata):
     Some collections and images in Neurovault, for some fields, use the
     string "None", "None / Other", or "null", instead of having ``null``
     in the json file; we replace these strings with ``None`` so that
-    they are consistent with the rest and for correct behaviour when we
+    they are consistent with the rest and for correct behavior when we
     want to select or filter out null values.
 
     Parameters
@@ -1298,12 +1301,18 @@ def _write_metadata(metadata, file_name):
         Dictionary representing metadata for a file or a
         collection. Any key containing 'absolute' is ignored.
 
-    file_name : str
+    file_name : str or pathlib.Path
         Path to the file in which to write the data.
 
     """
     metadata = {k: v for k, v in metadata.items() if "absolute" not in k}
-    with open(file_name, "wb") as metadata_file:
+
+    # Path objects need to be converted to string for the JSON serialization
+    for key, value in metadata.items():
+        if isinstance(value, Path):
+            metadata[key] = str(value)
+
+    with Path(file_name).open("wb") as metadata_file:
         metadata_file.write(json.dumps(metadata).encode("utf-8"))
 
 
@@ -1312,7 +1321,7 @@ def _add_absolute_paths(root_dir, metadata, force=True):
 
     Parameters
     ----------
-    root_dir : str
+    root_dir : pathlib.Path
         The root of the data directory, to prepend to relative paths
         in order to form absolute paths.
 
@@ -1338,7 +1347,7 @@ def _add_absolute_paths(root_dir, metadata, force=True):
         match = re.match(r"(.*)relative_path(.*)", name)
         if match is not None:
             abs_name = f"{match.groups()[0]}absolute_path{match.groups()[1]}"
-            absolute_paths[abs_name] = os.path.join(root_dir, value)
+            absolute_paths[abs_name] = root_dir / value
     if not absolute_paths:
         return metadata
     new_metadata = metadata.copy()
@@ -1349,19 +1358,32 @@ def _add_absolute_paths(root_dir, metadata, force=True):
 
 
 def _json_from_file(file_name):
-    """Load a json file encoded with UTF-8."""
-    with open(file_name, "rb") as dumped:
+    """Load a json file encoded with UTF-8.
+
+    Parameters
+    ----------
+    file_name : str or pathlib.Path
+    """
+    with Path(file_name).open("rb") as dumped:
         loaded = json.loads(dumped.read().decode("utf-8"))
     return loaded
 
 
 def _json_add_collection_dir(file_name, force=True):
-    """Load a json file and add is parent dir to resulting dict."""
+    """Load a json file and add is parent dir to resulting dict.
+
+    Parameters
+    ----------
+    file_name : str or pathlib.Path
+
+    force : bool
+    """
+    file_name = Path(file_name)
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
-    dir_path = os.path.dirname(file_name)
-    set_func("absolute_path", dir_path)
-    set_func("relative_path", os.path.basename(dir_path))
+    dir_path = file_name.parent
+    set_func("absolute_path", dir_path.absolute())
+    set_func("relative_path", dir_path)
     return loaded
 
 
@@ -1369,19 +1391,16 @@ def _json_add_im_files_paths(file_name, force=True):
     """Load a json file and add image and words paths."""
     loaded = _json_from_file(file_name)
     set_func = loaded.__setitem__ if force else loaded.setdefault
-    dir_path = os.path.dirname(file_name)
-    dir_relative_path = os.path.basename(dir_path)
+    dir_path = file_name.parent
     image_file_name = f"image_{loaded['id']}.nii.gz"
     words_file_name = f"neurosynth_words_for_image_{loaded['id']}.json"
-    set_func("relative_path", os.path.join(dir_relative_path, image_file_name))
-    if os.path.isfile(os.path.join(dir_path, words_file_name)):
+    set_func("relative_path", dir_path / image_file_name)
+    if (dir_path / words_file_name).is_file():
         set_func(
             "ns_words_relative_path",
-            os.path.join(dir_relative_path, words_file_name),
+            dir_path / words_file_name,
         )
-    loaded = _add_absolute_paths(
-        os.path.dirname(dir_path), loaded, force=force
-    )
+    loaded = _add_absolute_paths(dir_path.parent, loaded, force=force)
     return loaded
 
 
@@ -1406,20 +1425,20 @@ def _download_collection(collection, download_params):
     """
     if collection is None:
         return None
+
     collection = _remove_none_strings(collection)
     collection_id = collection["id"]
     collection_name = f"collection_{collection_id}"
-    collection_dir = os.path.join(
-        download_params["nv_data_dir"], collection_name
-    )
+    collection_dir = Path(download_params["nv_data_dir"]) / collection_name
     collection["relative_path"] = collection_name
-    collection["absolute_path"] = collection_dir
-    if not os.path.isdir(collection_dir):
-        os.makedirs(collection_dir)
-    metadata_file_path = os.path.join(
-        collection_dir, "collection_metadata.json"
-    )
+    collection["absolute_path"] = collection_dir.absolute()
+
+    if not collection_dir.is_dir():
+        collection_dir.mkdir(parents=True)
+
+    metadata_file_path = collection_dir / "collection_metadata.json"
     _write_metadata(collection, metadata_file_path)
+
     return collection
 
 
@@ -1447,12 +1466,12 @@ def _fetch_collection_for_image(image_info, download_params):
     """
     collection_id = image_info["collection_id"]
     collection_relative_path = f"collection_{collection_id}"
-    collection_absolute_path = os.path.join(
-        download_params["nv_data_dir"], collection_relative_path
+    collection_absolute_path = (
+        Path(download_params["nv_data_dir"]) / collection_relative_path
     )
-    if os.path.isdir(collection_absolute_path):
+    if collection_absolute_path.is_dir():
         return _json_add_collection_dir(
-            os.path.join(collection_absolute_path, "collection_metadata.json")
+            collection_absolute_path / "collection_metadata.json"
         )
 
     col_batch = _get_batch(
@@ -1491,18 +1510,14 @@ def _download_image_nii_file(image_info, collection, download_params):
     image_id = image_info["id"]
     image_url = image_info["file"]
     image_file_name = f"image_{image_id}.nii.gz"
-    image_relative_path = os.path.join(
-        collection["relative_path"], image_file_name
-    )
-    image_absolute_path = os.path.join(
-        collection["absolute_path"], image_file_name
-    )
+    image_relative_path = Path(collection["relative_path"], image_file_name)
+    image_absolute_path = Path(collection["absolute_path"], image_file_name)
 
     resampled_image_file_name = f"image_{image_id}_resampled.nii.gz"
-    resampled_image_absolute_path = os.path.join(
+    resampled_image_absolute_path = Path(
         collection["absolute_path"], resampled_image_file_name
     )
-    resampled_image_relative_path = os.path.join(
+    resampled_image_relative_path = Path(
         collection["relative_path"], resampled_image_file_name
     )
 
@@ -1517,7 +1532,7 @@ def _download_image_nii_file(image_info, collection, download_params):
 
         tmp_file = f"tmp_{struuid}.nii.gz"
 
-        tmp_path = os.path.join(collection["absolute_path"], tmp_file)
+        tmp_path = Path(collection["absolute_path"], tmp_file)
 
         _simple_download(
             image_url,
@@ -1540,7 +1555,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         im_resampled.to_filename(resampled_image_absolute_path)
 
         # Remove temporary file
-        os.remove(tmp_path)
+        tmp_path.unlink()
     else:
         _simple_download(
             image_url,
@@ -1552,7 +1567,8 @@ def _download_image_nii_file(image_info, collection, download_params):
 
 
 def _check_has_words(file_name):
-    if not os.path.isfile(file_name):
+    file_name = Path(file_name)
+    if not file_name.is_file():
         return False
     info = _remove_none_strings(_json_from_file(file_name))
     try:
@@ -1560,7 +1576,7 @@ def _check_has_words(file_name):
         return True
     except (AttributeError, TypeError, AssertionError):
         pass
-    os.remove(file_name)
+    file_name.unlink()
     return False
 
 
@@ -1594,14 +1610,14 @@ def _download_image_terms(image_info, collection, download_params):
 
     ns_words_file_name = f"neurosynth_words_for_image_{image_info['id']}.json"
     image_info = image_info.copy()
-    image_info["ns_words_relative_path"] = os.path.join(
+    image_info["ns_words_relative_path"] = Path(
         collection["relative_path"], ns_words_file_name
     )
-    image_info["ns_words_absolute_path"] = os.path.join(
+    image_info["ns_words_absolute_path"] = Path(
         collection["absolute_path"], ns_words_file_name
     )
 
-    if os.path.isfile(image_info["ns_words_absolute_path"]):
+    if Path(image_info["ns_words_absolute_path"]).is_file():
         return image_info, collection
 
     query = urljoin(
@@ -1664,7 +1680,7 @@ def _download_image(image_info, download_params):
     image_info, collection = _download_image_terms(
         image_info, collection, download_params
     )
-    metadata_file_path = os.path.join(
+    metadata_file_path = Path(
         collection["absolute_path"], f"image_{image_info['id']}_metadata.json"
     )
     _write_metadata(image_info, metadata_file_path)
@@ -1700,9 +1716,9 @@ def _update_image(image_info, download_params):
         image_info, collection = _download_image_terms(
             image_info, collection, download_params
         )
-        metadata_file_path = os.path.join(
-            os.path.dirname(image_info["absolute_path"]),
-            f"image_{image_info['id']}_metadata.json",
+        metadata_file_path = (
+            Path(image_info["absolute_path"]).parent
+            / f"image_{image_info['id']}_metadata.json"
         )
         _write_metadata(image_info, metadata_file_path)
     except OSError:
@@ -1746,10 +1762,8 @@ def _scroll_local(download_params):
         stack_level=4,
     )
 
-    collections = glob(
-        os.path.join(
-            download_params["nv_data_dir"], "*", "collection_metadata.json"
-        )
+    collections = Path(download_params["nv_data_dir"]).rglob(
+        "collection_metadata.json"
     )
 
     good_collections = (
@@ -1758,8 +1772,8 @@ def _scroll_local(download_params):
         if download_params["local_collection_filter"](col)
     )
     for collection in good_collections:
-        images = glob(
-            os.path.join(collection["absolute_path"], "image_*_metadata.json")
+        images = Path(collection["absolute_path"]).glob(
+            "image_*_metadata.json"
         )
 
         good_images = (
@@ -1770,7 +1784,7 @@ def _scroll_local(download_params):
         for image in good_images:
             image, collection = _update(image, collection, download_params)
             if download_params["resample"]:
-                if not os.path.isfile(image["resampled_absolute_path"]):
+                if not Path(image["resampled_absolute_path"]).is_file():
                     # TODO switch to force_resample=True
                     # when bumping to version > 0.13
                     im_resampled = resample_img(
@@ -1784,7 +1798,7 @@ def _scroll_local(download_params):
                 download_params["visited_images"].add(image["id"])
                 download_params["visited_collections"].add(collection["id"])
                 yield image, collection
-            elif os.path.isfile(image["absolute_path"]):
+            elif Path(image["absolute_path"]).is_file():
                 download_params["visited_images"].add(image["id"])
                 download_params["visited_collections"].add(collection["id"])
                 yield image, collection
@@ -2014,10 +2028,8 @@ def _scroll_image_ids(download_params):
         try:
             image = _download_image(image, download_params)
             collection = _json_add_collection_dir(
-                os.path.join(
-                    os.path.dirname(image["absolute_path"]),
-                    "collection_metadata.json",
-                )
+                Path(image["absolute_path"]).parent
+                / "collection_metadata.json",
             )
         except Exception:
             image, collection = None, None
@@ -2143,7 +2155,7 @@ def _scroll(download_params):
         if n_consecutive_fails >= download_params["max_consecutive_fails"]:
             warnings.warn(
                 "Neurovault download stopped early: "
-                "too many downloads failed in a row ({n_consecutive_fails})"
+                f"too many downloads failed in a row ({n_consecutive_fails})"
             )
             return
         if found == download_params["max_images"]:
@@ -2383,6 +2395,18 @@ def _result_list_to_bunch(result_list, download_params):
         ]
     else:
         images = [im_meta.get("absolute_path") for im_meta in images_meta]
+
+    # make sure all paths are strings instead of Path objects
+    images = [str(image) for image in images]
+    images_meta = [
+        {k: str(v) if isinstance(v, Path) else v for k, v in meta.items()}
+        for meta in images_meta
+    ]
+    collections_meta = [
+        {k: str(v) if isinstance(v, Path) else v for k, v in meta.items()}
+        for meta in collections_meta
+    ]
+
     result = Bunch(
         images=images,
         images_meta=images_meta,
@@ -2467,6 +2491,7 @@ def _fetch_neurovault_implementation(
     return _result_list_to_bunch(scroller, download_params)
 
 
+@fill_doc
 def fetch_neurovault(
     max_images=_DEFAULT_MAX_IMAGES,
     collection_terms=None,
@@ -2497,10 +2522,10 @@ def fetch_neurovault(
 
     Parameters
     ----------
-    max_images : int, default=100
+    max_images : :obj:`int`, default=100
         Maximum number of images to fetch.
 
-    collection_terms : dict, default=None
+    collection_terms : :obj:`dict` or None, default=None
         Key, value pairs used to filter collection
         metadata. Collections for which
         ``collection_metadata['key'] == value`` is not ``True`` for
@@ -2513,7 +2538,7 @@ def fetch_neurovault(
         Collections for which `collection_filter(collection_metadata)`
         is ``False`` will be discarded.
 
-    image_terms : dict, default=None
+    image_terms : :obj:`dict` or None, default=None
         Key, value pairs used to filter image metadata. Images for
         which ``image_metadata['key'] == value`` is not ``True`` for
         if image_filter != _empty_filter and image_terms =
@@ -2526,7 +2551,7 @@ def fetch_neurovault(
         Images for which `image_filter(image_metadata)` is ``False``
         will be discarded.
 
-    mode : {'download_new', 'overwrite', 'offline'}
+    mode : {'download_new', 'overwrite', 'offline'}, default="download_new"
         When to fetch an image from the server rather than the local
         disk.
 
@@ -2535,19 +2560,17 @@ def fetch_neurovault(
         - 'overwrite' means ignore files on disk and overwrite them.
         - 'offline' means load only data from disk; don't query server.
 
-    data_dir : str, optional
-        The directory we want to use for nilearn data. A subdirectory
-        named "neurovault" will contain :term:`Neurovault` data.
+    %(data_dir)s
 
-    fetch_neurosynth_words : bool, default=False
+    fetch_neurosynth_words : :obj:`bool`, default=False
         whether to collect words from Neurosynth.
 
-    vectorize_words : bool, default=True
+    vectorize_words : :obj:`bool`, default=True
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    resample : bool, optional (default=False)
+    resample : :obj:`bool`, default=False
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
@@ -2556,7 +2579,7 @@ def fetch_neurovault(
         method.
         Argument passed to nilearn.image.resample_img.
 
-    verbose : int, default=3
+    verbose : :obj:`int`, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     kwarg_image_filters
@@ -2645,13 +2668,14 @@ def fetch_neurovault(
 
         fetch_neurovault(
             max_images=None,
-            collection_terms=dict(basic_collection_terms(), DOI=NotNull()))
+            collection_terms=dict(basic_collection_terms(), DOI=NotNull()),
+        )
 
     To update all the images (matching the default filters)::
 
         fetch_neurovault(
-            max_images=None, mode='overwrite',
-            modify_date=GreaterThan(newest))
+            max_images=None, mode="overwrite", modify_date=GreaterThan(newest)
+        )
 
     """
     if collection_terms is None:
@@ -2672,14 +2696,17 @@ def fetch_neurovault(
     # Users may get confused if they write their image_filter function
     # and the default filters contained in image_terms still apply, so we
     # issue a warning.
-    if image_filter != _empty_filter and image_terms == basic_image_terms():
+    if (
+        image_filter is not _empty_filter
+        and image_terms == basic_image_terms()
+    ):
         warnings.warn(
             "You specified a value for `image_filter` but the "
             "default filters in `image_terms` still apply. "
             "If you want to disable them, pass `image_terms={}`"
         )
     if (
-        collection_filter != _empty_filter
+        collection_filter is not _empty_filter
         and collection_terms == basic_collection_terms()
     ):
         warnings.warn(
@@ -2704,6 +2731,7 @@ def fetch_neurovault(
     )
 
 
+@fill_doc
 def fetch_neurovault_ids(
     collection_ids=(),
     image_ids=(),
@@ -2744,23 +2772,21 @@ def fetch_neurovault_ids(
         - 'overwrite' means ignore files on disk and overwrite them.
         - 'offline' means load only data from disk; don't query server.
 
-    data_dir : str, optional
-        The directory we want to use for nilearn data. A subdirectory
-        named "neurovault" will contain :term:`Neurovault` data.
+    %(data_dir)s
 
-    fetch_neurosynth_words : bool, default=False
+    fetch_neurosynth_words : :obj:`bool`, default=False
         Whether to collect words from Neurosynth.
 
-    resample : bool, optional (default=False)
+    resample : :obj:`bool`, default=False
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
-    vectorize_words : bool, default=True
+    vectorize_words : :obj:`bool`, default=True
         If neurosynth words are downloaded, create a matrix of word
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    verbose : int, default=3
+    verbose : :obj:`int`, default=3
         An integer in [0, 1, 2, 3] to control the verbosity level.
 
     Returns
@@ -2818,18 +2844,16 @@ def fetch_neurovault_ids(
     )
 
 
+@fill_doc
 def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     """Fetch left vs right button press \
        group :term:`contrast` map from :term:`Neurovault`.
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
+    %(data_dir)s
 
-    verbose : int, default=1
-        Verbosity level (0 means no message).
+    %(verbose)s
 
     Returns
     -------
@@ -2861,18 +2885,16 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     return data
 
 
+@fill_doc
 def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     """Fetch a :term:`contrast` map from :term:`Neurovault` showing \
     the effect of mental subtraction upon auditory instructions.
 
     Parameters
     ----------
-    data_dir : string, optional
-        Path of the data directory. Used to force data storage in a specified
-        location.
+    %(data_dir)s
 
-    verbose : int, default=1
-        Verbosity level (0 means no message).
+    %(verbose)s
 
     Returns
     -------

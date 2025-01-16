@@ -175,8 +175,9 @@ can be computed from the data:
      :end-before: # Applying the mask to extract the corresponding time series
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png
-    :target: ../auto_examples/01_plotting/plot_visualization.html
-    :scale: 50%
+   :target: ../auto_examples/01_plotting/plot_visualization.html
+   :scale: 50%
+   :align: center
 
 
 .. _mask_4d_2_3d:
@@ -217,36 +218,35 @@ statistical test. This requires a chain of image
 operations on the input data. Here is a possible recipe for computing an
 ROI mask:
 
- * **Smoothing**: Before a statistical test, it is often useful to smooth the image a bit
-   using :func:`nilearn.image.smooth_img`, typically fwhm=6 for
-   fMRI.
+* **Smoothing**: Before a statistical test, it is often useful to smooth the image a bit
+  using :func:`nilearn.image.smooth_img`, typically fwhm=6 for fMRI.
 
- * **Selecting voxels**: Given the smoothed data, we can select voxels
-   with a statistical test (eg opposing face and house experimental
-   conditions), for instance with a simple Student's t-test using scipy
-   function :func:`scipy.stats.ttest_ind`.
+* **Selecting voxels**: Given the smoothed data, we can select voxels
+  with a statistical test (eg opposing face and house experimental
+  conditions), for instance with a simple Student's t-test using scipy
+  function :func:`scipy.stats.ttest_ind`.
 
- * **Thresholding**: Then we need threshold the statistical map to have
-   better representation of voxels of interest.
+* **Thresholding**: Then we need threshold the statistical map to have
+  better representation of voxels of interest.
 
- * **Mask intersection and dilation**: Post-processing the results with
-   simple morphological operations, mask intersection and dilation.
+* **Mask intersection and dilation**: Post-processing the results with
+  simple morphological operations, mask intersection and dilation.
 
-   * we can use another mask, such as a grey-matter mask, to select
-     only the voxels which are common in both masks.
+  * we can use another mask, such as a grey-matter mask, to select
+    only the voxels which are common in both masks.
 
-   * we can do `morphological dilation
-     <https://en.wikipedia.org/wiki/Dilation_(morphology)>`_ to achieve
-     more compact blobs with more regular boundaries. The function is
-     used from :func:`scipy.ndimage.binary_dilation`.
+  * we can do `morphological dilation
+    <https://en.wikipedia.org/wiki/Dilation_(morphology)>`_ to achieve
+    more compact blobs with more regular boundaries. The function is
+    used from :func:`scipy.ndimage.binary_dilation`.
 
- * **Extracting connected components**: We end with splitting the connected
-   ROIs into two separate regions (ROIs), one in each hemisphere. The
-   function :func:`scipy.ndimage.label` from the scipy library is used.
+* **Extracting connected components**: We end with splitting the connected
+  ROIs into two separate regions (ROIs), one in each hemisphere. The
+  function :func:`scipy.ndimage.label` from the scipy library is used.
 
- * **Saving the result**: The final :term:`voxel` mask is saved to disk using
-   the 'to_filename' method of the image object.
-   (or **nibabel.save**).
+* **Saving the result**: The final :term:`voxel` mask is saved to disk using
+  the 'to_filename' method of the image object.
+  (or **nibabel.save**).
 
 
 .. seealso::
@@ -257,7 +257,7 @@ ROI mask:
      on :term:`probabilistic atlas` Nifti-like images whereas
 
    * A function :func:`nilearn.regions.connected_label_regions` can be used on
-     atlases denoted as labels. For instance, atlases labelled using KMeans.
+     atlases denoted as labels. For instance, atlases labeled using KMeans.
 
 .. _nibabel: https://nipy.org/nibabel/
 
