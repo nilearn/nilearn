@@ -14,6 +14,9 @@ This shows:
     and to compute a connectome with surface data.
 
 -   how to use run some decoding directly on surface data.
+
+See the :ref:`dataset description <nki_dataset>`
+for more information on the data used in this example.
 """
 
 from nilearn._utils.helpers import check_matplotlib

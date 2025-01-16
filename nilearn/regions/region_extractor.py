@@ -165,7 +165,7 @@ def connected_regions(
 
         Default=6.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         If given, mask image is applied to input data.
         If None, no masking is applied.
 
@@ -500,7 +500,7 @@ def connected_label_regions(
         A 3D image which contains regions denoted as labels. Each region
         is assigned with integers.
 
-    min_size : :obj:`float`, optional
+    min_size : :obj:`float`, default=None
         Minimum region size (in mm^3) in volume required
         to keep after extraction.
         Removes small or spurious regions.
@@ -511,7 +511,8 @@ def connected_label_regions(
         False, two voxels are considered connected only if they are within the
         same x, y, or z direction.
 
-    labels : 1D :class:`numpy.ndarray` or :obj:`list` of :obj:`str`, optional
+    labels : 1D :class:`numpy.ndarray` or :obj:`list` of :obj:`str`, \
+        default=None
         Each string in a list or array denote the name of the brain atlas
         regions given in labels_img input. If provided, same names will be
         re-assigned corresponding to each connected component based extraction

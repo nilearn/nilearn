@@ -116,9 +116,7 @@ def _permuted_ols_on_chunk(
 
         .. versionadded:: 0.9.2
 
-    random_state : int or None, optional
-        Seed for random number generator, to have the same permutations
-        in each computing units.
+    %(random_state)s
 
     %(verbose0)s
 
@@ -353,7 +351,7 @@ def permuted_ols(
         while the descriptors will generally be images,
         such as run-wise z-statistic maps.
 
-    confounding_vars : array-like, shape=(n_samples, n_covars), optional
+    confounding_vars : array-like, shape=(n_samples, n_covars), default=None
         Confounding variates (covariates), fitted but not tested.
         If None, no confounding variate is added to the model
         (except maybe a constant column according to the value of
@@ -376,9 +374,7 @@ def permuted_ols(
         If False, only positive effects are considered as relevant. The null
         hypothesis is that the effect is zero or negative.
 
-    random_state : :obj:`int` or np.random.RandomState or None, optional
-        Seed for random number generator, to have the same permutations
-        in each computing units.
+    %(random_state)s
 
     n_jobs : :obj:`int`, default=1
         Number of parallel workers.
@@ -389,7 +385,7 @@ def permuted_ols(
     %(verbose0)s
 
     masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
-            :class:`~nilearn.maskers.MultiNiftiMasker`, optional
+            :class:`~nilearn.maskers.MultiNiftiMasker`, default=None
         A mask to be used on the data.
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.
@@ -424,7 +420,7 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    output_type : {'legacy', 'dict'}, optional
+    output_type : {'legacy', 'dict'}, default="legacy"
         Determines how outputs should be returned.
         The two options are:
 

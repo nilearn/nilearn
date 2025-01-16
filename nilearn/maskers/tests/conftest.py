@@ -17,3 +17,15 @@ def data_1(shape_3d_default):
 def mask_img_1(data_1, affine_eye):
     """Return a mask image."""
     return Nifti1Image(data_1.astype("uint8"), affine_eye)
+
+
+@pytest.fixture
+def shape_mask():
+    """Shape for masks."""
+    return (13, 14, 15)
+
+
+@pytest.fixture
+def shape_maps():
+    """Shape for maps."""
+    return (16, 17, 18)

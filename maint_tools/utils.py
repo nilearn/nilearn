@@ -3,8 +3,12 @@
 from __future__ import annotations
 
 import ast
+import importlib
+import inspect
 from pathlib import Path
 from typing import Literal
+
+import nilearn
 
 FOLDERS_TO_SKIP = ["externals", "data", "input_data", "tests", "_utils"]
 
@@ -27,6 +31,7 @@ def list_modules(
 
     if files_to_skip is None:
         files_to_skip = FILES_TO_SKIP
+
     if skip_private:
         files_to_skip += "_"
 
@@ -60,13 +65,16 @@ def list_classes(
 
 
 def list_nodes(
-    file: Path,
+    file: Path | ast.Module | ast.ClassDef,
     node_type,
     include: Literal["private", "public", "all"] = "public",
 ) -> list[ast.ClassDef] | list[ast.FunctionDef]:
     """Return AST of the nodes in a module."""
-    with file.open() as f:
-        module = ast.parse(f.read())
+    if isinstance(file, Path):
+        with file.open() as f:
+            module = ast.parse(f.read())
+    else:
+        module = file
     node_definitions = [
         node for node in module.body if isinstance(node, node_type)
     ]
@@ -76,3 +84,29 @@ def list_nodes(
     elif include == "private":
         return [c for c in node_definitions if c.name.startswith("_")]
     return [c for c in node_definitions if not c.name.startswith("_")]
+
+
+def update_api(api, mod):
+    """Add function and class names of a module to user facing API listing."""
+    for x in mod.__all__:
+        if x.startswith("_"):
+            continue
+        if inspect.isfunction(mod.__dict__[x]) or inspect.isclass(
+            mod.__dict__[x]
+        ):
+            api.append(x)
+    return api
+
+
+public_api = []
+for subpackage in nilearn.__all__:
+    if subpackage.startswith("_"):
+        continue
+    mod = importlib.import_module(f"nilearn.{subpackage}")
+    public_api = update_api(public_api, mod)
+    for x in mod.__all__:
+        if x.startswith("_"):
+            continue
+        if inspect.ismodule(mod.__dict__[x]):
+            submod = importlib.import_module(f"nilearn.{subpackage}.{x}")
+            public_api = update_api(public_api, submod)

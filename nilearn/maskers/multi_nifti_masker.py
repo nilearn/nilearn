@@ -24,6 +24,7 @@ from nilearn._utils.class_inspect import (
     get_params,
 )
 from nilearn._utils.niimg_conversions import iter_check_niimg
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 
@@ -205,6 +206,26 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         )
         self.n_jobs = n_jobs
 
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(masker=True, multi_masker=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(masker=True, multi_masker=True)
+        return tags
+
     def fit(
         self,
         imgs=None,
@@ -214,7 +235,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs : :obj:`list` of Niimg-like objects
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
             See :ref:`extracting_data`.
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
@@ -257,7 +278,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             ):
                 raise ValueError(
                     f"[{self.__class__.__name__}.fit] "
-                    "For multiple processing, you should  provide a list of "
+                    "For multiple processing, you should provide a list of "
                     "data (e.g. Nifti1Image objects or filenames). "
                     f"{imgs} is an invalid input."
                 )
@@ -358,11 +379,11 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             See :ref:`extracting_data`.
             List of imgs file to prepare. One item per subject.
 
-        confounds : :obj:`list` of confounds, optional
+        confounds : :obj:`list` of confounds, default=None
             List of confounds (2D arrays or filenames pointing to CSV
             files or pandas DataFrames). Must be of same length than imgs_list.
 
-        sample_mask : :obj:`list` of sample_mask, optional
+        sample_mask : :obj:`list` of sample_mask, default=None
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 
@@ -469,11 +490,11 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             Data to be preprocessed
 
         confounds : CSV file or 2D :obj:`numpy.ndarray` or \
-                :obj:`pandas.DataFrame`, optional
+                :obj:`pandas.DataFrame`, default=None
             This parameter is passed to signal.clean. Please see the
             corresponding documentation for details.
 
-        sample_mask : :obj:`list` of 1D :obj:`numpy.ndarray`, optional
+        sample_mask : :obj:`list` of 1D :obj:`numpy.ndarray`, default=None
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 

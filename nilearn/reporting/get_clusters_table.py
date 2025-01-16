@@ -254,7 +254,7 @@ def get_clusters_table(
         Whether to employ two-sided thresholding or to evaluate positive values
         only.
 
-    min_distance : :obj:`float`, default=8
+    min_distance : :obj:`float`, default=8.0
         Minimum distance between subpeaks, in millimeters.
 
         .. note::
