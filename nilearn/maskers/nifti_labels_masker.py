@@ -255,10 +255,9 @@ class NiftiLabelsMasker(BaseMasker):
         return np.unique(labels_image_data)
 
     def _check_labels(self):
-        """Check and clean labels.
+        """Check labels.
 
         - checks that labels is a list of strings.
-        - cast all items of the list into strings if they are bytestrings.
         """
         labels = self.labels
         if labels is not None:
@@ -544,7 +543,7 @@ class NiftiLabelsMasker(BaseMasker):
             )
 
         self._original_region_ids = self._get_labels_values(self.labels_img)
-        self.labels = self._sanitize_labels(self.labels)
+
         self._check_mismatch_labels_regions(
             self._original_region_ids, tolerant=True
         )
