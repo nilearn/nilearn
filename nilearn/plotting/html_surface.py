@@ -231,7 +231,7 @@ def _one_mesh_info_niivue(
         elif hemi == "right":
             surf_mesh_path.with_stem(f"{surf_mesh_path.stem}_hemi-R")
         else:
-            raise ValueError
+            raise ValueError(f"'hemi' must be 'left' or 'right'. Got {hemi}")
 
         info["surf_mesh"] = base64.b64encode(
             surf_mesh_path.read_bytes()

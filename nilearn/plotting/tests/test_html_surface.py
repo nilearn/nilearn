@@ -211,8 +211,9 @@ def test_niivue_smoke():
         fsaverage["pial_right"],
         surf_map,
         fsaverage["sulc_right"],
-        "90%",
+        threshold="90%",
         engine="niivue",
+        hemi="left",
     )
 
 
@@ -263,14 +264,19 @@ def test_view_surf(tmp_path, rng, engine):
 def test_view_surf_errors(engine):
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
+
     with pytest.raises(ValueError):
-        html_surface.view_surf(mesh, mesh.coordinates[::2, 0], engine=engine)
+        html_surface.view_surf(
+            mesh, mesh.coordinates[::2, 0], engine=engine, hemi="left"
+        )
+
     with pytest.raises(ValueError):
         html_surface.view_surf(
             mesh,
             mesh.coordinates[:, 0],
             bg_map=mesh.coordinates[::2, 0],
             engine=engine,
+            hemi="left",
         )
 
 
