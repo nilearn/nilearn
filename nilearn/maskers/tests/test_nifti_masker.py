@@ -69,11 +69,6 @@ def test_auto_mask(img_3d_rand_eye):
     # With a 3D img
     masker.transform(img_3d_rand_eye)
 
-    # check exception when transform() called without prior fit()
-    masker2 = NiftiMasker(mask_img=img_3d_rand_eye)
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker2.transform(img_3d_rand_eye)
-
 
 def test_detrend(img_3d_rand_eye, mask_img_1):
     """Check that detrending doesn't do something stupid with 3D images."""

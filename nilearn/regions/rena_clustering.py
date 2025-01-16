@@ -545,7 +545,7 @@ def recursive_neighbor_agglomeration(
     n_iter : :obj:`int`, default=10
         Number of iterations.
 
-    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-07
         The threshold is set to handle eccentricities.
 
     %(verbose0)s

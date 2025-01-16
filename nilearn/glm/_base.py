@@ -58,7 +58,7 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
 
     def generate_report(
         self,
-        contrasts,
+        contrasts=None,
         title=None,
         bg_img="MNI152TEMPLATE",
         threshold=3.09,

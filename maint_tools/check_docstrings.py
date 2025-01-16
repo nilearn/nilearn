@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import ast
+import re
 
 from numpydoc.docscrape import NumpyDocString
 from rich import print
@@ -30,9 +31,9 @@ VALUES = [
     "Tuple",
     "dict",
     "Dict",
-    # "int",
+    "int",
     "Int",
-    # "float",
+    "float",
     "Float",
     "str",
     "Bool",
@@ -142,7 +143,8 @@ def get_missing(docstring: str, values=None) -> list[tuple[str, str, str]]:
     missing = []
     for v in values:
         for arg_name, arg_desc in params.items():
-            if v in arg_desc and f":obj:`{v}`" not in arg_desc:
+            regex = f"{v}" + "[, ]"
+            if re.search(regex, arg_desc) and f":obj:`{v}`" not in arg_desc:
                 missing.append((arg_name, arg_desc, v))
 
     return missing

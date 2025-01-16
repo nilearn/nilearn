@@ -78,7 +78,7 @@ def high_variance_confounds(
         4D image.
         See :ref:`extracting_data`.
 
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or None, default=None
         If not provided, all voxels are used.
         If provided, confounds are extracted from voxels inside the mask.
         See :ref:`extracting_data`.
@@ -86,7 +86,7 @@ def high_variance_confounds(
     n_confounds : :obj:`int`, default=5
         Number of confounds to return.
 
-    percentile : :obj:`float`, default=2
+    percentile : :obj:`float`, default=2.0
         Highest-variance signals percentile to keep before computing the
         singular value decomposition, 0. <= `percentile` <= 100.
         `mask_img.sum() * percentile / 100` must be greater than `n_confounds`.
@@ -372,7 +372,7 @@ def crop_img(
         Image to be cropped (see :ref:`extracting_data` for a detailed
         description of the valid input types).
 
-    rtol : :obj:`float`, default=1e-8
+    rtol : :obj:`float`, default=1e-08
         relative tolerance (with respect to maximal absolute value of the
         image), under which values are considered negligeable and thus
         croppable.
@@ -792,7 +792,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         .. versionchanged:: 0.9.2
             Changed default dtype casting of booleans from 'int8' to 'uint8'.
 
-    affine : 4x4 :class:`numpy.ndarray`, optional
+    affine : 4x4 :class:`numpy.ndarray`, default=None
         Transformation matrix.
 
     copy_header : :obj:`bool`, default=False
@@ -1361,7 +1361,7 @@ def math_img(formula, copy_header_from=None, **imgs):
 
 
 def binarize_img(
-    img, threshold=0, mask_img=None, two_sided=True, copy_header=False
+    img, threshold=0.0, mask_img=None, two_sided=True, copy_header=False
 ):
     """Binarize an image such that its values are either 0 or 1.
 
@@ -1372,7 +1372,7 @@ def binarize_img(
     img : a 3D/4D Niimg-like object
         Image which should be binarized.
 
-    threshold : :obj:`float` or :obj:`str`
+    threshold : :obj:`float` or :obj:`str`, default=0.0
         If float, we threshold the image based on image intensities meaning
         voxels which have intensities greater than this value will be kept.
         The given value should be within the range of minimum and
@@ -1387,7 +1387,7 @@ def binarize_img(
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
-    two_sided : :obj:`bool`
+    two_sided : :obj:`bool`, default=True
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
 
@@ -1503,8 +1503,8 @@ def clean_img(
     standardize : :obj:`bool`, default=True
         If True, returned signals are set to unit variance.
 
-    confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of
-        Confounds timeseries. optional
+    confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
+        Confounds timeseries. default=None
         Shape must be (instant number, confound number),
         or just (instant number,)
         The number of time instants in signals and confounds must be
@@ -1518,7 +1518,7 @@ def clean_img(
 
     %(high_pass)s
 
-    t_r : :obj:`float`, optional
+    t_r : :obj:`float`, default=None
         Repetition time, in second (sampling period). Set to None if not
         specified. Mandatory if used together with `low_pass` or `high_pass`.
 
@@ -1526,13 +1526,13 @@ def clean_img(
         If True, the non-finite values (NaNs and infs) found in the images
         will be replaced by zeros.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         If provided, signal is only cleaned from voxels inside the mask. If
         mask is provided, it should have same shape and affine as imgs.
         If not provided, all voxels are used.
         See :ref:`extracting_data`.
 
-    kwargs : dict
+    kwargs : :obj:`dict`
         Keyword arguments to be passed to functions called
         within this function.
         Kwargs prefixed with ``'clean__'`` will be passed to
@@ -1617,6 +1617,7 @@ def clean_img(
     return imgs_
 
 
+@fill_doc
 def load_img(img, wildcards=True, dtype=None):
     """Load a Niimg-like object from filenames or list of filenames.
 
@@ -1679,7 +1680,7 @@ def concat_imgs(
     dtype : numpy dtype, default=np.float32
         The dtype of the returned image.
 
-    ensure_ndim : :obj:`int`, optional
+    ensure_ndim : :obj:`int`, default=None
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
 

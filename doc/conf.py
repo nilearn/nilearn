@@ -197,6 +197,7 @@ linkcheck_ignore = [
     # give a 403 Client Error: Forbidden for url:
     r"https://sites.wustl.edu/oasisbrains/.*",
     # similarly below are publishers that do not like doi redirects:
+    r"https://doi.org/10.1523/JNEUROSCI.*",
     r"https://doi.org/10.1002/.*",
     r"https://doi.org/10.1073/.*",
     r"https://doi.org/10.1080/.*",

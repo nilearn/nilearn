@@ -205,7 +205,8 @@ def get_bids_files(
         folders. If given as the empty string '', files will be searched
         inside the sub-label/ses-label directories.
 
-    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), \
+              default=None
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Filter examples would be ('ses', '01'), ('dir', 'ap') and

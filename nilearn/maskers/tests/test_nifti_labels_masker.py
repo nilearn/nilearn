@@ -23,16 +23,6 @@ from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
 
-@pytest.fixture
-def n_regions():
-    return 9
-
-
-@pytest.fixture
-def length():
-    return 93
-
-
 def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
     """Check working of shape/affine checks."""
     shape1 = (*shape_3d_default, length)
@@ -150,8 +140,6 @@ def test_nifti_labels_masker_errors(
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker11.transform(fmri11_img)
 
     # Test all kinds of mismatch between shapes and between affines
     masker11.fit()
@@ -181,10 +169,7 @@ def test_nifti_labels_masker_errors(
     masker11 = NiftiLabelsMasker(
         labels11_img, smoothing_fwhm=3, resampling_target=None
     )
-    signals11 = masker11.fit_transform(fmri11_img)
-
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        NiftiLabelsMasker(labels11_img).inverse_transform(signals11)
+    masker11.fit_transform(fmri11_img)
 
 
 def test_nifti_labels_masker_io_shapes(

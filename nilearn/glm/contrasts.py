@@ -390,7 +390,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : :obj:`float`, optional, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
 
@@ -481,7 +481,7 @@ def compute_fixed_effects(
         The input variance images.
 
     mask : Nifti1Image or NiftiMasker instance or \
-        :obj:`~nilearn.maskers.SurfaceMasker` instance
+        :obj:`~nilearn.maskers.SurfaceMasker` instance \
         or None, default=None
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 

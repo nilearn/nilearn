@@ -687,6 +687,12 @@ class SecondLevelModel(BaseGLM):
 
         return self
 
+    def __sklearn_is_fitted__(self):
+        return (
+            hasattr(self, "second_level_input_")
+            and self.second_level_input_ is not None
+        )
+
     @fill_doc
     def compute_contrast(
         self,
@@ -724,7 +730,7 @@ class SecondLevelModel(BaseGLM):
 
         output_type : {'z_score', 'stat', 'p_value', \
                       :term:`'effect_size'<Parameter Estimate>`, \
-                      'effect_variance', 'all'}, default='z-score'
+                      'effect_variance', 'all'}, default='z_score'
             Type of the output map.
 
         Returns
