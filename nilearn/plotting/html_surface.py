@@ -25,6 +25,7 @@ from nilearn.plotting.js_plotting_utils import (
 from nilearn.surface.surface import (
     PolyMesh,
     SurfaceImage,
+    _mesh_to_gifti,
     _data_to_gifti,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
@@ -220,22 +221,11 @@ def _one_mesh_info_niivue(
     """Build dict for plotting one surface map on a single mesh."""
     info = {}
 
-    # Create temporary directory
-    with Path(tempfile.mkdtemp()) as output_path:
-        # Handle mesh
-        surf_mesh_path = output_path / "surf_mesh.gii"
-        surf_mesh.to_gifti(output_path / "surf_mesh.gii")
-
-        if hemi == "left":
-            surf_mesh_path.with_stem(f"{surf_mesh_path.stem}_hemi-L")
-        elif hemi == "right":
-            surf_mesh_path.with_stem(f"{surf_mesh_path.stem}_hemi-R")
-        else:
-            raise ValueError(f"'hemi' must be 'left' or 'right'. Got {hemi}")
-
-        info["surf_mesh"] = base64.b64encode(
-            surf_mesh_path.read_bytes()
-        ).decode("UTF-8")
+    # Handle mesh
+    surf_mesh_gifti = _mesh_to_gifti(surf_mesh.coordinates, surf_mesh.faces)
+    info["surf_mesh"] = base64.b64encode(surf_mesh_gifti.to_bytes()).decode(
+        "UTF-8"
+    )
 
     # Handle surface data
     gii = _data_to_gifti(surf_map)

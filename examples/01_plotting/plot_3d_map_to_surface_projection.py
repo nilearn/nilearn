@@ -284,7 +284,7 @@ engine = "niivue"
 view = view_surf(
     surf_mesh=fsaverage_meshes["inflated"],
     surf_map=surface_image,
-    threshold="90%",
+    # threshold="90%",
     bg_map=fsaverage_sulcal,
     hemi=hemi,
     title="3D visualization in a web browser",
@@ -294,7 +294,7 @@ view = view_surf(
 # In a Jupyter notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
-view.open_in_browser()
+# view.open_in_browser()
 
 # We don't need to do the projection ourselves, we can use
 # :func:`~nilearn.plotting.view_img_on_surf`:
