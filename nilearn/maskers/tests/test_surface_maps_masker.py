@@ -373,7 +373,7 @@ def test_generate_report_engine_no_matplotlib_warning(
         assert masker.generate_report(engine="matplotlib") == [None]
 
 
-@pytest.mark.parametrize("displayed_maps", [4, [1, 3, 4, 5], "all"])
+@pytest.mark.parametrize("displayed_maps", [4, [1, 3, 4, 5], "all", [1]])
 @pytest.mark.skipif(
     not is_matplotlib_installed(),
     reason="Test requires matplotlib to be installed.",
