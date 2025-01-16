@@ -9,14 +9,15 @@ make_glm_report(model, contrasts):
 
 """
 
+import datetime
 import os
 import string
 import warnings
 from collections import OrderedDict
-from collections.abc import Iterable
 from decimal import Decimal
 from html import escape
 from pathlib import Path
+from string import Template
 
 import numpy as np
 import pandas as pd
@@ -24,6 +25,8 @@ from matplotlib import pyplot as plt
 
 from nilearn._utils import check_niimg, fill_doc
 from nilearn._utils.niimg import safe_get_data
+from nilearn._version import __version__
+from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
@@ -34,12 +37,24 @@ from nilearn.plotting import (
     plot_glass_brain,
     plot_roi,
     plot_stat_map,
+    plot_surf_stat_map,
 )
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.reporting.get_clusters_table import get_clusters_table
-from nilearn.reporting.html_report import HTMLReport
-from nilearn.reporting.utils import figure_to_svg_quoted
+from nilearn.reporting.html_report import (
+    HTMLReport,
+    _render_warnings_partial,
+)
+from nilearn.reporting.utils import (
+    CSS_PATH,
+    HTML_TEMPLATE_PATH,
+    TEMPLATE_ROOT_PATH,
+    coerce_to_dict,
+    figure_to_png_base64,
+    figure_to_svg_quoted,
+)
+from nilearn.surface import SurfaceImage
 
 HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
 
@@ -47,7 +62,7 @@ HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
 @fill_doc
 def make_glm_report(
     model,
-    contrasts,
+    contrasts=None,
     title=None,
     bg_img="MNI152TEMPLATE",
     threshold=3.09,
@@ -169,10 +184,21 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
-    if isinstance(model.masker_, SurfaceMasker):
-        raise NotImplementedError(
-            "Report generation is not yet supported for surface analysis."
+    if isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or isinstance(
+        model.masker_, SurfaceMasker
+    ):
+        report_text = _make_surface_glm_report(
+            model,
+            contrasts=contrasts,
+            title=title,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            bg_img=bg_img,
         )
+        report_text.width, report_text.height = _check_report_dims(report_dims)
+        return report_text
 
     if bg_img == "MNI152TEMPLATE":
         bg_img = MNI152TEMPLATE
@@ -200,7 +226,7 @@ def make_glm_report(
         html_body_template_text = html_body_file_obj.read()
     report_body_template = string.Template(html_body_template_text)
 
-    contrasts = _coerce_to_dict(contrasts)
+    contrasts = coerce_to_dict(contrasts)
     contrast_plots = _plot_contrasts(contrasts, design_matrices)
     page_title, page_heading_1, page_heading_2 = _make_headings(
         contrasts,
@@ -297,41 +323,6 @@ def _check_report_dims(report_size):
         )
         width, height = (1600, 800)
     return width, height
-
-
-def _coerce_to_dict(input_arg):
-    """Construct a dict from the provided arg.
-
-    If input_arg is:
-      dict then returns it unchanged.
-
-      string or collection of Strings or Sequence[int],
-      returns a dict {str(value): value, ...}
-
-    Parameters
-    ----------
-    input_arg : String or Collection[str or Int or Sequence[Int]]
-     or Dict[str, str or np.array]
-        Can be of the form:
-         'string'
-         ['string_1', 'string_2', ...]
-         list/array
-         [list/array_1, list/array_2, ...]
-         {'string_1': list/array1, ...}
-
-    Returns
-    -------
-    input_args : Dict[str, np.array or str]
-
-    """
-    if not isinstance(input_arg, dict):
-        if isinstance(input_arg, Iterable) and not isinstance(
-            input_arg[0], Iterable
-        ):
-            input_arg = [input_arg]
-        input_arg = [input_arg] if isinstance(input_arg, str) else input_arg
-        input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
-    return input_arg
 
 
 def _plot_to_svg(plot):
@@ -439,10 +430,7 @@ def _make_headings(contrasts, title, model):
         If title is user-supplied, then subheading is empty string.
 
     """
-    if isinstance(model, FirstLevelModel):
-        model_type = "First Level Model"
-    elif isinstance(model, SecondLevelModel):
-        model_type = "Second Level Model"
+    model_type = _return_model_type(model)
 
     if title:
         return title, title, model_type
@@ -456,7 +444,7 @@ def _make_headings(contrasts, title, model):
     return page_title, page_heading_1, page_heading_2
 
 
-def _model_attributes_to_dataframe(model):
+def _model_attributes_to_dataframe(model, is_volume_glm=True):
     """Return an HTML table with pertinent model attributes & information.
 
     Parameters
@@ -476,22 +464,25 @@ def _model_attributes_to_dataframe(model):
         "standardize",
         "noise_model",
         "t_r",
-        "high_pass",
-        "target_shape",
         "signal_scaling",
-        "drift_order",
         "scaling_axis",
         "smoothing_fwhm",
-        "target_affine",
         "slice_time_ref",
     ]
-    attribute_units = {
-        "t_r": "s",
-        "high_pass": "Hz",
-    }
-
+    if is_volume_glm:
+        selected_attributes.extend(["target_shape", "target_affine"])
     if hasattr(model, "hrf_model") and model.hrf_model == "fir":
         selected_attributes.append("fir_delays")
+    if hasattr(model, "drift_model"):
+        if model.drift_model == "cosine":
+            selected_attributes.append("high_pass")
+        elif model.drift_model == "polynomial":
+            selected_attributes.append("drift_order")
+
+    attribute_units = {
+        "t_r": "seconds",
+        "high_pass": "Hertz",
+    }
 
     selected_attributes.sort()
     display_attributes = OrderedDict(
@@ -510,6 +501,8 @@ def _model_attributes_to_dataframe(model):
     model_attributes = model_attributes.rename(
         index=attribute_names_with_units
     )
+    model_attributes.index.names = ["Parameter"]
+    model_attributes.columns = ["Value"]
     return model_attributes
 
 
@@ -1091,4 +1084,246 @@ def _dataframe_to_html(df, precision, **kwargs):
     with pd.option_context("display.precision", precision):
         html_table = df.to_html(**kwargs)
     html_table = html_table.replace('border="1" ', "")
-    return html_table
+    return html_table.replace('class="dataframe"', 'class="pure-table"')
+
+
+def _make_surface_glm_report(
+    model,
+    contrasts=None,
+    title=None,
+    threshold=3.09,
+    alpha=0.001,
+    cluster_threshold=0,
+    height_control="fpr",
+    bg_img=None,
+):
+    """Generate a GLM report when input data is surface image.
+
+    Deal first with part of the report that are always there
+    even before fit,
+    to return early if the model is not fitted.
+    """
+    if bg_img == "MNI152TEMPLATE":
+        bg_img = None
+    if bg_img and not isinstance(bg_img, SurfaceImage):
+        raise TypeError(
+            f"'bg_img' must a SurfaceImage instance.Got {type(bg_img)=}"
+        )
+
+    title = f"<br>{title}" if title else ""
+
+    docstring = model.__doc__
+    snippet = docstring.partition("Parameters\n    ----------\n")[0]
+
+    model_attributes = _model_attributes_to_dataframe(
+        model, is_volume_glm=False
+    )
+    with pd.option_context("display.max_colwidth", 100):
+        model_attributes_html = _dataframe_to_html(
+            model_attributes,
+            precision=2,
+            header=True,
+            sparsify=False,
+        )
+
+    body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(body_template_path),
+        encoding="utf-8",
+    )
+
+    css_file_path = CSS_PATH / "masker_report.css"
+    with css_file_path.open(encoding="utf-8") as css_file:
+        css = css_file.read()
+
+    head_template_path = (
+        TEMPLATE_ROOT_PATH / "html" / "report_head_template.html"
+    )
+    with head_template_path.open() as head_file:
+        head_tpl = Template(head_file.read())
+
+    head_css_file_path = CSS_PATH / "head.css"
+    with head_css_file_path.open(encoding="utf-8") as head_css_file:
+        head_css = head_css_file.read()
+
+    warning_messages = []
+    if not model.__sklearn_is_fitted__():
+        warning_messages.append("The model has not been fit yet.")
+
+        body = tpl.substitute(
+            css=css,
+            title=f"Statistical Report - {_return_model_type(model)}{title}",
+            docstring=snippet,
+            warning_messages=_render_warnings_partial(warning_messages),
+            design_matrices_dict=None,
+            parameters=model_attributes_html,
+            contrasts_dict=None,
+            statistical_maps=None,
+            cluster_table_details=None,
+            mask_plot=None,
+            cluster_table=None,
+            date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+        )
+
+        # revert HTML safe substitutions in CSS sections
+        body = body.replace(".pure-g &gt; div", ".pure-g > div")
+
+        report = HTMLReport(
+            body=body,
+            head_tpl=head_tpl,
+            head_values={
+                "head_css": head_css,
+                "version": __version__,
+                "page_title": (
+                    f"Statistical Report - {_return_model_type(model)}{title}"
+                ),
+            },
+        )
+        report.height = 800
+        report.width = 1000
+        return report
+
+    fig = model.masker_._create_figure_for_report()
+    mask_plot = figure_to_png_base64(fig)
+
+    design_matrices = (
+        model.design_matrices_
+        if isinstance(model, FirstLevelModel)
+        else [model.design_matrix_]
+    )
+    design_matrices_dict = _return_design_matrices_dict(design_matrices)
+
+    contrasts = coerce_to_dict(contrasts)
+    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
+
+    cluster_table_details = _clustering_params_to_dataframe(
+        threshold,
+        cluster_threshold,
+        None,
+        height_control,
+        alpha,
+    )
+    cluster_table_html = _dataframe_to_html(
+        cluster_table_details,
+        precision=2,
+        header=True,
+        sparsify=False,
+    )
+
+    statistical_maps = None
+    if contrasts_dict is not None:
+        statistical_maps = {}
+        statistical_maps = {
+            contrast_name: model.compute_contrast(
+                contrast_val, output_type="z_score"
+            )
+            for contrast_name, contrast_val in contrasts.items()
+        }
+
+        surf_mesh = None
+        if bg_img:
+            surf_mesh = bg_img.mesh
+
+        for contrast_name, contrast_val in contrasts.items():
+            contrast_map = model.compute_contrast(
+                contrast_val, output_type="z_score"
+            )
+            fig = plot_surf_stat_map(
+                stat_map=contrast_map,
+                hemi="left",
+                colorbar=True,
+                threshold=threshold,
+                bg_map=bg_img,
+                surf_mesh=surf_mesh,
+            )
+            statistical_maps[contrast_name] = {
+                "stat_map_img": figure_to_png_base64(fig),
+                "contrast_img": contrasts_dict[contrast_name],
+            }
+            # prevents sphinx-gallery & jupyter from scraping & inserting plots
+            plt.close("all")
+
+    # For now we do not have surface clusters,
+    # so we do not display this in the report
+    cluster_table_html = None
+
+    body = tpl.substitute(
+        css=css,
+        title=f"Statistical Report - {_return_model_type(model)}{title}",
+        docstring=snippet,
+        warning_messages=_render_warnings_partial(warning_messages),
+        design_matrices_dict=design_matrices_dict,
+        parameters=model_attributes_html,
+        contrasts_dict=contrasts_dict,
+        statistical_maps=statistical_maps,
+        cluster_table_details=cluster_table_html,
+        mask_plot=mask_plot,
+        cluster_table=None,
+        date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+    )
+
+    # revert HTML safe substitutions in CSS sections
+    body = body.replace(".pure-g &gt; div", ".pure-g > div")
+
+    report = HTMLReport(
+        body=body,
+        head_tpl=head_tpl,
+        head_values={
+            "head_css": head_css,
+            "version": __version__,
+            "page_title": (
+                f"Statistical Report - {_return_model_type(model)}{title}"
+            ),
+        },
+    )
+    report.height = 800
+    report.width = 1000
+    return report
+
+
+def _return_design_matrices_dict(design_matrices):
+    if design_matrices is None:
+        return None
+
+    design_matrices_dict = {}
+    for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
+        dmtx_plot = plot_design_matrix(design_matrix)
+        dmtx_title = f"Run {dmtx_count}"
+        if len(design_matrices) > 1:
+            plt.title(dmtx_title, y=1.025, x=-0.1)
+        dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
+        url_design_matrix_svg = _plot_to_svg(dmtx_plot)
+        # prevents sphinx-gallery & jupyter from scraping & inserting plots
+        plt.close("all")
+
+        design_matrices_dict[dmtx_title] = url_design_matrix_svg
+
+    return design_matrices_dict
+
+
+def _return_contrasts_dict(design_matrices, contrasts):
+    if design_matrices is None or not contrasts:
+        return None
+
+    contrasts_dict = {}
+    for design_matrix in design_matrices:
+        for contrast_name, contrast_data in contrasts.items():
+            contrast_plot = plot_contrast_matrix(
+                contrast_data, design_matrix, colorbar=True
+            )
+            contrast_plot.set_xlabel(contrast_name)
+            contrast_plot.figure.set_figheight(2)
+            url_contrast_plot_svg = _plot_to_svg(contrast_plot)
+            # prevents sphinx-gallery & jupyter
+            # from scraping & inserting plots
+            plt.close("all")
+            contrasts_dict[contrast_name] = url_contrast_plot_svg
+
+    return contrasts_dict
+
+
+def _return_model_type(model):
+    if isinstance(model, FirstLevelModel):
+        return "First Level Model"
+    elif isinstance(model, SecondLevelModel):
+        return "Second Level Model"

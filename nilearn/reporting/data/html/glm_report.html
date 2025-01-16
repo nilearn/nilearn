@@ -1,0 +1,228 @@
+{{inherit "base.html"}}
+<!--  -->
+{{def navbar}}
+<!-- Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/ -->
+<nav class="navbar pure-g fw-bold" id="menu">
+  <div class="pure-u-1 pure-u-lg-1-8">
+    <div class="pure-menu">
+      <a href="#model-details" class="pure-menu-heading">Home</a>
+      <a href="#" class="custom-toggle" id="toggle"
+        ><s class="bar"></s><s class="bar"></s
+      ></a>
+    </div>
+  </div>
+  <div class="pure-u-1 pure-u-lg-1-6">
+    <div class="pure-menu pure-menu-horizontal custom-can-transform">
+      <ul class="pure-menu-list">
+        <li class="pure-menu-item">
+          <a href="#model-details" class="pure-menu-link">Model details</a>
+        </li>
+        <li class="pure-menu-item">
+          <a href="#design-matrix" class="pure-menu-link">Design Matrix</a>
+        </li>
+        <li class="pure-menu-item">
+          <a href="#mask" class="pure-menu-link">Mask</a>
+        </li>
+        <li class="pure-menu-item">
+          <a href="#contrasts" class="pure-menu-link">Contrasts</a>
+        </li>
+        <li class="pure-menu-item">
+          <a href="#statistical-maps" class="pure-menu-link"
+            >Statistical Maps</a
+          >
+        </li>
+        <li class="pure-menu-item">
+          <a href="#about" class="pure-menu-link">About</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<script>
+  (function (window, document) {
+    var menu = document.getElementById("menu"),
+      rollback,
+      WINDOW_CHANGE_EVENT =
+        "onorientationchange" in window ? "orientationchange" : "resize";
+
+    function toggleHorizontal() {
+      menu.classList.remove("closing");
+      [].forEach.call(
+        document
+          .getElementById("menu")
+          .querySelectorAll(".custom-can-transform"),
+        function (el) {
+          el.classList.toggle("pure-menu-horizontal");
+        },
+      );
+    }
+
+    function toggleMenu() {
+      // set timeout so that the panel has a chance to roll up
+      // before the menu switches states
+      if (menu.classList.contains("open")) {
+        menu.classList.add("closing");
+        rollBack = setTimeout(toggleHorizontal, 500);
+      } else {
+        if (menu.classList.contains("closing")) {
+          clearTimeout(rollBack);
+        } else {
+          toggleHorizontal();
+        }
+      }
+      menu.classList.toggle("open");
+      document.getElementById("toggle").classList.toggle("x");
+    }
+
+    function closeMenu() {
+      if (menu.classList.contains("open")) {
+        toggleMenu();
+      }
+    }
+
+    document.getElementById("toggle").addEventListener("click", function (e) {
+      toggleMenu();
+      e.preventDefault();
+    });
+
+    window.addEventListener(WINDOW_CHANGE_EVENT, closeMenu);
+  })(this, this.document);
+</script>
+
+{{enddef}}
+<!--  -->
+{{def report}}
+<section id="model-details">
+  <h2>Model details</h2>
+  {{ parameters|html }}
+</section>
+
+<section id="design-matrix">
+  <h2>Design Matrix</h2>
+  <div class="d-flex flex-wrap justify-content-evenly">
+    {{if design_matrices_dict}}
+    <!--  -->
+    {{py: design_matrices = design_matrices_dict.items()}}
+    <!--  -->
+    {{for dmtx_title, dmtx in design_matrices}}
+    <div class="scroll-x">
+      <img
+        class="pure-img"
+        src="data:image/svg+xml,{{dmtx}}"
+        alt="Plot of Design Matrix used in {{dmtx_title}}."
+      />
+    </div>
+    {{endfor}}
+    <!--  -->
+    {{else}}
+    <p>No design matrix was provided.</p>
+    {{endif}}
+  </div>
+</section>
+
+<section id="mask">
+  <h2>Mask</h2>
+  <div class="d-flex justify-content-evenly">
+    {{if mask_plot}}
+    <img
+      class="pure-img"
+      width="75%"
+      src="data:image/svg+xml;base64, {{mask_plot}}"
+      alt="Mask image."
+    />
+    {{else}}
+    <p>No mask was provided.</p>
+    {{endif}}
+  </div>
+</section>
+
+<section id="contrasts">
+  <h2>Contrasts</h2>
+  <div class="d-flex flex-wrap justify-content-evenly">
+    {{if contrasts_dict}}
+    <!--  -->
+    {{py: contrasts = contrasts_dict.items()}}
+    <!--  -->
+    {{for contrast_name, contrast_plot in contrasts}}
+    <div class="scroll-x" style="padding-top: 10px">
+      <img
+        class="pure-img"
+        src="data:image/svg+xml,{{contrast_plot}}"
+        alt="Plot of the contrast: {{contrast_name}}."
+      />
+    </div>
+    {{endfor}}
+    <!--  -->
+    {{else}}
+    <p>No contrast was provided.</p>
+    {{endif}}
+  </div>
+</section>
+
+<section id="statistical-maps">
+  <h2>Statistical Maps</h2>
+  {{if statistical_maps}}
+  <div class="pure-g">
+    {{py: contrasts = statistical_maps.items()}}
+    <!--  -->
+    {{for contrast_name, maps in contrasts}}
+    <div class="pure-u-1 pure-u-md-1-2">
+      <h3>{{contrast_name}}</h3>
+
+      {{py: images = maps.items()}}
+      <!--  -->
+      {{for key, value in images}}
+      <!--  -->
+      {{if key == "stat_map_img"}}
+      <div class="d-flex justify-content-evenly">
+        <img
+          class="pure-img"
+          src="data:image/svg+xml;base64,{{value}}"
+          alt="Stat map plot for the contrast: {{contrast_name}}"
+        />
+      </div>
+      {{elif key == "contrast_img"}}
+      <details>
+        <summary class="pure-button button-small contrast-button">
+          Contrast Plot
+        </summary>
+        <img
+          class="pure-img"
+          src="data:image/svg+xml,{{value}}"
+          alt="Stat map plot for the contrast: {{contrast_name}}"
+        />
+      </details>
+      {{endif}}
+      <!--  -->
+      {{endfor}}
+
+      <details>
+        <summary class="pure-button button-small contrast-button">
+          Cluster Table
+        </summary>
+        {{if cluster_table_details}} {{ cluster_table_details|html }} {{else}}
+        <p>No cluster table parameter provided</p>
+        {{endif}}
+        <!--  -->
+        {{cluster_table}}
+      </details>
+    </div>
+    {{endfor}}
+    <!--  -->
+  </div>
+  {{else}}
+  <div class="d-flex flex-wrap justify-content-evenly">
+    <p>No statistical map was provided.</p>
+  </div>
+  {{endif}}
+</section>
+
+<section id="about" style="text-align: left">
+  <h2>About</h2>
+  <ul>
+    <li>Date preprocessed: <time>{{date}}</time></li>
+  </ul>
+</section>
+
+{{enddef}}
