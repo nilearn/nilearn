@@ -1,6 +1,8 @@
 {{if engine == 'plotly'}}
 <div style="margin-top: 20px">
-  <div id="map0" style="display: block">{{content[0]|html}}</div>
+  <div class="pure-img" width="100%" id="map0" style="display: block">
+    {{content[0]|html}}
+  </div>
 
   {{for map in range(1, len(displayed_maps))}}
   <div id="map{{map}}" style="display: none">{{content[map]|html}}</div>
