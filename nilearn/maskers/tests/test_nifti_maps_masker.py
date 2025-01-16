@@ -247,6 +247,23 @@ def test_nifti_maps_masker_resampling_errors(
         affine=np.diag((4, 4, 4, 1)),
     )
 
+    masker = NiftiMapsMasker(maps33_img, resampling_target="mask")
+    with pytest.raises(
+        ValueError,
+        match=(
+            "resampling_target has been set to 'mask' "
+            "but no mask has been provided."
+        ),
+    ):
+        masker.fit()
+
+    masker = NiftiMapsMasker(maps33_img, resampling_target="invalid")
+    with pytest.raises(
+        ValueError,
+        match="invalid value for 'resampling_target' parameter: invalid",
+    ):
+        masker.fit()
+
     # verify that 4D mask arguments are refused
     masker = NiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
     with pytest.raises(
@@ -255,23 +272,6 @@ def test_nifti_maps_masker_resampling_errors(
         "Expected dimension is 3D and you provided "
         "a 4D image.",
     ):
-        masker.fit()
-
-    with pytest.raises(
-        ValueError,
-        match=(
-            "resampling_target has been set to 'mask' "
-            "but no mask has been provided."
-        ),
-    ):
-        NiftiMapsMasker(maps33_img, resampling_target="mask")
-        masker.fit()
-
-    with pytest.raises(
-        ValueError,
-        match="invalid value for 'resampling_target' parameter: invalid",
-    ):
-        NiftiMapsMasker(maps33_img, resampling_target="invalid")
         masker.fit()
 
 
