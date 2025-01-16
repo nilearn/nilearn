@@ -2,8 +2,6 @@
 
 import base64
 import json
-import tempfile
-from pathlib import Path
 from warnings import warn
 
 import matplotlib as mpl
@@ -25,8 +23,8 @@ from nilearn.plotting.js_plotting_utils import (
 from nilearn.surface.surface import (
     PolyMesh,
     SurfaceImage,
-    _mesh_to_gifti,
     _data_to_gifti,
+    _mesh_to_gifti,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     combine_hemispheres_meshes,
