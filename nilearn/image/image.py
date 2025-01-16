@@ -1164,7 +1164,6 @@ def _get_img_data_for_cutoff(img, mask_img, data=None, mask_data=None):
 
     Parameters
     ----------
-    ----------*
     img: Niimg-like object or SurfaceImage
 
     mask_img: Niimg-like object or SurfaceImage
