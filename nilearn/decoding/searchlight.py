@@ -374,7 +374,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
         groups : array-like, default=None
             group label for each sample for cross validation. Must have
-            exactly as many elements as 3D images in img. default None
+            exactly as many elements as 3D images in img.
         """
         # check if image is 4D
         imgs = check_niimg_4d(imgs)

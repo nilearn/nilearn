@@ -43,7 +43,6 @@ def surf_maps_img(surf_mesh, rng):
 # tests for scikit-learn compatibility
 extra_valid_checks = [
     "check_no_attributes_set_in_init",
-    "check_parameters_default_constructible",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
     "check_estimator_repr",

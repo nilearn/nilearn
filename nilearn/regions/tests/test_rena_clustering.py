@@ -39,10 +39,6 @@ if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.append("check_estimator_sparse_data")
 
 
-if compare_version(sklearn_version, ">", "1.5.2"):
-    extra_valid_checks.append("check_parameters_default_constructible")
-
-
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(

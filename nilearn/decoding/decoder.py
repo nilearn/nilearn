@@ -637,7 +637,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
-        groups : None
+        groups : None, default=None
             Group labels for the samples used while splitting the dataset into
             train/test set. Default None.
 
@@ -1649,11 +1649,6 @@ class FREMRegressor(_BaseDecoder):
         n_jobs=1,
         verbose=0,
     ):
-        self.classes_ = ["beta"]
-
-        if isinstance(cv, int):
-            cv = ShuffleSplit(cv, random_state=0)
-
         super().__init__(
             estimator=estimator,
             mask=mask,
@@ -1676,6 +1671,38 @@ class FREMRegressor(_BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
+
+    def fit(self, X, y, groups=None):
+        """Fit the decoder (learner).
+
+        Parameters
+        ----------
+        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
+            See :ref:`extracting_data`.
+            Data on which model is to be fitted. If this is a list,
+            the affine is considered the same for all.
+
+        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
+            The dependent variable (age, sex, IQ, yes/no, etc.).
+            Target variable to predict. Must have exactly as many elements as
+            3D images in niimg.
+
+        groups : None, default=None
+            Group labels for the samples used while splitting the dataset into
+            train/test set. Default None.
+
+            Note that this parameter must be specified in some scikit-learn
+            cross-validation generators to calculate the number of splits, e.g.
+            sklearn.model_selection.LeaveOneGroupOut or
+            sklearn.model_selection.LeavePGroupsOut.
+
+            For more details see
+            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+        """
+        self.classes_ = ["beta"]
+        if isinstance(self.cv, int):
+            self.cv = ShuffleSplit(self.cv, random_state=0)
+        super().fit(X, y, groups=groups)
 
 
 @fill_doc
@@ -1807,9 +1834,6 @@ class FREMClassifier(_BaseDecoder):
         n_jobs=1,
         verbose=0,
     ):
-        if isinstance(cv, int):
-            cv = StratifiedShuffleSplit(cv, random_state=0)
-
         super().__init__(
             estimator=estimator,
             mask=mask,
@@ -1832,3 +1856,34 @@ class FREMClassifier(_BaseDecoder):
             high_pass=high_pass,
             t_r=t_r,
         )
+
+    def fit(self, X, y, groups=None):
+        """Fit the decoder (learner).
+
+        Parameters
+        ----------
+        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
+            See :ref:`extracting_data`.
+            Data on which model is to be fitted. If this is a list,
+            the affine is considered the same for all.
+
+        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
+            The dependent variable (age, sex, IQ, yes/no, etc.).
+            Target variable to predict. Must have exactly as many elements as
+            3D images in niimg.
+
+        groups : None, default=None
+            Group labels for the samples used while splitting the dataset into
+            train/test set. Default None.
+
+            Note that this parameter must be specified in some scikit-learn
+            cross-validation generators to calculate the number of splits, e.g.
+            sklearn.model_selection.LeaveOneGroupOut or
+            sklearn.model_selection.LeavePGroupsOut.
+
+            For more details see
+            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+        """
+        if isinstance(self.cv, int):
+            self.cv = StratifiedShuffleSplit(self.cv, random_state=0)
+        super().fit(X, y, groups=groups)

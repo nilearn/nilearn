@@ -22,6 +22,7 @@ VALID_CHECKS = [
     "check_get_params_invariance",
     "check_mixin_order",
     "check_non_transformer_estimators_n_iter",
+    "check_parameters_default_constructible",
     "check_set_params",
     # Nilearn checks
     "check_masker_fitted",

@@ -15,7 +15,6 @@ from nilearn.surface._testing import (
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_no_attributes_set_in_init",
-    "check_parameters_default_constructible",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
     "check_estimators_unfitted",

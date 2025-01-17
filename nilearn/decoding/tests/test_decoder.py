@@ -78,10 +78,7 @@ extra_valid_checks = [
     "estimator, check, name",
     check_estimator(
         estimator=[DecoderRegressor()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=[*extra_valid_checks],
     ),
 )
 def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG001
@@ -96,7 +93,6 @@ def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG
         estimator=[DecoderRegressor()],
         extra_valid_checks=[
             *extra_valid_checks,
-            "check_parameters_default_constructible",
         ],
         valid=False,
     ),
@@ -139,7 +135,6 @@ def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa
         extra_valid_checks=[
             *extra_valid_checks,
             "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
         ],
     ),
 )
@@ -156,7 +151,6 @@ def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
         extra_valid_checks=[
             *extra_valid_checks,
             "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
         ],
         valid=False,
     ),
@@ -173,7 +167,6 @@ def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG00
         extra_valid_checks=[
             *extra_valid_checks,
             "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
         ],
     ),
 )
@@ -190,7 +183,6 @@ def test_check_estimator_base_decoder(estimator, check, name):  # noqa: ARG001
         extra_valid_checks=[
             *extra_valid_checks,
             "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
         ],
         valid=False,
     ),

@@ -36,10 +36,6 @@ extra_valid_checks = [
     "check_methods_sample_order_invariance",
 ]
 
-
-if compare_version(sklearn_version, ">", "1.5.2"):
-    extra_valid_checks.append("check_parameters_default_constructible")
-
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.extend(

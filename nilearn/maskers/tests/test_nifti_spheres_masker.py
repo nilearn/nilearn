@@ -14,7 +14,6 @@ from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
 
 extra_valid_checks = [
-    "check_parameters_default_constructible",
     "check_estimators_unfitted",
     "check_get_params_invariance",
     "check_transformer_n_iter",
