@@ -22,28 +22,34 @@ from nibabel.spatialimages import SpatialImage
 from scipy import stats
 from scipy.ndimage import binary_fill_holes
 
-from nilearn.image.resampling import reorder_img
-from nilearn.maskers import NiftiMasker
-from nilearn.plotting.displays import get_projector, get_slicer
-from nilearn.plotting.displays._slicers import get_cbar_ticks
-
-from .. import _utils
-from .._utils import (
+from nilearn._utils import (
+    check_niimg_3d,
+    check_niimg_4d,
     compare_version,
     constrained_layout_kwargs,
     fill_doc,
     logger,
 )
-from .._utils.extmath import fast_abs_percentile
-from .._utils.ndimage import get_border_data
-from .._utils.niimg import safe_get_data
-from .._utils.numpy_conversions import as_ndarray
-from .._utils.param_validation import check_threshold
-from ..datasets import load_mni152_template
-from ..image import get_data, iter_img, math_img, new_img_like, resample_to_img
-from ..masking import apply_mask, compute_epi_mask
-from ..signal import clean
-from . import cm
+from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.ndimage import get_border_data
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn._utils.param_validation import check_threshold
+from nilearn.datasets import load_mni152_template
+from nilearn.image import (
+    get_data,
+    iter_img,
+    math_img,
+    new_img_like,
+    resample_to_img,
+)
+from nilearn.image.resampling import reorder_img
+from nilearn.maskers import NiftiMasker
+from nilearn.masking import apply_mask, compute_epi_mask
+from nilearn.plotting import cm
+from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.plotting.displays._slicers import get_cbar_ticks
+from nilearn.signal import clean
 
 
 def show():
@@ -228,7 +234,7 @@ def _plot_img_with_bg(
         )
 
     if img is not False and img is not None:
-        img = _utils.check_niimg_3d(img, dtype="auto")
+        img = check_niimg_3d(img, dtype="auto")
         data = safe_get_data(img, ensure_finite=True)
         affine = img.affine
 
@@ -255,7 +261,7 @@ def _plot_img_with_bg(
         radiological=radiological,
     )
     if bg_img is not None:
-        bg_img = _utils.check_niimg_3d(bg_img)
+        bg_img = check_niimg_3d(bg_img)
         display.add_overlay(
             bg_img,
             vmin=bg_vmin,
@@ -558,7 +564,7 @@ def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
         if black_bg == "auto":
             black_bg = False
     else:
-        anat_img = _utils.check_niimg_3d(anat_img)
+        anat_img = check_niimg_3d(anat_img)
         # Clean anat_img for non-finite values to avoid computing unnecessary
         # border data values.
         data = safe_get_data(anat_img, ensure_finite=True)
@@ -850,7 +856,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         Contours displayed on the background image.
 
     """
-    roi_img = _utils.check_niimg_3d(roi_img)
+    roi_img = check_niimg_3d(roi_img)
     roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
     cmap = plt.get_cmap(cmap)
@@ -1188,7 +1194,7 @@ def plot_prob_atlas(
         **kwargs,
     )
 
-    maps_img = _utils.check_niimg_4d(maps_img)
+    maps_img = check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
 
     valid_view_types = ["auto", "contours", "filled_contours", "continuous"]
@@ -1414,7 +1420,7 @@ def plot_stat_map(
         bg_img, dim=dim, black_bg=black_bg
     )
 
-    stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
+    stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
 
     cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
         safe_get_data(stat_map_img, ensure_finite=True),
@@ -1579,7 +1585,7 @@ def plot_glass_brain(
             )
 
     if stat_map_img:
-        stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
+        stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
         if plot_abs:
             if vmin is not None and vmin < 0:
                 warnings.warn(
@@ -2030,7 +2036,7 @@ def plot_carpet(
     .. footbibliography::
 
     """
-    img = _utils.check_niimg_4d(img, dtype="auto")
+    img = check_niimg_4d(img, dtype="auto")
 
     # Define TR and number of frames
     t_r = t_r or img.header.get_zooms()[-1]
@@ -2039,7 +2045,7 @@ def plot_carpet(
     if mask_img is None:
         mask_img = compute_epi_mask(img)
     else:
-        mask_img = _utils.check_niimg_3d(mask_img, dtype="auto")
+        mask_img = check_niimg_3d(mask_img, dtype="auto")
 
     is_atlas = len(np.unique(mask_img.get_fdata())) > 2
     if is_atlas:
