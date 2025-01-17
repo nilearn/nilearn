@@ -121,6 +121,7 @@ source = "vcs"
 
 [tool.mypy]
 allow_redefinition = false
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 exclude = [
     'doc/.*',
     'examples/.*',
@@ -129,6 +130,7 @@ exclude = [
     '.*/tests/test_.*',
     'nilearn/_version.py'
 ]
+warn_unreachable = true
 
 [[tool.mypy.overrides]]
 ignore_errors = true
