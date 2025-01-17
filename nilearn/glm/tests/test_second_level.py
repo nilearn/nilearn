@@ -46,6 +46,7 @@ extra_valid_checks = [
     "check_transformers_unfitted",
     "check_transformer_n_iter",
     "check_estimators_unfitted",
+    "check_no_attributes_set_in_init",
     "check_parameters_default_constructible",
 ]
 
