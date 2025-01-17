@@ -523,11 +523,6 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
-        if self.labels_img is None:
-            raise TypeError(
-                "Please provide a valid Nifti-like object for 'labels_img'."
-            )
-
         available_reduction_strategies = {
             "mean",
             "median",
@@ -548,12 +543,6 @@ class NiftiLabelsMasker(BaseMasker):
                 "invalid value for 'resampling_target' "
                 f"parameter: {self.resampling_target}"
             )
-
-        self._original_region_ids = self._get_labels_values(self.labels_img)
-
-        self._check_mismatch_labels_regions(
-            self._original_region_ids, tolerant=True
-        )
 
         if self.memory is None:
             self.memory = Memory(location=None, verbose=0)
@@ -578,6 +567,12 @@ class NiftiLabelsMasker(BaseMasker):
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
+
+        self._original_region_ids = self._get_labels_values(self.labels_img_)
+
+        self._check_mismatch_labels_regions(
+            self._original_region_ids, tolerant=True
+        )
 
         # create _region_id_name dictionary
         # this dictionary will be used to store region names and

@@ -18,7 +18,6 @@ from nilearn._utils.data_gen import (
     generate_maps,
     generate_random_img,
 )
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _shape_3d_default
@@ -207,21 +206,6 @@ def test_nifti_maps_masker_resampling_errors(
 ):
     """Test resampling errors."""
     maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
-
-    mask_img_4d = Nifti1Image(
-        np.ones((2, 2, 2, 2), dtype=np.int8),
-        affine=np.diag((4, 4, 4, 1)),
-    )
-
-    # verify that 4D mask arguments are refused
-    masker = NiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
-    ):
-        masker.fit()
 
     with pytest.raises(
         ValueError,

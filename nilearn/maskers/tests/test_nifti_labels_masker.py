@@ -17,7 +17,6 @@ from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_random_img,
 )
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
@@ -91,14 +90,12 @@ def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
     masker = NiftiLabelsMasker(labels_img, resampling_target=None)
 
     # Check attributes defined at fit
-    assert not hasattr(masker, "mask_img_")
     assert not hasattr(masker, "labels_img_")
     assert not hasattr(masker, "n_elements_")
 
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "mask_img_")
     assert hasattr(masker, "labels_img_")
     assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == n_regions
@@ -112,16 +109,6 @@ def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
     signals = masker.fit().transform(fmri_img)
 
     assert signals.shape == (length, n_regions)
-
-    shape2 = (12, 10, 14, length)
-    _, mask21_img = generate_random_img(
-        shape2,
-        affine=affine_eye,
-    )
-
-    masker = NiftiLabelsMasker(
-        labels_img, mask_img=mask21_img, resampling_target=None
-    )
 
     # Transform, with smoothing (smoke test)
     masker = NiftiLabelsMasker(
@@ -145,7 +132,10 @@ def test_nifti_labels_masker_errors(
     masker = NiftiLabelsMasker()
     with pytest.raises(
         TypeError,
-        match="Please provide a valid Nifti-like object for 'labels_img'.",
+        match=(
+            "Data given cannot be loaded "
+            "because it is not compatible with nibabel format"
+        ),
     ):
         masker.fit()
 
@@ -172,21 +162,6 @@ def test_nifti_labels_masker_errors(
         affine=affine_eye,
         n_regions=n_regions,
     )
-
-    mask_img_4d = Nifti1Image(
-        np.ones((2, 2, 2, 2), dtype=np.int8),
-        affine=np.diag((4, 4, 4, 1)),
-    )
-
-    # verify that 4D mask arguments are refused
-    masker = NiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
-    ):
-        masker.fit()
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)

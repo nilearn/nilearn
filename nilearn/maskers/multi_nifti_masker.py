@@ -311,6 +311,9 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
             self.mask_img_ = check_niimg_3d(self.mask_img)
 
+            # Just check that the mask is valid
+            masking.load_mask_img(self.mask_img_)
+
         self._reporting_data = None
         if self.reports:  # save inputs for reporting
             self._reporting_data = {

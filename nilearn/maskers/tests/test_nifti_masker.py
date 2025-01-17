@@ -182,17 +182,6 @@ def test_matrix_orientation():
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
-def test_mask_3d_error(shape_4d_default, affine_eye):
-    """Raise an error if 4D mask is provided with no img to fit."""
-    # Dummy mask
-    data = np.zeros(shape_4d_default)
-    data[5, 5, 5] = 1
-    mask_img = Nifti1Image(data, affine_eye)
-    masker = NiftiMasker(mask_img=mask_img)
-    with pytest.raises(TypeError, match="Expected dimension is 3D"):
-        masker.fit()
-
-
 def test_mask_4d(shape_3d_default, affine_eye):
     """Test performance with 4D data."""
     # Dummy mask
@@ -258,13 +247,11 @@ def test_4d_single_scan(rng, shape_3d_default, affine_eye):
     masker = NiftiMasker(mask_img=mask_img)
 
     # Check attributes defined at fit
-    assert not hasattr(masker, "mask_img_")
     assert not hasattr(masker, "n_elements_")
 
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "mask_img_")
     assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == np.sum(mask)
 

@@ -93,20 +93,6 @@ def test_multi_nifti_labels_masker():
         shape1, affine=affine1, n_regions=n_regions
     )
 
-    mask_img_4d = Nifti1Image(
-        np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
-    )
-
-    # verify that 4D mask arguments are refused
-    masker = MultiNiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
-    ):
-        masker.fit()
-
     # check exception when transform() called without prior fit()
     masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
 

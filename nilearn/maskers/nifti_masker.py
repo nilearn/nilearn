@@ -484,6 +484,9 @@ class NiftiMasker(BaseMasker):
         else:
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
 
+            # Just check that the mask is valid
+            masking.load_mask_img(self.mask_img_)
+
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,
