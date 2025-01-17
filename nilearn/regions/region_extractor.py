@@ -8,6 +8,7 @@ from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
 from nilearn.maskers import NiftiMapsMasker
+from nilearn.masking import load_mask_img
 
 from .. import masking
 from .._utils import check_niimg, check_niimg_3d, check_niimg_4d, fill_doc
@@ -437,6 +438,11 @@ class RegionExtractor(NiftiMapsMasker):
     ):
         """Prepare the data and setup for the region extraction."""
         maps_img = check_niimg_4d(self.maps_img)
+
+        # Check mask
+        if self.mask_img is not None:
+            self.mask_img = check_niimg_3d(self.mask_img)
+            load_mask_img(self.mask_img)
 
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
         if self.thresholding_strategy not in list_of_strategies:
