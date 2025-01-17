@@ -96,5 +96,5 @@ repos:
     hooks:
     -   id: mypy
         files: nilearn
-        additional_dependencies: [numpy, nibabel, requests, pandas-stubs, lxml-stubs]
-        args: [--config-file, pyproject.toml, --install-types, --non-interactive, --pretty]
+        additional_dependencies: [numpy, nibabel, requests, pandas-stubs, lxml-stubs, types-requests]
+        args: [--config-file, pyproject.toml, --pretty]
