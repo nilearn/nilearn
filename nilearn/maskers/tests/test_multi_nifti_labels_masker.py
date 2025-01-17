@@ -16,6 +16,7 @@ extra_valid_checks = [
     "check_get_params_invariance",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
+    "check_parameters_default_constructible",
 ]
 
 
@@ -24,12 +25,12 @@ extra_valid_checks = [
     check_estimator(
         estimator=[
             MultiNiftiLabelsMasker(
-                data_gen.generate_labeled_regions(
+                labels_img=data_gen.generate_labeled_regions(
                     _shape_3d_default(), affine=_affine_eye(), n_regions=9
                 )
             ),
             NiftiLabelsMasker(
-                data_gen.generate_labeled_regions(
+                labels_img=data_gen.generate_labeled_regions(
                     _shape_3d_default(), affine=_affine_eye(), n_regions=9
                 )
             ),
@@ -216,7 +217,8 @@ def test_multi_nifti_labels_masker_reduction_strategies():
             assert result.squeeze() == expected_result
 
     with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
-        MultiNiftiLabelsMasker(labels, strategy="TESTRAISE")
+        masker = MultiNiftiLabelsMasker(labels, strategy="TESTRAISE")
+        masker.fit()
 
     default_masker = MultiNiftiLabelsMasker(labels)
     assert default_masker.strategy == "mean"
@@ -253,15 +255,17 @@ def test_multi_nifti_labels_masker_resampling(tmp_path):
 
     # Test error checking
     with pytest.raises(ValueError):
-        MultiNiftiLabelsMasker(
+        masker = MultiNiftiLabelsMasker(
             labels33_img,
             resampling_target="mask",
         )
+        masker.fit()
     with pytest.raises(ValueError):
-        MultiNiftiLabelsMasker(
+        masker = MultiNiftiLabelsMasker(
             labels33_img,
             resampling_target="invalid",
         )
+        masker.fit()
 
     # Target: labels
     masker = MultiNiftiLabelsMasker(

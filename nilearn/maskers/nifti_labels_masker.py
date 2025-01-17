@@ -62,7 +62,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     Parameters
     ----------
-    labels_img : Niimg-like object
+    labels_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
@@ -84,16 +84,23 @@ class NiftiLabelsMasker(BaseMasker):
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
+
     %(smoothing_fwhm)s
+
     %(standardize_maskers)s
+
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
     %(detrend)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(dtype)s
@@ -108,17 +115,26 @@ class NiftiLabelsMasker(BaseMasker):
         if shapes and affines do not match, a ValueError is raised.
 
     %(memory)s
+
     %(memory_level1)s
+
     %(verbose0)s
+
     strategy : :obj:`str`, default='mean'
         The name of a valid function to reduce the region with.
         Must be one of: sum, mean, median, minimum, maximum, variance,
         standard_deviation.
+
     %(keep_masked_labels)s
+
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
     %(masker_kwargs)s
+
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
 
     Attributes
     ----------
@@ -174,7 +190,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     def __init__(
         self,
-        labels_img,
+        labels_img=None,
         labels=None,
         background_label=0,
         mask_img=None,
@@ -194,20 +210,16 @@ class NiftiLabelsMasker(BaseMasker):
         strategy="mean",
         keep_masked_labels=True,
         reports=True,
+        cmap="CMRmap_r",
         **kwargs,
     ):
-        if memory is None:
-            memory = Memory(location=None, verbose=0)
         self.labels_img = labels_img
-
         self.background_label = background_label
-        self._original_region_ids = self._get_labels_values(self.labels_img)
+
         self.labels = labels
-        self._check_mismatch_labels_regions(
-            self._original_region_ids, tolerant=True
-        )
 
         self.mask_img = mask_img
+        self.keep_masked_labels = keep_masked_labels
 
         # Parameters for smooth_array
         self.smoothing_fwhm = smoothing_fwhm
@@ -221,9 +233,7 @@ class NiftiLabelsMasker(BaseMasker):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
-        self.clean_kwargs = {
-            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-        }
+        self.clean_kwargs = kwargs
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -232,41 +242,12 @@ class NiftiLabelsMasker(BaseMasker):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
+
+        # Parameters for reports
         self.reports = reports
-        self._report_content = {
-            "description": (
-                "This reports shows the regions "
-                "defined by the labels of the mask."
-            ),
-            "warning_message": None,
-        }
+        self.cmap = cmap
 
-        available_reduction_strategies = {
-            "mean",
-            "median",
-            "sum",
-            "minimum",
-            "maximum",
-            "standard_deviation",
-            "variance",
-        }
-
-        if strategy not in available_reduction_strategies:
-            raise ValueError(
-                f"Invalid strategy '{strategy}'. "
-                f"Valid strategies are {available_reduction_strategies}."
-            )
         self.strategy = strategy
-
-        if resampling_target not in ("labels", "data", None):
-            raise ValueError(
-                "invalid value for 'resampling_target' "
-                f"parameter: {resampling_target}"
-            )
-
-        self.keep_masked_labels = keep_masked_labels
-
-        self.cmap = kwargs.get("cmap", "gray")
 
     def _get_labels_values(self, labels_image):
         labels_image = image.load_img(labels_image, dtype="int32")
@@ -274,10 +255,9 @@ class NiftiLabelsMasker(BaseMasker):
         return np.unique(labels_image_data)
 
     def _check_labels(self):
-        """Check and clean labels.
+        """Check labels.
 
         - checks that labels is a list of strings.
-        - cast all items of the list into strings if they are bytestrings.
         """
         labels = self.labels
         if labels is not None:
@@ -541,6 +521,55 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        if self.labels_img is None:
+            raise TypeError(
+                "Please provide a valid Nifti-like object for 'labels_img'."
+            )
+
+        available_reduction_strategies = {
+            "mean",
+            "median",
+            "sum",
+            "minimum",
+            "maximum",
+            "standard_deviation",
+            "variance",
+        }
+        if self.strategy not in available_reduction_strategies:
+            raise ValueError(
+                f"Invalid strategy '{self.strategy}'. "
+                f"Valid strategies are {available_reduction_strategies}."
+            )
+
+        if self.resampling_target not in ("labels", "data", None):
+            raise ValueError(
+                "invalid value for 'resampling_target' "
+                f"parameter: {self.resampling_target}"
+            )
+
+        self._original_region_ids = self._get_labels_values(self.labels_img)
+
+        self._check_mismatch_labels_regions(
+            self._original_region_ids, tolerant=True
+        )
+
+        if self.memory is None:
+            self.memory = Memory(location=None, verbose=0)
+
+        self.clean_kwargs = {
+            k[7:]: v
+            for k, v in self.clean_kwargs.items()
+            if k.startswith("clean__")
+        }
+
+        self._report_content = {
+            "description": (
+                "This reports shows the regions "
+                "defined by the labels of the mask."
+            ),
+            "warning_message": None,
+        }
+
         self._check_labels()
 
         repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))

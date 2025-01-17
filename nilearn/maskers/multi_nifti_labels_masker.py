@@ -2,7 +2,7 @@
 
 import itertools
 
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
@@ -25,7 +25,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     Parameters
     ----------
-    labels_img : Niimg-like object
+    labels_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
@@ -109,7 +109,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     def __init__(
         self,
-        labels_img,
+        labels_img=None,
         labels=None,
         background_label=0,
         mask_img=None,
@@ -131,8 +131,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         n_jobs=1,
         **kwargs,
     ):
-        if memory is None:
-            memory = Memory(location=None, verbose=0)
         self.n_jobs = n_jobs
         super().__init__(
             labels_img,
