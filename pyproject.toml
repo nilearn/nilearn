@@ -123,11 +123,11 @@ source = "vcs"
 allow_redefinition = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 exclude = [
+    '.*/tests/test_.*',
     'doc/.*',
     'examples/.*',
     'maint_tools/.*',
     'nilearn_cache/.*',
-    '.*/tests/test_.*',
     'nilearn/_version.py'
 ]
 warn_unreachable = true
@@ -142,23 +142,22 @@ module = [
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
 module = [
+    "IPython.*",
     "joblib.*",
-    "sklearn.*",
-    "scipy.*",
     "kaleido",
-    "plotly.*",
-    "svg.*",
-    "memory_profiler.*",
-    "nilearn._version",
-    "nibabel.*",
-    "rich.*",
-    "statsmodels.*",
-    "ipython.*",
-    "pytest.*",
     "matplotlib.*",
-    "packaging.*",
+    "memory_profiler.*",
     "mpl_toolkits.*",
-    "IPython.*"
+    "nibabel.*",
+    "nilearn._version",
+    "packaging.*",
+    "plotly.*",
+    "pytest.*",
+    "rich.*",
+    "scipy.*",
+    "sklearn.*",
+    "statsmodels.*",
+    "svg.*"
 ]
 
 [tool.pytest.ini_options]
