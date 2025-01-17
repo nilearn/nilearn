@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import ast
 import re
+from pathlib import Path
 
 from numpydoc.docscrape import NumpyDocString
 from rich import print
@@ -63,13 +64,13 @@ def main() -> None:
 
 
 def check_fill_doc_decorator(
-    ast_node: ast.ClassDef | ast.FunctionDef, filename: str
+    ast_node: ast.ClassDef | ast.FunctionDef, filename: str | Path
 ) -> None:
     """Check that fill_doc decorator is present when needed.
 
     Checks if '%(' is present in the doc string
     and warns if the function or class
-    does not have the @fill_doc dcorator.
+    does not have the @fill_doc decorator.
 
     Also warns if the decorator is used for no reason.
     """
@@ -94,7 +95,12 @@ def check_fill_doc_decorator(
                 "- [red]missing @fill_doc decorator."
             )
     elif any(
-        getattr(x, "name", "") == "fill_doc" for x in ast_node.decorator_list
+        (
+            getattr(x, "name", "") == "fill_doc"
+            or getattr(x, "id", "") == "fill_doc"
+            or getattr(x, "attr", "") == "fill_doc"
+        )
+        for x in ast_node.decorator_list
     ):
         print(
             f"{filename}:{ast_node.lineno} "
