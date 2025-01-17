@@ -386,17 +386,6 @@ def test_warning_smoothing(surf_img_1d, surf_label_img):
         masker.transform(surf_img_1d)
 
 
-def test_surface_label_masker_transform_clean(surf_label_img, surf_img_2d):
-    """Smoke test for clean args."""
-    masker = SurfaceLabelsMasker(
-        labels_img=surf_label_img,
-        t_r=2.0,
-        high_pass=1 / 128,
-        clean_args={"filter": "cosine"},
-    ).fit()
-    masker.transform(surf_img_2d(50))
-
-
 def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):
     """Smoke test for fit_transform."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)

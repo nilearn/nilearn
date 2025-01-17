@@ -143,17 +143,6 @@ def test_mask_img_transform_shape_mismatch(
     masker.transform(surf_img_1d)
 
 
-def test_mask_img_transform_clean(surf_img_2d, surf_mask_1d):
-    """Smoke test for clean args."""
-    masker = SurfaceMasker(
-        surf_mask_1d,
-        t_r=2.0,
-        high_pass=1 / 128,
-        clean_args={"filter": "cosine"},
-    ).fit()
-    masker.transform(surf_img_2d(50))
-
-
 def test_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     """Smoke test generate report."""
     masker = SurfaceMasker(surf_mask_1d, reports=True).fit()

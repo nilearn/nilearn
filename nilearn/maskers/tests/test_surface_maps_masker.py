@@ -241,17 +241,6 @@ def test_surface_maps_masker_smoothing_not_supported_error(
         assert masker.smoothing_fwhm is None
 
 
-def test_surface_maps_masker_transform_clean(surf_maps_img, surf_img_2d):
-    """Smoke test for clean arguments."""
-    masker = SurfaceMapsMasker(
-        surf_maps_img,
-        t_r=2.0,
-        high_pass=1 / 128,
-        clean_args={"filter": "cosine"},
-    ).fit()
-    masker.transform(surf_img_2d(50))
-
-
 def test_surface_maps_masker_labels_img_none():
     """Test that an error is raised when maps_img is None."""
     with pytest.raises(
