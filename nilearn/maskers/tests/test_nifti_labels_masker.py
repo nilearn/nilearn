@@ -785,6 +785,7 @@ def test_warning_n_labels_not_equal_n_regions(
 
 
 def test_check_labels_errors(shape_3d_default, affine_eye):
+    """Check that invalid types for labels are caught at fit time."""
     labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
