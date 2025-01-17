@@ -234,7 +234,8 @@ class NiftiSpheresMasker(BaseMasker):
 
     Parameters
     ----------
-    seeds : :obj:`list` of triplet of coordinates in native space
+    seeds : :obj:`list` of triplet of coordinates in native space or None, \
+          default=None
         Seed definitions. List of coordinates of the seeds in the same space
         as the images (typically MNI or TAL).
 
@@ -290,7 +291,7 @@ class NiftiSpheresMasker(BaseMasker):
     # memory and memory_level are used by CacheMixin.
     def __init__(
         self,
-        seeds,
+        seeds=None,
         radius=None,
         mask_img=None,
         allow_overlap=False,
@@ -309,8 +310,6 @@ class NiftiSpheresMasker(BaseMasker):
         reports=True,
         **kwargs,
     ):
-        if memory is None:
-            memory = Memory(location=None, verbose=0)
         self.seeds = seeds
         self.mask_img = mask_img
         self.radius = radius
@@ -328,9 +327,7 @@ class NiftiSpheresMasker(BaseMasker):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
-        self.clean_kwargs = {
-            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-        }
+        self.clean_kwargs = kwargs
 
         # Parameters for joblib
         self.memory = memory
@@ -535,6 +532,15 @@ class NiftiSpheresMasker(BaseMasker):
         if hasattr(self, "seeds_"):
             return self
 
+        if self.memory is None:
+            self.memory = Memory(location=None, verbose=0)
+
+        self.clean_kwargs = {
+            k[7:]: v
+            for k, v in self.clean_kwargs.items()
+            if k.startswith("clean__")
+        }
+
         error = (
             "Seeds must be a list of triplets of coordinates in "
             "native space.\n"
@@ -542,6 +548,9 @@ class NiftiSpheresMasker(BaseMasker):
 
         if self.mask_img is not None:
             self.mask_img_ = check_niimg_3d(self.mask_img)
+            # Just check that the mask is valid
+            masking.load_mask_img(self.mask_img_)
+
         else:
             self.mask_img_ = None
 

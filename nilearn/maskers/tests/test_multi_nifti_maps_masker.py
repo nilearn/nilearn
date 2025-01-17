@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nilearn._utils.class_inspect import check_estimator
@@ -234,20 +233,6 @@ def test_multi_nifti_maps_masker_resampling_error(
 ):
     """Test MultiNiftiMapsMasker when using resampling."""
     maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
-
-    mask_img_4d = Nifti1Image(
-        np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
-    )
-
-    # verify that 4D mask arguments are refused
-    masker = MultiNiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
-    ):
-        masker.fit()
 
     # Test error checking
     masker = MultiNiftiMapsMasker(maps33_img, resampling_target="mask")

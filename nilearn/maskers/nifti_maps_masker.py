@@ -10,6 +10,7 @@ from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.masking import load_mask_img
 
 
 class _ExtractionFunctor:
@@ -432,6 +433,10 @@ class NiftiMapsMasker(BaseMasker):
             msg = f"loading mask from {repr}"
             logger.log(msg=msg, verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
+
+            # Just check that the mask is valid
+            load_mask_img(self.mask_img_)
+
         else:
             self.mask_img_ = None
 

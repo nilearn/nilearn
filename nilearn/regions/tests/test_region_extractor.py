@@ -8,7 +8,7 @@ from scipy.ndimage import label
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_default
+from nilearn.conftest import _img_4d_zeros
 from nilearn.image import get_data
 from nilearn.regions import (
     RegionExtractor,
@@ -20,52 +20,56 @@ from nilearn.regions.region_extractor import (
     _threshold_maps_ratio,
 )
 
-N_REGIONS = 3
-
-MAP_SHAPE = (30, 30, 30)
-
 
 @pytest.fixture
 def negative_regions():
     return False
 
 
-@pytest.fixture(scope="module")
-def dummy_map():
+@pytest.fixture
+def dummy_map(shape_3d_default, n_regions):
     """Generate a small dummy map.
 
     Use for error testing
     """
-    return generate_maps(shape=(6, 6, 6), n_regions=N_REGIONS)[0]
+    return generate_maps(shape=shape_3d_default, n_regions=n_regions)[0]
 
 
 @pytest.fixture
-def labels_img():
-    n_regions = 9  # DO NOT CHANGE (some tests expect this value)
+def labels_img(shape_3d_default, affine_eye, n_regions):
+    # DO NOT CHANGE n_regions (some tests expect this value)
     return generate_labeled_regions(
-        shape=_shape_3d_default(), affine=_affine_eye(), n_regions=n_regions
+        shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
     )
 
 
 @pytest.fixture
-def maps(negative_regions):
+def map_img_3d(rng, affine_eye, shape_3d_default):
+    map_img = np.zeros(shape_3d_default) + 0.1 * rng.standard_normal(
+        size=shape_3d_default
+    )
+    return Nifti1Image(map_img, affine=affine_eye)
+
+
+N_REGIONS = 3
+
+# some tests require larger images
+MAP_SHAPE = (29, 30, 31)
+
+
+@pytest.fixture
+def maps(negative_regions, n_regions):
     return generate_maps(
         shape=MAP_SHAPE,
-        n_regions=N_REGIONS,
+        n_regions=n_regions,
         random_state=42,
         negative_regions=negative_regions,
     )[0]
 
 
 @pytest.fixture
-def maps_and_mask():
-    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42)
-
-
-@pytest.fixture
-def map_img_3d(rng):
-    map_img = np.zeros(MAP_SHAPE) + 0.1 * rng.standard_normal(size=MAP_SHAPE)
-    return Nifti1Image(map_img, affine=_affine_eye())
+def maps_and_mask(n_regions):
+    return generate_maps(shape=MAP_SHAPE, n_regions=n_regions, random_state=42)
 
 
 extra_valid_checks = [
@@ -348,8 +352,7 @@ def test_region_extractor_strategy_percentile(maps_and_mask):
         assert expected_signal_shape == signal.shape
 
 
-def test_region_extractor_high_resolution_image(affine_eye):
-    n_regions = 9
+def test_region_extractor_high_resolution_image(affine_eye, n_regions):
     maps, _ = generate_maps(
         shape=MAP_SHAPE, n_regions=n_regions, affine=0.2 * affine_eye
     )
@@ -363,11 +366,10 @@ def test_region_extractor_high_resolution_image(affine_eye):
     extract_ratio.fit()
 
     assert extract_ratio.regions_img_ != ""
-    assert extract_ratio.regions_img_.shape[-1] >= 9
+    assert extract_ratio.regions_img_.shape[-1] >= n_regions
 
 
-def test_region_extractor_zeros_affine_diagonal(affine_eye):
-    n_regions = 9
+def test_region_extractor_zeros_affine_diagonal(affine_eye, n_regions):
     affine = affine_eye
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
     maps, _ = generate_maps(
