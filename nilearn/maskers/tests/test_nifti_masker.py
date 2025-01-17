@@ -462,8 +462,10 @@ def test_filter_and_mask_error(affine_eye):
 
 def test_filter_and_mask(affine_eye):
     """Test filter_and_mask returns output with correct shape."""
-    data = np.zeros([20, 30, 40, 5])
-    mask = np.ones([20, 30, 40])
+    data_shape = (20, 30, 40, 5)
+    mask_shape = (20, 30, 40)
+    data = np.zeros(data_shape)
+    mask = np.ones(mask_shape)
 
     data_img = Nifti1Image(data, affine_eye)
     mask_img = Nifti1Image(mask, affine_eye)
@@ -474,7 +476,7 @@ def test_filter_and_mask(affine_eye):
 
     # Test return_affine = False
     data = filter_and_mask(data_img, mask_img, params)
-    assert data.shape == (data.shape[3], np.prod(mask.shape))
+    assert data.shape == (data_shape[3], np.prod(np.array(mask.shape)))
 
 
 def test_dtype(shape_3d_default):
