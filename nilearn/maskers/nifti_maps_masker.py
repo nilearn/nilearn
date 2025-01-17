@@ -5,9 +5,10 @@ import warnings
 import numpy as np
 from joblib import Memory
 
-from nilearn import _utils, image
+from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 
@@ -300,7 +301,7 @@ class NiftiMapsMasker(BaseMasker):
         if maps_image is None:
             return [None]
 
-        n_maps = image.get_data(maps_image).shape[-1]
+        n_maps = get_data(maps_image).shape[-1]
 
         maps_to_be_displayed = range(n_maps)
         if isinstance(self.displayed_maps, int):
@@ -340,7 +341,7 @@ class NiftiMapsMasker(BaseMasker):
             self._report_content["warning_message"] = msg
             for component in maps_to_be_displayed:
                 display = plotting.plot_stat_map(
-                    image.index_img(maps_image, component)
+                    index_img(maps_image, component)
                 )
                 embeded_images.append(embed_img(display))
                 display.close()
@@ -357,7 +358,7 @@ class NiftiMapsMasker(BaseMasker):
         for component in maps_to_be_displayed:
             # Find the cut coordinates
             cut_coords = plotting.find_xyz_cut_coords(
-                image.index_img(maps_image, component)
+                index_img(maps_image, component)
             )
             display = plotting.plot_img(
                 img,
@@ -366,7 +367,7 @@ class NiftiMapsMasker(BaseMasker):
                 cmap=self.cmap,
             )
             display.add_overlay(
-                image.index_img(maps_image, component),
+                index_img(maps_image, component),
                 cmap=plotting.cm.black_blue,
             )
             embeded_images.append(embed_img(display))
@@ -397,7 +398,7 @@ class NiftiMapsMasker(BaseMasker):
         self.maps_img_ = _utils.check_niimg(
             self.maps_img, dtype=self.dtype, atleast_4d=True
         )
-        self.maps_img_ = image.clean_img(
+        self.maps_img_ = clean_img(
             self.maps_img_,
             detrend=False,
             standardize=False,
@@ -427,7 +428,7 @@ class NiftiMapsMasker(BaseMasker):
 
             # TODO switch to force_resample=True
             # when bumping to version > 0.13
-            self.maps_img_ = image.resample_img(
+            self.maps_img_ = resample_img(
                 self.maps_img_,
                 target_affine=self.mask_img_.affine,
                 target_shape=self.mask_img_.shape,
@@ -442,7 +443,7 @@ class NiftiMapsMasker(BaseMasker):
 
             # TODO switch to force_resample=True
             # when bumping to version > 0.13
-            self.mask_img_ = image.resample_img(
+            self.mask_img_ = resample_img(
                 self.mask_img_,
                 target_affine=self.maps_img_.affine,
                 target_shape=self.maps_img_.shape[:3],
@@ -561,7 +562,7 @@ class NiftiMapsMasker(BaseMasker):
                 logger.log("Resampling maps", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
-                self._resampled_maps_img_ = self._cache(image.resample_img)(
+                self._resampled_maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
                     interpolation="continuous",
                     target_shape=ref_img.shape[:3],
@@ -580,7 +581,7 @@ class NiftiMapsMasker(BaseMasker):
                 logger.log("Resampling mask", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
-                self._resampled_mask_img_ = self._cache(image.resample_img)(
+                self._resampled_mask_img_ = self._cache(resample_img)(
                     self.mask_img_,
                     interpolation="nearest",
                     target_shape=ref_img.shape[:3],
@@ -593,7 +594,7 @@ class NiftiMapsMasker(BaseMasker):
             # Check if there is an overlap.
 
             # If float, we set low values to 0
-            data = image.get_data(self._resampled_maps_img_)
+            data = get_data(self._resampled_maps_img_)
             dtype = data.dtype
             if dtype.kind == "f":
                 data[data < np.finfo(dtype).eps] = 0.0

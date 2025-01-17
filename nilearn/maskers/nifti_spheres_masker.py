@@ -11,7 +11,6 @@ from joblib import Memory
 from scipy import sparse
 from sklearn import neighbors
 
-from nilearn import image, masking
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -22,8 +21,11 @@ from nilearn._utils.niimg_conversions import (
     safe_get_data,
 )
 from nilearn.datasets import load_mni152_template
+from nilearn.image import resample_img
+from nilearn.image.resampling import coord_transform
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
 
 
 def apply_mask_and_get_affinity(
@@ -72,7 +74,7 @@ def apply_mask_and_get_affinity(
 
     # Compute world coordinates of all in-mask voxels.
     if niimg is None:
-        mask, affine = masking.load_mask_img(mask_img)
+        mask, affine = load_mask_img(mask_img)
         # Get coordinate for all voxels inside of mask
         mask_coords = np.asarray(np.nonzero(mask)).T.tolist()
         X = None
@@ -82,7 +84,7 @@ def apply_mask_and_get_affinity(
         mask_img = check_niimg_3d(mask_img)
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
-        mask_img = image.resample_img(
+        mask_img = resample_img(
             mask_img,
             target_affine=affine,
             target_shape=niimg.shape[:3],
@@ -90,10 +92,10 @@ def apply_mask_and_get_affinity(
             copy_header=True,
             force_resample=False,
         )
-        mask, _ = masking.load_mask_img(mask_img)
+        mask, _ = load_mask_img(mask_img)
         mask_coords = list(zip(*np.where(mask != 0)))
 
-        X = masking.apply_mask_fmri(niimg, mask_img)
+        X = apply_mask_fmri(niimg, mask_img)
 
     elif niimg is not None:
         affine = niimg.affine
@@ -114,9 +116,7 @@ def apply_mask_and_get_affinity(
     # For each seed, get coordinates of nearest voxel
     nearests = []
     for sx, sy, sz in seeds:
-        nearest = np.round(
-            image.resampling.coord_transform(sx, sy, sz, np.linalg.inv(affine))
-        )
+        nearest = np.round(coord_transform(sx, sy, sz, np.linalg.inv(affine)))
         nearest = nearest.astype(int)
         nearest = (nearest[0], nearest[1], nearest[2])
         try:
@@ -125,7 +125,7 @@ def apply_mask_and_get_affinity(
             nearests.append(None)
 
     mask_coords = np.asarray(list(zip(*mask_coords)))
-    mask_coords = image.resampling.coord_transform(
+    mask_coords = coord_transform(
         mask_coords[0], mask_coords[1], mask_coords[2], affine
     )
     mask_coords = np.asarray(mask_coords).T
@@ -447,9 +447,7 @@ class NiftiSpheresMasker(BaseMasker):
         else:
             positions = [
                 np.round(
-                    image.resampling.coord_transform(
-                        *seed, np.linalg.inv(img.affine)
-                    )
+                    coord_transform(*seed, np.linalg.inv(img.affine))
                 ).astype(int)
                 for seed in seeds
             ]
@@ -556,7 +554,7 @@ class NiftiSpheresMasker(BaseMasker):
                 if self.mask_img_ is not None:
                     # TODO switch to force_resample=True
                     # when bumping to version > 0.13
-                    resampl_imgs = self._cache(image.resample_img)(
+                    resampl_imgs = self._cache(resample_img)(
                         X,
                         target_affine=self.mask_img_.affine,
                         copy=False,
@@ -770,4 +768,4 @@ class NiftiSpheresMasker(BaseMasker):
             adjacency = adjacency.dot(sparse.diags(scale))
 
         img = adjacency.T.dot(region_signals.T).T
-        return masking.unmask(img, self.mask_img)
+        return unmask(img, self.mask_img)

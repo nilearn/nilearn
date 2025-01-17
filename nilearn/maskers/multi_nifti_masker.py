@@ -11,7 +11,6 @@ from functools import partial
 
 from joblib import Parallel, delayed
 
-from nilearn import image, masking
 from nilearn._utils import (
     CacheMixin,
     check_niimg_3d,
@@ -25,32 +24,35 @@ from nilearn._utils.class_inspect import (
 )
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.image import resample_img
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
+from nilearn.masking import (
+    compute_multi_background_mask,
+    compute_multi_brain_mask,
+    compute_multi_epi_mask,
+    load_mask_img,
+)
 
 
 def _get_mask_strategy(strategy):
     """Return the mask computing method based on a provided strategy."""
     if strategy == "background":
-        return masking.compute_multi_background_mask
+        return compute_multi_background_mask
     elif strategy == "epi":
-        return masking.compute_multi_epi_mask
+        return compute_multi_epi_mask
     elif strategy == "whole-brain-template":
-        return partial(
-            masking.compute_multi_brain_mask, mask_type="whole-brain"
-        )
+        return partial(compute_multi_brain_mask, mask_type="whole-brain")
     elif strategy == "gm-template":
-        return partial(masking.compute_multi_brain_mask, mask_type="gm")
+        return partial(compute_multi_brain_mask, mask_type="gm")
     elif strategy == "wm-template":
-        return partial(masking.compute_multi_brain_mask, mask_type="wm")
+        return partial(compute_multi_brain_mask, mask_type="wm")
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated. "
             "Please use 'whole-brain-template' instead."
         )
-        return partial(
-            masking.compute_multi_brain_mask, mask_type="whole-brain"
-        )
+        return partial(compute_multi_brain_mask, mask_type="whole-brain")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -327,7 +329,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
-        self.mask_img_ = self._cache(image.resample_img)(
+        self.mask_img_ = self._cache(resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
             target_shape=self.target_shape,
@@ -343,7 +345,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             self.affine_ = self.mask_img_.affine
 
         # Load data in memory, while also checking that mask is binary/valid
-        data, _ = masking.load_mask_img(self.mask_img_, allow_empty=True)
+        data, _ = load_mask_img(self.mask_img_, allow_empty=True)
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
@@ -355,7 +357,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             if imgs is not None:
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
-                resampl_imgs = self._cache(image.resample_img)(
+                resampl_imgs = self._cache(resample_img)(
                     imgs,
                     target_affine=self.affine_,
                     copy=False,
