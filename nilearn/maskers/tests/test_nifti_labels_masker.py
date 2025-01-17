@@ -145,7 +145,10 @@ def test_nifti_labels_masker_errors(
     masker = NiftiLabelsMasker()
     with pytest.raises(
         TypeError,
-        match="Please provide a valid Nifti-like object for 'labels_img'.",
+        match=(
+            "Data given cannot be loaded "
+            "because it is not compatible with nibabel format"
+        ),
     ):
         masker.fit()
 
