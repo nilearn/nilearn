@@ -111,13 +111,18 @@ def get_colorbar_and_data_ranges(
         if vmin is None and vmax is None:
             vmax = max(-stat_map_min, stat_map_max)
             vmin = -vmax
-        elif vmin is None:
+        elif vmin is None and vmax >= 0:
             vmin = -vmax
-        elif vmax is None:
+        elif vmax is None and vmin <= 0:
             vmax = -vmin
         elif not np.isclose(vmin, -vmax):
             raise ValueError(
                 "vmin must be equal to -vmax unless symmetric_cbar is False."
+            )
+        else:
+            raise ValueError(
+                "vmin and vmax values are not compatible with symmetric "
+                f"colorbar. vmin={vmin}, vmax={vmax}"
             )
         cbar_vmin = vmin
         cbar_vmax = vmax
