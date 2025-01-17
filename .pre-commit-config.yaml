@@ -96,4 +96,4 @@ repos:
     hooks:
     -   id: mypy
         files: nilearn
-        args: [--config-file, pyproject.toml, --install-types, --non-interactive, --pretty, -v]
+        args: [--config-file, pyproject.toml, --install-types, --non-interactive, --pretty]
