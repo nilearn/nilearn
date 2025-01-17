@@ -315,11 +315,17 @@ def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
     new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, n_ticks)
     if threshold is not None:
         # Case where cbar is either all positive or all negative
-        if 0 <= cbar_vmin <= cbar_vmax or cbar_vmin <= cbar_vmax <= 0:
+        all_positive = 0 <= cbar_vmin <= cbar_vmax
+        all_negative = cbar_vmin <= cbar_vmax <= 0
+        abs_threshold = abs(threshold)
+        if all_positive or all_negative:
             idx_closest = np.argmin(
-                [abs(abs(tick) - threshold) for tick in new_tick_locs]
+                [abs(abs(tick) - abs_threshold) for tick in new_tick_locs]
             )
-            new_tick_locs[idx_closest] = threshold
+            if all_positive:
+                new_tick_locs[idx_closest] = min(cbar_vmax, abs_threshold)
+            if all_negative:
+                new_tick_locs[idx_closest] = max(cbar_vmin, -abs_threshold)
         # Case where we do a symmetric thresholding
         # within an asymmetric cbar
         # and both threshold values are within bounds
@@ -333,7 +339,7 @@ def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
                 [abs(tick - threshold) for tick in new_tick_locs]
             )
             new_tick_locs[idx_closest] = (
-                -threshold if threshold > cbar_vmax else threshold
+                cbar_vmax if threshold > cbar_vmax else cbar_vmin
             )
     return new_tick_locs
 
