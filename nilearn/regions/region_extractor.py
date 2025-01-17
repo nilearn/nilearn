@@ -274,7 +274,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     Parameters
     ----------
-    maps_img : 4D Niimg-like object
+    maps_img : 4D Niimg-like object or None, default=None
         Image containing a set of whole brain atlas maps or statistically
         decomposed brain maps.
 
@@ -390,7 +390,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     def __init__(
         self,
-        maps_img,
+        maps_img=None,
         mask_img=None,
         min_region_size=1350,
         threshold=1.0,

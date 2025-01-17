@@ -389,11 +389,6 @@ class NiftiMapsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
-        if self.maps_img is None:
-            raise TypeError(
-                "Please provide a valid 4D Nifti-like object for 'maps_img'."
-            )
-
         if self.resampling_target not in ("mask", "maps", "data", None):
             raise ValueError(
                 "invalid value for 'resampling_target' "

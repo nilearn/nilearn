@@ -172,7 +172,10 @@ def test_nifti_maps_masker_errors(
     masker = NiftiMapsMasker()
     with pytest.raises(
         TypeError,
-        match="Please provide a valid 4D Nifti-like object for 'maps_img'.",
+        match=(
+            "Data given cannot be loaded "
+            "because it is not compatible with nibabel format"
+        ),
     ):
         masker.fit()
 
