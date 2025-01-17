@@ -681,6 +681,7 @@ def test_nifti_labels_masker_resampling_to_none(
 
 
 def test_standardization(rng, affine_eye, shape_3d_default, n_regions):
+    """Check output properly standardized with 'standardize' parameter."""
     n_samples = 400
 
     signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))
@@ -768,6 +769,7 @@ def test_nifti_labels_masker_with_mask(
 def test_warning_n_labels_not_equal_n_regions(
     shape_3d_default, affine_eye, background, n_regions
 ):
+    """Check that n_labels provided match n_regions in image."""
     labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
@@ -988,6 +990,7 @@ def check_region_names_ids_match_after_fit(
 
 
 def generate_labels(n_regions, background=True):
+    """Create list of strings to use as labels."""
     labels = []
     if background:
         labels.append(background)

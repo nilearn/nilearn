@@ -89,6 +89,9 @@ def test_fit_transform(y, img_3d_rand_eye, mask_img_1):
 
 
 def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
+    """Warn that mask creation is happening \
+        when mask was provided at instantiation.
+    """
     y = np.ones((9, 9, 9))
     masker = NiftiMasker(mask_img=mask_img_1)
     with pytest.warns(
@@ -437,6 +440,7 @@ def test_compute_brain_mask(strategy, mask_args, expected_mask):
 
 
 def test_filter_and_mask_error(affine_eye):
+    """Check filter_and_mask fails if mask if 4D."""
     data = np.zeros([20, 30, 40, 5])
     mask = np.zeros([20, 30, 40, 2])
     mask[10, 15, 20, :] = 1
@@ -457,6 +461,7 @@ def test_filter_and_mask_error(affine_eye):
 
 
 def test_filter_and_mask(affine_eye):
+    """Test filter_and_mask returns output with correct shape."""
     data = np.zeros([20, 30, 40, 5])
     mask = np.ones([20, 30, 40])
 
@@ -469,10 +474,11 @@ def test_filter_and_mask(affine_eye):
 
     # Test return_affine = False
     data = filter_and_mask(data_img, mask_img, params)
-    assert data.shape == (5, 24000)
+    assert data.shape == (data.shape[3], np.prod(mask.shape))
 
 
 def test_dtype(shape_3d_default):
+    """Check type of output."""
     data_32 = np.zeros(shape_3d_default, dtype=np.float32)
     data_64 = np.zeros(shape_3d_default, dtype=np.float64)
     data_32[2:-2, 2:-2, 2:-2] = 10
@@ -494,6 +500,7 @@ def test_dtype(shape_3d_default):
 
 
 def test_standardization(rng, shape_3d_default, affine_eye):
+    """Check output properly standardized with 'standardize' parameter."""
     n_samples = 500
 
     signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))

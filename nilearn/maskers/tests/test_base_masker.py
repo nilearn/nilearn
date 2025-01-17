@@ -55,8 +55,10 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 
 
 def test_cropping_code_paths(rng):
-    # Will mask data with an identically sampled mask and
-    # with a smaller mask. The results must be identical
+    """Mask data with an identically sampled mask and with a smaller mask.
+
+    The results must be identical.
+    """
     data = np.zeros([20, 30, 40, 5])
     data[10:15, 5:20, 10:30, :] = 1.0 + rng.uniform(size=(5, 15, 20, 5))
 
