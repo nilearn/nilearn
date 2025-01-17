@@ -26,6 +26,6 @@ jobs:
             with:
                 python-version: '3.9'
         -   name: Install dependencies for building Nilearn
-            run: python -m pip tox
+            run: python -m pip install tox
         -   name: Run mypy via tox
             run: tox run -e mypy
