@@ -199,8 +199,11 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
     """
     from nilearn.conftest import _affine_eye, _img_3d_rand
 
-    mask = np.zeros((10, 11, 12))
-    mask[1, 1, 1] = 1
+    # TODO
+    # (29, 30, 31) is used to match MAP_SHAPE in
+    # nilearn/regions/tests/test_region_extractor.py
+    # this test would fail for RegionExtractor otherwise
+    mask = np.ones((29, 30, 31))
     mask_img = Nifti1Image(mask, affine=_affine_eye())
 
     estimator.mask_img = mask_img

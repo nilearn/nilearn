@@ -5,6 +5,7 @@ import pytest
 from nibabel import Nifti1Image
 from scipy.ndimage import label
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.exceptions import DimensionError
 from nilearn.conftest import _img_4d_zeros
@@ -69,6 +70,57 @@ def maps(negative_regions, n_regions):
 @pytest.fixture
 def maps_and_mask(n_regions):
     return generate_maps(shape=MAP_SHAPE, n_regions=n_regions, random_state=42)
+
+
+extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_estimators_fit_returns_self",
+    "check_estimators_unfitted",
+    "check_fit_check_is_fitted",
+    "check_parameters_default_constructible",
+    "check_positive_only_tag_during_fit",
+    "check_readonly_memmap_input",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            RegionExtractor(
+                maps_img=generate_maps(
+                    shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+                )[0]
+            )
+        ],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            RegionExtractor(
+                maps_img=generate_maps(
+                    shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+                )[0]
+            )
+        ],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize("invalid_threshold", ["80%", "auto", -1.0])

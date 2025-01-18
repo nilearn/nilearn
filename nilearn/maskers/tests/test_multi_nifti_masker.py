@@ -257,6 +257,7 @@ def test_dtype(affine_eye):
 
 
 def test_standardization(rng, shape_3d_default, affine_eye):
+    """Check output properly standardized with 'standardize' parameter."""
     n_samples = 500
 
     signals = rng.standard_normal(
