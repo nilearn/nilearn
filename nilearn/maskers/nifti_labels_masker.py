@@ -6,11 +6,13 @@ import numpy as np
 from joblib import Memory
 from nibabel import Nifti1Image
 
-from nilearn import _utils, image, masking
+from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn.image import get_data, load_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.masking import load_mask_img
 
 
 class _ExtractionFunctor:
@@ -250,8 +252,8 @@ class NiftiLabelsMasker(BaseMasker):
         self.strategy = strategy
 
     def _get_labels_values(self, labels_image):
-        labels_image = image.load_img(labels_image, dtype="int32")
-        labels_image_data = image.get_data(labels_image)
+        labels_image = load_img(labels_image, dtype="int32")
+        labels_image_data = get_data(labels_image)
         return np.unique(labels_image_data)
 
     def _check_labels(self):
@@ -423,8 +425,8 @@ class NiftiLabelsMasker(BaseMasker):
             if self.labels is None:
                 columns.remove("region name")
 
-            labels_image = image.load_img(labels_image, dtype="int32")
-            labels_image_data = image.get_data(labels_image)
+            labels_image = load_img(labels_image, dtype="int32")
+            labels_image_data = get_data(labels_image)
             labels_image_affine = labels_image.affine
 
             regions_summary = {c: [] for c in columns}
@@ -521,11 +523,6 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
-        if self.labels_img is None:
-            raise TypeError(
-                "Please provide a valid Nifti-like object for 'labels_img'."
-            )
-
         available_reduction_strategies = {
             "mean",
             "median",
@@ -546,12 +543,6 @@ class NiftiLabelsMasker(BaseMasker):
                 "invalid value for 'resampling_target' "
                 f"parameter: {self.resampling_target}"
             )
-
-        self._original_region_ids = self._get_labels_values(self.labels_img)
-
-        self._check_mismatch_labels_regions(
-            self._original_region_ids, tolerant=True
-        )
 
         if self.memory is None:
             self.memory = Memory(location=None, verbose=0)
@@ -576,6 +567,12 @@ class NiftiLabelsMasker(BaseMasker):
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
+
+        self._original_region_ids = self._get_labels_values(self.labels_img_)
+
+        self._check_mismatch_labels_regions(
+            self._original_region_ids, tolerant=True
+        )
 
         # create _region_id_name dictionary
         # this dictionary will be used to store region names and
@@ -654,7 +651,7 @@ class NiftiLabelsMasker(BaseMasker):
                 logger.log("resampling the mask", verbose=self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
-                self.mask_img_ = image.resample_img(
+                self.mask_img_ = resample_img(
                     self.mask_img_,
                     target_affine=self.labels_img_.affine,
                     target_shape=self.labels_img_.shape[:3],
@@ -671,7 +668,7 @@ class NiftiLabelsMasker(BaseMasker):
                 )
 
             # Just check that the mask is valid
-            masking.load_mask_img(self.mask_img_)
+            load_mask_img(self.mask_img_)
 
         if not hasattr(self, "_resampled_labels_img_"):
             # obviates need to run .transform() before .inverse_transform()
@@ -695,7 +692,7 @@ class NiftiLabelsMasker(BaseMasker):
         # This is equal to the number of unique values in the label image,
         # minus the background value.
         self.n_elements_ = (
-            np.unique(image.get_data(self._resampled_labels_img_)).size - 1
+            np.unique(get_data(self._resampled_labels_img_)).size - 1
         )
 
         return self
@@ -811,7 +808,7 @@ class NiftiLabelsMasker(BaseMasker):
             ):
                 logger.log("Resampling mask", self.verbose)
                 self._resampled_mask_img = self._cache(
-                    image.resample_img, func_memory_level=2
+                    resample_img, func_memory_level=2
                 )(
                     self.mask_img_,
                     interpolation="nearest",
@@ -896,7 +893,7 @@ class NiftiLabelsMasker(BaseMasker):
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
         )
         self._resampled_labels_img_ = self._cache(
-            image.resample_img, func_memory_level=2
+            resample_img, func_memory_level=2
         )(
             self.labels_img_,
             interpolation="nearest",

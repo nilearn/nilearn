@@ -11,7 +11,6 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.class_inspect import check_estimator
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
@@ -145,7 +144,6 @@ def test_3d_images():
     masker = MultiNiftiMasker(mask_img=mask_img)
 
     # Check attributes defined at fit
-    assert not hasattr(masker, "mask_img_")
     assert not hasattr(masker, "n_elements_")
 
     epis = masker.fit_transform([epi_img1, epi_img2])
@@ -154,19 +152,7 @@ def test_3d_images():
     assert len(epis) == 2
 
     # Check attributes defined at fit
-    assert hasattr(masker, "mask_img_")
     assert hasattr(masker, "n_elements_")
-
-
-def test_3d_images_error(img_4d_ones_eye):
-    """Verify that 4D mask arguments are refused."""
-    masker2 = MultiNiftiMasker(mask_img=img_4d_ones_eye)
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided a 4D image.",
-    ):
-        masker2.fit()
 
 
 def test_joblib_cache(mask_img_1, tmp_path):
@@ -272,6 +258,7 @@ def test_dtype(affine_eye):
 
 
 def test_standardization(rng, shape_3d_default, affine_eye):
+    """Check output properly standardized with 'standardize' parameter."""
     n_samples = 500
 
     signals = rng.standard_normal(

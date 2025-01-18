@@ -234,6 +234,7 @@ def test_is_nifti_spheres_masker_give_nans(rng):
 
 
 def test_standardization(rng):
+    """Check output properly standardized with 'standardize' parameter."""
     data = rng.random((3, 3, 3, 5))
     img = Nifti1Image(data, np.eye(4))
 

@@ -69,7 +69,7 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 
 
 def test_multi_nifti_labels_masker():
-    # Check working of shape/affine checks
+    """Check working of shape/affine checks."""
     shape1 = (13, 11, 12)
     affine1 = np.eye(4)
 
@@ -92,20 +92,6 @@ def test_multi_nifti_labels_masker():
     labels11_img = data_gen.generate_labeled_regions(
         shape1, affine=affine1, n_regions=n_regions
     )
-
-    mask_img_4d = Nifti1Image(
-        np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
-    )
-
-    # verify that 4D mask arguments are refused
-    masker = MultiNiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
-    ):
-        masker.fit()
 
     # check exception when transform() called without prior fit()
     masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
@@ -225,7 +211,7 @@ def test_multi_nifti_labels_masker_reduction_strategies():
 
 
 def test_multi_nifti_labels_masker_resampling(tmp_path):
-    # Test resampling in MultiNiftiLabelsMasker
+    """Test resampling in MultiNiftiLabelsMasker."""
     shape1 = (10, 11, 12)
     affine = np.eye(4)
 

@@ -405,18 +405,28 @@ def img_atlas(shape_3d_default, affine_mni):
     }
 
 
-@pytest.fixture
-def n_regions():
+def _n_regions():
     """Return a default numher of regions for maps."""
     return 9
 
 
 @pytest.fixture
-def img_maps(shape_3d_default, n_regions, affine_eye):
+def n_regions():
+    """Return a default numher of regions for maps."""
+    return _n_regions()
+
+
+def _img_maps():
     """Generate a default map image."""
     return generate_maps(
-        shape=shape_3d_default, n_regions=n_regions, affine=affine_eye
+        shape=_shape_3d_default(), n_regions=_n_regions(), affine=_affine_eye()
     )[0]
+
+
+@pytest.fixture
+def img_maps():
+    """Generate fixture for default map image."""
+    return _img_maps()
 
 
 @pytest.fixture

@@ -2,6 +2,8 @@
 
 import numpy as np
 from numpy.testing import assert_array_equal, assert_raises
+from nibabel import Nifti1Image
+
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.utils.estimator_checks import (
@@ -9,6 +11,7 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._utils import compare_version
+from nilearn._utils.exceptions import DimensionError
 
 # List of sklearn estimators checks that are valid
 # for all nilearn estimators.
@@ -30,6 +33,9 @@ VALID_CHECKS = [
     "check_nifti_masker_fit_list_3d",
     "check_surface_masker_clean",
     "check_surface_masker_detrending",
+    "check_nifti_masker_fit_with_3d_mask",
+    "check_nifti_masker_fit_with_4d_mask",
+    "check_nifti_masker_fit_with_empty_mask",
 ]
 
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -164,6 +170,10 @@ def nilearn_check_estimator(estimator):
 
         if niimg_input:
             yield (clone(estimator), check_nifti_masker_fit_list_3d)
+            yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
+            yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
+            yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)      
+      
             if not is_multimasker(estimator):
                 yield (clone(estimator), check_nifti_masker_detrending)
                 yield (clone(estimator), check_nifti_masker_clean)
@@ -172,8 +182,8 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_surface_masker_detrending)
             yield (clone(estimator), check_surface_masker_clean)
 
+def is_multimasker(estimator):            
 
-def is_multimasker(estimator):
     tags = estimator._more_tags()
 
     # TODO remove first if when dropping sklearn 1.5
@@ -300,6 +310,54 @@ def check_nifti_masker_fit_list_3d(estimator):
     from nilearn.conftest import _img_3d_rand
 
     estimator.fit([_img_3d_rand(), _img_3d_rand()])
+
+
+def check_nifti_masker_fit_with_3d_mask(estimator):
+    """Check 3D mask can be used with nifti maskers.
+
+    Mask can have different shape than fitted image.
+    """
+    from nilearn.conftest import _affine_eye, _img_3d_rand
+
+    # TODO
+    # (29, 30, 31) is used to match MAP_SHAPE in
+    # nilearn/regions/tests/test_region_extractor.py
+    # this test would fail for RegionExtractor otherwise
+    mask = np.ones((29, 30, 31))
+    mask_img = Nifti1Image(mask, affine=_affine_eye())
+
+    estimator.mask_img = mask_img
+
+    assert not hasattr(estimator, "mask_img_")
+
+    estimator.fit([_img_3d_rand()])
+
+    assert hasattr(estimator, "mask_img_")
+
+
+def check_nifti_masker_fit_with_empty_mask(estimator):
+    """Check mask that excludes all voxels raise an error."""
+    import pytest
+
+    from nilearn.conftest import _img_3d_rand, _img_3d_zeros
+
+    estimator.mask_img = _img_3d_zeros()
+    with pytest.raises(
+        ValueError,
+        match="The mask is invalid as it is empty: it masks all data",
+    ):
+        estimator.fit([_img_3d_rand()])
+
+
+def check_nifti_masker_fit_with_4d_mask(estimator):
+    """Check 4D mask cannot be used with nifti maskers."""
+    import pytest
+
+    from nilearn.conftest import _img_3d_rand, _img_4d_zeros
+
+    with pytest.raises(DimensionError, match="Expected dimension is 3D"):
+        estimator.mask_img = _img_4d_zeros()
+        estimator.fit([_img_3d_rand()])
 
 
 def get_params(cls, instance, ignore=None):

@@ -89,6 +89,9 @@ def test_fit_transform(y, img_3d_rand_eye, mask_img_1):
 
 
 def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
+    """Warn that mask creation is happening \
+        when mask was provided at instantiation.
+    """
     y = np.ones((9, 9, 9))
     masker = NiftiMasker(mask_img=mask_img_1)
     with pytest.warns(
@@ -182,17 +185,6 @@ def test_matrix_orientation():
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
-def test_mask_3d_error(shape_4d_default, affine_eye):
-    """Raise an error if 4D mask is provided with no img to fit."""
-    # Dummy mask
-    data = np.zeros(shape_4d_default)
-    data[5, 5, 5] = 1
-    mask_img = Nifti1Image(data, affine_eye)
-    masker = NiftiMasker(mask_img=mask_img)
-    with pytest.raises(TypeError, match="Expected dimension is 3D"):
-        masker.fit()
-
-
 def test_mask_4d(shape_3d_default, affine_eye):
     """Test performance with 4D data."""
     # Dummy mask
@@ -258,13 +250,11 @@ def test_4d_single_scan(rng, shape_3d_default, affine_eye):
     masker = NiftiMasker(mask_img=mask_img)
 
     # Check attributes defined at fit
-    assert not hasattr(masker, "mask_img_")
     assert not hasattr(masker, "n_elements_")
 
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "mask_img_")
     assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == np.sum(mask)
 
@@ -437,6 +427,7 @@ def test_compute_brain_mask(strategy, mask_args, expected_mask):
 
 
 def test_filter_and_mask_error(affine_eye):
+    """Check filter_and_mask fails if mask if 4D."""
     data = np.zeros([20, 30, 40, 5])
     mask = np.zeros([20, 30, 40, 2])
     mask[10, 15, 20, :] = 1
@@ -457,8 +448,11 @@ def test_filter_and_mask_error(affine_eye):
 
 
 def test_filter_and_mask(affine_eye):
-    data = np.zeros([20, 30, 40, 5])
-    mask = np.ones([20, 30, 40])
+    """Test filter_and_mask returns output with correct shape."""
+    data_shape = (20, 30, 40, 5)
+    mask_shape = (20, 30, 40)
+    data = np.zeros(data_shape)
+    mask = np.ones(mask_shape)
 
     data_img = Nifti1Image(data, affine_eye)
     mask_img = Nifti1Image(mask, affine_eye)
@@ -469,10 +463,11 @@ def test_filter_and_mask(affine_eye):
 
     # Test return_affine = False
     data = filter_and_mask(data_img, mask_img, params)
-    assert data.shape == (5, 24000)
+    assert data.shape == (data_shape[3], np.prod(np.array(mask.shape)))
 
 
 def test_dtype(shape_3d_default):
+    """Check type of output."""
     data_32 = np.zeros(shape_3d_default, dtype=np.float32)
     data_64 = np.zeros(shape_3d_default, dtype=np.float64)
     data_32[2:-2, 2:-2, 2:-2] = 10
@@ -494,6 +489,7 @@ def test_dtype(shape_3d_default):
 
 
 def test_standardization(rng, shape_3d_default, affine_eye):
+    """Check output properly standardized with 'standardize' parameter."""
     n_samples = 500
 
     signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))

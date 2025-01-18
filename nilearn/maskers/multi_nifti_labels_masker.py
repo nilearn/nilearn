@@ -4,11 +4,10 @@ import itertools
 
 from joblib import Parallel, delayed
 
+from nilearn._utils import fill_doc
+from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
-
-from .._utils import fill_doc
-from .._utils.niimg_conversions import iter_check_niimg
-from .nifti_labels_masker import NiftiLabelsMasker
+from nilearn.maskers.nifti_labels_masker import NiftiLabelsMasker
 
 
 @fill_doc
