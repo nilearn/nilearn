@@ -69,7 +69,7 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 
 
 def test_multi_nifti_labels_masker():
-    # Check working of shape/affine checks
+    """Check working of shape/affine checks."""
     shape1 = (13, 11, 12)
     affine1 = np.eye(4)
 
@@ -211,7 +211,7 @@ def test_multi_nifti_labels_masker_reduction_strategies():
 
 
 def test_multi_nifti_labels_masker_resampling(tmp_path):
-    # Test resampling in MultiNiftiLabelsMasker
+    """Test resampling in MultiNiftiLabelsMasker."""
     shape1 = (10, 11, 12)
     affine = np.eye(4)
 
