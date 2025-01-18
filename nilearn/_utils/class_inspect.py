@@ -1,9 +1,8 @@
 """Small utilities to inspect classes."""
 
 import numpy as np
-from numpy.testing import assert_array_equal, assert_raises
 from nibabel import Nifti1Image
-
+from numpy.testing import assert_array_equal, assert_raises
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.utils.estimator_checks import (
@@ -172,8 +171,8 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_fit_list_3d)
             yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
-            yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)      
-      
+            yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)
+
             if not is_multimasker(estimator):
                 yield (clone(estimator), check_nifti_masker_detrending)
                 yield (clone(estimator), check_nifti_masker_clean)
@@ -182,8 +181,8 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_surface_masker_detrending)
             yield (clone(estimator), check_surface_masker_clean)
 
-def is_multimasker(estimator):            
 
+def is_multimasker(estimator):
     tags = estimator._more_tags()
 
     # TODO remove first if when dropping sklearn 1.5
