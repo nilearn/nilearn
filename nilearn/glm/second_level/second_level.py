@@ -743,7 +743,10 @@ class SecondLevelModel(BaseGLM):
             keyed by the type of image.
 
         """
-        if self.second_level_input_ is None:
+        if (
+            not hasattr(self, "second_level_input_")
+            or self.second_level_input_ is None
+        ):
             raise ValueError("The model has not been fit yet.")
 
         # check first_level_contrast
@@ -864,7 +867,12 @@ class SecondLevelModel(BaseGLM):
                 "when initializing the `SecondLevelModel`-object."
             )
 
-        if self.labels_ is None or self.results_ is None:
+        if (
+            not hasattr(self, "labels_")
+            or not hasattr(self, "results_")
+            or self.labels_ is None
+            or self.results_ is None
+        ):
             raise ValueError(
                 "The model has no results. This could be "
                 "because the model has not been fitted yet "
