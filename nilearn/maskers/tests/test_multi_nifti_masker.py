@@ -17,7 +17,6 @@ from nilearn.maskers import MultiNiftiMasker
 
 extra_valid_checks = [
     "check_estimators_unfitted",
-    "check_get_params_invariance",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
     "check_parameters_default_constructible",
