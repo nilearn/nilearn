@@ -348,8 +348,12 @@ def test_generate_report_engine_no_plotly_warning(surf_maps_img, surf_img_2d):
     assert masker._report_content["engine"] == "matplotlib"
 
 
+@pytest.mark.skipif(
+    is_matplotlib_installed(),
+    reason="Test requires matplotlib not to be installed.",
+)
 def test_generate_report_engine_no_matplotlib_warning(
-    matplotlib_pyplot, surf_maps_img, surf_img_2d
+    surf_maps_img, surf_img_2d
 ):
     """Test warning is raised when engine selected is matplotlib but it is not
     installed.
