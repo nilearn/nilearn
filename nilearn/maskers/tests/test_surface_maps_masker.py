@@ -9,7 +9,6 @@ import pytest
 
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
-
 from nilearn.conftest import _make_mesh, _rng
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
