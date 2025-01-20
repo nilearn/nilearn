@@ -63,6 +63,21 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+def test_rena_clustering_mask_error():
+    data_img, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
+    rena = ReNA(mask_img=None, n_clusters=10)
+
+    data = get_data(data_img)
+    mask = get_data(mask_img)
+
+    X = np.empty((data.shape[3], int(mask.sum())))
+    for i in range(data.shape[3]):
+        X[i, :] = np.copy(data[:, :, :, i])[get_data(mask_img) != 0]
+
+    with pytest.raises(TypeError, match="The mask image should be a"):
+        rena.fit_transform(X)
+
+
 def test_rena_clustering():
     data_img, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
 
