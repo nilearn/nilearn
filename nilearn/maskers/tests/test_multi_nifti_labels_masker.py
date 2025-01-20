@@ -13,7 +13,6 @@ from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
 
 extra_valid_checks = [
     "check_estimators_unfitted",
-    "check_get_params_invariance",
     "check_parameters_default_constructible",
 ]
 

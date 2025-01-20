@@ -16,7 +16,6 @@ from nilearn.decoding import searchlight
 extra_valid_checks = [
     "check_estimators_unfitted",
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_get_params_invariance",
     "check_no_attributes_set_in_init",
 ]
 if compare_version(sklearn_version, ">", "1.5.2"):
