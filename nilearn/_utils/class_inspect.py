@@ -13,7 +13,6 @@ from sklearn.utils.estimator_checks import (
 
 from nilearn._utils import compare_version
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.testing import write_imgs_to_path
 
 # List of sklearn estimators checks that are valid
 # for all nilearn estimators.
@@ -222,6 +221,7 @@ def check_nifti_masker_fit_transform(estimator):
 
 def check_nifti_masker_fit_transform_files(estimator):
     """Check that nifti maskers can work directly on files."""
+    from nilearn._utils.testing import write_imgs_to_path
     from nilearn.conftest import _img_3d_rand
 
     with TemporaryDirectory() as tmp_dir:
