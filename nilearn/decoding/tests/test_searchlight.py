@@ -10,9 +10,10 @@ from sklearn.model_selection import KFold, LeaveOneGroupOut
 from nilearn._utils.class_inspect import check_estimator
 from nilearn.conftest import _img_3d_ones, _rng
 from nilearn.decoding import searchlight
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_estimators_unfitted",
+    *check_valid_for_all_maskers(),
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_no_attributes_set_in_init",
 ]
@@ -63,6 +64,22 @@ def define_cross_validation():
     cv = KFold(n_splits=4)
     n_jobs = 1
     return cv, n_jobs
+
+
+def test_searchlight_no_mask():
+    """Check validation type mask."""
+    sl = searchlight.SearchLight(mask_img=1)
+
+    frames = 30
+    data_img, cond, _ = _make_searchlight_test_data(frames)
+    with pytest.raises(
+        TypeError,
+        match=(
+            "Data given cannot be loaded "
+            "because it is not compatible with nibabel format"
+        ),
+    ):
+        sl.fit(data_img, y=cond)
 
 
 def test_searchlight_small_radius():

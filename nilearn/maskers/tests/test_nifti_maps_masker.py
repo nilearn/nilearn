@@ -28,7 +28,6 @@ from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
     *check_valid_for_all_maskers(),
-    "check_estimators_unfitted",
 ]
 
 

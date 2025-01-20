@@ -19,12 +19,12 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
 
+from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc, logger
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import new_img_like
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 
 from .. import masking
-from .._utils import check_niimg_4d, fill_doc, logger
 from ..image.resampling import coord_transform
 
 ESTIMATOR_CATALOG = {"svc": svm.LinearSVC, "svr": svm.SVR}
@@ -242,7 +242,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or None,
         See :ref:`extracting_data`.
         Boolean image giving location of voxels containing usable signals.
 
@@ -313,7 +313,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     def __init__(
         self,
-        mask_img,
+        mask_img=None,
         process_mask_img=None,
         radius=2.0,
         estimator="svc",
@@ -380,6 +380,8 @@ class SearchLight(TransformerMixin, BaseEstimator):
         imgs = check_niimg_4d(imgs)
 
         # Get the seeds
+        if self.mask_img is not None:
+            self.mask_img = check_niimg_3d(self.mask_img)
         process_mask_img = self.process_mask_img or self.mask_img
 
         # Compute world coordinates of the seeds
