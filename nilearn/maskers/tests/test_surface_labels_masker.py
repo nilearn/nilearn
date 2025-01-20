@@ -30,7 +30,6 @@ extra_valid_checks = [
     "check_no_attributes_set_in_init",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_dont_overwrite_parameters",
-    "check_estimator_tags_renamed",
     "check_estimators_fit_returns_self",
     "check_estimators_overwrite_params",
     "check_fit_check_is_fitted",
