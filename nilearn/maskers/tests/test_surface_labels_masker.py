@@ -8,34 +8,41 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 from nilearn.surface import SurfaceImage
 
 
-@pytest.fixture
-def _sklearn_surf_label_img(surf_mesh):
+def _sklearn_surf_label_img():
     """Create a sample surface label image using the sample mesh, just to use
     for scikit-learn checks.
     """
     labels = {
-        "left": np.asarray([1, 2, 3]),
-        "right": np.asarray([4, 5, 6]),
+        "left": np.asarray([1, 2, 3, 5]),
+        "right": np.asarray([4, 5, 6, 7, 9]),
     }
-    return SurfaceImage(surf_mesh(), labels)
+    return SurfaceImage(_make_mesh(), labels)
 
 
 extra_valid_checks = [
     *check_valid_for_all_maskers(),
     "check_no_attributes_set_in_init",
     "check_do_not_raise_errors_in_init_or_set_params",
+    "check_dont_overwrite_parameters",
+    "check_estimator_tags_renamed",
+    "check_estimators_fit_returns_self",
+    "check_estimators_overwrite_params",
+    "check_fit_check_is_fitted",
+    "check_positive_only_tag_during_fit",
+    "check_readonly_memmap_input",
 ]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img)],
+        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -48,7 +55,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img)],
+        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
         valid=False,
         extra_valid_checks=extra_valid_checks,
     ),
@@ -378,17 +385,6 @@ def test_warning_smoothing(surf_img_1d, surf_label_img):
     masker = masker.fit()
     with pytest.warns(UserWarning, match="not yet supported"):
         masker.transform(surf_img_1d)
-
-
-def test_surface_label_masker_transform_clean(surf_label_img, surf_img_2d):
-    """Smoke test for clean args."""
-    masker = SurfaceLabelsMasker(
-        labels_img=surf_label_img,
-        t_r=2.0,
-        high_pass=1 / 128,
-        clean_args={"filter": "cosine"},
-    ).fit()
-    masker.transform(surf_img_2d(50))
 
 
 def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):

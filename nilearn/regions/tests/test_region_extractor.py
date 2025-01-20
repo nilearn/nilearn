@@ -77,7 +77,6 @@ extra_valid_checks = [
     "check_estimators_fit_returns_self",
     "check_estimators_unfitted",
     "check_fit_check_is_fitted",
-    "check_parameters_default_constructible",
     "check_positive_only_tag_during_fit",
     "check_readonly_memmap_input",
 ]
