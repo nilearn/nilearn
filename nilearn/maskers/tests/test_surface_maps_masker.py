@@ -1,3 +1,5 @@
+# ruff: noqa: ARG001
+
 import warnings
 from os.path import join
 from pathlib import Path
@@ -64,7 +66,7 @@ extra_valid_checks = [
         extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
+def test_check_estimator(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -78,7 +80,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
         extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -301,11 +303,7 @@ def test_surface_maps_masker_sample_mask_to_fit_transform(
 # ------------------ Tests for reporting ------------------
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
-def test_reports_false(surf_maps_img, surf_img_2d):
+def test_reports_false(matplotlib_pyplot, surf_maps_img, surf_img_2d):
     """Test when reports=False, corresponding attributes should not exist."""
     masker = SurfaceMapsMasker(surf_maps_img, reports=False)
     masker.fit_transform(surf_img_2d(10))
@@ -326,11 +324,9 @@ def test_reports_false(surf_maps_img, surf_img_2d):
     assert "Empty Report" in report_str
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
-def test_generate_report_engine_error(surf_maps_img, surf_img_2d):
+def test_generate_report_engine_error(
+    matplotlib_pyplot, surf_maps_img, surf_img_2d
+):
     """Test error is raised when engine is not 'plotly' or 'matplotlib'."""
     masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
@@ -357,12 +353,8 @@ def test_generate_report_engine_no_plotly_warning(surf_maps_img, surf_img_2d):
     assert masker._report_content["engine"] == "matplotlib"
 
 
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
 def test_generate_report_engine_no_matplotlib_warning(
-    surf_maps_img, surf_img_2d
+    matplotlib_pyplot, surf_maps_img, surf_img_2d
 ):
     """Test warning is raised when engine selected is matplotlib but it is not
     installed.
@@ -374,12 +366,8 @@ def test_generate_report_engine_no_matplotlib_warning(
 
 
 @pytest.mark.parametrize("displayed_maps", [4, [1, 3, 4, 5], "all", [1]])
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
 def test_generate_report_displayed_maps_valid_inputs(
-    surf_maps_img, surf_img_2d, displayed_maps
+    matplotlib_pyplot, surf_maps_img, surf_img_2d, displayed_maps
 ):
     """Test all valid inputs for displayed_maps."""
     masker = SurfaceMapsMasker(surf_maps_img)
@@ -387,13 +375,9 @@ def test_generate_report_displayed_maps_valid_inputs(
     masker.generate_report(displayed_maps=displayed_maps)
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
 @pytest.mark.parametrize("displayed_maps", [4.5, [8.4, 3], "invalid"])
 def test_generate_report_displayed_maps_type_error(
-    surf_maps_img, surf_img_2d, displayed_maps
+    matplotlib_pyplot, surf_maps_img, surf_img_2d, displayed_maps
 ):
     """Test error is raised when displayed_maps is not a list or int or
     np.ndarray or str(all).
@@ -407,12 +391,8 @@ def test_generate_report_displayed_maps_type_error(
         masker.generate_report(displayed_maps=displayed_maps)
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
 def test_generate_report_displayed_maps_more_than_regions_warn_int(
-    surf_maps_img, surf_img_2d
+    matplotlib_pyplot, surf_maps_img, surf_img_2d
 ):
     """Test error is raised when displayed_maps is int and is more than n
     regions.
@@ -428,12 +408,8 @@ def test_generate_report_displayed_maps_more_than_regions_warn_int(
     assert masker.displayed_maps == 6
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
 def test_generate_report_displayed_maps_more_than_regions_warn_list(
-    surf_maps_img, surf_img_2d
+    matplotlib_pyplot, surf_maps_img, surf_img_2d
 ):
     """Test error is raised when displayed_maps is list has more elements than
     n regions.
@@ -447,11 +423,9 @@ def test_generate_report_displayed_maps_more_than_regions_warn_list(
         masker.generate_report(displayed_maps=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
-def test_generate_report_before_transform_warn(surf_maps_img):
+def test_generate_report_before_transform_warn(
+    matplotlib_pyplot, surf_maps_img
+):
     """Test warning is raised when generate_report is called before
     transform.
     """
@@ -460,11 +434,9 @@ def test_generate_report_before_transform_warn(surf_maps_img):
         masker.generate_report()
 
 
-@pytest.mark.skipif(
-    not is_plotly_installed(),
-    reason="Test requires plotly to be installed.",
-)
-def test_generate_report_plotly_out_figure_type(surf_maps_img, surf_img_2d):
+def test_generate_report_plotly_out_figure_type(
+    plotly, surf_maps_img, surf_img_2d
+):
     """Test that the report has a iframe tag when engine is plotly
     (default).
     """
@@ -480,11 +452,8 @@ def test_generate_report_plotly_out_figure_type(surf_maps_img, surf_img_2d):
     assert "<img" not in report_str
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="Test requires matplotlib to be installed.",
-)
 def test_generate_report_matplotlib_out_figure_type(
+    matplotlib_pyplot,
     surf_maps_img,
     surf_img_2d,
 ):
