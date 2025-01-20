@@ -8,40 +8,46 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.surface import SurfaceImage
 
 
-@pytest.fixture
-def _sklearn_surf_label_img(surf_mesh):
+def _sklearn_surf_label_img():
     """Create a sample surface label image using the sample mesh, just to use
     for scikit-learn checks.
     """
     labels = {
-        "left": np.asarray([1, 2, 3]),
-        "right": np.asarray([4, 5, 6]),
+        "left": np.asarray([1, 2, 3, 5]),
+        "right": np.asarray([4, 5, 6, 7, 9]),
     }
-    return SurfaceImage(surf_mesh(), labels)
+    return SurfaceImage(_make_mesh(), labels)
 
 
 extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_dont_overwrite_parameters",
+    "check_estimator_cloneable",
+    "check_estimator_repr",
+    "check_estimator_tags_renamed",
+    "check_estimators_fit_returns_self",
+    "check_estimators_overwrite_params",
+    "check_estimators_unfitted",
+    "check_fit_check_is_fitted",
+    "check_mixin_order",
     "check_no_attributes_set_in_init",
     "check_parameters_default_constructible",
+    "check_positive_only_tag_during_fit",
+    "check_readonly_memmap_input",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
-    "check_estimator_repr",
-    "check_estimator_cloneable",
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
-    "check_mixin_order",
-    "check_estimator_tags_renamed",
 ]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img)],
+        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -54,7 +60,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img)],
+        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
         valid=False,
         extra_valid_checks=extra_valid_checks,
     ),
