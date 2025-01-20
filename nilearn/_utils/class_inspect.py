@@ -23,6 +23,8 @@ VALID_CHECKS = [
     "check_mixin_order",
     "check_non_transformer_estimators_n_iter",
     "check_set_params",
+    "check_transformer_n_iter",
+    "check_transformers_unfitted",
     # Nilearn checks
     "check_masker_fitted",
     "check_nifti_masker_fit_list_3d",
