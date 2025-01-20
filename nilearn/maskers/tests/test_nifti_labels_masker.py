@@ -12,15 +12,55 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_random_img,
 )
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
+
+
+def _labels_img():
+    return generate_labeled_regions(
+        shape=(7, 8, 9),
+        affine=np.eye(4),
+        n_regions=9,
+    )
+
+
+extra_valid_checks = [
+    "check_parameters_default_constructible",
+    "check_estimators_unfitted",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiLabelsMasker(labels_img=_labels_img())],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[NiftiLabelsMasker(labels_img=_labels_img())],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
@@ -48,14 +88,12 @@ def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
     masker = NiftiLabelsMasker(labels_img, resampling_target=None)
 
     # Check attributes defined at fit
-    assert not hasattr(masker, "mask_img_")
     assert not hasattr(masker, "labels_img_")
     assert not hasattr(masker, "n_elements_")
 
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "mask_img_")
     assert hasattr(masker, "labels_img_")
     assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == n_regions
@@ -69,16 +107,6 @@ def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
     signals = masker.fit().transform(fmri_img)
 
     assert signals.shape == (length, n_regions)
-
-    shape2 = (12, 10, 14, length)
-    _, mask21_img = generate_random_img(
-        shape2,
-        affine=affine_eye,
-    )
-
-    masker = NiftiLabelsMasker(
-        labels_img, mask_img=mask21_img, resampling_target=None
-    )
 
     # Transform, with smoothing (smoke test)
     masker = NiftiLabelsMasker(
@@ -99,6 +127,16 @@ def test_nifti_labels_masker_errors(
     affine_eye, shape_3d_default, n_regions, length
 ):
     """Check working of shape/affine checks."""
+    masker = NiftiLabelsMasker()
+    with pytest.raises(
+        TypeError,
+        match=(
+            "Data given cannot be loaded "
+            "because it is not compatible with nibabel format"
+        ),
+    ):
+        masker.fit()
+
     shape1 = (*shape_3d_default, length)
 
     shape2 = (12, 10, 14, length)
@@ -122,21 +160,6 @@ def test_nifti_labels_masker_errors(
         affine=affine_eye,
         n_regions=n_regions,
     )
-
-    mask_img_4d = Nifti1Image(
-        np.ones((2, 2, 2, 2), dtype=np.int8),
-        affine=np.diag((4, 4, 4, 1)),
-    )
-
-    # verify that 4D mask arguments are refused
-    masker = NiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
-    ):
-        masker.fit()
 
     # check exception when transform() called without prior fit()
     masker11 = NiftiLabelsMasker(labels11_img, resampling_target=None)
@@ -372,7 +395,8 @@ def test_nifti_labels_masker_reduction_strategies_error(affine_eye):
     labels = Nifti1Image(labels_data, affine_eye)
 
     with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
-        NiftiLabelsMasker(labels, strategy="TESTRAISE")
+        masker = NiftiLabelsMasker(labels, strategy="TESTRAISE")
+        masker.fit()
 
 
 def test_nifti_labels_masker_resampling_errors(
@@ -389,16 +413,18 @@ def test_nifti_labels_masker_resampling_errors(
         ValueError,
         match="invalid value for 'resampling_target' parameter: mask",
     ):
-        NiftiLabelsMasker(labels_img, resampling_target="mask")
+        masker = NiftiLabelsMasker(labels_img, resampling_target="mask")
+        masker.fit()
 
     with pytest.raises(
         ValueError,
         match="invalid value for 'resampling_target' parameter: invalid",
     ):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             resampling_target="invalid",
         )
+        masker.fit()
 
 
 def test_nifti_labels_masker_resampling_to_data(
@@ -628,6 +654,7 @@ def test_nifti_labels_masker_resampling_to_none(
 
 
 def test_standardization(rng, affine_eye, shape_3d_default, n_regions):
+    """Check output properly standardized with 'standardize' parameter."""
     n_samples = 400
 
     signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))
@@ -715,6 +742,7 @@ def test_nifti_labels_masker_with_mask(
 def test_warning_n_labels_not_equal_n_regions(
     shape_3d_default, affine_eye, background, n_regions
 ):
+    """Check that n_labels provided match n_regions in image."""
     labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
@@ -724,30 +752,35 @@ def test_warning_n_labels_not_equal_n_regions(
     with pytest.warns(
         UserWarning, match="Mismatch between the number of provided labels"
     ):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             labels=region_names,
         )
+        masker.fit()
 
 
-def test_sanitize_labels_errors(shape_3d_default, affine_eye):
+def test_check_labels_errors(shape_3d_default, affine_eye):
+    """Check that invalid types for labels are caught at fit time."""
     labels_img = generate_labeled_regions(
         shape_3d_default[:3],
         affine=affine_eye,
         n_regions=2,
     )
+
     with pytest.raises(TypeError, match="'labels' must be a list."):
         NiftiLabelsMasker(
             labels_img,
             labels={"foo", "bar", "baz"},
         ).fit()
+
     with pytest.raises(
         TypeError, match="All elements of 'labels' must be a string"
     ):
-        NiftiLabelsMasker(
+        masker = NiftiLabelsMasker(
             labels_img,
             labels=[1, 2, 3],
-        ).fit()
+        )
+        masker.fit()
 
 
 @pytest.mark.parametrize(
@@ -930,6 +963,7 @@ def check_region_names_ids_match_after_fit(
 
 
 def generate_labels(n_regions, background=True):
+    """Create list of strings to use as labels."""
     labels = []
     if background:
         labels.append(background)

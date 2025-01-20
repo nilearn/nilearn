@@ -30,7 +30,10 @@ from nilearn.maskers import (
 def _check_html(html_view):
     """Check the presence of some expected code in the html viewer."""
     assert "<th>Parameter</th>" in str(html_view)
-    assert "data:image/svg+xml;base64," in str(html_view)
+    if "Surface" in str(html_view):
+        assert "data:image/png;base64," in str(html_view)
+    else:
+        assert "data:image/svg+xml;base64," in str(html_view)
     assert html_view._repr_html_() == html_view.body
 
 
