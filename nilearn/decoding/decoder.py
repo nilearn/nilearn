@@ -1470,8 +1470,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         n_jobs=1,
         verbose=0,
     ):
-        self.classes_ = ["beta"]
-
         super().__init__(
             estimator=estimator,
             mask=mask,
@@ -1517,6 +1515,36 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             return tags
         tags.estimator_type = "regressor"
         return tags
+
+    def fit(self, X, y, groups=None):
+        """Fit the decoder (learner).
+
+        Parameters
+        ----------
+        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
+            See :ref:`extracting_data`.
+            Data on which model is to be fitted. If this is a list,
+            the affine is considered the same for all.
+
+        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
+            The dependent variable (age, sex, IQ, yes/no, etc.).
+            Target variable to predict. Must have exactly as many elements as
+            3D images in niimg.
+
+        groups : None, default=None
+            Group labels for the samples used while splitting the dataset into
+            train/test set. Default None.
+
+            Note that this parameter must be specified in some scikit-learn
+            cross-validation generators to calculate the number of splits, e.g.
+            sklearn.model_selection.LeaveOneGroupOut or
+            sklearn.model_selection.LeavePGroupsOut.
+
+            For more details see
+            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+        """
+        self.classes_ = ["beta"]
+        super().fit(X, y, groups=groups)
 
 
 @fill_doc
