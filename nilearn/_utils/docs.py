@@ -388,13 +388,13 @@ groups : None, default=None
     Group labels for the samples used
     while splitting the dataset into train/test set.
 
-Note that this parameter must be specified in some scikit-learn
-cross-validation generators to calculate the number of splits,
-for example sklearn.model_selection.LeaveOneGroupOut or
-sklearn.model_selection.LeavePGroupsOut.
+    Note that this parameter must be specified in some scikit-learn
+    cross-validation generators to calculate the number of splits,
+    for example sklearn.model_selection.LeaveOneGroupOut or
+    sklearn.model_selection.LeavePGroupsOut.
 
-For more details see
-https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+    For more details see
+    https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
 """
 
 # hemi
