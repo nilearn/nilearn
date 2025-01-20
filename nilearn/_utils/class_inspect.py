@@ -25,6 +25,7 @@ VALID_CHECKS = [
     "check_set_params",
     # Nilearn checks
     "check_masker_fitted",
+    "check_nifti_masker_fit_3d",
     "check_nifti_masker_fit_list_3d",
     "check_nifti_masker_fit_with_3d_mask",
     "check_nifti_masker_fit_with_4d_mask",
@@ -157,6 +158,7 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_fitted)
 
     if is_masker and niimg_input:
+        yield (clone(estimator), check_nifti_masker_fit_3d)
         yield (clone(estimator), check_nifti_masker_fit_list_3d)
         yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
         yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
@@ -182,6 +184,13 @@ def check_masker_fitted(estimator):
     signals = np.ones((10, 11))
     with pytest.raises(ValueError, match="has not been fitted."):
         estimator.inverse_transform(signals)
+
+
+def check_nifti_masker_fit_3d(estimator):
+    """Check that list of 3D image can be fitted."""
+    from nilearn.conftest import _img_3d_rand
+
+    estimator.fit(_img_3d_rand())
 
 
 def check_nifti_masker_fit_list_3d(estimator):
