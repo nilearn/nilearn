@@ -44,8 +44,6 @@ def surf_maps_img(surf_mesh, rng):
 extra_valid_checks = [
     "check_no_attributes_set_in_init",
     "check_parameters_default_constructible",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
     "check_estimator_repr",
     "check_estimator_cloneable",
     "check_do_not_raise_errors_in_init_or_set_params",

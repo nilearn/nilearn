@@ -18,8 +18,6 @@ extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_get_params_invariance",
     "check_no_attributes_set_in_init",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
 ]
 if compare_version(sklearn_version, ">", "1.5.2"):
     extra_valid_checks.append("check_parameters_default_constructible")

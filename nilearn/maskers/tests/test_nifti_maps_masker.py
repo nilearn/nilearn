@@ -27,8 +27,6 @@ from nilearn.maskers import NiftiMapsMasker
 
 extra_valid_checks = [
     "check_parameters_default_constructible",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
     "check_estimators_unfitted",
 ]
 

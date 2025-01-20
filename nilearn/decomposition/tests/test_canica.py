@@ -115,8 +115,6 @@ extra_valid_checks = [
     "check_estimators_unfitted",
     "check_get_params_invariance",
     "check_no_attributes_set_in_init",
-    "check_transformers_unfitted",
-    "check_transformer_n_iter",
     "check_parameters_default_constructible",
 ]
 
