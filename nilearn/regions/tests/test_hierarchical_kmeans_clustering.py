@@ -30,8 +30,6 @@ extra_valid_checks = [
     "check_fit2d_1feature",
     "check_fit1d",
     "check_no_attributes_set_in_init",
-    "check_transformers_unfitted",
-    "check_transformer_n_iter",
     "check_methods_subset_invariance",
     "check_methods_sample_order_invariance",
 ]

@@ -1267,8 +1267,6 @@ class Decoder(ClassifierMixin, _BaseDecoder):
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
-    _estimator_type = "classifier"
-
     def __init__(
         self,
         estimator="svc",
@@ -1446,8 +1444,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         for Neuroimaging
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
-
-    _estimator_type = "regressor"
 
     def __init__(
         self,
