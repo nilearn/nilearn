@@ -1,5 +1,8 @@
 """Small utilities to inspect classes."""
 
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 import numpy as np
 from nibabel import Nifti1Image
 from sklearn import __version__ as sklearn_version
@@ -10,6 +13,7 @@ from sklearn.utils.estimator_checks import (
 
 from nilearn._utils import compare_version
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.testing import write_imgs_to_path
 
 # List of sklearn estimators checks that are valid
 # for all nilearn estimators.
@@ -25,7 +29,8 @@ VALID_CHECKS = [
     "check_set_params",
     # Nilearn checks
     "check_masker_fitted",
-    "check_nifti_masker_fit_transform_",
+    "check_nifti_masker_fit_transform",
+    "check_nifti_masker_fit_transform_files",
     "check_nifti_masker_fit_with_3d_mask",
     "check_nifti_masker_fit_with_4d_mask",
     "check_nifti_masker_fit_with_empty_mask",
@@ -158,6 +163,7 @@ def nilearn_check_estimator(estimator):
 
     if is_masker and niimg_input:
         yield (clone(estimator), check_nifti_masker_fit_transform)
+        yield (clone(estimator), check_nifti_masker_fit_transform_files)
         yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
         yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
         yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)
@@ -185,24 +191,49 @@ def check_masker_fitted(estimator):
 
 
 def check_nifti_masker_fit_transform(estimator):
-    """Run several smoke checks on maskers.
+    """Run several checks on maskers.
 
     - can fit 3D image
     - fitted maskers can transform:
       - 3D image
       - list of 3D images
     - can fit transform 3D image
-    - can fit transform 4D image
     """
-    from nilearn.conftest import _img_3d_rand
+    from nilearn.conftest import _img_3d_rand, _img_4d_rand_eye
 
     estimator.fit(_img_3d_rand())
-    estimator.transform(_img_3d_rand())
+
+    signal = estimator.transform(_img_3d_rand())
+
+    assert signal.shape[0] == 1
+
     estimator.transform([_img_3d_rand(), _img_3d_rand()])
+
+    assert signal.shape[0] == 1
+
+    estimator.transform(_img_4d_rand_eye())
+
+    assert signal.shape[0] == 1
 
     estimator.fit_transform(_img_3d_rand())
 
-    # estimator.fit_transform([_img_3d_rand()])
+    assert signal.shape[0] == 1
+
+
+def check_nifti_masker_fit_transform_files(estimator):
+    """Check that nifti maskers can work directly on files."""
+    from nilearn.conftest import _img_3d_rand
+
+    with TemporaryDirectory() as tmp_dir:
+        filename = write_imgs_to_path(
+            _img_3d_rand(),
+            file_path=Path(tmp_dir),
+            create_files=True,
+        )
+
+        estimator.fit(filename)
+        estimator.transform(filename)
+        estimator.fit_transform(filename)
 
 
 def check_nifti_masker_fit_with_3d_mask(estimator):

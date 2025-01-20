@@ -120,14 +120,6 @@ def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
         masker.fit_transform(img_3d_rand_eye)
 
 
-def test_with_files(tmp_path, img_3d_rand_eye):
-    """Test standard masking with filenames."""
-    filename = testing.write_imgs_to_path(img_3d_rand_eye, file_path=tmp_path)
-    masker = NiftiMasker()
-    masker.fit(filename)
-    masker.transform(filename)
-
-
 def test_nan(affine_eye):
     """Check that the masker handles NaNs appropriately."""
     data = np.ones((9, 9, 9))
