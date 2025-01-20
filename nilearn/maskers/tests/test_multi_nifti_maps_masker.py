@@ -12,7 +12,6 @@ from nilearn.conftest import _img_maps
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
 extra_valid_checks = [
-    "check_get_params_invariance",
     "check_estimators_unfitted",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
