@@ -637,17 +637,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
-        groups : None, default=None
-            Group labels for the samples used while splitting the dataset into
-            train/test set. Default None.
-
-            Note that this parameter must be specified in some scikit-learn
-            cross-validation generators to calculate the number of splits, e.g.
-            sklearn.model_selection.LeaveOneGroupOut or
-            sklearn.model_selection.LeavePGroupsOut.
-
-            For more details see
-            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+        %(groups)s
 
         Attributes
         ----------
@@ -1527,17 +1517,8 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
-        groups : None, default=None
-            Group labels for the samples used while splitting the dataset into
-            train/test set. Default None.
+        %(groups)s
 
-            Note that this parameter must be specified in some scikit-learn
-            cross-validation generators to calculate the number of splits, e.g.
-            sklearn.model_selection.LeaveOneGroupOut or
-            sklearn.model_selection.LeavePGroupsOut.
-
-            For more details see
-            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
         """
         self.classes_ = ["beta"]
         super().fit(X, y, groups=groups)
@@ -1711,17 +1692,8 @@ class FREMRegressor(_BaseDecoder):
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
-        groups : None, default=None
-            Group labels for the samples used while splitting the dataset into
-            train/test set. Default None.
+        %(groups)s
 
-            Note that this parameter must be specified in some scikit-learn
-            cross-validation generators to calculate the number of splits, e.g.
-            sklearn.model_selection.LeaveOneGroupOut or
-            sklearn.model_selection.LeavePGroupsOut.
-
-            For more details see
-            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
         """
         self.classes_ = ["beta"]
         if isinstance(self.cv, int):
@@ -1896,17 +1868,8 @@ class FREMClassifier(_BaseDecoder):
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
-        groups : None, default=None
-            Group labels for the samples used while splitting the dataset into
-            train/test set. Default None.
+        %(groups)s
 
-            Note that this parameter must be specified in some scikit-learn
-            cross-validation generators to calculate the number of splits, e.g.
-            sklearn.model_selection.LeaveOneGroupOut or
-            sklearn.model_selection.LeavePGroupsOut.
-
-            For more details see
-            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
         """
         if isinstance(self.cv, int):
             self.cv = StratifiedShuffleSplit(self.cv, random_state=0)
