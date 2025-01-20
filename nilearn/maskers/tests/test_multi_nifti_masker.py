@@ -14,8 +14,11 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
-extra_valid_checks = ["check_estimators_unfitted"]
+extra_valid_checks = [
+    *check_valid_for_all_maskers(),
+]
 
 
 @pytest.mark.parametrize(

@@ -6,6 +6,7 @@ import pytest
 
 from nilearn._utils.class_inspect import check_estimator
 from nilearn.maskers import SurfaceMapsMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 from nilearn.surface import SurfaceImage
 
 
@@ -40,12 +41,10 @@ def surf_maps_img(surf_mesh, rng):
     return SurfaceImage(surf_mesh(), data)
 
 
-# tests for scikit-learn compatibility
 extra_valid_checks = [
+    *check_valid_for_all_maskers(),
     "check_no_attributes_set_in_init",
-    "check_estimator_cloneable",
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
 ]
 
 

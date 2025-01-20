@@ -24,9 +24,10 @@ from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_parameters_default_constructible",
+    *check_valid_for_all_maskers(),
     "check_estimators_unfitted",
 ]
 

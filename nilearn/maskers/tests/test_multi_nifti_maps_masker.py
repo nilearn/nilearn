@@ -10,9 +10,10 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_estimators_unfitted",
+    *check_valid_for_all_maskers(),
     "check_parameters_default_constructible",
 ]
 
