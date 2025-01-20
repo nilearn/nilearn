@@ -463,28 +463,6 @@ def test_filter_and_mask(affine_eye):
     assert data.shape == (data_shape[3], np.prod(np.array(mask.shape)))
 
 
-def test_dtype(shape_3d_default):
-    """Check type of output."""
-    data_32 = np.zeros(shape_3d_default, dtype=np.float32)
-    data_64 = np.zeros(shape_3d_default, dtype=np.float64)
-    data_32[2:-2, 2:-2, 2:-2] = 10
-    data_64[2:-2, 2:-2, 2:-2] = 10
-
-    affine_32 = np.eye(4, dtype=np.float32)
-    affine_64 = np.eye(4, dtype=np.float64)
-
-    img_32 = Nifti1Image(data_32, affine_32)
-    img_64 = Nifti1Image(data_64, affine_64)
-
-    masker_1 = NiftiMasker(dtype="auto")
-    assert masker_1.fit_transform(img_32).dtype == np.float32
-    assert masker_1.fit_transform(img_64).dtype == np.float32
-
-    masker_2 = NiftiMasker(dtype="float64")
-    assert masker_2.fit_transform(img_32).dtype == np.float64
-    assert masker_2.fit_transform(img_64).dtype == np.float64
-
-
 def test_standardization(rng, shape_3d_default, affine_eye):
     """Check output properly standardized with 'standardize' parameter."""
     n_samples = 500
