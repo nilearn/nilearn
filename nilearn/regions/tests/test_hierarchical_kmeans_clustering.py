@@ -130,7 +130,7 @@ def test_hierarchical_k_means_clustering_inverse_transform():
     assert X_inv.shape == X.shape
 
 
-@pytest.mark.parametrize("n_clusters", [-2, 0])
+@pytest.mark.parametrize("n_clusters", [None, -2, 0, "2"])
 def test_hierarchical_k_means_clustering_error_n_clusters(n_clusters):
     n_samples = 15
     data_img, mask_img = generate_fake_fmri(

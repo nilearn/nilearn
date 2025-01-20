@@ -7,7 +7,7 @@ from sklearn import __version__ as sklearn_version
 from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.conftest import _img_3d_mni
+from nilearn.conftest import _img_3d_mni, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.rena_clustering import (
@@ -64,8 +64,11 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 
 
 def test_rena_clustering_mask_error():
-    data_img, mask_img = generate_fake_fmri(shape=(10, 11, 12), length=5)
-    rena = ReNA(mask_img=None, n_clusters=10)
+    """Check an error is raised if no mask is provided before fit."""
+    data_img, mask_img = generate_fake_fmri(
+        shape=_shape_3d_default(), length=5
+    )
+    rena = ReNA(n_clusters=10)
 
     data = get_data(data_img)
     mask = get_data(mask_img)
