@@ -155,7 +155,6 @@ def nilearn_check_estimator(estimator):
         is_masker = getattr(tags.input_tags, "masker", False)
 
     if is_masker:
-      
         yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_clean_kwargs)
 
@@ -184,7 +183,6 @@ def is_multimasker(estimator):
         return "multi_masker" in tags["X_types"]
     else:
         return getattr(tags.input_tags, "multi_masker", False)
-
 
 
 def check_masker_fitted(estimator):
