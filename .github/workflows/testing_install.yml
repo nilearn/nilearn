@@ -1,4 +1,6 @@
 ---
+# Tries to install Nilearn from wheel & check installation on all operating systems.
+###
 name: test installation
 
 on:

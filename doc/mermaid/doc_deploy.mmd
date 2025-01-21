@@ -1,11 +1,11 @@
 flowchart TD
     subgraph Circle-CI - nilearn
-    nilearn_CCI["nilearn (host)"]
+    nilearn_CCI["nilearn (host_docs)"]
     end
 
     subgraph GitHub - nilearn.github.io
-    nilearn_doc_dev[host in '/dev']
-    nilearn_doc_stable[host in '/stable']
+    nilearn_doc_dev['/dev']
+    nilearn_doc_stable['/stable']
     end
 
     subgraph GitHub - nilearn

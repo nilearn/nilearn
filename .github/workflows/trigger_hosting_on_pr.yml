@@ -1,18 +1,25 @@
 ---
-    # Trigger hosting of the doc on circle-ci
-    # We get the url for the artifacts for circle-ci from https://nightly.link/
-    #
-    # This must be run in a separate workflow because for security reasons
-    # the secrets for login to circle-ci cannot be accessed by PRs opened from a fork.
-    #
-    # So this workflow waits for the doc building workflow to finish successfully
-    # before grabbing its output and pushing it to circle-CI.
-    #
-    # See https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
-    #
-    # the CIRCLE_CI_TOKEN must be a personal token and not a project token
-    # https://support.circleci.com/hc/en-us/articles/360060360811-CircleCI-API-v2-Returns-404-Not-Found
-    #
+# Trigger hosting of the doc on circle-ci on pull-requests.
+#
+# We get the url for the artifacts for circle-ci via https://nightly.link/ .
+#
+# This must be run in a separate workflow because for security reasons
+# the secrets for login to circle-ci cannot be accessed by pull-requests opened from a fork.
+#
+# So this workflow waits for the doc building workflow to finish successfully
+# before grabbing its output and pushing it to circle-CI.
+#
+# .. seealso::
+#
+#   https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
+#
+# .. admonition:: CIRCLE_CI_TOKEN
+#    :class: warning
+#
+#   The ``CIRCLE_CI_TOKEN`` used in this workflow must be a personal token and not a project token:
+#   https://support.circleci.com/hc/en-us/articles/360060360811-CircleCI-API-v2-Returns-404-Not-Found
+#
+###
 name: Documentation push trigger
 on:
     workflow_run:
