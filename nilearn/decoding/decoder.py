@@ -622,6 +622,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
+    @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
@@ -639,82 +640,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         %(groups)s
 
-        Attributes
-        ----------
-        masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
-            The masker used to mask the data.
+        %(base_decoder_fit_attributes)s
 
-        mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
-            Mask computed by the masker object.
-
-        classes_ : numpy.ndarray
-            Classes to predict. For classification only.
-
-        screening_percentile_ : float
-            Screening percentile corrected according to volume of mask,
-            relative to the volume of standard brain.
-
-        coef_ : numpy.ndarray, shape=(n_classes, n_features)
-            Contains the mean of the models weight vector across
-            fold for each class. Returns None for Dummy estimators.
-
-        coef_img_ : dict of Nifti1Image
-            Dictionary containing `coef_` with class names as keys,
-            and `coef_` transformed in Nifti1Images as values. In the case of
-            a regression, it contains a single Nifti1Image at the key 'beta'.
-            Ignored if Dummy estimators are provided.
-
-        intercept_ : ndarray, shape (nclasses,)
-            Intercept (a.k.a. bias) added to the decision function.
-            Ignored if Dummy estimators are provided.
-
-        cv_ : list of pairs of lists
-            List of the (n_folds,) folds. For the corresponding fold,
-            each pair is composed of two lists of indices,
-            one for the train samples and one for the test samples.
-
-        std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
-            Contains the standard deviation of the models weight vector across
-            fold for each class. Note that folds are not independent, see
-            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
-            Ignored if Dummy estimators are provided.
-
-        std_coef_img_ : dict of Nifti1Image
-            Dictionary containing `std_coef_` with class names as keys,
-            and `coef_` transformed in Nifti1Image as values. In the case of
-            a regression, it contains a single Nifti1Image at the key 'beta'.
-            Ignored if Dummy estimators are provided.
-
-        cv_params_ : dict of lists
-            Best point in the parameter grid for each tested fold
-            in the inner cross validation loop. The grid is empty
-            when Dummy estimators are provided. Note: if the estimator used its
-            built-in cross-validation, this will include an additional key for
-            the single best value estimated by the built-in cross-validation
-            ('best_C' for LogisticRegressionCV and 'best_alpha' for
-            RidgeCV/RidgeClassifierCV/LassoCV), in addition to the input list
-            of values.
-
-        scorer_ : function
-            Scorer function used on the held out data to choose the best
-            parameters for the model.
-
-        cv_scores_ : dict, (classes, n_folds)
-            Scores (misclassification) for each parameter, and on each fold
-
-        n_outputs_ : int
-            Number of outputs (column-wise)
-
-        dummy_output_ : ndarray, shape=(n_classes, 2) \
-                       or shape=(1, 1) for regression
-            Contains dummy estimator attributes after class predictions
-            using strategies of :class:`sklearn.dummy.DummyClassifier`
-            (class_prior)
-            and  :class:`sklearn.dummy.DummyRegressor` (constant)
-            from scikit-learn.
-            This attribute is necessary for estimating class predictions
-            after fit.
-            Returns None if non-dummy estimators are provided.
         """
         self.estimator = _check_estimator(self.estimator)
         self.memory_ = check_memory(self.memory, self.verbose)
@@ -1502,6 +1429,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         tags.estimator_type = "regressor"
         return tags
 
+    @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
@@ -1518,6 +1446,8 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             3D images in niimg.
 
         %(groups)s
+
+        %(base_decoder_fit_attributes)s
 
         """
         self.classes_ = ["beta"]
@@ -1677,6 +1607,7 @@ class FREMRegressor(_BaseDecoder):
             n_jobs=n_jobs,
         )
 
+    @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
@@ -1693,6 +1624,8 @@ class FREMRegressor(_BaseDecoder):
             3D images in niimg.
 
         %(groups)s
+
+        %(base_decoder_fit_attributes)s
 
         """
         self.classes_ = ["beta"]
@@ -1853,22 +1786,28 @@ class FREMClassifier(_BaseDecoder):
             t_r=t_r,
         )
 
+    @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
         Parameters
         ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
+        X : :obj:`list` of Niimg-like \
+            or :obj:`~nilearn.surface.SurfaceImage` objects
             See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
+            Data on which model is to be fitted.
+            If this is a list,
             the affine is considered the same for all.
 
-        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
+        y : numpy.ndarray of shape=(n_samples) \
+            or :obj:`list` of length n_samples
             The dependent variable (age, sex, IQ, yes/no, etc.).
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
         %(groups)s
+
+        %(base_decoder_fit_attributes)s
 
         """
         if isinstance(self.cv, int):
