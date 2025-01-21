@@ -258,6 +258,7 @@ class BaseSlicer:
         self,
         img,
         threshold=1e-6,
+        two_sided=True,
         colorbar=False,
         cbar_tick_format="%.2g",
         cbar_vmin=None,
@@ -310,19 +311,32 @@ class BaseSlicer:
         # Make sure that add_overlay shows consistent default behavior
         # with plot_stat_map
         kwargs.setdefault("interpolation", "nearest")
-        ims = self._map_show(img, type="imshow", threshold=threshold, **kwargs)
+        ims = self._map_show(
+            img,
+            type="imshow",
+            threshold=threshold,
+            two_sided=two_sided,
+            **kwargs,
+        )
 
         # `ims` can be empty in some corner cases,
         # look at test_img_plotting.test_outlier_cut_coords.
         if colorbar and ims:
             self._show_colorbar(
-                ims[0].cmap, ims[0].norm, cbar_vmin, cbar_vmax, threshold
+                ims[0].cmap,
+                ims[0].norm,
+                cbar_vmin,
+                cbar_vmax,
+                threshold,
+                two_sided=two_sided,
             )
 
         plt.draw_if_interactive()
 
     @fill_doc
-    def add_contours(self, img, threshold=1e-6, filled=False, **kwargs):
+    def add_contours(
+        self, img, threshold=1e-6, two_sided=True, filled=False, **kwargs
+    ):
         """Contour a 3D map in all the views.
 
         Parameters
@@ -363,7 +377,13 @@ class BaseSlicer:
         """
         if not filled:
             threshold = None
-        self._map_show(img, type="contour", threshold=threshold, **kwargs)
+        self._map_show(
+            img,
+            type="contour",
+            threshold=threshold,
+            two_sided=two_sided,
+            **kwargs,
+        )
         if filled:
             if "levels" in kwargs:
                 levels = kwargs["levels"]
@@ -372,7 +392,13 @@ class BaseSlicer:
                     # should be given as (lower, upper).
                     levels.append(np.inf)
 
-            self._map_show(img, type="contourf", threshold=threshold, **kwargs)
+            self._map_show(
+                img,
+                type="contourf",
+                threshold=threshold,
+                two_sided=two_sided,
+                **kwargs,
+            )
 
         plt.draw_if_interactive()
 
