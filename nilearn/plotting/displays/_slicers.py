@@ -495,7 +495,13 @@ class BaseSlicer:
 
     @fill_doc
     def _show_colorbar(
-        self, cmap, norm, cbar_vmin=None, cbar_vmax=None, threshold=None
+        self,
+        cmap,
+        norm,
+        cbar_vmin=None,
+        cbar_vmax=None,
+        threshold=None,
+        two_sided=True,
     ):
         """Display the colorbar.
 
@@ -517,8 +523,7 @@ class BaseSlicer:
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
         """
-        offset = 0 if threshold is None else threshold
-        offset = min(offset, norm.vmax)
+        threshold = 0 if threshold is None else threshold
 
         cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
         cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
@@ -544,15 +549,28 @@ class BaseSlicer:
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
         n_ticks = 5 if cbar_vmin != cbar_vmax else 1
-        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
+        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, threshold, n_ticks)
         bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         # some colormap hacking
         cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-        transparent_start = int(norm(-offset, clip=True) * (our_cmap.N - 1))
-        transparent_stop = int(norm(offset, clip=True) * (our_cmap.N - 1))
+        # it must be one sided
+        if threshold <= 0 and not two_sided:
+            start = max(threshold, norm.vmin)
+            stop = norm.vmax
+        elif threshold > 0:
+            if two_sided:
+                start = max(-threshold, norm.vmin)
+                stop = min(threshold, norm.vmax)
+            else:
+                start = norm.vmin
+                stop = min(threshold, norm.vmax)
+        transparent_start = int(norm(start, clip=True) * (our_cmap.N - 1))
+        transparent_stop = int(norm(stop, clip=True) * (our_cmap.N - 1))
+
         for i in range(transparent_start, transparent_stop):
             cmaplist[i] = (*self._brain_color, 0.0)  # transparent
+
         if cbar_vmin == cbar_vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
