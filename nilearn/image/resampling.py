@@ -503,6 +503,7 @@ def resample_img(
         and np.array_equal(target_shape, shape)
     ):
         return img
+
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
 
@@ -578,30 +579,7 @@ def resample_img(
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
 
-    resampled_data_dtype = data.dtype
-    if interpolation == "continuous" and data.dtype.kind == "i":
-        # cast unsupported data types to closest support dtype
-        aux = data.dtype.name.replace("int", "float")
-        aux = aux.replace("ufloat", "float").replace("floatc", "float")
-        if aux in ["float8", "float16"]:
-            aux = "float32"
-        warnings.warn(
-            f"Casting data from {data.dtype.name} to {aux}", stacklevel=2
-        )
-        resampled_data_dtype = np.dtype(aux)
-
-    # Since the release of 0.17, resampling nifti images have some issues
-    # when affine is passed as 1D array and if data is of non-native
-    # endianness.
-    # See issue https://github.com/nilearn/nilearn/issues/1445.
-    # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
-    # than _geometric_transform (2D) where _geometric_transform is able
-    # to swap byte order in scipy later than 0.15 for nonnative endianness.
-
-    # We convert to 'native' order to not have any issues either with
-    # 'little' or 'big' endian data dtypes (non-native endians).
-    if len(A.shape) == 1 and not resampled_data_dtype.isnative:
-        resampled_data_dtype = resampled_data_dtype.newbyteorder("N")
+    resampled_data_dtype = _get_resampled_data_dtype(data, interpolation, A)
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
@@ -718,6 +696,35 @@ def _check_resample_img_inputs(target_shape, target_affine, interpolation):
             f"interpolation must be one of {allowed_interpolations}.\n"
             f" Got '{interpolation}' instead."
         )
+
+
+def _get_resampled_data_dtype(data, interpolation, A):
+    resampled_data_dtype = data.dtype
+    if interpolation == "continuous" and data.dtype.kind == "i":
+        # cast unsupported data types to closest support dtype
+        aux = data.dtype.name.replace("int", "float")
+        aux = aux.replace("ufloat", "float").replace("floatc", "float")
+        if aux in ["float8", "float16"]:
+            aux = "float32"
+        warnings.warn(
+            f"Casting data from {data.dtype.name} to {aux}", stacklevel=2
+        )
+        resampled_data_dtype = np.dtype(aux)
+
+    # Since the release of 0.17, resampling nifti images have some issues
+    # when affine is passed as 1D array and if data is of non-native
+    # endianness.
+    # See issue https://github.com/nilearn/nilearn/issues/1445.
+    # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
+    # than _geometric_transform (2D) where _geometric_transform is able
+    # to swap byte order in scipy later than 0.15 for nonnative endianness.
+
+    # We convert to 'native' order to not have any issues either with
+    # 'little' or 'big' endian data dtypes (non-native endians).
+    if len(A.shape) == 1 and not resampled_data_dtype.isnative:
+        resampled_data_dtype = resampled_data_dtype.newbyteorder("N")
+
+    return resampled_data_dtype
 
 
 def resample_to_img(
