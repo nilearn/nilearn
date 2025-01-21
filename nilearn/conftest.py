@@ -365,11 +365,6 @@ def img_4d_ones_eye():
     return _img_ones(_shape_4d_default(), _affine_eye())
 
 
-def _img_4d_rand_eye():
-    """Return a default random filled 4D Nifti1Image (identity affine)."""
-    return _img_4d_rand_eye()
-
-
 @pytest.fixture
 def img_4d_rand_eye():
     """Return a default random filled 4D Nifti1Image (identity affine)."""
