@@ -613,11 +613,12 @@ class SecondLevelModel(BaseGLM):
             and self.smoothing_fwhm is not None
         ):
             warn(
-                "Parameter smoothing_fwhm is not "
-                "yet supported for surface data",
+                "Parameter 'smoothing_fwhm' is not "
+                "yet supported for surface data.",
                 UserWarning,
                 stacklevel=2,
             )
+            self.smoothing_fwhm = None
 
         # Learn the mask. Assume the first level imgs have been masked.
         if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):
@@ -1022,24 +1023,55 @@ def non_parametric_inference(
         second_level_input = _sort_input_dataframe(second_level_input)
     sample_map, _ = _process_second_level_input(second_level_input)
 
+    if isinstance(sample_map, SurfaceImage) and smoothing_fwhm is not None:
+        warn(
+            "Parameter 'smoothing_fwhm' is not "
+            "yet supported for surface data.",
+            UserWarning,
+            stacklevel=2,
+        )
+        smoothing_fwhm = None
+
+    if (isinstance(sample_map, SurfaceImage) and tfce) or threshold:
+        tfce = False
+        threshold = None
+        warn(
+            (
+                "Cluster level inference not yet implemented "
+                "for surface data.\n"
+                f"Setting {tfce=} and {threshold=}."
+            ),
+            UserWarning,
+            stacklevel=2,
+        )
+
     # Report progress
     t0 = time.time()
     logger.log("Fitting second level model...", verbose=verbose)
 
     # Learn the mask. Assume the first level imgs have been masked.
-    if not isinstance(mask, NiftiMasker):
-        masker = NiftiMasker(
-            mask_img=mask,
-            smoothing_fwhm=smoothing_fwhm,
-            memory=Memory(None),
-            verbose=max(0, verbose - 1),
-            memory_level=1,
-        )
+    if not isinstance(mask, (NiftiMasker, SurfaceMasker)):
+        if isinstance(sample_map, SurfaceImage):
+            masker = SurfaceMasker(
+                mask_img=mask,
+                smoothing_fwhm=smoothing_fwhm,
+                memory=Memory(None),
+                verbose=max(0, verbose - 1),
+                memory_level=1,
+            )
+        else:
+            masker = NiftiMasker(
+                mask_img=mask,
+                smoothing_fwhm=smoothing_fwhm,
+                memory=Memory(None),
+                verbose=max(0, verbose - 1),
+                memory_level=1,
+            )
 
     else:
         masker = clone(mask)
         if smoothing_fwhm is not None and masker.smoothing_fwhm is not None:
-            warn("Parameter smoothing_fwhm of the masker overridden")
+            warn("Parameter 'smoothing_fwhm' of the masker overridden.")
             masker.smoothing_fwhm = smoothing_fwhm
 
     masker.fit(sample_map)
@@ -1069,10 +1101,9 @@ def non_parametric_inference(
     var_names = [var for var, mask in zip(var_names, column_mask) if not mask]
 
     # Obtain confounding vars
-    if not var_names:
-        # No other vars in design matrix
-        confounding_vars = None
-    else:
+    # No other vars in design matrix by default
+    confounding_vars = None
+    if var_names:
         # Use remaining vars as confounding vars
         confounding_vars = np.asarray(design_matrix[var_names])
 

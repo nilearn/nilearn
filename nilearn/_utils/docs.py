@@ -857,7 +857,7 @@ docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
 
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
-smoothing_fwhm : :obj:`float`, optional.
+smoothing_fwhm : :obj:`float` or None, optional.
     If `smoothing_fwhm` is not `None`,
     it gives the :term:`full-width at half maximum<FWHM>` in millimeters
     of the spatial smoothing to apply to the signal.
