@@ -163,6 +163,7 @@ def _plot_img_with_bg(
     axes=None,
     title=None,
     threshold=None,
+    two_sided=True,
     annotate=True,
     draw_cross=True,
     black_bg=False,
@@ -279,6 +280,7 @@ def _plot_img_with_bg(
         display.add_overlay(
             new_img_like(img, data, affine),
             threshold=threshold,
+            two_sided=two_sided,
             interpolation=interpolation,
             colorbar=colorbar,
             vmin=vmin,
@@ -354,6 +356,7 @@ def plot_img(
     axes=None,
     title=None,
     threshold=None,
+    two_sided=True,
     annotate=True,
     draw_cross=True,
     black_bg=False,
@@ -463,6 +466,7 @@ def plot_img(
         axes=axes,
         title=title,
         threshold=threshold,
+        two_sided=two_sided,
         annotate=annotate,
         draw_cross=draw_cross,
         resampling_interpolation=resampling_interpolation,
@@ -623,6 +627,7 @@ def plot_anat(
     title=None,
     annotate=True,
     threshold=None,
+    two_sided=True,
     draw_cross=True,
     black_bg="auto",
     dim="auto",
@@ -722,6 +727,7 @@ def plot_anat(
         axes=axes,
         title=title,
         threshold=threshold,
+        two_sided=two_sided,
         annotate=annotate,
         draw_cross=draw_cross,
         black_bg=black_bg,
@@ -903,6 +909,7 @@ def plot_roi(
     draw_cross=True,
     black_bg="auto",
     threshold=0.5,
+    two_sided=True,
     alpha=0.7,
     cmap=plt.cm.gist_ncar,
     dim="auto",
@@ -1041,6 +1048,7 @@ def plot_roi(
         draw_cross=draw_cross,
         black_bg=black_bg,
         threshold=threshold,
+        two_sided=two_sided,
         bg_vmin=bg_vmin,
         bg_vmax=bg_vmax,
         resampling_interpolation=resampling_interpolation,
@@ -1068,6 +1076,7 @@ def plot_prob_atlas(
     bg_img=MNI152TEMPLATE,
     view_type="auto",
     threshold="auto",
+    two_sided=True,
     linewidths=2.5,
     cut_coords=None,
     output_file=None,
@@ -1256,14 +1265,22 @@ def plot_prob_atlas(
         data = get_data(map_img)
         # To threshold or choose the level of the contours
         thr = check_threshold(
-            thr, data, percentile_func=fast_abs_percentile, name="threshold"
+            thr,
+            data,
+            percentile_func=fast_abs_percentile,
+            two_sided=two_sided,
+            name="threshold",
         )
         # Get rid of background values in all cases
         thr = max(thr, 1e-6)
 
         if view_type == "continuous":
             display.add_overlay(
-                map_img, threshold=thr, cmap=cm.alpha_cmap(color), alpha=alpha
+                map_img,
+                threshold=thr,
+                two_sided=two_sided,
+                cmap=cm.alpha_cmap(color),
+                alpha=alpha,
             )
         else:
             display.add_contours(
@@ -1325,6 +1342,7 @@ def plot_stat_map(
     axes=None,
     title=None,
     threshold=1e-6,
+    two_sided=True,
     annotate=True,
     draw_cross=True,
     black_bg="auto",
@@ -1453,6 +1471,7 @@ def plot_stat_map(
         draw_cross=draw_cross,
         black_bg=black_bg,
         threshold=threshold,
+        two_sided=two_sided,
         bg_vmin=bg_vmin,
         bg_vmax=bg_vmax,
         cmap=cmap,
@@ -1481,6 +1500,7 @@ def plot_glass_brain(
     axes=None,
     title=None,
     threshold="auto",
+    two_sided=True,
     annotate=True,
     black_bg=False,
     cmap=None,
@@ -1632,6 +1652,7 @@ def plot_glass_brain(
         annotate=annotate,
         black_bg=black_bg,
         threshold=threshold,
+        two_sided=two_sided,
         cmap=cmap,
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
