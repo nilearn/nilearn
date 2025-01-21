@@ -14,7 +14,7 @@
 #   https://securitylab.github.com/research/github-actions-preventing-pwn-requests/
 #
 # .. admonition:: CIRCLE_CI_TOKEN
-#    :class: warning
+#   :class: warning
 #
 #   The ``CIRCLE_CI_TOKEN`` used in this workflow must be a personal token and not a project token:
 #   https://support.circleci.com/hc/en-us/articles/360060360811-CircleCI-API-v2-Returns-404-Not-Found

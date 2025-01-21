@@ -440,6 +440,8 @@ sphinx_gallery_conf = {
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
 }
 
+mermaid_version = "11.4.0"
+
 
 def touch_example_backreferences(
     app,
