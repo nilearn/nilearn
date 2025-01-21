@@ -156,7 +156,9 @@ report_flm
 #
 import pandas as pd
 
-from nilearn.glm.second_level import SecondLevelModel
+from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
+
+threshold = 1.96
 
 second_level_glm = SecondLevelModel()
 design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
@@ -170,6 +172,21 @@ report_slm = second_level_glm.generate_report(
 
 # View the GLM report at the group level
 report_slm
+
+# %%
+# Permutation test
+# ----------------
+#
+# We will also run a permutation test.
+#
+neg_log_pvals_permuted_ols_unmasked = non_parametric_inference(
+    second_level_input=z_scores,
+    design_matrix=design_matrix,
+    second_level_contrast="intercept",
+    model_intercept=False,
+    n_perm=1000,
+    n_jobs=2,
+)
 
 
 # %%
@@ -186,9 +203,24 @@ for hemi in ["left", "right"]:
         surf_mesh=fsaverage5["inflated"],
         stat_map=results,
         hemi=hemi,
-        title=f"(language-string), {hemi} hemisphere",
+        title=f"(language-string), {hemi} hemisphere - abs(t) >= 1.96",
         colorbar=True,
         threshold=1.96,
+        bg_map=fsaverage_data,
+    )
+
+for hemi in ["left", "right"]:
+    plot_surf_stat_map(
+        surf_mesh=fsaverage5["inflated"],
+        stat_map=neg_log_pvals_permuted_ols_unmasked,
+        hemi=hemi,
+        title=(
+            f"(language-string), "
+            f"{hemi} hemisphere - "
+            "neg-log of non-parametric corrected p-values (FWER < 10%)"
+        ),
+        colorbar=True,
+        threshold=1,
         bg_map=fsaverage_data,
     )
 

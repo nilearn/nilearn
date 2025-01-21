@@ -20,6 +20,8 @@ Enhancements
 
 - :bdg-dark:`Code` Add reports for the surface based GLMs (:gh:`4442` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Enhance :func:`~nilearn.glm.non_parametric_inference` to support surface data  (???? by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Allow plotting both hemispheres together (:gh:`4991` by `Himanshu Aggarwal`_).
 
 - :bdg-dark:`Code` Add a look up table to each of the deterministic atlas (:gh:`4820` by `Rémi Gau`_).
