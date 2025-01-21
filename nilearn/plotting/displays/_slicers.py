@@ -481,18 +481,20 @@ class BaseSlicer:
         return ims
 
     @classmethod
-    def _threshold(cls, data, threshold=None, vmin=None, vmax=None):
+    def _threshold(cls, data, threshold=None, two_sided=True):
         """Threshold the data."""
-        if threshold is not None:
-            data = np.ma.masked_where(
-                np.abs(data) <= threshold,
-                data,
-                copy=False,
+        if threshold is None:
+            return data
+        if threshold < 0 and two_sided:
+            raise ValueError(
+                "Threshold must be positive for two_sided thresholding."
             )
-            if (vmin is not None) and (vmin >= -threshold):
-                data = np.ma.masked_where(data < vmin, data, copy=False)
-            if (vmax is not None) and (vmax <= threshold):
-                data = np.ma.masked_where(data > vmax, data, copy=False)
+        if two_sided or threshold == 0:
+            data = np.ma.masked_inside(data, -threshold, threshold, copy=False)
+        elif threshold > 0:
+            data = np.ma.masked_less_equal(data, threshold, copy=False)
+        else:
+            data = np.ma.masked_greater_equal(data, threshold, copy=False)
         return data
 
     @fill_doc
