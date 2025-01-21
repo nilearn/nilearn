@@ -382,6 +382,7 @@ class BaseSlicer:
         type="imshow",
         resampling_interpolation="continuous",
         threshold=None,
+        two_sided=True,
         **kwargs,
     ):
         # In the special case where the affine of img is not diagonal,
@@ -397,17 +398,12 @@ class BaseSlicer:
             img = reorder_img(
                 img, resample=resampling_interpolation, copy_header=True
             )
-        threshold = float(threshold) if threshold is not None else None
 
         affine = img.affine
         if threshold is not None:
+            threshold = float(threshold)
             data = safe_get_data(img, ensure_finite=True)
-            if threshold == 0:
-                data = np.ma.masked_equal(data, 0, copy=False)
-            else:
-                data = np.ma.masked_inside(
-                    data, -threshold, threshold, copy=False
-                )
+            data = self._threshold(data, threshold, two_sided)
             img = new_img_like(img, data, affine)
 
         data = safe_get_data(img, ensure_finite=True)
@@ -431,6 +427,7 @@ class BaseSlicer:
                 if "levels" in kwargs
                 else 1e-6
             )
+            # TODO how to deal with this part?
             not_mask = np.logical_or(data > thr, data < -thr)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = get_mask_bounds(
                 new_img_like(img, not_mask, affine)
@@ -470,8 +467,7 @@ class BaseSlicer:
                 data_2d = self._threshold(
                     data_2d,
                     threshold,
-                    vmin=kwargs.get("vmin"),
-                    vmax=kwargs.get("vmax"),
+                    two_sided=two_sided,
                 )
 
                 im = display_ax.draw_2d(
