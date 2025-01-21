@@ -50,16 +50,15 @@
 # However for quick checks to do yourself
 # you should always opt for local builds following the instructions here:
 # in the :ref:`building documentation` section.
-##
-# Upon a successful build of the doc, it is zipped and uploaded as an artifact.
-# A circle-ci workflow is then triggered. See below.
 #
 # Dataset caching
 # """""""""""""""
 #
 # We also implemented a dataset caching strategy within this workflow such that datasets are only downloaded once every month.
-# Once these datasets are cached, they will be used by all jobs running without requiring any download.
-# This saves a lot of time and avoids potential network errors that can happen when downloading datasets from remote servers.
+# Once these datasets are cached,
+# they will be used by all jobs running without requiring any download.
+# This saves a lot of time and avoids potential network errors that can happen
+# when downloading datasets from remote servers.
 #
 # Data is cached after the ``get_data`` job to be passed to the ``build_docs`` job.
 # Data can be cached and restore across attempts of a run of this workflow.
