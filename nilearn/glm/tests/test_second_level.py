@@ -615,7 +615,7 @@ def test_high_level_non_parametric_inference_with_paths_warning(tmp_path):
     masker = NiftiMasker(mask, smoothing_fwhm=2.0)
     with pytest.warns(
         UserWarning,
-        match="Parameter smoothing_fwhm of the masker overridden",
+        match="Parameter 'smoothing_fwhm' of the masker overridden",
     ):
         non_parametric_inference(
             Y,

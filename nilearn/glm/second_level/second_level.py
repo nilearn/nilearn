@@ -1032,7 +1032,7 @@ def non_parametric_inference(
         )
         smoothing_fwhm = None
 
-    if (isinstance(sample_map, SurfaceImage) and tfce) or threshold:
+    if (isinstance(sample_map, SurfaceImage)) and (tfce or threshold):
         tfce = False
         threshold = None
         warn(
