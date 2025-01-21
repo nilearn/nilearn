@@ -867,6 +867,9 @@ def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
     # edge case where the data has all negative values but vmax is exactly 0
     if vmax == 0:
         vmax += np.finfo(np.float32).eps
+    # edge case where the data has all positive values but vmin is exactly 0
+    if vmin == 0:
+        vmin -= np.finfo(np.float32).eps
 
     # If a threshold is specified, we want two of the tick
     # to correspond to -thresold and +threshold on the colorbar.
