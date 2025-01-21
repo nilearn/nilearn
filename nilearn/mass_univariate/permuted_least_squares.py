@@ -362,17 +362,10 @@ def permuted_ols(
         unless the tested variate is already the intercept or when
         confounding variates already contain an intercept.
 
-    n_perm : :obj:`int`, default=10000
-        Number of permutations to perform.
-        Permutations are costly but the more are performed, the more precision
-        one gets in the p-values estimation.
+    %(n_perm)s
         If ``n_perm`` is set to 0, then no p-values will be estimated.
 
-    two_sided_test : :obj:`bool`, default=True
-        If True, performs an unsigned t-test. Both positive and negative
-        effects are considered; the null hypothesis is that the effect is zero.
-        If False, only positive effects are considered as relevant. The null
-        hypothesis is that the effect is zero or negative.
+    %(two_sided_test)s
 
     %(random_state)s
 
@@ -404,19 +397,7 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    tfce : :obj:`bool`, default=False
-        Whether to calculate :term:`TFCE` as part of the permutation procedure
-        or not.
-        The TFCE calculation is implemented as described in
-        :footcite:t:`Smith2009a`.
-
-        .. warning::
-
-            Performing TFCE-based inference will increase the computation
-            time of the permutation procedure considerably.
-            The permutations may take multiple hours, depending on how many
-            permutations are requested and how many jobs are performed in
-            parallel.
+    %(tfce)s
 
         .. versionadded:: 0.9.2
 

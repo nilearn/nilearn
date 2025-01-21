@@ -453,21 +453,7 @@ class SecondLevelModel(BaseGLM):
 
     Parameters
     ----------
-    mask_img : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or\
-             :obj:`~nilearn.maskers.MultiNiftiMasker` or\
-             :obj:`~nilearn.maskers.SurfaceMasker` object or None,\
-             default=None
-        Mask to be used on data.
-        If an instance of masker is passed,
-        then its mask will be used.
-        If no mask is given,
-        it will be computed automatically
-        by a :class:`~nilearn.maskers.NiftiMasker`,
-        or a :obj:`~nilearn.maskers.SurfaceMasker`
-        (depending on the type passed at fit time)
-        with default parameters.
-        Automatic mask computation assumes first level imgs
-        have already been masked.
+    %(second_level_mask_img)s
 
     %(target_affine)s
 
@@ -572,24 +558,10 @@ class SecondLevelModel(BaseGLM):
         ----------
         %(second_level_input)s
 
-        confounds : :obj:`pandas.DataFrame` or None, default=None
-            Must contain a ``subject_label`` column. All other columns are
-            considered as confounds and included in the model. If
-            ``design_matrix`` is provided then this argument is ignored.
-            The resulting second level design matrix uses the same column
-            names as in the given :class:`~pandas.DataFrame` for confounds.
-            At least two columns are expected, ``subject_label`` and at
-            least one confound.
+        %(second_level_confounds)s
 
-        design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
-                        or :obj:`pathlib.Path` to a CSV or TSV file, \
-                        or None, default=None
-            Design matrix to fit the :term:`GLM`.
-            The number of rows in the design matrix
-            must agree with the number of maps
-            derived from ``second_level_input``.
-            Ensure that the order of maps given by a ``second_level_input``
-            list of Niimgs matches the order of the rows in the design matrix.
+        %(second_level_design_matrix)s
+
         """
         if self.memory is None:
             self.memory = Memory(None)
@@ -915,21 +887,9 @@ def non_parametric_inference(
     ----------
     %(second_level_input)s
 
-    confounds : :obj:`pandas.DataFrame` or None, default=None
-        Must contain a subject_label column. All other columns are
-        considered as confounds and included in the model. If
-        ``design_matrix`` is provided then this argument is ignored.
-        The resulting second level design matrix uses the same column
-        names as in the given :obj:`~pandas.DataFrame` for confounds.
-        At least two columns are expected, ``subject_label`` and at
-        least one confound.
+    %(second_level_confounds)s
 
-    design_matrix : :obj:`pandas.DataFrame` or None, default=None
-        Design matrix to fit the :term:`GLM`. The number of rows
-        in the design matrix must agree with the number of maps derived
-        from ``second_level_input``.
-        Ensure that the order of maps given by a ``second_level_input``
-        list of Niimgs matches the order of the rows in the design matrix.
+    %(second_level_design_matrix)s
 
     %(second_level_contrast)s
 
@@ -940,14 +900,7 @@ def non_parametric_inference(
 
         .. versionadded:: 0.9.0
 
-    mask : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or \
-            :obj:`~nilearn.maskers.MultiNiftiMasker` object \
-            or None, default=None
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, it will be computed
-        automatically by a :class:`~nilearn.maskers.MultiNiftiMasker` with
-        default parameters. Automatic mask computation assumes first level
-        imgs have already been masked.
+    %(second_level_mask)s
 
     %(smoothing_fwhm)s
 
@@ -955,19 +908,9 @@ def non_parametric_inference(
         If ``True``, a constant column is added to the confounding variates
         unless the tested variate is already the intercept.
 
-    n_perm : :obj:`int`, default=10000
-        Number of permutations to perform.
-        Permutations are costly but the more are performed, the more precision
-        one gets in the p-values estimation.
+    %(n_perm)s
 
-    two_sided_test : :obj:`bool`, default=False
-
-        - If ``True``, performs an unsigned t-test.
-          Both positive and negative effects are considered; the null
-          hypothesis is that the effect is zero.
-        - If ``False``, only positive effects are considered as relevant.
-          The null hypothesis is that the effect is zero or negative.
-
+    %(two_sided_test)s
 
     %(random_state)s
         Use this parameter to have the same permutations in each
@@ -989,19 +932,7 @@ def non_parametric_inference(
 
         .. versionadded:: 0.9.2
 
-    tfce : :obj:`bool`, default=False
-        Whether to calculate :term:`TFCE` as part of the permutation procedure
-        or not.
-        The TFCE calculation is implemented as described in
-        :footcite:t:`Smith2009a`.
-
-        .. warning::
-
-            Performing TFCE-based inference will increase the computation
-            time of the permutation procedure considerably.
-            The permutations may take multiple hours, depending on how many
-            permutations are requested and how many jobs are performed in
-            parallel.
+    %(tfce)s
 
         .. versionadded:: 0.9.2
 

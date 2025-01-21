@@ -614,6 +614,14 @@ n_jobs : :obj:`int`, default={}
 docdict["n_jobs"] = n_jobs.format("1")
 docdict["n_jobs_all"] = n_jobs.format("-1")
 
+# n_jobs
+docdict["n_perm"] = """
+n_perm : :obj:`int`, default=10000
+    Number of permutations to perform.
+    Permutations are costly but the more are performed, the more precision
+    one gets in the p-values estimation.
+"""
+
 # opening
 docdict["opening"] = """
 opening : :obj:`bool` or :obj:`int`, optional
@@ -765,6 +773,31 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
     when the design matrix has multiple columns, an error is raised.
 """
 
+# second_level_confounds
+docdict["second_level_confounds"] = """
+confounds : :obj:`pandas.DataFrame` or None, default=None
+    Must contain a ``subject_label`` column.
+    All other columns are considered as confounds and included in the model.
+    If ``design_matrix`` is provided then this argument is ignored.
+    The resulting second level design matrix uses the same column names
+    as in the given :class:`~pandas.DataFrame` for confounds.
+    At least two columns are expected, ``subject_label``
+    and at least one confound.
+"""
+
+# second_level_confounds
+docdict["second_level_design_matrix"] = """
+design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
+                or :obj:`pathlib.Path` to a CSV or TSV file, \
+                or None, default=None
+    Design matrix to fit the :term:`GLM`.
+    The number of rows in the design matrix
+    must agree with the number of maps
+    derived from ``second_level_input``.
+    Ensure that the order of maps given by a ``second_level_input``
+    list of Niimgs matches the order of the rows in the design matrix.
+"""
+
 # second_level_input
 docdict["second_level_input"] = """
 second_level_input : :obj:`list` of \
@@ -799,6 +832,28 @@ second_level_input : :obj:`list` of \
       and `design_matrix` must be provided.
 
 """
+
+# second_level_mask_img
+docdict["second_level_mask_img"] = """
+mask_img : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or\
+            :obj:`~nilearn.maskers.MultiNiftiMasker` or\
+            :obj:`~nilearn.maskers.SurfaceMasker` object or None,\
+            default=None
+    Mask to be used on data.
+    If an instance of masker is passed,
+    then its mask will be used.
+    If no mask is given,
+    it will be computed automatically
+    by a :class:`~nilearn.maskers.NiftiMasker`,
+    or a :obj:`~nilearn.maskers.SurfaceMasker`
+    (depending on the type passed at fit time)
+    with default parameters.
+    Automatic mask computation assumes first level imgs
+    have already been masked.
+"""
+docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
+    "mask_img :", "mask :"
+)
 
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
@@ -902,6 +957,24 @@ docdict["templateflow"] = """
 """
 
 # threshold
+docdict["tfce"] = """
+tfce : :obj:`bool`, default=False
+    Whether to calculate :term:`TFCE`
+    as part of the permutation procedure or not.
+    The TFCE calculation is implemented
+    as described in :footcite:t:`Smith2009a`.
+
+    .. warning::
+
+        Performing TFCE-based inference
+        will increase the computation time
+        of the permutation procedure considerably.
+        The permutations may take multiple hours,
+        depending on how many permutations
+        are requested and how many jobs are performed in parallel.
+"""
+
+# threshold
 docdict["threshold"] = """
 threshold : a number, None, or 'auto', optional
     If `None` is given, the image is not thresholded.
@@ -921,6 +994,17 @@ title : :obj:`str`, or None, default=None
 docdict["upper_cutoff"] = """
 upper_cutoff : :obj:`float`, optional
     Upper fraction of the histogram to be discarded.
+"""
+
+# two_sided_test
+docdict["two_sided_test"] = """
+two_sided_test : :obj:`bool`, default=False
+
+    - If ``True``, performs an unsigned t-test.
+        Both positive and negative effects are considered; the null
+        hypothesis is that the effect is zero.
+    - If ``False``, only positive effects are considered as relevant.
+        The null hypothesis is that the effect is zero or negative.
 """
 
 # url
