@@ -1,0 +1,21 @@
+flowchart TD
+    subgraph Circle-CI - nilearn
+    nilearn_CCI["nilearn (host)"]
+    end
+
+    subgraph GitHub - nilearn.github.io
+    nilearn_doc_dev[host in '/dev']
+    nilearn_doc_stable[host in '/stable']
+    end
+
+    subgraph GitHub - nilearn
+    DocumentationBuilder["build-docs.yml"]
+    trigger_hosting["trigger_hosting_on_pr.yml"]
+    artifacts["doc build artifacts"]
+    end
+
+    DocumentationBuilder -- merge PR on main --> nilearn_doc_dev
+    DocumentationBuilder -- Github release --> nilearn_doc_stable
+    DocumentationBuilder -- Successful doc build on PR --> trigger_hosting & artifacts
+    trigger_hosting -- trigger --> nilearn_CCI
+    artifacts -- fetched --> nilearn_CCI

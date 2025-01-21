@@ -30,6 +30,9 @@ Classes
    SurfaceMasker
    SurfaceMapsMasker
 
+.. autoclasstree:: nilearn.maskers
+   :full:
+
 .. toctree::
 
    generated_reports/masker_reports_examples.rst
