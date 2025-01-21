@@ -192,6 +192,13 @@ def _shape_4d_default():
     return (7, 8, 9, 5)
 
 
+def _shape_4d_medium():
+    """Return default shape for a long 4D image."""
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (7, 8, 9, 100)
+
+
 def _shape_4d_long():
     """Return default shape for a long 4D image."""
     # avoid having identical shapes values,
@@ -326,6 +333,18 @@ def _img_4d_zeros(shape=None, affine=None):
     return _img_zeros(shape, affine)
 
 
+def _img_4d_rand_eye():
+    """Return a default random filled 4D Nifti1Image (identity affine)."""
+    data = _rng().random(_shape_4d_default())
+    return Nifti1Image(data, _affine_eye())
+
+
+def _img_4d_rand_eye_medium():
+    """Return a random 4D Nifti1Image (identity affine, many volumes)."""
+    data = _rng().random(_shape_4d_medium())
+    return Nifti1Image(data, _affine_eye())
+
+
 def _img_4d_mni(shape=None, affine=None):
     if shape is None:
         shape = _shape_4d_default()
@@ -349,14 +368,19 @@ def img_4d_ones_eye():
 @pytest.fixture
 def img_4d_rand_eye():
     """Return a default random filled 4D Nifti1Image (identity affine)."""
-    data = _rng().random(_shape_4d_default())
-    return Nifti1Image(data, _affine_eye())
+    return _img_4d_rand_eye()
 
 
 @pytest.fixture
 def img_4d_mni():
     """Return a default random filled 4D Nifti1Image."""
     return _img_4d_mni()
+
+
+@pytest.fixture
+def img_4d_rand_eye_medium():
+    """Return a default random filled 4D Nifti1Image of medium length."""
+    return _img_4d_rand_eye_medium()
 
 
 @pytest.fixture
@@ -381,18 +405,28 @@ def img_atlas(shape_3d_default, affine_mni):
     }
 
 
-@pytest.fixture
-def n_regions():
+def _n_regions():
     """Return a default numher of regions for maps."""
     return 9
 
 
 @pytest.fixture
-def img_maps(shape_3d_default, n_regions, affine_eye):
+def n_regions():
+    """Return a default numher of regions for maps."""
+    return _n_regions()
+
+
+def _img_maps():
     """Generate a default map image."""
     return generate_maps(
-        shape=shape_3d_default, n_regions=n_regions, affine=affine_eye
+        shape=_shape_3d_default(), n_regions=_n_regions(), affine=_affine_eye()
     )[0]
+
+
+@pytest.fixture
+def img_maps():
+    """Generate fixture for default map image."""
+    return _img_maps()
 
 
 @pytest.fixture

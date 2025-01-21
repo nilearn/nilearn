@@ -16,9 +16,6 @@ from nilearn.maskers import NiftiSpheresMasker
 extra_valid_checks = [
     "check_parameters_default_constructible",
     "check_estimators_unfitted",
-    "check_get_params_invariance",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
 ]
 
 
@@ -234,6 +231,7 @@ def test_is_nifti_spheres_masker_give_nans(rng):
 
 
 def test_standardization(rng):
+    """Check output properly standardized with 'standardize' parameter."""
     data = rng.random((3, 3, 3, 5))
     img = Nifti1Image(data, np.eye(4))
 

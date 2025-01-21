@@ -14,11 +14,9 @@ from nilearn.surface._testing import (
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_no_attributes_set_in_init",
-    "check_parameters_default_constructible",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
     "check_estimators_unfitted",
+    "check_parameters_default_constructible",
+    "check_no_attributes_set_in_init",
 ]
 
 
@@ -141,17 +139,6 @@ def test_mask_img_transform_shape_mismatch(
         masker.transform(flip_surf_img(surf_img_1d))
     # non-flipped is ok
     masker.transform(surf_img_1d)
-
-
-def test_mask_img_transform_clean(surf_img_2d, surf_mask_1d):
-    """Smoke test for clean args."""
-    masker = SurfaceMasker(
-        surf_mask_1d,
-        t_r=2.0,
-        high_pass=1 / 128,
-        clean_args={"filter": "cosine"},
-    ).fit()
-    masker.transform(surf_img_2d(50))
 
 
 def test_mask_img_generate_report(surf_img_1d, surf_mask_1d):
