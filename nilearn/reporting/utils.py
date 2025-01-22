@@ -6,6 +6,8 @@ import urllib.parse
 from collections.abc import Iterable
 from pathlib import Path
 
+import pandas as pd
+
 TEMPLATE_ROOT_PATH = Path(__file__).parent / "data"
 
 CSS_PATH = TEMPLATE_ROOT_PATH / "css"
@@ -84,3 +86,31 @@ def coerce_to_dict(input_arg):
         input_arg = [input_arg] if isinstance(input_arg, str) else input_arg
         input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
     return input_arg
+
+
+def dataframe_to_html(df, precision, **kwargs):
+    """Make HTML table from provided dataframe.
+
+    Removes HTML5 non-compliant attributes (ex: `border`).
+
+    Parameters
+    ----------
+    df : pandas.Dataframe
+        Dataframe to be converted into HTML table.
+
+    precision : int
+        The display precision for float values in the table.
+
+    **kwargs : keyworded arguments
+        Supplies keyworded arguments for func: pandas.Dataframe.to_html()
+
+    Returns
+    -------
+    html_table : String
+        Code for HTML table.
+
+    """
+    with pd.option_context("display.precision", precision):
+        html_table = df.to_html(**kwargs)
+    html_table = html_table.replace('border="1" ', "")
+    return html_table.replace('class="dataframe"', 'class="pure-table"')

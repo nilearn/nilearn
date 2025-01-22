@@ -250,24 +250,23 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         self.n_elements_ = len(self._labels_)
 
-        if self.lut:
+        # generate a look up table if one was not provided
+        if self.lut is not None:
             if isinstance(self.lut, (str, Path)):
                 self.lut_ = pd.read_csv(self.lut)
             else:
                 self.lut_ = self.lut
-            check_look_up_table(self.lut_, self.labels_img, strict=True)
-
         elif self.labels:
             self.lut_ = generate_atlas_look_up_table(
                 function=None,
                 name=self.labels,
                 index=tuple(set(self._labels_data.ravel())),
             )
-
         else:
             self.lut_ = generate_atlas_look_up_table(
                 function=None, index=tuple(set(self._labels_data.ravel()))
             )
+        check_look_up_table(self.lut_, self.labels_img, strict=False)
 
         self.label_names_ = self.lut_.name.to_list()
 
@@ -297,48 +296,19 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 self.labels_img.mesh.parts[part].n_vertices
             )
 
-        if not self.reports:
-            self._reporting_data = None
-            return self
-
         self._reporting_data = self._generate_reporting_data()
 
         return self
-
-    def _check_labels(self):
-        """Check labels.
-
-        - checks that labels is a list of strings.
-        """
-        labels = self.labels
-        if labels is not None:
-            if not isinstance(labels, list):
-                raise TypeError(
-                    f"'labels' must be a list. Got: {type(labels)}",
-                )
-            if not all(isinstance(x, str) for x in labels):
-                types_labels = {type(x) for x in labels}
-                raise TypeError(
-                    "All elements of 'labels' must be a string.\n"
-                    f"Got a list of {types_labels}",
-                )
 
     def _generate_reporting_data(self):
         for part in self.labels_img.data.parts:
             size = []
             relative_size = []
-            regions_summary = {
-                "label value": [],
-                "region name": [],
-                "size<br>(number of vertices)": [],
-                "relative size<br>(% vertices in hemisphere)": [],
-            }
 
-            for i, label in enumerate(self.label_names_):
-                regions_summary["label value"].append(i)
-                regions_summary["region name"].append(label)
+            table = self.lut_.copy()
 
-                n_vertices = self.labels_img.data.parts[part] == i
+            for _, row in table.iterrows():
+                n_vertices = self.labels_img.data.parts[part] == row["index"]
                 size.append(n_vertices.sum())
                 tmp = (
                     n_vertices.sum()
@@ -347,21 +317,23 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 )
                 relative_size.append(f"{tmp:.2}")
 
-            regions_summary["size<br>(number of vertices)"] = size
-            regions_summary["relative size<br>(% vertices in hemisphere)"] = (
-                relative_size
-            )
+            table["size"] = size
+            table["relative size"] = relative_size
 
-            self._report_content["summary"][part] = regions_summary
+            self._report_content["summary"][part] = table
 
         return {
             "labels_image": self.labels_img,
-            "label_names": [str(x) for x in self.label_names_],
+            # "label_names": self.label_names_,
             "images": None,
         }
 
     def __sklearn_is_fitted__(self):
-        return hasattr(self, "n_elements_")
+        return (
+            hasattr(self, "n_elements_")
+            and hasattr(self, "lut_")
+            and hasattr(self, "mask_img_")
+        )
 
     def _check_fitted(self):
         if not self.__sklearn_is_fitted__():
@@ -550,7 +522,17 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 return [None]
 
         from nilearn.reporting.html_report import generate_report
+        from nilearn.reporting.utils import dataframe_to_html
 
+        for hemi, value in self._report_content["summary"].items():
+            if isinstance(value, pd.DataFrame):
+                self._report_content["summary"][hemi] = dataframe_to_html(
+                    value,
+                    precision=1,
+                    index=False,
+                    escape=True,
+                    justify="center",
+                )
         return generate_report(self)
 
     def _reporting(self):
