@@ -83,7 +83,7 @@ def inject_with_jinja(
 
     Parameters
     ----------
-        template_file : Path to the Jinja template file.
+    template_file : Path to the Jinja template file.
         output_file : Path to the output file.
         context : The context dictionary to render the template.
     """
