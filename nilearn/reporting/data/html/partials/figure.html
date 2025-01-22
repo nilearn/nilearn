@@ -3,7 +3,7 @@
   <div
     class="pure-img"
     width="100%"
-    id="map0"
+    id="map-{{unique_id}}-0"
     style="display: block"
     alt="image"
   >
@@ -11,12 +11,14 @@
   </div>
 
   {{for map in range(1, len(displayed_maps))}}
-  <div id="map{{map}}" style="display: none">{{content[map]|html}}</div>
+  <div id="map-{{unique_id}}-{{map}}" style="display: none">
+    {{content[map]|html}}
+  </div>
   {{endfor}}
 </div>
 {{else}}
 <img
-  id="map0"
+  id="map-{{unique_id}}-0"
   class="pure-img"
   width="100%"
   src="data:image/png;base64,{{content[0]}}"
@@ -26,7 +28,7 @@
 
 {{for map in range(1, len(displayed_maps))}}
 <img
-  id="map{{map}}"
+  id="map-{{unique_id}}-{{map}}"
   class="pure-img"
   width="100%"
   src="data:image/png;base64,{{content[map]}}"
