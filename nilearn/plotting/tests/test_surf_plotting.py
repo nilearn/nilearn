@@ -1591,12 +1591,21 @@ def parcellation(in_memory_mesh):
     return parcellation
 
 
-def test_plot_surf_contours(pyplot, in_memory_mesh, parcellation):
+def test_plot_surf_contours(
+    pyplot, in_memory_mesh, parcellation, surf_mask_1d
+):
     plot_surf_contours(in_memory_mesh, parcellation)
     plot_surf_contours(in_memory_mesh, parcellation, levels=[1, 2])
     plot_surf_contours(
         in_memory_mesh, parcellation, levels=[1, 2], cmap="gist_ncar"
     )
+
+
+def test_plot_surf_contour_roi_map_as_surface_image(
+    pyplot, surf_mesh, surf_mask_1d
+):
+    """Check that mesh can be PolyMesh and roi_map can be a SurfaceImage."""
+    plot_surf_contours(surf_mesh, roi_map=surf_mask_1d, hemi=None)
 
 
 def test_plot_surf_contours_legend(pyplot, in_memory_mesh, parcellation):
