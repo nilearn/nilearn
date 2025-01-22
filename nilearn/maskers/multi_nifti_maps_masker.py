@@ -138,6 +138,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         reports=True,
         cmap="CMRmap_r",
         n_jobs=1,
+        clean_args=None,
         **kwargs,
     ):
         self.n_jobs = n_jobs
@@ -160,6 +161,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             verbose=verbose,
             reports=reports,
             cmap=cmap,
+            clean_args=clean_args,
             **kwargs,
         )
 

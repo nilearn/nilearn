@@ -130,6 +130,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         strategy="mean",
         reports=True,
         n_jobs=1,
+        clean_args=None,
         **kwargs,
     ):
         self.n_jobs = n_jobs
@@ -153,6 +154,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             verbose=verbose,
             strategy=strategy,
             reports=reports,
+            clean_args=clean_args,
             **kwargs,
         )
 
