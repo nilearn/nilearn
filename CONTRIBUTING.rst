@@ -886,7 +886,7 @@ Deterministic atlases must also include:
   - that complies with the
     `dseg.tsv format from BIDS
     <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
-  - can be validated by the function ``nilearn.datasets.atlas._check_look_up_table``
+  - can be validated by the function ``nilearn._tuils.helpers.check_look_up_table``
     in strict mode.
 
 In addition, the atlas will need to be called by a fetcher.

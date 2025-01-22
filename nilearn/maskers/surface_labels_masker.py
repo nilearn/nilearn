@@ -1,15 +1,24 @@
 """Extract data from a SurfaceImage, averaging over atlas regions."""
 
 import warnings
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
 
 from nilearn import signal
-from nilearn._utils import constrained_layout_kwargs, fill_doc
+from nilearn._utils.bids import (
+    check_look_up_table,
+    generate_atlas_look_up_table,
+)
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import (
+    constrained_layout_kwargs,
+    is_matplotlib_installed,
+)
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -159,6 +168,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self,
         labels_img=None,
         labels=None,
+        lut=None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
@@ -178,6 +188,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
     ):
         self.labels_img = labels_img
         self.labels = labels
+        self.lut = lut
         self.background_label = background_label
         self.mask_img = mask_img
         self.smoothing_fwhm = smoothing_fwhm
@@ -225,25 +236,49 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "masker = SurfaceLabelsMasker(labels_img=labels_img)"
             )
 
+        if self.labels and self.lut:
+            raise ValueError(
+                "Pass either labels or a lookup table (lut) to the masker, "
+                "but not both."
+            )
+
+        self._shelving = False
+
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)
         self._labels_ = list(all_labels)
 
         self.n_elements_ = len(self._labels_)
 
-        if self.labels is None:
-            self.label_names_ = [str(label) for label in self._labels_]
+        if self.lut:
+            if isinstance(self.lut, (str, Path)):
+                self.lut_ = pd.read_csv(self.lut)
+            else:
+                self.lut_ = self.lut
+            check_look_up_table(self.lut_, self.labels_img, strict=True)
+
+        elif self.labels:
+            self.lut_ = generate_atlas_look_up_table(
+                function=None,
+                name=self.labels,
+                index=tuple(set(self._labels_data.ravel())),
+            )
+
         else:
-            self.label_names_ = [self.labels[x] for x in self._labels_]
+            self.lut_ = generate_atlas_look_up_table(
+                function=None, index=tuple(set(self._labels_data.ravel()))
+            )
+
+        self.label_names_ = self.lut_.name.to_list()
 
         if self.mask_img is not None:
             check_same_n_vertices(self.labels_img.mesh, self.mask_img.mesh)
+        self.mask_img_ = self.mask_img
 
         if not self.reports:
             self._reporting_data = None
             return self
 
-        self._shelving = False
         # content to inject in the HTML template
         self._report_content = {
             "description": (
@@ -269,6 +304,24 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self._reporting_data = self._generate_reporting_data()
 
         return self
+
+    def _check_labels(self):
+        """Check labels.
+
+        - checks that labels is a list of strings.
+        """
+        labels = self.labels
+        if labels is not None:
+            if not isinstance(labels, list):
+                raise TypeError(
+                    f"'labels' must be a list. Got: {type(labels)}",
+                )
+            if not all(isinstance(x, str) for x in labels):
+                types_labels = {type(x) for x in labels}
+                raise TypeError(
+                    "All elements of 'labels' must be a string.\n"
+                    f"Got a list of {types_labels}",
+                )
 
     def _generate_reporting_data(self):
         for part in self.labels_img.data.parts:
@@ -358,7 +411,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         labels_data = self._labels_data
         labels = self._labels_
-        if self.mask_img is not None:
+        if self.mask_img_ is not None:
             mask_data = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
             )

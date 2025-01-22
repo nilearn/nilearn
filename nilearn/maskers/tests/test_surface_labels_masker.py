@@ -75,23 +75,19 @@ def test_surface_label_masker_fit(surf_label_img):
     masker = masker.fit()
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
-    assert masker.label_names_ == ["1"]
+    assert masker.label_names_ == ["0", "1"]
     assert masker._reporting_data is not None
 
 
 def test_surface_label_masker_fit_with_names(surf_label_img):
-    """Check passing labels is reflected in attributes.
-
-    - the value corresponding to 0 (background) is omitted
-    - extra value provided (foo) are not listed in attributes
-    """
+    """Check passing labels is reflected in attributes."""
     masker = SurfaceLabelsMasker(
-        labels_img=surf_label_img, labels=["background", "bar", "foo"]
+        labels_img=surf_label_img, labels=["background", "bar"]
     )
     masker = masker.fit()
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
-    assert masker.label_names_ == ["bar"]
+    assert masker.label_names_ == ["background", "bar"]
 
 
 def test_surface_label_masker_fit_no_report(surf_label_img):
