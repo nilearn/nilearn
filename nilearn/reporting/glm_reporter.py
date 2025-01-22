@@ -51,6 +51,7 @@ from nilearn.reporting.utils import (
     HTML_TEMPLATE_PATH,
     TEMPLATE_ROOT_PATH,
     coerce_to_dict,
+    dataframe_to_html,
     figure_to_png_base64,
     figure_to_svg_quoted,
     model_attributes_to_dataframe,
@@ -236,7 +237,7 @@ def make_glm_report(
     )
     with pd.option_context("display.max_colwidth", 100):
         model_attributes = model_attributes_to_dataframe(model)
-        model_attributes_html = _dataframe_to_html(
+        model_attributes_html = dataframe_to_html(
             model_attributes,
             precision=2,
             header=False,
@@ -746,13 +747,13 @@ def _make_stat_maps_contrast_clusters(
             two_sided=two_sided,
         )
 
-        cluster_table_html = _dataframe_to_html(
+        cluster_table_html = dataframe_to_html(
             cluster_table,
             precision=2,
             index=False,
             classes="cluster-table",
         )
-        table_details_html = _dataframe_to_html(
+        table_details_html = dataframe_to_html(
             table_details,
             precision=3,
             header=False,
@@ -998,34 +999,6 @@ def _add_params_to_plot(table_details, stat_map_plot):
     return stat_map_plot
 
 
-def _dataframe_to_html(df, precision, **kwargs):
-    """Make HTML table from provided dataframe.
-
-    Removes HTML5 non-compliant attributes (ex: `border`).
-
-    Parameters
-    ----------
-    df : pandas.Dataframe
-        Dataframe to be converted into HTML table.
-
-    precision : int
-        The display precision for float values in the table.
-
-    **kwargs : keyworded arguments
-        Supplies keyworded arguments for func: pandas.Dataframe.to_html()
-
-    Returns
-    -------
-    html_table : String
-        Code for HTML table.
-
-    """
-    with pd.option_context("display.precision", precision):
-        html_table = df.to_html(**kwargs)
-    html_table = html_table.replace('border="1" ', "")
-    return html_table.replace('class="dataframe"', 'class="pure-table"')
-
-
 def _make_surface_glm_report(
     model,
     contrasts=None,
@@ -1058,7 +1031,7 @@ def _make_surface_glm_report(
         model, is_volume_glm=False
     )
     with pd.option_context("display.max_colwidth", 100):
-        model_attributes_html = _dataframe_to_html(
+        model_attributes_html = dataframe_to_html(
             model_attributes,
             precision=2,
             header=True,
@@ -1142,7 +1115,7 @@ def _make_surface_glm_report(
         height_control,
         alpha,
     )
-    cluster_table_html = _dataframe_to_html(
+    cluster_table_html = dataframe_to_html(
         cluster_table_details,
         precision=2,
         header=True,

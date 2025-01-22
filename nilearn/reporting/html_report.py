@@ -4,6 +4,8 @@ import copy
 import warnings
 from string import Template
 
+import pandas as pd
+
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
@@ -12,7 +14,9 @@ from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_PARTIALS_PATH,
     HTML_TEMPLATE_PATH,
+    dataframe_to_html,
     figure_to_svg_base64,
+    model_attributes_to_dataframe,
 )
 
 ESTIMATOR_TEMPLATES = {
@@ -162,7 +166,7 @@ def _update_template(
         content=content,
         overlay=overlay,
         docstring=docstring,
-        parameters=_render_parameters_partial(parameters),
+        parameters=parameters,
         **data,
         css=css,
         warning_messages=_render_warnings_partial(warning_messages),
@@ -270,13 +274,6 @@ def generate_report(estimator):
     return _create_report(estimator, data)
 
 
-def _render_parameters_partial(parameters):
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(HTML_PARTIALS_PATH / "parameters.html"), encoding="utf-8"
-    )
-    return tpl.substitute(parameters=parameters)
-
-
 def _render_warnings_partial(warning_messages):
     if not warning_messages:
         return ""
@@ -294,7 +291,14 @@ def _create_report(estimator, data):
         if isinstance(image, list)
         else embed_img(image)
     )
-    parameters = _str_params(estimator.get_params())
+    parameters = model_attributes_to_dataframe(estimator)
+    with pd.option_context("display.max_colwidth", 100):
+        parameters = dataframe_to_html(
+            parameters,
+            precision=2,
+            header=True,
+            sparsify=False,
+        )
     docstring = estimator.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
     return _update_template(
