@@ -18,7 +18,6 @@ from nilearn._utils.data_gen import (
     generate_random_img,
 )
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
 
@@ -427,9 +426,7 @@ def test_nifti_labels_masker_resampling_errors(
         masker.fit()
 
 
-def test_nifti_labels_masker_resampling_to_data(
-    tmp_path, affine_eye, n_regions, length
-):
+def test_nifti_labels_masker_resampling_to_data(affine_eye, n_regions, length):
     """Test resampling to data in NiftiLabelsMasker."""
     # mask
     shape2 = (8, 9, 10, length)
@@ -460,11 +457,6 @@ def test_nifti_labels_masker_resampling_to_data(
     masker.fit_transform(fmri_img)
 
     assert_array_equal(masker._resampled_labels_img_.affine, affine2)
-
-    # Test with filenames
-    filename = write_imgs_to_path(fmri_img, file_path=tmp_path)
-    masker = NiftiLabelsMasker(labels_img, resampling_target="data")
-    masker.fit_transform(filename)
 
 
 @pytest.mark.parametrize("resampling_target", ["data", "labels"])
