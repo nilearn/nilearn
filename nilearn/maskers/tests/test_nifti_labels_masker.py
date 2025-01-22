@@ -20,6 +20,7 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 
 def _labels_img():
@@ -31,8 +32,7 @@ def _labels_img():
 
 
 extra_valid_checks = [
-    "check_parameters_default_constructible",
-    "check_estimators_unfitted",
+    *check_valid_for_all_maskers(),
 ]
 
 

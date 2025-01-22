@@ -335,14 +335,6 @@ class NiftiSpheresMasker(BaseMasker):
 
         # Parameters for reporting
         self.reports = reports
-        self.report_id = -1
-        self._report_content = {
-            "description": (
-                "This reports shows the regions defined "
-                "by the spheres of the masker."
-            ),
-            "warning_message": None,
-        }
         self.verbose = verbose
 
     def generate_report(self, displayed_spheres="all"):
@@ -529,6 +521,15 @@ class NiftiSpheresMasker(BaseMasker):
         """
         if hasattr(self, "seeds_"):
             return self
+
+        self.report_id = -1
+        self._report_content = {
+            "description": (
+                "This reports shows the regions defined "
+                "by the spheres of the masker."
+            ),
+            "warning_message": None,
+        }
 
         if self.memory is None:
             self.memory = Memory(location=None, verbose=0)
