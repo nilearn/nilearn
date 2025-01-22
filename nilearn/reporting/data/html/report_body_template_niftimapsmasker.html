@@ -7,25 +7,70 @@
   <div class="pure-u-1 pure-u-md-2-3">
     <div class="image">
       <script>
-        current_map_idx = 0;
-        displayed_maps = {{displayed_maps}};
-        number_maps = {{len(displayed_maps)}};
+        document.addEventListener("DOMContentLoaded", function() {
+          (function() {
+            var unique_id = "{{unique_id}}";
+            var current_map_idx_{{unique_id}} = 0;
+            var displayed_maps_{{unique_id}} = {{displayed_maps}};
+            var number_maps_{{unique_id}} = {{len(displayed_maps)}};
+            window['current_map_idx_' + unique_id] = current_map_idx_{{unique_id}};
+            window['displayed_maps_' + unique_id] = displayed_maps_{{unique_id}};
+            window['number_maps_' + unique_id] = number_maps_{{unique_id}};
+
+            document.getElementById("comp-{{unique_id}}").innerHTML = displayed_maps_{{unique_id}}[current_map_idx_{{unique_id}}];
+
+            function displayNextMap() {
+              var current_map_idx = window['current_map_idx_' + unique_id];
+              var displayed_maps = window['displayed_maps_' + unique_id];
+              var number_maps = window['number_maps_' + unique_id];
+
+              document.getElementById("map-" + unique_id + "-" + current_map_idx).style["display"] = "none";
+              current_map_idx = current_map_idx + 1;
+              if (current_map_idx >= number_maps) {
+                current_map_idx = 0;
+              }
+              document.getElementById("map-" + unique_id + "-" + current_map_idx).style["display"] = "block";
+              document.getElementById("comp-" + unique_id).innerHTML = displayed_maps[current_map_idx];
+              window['current_map_idx_' + unique_id] = current_map_idx;
+            }
+
+            function displayPreviousMap() {
+              var current_map_idx = window['current_map_idx_' + unique_id];
+              var displayed_maps = window['displayed_maps_' + unique_id];
+              var number_maps = window['number_maps_' + unique_id];
+
+              document.getElementById("map-" + unique_id + "-" + current_map_idx).style["display"] = "none";
+              current_map_idx = current_map_idx - 1;
+              if (current_map_idx < 0) {
+                current_map_idx = number_maps - 1;
+              }
+              document.getElementById("map-" + unique_id + "-" + current_map_idx).style["display"] = "block";
+              document.getElementById("comp-" + unique_id).innerHTML = displayed_maps[current_map_idx];
+              window['current_map_idx_' + unique_id] = current_map_idx;
+            }
+
+            // Attach functions to buttons
+            document.querySelector("#prev-btn-{{unique_id}}").onclick = displayPreviousMap;
+            document.querySelector("#next-btn-{{unique_id}}").onclick = displayNextMap;
+          })();
+        });
       </script>
-
       <div class="btn-container">
-        <button onclick="displayPreviousMap()" class="btn">Previous Map</button>
+        <button id="prev-btn-{{unique_id}}" class="btn">Previous Map</button>
       </div>
 
       <div class="btn-container">
-        <h3 class="comp-title">Component <span id="comp"></span></h3>
+        <h3 class="comp-title">
+          Component <span id="comp-{{unique_id}}"></span>
+        </h3>
       </div>
 
       <div class="btn-container">
-        <button onclick="displayNextMap()" class="btn">Next Map</button>
+        <button id="next-btn-{{unique_id}}" class="btn">Next Map</button>
       </div>
 
       <img
-        id="map0"
+        id="map-{{unique_id}}-0"
         class="pure-img"
         width="100%"
         src="data:image/svg+xml;base64,{{content[0]}}"
@@ -35,7 +80,7 @@
 
       {{for map in range(1, len(displayed_maps))}}
       <img
-        id="map{{map}}"
+        id="map-{{unique_id}}-{{map}}"
         class="pure-img"
         width="100%"
         src="data:image/svg+xml;base64,{{content[map]}}"
@@ -71,28 +116,4 @@
     transform time.
   </p>
 </div>
-
-<script>
-  document.getElementById("comp").innerHTML = displayed_maps[current_map_idx];
-
-  function displayNextMap() {
-    document.getElementById("map" + current_map_idx).style["display"] = "none";
-    current_map_idx = current_map_idx + 1;
-    if (current_map_idx >= number_maps) {
-      current_map_idx = 0;
-    }
-    document.getElementById("map" + current_map_idx).style["display"] = "block";
-    document.getElementById("comp").innerHTML = displayed_maps[current_map_idx];
-  }
-
-  function displayPreviousMap() {
-    document.getElementById("map" + current_map_idx).style["display"] = "none";
-    current_map_idx = current_map_idx - 1;
-    if (current_map_idx < 0) {
-      current_map_idx = number_maps - 1;
-    }
-    document.getElementById("map" + current_map_idx).style["display"] = "block";
-    document.getElementById("comp").innerHTML = displayed_maps[current_map_idx];
-  }
-</script>
 {{enddef}}

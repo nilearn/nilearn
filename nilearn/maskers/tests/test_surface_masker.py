@@ -6,6 +6,7 @@ import pytest
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers import SurfaceMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 from nilearn.surface import SurfaceImage
 from nilearn.surface._testing import (
     assert_polydata_equal,
@@ -14,9 +15,8 @@ from nilearn.surface._testing import (
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
-    "check_parameters_default_constructible",
     "check_no_attributes_set_in_init",
+    *check_valid_for_all_maskers(),
 ]
 
 

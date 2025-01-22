@@ -22,10 +22,10 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_parameters_default_constructible",
-    "check_estimators_unfitted",
+    *check_valid_for_all_maskers(),
 ]
 
 
@@ -53,18 +53,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
-
-
-def test_auto_mask(img_3d_rand_eye):
-    """Perform a smoke test on the auto-mask option."""
-    masker = NiftiMasker()
-    # Smoke test the fit
-    masker.fit(img_3d_rand_eye)
-    # Smoke test the transform
-    # With a 4D img
-    masker.transform([img_3d_rand_eye])
-    # With a 3D img
-    masker.transform(img_3d_rand_eye)
 
 
 def test_detrend(img_3d_rand_eye, mask_img_1):
@@ -127,14 +115,6 @@ def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
         "to save memory and computation time.",
     ):
         masker.fit_transform(img_3d_rand_eye)
-
-
-def test_with_files(tmp_path, img_3d_rand_eye):
-    """Test standard masking with filenames."""
-    filename = testing.write_imgs_to_path(img_3d_rand_eye, file_path=tmp_path)
-    masker = NiftiMasker()
-    masker.fit(filename)
-    masker.transform(filename)
 
 
 def test_nan(affine_eye):

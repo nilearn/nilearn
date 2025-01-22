@@ -14,10 +14,10 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_estimators_unfitted",
-    "check_parameters_default_constructible",
+    *check_valid_for_all_maskers(),
 ]
 
 
@@ -80,16 +80,6 @@ def test_auto_mask(data_1, img_1, data_2, img_2):
     masker.transform([[img_1]])
     # It should also work with a 3D image
     masker.transform(img_1)
-
-
-def test_auto_mask_errors(img_3d_rand_eye):
-    masker = MultiNiftiMasker()
-    # Check error return due to bad data format
-    with pytest.raises(
-        ValueError,
-        match="For multiple processing, you should provide a list of data",
-    ):
-        masker.fit(img_3d_rand_eye)
 
 
 def test_nan():
