@@ -61,7 +61,7 @@
 # when downloading datasets from remote servers.
 #
 # Data is cached after the ``get_data`` job to be passed to the ``build_docs`` job.
-# Data can be cached and restore across attempts of a run of this workflow.
+# Data can be cached and restored across attempts of a run of this workflow.
 # Data can be cached and restored across run of this workflow.
 #
 # Note that you can request to download all datasets and ignore the cache at any time
