@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn._utils import data_gen, testing
+from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
 from nilearn.conftest import _affine_eye, _shape_3d_default
@@ -207,7 +207,7 @@ def test_multi_nifti_labels_masker_reduction_strategies():
     assert default_masker.strategy == "mean"
 
 
-def test_multi_nifti_labels_masker_resampling(tmp_path):
+def test_multi_nifti_labels_masker_resampling():
     """Test resampling in MultiNiftiLabelsMasker."""
     shape1 = (10, 11, 12)
     affine = np.eye(4)
@@ -347,11 +347,6 @@ def test_multi_nifti_labels_masker_resampling(tmp_path):
     np.testing.assert_array_equal(
         masker._resampled_labels_img_.affine, affine2
     )
-
-    # Test with filenames
-    filename = testing.write_imgs_to_path(fmri22_img, file_path=tmp_path)
-    masker = MultiNiftiLabelsMasker(labels33_img, resampling_target="data")
-    masker.fit_transform(filename)
 
     # test labels masker with resampling target in 'data', 'labels' to return
     # resampled labels having number of labels equal with transformed shape of

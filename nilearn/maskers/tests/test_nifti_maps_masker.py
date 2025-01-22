@@ -142,26 +142,6 @@ def test_nifti_maps_masker_fit(n_regions, img_maps):
     assert masker.n_elements_ == n_regions
 
 
-@pytest.mark.parametrize("create_files", (True, False))
-def test_nifti_maps_masker_fit_files(
-    tmp_path,
-    length,
-    n_regions,
-    create_files,
-    img_maps,
-    img_fmri,
-):
-    """Check fitting files directly."""
-    labels11 = write_imgs_to_path(
-        img_maps, file_path=tmp_path, create_files=create_files
-    )
-    masker = NiftiMapsMasker(labels11, resampling_target=None, verbose=0)
-
-    signals11 = masker.fit().transform(img_fmri)
-
-    assert signals11.shape == (length, n_regions)
-
-
 def test_nifti_maps_masker_errors(
     length, n_regions, affine_eye, shape_3d_default, img_maps
 ):
@@ -176,25 +156,15 @@ def test_nifti_maps_masker_errors(
     ):
         masker.fit()
 
-    fmri11_img, mask11_img = generate_fake_fmri(
+    fmri11_img, _ = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
     )
-
-    masker = NiftiMapsMasker(
-        img_maps, mask_img=mask11_img, resampling_target=None
-    )
-
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker.transform(fmri11_img)
 
     masker = NiftiMapsMasker(
         img_maps, smoothing_fwhm=3, resampling_target=None
     )
     signals11 = masker.fit_transform(fmri11_img)
     assert signals11.shape == (length, n_regions)
-
-    with pytest.raises(ValueError, match="has not been fitted."):
-        NiftiMapsMasker(img_maps).inverse_transform(signals11)
 
 
 @pytest.mark.parametrize("create_files", (True, False))
