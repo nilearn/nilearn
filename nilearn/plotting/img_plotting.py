@@ -176,6 +176,38 @@ def _plot_img_with_bg(
     %(img)s
         Image to plot.
 
+    %(bg_img)s
+        If nothing is specified, no background image is plotted.
+        Default=None.
+
+    %(cut_coords)s
+
+    %(output_file)s
+
+    %(display_mode)s
+
+    %(colorbar)s
+        Default=False.
+
+    %(figure)s
+
+    %(axes)s
+
+    %(title)s
+
+    %(threshold)s
+
+    %(annotate)s
+
+    %(draw_cross)s
+
+    %(black_bg)s
+        Default=False.
+
+    %(vmin)s
+
+    %(vmax)s
+
     bg_vmin : :obj:`float`, optional
         vmin for `bg_img`.
 
@@ -187,6 +219,17 @@ def _plot_img_with_bg(
 
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
+
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%%i" to display as integers.
+
+    decimals : :obj:`int` or :obj:`bool`, default=False
+        Number of decimal places on slice position annotation.
+        If False,
+        the slice position is integer without decimal point.
+
+    %(radiological)s
 
     kwargs :  extra keyword arguments, optional
         Extra keyword arguments passed
@@ -201,7 +244,14 @@ def _plot_img_with_bg(
         An instance of the OrthoSlicer or OrthoProjector class depending on the
         function defined in ``display_factory``. If ``output_file`` is defined,
         None is returned.
+
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
     """
+    if isinstance(threshold, float) and threshold < 0:
+        raise ValueError("Threshold should be a non-negative number!")
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
         vmax = None
@@ -375,14 +425,6 @@ def plot_img(
 
     %(annotate)s
 
-    decimals : :obj:`int` or :obj:`bool`, default=False
-        Number of decimal places on slice position annotation.
-        If False,
-        the slice position is integer without decimal point.
-
-    %(cmap)s
-        default="gray"
-
     %(draw_cross)s
 
     %(black_bg)s
@@ -408,6 +450,14 @@ def plot_img(
 
     %(radiological)s
 
+    decimals : :obj:`int` or :obj:`bool`, default=False
+        Number of decimal places on slice position annotation.
+        If False,
+        the slice position is integer without decimal point.
+
+    %(cmap)s
+        default="gray"
+
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
@@ -418,6 +468,11 @@ def plot_img(
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
+
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
 
     .. note::
 
@@ -678,6 +733,11 @@ def plot_anat(
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
+
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
 
     Notes
     -----
@@ -984,6 +1044,11 @@ def plot_roi(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     Notes
     -----
     A small threshold is applied by default to eliminate numerical
@@ -1096,8 +1161,8 @@ def plot_prob_atlas(
         If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
 
-    threshold : a :obj:`str` or a number, :obj:`list` of :obj:`str` or \
-        numbers, default='auto'
+    threshold : a :obj:`str` or a non-negative number, :obj:`list` of
+        :obj:`str` or non-negative numbers, default='auto'
         This parameter is optional and is used to threshold the maps image
         using the given value or automatically selected value. The values
         in the image above the threshold level will be visualized.
@@ -1167,10 +1232,18 @@ def plot_prob_atlas(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     See Also
     --------
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
     """
+    if threshold < 0:
+        raise ValueError("Threshold should be a non-negative number!")
+
     display = plot_anat(
         bg_img,
         cut_coords=cut_coords,
@@ -1396,6 +1469,11 @@ def plot_stat_map(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1560,6 +1638,11 @@ def plot_glass_brain(
     display : :class:`~nilearn.plotting.displays.OrthoProjector` or None
         An instance of the OrthoProjector class. If ``output_file`` is defined,
         None is returned.
+
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
 
     Notes
     -----
