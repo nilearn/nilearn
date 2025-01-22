@@ -1541,18 +1541,21 @@ def fetch_atlas_yeo_2011(
                 )
             ),
         )
+
     if n_networks is not None:
         if n_networks not in (7, 17):
             raise ValueError(
                 f"'n_networks' must be 7 or 17. Got {n_networks=}"
             )
-        thickness = "thick"
+        if thickness is None:
+            thickness = "thick"
     if thickness is not None:
         if thickness not in ("thin", "thick"):
             raise ValueError(
                 f"'thickness' must be 'thin' or 'thick'. Got {thickness=}"
             )
-        n_networks = 7
+        if n_networks is None:
+            n_networks = 7
 
     if url is None:
         url = (
