@@ -143,7 +143,7 @@ def test_make_edges_and_weights_surface(surf_mesh, surf_img_2d):
         "left": np.array([False, True, True, True]),
         "right": np.array([True, True, False, True, False]),
     }
-    surf_mask_1d = SurfaceImage(surf_mesh(), data)
+    surf_mask_1d = SurfaceImage(surf_mesh, data)
     # create a surface masker
     masker = SurfaceMasker(surf_mask_1d).fit()
     # mask the surface image with 50 samples
