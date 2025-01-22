@@ -1605,7 +1605,7 @@ def test_plot_surf_contour_roi_map_as_surface_image(
     pyplot, surf_mesh, surf_mask_1d
 ):
     """Check that mesh can be PolyMesh and roi_map can be a SurfaceImage."""
-    plot_surf_contours(surf_mesh, roi_map=surf_mask_1d, hemi=None)
+    plot_surf_contours(surf_mesh(), roi_map=surf_mask_1d, hemi=None)
 
 
 def test_plot_surf_contours_legend(pyplot, in_memory_mesh, parcellation):
