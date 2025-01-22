@@ -1,7 +1,7 @@
 ---
 # Workflow to check the time taken to run tests and build the documentation.
 #
-# Pings github API to collect information about:
+# Pings Github API to collect information about:
 #
 # - how long each run of the test suite lasted,
 # - how long the build of the doc lasted.
