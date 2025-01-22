@@ -53,6 +53,7 @@ from nilearn.reporting.utils import (
     coerce_to_dict,
     figure_to_png_base64,
     figure_to_svg_quoted,
+    model_attributes_to_dataframe,
 )
 from nilearn.surface import SurfaceImage
 
@@ -234,7 +235,7 @@ def make_glm_report(
         model,
     )
     with pd.option_context("display.max_colwidth", 100):
-        model_attributes = _model_attributes_to_dataframe(model)
+        model_attributes = model_attributes_to_dataframe(model)
         model_attributes_html = _dataframe_to_html(
             model_attributes,
             precision=2,
@@ -442,68 +443,6 @@ def _make_headings(contrasts, title, model):
     page_heading_1 = f"Statistical Report for {contrasts_text}"
     page_heading_2 = model_type
     return page_title, page_heading_1, page_heading_2
-
-
-def _model_attributes_to_dataframe(model, is_volume_glm=True):
-    """Return an HTML table with pertinent model attributes & information.
-
-    Parameters
-    ----------
-    model : FirstLevelModel or SecondLevelModel object.
-
-    Returns
-    -------
-    HTML Table : String
-        HTML table with the pertinent attributes of the model.
-
-    """
-    selected_attributes = [
-        "subject_label",
-        "drift_model",
-        "hrf_model",
-        "standardize",
-        "noise_model",
-        "t_r",
-        "signal_scaling",
-        "scaling_axis",
-        "smoothing_fwhm",
-        "slice_time_ref",
-    ]
-    if is_volume_glm:
-        selected_attributes.extend(["target_shape", "target_affine"])
-    if hasattr(model, "hrf_model") and model.hrf_model == "fir":
-        selected_attributes.append("fir_delays")
-    if hasattr(model, "drift_model"):
-        if model.drift_model == "cosine":
-            selected_attributes.append("high_pass")
-        elif model.drift_model == "polynomial":
-            selected_attributes.append("drift_order")
-
-    attribute_units = {
-        "t_r": "seconds",
-        "high_pass": "Hertz",
-    }
-
-    selected_attributes.sort()
-    display_attributes = OrderedDict(
-        (attr_name, getattr(model, attr_name))
-        for attr_name in selected_attributes
-        if hasattr(model, attr_name)
-    )
-    model_attributes = pd.DataFrame.from_dict(
-        display_attributes,
-        orient="index",
-    )
-    attribute_names_with_units = {
-        attribute_name_: attribute_name_ + f" ({attribute_unit_})"
-        for attribute_name_, attribute_unit_ in attribute_units.items()
-    }
-    model_attributes = model_attributes.rename(
-        index=attribute_names_with_units
-    )
-    model_attributes.index.names = ["Parameter"]
-    model_attributes.columns = ["Value"]
-    return model_attributes
 
 
 def make_stat_maps(model, contrasts, output_type="z_score"):
@@ -1115,7 +1054,7 @@ def _make_surface_glm_report(
     docstring = model.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
-    model_attributes = _model_attributes_to_dataframe(
+    model_attributes = model_attributes_to_dataframe(
         model, is_volume_glm=False
     )
     with pd.option_context("display.max_colwidth", 100):
