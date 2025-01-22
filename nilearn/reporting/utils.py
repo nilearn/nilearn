@@ -175,7 +175,6 @@ def _glm_model_attributes_to_dataframe(model, is_volume_glm=True):
     model_attributes.index.names = ["Parameter"]
     model_attributes.columns = ["Value"]
 
-    breakpoint()
     return model_attributes
 
 
