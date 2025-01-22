@@ -482,7 +482,26 @@ class BaseSlicer:
 
     @classmethod
     def _threshold(cls, data, threshold=None, vmin=None, vmax=None):
-        """Threshold the data."""
+        """Threshold the data.
+
+        Parameters
+        ----------
+        data: ndarray
+            data to be thresholded
+
+        %(threshold)s
+
+        %(vmin)s
+
+        %(vmax)s
+
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
+        """
+        if isinstance(threshold, float) and threshold < 0:
+            raise ValueError("Threshold should be a non-negative number!")
         if threshold is not None:
             data = np.ma.masked_where(
                 np.abs(data) <= threshold,
