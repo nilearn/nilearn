@@ -6,7 +6,7 @@ from tempfile import mkdtemp
 
 import numpy as np
 import pytest
-from joblib import Memory
+from joblib import Memory, hash
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
@@ -49,23 +49,26 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 
 @pytest.fixture
 def data_2(shape_3d_default):
+    """Return 3D zeros with a few 10 in the center."""
     data = np.zeros(shape_3d_default)
-    data[2:-2, 2:-2, 2:-2] = 10
+    data[1:-2, 1:-2, 1:-2] = 10
     return data
 
 
 @pytest.fixture
 def img_1(data_1, affine_eye):
+    """Return Nifti image of 3D zeros with a few 10 in the center."""
     return Nifti1Image(data_1, affine_eye)
 
 
 @pytest.fixture
 def img_2(data_2, affine_eye):
+    """Return Nifti image of 3D zeros with a few 10 in the center."""
     return Nifti1Image(data_2, affine_eye)
 
 
 def test_auto_mask(data_1, img_1, data_2, img_2):
-    # This mostly a smoke test
+    """Test that a proper mask is generated from fitted image."""
     masker = MultiNiftiMasker(mask_args={"opening": 0})
 
     # Smoke test the fit
@@ -73,9 +76,11 @@ def test_auto_mask(data_1, img_1, data_2, img_2):
 
     # Test mask intersection
     masker.fit([[img_1, img_2]])
+
     assert_array_equal(
         get_data(masker.mask_img_), np.logical_or(data_1, data_2)
     )
+
     # Smoke test the transform
     masker.transform([[img_1]])
     # It should also work with a 3D image
@@ -83,8 +88,8 @@ def test_auto_mask(data_1, img_1, data_2, img_2):
 
 
 def test_auto_mask_errors(img_3d_rand_eye):
+    """Check error return due to bad data format."""
     masker = MultiNiftiMasker()
-    # Check error return due to bad data format
     with pytest.raises(
         ValueError,
         match="For multiple processing, you should provide a list of data",
@@ -93,6 +98,7 @@ def test_auto_mask_errors(img_3d_rand_eye):
 
 
 def test_nan():
+    """Check when fitted data contains nan."""
     data = np.ones((9, 9, 9))
     data[0] = np.nan
     data[:, 0] = np.nan
@@ -118,7 +124,7 @@ def test_nan():
 
 
 def test_different_affines():
-    # Mask and EIP files with different affines
+    """Check mask and EIP files with different affines."""
     mask_img = Nifti1Image(
         np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
     )
@@ -132,7 +138,7 @@ def test_different_affines():
 
 
 def test_3d_images():
-    # Test that the MultiNiftiMasker works with 3D images
+    """Test that the MultiNiftiMasker works with 3D images."""
     mask_img = Nifti1Image(
         np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
     )
@@ -153,8 +159,7 @@ def test_3d_images():
 
 
 def test_joblib_cache(mask_img_1, tmp_path):
-    from joblib import hash
-
+    """Check cached data."""
     filename = write_imgs_to_path(
         mask_img_1, file_path=tmp_path, create_files=True
     )
@@ -164,11 +169,10 @@ def test_joblib_cache(mask_img_1, tmp_path):
     get_data(masker.mask_img_)
 
     assert mask_hash == hash(masker.mask_img_)
-    # enables to delete "filename" on windows
-    del masker
 
 
 def test_shelving():
+    """Check behavior when shelving masker."""
     mask_img = Nifti1Image(
         np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
     )
@@ -194,6 +198,7 @@ def test_shelving():
         epi_shelved = epi_shelved.get()
 
         assert_array_equal(epi_shelved, epi)
+
     finally:
         # enables to delete "filename" on windows
         del masker
@@ -202,11 +207,12 @@ def test_shelving():
 
 @pytest.fixture
 def list_random_imgs(img_3d_rand_eye):
+    """Create a list of random 3D nifti images."""
     return [img_3d_rand_eye] * 2
 
 
 def test_mask_strategy_errors(list_random_imgs):
-    # Error with unknown mask_strategy
+    """Throw error with unknown mask_strategy."""
     mask = MultiNiftiMasker(mask_strategy="foo")
 
     with pytest.raises(
@@ -227,6 +233,7 @@ def test_mask_strategy_errors(list_random_imgs):
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
 def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
+    """Check different strategies to compute masks."""
     masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
     masker.fit(list_random_imgs)
 
