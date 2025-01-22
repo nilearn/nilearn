@@ -351,25 +351,25 @@ def check_nifti_masker_fit_transform_files(estimator):
 
 def check_nifti_masker_dtype(estimator):
     """Check dtype of output of maskers."""
-    from nilearn.conftest import _shape_3d_default
+    from nilearn.conftest import _rng, _shape_3d_default
 
-    data_32 = np.zeros(_shape_3d_default(), dtype=np.float32)
-    data_32[2:-2, 2:-2, 2:-2] = 10
+    data_32 = _rng().random(_shape_3d_default(), dtype=np.float32)
     affine_32 = np.eye(4, dtype=np.float32)
     img_32 = Nifti1Image(data_32, affine_32)
 
-    data_64 = np.zeros(_shape_3d_default(), dtype=np.float64)
-    data_64[2:-2, 2:-2, 2:-2] = 10
+    data_64 = _rng().random(_shape_3d_default(), dtype=np.float64)
     affine_64 = np.eye(4, dtype=np.float64)
     img_64 = Nifti1Image(data_64, affine_64)
 
-    estimator.dtype = "auto"
-    assert estimator.fit_transform(img_32).dtype == np.float32
-    assert estimator.fit_transform(img_64).dtype == np.float32
+    for img in [img_32, img_64]:
+        estimator = clone(estimator)
+        estimator.dtype = "auto"
+        assert estimator.fit_transform(img).dtype == np.float32
 
-    estimator.dtype = "float64"
-    assert estimator.fit_transform(img_32).dtype == np.float64
-    assert estimator.fit_transform(img_64).dtype == np.float64
+    for img in [img_32, img_64]:
+        estimator = clone(estimator)
+        estimator.dtype = "float64"
+        assert estimator.fit_transform(img).dtype == np.float64
 
 
 def check_nifti_masker_fit_with_3d_mask(estimator):
