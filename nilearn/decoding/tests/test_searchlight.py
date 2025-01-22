@@ -10,10 +10,9 @@ from sklearn.model_selection import KFold, LeaveOneGroupOut
 from nilearn._utils.class_inspect import check_estimator
 from nilearn.conftest import _img_3d_ones, _rng
 from nilearn.decoding import searchlight
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    *check_valid_for_all_maskers(),
+    "check_estimators_unfitted",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_no_attributes_set_in_init",
 ]

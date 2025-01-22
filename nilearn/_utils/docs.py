@@ -382,7 +382,7 @@ or 'fast' or None, optional
 
 """
 
-# hemi
+# groups
 docdict["groups"] = """
 groups : None, default=None
     Group labels for the samples used
