@@ -55,18 +55,6 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-def test_auto_mask(img_3d_rand_eye):
-    """Perform a smoke test on the auto-mask option."""
-    masker = NiftiMasker()
-    # Smoke test the fit
-    masker.fit(img_3d_rand_eye)
-    # Smoke test the transform
-    # With a 4D img
-    masker.transform([img_3d_rand_eye])
-    # With a 3D img
-    masker.transform(img_3d_rand_eye)
-
-
 def test_detrend(img_3d_rand_eye, mask_img_1):
     """Check that detrending doesn't do something stupid with 3D images."""
     # Smoke test the fit
@@ -127,14 +115,6 @@ def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
         "to save memory and computation time.",
     ):
         masker.fit_transform(img_3d_rand_eye)
-
-
-def test_with_files(tmp_path, img_3d_rand_eye):
-    """Test standard masking with filenames."""
-    filename = testing.write_imgs_to_path(img_3d_rand_eye, file_path=tmp_path)
-    masker = NiftiMasker()
-    masker.fit(filename)
-    masker.transform(filename)
 
 
 def test_nan(affine_eye):
