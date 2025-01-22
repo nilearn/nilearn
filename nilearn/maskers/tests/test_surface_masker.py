@@ -68,6 +68,9 @@ def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):
 def test_mask_img_fit_shape_mismatch(
     flip_surf_img, surf_mask_1d, surf_img_2d, shape
 ):
+    """Fit fails when mismatch between mesh of mask \
+        and that of image to fit.
+    """
     masker = SurfaceMasker(surf_mask_1d)
     with pytest.raises(ValueError, match="number of vertices"):
         masker.fit(flip_surf_img(surf_img_2d(shape)))
@@ -76,12 +79,17 @@ def test_mask_img_fit_shape_mismatch(
 
 
 def test_mask_img_fit_keys_mismatch(surf_mask_1d, drop_surf_img_part):
+    """Check fitr fails if one hemisphere is missing."""
     masker = SurfaceMasker(surf_mask_1d)
     with pytest.raises(ValueError, match="key"):
         masker.fit(drop_surf_img_part(surf_mask_1d))
 
 
 def test_none_mask_img(surf_mask_1d):
+    """Check that masker can be instantiated with mask_img=None.
+
+    An error should then be raised with .fit(img=None).
+    """
     masker = SurfaceMasker(None)
     with pytest.raises(ValueError, match="provide either"):
         masker.fit(None)
@@ -121,12 +129,14 @@ def test_inverse_transform_list_surf_images(
 
 
 def test_unfitted_masker(surf_mask_1d):
+    """Check transform requires fit first."""
     masker = SurfaceMasker(surf_mask_1d)
     with pytest.raises(ValueError, match="fitted"):
         masker.transform(surf_mask_1d)
 
 
 def test_check_is_fitted(surf_mask_1d):
+    """Check __sklearn_is_fitted__ method."""
     masker = SurfaceMasker(surf_mask_1d)
     assert not masker.__sklearn_is_fitted__()
 
@@ -134,6 +144,9 @@ def test_check_is_fitted(surf_mask_1d):
 def test_mask_img_transform_shape_mismatch(
     flip_surf_img, surf_img_1d, surf_mask_1d
 ):
+    """Transform fails when mismatch between mesh of fitted mask \
+        and that of image to transform.
+    """
     masker = SurfaceMasker(surf_mask_1d).fit()
     with pytest.raises(ValueError, match="number of vertices"):
         masker.transform(flip_surf_img(surf_img_1d))
@@ -178,6 +191,7 @@ def test_warning_smoothing(surf_img_1d, surf_mask_1d):
 def test_mask_img_transform_keys_mismatch(
     surf_mask_1d, surf_img_1d, drop_surf_img_part
 ):
+    """Check transform fails if one hemisphere is missing."""
     masker = SurfaceMasker(surf_mask_1d).fit()
     with pytest.raises(ValueError, match="key"):
         masker.transform(drop_surf_img_part(surf_img_1d))
@@ -186,6 +200,7 @@ def test_mask_img_transform_keys_mismatch(
 
 
 def test_error_inverse_transform_shape(surf_img_1d, surf_mask_1d, rng):
+    """Check input shape of inverse transform."""
     masker = SurfaceMasker(surf_mask_1d).fit()
     signals = masker.transform(surf_img_1d)
     signals_wrong_shape = rng.random(
@@ -199,6 +214,7 @@ def test_error_inverse_transform_shape(surf_img_1d, surf_mask_1d, rng):
 
 @pytest.mark.parametrize("n_timepoints", [3])
 def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
+    """Check output of inverse transform when not using a mask."""
     # make a sample image with data on the first timepoint/sample 1-4 on
     # left part and 10-50 on right part
     mesh = surf_mesh()
@@ -223,6 +239,7 @@ def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
 
 @pytest.mark.parametrize("n_timepoints", [1, 3])
 def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
+    """Check output of inverse transform when using a mask."""
     # make a sample image with data on the first timepoint/sample 1-4 on
     # left part and 10-50 on right part
     mesh = surf_mesh()
