@@ -397,17 +397,11 @@ class BaseSlicer:
             img = reorder_img(
                 img, resample=resampling_interpolation, copy_header=True
             )
-        threshold = float(threshold) if threshold is not None else None
-
         affine = img.affine
         if threshold is not None:
+            threshold = float(threshold)
             data = safe_get_data(img, ensure_finite=True)
-            if threshold == 0:
-                data = np.ma.masked_equal(data, 0, copy=False)
-            else:
-                data = np.ma.masked_inside(
-                    data, -threshold, threshold, copy=False
-                )
+            data = self._threshold(data, threshold, None, None)
             img = new_img_like(img, data, affine)
 
         data = safe_get_data(img, ensure_finite=True)
