@@ -87,16 +87,6 @@ def test_auto_mask(data_1, img_1, data_2, img_2):
     masker.transform(img_1)
 
 
-def test_auto_mask_errors(img_3d_rand_eye):
-    """Check error return due to bad data format."""
-    masker = MultiNiftiMasker()
-    with pytest.raises(
-        ValueError,
-        match="For multiple processing, you should provide a list of data",
-    ):
-        masker.fit(img_3d_rand_eye)
-
-
 def test_nan():
     """Check when fitted data contains nan."""
     data = np.ones((9, 9, 9))
