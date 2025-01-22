@@ -23,7 +23,10 @@ from nilearn._utils.niimg_conversions import (
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
-from nilearn.maskers._utils import compute_middle_image
+from nilearn.maskers._utils import (
+    compute_middle_image,
+    sanitize_cleaning_parameters,
+)
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
 
@@ -267,6 +270,10 @@ class NiftiSpheresMasker(BaseMasker):
     %(memory)s
     %(memory_level1)s
     %(verbose0)s
+
+    %(clean_args)s
+        .. versionadded:: 0.11.2dev
+
     %(masker_kwargs)s
 
     Attributes
@@ -308,6 +315,7 @@ class NiftiSpheresMasker(BaseMasker):
         memory_level=1,
         verbose=0,
         reports=True,
+        clean_args=None,
         **kwargs,
     ):
         self.seeds = seeds
@@ -327,6 +335,7 @@ class NiftiSpheresMasker(BaseMasker):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
+        self.clean_args = clean_args
         self.clean_kwargs = kwargs
 
         # Parameters for joblib
@@ -533,11 +542,7 @@ class NiftiSpheresMasker(BaseMasker):
         if self.memory is None:
             self.memory = Memory(location=None, verbose=0)
 
-        self.clean_kwargs = {
-            k[7:]: v
-            for k, v in self.clean_kwargs.items()
-            if k.startswith("clean__")
-        }
+        self = sanitize_cleaning_parameters(self)
 
         error = (
             "Seeds must be a list of triplets of coordinates in "
@@ -699,7 +704,10 @@ class NiftiSpheresMasker(BaseMasker):
         self._check_fitted()
 
         params = get_params(NiftiSpheresMasker, self)
-        params["clean_kwargs"] = self.clean_kwargs
+        params["clean_kwargs"] = self.clean_args
+        # TODO remove in 0.13.2
+        if self.clean_kwargs:
+            params["clean_kwargs"] = self.clean_kwargs
 
         signals, _ = self._cache(
             filter_and_extract, ignore=["verbose", "memory", "memory_level"]

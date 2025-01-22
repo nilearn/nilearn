@@ -82,6 +82,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
+    %(clean_args)s
+
     %(masker_kwargs)s
 
     Attributes

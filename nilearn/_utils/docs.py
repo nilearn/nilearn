@@ -187,6 +187,17 @@ docdict["classifier_options"] = f"""
 """
 
 # cmap
+docdict["clean_args"] = """
+clean_args : :obj:`dict` or None, default=None
+    Keyword arguments to be passed
+    to :func:`~nilearn.signal.clean`
+    called within the masker.
+    Within :func:`~nilearn.signal.clean`,
+    kwargs prefixed with ``'butterworth__'``
+    will be passed to the Butterworth filter.
+"""
+
+# cmap
 docdict["cmap"] = """
 cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
     The colormap to use.
@@ -472,6 +483,42 @@ imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
+# keep_masked_labels
+docdict["keep_masked_labels"] = """
+keep_masked_labels : :obj:`bool`, default=True
+    When a mask is supplied through the "mask_img" parameter, some
+    atlas regions may lie entirely outside of the brain mask, resulting
+    in empty time series for those regions.
+    If True, the masked atlas with these empty labels will be retained
+    in the output, resulting in corresponding time series containing
+    zeros only. If False, the empty labels will be removed from the
+    output, ensuring no empty time series are present.
+
+    .. deprecated:: 0.10.2
+
+        The 'True' option for ``keep_masked_labels`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_labels`` parameter will be removed in 0.15.
+
+"""
+
+# keep_masked_maps
+docdict["keep_masked_maps"] = """
+keep_masked_maps : :obj:`bool`, optional
+    If True, masked atlas with invalid maps (maps that contain only
+    zeros after applying the mask) will be retained in the output, resulting
+    in corresponding time series containing zeros only. If False, the
+    invalid maps will be removed from the trimmed atlas, resulting in
+    no empty time series in the output.
+
+    .. deprecated:: 0.10.2
+
+        The 'True' option for ``keep_masked_maps`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_maps`` parameter will be removed in 0.15.
+
+"""
+
 # linewidth
 docdict["linewidths"] = """
 linewidths : :obj:`float`, optional
@@ -539,42 +586,6 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
 
 """
 
-# keep_masked_labels
-docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=True
-    When a mask is supplied through the "mask_img" parameter, some
-    atlas regions may lie entirely outside of the brain mask, resulting
-    in empty time series for those regions.
-    If True, the masked atlas with these empty labels will be retained
-    in the output, resulting in corresponding time series containing
-    zeros only. If False, the empty labels will be removed from the
-    output, ensuring no empty time series are present.
-
-    .. deprecated:: 0.10.2
-
-        The 'True' option for ``keep_masked_labels`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_labels`` parameter will be removed in 0.15.
-
-"""
-
-# keep_masked_maps
-docdict["keep_masked_maps"] = """
-keep_masked_maps : :obj:`bool`, optional
-    If True, masked atlas with invalid maps (maps that contain only
-    zeros after applying the mask) will be retained in the output, resulting
-    in corresponding time series containing zeros only. If False, the
-    invalid maps will be removed from the trimmed atlas, resulting in
-    no empty time series in the output.
-
-    .. deprecated:: 0.10.2
-
-        The 'True' option for ``keep_masked_maps`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_maps`` parameter will be removed in 0.15.
-
-"""
-
 # kwargs for Maskers
 docdict["masker_kwargs"] = """
 kwargs : dict
@@ -584,6 +595,17 @@ kwargs : dict
     Within :func:`~nilearn.signal.clean`, kwargs prefixed with
     `'butterworth__'` will be passed to the Butterworth filter
     (i.e., `clean__butterworth__`).
+
+    .. deprecated:: 0.11.2dev
+
+    .. admonition:: Use ``clean_args`` instead!
+       :class: important
+
+       It is recommended to pass parameters to use for data cleaning
+       via :obj:`dict` to the ``clean_args`` parameter.
+
+       Passing parameters via "kwargs" is mutually exclusive
+       with passing cleaning parameters via ``clean_args``.
 """
 
 # memory

@@ -86,6 +86,8 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         default="CMRmap_r"
         Only relevant for the report figures.
 
+    %(clean_args)s
+
     %(masker_kwargs)s
 
     Attributes

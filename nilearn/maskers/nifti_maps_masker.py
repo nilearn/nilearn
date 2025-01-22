@@ -9,7 +9,10 @@ from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import clean_img, get_data, index_img, resample_img
-from nilearn.maskers._utils import compute_middle_image
+from nilearn.maskers._utils import (
+    compute_middle_image,
+    sanitize_cleaning_parameters,
+)
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import load_mask_img
 
@@ -112,6 +115,9 @@ class NiftiMapsMasker(BaseMasker):
         default="CMRmap_r"
         Only relevant for the report figures.
 
+    %(clean_args)s
+        .. versionadded:: 0.11.2dev
+
     %(masker_kwargs)s
 
     Attributes
@@ -161,6 +167,7 @@ class NiftiMapsMasker(BaseMasker):
         verbose=0,
         reports=True,
         cmap="CMRmap_r",
+        clean_args=None,
         **kwargs,
     ):
         self.maps_img = maps_img
@@ -181,6 +188,7 @@ class NiftiMapsMasker(BaseMasker):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
+        self.clean_args = clean_args
         self.clean_kwargs = kwargs
 
         # Parameters for resampling
@@ -407,11 +415,7 @@ class NiftiMapsMasker(BaseMasker):
         if self.memory is None:
             self.memory = Memory(location=None, verbose=0)
 
-        self.clean_kwargs = {
-            k[7:]: v
-            for k, v in self.clean_kwargs.items()
-            if k.startswith("clean__")
-        }
+        self = sanitize_cleaning_parameters(self)
 
         # Load images
         repr = _utils.repr_niimgs(self.mask_img, shorten=(not self.verbose))
@@ -646,7 +650,10 @@ class NiftiMapsMasker(BaseMasker):
         )
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
-        params["clean_kwargs"] = self.clean_kwargs
+        params["clean_kwargs"] = self.clean_args
+        # TODO remove in 0.13.2
+        if self.clean_kwargs:
+            params["clean_kwargs"] = self.clean_kwargs
 
         region_signals, labels_ = self._cache(
             filter_and_extract,
