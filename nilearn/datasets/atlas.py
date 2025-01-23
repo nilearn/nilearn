@@ -1506,7 +1506,7 @@ def fetch_atlas_yeo_2011(
             Path to nifti file containing the anatomy image.
 
         - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`.
-          The image contains integer values for each networf.
+          The image contains integer values for each network.
 
         - %(labels)s
 
