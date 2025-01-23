@@ -1,6 +1,15 @@
 ---
+# Runs pytest in several environments including several Python and dependencies versions as well as on different systems.
+# All environments are defined in `tox.ini <https://github.com/nilearn/nilearn/blob/main/tox.ini>`_.
 #
-#  Most of this workflow is skipped if "[skip test]" is in the commit message.
+# .. admonition:: Control via commit message
+#    :class: tip
+#
+#    This workflow can be controlled if your commit message contains:
+#
+#    - ``[skip test]`` skip this workflow.
+#
+###
 name: test
 
 on:

@@ -12,10 +12,10 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_parameters_default_constructible",
-    "check_estimators_unfitted",
+    *check_valid_for_all_maskers(),
 ]
 
 

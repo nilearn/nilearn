@@ -209,7 +209,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
     def __init__(
         self,
-        n_clusters,
+        n_clusters=None,
         init="k-means++",
         batch_size=1000,
         n_init=10,
@@ -283,7 +283,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         # number of samples in the input data
         n_features = X.shape[1]
 
-        if self.n_clusters <= 0:
+        if not isinstance(self.n_clusters, int) or self.n_clusters <= 0:
             raise ValueError(
                 "n_clusters should be an integer greater than 0."
                 f" {self.n_clusters} was provided."
