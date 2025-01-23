@@ -128,7 +128,7 @@ def test_surface_maps_masker_fit_transform_actual_output(surf_mesh, rng):
     # create a maps_img with 9 vertices and 2 regions
     A = rng.random((9, 2))
     maps_data = {"left": A[:4, :], "right": A[4:, :]}
-    surf_maps_img = SurfaceImage(surf_mesh(), maps_data)
+    surf_maps_img = SurfaceImage(surf_mesh, maps_data)
 
     # random region signals x
     expected_region_signals = rng.random((50, 2))
@@ -136,7 +136,7 @@ def test_surface_maps_masker_fit_transform_actual_output(surf_mesh, rng):
     # create an img with 9 vertices and 50 timepoints as B = A @ x
     B = np.dot(A, expected_region_signals.T)
     img_data = {"left": B[:4, :], "right": B[4:, :]}
-    surf_img = SurfaceImage(surf_mesh(), img_data)
+    surf_img = SurfaceImage(surf_mesh, img_data)
 
     # get the region signals x using the SurfaceMapsMasker
     region_signals = SurfaceMapsMasker(surf_maps_img).fit_transform(surf_img)
@@ -164,7 +164,7 @@ def test_surface_maps_masker_inverse_transform_actual_output(surf_mesh, rng):
     # create a maps_img with 9 vertices and 2 regions
     A = rng.random((9, 2))
     maps_data = {"left": A[:4, :], "right": A[4:, :]}
-    surf_maps_img = SurfaceImage(surf_mesh(), maps_data)
+    surf_maps_img = SurfaceImage(surf_mesh, maps_data)
 
     # random region signals x
     expected_region_signals = rng.random((50, 2))
@@ -172,7 +172,7 @@ def test_surface_maps_masker_inverse_transform_actual_output(surf_mesh, rng):
     # create an img with 9 vertices and 50 timepoints as B = A @ x
     B = np.dot(A, expected_region_signals.T)
     img_data = {"left": B[:4, :], "right": B[4:, :]}
-    surf_img = SurfaceImage(surf_mesh(), img_data)
+    surf_img = SurfaceImage(surf_mesh, img_data)
 
     # get the region signals x using the SurfaceMapsMasker
     masker = SurfaceMapsMasker(surf_maps_img).fit()

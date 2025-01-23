@@ -1,5 +1,8 @@
 ---
-# github action to update AUTHORS.rst file if CITATION.cff is updated
+# If the CITATION.CFF file is modified,
+# this workflow will run to update the AUTHORS file
+# and the and ``doc/changes/names.rst`` file.
+###
 name: Update authors
 
 on:
