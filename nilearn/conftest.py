@@ -497,7 +497,7 @@ def _make_mesh():
 @pytest.fixture()
 def surf_mesh():
     """Return _make_mesh as a function allowing it to be used as a fixture."""
-    return _make_mesh
+    return _make_mesh()
 
 
 def _make_surface_img(n_samples=1):
@@ -583,7 +583,7 @@ def surf_label_img(surf_mesh):
         "left": np.asarray([0, 0, 1, 1]),
         "right": np.asarray([1, 1, 0, 0, 0]),
     }
-    return SurfaceImage(surf_mesh(), data)
+    return SurfaceImage(surf_mesh, data)
 
 
 @pytest.fixture
@@ -595,7 +595,7 @@ def surf_three_labels_img(surf_mesh):
         "left": np.asarray([0, 0, 1, 1]),
         "right": np.asarray([1, 1, 0, 2, 0]),
     }
-    return SurfaceImage(surf_mesh(), data)
+    return SurfaceImage(surf_mesh, data)
 
 
 @pytest.fixture

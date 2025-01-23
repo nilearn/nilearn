@@ -6,6 +6,7 @@ import pytest
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.maskers import SurfaceMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 from nilearn.surface import SurfaceImage
 from nilearn.surface._testing import (
     assert_polydata_equal,
@@ -14,9 +15,8 @@ from nilearn.surface._testing import (
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
-    "check_parameters_default_constructible",
     "check_no_attributes_set_in_init",
+    *check_valid_for_all_maskers(),
 ]
 
 
@@ -201,16 +201,15 @@ def test_error_inverse_transform_shape(surf_img_1d, surf_mask_1d, rng):
 def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
     # make a sample image with data on the first timepoint/sample 1-4 on
     # left part and 10-50 on right part
-    mesh = surf_mesh()
     img_data = {}
-    for i, (key, val) in enumerate(mesh.parts.items()):
+    for i, (key, val) in enumerate(surf_mesh.parts.items()):
         data_shape = (val.n_vertices, n_timepoints)
         data_part = (
             np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
         ) * 10**i
         img_data[key] = data_part.T
 
-    img = SurfaceImage(mesh, img_data)
+    img = SurfaceImage(surf_mesh, img_data)
     masker = SurfaceMasker().fit(img)
     signals = masker.transform(img)
 
@@ -224,16 +223,15 @@ def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
 @pytest.mark.parametrize("n_timepoints", [1, 3])
 def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
     # make a sample image with data on the first timepoint/sample 1-4 on
-    # left part and 10-50 on right part
-    mesh = surf_mesh()
+    # left part and 10-50 on right part-
     img_data = {}
-    for i, (key, val) in enumerate(mesh.parts.items()):
+    for i, (key, val) in enumerate(surf_mesh.parts.items()):
         data_shape = (val.n_vertices, n_timepoints)
         data_part = (
             np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
         ) * 10**i
         img_data[key] = data_part.T
-    img = SurfaceImage(mesh, img_data)
+    img = SurfaceImage(surf_mesh, img_data)
 
     # make a mask that removes first vertex of each part
     # total 2 removed
@@ -241,7 +239,7 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
         "left": np.asarray([False, True, True, True]),
         "right": np.asarray([False, True, True, True, True]),
     }
-    mask = SurfaceImage(mesh, mask_data)
+    mask = SurfaceImage(surf_mesh, mask_data)
 
     masker = SurfaceMasker(mask).fit(img)
     signals = masker.transform(img)

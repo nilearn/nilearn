@@ -1,5 +1,19 @@
 ---
-# Workflow to check the time taken to run tests
+# Workflow to check the time taken to run tests and build the documentation.
+#
+# Pings Github API to collect information about:
+#
+# - how long each run of the test suite lasted,
+# - how long the build of the doc lasted.
+#
+# Plots the results and saves it as an artifact to download and manually inspect
+# to see if there is a trend in tests or doc build taking longer.
+#
+# .. seealso::
+#
+#       `maint_tools/check_gha_workflow.py <https://github.com/nilearn/nilearn/blob/main/maint_tools/check_gha_workflow.py>`_
+#
+###
 name: Benchmark test suite
 
 on:

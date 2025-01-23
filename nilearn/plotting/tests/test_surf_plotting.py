@@ -287,12 +287,12 @@ def test_check_surface_plotting_inputs_extract_mesh_from_polymesh(
     hemi = "left"
     out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
         surf_map=surf_img_1d,
-        surf_mesh=surf_mesh(),
+        surf_mesh=surf_mesh,
         hemi=hemi,
         bg_map=bg_map,
     )
     assert_array_equal(out_surf_map, surf_img_1d.data.parts[hemi].T)
-    assert_surface_mesh_equal(out_surf_mesh, surf_mesh().parts[hemi])
+    assert_surface_mesh_equal(out_surf_mesh, surf_mesh.parts[hemi])
     assert bg_map == out_bg_map
 
 
@@ -303,7 +303,7 @@ def test_check_surface_plotting_inputs_extract_bg_map_data(
     hemi = "left"
     _, _, out_bg_map = check_surface_plotting_inputs(
         surf_map=surf_img_1d,
-        surf_mesh=surf_mesh(),
+        surf_mesh=surf_mesh,
         hemi=hemi,
         bg_map=surf_img_1d,
     )
@@ -351,7 +351,7 @@ def test_check_surface_plotting_hemi_both_all_inputs(surf_img_1d, surf_mesh):
     hemi = "both"
     combined_map, combined_mesh, combined_bg = check_surface_plotting_inputs(
         surf_map=surf_img_1d,
-        surf_mesh=surf_mesh(),
+        surf_mesh=surf_mesh,
         hemi=hemi,
         bg_map=surf_img_1d,
     )
@@ -368,7 +368,7 @@ def test_check_surface_plotting_hemi_both_all_inputs(surf_img_1d, surf_mesh):
         )
         assert isinstance(data, np.ndarray)
     # check that the mesh is concatenated
-    assert combined_mesh.n_vertices == surf_mesh().n_vertices
+    assert combined_mesh.n_vertices == surf_mesh.n_vertices
     assert isinstance(combined_mesh, InMemoryMesh)
 
 
@@ -391,7 +391,7 @@ def test_check_surface_plotting_hemi_error(surf_img_1d, surf_mesh):
         ValueError, match="hemi must be one of left, right or both"
     ):
         check_surface_plotting_inputs(
-            surf_map=surf_img_1d, surf_mesh=surf_mesh(), hemi="foo"
+            surf_map=surf_img_1d, surf_mesh=surf_mesh, hemi="foo"
         )
 
 
@@ -1605,7 +1605,9 @@ def parcellation(in_memory_mesh):
     return parcellation
 
 
-def test_plot_surf_contours(matplotlib_pyplot, in_memory_mesh, parcellation):
+def test_plot_surf_contours(
+    matplotlib_pyplot, in_memory_mesh, parcellation, surf_mask_1d
+):
     plot_surf_contours(in_memory_mesh, parcellation)
     plot_surf_contours(in_memory_mesh, parcellation, levels=[1, 2])
     plot_surf_contours(
@@ -1613,9 +1615,15 @@ def test_plot_surf_contours(matplotlib_pyplot, in_memory_mesh, parcellation):
     )
 
 
-def test_plot_surf_contours_legend(
-    matplotlib_pyplot, in_memory_mesh, parcellation
+
+def test_plot_surf_contour_roi_map_as_surface_image(
+    pyplot, surf_mesh, surf_mask_1d
 ):
+    """Check that mesh can be PolyMesh and roi_map can be a SurfaceImage."""
+    plot_surf_contours(surf_mesh, roi_map=surf_mask_1d, hemi=None)
+
+
+def test_plot_surf_contours_legend(matplotlib_pyplot, in_memory_mesh, parcellation):
     fig = plot_surf_contours(
         in_memory_mesh,
         parcellation,
