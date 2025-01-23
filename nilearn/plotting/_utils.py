@@ -115,5 +115,5 @@ def _get_hemi(mesh, hemi):
 
 
 def _check_threshold(threshold):
-    if isinstance(threshold, float) and threshold < 0:
+    if isinstance(threshold, (int, float)) and threshold < 0:
         raise ValueError("Threshold should be a non-negative number!")
