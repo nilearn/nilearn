@@ -27,9 +27,10 @@ from nilearn.maskers import (
 # warnings
 
 
-def _check_html(html_view):
+def _check_html(html_view, is_fit=True):
     """Check the presence of some expected code in the html viewer."""
-    assert "<th>Parameter</th>" in str(html_view)
+    if is_fit:
+        assert "<th>Parameter</th>" in str(html_view)
     if "Surface" in str(html_view):
         assert "data:image/png;base64," in str(html_view)
     else:
@@ -578,7 +579,7 @@ def test_surface_masker_minimal_report_no_fit(
     masker = SurfaceMasker(mask_img=mask, reports=reports)
     report = masker.generate_report()
 
-    _check_html(report)
+    _check_html(report, is_fit=False)
     assert "Make sure to run `fit`" in str(report)
 
 
