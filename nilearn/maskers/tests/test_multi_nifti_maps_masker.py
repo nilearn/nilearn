@@ -10,10 +10,10 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_estimators_unfitted",
-    "check_parameters_default_constructible",
+    *check_valid_for_all_maskers(),
 ]
 
 
@@ -104,22 +104,6 @@ def test_multi_nifti_maps_masker(
     masker.inverse_transform(signals)
 
 
-@pytest.mark.parametrize("create_files", [True, False])
-def test_multi_nifti_maps_masker_fit_files(
-    tmp_path, length, n_regions, create_files, img_maps, img_fmri
-):
-    """Check fit / transform on both nifti object and files."""
-    labels11 = write_imgs_to_path(
-        img_maps, file_path=tmp_path, create_files=create_files
-    )
-
-    masker = MultiNiftiMapsMasker(labels11, resampling_target=None)
-
-    signals11 = masker.fit().transform(img_fmri)
-
-    assert signals11.shape == (length, n_regions)
-
-
 def test_multi_nifti_maps_masker_data_atlas_different_shape(
     affine_eye, length, img_maps
 ):
@@ -158,14 +142,7 @@ def test_multi_nifti_maps_masker_errors(
         img_maps, mask_img=mask11_img, resampling_target=None
     )
 
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker.transform(fmri11_img)
-
     signals_input = [fmri11_img, fmri11_img]
-    signals11_list = masker.fit().transform(signals_input)
-
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        MultiNiftiMapsMasker(img_maps).inverse_transform(signals11_list[0])
 
     # NiftiMapsMasker should not work with 4D + 1D input
     masker = NiftiMapsMasker(img_maps, resampling_target=None)

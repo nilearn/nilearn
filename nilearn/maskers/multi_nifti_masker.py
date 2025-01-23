@@ -12,7 +12,6 @@ from functools import partial
 from joblib import Parallel, delayed
 
 from nilearn._utils import (
-    CacheMixin,
     check_niimg_3d,
     fill_doc,
     logger,
@@ -63,7 +62,7 @@ def _get_mask_strategy(strategy):
 
 
 @fill_doc
-class MultiNiftiMasker(NiftiMasker, CacheMixin):
+class MultiNiftiMasker(NiftiMasker):
     """Applying a mask to extract time-series from multiple Niimg-like objects.
 
     MultiNiftiMasker is useful when dealing with image sets from multiple
@@ -237,7 +236,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs : :obj:`list` of Niimg-like objects or None, default=None
+        imgs : Niimg-like objects, :obj:`list` of Niimg-like objects or None, \
+            default=None
             See :ref:`extracting_data`.
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
@@ -278,12 +278,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             if not isinstance(imgs, collections.abc.Iterable) or isinstance(
                 imgs, str
             ):
-                raise ValueError(
-                    f"[{self.__class__.__name__}.fit] "
-                    "For multiple processing, you should provide a list of "
-                    "data (e.g. Nifti1Image objects or filenames). "
-                    f"{imgs} is an invalid input."
-                )
+                imgs = [imgs]
 
             mask_args = self.mask_args if self.mask_args is not None else {}
             compute_mask = _get_mask_strategy(self.mask_strategy)

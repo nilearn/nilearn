@@ -70,6 +70,10 @@ sym_links:
 	-find ../examples/ -mindepth 1 -maxdepth 1 -type d -not -path "../examples/nilearn_cache" -exec ln -sf ../nilearn_cache "{}/nilearn_cache" \;
 	-mkdir -p ../examples/nilearn_cache/joblib
 
+.PHONY: ci.rst
+ci.rst:
+	python get_ci_workflows_description.py
+
 force_html: force html
 
 force:
@@ -79,14 +83,14 @@ force:
 view: _build/html/index.html
 	$(BROWSER) _build/html/index.html
 
-html: sym_links sym_links_datasets
+html: ci.rst sym_links sym_links_datasets
 	rm -rf $(BUILDDIR)/html/_images
 	python visual_testing/reporter_visual_inspection_suite.py full
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict: sym_links sym_links_datasets
+html-strict: ci.rst sym_links sym_links_datasets
 	python visual_testing/reporter_visual_inspection_suite.py full
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
@@ -94,23 +98,23 @@ html-strict: sym_links sym_links_datasets
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-modified-examples-only: sym_links sym_links_datasets glm_reports
+html-modified-examples-only: ci.rst sym_links sym_links_datasets glm_reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D sphinx_gallery_conf.filename_pattern=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot: sym_links_datasets
+html-noplot: ci.rst sym_links_datasets
 	python visual_testing/reporter_visual_inspection_suite.py full
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot-noreport: sym_links_datasets glm_reports
+html-noplot-noreport: ci.rst sym_links_datasets glm_reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-ci-html-noplot: sym_links_datasets glm_reports
+ci-html-noplot: ci.rst sym_links_datasets glm_reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
