@@ -1,6 +1,7 @@
 """Generate HTML reports."""
 
 import copy
+import uuid
 import warnings
 from string import Template
 
@@ -301,13 +302,17 @@ def _create_report(estimator, data):
         )
     docstring = estimator.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
+
+    # Generate a unique ID for this report
+    unique_id = str(uuid.uuid4()).replace("-", "")
+
     return _update_template(
         title=estimator.__class__.__name__,
         docstring=snippet,
         content=embeded_images,
         overlay=embed_img(overlay),
         parameters=parameters,
-        data=data,
+        data={**data, "unique_id": unique_id},
         template_name=html_template,
     )
 

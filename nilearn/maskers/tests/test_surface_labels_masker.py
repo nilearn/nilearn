@@ -10,6 +10,7 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 from nilearn.surface import SurfaceImage
 
 
@@ -25,15 +26,13 @@ def _sklearn_surf_label_img():
 
 
 extra_valid_checks = [
+    *check_valid_for_all_maskers(),
+    "check_no_attributes_set_in_init",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_dont_overwrite_parameters",
-    "check_estimator_tags_renamed",
     "check_estimators_fit_returns_self",
     "check_estimators_overwrite_params",
-    "check_estimators_unfitted",
     "check_fit_check_is_fitted",
-    "check_no_attributes_set_in_init",
-    "check_parameters_default_constructible",
     "check_positive_only_tag_during_fit",
     "check_readonly_memmap_input",
 ]

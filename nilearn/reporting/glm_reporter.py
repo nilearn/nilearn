@@ -12,6 +12,7 @@ make_glm_report(model, contrasts):
 import datetime
 import os
 import string
+import uuid
 import warnings
 from collections import OrderedDict
 from decimal import Decimal
@@ -1022,6 +1023,7 @@ def _make_surface_glm_report(
             f"'bg_img' must a SurfaceImage instance.Got {type(bg_img)=}"
         )
 
+    unique_id = str(uuid.uuid4()).replace("-", "")
     title = f"<br>{title}" if title else ""
 
     docstring = model.__doc__
@@ -1075,6 +1077,7 @@ def _make_surface_glm_report(
             mask_plot=None,
             cluster_table=None,
             date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+            unique_id=unique_id,
         )
 
         # revert HTML safe substitutions in CSS sections
@@ -1172,6 +1175,7 @@ def _make_surface_glm_report(
         mask_plot=mask_plot,
         cluster_table=None,
         date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+        unique_id=unique_id,
     )
 
     # revert HTML safe substitutions in CSS sections
