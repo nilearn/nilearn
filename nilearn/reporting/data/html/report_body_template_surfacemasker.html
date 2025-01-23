@@ -73,27 +73,7 @@
         <!--  -->
         <details>
           <summary class="pure-button">Regions summary - {{ region }}</summary>
-          {{py: tmp = table.items()}}
-          <div class="table-container">
-            <table class="pure-table">
-              <thead>
-                <tr>
-                  {{for col, value in tmp}}
-                  <th>{{col|html}}</th>
-                  {{endfor}}
-                </tr>
-              </thead>
-              <tbody>
-                {{for idx in range(number_of_regions)}}
-                <tr>
-                  {{for col, value in tmp}}
-                  <td data-column="{{col}}">{{value[idx]}}</td>
-                  {{endfor}}
-                </tr>
-                {{endfor}}
-              </tbody>
-            </table>
-          </div>
+          {{table | html}}
         </details>
         {{endfor}}
       </div>
