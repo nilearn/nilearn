@@ -607,8 +607,7 @@ def report_surface_label_masker(build_type):
 def _generate_dummy_html(filenames: list[str]):
     for x in filenames:
         with (REPORTS_DIR / x).open("w") as f:
-            f.write(
-                """
+            f.write("""
 <!doctype html>
 <html lang="en">
 <head>
@@ -622,8 +621,7 @@ def _generate_dummy_html(filenames: list[str]):
 <body>
     <p>Not content displayed on partial doc build.</p>
 </body>
-</html>"""
-            )
+</html>""")
 
 
 def main(args=sys.argv):
