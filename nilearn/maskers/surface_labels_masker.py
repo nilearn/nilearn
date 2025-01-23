@@ -324,7 +324,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         return {
             "labels_image": self.labels_img,
-            # "label_names": self.label_names_,
             "images": None,
         }
 
