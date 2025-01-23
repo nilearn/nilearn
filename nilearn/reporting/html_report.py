@@ -99,6 +99,7 @@ def _update_template(
     overlay,
     parameters,
     data,
+    summary_html=None,
     template_name=None,
     warning_messages=None,
 ):
@@ -136,6 +137,9 @@ def _update_template(
               region labels and sizes. This will be displayed
               as an expandable table in the report.
 
+    summary_html : dict if estimator is Surface masker str otherwise, optional
+        Summary of the region labels and sizes converted to html table.
+
     template_name : str, optional
         The name of the template to use. If not provided, the
         default template `report_body_template.html` will be
@@ -171,6 +175,7 @@ def _update_template(
         **data,
         css=css,
         warning_messages=_render_warnings_partial(warning_messages),
+        summary_html=summary_html,
     )
 
     # revert HTML safe substitutions in CSS sections
@@ -292,19 +297,21 @@ def _create_report(estimator, data):
         if isinstance(image, list)
         else embed_img(image)
     )
+    summary_html = None
     # only convert summary to html table if summary exists
     if "summary" in data and data["summary"] is not None:
         # convert region summary to html table
         # for Surface maskers create a table for each part
         if "Surface" in estimator.__class__.__name__:
+            summary_html = {}
             for part in data["summary"]:
                 # avoid converting already converted tables
                 if isinstance(data["summary"][part], dict):
-                    data["summary"][part] = pd.DataFrame.from_dict(
+                    summary_html[part] = pd.DataFrame.from_dict(
                         data["summary"][part]
                     )
-                    data["summary"][part] = dataframe_to_html(
-                        data["summary"][part],
+                    summary_html[part] = dataframe_to_html(
+                        summary_html[part],
                         precision=2,
                         header=True,
                         index=False,
@@ -315,9 +322,9 @@ def _create_report(estimator, data):
         elif "Nifti" in estimator.__class__.__name__ and isinstance(
             data["summary"], dict
         ):
-            data["summary"] = pd.DataFrame.from_dict(data["summary"])
-            data["summary"] = dataframe_to_html(
-                data["summary"],
+            summary_html = pd.DataFrame.from_dict(data["summary"])
+            summary_html = dataframe_to_html(
+                summary_html,
                 precision=2,
                 header=True,
                 index=False,
@@ -345,6 +352,7 @@ def _create_report(estimator, data):
         parameters=parameters,
         data={**data, "unique_id": unique_id},
         template_name=html_template,
+        summary_html=summary_html,
     )
 
 
