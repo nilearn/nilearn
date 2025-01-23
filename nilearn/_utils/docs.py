@@ -903,9 +903,9 @@ docdict["templateflow"] = """
 
 # threshold
 docdict["threshold"] = """
-threshold : :obj:`float`, None, or 'auto', optional
+threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
     If `None` is given, the image is not thresholded.
-    If `float`, it must be non-negative. The specified value is used to
+    If number is given, it must be non-negative. The specified value is used to
     threshold the image: values below the threshold (in absolute value) are
     plotted as transparent.
     If "auto" is given, the threshold is determined magically by analysis of
