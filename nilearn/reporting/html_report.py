@@ -293,9 +293,17 @@ def _create_report(estimator, data):
         else embed_img(image)
     )
     parameters = model_attributes_to_dataframe(estimator)
+    data["summary"] = pd.DataFrame.from_dict(data["summary"])
     with pd.option_context("display.max_colwidth", 100):
         parameters = dataframe_to_html(
             parameters,
+            precision=2,
+            header=True,
+            sparsify=False,
+        )
+
+        data["summary"] = dataframe_to_html(
+            data["summary"],
             precision=2,
             header=True,
             sparsify=False,

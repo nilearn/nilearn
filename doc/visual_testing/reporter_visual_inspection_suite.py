@@ -607,7 +607,8 @@ def report_surface_label_masker(build_type):
 def _generate_dummy_html(filenames: list[str]):
     for x in filenames:
         with (REPORTS_DIR / x).open("w") as f:
-            f.write("""
+            f.write(
+                """
 <!doctype html>
 <html lang="en">
 <head>
@@ -621,7 +622,8 @@ def _generate_dummy_html(filenames: list[str]):
 <body>
     <p>Not content displayed on partial doc build.</p>
 </body>
-</html>""")
+</html>"""
+            )
 
 
 def main(args=sys.argv):
@@ -632,14 +634,14 @@ def main(args=sys.argv):
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
-    report_surface_masker(build_type)
+    # report_surface_masker(build_type)
     report_surface_label_masker(build_type)
-    report_nifti_masker(build_type)
-    report_nifti_maps_masker(build_type)
-    report_nifti_labels_masker(build_type)
-    report_multi_nifti_masker(build_type)
-    report_multi_nifti_labels_masker(build_type)
-    report_multi_nifti_maps_masker(build_type)
+    # report_nifti_masker(build_type)
+    # report_nifti_maps_masker(build_type)
+    # report_nifti_labels_masker(build_type)
+    # report_multi_nifti_masker(build_type)
+    # report_multi_nifti_labels_masker(build_type)
+    # report_multi_nifti_maps_masker(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
@@ -647,11 +649,11 @@ def main(args=sys.argv):
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
-    report_flm_adhd_dmn(build_type)
-    report_flm_bids_features(build_type)
-    report_flm_fiac(build_type)
-    report_slm_oasis(build_type)
-    report_surface_glm(build_type)
+    # report_flm_adhd_dmn(build_type)
+    # report_flm_bids_features(build_type)
+    # report_flm_fiac(build_type)
+    # report_slm_oasis(build_type)
+    # report_surface_glm(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")

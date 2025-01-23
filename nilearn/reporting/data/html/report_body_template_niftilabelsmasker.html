@@ -43,26 +43,7 @@
       {{if summary}}
       <details>
         <summary class="pure-button">Regions summary</summary>
-        <div class="table-container">
-          <table class="pure-table">
-            <thead>
-              <tr>
-                {{py: region = summary.items()}} {{for k, v in region}}
-                <th>{{k}}</th>
-                {{endfor}}
-              </tr>
-            </thead>
-            <tbody>
-              {{for idx in range(number_of_regions)}}
-              <tr>
-                {{for k, v in region}}
-                <td data-column="{{k}}">{{v[idx]}}</td>
-                {{endfor}}
-              </tr>
-              {{endfor}}
-            </tbody>
-          </table>
-        </div>
+        {{summary|html}}
       </details>
       {{endif}}
       <!--  -->
