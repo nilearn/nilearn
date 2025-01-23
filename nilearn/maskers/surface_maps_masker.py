@@ -655,7 +655,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 threshold=threshold,
                 hemi="both",
                 cmap=self.cmap,
-            ).get_iframe()
+            ).get_iframe(width=400)
         elif self._report_content["engine"] == "matplotlib":
             # TODO: possibly allow to generate a report with other views
             views = ["lateral", "medial"]
