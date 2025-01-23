@@ -177,7 +177,6 @@ report_slm
 # -------------
 # We can now plot
 # the computed group-level maps for left and right hemisphere
-from nilearn.datasets import load_fsaverage_data
 from nilearn.plotting import plot_surf_stat_map, show
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")

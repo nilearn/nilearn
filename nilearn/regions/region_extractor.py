@@ -4,11 +4,11 @@ import collections.abc
 import numbers
 
 import numpy as np
-from joblib import Memory
 from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
 from nilearn.maskers import NiftiMapsMasker
+from nilearn.masking import load_mask_img
 
 from .. import masking
 from .._utils import check_niimg, check_niimg_3d, check_niimg_4d, fill_doc
@@ -275,7 +275,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     Parameters
     ----------
-    maps_img : 4D Niimg-like object
+    maps_img : 4D Niimg-like object or None, default=None
         Image containing a set of whole brain atlas maps or statistically
         decomposed brain maps.
 
@@ -391,7 +391,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     def __init__(
         self,
-        maps_img,
+        maps_img=None,
         mask_img=None,
         min_region_size=1350,
         threshold=1.0,
@@ -409,8 +409,6 @@ class RegionExtractor(NiftiMapsMasker):
         memory_level=0,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             maps_img=maps_img,
             mask_img=mask_img,
@@ -440,6 +438,11 @@ class RegionExtractor(NiftiMapsMasker):
     ):
         """Prepare the data and setup for the region extraction."""
         maps_img = check_niimg_4d(self.maps_img)
+
+        # Check mask
+        if self.mask_img is not None:
+            self.mask_img = check_niimg_3d(self.mask_img)
+            load_mask_img(self.mask_img)
 
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
         if self.thresholding_strategy not in list_of_strategies:

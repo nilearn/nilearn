@@ -1220,7 +1220,7 @@ def load_surf_mesh(surf_mesh):
             "Valid inputs are one of the following file "
             "formats: .gii, .gii.gz, "
             "Freesurfer specific files such as "
-            f"{_stringify(FREESURFER_MESH_EXTENSIONS)}"
+            f"{_stringify(FREESURFER_MESH_EXTENSIONS)} "
             "or two Numpy arrays organized in a list, tuple or "
             'a namedtuple with the fields "coordinates" and "faces"'
         )

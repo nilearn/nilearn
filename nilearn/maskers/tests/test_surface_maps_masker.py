@@ -5,12 +5,13 @@ import numpy as np
 import pytest
 
 from nilearn._utils.class_inspect import check_estimator
+from nilearn.conftest import _make_mesh, _rng
 from nilearn.maskers import SurfaceMapsMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 from nilearn.surface import SurfaceImage
 
 
-@pytest.fixture
-def surf_maps_img(surf_mesh, rng):
+def _surf_maps_img():
     """Return a sample surface map image using the sample mesh.
     Has 6 regions in total: 3 in both, 1 only in left and 2 only in right.
     Later we multiply the data with random "probability" values to make it
@@ -36,29 +37,35 @@ def surf_maps_img(surf_mesh, rng):
         ),
     }
     # multiply with random "probability" values
-    data = {part: data[part] * rng.random(data[part].shape) for part in data}
-    return SurfaceImage(surf_mesh(), data)
+    data = {
+        part: data[part] * _rng().random(data[part].shape) for part in data
+    }
+    return SurfaceImage(_make_mesh(), data)
 
 
-# tests for scikit-learn compatibility
+@pytest.fixture
+def surf_maps_img():
+    """Return a sample surface map as fixture."""
+    return _surf_maps_img()
+
+
 extra_valid_checks = [
-    "check_no_attributes_set_in_init",
-    "check_parameters_default_constructible",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
-    "check_estimator_repr",
-    "check_estimator_cloneable",
+    *check_valid_for_all_maskers(),
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
-    "check_mixin_order",
-    "check_estimator_tags_renamed",
+    "check_dont_overwrite_parameters",
+    "check_estimators_fit_returns_self",
+    "check_estimators_overwrite_params",
+    "check_fit_check_is_fitted",
+    "check_no_attributes_set_in_init",
+    "check_positive_only_tag_during_fit",
+    "check_readonly_memmap_input",
 ]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceMapsMasker(surf_maps_img)],
+        estimator=[SurfaceMapsMasker(_surf_maps_img())],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -71,7 +78,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceMapsMasker(surf_maps_img)],
+        estimator=[SurfaceMapsMasker(_surf_maps_img())],
         valid=False,
         extra_valid_checks=extra_valid_checks,
     ),
@@ -121,7 +128,7 @@ def test_surface_maps_masker_fit_transform_actual_output(surf_mesh, rng):
     # create a maps_img with 9 vertices and 2 regions
     A = rng.random((9, 2))
     maps_data = {"left": A[:4, :], "right": A[4:, :]}
-    surf_maps_img = SurfaceImage(surf_mesh(), maps_data)
+    surf_maps_img = SurfaceImage(surf_mesh, maps_data)
 
     # random region signals x
     expected_region_signals = rng.random((50, 2))
@@ -129,7 +136,7 @@ def test_surface_maps_masker_fit_transform_actual_output(surf_mesh, rng):
     # create an img with 9 vertices and 50 timepoints as B = A @ x
     B = np.dot(A, expected_region_signals.T)
     img_data = {"left": B[:4, :], "right": B[4:, :]}
-    surf_img = SurfaceImage(surf_mesh(), img_data)
+    surf_img = SurfaceImage(surf_mesh, img_data)
 
     # get the region signals x using the SurfaceMapsMasker
     region_signals = SurfaceMapsMasker(surf_maps_img).fit_transform(surf_img)
@@ -157,7 +164,7 @@ def test_surface_maps_masker_inverse_transform_actual_output(surf_mesh, rng):
     # create a maps_img with 9 vertices and 2 regions
     A = rng.random((9, 2))
     maps_data = {"left": A[:4, :], "right": A[4:, :]}
-    surf_maps_img = SurfaceImage(surf_mesh(), maps_data)
+    surf_maps_img = SurfaceImage(surf_mesh, maps_data)
 
     # random region signals x
     expected_region_signals = rng.random((50, 2))
@@ -165,7 +172,7 @@ def test_surface_maps_masker_inverse_transform_actual_output(surf_mesh, rng):
     # create an img with 9 vertices and 50 timepoints as B = A @ x
     B = np.dot(A, expected_region_signals.T)
     img_data = {"left": B[:4, :], "right": B[4:, :]}
-    surf_img = SurfaceImage(surf_mesh(), img_data)
+    surf_img = SurfaceImage(surf_mesh, img_data)
 
     # get the region signals x using the SurfaceMapsMasker
     masker = SurfaceMapsMasker(surf_maps_img).fit()
@@ -239,17 +246,6 @@ def test_surface_maps_masker_smoothing_not_supported_error(
     with pytest.warns(match="smoothing_fwhm is not yet supported"):
         masker.transform(surf_img_2d(50))
         assert masker.smoothing_fwhm is None
-
-
-def test_surface_maps_masker_transform_clean(surf_maps_img, surf_img_2d):
-    """Smoke test for clean arguments."""
-    masker = SurfaceMapsMasker(
-        surf_maps_img,
-        t_r=2.0,
-        high_pass=1 / 128,
-        clean_args={"filter": "cosine"},
-    ).fit()
-    masker.transform(surf_img_2d(50))
 
 
 def test_surface_maps_masker_labels_img_none():

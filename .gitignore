@@ -64,6 +64,7 @@ nosetests_coverage/
 doc/_build/
 doc/auto_examples/
 doc/building_blocks/generated/
+doc/ci.rst
 doc/generated/
 doc/modules/generated/
 doc/modules/generated_reports/*.html

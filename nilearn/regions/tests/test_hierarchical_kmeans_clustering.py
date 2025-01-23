@@ -30,15 +30,9 @@ extra_valid_checks = [
     "check_fit2d_1feature",
     "check_fit1d",
     "check_no_attributes_set_in_init",
-    "check_transformers_unfitted",
-    "check_transformer_n_iter",
     "check_methods_subset_invariance",
     "check_methods_sample_order_invariance",
 ]
-
-
-if compare_version(sklearn_version, ">", "1.5.2"):
-    extra_valid_checks.append("check_parameters_default_constructible")
 
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
@@ -136,7 +130,7 @@ def test_hierarchical_k_means_clustering_inverse_transform():
     assert X_inv.shape == X.shape
 
 
-@pytest.mark.parametrize("n_clusters", [-2, 0])
+@pytest.mark.parametrize("n_clusters", [None, -2, 0, "2"])
 def test_hierarchical_k_means_clustering_error_n_clusters(n_clusters):
     n_samples = 15
     data_img, mask_img = generate_fake_fmri(

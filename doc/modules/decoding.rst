@@ -23,3 +23,6 @@ Classes
    SpaceNetClassifier
    SpaceNetRegressor
    SearchLight
+
+.. autoclasstree:: nilearn.decoding
+   :full:

@@ -528,10 +528,6 @@ class SecondLevelModel(BaseGLM):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
-        self.second_level_input_ = None
-        self.confounds_ = None
-        self.labels_ = None
-        self.results_ = None
 
     def _more_tags(self):
         """Return estimator tags.
@@ -591,6 +587,11 @@ class SecondLevelModel(BaseGLM):
             Ensure that the order of maps given by a ``second_level_input``
             list of Niimgs matches the order of the rows in the design matrix.
         """
+        self.second_level_input_ = None
+        self.confounds_ = None
+        self.labels_ = None
+        self.results_ = None
+
         if self.memory is None:
             self.memory = Memory(None)
         self.memory = stringify_path(self.memory)
@@ -742,7 +743,10 @@ class SecondLevelModel(BaseGLM):
             keyed by the type of image.
 
         """
-        if self.second_level_input_ is None:
+        if (
+            not hasattr(self, "second_level_input_")
+            or self.second_level_input_ is None
+        ):
             raise ValueError("The model has not been fit yet.")
 
         # check first_level_contrast
@@ -863,7 +867,12 @@ class SecondLevelModel(BaseGLM):
                 "when initializing the `SecondLevelModel`-object."
             )
 
-        if self.labels_ is None or self.results_ is None:
+        if (
+            not hasattr(self, "labels_")
+            or not hasattr(self, "results_")
+            or self.labels_ is None
+            or self.results_ is None
+        ):
             raise ValueError(
                 "The model has no results. This could be "
                 "because the model has not been fitted yet "
