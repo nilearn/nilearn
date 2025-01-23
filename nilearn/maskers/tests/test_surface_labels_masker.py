@@ -82,12 +82,22 @@ def test_surface_label_masker_fit(surf_label_img):
 def test_surface_label_masker_fit_with_names(surf_label_img):
     """Check passing labels is reflected in attributes."""
     masker = SurfaceLabelsMasker(
-        labels_img=surf_label_img, labels=["background", "bar"]
+        labels_img=surf_label_img, labels=["background", "bar", "foo"]
     )
-    masker = masker.fit()
+    with pytest.warns(UserWarning, match="Dropping excess names values."):
+        masker = masker.fit()
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
     assert masker.label_names_ == ["background", "bar"]
+
+    masker = SurfaceLabelsMasker(
+        labels_img=surf_label_img, labels=["background"]
+    )
+    with pytest.warns(UserWarning, match="Padding 'names' with 'unknown'"):
+        masker = masker.fit()
+    assert masker.n_elements_ == 1
+    assert masker._labels_ == [1]
+    assert masker.label_names_ == ["background", "unknown"]
 
 
 def test_surface_label_masker_fit_no_report(surf_label_img):

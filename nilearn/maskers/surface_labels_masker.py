@@ -9,8 +9,8 @@ from joblib import Memory
 
 from nilearn import signal
 from nilearn._utils.bids import (
-    check_look_up_table,
     generate_atlas_look_up_table,
+    sanitize_look_up_table,
 )
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
@@ -94,16 +94,19 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
     Parameters
     ----------
     labels_img : :obj:`~nilearn.surface.SurfaceImage` object
-        Region definitions, as one image of labels. The data for \
-        each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
+        Region definitions, as one image of labels.
+        The data for each hemisphere
+        is of shape (n_vertices_per_hemisphere, n_regions).
 
     labels : :obj:`list` of :obj:`str`, default=None
-        Full labels corresponding to the labels image.
+        Labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
 
         .. warning::
-            The labels must be consistent with the label values
-            provided through ``labels_img``.
+            If the labels are not be consistent with the label values
+            provided through ``labels_img``,
+            excess labels will be dropped,
+            and missing labels will be labeled ``'unknown'``.
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
@@ -253,20 +256,21 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         # generate a look up table if one was not provided
         if self.lut is not None:
             if isinstance(self.lut, (str, Path)):
-                self.lut_ = pd.read_csv(self.lut)
+                lut = pd.read_csv(self.lut)
             else:
-                self.lut_ = self.lut
+                lut = self.lut
         elif self.labels:
-            self.lut_ = generate_atlas_look_up_table(
+            lut = generate_atlas_look_up_table(
                 function=None,
                 name=self.labels,
-                index=tuple(set(self._labels_data.ravel())),
+                index=self.labels_img,
             )
         else:
-            self.lut_ = generate_atlas_look_up_table(
-                function=None, index=tuple(set(self._labels_data.ravel()))
+            lut = generate_atlas_look_up_table(
+                function=None, index=self.labels_img
             )
-        check_look_up_table(self.lut_, self.labels_img, strict=False)
+
+        self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img)
 
         self.label_names_ = self.lut_.name.to_list()
 

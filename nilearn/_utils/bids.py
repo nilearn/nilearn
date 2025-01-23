@@ -11,7 +11,9 @@ from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
 
-def generate_atlas_look_up_table(function=None, name=None, index=None):
+def generate_atlas_look_up_table(
+    function=None, name=None, index=None, strict=False
+):
     """Generate a BIDS compatible look up table for an atlas.
 
     For a given deterministic atlas supported by Nilearn,
@@ -41,10 +43,15 @@ def generate_atlas_look_up_table(function=None, name=None, index=None):
         If an iterable is passed, then it contains the ROI names.
         If None is passed, then it is inferred from index.
 
-    index : iterable of integers, niimg like or None, default=None
+    index : iterable of integers, niimg like, surface image or None, \
+            default=None
         If None, then the index of each ROI is derived from name.
         If a Niimg like or SurfaceImage is passed,
         then a LUT is generated for this image.
+
+    strict: bool, default=False
+        If True, an error will be thrown
+        if ``name`` and ``index``have different length.
     """
     if name is None and index is None:
         raise ValueError("'index' and 'name' cannot both be None.")
@@ -54,16 +61,14 @@ def generate_atlas_look_up_table(function=None, name=None, index=None):
     # deal with names
     if name is None:
         if fname == "unknown":
-            if isinstance(index, (str, Path, Nifti1Image)):
-                img = check_niimg(index)
-                index = np.unique(safe_get_data(img))
-            elif isinstance(index, SurfaceImage):
-                index = np.unique(get_surface_data(index))
+            index = _get_indices_from_image(index)
         name = [str(x) for x in index]
 
     # deal with indices
     if index is None:
         index = list(range(len(name)))
+    else:
+        index = _get_indices_from_image(index)
     if fname in ["fetch_atlas_basc_multiscale_2015"]:
         index = []
         for x in name:
@@ -71,6 +76,29 @@ def generate_atlas_look_up_table(function=None, name=None, index=None):
             index.append(tmp)
     elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
         index = list(range(1, len(name) + 1))
+
+    if len(name) != len(index):
+        if strict:
+            raise ValueError(
+                f"'name' ({len(name)}) and 'index' ({len(index)})"
+                "have different lengths."
+                "Cannot generate a look upt table."
+            )
+
+        if len(name) < len(index):
+            warnings.warn(
+                "Too many indices for the names."
+                "Padding 'names' with 'unknown'.",
+                stacklevel=3,
+            )
+            name += ["unknown"] * (len(index) - len(name))
+
+        if len(name) > len(index):
+            warnings.warn(
+                "Too many names for the indices.Dropping excess names values.",
+                stacklevel=3,
+            )
+            name = name[0 : len(index)]
 
     # convert to dataframe and do some cleaning where required
     lut = pd.DataFrame({"index": index, "name": name})
@@ -86,7 +114,7 @@ def generate_atlas_look_up_table(function=None, name=None, index=None):
     return lut
 
 
-def check_look_up_table(lut, atlas, strict=False):
+def check_look_up_table(lut, atlas, strict=False, verbose=1):
     """Validate atlas look up table (LUT).
 
     Make sure it complies with BIDS requirements.
@@ -101,10 +129,13 @@ def check_look_up_table(lut, atlas, strict=False):
     lut : :obj:`pandas.DataFrame`
         Must be a pandas dataframe with at least "name" and "index" columns.
 
-    atlas : Niimg like object or SurfaceImage
+    atlas : Niimg like object or SurfaceImage or numpy array
 
     strict : bool, default = False
         Errors are raised instead of warnings if strict == True.
+
+    verbose: int
+        No warning thrown if set to 0.
 
     Raises
     ------
@@ -129,17 +160,7 @@ def check_look_up_table(lut, atlas, strict=False):
     assert "name" in lut.columns
     assert "index" in lut.columns
 
-    if isinstance(atlas, (str, Path)):
-        atlas = check_niimg(atlas)
-
-    if isinstance(atlas, Nifti1Image):
-        data = safe_get_data(atlas, ensure_finite=True)
-    elif isinstance(atlas, SurfaceImage):
-        data = get_surface_data(atlas)
-    elif isinstance(atlas, np.ndarray):
-        data = atlas
-
-    roi_id = np.unique(data)
+    roi_id = _get_indices_from_image(atlas)
 
     if len(lut) != len(roi_id):
         if missing_from_image := set(lut["index"].to_list()) - set(roi_id):
@@ -154,7 +175,8 @@ def check_look_up_table(lut, atlas, strict=False):
             )
             if strict:
                 raise ValueError(msg)
-            warnings.warn(msg, stacklevel=3)
+            if verbose:
+                warnings.warn(msg, stacklevel=3)
 
         if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
             msg = (
@@ -165,4 +187,31 @@ def check_look_up_table(lut, atlas, strict=False):
             )
             if strict:
                 raise ValueError(msg)
-            warnings.warn(msg, stacklevel=3)
+            if verbose:
+                warnings.warn(msg, stacklevel=3)
+
+
+def sanitize_look_up_table(lut, atlas):
+    """Remove entries in lut that are missing from image."""
+    check_look_up_table(lut, atlas, strict=False, verbose=0)
+    indices = _get_indices_from_image(atlas)
+    lut = lut[lut["index"].isin(indices)]
+    check_look_up_table(lut, atlas, strict=True, verbose=1)
+    return lut
+
+
+def _get_indices_from_image(image):
+    if isinstance(image, (str, Path, Nifti1Image)):
+        img = check_niimg(image)
+        data = safe_get_data(img)
+    elif isinstance(image, SurfaceImage):
+        data = get_surface_data(image)
+    elif isinstance(image, np.ndarray):
+        data = image
+    else:
+        raise TypeError(
+            "Image to extract indices from must be one of:"
+            "Niimg-Like, SurfaceIamge, numpy array"
+            f"Got {type(image)}"
+        )
+    return np.unique(data)
