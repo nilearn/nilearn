@@ -10,10 +10,10 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn.conftest import _affine_eye, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_estimators_unfitted",
-    "check_parameters_default_constructible",
+    *check_valid_for_all_maskers(),
 ]
 
 

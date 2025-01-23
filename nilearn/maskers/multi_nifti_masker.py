@@ -12,7 +12,6 @@ from functools import partial
 from joblib import Parallel, delayed
 
 from nilearn._utils import (
-    CacheMixin,
     check_niimg_3d,
     fill_doc,
     logger,
@@ -66,7 +65,7 @@ def _get_mask_strategy(strategy):
 
 
 @fill_doc
-class MultiNiftiMasker(NiftiMasker, CacheMixin):
+class MultiNiftiMasker(NiftiMasker):
     """Applying a mask to extract time-series from multiple Niimg-like objects.
 
     MultiNiftiMasker is useful when dealing with image sets from multiple

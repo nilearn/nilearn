@@ -26,6 +26,7 @@ VALID_CHECKS = [
     "check_get_params_invariance",
     "check_mixin_order",
     "check_non_transformer_estimators_n_iter",
+    "check_parameters_default_constructible",
     "check_set_params",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
@@ -167,6 +168,7 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)
             yield (clone(estimator), check_nifti_masker_clean_error)
             yield (clone(estimator), check_nifti_masker_clean_warning)
+            yield (clone(estimator), check_nifti_masker_dtype)
 
 
 def is_multimasker(estimator):
@@ -355,6 +357,29 @@ def check_nifti_masker_fit_transform_files(estimator):
         estimator.fit(filename)
         estimator.transform(filename)
         estimator.fit_transform(filename)
+
+
+def check_nifti_masker_dtype(estimator):
+    """Check dtype of output of maskers."""
+    from nilearn.conftest import _rng, _shape_3d_default
+
+    data_32 = _rng().random(_shape_3d_default(), dtype=np.float32)
+    affine_32 = np.eye(4, dtype=np.float32)
+    img_32 = Nifti1Image(data_32, affine_32)
+
+    data_64 = _rng().random(_shape_3d_default(), dtype=np.float64)
+    affine_64 = np.eye(4, dtype=np.float64)
+    img_64 = Nifti1Image(data_64, affine_64)
+
+    for img in [img_32, img_64]:
+        estimator = clone(estimator)
+        estimator.dtype = "auto"
+        assert estimator.fit_transform(img).dtype == np.float32
+
+    for img in [img_32, img_64]:
+        estimator = clone(estimator)
+        estimator.dtype = "float64"
+        assert estimator.fit_transform(img).dtype == np.float64
 
 
 def check_nifti_masker_fit_with_3d_mask(estimator):

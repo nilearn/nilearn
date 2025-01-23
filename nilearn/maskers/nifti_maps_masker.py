@@ -201,13 +201,6 @@ class NiftiMapsMasker(BaseMasker):
 
         self.reports = reports
         self.cmap = cmap
-        self.report_id = -1
-        self._report_content = {
-            "description": (
-                "This reports shows the spatial maps provided to the mask."
-            ),
-            "warning_message": None,
-        }
 
         self.keep_masked_maps = keep_masked_maps
 
@@ -416,6 +409,14 @@ class NiftiMapsMasker(BaseMasker):
             self.memory = Memory(location=None, verbose=0)
 
         self = sanitize_cleaning_parameters(self)
+
+        self.report_id = -1
+        self._report_content = {
+            "description": (
+                "This reports shows the spatial maps provided to the mask."
+            ),
+            "warning_message": None,
+        }
 
         # Load images
         repr = _utils.repr_niimgs(self.mask_img, shorten=(not self.verbose))
