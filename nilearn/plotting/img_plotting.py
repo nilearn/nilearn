@@ -23,7 +23,6 @@ from scipy import stats
 from scipy.ndimage import binary_fill_holes
 
 from nilearn._utils import (
-    _check_threshold,
     check_niimg_3d,
     check_niimg_4d,
     compare_version,
@@ -48,6 +47,7 @@ from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
+from nilearn.plotting._utils import _check_threshold
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.signal import clean

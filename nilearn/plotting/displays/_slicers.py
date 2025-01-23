@@ -9,11 +9,12 @@ from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
 
-from nilearn._utils import _check_threshold, check_niimg_3d
+from nilearn._utils import check_niimg_3d
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
+from nilearn.plotting._utils import _check_threshold
 from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._axes import coords_3d_to_2d
 from nilearn.plotting.edge_detect import edge_map
