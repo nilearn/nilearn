@@ -292,35 +292,38 @@ def _create_report(estimator, data):
         if isinstance(image, list)
         else embed_img(image)
     )
-    # convert region summary to html table
-    # for Surface maskers create a table for each part
-    if "Surface" in estimator.__class__.__name__:
-        for part in data["summary"]:
-            # avoid converting already converted tables
-            if isinstance(data["summary"][part], dict):
-                data["summary"][part] = pd.DataFrame.from_dict(
-                    data["summary"][part]
-                )
-                data["summary"][part] = dataframe_to_html(
-                    data["summary"][part],
-                    precision=2,
-                    header=True,
-                    index=False,
-                    sparsify=False,
-                )
-    # otherwise we just have one table
-    # also avoid converting already converted tables
-    elif "Nifti" in estimator.__class__.__name__ and isinstance(
-        data["summary"], dict
-    ):
-        data["summary"] = pd.DataFrame.from_dict(data["summary"])
-        data["summary"] = dataframe_to_html(
-            data["summary"],
-            precision=2,
-            header=True,
-            index=False,
-            sparsify=False,
-        )
+    # only convert summary to html table if summary exists
+    if "summary" in data:
+        # convert region summary to html table
+        # for Surface maskers create a table for each part
+        if "Surface" in estimator.__class__.__name__:
+            for part in data["summary"]:
+                # avoid converting already converted tables
+                if isinstance(data["summary"][part], dict):
+                    data["summary"][part] = pd.DataFrame.from_dict(
+                        data["summary"][part]
+                    )
+                    data["summary"][part] = dataframe_to_html(
+                        data["summary"][part],
+                        precision=2,
+                        header=True,
+                        index=False,
+                        sparsify=False,
+                    )
+        # otherwise we just have one table
+        # also avoid converting already converted tables
+        elif "Nifti" in estimator.__class__.__name__ and isinstance(
+            data["summary"], dict
+        ):
+            data["summary"] = pd.DataFrame.from_dict(data["summary"])
+            data["summary"] = dataframe_to_html(
+                data["summary"],
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
+    breakpoint()
     parameters = model_attributes_to_dataframe(estimator)
     with pd.option_context("display.max_colwidth", 100):
         parameters = dataframe_to_html(
