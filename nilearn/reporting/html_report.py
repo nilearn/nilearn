@@ -331,7 +331,6 @@ def _create_report(estimator, data):
             header=True,
             sparsify=False,
         )
-
     docstring = estimator.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
