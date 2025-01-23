@@ -305,23 +305,18 @@ def _create_report(estimator, data):
         if "Surface" in estimator.__class__.__name__:
             summary_html = {}
             for part in data["summary"]:
-                # avoid converting already converted tables
-                if isinstance(data["summary"][part], dict):
-                    summary_html[part] = pd.DataFrame.from_dict(
-                        data["summary"][part]
-                    )
-                    summary_html[part] = dataframe_to_html(
-                        summary_html[part],
-                        precision=2,
-                        header=True,
-                        index=False,
-                        sparsify=False,
-                    )
+                summary_html[part] = pd.DataFrame.from_dict(
+                    data["summary"][part]
+                )
+                summary_html[part] = dataframe_to_html(
+                    summary_html[part],
+                    precision=2,
+                    header=True,
+                    index=False,
+                    sparsify=False,
+                )
         # otherwise we just have one table
-        # also avoid converting already converted tables
-        elif "Nifti" in estimator.__class__.__name__ and isinstance(
-            data["summary"], dict
-        ):
+        elif "Nifti" in estimator.__class__.__name__:
             summary_html = pd.DataFrame.from_dict(data["summary"])
             summary_html = dataframe_to_html(
                 summary_html,
