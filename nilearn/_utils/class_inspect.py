@@ -1,5 +1,8 @@
 """Small utilities to inspect classes."""
 
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
 import numpy as np
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal, assert_raises
@@ -23,20 +26,10 @@ VALID_CHECKS = [
     "check_get_params_invariance",
     "check_mixin_order",
     "check_non_transformer_estimators_n_iter",
+    "check_parameters_default_constructible",
     "check_set_params",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
-    # Nilearn checks
-    "check_masker_clean_kwargs",
-    "check_masker_fitted",
-    "check_nifti_masker_clean",
-    "check_nifti_masker_detrending",
-    "check_nifti_masker_fit_list_3d",
-    "check_surface_masker_clean",
-    "check_surface_masker_detrending",
-    "check_nifti_masker_fit_with_3d_mask",
-    "check_nifti_masker_fit_with_4d_mask",
-    "check_nifti_masker_fit_with_empty_mask",
 ]
 
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -169,11 +162,14 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_clean_kwargs)
 
+    if is_masker:
         if niimg_input:
-            yield (clone(estimator), check_nifti_masker_fit_list_3d)
+            yield (clone(estimator), check_nifti_masker_fit_transform)
+            yield (clone(estimator), check_nifti_masker_fit_transform_files)
             yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)
+            yield (clone(estimator), check_nifti_masker_dtype)
 
             if not is_multimasker(estimator):
                 yield (clone(estimator), check_nifti_masker_detrending)
@@ -214,6 +210,36 @@ def check_masker_fitted(estimator):
     signals = np.ones((10, 11))
     with pytest.raises(ValueError, match="has not been fitted."):
         estimator.inverse_transform(signals)
+
+
+def check_nifti_masker_fit_transform(estimator):
+    """Run several checks on maskers.
+
+    - can fit 3D image
+    - fitted maskers can transform:
+      - 3D image
+      - list of 3D images
+    - can fit transform 3D image
+    """
+    from nilearn.conftest import _img_3d_rand, _img_4d_rand_eye
+
+    estimator.fit(_img_3d_rand())
+
+    signal = estimator.transform(_img_3d_rand())
+
+    assert signal.shape[0] == 1
+
+    estimator.transform([_img_3d_rand(), _img_3d_rand()])
+
+    assert signal.shape[0] == 1
+
+    estimator.transform(_img_4d_rand_eye())
+
+    assert signal.shape[0] == 1
+
+    estimator.fit_transform(_img_3d_rand())
+
+    assert signal.shape[0] == 1
 
 
 def check_masker_clean_kwargs(estimator):
@@ -306,11 +332,44 @@ def check_surface_masker_clean(estimator):
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
 
 
-def check_nifti_masker_fit_list_3d(estimator):
-    """Check that list of 3D image can be fitted."""
+def check_nifti_masker_fit_transform_files(estimator):
+    """Check that nifti maskers can work directly on files."""
+    from nilearn._utils.testing import write_imgs_to_path
     from nilearn.conftest import _img_3d_rand
 
-    estimator.fit([_img_3d_rand(), _img_3d_rand()])
+    with TemporaryDirectory() as tmp_dir:
+        filename = write_imgs_to_path(
+            _img_3d_rand(),
+            file_path=Path(tmp_dir),
+            create_files=True,
+        )
+
+        estimator.fit(filename)
+        estimator.transform(filename)
+        estimator.fit_transform(filename)
+
+
+def check_nifti_masker_dtype(estimator):
+    """Check dtype of output of maskers."""
+    from nilearn.conftest import _rng, _shape_3d_default
+
+    data_32 = _rng().random(_shape_3d_default(), dtype=np.float32)
+    affine_32 = np.eye(4, dtype=np.float32)
+    img_32 = Nifti1Image(data_32, affine_32)
+
+    data_64 = _rng().random(_shape_3d_default(), dtype=np.float64)
+    affine_64 = np.eye(4, dtype=np.float64)
+    img_64 = Nifti1Image(data_64, affine_64)
+
+    for img in [img_32, img_64]:
+        estimator = clone(estimator)
+        estimator.dtype = "auto"
+        assert estimator.fit_transform(img).dtype == np.float32
+
+    for img in [img_32, img_64]:
+        estimator = clone(estimator)
+        estimator.dtype = "float64"
+        assert estimator.fit_transform(img).dtype == np.float64
 
 
 def check_nifti_masker_fit_with_3d_mask(estimator):

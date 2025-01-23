@@ -60,7 +60,8 @@ doc = [
     "sphinx-design>=0.6.1",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
-    "sphinxext-opengraph>=0.9.1"
+    "sphinxext-opengraph>=0.9.1",
+    "sphinxcontrib-mermaid>=1.0.0"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]

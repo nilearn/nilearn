@@ -193,13 +193,6 @@ class NiftiMapsMasker(BaseMasker):
 
         self.reports = reports
         self.cmap = cmap
-        self.report_id = -1
-        self._report_content = {
-            "description": (
-                "This reports shows the spatial maps provided to the mask."
-            ),
-            "warning_message": None,
-        }
 
         self.keep_masked_maps = keep_masked_maps
 
@@ -411,6 +404,14 @@ class NiftiMapsMasker(BaseMasker):
             k[7:]: v
             for k, v in self.clean_kwargs.items()
             if k.startswith("clean__")
+        }
+
+        self.report_id = -1
+        self._report_content = {
+            "description": (
+                "This reports shows the spatial maps provided to the mask."
+            ),
+            "warning_message": None,
         }
 
         # Load images
