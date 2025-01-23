@@ -1,0 +1,66 @@
+.. _continuous integration:
+
+Continuous integration
+======================
+
+Please note that if one of the following markers appear in the latest commit message, the following actions are taken.
+
+============================ ===================
+Commit message marker        Action taken by CI
+============================ ===================
+[skip ci]                    Gtihub CI is skipped completely. Several other options are also possible, see `github documentation <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs>`_.
+[skip test]                  Skip running the tests.
+[skip doc]                   Skip building the doc.
+[test nightly]               Run tests on the nightly build of Nilearn's dependencies.
+[full doc]                   Run a full build of the documentation (meaning that all examples will be run).
+[example] name_of_example.py Run partial documentation build but will run the requested example.
+[force download]             Force a download of all the dataset required for the build of the documentation.
+============================ ===================
+
+Documentation build and deploy
+------------------------------
+
+.. using a mermaid flowchart: https://mermaid.js.org/syntax/flowchart.html
+
+.. mermaid:: mermaid/doc_deploy.mmd
+
+The development docs are built using GitHub Actions and Circle-CI.
+
+The workflow ``.github/workflows/build-docs.yml`` builds the doc and stores as a Github artifact.
+On the ``main`` branch (or respectively on GitHub release),
+this workflow will also deploy the doc
+to https://github.com/nilearn//nilearn.github.io.git on the ``dev`` (respectively ``stable``).
+
+On pull-request,
+a successful build of the doc by ``.github/workflows/build-docs.yml`` triggers ``trigger_hosting_on_pr.yml``.
+This latter workflow will launch the circle-CI ``host_docs`` jobs by calling the circle-CI API.
+CircleCI download the doc artifacts from GitHub and hosts it on circle-CI.
+
+The documentation for a pull request can be accessed on https://app.circleci.com/pipelines/github/nilearn/nilearn,
+by selecting the ``host_and_deploy_doc`` workflow for the corresponding pull-request,
+then by selecting the ``host_docs`` job,
+clicking on the ``ARTIFACTS`` tab,
+and opening the the landing page of the deployed doc by clikcing on ``index.html``.
+
+
+GitHub Actions Specification
+----------------------------
+
+{% for workflow in context %}
+
+{{ workflow.file }}
+{% for i in range(workflow.file|length) %}^{% endfor %}
+
+Workflow file: `{{workflow.file}} <https://github.com/nilearn/nilearn/blob/main/.github/workflows/{{ workflow.file }}>`_
+
+{{ workflow.comment }}
+{% endfor %}
+
+Circle-CI workflows
+-------------------
+
+Source file: `.circleci/config.yml <https://github.com/nilearn/nilearn/blob/main/.circleci/config.yml>`_
+
+.. seealso::
+
+    https://app.circleci.com/pipelines/github/nilearn/nilearn
