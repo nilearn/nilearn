@@ -1,17 +1,78 @@
 ---
 # Workflow to build the documentation.
 #
-#  On pull requests, partial builds are run except
-#  if "[full doc]" is defined in commit message.
-#  Full builds are always run on "main".
-#  This is done every time there is a push on "main" and every week.
+# - validate CITATION.CFF file
+# - check for dead links
+# - get datasets from cache or from source
+# - build doc and upload it as artifact
+# - on `main` (or on github release): trigger hosting of dev (or stable) doc on https://github.com/nilearn//nilearn.github.io.git
 #
-#  Most of this workflow is skipped if "[skip doc]" is in the commit message.
+# .. admonition:: Control via commit message
+#    :class: tip
 #
-#  Data is cached after the get_data job to be passed to the build_docs job.
-#  Data can be cached and restore across attempts of a run of this workflow.
-#  Data can be cached and restored across run of this workflow.
-#  Using "[force download]" in the commit message should prevent from using any cache.
+#    This workflow can be controlled if your commit message contains:
+#
+#    - ``[full doc]`` runs a full build on pull-request.
+#    - ``[skip doc]`` skip build of the documentation.
+#    - ``[example] name_of_example.py`` trigger build of some specific examples.
+#    - ``[force download]`` do not rely of cached datasets and force to redownload them.
+#
+# On Pull Requests, "partial builds" are run by default which render all the rst files,
+# but only build examples modified in the Pull Request.
+# This saves a lot of time and resources when working on Pull Requests.
+#
+# Occasionally, some changes necessitate rebuilding the documentation from scratch,
+# for example to see the full effect of the changes.
+# These are called "full builds".
+#
+# You can request a full build from a Pull Request at any time by including the tag ``[full doc]`` in your commit message.
+# Note that this will trigger a full build of the documentation which usually takes >90 minutes.
+#
+# .. code-block:: bash
+#
+#   $ git commit -m "[full doc] request full build"
+#
+# Full builds are always run on "main".
+# This is done every time there is a push on "main" and every week.
+#
+# Most of this workflow is skipped if ``[skip doc]`` is in the commit message.
+#
+# Though partial builds will build modified examples,
+# sometimes code changes on the module side could affect the plots in unmodified examples.
+# For this, you can request for the CI to build a specific example
+# by using the tag ``[example]`` and the name of the example.
+# This is useful when wanting to get quick feedback from reviewers.
+#
+# .. code-block:: bash
+#
+#   $ git commit -m "[example] plot_nilearn_101.py"
+#
+# However for quick checks to do yourself
+# you should always opt for local builds following the instructions here:
+# in the :ref:`building documentation` section.
+#
+# Dataset caching
+# """""""""""""""
+#
+# We also implemented a dataset caching strategy within this workflow such that datasets are only downloaded once every month.
+# Once these datasets are cached,
+# they will be used by all jobs running without requiring any download.
+# This saves a lot of time and avoids potential network errors that can happen
+# when downloading datasets from remote servers.
+#
+# Data is cached after the ``get_data`` job to be passed to the ``build_docs`` job.
+# Data can be cached and restored across attempts of a run of this workflow.
+# Data can be cached and restored across run of this workflow.
+#
+# Note that you can request to download all datasets and ignore the cache at any time
+# by including the tag ``[force download]`` in your commit message.
+#
+# To run a full build and download all datasets, you would then combine both tags:
+#
+# .. code-block:: bash
+#
+#   $ git commit -m "[full doc][force download] request full build"
+###
 name: DocumentationBuilder
 
 on:

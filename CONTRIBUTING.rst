@@ -639,19 +639,7 @@ learn how to use those tools to build documentation.
 Continuous integration
 ----------------------
 
-Please note that if one of the following markers appear in the latest commit message, the following actions are taken.
-
-============================ ===================
-Commit Message Marker        Action Taken by CI
-============================ ===================
-[skip ci]                    Gtihub CI is skipped completely. Several other options are also possible, see `github documentation <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs>`_).
-[skip test]                  Skip running the tests.
-[skip doc]                   Skip building the doc.
-[test nightly]               Run tests on the nightly build of Nilearn's dependencies.
-[full doc]                   Run a full build of the documentation (meaning that all examples will be run).
-[example] name_of_example.py Run partial documentation build but will run the requested example.
-[force download]             Force a download of all the dataset required for the build of the documentation.
-============================ ===================
+See the :ref:`continuous integration` page.
 
 Setting up your environment
 ===========================
@@ -799,6 +787,8 @@ For more details about the Fork Clone Push workflows,
 read `here <https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project#about-forking>`_.
 
 
+.. _building documentation:
+
 Building documentation
 ----------------------
 
@@ -845,13 +835,14 @@ So if you don't need the plots, a quicker option is:
       git commit --allow-empty -m "[full doc] request full build"
 
 .. tip::
-    When generating documentation locally, you can build only specific files
-    to reduce building time. To do so, use the ``filename_pattern``:
 
-.. code-block:: bash
+      When generating documentation locally, you can build only specific files
+      to reduce building time. To do so, use the ``filename_pattern``:
 
-      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
-      plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+      .. code-block:: bash
+
+            python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
+            plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
 
 Additional cases
