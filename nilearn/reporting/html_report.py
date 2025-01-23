@@ -293,7 +293,7 @@ def _create_report(estimator, data):
         else embed_img(image)
     )
     # only convert summary to html table if summary exists
-    if "summary" in data:
+    if "summary" in data and data["summary"] is not None:
         # convert region summary to html table
         # for Surface maskers create a table for each part
         if "Surface" in estimator.__class__.__name__:
