@@ -323,7 +323,6 @@ def _create_report(estimator, data):
                 index=False,
                 sparsify=False,
             )
-    breakpoint()
     parameters = model_attributes_to_dataframe(estimator)
     with pd.option_context("display.max_colwidth", 100):
         parameters = dataframe_to_html(
