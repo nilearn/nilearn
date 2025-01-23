@@ -2,11 +2,12 @@
 
 import itertools
 
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 
-from .._utils import fill_doc
-from .._utils.niimg_conversions import iter_check_niimg
-from .nifti_maps_masker import NiftiMapsMasker
+from nilearn._utils import fill_doc
+from nilearn._utils.niimg_conversions import iter_check_niimg
+from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.maskers.nifti_maps_masker import NiftiMapsMasker
 
 
 @fill_doc
@@ -31,7 +32,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
     Parameters
     ----------
-    maps_img : 4D niimg-like object
+    maps_img : 4D niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
@@ -71,11 +72,20 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
 
     %(memory)s
+
     %(memory_level)s
+
     %(n_jobs)s
+
     %(verbose0)s
+
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
+
     %(masker_kwargs)s
 
     Attributes
@@ -107,7 +117,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
     def __init__(
         self,
-        maps_img,
+        maps_img=None,
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
@@ -124,11 +134,10 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         memory_level=0,
         verbose=0,
         reports=True,
+        cmap="CMRmap_r",
         n_jobs=1,
         **kwargs,
     ):
-        if memory is None:
-            memory = Memory(location=None, verbose=0)
         self.n_jobs = n_jobs
         super().__init__(
             maps_img,
@@ -148,8 +157,29 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             memory_level=memory_level,
             verbose=verbose,
             reports=reports,
+            cmap=cmap,
             **kwargs,
         )
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(masker=True, multi_masker=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(masker=True, multi_masker=True)
+        return tags
 
     @fill_doc
     def transform_imgs(

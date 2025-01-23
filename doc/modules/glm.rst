@@ -27,6 +27,9 @@ Classes
     RegressionResults
     SimpleRegressionResults
 
+.. autoclasstree:: nilearn.glm
+   :full:
+
 Functions
 ---------
 
@@ -113,3 +116,7 @@ Functions
 
     make_second_level_design_matrix
     non_parametric_inference
+
+
+.. autoclasstree:: nilearn.glm.first_level.FirstLevelModel nilearn.glm.second_level.SecondLevelModel
+   :full:

@@ -40,7 +40,6 @@ class _MaskWarning(UserWarning):
 warnings.simplefilter("always", _MaskWarning)
 
 
-@fill_doc
 def load_mask_img(mask_img, allow_empty=False):
     """Check that a mask is valid.
 

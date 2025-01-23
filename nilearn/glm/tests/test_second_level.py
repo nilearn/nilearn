@@ -43,10 +43,8 @@ from nilearn.surface.surface import concat_imgs as surf_concat_imgs
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_transformers_unfitted",
-    "check_transformer_n_iter",
     "check_estimators_unfitted",
-    "check_parameters_default_constructible",
+    "check_no_attributes_set_in_init",
 ]
 
 

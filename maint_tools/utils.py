@@ -36,8 +36,12 @@ def list_modules(
         files_to_skip += "_"
 
     modules = []
-    for mod in (root_dir() / "nilearn").glob("**/*.py"):
-        if any(x.stem in folders_to_skip for x in mod.parents):
+    nilearn_dir = root_dir() / "nilearn"
+    for mod in nilearn_dir.glob("**/*.py"):
+        if any(
+            x.stem in folders_to_skip
+            for x in mod.relative_to(nilearn_dir).parents
+        ):
             continue
         if any(mod.name.startswith(s) for s in files_to_skip):
             continue

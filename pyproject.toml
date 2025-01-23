@@ -60,7 +60,8 @@ doc = [
     "sphinx-design>=0.6.1",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
-    "sphinxext-opengraph>=0.9.1"
+    "sphinxext-opengraph>=0.9.1",
+    "sphinxcontrib-mermaid>=1.0.0"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
@@ -214,8 +215,6 @@ ignore = [
     "E111",
     "E114",
     "E117",
-    "ISC001",
-    "ISC002",
     "Q000",
     "Q001",
     "Q002",
@@ -272,11 +271,7 @@ max-complexity = 25
 "nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
 "nilearn/interfaces/**/{tests}/*" = ["D103"]  # 75 errors to fix
 "nilearn/maskers/*" = ["B028"]  # 17 errors to fix
-"nilearn/maskers/**/test_base_masker.py" = ["D103"]  # 2 errors to fix
-"nilearn/maskers/**/test_multi_nifti_labels_masker.py" = ["D103"]  # 2 errors to fix
 "nilearn/maskers/**/test_multi_nifti_masker.py" = ["D103"]  # 14 errors to fix
-"nilearn/maskers/**/test_nifti_labels_masker.py" = ["D103"]  # 4 errors to fix
-"nilearn/maskers/**/test_nifti_masker.py" = ["D103"]  # 5 errors to fix
 "nilearn/maskers/**/test_nifti_spheres_masker.py" = ["D103"]  # 9 errors to fix
 "nilearn/maskers/**/test_surface_masker.py" = ["D103"]  # 10 errors to fix
 "nilearn/mass_univariate/*" = ["B028"]  # 4 errors to fix

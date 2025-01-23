@@ -12,19 +12,23 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_estimators_unfitted",
-    "check_get_params_invariance",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
+    *check_valid_for_all_maskers(),
 ]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiSpheresMasker([(1, 1, 1)])],
+        estimator=[
+            NiftiSpheresMasker(
+                seeds=[
+                    (1, 1, 1),
+                ]
+            )
+        ],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -37,7 +41,13 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiSpheresMasker([(1, 1, 1)])],
+        estimator=[
+            NiftiSpheresMasker(
+                seeds=[
+                    (1, 1, 1),
+                ]
+            )
+        ],
         extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
@@ -221,6 +231,7 @@ def test_is_nifti_spheres_masker_give_nans(rng):
 
 
 def test_standardization(rng):
+    """Check output properly standardized with 'standardize' parameter."""
     data = rng.random((3, 3, 3, 5))
     img = Nifti1Image(data, np.eye(4))
 

@@ -1,8 +1,35 @@
+from warnings import warn
+
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
 )
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
+
+
+def sanitize_hemi_for_surface_image(hemi, map, mesh):
+    if hemi is None and (
+        isinstance(map, SurfaceImage) or isinstance(mesh, PolyMesh)
+    ):
+        return "left"
+
+    if (
+        hemi is not None
+        and not isinstance(map, SurfaceImage)
+        and not isinstance(mesh, PolyMesh)
+    ):
+        warn(
+            category=UserWarning,
+            message=(
+                f"{hemi=} was passed "
+                f"with {type(map)=} and {type(mesh)=}.\n"
+                "This value will be ignored as it is only used when "
+                "'roi_map' is a SurfaceImage instance "
+                "and  / or 'surf_mesh' is a PolyMesh instance."
+            ),
+            stacklevel=3,
+        )
+    return hemi
 
 
 def check_surface_plotting_inputs(

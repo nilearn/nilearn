@@ -11,17 +11,13 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.class_inspect import check_estimator
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_estimators_unfitted",
-    "check_get_params_invariance",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
-    "check_parameters_default_constructible",
+    *check_valid_for_all_maskers(),
 ]
 
 
@@ -86,27 +82,6 @@ def test_auto_mask(data_1, img_1, data_2, img_2):
     masker.transform(img_1)
 
 
-def test_auto_mask_errors(img_3d_rand_eye, img_2):
-    masker = MultiNiftiMasker(mask_args={"opening": 0})
-    # Check that if we have not fit the masker we get a intelligible
-    # error
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker.transform(
-            [[img_3d_rand_eye]],
-        )
-    # Check error return due to bad data format
-    with pytest.raises(
-        ValueError,
-        match="For multiple processing, you should  provide a list of data",
-    ):
-        masker.fit(img_3d_rand_eye)
-
-    # check exception when transform() called without prior fit()
-    masker2 = MultiNiftiMasker(mask_img=img_3d_rand_eye)
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker2.transform(img_2)
-
-
 def test_nan():
     data = np.ones((9, 9, 9))
     data[0] = np.nan
@@ -156,7 +131,6 @@ def test_3d_images():
     masker = MultiNiftiMasker(mask_img=mask_img)
 
     # Check attributes defined at fit
-    assert not hasattr(masker, "mask_img_")
     assert not hasattr(masker, "n_elements_")
 
     epis = masker.fit_transform([epi_img1, epi_img2])
@@ -165,19 +139,7 @@ def test_3d_images():
     assert len(epis) == 2
 
     # Check attributes defined at fit
-    assert hasattr(masker, "mask_img_")
     assert hasattr(masker, "n_elements_")
-
-
-def test_3d_images_error(img_4d_ones_eye):
-    """Verify that 4D mask arguments are refused."""
-    masker2 = MultiNiftiMasker(mask_img=img_4d_ones_eye)
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided a 4D image.",
-    ):
-        masker2.fit()
 
 
 def test_joblib_cache(mask_img_1, tmp_path):
@@ -269,20 +231,8 @@ def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
 
 
-def test_dtype(affine_eye):
-    """Check dtype returned by transform when using auto."""
-    data = np.zeros((9, 10, 11), dtype=np.float64)
-    data[2:-2, 2:-2, 2:-2] = 10
-    img = Nifti1Image(data, affine_eye)
-
-    masker = MultiNiftiMasker(dtype="auto")
-    masker.fit([[img]])
-
-    masked_img = masker.transform([[img]])
-    assert masked_img[0].dtype == np.float32
-
-
 def test_standardization(rng, shape_3d_default, affine_eye):
+    """Check output properly standardized with 'standardize' parameter."""
     n_samples = 500
 
     signals = rng.standard_normal(

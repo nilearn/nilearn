@@ -2,21 +2,18 @@
 
 import numpy as np
 import pytest
-from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
 
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
-from nilearn.conftest import _shape_3d_default
+from nilearn.conftest import _img_maps
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_get_params_invariance",
-    "check_estimators_unfitted",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
+    *check_valid_for_all_maskers(),
 ]
 
 
@@ -24,12 +21,8 @@ extra_valid_checks = [
     "estimator, check, name",
     check_estimator(
         estimator=[
-            MultiNiftiMapsMasker(
-                generate_maps(_shape_3d_default(), n_regions=9)[0]
-            ),
-            NiftiMapsMasker(
-                generate_maps(_shape_3d_default(), n_regions=9)[0]
-            ),
+            MultiNiftiMapsMasker(_img_maps()),
+            NiftiMapsMasker(_img_maps()),
         ],
         extra_valid_checks=extra_valid_checks,
     ),
@@ -44,12 +37,8 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[
-            MultiNiftiMapsMasker(
-                generate_maps(_shape_3d_default(), n_regions=9)[0]
-            ),
-            NiftiMapsMasker(
-                generate_maps(_shape_3d_default(), n_regions=9)[0]
-            ),
+            MultiNiftiMapsMasker(_img_maps()),
+            NiftiMapsMasker(_img_maps()),
         ],
         extra_valid_checks=extra_valid_checks,
         valid=False,
@@ -115,22 +104,6 @@ def test_multi_nifti_maps_masker(
     masker.inverse_transform(signals)
 
 
-@pytest.mark.parametrize("create_files", [True, False])
-def test_multi_nifti_maps_masker_fit_files(
-    tmp_path, length, n_regions, create_files, img_maps, img_fmri
-):
-    """Check fit / transform on both nifti object and files."""
-    labels11 = write_imgs_to_path(
-        img_maps, file_path=tmp_path, create_files=create_files
-    )
-
-    masker = MultiNiftiMapsMasker(labels11, resampling_target=None)
-
-    signals11 = masker.fit().transform(img_fmri)
-
-    assert signals11.shape == (length, n_regions)
-
-
 def test_multi_nifti_maps_masker_data_atlas_different_shape(
     affine_eye, length, img_maps
 ):
@@ -169,14 +142,7 @@ def test_multi_nifti_maps_masker_errors(
         img_maps, mask_img=mask11_img, resampling_target=None
     )
 
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker.transform(fmri11_img)
-
     signals_input = [fmri11_img, fmri11_img]
-    signals11_list = masker.fit().transform(signals_input)
-
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        MultiNiftiMapsMasker(img_maps).inverse_transform(signals11_list[0])
 
     # NiftiMapsMasker should not work with 4D + 1D input
     masker = NiftiMapsMasker(img_maps, resampling_target=None)
@@ -242,21 +208,8 @@ def test_multi_nifti_maps_masker_resampling_error(
     """Test MultiNiftiMapsMasker when using resampling."""
     maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
 
-    mask_img_4d = Nifti1Image(
-        np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
-    )
-
-    # verify that 4D mask arguments are refused
-    masker = MultiNiftiMapsMasker(maps33_img, mask_img=mask_img_4d)
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
-    ):
-        masker.fit()
-
     # Test error checking
+    masker = MultiNiftiMapsMasker(maps33_img, resampling_target="mask")
     with pytest.raises(
         ValueError,
         match=(
@@ -264,15 +217,13 @@ def test_multi_nifti_maps_masker_resampling_error(
             "but no mask has been provided"
         ),
     ):
-        MultiNiftiMapsMasker(maps33_img, resampling_target="mask")
+        masker.fit()
 
+    masker = MultiNiftiMapsMasker(maps33_img, resampling_target="invalid")
     with pytest.raises(
         ValueError, match="invalid value for 'resampling_target' parameter:"
     ):
-        MultiNiftiMapsMasker(
-            maps33_img,
-            resampling_target="invalid",
-        )
+        masker.fit()
 
 
 def test_multi_nifti_maps_masker_resampling_to_mask(
