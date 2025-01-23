@@ -9,7 +9,7 @@ from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
 
-from nilearn._utils import check_niimg_3d
+from nilearn._utils import _check_threshold, check_niimg_3d
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
 from nilearn.image import get_data, new_img_like, reorder_img
@@ -118,6 +118,9 @@ class BaseSlicer:
         Parameters
         ----------
         %(img)s
+
+        %(threshold)s
+
         cut_coords : 3 :obj:`tuple` of :obj:`int`
             The cut position, in world space.
 
@@ -135,7 +138,13 @@ class BaseSlicer:
             The brain color to use as the background color (e.g., for
             transparent colorbars).
 
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
         """
+        _check_threshold(threshold)
+
         # deal with "fake" 4D images
         if img is not None and img is not False:
             img = check_niimg_3d(img)
@@ -275,9 +284,9 @@ class BaseSlicer:
             Threshold to apply:
 
                 - If ``None`` is given, the maps are not thresholded.
-                - If a number is given, it is used to threshold the maps:
-                  values below the threshold (in absolute value) are
-                  plotted as transparent.
+                - If number is given, it must be non-negative. The specified
+                value is used to threshold the image: values below the
+                threshold (in absolute value) are plotted as transparent.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
@@ -297,7 +306,14 @@ class BaseSlicer:
         cbar_vmax : :obj:`float`, optional
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
+
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
         """
+        _check_threshold(threshold)
+
         if colorbar and self._colorbar:
             raise ValueError(
                 "This figure already has an overlay with a colorbar."
@@ -334,11 +350,9 @@ class BaseSlicer:
             Threshold to apply:
 
                 - If ``None`` is given, the maps are not thresholded.
-                - If a number is given, it is used to threshold the maps,
-                  values below the threshold (in absolute value) are plotted
-                  as transparent.
-
-
+                - If number is given, it must be non-negative. The specified
+                value is used to threshold the image: values below the
+                threshold (in absolute value) are plotted as transparent.
 
         filled : :obj:`bool`, default=False
             If ``filled=True``, contours are displayed with color fillings.
@@ -354,6 +368,11 @@ class BaseSlicer:
             "colors", which is one color or a list of colors for
             these contours.
 
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
+
         Notes
         -----
         If colors are not specified, default coloring choices
@@ -363,6 +382,9 @@ class BaseSlicer:
         """
         if not filled:
             threshold = None
+        else:
+            _check_threshold(threshold)
+
         self._map_show(img, type="contour", threshold=threshold, **kwargs)
         if filled:
             if "levels" in kwargs:
@@ -494,8 +516,8 @@ class BaseSlicer:
         ValueError
             if the specified threshold is a negative number
         """
-        if isinstance(threshold, float) and threshold < 0:
-            raise ValueError("Threshold should be a non-negative number!")
+        _check_threshold(threshold)
+
         if threshold is not None:
             data = np.ma.masked_where(
                 np.abs(data) <= threshold,
@@ -925,14 +947,17 @@ class OrthoSlicer(BaseSlicer):
             Threshold to apply:
 
                 - If ``None`` is given, the maps are not thresholded.
-                - If a number is given, it is used to threshold the maps,
-                  values below the threshold (in absolute value) are plotted
-                  as transparent.
-
-
+                - If number is given, it must be non-negative. The specified
+                value is used to threshold the image: values below the
+                threshold (in absolute value) are plotted as transparent.
 
         cut_coords : 3 :obj:`tuple` of :obj:`int`
             The cut position, in world space.
+
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
         """
         if cut_coords is None:
             if img is None or img is False:
@@ -1162,6 +1187,11 @@ class TiledSlicer(BaseSlicer):
         -------
         cut_coords : :obj:`list` of :obj:`float`
             xyz world coordinates of cuts.
+
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
         """
         if cut_coords is None:
             if img is None or img is False:

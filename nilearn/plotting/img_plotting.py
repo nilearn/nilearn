@@ -23,6 +23,7 @@ from scipy import stats
 from scipy.ndimage import binary_fill_holes
 
 from nilearn._utils import (
+    _check_threshold,
     check_niimg_3d,
     check_niimg_4d,
     compare_version,
@@ -256,8 +257,8 @@ def _plot_img_with_bg(
     ValueError
         if the specified threshold is a negative number
     """
-    if isinstance(threshold, float) and threshold < 0:
-        raise ValueError("Threshold should be a non-negative number!")
+    _check_threshold(threshold)
+
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
         vmax = None
@@ -753,6 +754,8 @@ def plot_anat(
     are set to zero.
 
     """
+    _check_threshold(threshold)
+
     anat_img, black_bg, anat_vmin, anat_vmax = load_anat(
         anat_img, dim=dim, black_bg=black_bg
     )
@@ -1068,6 +1071,8 @@ def plot_roi(
     nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
         (4D images)
     """
+    _check_threshold(threshold)
+
     valid_view_types = ["continuous", "contours"]
     if view_type not in valid_view_types:
         raise ValueError(
@@ -1167,11 +1172,12 @@ def plot_prob_atlas(
         If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
 
-    threshold : a :obj:`str` or a non-negative number, :obj:`list` of
-        :obj:`str` or non-negative numbers, default='auto'
+    threshold : a :obj:`int` or :obj:`float` or :obj:`str` or :obj:`list` of
+        :obj:`int` or :obj:`float` or :obj:`str`, default='auto'
         This parameter is optional and is used to threshold the maps image
         using the given value or automatically selected value. The values
-        in the image above the threshold level will be visualized.
+        in the image (in absolute value) above the threshold level will be
+        visualized.
         The default strategy, computes a threshold level that seeks to
         minimize (yet not eliminate completely) the overlap between several
         maps for a better visualization.
@@ -1183,8 +1189,9 @@ def plot_prob_atlas(
         provided, each 3D map is thresholded with certain percentile
         sequentially. Length of percentiles given should match the number
         of 3D map in time (4th) dimension.
-        If a number or a list of numbers, the given value will be used
-        directly to threshold the maps without any percentile calculation.
+        If a number or a list of numbers, the numbers should be
+        non-negative. The given value will be used directly to threshold the
+        maps without any percentile calculation.
         If None, a very small threshold is applied to remove numerical
         noise from the maps background.
 
@@ -1247,8 +1254,7 @@ def plot_prob_atlas(
     --------
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
     """
-    if threshold < 0:
-        raise ValueError("Threshold should be a non-negative number!")
+    _check_threshold(threshold)
 
     display = plot_anat(
         bg_img,
@@ -1493,6 +1499,8 @@ def plot_stat_map(
     nilearn.plotting.plot_epi : To simply plot raw EPI images
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
     """
+    _check_threshold(threshold)
+
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
@@ -1654,6 +1662,8 @@ def plot_glass_brain(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
+    _check_threshold(threshold)
+
     if cmap is None:
         cmap = cm.cold_white_hot
         if black_bg:

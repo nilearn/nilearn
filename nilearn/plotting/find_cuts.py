@@ -10,7 +10,7 @@ from scipy.ndimage import center_of_mass, find_objects, label
 
 from nilearn.image import get_data
 
-from .._utils import check_niimg_3d, check_niimg_4d
+from .._utils import _check_threshold, check_niimg_3d, check_niimg_4d
 from .._utils.extmath import fast_abs_percentile
 from .._utils.ndimage import largest_connected_component
 from .._utils.niimg import safe_get_data
@@ -55,7 +55,12 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     z : :obj:`float`
         The z world coordinate.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
     """
+    _check_threshold(activation_threshold)
     # if a pseudo-4D image or several images were passed (cf. #922),
     # we reduce to a single 3D image to find the coordinates
     img = check_niimg_3d(img)
