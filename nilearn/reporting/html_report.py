@@ -31,8 +31,8 @@ ESTIMATOR_TEMPLATES = {
 }
 
 JS_TEMPLATE = {
-    "MapsMasker": "maps_buttons.js.tpl",
-    "SpheresMasker": "spheres_buttons.js.tpl",
+    "MapsMasker": "maps_carousel.js.tpl",
+    "SpheresMasker": "spheres_carousel.js.tpl",
 }
 
 
