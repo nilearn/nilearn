@@ -721,7 +721,9 @@ def _get_resampled_data_dtype(data, interpolation, A):
 
     # We convert to 'native' order to not have any issues either with
     # 'little' or 'big' endian data dtypes (non-native endians).
-    if len(A.shape) == 1 and not resampled_data_dtype.isnative:
+    if (
+        len(A.shape) == 1 and not resampled_data_dtype.isnative
+    ):  # pragma: no cover
         resampled_data_dtype = resampled_data_dtype.newbyteorder("N")
 
     return resampled_data_dtype
