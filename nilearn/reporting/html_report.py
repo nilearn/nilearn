@@ -26,6 +26,7 @@ ESTIMATOR_TEMPLATES = {
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
     "SurfaceMasker": "report_body_template_surfacemasker.html",
     "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
+    "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "default": "report_body_template.html",
 }
 
@@ -204,6 +205,16 @@ def _update_template(
         overlay=overlay,
         docstring=docstring,
         parameters=_render_parameters_partial(parameters),
+        figure=(
+            _insert_figure_partial(
+                data["engine"],
+                content,
+                data["displayed_maps"],
+                data["unique_id"],
+            )
+            if "engine" in data
+            else None
+        ),
         **data,
         css=css,
         js_content=js_content,
@@ -317,6 +328,20 @@ def generate_report(estimator):
         )
 
     return _create_report(estimator, data)
+
+
+def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(HTML_PARTIALS_PATH / "figure.html"), encoding="utf-8"
+    )
+    if not isinstance(content, list):
+        content = [content]
+    return tpl.substitute(
+        engine=engine,
+        content=content,
+        displayed_maps=displayed_maps,
+        unique_id=unique_id,
+    )
 
 
 def _render_parameters_partial(parameters):
