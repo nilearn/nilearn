@@ -191,6 +191,10 @@ def _update_template(
             raise FileNotFoundError(f"No template {js_template_path}")
         with js_template_path.open(encoding="utf-8") as js_file:
             js_tpl = js_file.read()
+            # remove comments from the top of the file
+            # our scripts start with "document.addEventListener"
+            # so we can find the start
+            js_tpl = js_tpl[js_tpl.find("document.addEventListener") :]
         js_content = tempita.Template(js_tpl).substitute(**data)
     else:
         js_content = None
