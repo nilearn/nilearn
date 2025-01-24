@@ -29,6 +29,11 @@ ESTIMATOR_TEMPLATES = {
     "default": "report_body_template.html",
 }
 
+JS_TEMPLATE = {
+    "MapsMasker": "maps_buttons.js.tpl",
+    "SpheresMasker": "spheres_buttons.js.tpl",
+}
+
 
 def _get_estimator_template(estimator):
     """Return the HTML template to use for a given estimator \
@@ -50,6 +55,28 @@ def _get_estimator_template(estimator):
         return ESTIMATOR_TEMPLATES[estimator.__class__.__name__]
     else:
         return ESTIMATOR_TEMPLATES["default"]
+
+
+def _get_js_template(estimator_name):
+    """Return the JS template to use for a given estimator \
+    if a specific template was defined in JS_TEMPLATES, \
+    otherwise return None.
+
+    Parameters
+    ----------
+    estimator : str
+        The name of the estimator.
+
+    Returns
+    -------
+    template : str
+        Name of the template file to use.
+
+    """
+    for key in JS_TEMPLATE:
+        if key in estimator_name:
+            return JS_PATH / JS_TEMPLATE[key]
+    return None
 
 
 def embed_img(display):
@@ -156,13 +183,16 @@ def _update_template(
         str(body_template_path), encoding="utf-8"
     )
 
-    # Load the JavaScript template
-    js_template_path = JS_PATH / "maps_buttons.js.tpl"
-    if not js_template_path.exists():
-        raise FileNotFoundError(f"No template {js_template_path}")
-    with js_template_path.open(encoding="utf-8") as js_file:
-        js_tpl = js_file.read()
-    js_content = tempita.Template(js_tpl).substitute(**data)
+    # Load JS template
+    js_template_path = _get_js_template(title)
+    if js_template_path is not None:
+        if not js_template_path.exists():
+            raise FileNotFoundError(f"No template {js_template_path}")
+        with js_template_path.open(encoding="utf-8") as js_file:
+            js_tpl = js_file.read()
+        js_content = tempita.Template(js_tpl).substitute(**data)
+    else:
+        js_content = None
 
     css_file_path = CSS_PATH / "masker_report.css"
     with css_file_path.open(encoding="utf-8") as css_file:
@@ -184,10 +214,11 @@ def _update_template(
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
 
     # revert HTML safe substitutions in JS sections
-    js_start = body.find("<script>")
-    js_end = body.find("</script>") + len("</script>")
-    unescaped_js = html.unescape(body[js_start:js_end])
-    body = body[:js_start] + unescaped_js + body[js_end:]
+    if js_template_path is not None:
+        js_start = body.find("<script>")
+        js_end = body.find("</script>") + len("</script>")
+        unescaped_js = html.unescape(body[js_start:js_end])
+        body = body[:js_start] + unescaped_js + body[js_end:]
 
     head_template_name = "report_head_template.html"
     head_template_path = HTML_TEMPLATE_PATH / head_template_name
