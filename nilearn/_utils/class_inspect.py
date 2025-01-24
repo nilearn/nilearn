@@ -326,6 +326,8 @@ def check_nifti_masker_clean_warning(estimator):
     """Nifti maskers raise warning if cleaning parameters \
         passed via kwargs.
 
+        But this still affects the transformed signal.
+
     TODO remove after nilearn 0.13.0
     """
     import pytest
@@ -334,12 +336,18 @@ def check_nifti_masker_clean_warning(estimator):
 
     input_img = _img_4d_rand_eye_medium()
 
+    signal = estimator.fit_transform(input_img)
+
     estimator.t_r = 2.0
     estimator.high_pass = 1 / 128
     estimator.clean_kwargs = {"clean__filter": "cosine"}
 
     with pytest.warns(DeprecationWarning, match="You passed some kwargs"):
         estimator.fit(input_img)
+
+    detrended_signal = estimator.transform(input_img)
+
+    assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
 
 
 def check_nifti_masker_fit_transform_files(estimator):
