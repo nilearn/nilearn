@@ -1,6 +1,7 @@
 """Generate HTML reports."""
 
 import copy
+import html
 import uuid
 import warnings
 from string import Template
@@ -13,6 +14,7 @@ from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_PARTIALS_PATH,
     HTML_TEMPLATE_PATH,
+    JS_PATH,
     figure_to_svg_base64,
 )
 
@@ -154,6 +156,14 @@ def _update_template(
         str(body_template_path), encoding="utf-8"
     )
 
+    # Load the JavaScript template
+    js_template_path = JS_PATH / "maps_buttons.js.tpl"
+    if not js_template_path.exists():
+        raise FileNotFoundError(f"No template {js_template_path}")
+    with js_template_path.open(encoding="utf-8") as js_file:
+        js_tpl = js_file.read()
+    js_content = tempita.Template(js_tpl).substitute(**data)
+
     css_file_path = CSS_PATH / "masker_report.css"
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
@@ -166,11 +176,18 @@ def _update_template(
         parameters=_render_parameters_partial(parameters),
         **data,
         css=css,
+        js_content=js_content,
         warning_messages=_render_warnings_partial(warning_messages),
     )
 
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
+
+    # revert HTML safe substitutions in JS sections
+    js_start = body.find("<script>")
+    js_end = body.find("</script>") + len("</script>")
+    unescaped_js = html.unescape(body[js_start:js_end])
+    body = body[:js_start] + unescaped_js + body[js_end:]
 
     head_template_name = "report_head_template.html"
     head_template_path = HTML_TEMPLATE_PATH / head_template_name
