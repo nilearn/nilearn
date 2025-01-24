@@ -17,7 +17,7 @@
 
       document.getElementById("map-" + uid + "-" + current_map_idx).style["display"] = "none";
       current_map_idx = current_map_idx + 1;
-      if (current_map_idx >= number_maps) {
+      if (current_map_idx >= number_maps + 1) {
         current_map_idx = 0;
       }
 
@@ -25,12 +25,12 @@
       document.getElementById("title-all-" + uid).style["display"] = "block";
       document.getElementById("title-sphere-" + uid).style["display"] = "none";
       } else {
-        document.getElementById("title-all").style["display"] = "none";
-        document.getElementById("title-sphere").style["display"] = "block";
+        document.getElementById("title-all-" + uid).style["display"] = "none";
+        document.getElementById("title-sphere-" + uid).style["display"] = "block";
       }
 
       document.getElementById("map-" + uid + "-" + current_map_idx).style["display"] = "block";
-      document.getElementById("comp-" + uid).innerHTML = displayed_maps[current_map_idx];
+      document.getElementById("comp-" + uid).innerHTML = displayed_maps[current_map_idx - 1];
       window['current_map_idx_' + uid] = current_map_idx;
     }
 
@@ -49,12 +49,12 @@
       document.getElementById("title-all-" + uid).style["display"] = "block";
       document.getElementById("title-sphere-" + uid).style["display"] = "none";
       } else {
-        document.getElementById("title-all").style["display"] = "none";
-        document.getElementById("title-sphere").style["display"] = "block";
+        document.getElementById("title-all-" + uid).style["display"] = "none";
+        document.getElementById("title-sphere-" + uid).style["display"] = "block";
       }
 
       document.getElementById("map-" + uid + "-" + current_map_idx).style["display"] = "block";
-      document.getElementById("comp-" + uid).innerHTML = displayed_maps[current_map_idx];
+      document.getElementById("comp-" + uid).innerHTML = displayed_maps[current_map_idx - 1];
       window['current_map_idx_' + uid] = current_map_idx;
     }
 
