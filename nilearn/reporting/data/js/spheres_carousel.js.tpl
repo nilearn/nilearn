@@ -1,4 +1,9 @@
-  document.addEventListener("DOMContentLoaded", function() {
+// This is a template for a JavaScript code snippet that will be used to
+// implement a carousel of maps.
+// Everything in {{ }} will be substituted by the corresponding values
+// from the Python code using Tempita. The substituted code will be then be
+// inserted into the HTML file.
+document.addEventListener("DOMContentLoaded", function() {
   (function() {
     var uid = "{{unique_id}}";
     var current_map_idx_{{unique_id}} = 0;
