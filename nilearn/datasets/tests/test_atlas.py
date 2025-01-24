@@ -556,6 +556,19 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     validate_atlas(dataset)
 
 
+def test_fetch_atlas_yeo_2011_error(tmp_path):
+    """Raise errors when the wrong values are passed."""
+    with pytest.raises(ValueError, match="'n_networks' must be 7 or 17."):
+        fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=10)
+
+    with pytest.raises(
+        ValueError, match="'thickness' must be 'thin' or 'thick'."
+    ):
+        fetch_atlas_yeo_2011(
+            data_dir=tmp_path, verbose=0, thickness="dead_parot"
+        )
+
+
 def test_fetch_atlas_difumo(tmp_path, request_mocker):
     resolutions = [2, 3]  # Valid resolution values
     dimensions = [64, 128, 256, 512, 1024]  # Valid dimension values
