@@ -1423,8 +1423,8 @@ def fetch_atlas_yeo_2011(
         If not None,
         then only specific version of the atlas is returned:
 
-        - 7 regions parcellation,
-        - 17 regions parcellation.
+        - 7 networks parcellation,
+        - 17 networks parcellation.
 
         If ``thickness`` is not None, this will default to ``7``.
         The default will be set to ``7`` in version 0.13.2.
@@ -1452,41 +1452,41 @@ def fetch_atlas_yeo_2011(
 
         - 'thin_7': :obj:`str`
             Path to nifti file containing the
-            7 regions :term:`parcellation` fitted to thin template cortex
+            7 networks :term:`parcellation` fitted to thin template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_7``.
 
         - 'thick_7': :obj:`str`
             Path to nifti file containing the
-            7 region :term:`parcellation` fitted to thick template cortex
+            7 networks :term:`parcellation` fitted to thick template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_7``.
 
         - 'thin_17': :obj:`str`
             Path to nifti file containing the
-            17 region :term:`parcellation` fitted to thin template cortex
+            17 networks :term:`parcellation` fitted to thin template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_17``.
 
         - 'thick_17': :obj:`str`
             Path to nifti file containing the
-            17 region :term:`parcellation` fitted to thick template cortex
+            17 networks :term:`parcellation` fitted to thick template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_17``.
 
         - 'colors_7': :obj:`str`
             Path to colormaps text file for
-            7 region :term:`parcellation`.
+            7 networks :term:`parcellation`.
             This file maps :term:`voxel` integer
             values from ``data.thin_7`` and ``data.tick_7`` to network names.
 
         - 'colors_17': :obj:`str`
             Path to colormaps text file for
-            17 region :term:`parcellation`.
+            17 networks :term:`parcellation`.
             This file maps :term:`voxel` integer
             values from ``data.thin_17`` and ``data.tick_17``
             to network names.
