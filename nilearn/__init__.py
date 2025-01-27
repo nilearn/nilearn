@@ -42,17 +42,11 @@ reporting               --- Implements functions useful
 signal                  --- Set of preprocessing functions for time series
 """
 
-import gzip
-
 try:
     from ._version import __version__
 except ImportError:
     __version__ = "0+unknown"
 
-
-# Monkey-patch gzip to have faster reads on large gzip files
-if hasattr(gzip.GzipFile, "max_read_chunk"):
-    gzip.GzipFile.max_read_chunk = 100 * 1024 * 1024  # 100Mb
 
 # Boolean controlling the default globbing technique when using check_niimg
 # and the os.path.expanduser usage in CacheMixin.

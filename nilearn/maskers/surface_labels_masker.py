@@ -278,6 +278,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             check_same_n_vertices(self.labels_img.mesh, self.mask_img.mesh)
         self.mask_img_ = self.mask_img
 
+        self._shelving = False
+
         if not self.reports:
             self._reporting_data = None
             return self
