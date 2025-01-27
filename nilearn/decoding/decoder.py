@@ -406,8 +406,6 @@ def _parallel_fit(
 
         if is_classification:
             score = scorer(estimator, X_test, y_test)
-            if hasattr(estimator, "coef_") and np.all(estimator.coef_ == 0):
-                score = 0
         else:  # regression
             score = scorer(estimator, X_test, y_test)
 
