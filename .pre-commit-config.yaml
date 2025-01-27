@@ -90,3 +90,11 @@ repos:
     hooks:
     -   id: doc8
         args: [--config=pyproject.toml, nilearn]
+
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.14.1
+    hooks:
+    -   id: mypy
+        files: nilearn
+        additional_dependencies: [numpy, nibabel, requests, pandas-stubs, lxml-stubs, types-requests]
+        args: [--config-file, pyproject.toml, --pretty]

@@ -26,13 +26,21 @@ Enhancements
 -
 - :bdg-dark:`Code` Add a ``"template"`` to each atlas to describe the space they are provided in (:gh:`5041` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Add an 'atlas_type' metadata to each atlas (:gh:`4820` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add an ``"atlas_type"`` metadata to each atlas (:gh:`4820` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add ``n_networks`` and ``thickness`` parameters to :func:`nilearn.datasets.fetch_atlas_yeo_2011` to specify which parcellation should be returned :gh:`5085` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Add reports for SurfaceMapsMasker (:gh:`4968` by `Himanshu Aggarwal`_).
 
 Changes
 -------
 
+- :bdg-danger:`Deprecation` From version 0.13.2, :func:`nilearn.datasets.fetch_atlas_yeo_2011` will return a single parcellation (:gh:`5085` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Fix labels of all deterministic atlases to be list of strings that contain a ``"Background"`` label (:gh:`4820`, :gh:`5006`, :gh:`5013`, :gh:`5041` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Remove the ``legacy_format`` parameter from several dataset fetcher functions as it was due for deprecation in version 0.11.0  (:gh:`5004` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` Deprecate passing cleaning arguments to maskers for NiftiImages via ``kwargs``. Introduce a ``clean_args`` parameter to match API of Surface maskers.  (:gh:`5082` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Change the default map to be ``"RdBu_r"`` or ``"gray"`` for most plotting functions. In several examples, use the "inferno" colormap when a sequential colormap is preferable (:gh:`4807` by `Rémi Gau`_).

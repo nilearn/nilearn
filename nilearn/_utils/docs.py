@@ -187,6 +187,17 @@ docdict["classifier_options"] = f"""
 """
 
 # cmap
+docdict["clean_args"] = """
+clean_args : :obj:`dict` or None, default=None
+    Keyword arguments to be passed
+    to :func:`~nilearn.signal.clean`
+    called within the masker.
+    Within :func:`~nilearn.signal.clean`,
+    kwargs prefixed with ``'butterworth__'``
+    will be passed to the Butterworth filter.
+"""
+
+# cmap
 docdict["cmap"] = """
 cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
     The colormap to use.
@@ -382,6 +393,21 @@ or 'fast' or None, optional
 
 """
 
+# groups
+docdict["groups"] = """
+groups : None, default=None
+    Group labels for the samples used
+    while splitting the dataset into train/test set.
+
+    Note that this parameter must be specified in some scikit-learn
+    cross-validation generators to calculate the number of splits,
+    for example sklearn.model_selection.LeaveOneGroupOut or
+    sklearn.model_selection.LeavePGroupsOut.
+
+    For more details see
+    https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+"""
+
 # hemi
 docdict["hemi"] = """
 hemi : {"left", "right", "both"}, default="left"
@@ -472,6 +498,42 @@ imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
+# keep_masked_labels
+docdict["keep_masked_labels"] = """
+keep_masked_labels : :obj:`bool`, default=True
+    When a mask is supplied through the "mask_img" parameter, some
+    atlas regions may lie entirely outside of the brain mask, resulting
+    in empty time series for those regions.
+    If True, the masked atlas with these empty labels will be retained
+    in the output, resulting in corresponding time series containing
+    zeros only. If False, the empty labels will be removed from the
+    output, ensuring no empty time series are present.
+
+    .. deprecated:: 0.10.2
+
+        The 'True' option for ``keep_masked_labels`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_labels`` parameter will be removed in 0.15.
+
+"""
+
+# keep_masked_maps
+docdict["keep_masked_maps"] = """
+keep_masked_maps : :obj:`bool`, optional
+    If True, masked atlas with invalid maps (maps that contain only
+    zeros after applying the mask) will be retained in the output, resulting
+    in corresponding time series containing zeros only. If False, the
+    invalid maps will be removed from the trimmed atlas, resulting in
+    no empty time series in the output.
+
+    .. deprecated:: 0.10.2
+
+        The 'True' option for ``keep_masked_maps`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_maps`` parameter will be removed in 0.15.
+
+"""
+
 # linewidth
 docdict["linewidths"] = """
 linewidths : :obj:`float`, optional
@@ -539,42 +601,6 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
 
 """
 
-# keep_masked_labels
-docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=True
-    When a mask is supplied through the "mask_img" parameter, some
-    atlas regions may lie entirely outside of the brain mask, resulting
-    in empty time series for those regions.
-    If True, the masked atlas with these empty labels will be retained
-    in the output, resulting in corresponding time series containing
-    zeros only. If False, the empty labels will be removed from the
-    output, ensuring no empty time series are present.
-
-    .. deprecated:: 0.10.2
-
-        The 'True' option for ``keep_masked_labels`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_labels`` parameter will be removed in 0.15.
-
-"""
-
-# keep_masked_maps
-docdict["keep_masked_maps"] = """
-keep_masked_maps : :obj:`bool`, optional
-    If True, masked atlas with invalid maps (maps that contain only
-    zeros after applying the mask) will be retained in the output, resulting
-    in corresponding time series containing zeros only. If False, the
-    invalid maps will be removed from the trimmed atlas, resulting in
-    no empty time series in the output.
-
-    .. deprecated:: 0.10.2
-
-        The 'True' option for ``keep_masked_maps`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_maps`` parameter will be removed in 0.15.
-
-"""
-
 # kwargs for Maskers
 docdict["masker_kwargs"] = """
 kwargs : dict
@@ -584,6 +610,17 @@ kwargs : dict
     Within :func:`~nilearn.signal.clean`, kwargs prefixed with
     `'butterworth__'` will be passed to the Butterworth filter
     (i.e., `clean__butterworth__`).
+
+    .. deprecated:: 0.11.2dev
+
+    .. admonition:: Use ``clean_args`` instead!
+       :class: important
+
+       It is recommended to pass parameters to use for data cleaning
+       via :obj:`dict` to the ``clean_args`` parameter.
+
+       Passing parameters via "kwargs" is mutually exclusive
+       with passing cleaning parameters via ``clean_args``.
 """
 
 # memory
@@ -981,6 +1018,96 @@ docdict["atlas_type"] = """'atlas_type' : :obj:`str`
         Type of atlas.
         See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
 
+docdict["base_decoder_fit_attributes"] = """
+        Attributes
+        ----------
+        masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
+            The masker used to mask the data.
+
+        mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
+            Mask computed by the masker object.
+
+        classes_ : numpy.ndarray
+            Classes to predict. For classification only.
+
+        screening_percentile_ : :obj:`float`
+            Screening percentile corrected according to volume of mask,
+            relative to the volume of standard brain.
+
+        coef_ : numpy.ndarray, shape=(n_classes, n_features)
+            Contains the mean of the models weight vector across
+            fold for each class. Returns None for Dummy estimators.
+
+        coef_img_ : :obj:`dict` of Nifti1Image
+            Dictionary containing ``coef_`` with class names as keys,
+            and ``coef_`` transformed in Nifti1Images as values.
+            In the case of a regression,
+            it contains a single Nifti1Image at the key 'beta'.
+            Ignored if Dummy estimators are provided.
+
+        intercept_ : ndarray, shape (nclasses,)
+            Intercept (also known as bias) added to the decision function.
+            Ignored if Dummy estimators are provided.
+
+        cv_ : :obj:`list` of pairs of lists
+            List of the (n_folds,) folds.
+            For the corresponding fold,
+            each pair is composed of two lists of indices,
+            one for the train samples and one for the test samples.
+
+        std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
+            Contains the standard deviation of the models weight vector across
+            fold for each class.
+            Note that folds are not independent,
+            see
+            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+            Ignored if Dummy estimators are provided.
+
+        std_coef_img_ : :obj:`dict` of Nifti1Image
+            Dictionary containing `std_coef_` with class names as keys,
+            and `coef_` transformed in Nifti1Image as values.
+            In the case of a regression,
+            it contains a single Nifti1Image at the key 'beta'.
+            Ignored if Dummy estimators are provided.
+
+        cv_params_ : :obj:`dict` of :obj:`list`
+            Best point in the parameter grid for each tested fold
+            in the inner cross validation loop.
+            The grid is empty
+            when Dummy estimators are provided.
+
+            .. note::
+
+                If the estimator used its built-in cross-validation,
+                this will include an additional key
+                for the single best value estimated
+                by the built-in cross-validation
+                ('best_C' for LogisticRegressionCV
+                and 'best_alpha' for RidgeCV/RidgeClassifierCV/LassoCV),
+                in addition to the input list of values.
+
+        scorer_ : function
+            Scorer function used on the held out data to choose the best
+            parameters for the model.
+
+        cv_scores_ : :obj:`dict`, (classes, n_folds)
+            Scores (misclassification) for each parameter, and on each fold
+
+        n_outputs_ : :obj:`int`
+            Number of outputs (column-wise)
+
+        dummy_output_ : ndarray, shape=(n_classes, 2) \
+                       or shape=(1, 1) for regression
+            Contains dummy estimator attributes after class predictions
+            using strategies of :class:`sklearn.dummy.DummyClassifier`
+            (class_prior)
+            and  :class:`sklearn.dummy.DummyRegressor` (constant)
+            from scikit-learn.
+            This attribute is necessary for estimating class predictions
+            after fit.
+            Returns None if non-dummy estimators are provided.
+"""
+
 # dataset description
 docdict["description"] = """'description' : :obj:`str`
         Description of the dataset."""
@@ -1016,7 +1143,7 @@ docdict["templateflow"] = """
 
 ##############################################################################
 
-docdict_indented = {}
+docdict_indented: dict[int, dict[str, str]] = {}
 
 
 def _indentcount_lines(lines):

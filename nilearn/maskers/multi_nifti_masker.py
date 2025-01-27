@@ -12,7 +12,6 @@ from functools import partial
 from joblib import Parallel, delayed
 
 from nilearn._utils import (
-    CacheMixin,
     check_niimg_3d,
     fill_doc,
     logger,
@@ -25,7 +24,10 @@ from nilearn._utils.class_inspect import (
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import resample_img
-from nilearn.maskers._utils import compute_middle_image
+from nilearn.maskers._utils import (
+    compute_middle_image,
+    sanitize_cleaning_parameters,
+)
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.masking import (
     compute_multi_background_mask,
@@ -63,7 +65,7 @@ def _get_mask_strategy(strategy):
 
 
 @fill_doc
-class MultiNiftiMasker(NiftiMasker, CacheMixin):
+class MultiNiftiMasker(NiftiMasker):
     """Applying a mask to extract time-series from multiple Niimg-like objects.
 
     MultiNiftiMasker is useful when dealing with image sets from multiple
@@ -137,6 +139,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
     %(verbose0)s
 
+    %(clean_args)s
+
     %(masker_kwargs)s
 
     Attributes
@@ -182,6 +186,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
         n_jobs=1,
         verbose=0,
         cmap="CMRmap_r",
+        clean_args=None,
         **kwargs,
     ):
         super().__init__(
@@ -204,6 +209,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             memory_level=memory_level,
             verbose=verbose,
             cmap=cmap,
+            clean_args=clean_args,
             **kwargs,
         )
         self.n_jobs = n_jobs
@@ -237,7 +243,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
 
         Parameters
         ----------
-        imgs : :obj:`list` of Niimg-like objects or None, default=None
+        imgs : Niimg-like objects, :obj:`list` of Niimg-like objects or None, \
+            default=None
             See :ref:`extracting_data`.
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
@@ -264,6 +271,8 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             "hover over the displayed image."
         )
 
+        self = sanitize_cleaning_parameters(self)
+
         # Load data (if filenames are given, load them)
         logger.log(
             f"Loading data from {repr_niimgs(imgs, shorten=False)}.",
@@ -278,12 +287,7 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
             if not isinstance(imgs, collections.abc.Iterable) or isinstance(
                 imgs, str
             ):
-                raise ValueError(
-                    f"[{self.__class__.__name__}.fit] "
-                    "For multiple processing, you should provide a list of "
-                    "data (e.g. Nifti1Image objects or filenames). "
-                    f"{imgs} is an invalid input."
-                )
+                imgs = [imgs]
 
             mask_args = self.mask_args if self.mask_args is not None else {}
             compute_mask = _get_mask_strategy(self.mask_strategy)
@@ -456,7 +460,10 @@ class MultiNiftiMasker(NiftiMasker, CacheMixin):
                 "copy",
             ],
         )
-        params["clean_kwargs"] = self.clean_kwargs
+        params["clean_kwargs"] = self.clean_args
+        # TODO remove in 0.13.2
+        if self.clean_kwargs:
+            params["clean_kwargs"] = self.clean_kwargs
 
         func = self._cache(
             filter_and_mask,

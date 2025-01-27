@@ -1,5 +1,7 @@
 """Tests common to multiple image plotting functions."""
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -290,7 +292,9 @@ def test_plot_symmetric_colorbar_threshold(
 
 
 functions = [plot_stat_map]
-EXPECTED2 = [(0, ["0", "2.5", "5", "7.5", "10"])]
+EXPECTED2: list[tuple[float | int, list[str]]] = [
+    (0, ["0", "2.5", "5", "7.5", "10"])
+]
 EXPECTED2 += [(i, [f"{i}", "2.5", "5", "7.5", "10"]) for i in [0.1, 0.3, 1.2]]
 EXPECTED2 += [
     (i, ["0", f"{i}", "5", "7.5", "10"]) for i in [1.3, 1.9, 2.5, 3, 3.7]

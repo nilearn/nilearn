@@ -12,7 +12,10 @@ from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import crop_img, resample_img
-from nilearn.maskers._utils import compute_middle_image
+from nilearn.maskers._utils import (
+    compute_middle_image,
+    sanitize_cleaning_parameters,
+)
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import (
     apply_mask,
@@ -133,7 +136,7 @@ def filter_and_mask(
         parameters["target_shape"] = mask_img_.shape
         parameters["target_affine"] = mask_img_.affine
 
-    data, affine = filter_and_extract(
+    data, _ = filter_and_extract(
         imgs,
         _ExtractionFunctor(mask_img_),
         parameters,
@@ -241,6 +244,9 @@ class NiftiMasker(BaseMasker):
         default="gray"
         Only relevant for the report figures.
 
+    %(clean_args)s
+        .. versionadded:: 0.11.2dev
+
     %(masker_kwargs)s
 
     Attributes
@@ -289,6 +295,7 @@ class NiftiMasker(BaseMasker):
         verbose=0,
         reports=True,
         cmap="gray",
+        clean_args=None,
         **kwargs,
     ):
         # Mask is provided or computed
@@ -312,6 +319,7 @@ class NiftiMasker(BaseMasker):
         self.verbose = verbose
         self.reports = reports
         self.cmap = cmap
+        self.clean_args = clean_args
         self.clean_kwargs = kwargs
 
     def generate_report(self):
@@ -454,11 +462,7 @@ class NiftiMasker(BaseMasker):
         if self.memory is None:
             self.memory = Memory(location=None)
 
-        self.clean_kwargs = {
-            k[7:]: v
-            for k, v in self.clean_kwargs.items()
-            if k.startswith("clean__")
-        }
+        self = sanitize_cleaning_parameters(self)
 
         # Load data (if filenames are given, load them)
         logger.log(
@@ -613,7 +617,10 @@ class NiftiMasker(BaseMasker):
                 "sample_mask",
             ],
         )
-        params["clean_kwargs"] = self.clean_kwargs
+        params["clean_kwargs"] = self.clean_args
+        # TODO remove in 0.13.2
+        if self.clean_kwargs:
+            params["clean_kwargs"] = self.clean_kwargs
 
         data = self._cache(
             filter_and_mask,

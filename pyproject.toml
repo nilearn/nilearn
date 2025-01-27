@@ -60,7 +60,8 @@ doc = [
     "sphinx-design>=0.6.1",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
-    "sphinxext-opengraph>=0.9.1"
+    "sphinxext-opengraph>=0.9.1",
+    "sphinxcontrib-mermaid>=1.0.0"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
@@ -118,6 +119,47 @@ packages = ["nilearn"]
 
 [tool.hatch.version]
 source = "vcs"
+
+[tool.mypy]
+allow_redefinition = false
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+exclude = [
+    '.*/tests/test_.*',
+    'doc/.*',
+    'examples/.*',
+    'maint_tools/.*',
+    'nilearn_cache/.*',
+    'nilearn/_version.py'
+]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = [
+    "nilearn.externals.*",
+    "nilearn._version"
+]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = [
+    "IPython.*",
+    "joblib.*",
+    "kaleido",
+    "matplotlib.*",
+    "memory_profiler.*",
+    "mpl_toolkits.*",
+    "nibabel.*",
+    "nilearn._version",
+    "packaging.*",
+    "plotly.*",
+    "pytest.*",
+    "rich.*",
+    "scipy.*",
+    "sklearn.*",
+    "statsmodels.*",
+    "svg.*"
+]
 
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
@@ -229,9 +271,6 @@ max-complexity = 25
 "nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
 "nilearn/interfaces/**/{tests}/*" = ["D103"]  # 75 errors to fix
 "nilearn/maskers/*" = ["B028"]  # 17 errors to fix
-"nilearn/maskers/**/test_multi_nifti_masker.py" = ["D103"]  # 14 errors to fix
-"nilearn/maskers/**/test_nifti_spheres_masker.py" = ["D103"]  # 9 errors to fix
-"nilearn/maskers/**/test_surface_masker.py" = ["D103"]  # 10 errors to fix
 "nilearn/mass_univariate/*" = ["B028"]  # 4 errors to fix
 "nilearn/plotting/*" = ["B028"]  # 18 errors to fix
 "nilearn/plotting/**/{tests}/*" = ["D103"]  # 123 errors to fix

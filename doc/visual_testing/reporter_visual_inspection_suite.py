@@ -49,6 +49,7 @@ from nilearn.maskers import (
     NiftiMasker,
     NiftiSpheresMasker,
     SurfaceLabelsMasker,
+    SurfaceMapsMasker,
     SurfaceMasker,
 )
 from nilearn.reporting import make_glm_report
@@ -464,12 +465,12 @@ def report_multi_nifti_labels_masker(build_type):
         )
         return None
 
-    yeo = fetch_atlas_yeo_2011()
+    yeo = fetch_atlas_yeo_2011(thichness="thick", n_networks=17)
 
     data = fetch_development_fmri(n_subjects=2)
 
     masker = MultiNiftiLabelsMasker(
-        labels_img=yeo["thick_17"],
+        labels_img=yeo["maps"],
         standardize="zscore_sample",
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
@@ -604,6 +605,40 @@ def report_surface_label_masker(build_type):
     )
 
 
+def report_surface_maps_masker(build_type):
+    if build_type == "partial":
+        _generate_dummy_html(
+            filenames=[
+                "surface_maps_masker_plotly.html",
+                "surface_maps_masker_matplotlib.html",
+            ]
+        )
+        return None, None
+
+    # Fetch a volumetric probabilistic atlas
+    atlas = fetch_atlas_msdl()
+    # Fetch the fsaverage5 mesh
+    fsaverage5_mesh = load_fsaverage("fsaverage5")["pial"]
+    # project atlas to the surface
+    surf_atlas = SurfaceImage.from_volume(
+        volume_img=atlas.maps, mesh=fsaverage5_mesh
+    )
+    # Fetch the NKI dataset
+    surf_img = load_nki()[0]
+    # Create a masker object
+    masker = SurfaceMapsMasker(surf_atlas).fit()
+    masker.transform(surf_img)
+    # generate report with plotly engine
+    report_plotly = masker.generate_report(engine="plotly")
+    report_plotly.save_as_html(REPORTS_DIR / "surface_maps_masker_plotly.html")
+    # now with matplotlib
+    report_mpl = masker.generate_report(engine="matplotlib")
+    report_mpl.save_as_html(
+        REPORTS_DIR / "surface_maps_masker_matplotlib.html"
+    )
+    return report_plotly, report_mpl
+
+
 def _generate_dummy_html(filenames: list[str]):
     for x in filenames:
         with (REPORTS_DIR / x).open("w") as f:
@@ -634,6 +669,7 @@ def main(args=sys.argv):
 
     report_surface_masker(build_type)
     report_surface_label_masker(build_type)
+    report_surface_maps_masker(build_type)
     report_nifti_masker(build_type)
     report_nifti_maps_masker(build_type)
     report_nifti_labels_masker(build_type)

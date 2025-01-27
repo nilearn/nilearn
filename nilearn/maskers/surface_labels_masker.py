@@ -142,10 +142,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         default="inferno"
         Only relevant for the report figures.
 
-    clean_args : :obj:`dict` or None, default=None
-        Keyword arguments to be passed
-        to :func:`nilearn.signal.clean`
-        called within the masker.
+    %(clean_args)s
 
     Attributes
     ----------
@@ -239,11 +236,12 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if self.mask_img is not None:
             check_same_n_vertices(self.labels_img.mesh, self.mask_img.mesh)
 
+        self._shelving = False
+
         if not self.reports:
             self._reporting_data = None
             return self
 
-        self._shelving = False
         # content to inject in the HTML template
         self._report_content = {
             "description": (
@@ -261,10 +259,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             self._report_content["n_vertices"][part] = (
                 self.labels_img.mesh.parts[part].n_vertices
             )
-
-        if not self.reports:
-            self._reporting_data = None
-            return self
 
         self._reporting_data = self._generate_reporting_data()
 

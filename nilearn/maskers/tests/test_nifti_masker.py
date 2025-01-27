@@ -22,10 +22,10 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_parameters_default_constructible",
-    "check_estimators_unfitted",
+    *check_valid_for_all_maskers(),
 ]
 
 
@@ -53,18 +53,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
-
-
-def test_auto_mask(img_3d_rand_eye):
-    """Perform a smoke test on the auto-mask option."""
-    masker = NiftiMasker()
-    # Smoke test the fit
-    masker.fit(img_3d_rand_eye)
-    # Smoke test the transform
-    # With a 4D img
-    masker.transform([img_3d_rand_eye])
-    # With a 3D img
-    masker.transform(img_3d_rand_eye)
 
 
 def test_detrend(img_3d_rand_eye, mask_img_1):
@@ -127,14 +115,6 @@ def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
         "to save memory and computation time.",
     ):
         masker.fit_transform(img_3d_rand_eye)
-
-
-def test_with_files(tmp_path, img_3d_rand_eye):
-    """Test standard masking with filenames."""
-    filename = testing.write_imgs_to_path(img_3d_rand_eye, file_path=tmp_path)
-    masker = NiftiMasker()
-    masker.fit(filename)
-    masker.transform(filename)
 
 
 def test_nan(affine_eye):
@@ -461,28 +441,6 @@ def test_filter_and_mask(affine_eye):
     # Test return_affine = False
     data = filter_and_mask(data_img, mask_img, params)
     assert data.shape == (data_shape[3], np.prod(np.array(mask.shape)))
-
-
-def test_dtype(shape_3d_default):
-    """Check type of output."""
-    data_32 = np.zeros(shape_3d_default, dtype=np.float32)
-    data_64 = np.zeros(shape_3d_default, dtype=np.float64)
-    data_32[2:-2, 2:-2, 2:-2] = 10
-    data_64[2:-2, 2:-2, 2:-2] = 10
-
-    affine_32 = np.eye(4, dtype=np.float32)
-    affine_64 = np.eye(4, dtype=np.float64)
-
-    img_32 = Nifti1Image(data_32, affine_32)
-    img_64 = Nifti1Image(data_64, affine_64)
-
-    masker_1 = NiftiMasker(dtype="auto")
-    assert masker_1.fit_transform(img_32).dtype == np.float32
-    assert masker_1.fit_transform(img_64).dtype == np.float32
-
-    masker_2 = NiftiMasker(dtype="float64")
-    assert masker_2.fit_transform(img_32).dtype == np.float64
-    assert masker_2.fit_transform(img_64).dtype == np.float64
 
 
 def test_standardization(rng, shape_3d_default, affine_eye):
