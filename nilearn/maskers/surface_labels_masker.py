@@ -524,17 +524,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 return [None]
 
         from nilearn.reporting.html_report import generate_report
-        from nilearn.reporting.utils import dataframe_to_html
 
-        for hemi, value in self._report_content["summary"].items():
-            if isinstance(value, pd.DataFrame):
-                self._report_content["summary"][hemi] = dataframe_to_html(
-                    value,
-                    precision=1,
-                    index=False,
-                    escape=True,
-                    justify="center",
-                )
         return generate_report(self)
 
     def _reporting(self):

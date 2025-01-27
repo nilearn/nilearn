@@ -1653,7 +1653,9 @@ def fetch_atlas_aal(
         labels=labels,
         description=fdescr,
         lut=generate_atlas_look_up_table(
-            "fetch_atlas_aal", index=[int(x) for x in indices], name=labels
+            "fetch_atlas_aal",
+            index=np.array([int(x) for x in indices]),
+            name=labels,
         ),
         atlas_type=atlas_type,
         indices=indices,

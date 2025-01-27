@@ -210,8 +210,8 @@ def _get_indices_from_image(image):
         data = image
     else:
         raise TypeError(
-            "Image to extract indices from must be one of:"
-            "Niimg-Like, SurfaceIamge, numpy array"
+            "Image to extract indices from must be one of: "
+            "Niimg-Like, SurfaceIamge, numpy array. "
             f"Got {type(image)}"
         )
     return np.unique(data)
