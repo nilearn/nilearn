@@ -68,6 +68,29 @@ def test_plot_functions_3d_default_params(plot_func, img_3d_mni, tmp_path):
     plt.close()
 
 
+@pytest.mark.parametrize(
+    "plot_func",
+    {
+        plot_img,
+        plot_anat,
+        plot_stat_map,
+        plot_roi,
+        plot_glass_brain,
+        plot_prob_atlas,
+    },
+)
+def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
+    """Test plot functions for negative threshold value."""
+    filename = tmp_path / "temp.png"
+
+    """Tests plot_img for negative threshold."""
+    with pytest.raises(
+        ValueError, match="Threshold should be a non-negative number!"
+    ):
+        plot_func(img_3d_mni, output_file=filename, threshold=-1)
+    plt.close()
+
+
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("cbar_tick_format", ["%f", "%i"])
 def test_cbar_tick_format(plot_func, img_3d_mni, cbar_tick_format, tmp_path):

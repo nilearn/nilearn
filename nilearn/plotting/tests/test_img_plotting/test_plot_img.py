@@ -42,6 +42,23 @@ def test_display_methods(pyplot, img_3d_mni):
     )
 
 
+def test_display_methods_invalid_threshold(pyplot, img_3d_mni):
+    """Tests display methods for negative threshold."""
+    with pytest.raises(
+        ValueError, match="Threshold should be a non-negative number!"
+    ):
+        display = plot_img(img_3d_mni)
+        display.add_overlay(img_3d_mni, threshold=-1)
+
+    with pytest.raises(
+        ValueError, match="Threshold should be a non-negative number!"
+    ):
+        display = plot_img(img_3d_mni)
+        display.add_contours(
+            img_3d_mni, contours=2, linewidth=4, threshold=-1, filled=True
+        )
+
+
 def test_plot_with_axes_or_figure(pyplot, img_3d_mni):
     """Smoke tests for plot_img with providing figure or Axes."""
     figure = plt.figure()
