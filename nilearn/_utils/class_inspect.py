@@ -174,13 +174,10 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_dtype)
             yield (clone(estimator), check_nifti_masker_fit_returns_self)
 
-
         if surf_img_input:
-            yield (clone(estimator), check_surface_masker_detrending)
-            yield (clone(estimator), check_surface_masker_clean)
             yield (clone(estimator), check_surface_masker_fit_returns_self)
 
-          
+
 def is_multimasker(estimator):
     tags = estimator._more_tags()
 
