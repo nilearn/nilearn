@@ -338,6 +338,10 @@ def check_nifti_masker_clean_warning(estimator):
 
     signal = estimator.fit_transform(input_img)
 
+    # TODO remove this cloning once nifti sphere masker can be refitted
+    # See https://github.com/nilearn/nilearn/issues/5091
+    estimator = clone(estimator)
+
     estimator.t_r = 2.0
     estimator.high_pass = 1 / 128
     estimator.clean_kwargs = {"clean__filter": "cosine"}
