@@ -38,7 +38,7 @@ else:
             "reporting/tests/test_html_report.py",
         ]
     )
-    matplotlib = None
+    matplotlib = None  # type: ignore[assignment]
 
 
 def pytest_configure(config):  # noqa: ARG001

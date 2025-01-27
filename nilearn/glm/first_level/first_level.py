@@ -2295,7 +2295,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
         "space_label or img_filters"
     )
 
-    run_check_list: list = []
+    run_check_list = []
 
     for img_ in imgs:
         parsed_filename = parse_bids_filename(img_)

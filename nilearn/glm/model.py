@@ -146,6 +146,9 @@ class LikelihoodModelResults:
         if dispersion is None:
             dispersion = self.dispersion
 
+        if matrix is None and column is None:
+            return self.cov * dispersion
+
         if column is not None:
             column = np.asarray(column)
             if column.shape == ():
@@ -161,8 +164,6 @@ class LikelihoodModelResults:
                 return tmp * dispersion
             else:
                 return tmp[:, :, np.newaxis] * dispersion
-        if matrix is None and column is None:
-            return self.cov * dispersion
 
     def Tcontrast(self, matrix, store=("t", "effect", "sd"), dispersion=None):  # noqa: N802
         """Compute a Tcontrast for a row vector `matrix`.
