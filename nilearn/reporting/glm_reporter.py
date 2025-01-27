@@ -238,7 +238,6 @@ def make_glm_report(
     )
     with pd.option_context("display.max_colwidth", 100):
         model_attributes = model_attributes_to_dataframe(model)
-
         model_attributes_html = dataframe_to_html(
             model_attributes,
             precision=2,
