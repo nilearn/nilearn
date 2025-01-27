@@ -286,8 +286,8 @@ class BaseSlicer:
 
                 - If ``None`` is given, the maps are not thresholded.
                 - If number is given, it must be non-negative. The specified
-                value is used to threshold the image: values below the
-                threshold (in absolute value) are plotted as transparent.
+                  value is used to threshold the image: values below the
+                  threshold (in absolute value) are plotted as transparent.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
@@ -352,8 +352,8 @@ class BaseSlicer:
 
                 - If ``None`` is given, the maps are not thresholded.
                 - If number is given, it must be non-negative. The specified
-                value is used to threshold the image: values below the
-                threshold (in absolute value) are plotted as transparent.
+                  value is used to threshold the image: values below the
+                  threshold (in absolute value) are plotted as transparent.
 
         filled : :obj:`bool`, default=False
             If ``filled=True``, contours are displayed with color fillings.
@@ -949,8 +949,8 @@ class OrthoSlicer(BaseSlicer):
 
                 - If ``None`` is given, the maps are not thresholded.
                 - If number is given, it must be non-negative. The specified
-                value is used to threshold the image: values below the
-                threshold (in absolute value) are plotted as transparent.
+                  value is used to threshold the image: values below the
+                  threshold (in absolute value) are plotted as transparent.
 
         cut_coords : 3 :obj:`tuple` of :obj:`int`
             The cut position, in world space.
