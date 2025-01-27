@@ -20,9 +20,9 @@ from nilearn._utils.exceptions import DimensionError
 VALID_CHECKS = [
     "check_decision_proba_consistency",
     "check_estimator_cloneable",
-    "check_estimators_partial_fit_n_features",
     "check_estimator_repr",
     "check_estimator_tags_renamed",
+    "check_estimators_partial_fit_n_features",
     "check_get_params_invariance",
     "check_mixin_order",
     "check_non_transformer_estimators_n_iter",
@@ -47,12 +47,12 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_estimator_sparse_data",
     "check_estimator_sparse_matrix",
     "check_estimator_sparse_tag",
+    "check_estimators_fit_returns_self",
     "check_f_contiguous_array_estimator",
     "check_fit1d",
     "check_fit2d_1feature",
     "check_fit2d_1sample",
     "check_fit2d_predict1d",
-    "check_nifti_masker_clean",
 }
 
 # TODO
@@ -146,16 +146,16 @@ def nilearn_check_estimator(estimator):
 
     niimg_input = False
     is_masker = False
-    is_surf_masker = False
+    surf_img_input = False
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
         niimg_input = "niimg_like" in tags["X_types"]
-        is_surf_masker = "surf_img" in tags["X_types"]
+        surf_img_input = "surf_img" in tags["X_types"]
         is_masker = "masker" in tags["X_types"]
     else:
         niimg_input = getattr(tags.input_tags, "niimg_like", False)
-        is_surf_masker = getattr(tags.input_tags, "surf_img", False)
+        surf_img_input = getattr(tags.input_tags, "surf_img", False)
         is_masker = getattr(tags.input_tags, "masker", False)
 
     if is_masker:
@@ -170,14 +170,16 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)
             yield (clone(estimator), check_nifti_masker_dtype)
+            yield (clone(estimator), check_nifti_masker_fit_returns_self)
 
             if not is_multimasker(estimator):
                 yield (clone(estimator), check_nifti_masker_detrending)
                 yield (clone(estimator), check_nifti_masker_clean)
 
-        if is_surf_masker:
+        if surf_img_input:
             yield (clone(estimator), check_surface_masker_detrending)
             yield (clone(estimator), check_surface_masker_clean)
+            yield (clone(estimator), check_surface_masker_fit_returns_self)
 
 
 def is_multimasker(estimator):
@@ -210,6 +212,24 @@ def check_masker_fitted(estimator):
     signals = np.ones((10, 11))
     with pytest.raises(ValueError, match="has not been fitted."):
         estimator.inverse_transform(signals)
+
+
+def check_nifti_masker_fit_returns_self(estimator):
+    """Check if self is returned when calling fit."""
+    from nilearn.conftest import _img_3d_rand
+
+    assert estimator.fit(_img_3d_rand()) is estimator
+
+
+def check_surface_masker_fit_returns_self(estimator):
+    """Check detrending does something.
+
+    Fit transform on same input should give different results
+    if detrend is true or false.
+    """
+    from nilearn.conftest import _make_surface_img
+
+    assert estimator.fit(_make_surface_img(100)) is estimator
 
 
 def check_nifti_masker_fit_transform(estimator):
