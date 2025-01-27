@@ -440,7 +440,7 @@ def test_generate_report_before_transform_warn(
     reason="Old matplotlib not compatible with numpy 2.0 on windows.",
 )
 def test_generate_report_plotly_out_figure_type(
-    plotly, surf_maps_img, surf_img_2d, on_windows_with_old_mpl_and_new_numpy
+    plotly, surf_maps_img, surf_img_2d
 ):
     """Test that the report has a iframe tag when engine is plotly
     (default).
