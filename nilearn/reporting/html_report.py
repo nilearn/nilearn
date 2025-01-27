@@ -195,8 +195,6 @@ def _update_template(
     # Load JS template
     js_template_path = _get_js_template(title)
     if js_template_path is not None:
-        if not js_template_path.exists():
-            raise FileNotFoundError(f"No template {js_template_path}")
         with js_template_path.open(encoding="utf-8") as js_file:
             js_tpl = js_file.read()
             # remove comments from the top of the file
