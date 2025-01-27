@@ -154,10 +154,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         default="inferno"
         Only relevant for the report figures.
 
-    clean_args : :obj:`dict` or None, default=None
-        Keyword arguments to be passed
-        to :func:`nilearn.signal.clean`
-        called within the masker.
+    %(clean_args)s
 
     Attributes
     ----------
