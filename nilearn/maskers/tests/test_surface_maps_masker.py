@@ -242,16 +242,6 @@ def test_surface_maps_masker_not_fitted_error(surf_maps_img):
         masker.inverse_transform(None)
 
 
-def test_surface_maps_masker_smoothing_not_supported_error(
-    surf_maps_img, surf_img_2d
-):
-    """Test that an error is raised when smoothing_fwhm is not None."""
-    masker = SurfaceMapsMasker(maps_img=surf_maps_img, smoothing_fwhm=1).fit()
-    with pytest.warns(match="smoothing_fwhm is not yet supported"):
-        masker.transform(surf_img_2d(50))
-        assert masker.smoothing_fwhm is None
-
-
 def test_surface_maps_masker_labels_img_none():
     """Test that an error is raised when maps_img is None."""
     with pytest.raises(

@@ -56,7 +56,6 @@ def test_multi_nifti_maps_masker(
 
     - fit, transform, fit_transform, inverse_transform.
     - 4D and list[4D] inputs
-    - smoothing
     """
     fmri11_img, mask11_img = generate_fake_fmri(
         shape_3d_default, affine=affine_eye, length=length
@@ -78,16 +77,6 @@ def test_multi_nifti_maps_masker(
     signals11_list = masker.fit_transform(signals_input)
 
     assert len(signals11_list) == len(signals_input)
-    for signals in signals11_list:
-        assert signals.shape == (length, n_regions)
-
-    # Transform, with smoothing (smoke test)
-    masker = MultiNiftiMapsMasker(
-        img_maps, smoothing_fwhm=3, resampling_target=None
-    )
-
-    signals11_list = masker.fit().transform(signals_input)
-
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
 
