@@ -299,7 +299,7 @@ def check_masker_clean(estimator):
 
 def check_nifti_masker_clean_error(estimator):
     """Nifti maskers cannot be given cleaning parameters \
-        via both clean_args and kwargs.
+        via both clean_args and kwargs simultaneously.
 
     TODO remove after nilearn 0.13.0
     """
