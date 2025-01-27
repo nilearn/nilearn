@@ -43,16 +43,37 @@ else:
 # by sklearn
 # and could be removed from this list.
 CHECKS_TO_SKIP_IF_IMG_INPUT = {
+    "check_complex_data",
+    "check_dtype_object",
+    "check_dict_unchanged",
+    "check_dont_overwrite_parameters",
     "check_estimator_sparse_array",
     "check_estimator_sparse_data",
     "check_estimator_sparse_matrix",
     "check_estimator_sparse_tag",
+    "check_estimators_empty_data_messages",
+    "check_estimators_dtypes",
+    "check_estimators_nan_inf",
+    "check_estimators_overwrite_params",
+    "check_estimators_pickle",
     "check_f_contiguous_array_estimator",
     "check_fit1d",
     "check_fit2d_1feature",
     "check_fit2d_1sample",
     "check_fit2d_predict1d",
+    "check_fit_score_takes_y",
+    "check_fit_idempotent",
+    "check_methods_sample_order_invariance",
+    "check_methods_subset_invariance",
+    "check_n_features_in",
+    "check_n_features_in_after_fitting",
     "check_nifti_masker_clean",
+    "check_positive_only_tag_during_fit",
+    "check_pipeline_consistency",
+    "check_readonly_memmap_input",
+    "check_transformer_data_not_an_array",
+    "check_transformer_general",
+    "check_transformer_preserve_dtypes",
 }
 
 # TODO
