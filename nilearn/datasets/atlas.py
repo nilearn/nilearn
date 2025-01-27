@@ -1392,7 +1392,14 @@ def fetch_atlas_smith_2009(
 
 
 @fill_doc
-def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_atlas_yeo_2011(
+    data_dir=None,
+    url=None,
+    resume=True,
+    verbose=1,
+    n_networks=None,
+    thickness=None,
+):
     """Download and return file names for the Yeo 2011 :term:`parcellation`.
 
     This function retrieves the so-called yeo
@@ -1412,54 +1419,98 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     %(resume)s
     %(verbose)s
 
+    n_networks : {7, 17, None}, default = None
+        If not None,
+        then only specific version of the atlas is returned:
+
+        - 7 networks parcellation,
+        - 17 networks parcellation.
+
+        If ``thickness`` is not None, this will default to ``7``.
+        The default will be set to ``7`` in version 0.13.2.
+
+        .. versionadded:: 0.11.2dev
+
+    thickness : {"thin", "thick", None}, default = None
+        If not None,
+        then only specific version of the atlas is returned:
+
+        - ``"thick"``: parcellation fitted to thick cortex segmentations,
+        - ``"thin"``: parcellation fitted to thin cortex segmentations.
+
+        If ``n_networks`` is not None, this will default to ``"thick"``.
+        The default will be set to ``"thick"`` in version 0.13.2.
+
+        .. versionadded:: 0.11.2dev
+
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object.
+
+        If ``n_networks`` and ``thickness`` are None, keys are:
 
         - 'thin_7': :obj:`str`
             Path to nifti file containing the
-            7 regions :term:`parcellation` fitted to thin template cortex
+            7 networks :term:`parcellation` fitted to thin template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_7``.
 
         - 'thick_7': :obj:`str`
             Path to nifti file containing the
-            7 region :term:`parcellation` fitted to thick template cortex
+            7 networks :term:`parcellation` fitted to thick template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_7``.
 
         - 'thin_17': :obj:`str`
             Path to nifti file containing the
-            17 region :term:`parcellation` fitted to thin template cortex
+            17 networks :term:`parcellation` fitted to thin template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_17``.
 
         - 'thick_17': :obj:`str`
             Path to nifti file containing the
-            17 region :term:`parcellation` fitted to thick template cortex
+            17 networks :term:`parcellation` fitted to thick template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_17``.
 
         - 'colors_7': :obj:`str`
             Path to colormaps text file for
-            7 region :term:`parcellation`.
+            7 networks :term:`parcellation`.
             This file maps :term:`voxel` integer
             values from ``data.thin_7`` and ``data.tick_7`` to network names.
 
         - 'colors_17': :obj:`str`
             Path to colormaps text file for
-            17 region :term:`parcellation`.
+            17 networks :term:`parcellation`.
             This file maps :term:`voxel` integer
             values from ``data.thin_17`` and ``data.tick_17``
             to network names.
 
         - 'anat': :obj:`str`
             Path to nifti file containing the anatomy image.
+
+        - %(description)s
+
+        - %(template)s
+
+        - %(atlas_type)s
+
+        otherwise the keys are:
+
+        - 'anat': :obj:`str`
+            Path to nifti file containing the anatomy image.
+
+        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`.
+          The image contains integer values for each network.
+
+        - %(labels)s
+
+        - %(lut)s
 
         - %(description)s
 
@@ -1477,6 +1528,34 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     """
     atlas_type = "deterministic"
+
+    if n_networks is None and thickness is None:
+        warnings.warn(
+            category=DeprecationWarning,
+            message=(
+                deprecation_message.format(version="0.13.2")
+                + (
+                    "To suppress this warning, "
+                    "Please use the parameters 'n_networks' and 'thickness' "
+                    "to specify the exact atlas image you want."
+                )
+            ),
+        )
+
+    if n_networks is not None:
+        if n_networks not in (7, 17):
+            raise ValueError(
+                f"'n_networks' must be 7 or 17. Got {n_networks=}"
+            )
+        if thickness is None:
+            thickness = "thick"
+    if thickness is not None:
+        if thickness not in ("thin", "thick"):
+            raise ValueError(
+                f"'thickness' must be 'thin' or 'thick'. Got {thickness=}"
+            )
+        if n_networks is None:
+            n_networks = 7
 
     if url is None:
         url = (
@@ -1526,26 +1605,29 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
         ]
     )
 
-    lut = pd.read_csv(
-        params["colors_7"],
-        sep="\\s+",
-        names=["index", "name", "r", "g", "b", "fs"],
-        header=0,
-    )
-    params["lut_7"] = _update_lut_freesurder(lut)
+    if n_networks and thickness:
+        lut_file = (
+            params["colors_7"] if n_networks == 7 else params["colors_17"]
+        )
+        lut = pd.read_csv(
+            lut_file,
+            sep="\\s+",
+            names=["index", "name", "r", "g", "b", "fs"],
+            header=0,
+        )
+        lut = _update_lut_freesurder(lut)
 
-    lut = pd.read_csv(
-        params["colors_17"],
-        sep="\\s+",
-        names=["index", "name", "r", "g", "b", "fs"],
-        header=0,
-    )
-    params["lut_17"] = _update_lut_freesurder(lut)
+        maps = params[f"{thickness}_{n_networks}"]
 
-    _check_look_up_table(params["lut_7"], params["thin_7"])
-    _check_look_up_table(params["lut_7"], params["thick_7"])
-    _check_look_up_table(params["lut_17"], params["thin_17"])
-    _check_look_up_table(params["lut_17"], params["thick_17"])
+        return Atlas(
+            maps=maps,
+            labels=lut.name.to_list(),
+            description=fdescr,
+            template="fsaverage",
+            lut=lut,
+            atlas_type=atlas_type,
+            anat=params["anat"],
+        )
 
     return Bunch(**params)
 

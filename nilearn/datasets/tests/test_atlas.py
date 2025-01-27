@@ -486,10 +486,6 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     assert request_mocker.url_count == 1
 
 
-@pytest.mark.xfail(
-    reason="Atlas should return single map with associated labels.",
-    raises=AttributeError,
-)
 def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     """Check fetcher for the yeo atlas.
 
@@ -539,7 +535,10 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
 
     request_mocker.url_mapping["*Yeo_JNeurophysiol11_MNI152*"] = yeo_data
 
-    dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
+    with pytest.warns(
+        DeprecationWarning, match="the parameters 'n_networks' and 'thickness'"
+    ):
+        dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
 
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.colors_17, str)
@@ -549,7 +548,25 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     assert isinstance(dataset.thin_17, str)
     assert isinstance(dataset.thin_7, str)
 
+    dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=7)
+    dataset = fetch_atlas_yeo_2011(
+        data_dir=tmp_path, verbose=0, thickness="thick"
+    )
+
     validate_atlas(dataset)
+
+
+def test_fetch_atlas_yeo_2011_error(tmp_path):
+    """Raise errors when the wrong values are passed."""
+    with pytest.raises(ValueError, match="'n_networks' must be 7 or 17."):
+        fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=10)
+
+    with pytest.raises(
+        ValueError, match="'thickness' must be 'thin' or 'thick'."
+    ):
+        fetch_atlas_yeo_2011(
+            data_dir=tmp_path, verbose=0, thickness="dead_parot"
+        )
 
 
 def test_fetch_atlas_difumo(tmp_path, request_mocker):
