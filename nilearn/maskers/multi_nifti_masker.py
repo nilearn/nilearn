@@ -24,7 +24,10 @@ from nilearn._utils.class_inspect import (
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import resample_img
-from nilearn.maskers._utils import compute_middle_image
+from nilearn.maskers._utils import (
+    compute_middle_image,
+    sanitize_cleaning_parameters,
+)
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.masking import (
     compute_multi_background_mask,
@@ -136,6 +139,8 @@ class MultiNiftiMasker(NiftiMasker):
 
     %(verbose0)s
 
+    %(clean_args)s
+
     %(masker_kwargs)s
 
     Attributes
@@ -181,6 +186,7 @@ class MultiNiftiMasker(NiftiMasker):
         n_jobs=1,
         verbose=0,
         cmap="CMRmap_r",
+        clean_args=None,
         **kwargs,
     ):
         super().__init__(
@@ -203,6 +209,7 @@ class MultiNiftiMasker(NiftiMasker):
             memory_level=memory_level,
             verbose=verbose,
             cmap=cmap,
+            clean_args=clean_args,
             **kwargs,
         )
         self.n_jobs = n_jobs
@@ -263,6 +270,8 @@ class MultiNiftiMasker(NiftiMasker):
             "\n To see the input Nifti image before resampling, "
             "hover over the displayed image."
         )
+
+        self = sanitize_cleaning_parameters(self)
 
         # Load data (if filenames are given, load them)
         logger.log(
@@ -451,7 +460,10 @@ class MultiNiftiMasker(NiftiMasker):
                 "copy",
             ],
         )
-        params["clean_kwargs"] = self.clean_kwargs
+        params["clean_kwargs"] = self.clean_args
+        # TODO remove in 0.13.2
+        if self.clean_kwargs:
+            params["clean_kwargs"] = self.clean_kwargs
 
         func = self._cache(
             filter_and_mask,
