@@ -156,11 +156,25 @@ def cut_coords(name):
     return (0,) * 3
 
 
-@pytest.mark.parametrize(
-    "display,name", zip(SLICERS + PROJECTORS, SLICER_KEYS + PROJECTOR_KEYS)
-)
-def test_display_basics(display, name, img, cut_coords):
-    """Basic smoke tests for all displays (slicers + projectors).
+@pytest.mark.parametrize("display,name", zip(SLICERS, SLICER_KEYS))
+def test_display_basics_slicers(display, name, img, cut_coords):
+    """Basic smoke tests for all displays (slicers).
+
+    Each object is instantiated, ``add_overlay``, ``title``,
+    and ``close`` are then called.
+    """
+    display = display(cut_coords=cut_coords)
+    display.add_overlay(img, cmap=plt.cm.gray)
+    display.title(f"display mode is {name}")
+    if name != "mosaic":
+        assert display.cut_coords == cut_coords
+    assert isinstance(display.frame_axes, matplotlib.axes.Axes)
+    display.close()
+
+
+@pytest.mark.parametrize("display,name", zip(PROJECTORS, PROJECTOR_KEYS))
+def test_display_basics_projectors(display, name, img, cut_coords):
+    """Basic smoke tests for all displays (projectors).
 
     Each object is instantiated, ``add_overlay``, ``title``,
     and ``close`` are then called.

@@ -6,6 +6,8 @@ import uuid
 import warnings
 from string import Template
 
+import pandas as pd
+
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
@@ -15,7 +17,9 @@ from nilearn.reporting.utils import (
     HTML_PARTIALS_PATH,
     HTML_TEMPLATE_PATH,
     JS_PATH,
+    dataframe_to_html,
     figure_to_svg_base64,
+    model_attributes_to_dataframe,
 )
 
 ESTIMATOR_TEMPLATES = {
@@ -125,6 +129,7 @@ def _update_template(
     overlay,
     parameters,
     data,
+    summary_html=None,
     template_name=None,
     warning_messages=None,
 ):
@@ -161,6 +166,9 @@ def _update_template(
             - summary (dict) : A summary description of the
               region labels and sizes. This will be displayed
               as an expandable table in the report.
+
+    summary_html : dict if estimator is Surface masker str otherwise, optional
+        Summary of the region labels and sizes converted to html table.
 
     template_name : str, optional
         The name of the template to use. If not provided, the
@@ -208,7 +216,7 @@ def _update_template(
         content=content,
         overlay=overlay,
         docstring=docstring,
-        parameters=_render_parameters_partial(parameters),
+        parameters=parameters,
         figure=(
             _insert_figure_partial(
                 data["engine"],
@@ -223,6 +231,7 @@ def _update_template(
         css=css,
         js_content=js_content,
         warning_messages=_render_warnings_partial(warning_messages),
+        summary_html=summary_html,
     )
 
     # revert HTML safe substitutions in CSS sections
@@ -372,7 +381,42 @@ def _create_report(estimator, data):
         if isinstance(image, list)
         else embed_img(image)
     )
-    parameters = _str_params(estimator.get_params())
+    summary_html = None
+    # only convert summary to html table if summary exists
+    if "summary" in data and data["summary"] is not None:
+        # convert region summary to html table
+        # for Surface maskers create a table for each part
+        if "Surface" in estimator.__class__.__name__:
+            summary_html = {}
+            for part in data["summary"]:
+                summary_html[part] = pd.DataFrame.from_dict(
+                    data["summary"][part]
+                )
+                summary_html[part] = dataframe_to_html(
+                    summary_html[part],
+                    precision=2,
+                    header=True,
+                    index=False,
+                    sparsify=False,
+                )
+        # otherwise we just have one table
+        elif "Nifti" in estimator.__class__.__name__:
+            summary_html = pd.DataFrame.from_dict(data["summary"])
+            summary_html = dataframe_to_html(
+                summary_html,
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
+    parameters = model_attributes_to_dataframe(estimator)
+    with pd.option_context("display.max_colwidth", 100):
+        parameters = dataframe_to_html(
+            parameters,
+            precision=2,
+            header=True,
+            sparsify=False,
+        )
     docstring = estimator.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
@@ -387,6 +431,7 @@ def _create_report(estimator, data):
         parameters=parameters,
         data={**data, "unique_id": unique_id},
         template_name=html_template,
+        summary_html=summary_html,
     )
 
 

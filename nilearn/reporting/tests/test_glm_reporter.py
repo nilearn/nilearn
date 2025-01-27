@@ -302,6 +302,46 @@ def test_masking_first_level_model(tmp_path):
     report_flm.get_iframe()
 
 
+def test_fir_delays_in_params(tmp_path):
+    """Check that fir_delays is in the report when hrf_model is fir."""
+    shapes, rk = ((7, 7, 7, 5),), 3
+    _, fmri_data, design_matrices = write_fake_fmri_data_and_design(
+        shapes, rk, file_path=tmp_path
+    )
+    contrast = np.eye(3)[1]
+    model = FirstLevelModel(hrf_model="fir", fir_delays=[1, 2, 3])
+    model.fit(fmri_data, design_matrices=design_matrices)
+    report = model.generate_report(contrast)
+    assert "fir_delays" in report.__str__()
+
+    # also check that it's not in the report when not set
+    model = FirstLevelModel()
+    model.fit(fmri_data, design_matrices=design_matrices)
+    report = model.generate_report(contrast)
+    assert "fir_delays" not in report.__str__()
+
+
+def test_drift_order_in_params(tmp_path):
+    """Check that drift_order is in the report when parameter is drift_model is
+    polynomial.
+    """
+    shapes, rk = ((7, 7, 7, 5),), 3
+    _, fmri_data, design_matrices = write_fake_fmri_data_and_design(
+        shapes, rk, file_path=tmp_path
+    )
+    contrast = np.eye(3)[1]
+    model = FirstLevelModel(drift_model="polynomial", drift_order=3)
+    model.fit(fmri_data, design_matrices=design_matrices)
+    report = model.generate_report(contrast)
+    assert "drift_order" in report.__str__()
+
+    # also check that it's not in the report when not set
+    model = FirstLevelModel()
+    model.fit(fmri_data, design_matrices=design_matrices)
+    report = model.generate_report(contrast)
+    assert "drift_order" not in report.__str__()
+
+
 # -----------------------surface tests--------------------------------------- #
 
 
