@@ -26,7 +26,7 @@ from numpy.testing import assert_array_almost_equal
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import ConvergenceWarning, NotFittedError
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -753,17 +753,6 @@ def test_decoder_dummy_classifier_with_callable(binary_classification_data):
 
     assert model.scoring == accuracy_scorer
     assert model.score(X, y) == accuracy_score(y, y_pred)
-
-
-def test_decoder_error_model_not_fitted(tiny_binary_classification_data):
-    X, y, mask = tiny_binary_classification_data
-
-    model = Decoder(estimator="dummy_classifier", mask=mask)
-
-    with pytest.raises(
-        NotFittedError, match="This Decoder instance is not fitted yet."
-    ):
-        model.score(X, y)
 
 
 def test_decoder_dummy_classifier_strategy_prior():

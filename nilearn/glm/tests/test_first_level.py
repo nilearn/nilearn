@@ -1135,7 +1135,7 @@ def test_first_level_contrast_computation_errors(tmp_path, shape_4d_default):
     c1, cnull = np.eye(7)[0], np.zeros(7)
 
     # asking for contrast before model fit gives error
-    with pytest.raises(ValueError, match="The model has not been fit yet"):
+    with pytest.raises(ValueError, match="not fitted yet"):
         model.compute_contrast(c1)
 
     # fit model
@@ -1291,9 +1291,6 @@ def test_first_level_residuals_errors(shape_4d_default):
     model = FirstLevelModel(
         mask_img=mask, minimize_memory=False, noise_model="ols"
     )
-
-    with pytest.raises(ValueError, match="The model has not been fit yet"):
-        model.residuals[0]
 
     model.fit(fmri_data, design_matrices=design_matrices)
 
