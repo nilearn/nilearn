@@ -199,6 +199,7 @@ def nilearn_check_estimator(estimator):
 
         if surf_img_input:
             yield (clone(estimator), check_surface_masker_fit_returns_self)
+            yield (clone(estimator), check_surface_masker_smooth)
 
 
 def is_multimasker(estimator):
