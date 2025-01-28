@@ -8,6 +8,7 @@ from joblib import Memory, Parallel, delayed
 from scipy.sparse import coo_matrix
 from sklearn.base import clone
 from sklearn.feature_extraction import image
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
@@ -561,7 +562,7 @@ class Parcellations(_MultiPCA):
             (number of scans, number of labels)
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
         imgs, confounds, single_subject = _check_parameters_transform(
             imgs, confounds
         )
@@ -663,7 +664,7 @@ class Parcellations(_MultiPCA):
         """
         from .signal_extraction import signals_to_img_labels
 
-        self._check_fitted()
+        check_is_fitted(self)
 
         if not isinstance(signals, (list, tuple)) or isinstance(
             signals, np.ndarray

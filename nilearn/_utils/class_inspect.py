@@ -11,6 +11,7 @@ from sklearn import clone
 from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import compare_version
 from nilearn._utils.exceptions import DimensionError
@@ -30,6 +31,7 @@ VALID_CHECKS = [
     "check_set_params",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
+    "check_fit_check_is_fitted",
 ]
 
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -49,6 +51,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_estimator_sparse_tag",
     "check_estimators_fit_returns_self",
     "check_f_contiguous_array_estimator",
+    "check_fit_check_is_fitted",
     "check_fit1d",
     "check_fit2d_1feature",
     "check_fit2d_1sample",
@@ -155,6 +158,8 @@ def nilearn_check_estimator(estimator):
         is_masker = getattr(tags.input_tags, "masker", False)
         surf_img_input = getattr(tags.input_tags, "surf_img", False)
 
+    yield (clone(estimator), check_estimator_fitted)
+
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -200,9 +205,33 @@ def accept_niimg_input(estimator):
         return getattr(tags.input_tags, "niimg_like", False)
 
 
+def check_estimator_fitted(estimator):
+    """Check appropriate response to check_fitted from sklearn before fitting.
+
+    check that before fitting
+    - masker has a __sklearn_is_fitted__ method
+    - running sklearn check_fitted on masker throws an error
+    """
+    import pytest
+
+    assert hasattr(estimator, "__sklearn_is_fitted__")
+    assert estimator.__sklearn_is_fitted__() is False
+
+    with pytest.raises(ValueError, match="has not been fitted."):
+        check_is_fitted(estimator)
+
+
 def check_masker_fitted(estimator):
-    """Check that transform() and inverse_transform() \
-       fail for maskers if they have not been fitted.
+    """Check appropriate response of maskers to check_fitted from sklearn.
+
+    Should act as a replacement in the case of the maskers
+    for sklearn's check_fit_check_is_fitted
+
+    check that before fitting
+    - masker has a __sklearn_is_fitted__ method
+    - running sklearn check_fitted on masker throws an error
+    - transform() and inverse_transform() \
+      throw same error
     """
     import pytest
 

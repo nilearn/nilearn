@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import signal
 from nilearn._utils import constrained_layout_kwargs, fill_doc
@@ -304,12 +305,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
 
-    def _check_fitted(self):
-        if not self.__sklearn_is_fitted__():
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been fitted."
-            )
-
     def transform(self, img, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
@@ -339,7 +334,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         # if img is a single image, convert it to a list
         # to be able to concatenate it
@@ -469,7 +464,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         :obj:`~nilearn.surface.SurfaceImage` object
             Mesh and data for both hemispheres.
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         return signals_to_surf_img_labels(
             signals,

@@ -10,6 +10,7 @@ import numpy as np
 from joblib import Memory
 from scipy import sparse
 from sklearn import neighbors
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.class_inspect import get_params
@@ -702,7 +703,7 @@ class NiftiSpheresMasker(BaseMasker):
             inputs.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         params = get_params(NiftiSpheresMasker, self)
         params["clean_kwargs"] = self.clean_args
@@ -757,7 +758,7 @@ class NiftiSpheresMasker(BaseMasker):
             shape: (mask_img, number of scans).
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         logger.log("computing image from signals", verbose=self.verbose)
 

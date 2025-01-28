@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
 from nilearn._utils import logger
@@ -704,7 +705,7 @@ class NiftiMapsMasker(BaseMasker):
         """
         from ..regions import signal_extraction
 
-        self._check_fitted()
+        check_is_fitted(self)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_maps(

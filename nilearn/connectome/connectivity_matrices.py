@@ -7,6 +7,7 @@ import numpy as np
 from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.docs import fill_doc
 
@@ -670,7 +671,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             Vectors are cleaned when vectorize=True and confounds are provided.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
         return self._fit_transform(X, do_transform=True, confounds=confounds)
 
     def __sklearn_is_fitted__(self):
@@ -709,7 +710,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             If kind is 'tangent', the covariance matrices are reconstructed.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         connectivities = np.array(connectivities)
         if self.vectorize:

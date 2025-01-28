@@ -18,6 +18,7 @@ from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn.base import clone
 from sklearn.cluster import KMeans
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.glm import check_and_load_tables
@@ -936,7 +937,7 @@ class FirstLevelModel(BaseGLM):
             keyed by the type of image.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -1046,7 +1047,7 @@ class FirstLevelModel(BaseGLM):
                 "when initializing the `FirstLevelModel`-object."
             )
 
-        self._check_fitted()
+        check_is_fitted(self)
 
         output = []
 
