@@ -3,6 +3,7 @@ from os.path import join
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
@@ -83,20 +84,57 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
     masker = SurfaceLabelsMasker(
         labels_img=surf_label_img, labels=["background", "bar", "foo"]
     )
+
     with pytest.warns(UserWarning, match="Dropping excess names values."):
         masker = masker.fit()
+
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
     assert masker.label_names_ == ["background", "bar"]
+    assert masker.lut_["name"].to_list() == ["background", "bar"]
+    assert masker.lut_["index"].to_list() == [0, 1]
 
     masker = SurfaceLabelsMasker(
         labels_img=surf_label_img, labels=["background"]
     )
+
     with pytest.warns(UserWarning, match="Padding 'names' with 'unknown'"):
         masker = masker.fit()
+
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
     assert masker.label_names_ == ["background", "unknown"]
+    assert masker.lut_["name"].to_list() == ["background", "unknown"]
+    assert masker.lut_["index"].to_list() == [0, 1]
+
+
+def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
+    """Check passing lut is reflected in attributes.
+
+    Check that lut can be read from a tsv file.
+    """
+    lut = pd.DataFrame({"index": [0, 1], "name": ["background", "bar"]})
+    lut_file = tmp_path / "lut.tsv"
+    lut.to_csv(lut_file, sep="\t")
+
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut_file).fit()
+
+    assert masker.n_elements_ == 1
+    assert masker._labels_ == [1]
+    assert masker.label_names_ == ["background", "bar"]
+
+
+def test_surface_label_masker_error_names_and_lut(surf_label_img):
+    """Cannot pass both look up table AND names."""
+    lut = pd.DataFrame({"index": [0, 1], "name": ["background", "bar"]})
+    masker = SurfaceLabelsMasker(
+        labels_img=surf_label_img, labels=["background", "bar"], lut=lut
+    )
+    with pytest.raises(
+        ValueError,
+        match="Pass either labels or a lookup table .* but not both.",
+    ):
+        masker.fit()
 
 
 def test_surface_label_masker_fit_no_report(surf_label_img):

@@ -99,6 +99,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         is of shape (n_vertices_per_hemisphere, n_regions).
 
     labels : :obj:`list` of :obj:`str`, default=None
+        Mutually exclusive with ``lut``.
         Labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
 
@@ -107,6 +108,14 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             provided through ``labels_img``,
             excess labels will be dropped,
             and missing labels will be labeled ``'unknown'``.
+
+    'lut' : :obj:`pandas.DataFrame` or :obj:`str` \
+            or :obj:`pathlb.Path` to a TSV file or None, default=None
+        Mutually exclusive with ``labels``.
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
@@ -162,6 +171,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         The number of discrete values in the mask.
         This is equivalent to the number of unique values in the mask image,
         ignoring the background value.
+
+    lut_ : :obj:`pandas.DataFrame`
+        Look-up table derived from the ``labels`` or ``lut``
+        or from the values of the label image.
     """
 
     def __init__(
@@ -236,7 +249,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "masker = SurfaceLabelsMasker(labels_img=labels_img)"
             )
 
-        if self.labels and self.lut:
+        if self.labels and self.lut is not None:
             raise ValueError(
                 "Pass either labels or a lookup table (lut) to the masker, "
                 "but not both."

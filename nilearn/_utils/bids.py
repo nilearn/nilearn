@@ -80,7 +80,7 @@ def generate_atlas_look_up_table(
     if len(name) != len(index):
         if strict:
             raise ValueError(
-                f"'name' ({len(name)}) and 'index' ({len(index)})"
+                f"'name' ({len(name)}) and 'index' ({len(index)}) "
                 "have different lengths."
                 "Cannot generate a look upt table."
             )
