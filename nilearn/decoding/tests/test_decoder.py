@@ -1528,11 +1528,3 @@ def test_decoder_vs_sklearn(
         f"Sklearn mean score: {np.mean(flat_sklearn_scores)}, "
         f"Nilearn mean score: {np.mean(flat_nilearn_scores)}"
     )
-
-    print("len(flat_sklearn_scores)", len(flat_sklearn_scores))
-    print("len(flat_nilearn_scores)", len(flat_nilearn_scores))
-
-    print("Sklearn mean score:", np.mean(flat_sklearn_scores))
-    print("Nilearn mean score:", np.mean(flat_nilearn_scores))
-
-    breakpoint()
