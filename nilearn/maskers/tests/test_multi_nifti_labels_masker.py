@@ -141,18 +141,9 @@ def test_multi_nifti_labels_masker():
     with pytest.raises(ValueError):
         masker11.fit()
 
-    # Transform, with smoothing (smoke test)
-    masker11 = MultiNiftiLabelsMasker(
-        labels11_img, smoothing_fwhm=3, resampling_target=None
-    )
-    signals11_list = masker11.fit().transform(signals_input)
-    for signals in signals11_list:
-        assert signals.shape == (length, n_regions)
-
-    masker11 = MultiNiftiLabelsMasker(
-        labels11_img, smoothing_fwhm=3, resampling_target=None
-    )
+    masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
     signals11_list = masker11.fit_transform(signals_input)
+
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
 
