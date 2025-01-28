@@ -141,6 +141,12 @@ def test_multi_nifti_labels_masker():
     with pytest.raises(ValueError):
         masker11.fit()
 
+    masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
+    signals11_list = masker11.fit_transform(signals_input)
+
+    for signals in signals11_list:
+        assert signals.shape == (length, n_regions)
+
     # Call inverse transform (smoke test)
     for signals in signals11_list:
         fmri11_img_r = masker11.inverse_transform(signals)
