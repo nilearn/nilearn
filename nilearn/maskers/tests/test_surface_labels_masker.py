@@ -392,13 +392,6 @@ def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):
     assert signal.shape == (1, masker.n_elements_)
 
 
-def test_error_transform_before_fit(surf_label_img, surf_img_1d):
-    """Transform requires masker to be fitted."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
-    with pytest.raises(ValueError, match="has not been fitted"):
-        masker.transform(surf_img_1d)
-
-
 def test_surface_label_masker_inverse_transform(surf_label_img, surf_img_1d):
     """Test transform extract signals."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
@@ -444,13 +437,6 @@ def test_surface_label_masker_inverse_transform_with_mask(
         # the data for label 2 should be zeros
         assert np.all(img_inverted.data.parts["left"][-1, :] == 0)
         assert np.all(img_inverted.data.parts["right"][2:, :] == 0)
-
-
-def test_surface_label_masker_inverse_transform_before_fit(surf_label_img):
-    """Test inverse_transform requires masker to be fitted."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
-    with pytest.raises(ValueError, match="has not been fitted"):
-        masker.inverse_transform(np.zeros((1, 1)))
 
 
 def test_surface_label_masker_transform_list_surf_images(

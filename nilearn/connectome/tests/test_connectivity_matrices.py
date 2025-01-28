@@ -835,10 +835,6 @@ def test_connectivity_measure_check_vectorization_option(kind, signals):
         vectorized_connectivities, sym_matrix_to_vec(connectivities)
     )
 
-    # Check not fitted error
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        ConnectivityMeasure().inverse_transform(vectorized_connectivities)
-
 
 @pytest.mark.parametrize(
     "kind",

@@ -1025,6 +1025,8 @@ class FirstLevelModel(BaseGLM):
 
         """
         # check if valid attribute is being accessed.
+        check_is_fitted(self)
+
         all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
@@ -1042,8 +1044,6 @@ class FirstLevelModel(BaseGLM):
                 "To do so, set `minimize_memory` to `False` "
                 "when initializing the `FirstLevelModel`-object."
             )
-
-        check_is_fitted(self)
 
         output = []
 

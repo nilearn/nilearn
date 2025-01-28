@@ -225,23 +225,6 @@ def test_surface_maps_masker_1d_img(surf_maps_img, surf_img_1d):
         masker.transform(surf_img_1d)
 
 
-def test_surface_maps_masker_not_fitted_error(surf_maps_img):
-    """Test that an error is raised when transform or inverse_transform is
-    called before fit.
-    """
-    masker = SurfaceMapsMasker(surf_maps_img)
-    with pytest.raises(
-        ValueError,
-        match="SurfaceMapsMasker has not been fitted",
-    ):
-        masker.transform(None)
-    with pytest.raises(
-        ValueError,
-        match="SurfaceMapsMasker has not been fitted",
-    ):
-        masker.inverse_transform(None)
-
-
 def test_surface_maps_masker_smoothing_not_supported_error(
     surf_maps_img, surf_img_2d
 ):
