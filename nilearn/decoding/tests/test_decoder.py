@@ -1464,12 +1464,12 @@ from nilearn.decoding import Decoder
 def test_decoder_vs_sklearn(
     classifier_penalty, strings_to_sklearn=SUPPORTED_ESTIMATORS
 ):
+    """Compare scores from nilearn Decoder with sklearn classifiers."""
     # Generate synthetic data
     X, y, mask = _make_multiclass_classification_test_data(
         n_samples=100, dim=5
     )
     n_classes = len(np.unique(y))
-    # cross-validator
     cv = StratifiedKFold(n_splits=10)
     # get appropriate scorer
     scorer = check_scoring(strings_to_sklearn[classifier_penalty], "accuracy")
@@ -1478,7 +1478,7 @@ def test_decoder_vs_sklearn(
     nilearn_decoder = Decoder(
         estimator=classifier_penalty,
         mask=mask,
-        standardize=True,
+        standardize="zscore_sample",
         cv=cv,
         scoring=scorer,
         screening_percentile=100,
@@ -1490,7 +1490,7 @@ def test_decoder_vs_sklearn(
 
     ## start decoding with sklearn
     # Initialize NiftiMasker
-    masker = NiftiMasker(mask_img=mask, standardize="zscore")
+    masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     # Transform data using masker
     X_transformed = masker.fit_transform(X)
 
@@ -1501,7 +1501,7 @@ def test_decoder_vs_sklearn(
     label_binarizer = LabelBinarizer()
     y_binary = label_binarizer.fit_transform(y)
     for klass in range(n_classes):
-        for count, train_idx, test_idx in enumerate(
+        for count, (train_idx, test_idx) in enumerate(
             cv.split(X_transformed, y)
         ):
             X_train, X_test = X_transformed[train_idx], X_transformed[test_idx]
@@ -1533,5 +1533,7 @@ def test_decoder_vs_sklearn(
 
     # Compare average scores
     assert np.isclose(
-        np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores), atol=0.05
+        np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores)
     )
+    # Compare scores
+    assert np.allclose(flat_sklearn_scores, flat_nilearn_scores)
