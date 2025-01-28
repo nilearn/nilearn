@@ -441,11 +441,11 @@ def check_surface_masker_smooth(estimator):
 
     assert hasattr(estimator, "smoothing_fwhm")
 
-    n_sample = 100
+    n_sample = 10
 
     input_img = _make_surface_img(n_sample)
 
-    estimator.fit()
+    estimator.fit(input_img)
 
     signal = estimator.transform(input_img)
 
@@ -453,7 +453,7 @@ def check_surface_masker_smooth(estimator):
     assert signal.shape[0] == n_sample
 
     estimator.smoothing_fwhm = 3
-    estimator.fit()
+    estimator.fit(input_img)
 
     with pytest.warns(UserWarning, match="not yet supported"):
         smoothed_signal = estimator.transform(input_img)
