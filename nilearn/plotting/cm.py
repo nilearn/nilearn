@@ -13,6 +13,8 @@ from nilearn._utils.helpers import compare_version
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
 
+# mypy: disable_error_code="attr-defined"
+
 __all__ = ["_cmap_d"]
 
 
@@ -178,7 +180,9 @@ _cmaps_data = {
 
 _cmaps_data["ocean_hot"] = _concat_cmap(_cm.ocean, _cm.hot_r)
 _cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
+
 _cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
+
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
