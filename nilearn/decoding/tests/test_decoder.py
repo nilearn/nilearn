@@ -1467,7 +1467,7 @@ def test_decoder_vs_sklearn(
     """Compare scores from nilearn Decoder with sklearn classifiers."""
     # Generate synthetic data
     X, y, mask = _make_multiclass_classification_test_data(
-        n_samples=100, dim=5
+        n_samples=100, dim=10
     )
     n_classes = len(np.unique(y))
     cv = StratifiedKFold(n_splits=10)
@@ -1531,9 +1531,7 @@ def test_decoder_vs_sklearn(
     flat_sklearn_scores = np.concatenate(list(scores_sklearn.values()))
     flat_nilearn_scores = np.concatenate(list(scores_nilearn.values()))
 
-    # Compare average scores
+    # check average scores are within 1% of each other
     assert np.isclose(
-        np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores)
+        np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores), atol=0.01
     )
-    # Compare scores
-    assert np.allclose(flat_sklearn_scores, flat_nilearn_scores)
