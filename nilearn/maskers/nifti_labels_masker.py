@@ -740,7 +740,7 @@ class NiftiLabelsMasker(BaseMasker):
         )
 
     def __sklearn_is_fitted__(self):
-        return hasattr(self, "labels_img_")
+        return hasattr(self, "labels_img_") and hasattr(self, "n_elements_")
 
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.

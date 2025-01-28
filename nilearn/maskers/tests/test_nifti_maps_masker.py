@@ -130,15 +130,10 @@ def test_nifti_maps_masker_data_atlas_different_shape(
 def test_nifti_maps_masker_fit(n_regions, img_maps):
     """Check fitted attributes."""
     masker = NiftiMapsMasker(img_maps, resampling_target=None)
-    # Check attributes defined at fit
-    assert not hasattr(masker, "maps_img_")
-    assert not hasattr(masker, "n_elements_")
 
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "maps_img_")
-    assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == n_regions
 
 

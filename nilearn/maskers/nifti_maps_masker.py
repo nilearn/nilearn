@@ -505,7 +505,7 @@ class NiftiMapsMasker(BaseMasker):
         return self
 
     def __sklearn_is_fitted__(self):
-        return hasattr(self, "maps_img_")
+        return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction."""
