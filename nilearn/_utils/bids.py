@@ -81,8 +81,8 @@ def generate_atlas_look_up_table(
         if strict:
             raise ValueError(
                 f"'name' ({len(name)}) and 'index' ({len(index)}) "
-                "have different lengths."
-                "Cannot generate a look upt table."
+                "have different lengths. "
+                "Cannot generate a look up table."
             )
 
         if len(name) < len(index):
@@ -95,7 +95,7 @@ def generate_atlas_look_up_table(
 
         if len(name) > len(index):
             warnings.warn(
-                "Too many names for the indices.Dropping excess names values.",
+                "Too many names for the indices. Dropping excess names values.",
                 stacklevel=3,
             )
             name = name[0 : len(index)]
@@ -122,7 +122,7 @@ def check_look_up_table(lut, atlas, strict=False, verbose=1):
     Throws warning / errors:
     - lut is not a dataframe with the required columns
     - if there are mismatches between the number of ROIs
-      in the LUT and th number of unique ROIs in the associated image.
+      in the LUT and the number of unique ROIs in the associated image.
 
     Parameters
     ----------
@@ -143,7 +143,7 @@ def check_look_up_table(lut, atlas, strict=False, verbose=1):
         If:
         - lut is not a dataframe with the required columns
         - if there are mismatches between the number of ROIs
-          in the LUT and th number of unique ROIs in the associated image.
+          in the LUT and the number of unique ROIs in the associated image.
 
     ValueError
         If regions in the image do not exist in the atlas lookup table
@@ -181,8 +181,8 @@ def check_look_up_table(lut, atlas, strict=False, verbose=1):
         if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
             msg = (
                 "\nThe following regions are present "
-                "in the atlas image,\n"
-                "but missing from the atlas look-up table:\n\n"
+                "in the atlas image, \n"
+                "but missing from the atlas look-up table: \n\n"
                 f"{missing_from_lut}"
             )
             if strict:
