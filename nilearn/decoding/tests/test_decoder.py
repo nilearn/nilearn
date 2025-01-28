@@ -1470,7 +1470,7 @@ def test_decoder_vs_sklearn(
         n_samples=100, dim=10
     )
     n_classes = len(np.unique(y))
-    cv = StratifiedKFold(n_splits=10)
+    cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
     # get appropriate scorer
     scorer = check_scoring(strings_to_sklearn[classifier_penalty], "accuracy")
 
@@ -1483,7 +1483,6 @@ def test_decoder_vs_sklearn(
         scoring=scorer,
         screening_percentile=100,
     )
-
     # Fit and score using nilearn
     nilearn_decoder.fit(X, y)
     scores_nilearn = nilearn_decoder.cv_scores_
@@ -1509,17 +1508,22 @@ def test_decoder_vs_sklearn(
                 y_binary[train_idx, klass],
                 y_binary[test_idx, klass],
             )
-            # set best hyperparameters selected by nilearn for each fold
+            # set best hyperparameters for each fold
             if classifier_penalty in ["svc_l1", "svc_l2"]:
+                # LinearSVC does not have a CV variant, so we use exactly the
+                # parameter selected by nilearn
                 sklearn_classifier = clone(sklearn_classifier).set_params(
                     C=nilearn_decoder.cv_params_[klass]["C"][count]
                 )
             elif classifier_penalty in ["logistic_l1", "logistic_l2"]:
+                # this sets the list of Cs as coded within nilearn and
+                # LogisticRegressionCV will select the best one using
+                # cross-validation
                 sklearn_classifier = clone(sklearn_classifier).set_params(
                     Cs=nilearn_decoder.cv_params_[klass]["Cs"][count],
-                    refit=True,
                 )
             elif classifier_penalty in ["ridge_classifier"]:
+                # same as logistic regression
                 sklearn_classifier = clone(sklearn_classifier).set_params(
                     alphas=nilearn_decoder.cv_params_[klass]["alphas"][count]
                 )
