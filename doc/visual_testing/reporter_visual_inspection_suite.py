@@ -465,7 +465,7 @@ def report_multi_nifti_labels_masker(build_type):
         )
         return None
 
-    yeo = fetch_atlas_yeo_2011(thichness="thick", n_networks=17)
+    yeo = fetch_atlas_yeo_2011(thickness="thick", n_networks=17)
 
     data = fetch_development_fmri(n_subjects=2)
 
