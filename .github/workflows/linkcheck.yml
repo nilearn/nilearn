@@ -15,6 +15,10 @@ on:
     # Run every Monday at 8am UTC
     -   cron: 0 8 * * 1
 
+    pull_request:
+        branches:
+        -   '*'
+
     # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
 
