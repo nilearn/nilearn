@@ -120,6 +120,47 @@ packages = ["nilearn"]
 [tool.hatch.version]
 source = "vcs"
 
+[tool.mypy]
+allow_redefinition = false
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+exclude = [
+    '.*/tests/test_.*',
+    'doc/.*',
+    'examples/.*',
+    'maint_tools/.*',
+    'nilearn_cache/.*',
+    'nilearn/_version.py'
+]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = [
+    "nilearn.externals.*",
+    "nilearn._version"
+]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = [
+    "IPython.*",
+    "joblib.*",
+    "kaleido",
+    "matplotlib.*",
+    "memory_profiler.*",
+    "mpl_toolkits.*",
+    "nibabel.*",
+    "nilearn._version",
+    "packaging.*",
+    "plotly.*",
+    "pytest.*",
+    "rich.*",
+    "scipy.*",
+    "sklearn.*",
+    "statsmodels.*",
+    "svg.*"
+]
+
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"

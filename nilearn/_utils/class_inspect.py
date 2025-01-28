@@ -20,9 +20,9 @@ from nilearn._utils.exceptions import DimensionError
 VALID_CHECKS = [
     "check_decision_proba_consistency",
     "check_estimator_cloneable",
-    "check_estimators_partial_fit_n_features",
     "check_estimator_repr",
     "check_estimator_tags_renamed",
+    "check_estimators_partial_fit_n_features",
     "check_get_params_invariance",
     "check_mixin_order",
     "check_non_transformer_estimators_n_iter",
@@ -47,12 +47,12 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_estimator_sparse_data",
     "check_estimator_sparse_matrix",
     "check_estimator_sparse_tag",
+    "check_estimators_fit_returns_self",
     "check_f_contiguous_array_estimator",
     "check_fit1d",
     "check_fit2d_1feature",
     "check_fit2d_1sample",
     "check_fit2d_predict1d",
-    "check_nifti_masker_clean",
 }
 
 # TODO
@@ -144,41 +144,39 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
 def nilearn_check_estimator(estimator):
     tags = estimator._more_tags()
 
-    niimg_input = False
     is_masker = False
-    is_surf_masker = False
+    surf_img_input = False
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
-        niimg_input = "niimg_like" in tags["X_types"]
-        is_surf_masker = "surf_img" in tags["X_types"]
         is_masker = "masker" in tags["X_types"]
+        surf_img_input = "surf_img" in tags["X_types"]
     else:
-        niimg_input = getattr(tags.input_tags, "niimg_like", False)
-        is_surf_masker = getattr(tags.input_tags, "surf_img", False)
         is_masker = getattr(tags.input_tags, "masker", False)
+        surf_img_input = getattr(tags.input_tags, "surf_img", False)
 
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_clean_kwargs)
 
-    if is_masker:
-        if niimg_input:
+        if not is_multimasker(estimator):
+            yield (clone(estimator), check_masker_detrending)
+            yield (clone(estimator), check_masker_clean)
+
+        if accept_niimg_input(estimator):
             yield (clone(estimator), check_nifti_masker_fit_transform)
             yield (clone(estimator), check_nifti_masker_fit_transform_files)
             yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)
+            yield (clone(estimator), check_nifti_masker_clean_error)
+            yield (clone(estimator), check_nifti_masker_clean_warning)
             yield (clone(estimator), check_nifti_masker_dtype)
             yield (clone(estimator), check_nifti_masker_smooth)
+            yield (clone(estimator), check_nifti_masker_fit_returns_self)
 
-            if not is_multimasker(estimator):
-                yield (clone(estimator), check_nifti_masker_detrending)
-                yield (clone(estimator), check_nifti_masker_clean)
-
-        if is_surf_masker:
-            yield (clone(estimator), check_surface_masker_detrending)
-            yield (clone(estimator), check_surface_masker_clean)
+        if surf_img_input:
+            yield (clone(estimator), check_surface_masker_fit_returns_self)
 
 
 def is_multimasker(estimator):
@@ -187,9 +185,20 @@ def is_multimasker(estimator):
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
-        return "multi_masker" in tags["X_types"]
+        return "niimg_like" in tags["X_types"]
     else:
         return getattr(tags.input_tags, "multi_masker", False)
+
+
+def accept_niimg_input(estimator):
+    tags = estimator._more_tags()
+
+    # TODO remove first if when dropping sklearn 1.5
+    #  for sklearn >= 1.6 tags are always a dataclass
+    if isinstance(tags, dict) and "X_types" in tags:
+        return "multi_masker" in tags["X_types"]
+    else:
+        return getattr(tags.input_tags, "niimg_like", False)
 
 
 def check_masker_fitted(estimator):
@@ -211,6 +220,24 @@ def check_masker_fitted(estimator):
     signals = np.ones((10, 11))
     with pytest.raises(ValueError, match="has not been fitted."):
         estimator.inverse_transform(signals)
+
+
+def check_nifti_masker_fit_returns_self(estimator):
+    """Check if self is returned when calling fit."""
+    from nilearn.conftest import _img_3d_rand
+
+    assert estimator.fit(_img_3d_rand()) is estimator
+
+
+def check_surface_masker_fit_returns_self(estimator):
+    """Check detrending does something.
+
+    Fit transform on same input should give different results
+    if detrend is true or false.
+    """
+    from nilearn.conftest import _make_surface_img
+
+    assert estimator.fit(_make_surface_img(100)) is estimator
 
 
 def check_nifti_masker_fit_transform(estimator):
@@ -246,27 +273,24 @@ def check_nifti_masker_fit_transform(estimator):
 def check_masker_clean_kwargs(estimator):
     """Check attributes for cleaning.
 
-    Nifti maskers accept **kwargs
-    and store in clean_kwargs any parameters that starts with clean__
-
-    Surface maskers accept a clean_args dict
-    and store in clean_args and contains parameters to pass to clean
+    Maskers accept a clean_args dict
+    and store in clean_args and contains parameters to pass to clean.
     """
-    try:
-        estimator.clean_kwargs  # noqa: B018
-    except AttributeError:
-        assert estimator.clean_args is None
+    assert estimator.clean_args is None
 
 
-def check_nifti_masker_detrending(estimator):
+def check_masker_detrending(estimator):
     """Check detrending does something.
 
     Fit transform on same input should give different results
     if detrend is true or false.
     """
-    from nilearn.conftest import _img_4d_rand_eye_medium
+    from nilearn.conftest import _img_4d_rand_eye_medium, _make_surface_img
 
-    input_img = _img_4d_rand_eye_medium()
+    if accept_niimg_input(estimator):
+        input_img = _img_4d_rand_eye_medium()
+    else:
+        input_img = _make_surface_img(100)
 
     signal = estimator.fit_transform(input_img)
 
@@ -276,59 +300,82 @@ def check_nifti_masker_detrending(estimator):
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
 
 
-def check_surface_masker_detrending(estimator):
-    """Check detrending does something.
-
-    Fit transform on same input should give different results
-    if detrend is true or false.
-    """
-    from nilearn.conftest import _make_surface_img
-
-    input_img = _make_surface_img(100)
-
-    signal = estimator.fit_transform(input_img)
-
-    estimator.detrend = True
-    detrended_signal = estimator.fit_transform(input_img)
-
-    assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
-
-
-def check_nifti_masker_clean(estimator):
+def check_masker_clean(estimator):
     """Check that cleaning does something on fit transform.
 
     Fit transform on same input should give different results
     if some cleaning parameters are passed.
     """
+    from nilearn.conftest import _img_4d_rand_eye_medium, _make_surface_img
+
+    if accept_niimg_input(estimator):
+        input_img = _img_4d_rand_eye_medium()
+    else:
+        input_img = _make_surface_img(100)
+
+    signal = estimator.fit_transform(input_img)
+
+    estimator.t_r = 2.0
+    estimator.high_pass = 1 / 128
+    estimator.clean_args = {"filter": "cosine"}
+    detrended_signal = estimator.fit_transform(input_img)
+
+    assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
+
+
+def check_nifti_masker_clean_error(estimator):
+    """Nifti maskers cannot be given cleaning parameters \
+        via both clean_args and kwargs simultaneously.
+
+    TODO remove after nilearn 0.13.0
+    """
+    import pytest
+
     from nilearn.conftest import _img_4d_rand_eye_medium
 
     input_img = _img_4d_rand_eye_medium()
-    signal = estimator.fit_transform(input_img)
 
     estimator.t_r = 2.0
     estimator.high_pass = 1 / 128
     estimator.clean_kwargs = {"clean__filter": "cosine"}
-    detrended_signal = estimator.fit_transform(input_img)
+    estimator.clean_args = {"filter": "cosine"}
 
-    assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
+    error_msg = (
+        "Passing arguments via 'kwargs' "
+        "is mutually exclusive with using 'clean_args'"
+    )
+    with pytest.raises(ValueError, match=error_msg):
+        estimator.fit(input_img)
 
 
-def check_surface_masker_clean(estimator):
-    """Check that cleaning does something on fit transform.
+def check_nifti_masker_clean_warning(estimator):
+    """Nifti maskers raise warning if cleaning parameters \
+        passed via kwargs.
 
-    Fit transform on same input should give different results
-    if some cleaning parameters are passed.
+        But this still affects the transformed signal.
+
+    TODO remove after nilearn 0.13.0
     """
-    from nilearn.conftest import _make_surface_img
+    import pytest
 
-    input_img = _make_surface_img(100)
+    from nilearn.conftest import _img_4d_rand_eye_medium
+
+    input_img = _img_4d_rand_eye_medium()
 
     signal = estimator.fit_transform(input_img)
 
+    # TODO remove this cloning once nifti sphere masker can be refitted
+    # See https://github.com/nilearn/nilearn/issues/5091
+    estimator = clone(estimator)
+
     estimator.t_r = 2.0
     estimator.high_pass = 1 / 128
-    estimator.clean_kwargs = {"filter": "cosine"}
-    detrended_signal = estimator.fit_transform(input_img)
+    estimator.clean_kwargs = {"clean__filter": "cosine"}
+
+    with pytest.warns(DeprecationWarning, match="You passed some kwargs"):
+        estimator.fit(input_img)
+
+    detrended_signal = estimator.transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
 
