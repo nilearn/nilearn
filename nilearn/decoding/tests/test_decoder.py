@@ -25,6 +25,7 @@ import numpy as np
 import pytest
 from nibabel import save
 from numpy.testing import assert_array_almost_equal
+from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
@@ -69,7 +70,6 @@ from nilearn.decoding.decoder import (
     _BaseDecoder,
     _check_estimator,
     _check_param_grid,
-    _default_param_grid,
     _parallel_fit,
     _wrap_param_grid,
 )
@@ -1454,7 +1454,7 @@ from nilearn.decoding import Decoder
 @pytest.mark.parametrize(
     "classifier_penalty",
     [
-        # "svc_l1",
+        "svc_l1",
         "svc_l2",
         "logistic_l1",
         "logistic_l2",
@@ -1466,7 +1466,7 @@ def test_decoder_vs_sklearn(
 ):
     # Generate synthetic data
     X, y, mask = _make_multiclass_classification_test_data(
-        n_samples=100, dim=10
+        n_samples=100, dim=5
     )
     n_classes = len(np.unique(y))
     # cross-validator
@@ -1496,23 +1496,33 @@ def test_decoder_vs_sklearn(
 
     # Initialize sklearn classifier
     sklearn_classifier = strings_to_sklearn[classifier_penalty]
-    if hasattr(sklearn_classifier, "refit"):
-        sklearn_classifier.refit = True
-
     # Fit and score using sklearn
     scores_sklearn = {c: [] for c in range(n_classes)}
     label_binarizer = LabelBinarizer()
     y_binary = label_binarizer.fit_transform(y)
     for klass in range(n_classes):
-        for train_idx, test_idx in cv.split(X_transformed, y):
+        for count, train_idx, test_idx in enumerate(
+            cv.split(X_transformed, y)
+        ):
             X_train, X_test = X_transformed[train_idx], X_transformed[test_idx]
             y_train, y_test = (
                 y_binary[train_idx, klass],
                 y_binary[test_idx, klass],
             )
-            sklearn_classifier.set_params = _default_param_grid(
-                strings_to_sklearn[classifier_penalty], X_train, y_train
-            )
+            # set best hyperparameters selected by nilearn for each fold
+            if classifier_penalty in ["svc_l1", "svc_l2"]:
+                sklearn_classifier = clone(sklearn_classifier).set_params(
+                    C=nilearn_decoder.cv_params_[klass]["C"][count]
+                )
+            elif classifier_penalty in ["logistic_l1", "logistic_l2"]:
+                sklearn_classifier = clone(sklearn_classifier).set_params(
+                    Cs=nilearn_decoder.cv_params_[klass]["Cs"][count],
+                    refit=True,
+                )
+            elif classifier_penalty in ["ridge_classifier"]:
+                sklearn_classifier = clone(sklearn_classifier).set_params(
+                    alphas=nilearn_decoder.cv_params_[klass]["alphas"][count]
+                )
             sklearn_classifier.fit(X_train, y_train)
             score = scorer(sklearn_classifier, X_test, y_test)
             scores_sklearn[klass].append(score)
@@ -1524,7 +1534,4 @@ def test_decoder_vs_sklearn(
     # Compare average scores
     assert np.isclose(
         np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores), atol=0.05
-    ), (
-        f"Sklearn mean score: {np.mean(flat_sklearn_scores)}, "
-        f"Nilearn mean score: {np.mean(flat_nilearn_scores)}"
     )
