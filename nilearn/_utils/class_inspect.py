@@ -24,6 +24,7 @@ VALID_CHECKS = [
     "check_estimator_repr",
     "check_estimator_tags_renamed",
     "check_estimators_partial_fit_n_features",
+    "check_fit_check_is_fitted",
     "check_get_params_invariance",
     "check_mixin_order",
     "check_non_transformer_estimators_n_iter",
@@ -31,7 +32,6 @@ VALID_CHECKS = [
     "check_set_params",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
-    "check_fit_check_is_fitted",
 ]
 
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -205,6 +205,13 @@ def accept_niimg_input(estimator):
         return getattr(tags.input_tags, "niimg_like", False)
 
 
+def _not_fitted_error_message(estimator):
+    return (
+        f"This {type(estimator).__name__} instance is not fitted yet. "
+        "Call 'fit' with appropriate arguments before using this estimator."
+    )
+
+
 def check_estimator_fitted(estimator):
     """Check appropriate response to check_fitted from sklearn before fitting.
 
@@ -214,10 +221,17 @@ def check_estimator_fitted(estimator):
     """
     import pytest
 
-    assert hasattr(estimator, "__sklearn_is_fitted__")
-    assert estimator.__sklearn_is_fitted__() is False
+    if not hasattr(estimator, "__sklearn_is_fitted__"):
+        raise TypeError(
+            "All nilearn estimators must have __sklearn_is_fitted__ method."
+        )
 
-    with pytest.raises(ValueError, match="has not been fitted."):
+    if estimator.__sklearn_is_fitted__() is True:
+        raise ValueError(
+            "Estimator __sklearn_is_fitted__ must return False before fit."
+        )
+
+    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         check_is_fitted(estimator)
 
 
@@ -240,13 +254,13 @@ def check_masker_fitted(estimator):
     # Failure should happen before the input type is determined
     # so we can pass nifti image to surface maskers.
     img_3d_rand_eye = generate_random_img(shape=(7, 8, 9), affine=np.eye(4))
-    with pytest.raises(ValueError, match="has not been fitted."):
+    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         estimator.transform(img_3d_rand_eye)
 
     # Failure should happen before the size of the input type is determined
     # so we can pass any array here.
     signals = np.ones((10, 11))
-    with pytest.raises(ValueError, match="has not been fitted."):
+    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         estimator.inverse_transform(signals)
 
 

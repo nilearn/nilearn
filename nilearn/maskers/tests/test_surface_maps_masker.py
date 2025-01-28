@@ -60,7 +60,6 @@ extra_valid_checks = [
     "check_dont_overwrite_parameters",
     "check_estimators_fit_returns_self",
     "check_estimators_overwrite_params",
-    "check_fit_check_is_fitted",
     "check_no_attributes_set_in_init",
     "check_positive_only_tag_during_fit",
     "check_readonly_memmap_input",

@@ -677,14 +677,6 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
     def __sklearn_is_fitted__(self):
         return not hasattr(self, "cov_estimator_")
 
-    def _check_fitted(self):
-        if self.__sklearn_is_fitted__():
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} "
-                "has not been fitted. "
-                "You must call fit() before calling transform()."
-            )
-
     def inverse_transform(self, connectivities, diagonal=None):
         """Return connectivity matrices from connectivities, \
         vectorized or not.

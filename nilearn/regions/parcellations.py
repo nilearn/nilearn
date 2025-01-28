@@ -526,13 +526,8 @@ class Parcellations(_MultiPCA):
 
         return self
 
-    def _check_fitted(self):
-        """Check whether fit is called or not."""
-        if not hasattr(self, "labels_img_"):
-            raise ValueError(
-                "Object has no labels_img_ attribute. "
-                "Ensure that fit() is called before transform."
-            )
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "labels_img_")
 
     @fill_doc
     def transform(self, imgs, confounds=None):

@@ -691,10 +691,6 @@ class FirstLevelModel(BaseGLM):
             and self.results_ is not None
         )
 
-    def _check_fitted(self):
-        if not self.__sklearn_is_fitted__():
-            raise ValueError("The model has not been fit yet.")
-
     def _more_tags(self):
         """Return estimator tags.
 
@@ -1138,7 +1134,7 @@ class FirstLevelModel(BaseGLM):
 
         else:
             # Make sure masker has been fitted otherwise no attribute mask_img_
-            self.mask_img._check_fitted()
+            check_is_fitted(self.mask_img)
             if self.mask_img.mask_img_ is None and self.masker_ is None:
                 self.masker_ = clone(self.mask_img)
                 for param_name in [

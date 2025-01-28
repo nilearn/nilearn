@@ -438,10 +438,6 @@ class SearchLight(TransformerMixin, BaseEstimator):
             and self.process_mask_ is not None
         )
 
-    def _check_fitted(self):
-        if not self.__sklearn_is_fitted__():
-            raise ValueError("The model has not been fitted yet.")
-
     @property
     def scores_img_(self):
         """Convert the 3D scores array into a NIfTI image."""

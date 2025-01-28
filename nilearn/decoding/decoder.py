@@ -784,6 +784,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             if self.is_classification and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "coef_") and hasattr(self, "masker_")
+
     def score(self, X, y, *args):
         """Compute the prediction score using the scoring \
         metric defined by the scoring attribute.
@@ -807,8 +810,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Prediction score.
 
         """
-        check_is_fitted(self, "coef_")
-        check_is_fitted(self, "masker_")
+        check_is_fitted(self)
         return self.scorer_(self, X, y, *args)
 
     def decision_function(self, X):
@@ -862,8 +864,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             case, confidence score for self.classes_[1] where >0 means this
             class would be predicted.
         """
-        check_is_fitted(self, "coef_")
-        check_is_fitted(self, "masker_")
+        check_is_fitted(self)
 
         n_samples = np.shape(X)[-1]
 

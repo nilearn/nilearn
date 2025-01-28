@@ -415,13 +415,8 @@ class NiftiMasker(BaseMasker):
 
         return [init_display, final_display]
 
-    def _check_fitted(self):
-        if not hasattr(self, "mask_img_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been "
-                "fitted. "
-                "You must call fit() before calling transform()."
-            )
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "mask_img_")
 
     def fit(
         self,
