@@ -945,8 +945,8 @@ threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
     If number is given, it must be non-negative. The specified value is used to
     threshold the image: values below the threshold (in absolute value) are
     plotted as transparent.
-    If "auto" is given, the threshold is determined by analysis of
-    the image.
+    If "auto" is given, the threshold is determined based on the score obtained
+    using percentile value "80%" on the absolute value of the image data.
 """
 
 # title
