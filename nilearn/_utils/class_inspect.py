@@ -266,10 +266,12 @@ def check_masker_fitted(estimator):
     for sklearn's check_fit_check_is_fitted
 
     check that before fitting
-    - masker has a __sklearn_is_fitted__ method
-    - running sklearn check_fitted on masker throws an error
     - transform() and inverse_transform() \
       throw same error
+
+    check that after fitting
+    - __sklearn_is_fitted__ returns true
+    - running sklearn check_fitted throws no error
     """
     import pytest
 
@@ -286,6 +288,12 @@ def check_masker_fitted(estimator):
     signals = np.ones((10, 11))
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         estimator.inverse_transform(signals)
+
+    estimator.fit()
+
+    assert estimator.__sklearn_is_fitted__()
+
+    check_is_fitted(estimator)
 
 
 def check_nifti_masker_fit_returns_self(estimator):
