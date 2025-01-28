@@ -115,7 +115,7 @@ def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
     """
     lut = pd.DataFrame({"index": [0, 1], "name": ["background", "bar"]})
     lut_file = tmp_path / "lut.tsv"
-    lut.to_csv(lut_file, sep="\t")
+    lut.to_csv(lut_file, sep="\t", index=False)
 
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut_file).fit()
 

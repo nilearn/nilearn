@@ -266,7 +266,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         # generate a look up table if one was not provided
         if self.lut is not None:
             if isinstance(self.lut, (str, Path)):
-                lut = pd.read_csv(self.lut)
+                lut = pd.read_csv(self.lut, sep="\t")
             else:
                 lut = self.lut
         elif self.labels:
