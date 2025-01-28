@@ -97,7 +97,7 @@ def test_high_level_glm_one_run(shape_4d_default):
     # Give an unfitted NiftiMasker as mask_img and check that we get an error
     masker = NiftiMasker(mask)
     with pytest.raises(
-        ValueError, match="It seems that NiftiMasker has not been fitted."
+        ValueError, match="NiftiMasker instance is not fitted yet."
     ):
         FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0]

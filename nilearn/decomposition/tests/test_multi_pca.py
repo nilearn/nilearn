@@ -111,17 +111,6 @@ def test_multi_pca_with_confounds_smoke(multi_pca_data, mask_img):
     multi_pca.fit(multi_pca_data, confounds=confounds)
 
 
-def test_multi_pca_componenent_errors(mask_img):
-    """Test that a ValueError is raised \
-    if the number of components is too low.
-    """
-    multi_pca = _MultiPCA(mask=mask_img)
-    with pytest.raises(
-        ValueError, match="Object has no components_ attribute."
-    ):
-        multi_pca._check_components_()
-
-
 def test_multi_pca_errors(multi_pca_data, mask_img):
     """Fit and transform fail without the proper arguments."""
     multi_pca = _MultiPCA(mask=mask_img)

@@ -70,7 +70,12 @@ except ImportError:
     ...
 
 
-def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
+def check_estimator(
+    estimator=None,
+    valid=True,
+    extra_valid_checks=None,
+    expected_failed_checks=None,
+):
     """Yield a valid or invalid scikit-learn estimators check.
 
     As some of Nilearn estimators do not comply
@@ -104,6 +109,16 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
 
     extra_valid_checks : list of strings
         Names of checks to be tested as valid for this estimator.
+
+    expected_failed_checks: dict, default=None
+        A dictionary of the form::
+
+            {
+                "check_name": "this check is expected to fail because ...",
+            }
+
+        Where `"check_name"` is the name of the check, and `"my reason"` is why
+        the check fails.
     """
     valid_checks = VALID_CHECKS
     if extra_valid_checks is not None:
@@ -115,6 +130,15 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
         for e, check in sklearn_check_estimator(
             estimator=est, generate_only=True
         ):
+            # TODO when dropping sklearn 1.5,
+            # pass expected_failed_checks directly to
+            # sklearn_check_estimator above
+            if (
+                isinstance(expected_failed_checks, dict)
+                and check.func.__name__ in expected_failed_checks
+            ):
+                continue
+
             tags = est._more_tags()
 
             niimg_input = False

@@ -66,6 +66,9 @@ extra_valid_checks = [
                 ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
             ],
             extra_valid_checks=extra_valid_checks,
+            expected_failed_checks={
+                "check_fit_check_is_fitted": "handled by nilearn checks"
+            },
         )
     ),
 )
@@ -85,6 +88,9 @@ def test_check_estimator_group_sparse_covariance(
         estimator=[ConnectivityMeasure(cov_estimator=EmpiricalCovariance())],
         valid=False,
         extra_valid_checks=extra_valid_checks,
+        expected_failed_checks={
+            "check_fit_check_is_fitted": "handled by nilearn checks"
+        },
     ),
 )
 def test_check_estimator_invalid_group_sparse_covariance(
