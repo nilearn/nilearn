@@ -119,14 +119,6 @@ def test_multi_pca_errors(multi_pca_data, mask_img):
     with pytest.raises(TypeError, match="missing 1 required positional"):
         multi_pca.fit()
 
-    # transform before fit raises an error
-    with pytest.raises(
-        ValueError,
-        match="Object has no components_ attribute. This is "
-        "probably because fit has not been called",
-    ):
-        multi_pca.transform(multi_pca_data)
-
     # Test if raises an error when empty list of provided.
     with pytest.raises(
         ValueError,

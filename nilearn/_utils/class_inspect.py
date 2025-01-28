@@ -275,13 +275,12 @@ def check_masker_fitted(estimator):
     """
     import pytest
 
-    from nilearn._utils.data_gen import generate_random_img
+    from nilearn.conftest import _img_3d_rand, _make_surface_img
 
     # Failure should happen before the input type is determined
     # so we can pass nifti image to surface maskers.
-    img_3d_rand_eye = generate_random_img(shape=(7, 8, 9), affine=np.eye(4))
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
-        estimator.transform(img_3d_rand_eye)
+        estimator.transform(_img_3d_rand())
 
     # Failure should happen before the size of the input type is determined
     # so we can pass any array here.
@@ -289,7 +288,11 @@ def check_masker_fitted(estimator):
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         estimator.inverse_transform(signals)
 
-    estimator.fit()
+    # NiftiMasker and SurfaceMasker cannot accept None on fit
+    if accept_niimg_input(estimator):
+        estimator.fit(_img_3d_rand())
+    else:
+        estimator.fit(_make_surface_img(10))
 
     assert estimator.__sklearn_is_fitted__()
 
@@ -311,7 +314,7 @@ def check_surface_masker_fit_returns_self(estimator):
     """
     from nilearn.conftest import _make_surface_img
 
-    assert estimator.fit(_make_surface_img(100)) is estimator
+    assert estimator.fit(_make_surface_img(10)) is estimator
 
 
 def check_nifti_masker_fit_transform(estimator):
