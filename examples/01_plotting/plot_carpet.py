@@ -57,7 +57,8 @@ display.show()
 # ICBM152 tissue probability maps.
 import numpy as np
 
-from nilearn import fetch_icbm152_2009, image
+from nilearn import image
+from nilearn.datasets import fetch_icbm152_2009
 
 atlas = fetch_icbm152_2009()
 atlas_img = image.concat_imgs((atlas["gm"], atlas["wm"], atlas["csf"]))
