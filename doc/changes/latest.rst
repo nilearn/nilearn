@@ -17,6 +17,8 @@ Fixes
 
 - :bdg-dark:`Code` Ensure that only valid surface meshes can be instantiated. (:gh:`5036` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Do not set score to zero if all coefficients are zero. (:gh:`5097` by `Himanshu Aggarwal`_).
+
 Enhancements
 ------------
 
