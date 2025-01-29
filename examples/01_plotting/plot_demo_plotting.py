@@ -207,5 +207,5 @@ plotting.plot_stat_map(
     display_mode="ortho",
     cut_coords=[36, -27, 60],
     colorbar=False,
-    title="no colormap",
+    title="no colorbar",
 )
