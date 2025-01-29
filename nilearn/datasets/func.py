@@ -330,15 +330,11 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     )[0]
 
     # Load the csv file
-    phenotypic = np.genfromtxt(
-        phenotypic, names=True, delimiter=",", dtype=None, encoding=None
-    )
+    phenotypic = pd.read_table(phenotypic, delimiter=",")
 
     # Keep phenotypic information for selected subjects
-    int_ids = np.asarray(ids, dtype=int)
-    phenotypic = phenotypic[
-        [np.where(phenotypic["Subject"] == i)[0][0] for i in int_ids]
-    ]
+    mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
+    phenotypic = phenotypic[mask]
 
     # Download dataset files
 
