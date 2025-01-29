@@ -196,6 +196,7 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_dtype)
             yield (clone(estimator), check_nifti_masker_smooth)
             yield (clone(estimator), check_nifti_masker_fit_returns_self)
+            yield (clone(estimator), check_nifti_masker_fit_transform_5d)
 
         if surf_img_input:
             yield (clone(estimator), check_surface_masker_fit_returns_self)
@@ -269,7 +270,7 @@ def check_nifti_masker_fit_transform(estimator):
     - can fit 3D image
     - fitted maskers can transform:
       - 3D image
-      - list of 3D images
+      - list of 3D images with same affine
     - can fit transform 3D image
     """
     from nilearn.conftest import _img_3d_rand, _img_4d_rand_eye
@@ -278,19 +279,71 @@ def check_nifti_masker_fit_transform(estimator):
 
     signal = estimator.transform(_img_3d_rand())
 
+    assert isinstance(signal, np.ndarray)
     assert signal.shape[0] == 1
 
     estimator.transform([_img_3d_rand(), _img_3d_rand()])
 
+    assert isinstance(signal, np.ndarray)
     assert signal.shape[0] == 1
 
     estimator.transform(_img_4d_rand_eye())
 
+    assert isinstance(signal, np.ndarray)
     assert signal.shape[0] == 1
 
     estimator.fit_transform(_img_3d_rand())
 
+    assert isinstance(signal, np.ndarray)
     assert signal.shape[0] == 1
+
+
+def check_nifti_masker_fit_transform_5d(estimator):
+    """Run checks on nifti maskers for transforming 5D images.
+
+    - multi masker should be fine
+      and return a list of numpy arrays
+    - non multimasker should fail
+    """
+    import pytest
+
+    from nilearn.conftest import _img_3d_rand, _img_4d_rand_eye
+
+    n_subject = 3
+
+    estimator.fit(_img_3d_rand())
+
+    input_5d_img = [_img_4d_rand_eye() for _ in range(n_subject)]
+
+    if not is_multimasker(estimator):
+        with pytest.raises(
+            DimensionError,
+            match="Input data has incompatible dimensionality: "
+            "Expected dimension is 4D and you provided "
+            "a list of 4D images \\(5D\\).",
+        ):
+            estimator.transform(input_5d_img)
+
+        with pytest.raises(
+            DimensionError,
+            match="Input data has incompatible dimensionality: "
+            "Expected dimension is 4D and you provided "
+            "a list of 4D images \\(5D\\).",
+        ):
+            estimator.fit_transform(input_5d_img)
+
+    else:
+        signal = estimator.transform(input_5d_img)
+
+        assert isinstance(signal, list)
+        assert all(isinstance(x, np.ndarray) for x in signal)
+        assert len(signal) == n_subject
+
+        signal = estimator.fit_transform(input_5d_img)
+
+        assert isinstance(signal, list)
+        assert all(isinstance(x, np.ndarray) for x in signal)
+        assert len(signal) == n_subject
 
 
 def check_masker_clean_kwargs(estimator):

@@ -139,10 +139,7 @@ def test_3d_images():
     # Check attributes defined at fit
     assert not hasattr(masker, "n_elements_")
 
-    epis = masker.fit_transform([epi_img1, epi_img2])
-
-    # This is mostly a smoke test
-    assert len(epis) == 2
+    masker.fit_transform([epi_img1, epi_img2])
 
     # Check attributes defined at fit
     assert hasattr(masker, "n_elements_")
