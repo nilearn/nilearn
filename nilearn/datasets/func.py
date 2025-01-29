@@ -1752,20 +1752,15 @@ def fetch_surf_nki_enhanced(
     )[0]
 
     # Load the csv file
-    phenotypic = np.genfromtxt(
+    phenotypic = pd.read_csv(
         phenotypic,
-        skip_header=True,
+        header=1,
         names=["Subject", "Age", "Dominant Hand", "Sex"],
-        delimiter=",",
-        dtype=["U9", "<f8", "U1", "U1"],
-        encoding=None,
     )
 
     # Keep phenotypic information for selected subjects
-    int_ids = np.asarray(ids)
-    phenotypic = phenotypic[
-        [np.where(phenotypic["Subject"] == i)[0][0] for i in int_ids]
-    ]
+    mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
+    phenotypic = phenotypic[mask]
 
     # Download subjects' datasets
     func_right = []

@@ -578,8 +578,8 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
     check_type_fetcher(nki_data)
     assert len(nki_data.func_left) == 10
     assert len(nki_data.func_right) == 10
-    assert isinstance(nki_data.phenotypic, np.ndarray)
-    assert nki_data.phenotypic.shape == (10,)
+    assert isinstance(nki_data.phenotypic, pd.DataFrame)
+    assert nki_data.phenotypic.shape == (9, 4)
 
 
 def test_load_nki_error():
