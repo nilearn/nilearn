@@ -158,7 +158,7 @@ plotting.plot_stat_map(
 # Using ``threshold`` value alongside with ``vmin`` and ``vmax`` parameters
 # enable us to mask certain values in the image.
 #
-# Unthresholded image:
+# Image without plotting threshold:
 
 plotting.plot_stat_map(
     stat_img,
@@ -168,7 +168,7 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Image thresholded at 1:
+# Plotting threshold set to 1:
 
 plotting.plot_stat_map(
     stat_img,
@@ -179,9 +179,9 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Setting ``vmin=0``, it is possible to plot only positive regions.
+# Setting ``vmin=0``, it is possible to plot only positive image values.
 #
-# Image thresholded at 1 with ``vmin=0``:
+# Plotting threshold set to 1 with ``vmin=0``:
 
 plotting.plot_stat_map(
     stat_img,
@@ -193,9 +193,9 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Setting ``vmax=0``, it is possible to plot only negative regions.
+# Setting ``vmax=0``, it is possible to plot only negative image values.
 #
-# Image thresholded at 1 with ``vmax=0``:
+# Plotting threshold set to 1 with ``vmax=0``:
 
 plotting.plot_stat_map(
     stat_img,
