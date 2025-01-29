@@ -192,3 +192,18 @@ plotting.plot_stat_map(
     title="plotting threshold=1, vmax=0",
     vmax=0,
 )
+
+# %%
+# Visualizing without a colorbar on the right side
+# ------------------------------------------------
+#
+# The argument ``colorbar`` should be set to ``False`` to show plots without
+# a colorbar on the right side.
+
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="ortho",
+    cut_coords=[36, -27, 60],
+    colorbar=False,
+    title="no colormap",
+)
