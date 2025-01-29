@@ -111,7 +111,7 @@ plotting.plot_roi(
 # Plotting :term:`EPI` image: `plot_epi`
 # ``````````````````````````````````````
 
-# Import image processing tool0c6ffeed5899307f736c3dc3ef364afc86a76707
+# Import image processing tool
 from nilearn import image
 
 # Compute the voxel_wise mean of functional images across time.
