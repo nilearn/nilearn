@@ -285,9 +285,9 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-         - 'func': Paths to functional :term:`resting-state` images
-         - 'phenotypic': Explanations of preprocessing steps
-         - 'confounds': CSV files containing the nuisance variables
+        - 'func': Paths to functional :term:`resting-state` images
+        - 'phenotypic': pd.dataframe with explanations of preprocessing steps
+        - 'confounds': CSV files containing the nuisance variables
 
     References
     ----------
@@ -1378,13 +1378,14 @@ def fetch_mixed_gambles(
 
         - 'zmaps': :obj:`list` of :obj:`str`
           Paths to realigned gain betamaps (one nifti per subject).
+        - 'subject_id':  pd.DaaFrame of subjects IDs
         - 'gain': :obj:`list` of :class:`~nibabel.nifti1.Nifti1Image` \
-        or ``None``
+          or ``None``
           If ``make_Xy`` is ``True``, this is a list of
           ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image`
           objects, else it is ``None``.
         - 'y': :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)`` \
-        or ``None``
+          or ``None``
           If ``make_Xy`` is ``True``, then this is a
           :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)``,
           else it is ``None``.
@@ -1406,7 +1407,9 @@ def fetch_mixed_gambles(
     ]
     data_dir = get_dataset_dir("jimura_poldrack_2012_zmaps", data_dir=data_dir)
     zmap_fnames = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    subject_id = np.repeat(np.arange(n_subjects), 6 * 8)
+    subject_id = pd.DataFrame(
+        {"subject_id": np.repeat(np.arange(n_subjects), 6 * 8).tolist()}
+    )
     description = get_dataset_descr("mixed_gambles")
     data = Bunch(
         zmaps=zmap_fnames, subject_id=subject_id, description=description
@@ -1701,7 +1704,7 @@ def fetch_surf_nki_enhanced(
                         time series left hemisphere
         - 'func_right': Paths to Gifti files containing resting state
                          time series right hemisphere
-        - 'phenotypic': array containing tuple with subject ID, age,
+        - 'phenotypic': pd.DataFrame containing tuple with subject ID, age,
                          dominant hand and sex for each subject.
         - 'description': data description of the release and references.
 
