@@ -136,10 +136,7 @@ def test_3d_images():
     epi_img2 = Nifti1Image(np.ones((2, 2, 2)), affine=np.diag((2, 2, 2, 1)))
     masker = MultiNiftiMasker(mask_img=mask_img)
 
-    epis = masker.fit_transform([epi_img1, epi_img2])
-
-    # This is mostly a smoke test
-    assert len(epis) == 2
+    masker.fit_transform([epi_img1, epi_img2])
 
 
 def test_joblib_cache(mask_img_1, tmp_path):

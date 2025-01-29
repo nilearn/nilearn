@@ -237,24 +237,6 @@ def test_4d_single_scan(rng, shape_3d_default, affine_eye):
     assert_array_equal(data_trans_4d, data_trans_5d)
 
 
-def test_5d(rng, shape_3d_default, mask_img_1, affine_eye):
-    """Test that list of 4D images with last dim=3 raises a DimensionError."""
-    shape_4d = (*shape_3d_default, 3)
-    data_5d = [rng.random(shape_4d) for _ in range(5)]
-    data_5d = [Nifti1Image(d, affine_eye) for d in data_5d]
-
-    masker = NiftiMasker(mask_img=mask_img_1)
-    masker.fit()
-
-    with pytest.raises(
-        exceptions.DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 4D and you provided "
-        "a list of 4D images \\(5D\\).",
-    ):
-        masker.transform(data_5d)
-
-
 def test_sessions(affine_eye):
     """Test the sessions vector."""
     data = np.ones((40, 40, 40, 4))

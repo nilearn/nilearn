@@ -940,12 +940,13 @@ docdict["templateflow"] = """
 
 # threshold
 docdict["threshold"] = """
-threshold : a number, None, or 'auto', optional
+threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
     If `None` is given, the image is not thresholded.
-    If a number is given, it is used to threshold the image:
-    values below the threshold (in absolute value) are plotted as transparent.
-    If "auto" is given, the threshold is determined magically
-    by analysis of the image.
+    If number is given, it must be non-negative. The specified value is used to
+    threshold the image: values below the threshold (in absolute value) are
+    plotted as transparent.
+    If "auto" is given, the threshold is determined based on the score obtained
+    using percentile value "80%" on the absolute value of the image data.
 """
 
 # title
@@ -993,7 +994,7 @@ view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"\
 # vmax
 docdict["vmax"] = """
 vmax : :obj:`float`, optional
-    Upper bound of the colormap.
+    Upper bound of the colormap. The values above vmax are masked.
     If `None`, the max of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
@@ -1001,7 +1002,7 @@ vmax : :obj:`float`, optional
 # vmin
 docdict["vmin"] = """
 vmin : :obj:`float`, optional
-    Lower bound of the colormap.
+    Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """

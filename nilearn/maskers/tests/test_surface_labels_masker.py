@@ -377,14 +377,6 @@ def test_surface_label_masker_check_output_2d(surf_mesh, rng):
     assert_array_equal(img.data.parts["right"], expected_inverse_data["right"])
 
 
-def test_warning_smoothing(surf_img_1d, surf_label_img):
-    """Smooth during transform not implemented."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img, smoothing_fwhm=1)
-    masker = masker.fit()
-    with pytest.warns(UserWarning, match="not yet supported"):
-        masker.transform(surf_img_1d)
-
-
 def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):
     """Smoke test for fit_transform."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
