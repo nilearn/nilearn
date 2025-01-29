@@ -11,6 +11,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Fixes datasets that returned numpy arrays instead of pandas dataframes (:gh:`5109` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Ensure that image plotting threshold is non-negative as one-sided behavior in image thresholding can be obtained with vmin and vmax values in plotting threshold. (:gh:`5088` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Allow one-sided image thresholding by introducing ``two_sided`` parameter to image thresholding and update behavior of negative threshold. (:gh:`4951` by `Hande Gözükan`_).

@@ -36,11 +36,11 @@ from nilearn.datasets.atlas import (
     fetch_atlas_talairach,
     fetch_atlas_yeo_2011,
 )
-from nilearn.datasets.tests._testing import dict_to_archive
+from nilearn.datasets.tests._testing import check_type_fetcher, dict_to_archive
 from nilearn.image import get_data
 
 
-def validate_atlas(atlas_data):
+def validate_atlas(atlas_data, check_type=True):
     """Validate content of the atlas bunch.
 
     Atlas must:
@@ -50,9 +50,10 @@ def validate_atlas(atlas_data):
       - a labels attribute that is a list
       - a lut attribute that is a pd.DataFrame
     """
+    if check_type:
+        check_type_fetcher(atlas_data)
     assert isinstance(atlas_data, Bunch)
-    assert isinstance(atlas_data.description, str)
-    assert atlas_data.description != ""
+
     assert atlas_data.template != ""
     assert atlas_data.atlas_type in {"deterministic", "probabilistic"}
     if atlas_data.atlas_type == "deterministic":
@@ -770,7 +771,9 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
 
     bunch = fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
 
-    validate_atlas(bunch)
+    # one exception is made here to return some numpy array
+    # so we do not check the type
+    validate_atlas(bunch, check_type=False)
 
     # Our mock annots have 4 labels
     assert len(bunch.labels) == 4

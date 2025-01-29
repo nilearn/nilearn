@@ -2636,14 +2636,23 @@ class Atlas(Bunch):
             template = "volume"
 
         if atlas_type == "probabilistic":
-            super().__init__(
-                maps=maps,
-                labels=labels,
-                description=description,
-                atlas_type=atlas_type,
-                template=template,
-                **kwargs,
-            )
+            if labels is None:
+                super().__init__(
+                    maps=maps,
+                    description=description,
+                    atlas_type=atlas_type,
+                    template=template,
+                    **kwargs,
+                )
+            else:
+                super().__init__(
+                    maps=maps,
+                    labels=labels,
+                    description=description,
+                    atlas_type=atlas_type,
+                    template=template,
+                    **kwargs,
+                )
 
             return None
 
