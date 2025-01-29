@@ -114,13 +114,20 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
 def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
     """Check passing lut is reflected in attributes.
 
-    Check that lut can be read from a tsv file.
+    Check that lut can be read from:
+    - a tsv file (str or path)
+    - a csv file (doc strings only mention TSV but testing for robustness)
+    - a dataframe
     """
     lut_df = pd.DataFrame({"index": [0, 1], "name": ["background", "bar"]})
-    lut_file = tmp_path / "lut.tsv"
-    lut_df.to_csv(lut_file, sep="\t", index=False)
 
-    for lut in [lut_file, lut_df]:
+    lut_tsv = tmp_path / "lut.tsv"
+    lut_df.to_csv(lut_tsv, sep="\t", index=False)
+
+    lut_csv = tmp_path / "lut.csv"
+    lut_df.to_csv(lut_csv, sep="\t", index=False)
+
+    for lut in [lut_tsv, lut_csv, lut_df, str(lut_tsv)]:
         masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut).fit()
 
         assert masker.n_elements_ == 1
