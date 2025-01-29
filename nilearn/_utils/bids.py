@@ -95,7 +95,10 @@ def generate_atlas_look_up_table(
 
         if len(name) > len(index):
             warnings.warn(
-                "Too many names for the indices. Dropping excess names values.",
+                (
+                    "Too many names for the indices. "
+                    "Dropping excess names values."
+                ),
                 stacklevel=3,
             )
             name = name[0 : len(index)]
