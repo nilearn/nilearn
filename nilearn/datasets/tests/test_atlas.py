@@ -20,8 +20,6 @@ from nilearn.conftest import _rng
 from nilearn.datasets import atlas
 from nilearn.datasets._utils import fetch_files
 from nilearn.datasets.atlas import (
-    _check_look_up_table,
-    _generate_atlas_look_up_table,
     fetch_atlas_aal,
     fetch_atlas_allen_2011,
     fetch_atlas_basc_multiscale_2015,
@@ -63,49 +61,6 @@ def validate_atlas(atlas_data):
         assert isinstance(atlas_data.lut, pd.DataFrame)
         if "fsaverage" not in atlas_data.template:
             assert "Background" in atlas_data.labels
-
-
-def test_generate_atlas_look_up_table(shape_3d_default, surf_three_labels_img):
-    """Check generation of LUT directly from niimg or surface image."""
-    mock_regions = data_gen.generate_labeled_regions(
-        shape_3d_default, n_regions=10
-    )
-    lut = _generate_atlas_look_up_table(function="unknown", index=mock_regions)
-    _check_look_up_table(lut=lut, atlas=mock_regions, strict=True)
-
-    lut = _generate_atlas_look_up_table(
-        function="unknown", index=surf_three_labels_img
-    )
-    _check_look_up_table(lut=lut, atlas=surf_three_labels_img, strict=True)
-
-
-def test_generate_atlas_look_up_table_errors():
-    with pytest.raises(
-        ValueError, match="'index' and 'name' cannot both be None."
-    ):
-        _generate_atlas_look_up_table(function=None, name=None, index=None)
-
-
-def test_check_look_up_table_errors(shape_3d_default):
-    mock_regions = data_gen.generate_labeled_regions(
-        shape_3d_default, n_regions=10
-    )
-    lut = _generate_atlas_look_up_table(function="unknown", index=mock_regions)
-
-    with pytest.raises(
-        ValueError, match="missing from the atlas look-up table"
-    ):
-        _check_look_up_table(
-            lut=lut.drop(index=2), atlas=mock_regions, strict=True
-        )
-
-    mock_regions_with_missing_labels = data_gen.generate_labeled_regions(
-        shape_3d_default, n_regions=8
-    )
-    with pytest.raises(ValueError, match="missing from the atlas image"):
-        _check_look_up_table(
-            lut=lut, atlas=mock_regions_with_missing_labels, strict=True
-        )
 
 
 def test_downloader(tmp_path, request_mocker):

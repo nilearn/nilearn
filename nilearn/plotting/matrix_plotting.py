@@ -100,7 +100,10 @@ def _sanitize_labels(mat_shape, labels):
     if isinstance(labels, np.ndarray):
         labels = labels.tolist()
     if labels and len(labels) != mat_shape[0]:
-        raise ValueError("Length of labels unequal to length of matrix.")
+        raise ValueError(
+            f"Length of labels ({len(labels)}) "
+            f"unequal to length of matrix ({mat_shape[0]})."
+        )
     return labels
 
 
