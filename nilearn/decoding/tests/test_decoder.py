@@ -621,7 +621,6 @@ def test_parallel_fit_builtin_cv(
         train=train,
         test=test,
         param_grid=param_grid,
-        is_classification=is_classification,
         scorer=scorer,
         mask_img=None,
         class_index=1,
