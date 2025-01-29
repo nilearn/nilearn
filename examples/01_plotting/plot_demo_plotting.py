@@ -171,6 +171,7 @@ plotting.plot_stat_map(
 plotting.plot_stat_map(
     stat_img,
     threshold=1,
+    cmap="inferno",
     display_mode="ortho",
     cut_coords=[36, -27, 60],
     title="plotting threshold=1, vmin=0",
@@ -187,6 +188,7 @@ plotting.plot_stat_map(
 plotting.plot_stat_map(
     stat_img,
     threshold=1,
+    cmap="inferno",
     display_mode="ortho",
     cut_coords=[36, -27, 60],
     title="plotting threshold=1, vmax=0",
