@@ -512,7 +512,7 @@ def test_fetch_megatrawls_netmats(tmp_path):
         files_dir = tmp_path / "Megatrawls" / folder
         files_dir.mkdir(parents=True, exist_ok=True)
         with (files_dir / file).open("w") as net_file:
-            net_file.write("1")
+            net_file.write("  1  2\n  2  3")
 
     dataset = func.fetch_megatrawls_netmats(data_dir=tmp_path)
 
@@ -530,8 +530,7 @@ def test_fetch_megatrawls_netmats(tmp_path):
     # matrices
     assert dataset.matrices != ""
     # correlation matrices
-    assert dataset.correlation_matrices != ""
-    # description
+    assert isinstance(dataset.correlation_matrices, pd.DataFrame)
 
     # check if input provided for dimensions, timeseries, matrices to be same
     # to user settings
