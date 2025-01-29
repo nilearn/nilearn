@@ -73,10 +73,13 @@ def test_surface_label_masker_fit(surf_label_img):
     """
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
     masker = masker.fit()
+
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
     assert masker.label_names_ == ["0", "1"]
     assert masker._reporting_data is not None
+    assert masker.lut_["name"].to_list() == ["0", "1"]
+    assert masker.lut_["index"].to_list() == [0, 1]
 
 
 def test_surface_label_masker_fit_with_names(surf_label_img):
@@ -113,15 +116,16 @@ def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
 
     Check that lut can be read from a tsv file.
     """
-    lut = pd.DataFrame({"index": [0, 1], "name": ["background", "bar"]})
+    lut_df = pd.DataFrame({"index": [0, 1], "name": ["background", "bar"]})
     lut_file = tmp_path / "lut.tsv"
-    lut.to_csv(lut_file, sep="\t", index=False)
+    lut_df.to_csv(lut_file, sep="\t", index=False)
 
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut_file).fit()
+    for lut in [lut_file, lut_df]:
+        masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut).fit()
 
-    assert masker.n_elements_ == 1
-    assert masker._labels_ == [1]
-    assert masker.label_names_ == ["background", "bar"]
+        assert masker.n_elements_ == 1
+        assert masker._labels_ == [1]
+        assert masker.label_names_ == ["background", "bar"]
 
 
 def test_surface_label_masker_error_names_and_lut(surf_label_img):
