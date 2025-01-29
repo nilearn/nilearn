@@ -349,7 +349,6 @@ def _parallel_fit(
     train,
     test,
     param_grid,
-    is_classification,
     selector,
     scorer,
     mask_img,
@@ -404,10 +403,7 @@ def _parallel_fit(
         estimator = clone(estimator).set_params(**params)
         estimator.fit(X_train, y_train)
 
-        if is_classification:
-            score = scorer(estimator, X_test, y_test)
-        else:  # regression
-            score = scorer(estimator, X_test, y_test)
+        score = scorer(estimator, X_test, y_test)
 
         # Store best parameters and estimator coefficients
         if (best_score is None) or (score >= best_score):
@@ -726,7 +722,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 train=train,
                 test=test,
                 param_grid=self.param_grid,
-                is_classification=self.is_classification,
                 selector=selector,
                 scorer=self.scorer_,
                 mask_img=self.mask_img_,
