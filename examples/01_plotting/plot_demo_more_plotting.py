@@ -1,3 +1,4 @@
+# %%
 """
 More plotting tools from nilearn
 ================================
@@ -148,6 +149,61 @@ plotting.plot_stat_map(
     colorbar=False,
     title="display_mode='z', cut_coords=1,\ncolorbar=False",
     figure=plt.figure(figsize=(5, 7)),
+)
+
+# %%
+# Using plotting threshold, vmin, vmax parameters
+# -----------------------------------------------
+#
+# Using ``threshold`` value alongside with ``vmin`` and ``vmax`` parameters
+# enable us to mask certain values in the image.
+#
+# Unthresholded image:
+
+plotting.plot_stat_map(
+    stat_img,
+    display_mode="ortho",
+    cut_coords=[36, -27, 60],
+    title="display_mode='ortho', cut_coords=[36, -27, 60]",
+)
+
+# %%
+# Image thresholded at 1:
+
+plotting.plot_stat_map(
+    stat_img,
+    threshold=1,
+    display_mode="ortho",
+    cut_coords=[36, -27, 60],
+    title="display_mode='ortho', cut_coords=[36, -27, 60]",
+)
+
+# %%
+# Setting ``vmin=0``, it is possible to plot only positive regions.
+#
+# Image thresholded at 1 with ``vmin=0``:
+
+plotting.plot_stat_map(
+    stat_img,
+    threshold=1,
+    display_mode="ortho",
+    cut_coords=[36, -27, 60],
+    title="display_mode='ortho', cut_coords=[36, -27, 60]",
+    vmin=0,
+)
+
+# %%
+# Setting ``vmax=0``, it is possible to plot only negative regions.
+#
+# Image thresholded at 1 with ``vmax=0``:
+
+plotting.plot_stat_map(
+    stat_img,
+    threshold=1,
+    display_mode="ortho",
+    cut_coords=[36, -27, 60],
+    title="display_mode='ortho', cut_coords=[36, -27, 60]",
+    vmax=0,
 )
 
 # %%
