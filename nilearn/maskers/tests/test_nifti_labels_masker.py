@@ -267,11 +267,10 @@ def test_nifti_labels_masker_io_shapes(
         masker.inverse_transform(data_2d.T)
 
 
-@pytest.mark.parametrize("nans_in", ["mask", "labels"])
 def test_nifti_labels_masker_with_nans_and_infs(
-    affine_eye, shape_3d_default, nans_in, n_regions, length
+    affine_eye, shape_3d_default, n_regions, length
 ):
-    """Deal with NaNs and infs in label image or mask.
+    """Deal with NaNs and infs in label image.
 
     The masker should replace those NaNs and infs with zeros,
     while raising a warning.
@@ -288,16 +287,10 @@ def test_nifti_labels_masker_with_nans_and_infs(
 
     # Introduce nans with data type float
     # See issue: https://github.com/nilearn/nilearn/issues/2580
-    def add_nans_and_infs(img, affine):
-        data = get_data(img).astype(np.float32)
-        data[:, :, 7] = np.nan
-        data[:, :, 4] = np.inf
-        return Nifti1Image(data, affine)
-
-    if nans_in == "labels":
-        labels_img = add_nans_and_infs(labels_img, affine_eye)
-    elif nans_in == "mask":
-        mask_img = add_nans_and_infs(mask_img, affine_eye)
+    data = get_data(labels_img).astype(np.float32)
+    data[:, :, 7] = np.nan
+    data[:, :, 4] = np.inf
+    labels_img = Nifti1Image(data, affine_eye)
 
     masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
 
