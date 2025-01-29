@@ -135,8 +135,8 @@ plotting.show()
 # Using ``threshold`` value alongside with ``vmin`` and ``vmax`` parameters
 # enable us to mask certain values in the image.
 #
-# Plotting without threshold:
-# ```````````````````````````
+# Plotting without threshold
+# ``````````````````````````
 
 plotting.plot_stat_map(
     stat_img,
@@ -146,8 +146,8 @@ plotting.plot_stat_map(
 )
 
 # %%
-# Plotting threshold set to 1:
-# ````````````````````````````
+# Plotting threshold set to 1
+# ```````````````````````````
 #
 # When plotting threshold is set to 1, the values between -1 and 1
 # are masked in the plot.

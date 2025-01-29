@@ -12,7 +12,7 @@ behavior.
 
 """
 
-# +
+# %%
 # Image without threshold
 # -----------------------
 #
@@ -33,7 +33,7 @@ plotting.plot_stat_map(
     cut_coords=cut_coords,
 )
 
-# +
+# %%
 # Image thresholded at 2 when two_sided=True
 # ------------------------------------------
 #
@@ -80,7 +80,7 @@ plotting.plot_stat_map(
     axes=axes[1],
 )
 
-# +
+# %%
 # Image thresholded at 2 when two_sided=False
 # ------------------------------------------
 #
@@ -126,7 +126,7 @@ plotting.plot_stat_map(
     axes=axes[1],
 )
 
-# +
+# %%
 # Image thresholded at -2 when two_sided=False
 # ------------------------------------------
 #
