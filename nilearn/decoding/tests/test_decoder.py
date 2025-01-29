@@ -1445,58 +1445,46 @@ def test_frem_decoder_fit_surface(
     model.fit(X, y)
 
 
-import numpy as np
-from sklearn.linear_model import LogisticRegressionCV
-
-from nilearn.decoding import Decoder
+# ------------------------ test decoder vs sklearn -------------------------- #
 
 
 @pytest.mark.parametrize(
     "classifier_penalty",
-    [
-        "svc_l1",
-        "svc_l2",
-        "logistic_l1",
-        "logistic_l2",
-        "ridge_classifier",
-    ],
+    ["svc_l1", "svc_l2", "logistic_l1", "logistic_l2", "ridge_classifier"],
 )
 def test_decoder_vs_sklearn(
     classifier_penalty, strings_to_sklearn=SUPPORTED_ESTIMATORS
 ):
     """Compare scores from nilearn Decoder with sklearn classifiers."""
-    # Generate synthetic data
     X, y, mask = _make_multiclass_classification_test_data(
         n_samples=100, dim=10
     )
     n_classes = len(np.unique(y))
+    # default cross-validation in nilearn is StratifiedKFold
+    # with 10 splits
     cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
-    # get appropriate scorer
+    # default scoring is accuracy
     scorer = check_scoring(strings_to_sklearn[classifier_penalty], "accuracy")
 
-    # Initialize nilearn Decoder
+    ## nilearn decoding
     nilearn_decoder = Decoder(
         estimator=classifier_penalty,
         mask=mask,
-        standardize="zscore_sample",
+        standardize=True,
         cv=cv,
         scoring=scorer,
-        screening_percentile=100,
+        screening_percentile=100,  # disable screening
     )
-    # Fit and score using nilearn
     nilearn_decoder.fit(X, y)
     scores_nilearn = nilearn_decoder.cv_scores_
 
     ## start decoding with sklearn
-    # Initialize NiftiMasker
-    masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
-    # Transform data using masker
+    masker = NiftiMasker(mask_img=mask, standardize=True)
     X_transformed = masker.fit_transform(X)
 
-    # Initialize sklearn classifier
     sklearn_classifier = strings_to_sklearn[classifier_penalty]
-    # Fit and score using sklearn
     scores_sklearn = {c: [] for c in range(n_classes)}
+    # convert multiclass to n_classes binary classifications
     label_binarizer = LabelBinarizer()
     y_binary = label_binarizer.fit_transform(y)
     for klass in range(n_classes):
@@ -1539,3 +1527,70 @@ def test_decoder_vs_sklearn(
     assert np.isclose(
         np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores), atol=0.01
     )
+
+
+@pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
+def test_regressor_vs_sklearn(
+    regressor, strings_to_sklearn=SUPPORTED_ESTIMATORS
+):
+    """Compare scores from nilearn DecoderRegressor with sklearn regressors."""
+    X, y, mask = _make_regression_test_data(n_samples=100, dim=10)
+    # for regression default cv in nilearn is KFold with 10 splits
+    # shuffling is False by default but we use it here with a fixed seed
+    # to reduce variability in the test
+    cv = KFold(n_splits=10, shuffle=True, random_state=42)
+    # r2 is the default scoring for regression
+    scorer = check_scoring(strings_to_sklearn[regressor], "r2")
+
+    ## nilearn decoding
+    nilearn_regressor = DecoderRegressor(
+        estimator=regressor,
+        mask=mask,
+        standardize=True,
+        cv=cv,
+        scoring=scorer,
+        screening_percentile=100,  # disable screening
+    )
+    nilearn_regressor.fit(X, y)
+    scores_nilearn = nilearn_regressor.cv_scores_["beta"]
+
+    ## start decoding with sklearn
+    masker = NiftiMasker(mask_img=mask, standardize=True)
+    X_transformed = masker.fit_transform(X)
+
+    sklearn_regressor = strings_to_sklearn[regressor]
+    scores_sklearn = []
+
+    for count, (train_idx, test_idx) in enumerate(cv.split(X_transformed, y)):
+        X_train, X_test = X_transformed[train_idx], X_transformed[test_idx]
+        y_train, y_test = (y[train_idx], y[test_idx])
+        # set best hyperparameters for each fold
+        if regressor == "svr":
+            # SVR does not have a CV variant, so we use exactly the
+            # parameter selected by nilearn
+            sklearn_regressor = clone(sklearn_regressor).set_params(
+                C=nilearn_regressor.cv_params_["beta"]["C"][count]
+            )
+        elif regressor == "lasso":
+            # this sets n_alphas as coded within nilearn and
+            # LassoCV will select the best one using cross-validation
+            sklearn_regressor = clone(sklearn_regressor).set_params(
+                n_alphas=nilearn_regressor.cv_params_["beta"]["n_alphas"][
+                    count
+                ],
+            )
+        elif regressor in ["ridge"]:
+            # same as lasso but with alphas
+            sklearn_regressor = clone(sklearn_regressor).set_params(
+                alphas=nilearn_regressor.cv_params_["beta"]["alphas"][count]
+            )
+        sklearn_regressor.fit(X_train, y_train)
+        score = scorer(sklearn_regressor, X_test, y_test)
+        scores_sklearn.append(score)
+
+    # check average scores are within 1% of each other
+    assert np.isclose(
+        np.mean(scores_sklearn), np.mean(scores_nilearn), atol=0.01
+    )
+    # also check individual scores are within 1% of each other
+    assert np.allclose(scores_sklearn, scores_nilearn, atol=0.01)
