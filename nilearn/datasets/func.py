@@ -1378,7 +1378,7 @@ def fetch_mixed_gambles(
 
         - 'zmaps': :obj:`list` of :obj:`str`
           Paths to realigned gain betamaps (one nifti per subject).
-        - 'subject_id':  pd.DaaFrame of subjects IDs
+        - 'subject_id':  pd.DataFrame of subjects IDs
         - 'gain': :obj:`list` of :class:`~nibabel.nifti1.Nifti1Image` \
           or ``None``
           If ``return_raw_data`` is ``True``,
