@@ -541,7 +541,6 @@ def test_parallel_fit(rand_x_y):
                     train=train,
                     test=test,
                     param_grid=param_grid,
-                    is_classification=False,
                     scorer=scorer,
                     mask_img=None,
                     class_index=1,
