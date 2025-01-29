@@ -1329,7 +1329,7 @@ def _load_mixed_gambles(zmap_imgs):
         X.append(this_X)
         y.extend(this_y)
         mask.append(this_mask)
-    y = np.array(y)
+    y = pd.DataFrame({"gain": y})
     X = np.concatenate(X, axis=-1)
     mask = np.sum(mask, axis=0) > 0.5 * len(mask)
     mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
@@ -1381,13 +1381,13 @@ def fetch_mixed_gambles(
         - 'subject_id':  pd.DaaFrame of subjects IDs
         - 'gain': :obj:`list` of :class:`~nibabel.nifti1.Nifti1Image` \
           or ``None``
-          If ``make_Xy`` is ``True``, this is a list of
-          ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image`
-          objects, else it is ``None``.
-        - 'y': :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)`` \
-          or ``None``
-          If ``make_Xy`` is ``True``, then this is a
-          :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)``,
+          If ``return_raw_data`` is ``True``,
+          this is a list of
+          ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image` objects,
+          else it is ``None``.
+        - 'y': DataFrame of shape ``(n_subjects * 48,)`` or ``None``
+          If ``return_raw_data`` is ``True``,
+          then this is a DataFrame of shape ``(n_subjects * 48,)``,
           else it is ``None``.
         - 'description': data description
 
