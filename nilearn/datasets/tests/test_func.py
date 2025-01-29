@@ -683,8 +683,8 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     check_type_fetcher(data)
     assert len(data.func) == 2
     assert len(data.confounds) == 2
-    assert isinstance(data.phenotypic, np.ndarray)
-    assert data.phenotypic.shape == (2,)
+    assert isinstance(data.phenotypic, pd.DataFrame)
+    assert data.phenotypic.shape == (2, 6)
 
     # check reduced confounds
     confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
@@ -703,7 +703,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     data = func.fetch_development_fmri(
         n_subjects=1, reduce_confounds=False, verbose=1
     )
-    age_group = data.phenotypic["Child_Adult"][0]
+    age_group = data.phenotypic["Child_Adult"].to_list()[0]
 
     assert age_group == "adult"
 

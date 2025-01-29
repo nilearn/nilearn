@@ -1917,7 +1917,7 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
 
     Returns
     -------
-    participants : numpy.ndarray
+    participants : pandas.DataFrame
         Contains data of each subject age, age group, child or adult,
         gender, handedness.
 
@@ -1934,14 +1934,6 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     path_to_participants = fetch_files(data_dir, files, verbose=verbose)[0]
 
     # Load path to participants
-    dtype = [
-        ("participant_id", "U12"),
-        ("Age", "<f8"),
-        ("AgeGroup", "U6"),
-        ("Child_Adult", "U5"),
-        ("Gender", "U4"),
-        ("Handedness", "U4"),
-    ]
     names = [
         "participant_id",
         "Age",
@@ -1950,9 +1942,7 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
         "Gender",
         "Handedness",
     ]
-    participants = csv_to_array(
-        path_to_participants, skip_header=True, dtype=dtype, names=names
-    )
+    participants = pd.read_table(path_to_participants, usecols=names)
     return participants
 
 
@@ -1969,7 +1959,7 @@ def _fetch_development_fmri_functional(
 
     Parameters
     ----------
-    participants : numpy.ndarray
+    participants : pandas.DataFrame
         Should contain column participant_id which represents subjects id. The
         number of files are fetched based on ids in this column.
     %(data_dir)s
@@ -2104,7 +2094,7 @@ def fetch_development_fmri(
         - 'confounds': :obj:`list` of :obj:`str` (tsv files)
             Paths to confounds related to each subject.
 
-        - 'phenotypic': numpy.ndarray
+        - 'phenotypic': pandas.DataFame
             Contains each subject age, age group, child or adult, gender,
             handedness.
 
@@ -2206,7 +2196,7 @@ def _filter_func_regressors_by_participants(participants, age_group):
             f"Valid arguments are: {valid_age_groups}"
         )
 
-    child_adult = participants["Child_Adult"].tolist()
+    child_adult = participants["Child_Adult"].to_list()
 
     child_count = child_adult.count("child") if age_group != "adult" else 0
     adult_count = child_adult.count("adult") if age_group != "child" else 0
@@ -2223,7 +2213,7 @@ def _filter_csv_by_n_subjects(participants, n_adult, n_child):
     ][:n_adult]
     ids = np.hstack([adult_ids, child_ids])
     participants = participants[np.isin(participants["participant_id"], ids)]
-    participants = participants[np.argsort(participants, order="Child_Adult")]
+    participants = participants.sort_values(by=["Child_Adult"])
     return participants
 
 
