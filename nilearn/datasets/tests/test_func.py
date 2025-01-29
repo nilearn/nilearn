@@ -652,8 +652,8 @@ def test_fetch_development_fmri_participants(tmp_path, request_mocker):
         data_dir=tmp_path, url=None, verbose=1
     )
 
-    assert isinstance(participants, np.ndarray)
-    assert participants.shape == (5,)
+    assert isinstance(participants, pd.DataFrame)
+    assert participants.shape == (5, 6)
 
 
 def test_fetch_development_fmri_functional(tmp_path):
