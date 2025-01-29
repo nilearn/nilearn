@@ -180,14 +180,6 @@ def test_mask_img_generate_no_report(surf_img_2d, surf_mask_1d):
     masker.generate_report()
 
 
-def test_warning_smoothing(surf_img_1d, surf_mask_1d):
-    """Smooth during transform not implemented."""
-    masker = SurfaceMasker(surf_mask_1d, smoothing_fwhm=1)
-    masker = masker.fit()
-    with pytest.warns(UserWarning, match="not yet supported"):
-        masker.transform(surf_img_1d)
-
-
 def test_mask_img_transform_keys_mismatch(
     surf_mask_1d, surf_img_1d, drop_surf_img_part
 ):

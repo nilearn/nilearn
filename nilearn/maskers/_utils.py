@@ -1,4 +1,35 @@
+import warnings
+
 from nilearn import image
+
+
+def sanitize_cleaning_parameters(masker):
+    """Make sure that clarning parameters are passed via clean_args.
+
+    TODO simplify after nilearn 0.13.2
+    """
+    if hasattr(masker, "clean_kwargs"):
+        if masker.clean_kwargs:
+            warnings.warn(
+                f"You passed some kwargs to {type(masker)}"
+                "This behavior is deprecated "
+                "and will be removed in version 0.13.2.",
+                DeprecationWarning,
+            )
+            if masker.clean_args:
+                raise ValueError(
+                    "Passing arguments via 'kwargs' "
+                    "is mutually exclusive with using 'clean_args'"
+                )
+        masker.clean_kwargs = {
+            k[7:]: v
+            for k, v in masker.clean_kwargs.items()
+            if k.startswith("clean__")
+        }
+    if masker.clean_args is None:
+        masker.clean_args = {}
+
+    return masker
 
 
 def _check_dims(imgs):

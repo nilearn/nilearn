@@ -31,6 +31,7 @@ from nilearn.datasets import (
     fetch_openneuro_dataset,
     load_fsaverage,
     load_nki,
+    load_sample_motor_activation_image,
     select_from_index,
 )
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
@@ -465,12 +466,12 @@ def report_multi_nifti_labels_masker(build_type):
         )
         return None
 
-    yeo = fetch_atlas_yeo_2011()
+    yeo = fetch_atlas_yeo_2011(thickness="thick", n_networks=17)
 
     data = fetch_development_fmri(n_subjects=2)
 
     masker = MultiNiftiLabelsMasker(
-        labels_img=yeo["thick_17"],
+        labels_img=yeo["maps"],
         standardize="zscore_sample",
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
@@ -532,9 +533,15 @@ def report_surface_masker(build_type):
         )
         return None, None
 
+    img = load_sample_motor_activation_image()
+    fsaverage_meshes = load_fsaverage()
+    surface_stat_image = SurfaceImage.from_volume(
+        mesh=fsaverage_meshes["pial"],
+        volume_img=img,
+    )
+
     masker = SurfaceMasker()
-    img = load_nki(mesh_type="inflated")[0]
-    masker.fit_transform(img)
+    masker.fit_transform(surface_stat_image)
     surface_masker_report = masker.generate_report()
     surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
 
@@ -585,15 +592,20 @@ def report_surface_label_masker(build_type):
         },
     )
 
-    labels_masker = SurfaceLabelsMasker(labels_img, destrieux.labels).fit()
+    labels_masker = SurfaceLabelsMasker(labels_img, lut=destrieux.lut).fit()
     labels_masker_report_unfitted = labels_masker.generate_report()
     labels_masker_report_unfitted.save_as_html(
         REPORTS_DIR / "surface_label_masker_unfitted.html"
     )
 
-    img = load_nki(mesh_type="inflated")[0]
+    stat_img = load_sample_motor_activation_image()
+    fsaverage_meshes = load_fsaverage()
+    surface_stat_image = SurfaceImage.from_volume(
+        mesh=fsaverage_meshes["pial"],
+        volume_img=stat_img,
+    )
 
-    labels_masker.transform(img)
+    labels_masker.transform(surface_stat_image)
     labels_masker_report = labels_masker.generate_report()
     labels_masker_report.save_as_html(
         REPORTS_DIR / "surface_label_masker.html"

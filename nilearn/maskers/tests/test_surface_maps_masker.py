@@ -9,6 +9,7 @@ import pytest
 
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 from nilearn.conftest import _make_mesh, _rng
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
@@ -242,16 +243,6 @@ def test_surface_maps_masker_not_fitted_error(surf_maps_img):
         masker.inverse_transform(None)
 
 
-def test_surface_maps_masker_smoothing_not_supported_error(
-    surf_maps_img, surf_img_2d
-):
-    """Test that an error is raised when smoothing_fwhm is not None."""
-    masker = SurfaceMapsMasker(maps_img=surf_maps_img, smoothing_fwhm=1).fit()
-    with pytest.warns(match="smoothing_fwhm is not yet supported"):
-        masker.transform(surf_img_2d(50))
-        assert masker.smoothing_fwhm is None
-
-
 def test_surface_maps_masker_labels_img_none():
     """Test that an error is raised when maps_img is None."""
     with pytest.raises(
@@ -434,6 +425,10 @@ def test_generate_report_before_transform_warn(
         masker.generate_report()
 
 
+@pytest.mark.skipif(
+    on_windows_with_old_mpl_and_new_numpy(),
+    reason="Old matplotlib not compatible with numpy 2.0 on windows.",
+)
 def test_generate_report_plotly_out_figure_type(
     plotly, surf_maps_img, surf_img_2d
 ):

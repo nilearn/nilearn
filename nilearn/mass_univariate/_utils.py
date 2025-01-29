@@ -59,7 +59,7 @@ def calculate_tfce(
     ----------
     .. [1] Smith, S. M., & Nichols, T. E. (2009).
        Threshold-free cluster enhancement: addressing problems of smoothing,
-       threshold dependence and localisation in cluster inference.
+       threshold dependence and localization in cluster inference.
        Neuroimage, 44(1), 83-98.
     """
     tfce_4d = np.zeros_like(arr4d)
