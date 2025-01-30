@@ -1,3 +1,4 @@
+# %%
 """
 Image thresholding
 ==================
@@ -82,7 +83,7 @@ plotting.plot_stat_map(
 
 # %%
 # Image thresholded at 2 when two_sided=False
-# ------------------------------------------
+# -------------------------------------------
 #
 # Now we will use ``threshold=2`` together with ``two_sided=False`` to
 # see the effect.
@@ -128,7 +129,7 @@ plotting.plot_stat_map(
 
 # %%
 # Image thresholded at -2 when two_sided=False
-# ------------------------------------------
+# --------------------------------------------
 #
 # Now we will use ``threshold=-2`` together with ``two_sided=False`` to
 # see the effect.
