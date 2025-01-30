@@ -20,8 +20,8 @@ from nilearn.maskers import NiftiMasker
 
 
 @profile
-def get_fmri_path():
-    fmri_data = fetch_development_fmri(n_subjects=1)
+def get_fmri_path(n_subjects=1):
+    fmri_data = fetch_development_fmri(n_subjects=n_subjects)
     concat = concat_imgs(fmri_data.func)
     fmri_path = Path("temp", "fmri.nii.gz")
     concat.to_filename(fmri_path)
@@ -94,8 +94,8 @@ def mask_fmri_efficient_parallel(fmri_path, mask_paths):
 
 
 @profile
-def main():
-    fmri_path = get_fmri_path()
+def main(N=1):
+    fmri_path = get_fmri_path(n_subjects=N)
     atlas_path = get_atlas_path()
     mask_paths = atlas_to_masks(atlas_path, fmri_path)
 
@@ -115,4 +115,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(2)
