@@ -23,6 +23,7 @@ from nilearn.maskers import NiftiMasker
 def get_fmri_path(n_subjects=1):
     fmri_data = fetch_development_fmri(n_subjects=n_subjects)
     concat = concat_imgs(fmri_data.func)
+    Path("temp").mkdir(parents=True, exist_ok=True)
     fmri_path = Path("temp", "fmri.nii.gz")
     concat.to_filename(fmri_path)
     return fmri_path
@@ -138,4 +139,4 @@ def main(n_images=1, n_regions=6):
 
 
 if __name__ == "__main__":
-    main(2)
+    main(1)
