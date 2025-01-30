@@ -560,7 +560,7 @@ def report_surface_masker(build_type):
         mask.data.parts[part] = mask.data.parts[part] == 34
 
     masker = SurfaceMasker(mask)
-    masker.fit_transform(img)
+    masker.fit_transform(surface_stat_image)
     surface_masker_with_mask_report = masker.generate_report()
     surface_masker_with_mask_report.save_as_html(
         REPORTS_DIR / "surface_masker_with_mask.html"
