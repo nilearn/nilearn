@@ -18,6 +18,7 @@ from .html_stat_map import view_img
 from .html_surface import view_img_on_surf, view_surf
 from .img_plotting import (
     plot_anat,
+    plot_bland_altman,
     plot_carpet,
     plot_connectome,
     plot_epi,
@@ -52,6 +53,7 @@ __all__ = [
     "find_probabilistic_atlas_cut_coords",
     "find_xyz_cut_coords",
     "plot_anat",
+    "plot_bland_altman",
     "plot_carpet",
     "plot_connectome",
     "plot_contrast_matrix",

@@ -16,8 +16,10 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import gridspec
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
+from nibabel import Nifti1Image
 from nibabel.spatialimages import SpatialImage
 from scipy import stats
 from scipy.ndimage import binary_fill_holes
@@ -2409,3 +2411,99 @@ def plot_img_comparison(
                 plt.savefig(output_dir / f"{int(i):04}.png")
 
     return corrs
+
+
+def plot_bland_altman(
+    stat_file_1,
+    stat_file_2,
+    masker=None,
+    title="",
+    x_lab="",
+    y_lab="",
+    lims=(-10, 10, -8, 8),
+):
+    """Create a bland altman plot."""
+    mean, diff = _bland_altman_values(stat_file_1, stat_file_2, masker=masker)
+
+    f = plt.figure(figsize=(15, 15))
+
+    gs0 = gridspec.GridSpec(1, 1)
+
+    gs = gridspec.GridSpecFromSubplotSpec(
+        5, 6, subplot_spec=gs0[0], hspace=0.50, wspace=1.3
+    )
+
+    ax1 = f.add_subplot(gs[:-1, 1:5])
+    hb = ax1.hexbin(
+        mean, diff, bins="log", cmap="viridis", gridsize=50, extent=lims
+    )
+    ax1.axis(lims)
+    ax1.axhline(linewidth=1, color="r")
+    ax1.set_title(title)
+
+    ax2 = f.add_subplot(gs[:-1, 0], xticklabels=[], sharey=ax1)
+    ax2.set_ylim(lims[2:4])
+    ax2.hist(
+        diff,
+        100,
+        range=lims[2:4],
+        histtype="stepfilled",
+        orientation="horizontal",
+        color="gray",
+    )
+    ax2.invert_xaxis()
+    ax2.set_ylabel("Difference" + y_lab)
+
+    ax3 = f.add_subplot(gs[-1, 1:5], yticklabels=[], sharex=ax1)
+    ax3.hist(
+        mean,
+        100,
+        range=lims[0:2],
+        histtype="stepfilled",
+        orientation="vertical",
+        color="gray",
+    )
+    ax3.set_xlim(lims[0:2])
+    ax3.invert_yaxis()
+    ax3.set_xlabel("Average" + x_lab)
+
+    ax4 = f.add_subplot(gs[:-1, 5])
+    ax4.set_aspect(20)
+    pos1 = ax4.get_position()
+    ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
+
+    cb = f.colorbar(hb, cax=ax4)
+    cb.set_label("log10(N)")
+
+
+def _bland_altman_values(data1_file, data2_file, masker=None):
+    data1_img = check_niimg_3d(data1_file)
+    data2_img = check_niimg_3d(data2_file)
+
+    if masker is not None:
+        if not isinstance(masker, (NiftiMasker, Nifti1Image)):
+            raise TypeError(
+                "'masker' must be NiftiMasker or Nifti1Image.\n"
+                f"Got {type(masker)}"
+            )
+        elif isinstance(masker, Nifti1Image):
+            masker = NiftiMasker(
+                mask_img=masker,
+                target_affine=data1_img.affine,
+                target_shape=data1_img.shape,
+            )
+
+    # TODO replace with proper method
+    if not hasattr(masker, "mask_img_"):
+        masker.fit(data1_img)
+
+    data1 = masker.transform(data1_img)
+    data2 = masker.transform(data2_img)
+
+    data1 = data1.ravel()
+    data2 = data2.ravel()
+
+    mean = np.mean([data1, data2], axis=0)
+    diff = data1 - data2
+
+    return mean, diff

@@ -23,8 +23,6 @@ More specifically:
 4. Display contrast plot and uncorrected first level statistics table report.
 """
 
-from nilearn import plotting
-
 # %%
 # Fetch openneuro :term:`BIDS` dataset
 # ------------------------------------
@@ -147,7 +145,16 @@ z_map = model.compute_contrast("StopSuccess - Go")
 # %%
 # We show the agreement between the Nilearn estimation and the FSL estimation
 # available in the dataset.
+import matplotlib.pyplot as plt
 import nibabel as nib
+from scipy.stats import norm
+
+from nilearn.plotting import (
+    plot_bland_altman,
+    plot_glass_brain,
+    plot_img_comparison,
+    show,
+)
 
 fsl_z_map = nib.load(
     Path(data_dir)
@@ -159,10 +166,7 @@ fsl_z_map = nib.load(
     / "zstat12.nii.gz"
 )
 
-import matplotlib.pyplot as plt
-from scipy.stats import norm
-
-plotting.plot_glass_brain(
+plot_glass_brain(
     z_map,
     colorbar=True,
     threshold=norm.isf(0.001),
@@ -170,7 +174,7 @@ plotting.plot_glass_brain(
     plot_abs=False,
     display_mode="ortho",
 )
-plotting.plot_glass_brain(
+plot_glass_brain(
     fsl_z_map,
     colorbar=True,
     threshold=norm.isf(0.001),
@@ -178,14 +182,14 @@ plotting.plot_glass_brain(
     plot_abs=False,
     display_mode="ortho",
 )
-plt.show()
-
-from nilearn.plotting import plot_img_comparison
 
 plot_img_comparison(
     [z_map], [fsl_z_map], model.masker_, ref_label="Nilearn", src_label="FSL"
 )
-plt.show()
+
+plot_bland_altman(z_map, fsl_z_map, model.masker_)
+
+show()
 
 # %%
 # Simple statistical report of thresholded contrast
@@ -194,7 +198,7 @@ plt.show()
 from nilearn.plotting import plot_contrast_matrix
 
 plot_contrast_matrix("StopSuccess - Go", design_matrix)
-plotting.plot_glass_brain(
+plot_glass_brain(
     z_map,
     colorbar=True,
     threshold=norm.isf(0.001),
@@ -202,7 +206,7 @@ plotting.plot_glass_brain(
     display_mode="z",
     figure=plt.figure(figsize=(4, 4)),
 )
-plt.show()
+show()
 
 # %%
 # We can get a latex table from a Pandas Dataframe for display and publication
