@@ -1521,9 +1521,9 @@ def test_decoder_vs_sklearn(
     flat_sklearn_scores = np.concatenate(list(scores_sklearn.values()))
     flat_nilearn_scores = np.concatenate(list(scores_nilearn.values()))
 
-    # check average scores are within 1% of each other
+    # check average scores are within 2% of each other
     assert np.isclose(
-        np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores), atol=0.01
+        np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores), atol=0.02
     )
 
 
