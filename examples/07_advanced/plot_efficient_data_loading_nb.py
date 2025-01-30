@@ -17,13 +17,6 @@ from nilearn.image import (
 )
 from nilearn.maskers import NiftiMasker
 
-# %%
-# install memory_profiler
-# !pip install memory_profiler
-
-# load as extension
-# %load_ext memory_profiler
-
 
 # %%
 def get_fmri_path(n_subjects=1):
@@ -93,6 +86,14 @@ def mask_fmri_efficient_parallel(fmri_path, mask_paths, n_jobs=6):
 
 
 # %%
+# install memory_profiler
+# !pip install scalene
+
+# load as extension
+# %load_ext scalene
+
+
+# %%
 n_images = 1
 n_regions = 6
 
@@ -101,9 +102,9 @@ atlas_path = get_atlas_path()
 mask_paths = atlas_to_masks(atlas_path, fmri_path, n_regions=n_regions)
 
 # %%
-# %%memit mask_fmri_parallel(fmri_path, mask_paths, n_jobs=n_regions)
+# %scrun mask_fmri_parallel(fmri_path, mask_paths, n_jobs=n_regions)
 
 # %%
-# %%memit mask_fmri_efficient_parallel(fmri_path, mask_paths, n_jobs=n_regions)
+# %scrun mask_fmri_efficient_parallel(fmri_path, mask_paths, n_jobs=n_regions)
 
 # %%
