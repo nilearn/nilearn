@@ -187,7 +187,9 @@ plot_img_comparison(
     [z_map], [fsl_z_map], model.masker_, ref_label="Nilearn", src_label="FSL"
 )
 
-plot_bland_altman(z_map, fsl_z_map, model.masker_)
+plot_bland_altman(
+    z_map, fsl_z_map, model.masker_, ref_label="Nilearn", src_label="FSL"
+)
 
 show()
 

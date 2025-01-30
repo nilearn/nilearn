@@ -2414,18 +2414,41 @@ def plot_img_comparison(
 
 
 def plot_bland_altman(
-    stat_file_1,
-    stat_file_2,
+    ref_imgs,
+    src_imgs,
     masker=None,
-    title="",
-    x_lab="",
-    y_lab="",
-    lims=(-10, 10, -8, 8),
+    ref_label="image set 1",
+    src_label="image set 2",
+    lims=(-10, 10, -10, 10),
+    output_file=None,
+    title=None,
+    cmap="inferno",
 ):
-    """Create a bland altman plot."""
-    mean, diff = _bland_altman_values(stat_file_1, stat_file_2, masker=masker)
+    """Create a Bland-Altman plot.
 
-    f = plt.figure(figsize=(15, 15))
+    Parameters
+    ----------
+    ref_imgs : nifti_like
+        Reference image.
+
+    src_imgs : nifti_like
+        Source image.
+
+    masker : Nifti_like to use as mask or NiftiMasker object
+        Mask to be used on data.
+
+    ref_label : :obj:`str`, default='image set 1'
+        Name of reference images.
+
+    src_label : :obj:`str`, default='image set 2'
+        Name of source images.
+
+    output_dir : :obj:`str` or None, default=None
+        Directory where plotted figures will be stored.
+    """
+    mean, diff = _bland_altman_values(ref_imgs, src_imgs, masker=masker)
+
+    figure = plt.figure(figsize=(15, 15))
 
     gs0 = gridspec.GridSpec(1, 1)
 
@@ -2433,15 +2456,18 @@ def plot_bland_altman(
         5, 6, subplot_spec=gs0[0], hspace=0.50, wspace=1.3
     )
 
-    ax1 = f.add_subplot(gs[:-1, 1:5])
+    gridsize = 100
+
+    ax1 = figure.add_subplot(gs[:-1, 1:5])
     hb = ax1.hexbin(
-        mean, diff, bins="log", cmap="viridis", gridsize=50, extent=lims
+        mean, diff, bins="log", cmap=cmap, gridsize=gridsize, extent=lims
     )
     ax1.axis(lims)
     ax1.axhline(linewidth=1, color="r")
-    ax1.set_title(title)
+    if title:
+        ax1.set_title(title)
 
-    ax2 = f.add_subplot(gs[:-1, 0], xticklabels=[], sharey=ax1)
+    ax2 = figure.add_subplot(gs[:-1, 0], xticklabels=[], sharey=ax1)
     ax2.set_ylim(lims[2:4])
     ax2.hist(
         diff,
@@ -2452,9 +2478,9 @@ def plot_bland_altman(
         color="gray",
     )
     ax2.invert_xaxis()
-    ax2.set_ylabel("Difference" + y_lab)
+    ax2.set_ylabel(f"Difference : {ref_label} - {src_label}")
 
-    ax3 = f.add_subplot(gs[-1, 1:5], yticklabels=[], sharex=ax1)
+    ax3 = figure.add_subplot(gs[-1, 1:5], yticklabels=[], sharex=ax1)
     ax3.hist(
         mean,
         100,
@@ -2465,20 +2491,25 @@ def plot_bland_altman(
     )
     ax3.set_xlim(lims[0:2])
     ax3.invert_yaxis()
-    ax3.set_xlabel("Average" + x_lab)
+    ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label}")
 
-    ax4 = f.add_subplot(gs[:-1, 5])
+    ax4 = figure.add_subplot(gs[:-1, 5])
     ax4.set_aspect(20)
     pos1 = ax4.get_position()
     ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
 
-    cb = f.colorbar(hb, cax=ax4)
+    cb = figure.colorbar(hb, cax=ax4)
     cb.set_label("log10(N)")
 
+    if output_file is not None:
+        figure.savefig(output_file)
+        plt.close(figure)
+        figure = None
 
-def _bland_altman_values(data1_file, data2_file, masker=None):
-    data1_img = check_niimg_3d(data1_file)
-    data2_img = check_niimg_3d(data2_file)
+
+def _bland_altman_values(ref_img, src_img, masker=None):
+    data_ref_img = check_niimg_3d(ref_img)
+    data_src_img = check_niimg_3d(src_img)
 
     if masker is not None:
         if not isinstance(masker, (NiftiMasker, Nifti1Image)):
@@ -2489,21 +2520,21 @@ def _bland_altman_values(data1_file, data2_file, masker=None):
         elif isinstance(masker, Nifti1Image):
             masker = NiftiMasker(
                 mask_img=masker,
-                target_affine=data1_img.affine,
-                target_shape=data1_img.shape,
+                target_affine=data_ref_img.affine,
+                target_shape=data_ref_img.shape,
             )
 
     # TODO replace with proper method
     if not hasattr(masker, "mask_img_"):
-        masker.fit(data1_img)
+        masker.fit(data_ref_img)
 
-    data1 = masker.transform(data1_img)
-    data2 = masker.transform(data2_img)
+    data_ref = masker.transform(data_ref_img)
+    data_src = masker.transform(data_src_img)
 
-    data1 = data1.ravel()
-    data2 = data2.ravel()
+    data_ref = data_ref.ravel()
+    data_src = data_src.ravel()
 
-    mean = np.mean([data1, data2], axis=0)
-    diff = data1 - data2
+    mean = np.mean([data_ref, data_src], axis=0)
+    diff = data_ref - data_src
 
     return mean, diff
