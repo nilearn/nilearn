@@ -2417,15 +2417,29 @@ def plot_bland_altman(
     ref_imgs,
     src_imgs,
     masker=None,
-    ref_label="image set 1",
-    src_label="image set 2",
-    lims=(-10, 10, -10, 10),
+    ref_label="reference image",
+    src_label="source image",
     title=None,
     cmap="inferno",
     gridsize=100,
     output_file=None,
 ):
-    """Create a Bland-Altman plot.
+    """Create a Bland-Altman plot between 2 images.
+
+    .. note::
+
+        Bland-Altman plots show the difference between
+        the statistic values (y-axis) against
+        the mean statistic value (x-axis) for all voxels.
+        The plots provide an assessment of the level of agreement
+        between two images about the magnitude of the statistic value
+        observed at each voxel.
+        If two images were in perfect agreement,
+        all points on the bland-altman plot would lie on the x-axis,
+        since the difference between the statistic values
+        at each voxel would be zero.
+        The degree of disagreement is therefore evaluated
+        by the perpendicular distance of points from the x-axis.
 
     Parameters
     ----------
@@ -2435,18 +2449,47 @@ def plot_bland_altman(
     src_imgs : nifti_like
         Source image.
 
-    masker : Nifti_like to use as mask or NiftiMasker object
+    masker : Nifti_like to use as mask or NiftiMasker object or None
         Mask to be used on data.
+        If None is passed,
+        a NiftiMasker will be fitted on the reference image.
 
-    ref_label : :obj:`str`, default='image set 1'
-        Name of reference images.
+    ref_label : :obj:`str`, default='reference image'
+        Name of reference image.
 
-    src_label : :obj:`str`, default='image set 2'
-        Name of source images.
+    src_label : :obj:`str`, default='source image'
+        Name of source image.
 
-    output_dir : :obj:`str` or None, default=None
-        Directory where plotted figures will be stored.
+    title : :obj:`str` or None, default=None
+
+    %(cmap)s
+        Default=`inferno`.
+
+    gridsize : :obj:`int` or :obj:`tuple` of 2 :obj:`int`, default=100
+        Dimension of the grid on which to display the main plot.
+        If a single value is passed, then the grid is square.
+        If a tuple is passed, the first value corresponds
+        to the length of the x axis,
+        and the second value corresponds to the length of the y axis.
+
+    %(output_file)s
+
+    Notes
+    -----
+    This function and the plot description was adapted
+    from :footcite:t:`Bowring2019`
+    and its associated `code base <https://github.com/AlexBowring/Software_Comparison/blob/master/figures/lib/bland_altman.py>`_.
+
+
+    References
+    ----------
+
+    .. footbibliography::
+
+
     """
+    lims = ((-10, 10, -10, 10),)
+
     mean, diff = _bland_altman_values(ref_imgs, src_imgs, masker=masker)
 
     if isinstance(gridsize, int):
