@@ -5,8 +5,10 @@
 0.11.2.dev
 ==========
 
-NEW
----
+HIGHLIGHTS
+----------
+
+- Fixes the behavior of :class:`nilearn.decoding.Decoder` where it used to set the score to zero if all coefficients are zero, irrespective of the scoring metric used. This change ensures that the average cross-validated scores are comparable to a pure scikit-learn implementation. (:gh:`5097`).
 
 Fixes
 -----
@@ -18,6 +20,8 @@ Fixes
 - :bdg-dark:`Code` Allow one-sided image thresholding by introducing ``two_sided`` parameter to image thresholding and update behavior of negative threshold. (:gh:`4951` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Ensure that only valid surface meshes can be instantiated. (:gh:`5036` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Do not set score to zero if all coefficients are zero in :class:`nilearn.decoding.Decoder` and ensure average scores are comparable to a pure scikit-learn implementation (:gh:`5097` by `Himanshu Aggarwal`_).
 
 Enhancements
 ------------
