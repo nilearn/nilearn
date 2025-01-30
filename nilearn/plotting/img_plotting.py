@@ -2420,9 +2420,10 @@ def plot_bland_altman(
     ref_label="image set 1",
     src_label="image set 2",
     lims=(-10, 10, -10, 10),
-    output_file=None,
     title=None,
     cmap="inferno",
+    gridsize=100,
+    output_file=None,
 ):
     """Create a Bland-Altman plot.
 
@@ -2448,6 +2449,9 @@ def plot_bland_altman(
     """
     mean, diff = _bland_altman_values(ref_imgs, src_imgs, masker=masker)
 
+    if isinstance(gridsize, int):
+        gridsize = (gridsize, gridsize)
+
     figure = plt.figure(figsize=(15, 15))
 
     gs0 = gridspec.GridSpec(1, 1)
@@ -2456,11 +2460,14 @@ def plot_bland_altman(
         5, 6, subplot_spec=gs0[0], hspace=0.50, wspace=1.3
     )
 
-    gridsize = 100
-
     ax1 = figure.add_subplot(gs[:-1, 1:5])
     hb = ax1.hexbin(
-        mean, diff, bins="log", cmap=cmap, gridsize=gridsize, extent=lims
+        mean,
+        diff,
+        bins="log",
+        cmap=cmap,
+        gridsize=gridsize,
+        extent=lims,
     )
     ax1.axis(lims)
     ax1.axhline(linewidth=1, color="r")
@@ -2471,7 +2478,7 @@ def plot_bland_altman(
     ax2.set_ylim(lims[2:4])
     ax2.hist(
         diff,
-        100,
+        bins=gridsize[0],
         range=lims[2:4],
         histtype="stepfilled",
         orientation="horizontal",
@@ -2483,7 +2490,7 @@ def plot_bland_altman(
     ax3 = figure.add_subplot(gs[-1, 1:5], yticklabels=[], sharex=ax1)
     ax3.hist(
         mean,
-        100,
+        bins=gridsize[1],
         range=lims[0:2],
         histtype="stepfilled",
         orientation="vertical",
@@ -2506,6 +2513,8 @@ def plot_bland_altman(
         plt.close(figure)
         figure = None
 
+    return figure
+
 
 def _bland_altman_values(ref_img, src_img, masker=None):
     data_ref_img = check_niimg_3d(ref_img)
@@ -2523,6 +2532,11 @@ def _bland_altman_values(ref_img, src_img, masker=None):
                 target_affine=data_ref_img.affine,
                 target_shape=data_ref_img.shape,
             )
+    else:
+        masker = NiftiMasker(
+            target_affine=data_ref_img.affine,
+            target_shape=data_ref_img.shape,
+        )
 
     # TODO replace with proper method
     if not hasattr(masker, "mask_img_"):
