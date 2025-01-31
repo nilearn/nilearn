@@ -97,7 +97,7 @@ for i, mask in enumerate(iter_img(masks)):
 # etc. the data.
 #
 # We will define a function that will do that so that it's easier to use it
-# with the :mod:`memory_profiler`.
+# with the ``memory_profiler`` package to measure the memory usage.
 
 from memory_profiler import memory_usage
 
@@ -151,7 +151,7 @@ print(
 # the fMRI image with binary masks and don't need to standardize, smooth, etc.
 # the image.
 #
-# In addition, we will use :func:`nibabel.load` function to load the
+# In addition, we will use :func:`nibabel.loadsave.load` function to load the
 # fMRI image as a proxy object. This will allow us to load the data directly
 # from the file as a numpy array without loading the entire image into memory.
 # You can find more information about this in the :mod:`nibabel` documentation,
