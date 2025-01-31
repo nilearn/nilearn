@@ -2413,9 +2413,10 @@ def plot_img_comparison(
     return corrs
 
 
+@fill_doc
 def plot_bland_altman(
-    ref_imgs,
-    src_imgs,
+    ref_img,
+    src_img,
     masker=None,
     ref_label="reference image",
     src_label="source image",
@@ -2443,10 +2444,10 @@ def plot_bland_altman(
 
     Parameters
     ----------
-    ref_imgs : nifti_like
+    ref_img : 3D nifti_like
         Reference image.
 
-    src_imgs : nifti_like
+    src_img : 3D nifti_like
         Source image.
 
     masker : Nifti_like to use as mask or NiftiMasker object or None
@@ -2488,9 +2489,15 @@ def plot_bland_altman(
 
 
     """
-    lims = ((-10, 10, -10, 10),)
+    mean, diff = _bland_altman_values(ref_img, src_img, masker=masker)
 
-    mean, diff = _bland_altman_values(ref_imgs, src_imgs, masker=masker)
+    lim_x = np.max(np.abs(mean))
+    if lim_x == 0:
+        lim_x = 1
+    lim_y = np.max(np.abs(diff))
+    if lim_y == 0:
+        lim_y = 1
+    lims = [-lim_x, lim_x, -lim_y, lim_y]
 
     if isinstance(gridsize, int):
         gridsize = (gridsize, gridsize)
@@ -2514,15 +2521,16 @@ def plot_bland_altman(
     )
     ax1.axis(lims)
     ax1.axhline(linewidth=1, color="r")
+    ax1.axvline(linewidth=1, color="r")
     if title:
         ax1.set_title(title)
 
     ax2 = figure.add_subplot(gs[:-1, 0], xticklabels=[], sharey=ax1)
-    ax2.set_ylim(lims[2:4])
+    ax2.set_ylim([-lim_y, lim_y])
     ax2.hist(
         diff,
         bins=gridsize[0],
-        range=lims[2:4],
+        range=[-lim_y, lim_y],
         histtype="stepfilled",
         orientation="horizontal",
         color="gray",
@@ -2534,12 +2542,12 @@ def plot_bland_altman(
     ax3.hist(
         mean,
         bins=gridsize[1],
-        range=lims[0:2],
+        range=[-lim_x, lim_x],
         histtype="stepfilled",
         orientation="vertical",
         color="gray",
     )
-    ax3.set_xlim(lims[0:2])
+    ax3.set_xlim([-lim_x, lim_x])
     ax3.invert_yaxis()
     ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label}")
 
