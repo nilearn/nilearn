@@ -1,11 +1,11 @@
 # ruff: noqa: D100
 
 import time
+from multiprocessing.shared_memory import SharedMemory
 from pathlib import Path
 
 import numpy as np
 from joblib import Parallel, delayed
-from memory_profiler import profile
 from nibabel import load
 
 from nilearn.datasets import fetch_atlas_difumo, fetch_development_fmri
@@ -19,7 +19,6 @@ from nilearn.image import (
 from nilearn.maskers import NiftiMasker
 
 
-@profile
 def get_fmri_path(n_subjects=1):
     fmri_data = fetch_development_fmri(n_subjects=n_subjects)
     concat = concat_imgs(fmri_data.func)
@@ -29,14 +28,12 @@ def get_fmri_path(n_subjects=1):
     return fmri_path
 
 
-@profile
 def get_atlas_path():
     atlas = fetch_atlas_difumo(dimension=64)
     atlas_path = atlas.maps
     return atlas_path
 
 
-@profile
 def atlas_to_masks(atlas_path, fmri_path, n_regions=6):
     masks = load_img(atlas_path)
     # only keep the first 6 regions
@@ -62,20 +59,21 @@ def atlas_to_masks(atlas_path, fmri_path, n_regions=6):
     return mask_paths
 
 
-@profile
 def mask_fmri_single(fmri_path, mask_path):
     masker = NiftiMasker(mask_img=mask_path, standardize=True)
     return masker.fit_transform(fmri_path)
 
 
-@profile
 def mask_fmri_single_efficient(fmri_path, mask_path):
     return np.asarray(load(fmri_path).dataobj)[
         np.asarray(load(mask_path).dataobj).astype(bool)
     ]
 
 
-@profile
+def mask_fmri_single_shared(img, mask_path):
+    return img[np.asarray(load(mask_path).dataobj).astype(bool)]
+
+
 def mask_fmri_parallel(fmri_path, mask_paths, n_jobs=6):
     fmri_ts = Parallel(n_jobs=n_jobs)(
         delayed(mask_fmri_single)(fmri_path, mask) for mask in mask_paths
@@ -83,7 +81,6 @@ def mask_fmri_parallel(fmri_path, mask_paths, n_jobs=6):
     return fmri_ts
 
 
-@profile
 def mask_fmri_efficient_parallel(fmri_path, mask_paths, n_jobs=6):
     fmri_ts = Parallel(n_jobs=n_jobs)(
         delayed(mask_fmri_single_efficient)(fmri_path, mask)
@@ -92,7 +89,13 @@ def mask_fmri_efficient_parallel(fmri_path, mask_paths, n_jobs=6):
     return fmri_ts
 
 
-@profile
+def mask_fmri_shared_parallel(img, mask_paths, n_jobs=6):
+    fmri_ts = Parallel(n_jobs=n_jobs)(
+        delayed(mask_fmri_single_shared)(img, mask) for mask in mask_paths
+    )
+    return fmri_ts
+
+
 def main(n_images=1, n_regions=6):
     """
     Compare the performance of NiftiMasker vs. numpy masking by:
@@ -136,6 +139,28 @@ def main(n_images=1, n_regions=6):
         fmri_path, mask_paths, n_jobs=n_regions
     )
     del ts_efficient
+
+    print("waiting")
+    time.sleep(30)
+    print("load image in shared memory")
+
+    fmri_data = np.asarray(load(fmri_path).dataobj)
+    shm = SharedMemory(create=True, size=fmri_data.nbytes)
+    shared_img = np.ndarray(
+        fmri_data.shape, dtype=fmri_data.dtype, buffer=shm.buf
+    )
+    np.copyto(shared_img, fmri_data)
+    del fmri_data
+
+    print("waiting")
+    time.sleep(30)
+    print("start shared masker")
+    ts_shared = mask_fmri_shared_parallel(
+        shared_img, mask_paths, n_jobs=n_regions
+    )
+    del ts_shared
+    shm.close()
+    shm.unlink()
 
 
 if __name__ == "__main__":
