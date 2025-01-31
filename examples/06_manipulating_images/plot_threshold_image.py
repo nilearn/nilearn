@@ -58,9 +58,9 @@ thresholded_img = threshold_img(
 
 
 fig, axes = plt.subplots(
-    1,
     2,
-    figsize=(17, 5),
+    1,
+    figsize=(8, 8),
 )
 
 plotting.plot_stat_map(
@@ -104,9 +104,9 @@ thresholded_img = threshold_img(
 
 
 fig, axes = plt.subplots(
-    1,
     2,
-    figsize=(17, 5),
+    1,
+    figsize=(8, 8),
 )
 
 plotting.plot_stat_map(
@@ -150,9 +150,9 @@ thresholded_img = threshold_img(
 
 
 fig, axes = plt.subplots(
-    1,
     2,
-    figsize=(17, 5),
+    1,
+    figsize=(8, 8),
 )
 
 plotting.plot_stat_map(
