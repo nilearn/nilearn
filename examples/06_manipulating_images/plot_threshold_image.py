@@ -91,6 +91,8 @@ plotting.plot_stat_map(
 # This will set all image values below 2 to 0.
 
 import matplotlib.pyplot as plt
+import numpy as np
+from matplotlib import colors
 
 from nilearn.image import threshold_img
 
@@ -109,6 +111,12 @@ fig, axes = plt.subplots(
     figsize=(8, 8),
 )
 
+
+pos_cmap = colors.LinearSegmentedColormap.from_list(
+    "new_cmap", plt.get_cmap(cmap)(np.linspace(0.5, 1, 10))
+)
+
+
 plotting.plot_stat_map(
     image,
     colorbar=True,
@@ -121,7 +129,7 @@ plotting.plot_stat_map(
 plotting.plot_stat_map(
     thresholded_img,
     colorbar=True,
-    cmap=cmap,
+    cmap=pos_cmap,
     title="image thresholded at 2 with two_sided=False",
     cut_coords=cut_coords,
     axes=axes[1],
@@ -137,8 +145,8 @@ plotting.plot_stat_map(
 # This will set all image values above -2 to 0.
 
 import matplotlib.pyplot as plt
-
-from nilearn.image import threshold_img
+import numpy as np
+from matplotlib import colors
 
 thresholded_img = threshold_img(
     image,
@@ -155,6 +163,10 @@ fig, axes = plt.subplots(
     figsize=(8, 8),
 )
 
+neg_cmap = colors.LinearSegmentedColormap.from_list(
+    "new_cmap", plt.get_cmap(cmap)(np.linspace(0, 0.5, 10))
+)
+
 plotting.plot_stat_map(
     image,
     colorbar=True,
@@ -167,7 +179,7 @@ plotting.plot_stat_map(
 plotting.plot_stat_map(
     thresholded_img,
     colorbar=True,
-    cmap=cmap,
+    cmap=neg_cmap,
     title="image thresholded at -2 with two_sided=False",
     cut_coords=cut_coords,
     axes=axes[1],
