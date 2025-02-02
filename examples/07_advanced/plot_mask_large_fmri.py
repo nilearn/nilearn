@@ -366,7 +366,6 @@ shm.unlink()
 # Let's plot the memory usage for each method to compare them.
 import matplotlib.pyplot as plt
 
-tab20 = plt.color_sequences["tab20"]
 plt.figure(figsize=(8, 6))
 plt.bar(
     [
@@ -383,7 +382,13 @@ plt.bar(
         numpy_masker["parallel"]["in_memory"],
         numpy_masker_shared["parallel"],
     ],
-    color=tab20[:5],
+    color=[
+        (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
+        (0.6823529411764706, 0.7803921568627451, 0.9098039215686274),
+        (1.0, 0.4980392156862745, 0.054901960784313725),
+        (1.0, 0.7333333333333333, 0.47058823529411764),
+        (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
+    ],
 )
 plt.ylabel("Peak memory usage (MiB)")
 plt.title(f"Memory usage comparison with {N_REGIONS} jobs in parallel")
