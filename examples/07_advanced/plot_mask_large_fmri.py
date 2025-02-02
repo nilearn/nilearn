@@ -56,7 +56,13 @@ fmri_img.to_filename(fmri_path)
 # masks. You might want to use a different atlas or create your own masks.
 
 from nilearn.datasets import fetch_atlas_difumo
-from nilearn.image import index_img, iter_img, load_img, resample_to_img
+from nilearn.image import (
+    index_img,
+    iter_img,
+    load_img,
+    new_img_like,
+    resample_to_img,
+)
 
 atlas_path = fetch_atlas_difumo(dimension=64).maps
 
@@ -71,6 +77,7 @@ masks = index_img(masks, slice(0, N_REGIONS))
 # mask to the fMRI image but not the numpy indexing method we will use later.
 
 mask_paths = []
+mask_imgs = []
 for i, mask in enumerate(iter_img(masks)):
     resampled_mask = resample_to_img(
         mask,
@@ -82,9 +89,13 @@ for i, mask in enumerate(iter_img(masks)):
     path = output_dir / f"mask_{i}.nii.gz"
     data = resampled_mask.get_fdata()
     data[data != 0] = 1
-    resampled_mask = resampled_mask.__class__(
-        data, resampled_mask.affine, resampled_mask.header
+    resampled_mask = new_img_like(
+        ref_niimg=resampled_mask,
+        data=data,
+        affine=resampled_mask.affine,
+        copy_header=True,
     )
+    mask_imgs.append(resampled_mask)
     resampled_mask.to_filename(path)
     mask_paths.append(path)
 
@@ -99,8 +110,6 @@ for i, mask in enumerate(iter_img(masks)):
 # We will define a function that will do that so that it's easier to use it
 # with the ``memory_profiler`` package to measure the memory usage.
 
-from memory_profiler import memory_usage
-
 from nilearn.maskers import NiftiMasker
 
 
@@ -108,12 +117,36 @@ def nifti_masker_single(fmri_path, mask_path):
     return NiftiMasker(mask_img=mask_path).fit_transform(fmri_path)
 
 
-nifti_masker_single_usage = memory_usage(
-    (nifti_masker_single, (fmri_img, mask_paths[0])), max_usage=True
+# %%
+# Furthermore, we can input the fmri image and the masks in two different ways:
+#
+# 1. Using the file paths
+# 2. Using the in-memory objects
+#
+# So we will measure the memory usage for both cases.
+#
+# Let's first create a dictionary to store the memory usage for each method
+
+from memory_profiler import memory_usage
+
+nifti_masker = {"single": {"path": [], "in_memory": []}}
+
+nifti_masker["single"]["path"] = memory_usage(
+    (nifti_masker_single, (fmri_path, mask_paths[0])),
+    max_usage=True,
 )
 print(
-    "Peak memory usage for masking with a single mask using NiftiMasker:\n\n"
-    f"{nifti_masker_single_usage} MiB"
+    "Peak memory usage: with NiftiMasker, single mask, with paths:\n"
+    f"{nifti_masker['single']['path']} MiB"
+)
+
+nifti_masker["single"]["in_memory"] = memory_usage(
+    (nifti_masker_single, (fmri_img, mask_imgs[0])),
+    max_usage=True,
+)
+print(
+    "Peak memory usage: with NiftiMasker, single mask, with in-memory image:\n"
+    f"{nifti_masker['single']['in_memory']} MiB"
 )
 
 # %%
@@ -121,6 +154,9 @@ print(
 # -------------------------------------
 # Now let's see how we would mask the fMRI image using multiple masks in
 # parallel using the :mod:`joblib` package.
+#
+# Let's add another key to the previous dictionary to store the memory usage
+# for this case.
 
 from joblib import Parallel, delayed
 
@@ -131,17 +167,32 @@ def nifti_masker_parallel(fmri_path, mask_paths):
     )
 
 
-nifti_masker_parallel_usage = memory_usage(
-    (nifti_masker_parallel, (fmri_img, mask_paths)),
+nifti_masker["parallel"] = {"path": [], "in_memory": []}
+
+nifti_masker["parallel"]["path"] = memory_usage(
+    (nifti_masker_parallel, (fmri_path, mask_paths)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
 )
 print(
-    f"Peak memory usage for masking with {N_REGIONS} jobs in parallel\n"
-    "using NiftiMasker:\n\n"
-    f"{nifti_masker_parallel_usage} MiB"
+    f"Peak memory usage: with NiftiMasker, {N_REGIONS} jobs in parallel, "
+    "with paths:\n"
+    f"{nifti_masker['parallel']['path']} MiB"
 )
+
+nifti_masker["parallel"]["in_memory"] = memory_usage(
+    (nifti_masker_parallel, (fmri_path, mask_paths)),
+    max_usage=True,
+    include_children=True,
+    multiprocess=True,
+)
+print(
+    f"Peak memory usage: with NiftiMasker, {N_REGIONS} jobs in parallel, "
+    "with in-memory images:\n"
+    f"{nifti_masker['parallel']['path']} MiB"
+)
+
 
 # %%
 # Masking using numpy indexing
@@ -157,22 +208,47 @@ print(
 # You can find more information about this in the :mod:`nibabel` documentation,
 # here: https://nipy.org/nibabel/images_and_memory.html
 
+import nibabel as nib
 import numpy as np
-from nibabel import load
 
 
-def numpy_masker_single(fmri_path, mask_path):
-    return np.asarray(load(fmri_path).dataobj)[
-        np.asarray(load(mask_path).dataobj).astype(bool)
+def numpy_masker_single_path(fmri_path, mask_path):
+    return np.asarray(nib.load(fmri_path).dataobj)[
+        np.asarray(nib.load(mask_path).dataobj).astype(bool)
     ]
 
 
-numpy_masker_single_usage = memory_usage(
-    (numpy_masker_single, (fmri_path, mask_paths[0])), max_usage=True
+numpy_masker = {"single": {"path": [], "in_memory": []}}
+
+numpy_masker["single"]["path"] = memory_usage(
+    (numpy_masker_single_path, (fmri_path, mask_paths[0])),
+    max_usage=True,
 )
 print(
-    "Peak memory usage for masking with a single mask using numpy masking:\n\n"
-    f"{numpy_masker_single_usage} MiB"
+    "Peak memory usage: with numpy indexing, single mask, with path:\n"
+    f"{numpy_masker['single']['path']} MiB"
+)
+
+# %%
+# For this method, we would have to redefine the masking function because
+# we don't need to load the fMRI image and the masks in the function, but
+# only to convert the in-memory objects to numpy arrays.
+
+
+def numpy_masker_single_inmemory(fmri_img, mask_img):
+    return np.asarray(fmri_img.dataobj)[
+        np.asarray(mask_img.dataobj).astype(bool)
+    ]
+
+
+numpy_masker["single"]["in_memory"] = memory_usage(
+    (numpy_masker_single_inmemory, (fmri_img, mask_imgs[0])),
+    max_usage=True,
+)
+print(
+    "Peak memory usage: with numpy indexing, single mask, "
+    "with in-memory image:\n"
+    f"{numpy_masker['single']['in_memory']} MiB"
 )
 
 # %%
@@ -182,98 +258,43 @@ print(
 # using numpy indexing.
 
 
-def numpy_masker_parallel(fmri_path, mask_paths):
+def numpy_masker_parallel_path(fmri_path, mask_paths):
     return Parallel(n_jobs=N_REGIONS)(
-        delayed(numpy_masker_single)(fmri_path, mask) for mask in mask_paths
+        delayed(numpy_masker_single_path)(fmri_path, mask)
+        for mask in mask_paths
     )
 
 
-numpy_masker_parallel_usage = memory_usage(
-    (numpy_masker_parallel, (fmri_path, mask_paths)),
+numpy_masker["parallel"] = {"path": [], "in_memory": []}
+
+numpy_masker["parallel"]["path"] = memory_usage(
+    (numpy_masker_parallel_path, (fmri_path, mask_paths)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
 )
 print(
-    f"Peak memory usage for masking with {N_REGIONS} jobs in parallel\n"
-    "using numpy masking:\n\n"
-    f"{numpy_masker_parallel_usage} MiB"
+    f"Peak memory usage: with numpy indexing, {N_REGIONS} jobs in parallel, "
+    "with path:\n"
+    f"{numpy_masker['parallel']['path']} MiB"
 )
 
-# %%
-# Masking using numpy indexing in parallel with shared memory
-# -----------------------------------------------------------
-# Finally, let's see how we can mask the fMRI image using multiple masks in
-# parallel using numpy indexing and shared memory from the
-# :mod:`multiprocessing` module.
 
-from multiprocessing.shared_memory import SharedMemory
-
-
-def numpy_masker_single_shared(img, mask_path):
-    return img[np.asarray(load(mask_path).dataobj).astype(bool)]
-
-
-def numpy_masker_shared_parallel(img, mask_paths):
+def numpy_masker_parallel_inmemory(fmri_img, mask_imgs):
     return Parallel(n_jobs=N_REGIONS)(
-        delayed(numpy_masker_single_shared)(img, mask) for mask in mask_paths
+        delayed(numpy_masker_single_inmemory)(fmri_img, mask)
+        for mask in mask_imgs
     )
 
 
-# %%
-# Load the fMRI image in shared memory
-# ------------------------------------
-fmri_data = np.asarray(load(fmri_path).dataobj)
-shm = SharedMemory(create=True, size=fmri_data.nbytes)
-shared_img = np.ndarray(fmri_data.shape, dtype=fmri_data.dtype, buffer=shm.buf)
-np.copyto(shared_img, fmri_data)
-del fmri_data
-
-numpy_masker_shared_parallel_usage = memory_usage(
-    (numpy_masker_shared_parallel, (shared_img, mask_paths)),
+numpy_masker["parallel"]["in_memory"] = memory_usage(
+    (numpy_masker_parallel_inmemory, (fmri_img, mask_imgs)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
 )
 print(
-    f"Peak memory usage for masking with {N_REGIONS} jobs in parallel\n"
-    "using numpy masking and shared memory:\n\n"
-    f"{numpy_masker_shared_parallel_usage} MiB"
+    f"Peak memory usage: with numpy indexing, {N_REGIONS} jobs in parallel, "
+    "with in-memory images:\n"
+    f"{numpy_masker['parallel']['in_memory']} MiB"
 )
-
-# cleanup
-shm.close()
-shm.unlink()
-
-# %%
-# Let's plot the memory usage for each method to compare them.
-import matplotlib.pyplot as plt
-
-plt.figure(figsize=(8, 6))
-plt.bar(
-    ["NiftiMasker", "Numpy indexing", "Numpy indexing\nwith shared memory"],
-    [
-        nifti_masker_parallel_usage,
-        numpy_masker_parallel_usage,
-        numpy_masker_shared_parallel_usage,
-    ],
-)
-plt.ylabel("Peak memory usage (MiB)")
-plt.title("Memory usage comparison")
-plt.show()
-
-# %%
-# Conclusion
-# ----------
-# So using numpy indexing with shared memory is the most efficient way to mask
-# large fMRI images in parallel. However, it is important to note that this
-# method is only useful when we only need to mask the fMRI image with binary
-# masks and don't need to standardize, smooth, etc. the image. Otherwise,
-# using :class:`~nilearn.maskers.NiftiMasker` is still the most appropriate
-# way to extract data from an fMRI image.
-#
-# Furthermore, the differences in memory usage between the methods can be more
-# significant when working with much larger images and/or more jobs/regions
-# in parallel. You can try increasing the ``N_SUBJECTS`` and ``N_REGIONS``
-# variables at the beginning of this script to see how the memory usage changes
-# for each method.
