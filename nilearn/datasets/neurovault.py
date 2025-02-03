@@ -23,6 +23,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from nilearn._utils import fill_doc
+from nilearn._utils.param_validation import check_params
 from nilearn.image import resample_img
 
 from ._utils import (
@@ -2678,6 +2679,8 @@ def fetch_neurovault(
         )
 
     """
+    check_params(locals())
+
     if collection_terms is None:
         collection_terms = basic_collection_terms()
     if image_terms is None:
@@ -2832,6 +2835,8 @@ def fetch_neurovault_ids(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     return _fetch_neurovault_implementation(
         mode=mode,
         collection_ids=collection_ids,
@@ -2879,6 +2884,8 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     nilearn.datasets.fetch_neurovault_auditory_computation_task
 
     """
+    check_params(locals())
+
     data = fetch_neurovault_ids(
         image_ids=[10426], data_dir=data_dir, verbose=verbose
     )
@@ -2920,6 +2927,8 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     nilearn.datasets.fetch_neurovault_motor_task
 
     """
+    check_params(locals())
+
     data = fetch_neurovault_ids(
         image_ids=[32980], data_dir=data_dir, verbose=verbose
     )

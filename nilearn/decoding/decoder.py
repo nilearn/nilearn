@@ -55,7 +55,10 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
 )
-from nilearn._utils.param_validation import check_feature_screening
+from nilearn._utils.param_validation import (
+    check_feature_screening,
+    check_params,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
@@ -637,6 +640,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         %(base_decoder_fit_attributes)s
 
         """
+        check_params(self.__dict__)
         self.estimator = _check_estimator(self.estimator)
         self.memory_ = check_memory(self.memory, self.verbose)
 
@@ -1443,6 +1447,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         %(base_decoder_fit_attributes)s
 
         """
+        check_params(self.__dict__)
         self.classes_ = ["beta"]
         super().fit(X, y, groups=groups)
 
@@ -1621,6 +1626,7 @@ class FREMRegressor(_BaseDecoder):
         %(base_decoder_fit_attributes)s
 
         """
+        check_params(self.__dict__)
         self.classes_ = ["beta"]
         if isinstance(self.cv, int):
             self.cv = ShuffleSplit(self.cv, random_state=0)
@@ -1803,6 +1809,7 @@ class FREMClassifier(_BaseDecoder):
         %(base_decoder_fit_attributes)s
 
         """
+        check_params(self.__dict__)
         if isinstance(self.cv, int):
             self.cv = StratifiedShuffleSplit(self.cv, random_state=0)
         super().fit(X, y, groups=groups)

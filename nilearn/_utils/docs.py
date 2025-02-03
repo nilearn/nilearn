@@ -266,7 +266,7 @@ darkness : :obj:`float` between 0 and 1, optional
 
 # data_dir
 docdict["data_dir"] = """
-data_dir : :obj:`pathlib.Path` or :obj:`str`, optional
+data_dir : :obj:`pathlib.Path` or :obj:`str` or None, optional
     Path where data should be downloaded.
     By default, files are downloaded in a ``nilearn_data`` folder
     in the home directory of the user.
@@ -766,7 +766,7 @@ resampling_interpolation : :obj:`str`, optional
 
 # resolution template
 docdict["resolution"] = """
-resolution : :obj:`int`, default=None
+resolution : :obj:`int` or None, default=None
         Resolution in millimeters.
         If resolution is different from 1,
         the template is re-sampled with the specified resolution.
@@ -963,7 +963,7 @@ upper_cutoff : :obj:`float`, optional
 
 # url
 docdict["url"] = """
-url : :obj:`str`, default=None
+url : :obj:`str` or None, default=None
     URL of file to download.
     Override download URL.
     Used for test only (or if you setup a mirror of the data).

@@ -19,6 +19,7 @@ from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
 from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -453,6 +454,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             at the object level.
 
         """
+        check_params(self.__dict__)
         # Base fit for decomposition estimators : compute the embedded masker
         if self.memory is None:
             self.memory = Memory(location=None)

@@ -16,6 +16,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
@@ -703,6 +704,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         self : `ReNA` object
 
         """
+        check_params(self.__dict__)
         X = check_array(
             X, ensure_min_features=2, ensure_min_samples=2, estimator=self
         )

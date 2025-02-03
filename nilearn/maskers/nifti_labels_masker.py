@@ -9,6 +9,7 @@ from nibabel import Nifti1Image
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, load_img, resample_img
 from nilearn.maskers._utils import (
     compute_middle_image,
@@ -531,6 +532,7 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        check_params(self.__dict__)
         available_reduction_strategies = {
             "mean",
             "median",

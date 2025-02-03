@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
+import nilearn.typing as nil_typing
 from nilearn._utils import logger
 from nilearn._utils.niimg import _get_data
 
@@ -361,3 +362,25 @@ def _cast_to_int32(sample_mask):
             what can be represented by int32: {highest}."
         raise ValueError(msg)
     return np.asarray(sample_mask, new_dtype)
+
+
+def check_params(fn_dict):
+    """Check types of inputs passed to a function/method.
+
+    Rely on types declared in nilearn.typing to do this.
+    """
+    type_map = {
+        "data_dir": nil_typing.DataDir,
+        "resolution": nil_typing.Resolution,
+        "resume": nil_typing.Resume,
+        "url": nil_typing.Url,
+        "verbose": nil_typing.Verbose,
+    }
+    for k, v in fn_dict.items():
+        if k not in type_map:
+            continue
+
+        if not isinstance(v, type_map[k]):
+            raise TypeError(
+                f"'{k}' should be of type '{type_map[k]}'.\nGot: '{type(v)}'"
+            )

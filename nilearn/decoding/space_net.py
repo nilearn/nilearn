@@ -30,6 +30,7 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.extmath import safe_sparse_dot
 
 from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -770,9 +771,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.mask_args = mask_args
         self.positive = positive
 
-        # sanity check on params
-        self.check_params()
-
     def check_params(self):
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
@@ -848,6 +846,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self : `SpaceNet` object
             Model selection is via cross-validation with bagging.
         """
+        check_params(self.__dict__)
+        # sanity check on params
+        self.check_params()
         if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
             raise NotImplementedError(
                 "Running space net on surface objects is not supported."
