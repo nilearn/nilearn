@@ -371,11 +371,14 @@ def check_params(fn_dict):
     """
     type_map = {
         "data_dir": nil_typing.DataDir,
+        "memory": nil_typing.MemoryLike,
+        "memory_level": nil_typing.MemoryLevel,
         "resolution": nil_typing.Resolution,
         "resume": nil_typing.Resume,
         "url": nil_typing.Url,
         "verbose": nil_typing.Verbose,
     }
+
     for k, v in fn_dict.items():
         if k not in type_map:
             continue

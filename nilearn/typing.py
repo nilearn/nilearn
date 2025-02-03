@@ -14,6 +14,7 @@ from joblib.memory import Memory
 
 DataDir: TypeAlias = str | pathlib.Path | None
 MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
+MemoryLevel: TypeAlias = int
 Resolution: TypeAlias = int | None
 Resume: TypeAlias = bool
 Url: TypeAlias = str | None
