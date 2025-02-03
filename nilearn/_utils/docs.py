@@ -822,7 +822,7 @@ second_level_input : :obj:`list` of \
 
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
-smoothing_fwhm : :obj:`float` or None, optional.
+smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
     If `smoothing_fwhm` is not `None`,
     it gives the :term:`full-width at half maximum<FWHM>` in millimeters
     of the spatial smoothing to apply to the signal.
@@ -880,7 +880,7 @@ symmetric_cbar : :obj:`bool`, or "auto", default="auto"
 
 # t_r
 docdict["t_r"] = """
-t_r : :obj:`float` or None, default=None
+t_r : :obj:`float` or :obj:`int` or None, default=None
     :term:`Repetition time<TR>`, in seconds (sampling period).
     Set to `None` if not provided.
 """
