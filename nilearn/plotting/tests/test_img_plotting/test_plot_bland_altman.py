@@ -58,8 +58,8 @@ def test_plot_bland_altman_different_fov(
     [
         None,
         _make_surface_mask(),
-        NiftiMasker(mask_img=_make_surface_mask()),
-        NiftiMasker(mask_img=_make_surface_mask()).fit(),
+        SurfaceMasker(mask_img=_make_surface_mask()),
+        SurfaceMasker(mask_img=_make_surface_mask()).fit(),
     ],
 )
 def test_plot_bland_altman_surface(matplotlib_pyplot, surf_img_1d, masker):
@@ -70,32 +70,72 @@ def test_plot_bland_altman_errors(
     surf_img_1d, surf_mask_1d, img_3d_rand_eye, img_3d_ones_eye
 ):
     # Invalid input
-    with pytest.raises(TypeError, match="foo"):
+    with pytest.raises(
+        TypeError,
+        match=(
+            "'ref_img' and 'src_img' must both be Niimg-like or SurfaceImage."
+        ),
+    ):
         plot_bland_altman(
             1,
             "foo",
         )
 
     # images must be both volumes or surface
-    with pytest.raises(TypeError, match="foo"):
+    with pytest.raises(
+        TypeError,
+        match=(
+            "'ref_img' and 'src_img' must both be Niimg-like or SurfaceImage."
+        ),
+    ):
         plot_bland_altman(surf_img_1d, img_3d_rand_eye)
 
     # invalid masker
-    with pytest.raises(TypeError, match="foo"):
+    with pytest.raises(
+        TypeError,
+        match=(
+            "'masker' must be NiftiMasker or Niimg-Like "
+            "for volume based images."
+        ),
+    ):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, masker=1)
 
     # invalid masker for that image type
-    with pytest.raises(TypeError, match="foo"):
+    with pytest.raises(
+        TypeError,
+        match=(
+            "'masker' must be NiftiMasker or Niimg-Like "
+            "or volume based images."
+        ),
+    ):
         plot_bland_altman(
             img_3d_rand_eye, img_3d_rand_eye, masker=SurfaceMasker()
         )
-    with pytest.raises(TypeError, match="foo"):
+    with pytest.raises(
+        TypeError,
+        match=(
+            "'masker' must be NiftiMasker or Niimg-Like "
+            "for volume based images."
+        ),
+    ):
         plot_bland_altman(
             img_3d_rand_eye, img_3d_rand_eye, masker=surf_mask_1d
         )
 
-    with pytest.raises(TypeError, match="foo"):
+    with pytest.raises(
+        TypeError,
+        match=(
+            "'masker' must be SurfaceMasker or SurfaceImage "
+            "for surface based images."
+        ),
+    ):
         plot_bland_altman(surf_img_1d, surf_img_1d, masker=NiftiMasker())
 
-    with pytest.raises(TypeError, match="foo"):
+    with pytest.raises(
+        TypeError,
+        match=(
+            "'masker' must be SurfaceMasker or SurfaceImage "
+            "for surface based images."
+        ),
+    ):
         plot_bland_altman(surf_img_1d, surf_img_1d, masker=img_3d_ones_eye)

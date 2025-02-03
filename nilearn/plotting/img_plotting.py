@@ -2539,11 +2539,11 @@ def plot_bland_altman(
         ax1.set_title(title)
 
     ax2 = figure.add_subplot(gs[:-1, 0], xticklabels=[], sharey=ax1)
-    ax2.set_ylim(lims[2:3])
+    ax2.set_ylim(lims[2:])
     ax2.hist(
         diff,
         bins=gridsize[0],
-        range=lims[2:3],
+        range=lims[2:],
         histtype="stepfilled",
         orientation="horizontal",
         color="gray",
@@ -2555,12 +2555,12 @@ def plot_bland_altman(
     ax3.hist(
         mean,
         bins=gridsize[1],
-        range=lims[0:1],
+        range=lims[0:2],
         histtype="stepfilled",
         orientation="vertical",
         color="gray",
     )
-    ax3.set_xlim(lims[0:1])
+    ax3.set_xlim(lims[0:2])
     ax3.invert_yaxis()
     ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label}")
 
