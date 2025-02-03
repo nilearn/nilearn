@@ -45,8 +45,8 @@ else:
     LowPass: TypeAlias = float | None
     MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
     Resolution: TypeAlias = int | None
-    SmoothingFwhm = float
+    SmoothingFwhm = float | None
     Url: TypeAlias = str | None
     TargetAffine: TypeAlias = ndarray | None
-    TargetShape: TypeAlias = tuple[int, int, int] | list[int] | None
+    TargetShape: TypeAlias = tuple | list | None
     Tr: TypeAlias = float | None

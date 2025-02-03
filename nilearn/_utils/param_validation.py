@@ -372,7 +372,6 @@ def check_params(fn_dict):
     """
     type_map = {
         "data_dir": nil_typing.DataDir,
-        "dtype": nil_typing.DType,
         "high_pass": nil_typing.HighPass,
         "hrf_model": nil_typing.HrfModel,
         "low_pass": nil_typing.LowPass,
@@ -395,14 +394,11 @@ def check_params(fn_dict):
         type_to_check = type_map[k]
 
         # TODO update when dropping python 3.9
+        error_msg = (
+            f"'{k}' should be of type '{type_to_check}'.\nGot: '{type(v)}'"
+        )
         if sys.version_info[1] > 9:
             if not isinstance(v, type_to_check):
-                raise TypeError(
-                    f"'{k}' should be of type '{type_to_check}'."
-                    "\nGot: '{type(v)}'"
-                )
+                raise TypeError(error_msg)
         elif v is not None and not isinstance(v, type_to_check):
-            raise TypeError(
-                f"'{k}' should be of type '{type_to_check}'.\n"
-                "Got: '{type(v)}'"
-            )
+            raise TypeError(error_msg)
