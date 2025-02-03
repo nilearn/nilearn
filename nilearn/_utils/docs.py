@@ -187,6 +187,17 @@ docdict["classifier_options"] = f"""
 """
 
 # cmap
+docdict["clean_args"] = """
+clean_args : :obj:`dict` or None, default=None
+    Keyword arguments to be passed
+    to :func:`~nilearn.signal.clean`
+    called within the masker.
+    Within :func:`~nilearn.signal.clean`,
+    kwargs prefixed with ``'butterworth__'``
+    will be passed to the Butterworth filter.
+"""
+
+# cmap
 docdict["cmap"] = """
 cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
     The colormap to use.
@@ -382,6 +393,21 @@ or 'fast' or None, optional
 
 """
 
+# groups
+docdict["groups"] = """
+groups : None, default=None
+    Group labels for the samples used
+    while splitting the dataset into train/test set.
+
+    Note that this parameter must be specified in some scikit-learn
+    cross-validation generators to calculate the number of splits,
+    for example sklearn.model_selection.LeaveOneGroupOut or
+    sklearn.model_selection.LeavePGroupsOut.
+
+    For more details see
+    https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+"""
+
 # hemi
 docdict["hemi"] = """
 hemi : {"left", "right", "both"}, default="left"
@@ -472,6 +498,42 @@ imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
+# keep_masked_labels
+docdict["keep_masked_labels"] = """
+keep_masked_labels : :obj:`bool`, default=True
+    When a mask is supplied through the "mask_img" parameter, some
+    atlas regions may lie entirely outside of the brain mask, resulting
+    in empty time series for those regions.
+    If True, the masked atlas with these empty labels will be retained
+    in the output, resulting in corresponding time series containing
+    zeros only. If False, the empty labels will be removed from the
+    output, ensuring no empty time series are present.
+
+    .. deprecated:: 0.10.2
+
+        The 'True' option for ``keep_masked_labels`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_labels`` parameter will be removed in 0.15.
+
+"""
+
+# keep_masked_maps
+docdict["keep_masked_maps"] = """
+keep_masked_maps : :obj:`bool`, optional
+    If True, masked atlas with invalid maps (maps that contain only
+    zeros after applying the mask) will be retained in the output, resulting
+    in corresponding time series containing zeros only. If False, the
+    invalid maps will be removed from the trimmed atlas, resulting in
+    no empty time series in the output.
+
+    .. deprecated:: 0.10.2
+
+        The 'True' option for ``keep_masked_maps`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_maps`` parameter will be removed in 0.15.
+
+"""
+
 # linewidth
 docdict["linewidths"] = """
 linewidths : :obj:`float`, optional
@@ -539,42 +601,6 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
 
 """
 
-# keep_masked_labels
-docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=True
-    When a mask is supplied through the "mask_img" parameter, some
-    atlas regions may lie entirely outside of the brain mask, resulting
-    in empty time series for those regions.
-    If True, the masked atlas with these empty labels will be retained
-    in the output, resulting in corresponding time series containing
-    zeros only. If False, the empty labels will be removed from the
-    output, ensuring no empty time series are present.
-
-    .. deprecated:: 0.10.2
-
-        The 'True' option for ``keep_masked_labels`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_labels`` parameter will be removed in 0.15.
-
-"""
-
-# keep_masked_maps
-docdict["keep_masked_maps"] = """
-keep_masked_maps : :obj:`bool`, optional
-    If True, masked atlas with invalid maps (maps that contain only
-    zeros after applying the mask) will be retained in the output, resulting
-    in corresponding time series containing zeros only. If False, the
-    invalid maps will be removed from the trimmed atlas, resulting in
-    no empty time series in the output.
-
-    .. deprecated:: 0.10.2
-
-        The 'True' option for ``keep_masked_maps`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_maps`` parameter will be removed in 0.15.
-
-"""
-
 # kwargs for Maskers
 docdict["masker_kwargs"] = """
 kwargs : dict
@@ -584,6 +610,17 @@ kwargs : dict
     Within :func:`~nilearn.signal.clean`, kwargs prefixed with
     `'butterworth__'` will be passed to the Butterworth filter
     (i.e., `clean__butterworth__`).
+
+    .. deprecated:: 0.11.2dev
+
+    .. admonition:: Use ``clean_args`` instead!
+       :class: important
+
+       It is recommended to pass parameters to use for data cleaning
+       via :obj:`dict` to the ``clean_args`` parameter.
+
+       Passing parameters via "kwargs" is mutually exclusive
+       with passing cleaning parameters via ``clean_args``.
 """
 
 # memory
@@ -662,7 +699,7 @@ radiological : :obj:`bool`, default=False
 
 # random_state
 docdict["random_state"] = """
-random_state : :obj:`int` or RandomState, optional
+random_state : :obj:`int` or np.random.RandomState, optional
     Pseudo-random number generator state used for random sampling.
 """
 
@@ -903,12 +940,13 @@ docdict["templateflow"] = """
 
 # threshold
 docdict["threshold"] = """
-threshold : a number, None, or 'auto', optional
+threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
     If `None` is given, the image is not thresholded.
-    If a number is given, it is used to threshold the image:
-    values below the threshold (in absolute value) are plotted as transparent.
-    If "auto" is given, the threshold is determined magically
-    by analysis of the image.
+    If number is given, it must be non-negative. The specified value is used to
+    threshold the image: values below the threshold (in absolute value) are
+    plotted as transparent.
+    If "auto" is given, the threshold is determined based on the score obtained
+    using percentile value "80%" on the absolute value of the image data.
 """
 
 # title
@@ -956,7 +994,7 @@ view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"\
 # vmax
 docdict["vmax"] = """
 vmax : :obj:`float`, optional
-    Upper bound of the colormap.
+    Upper bound of the colormap. The values above vmax are masked.
     If `None`, the max of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
@@ -964,7 +1002,7 @@ vmax : :obj:`float`, optional
 # vmin
 docdict["vmin"] = """
 vmin : :obj:`float`, optional
-    Lower bound of the colormap.
+    Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
@@ -979,6 +1017,96 @@ vmin : :obj:`float`, optional
 docdict["atlas_type"] = """'atlas_type' : :obj:`str`
         Type of atlas.
         See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
+
+docdict["base_decoder_fit_attributes"] = """
+        Attributes
+        ----------
+        masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
+            The masker used to mask the data.
+
+        mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
+            Mask computed by the masker object.
+
+        classes_ : numpy.ndarray
+            Classes to predict. For classification only.
+
+        screening_percentile_ : :obj:`float`
+            Screening percentile corrected according to volume of mask,
+            relative to the volume of standard brain.
+
+        coef_ : numpy.ndarray, shape=(n_classes, n_features)
+            Contains the mean of the models weight vector across
+            fold for each class. Returns None for Dummy estimators.
+
+        coef_img_ : :obj:`dict` of Nifti1Image
+            Dictionary containing ``coef_`` with class names as keys,
+            and ``coef_`` transformed in Nifti1Images as values.
+            In the case of a regression,
+            it contains a single Nifti1Image at the key 'beta'.
+            Ignored if Dummy estimators are provided.
+
+        intercept_ : ndarray, shape (nclasses,)
+            Intercept (also known as bias) added to the decision function.
+            Ignored if Dummy estimators are provided.
+
+        cv_ : :obj:`list` of pairs of lists
+            List of the (n_folds,) folds.
+            For the corresponding fold,
+            each pair is composed of two lists of indices,
+            one for the train samples and one for the test samples.
+
+        std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
+            Contains the standard deviation of the models weight vector across
+            fold for each class.
+            Note that folds are not independent,
+            see
+            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+            Ignored if Dummy estimators are provided.
+
+        std_coef_img_ : :obj:`dict` of Nifti1Image
+            Dictionary containing `std_coef_` with class names as keys,
+            and `coef_` transformed in Nifti1Image as values.
+            In the case of a regression,
+            it contains a single Nifti1Image at the key 'beta'.
+            Ignored if Dummy estimators are provided.
+
+        cv_params_ : :obj:`dict` of :obj:`list`
+            Best point in the parameter grid for each tested fold
+            in the inner cross validation loop.
+            The grid is empty
+            when Dummy estimators are provided.
+
+            .. note::
+
+                If the estimator used its built-in cross-validation,
+                this will include an additional key
+                for the single best value estimated
+                by the built-in cross-validation
+                ('best_C' for LogisticRegressionCV
+                and 'best_alpha' for RidgeCV/RidgeClassifierCV/LassoCV),
+                in addition to the input list of values.
+
+        scorer_ : function
+            Scorer function used on the held out data to choose the best
+            parameters for the model.
+
+        cv_scores_ : :obj:`dict`, (classes, n_folds)
+            Scores (misclassification) for each parameter, and on each fold
+
+        n_outputs_ : :obj:`int`
+            Number of outputs (column-wise)
+
+        dummy_output_ : ndarray, shape=(n_classes, 2) \
+                       or shape=(1, 1) for regression
+            Contains dummy estimator attributes after class predictions
+            using strategies of :class:`sklearn.dummy.DummyClassifier`
+            (class_prior)
+            and  :class:`sklearn.dummy.DummyRegressor` (constant)
+            from scikit-learn.
+            This attribute is necessary for estimating class predictions
+            after fit.
+            Returns None if non-dummy estimators are provided.
+"""
 
 # dataset description
 docdict["description"] = """'description' : :obj:`str`
@@ -995,9 +1123,27 @@ docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
         Formatted according to 'dseg.tsv' format from
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
 
+# template
+docdict["template"] = """'template' : :obj:`str`
+        The standardized space of analysis
+        in which the atlas results are provided.
+        When known it should be a valid template name
+        taken from the spaces described in
+        `the BIDS specification <https://bids-specification.readthedocs.io/en/latest/appendices/coordinate-systems.html#image-based-coordinate-systems>`_."""
+
+
+# templateflow
+docdict["templateflow"] = """
+    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+    release c (MNI152NLin2009cSAsym).
+    The NiLearn template is asymmetrical ICBM152 2009, release a.
+    If you wish to use the exact same release as :term:`fMRIPrep`,
+    please refer to TemplateFlow (https://www.templateflow.org/).
+"""
+
 ##############################################################################
 
-docdict_indented = {}
+docdict_indented: dict[int, dict[str, str]] = {}
 
 
 def _indentcount_lines(lines):

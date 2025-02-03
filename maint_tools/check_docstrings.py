@@ -9,6 +9,8 @@
 from __future__ import annotations
 
 import ast
+import re
+from pathlib import Path
 
 from numpydoc.docscrape import NumpyDocString
 from rich import print
@@ -30,9 +32,9 @@ VALUES = [
     "Tuple",
     "dict",
     "Dict",
-    # "int",
+    "int",
     "Int",
-    # "float",
+    "float",
     "Float",
     "str",
     "Bool",
@@ -62,13 +64,13 @@ def main() -> None:
 
 
 def check_fill_doc_decorator(
-    ast_node: ast.ClassDef | ast.FunctionDef, filename: str
+    ast_node: ast.ClassDef | ast.FunctionDef, filename: str | Path
 ) -> None:
     """Check that fill_doc decorator is present when needed.
 
     Checks if '%(' is present in the doc string
     and warns if the function or class
-    does not have the @fill_doc dcorator.
+    does not have the @fill_doc decorator.
 
     Also warns if the decorator is used for no reason.
     """
@@ -93,7 +95,12 @@ def check_fill_doc_decorator(
                 "- [red]missing @fill_doc decorator."
             )
     elif any(
-        getattr(x, "name", "") == "fill_doc" for x in ast_node.decorator_list
+        (
+            getattr(x, "name", "") == "fill_doc"
+            or getattr(x, "id", "") == "fill_doc"
+            or getattr(x, "attr", "") == "fill_doc"
+        )
+        for x in ast_node.decorator_list
     ):
         print(
             f"{filename}:{ast_node.lineno} "
@@ -142,7 +149,8 @@ def get_missing(docstring: str, values=None) -> list[tuple[str, str, str]]:
     missing = []
     for v in values:
         for arg_name, arg_desc in params.items():
-            if v in arg_desc and f":obj:`{v}`" not in arg_desc:
+            regex = f"{v}" + "[, ]"
+            if re.search(regex, arg_desc) and f":obj:`{v}`" not in arg_desc:
                 missing.append((arg_name, arg_desc, v))
 
     return missing

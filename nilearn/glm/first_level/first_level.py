@@ -553,8 +553,7 @@ class FirstLevelModel(BaseGLM):
             remaining = f"{int(remaining)} seconds remaining"
 
         return (
-            f"Computing run {run_idx + 1} "
-            f"out of {n_runs} runs ({remaining})."
+            f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."
         )
 
     def _fit_single_run(self, sample_masks, bins, run_img, run_idx):
@@ -919,7 +918,7 @@ class FirstLevelModel(BaseGLM):
             this case, the string defining the contrasts must be a valid
             expression for compatibility with :meth:`pandas.DataFrame.eval`.
 
-        stat_type : {'t', 'F'}, optional
+        stat_type : {'t', 'F'}, default=None
             Type of the contrast.
 
         output_type : :obj:`str`, default='z_score'
@@ -2147,8 +2146,7 @@ def _check_args_first_level_from_bids(
 
     if not isinstance(img_filters, list):
         raise TypeError(
-            f"'img_filters' must be a list. "
-            f"Got {type(img_filters)} instead."
+            f"'img_filters' must be a list. Got {type(img_filters)} instead."
         )
     supported_filters = [
         *bids_entities()["raw"],
@@ -2297,7 +2295,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
         "space_label or img_filters"
     )
 
-    run_check_list: list = []
+    run_check_list = []
 
     for img_ in imgs:
         parsed_filename = parse_bids_filename(img_)
@@ -2418,8 +2416,7 @@ def _check_bids_events_list(
             )
         if len(this_event) > 1:
             raise ValueError(
-                f"More than 1 events.tsv files "
-                f"corresponding to {msg_suffix}"
+                f"More than 1 events.tsv files corresponding to {msg_suffix}"
             )
         if this_event[0] not in events:
             raise ValueError(

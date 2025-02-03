@@ -393,7 +393,7 @@ def resample_img(
         Fortran ordering.
 
     clip : :obj:`bool`, default=True
-        If True (default) all resampled image values above max(img) and
+        If True, all resampled image values above max(img) and
         under min(img) are clipped to min(img) and max(img). Note that
         0 is added as an image value for clipping, and it is the padding
         value when extrapolating out of field of view.
@@ -408,7 +408,7 @@ def resample_img(
         Will be set to ``False`` if ``None`` is passed.
         The default value will be set to ``True`` for Nilearn >=0.13.0.
 
-    copy_header : :obj:`bool`
+    copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
         .. versionadded:: 0.11.0
@@ -503,6 +503,7 @@ def resample_img(
         and np.array_equal(target_shape, shape)
     ):
         return img
+
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
 
@@ -578,30 +579,7 @@ def resample_img(
         target_shape = target_shape.tolist()
     target_shape = tuple(target_shape)
 
-    resampled_data_dtype = data.dtype
-    if interpolation == "continuous" and data.dtype.kind == "i":
-        # cast unsupported data types to closest support dtype
-        aux = data.dtype.name.replace("int", "float")
-        aux = aux.replace("ufloat", "float").replace("floatc", "float")
-        if aux in ["float8", "float16"]:
-            aux = "float32"
-        warnings.warn(
-            f"Casting data from {data.dtype.name} to {aux}", stacklevel=2
-        )
-        resampled_data_dtype = np.dtype(aux)
-
-    # Since the release of 0.17, resampling nifti images have some issues
-    # when affine is passed as 1D array and if data is of non-native
-    # endianness.
-    # See issue https://github.com/nilearn/nilearn/issues/1445.
-    # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
-    # than _geometric_transform (2D) where _geometric_transform is able
-    # to swap byte order in scipy later than 0.15 for nonnative endianness.
-
-    # We convert to 'native' order to not have any issues either with
-    # 'little' or 'big' endian data dtypes (non-native endians).
-    if len(A.shape) == 1 and not resampled_data_dtype.isnative:
-        resampled_data_dtype = resampled_data_dtype.newbyteorder("N")
+    resampled_data_dtype = _get_resampled_data_dtype(data, interpolation, A)
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
@@ -720,6 +698,41 @@ def _check_resample_img_inputs(target_shape, target_affine, interpolation):
         )
 
 
+def _get_resampled_data_dtype(data, interpolation, A):
+    """Get the datat type of the resampled data.
+
+    Make sure to cast unsupported data types to the closest support ones.
+    """
+    resampled_data_dtype = data.dtype
+    if interpolation == "continuous" and data.dtype.kind == "i":
+        # cast unsupported data types to closest support dtype
+        aux = data.dtype.name.replace("int", "float")
+        aux = aux.replace("ufloat", "float").replace("floatc", "float")
+        if aux in ["float8", "float16"]:
+            aux = "float32"
+        warnings.warn(
+            f"Casting data from {data.dtype.name} to {aux}", stacklevel=2
+        )
+        resampled_data_dtype = np.dtype(aux)
+
+    # Since the release of 0.17, resampling nifti images have some issues
+    # when affine is passed as 1D array
+    # and if data is of non-native  endianness.
+    # See issue https://github.com/nilearn/nilearn/issues/1445.
+    # If affine is passed as 1D, scipy uses _nd_image.zoom_shift rather
+    # than _geometric_transform (2D) where _geometric_transform is able
+    # to swap byte order in scipy later than 0.15 for nonnative endianness.
+
+    # We convert to 'native' order to not have any issues either with
+    # 'little' or 'big' endian data dtypes (non-native endians).
+    if (
+        len(A.shape) == 1 and not resampled_data_dtype.isnative
+    ):  # pragma: no cover
+        resampled_data_dtype = resampled_data_dtype.newbyteorder("N")
+
+    return resampled_data_dtype
+
+
 def resample_to_img(
     source_img,
     target_img,
@@ -761,8 +774,8 @@ def resample_to_img(
         Fortran ordering.
 
     clip : :obj:`bool`, default=False
-        If False (default) no clip is performed.
-        If True all resampled image values above max(img)
+        If False, no clip is performed.
+        If True, all resampled image values above max(img)
         and under min(img) are cllipped to min(img) and max(img).
 
     fill_value : :obj:`float`, default=0
@@ -831,8 +844,8 @@ def reorder_img(img, resample=None, copy_header=False):
 
     resample : None or :obj:`str` in {'continuous', 'linear', 'nearest'}, \
         default=None
-        If resample is None (default), no resampling is performed, the
-        axes are only permuted.
+        If resample is None, no resampling is performed,
+        the axes are only permuted.
         Otherwise resampling is performed and 'resample' will
         be passed as the 'interpolation' argument into
         resample_img.
@@ -856,8 +869,7 @@ def reorder_img(img, resample=None, copy_header=False):
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
         if resample is None:
             raise ValueError(
-                "Cannot reorder the axes: "
-                "the image affine contains rotations"
+                "Cannot reorder the axes: the image affine contains rotations"
             )
 
         # Identify the voxel size using a QR decomposition of the affine

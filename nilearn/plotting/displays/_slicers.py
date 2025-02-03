@@ -14,6 +14,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
+from nilearn.plotting._utils import _check_threshold
 from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._axes import coords_3d_to_2d
 from nilearn.plotting.edge_detect import edge_map
@@ -47,7 +48,7 @@ class BaseSlicer:
     """
 
     # This actually encodes the figsize for only one axe
-    _default_figsize: ClassVar[list[float, float]] = [2.2, 2.6]
+    _default_figsize: ClassVar[list[float]] = [2.2, 2.6]
     _axes_class = CutAxes
 
     def __init__(
@@ -118,6 +119,9 @@ class BaseSlicer:
         Parameters
         ----------
         %(img)s
+
+        %(threshold)s
+
         cut_coords : 3 :obj:`tuple` of :obj:`int`
             The cut position, in world space.
 
@@ -135,7 +139,13 @@ class BaseSlicer:
             The brain color to use as the background color (e.g., for
             transparent colorbars).
 
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
         """
+        _check_threshold(threshold)
+
         # deal with "fake" 4D images
         if img is not None and img is not False:
             img = check_niimg_3d(img)
@@ -162,9 +172,9 @@ class BaseSlicer:
                 figsize[0] += 3.4
             figure = plt.figure(figure, figsize=figsize, facecolor=facecolor)
         if isinstance(axes, plt.Axes):
-            assert (
-                axes.figure is figure
-            ), "The axes passed are not in the figure"
+            assert axes.figure is figure, (
+                "The axes passed are not in the figure"
+            )
 
         if axes is None:
             axes = [0.0, 0.0, 1.0, 1.0]
@@ -275,9 +285,9 @@ class BaseSlicer:
             Threshold to apply:
 
                 - If ``None`` is given, the maps are not thresholded.
-                - If a number is given, it is used to threshold the maps:
-                  values below the threshold (in absolute value) are
-                  plotted as transparent.
+                - If number is given, it must be non-negative. The specified
+                  value is used to threshold the image: values below the
+                  threshold (in absolute value) are plotted as transparent.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
@@ -297,7 +307,14 @@ class BaseSlicer:
         cbar_vmax : :obj:`float`, optional
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
+
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
         """
+        _check_threshold(threshold)
+
         if colorbar and self._colorbar:
             raise ValueError(
                 "This figure already has an overlay with a colorbar."
@@ -334,11 +351,9 @@ class BaseSlicer:
             Threshold to apply:
 
                 - If ``None`` is given, the maps are not thresholded.
-                - If a number is given, it is used to threshold the maps,
-                  values below the threshold (in absolute value) are plotted
-                  as transparent.
-
-
+                - If number is given, it must be non-negative. The specified
+                  value is used to threshold the image: values below the
+                  threshold (in absolute value) are plotted as transparent.
 
         filled : :obj:`bool`, default=False
             If ``filled=True``, contours are displayed with color fillings.
@@ -354,6 +369,11 @@ class BaseSlicer:
             "colors", which is one color or a list of colors for
             these contours.
 
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
+
         Notes
         -----
         If colors are not specified, default coloring choices
@@ -363,6 +383,9 @@ class BaseSlicer:
         """
         if not filled:
             threshold = None
+        else:
+            _check_threshold(threshold)
+
         self._map_show(img, type="contour", threshold=threshold, **kwargs)
         if filled:
             if "levels" in kwargs:
@@ -397,17 +420,11 @@ class BaseSlicer:
             img = reorder_img(
                 img, resample=resampling_interpolation, copy_header=True
             )
-        threshold = float(threshold) if threshold is not None else None
-
         affine = img.affine
         if threshold is not None:
+            threshold = float(threshold)
             data = safe_get_data(img, ensure_finite=True)
-            if threshold == 0:
-                data = np.ma.masked_equal(data, 0, copy=False)
-            else:
-                data = np.ma.masked_inside(
-                    data, -threshold, threshold, copy=False
-                )
+            data = self._threshold(data, threshold, None, None)
             img = new_img_like(img, data, affine)
 
         data = safe_get_data(img, ensure_finite=True)
@@ -482,7 +499,26 @@ class BaseSlicer:
 
     @classmethod
     def _threshold(cls, data, threshold=None, vmin=None, vmax=None):
-        """Threshold the data."""
+        """Threshold the data.
+
+        Parameters
+        ----------
+        data: ndarray
+            data to be thresholded
+
+        %(threshold)s
+
+        %(vmin)s
+
+        %(vmax)s
+
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
+        """
+        _check_threshold(threshold)
+
         if threshold is not None:
             data = np.ma.masked_where(
                 np.abs(data) <= threshold,
@@ -546,7 +582,7 @@ class BaseSlicer:
         # yields a cryptic matplotlib error message
         # when trying to plot the color bar
         n_ticks = 5 if cbar_vmin != cbar_vmax else 1
-        ticks = _get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
+        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
         bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         # some colormap hacking
@@ -815,7 +851,7 @@ class BaseSlicer:
         )
 
 
-def _get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
+def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
     """Help for BaseSlicer."""
     # edge case where the data has a single value yields
     # a cryptic matplotlib error message when trying to plot the color bar
@@ -898,7 +934,7 @@ class OrthoSlicer(BaseSlicer):
 
     _cut_displayed: ClassVar[str] = "yxz"
     _axes_class = CutAxes
-    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.5]
+    _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
 
     @classmethod
     @fill_doc  # the fill_doc decorator must be last applied
@@ -912,14 +948,17 @@ class OrthoSlicer(BaseSlicer):
             Threshold to apply:
 
                 - If ``None`` is given, the maps are not thresholded.
-                - If a number is given, it is used to threshold the maps,
-                  values below the threshold (in absolute value) are plotted
-                  as transparent.
-
-
+                - If number is given, it must be non-negative. The specified
+                  value is used to threshold the image: values below the
+                  threshold (in absolute value) are plotted as transparent.
 
         cut_coords : 3 :obj:`tuple` of :obj:`int`
             The cut position, in world space.
+
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
         """
         if cut_coords is None:
             if img is None or img is False:
@@ -937,8 +976,7 @@ class OrthoSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the display_mode"
+                "The number cut_coords passed does not match the display_mode"
             )
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
@@ -1127,7 +1165,7 @@ class TiledSlicer(BaseSlicer):
 
     _cut_displayed: ClassVar[str] = "yxz"
     _axes_class = CutAxes
-    _default_figsize: ClassVar[list[float, float]] = [2.0, 7.6]
+    _default_figsize: ClassVar[list[float]] = [2.0, 7.6]
 
     @classmethod
     def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
@@ -1150,6 +1188,11 @@ class TiledSlicer(BaseSlicer):
         -------
         cut_coords : :obj:`list` of :obj:`float`
             xyz world coordinates of cuts.
+
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
         """
         if cut_coords is None:
             if img is None or img is False:
@@ -1208,8 +1251,7 @@ class TiledSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the display_mode"
+                "The number cut_coords passed does not match the display_mode"
             )
 
         facecolor = "k" if self._black_bg else "w"
@@ -1638,7 +1680,7 @@ class XSlicer(BaseStackedSlicer):
     """
 
     _direction: ClassVar[str] = "x"
-    _default_figsize: ClassVar[list[float, float]] = [2.6, 2.3]
+    _default_figsize: ClassVar[list[float]] = [2.6, 2.3]
 
 
 class YSlicer(BaseStackedSlicer):
@@ -1677,7 +1719,7 @@ class YSlicer(BaseStackedSlicer):
     """
 
     _direction: ClassVar[str] = "y"
-    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.0]
+    _default_figsize: ClassVar[list[float]] = [2.2, 3.0]
 
 
 class ZSlicer(BaseStackedSlicer):
@@ -1716,7 +1758,7 @@ class ZSlicer(BaseStackedSlicer):
     """
 
     _direction: ClassVar[str] = "z"
-    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.2]
+    _default_figsize: ClassVar[list[float]] = [2.2, 3.2]
 
 
 class XZSlicer(OrthoSlicer):
@@ -1831,7 +1873,7 @@ class YZSlicer(OrthoSlicer):
     """
 
     _cut_displayed: ClassVar[str] = "yz"
-    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.0]
+    _default_figsize: ClassVar[list[float]] = [2.2, 3.0]
 
 
 class MosaicSlicer(BaseSlicer):
@@ -1874,8 +1916,8 @@ class MosaicSlicer(BaseSlicer):
     """
 
     _cut_displayed: ClassVar[str] = "yxz"
-    _axes_class: ClassVar[CutAxes] = CutAxes
-    _default_figsize: ClassVar[list[float, float]] = [4.0, 5.0]
+    _axes_class: ClassVar[CutAxes] = CutAxes  # type: ignore[assignment, misc]
+    _default_figsize: ClassVar[list[float]] = [4.0, 5.0]
 
     @classmethod
     def find_cut_coords(
@@ -1980,8 +2022,7 @@ class MosaicSlicer(BaseSlicer):
 
         if len(self.cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not"
-                " match the mosaic mode"
+                "The number cut_coords passed does not match the mosaic mode"
             )
         x0, y0, x1, y1 = self.rect
 
@@ -2164,10 +2205,10 @@ def get_slicer(display_mode):
               :class:`~nilearn.plotting.displays.ZSlicer`.
 
     """
-    return _get_create_display_fun(display_mode, SLICERS)
+    return get_create_display_fun(display_mode, SLICERS)
 
 
-def _get_create_display_fun(display_mode, class_dict):
+def get_create_display_fun(display_mode, class_dict):
     """Help for functions \
     :func:`~nilearn.plotting.displays.get_slicer` and \
     :func:`~nilearn.plotting.displays.get_projector`.

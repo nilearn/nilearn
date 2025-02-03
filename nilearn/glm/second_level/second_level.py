@@ -60,6 +60,8 @@ def _check_second_level_input(
     second_level_input, design_matrix, confounds=None
 ):
     """Check second_level_input type."""
+    _check_design_matrix(design_matrix)
+
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
         second_level_input,
@@ -291,9 +293,13 @@ def _check_output_type(output_type, valid_types):
 def _check_design_matrix(design_matrix):
     """Check design_matrix type."""
     if design_matrix is not None and not isinstance(
-        design_matrix, pd.DataFrame
+        design_matrix, (str, Path, pd.DataFrame)
     ):
-        raise ValueError("design matrix must be a pandas DataFrame")
+        raise TypeError(
+            "'design_matrix' must be a "
+            "str, pathlib.Path or a pandas.DataFrame.\n"
+            f"Got {type(design_matrix)}"
+        )
 
 
 def _check_n_rows_desmat_vs_n_effect_maps(effect_maps, design_matrix):
@@ -522,10 +528,6 @@ class SecondLevelModel(BaseGLM):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
-        self.second_level_input_ = None
-        self.confounds_ = None
-        self.labels_ = None
-        self.results_ = None
 
     def _more_tags(self):
         """Return estimator tags.
@@ -585,6 +587,11 @@ class SecondLevelModel(BaseGLM):
             Ensure that the order of maps given by a ``second_level_input``
             list of Niimgs matches the order of the rows in the design matrix.
         """
+        self.second_level_input_ = None
+        self.confounds_ = None
+        self.labels_ = None
+        self.results_ = None
+
         if self.memory is None:
             self.memory = Memory(None)
         self.memory = stringify_path(self.memory)
@@ -628,12 +635,6 @@ class SecondLevelModel(BaseGLM):
             design_matrix = check_and_load_tables(
                 design_matrix, "design_matrix"
             )[0]
-        else:
-            raise TypeError(
-                "'design_matrix' must be a "
-                "str, pathlib.Path or a pandas.DataFrame.\n"
-                f"Got {type(design_matrix)}"
-            )
         self.design_matrix_ = design_matrix
 
         if (
@@ -687,6 +688,12 @@ class SecondLevelModel(BaseGLM):
 
         return self
 
+    def __sklearn_is_fitted__(self):
+        return (
+            hasattr(self, "second_level_input_")
+            and self.second_level_input_ is not None
+        )
+
     @fill_doc
     def compute_contrast(
         self,
@@ -724,7 +731,7 @@ class SecondLevelModel(BaseGLM):
 
         output_type : {'z_score', 'stat', 'p_value', \
                       :term:`'effect_size'<Parameter Estimate>`, \
-                      'effect_variance', 'all'}, default='z-score'
+                      'effect_variance', 'all'}, default='z_score'
             Type of the output map.
 
         Returns
@@ -736,7 +743,10 @@ class SecondLevelModel(BaseGLM):
             keyed by the type of image.
 
         """
-        if self.second_level_input_ is None:
+        if (
+            not hasattr(self, "second_level_input_")
+            or self.second_level_input_ is None
+        ):
             raise ValueError("The model has not been fit yet.")
 
         # check first_level_contrast
@@ -857,7 +867,12 @@ class SecondLevelModel(BaseGLM):
                 "when initializing the `SecondLevelModel`-object."
             )
 
-        if self.labels_ is None or self.results_ is None:
+        if (
+            not hasattr(self, "labels_")
+            or not hasattr(self, "results_")
+            or self.labels_ is None
+            or self.results_ is None
+        ):
             raise ValueError(
                 "The model has no results. This could be "
                 "because the model has not been fitted yet "

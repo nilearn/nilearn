@@ -13,6 +13,10 @@ from nilearn._utils.helpers import compare_version
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
 
+# mypy: disable_error_code="attr-defined"
+
+__all__ = ["_cmap_d"]
+
 
 def mix_colormaps(fg, bg):
     """Mixes foreground and background arrays of RGBA colors.
@@ -176,7 +180,9 @@ _cmaps_data = {
 
 _cmaps_data["ocean_hot"] = _concat_cmap(_cm.ocean, _cm.hot_r)
 _cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
+
 _cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
+
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
@@ -332,9 +338,9 @@ def dim_cmap(cmap, factor=0.3, to_white=True):
 
 def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     """Replace a colormap by another inside a pair of values."""
-    assert (
-        vmin < vmax
-    ), f"'vmin' must be smaller than 'vmax'. Got {vmin=} and {vmax=}."
+    assert vmin < vmax, (
+        f"'vmin' must be smaller than 'vmax'. Got {vmin=} and {vmax=}."
+    )
     assert vmin >= 0, f"'vmin' must be larger than 0, {vmin=} was passed."
     assert vmax <= 1, f"'vmax' must be smaller than 1, {vmax=} was passed."
     outer_cdict = outer_cmap._segmentdata.copy()

@@ -12,7 +12,7 @@ from nilearn.plotting import cm
 from nilearn.plotting.displays._axes import GlassBrainAxes
 from nilearn.plotting.displays._slicers import (
     OrthoSlicer,
-    _get_create_display_fun,
+    get_create_display_fun,
 )
 
 
@@ -43,7 +43,7 @@ class OrthoProjector(OrthoSlicer):
 
     """
 
-    _axes_class = GlassBrainAxes
+    _axes_class = GlassBrainAxes  # type: ignore[assignment]
 
     @classmethod
     def find_cut_coords(
@@ -324,7 +324,7 @@ class XProjector(OrthoProjector):
     """
 
     _cut_displayed: ClassVar[str] = "x"
-    _default_figsize: ClassVar[list[float, float]] = [2.6, 3.0]
+    _default_figsize: ClassVar[list[float]] = [2.6, 3.0]
 
 
 class YProjector(OrthoProjector):
@@ -358,7 +358,7 @@ class YProjector(OrthoProjector):
     """
 
     _cut_displayed: ClassVar[str] = "y"
-    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.0]
+    _default_figsize: ClassVar[list[float]] = [2.2, 3.0]
 
 
 class ZProjector(OrthoProjector):
@@ -392,7 +392,7 @@ class ZProjector(OrthoProjector):
     """
 
     _cut_displayed: ClassVar[str] = "z"
-    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.4]
+    _default_figsize: ClassVar[list[float]] = [2.2, 3.4]
 
 
 class XZProjector(OrthoProjector):
@@ -500,7 +500,7 @@ class YZProjector(OrthoProjector):
     """
 
     _cut_displayed: ClassVar[str] = "yz"
-    _default_figsize: ClassVar[list[float, float]] = [2.2, 3.4]
+    _default_figsize: ClassVar[list[float]] = [2.2, 3.4]
 
 
 class LYRZProjector(OrthoProjector):
@@ -702,7 +702,7 @@ class LProjector(OrthoProjector):
     """
 
     _cut_displayed: ClassVar[str] = "l"
-    _default_figsize: ClassVar[list[float, float]] = [2.6, 3.0]
+    _default_figsize: ClassVar[list[float]] = [2.6, 3.0]
 
 
 class RProjector(OrthoProjector):
@@ -735,7 +735,7 @@ class RProjector(OrthoProjector):
     """
 
     _cut_displayed: ClassVar[str] = "r"
-    _default_figsize: ClassVar[list[float, float]] = [2.6, 2.8]
+    _default_figsize: ClassVar[list[float]] = [2.6, 2.8]
 
 
 PROJECTORS = {
@@ -802,4 +802,4 @@ def get_projector(display_mode):
               :class:`~nilearn.plotting.displays.RProjector`.
 
     """
-    return _get_create_display_fun(display_mode, PROJECTORS)
+    return get_create_display_fun(display_mode, PROJECTORS)

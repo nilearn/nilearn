@@ -267,7 +267,7 @@ def img_to_signals_labels(
         Regions definition as labels. By default, the label zero is used to
         denote an absence of region. Use background_label to change it.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Mask to apply to labels before extracting signals.
         Every point outside the mask is considered
@@ -276,7 +276,7 @@ def img_to_signals_labels(
     background_label : number, default=0
         Number representing background in labels_img.
 
-    order : :obj:`str`, default="F"
+    order : :obj:`str`, default='F'
         Ordering of output array ("C" or "F").
 
     strategy : :obj:`str`, default="mean"
@@ -391,7 +391,7 @@ def signals_to_img_labels(
         See :ref:`extracting_data`.
         Region definitions using labels.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Boolean array giving voxels to process. integer arrays also accepted,
         In this array, zero means False, non-zero means True.
@@ -399,7 +399,7 @@ def signals_to_img_labels(
     background_label : number, default=0
         Label to use for "no region".
 
-    order : :obj:`str`, default="F"
+    order : :obj:`str`, default='F'
         Ordering of output array ("C" or "F").
 
     Returns
@@ -465,7 +465,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         Regions definition as maps (array of weights).
         shape: imgs.shape + (region number, )
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
         Every point outside the mask is considered
@@ -564,7 +564,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         See :ref:`extracting_data`.
         Region definitions using maps.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Boolean array giving :term:`voxels<voxel>` to process.
         Integer arrays also accepted, zero meaning False.

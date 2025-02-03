@@ -25,7 +25,7 @@ from nilearn.datasets import fetch_mixed_gambles
 data = fetch_mixed_gambles(n_subjects=16)
 
 zmap_filenames = data.zmaps
-behavioral_target = data.gain
+behavioral_target = data.gain.to_numpy().ravel()
 mask_filename = data.mask_img
 
 # %%
@@ -43,7 +43,7 @@ frem.fit(zmap_filenames, behavioral_target)
 # Visualize FREM weights
 # ----------------------
 
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 plot_stat_map(
     frem.coef_img_["beta"],
@@ -52,6 +52,8 @@ plot_stat_map(
     cut_coords=[20, -2],
     threshold=0.2,
 )
+
+show()
 
 # %%
 # We can observe that the coefficients map learnt

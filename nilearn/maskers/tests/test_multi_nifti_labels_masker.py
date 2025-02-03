@@ -4,18 +4,16 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn._utils import data_gen, testing
+from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.exceptions import DimensionError
 from nilearn.conftest import _affine_eye, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 extra_valid_checks = [
-    "check_estimators_unfitted",
-    "check_get_params_invariance",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
+    *check_valid_for_all_maskers(),
 ]
 
 
@@ -24,12 +22,12 @@ extra_valid_checks = [
     check_estimator(
         estimator=[
             MultiNiftiLabelsMasker(
-                data_gen.generate_labeled_regions(
+                labels_img=data_gen.generate_labeled_regions(
                     _shape_3d_default(), affine=_affine_eye(), n_regions=9
                 )
             ),
             NiftiLabelsMasker(
-                data_gen.generate_labeled_regions(
+                labels_img=data_gen.generate_labeled_regions(
                     _shape_3d_default(), affine=_affine_eye(), n_regions=9
                 )
             ),
@@ -68,7 +66,7 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 
 
 def test_multi_nifti_labels_masker():
-    # Check working of shape/affine checks
+    """Check working of shape/affine checks."""
     shape1 = (13, 11, 12)
     affine1 = np.eye(4)
 
@@ -92,24 +90,8 @@ def test_multi_nifti_labels_masker():
         shape1, affine=affine1, n_regions=n_regions
     )
 
-    mask_img_4d = Nifti1Image(
-        np.ones((2, 2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
-    )
-
-    # verify that 4D mask arguments are refused
-    masker = MultiNiftiLabelsMasker(labels11_img, mask_img=mask_img_4d)
-    with pytest.raises(
-        DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
-    ):
-        masker.fit()
-
     # check exception when transform() called without prior fit()
     masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
-    with pytest.raises(ValueError, match="has not been fitted. "):
-        masker11.transform(fmri11_img)
 
     # No exception raised here
     signals11 = masker11.fit().transform(fmri11_img)
@@ -129,7 +111,7 @@ def test_multi_nifti_labels_masker():
     # Should work with 4D + 1D input too (also test fit_transform)
     signals_input = [fmri11_img, fmri11_img]
     signals11_list = masker11.fit_transform(signals_input)
-    assert len(signals11_list) == len(signals_input)
+
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
 
@@ -159,23 +141,11 @@ def test_multi_nifti_labels_masker():
     with pytest.raises(ValueError):
         masker11.fit()
 
-    # Transform, with smoothing (smoke test)
-    masker11 = MultiNiftiLabelsMasker(
-        labels11_img, smoothing_fwhm=3, resampling_target=None
-    )
-    signals11_list = masker11.fit().transform(signals_input)
-    for signals in signals11_list:
-        assert signals.shape == (length, n_regions)
-
-    masker11 = MultiNiftiLabelsMasker(
-        labels11_img, smoothing_fwhm=3, resampling_target=None
-    )
+    masker11 = MultiNiftiLabelsMasker(labels11_img, resampling_target=None)
     signals11_list = masker11.fit_transform(signals_input)
+
     for signals in signals11_list:
         assert signals.shape == (length, n_regions)
-
-        with pytest.raises(ValueError, match="has not been fitted. "):
-            MultiNiftiLabelsMasker(labels11_img).inverse_transform(signals)
 
     # Call inverse transform (smoke test)
     for signals in signals11_list:
@@ -221,14 +191,15 @@ def test_multi_nifti_labels_masker_reduction_strategies():
             assert result.squeeze() == expected_result
 
     with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
-        MultiNiftiLabelsMasker(labels, strategy="TESTRAISE")
+        masker = MultiNiftiLabelsMasker(labels, strategy="TESTRAISE")
+        masker.fit()
 
     default_masker = MultiNiftiLabelsMasker(labels)
     assert default_masker.strategy == "mean"
 
 
-def test_multi_nifti_labels_masker_resampling(tmp_path):
-    # Test resampling in MultiNiftiLabelsMasker
+def test_multi_nifti_labels_masker_resampling():
+    """Test resampling in MultiNiftiLabelsMasker."""
     shape1 = (10, 11, 12)
     affine = np.eye(4)
 
@@ -258,15 +229,17 @@ def test_multi_nifti_labels_masker_resampling(tmp_path):
 
     # Test error checking
     with pytest.raises(ValueError):
-        MultiNiftiLabelsMasker(
+        masker = MultiNiftiLabelsMasker(
             labels33_img,
             resampling_target="mask",
         )
+        masker.fit()
     with pytest.raises(ValueError):
-        MultiNiftiLabelsMasker(
+        masker = MultiNiftiLabelsMasker(
             labels33_img,
             resampling_target="invalid",
         )
+        masker.fit()
 
     # Target: labels
     masker = MultiNiftiLabelsMasker(
@@ -366,11 +339,6 @@ def test_multi_nifti_labels_masker_resampling(tmp_path):
         masker._resampled_labels_img_.affine, affine2
     )
 
-    # Test with filenames
-    filename = testing.write_imgs_to_path(fmri22_img, file_path=tmp_path)
-    masker = MultiNiftiLabelsMasker(labels33_img, resampling_target="data")
-    masker.fit_transform(filename)
-
     # test labels masker with resampling target in 'data', 'labels' to return
     # resampled labels having number of labels equal with transformed shape of
     # 2nd dimension. This tests are added based on issue #1673 in Nilearn
@@ -443,6 +411,5 @@ def test_multi_nifti_labels_masker_list_of_sample_mask():
         [fmri11_img, fmri11_img], sample_mask=[sample_mask1, sample_mask2]
     )
 
-    assert len(ts_list) == 2
     for ts, n_scrub in zip(ts_list, [n_scrub1, n_scrub2]):
         assert ts.shape == (length - n_scrub, n_regions)

@@ -7,13 +7,13 @@ from sklearn import __version__ as sklearn_version
 from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn.conftest import _img_3d_mni
+from nilearn.conftest import _img_3d_mni, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.rena_clustering import (
     ReNA,
     _make_edges_and_weights_surface,
-    _make_edges_surface,
+    make_edges_surface,
 )
 from nilearn.surface import SurfaceImage
 
@@ -29,18 +29,12 @@ extra_valid_checks = [
     "check_fit2d_1feature",
     "check_fit1d",
     "check_no_attributes_set_in_init",
-    "check_transformers_unfitted",
-    "check_transformer_n_iter",
 ]
 
 
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.append("check_estimator_sparse_data")
-
-
-if compare_version(sklearn_version, ">", "1.5.2"):
-    extra_valid_checks.append("check_parameters_default_constructible")
 
 
 @pytest.mark.parametrize(
@@ -67,6 +61,24 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
+
+
+def test_rena_clustering_mask_error():
+    """Check an error is raised if no mask is provided before fit."""
+    data_img, mask_img = generate_fake_fmri(
+        shape=_shape_3d_default(), length=5
+    )
+    rena = ReNA(n_clusters=10)
+
+    data = get_data(data_img)
+    mask = get_data(mask_img)
+
+    X = np.empty((data.shape[3], int(mask.sum())))
+    for i in range(data.shape[3]):
+        X[i, :] = np.copy(data[:, :, :, i])[get_data(mask_img) != 0]
+
+    with pytest.raises(TypeError, match="The mask image should be a"):
+        rena.fit_transform(X)
 
 
 def test_rena_clustering():
@@ -123,7 +135,7 @@ def test_make_edges_surface(surf_mask_1d, part):
     # the mask for left part has total 4 vertices out of which 2 are True
     # and for right part it has total 5 vertices out of which 3 are True
     mask = surf_mask_1d.data.parts[part]
-    edges_unmasked, edges_mask = _make_edges_surface(faces, mask)
+    edges_unmasked, edges_mask = make_edges_surface(faces, mask)
 
     # only one edge remains after masking the left part (between 2 vertices)
     if part == "left":
@@ -145,7 +157,7 @@ def test_make_edges_and_weights_surface(surf_mesh, surf_img_2d):
         "left": np.array([False, True, True, True]),
         "right": np.array([True, True, False, True, False]),
     }
-    surf_mask_1d = SurfaceImage(surf_mesh(), data)
+    surf_mask_1d = SurfaceImage(surf_mesh, data)
     # create a surface masker
     masker = SurfaceMasker(surf_mask_1d).fit()
     # mask the surface image with 50 samples

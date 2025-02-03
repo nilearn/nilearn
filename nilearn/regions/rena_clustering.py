@@ -216,7 +216,7 @@ def _circular_pairwise(iterable):
     return itertools.zip_longest(a, b, fillvalue=next(b, None))
 
 
-def _make_edges_surface(faces, mask):
+def make_edges_surface(faces, mask):
     """Create the edges set: Returns a list of edges for a surface mesh.
 
     Parameters
@@ -280,7 +280,7 @@ def _make_edges_and_weights_surface(X, mask_img):
         else:
             mask_part = mask_img.data.parts[part][:, 0]
 
-        edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
+        edges_unmasked, edges_mask = make_edges_surface(face_part, mask_part)
 
         idxs = np.array(range(mask_part.sum())) + len_previous_mask
         weights_unmasked = _compute_weights_surface(
@@ -545,7 +545,7 @@ def recursive_neighbor_agglomeration(
     n_iter : :obj:`int`, default=10
         Number of iterations.
 
-    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-07
         The threshold is set to handle eccentricities.
 
     %(verbose0)s
@@ -599,8 +599,9 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-    or :obj:`~nilearn.maskers.SurfaceMasker` object
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+                or :obj:`~nilearn.maskers.SurfaceMasker` object \
+                or None, default=None
         Object used for masking the data.
 
     n_clusters : :obj:`int`, default=2
@@ -638,7 +639,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
     def __init__(
         self,
-        mask_img,
+        mask_img=None,
         n_clusters=2,
         scaling=False,
         n_iter=10,
@@ -710,7 +711,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         if not isinstance(
             self.mask_img, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
         ):
-            raise ValueError(
+            raise TypeError(
                 "The mask image should be a Niimg-like object, "
                 "a SurfaceImage object or a SurfaceMasker."
                 f"Instead a {type(self.mask_img)} object was provided."

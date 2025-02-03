@@ -19,12 +19,12 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
 
+from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc, logger
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import new_img_like
-from nilearn.maskers.nifti_spheres_masker import _apply_mask_and_get_affinity
+from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 
 from .. import masking
-from .._utils import check_niimg_4d, fill_doc, logger
 from ..image.resampling import coord_transform
 
 ESTIMATOR_CATALOG = {"svc": svm.LinearSVC, "svr": svm.SVR}
@@ -59,17 +59,17 @@ def search_light(
         adjacency matrix. Defines for each feature the neigbhoring features
         following a given structure of the data.
 
-    groups : array-like, optional, (default None)
+    groups : array-like, default=None
         group label for each sample for cross validation.
 
-    scoring : :obj:`str` or callable or None, optional
+    scoring : :obj:`str` or callable or None, default=None
         The scoring strategy to use. See the scikit-learn documentation
         for possible values.
         If callable, it takes as arguments the fitted estimator, the
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, optional
+    cv : cross-validation generator, default=None
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
@@ -113,7 +113,7 @@ class GroupIterator:
 
     Parameters
     ----------
-    n_features : int
+    n_features : :obj:`int`
         Total number of features
     %(n_jobs)s
 
@@ -242,7 +242,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or None,
         See :ref:`extracting_data`.
         Boolean image giving location of voxels containing usable signals.
 
@@ -251,7 +251,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         Boolean image giving voxels on which searchlight should be
         computed.
 
-    radius : float, default=2.
+    radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
     estimator : 'svr', 'svc', or an estimator object implementing 'fit'
@@ -313,7 +313,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     def __init__(
         self,
-        mask_img,
+        mask_img=None,
         process_mask_img=None,
         radius=2.0,
         estimator="svc",
@@ -372,14 +372,16 @@ class SearchLight(TransformerMixin, BaseEstimator):
             Target variable to predict. Must have exactly as many elements as
             3D images in img.
 
-        groups : array-like, optional
+        groups : array-like, default=None
             group label for each sample for cross validation. Must have
-            exactly as many elements as 3D images in img. default None
+            exactly as many elements as 3D images in img.
         """
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
 
         # Get the seeds
+        if self.mask_img is not None:
+            self.mask_img = check_niimg_3d(self.mask_img)
         process_mask_img = self.process_mask_img or self.mask_img
 
         # Compute world coordinates of the seeds
@@ -397,7 +399,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         )
         process_mask_coords = np.asarray(process_mask_coords).T
 
-        X, A = _apply_mask_and_get_affinity(
+        X, A = apply_mask_and_get_affinity(
             process_mask_coords,
             imgs,
             self.radius,
@@ -451,7 +453,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
         imgs = check_niimg_4d(imgs)
 
-        X, A = _apply_mask_and_get_affinity(
+        X, A = apply_mask_and_get_affinity(
             np.asarray(np.where(self.process_mask_)).T,
             imgs,
             self.radius,

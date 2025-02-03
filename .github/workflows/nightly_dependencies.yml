@@ -1,5 +1,16 @@
 ---
-# Workflow to test against the latest nightly releases of development versions of our dependencies
+# Run test suite using the nightly release of Nilearn dependencies.
+#
+# .. admonition:: Control via commit message
+#    :class: tip
+#
+#    This workflow can be controlled if your commit message contains:
+#
+#    - ```[test nightly]`` runs the workflow on pull-request.
+#
+# When running on `main`, if the workflow fails the action will open an issue
+# using this issue `template <https://github.com/nilearn/nilearn/blob/main/.github/nightly_failure.md>`_.
+###
 name: test on nightly dependencies
 
 on:

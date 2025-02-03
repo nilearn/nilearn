@@ -43,7 +43,7 @@ def test_number_public_functions():
     If this is intentional, then the number should be updated in the test.
     Otherwise it means that the public API of nilearn has changed by mistake.
     """
-    assert len({_[0] for _ in all_functions()}) == 249
+    assert len({_[0] for _ in all_functions()}) == 259
 
 
 @pytest.mark.skipif(
@@ -57,4 +57,4 @@ def test_number_public_classes():
     If this is intentional, then the number should be updated in the test.
     Otherwise it means that the public API of nilearn has changed by mistake.
     """
-    assert len({_[0] for _ in all_classes()}) == 67
+    assert len({_[0] for _ in all_classes()}) == 68

@@ -8,7 +8,7 @@ import numpy as np
 from joblib import Memory
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs, fill_doc
+from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -64,10 +64,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         default="inferno"
         Only relevant for the report figures.
 
-    clean_args : :obj:`dict` or None, default=None
-        Keyword arguments to be passed
-        to :func:`nilearn.signal.clean`
-        called within the masker.
+    %(clean_args)s
 
     Attributes
     ----------
@@ -405,8 +402,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -428,7 +424,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         # avoid circular import
         import matplotlib.pyplot as plt
 
-        from nilearn.reporting.utils import figure_to_svg_base64
+        from nilearn.reporting.utils import figure_to_png_base64
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
@@ -442,7 +438,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         plt.close()
 
-        init_display = figure_to_svg_base64(fig)
+        init_display = figure_to_png_base64(fig)
 
         return [init_display]
 
@@ -481,7 +477,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
 

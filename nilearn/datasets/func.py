@@ -285,9 +285,9 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-         - 'func': Paths to functional :term:`resting-state` images
-         - 'phenotypic': Explanations of preprocessing steps
-         - 'confounds': CSV files containing the nuisance variables
+        - 'func': Paths to functional :term:`resting-state` images
+        - 'phenotypic': pd.dataframe with explanations of preprocessing steps
+        - 'confounds': CSV files containing the nuisance variables
 
     References
     ----------
@@ -330,15 +330,11 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     )[0]
 
     # Load the csv file
-    phenotypic = np.genfromtxt(
-        phenotypic, names=True, delimiter=",", dtype=None, encoding=None
-    )
+    phenotypic = pd.read_table(phenotypic, delimiter=",")
 
     # Keep phenotypic information for selected subjects
-    int_ids = np.asarray(ids, dtype=int)
-    phenotypic = phenotypic[
-        [np.where(phenotypic["Subject"] == i)[0][0] for i in int_ids]
-    ]
+    mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
+    phenotypic = phenotypic[mask]
 
     # Download dataset files
 
@@ -680,7 +676,7 @@ def fetch_localizer_contrasts(
         - "visual click vs visual sentences"
         - "auditory&visual motor vs cognitive processing"
 
-    n_subjects : :obj:`int` or :obj:`list`, optional
+    n_subjects : :obj:`int` or :obj:`list` or None, default=None
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
@@ -1039,7 +1035,7 @@ def fetch_abide_pcp(
     Parameters
     ----------
     %(data_dir)s
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=None
         The number of subjects to load. If None is given,
         all available subjects are used (this number depends on the
         preprocessing pipeline used).
@@ -1055,7 +1051,7 @@ def fetch_abide_pcp(
         Indicates if global signal regression should be applied on the
         signals.
 
-    derivatives : :obj:`list` of :obj:`str`, default=['func_preproc']
+    derivatives : :obj:`list` of :obj:`str`, default=None
         Types of downloaded files. Possible values are: alff, degree_binarize,
         degree_weighted, dual_regression, eigenvector_binarize,
         eigenvector_weighted, falff, func_mask, func_mean, func_preproc, lfcd,
@@ -1225,8 +1221,7 @@ def fetch_abide_pcp(
 
     if url is None:
         url = (
-            "https://s3.amazonaws.com/fcp-indi/data/Projects/"
-            "ABIDE_Initiative"
+            "https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative"
         )
 
     if quality_checked:
@@ -1334,7 +1329,7 @@ def _load_mixed_gambles(zmap_imgs):
         X.append(this_X)
         y.extend(this_y)
         mask.append(this_mask)
-    y = np.array(y)
+    y = pd.DataFrame({"gain": y})
     X = np.concatenate(X, axis=-1)
     mask = np.sum(mask, axis=0) > 0.5 * len(mask)
     mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
@@ -1383,15 +1378,16 @@ def fetch_mixed_gambles(
 
         - 'zmaps': :obj:`list` of :obj:`str`
           Paths to realigned gain betamaps (one nifti per subject).
+        - 'subject_id':  pd.DataFrame of subjects IDs
         - 'gain': :obj:`list` of :class:`~nibabel.nifti1.Nifti1Image` \
-        or ``None``
-          If ``make_Xy`` is ``True``, this is a list of
-          ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image`
-          objects, else it is ``None``.
-        - 'y': :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)`` \
-        or ``None``
-          If ``make_Xy`` is ``True``, then this is a
-          :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)``,
+          or ``None``
+          If ``return_raw_data`` is ``True``,
+          this is a list of
+          ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image` objects,
+          else it is ``None``.
+        - 'y': DataFrame of shape ``(n_subjects * 48,)`` or ``None``
+          If ``return_raw_data`` is ``True``,
+          then this is a DataFrame of shape ``(n_subjects * 48,)``,
           else it is ``None``.
         - 'description': data description
 
@@ -1411,7 +1407,9 @@ def fetch_mixed_gambles(
     ]
     data_dir = get_dataset_dir("jimura_poldrack_2012_zmaps", data_dir=data_dir)
     zmap_fnames = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    subject_id = np.repeat(np.arange(n_subjects), 6 * 8)
+    subject_id = pd.DataFrame(
+        {"subject_id": np.repeat(np.arange(n_subjects), 6 * 8).tolist()}
+    )
     description = get_dataset_descr("mixed_gambles")
     data = Bunch(
         zmaps=zmap_fnames, subject_id=subject_id, description=description
@@ -1492,7 +1490,8 @@ def fetch_megatrawls_netmats(
 
         - 'matrices': str, consists of given type of specific matrices.
 
-        - 'correlation_matrices': ndarray, consists of correlation matrices
+        - 'correlation_matrices': pd.DataFrame
+          consists of correlation matrices
           based on given type of matrices. Array size will depend on given
           dimensions (n, n).
 
@@ -1557,8 +1556,8 @@ def fetch_megatrawls_netmats(
     # Fetch all the files
     files = fetch_files(data_dir, filepath, resume=resume, verbose=verbose)
 
-    # Load the files into arrays
-    correlation_matrices = csv_to_array(files[0])
+    # Load the files into dataframe
+    correlation_matrices = pd.read_table(files[0], sep=r"\s+", header=None)
 
     return Bunch(
         dimensions=dimensionality,
@@ -1684,10 +1683,6 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
-    See :footcite:t:`Nooner2012`.
-
-    Direct download link :footcite:t:`NKIdataset`.
-
     .. versionadded:: 0.3
 
     Parameters
@@ -1710,18 +1705,21 @@ def fetch_surf_nki_enhanced(
                         time series left hemisphere
         - 'func_right': Paths to Gifti files containing resting state
                          time series right hemisphere
-        - 'phenotypic': array containing tuple with subject ID, age,
+        - 'phenotypic': pd.DataFrame containing tuple with subject ID, age,
                          dominant hand and sex for each subject.
         - 'description': data description of the release and references.
 
-    Note that the it may be necessary
-    to coerce to float the data loaded from the Gifti files
-    to avoid issues with scipy >= 0.14.0.
+    ..  admonition:: scipy >= 0.14.0 compatibility
+        :class: important
 
-    References
-    ----------
-    .. footbibliography::
+        It may be necessary
+        to coerce to float the data loaded from the Gifti files
+        to avoid issues with scipy >= 0.14.0.
 
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
     """
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
@@ -1758,20 +1756,15 @@ def fetch_surf_nki_enhanced(
     )[0]
 
     # Load the csv file
-    phenotypic = np.genfromtxt(
+    phenotypic = pd.read_csv(
         phenotypic,
-        skip_header=True,
+        header=1,
         names=["Subject", "Age", "Dominant Hand", "Sex"],
-        delimiter=",",
-        dtype=["U9", "<f8", "U1", "U1"],
-        encoding=None,
     )
 
     # Keep phenotypic information for selected subjects
-    int_ids = np.asarray(ids)
-    phenotypic = phenotypic[
-        [np.where(phenotypic["Subject"] == i)[0][0] for i in int_ids]
-    ]
+    mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
+    phenotypic = phenotypic[mask]
 
     # Download subjects' datasets
     func_right = []
@@ -1861,6 +1854,11 @@ def load_nki(
     -------
     list of SurfaceImage objects
         One image per subject.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
     """
     if mesh_type not in ALLOWED_MESH_TYPES:
         raise ValueError(
@@ -1914,7 +1912,7 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
 
     Returns
     -------
-    participants : numpy.ndarray
+    participants : pandas.DataFrame
         Contains data of each subject age, age group, child or adult,
         gender, handedness.
 
@@ -1931,14 +1929,6 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     path_to_participants = fetch_files(data_dir, files, verbose=verbose)[0]
 
     # Load path to participants
-    dtype = [
-        ("participant_id", "U12"),
-        ("Age", "<f8"),
-        ("AgeGroup", "U6"),
-        ("Child_Adult", "U5"),
-        ("Gender", "U4"),
-        ("Handedness", "U4"),
-    ]
     names = [
         "participant_id",
         "Age",
@@ -1947,9 +1937,7 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
         "Gender",
         "Handedness",
     ]
-    participants = csv_to_array(
-        path_to_participants, skip_header=True, dtype=dtype, names=names
-    )
+    participants = pd.read_table(path_to_participants, usecols=names)
     return participants
 
 
@@ -1966,7 +1954,7 @@ def _fetch_development_fmri_functional(
 
     Parameters
     ----------
-    participants : numpy.ndarray
+    participants : pandas.DataFrame
         Should contain column participant_id which represents subjects id. The
         number of files are fetched based on ids in this column.
     %(data_dir)s
@@ -2069,7 +2057,7 @@ def fetch_development_fmri(
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=None
         The number of subjects to load. If None, all the subjects are
         loaded. Total 155 subjects.
 
@@ -2101,7 +2089,7 @@ def fetch_development_fmri(
         - 'confounds': :obj:`list` of :obj:`str` (tsv files)
             Paths to confounds related to each subject.
 
-        - 'phenotypic': numpy.ndarray
+        - 'phenotypic': pandas.DataFame
             Contains each subject age, age group, child or adult, gender,
             handedness.
 
@@ -2203,7 +2191,7 @@ def _filter_func_regressors_by_participants(participants, age_group):
             f"Valid arguments are: {valid_age_groups}"
         )
 
-    child_adult = participants["Child_Adult"].tolist()
+    child_adult = participants["Child_Adult"].to_list()
 
     child_count = child_adult.count("child") if age_group != "adult" else 0
     adult_count = child_adult.count("adult") if age_group != "child" else 0
@@ -2220,7 +2208,7 @@ def _filter_csv_by_n_subjects(participants, n_adult, n_child):
     ][:n_adult]
     ids = np.hstack([adult_ids, child_ids])
     participants = participants[np.isin(participants["participant_id"], ids)]
-    participants = participants[np.argsort(participants, order="Child_Adult")]
+    participants = participants.sort_values(by=["Child_Adult"])
     return participants
 
 
@@ -2469,7 +2457,7 @@ def select_from_index(
     urls : :obj:`list` of :obj:`str`
         List of dataset urls obtained from index download.
 
-    inclusion_filters : :obj:`list` of :obj:`str`, optional
+    inclusion_filters : :obj:`list` of :obj:`str` or None, default=None
         List of unix shell-style wildcard strings
         that will be used to filter the url list.
         If a filter matches the url it is retained for download.
@@ -2479,7 +2467,7 @@ def select_from_index(
         For example the filter '*task-rest*'' would keep only urls
         that contain the 'task-rest' string.
 
-    exclusion_filters : :obj:`list` of :obj:`str`, optional
+    exclusion_filters : :obj:`list` of :obj:`str` or None, default=None
         List of unix shell-style wildcard strings
         that will be used to filter the url list.
         If a filter matches the url it is discarded for download.
@@ -2489,7 +2477,7 @@ def select_from_index(
         For example the filter '*task-rest*' would discard all urls
         that contain the 'task-rest' string.
 
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=None
         Number of subjects to download from the dataset. All by default.
 
     Returns
@@ -2579,7 +2567,7 @@ def fetch_openneuro_dataset(
 
     Parameters
     ----------
-    urls : :obj:`list` of :obj:`str`, optional
+    urls : :obj:`list` of :obj:`str`, default=None
         List of URLs to dataset files to download.
         If not specified, all files from the default dataset
         (``ds000030_R1.0.4``) will be downloaded.

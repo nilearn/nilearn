@@ -123,10 +123,10 @@ def test_one_mesh_info():
         surf_map, mesh, "90%", black_bg=True, bg_map=surf_map
     )
     assert {"_x", "_y", "_z", "_i", "_j", "_k"}.issubset(
-        info["inflated_left"].keys()
+        info["inflated_both"].keys()
     )
-    assert len(decode(info["inflated_left"]["_x"], "<f4")) == len(surf_map)
-    assert len(info["vertexcolor_left"]) == len(surf_map)
+    assert len(decode(info["inflated_both"]["_x"], "<f4")) == len(surf_map)
+    assert len(info["vertexcolor_both"]) == len(surf_map)
     cmax = np.max(np.abs(surf_map))
     assert (info["cmin"], info["cmax"]) == (-cmax, cmax)
     assert isinstance(info["cmax"], float)

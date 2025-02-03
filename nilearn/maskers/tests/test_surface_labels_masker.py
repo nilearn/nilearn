@@ -3,45 +3,46 @@ from os.path import join
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
+from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 from nilearn.surface import SurfaceImage
 
 
-@pytest.fixture
-def _sklearn_surf_label_img(surf_mesh):
+def _sklearn_surf_label_img():
     """Create a sample surface label image using the sample mesh, just to use
     for scikit-learn checks.
     """
     labels = {
-        "left": np.asarray([1, 2, 3]),
-        "right": np.asarray([4, 5, 6]),
+        "left": np.asarray([1, 2, 3, 5]),
+        "right": np.asarray([4, 5, 6, 7, 9]),
     }
-    return SurfaceImage(surf_mesh(), labels)
+    return SurfaceImage(_make_mesh(), labels)
 
 
 extra_valid_checks = [
+    *check_valid_for_all_maskers(),
     "check_no_attributes_set_in_init",
-    "check_parameters_default_constructible",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
-    "check_estimator_repr",
-    "check_estimator_cloneable",
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
-    "check_mixin_order",
-    "check_estimator_tags_renamed",
+    "check_dont_overwrite_parameters",
+    "check_estimators_fit_returns_self",
+    "check_estimators_overwrite_params",
+    "check_fit_check_is_fitted",
+    "check_positive_only_tag_during_fit",
+    "check_readonly_memmap_input",
 ]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img)],
+        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
         extra_valid_checks=extra_valid_checks,
     ),
 )
@@ -54,7 +55,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img)],
+        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
         valid=False,
         extra_valid_checks=extra_valid_checks,
     ),
@@ -72,25 +73,79 @@ def test_surface_label_masker_fit(surf_label_img):
     """
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
     masker = masker.fit()
+
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
-    assert masker.label_names_ == ["1"]
+    assert masker.label_names_ == ["0", "1"]
     assert masker._reporting_data is not None
+    assert masker.lut_["name"].to_list() == ["0", "1"]
+    assert masker.lut_["index"].to_list() == [0, 1]
 
 
 def test_surface_label_masker_fit_with_names(surf_label_img):
-    """Check passing labels is reflected in attributes.
-
-    - the value corresponding to 0 (background) is omitted
-    - extra value provided (foo) are not listed in attributes
-    """
+    """Check passing labels is reflected in attributes."""
     masker = SurfaceLabelsMasker(
         labels_img=surf_label_img, labels=["background", "bar", "foo"]
     )
-    masker = masker.fit()
+
+    with pytest.warns(UserWarning, match="Dropping excess names values."):
+        masker = masker.fit()
+
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
-    assert masker.label_names_ == ["bar"]
+    assert masker.label_names_ == ["background", "bar"]
+    assert masker.lut_["name"].to_list() == ["background", "bar"]
+    assert masker.lut_["index"].to_list() == [0, 1]
+
+    masker = SurfaceLabelsMasker(
+        labels_img=surf_label_img, labels=["background"]
+    )
+
+    with pytest.warns(UserWarning, match="Padding 'names' with 'unknown'"):
+        masker = masker.fit()
+
+    assert masker.n_elements_ == 1
+    assert masker._labels_ == [1]
+    assert masker.label_names_ == ["background", "unknown"]
+    assert masker.lut_["name"].to_list() == ["background", "unknown"]
+    assert masker.lut_["index"].to_list() == [0, 1]
+
+
+def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
+    """Check passing lut is reflected in attributes.
+
+    Check that lut can be read from:
+    - a tsv file (str or path)
+    - a csv file (doc strings only mention TSV but testing for robustness)
+    - a dataframe
+    """
+    lut_df = pd.DataFrame({"index": [0, 1], "name": ["background", "bar"]})
+
+    lut_tsv = tmp_path / "lut.tsv"
+    lut_df.to_csv(lut_tsv, sep="\t", index=False)
+
+    lut_csv = tmp_path / "lut.csv"
+    lut_df.to_csv(lut_csv, sep="\t", index=False)
+
+    for lut in [lut_tsv, lut_csv, lut_df, str(lut_tsv)]:
+        masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut).fit()
+
+        assert masker.n_elements_ == 1
+        assert masker._labels_ == [1]
+        assert masker.label_names_ == ["background", "bar"]
+
+
+def test_surface_label_masker_error_names_and_lut(surf_label_img):
+    """Cannot pass both look up table AND names."""
+    lut = pd.DataFrame({"index": [0, 1], "name": ["background", "bar"]})
+    masker = SurfaceLabelsMasker(
+        labels_img=surf_label_img, labels=["background", "bar"], lut=lut
+    )
+    with pytest.raises(
+        ValueError,
+        match="Pass either labels or a lookup table .* but not both.",
+    ):
+        masker.fit()
 
 
 def test_surface_label_masker_fit_no_report(surf_label_img):
@@ -129,7 +184,7 @@ def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
         "left": np.asarray([1, 1, 1, 2]),
         "right": np.asarray([3, 3, 2, 2, 2]),
     }
-    surf_label_img = SurfaceImage(surf_mesh(), labels_data)
+    surf_label_img = SurfaceImage(surf_mesh, labels_data)
 
     # create a mask image
     # we are keeping labels 1 and 2 out of 3
@@ -140,7 +195,7 @@ def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
         "left": np.asarray([1, 1, 1, 1]),
         "right": np.asarray([0, 0, 1, 1, 1]),
     }
-    surf_mask = SurfaceImage(surf_mesh(), mask_data)
+    surf_mask = SurfaceImage(surf_mesh, mask_data)
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, mask_img=surf_mask)
     masker = masker.fit()
     n_timepoints = 5
@@ -166,7 +221,7 @@ def test_surface_label_masker_check_output_1d(surf_mesh, rng):
         "left": np.asarray([2, 0, 10, 1]),
         "right": np.asarray([10, 1, 20, 20, 0]),
     }
-    surf_label_img = SurfaceImage(surf_mesh(), labels)
+    surf_label_img = SurfaceImage(surf_mesh, labels)
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
     masker = masker.fit()
 
@@ -196,7 +251,7 @@ def test_surface_label_masker_check_output_1d(surf_mesh, rng):
             ]
         ),
     }
-    surf_img_1d = SurfaceImage(surf_mesh(), data)
+    surf_img_1d = SurfaceImage(surf_mesh, data)
     signal = masker.transform(surf_img_1d)
 
     assert signal.shape == (1, masker.n_elements_)
@@ -261,7 +316,7 @@ def test_surface_label_masker_check_output_2d(surf_mesh, rng):
         "left": np.asarray([2, 0, 10, 1]),
         "right": np.asarray([10, 1, 20, 20, 0]),
     }
-    surf_label_img = SurfaceImage(surf_mesh(), labels)
+    surf_label_img = SurfaceImage(surf_mesh, labels)
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
     masker = masker.fit()
 
@@ -310,7 +365,7 @@ def test_surface_label_masker_check_output_2d(surf_mesh, rng):
         ).T,
     }
 
-    surf_img_2d = SurfaceImage(surf_mesh(), data)
+    surf_img_2d = SurfaceImage(surf_mesh, data)
     signal = masker.transform(surf_img_2d)
 
     assert signal.shape == (surf_img_2d.shape[1], masker.n_elements_)
@@ -378,25 +433,6 @@ def test_surface_label_masker_check_output_2d(surf_mesh, rng):
     assert_array_equal(img.data.parts["right"], expected_inverse_data["right"])
 
 
-def test_warning_smoothing(surf_img_1d, surf_label_img):
-    """Smooth during transform not implemented."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img, smoothing_fwhm=1)
-    masker = masker.fit()
-    with pytest.warns(UserWarning, match="not yet supported"):
-        masker.transform(surf_img_1d)
-
-
-def test_surface_label_masker_transform_clean(surf_label_img, surf_img_2d):
-    """Smoke test for clean args."""
-    masker = SurfaceLabelsMasker(
-        labels_img=surf_label_img,
-        t_r=2.0,
-        high_pass=1 / 128,
-        clean_args={"filter": "cosine"},
-    ).fit()
-    masker.transform(surf_img_2d(50))
-
-
 def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):
     """Smoke test for fit_transform."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
@@ -431,7 +467,7 @@ def test_surface_label_masker_inverse_transform_with_mask(
         "left": np.asarray([1, 1, 1, 2]),
         "right": np.asarray([3, 3, 2, 2, 2]),
     }
-    surf_label_img = SurfaceImage(surf_mesh(), labels_data)
+    surf_label_img = SurfaceImage(surf_mesh, labels_data)
 
     # create a mask image
     # we are keeping labels 1 and 3 out of 3
@@ -442,7 +478,7 @@ def test_surface_label_masker_inverse_transform_with_mask(
         "left": np.asarray([1, 1, 1, 0]),
         "right": np.asarray([1, 1, 0, 0, 0]),
     }
-    surf_mask = SurfaceImage(surf_mesh(), mask_data)
+    surf_mask = SurfaceImage(surf_mesh, mask_data)
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, mask_img=surf_mask)
     masker = masker.fit()
     n_timepoints = 5

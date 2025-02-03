@@ -56,12 +56,9 @@ FUNCFILE = BASEDIR / "functional.nii.gz"
 
 
 extra_valid_checks = [
-    "check_transformers_unfitted",
-    "check_transformer_n_iter",
     "check_estimators_unfitted",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_no_attributes_set_in_init",
-    "check_parameters_default_constructible",
 ]
 
 
@@ -752,8 +749,7 @@ def test_fmri_inputs_errors(tmp_path, shape_4d_default):
     # If paradigms are given
     # then both t_r and slice time ref are required
     match = (
-        "t_r not given to FirstLevelModel object "
-        "to compute design from events"
+        "t_r not given to FirstLevelModel object to compute design from events"
     )
     with pytest.raises(ValueError, match=match):
         FirstLevelModel(mask_img=None).fit(func_img, des)
@@ -796,8 +792,7 @@ def test_fmri_inputs_errors_confounds(tmp_path, shape_4d_default):
     with pytest.raises(
         ValueError,
         match=(
-            "Rows in confounds does not match "
-            "n_scans in run_img at index 0."
+            "Rows in confounds does not match n_scans in run_img at index 0."
         ),
     ):
         FirstLevelModel(mask_img=None, t_r=2.0).fit(func_img, des, conf)

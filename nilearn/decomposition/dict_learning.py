@@ -14,7 +14,7 @@ from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
 from nilearn._utils import fill_doc, logger
-from nilearn._utils.helpers import _transfer_deprecated_param_vals
+from nilearn._utils.helpers import transfer_deprecated_param_vals
 
 from ._base import _BaseDecomposition
 from .canica import CanICA
@@ -56,20 +56,20 @@ class DictLearning(_BaseDecomposition):
     n_components : :obj:`int`, default=20
         Number of components to extract.
 
-    batch_size : obj:`int`, default=20
+    batch_size : :obj:`int`, default=20
         The number of samples to take in each batch.
 
-    n_epochs : float, default=1
+    n_epochs : :obj:`float`, default=1
         Number of epochs the algorithm should run on the data.
 
-    alpha : float, default=10
+    alpha : :obj:`float`, default=10
         Sparsity controlling parameter.
 
     dict_init : Niimg-like object, optional
         Initial estimation of dictionary maps. Would be computed from CanICA if
         not provided.
 
-    reduction_ratio : 'auto' or float between 0. and 1., default='auto'
+    reduction_ratio : 'auto' or :obj:`float` between 0. and 1., default='auto'
         - Between 0. or 1. : controls data reduction in the temporal domain.
           1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
@@ -83,8 +83,8 @@ class DictLearning(_BaseDecomposition):
         Lasso solution (linear_model.Lasso). Lars will be faster if
         the estimated components are sparse.
 
-    random_state : :obj:`int` or RandomState, optional
-        Pseudo number generator state used for random sampling.
+    %(random_state)s
+
     %(smoothing_fwhm)s
         Default=4mm.
 
@@ -290,7 +290,7 @@ class DictLearning(_BaseDecomposition):
 
         logger.log(" Learning dictionary", verbose=self.verbose, stack_level=2)
 
-        kwargs = _transfer_deprecated_param_vals(
+        kwargs = transfer_deprecated_param_vals(
             {"n_iter": "max_iter"}, {"max_iter": max_iter}
         )
         self.components_, _ = self._cache(dict_learning_online)(

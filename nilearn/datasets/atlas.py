@@ -10,11 +10,14 @@ from xml.etree import ElementTree
 
 import numpy as np
 import pandas as pd
-from nibabel import Nifti1Image, freesurfer, load
+from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, rename_parameters
-from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.bids import (
+    check_look_up_table,
+    generate_atlas_look_up_table,
+)
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
@@ -23,14 +26,21 @@ from nilearn.datasets._utils import (
 )
 from nilearn.image import get_data as get_img_data
 from nilearn.image import new_img_like, reorder_img
-from nilearn.surface.surface import SurfaceImage
-from nilearn.surface.surface import get_data as get_surface_data
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
 
 dec_to_hex_nums = pd.DataFrame(
     {"hex": [f"{x:02x}" for x in range(256)]}, dtype=str
+)
+
+deprecation_message = (
+    "From release >={version}, "
+    "instead of returning several atlas image accessible "
+    "via different keys, "
+    "this fetcher will return the atlas as a dictionary "
+    "with a single atlas image, "
+    "accessible through a 'maps' key. "
 )
 
 
@@ -49,159 +59,6 @@ def rgb_to_hex_lookup(
     bb.index = blue.index
     # Concatenate and return
     return rr + gg + bb
-
-
-def _generate_atlas_look_up_table(function=None, name=None, index=None):
-    """Generate a look up table for an atlas.
-
-    For a given deterministic atlas supported by Nilearn,
-    this returns a pandas dataframe to use as look up table (LUT)
-    between the name of a ROI and its index in the associated image.
-    This LUT is compatible with the dseg.tsv BIDS format
-    describing brain segmentations and parcellations,
-    with an 'index' and 'name' column
-    ('color' may be an example of an optional column).
-    https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels
-
-    For some atlases some 'clean up' of the LUT is done
-    (for example make sure that the LUT contains the background 'ROI').
-
-    This can also generate a look up table
-    for an arbitrary niimg-like or surface image.
-
-    Parameters
-    ----------
-    function : obj:`str` or None, default=None
-        Atlas fetching function name as a string.
-        Defaults to "unknown" in case None is passed.
-
-    name : iterable of bytes or string, or int or None, default=None
-        If an integer is passed,
-        this corresponds to the number of ROIs in the atlas.
-        If an iterable is passed, then it contains the ROI names.
-        If None is passed, then it is inferred from index.
-
-    index : iterable of integers, niimg like or None, default=None
-        If None, then the index of each ROI is derived from name.
-        If a Niimg like or SurfaceImage is passed,
-        then a LUT is generated for this image.
-    """
-    if name is None and index is None:
-        raise ValueError("'index' and 'name' cannot both be None.")
-
-    fname = "unknown" if function is None else function
-
-    # deal with names
-    if name is None:
-        if fname == "unknown":
-            if isinstance(index, (str, Path, Nifti1Image)):
-                img = check_niimg(index)
-                index = np.unique(safe_get_data(img))
-            elif isinstance(index, SurfaceImage):
-                index = np.unique(get_surface_data(index))
-        name = [str(x) for x in index]
-
-    # deal with indices
-    if index is None:
-        index = list(range(len(name)))
-    if fname in ["fetch_atlas_basc_multiscale_2015"]:
-        index = [int(x) for x in name]
-    elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
-        index = list(range(1, len(name) + 1))
-
-    # convert to dataframe and do some cleaning where required
-    lut = pd.DataFrame({"index": index, "name": name})
-
-    if fname in [
-        "fetch_atlas_pauli_2017",
-        "fetch_atlas_aal",
-    ]:
-        lut = pd.concat(
-            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
-            ignore_index=True,
-        )
-
-    return lut
-
-
-def _check_look_up_table(lut, atlas, strict=False):
-    """Validate atlas look up table (LUT).
-
-    Throws warning / errors:
-    - lut is not a dataframe with the required columns
-    - if there are mismatches between the number of ROIs
-      in the LUT and th number of unique ROIs in the associated image.
-
-    Parameters
-    ----------
-    lut : :obj:`pandas.DataFrame`
-        Must be a pandas dataframe with at least "name" and "index" columns.
-
-    atlas : Niimg like object or SurfaceImage
-
-    strict : bool, default = False
-        Errors are raised instead of warnings if strict == True.
-
-    Raises
-    ------
-    AssertionError
-        If:
-        - lut is not a dataframe with the required columns
-        - if there are mismatches between the number of ROIs
-          in the LUT and th number of unique ROIs in the associated image.
-
-    ValueError
-        If regions in the image do not exist in the atlas lookup table
-        and `strict=True`.
-
-    Warns
-    -----
-    UserWarning
-        If regions in the image do not exist in the atlas lookup table
-        and `strict=False`.
-
-    """
-    assert isinstance(lut, pd.DataFrame)
-    assert "name" in lut.columns
-    assert "index" in lut.columns
-
-    if isinstance(atlas, (str, Path)):
-        atlas = check_niimg(atlas)
-
-    if isinstance(atlas, Nifti1Image):
-        data = safe_get_data(atlas, ensure_finite=True)
-    elif isinstance(atlas, SurfaceImage):
-        data = get_surface_data(atlas)
-    elif isinstance(atlas, np.ndarray):
-        data = atlas
-
-    roi_id = np.unique(data)
-
-    if len(lut) != len(roi_id):
-        if missing_from_image := set(lut["index"].to_list()) - set(roi_id):
-            missing_rows = lut[
-                lut["index"].isin(list(missing_from_image))
-            ].to_string(index=False)
-            msg = (
-                "\nThe following regions are present "
-                "in the atlas look-up table,\n"
-                "but missing from the atlas image:\n\n"
-                f"{missing_rows}\n"
-            )
-            if strict:
-                raise ValueError(msg)
-            warnings.warn(msg, stacklevel=3)
-
-        if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
-            msg = (
-                "\nThe following regions are present "
-                "in the atlas image,\n"
-                "but missing from the atlas look-up table:\n\n"
-                f"{missing_from_lut}"
-            )
-            if strict:
-                raise ValueError(msg)
-            warnings.warn(msg, stacklevel=3)
 
 
 @fill_doc
@@ -267,6 +124,7 @@ def fetch_atlas_difumo(
 
         - %(atlas_type)s
 
+        - %(template)s
 
     References
     ----------
@@ -327,12 +185,10 @@ def fetch_atlas_difumo(
     if not (data_dir / "README.md").exists():
         fetch_files(data_dir, readme_files, verbose=verbose, resume=resume)
 
-    fdescr = get_dataset_descr(dataset_name)
-
-    return Bunch(
-        description=fdescr,
+    return Atlas(
         maps=files_[1],
         labels=labels,
+        description=get_dataset_descr(dataset_name),
         atlas_type=atlas_type,
     )
 
@@ -368,11 +224,10 @@ def fetch_atlas_craddock_2012(
 
     %(verbose)s
 
-    homogeneity : :obj:`str`, optional
+    homogeneity : :obj:`str`,  default=None
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
     grp_mean : :obj:`bool`, default=True
         The choice of the :term:`parcellation` (with group_mean or without)
-        Default=True.
 
 
     Returns
@@ -401,6 +256,8 @@ def fetch_atlas_craddock_2012(
         - %(description)s
 
         - %(atlas_type)s
+
+        - %(template)s
 
 
     Warns
@@ -465,24 +322,31 @@ def fetch_atlas_craddock_2012(
         else:
             filename = [("random_all.nii.gz", url, opts)]
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-        params = {
-            "maps": data[0],
-            "description": fdescr,
-        }
-    else:
-        params = dict(
-            [
-                ("description", fdescr),
-                *list(zip(keys, sub_files)),
-            ]
-        )
-        warnings.warn(
-            category=DeprecationWarning,
-            message="In release 0.13, this fetcher will return a dictionary "
-            "with one map accessed through a 'maps' key. Please use the new "
-            "parameters homogeneity and grp_mean.",
+
+        return Atlas(
+            maps=data[0],
+            description=fdescr,
+            atlas_type=atlas_type,
         )
 
+    warnings.warn(
+        category=DeprecationWarning,
+        message=(
+            deprecation_message.format(version="0.13")
+            + (
+                "To suppress this warning, "
+                "Please use the parameters 'homogeneity' and 'grp_mean' "
+                "to specify the exact atlas image you want."
+            )
+        ),
+    )
+
+    params = dict(
+        [
+            ("description", fdescr),
+            *list(zip(keys, sub_files)),
+        ]
+    )
     params["atlas_type"] = atlas_type
 
     return Bunch(**params)
@@ -537,6 +401,8 @@ def fetch_atlas_destrieux_2009(
 
         - %(lut)s
 
+        - %(template)s
+
         - %(atlas_type)s
 
     References
@@ -565,18 +431,15 @@ def fetch_atlas_destrieux_2009(
     )
     files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
-    params = {
-        "maps": files_[1],
-        "labels": pd.read_csv(files_[0], index_col=0),
-        "lut": pd.read_csv(files_[0]),
-        "atlas_type": atlas_type,
-        "description": Path(files_[2]).read_text(),
-    }
-    params["labels"] = params["labels"].name.to_list()
+    labels = pd.read_csv(files_[0], index_col=0)
 
-    _check_look_up_table(lut=params["lut"], atlas=params["maps"])
-
-    return Bunch(**params)
+    return Atlas(
+        maps=files_[1],
+        labels=labels.name.to_list(),
+        description=Path(files_[2]).read_text(),
+        atlas_type=atlas_type,
+        lut=pd.read_csv(files_[0]),
+    )
 
 
 @fill_doc
@@ -673,6 +536,8 @@ def fetch_atlas_harvard_oxford(
         - %(lut)s
             Only for deterministic version of the atlas.
 
+        - %(template)s
+
         - %(atlas_type)s
 
     See Also
@@ -733,31 +598,17 @@ def fetch_atlas_harvard_oxford(
         verbose=verbose,
     )
 
-    fdescr = get_dataset_descr("harvard_oxford")
-
     atlas_niimg = check_niimg(atlas_img)
     if not symmetric_split or is_lateralized:
-        if atlas_type == "probabilistic":
-            return Bunch(
-                filename=atlas_filename,
-                maps=atlas_niimg,
-                labels=names,
-                description=fdescr,
-                atlas_type=atlas_type,
-            )
-
-        lut = _generate_atlas_look_up_table(
-            "fetch_atlas_harvard_oxford", name=names
-        )
-        _check_look_up_table(lut=lut, atlas=atlas_niimg)
-
-        return Bunch(
-            filename=atlas_filename,
+        return Atlas(
             maps=atlas_niimg,
             labels=names,
-            description=fdescr,
-            lut=lut,
+            description=get_dataset_descr("harvard_oxford"),
             atlas_type=atlas_type,
+            lut=generate_atlas_look_up_table(
+                "fetch_atlas_harvard_oxford", name=names
+            ),
+            filename=atlas_filename,
         )
 
     new_atlas_data, new_names = _compute_symmetric_split(
@@ -767,27 +618,15 @@ def fetch_atlas_harvard_oxford(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
 
-    if atlas_type == "probabilistic":
-        return Bunch(
-            filename=atlas_filename,
-            maps=new_atlas_niimg,
-            labels=new_names,
-            description=fdescr,
-            atlas_type=atlas_type,
-        )
-
-    lut = _generate_atlas_look_up_table(
-        "fetch_atlas_harvard_oxford", name=new_names
-    )
-    _check_look_up_table(lut=lut, atlas=new_atlas_niimg)
-
-    return Bunch(
-        filename=atlas_filename,
+    return Atlas(
         maps=new_atlas_niimg,
         labels=new_names,
-        description=fdescr,
-        lut=lut,
+        description=get_dataset_descr("harvard_oxford"),
         atlas_type=atlas_type,
+        lut=generate_atlas_look_up_table(
+            "fetch_atlas_harvard_oxford", name=new_names
+        ),
+        filename=atlas_filename,
     )
 
 
@@ -875,6 +714,8 @@ def fetch_atlas_juelich(
         - %(lut)s
             Only for deterministic version of the atlas.
 
+        - %(template)s
+
         - %(atlas_type)s
 
     See Also
@@ -932,29 +773,15 @@ def fetch_atlas_juelich(
         atlas_niimg, new_atlas_data, atlas_niimg.affine
     )
 
-    fdescr = get_dataset_descr("juelich")
-
-    if atlas_type == "probabilistic":
-        return Bunch(
-            filename=atlas_filename,
-            maps=new_atlas_niimg,
-            labels=list(new_names),
-            description=fdescr,
-            atlas_type=atlas_type,
-        )
-
-    lut = _generate_atlas_look_up_table(
-        "fetch_atlas_juelich", name=list(new_names)
-    )
-    _check_look_up_table(lut=lut, atlas=new_atlas_niimg)
-
-    return Bunch(
-        filename=atlas_filename,
+    return Atlas(
         maps=new_atlas_niimg,
         labels=list(new_names),
-        description=fdescr,
-        lut=lut,
+        description=get_dataset_descr("juelich"),
         atlas_type=atlas_type,
+        lut=generate_atlas_look_up_table(
+            "fetch_atlas_juelich", name=list(new_names)
+        ),
+        filename=atlas_filename,
     )
 
 
@@ -1165,6 +992,8 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
         - %(atlas_type)s
 
+        - %(template)s
+
     References
     ----------
     .. footbibliography::
@@ -1188,21 +1017,17 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
     files = fetch_files(data_dir, files, resume=resume, verbose=verbose)
 
     csv_data = pd.read_csv(files[0])
-    labels = [name.strip() for name in csv_data["name"].to_list()]
     net_names = [
         net_name.strip() for net_name in csv_data["net name"].to_list()
     ]
-    region_coords = csv_data[["x", "y", "z"]].to_numpy().tolist()
 
-    fdescr = get_dataset_descr(dataset_name)
-
-    return Bunch(
+    return Atlas(
         maps=files[1],
-        labels=labels,
-        region_coords=region_coords,
-        networks=net_names,
-        description=fdescr,
+        labels=[name.strip() for name in csv_data["name"].to_list()],
+        description=get_dataset_descr(dataset_name),
         atlas_type=atlas_type,
+        region_coords=csv_data[["x", "y", "z"]].to_numpy().tolist(),
+        networks=net_names,
     )
 
 
@@ -1269,7 +1094,7 @@ def fetch_atlas_smith_2009(
         atlas. Specifying "nitrc" will force download from a mirror, with
         potentially higher bandwidth.
 
-    dimension : :obj:`int`, optional
+    dimension : :obj:`int`, default=None
         Number of dimensions in the dictionary. Valid resolutions
         available are {10, 20, 70}.
 
@@ -1316,6 +1141,8 @@ def fetch_atlas_smith_2009(
         - %(description)s
 
         - %(atlas_type)s
+
+        - %(template)s
 
     Warns
     -----
@@ -1380,26 +1207,45 @@ def fetch_atlas_smith_2009(
 
         file = [(files[key], url[key_index] + files[key], {})]
         data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
-        params = Bunch(maps=data[0], description=fdescr, atlas_type=atlas_type)
-    else:
-        keys = list(files.keys())
-        files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
-        files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-        params = dict(zip(keys, files_))
-        params["description"] = fdescr
-        params["atlas_type"] = atlas_type
-        warnings.warn(
-            category=DeprecationWarning,
-            message="In release 0.13, this fetcher will return a dictionary "
-            "with one map accessed through a 'maps' key. Please use the new "
-            "parameters dimension and resting.",
+
+        return Atlas(
+            maps=data[0],
+            description=fdescr,
+            atlas_type=atlas_type,
         )
+
+    warnings.warn(
+        category=DeprecationWarning,
+        message=(
+            deprecation_message.format(version="0.13")
+            + (
+                "To suppress this warning, "
+                "Please use the parameters 'dimension' and 'resting' "
+                "to specify the exact atlas image you want."
+            )
+        ),
+    )
+
+    keys = list(files.keys())
+    files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
+    files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
+    params = dict(zip(keys, files_))
+
+    params["description"] = fdescr
+    params["atlas_type"] = atlas_type
 
     return Bunch(**params)
 
 
 @fill_doc
-def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_atlas_yeo_2011(
+    data_dir=None,
+    url=None,
+    resume=True,
+    verbose=1,
+    n_networks=None,
+    thickness=None,
+):
     """Download and return file names for the Yeo 2011 :term:`parcellation`.
 
     This function retrieves the so-called yeo
@@ -1419,48 +1265,74 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     %(resume)s
     %(verbose)s
 
+    n_networks : {7, 17, None}, default = None
+        If not None,
+        then only specific version of the atlas is returned:
+
+        - 7 networks parcellation,
+        - 17 networks parcellation.
+
+        If ``thickness`` is not None, this will default to ``7``.
+        The default will be set to ``7`` in version 0.13.2.
+
+        .. versionadded:: 0.11.2dev
+
+    thickness : {"thin", "thick", None}, default = None
+        If not None,
+        then only specific version of the atlas is returned:
+
+        - ``"thick"``: parcellation fitted to thick cortex segmentations,
+        - ``"thin"``: parcellation fitted to thin cortex segmentations.
+
+        If ``n_networks`` is not None, this will default to ``"thick"``.
+        The default will be set to ``"thick"`` in version 0.13.2.
+
+        .. versionadded:: 0.11.2dev
+
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object.
+
+        If ``n_networks`` and ``thickness`` are None, keys are:
 
         - 'thin_7': :obj:`str`
             Path to nifti file containing the
-            7 regions :term:`parcellation` fitted to thin template cortex
+            7 networks :term:`parcellation` fitted to thin template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_7``.
 
         - 'thick_7': :obj:`str`
             Path to nifti file containing the
-            7 region :term:`parcellation` fitted to thick template cortex
+            7 networks :term:`parcellation` fitted to thick template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_7``.
 
         - 'thin_17': :obj:`str`
             Path to nifti file containing the
-            17 region :term:`parcellation` fitted to thin template cortex
+            17 networks :term:`parcellation` fitted to thin template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_17``.
 
         - 'thick_17': :obj:`str`
             Path to nifti file containing the
-            17 region :term:`parcellation` fitted to thick template cortex
+            17 networks :term:`parcellation` fitted to thick template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_17``.
 
         - 'colors_7': :obj:`str`
             Path to colormaps text file for
-            7 region :term:`parcellation`.
+            7 networks :term:`parcellation`.
             This file maps :term:`voxel` integer
             values from ``data.thin_7`` and ``data.tick_7`` to network names.
 
         - 'colors_17': :obj:`str`
             Path to colormaps text file for
-            17 region :term:`parcellation`.
+            17 networks :term:`parcellation`.
             This file maps :term:`voxel` integer
             values from ``data.thin_17`` and ``data.tick_17``
             to network names.
@@ -1470,7 +1342,25 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
         - %(description)s
 
+        - %(template)s
+
+        - %(atlas_type)s
+
+        otherwise the keys are:
+
+        - 'anat': :obj:`str`
+            Path to nifti file containing the anatomy image.
+
+        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`.
+          The image contains integer values for each network.
+
+        - %(labels)s
+
         - %(lut)s
+
+        - %(description)s
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -1484,6 +1374,34 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     """
     atlas_type = "deterministic"
+
+    if n_networks is None and thickness is None:
+        warnings.warn(
+            category=DeprecationWarning,
+            message=(
+                deprecation_message.format(version="0.13.2")
+                + (
+                    "To suppress this warning, "
+                    "Please use the parameters 'n_networks' and 'thickness' "
+                    "to specify the exact atlas image you want."
+                )
+            ),
+        )
+
+    if n_networks is not None:
+        if n_networks not in (7, 17):
+            raise ValueError(
+                f"'n_networks' must be 7 or 17. Got {n_networks=}"
+            )
+        if thickness is None:
+            thickness = "thick"
+    if thickness is not None:
+        if thickness not in ("thin", "thick"):
+            raise ValueError(
+                f"'thickness' must be 'thin' or 'thick'. Got {thickness=}"
+            )
+        if n_networks is None:
+            n_networks = 7
 
     if url is None:
         url = (
@@ -1533,26 +1451,29 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
         ]
     )
 
-    lut = pd.read_csv(
-        params["colors_7"],
-        sep="\\s+",
-        names=["index", "name", "r", "g", "b", "fs"],
-        header=0,
-    )
-    params["lut_7"] = _update_lut_freesurder(lut)
+    if n_networks and thickness:
+        lut_file = (
+            params["colors_7"] if n_networks == 7 else params["colors_17"]
+        )
+        lut = pd.read_csv(
+            lut_file,
+            sep="\\s+",
+            names=["index", "name", "r", "g", "b", "fs"],
+            header=0,
+        )
+        lut = _update_lut_freesurder(lut)
 
-    lut = pd.read_csv(
-        params["colors_17"],
-        sep="\\s+",
-        names=["index", "name", "r", "g", "b", "fs"],
-        header=0,
-    )
-    params["lut_17"] = _update_lut_freesurder(lut)
+        maps = params[f"{thickness}_{n_networks}"]
 
-    _check_look_up_table(params["lut_7"], params["thin_7"])
-    _check_look_up_table(params["lut_7"], params["thick_7"])
-    _check_look_up_table(params["lut_17"], params["thin_17"])
-    _check_look_up_table(params["lut_17"], params["thick_17"])
+        return Atlas(
+            maps=maps,
+            labels=lut.name.to_list(),
+            description=fdescr,
+            template="fsaverage",
+            lut=lut,
+            atlas_type=atlas_type,
+            anat=params["anat"],
+        )
 
     return Bunch(**params)
 
@@ -1626,26 +1547,29 @@ def fetch_atlas_aal(
             to see how to link labels to regions IDs.
 
         - %(labels)s
-            As 'Background' (label 0) is not included in this list,
-            there are 116 names in version SPM 5, 8, and 12,
-            and 166 names in version 3v2.
+            There are 117 names in version SPM 5, 8, and 12,
+            and 167 names in version 3v2.
             Please refer to the main description
-            to see how to   link labels to regions IDs.
+            to see how to link labels to regions IDs.
 
         - 'indices': :obj:`list` of :obj:`str`
             Indices mapping 'labels'
-            to values in the 'maps' image. This list has 116 elements in
-            version SPM 5, 8 and 12, and 166 elements in version 3v2.
+            to values in the 'maps' image.
+            This list has 117 elements in
+            version SPM 5, 8 and 12, and 167 elements in version 3v2.
             Since the values in the 'maps' image do not correspond to
             indices in ``labels``, but rather to values in ``indices``, the
             location of a label in the ``labels`` list does not necessary
-            match the associated value in the image. Use the ``indices``
+            match the associated value in the image.
+            Use the ``indices``
             list to identify the appropriate image value for a given label
             (See main description above).
 
         - %(description)s
 
         - %(lut)s
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -1708,8 +1632,8 @@ def fetch_atlas_aal(
         data_dir, filenames, resume=resume, verbose=verbose
     )
     fdescr = get_dataset_descr("aal")
-    labels = []
-    indices = []
+    labels = ["Background"]
+    indices = ["0"]
     if version in ("SPM12", "3v2"):
         xml_tree = ElementTree.parse(labels_file)
         root = xml_tree.getroot()
@@ -1724,21 +1648,18 @@ def fetch_atlas_aal(
                 labels.append(label)
         fdescr = fdescr.replace("SPM 12", version)
 
-    lut = _generate_atlas_look_up_table(
-        "fetch_atlas_aal", index=[int(x) for x in indices], name=labels
+    return Atlas(
+        maps=atlas_img,
+        labels=labels,
+        description=fdescr,
+        lut=generate_atlas_look_up_table(
+            "fetch_atlas_aal",
+            index=np.array([int(x) for x in indices]),
+            name=labels,
+        ),
+        atlas_type=atlas_type,
+        indices=indices,
     )
-    _check_look_up_table(lut=lut, atlas=atlas_img)
-
-    params = {
-        "description": fdescr,
-        "maps": atlas_img,
-        "labels": labels,
-        "indices": indices,
-        "lut": lut,
-        "atlas_type": atlas_type,
-    }
-
-    return Bunch(**params)
 
 
 @fill_doc
@@ -1786,7 +1707,7 @@ def fetch_atlas_basc_multiscale_2015(
 
     %(verbose)s
 
-    resolution : :obj:`int`, optional
+    resolution : :obj:`int`, default=None
         Number of networks in the dictionary.
         Valid resolutions  available are
         {7, 12, 20, 36, 64, 122, 197, 325, 444}
@@ -1810,6 +1731,8 @@ def fetch_atlas_basc_multiscale_2015(
         - %(description)s
 
         - %(lut)s
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -1878,46 +1801,41 @@ def fetch_atlas_basc_multiscale_2015(
 
         data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
 
-        labels = [str(x) for x in range(resolution + 1)]
+        labels = ["Background"] + [str(x) for x in range(1, resolution + 1)]
 
-        lut = _generate_atlas_look_up_table(
-            "fetch_atlas_basc_multiscale_2015", name=labels
-        )
-
-        params = Bunch(
+        return Atlas(
             maps=data[0],
-            description=fdescr,
-            lut=lut,
-            atlas_type=atlas_type,
             labels=labels,
+            description=fdescr,
+            lut=generate_atlas_look_up_table(
+                "fetch_atlas_basc_multiscale_2015", name=labels
+            ),
+            atlas_type=atlas_type,
         )
-        _check_look_up_table(lut=params.lut, atlas=params.maps)
 
-    else:
-        basenames = [
-            "template_cambridge_basc_multiscale_"
-            + version
-            + "_"
-            + key
-            + ".nii.gz"
-            for key in keys
-        ]
-        filenames = [
-            (folder_name / basename, url, opts) for basename in basenames
-        ]
-        data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
+    warnings.warn(
+        category=DeprecationWarning,
+        message=(
+            deprecation_message.format(version="0.13")
+            + (
+                "To suppress this warning, "
+                "Please use the parameters 'resolution' and 'version' "
+                "to specify the exact atlas image you want."
+            )
+        ),
+    )
 
-        descr = get_dataset_descr(dataset_name)
+    basenames = [
+        "template_cambridge_basc_multiscale_" + version + "_" + key + ".nii.gz"
+        for key in keys
+    ]
+    filenames = [(folder_name / basename, url, opts) for basename in basenames]
+    data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
 
-        params = dict(zip(keys, data))
-        params["description"] = descr
-        params["atlas_type"] = atlas_type
-        warnings.warn(
-            category=DeprecationWarning,
-            message="In release 0.13, this fetcher will return a dictionary "
-            "with one map accessed through a 'maps' key. Please use the new "
-            "parameters resolution and version.",
-        )
+    params = dict(zip(keys, data))
+    params["description"] = fdescr
+    params["atlas_type"] = atlas_type
+
     return Bunch(**params)
 
 
@@ -2118,6 +2036,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
         - %(atlas_type)s
 
+        - %(template)s
+
     References
     ----------
     .. footbibliography::
@@ -2173,6 +2093,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         ("atlas_type", atlas_type),
         ("rsn_indices", labels),
         ("networks", networks),
+        ("template", "volume"),
         *list(zip(keys, sub_files)),
     ]
     return Bunch(**dict(params))
@@ -2219,6 +2140,8 @@ def fetch_atlas_surf_destrieux(
         - %(description)s
 
         - %(lut)s
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -2267,11 +2190,11 @@ def fetch_atlas_surf_destrieux(
     annot_right = freesurfer.read_annot(annots[1])
 
     labels = [x.decode("utf-8") for x in annot_left[2]]
-    lut = _generate_atlas_look_up_table(
+    lut = generate_atlas_look_up_table(
         "fetch_atlas_surf_destrieux", name=labels
     )
-    _check_look_up_table(lut=lut, atlas=annot_left[0])
-    _check_look_up_table(lut=lut, atlas=annot_right[0])
+    check_look_up_table(lut=lut, atlas=annot_left[0])
+    check_look_up_table(lut=lut, atlas=annot_right[0])
 
     return Bunch(
         labels=labels,
@@ -2280,6 +2203,7 @@ def fetch_atlas_surf_destrieux(
         description=fdescr,
         lut=lut,
         atlas_type=atlas_type,
+        template="fsaverage",
     )
 
 
@@ -2381,6 +2305,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
         - %(lut)s
 
+        - %(template)s
+
         - %(atlas_type)s
 
     References
@@ -2404,17 +2330,14 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     atlas_img = check_niimg(img_file)
     labels = json.loads(labels_file.read_text("utf-8"))
-    description = get_dataset_descr("talairach_atlas").format(level_name)
 
-    lut = _generate_atlas_look_up_table("fetch_atlas_talairach", name=labels)
-    _check_look_up_table(lut=lut, atlas=atlas_img)
-
-    return Bunch(
+    return Atlas(
         maps=atlas_img,
         labels=labels,
-        description=description,
-        lut=lut,
+        description=get_dataset_descr("talairach_atlas").format(level_name),
+        lut=generate_atlas_look_up_table("fetch_atlas_talairach", name=labels),
         atlas_type=atlas_type,
+        template="Talairach",
     )
 
 
@@ -2454,34 +2377,16 @@ def fetch_atlas_pauli_2017(
             (integers from 0 to 16).
 
         - %(labels)s
-            The list contains 16 values for both
+            The list contains values for both
             :term:`probabilitic<Probabilistic atlas>` and
             :term:`deterministic<Deterministic atlas>` types.
-
-            .. warning::
-                For the :term:`deterministic<Deterministic atlas>` type,
-                'Background' is not included in the list of labels.
-                To have proper indexing, you should either manually add
-                'Background' to the list of labels:
-
-                .. code-block:: python
-
-                    # Prepend background label
-                    data.labels.insert(0, "Background")
-
-                Or be careful that the indexing should be offset by one:
-
-                .. code-block:: python
-
-                    # Get region ID of label 'NAC' when 'background' was
-                    # not added to the list of labels:
-                    # idx_nac should be equal to 3:
-                    idx_nac = data.labels.index("NAC") + 1
 
         - %(description)s
 
         - %(lut)s
-            Only when atlas_type="probabilistic"
+            Only when atlas_type="deterministic"
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -2540,24 +2445,13 @@ def fetch_atlas_pauli_2017(
 
     labels = np.loadtxt(labels, dtype=str)[:, 1].tolist()
 
-    fdescr = get_dataset_descr(dataset_name)
-
-    if atlas_type == "probabilistic":
-        return Bunch(
-            maps=atlas_file,
-            labels=labels,
-            description=fdescr,
-            atlas_type=atlas_type,
-        )
-
-    lut = _generate_atlas_look_up_table("fetch_atlas_pauli_2017", name=labels)
-    _check_look_up_table(lut=lut, atlas=atlas_file)
-
-    return Bunch(
+    return Atlas(
         maps=atlas_file,
         labels=labels,
-        description=fdescr,
-        lut=lut,
+        description=get_dataset_descr(dataset_name),
+        lut=generate_atlas_look_up_table(
+            "fetch_atlas_pauli_2017", name=labels
+        ),
         atlas_type=atlas_type,
     )
 
@@ -2594,7 +2488,7 @@ def fetch_atlas_schaefer_2018(
     resolution_mm : {1, 2}, default=1mm
         Spatial resolution of atlas image in mm.
     %(data_dir)s
-    base_url : :obj:`str`, optional
+    base_url : :obj:`str`,  default=None
         Base URL of files to download (``None`` results in
         default ``base_url``).
     %(resume)s
@@ -2614,28 +2508,11 @@ def fetch_atlas_schaefer_2018(
 
         - %(labels)s
 
-            .. warning::
-                The list of labels does not contain 'Background' by default.
-                To have proper indexing, you should either
-                manually add 'Background' to the list of labels:
-
-                .. code-block:: python
-
-                   # Prepend background label
-                   data.labels.insert(0, "Background")
-
-                Or be careful that the indexing should be offset by one:
-
-                .. code-block:: python
-
-                   # Get region ID of label '7Networks_LH_Vis_3'
-                   # when 'Background' was not added to the list of labels:
-                   # idx should be equal to 3:
-                   idx = data.labels.index("7Networks_LH_Vis_3") + 1
-
         - %(description)s
 
         - %(lut)s
+
+        - %(template)s
 
         - %(atlas_type)s
 
@@ -2710,15 +2587,83 @@ def fetch_atlas_schaefer_2018(
     )
     lut = _update_lut_freesurder(lut)
 
-    labels = list(lut["name"])
-    fdescr = get_dataset_descr(dataset_name)
-
-    _check_look_up_table(lut=lut, atlas=atlas_file)
-
-    return Bunch(
+    return Atlas(
         maps=atlas_file,
-        labels=labels,
-        description=fdescr,
+        labels=list(lut["name"]),
+        description=get_dataset_descr(dataset_name),
         lut=lut,
         atlas_type=atlas_type,
     )
+
+
+class Atlas(Bunch):
+    """Sub class of Bunch to help standardize atlases.
+
+    Parameters
+    ----------
+    maps : Niimg-like object or SurfaceImage object
+        single image or list of images for that atlas
+
+    description : str
+        atlas description
+
+    atlas_type: {"deterministic", "probabilistic"}
+
+    labels: list of str
+        labels for the atlas
+
+    lut: pandas.DataFrame
+        look up table for the atlas
+
+    template: str
+        name of the template used for the atlas
+    """
+
+    def __init__(
+        self,
+        maps,
+        description,
+        atlas_type,
+        labels=None,
+        lut=None,
+        template=None,
+        **kwargs,
+    ):
+        assert atlas_type in ["probabilistic", "deterministic"]
+
+        # TODO: improve
+        if template is None:
+            template = "volume"
+
+        if atlas_type == "probabilistic":
+            if labels is None:
+                super().__init__(
+                    maps=maps,
+                    description=description,
+                    atlas_type=atlas_type,
+                    template=template,
+                    **kwargs,
+                )
+            else:
+                super().__init__(
+                    maps=maps,
+                    labels=labels,
+                    description=description,
+                    atlas_type=atlas_type,
+                    template=template,
+                    **kwargs,
+                )
+
+            return None
+
+        check_look_up_table(lut=lut, atlas=maps)
+
+        super().__init__(
+            maps=maps,
+            labels=lut.name.to_list(),
+            description=description,
+            lut=lut,
+            atlas_type=atlas_type,
+            template=template,
+            **kwargs,
+        )

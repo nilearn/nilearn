@@ -19,7 +19,11 @@ from sklearn.utils import Bunch
 from nilearn._utils.data_gen import create_fake_bids_dataset
 from nilearn.datasets import func
 from nilearn.datasets._utils import PACKAGE_DIRECTORY, get_dataset_dir
-from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
+from nilearn.datasets.tests._testing import (
+    check_type_fetcher,
+    dict_to_archive,
+    list_to_archive,
+)
 from nilearn.image import load_img
 
 
@@ -38,6 +42,7 @@ def test_is_valid_path():
 def test_func_fetcher_return_bunch(fn):
     data = fn()
     assert isinstance(data, Bunch)
+    check_type_fetcher(data)
 
 
 def _load_localizer_index():
@@ -108,6 +113,8 @@ def test_fetch_haxby(tmp_path, request_mocker):
         # subject_data + (md5 + mask if first subj)
 
         assert isinstance(haxby, Bunch)
+        check_type_fetcher(haxby)
+
         assert request_mocker.url_count == i + 2
         assert len(haxby.func) == 1
         assert len(haxby.anat) == 1
@@ -118,7 +125,6 @@ def test_fetch_haxby(tmp_path, request_mocker):
         assert len(haxby.mask_house) == 1
         assert len(haxby.mask_face_little) == 1
         assert len(haxby.mask_house_little) == 1
-        assert haxby.description != ""
 
     # subjects with list
     subjects = [1, 2, 6]
@@ -230,10 +236,10 @@ def test_fetch_adhd(tmp_path, request_mocker):
     adhd = func.fetch_adhd(data_dir=tmp_path, n_subjects=12, verbose=0)
 
     assert isinstance(adhd, Bunch)
+    check_type_fetcher(adhd)
     assert len(adhd.func) == 12
     assert len(adhd.confounds) == 12
     assert request_mocker.url_count == 13  # Subjects + phenotypic
-    assert adhd.description != ""
 
 
 def test_miyawaki2008(tmp_path, request_mocker):
@@ -245,7 +251,6 @@ def test_miyawaki2008(tmp_path, request_mocker):
     assert len(dataset.mask_roi) == 38
     assert isinstance(dataset.background, str)
     assert request_mocker.url_count == 1
-    assert dataset.description != ""
 
 
 def test_fetch_localizer_contrasts_errors(
@@ -284,6 +289,7 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):  # noqa: ARG001
         ["checkerboard"], n_subjects=2, data_dir=tmp_path, verbose=1
     )
 
+    check_type_fetcher(dataset)
     assert not hasattr(dataset, "anats")
     assert not hasattr(dataset, "tmaps")
     assert not hasattr(dataset, "masks")
@@ -291,7 +297,6 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):  # noqa: ARG001
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert len(dataset.cmaps) == 2
     assert len(dataset["ext_vars"]) == 2
-    assert dataset.description != ""
 
 
 def test_fetch_localizer_contrasts_multiple_contrasts(
@@ -333,7 +338,6 @@ def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):  # noqa:
     assert len(dataset.cmaps) == 1
     assert len(dataset.masks) == 1
     assert len(dataset.tmaps) == 1
-    assert dataset.description != ""
 
 
 def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  # noqa: ARG001
@@ -361,11 +365,11 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: 
     )
 
     assert isinstance(dataset, Bunch)
+    check_type_fetcher(dataset)
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.cmaps[0], str)
     assert len(dataset["ext_vars"]) == 2
     assert len(dataset.cmaps) == 2
-    assert dataset.description != ""
 
 
 def test_fetch_localizer_button_task(tmp_path, localizer_mocker):  # noqa: ARG001
@@ -383,8 +387,6 @@ def test_fetch_localizer_button_task(tmp_path, localizer_mocker):  # noqa: ARG00
 
     assert isinstance(dataset.tmap, str)
     assert isinstance(dataset.anat, str)
-
-    assert dataset.description != ""
 
 
 @pytest.mark.parametrize("quality_checked", [False, True])
@@ -425,8 +427,9 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
 
     assert isinstance(dataset, Bunch)
 
+    check_type_fetcher(dataset)
+
     assert len(dataset.func_preproc) == n_subjects / div
-    assert dataset.description != ""
 
     # Smoke test using only a string, rather than a list of strings
     dataset = func.fetch_abide_pcp(
@@ -467,7 +470,7 @@ def test_fetch_mixed_gambles(tmp_path, n_subjects):
     assert len(mgambles["zmaps"]) == n_subjects
 
     assert isinstance(mgambles, Bunch)
-    assert mgambles.description != ""
+    check_type_fetcher(mgambles)
 
 
 def test_check_parameters_megatrawls_datasets():
@@ -509,38 +512,38 @@ def test_fetch_megatrawls_netmats(tmp_path):
         files_dir = tmp_path / "Megatrawls" / folder
         files_dir.mkdir(parents=True, exist_ok=True)
         with (files_dir / file).open("w") as net_file:
-            net_file.write("1")
+            net_file.write("  1  2\n  2  3")
 
-    megatrawl_netmats_data = func.fetch_megatrawls_netmats(data_dir=tmp_path)
+    dataset = func.fetch_megatrawls_netmats(data_dir=tmp_path)
 
-    assert isinstance(megatrawl_netmats_data, Bunch)
+    assert isinstance(dataset, Bunch)
+
+    check_type_fetcher(dataset)
 
     # expected number of returns in output name should be equal
-    assert len(megatrawl_netmats_data) == 5
+    assert len(dataset) == 5
     # check if returned bunch should not be empty
     # dimensions
-    assert megatrawl_netmats_data.dimensions != ""
+    assert dataset.dimensions != ""
     # timeseries
-    assert megatrawl_netmats_data.timeseries != ""
+    assert dataset.timeseries != ""
     # matrices
-    assert megatrawl_netmats_data.matrices != ""
+    assert dataset.matrices != ""
     # correlation matrices
-    assert megatrawl_netmats_data.correlation_matrices != ""
-    # description
-    assert megatrawl_netmats_data.description != ""
+    assert isinstance(dataset.correlation_matrices, pd.DataFrame)
 
     # check if input provided for dimensions, timeseries, matrices to be same
     # to user settings
-    netmats_data = func.fetch_megatrawls_netmats(
+    dataset = func.fetch_megatrawls_netmats(
         data_dir=tmp_path,
         dimensionality=300,
         timeseries="multiple_spatial_regression",
         matrices="full_correlation",
     )
-
-    assert netmats_data.dimensions == 300
-    assert netmats_data.timeseries == "multiple_spatial_regression"
-    assert netmats_data.matrices == "full_correlation"
+    check_type_fetcher(dataset)
+    assert dataset.dimensions == 300
+    assert dataset.timeseries == "multiple_spatial_regression"
+    assert dataset.matrices == "full_correlation"
 
 
 def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
@@ -571,12 +574,11 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
     nki_data = func.fetch_surf_nki_enhanced(data_dir=tmp_path)
 
     assert isinstance(nki_data, Bunch)
-    assert nki_data.description != ""
+    check_type_fetcher(nki_data)
     assert len(nki_data.func_left) == 10
     assert len(nki_data.func_right) == 10
-    assert isinstance(nki_data.phenotypic, np.ndarray)
-    assert nki_data.phenotypic.shape == (10,)
-    assert nki_data.description != ""
+    assert isinstance(nki_data.phenotypic, pd.DataFrame)
+    assert nki_data.phenotypic.shape == (9, 4)
 
 
 def test_load_nki_error():
@@ -649,8 +651,8 @@ def test_fetch_development_fmri_participants(tmp_path, request_mocker):
         data_dir=tmp_path, url=None, verbose=1
     )
 
-    assert isinstance(participants, np.ndarray)
-    assert participants.shape == (5,)
+    assert isinstance(participants, pd.DataFrame)
+    assert participants.shape == (5, 6)
 
 
 def test_fetch_development_fmri_functional(tmp_path):
@@ -677,11 +679,11 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     )
 
     assert isinstance(data, Bunch)
+    check_type_fetcher(data)
     assert len(data.func) == 2
     assert len(data.confounds) == 2
-    assert isinstance(data.phenotypic, np.ndarray)
-    assert data.phenotypic.shape == (2,)
-    assert data.description != ""
+    assert isinstance(data.phenotypic, pd.DataFrame)
+    assert data.phenotypic.shape == (2, 6)
 
     # check reduced confounds
     confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
@@ -700,7 +702,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     data = func.fetch_development_fmri(
         n_subjects=1, reduce_confounds=False, verbose=1
     )
-    age_group = data.phenotypic["Child_Adult"][0]
+    age_group = data.phenotypic["Child_Adult"].to_list()[0]
 
     assert age_group == "adult"
 
@@ -914,22 +916,6 @@ def test_fetch_localizer(tmp_path):
 
     assert isinstance(dataset["events"], str)
     assert isinstance(dataset.epi_img, str)
-    assert dataset.description != ""
-
-
-def _mock_original_spm_auditory_events_file():
-    expected_events_data = {
-        "onset": [factor * 42.0 for factor in range(16)],
-        "duration": [42.0] * 16,
-        "trial_type": ["rest", "active"] * 8,
-    }
-    expected_events_data = pd.DataFrame(expected_events_data)
-    expected_events_data_string = expected_events_data.to_csv(
-        sep="\t",
-        index=0,
-        columns=["onset", "duration", "trial_type"],
-    )
-    return expected_events_data_string
 
 
 @pytest.mark.parametrize("legacy", [True, False])
@@ -960,9 +946,9 @@ def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
         )
 
         assert isinstance(bunch, Bunch)
+        check_type_fetcher(bunch)
         assert bunch.data_dir == str(expected_data_dir)
         assert bunch.func == sorted(expected_files)
-        assert bunch.description != ""
 
 
 def test_download_spm_auditory_data(tmp_path, request_mocker):
@@ -989,11 +975,10 @@ def test_fetch_spm_auditory(tmp_path):
     dataset = func.fetch_spm_auditory(data_dir=tmp_path)
 
     assert isinstance(dataset, Bunch)
+    check_type_fetcher(dataset)
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.events, str)
     assert isinstance(dataset.func[0], str)
-
-    assert dataset.description != ""
 
 
 def _generate_spm_multimodal(subject_dir=None, n_sessions=2, n_vol=390):
@@ -1024,6 +1009,7 @@ def test_fetch_spm_multimodal(tmp_path):
     dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path, verbose=0)
 
     assert isinstance(dataset, Bunch)
+    check_type_fetcher(dataset)
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.func1[0], str)
     assert len(dataset.func1) == 390
@@ -1032,7 +1018,6 @@ def test_fetch_spm_multimodal(tmp_path):
     assert dataset.slice_order == "descending"
     assert isinstance(dataset.trials_ses1, str)
     assert isinstance(dataset.trials_ses2, str)
-    assert dataset.description != ""
 
 
 def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
@@ -1049,6 +1034,7 @@ def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
     assert (subject_dir / "fMRI").exists()
     assert (subject_dir / "sMRI").exists()
     assert isinstance(dataset, Bunch)
+    check_type_fetcher(dataset)
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.func1[0], str)
     assert len(dataset.func1) == 390
@@ -1057,7 +1043,6 @@ def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
     assert dataset.slice_order == "descending"
     assert isinstance(dataset.trials_ses1, str)
     assert isinstance(dataset.trials_ses2, str)
-    assert dataset.description != ""
 
 
 def test_fiac(tmp_path):
@@ -1076,16 +1061,17 @@ def test_fiac(tmp_path):
     dataset = func.fetch_fiac_first_level(data_dir=tmp_path)
 
     assert isinstance(dataset, Bunch)
+    check_type_fetcher(dataset)
     assert isinstance(dataset.func1, str)
     assert isinstance(dataset.func2, str)
     assert isinstance(dataset.design_matrix1, str)
     assert isinstance(dataset.design_matrix2, str)
     assert isinstance(dataset.mask, str)
-    assert dataset.description != ""
 
 
 def test_load_sample_motor_activation_image():
     path_img = func.load_sample_motor_activation_image()
 
+    check_type_fetcher(path_img)
     assert Path(path_img).exists()
     assert load_img(path_img)

@@ -22,28 +22,35 @@ from nibabel.spatialimages import SpatialImage
 from scipy import stats
 from scipy.ndimage import binary_fill_holes
 
-from nilearn.image.resampling import reorder_img
-from nilearn.maskers import NiftiMasker
-from nilearn.plotting.displays import get_projector, get_slicer
-from nilearn.plotting.displays._slicers import _get_cbar_ticks
-
-from .. import _utils
-from .._utils import (
-    _constrained_layout_kwargs,
+from nilearn._utils import (
+    check_niimg_3d,
+    check_niimg_4d,
     compare_version,
+    constrained_layout_kwargs,
     fill_doc,
     logger,
 )
-from .._utils.extmath import fast_abs_percentile
-from .._utils.ndimage import get_border_data
-from .._utils.niimg import safe_get_data
-from .._utils.numpy_conversions import as_ndarray
-from .._utils.param_validation import check_threshold
-from ..datasets import load_mni152_template
-from ..image import get_data, iter_img, math_img, new_img_like, resample_to_img
-from ..masking import apply_mask, compute_epi_mask
-from ..signal import clean
-from . import cm
+from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.ndimage import get_border_data
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn._utils.param_validation import check_threshold
+from nilearn.datasets import load_mni152_template
+from nilearn.image import (
+    get_data,
+    iter_img,
+    math_img,
+    new_img_like,
+    resample_to_img,
+)
+from nilearn.image.resampling import reorder_img
+from nilearn.maskers import NiftiMasker
+from nilearn.masking import apply_mask, compute_epi_mask
+from nilearn.plotting import cm
+from nilearn.plotting._utils import _check_threshold
+from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.plotting.displays._slicers import get_cbar_ticks
+from nilearn.signal import clean
 
 
 def show():
@@ -95,8 +102,14 @@ def get_colorbar_and_data_ranges(
     stat_map_max = np.nanmax(stat_map_data)
 
     if symmetric_cbar == "auto":
-        if (vmin is None) or (vmax is None):
-            symmetric_cbar = stat_map_min < 0 < stat_map_max
+        if vmin is None or vmax is None:
+            min_value = (
+                stat_map_min if vmin is None else max(vmin, stat_map_min)
+            )
+            max_value = (
+                stat_map_max if vmax is None else min(stat_map_max, vmax)
+            )
+            symmetric_cbar = min_value < 0 < max_value
         else:
             symmetric_cbar = np.isclose(vmin, -vmax)
 
@@ -115,7 +128,6 @@ def get_colorbar_and_data_ranges(
             )
         cbar_vmin = vmin
         cbar_vmax = vmax
-
     # set colorbar limits
     else:
         negative_range = stat_map_max <= 0
@@ -176,6 +188,38 @@ def _plot_img_with_bg(
     %(img)s
         Image to plot.
 
+    %(bg_img)s
+        If nothing is specified, no background image is plotted.
+        Default=None.
+
+    %(cut_coords)s
+
+    %(output_file)s
+
+    %(display_mode)s
+
+    %(colorbar)s
+        Default=False.
+
+    %(figure)s
+
+    %(axes)s
+
+    %(title)s
+
+    %(threshold)s
+
+    %(annotate)s
+
+    %(draw_cross)s
+
+    %(black_bg)s
+        Default=False.
+
+    %(vmin)s
+
+    %(vmax)s
+
     bg_vmin : :obj:`float`, optional
         vmin for `bg_img`.
 
@@ -187,6 +231,17 @@ def _plot_img_with_bg(
 
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
+
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%%i" to display as integers.
+
+    decimals : :obj:`int` or :obj:`bool`, default=False
+        Number of decimal places on slice position annotation.
+        If False,
+        the slice position is integer without decimal point.
+
+    %(radiological)s
 
     kwargs :  extra keyword arguments, optional
         Extra keyword arguments passed
@@ -201,7 +256,14 @@ def _plot_img_with_bg(
         An instance of the OrthoSlicer or OrthoProjector class depending on the
         function defined in ``display_factory``. If ``output_file`` is defined,
         None is returned.
+
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
     """
+    _check_threshold(threshold)
+
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
         vmax = None
@@ -228,7 +290,7 @@ def _plot_img_with_bg(
         )
 
     if img is not False and img is not None:
-        img = _utils.check_niimg_3d(img, dtype="auto")
+        img = check_niimg_3d(img, dtype="auto")
         data = safe_get_data(img, ensure_finite=True)
         affine = img.affine
 
@@ -255,7 +317,7 @@ def _plot_img_with_bg(
         radiological=radiological,
     )
     if bg_img is not None:
-        bg_img = _utils.check_niimg_3d(bg_img)
+        bg_img = check_niimg_3d(bg_img)
         display.add_overlay(
             bg_img,
             vmin=bg_vmin,
@@ -313,7 +375,7 @@ def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
         # within an asymmetric cbar
         # and both threshold values are within bounds
         elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
-            new_tick_locs = _get_cbar_ticks(
+            new_tick_locs = get_cbar_ticks(
                 cbar_vmin, cbar_vmax, threshold, n_ticks=len(new_tick_locs)
             )
         # Case where one of the threshold values is out of bounds
@@ -375,11 +437,6 @@ def plot_img(
 
     %(annotate)s
 
-    decimals : :obj:`int` or :obj:`bool`, default=False
-        Number of decimal places on slice position annotation.
-        If False (default),
-        the slice position is integer without decimal point.
-
     %(draw_cross)s
 
     %(black_bg)s
@@ -405,6 +462,14 @@ def plot_img(
 
     %(radiological)s
 
+    decimals : :obj:`int` or :obj:`bool`, default=False
+        Number of decimal places on slice position annotation.
+        If False,
+        the slice position is integer without decimal point.
+
+    %(cmap)s
+        default="gray"
+
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
@@ -415,6 +480,11 @@ def plot_img(
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
+
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
 
     .. note::
 
@@ -474,7 +544,7 @@ class _MNI152Template(SpatialImage):
     vmax = None
     _shape = None
     # Having a header is required by the load_niimg function
-    header = None
+    header = None  # type: ignore[assignment]
 
     def __init__(self, data=None, affine=None, header=None):
         # Comply with spatial image requirements while allowing empty init
@@ -555,7 +625,7 @@ def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
         if black_bg == "auto":
             black_bg = False
     else:
-        anat_img = _utils.check_niimg_3d(anat_img)
+        anat_img = check_niimg_3d(anat_img)
         # Clean anat_img for non-finite values to avoid computing unnecessary
         # border data values.
         data = safe_get_data(anat_img, ensure_finite=True)
@@ -676,6 +746,11 @@ def plot_anat(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -684,6 +759,8 @@ def plot_anat(
     are set to zero.
 
     """
+    _check_threshold(threshold)
+
     anat_img, black_bg, anat_vmin, anat_vmax = load_anat(
         anat_img, dim=dim, black_bg=black_bg
     )
@@ -847,7 +924,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         Contours displayed on the background image.
 
     """
-    roi_img = _utils.check_niimg_3d(roi_img)
+    roi_img = check_niimg_3d(roi_img)
     roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
     cmap = plt.get_cmap(cmap)
@@ -981,6 +1058,11 @@ def plot_roi(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     Notes
     -----
     A small threshold is applied by default to eliminate numerical
@@ -994,6 +1076,8 @@ def plot_roi(
     nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
         (4D images)
     """
+    _check_threshold(threshold)
+
     valid_view_types = ["continuous", "contours"]
     if view_type not in valid_view_types:
         raise ValueError(
@@ -1093,11 +1177,12 @@ def plot_prob_atlas(
         If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
 
-    threshold : a :obj:`str` or a number, :obj:`list` of :obj:`str` or \
-        numbers, default='auto'
+    threshold : a :obj:`int` or :obj:`float` or :obj:`str` or :obj:`list` of
+        :obj:`int` or :obj:`float` or :obj:`str`, default='auto'
         This parameter is optional and is used to threshold the maps image
         using the given value or automatically selected value. The values
-        in the image above the threshold level will be visualized.
+        in the image (in absolute value) above the threshold level will be
+        visualized.
         The default strategy, computes a threshold level that seeks to
         minimize (yet not eliminate completely) the overlap between several
         maps for a better visualization.
@@ -1109,8 +1194,9 @@ def plot_prob_atlas(
         provided, each 3D map is thresholded with certain percentile
         sequentially. Length of percentiles given should match the number
         of 3D map in time (4th) dimension.
-        If a number or a list of numbers, the given value will be used
-        directly to threshold the maps without any percentile calculation.
+        If a number or a list of numbers, the numbers should be
+        non-negative. The given value will be used directly to threshold the
+        maps without any percentile calculation.
         If None, a very small threshold is applied to remove numerical
         noise from the maps background.
 
@@ -1164,10 +1250,17 @@ def plot_prob_atlas(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     See Also
     --------
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
     """
+    _check_threshold(threshold)
+
     display = plot_anat(
         bg_img,
         cut_coords=cut_coords,
@@ -1185,7 +1278,7 @@ def plot_prob_atlas(
         **kwargs,
     )
 
-    maps_img = _utils.check_niimg_4d(maps_img)
+    maps_img = check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
 
     valid_view_types = ["auto", "contours", "filled_contours", "continuous"]
@@ -1393,6 +1486,11 @@ def plot_stat_map(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1406,12 +1504,14 @@ def plot_stat_map(
     nilearn.plotting.plot_epi : To simply plot raw EPI images
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
     """
+    _check_threshold(threshold)
+
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
     )
 
-    stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
+    stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
 
     cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
         safe_get_data(stat_map_img, ensure_finite=True),
@@ -1558,10 +1658,17 @@ def plot_glass_brain(
         An instance of the OrthoProjector class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
+    _check_threshold(threshold)
+
     if cmap is None:
         cmap = cm.cold_white_hot
         if black_bg:
@@ -1576,7 +1683,7 @@ def plot_glass_brain(
             )
 
     if stat_map_img:
-        stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
+        stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
         if plot_abs:
             if vmin is not None and vmin < 0:
                 warnings.warn(
@@ -1809,7 +1916,7 @@ def plot_markers(
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely proportional to the number of nodes.
 
-    node_cmap : :obj:`str` or colormap, default=plt.cm.viridis_r.
+    node_cmap : :obj:`str` or colormap, default=plt.cm.gray.
         Colormap used to represent the node measure.
 
     node_vmin : :obj:`float` or None, default=None
@@ -1863,7 +1970,7 @@ def plot_markers(
             "Dimension mismatch: 'node_values' should be vector of length "
             f"{len(node_coords)}, "
             f"but current shape is {node_values.shape} "
-            f"instead of {(node_coords.shape[0], )}"
+            f"instead of {(node_coords.shape[0],)}"
         )
         raise ValueError(msg)
 
@@ -2027,7 +2134,7 @@ def plot_carpet(
     .. footbibliography::
 
     """
-    img = _utils.check_niimg_4d(img, dtype="auto")
+    img = check_niimg_4d(img, dtype="auto")
 
     # Define TR and number of frames
     t_r = t_r or img.header.get_zooms()[-1]
@@ -2036,7 +2143,7 @@ def plot_carpet(
     if mask_img is None:
         mask_img = compute_epi_mask(img)
     else:
-        mask_img = _utils.check_niimg_3d(mask_img, dtype="auto")
+        mask_img = check_niimg_3d(mask_img, dtype="auto")
 
     is_atlas = len(np.unique(mask_img.get_fdata())) > 2
     if is_atlas:
@@ -2262,7 +2369,7 @@ def plot_img_comparison(
                 1,
                 2,
                 figsize=(12, 5),
-                **_constrained_layout_kwargs(),
+                **constrained_layout_kwargs(),
             )
         else:
             (ax1, ax2) = axes

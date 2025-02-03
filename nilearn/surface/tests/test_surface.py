@@ -874,8 +874,7 @@ def test_mesh_to_gifti(single_mesh, tmp_path):
 
 
 def test_compare_file_and_inmemory_mesh(surf_mesh, tmp_path):
-    mesh = surf_mesh()
-    left = mesh.parts["left"]
+    left = surf_mesh.parts["left"]
     gifti_file = tmp_path / "left.gii"
     left.to_gifti(gifti_file)
 
@@ -1048,7 +1047,7 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
     """Load and save 1D gifti leaves them unchanged."""
     data = {}
     for hemi in ["left", "right"]:
-        size = (surf_mesh().parts[hemi].n_vertices,)
+        size = (surf_mesh.parts[hemi].n_vertices,)
         data[hemi] = rng.random(size=size).astype(np.uint8)
         darray = gifti.GiftiDataArray(
             data=data[hemi], datatype="NIFTI_TYPE_UINT8"
@@ -1057,7 +1056,7 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
         gii.to_filename(tmp_path / f"original_{hemi}.gii")
 
     img = SurfaceImage(
-        mesh=surf_mesh(),
+        mesh=surf_mesh,
         data={
             "left": tmp_path / "original_left.gii",
             "right": tmp_path / "original_right.gii",
@@ -1100,27 +1099,26 @@ def test_save_dtype(surf_img_1d, tmp_path, dtype):
 
 def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
-    mesh = surf_mesh()
-    SurfaceImage.from_volume(mesh=mesh, volume_img=img_3d_mni)
+    SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_3d_mni)
 
     img_3d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
-        mesh=mesh,
+        mesh=surf_mesh,
         volume_img=tmp_path / "tmp.nii.gz",
     )
 
 
 def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
-    img = SurfaceImage.from_volume(mesh=surf_mesh(), volume_img=img_4d_mni)
+    img = SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_4d_mni)
     # check that we have the correct number of time points
     assert img.shape[1] == img_4d_mni.shape[3]
 
     img_4d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
-        mesh=surf_mesh(),
+        mesh=surf_mesh,
         volume_img=tmp_path / "tmp.nii.gz",
     )
 

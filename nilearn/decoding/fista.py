@@ -48,8 +48,8 @@ def _check_lipschitz_continuous(
       function `f`. The more tests, the more confident we are in the
       Lipschitz continuity of `f` if the test passes.
 
-    random_state : int, optional (default 42)
-        Random state for initializing local rng.
+    %(random_state)s
+        default 42
 
     Raises
     ------
@@ -110,17 +110,17 @@ def mfista(
     tol : :obj:`float`, default=1e-4
         Tolerance on the (primal) cost function.
 
-    dgap_tol : :obj:`float`, optional
+    dgap_tol : :obj:`float`, default=None
         If None, the nonsmooth_prox argument returns a float, with the value,
         if not 0, the nonsmooth_prox accepts a third parameter tol, which is
         the tolerance on the computation of the proximal operator and returns a
         float, and a dict with the key "converged", that says if the method to
         compute f2_prox converged or not.
 
-    dgap_factor : :obj:`float`, optional
+    dgap_factor : :obj:`float`, default=None
         Dual gap factor. Used for debugging purpose (control the convergence).
 
-    init : dict-like, optional
+    init : dict-like, default=None
         Dictionary of initialization parameters. Possible keys are 'w',
         'stepsize', 'z', 't', 'dgap_factor', etc.
 

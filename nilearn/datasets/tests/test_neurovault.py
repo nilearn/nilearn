@@ -362,7 +362,7 @@ def test_order_comp():
     gt = neurovault.GreaterThan("abc")
 
     assert gt != "abc"
-    assert gt == "abd"
+    assert gt == "abd"  # codespell:ignore abd
     assert str(gt) == "GreaterThan('abc')"
 
     lt = neurovault.LessThan(7)

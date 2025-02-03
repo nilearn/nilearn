@@ -1,5 +1,7 @@
 """Tests common to multiple image plotting functions."""
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -65,6 +67,29 @@ def test_plot_functions_3d_default_params(plot_func, img_3d_mni, tmp_path):
     """Smoke tests for 3D plotting functions with default parameters."""
     filename = tmp_path / "temp.png"
     plot_func(img_3d_mni, output_file=filename)
+    plt.close()
+
+
+@pytest.mark.parametrize(
+    "plot_func",
+    {
+        plot_img,
+        plot_anat,
+        plot_stat_map,
+        plot_roi,
+        plot_glass_brain,
+        plot_prob_atlas,
+    },
+)
+def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
+    """Test plot functions for negative threshold value."""
+    filename = tmp_path / "temp.png"
+
+    """Tests plot_img for negative threshold."""
+    with pytest.raises(
+        ValueError, match="Threshold should be a non-negative number!"
+    ):
+        plot_func(img_3d_mni, output_file=filename, threshold=-1)
     plt.close()
 
 
@@ -267,7 +292,9 @@ def test_plot_symmetric_colorbar_threshold(
 
 
 functions = [plot_stat_map]
-EXPECTED2 = [(0, ["0", "2.5", "5", "7.5", "10"])]
+EXPECTED2: list[tuple[float | int, list[str]]] = [
+    (0, ["0", "2.5", "5", "7.5", "10"])
+]
 EXPECTED2 += [(i, [f"{i}", "2.5", "5", "7.5", "10"]) for i in [0.1, 0.3, 1.2]]
 EXPECTED2 += [
     (i, ["0", f"{i}", "5", "7.5", "10"]) for i in [1.3, 1.9, 2.5, 3, 3.7]

@@ -1,3 +1,5 @@
+import re
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -5,7 +7,7 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils import _constrained_layout_kwargs
+from nilearn._utils import constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -59,7 +61,10 @@ def test_sanitize_labels():
 
     labs = ["foo", "bar"]
     with pytest.raises(
-        ValueError, match="Length of labels unequal to length of matrix."
+        ValueError,
+        match=re.escape(
+            "Length of labels (2) unequal to length of matrix (6)."
+        ),
     ):
         _sanitize_labels((6, 6), labs)
     for lab in [labs, np.array(labs)]:
@@ -83,8 +88,7 @@ def test_sanitize_tri_error(tri):
     with pytest.raises(
         ValueError,
         match=(
-            "Parameter tri needs to be "
-            f"one of: {', '.join(VALID_TRI_VALUES)}"
+            f"Parameter tri needs to be one of: {', '.join(VALID_TRI_VALUES)}"
         ),
     ):
         _sanitize_tri(tri)
@@ -187,9 +191,9 @@ def test_matrix_plotting_reorder(mat, labels):
         int(lbl.get_text()) for lbl in ax.axes.get_xticklabels()
     ]
     # block order does not matter
-    assert (
-        reordered_labels[:3] == idx or reordered_labels[-3:] == idx
-    ), "Clustering does not find block structure."
+    assert reordered_labels[:3] == idx or reordered_labels[-3:] == idx, (
+        "Clustering does not find block structure."
+    )
     plt.close()
     # test if reordering with specific linkage works
     ax = plot_matrix(mat, labels=labels, reorder="complete")
@@ -311,7 +315,7 @@ def test_show_contrast_matrix_axes():
         frame_times, drift_model="polynomial", drift_order=3
     )
     contrast = np.ones(4)
-    fig, ax = plt.subplots(**_constrained_layout_kwargs())
+    fig, ax = plt.subplots(**constrained_layout_kwargs())
     plot_contrast_matrix(contrast, dmtx, axes=ax)
 
     # to actually check we need get_layout_engine, but even without it the

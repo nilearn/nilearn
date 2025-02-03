@@ -36,20 +36,21 @@ sys.path.insert(0, str(Path("..").absolute()))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
+    "gh_substitutions",
+    "myst_parser",
+    "numpydoc",
+    "sphinx_copybutton",
+    "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.extlinks",
     "sphinx.ext.imgmath",
     "sphinx.ext.intersphinx",
-    "sphinxcontrib.bibtex",
-    "numpydoc",
     "sphinx.ext.linkcode",
-    "gh_substitutions",
-    "sphinx_copybutton",
+    "sphinxcontrib.bibtex",
+    "sphinxcontrib.mermaid",
     "sphinxext.opengraph",
-    "myst_parser",
-    "sphinx_design",
-    "sphinx.ext.extlinks",
 ]
 
 autosummary_generate = True
@@ -197,15 +198,7 @@ linkcheck_ignore = [
     # give a 403 Client Error: Forbidden for url:
     r"https://sites.wustl.edu/oasisbrains/.*",
     # similarly below are publishers that do not like doi redirects:
-    r"https://doi.org/10.1002/.*",
-    r"https://doi.org/10.1073/.*",
-    r"https://doi.org/10.1080/.*",
-    r"https://doi.org/10.1093/.*",
-    r"https://doi.org/10.1111/.*",
-    r"https://doi.org/10.1126/.*",
-    r"https://doi.org/10.1152/.*",
-    r"https://doi.org/10.1162/.*",
-    r"https://doi.org/10.3389/.*",
+    r"https://doi.org/.*",
     # do not check download links for OSF
     r"https://osf.io/.*/download",
 ]
@@ -437,6 +430,8 @@ sphinx_gallery_conf = {
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
 }
+
+mermaid_version = "11.4.0"
 
 
 def touch_example_backreferences(

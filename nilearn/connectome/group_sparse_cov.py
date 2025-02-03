@@ -15,6 +15,7 @@ from joblib import Memory, Parallel, delayed
 from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
+from sklearn.utils import check_array
 from sklearn.utils.extmath import fast_logdet
 
 from nilearn._utils import CacheMixin, fill_doc, logger
@@ -168,13 +169,13 @@ def group_sparse_covariance(
     max_iter : :obj:`int`, default=50
         maximum number of iterations.
 
-    tol : positive :obj:`float` or None, default=1e-3
+    tol : positive :obj:`float` or None, default=0.001
         The tolerance to declare convergence: if the duality gap goes below
         this value, optimization is stopped. If None, no check is performed.
 
     %(verbose0)s
 
-    probe_function : callable or None, optional
+    probe_function : callable or None,  default=None
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.
@@ -189,7 +190,7 @@ def group_sparse_covariance(
         - current value of precisions (ndarray).
         - previous value of precisions (ndarray). None before first iteration.
 
-    precisions_init : numpy.ndarray, optional
+    precisions_init : numpy.ndarray,  default=None
         initial value of the precision matrices. If not provided, a diagonal
         matrix with the variances of each input signal is used.
 
@@ -314,8 +315,7 @@ def _group_sparse_covariance(
         )
 
         logger.log(
-            f"* iteration {n:d} "
-            f"({100.0 * n / max_iter:.0f} %){suffix} ...",
+            f"* iteration {n:d} ({100.0 * n / max_iter:.0f} %){suffix} ...",
             verbose=verbose,
             stack_level=2,
         )
@@ -525,8 +525,7 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
     tolerance_reached = tol is not None and max_norm < tol
     if tolerance_reached:
         logger.log(
-            f"tolerance reached at iteration number {n + 1:d}: "
-            f"{max_norm:.3e}",
+            f"tolerance reached at iteration number {n + 1:d}: {max_norm:.3e}",
             verbose=verbose,
             stack_level=2,
         )
@@ -542,16 +541,16 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
 
     Parameters
     ----------
-    alpha : float, default=0.1
+    alpha : :obj:`float`, default=0.1
         regularization parameter. With normalized covariances matrices and
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse).
 
-    tol : positive float, default=1e-3
+    tol : positive :obj:`float`, default=1e-3
         The tolerance to declare convergence: if the dual gap goes below
         this value, iterations are stopped.
 
-    max_iter : int, default=10
+    max_iter : :obj:`int`, default=10
         maximum number of iterations. The default value is rather
         conservative.
 
@@ -614,6 +613,9 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
             the object itself. Useful for chaining operations.
 
         """
+        for x in subjects:
+            check_array(x, accept_sparse=False)
+
         if self.memory is None:
             self.memory = Memory(location=None)
 
@@ -839,7 +841,7 @@ def group_sparse_covariance_path(
     alphas : :obj:`list` of :obj:`float`
          values of alpha to use. Best results for sorted values (decreasing)
 
-    test_subjs : :obj:`list` of numpy.ndarray, optional
+    test_subjs : :obj:`list` of numpy.ndarray, default=None
         list of signals, independent from those in train_subjs, on which to
         compute a score. If None, no score is computed.
 
@@ -849,7 +851,7 @@ def group_sparse_covariance_path(
         Passed to group_sparse_covariance(). See the corresponding docstring
         for details.
 
-    probe_function : callable, optional
+    probe_function : callable, default=None
         This value is called before the first iteration and after each
         iteration. If it returns True, then optimization is stopped
         prematurely.
@@ -974,7 +976,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
     cv : :obj:`int`, default=None
         number of folds in a K-fold cross-validation scheme.
 
-    tol_cv : float, default=1e-2
+    tol_cv : :obj:`float`, default=1e-2
         tolerance used to get the optimal alpha value. It has the same meaning
         as the `tol` parameter in :func:`group_sparse_covariance`.
 
@@ -982,7 +984,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
         maximum number of iterations for each optimization, during the alpha-
         selection phase.
 
-    tol : float, default=1e-3
+    tol : :obj:`float`, default=1e-3
         tolerance used during the final optimization for determining precision
         matrices value.
 
@@ -1085,6 +1087,9 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             the object instance itself.
 
         """
+        for x in subjects:
+            check_array(x, accept_sparse=False)
+
         # Empirical covariances
         emp_covs, n_samples = empirical_covariances(
             subjects, assume_centered=False
