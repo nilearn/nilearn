@@ -29,8 +29,8 @@ if sys.version_info[1] < 10:
     LowPass = float
     MemoryLike = (Memory, str, pathlib.Path)
     Resolution = int
-    SmoothingFwhm = float
-    Tr = float
+    SmoothingFwhm = (float, int)
+    Tr = (float, int)
     Url = str
     TargetAffine = ndarray
     TargetShape = (tuple, list)
@@ -45,8 +45,8 @@ else:
     LowPass: TypeAlias = float | None
     MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
     Resolution: TypeAlias = int | None
-    SmoothingFwhm = float | None
+    SmoothingFwhm = float | int | None
     Url: TypeAlias = str | None
     TargetAffine: TypeAlias = ndarray | None
     TargetShape: TypeAlias = tuple | list | None
-    Tr: TypeAlias = float | None
+    Tr: TypeAlias = float | int | None
