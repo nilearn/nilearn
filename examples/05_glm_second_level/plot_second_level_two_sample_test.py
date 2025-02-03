@@ -28,8 +28,8 @@ observe some significant effects in these areas.
 # %%
 import pandas as pd
 
-from nilearn import plotting
 from nilearn.datasets import fetch_localizer_contrasts
+from nilearn.plotting import plot_design_matrix, plot_glass_brain, show
 
 # %%
 # Fetch dataset
@@ -95,15 +95,12 @@ _, (ax_unpaired, ax_paired) = plt.subplots(
 )
 
 
-plotting.plot_design_matrix(
-    unpaired_design_matrix, rescale=False, axes=ax_unpaired
-)
-plotting.plot_design_matrix(
-    paired_design_matrix, rescale=False, axes=ax_paired
-)
+plot_design_matrix(unpaired_design_matrix, rescale=False, axes=ax_unpaired)
+plot_design_matrix(paired_design_matrix, rescale=False, axes=ax_paired)
 ax_unpaired.set_title("unpaired design", fontsize=12)
 ax_paired.set_title("paired design", fontsize=12)
-plotting.show()
+
+show()
 
 # %%
 # We specify the analysis models and fit them.
@@ -142,49 +139,49 @@ stat_maps_paired = second_level_model_paired.compute_contrast(
 
 # %%
 # But the variance in the unpaired image is larger.
-plotting.plot_glass_brain(
+plot_glass_brain(
     stat_maps_unpaired["effect_variance"],
     colorbar=True,
     vmin=0,
     vmax=6,
+    cmap="inferno",
     title="vertical vs horizontal effect variance, unpaired",
 )
 
-plotting.plot_glass_brain(
+plot_glass_brain(
     stat_maps_paired["effect_variance"],
     colorbar=True,
     vmin=0,
     vmax=6,
+    cmap="inferno",
     title="vertical vs horizontal effect variance, paired",
 )
 
-plotting.show()
+show()
 
 # %%
 # Together, this makes the z_scores from the paired test larger.
 # We threshold the second level :term:`contrast` and plot it.
 threshold = 3.1  # corresponds to  p < .001, uncorrected
-display = plotting.plot_glass_brain(
+plot_glass_brain(
     stat_maps_unpaired["z_score"],
     threshold=threshold,
     colorbar=True,
     plot_abs=False,
-    title="vertical vs horizontal (unc p<0.001)",
-    vmin=0,
-    vmax=6,
+    vmax=5.8,
+    title="vertical vs horizontal (unc p<0.001), unpaired",
 )
 
-display = plotting.plot_glass_brain(
+plot_glass_brain(
     stat_maps_paired["z_score"],
     threshold=threshold,
     colorbar=True,
     plot_abs=False,
-    title="vertical vs horizontal (unc p<0.001)",
-    vmin=0,
-    vmax=6,
+    vmax=5.8,
+    title="vertical vs horizontal (unc p<0.001), paired",
 )
 
-plotting.show()
+show()
 
 # %%
 # Unsurprisingly, we see activity in the primary visual cortex, both positive
