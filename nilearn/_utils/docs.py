@@ -348,23 +348,6 @@ figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     If `None` is given, a new figure is created.
 """
 
-# fsaverage options
-docdict["fsaverage_options"] = """
-
-    - ``"fsaverage3"``: the low-resolution fsaverage3 mesh (642 nodes)
-    - ``"fsaverage4"``: the low-resolution fsaverage4 mesh (2562 nodes)
-    - ``"fsaverage5"``: the low-resolution fsaverage5 mesh (10242 nodes)
-    - ``"fsaverage6"``: the medium-resolution fsaverage6 mesh (40962 nodes)
-    - ``"fsaverage7"``: same as `"fsaverage"`
-    - ``"fsaverage"``: the high-resolution fsaverage mesh (163842 nodes)
-
-    .. note::
-
-        The high-resolution fsaverage will result in more computation
-        time and memory usage
-
-"""
-
 # fwhm
 docdict["fwhm"] = """
 fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
@@ -922,22 +905,6 @@ target_shape : :obj:`tuple` or :obj:`list`, default=None
 
 """
 
-# templateflow
-docdict["templateflow"] = """
-
-.. admonition:: Nilearn MNI template
-   :class: important
-
-   The Nilearn template is asymmetrical ICBM152 2009, release a.
-
-   The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
-   release c (MNI152NLin2009cSAsym).
-
-   If you wish to use the exact same release as :term:`fMRIPrep`,
-   please refer to `TemplateFlow <https://www.templateflow.org>`_.
-
-"""
-
 # threshold
 docdict["threshold"] = """
 threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
@@ -1112,6 +1079,23 @@ docdict["base_decoder_fit_attributes"] = """
 docdict["description"] = """'description' : :obj:`str`
         Description of the dataset."""
 
+# fsaverage options
+docdict["fsaverage_options"] = """
+
+    - ``"fsaverage3"``: the low-resolution fsaverage3 mesh (642 nodes)
+    - ``"fsaverage4"``: the low-resolution fsaverage4 mesh (2562 nodes)
+    - ``"fsaverage5"``: the low-resolution fsaverage5 mesh (10242 nodes)
+    - ``"fsaverage6"``: the medium-resolution fsaverage6 mesh (40962 nodes)
+    - ``"fsaverage7"``: same as `"fsaverage"`
+    - ``"fsaverage"``: the high-resolution fsaverage mesh (163842 nodes)
+
+    .. note::
+
+        The high-resolution fsaverage will result in more computation
+        time and memory usage
+
+"""
+
 # atlas labels
 docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""
@@ -1134,11 +1118,18 @@ docdict["template"] = """'template' : :obj:`str`
 
 # templateflow
 docdict["templateflow"] = """
-    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
-    release c (MNI152NLin2009cSAsym).
-    The NiLearn template is asymmetrical ICBM152 2009, release a.
-    If you wish to use the exact same release as :term:`fMRIPrep`,
-    please refer to TemplateFlow (https://www.templateflow.org/).
+
+.. admonition:: Nilearn MNI template
+   :class: important
+
+   The Nilearn template is asymmetrical ICBM152 2009, release a.
+
+   The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+   release c (MNI152NLin2009cSAsym).
+
+   If you wish to use the exact same release as :term:`fMRIPrep`,
+   please refer to `TemplateFlow <https://www.templateflow.org>`_.
+
 """
 
 ##############################################################################

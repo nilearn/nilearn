@@ -31,3 +31,35 @@ else:
     MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
     Resolution: TypeAlias = int | None
     Url: TypeAlias = str | None
+
+    # %(smoothing_fwhm)s
+
+    # %(standardize)s
+
+    # %(target_affine)s
+
+    # %(target_shape)s
+
+    # %(low_pass)s
+
+    # %(high_pass)s
+
+    # %(t_r)s
+
+    # %(mask_strategy)s
+
+    # %(memory)s
+
+    # %(memory_level)s
+
+    # %(n_jobs)s
+    # %(smoothing_fwhm)s
+    # %(standardize)s
+    # %(target_affine)s
+    # %(target_shape)s
+    # %(low_pass)s
+    # %(high_pass)s
+    # %(t_r)s
+    # %(mask_strategy)s
+    # %(hrf_model)s
+    # dtype
