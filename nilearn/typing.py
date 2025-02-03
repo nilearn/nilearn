@@ -11,55 +11,42 @@ import pathlib
 import sys
 
 from joblib.memory import Memory
+from numpy import ndarray
+from numpy.typing import DTypeLike
 
+HrfModel = str
 MemoryLevel = int
+NJobs = int
 Resume = bool
+Standardize = bool
 Verbose = int
 
 # TODO update when dropping python 3.9
 if sys.version_info[1] < 10:
     DataDir = (str, pathlib.Path)
+    DType = (DTypeLike, str)
+    HighPass = float
+    LowPass = float
     MemoryLike = (Memory, str, pathlib.Path)
     Resolution = int
+    SmoothingFwhm = float
+    Tr = float
     Url = str
+    TargetAffine = ndarray
+    TargetShape = (tuple, list)
 
 
 else:
     from typing import TypeAlias
 
     DataDir: TypeAlias = str | pathlib.Path | None
+    DType: TypeAlias = DTypeLike | str | None
+    HighPass: TypeAlias = float | None
+    LowPass: TypeAlias = float | None
     MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
     Resolution: TypeAlias = int | None
+    SmoothingFwhm = float
     Url: TypeAlias = str | None
-
-    # %(smoothing_fwhm)s
-
-    # %(standardize)s
-
-    # %(target_affine)s
-
-    # %(target_shape)s
-
-    # %(low_pass)s
-
-    # %(high_pass)s
-
-    # %(t_r)s
-
-    # %(mask_strategy)s
-
-    # %(memory)s
-
-    # %(memory_level)s
-
-    # %(n_jobs)s
-    # %(smoothing_fwhm)s
-    # %(standardize)s
-    # %(target_affine)s
-    # %(target_shape)s
-    # %(low_pass)s
-    # %(high_pass)s
-    # %(t_r)s
-    # %(mask_strategy)s
-    # %(hrf_model)s
-    # dtype
+    TargetAffine: TypeAlias = ndarray | None
+    TargetShape: TypeAlias = tuple[int, int, int] | list[int] | None
+    Tr: TypeAlias = float | None

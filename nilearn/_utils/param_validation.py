@@ -1,6 +1,7 @@
 """Utilities to check for valid parameters."""
 
 import numbers
+import sys
 import warnings
 
 import numpy as np
@@ -371,10 +372,19 @@ def check_params(fn_dict):
     """
     type_map = {
         "data_dir": nil_typing.DataDir,
+        "dtype": nil_typing.DType,
+        "high_pass": nil_typing.HighPass,
+        "hrf_model": nil_typing.HrfModel,
+        "low_pass": nil_typing.LowPass,
         "memory": nil_typing.MemoryLike,
         "memory_level": nil_typing.MemoryLevel,
+        "n_jobs": nil_typing.NJobs,
         "resolution": nil_typing.Resolution,
         "resume": nil_typing.Resume,
+        "smoothing_fwhm": nil_typing.SmoothingFwhm,
+        "t_r": nil_typing.Tr,
+        "target_affine": nil_typing.TargetAffine,
+        "target_shape": nil_typing.TargetShape,
         "url": nil_typing.Url,
         "verbose": nil_typing.Verbose,
     }
@@ -382,8 +392,17 @@ def check_params(fn_dict):
     for k, v in fn_dict.items():
         if k not in type_map:
             continue
+        type_to_check = type_map[k]
 
-        if not isinstance(v, type_map[k]):
+        # TODO update when dropping python 3.9
+        if sys.version_info[1] > 9:
+            if not isinstance(v, type_to_check):
+                raise TypeError(
+                    f"'{k}' should be of type '{type_to_check}'."
+                    "\nGot: '{type(v)}'"
+                )
+        elif v is not None and not isinstance(v, type_to_check):
             raise TypeError(
-                f"'{k}' should be of type '{type_map[k]}'.\nGot: '{type(v)}'"
+                f"'{k}' should be of type '{type_to_check}'.\n"
+                "Got: '{type(v)}'"
             )
