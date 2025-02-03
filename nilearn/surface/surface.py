@@ -2142,7 +2142,6 @@ def smooth_img(
     distance_weights=False,
     vertex_weights=None,
     center_surround_knob=0,
-    match="sum",
 ):
     """Smooth values along the surface.
 
@@ -2185,19 +2184,6 @@ def smooth_img(
         A value of `inf` results in each vertex being updated
         with the average of its neighbors without including its own value.
 
-    match : { 'sum', 'mean', 'var', 'dist', None}, default = "sum"
-        What properties of the input data should be matched in the output data.
-        `None` indicates that the smoothed output should be
-        returned without transformation.
-        If the value is `'sum'`,
-        then the  output is rescaled to have the same sum as `surf_data`.
-        If the value is `'mean'`,
-        then the output is shifted to match the mean of the input.
-        If the value is `'var'`,
-        then the variance of the output is matched.
-        Finally, if the value is `'dist'`,
-        then the mean and the variance are matched.
-
     Returns
     -------
     smoothed_imgs : SurfaceImage
@@ -2210,15 +2196,6 @@ def smooth_img(
     >>> curv_smooth, _ = surface.smooth_img(curv, iterations=50)
 
     """
-    if match not in (
-        "sum",
-        "mean",
-        "var",
-        "dist",
-        None,
-    ):
-        raise ValueError(f"invalid match argument: {match}")
-
     # First, calculate the center and surround weights for the
     # center-surround knob.
     center_weight = 1 / (1 + np.exp2(-center_surround_knob))
@@ -2262,30 +2239,7 @@ def smooth_img(
             tmp = matrix.dot(tmp)
 
         # Convert back into numpy array.
-        tmp = np.reshape(np.asarray(tmp), np.shape(data))
-
-        # Rescale it if needed.
-        if match == "sum":
-            sum0 = np.nansum(data, axis=0)
-            sum1 = np.nansum(tmp, axis=0)
-            tmp = tmp * (sum0 / sum1)
-        elif match == "mean":
-            mu0 = np.nanmean(data, axis=0)
-            mu1 = np.nanmean(tmp, axis=0)
-            tmp = tmp + (mu0 - mu1)
-        elif match == "var":
-            std0 = np.nanstd(data, axis=0)
-            std1 = np.nanstd(tmp, axis=0)
-            mu1 = np.nanmean(tmp, axis=0)
-            tmp = (tmp - mu1) * (std0 / std1) + mu1
-        elif match == "dist":
-            std0 = np.nanstd(data, axis=0)
-            std1 = np.nanstd(tmp, axis=0)
-            mu0 = np.nanmean(data, axis=0)
-            mu1 = np.nanmean(tmp, axis=0)
-            tmp = (tmp - mu1) * (std0 / std1) + mu0
-
-        new_data[hemi] = tmp
+        new_data[hemi] = np.reshape(np.asarray(tmp), np.shape(data))
 
         w /= np.sum(w)
         weights[hemi] = w

@@ -1152,12 +1152,7 @@ def test_inmemorymesh_index_error(in_memory_mesh):
 
 
 def test_smooth_img(surf_img_1d):
-    surf_data_smooth, _ = smooth_img(surf_img_1d, iterations=1, match="sum")
-    # checking that output was properly normalized
-    assert np.isclose(
-        np.sum(surf_data_smooth.data.parts["right"]),
-        np.sum(surf_img_1d.data.parts["right"]),
-    )
+    smooth_img(surf_img_1d, iterations=1)
 
 
 def test_mean_img(surf_img_1d, surf_img_2d):

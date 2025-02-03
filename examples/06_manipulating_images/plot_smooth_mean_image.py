@@ -85,20 +85,3 @@ for iteration in range(0, 25, 5):
     )
 
 show()
-
-for match in ["sum", "mean", "var", "dist", None]:
-    smoothed_surface_image, _ = smooth_surf_img(
-        surface_image, iterations=25, match=match
-    )
-    plot_surf_stat_map(
-        surf_mesh=fsaverage_meshes["inflated"],
-        stat_map=smoothed_surface_image,
-        hemi=hemi,
-        title=f"{match=}",
-        colorbar=True,
-        threshold=1.0,
-        bg_map=curvature,
-        cmap="RdBu_r",
-    )
-
-show()
