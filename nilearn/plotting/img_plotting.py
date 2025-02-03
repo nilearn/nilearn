@@ -2622,7 +2622,7 @@ def _bland_altman_values(ref_img, src_img, masker=None):
                 f"Got {type(masker)}"
             )
 
-        elif image_type == "volume" and isinstance(
+        if image_type == "volume" and isinstance(
             masker, (Nifti1Image, str, Path)
         ):
             masker = NiftiMasker(
