@@ -392,7 +392,7 @@ def check_params(fn_dict):
     # Send a message to dev if they are using this function needlessly.
     if not keys_to_check:
         raise ValueError(
-            "No knownb parameters to check."
+            "No known parameter to check.\n"
             "You probably do not need to use 'check_params' here."
         )
 

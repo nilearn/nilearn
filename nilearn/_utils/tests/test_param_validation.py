@@ -247,3 +247,14 @@ def test_check_params():
 
     with pytest.raises(TypeError, match="'data_dir' should be of type"):
         f_with_param_to_check(data_dir=1)
+
+
+def test_check_params_not_necessary():
+    """Check an error is raised when function is used when not needed."""
+
+    def f_with_unknown_param(foo):
+        check_params(locals())
+        return foo
+
+    with pytest.raises(ValueError, match="No known parameter to check."):
+        f_with_unknown_param(foo=1)
