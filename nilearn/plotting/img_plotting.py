@@ -2587,6 +2587,7 @@ def plot_bland_altman(
 
 
 def _bland_altman_values(ref_img, src_img, masker=None):
+    """Return voxel wise mean and differences between 2 images."""
     if isinstance(ref_img, (str, Path, Nifti1Image)) and isinstance(
         src_img, (str, Path, Nifti1Image)
     ):

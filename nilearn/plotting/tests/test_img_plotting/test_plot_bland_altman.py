@@ -64,25 +64,18 @@ def test_plot_bland_altman_surface(matplotlib_pyplot, surf_img_1d, masker):
 def test_plot_bland_altman_errors(
     surf_img_1d, surf_mask_1d, img_3d_rand_eye, img_3d_ones_eye
 ):
-    # Invalid input
-    error_msg = "'ref_img' and 'src_img' must both be"
-    with pytest.raises(
-        TypeError,
-        match=error_msg,
-    ):
-        plot_bland_altman(
-            1,
-            "foo",
-        )
+    """Check common errors for bland altman plots.
 
-    # images must be both volumes or surface
-    with pytest.raises(
-        TypeError,
-        match=error_msg,
-    ):
+    - both inputs must be niimg like or surface
+    - valid masker type for volume or surface data
+    """
+    error_msg = "'ref_img' and 'src_img' must both be"
+    with pytest.raises(TypeError, match=error_msg):
+        plot_bland_altman(1, "foo")
+
+    with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(surf_img_1d, img_3d_rand_eye)
 
-    # invalid masker
     error_msg = "'masker' must be NiftiMasker or Niimg-Like"
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, masker=1)
