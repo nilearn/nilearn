@@ -388,17 +388,24 @@ def check_params(fn_dict):
         "verbose": nil_typing.Verbose,
     }
 
-    for k, v in fn_dict.items():
-        if k not in type_map:
-            continue
+    keys_to_check = set(type_map.keys()).intersection(set(fn_dict.keys()))
+    # Send a message to dev if they are using this function needlessly.
+    if not keys_to_check:
+        raise ValueError(
+            "No knownb parameters to check."
+            "You probably do not need to use 'check_params' here."
+        )
+
+    for k in keys_to_check:
         type_to_check = type_map[k]
+        value = fn_dict[k]
 
         # TODO update when dropping python 3.9
         error_msg = (
-            f"'{k}' should be of type '{type_to_check}'.\nGot: '{type(v)}'"
+            f"'{k}' should be of type '{type_to_check}'.\nGot: '{type(value)}'"
         )
         if sys.version_info[1] > 9:
-            if not isinstance(v, type_to_check):
+            if not isinstance(value, type_to_check):
                 raise TypeError(error_msg)
-        elif v is not None and not isinstance(v, type_to_check):
+        elif value is not None and not isinstance(value, type_to_check):
             raise TypeError(error_msg)

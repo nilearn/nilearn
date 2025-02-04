@@ -771,7 +771,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.mask_args = mask_args
         self.positive = positive
 
-    def check_params(self):
+    def _check_params(self):
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
@@ -848,14 +848,14 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         """
         check_params(self.__dict__)
         # sanity check on params
-        self.check_params()
+        self._check_params()
         if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
             raise NotImplementedError(
                 "Running space net on surface objects is not supported."
             )
 
         # misc
-        self.check_params()
+        self._check_params()
         if self.memory is None or isinstance(self.memory, str):
             self.memory_ = Memory(
                 self.memory, verbose=max(0, self.verbose - 1)

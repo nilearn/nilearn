@@ -9,12 +9,12 @@ from __future__ import annotations
 
 import pathlib
 import sys
+from typing import Callable
 
 from joblib.memory import Memory
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
-HrfModel = str
 MemoryLevel = int
 NJobs = int
 Resume = bool
@@ -25,8 +25,9 @@ Verbose = int
 if sys.version_info[1] < 10:
     DataDir = (str, pathlib.Path)
     DType = (DTypeLike, str)
-    HighPass = float
-    LowPass = float
+    HighPass = (float, int)
+    HrfModel = (str, Callable, list)
+    LowPass = (float, int)
     MemoryLike = (Memory, str, pathlib.Path)
     Resolution = int
     SmoothingFwhm = (float, int)
@@ -41,8 +42,9 @@ else:
 
     DataDir: TypeAlias = str | pathlib.Path | None
     DType: TypeAlias = DTypeLike | str | None
-    HighPass: TypeAlias = float | None
-    LowPass: TypeAlias = float | None
+    HrfModel = str | Callable | list | None
+    HighPass: TypeAlias = float | int | None
+    LowPass: TypeAlias = float | int | None
     MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
     Resolution: TypeAlias = int | None
     SmoothingFwhm = float | int | None

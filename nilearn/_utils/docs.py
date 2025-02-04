@@ -399,7 +399,7 @@ hemi : {"left", "right", "both"}, default="left"
 
 # high_pass
 docdict["high_pass"] = """
-high_pass : :obj:`float` or None, default=None
+high_pass : :obj:`float` or :obj:`int` or None, default=None
     High cutoff frequency in Hertz.
     If specified, signals below this frequency will be filtered out.
 """
@@ -526,7 +526,7 @@ linewidths : :obj:`float`, optional
 
 # low_pass
 docdict["low_pass"] = """
-low_pass : :obj:`float` or None, default=None
+low_pass : :obj:`float` or :obj:`int` or None, default=None
     Low cutoff frequency in Hertz.
     If specified, signals above this frequency will be filtered out.
     If `None`, no low-pass filtering will be performed.
