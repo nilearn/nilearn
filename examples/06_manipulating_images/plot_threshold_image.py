@@ -21,7 +21,6 @@ behavior.
 
 from nilearn import datasets, plotting
 
-cmap = "RdBu_r"
 cut_coords = [-26, -33, 59]
 
 image = datasets.load_sample_motor_activation_image()
@@ -29,7 +28,6 @@ image = datasets.load_sample_motor_activation_image()
 plotting.plot_stat_map(
     image,
     colorbar=True,
-    cmap=cmap,
     title="image without threshold",
     cut_coords=cut_coords,
 )
@@ -66,7 +64,6 @@ fig, axes = plt.subplots(
 plotting.plot_stat_map(
     image,
     colorbar=True,
-    cmap=cmap,
     title="image without threshold",
     axes=axes[0],
     cut_coords=cut_coords,
@@ -75,7 +72,6 @@ plotting.plot_stat_map(
 plotting.plot_stat_map(
     thresholded_img,
     colorbar=True,
-    cmap=cmap,
     title="image thresholded at 2 with two_sided=True",
     cut_coords=cut_coords,
     axes=axes[1],
@@ -91,8 +87,6 @@ plotting.plot_stat_map(
 # This will set all image values below 2 to 0.
 
 import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib import colors
 
 from nilearn.image import threshold_img
 
@@ -112,15 +106,9 @@ fig, axes = plt.subplots(
 )
 
 
-pos_cmap = colors.LinearSegmentedColormap.from_list(
-    "new_cmap", plt.get_cmap(cmap)(np.linspace(0.5, 1, 10))
-)
-
-
 plotting.plot_stat_map(
     image,
     colorbar=True,
-    cmap=cmap,
     title="image without threshold",
     axes=axes[0],
     cut_coords=cut_coords,
@@ -129,7 +117,7 @@ plotting.plot_stat_map(
 plotting.plot_stat_map(
     thresholded_img,
     colorbar=True,
-    cmap=pos_cmap,
+    cmap="Reds",
     title="image thresholded at 2 with two_sided=False",
     cut_coords=cut_coords,
     axes=axes[1],
@@ -145,8 +133,6 @@ plotting.plot_stat_map(
 # This will set all image values above -2 to 0.
 
 import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib import colors
 
 thresholded_img = threshold_img(
     image,
@@ -163,14 +149,9 @@ fig, axes = plt.subplots(
     figsize=(8, 8),
 )
 
-neg_cmap = colors.LinearSegmentedColormap.from_list(
-    "new_cmap", plt.get_cmap(cmap)(np.linspace(0, 0.5, 10))
-)
-
 plotting.plot_stat_map(
     image,
     colorbar=True,
-    cmap=cmap,
     title="image without threshold",
     axes=axes[0],
     cut_coords=cut_coords,
@@ -179,9 +160,11 @@ plotting.plot_stat_map(
 plotting.plot_stat_map(
     thresholded_img,
     colorbar=True,
-    cmap=neg_cmap,
+    cmap="Blues_r",
     title="image thresholded at -2 with two_sided=False",
     cut_coords=cut_coords,
     axes=axes[1],
 )
 # -
+
+# %%
