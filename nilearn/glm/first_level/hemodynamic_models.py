@@ -797,4 +797,4 @@ def _calculate_tr(frame_times):
     :obj:`float`
         repetition time
     """
-    return np.min(np.diff(frame_times))
+    return float(np.min(np.diff(frame_times)))
