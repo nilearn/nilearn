@@ -24,7 +24,7 @@ Verbose = int
 # TODO update when dropping python 3.9
 if sys.version_info[1] < 10:
     DataDir = (str, pathlib.Path)
-    DType = (DTypeLike, str)
+    DType = DTypeLike
     HighPass = (float, int)
     HrfModel = (str, Callable, list)
     LowPass = (float, int)
@@ -41,14 +41,25 @@ else:
     from typing import TypeAlias
 
     DataDir: TypeAlias = str | pathlib.Path | None
-    DType: TypeAlias = DTypeLike | str | None
-    HrfModel = str | Callable | list | None
+    DType: TypeAlias = DTypeLike | None
+
+    # Note that for HrfModel
+    # str is too generic here
+    # and it should actually be Literal["spm", "glover", ...]
+    # if we wanted to use proper type annotation
+    HrfModel: TypeAlias = str | Callable | list | None
+
     HighPass: TypeAlias = float | int | None
     LowPass: TypeAlias = float | int | None
     MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
     Resolution: TypeAlias = int | None
-    SmoothingFwhm = float | int | None
+    SmoothingFwhm: TypeAlias = float | int | None
     TargetAffine: TypeAlias = ndarray | None
+
+    # Note that this is usable as for static type checking,
+    # as type checkers will complain1
+    # about using a generic and would prefer "list[int]" to "list".
     TargetShape: TypeAlias = tuple | list | None
+
     Tr: TypeAlias = float | int | None
     Url: TypeAlias = str | None
