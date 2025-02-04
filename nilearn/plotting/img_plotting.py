@@ -2431,7 +2431,8 @@ def plot_bland_altman(
     """Create a Bland-Altman plot between 2 images.
 
     Plot the the 2D dsitribution of voxel-wise differences
-    as a function of the voxel-wise mean.
+    as a function of the voxel-wise mean,
+    along with an histogram for the distribution of each.
 
     .. note::
 
@@ -2515,6 +2516,9 @@ def plot_bland_altman(
         if lim_y == 0:
             lim_y = 1
         lims = [-lim_x, lim_x, -lim_y, lim_y]
+
+    if not isinstance(lims, (list, tuple)) or len(lims) != 4:
+        raise TypeError("'lims must be a list or tuple of length == 4'")
 
     if isinstance(gridsize, int):
         gridsize = (gridsize, gridsize)

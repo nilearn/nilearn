@@ -47,6 +47,7 @@ def test_plot_bland_altman(
         title="cheese shop",
         gridsize=10,
         output_file=tmp_path / "spam.jpg",
+        lims=[-1, 5, -2, 3],
     )
 
     assert (tmp_path / "spam.jpg").is_file()
@@ -106,3 +107,8 @@ def test_plot_bland_altman_errors(
 
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(surf_img_1d, surf_img_1d, masker=img_3d_ones_eye)
+
+    with pytest.raises(
+        TypeError, match="'lims must be a list or tuple of length == 4'"
+    ):
+        plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[-1])

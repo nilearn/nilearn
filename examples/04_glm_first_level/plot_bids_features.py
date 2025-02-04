@@ -143,18 +143,15 @@ model.fit(imgs, design_matrices=[design_matrix])
 z_map = model.compute_contrast("StopSuccess - Go")
 
 # %%
-# We show the agreement between the Nilearn estimation and the FSL estimation
-# available in the dataset.
+# Visualize results
+# -----------------
+# Let's have a look at the Nilearn estimation
+# and the FSL estimation available in the dataset.
 import matplotlib.pyplot as plt
 import nibabel as nib
 from scipy.stats import norm
 
-from nilearn.plotting import (
-    plot_bland_altman,
-    plot_glass_brain,
-    plot_img_comparison,
-    show,
-)
+from nilearn.plotting import plot_glass_brain, show
 
 fsl_z_map = nib.load(
     Path(data_dir)
@@ -182,6 +179,11 @@ plot_glass_brain(
     plot_abs=False,
     display_mode="ortho",
 )
+
+# %%
+# We show the agreement between the 2 estimations.
+
+from nilearn.plotting import plot_bland_altman, plot_img_comparison
 
 plot_img_comparison(
     [z_map], [fsl_z_map], model.masker_, ref_label="Nilearn", src_label="FSL"
