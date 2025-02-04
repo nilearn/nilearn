@@ -914,6 +914,10 @@ def non_parametric_inference(
 
     %(smoothing_fwhm)s
 
+        .. warning::
+
+            Smoothing is not implemented for surface data.
+
     model_intercept : :obj:`bool`, default=True
         If ``True``, a constant column is added to the confounding variates
         unless the tested variate is already the intercept.
@@ -935,16 +939,24 @@ def non_parametric_inference(
         This is only used for cluster-level inference.
         If None, no cluster-level inference will be performed.
 
+        .. versionadded:: 0.9.2
+
         .. warning::
 
             Performing cluster-level inference will increase the computation
             time of the permutation procedure.
 
-        .. versionadded:: 0.9.2
+        .. warning::
+
+            Cluster analysis are not implemented for surface data.
 
     %(tfce)s
 
         .. versionadded:: 0.9.2
+
+        .. warning::
+
+            TFCE analysis are not implemented for surface data.
 
     Returns
     -------
