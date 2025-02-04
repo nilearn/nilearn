@@ -238,7 +238,7 @@ def is_multimasker(estimator):
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
-        return "niimg_like" in tags["X_types"]
+        return "multi_masker" in tags["X_types"]
     else:
         return getattr(tags.input_tags, "multi_masker", False)
 
@@ -249,7 +249,7 @@ def accept_niimg_input(estimator):
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
-        return "multi_masker" in tags["X_types"]
+        return "niimg_like" in tags["X_types"]
     else:
         return getattr(tags.input_tags, "niimg_like", False)
 
