@@ -2483,6 +2483,12 @@ def plot_bland_altman(
         to the length of the x axis,
         and the second value corresponds to the length of the y axis.
 
+    lims : A :obj:`list` or :obj:`tuple` of 4 :obj:`int` or None, default=None
+        Determines the limit the central hexbin plot
+        and the marginal histograms.
+        Values in the list or tuple are: [-lim_x, lim_x, -lim_y, lim_y].
+        If None is passed values are determined based on the data.
+
     %(output_file)s
 
     Notes
@@ -2514,7 +2520,7 @@ def plot_bland_altman(
         gridsize = (gridsize, gridsize)
 
     if figure is None:
-        figsize = (15, 15)
+        figsize = (6, 6)
         figure = plt.figure(figsize=figsize)
 
     gs0 = gridspec.GridSpec(1, 1)
