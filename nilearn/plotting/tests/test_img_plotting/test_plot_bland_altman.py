@@ -1,16 +1,26 @@
+import numpy as np
 import pytest
+from nibabel import Nifti1Image
 
-from nilearn.conftest import _img_mask_mni, _make_surface_mask
+from nilearn.conftest import _affine_mni, _img_mask_mni, _make_surface_mask
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting import plot_bland_altman
 
 # ruff: noqa: ARG001
 
 
+def _mask():
+    affine = _affine_mni()
+    data_positive = np.zeros((7, 7, 3))
+    data_positive[1:-1, 2:-1, 1:] = 1
+    return Nifti1Image(data_positive, affine)
+
+
 @pytest.mark.parametrize(
     "masker",
     [
         None,
+        _mask(),
         NiftiMasker(mask_img=_img_mask_mni()),
         NiftiMasker(mask_img=_img_mask_mni()).fit(),
     ],
