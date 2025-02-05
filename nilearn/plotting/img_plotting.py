@@ -2424,6 +2424,7 @@ def plot_bland_altman(
     figure=None,
     title=None,
     cmap="inferno",
+    colorbar=True,
     gridsize=100,
     lims=None,
     output_file=None,
@@ -2480,7 +2481,10 @@ def plot_bland_altman(
     %(title)s
 
     %(cmap)s
-        Default=`inferno`.
+        default="inferno"
+
+    %(colorbar)s
+        default=True
 
     gridsize : :obj:`int` or :obj:`tuple` of 2 :obj:`int`, default=100
         Dimension of the grid on which to display the main plot.
@@ -2511,7 +2515,12 @@ def plot_bland_altman(
 
 
     """
-    mean, diff = _bland_altman_values(ref_img, src_img, masker=masker)
+    data_ref, data_src = _extract_data_2_images(
+        ref_img, src_img, masker=masker
+    )
+
+    mean = np.mean([data_ref, data_src], axis=0)
+    diff = data_ref - data_src
 
     if lims is None:
         lim_x = np.max(np.abs(mean))
@@ -2590,8 +2599,9 @@ def plot_bland_altman(
     pos1 = ax4.get_position()
     ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
 
-    cb = figure.colorbar(hb, cax=ax4)
-    cb.set_label("log10(N)")
+    if colorbar:
+        cb = figure.colorbar(hb, cax=ax4)
+        cb.set_label("log10(N)")
 
     if output_file is not None:
         figure.savefig(output_file)
@@ -2601,8 +2611,30 @@ def plot_bland_altman(
     return figure
 
 
-def _bland_altman_values(ref_img, src_img, masker=None):
-    """Return voxel wise mean and differences between 2 images."""
+def _extract_data_2_images(ref_img, src_img, masker=None):
+    """Return data of 2 images as 2 vectors.
+
+    Parameters
+    ----------
+    ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Reference image.
+
+    src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Source image. Its type must match that of the ``ref_img``.
+        If the source image is Niimg-Like,
+        it will be resampled to match that or the source image.
+
+    masker : 3D Niimg-like binary mask or \
+            :obj:`~nilearn.masker.NiftiMasker` or \
+            binary :obj:`~nilearn.surface.SurfaceImage` ort \
+            or :obj:`~nilearn.masker.SurfaceMasker` or \
+            None
+        Mask to be used on data.
+        Its type must be compatible with that of the ``ref_img``.
+        If None is passed,
+        an appropriate masker will be fitted on the reference image.
+
+    """
     if isinstance(ref_img, (str, Path, Nifti1Image)) and isinstance(
         src_img, (str, Path, Nifti1Image)
     ):
@@ -2625,48 +2657,41 @@ def _bland_altman_values(ref_img, src_img, masker=None):
             f"Got {type(src_img)=} and {type(ref_img)=}."
         )
 
-    if masker is not None:
-        if image_type == "volume" and not isinstance(
-            masker, (NiftiMasker, Nifti1Image, str, Path)
-        ):
+    if masker is None:
+        if image_type == "volume":
+            masker = NiftiMasker(
+                target_affine=ref_img.affine,
+                target_shape=ref_img.shape,
+            )
+        else:
+            masker = SurfaceMasker()
+
+    if image_type == "volume":
+        if not isinstance(masker, (NiftiMasker, Nifti1Image, str, Path)):
             raise TypeError(
                 "'masker' must be NiftiMasker or Niimg-Like "
                 "for volume based images.\n"
                 f"Got {type(masker)}"
             )
-
-        elif image_type == "surface" and not isinstance(
-            masker, (SurfaceMasker, SurfaceImage)
-        ):
-            raise TypeError(
-                "'masker' must be SurfaceMasker or SurfaceImage "
-                "for surface based images.\n"
-                f"Got {type(masker)}"
-            )
-
-        if image_type == "volume" and isinstance(
-            masker, (Nifti1Image, str, Path)
-        ):
+        elif isinstance(masker, (Nifti1Image, str, Path)):
             masker = NiftiMasker(
                 mask_img=masker,
                 target_affine=ref_img.affine,
                 target_shape=ref_img.shape,
             )
 
-        elif image_type == "surface" and isinstance(masker, SurfaceImage):
+    else:
+        if not isinstance(masker, (SurfaceMasker, SurfaceImage)):
+            raise TypeError(
+                "'masker' must be SurfaceMasker or SurfaceImage "
+                "for surface based images.\n"
+                f"Got {type(masker)}"
+            )
+        if isinstance(masker, SurfaceImage):
             check_same_n_vertices(ref_img.mesh, masker.mesh)
             masker = SurfaceMasker(
                 mask_img=masker,
             )
-
-    elif image_type == "volume":
-        masker = NiftiMasker(
-            target_affine=ref_img.affine,
-            target_shape=ref_img.shape,
-        )
-
-    elif image_type == "surface":
-        masker = SurfaceMasker()
 
     # TODO replace with proper method
     if not hasattr(masker, "mask_img_"):
@@ -2678,7 +2703,4 @@ def _bland_altman_values(ref_img, src_img, masker=None):
     data_ref = data_ref.ravel()
     data_src = data_src.ravel()
 
-    mean = np.mean([data_ref, data_src], axis=0)
-    diff = data_ref - data_src
-
-    return mean, diff
+    return data_ref, data_src
