@@ -447,6 +447,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         region_signals = np.empty((n_time_points, len(labels)))
 
         # adapted from nilearn.regions.signal_extraction.img_to_signals_labels
+        # iterate over time points and apply reduction function over labels.
         reduction_function = getattr(ndimage, self.strategy)
         for n, img in enumerate(np.rollaxis(img_data, -1)):
             region_signals[n] = np.asarray(
