@@ -71,7 +71,6 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_methods_subset_invariance",
     "check_n_features_in",
     "check_n_features_in_after_fitting",
-    "check_nifti_masker_clean",
     "check_positive_only_tag_during_fit",
     "check_pipeline_consistency",
     "check_readonly_memmap_input",

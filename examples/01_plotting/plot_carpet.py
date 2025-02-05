@@ -12,10 +12,10 @@ from a 4D functional image.
 # %%
 # Fetching data from ADHD dataset
 # -------------------------------
-from nilearn import datasets
+from nilearn.datasets import fetch_adhd
 from nilearn.plotting import plot_carpet
 
-adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+adhd_dataset = fetch_adhd(n_subjects=1)
 
 # plot_carpet can infer TR from the image header,
 # but preprocessing can often overwrite that particular header field,
@@ -58,8 +58,9 @@ display.show()
 import numpy as np
 
 from nilearn import image
+from nilearn.datasets import fetch_icbm152_2009
 
-atlas = datasets.fetch_icbm152_2009()
+atlas = fetch_icbm152_2009()
 atlas_img = image.concat_imgs((atlas["gm"], atlas["wm"], atlas["csf"]))
 map_labels = {"Gray Matter": 1, "White Matter": 2, "Cerebrospinal Fluid": 3}
 

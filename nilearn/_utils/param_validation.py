@@ -361,3 +361,27 @@ def _cast_to_int32(sample_mask):
             what can be represented by int32: {highest}."
         raise ValueError(msg)
     return np.asarray(sample_mask, new_dtype)
+
+
+def check_reduction_strategy(strategy: str):
+    """Check that the provided strategy is supported.
+
+    Parameters
+    ----------
+    %(strategy)s
+    """
+    available_reduction_strategies = {
+        "mean",
+        "median",
+        "sum",
+        "minimum",
+        "maximum",
+        "standard_deviation",
+        "variance",
+    }
+
+    if strategy not in available_reduction_strategies:
+        raise ValueError(
+            f"Invalid strategy '{strategy}'. "
+            f"Valid strategies are {available_reduction_strategies}."
+        )

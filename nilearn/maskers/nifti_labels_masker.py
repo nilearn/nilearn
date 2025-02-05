@@ -10,6 +10,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.param_validation import check_reduction_strategy
 from nilearn.image import get_data, load_img, resample_img
 from nilearn.maskers._utils import (
     compute_middle_image,
@@ -126,10 +127,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     %(verbose0)s
 
-    strategy : :obj:`str`, default='mean'
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
+    %(strategy)s
 
     %(keep_masked_labels)s
 
@@ -532,20 +530,7 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
-        available_reduction_strategies = {
-            "mean",
-            "median",
-            "sum",
-            "minimum",
-            "maximum",
-            "standard_deviation",
-            "variance",
-        }
-        if self.strategy not in available_reduction_strategies:
-            raise ValueError(
-                f"Invalid strategy '{self.strategy}'. "
-                f"Valid strategies are {available_reduction_strategies}."
-            )
+        check_reduction_strategy(self.strategy)
 
         if self.resampling_target not in ("labels", "data", None):
             raise ValueError(
