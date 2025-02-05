@@ -12,6 +12,8 @@ import numpy as np
 from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
+from nilearn._utils.param_validation import check_reduction_strategy
+
 from .. import _utils, masking
 from .._utils.niimg import safe_get_data
 from ..image import new_img_like
@@ -208,30 +210,6 @@ def _get_labels_data(
         labels.remove(background_label)
 
     return labels, labels_data
-
-
-def check_reduction_strategy(strategy: str):
-    """Check that the provided strategy is supported.
-
-    Parameters
-    ----------
-    %(strategy)s
-    """
-    available_reduction_strategies = {
-        "mean",
-        "median",
-        "sum",
-        "minimum",
-        "maximum",
-        "standard_deviation",
-        "variance",
-    }
-
-    if strategy not in available_reduction_strategies:
-        raise ValueError(
-            f"Invalid strategy '{strategy}'. "
-            f"Valid strategies are {available_reduction_strategies}."
-        )
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.

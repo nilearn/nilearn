@@ -9,6 +9,7 @@ from nibabel import Nifti1Image
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.param_validation import check_reduction_strategy
 from nilearn.image import get_data, load_img, resample_img
 from nilearn.maskers._utils import (
     compute_middle_image,
@@ -19,7 +20,6 @@ from nilearn.maskers.base_masker import (
     filter_and_extract,
 )
 from nilearn.masking import load_mask_img
-from nilearn.regions.signal_extraction import check_reduction_strategy
 
 
 class _ExtractionFunctor:
