@@ -2440,13 +2440,16 @@ def plot_bland_altman(
         Bland-Altman plots show
         the difference between the statistic values (y-axis)
         against the mean statistic value (x-axis) for all voxels.
+
         The plots provide an assessment of the level of agreement
         between two images about the magnitude of the statistic value
         observed at each voxel.
+
         If two images were in perfect agreement,
-        all points on the bland-altman plot would lie on the x-axis,
+        all points on the Bland-Altman plot would lie on the x-axis,
         since the difference between the statistic values
         at each voxel would be zero.
+
         The degree of disagreement is therefore evaluated
         by the perpendicular distance of points from the x-axis.
 
@@ -2461,13 +2464,13 @@ def plot_bland_altman(
         it will be resampled to match that or the source image.
 
     masker : 3D Niimg-like binary mask or \
-            :obj:`~nilearn.masker.NiftiMasker` or \
-            binary :obj:`~nilearn.surface.SurfaceImage` ort \
-            or :obj:`~nilearn.masker.SurfaceMasker` or \
+            :obj:`~nilearn.maskers.NiftiMasker` or \
+            binary :obj:`~nilearn.surface.SurfaceImage` or \
+            or :obj:`~nilearn.maskers.SurfaceMasker` or \
             None
         Mask to be used on data.
         Its type must be compatible with that of the ``ref_img``.
-        If None is passed,
+        If ``None`` is passed,
         an appropriate masker will be fitted on the reference image.
 
     ref_label : :obj:`str`, default='reference image'
@@ -2497,7 +2500,7 @@ def plot_bland_altman(
         Determines the limit the central hexbin plot
         and the marginal histograms.
         Values in the list or tuple are: [-lim_x, lim_x, -lim_y, lim_y].
-        If None is passed values are determined based on the data.
+        If ``None`` is passed values are determined based on the data.
 
     %(output_file)s
 
@@ -2625,9 +2628,9 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
         it will be resampled to match that or the source image.
 
     masker : 3D Niimg-like binary mask or \
-            :obj:`~nilearn.masker.NiftiMasker` or \
-            binary :obj:`~nilearn.surface.SurfaceImage` ort \
-            or :obj:`~nilearn.masker.SurfaceMasker` or \
+            :obj:`~nilearn.maskers.NiftiMasker` or \
+            binary :obj:`~nilearn.surface.SurfaceImage` or \
+            or :obj:`~nilearn.maskers.SurfaceMasker` or \
             None
         Mask to be used on data.
         Its type must be compatible with that of the ``ref_img``.
