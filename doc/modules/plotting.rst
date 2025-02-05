@@ -53,7 +53,7 @@ Functions
 :mod:`nilearn.plotting`: Comparing images
 =========================================
 
-.. automodule:: nilearn.plotting
+.. automodule:: nilearn.plotting.img_comparison
    :no-members:
    :no-inherited-members:
 
@@ -62,7 +62,7 @@ Functions
 Functions
 ---------
 
-.. currentmodule:: nilearn.plotting
+.. currentmodule:: nilearn.plotting.img_comparison
 
 .. autosummary::
    :toctree: generated/
