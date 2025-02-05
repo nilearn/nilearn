@@ -17,7 +17,7 @@ from nilearn.maskers._utils import (
 )
 from nilearn.maskers.base_masker import (
     BaseMasker,
-    filter_and_extract,
+    filter_and_extract
 )
 from nilearn.masking import load_mask_img
 
