@@ -86,7 +86,6 @@ for i, mask in enumerate(iter_img(masks)):
         copy_header=True,
         force_resample=True,
     )
-    path = output_dir / f"mask_{i}.nii.gz"
     data = resampled_mask.get_fdata()
     data[data != 0] = 1
     resampled_mask = new_img_like(
@@ -96,6 +95,8 @@ for i, mask in enumerate(iter_img(masks)):
         copy_header=True,
     )
     mask_imgs.append(resampled_mask)
+    
+    path = output_dir / f"mask_{i}.nii.gz"    
     resampled_mask.to_filename(path)
     mask_paths.append(path)
 
