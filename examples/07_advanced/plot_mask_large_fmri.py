@@ -95,8 +95,8 @@ for i, mask in enumerate(iter_img(masks)):
         copy_header=True,
     )
     mask_imgs.append(resampled_mask)
-    
-    path = output_dir / f"mask_{i}.nii.gz"    
+
+    path = output_dir / f"mask_{i}.nii.gz"
     resampled_mask.to_filename(path)
     mask_paths.append(path)
 
