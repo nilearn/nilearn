@@ -968,10 +968,13 @@ def threshold_img(
 
         The score is calculated only on the non-negative values of data.
 
+    .. versionadded:: 0.2
+
     .. versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
-    .. versionadded:: 0.2
+    .. versionchanged:: 0.11.2dev
+        Add support for SurfaceImage.
 
     Parameters
     ----------

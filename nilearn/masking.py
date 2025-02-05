@@ -61,11 +61,11 @@ def load_mask_img(mask_img, allow_empty=False):
     Returns
     -------
     mask : :class:`numpy.ndarray` or :obj:`~nilearn.surface.SurfaceImage`
+        Boolean version of the input.
         Returns a :class:`numpy.ndarray` if Niimg-like object
         was passed as input
         or :obj:`~nilearn.surface.SurfaceImage`
         if :obj:`~nilearn.surface.SurfaceImage` was passed as input
-        Boolean version of the input.
 
     mask_affine : None or (4,4) array-like
         Affine of the mask if Niimg-like object was passed as input,
