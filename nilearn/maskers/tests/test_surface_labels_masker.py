@@ -155,11 +155,26 @@ def test_surface_label_masker_fit_no_report(surf_label_img):
     assert masker._reporting_data is None
 
 
+@pytest.mark.parametrize(
+    "strategy",
+    (
+        "variance",
+        "minimum",
+        "mean",
+        "standard_deviation",
+        "sum",
+        "median",
+        "maximum",
+    ),
+)
 def test_surface_label_masker_transform(
-    surf_label_img, surf_img_1d, surf_img_2d
+    surf_label_img, surf_img_1d, surf_img_2d, strategy
 ):
-    """Test transform extract signals."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
+    """Test transform extract signals.
+
+    Also a smoke test for different strategies.
+    """
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy=strategy)
     masker = masker.fit()
 
     # only one 'timepoint'
@@ -577,3 +592,10 @@ def test_masker_reporting_mpl_warning(surf_label_img):
 
     assert len(warning_list) == 1
     assert issubclass(warning_list[0].category, ImportWarning)
+
+
+def test_error_wrong_strategy(surf_label_img):
+    """Throw error for unsupported strategies."""
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy="foo")
+    with pytest.raises(ValueError, match="Invalid strategy 'foo'."):
+        masker.fit()
