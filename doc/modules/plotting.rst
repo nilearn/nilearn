@@ -23,6 +23,7 @@ Functions
    find_parcellation_cut_coords
    find_probabilistic_atlas_cut_coords
    plot_anat
+   plot_bland_altman
    plot_carpet
    plot_connectome
    plot_contrast_matrix

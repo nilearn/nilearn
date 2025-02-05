@@ -20,9 +20,9 @@ from nilearn._utils.exceptions import DimensionError
 VALID_CHECKS = [
     "check_decision_proba_consistency",
     "check_estimator_cloneable",
-    "check_estimators_partial_fit_n_features",
     "check_estimator_repr",
     "check_estimator_tags_renamed",
+    "check_estimators_partial_fit_n_features",
     "check_get_params_invariance",
     "check_mixin_order",
     "check_non_transformer_estimators_n_iter",
@@ -43,16 +43,37 @@ else:
 # by sklearn
 # and could be removed from this list.
 CHECKS_TO_SKIP_IF_IMG_INPUT = {
+    "check_complex_data",
+    "check_dtype_object",
+    "check_dict_unchanged",
+    "check_dont_overwrite_parameters",
     "check_estimator_sparse_array",
     "check_estimator_sparse_data",
     "check_estimator_sparse_matrix",
     "check_estimator_sparse_tag",
+    "check_estimators_empty_data_messages",
+    "check_estimators_dtypes",
+    "check_estimators_nan_inf",
+    "check_estimators_overwrite_params",
+    "check_estimators_pickle",
+    "check_estimators_fit_returns_self",
     "check_f_contiguous_array_estimator",
     "check_fit1d",
     "check_fit2d_1feature",
     "check_fit2d_1sample",
     "check_fit2d_predict1d",
-    "check_nifti_masker_clean",
+    "check_fit_score_takes_y",
+    "check_fit_idempotent",
+    "check_methods_sample_order_invariance",
+    "check_methods_subset_invariance",
+    "check_n_features_in",
+    "check_n_features_in_after_fitting",
+    "check_positive_only_tag_during_fit",
+    "check_pipeline_consistency",
+    "check_readonly_memmap_input",
+    "check_transformer_data_not_an_array",
+    "check_transformer_general",
+    "check_transformer_preserve_dtypes",
 }
 
 # TODO
@@ -145,12 +166,15 @@ def nilearn_check_estimator(estimator):
     tags = estimator._more_tags()
 
     is_masker = False
+    surf_img_input = False
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
         is_masker = "masker" in tags["X_types"]
+        surf_img_input = "surf_img" in tags["X_types"]
     else:
         is_masker = getattr(tags.input_tags, "masker", False)
+        surf_img_input = getattr(tags.input_tags, "surf_img", False)
 
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
@@ -173,6 +197,13 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_clean_error)
             yield (clone(estimator), check_nifti_masker_clean_warning)
             yield (clone(estimator), check_nifti_masker_dtype)
+            yield (clone(estimator), check_nifti_masker_smooth)
+            yield (clone(estimator), check_nifti_masker_fit_returns_self)
+            yield (clone(estimator), check_nifti_masker_fit_transform_5d)
+
+        if surf_img_input:
+            yield (clone(estimator), check_surface_masker_fit_returns_self)
+            yield (clone(estimator), check_surface_masker_smooth)
 
 
 def is_multimasker(estimator):
@@ -218,13 +249,31 @@ def check_masker_fitted(estimator):
         estimator.inverse_transform(signals)
 
 
+def check_nifti_masker_fit_returns_self(estimator):
+    """Check if self is returned when calling fit."""
+    from nilearn.conftest import _img_3d_rand
+
+    assert estimator.fit(_img_3d_rand()) is estimator
+
+
+def check_surface_masker_fit_returns_self(estimator):
+    """Check detrending does something.
+
+    Fit transform on same input should give different results
+    if detrend is true or false.
+    """
+    from nilearn.conftest import _make_surface_img
+
+    assert estimator.fit(_make_surface_img(100)) is estimator
+
+
 def check_nifti_masker_fit_transform(estimator):
     """Run several checks on maskers.
 
     - can fit 3D image
     - fitted maskers can transform:
       - 3D image
-      - list of 3D images
+      - list of 3D images with same affine
     - can fit transform 3D image
     """
     from nilearn.conftest import _img_3d_rand, _img_4d_rand_eye
@@ -233,19 +282,71 @@ def check_nifti_masker_fit_transform(estimator):
 
     signal = estimator.transform(_img_3d_rand())
 
+    assert isinstance(signal, np.ndarray)
     assert signal.shape[0] == 1
 
     estimator.transform([_img_3d_rand(), _img_3d_rand()])
 
+    assert isinstance(signal, np.ndarray)
     assert signal.shape[0] == 1
 
     estimator.transform(_img_4d_rand_eye())
 
+    assert isinstance(signal, np.ndarray)
     assert signal.shape[0] == 1
 
     estimator.fit_transform(_img_3d_rand())
 
+    assert isinstance(signal, np.ndarray)
     assert signal.shape[0] == 1
+
+
+def check_nifti_masker_fit_transform_5d(estimator):
+    """Run checks on nifti maskers for transforming 5D images.
+
+    - multi masker should be fine
+      and return a list of numpy arrays
+    - non multimasker should fail
+    """
+    import pytest
+
+    from nilearn.conftest import _img_3d_rand, _img_4d_rand_eye
+
+    n_subject = 3
+
+    estimator.fit(_img_3d_rand())
+
+    input_5d_img = [_img_4d_rand_eye() for _ in range(n_subject)]
+
+    if not is_multimasker(estimator):
+        with pytest.raises(
+            DimensionError,
+            match="Input data has incompatible dimensionality: "
+            "Expected dimension is 4D and you provided "
+            "a list of 4D images \\(5D\\).",
+        ):
+            estimator.transform(input_5d_img)
+
+        with pytest.raises(
+            DimensionError,
+            match="Input data has incompatible dimensionality: "
+            "Expected dimension is 4D and you provided "
+            "a list of 4D images \\(5D\\).",
+        ):
+            estimator.fit_transform(input_5d_img)
+
+    else:
+        signal = estimator.transform(input_5d_img)
+
+        assert isinstance(signal, list)
+        assert all(isinstance(x, np.ndarray) for x in signal)
+        assert len(signal) == n_subject
+
+        signal = estimator.fit_transform(input_5d_img)
+
+        assert isinstance(signal, list)
+        assert all(isinstance(x, np.ndarray) for x in signal)
+        assert len(signal) == n_subject
 
 
 def check_masker_clean_kwargs(estimator):
@@ -356,6 +457,69 @@ def check_nifti_masker_clean_warning(estimator):
     detrended_signal = estimator.transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
+
+
+def check_nifti_masker_smooth(estimator):
+    """Check that masker can smooth data when extracting.
+
+    Check that masker instance has smoothing_fwhm attribute.
+    Check that output is different with and without smoothing.
+    """
+    from nilearn.conftest import _img_3d_rand
+
+    assert hasattr(estimator, "smoothing_fwhm")
+
+    signal = estimator.fit(_img_3d_rand())
+    signal = estimator.transform(_img_3d_rand())
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape[0] == 1
+
+    estimator.smoothing_fwhm = 3
+    estimator.fit(_img_3d_rand())
+    smoothed_signal = estimator.transform(_img_3d_rand())
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape[0] == 1
+
+    assert_raises(AssertionError, assert_array_equal, smoothed_signal, signal)
+
+
+def check_surface_masker_smooth(estimator):
+    """Check smoothing on surface maskers raises warning.
+
+    Check that output is the same with and without smoothing.
+    TODO: update once smoothing is implemented.
+    """
+    import pytest
+
+    from nilearn.conftest import _make_surface_img
+
+    assert hasattr(estimator, "smoothing_fwhm")
+
+    n_sample = 10
+
+    input_img = _make_surface_img(n_sample)
+
+    estimator.fit(input_img)
+
+    signal = estimator.transform(input_img)
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape[0] == n_sample
+
+    estimator.smoothing_fwhm = 3
+    estimator.fit(input_img)
+
+    with pytest.warns(UserWarning, match="not yet supported"):
+        smoothed_signal = estimator.transform(input_img)
+
+    assert estimator.smoothing_fwhm is None
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape[0] == n_sample
+
+    assert_array_equal(smoothed_signal, signal)
 
 
 def check_nifti_masker_fit_transform_files(estimator):

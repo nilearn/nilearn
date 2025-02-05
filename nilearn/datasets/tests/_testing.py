@@ -31,6 +31,7 @@ home directory and other default nilearn data directories.
 import fnmatch
 import json
 import os
+import pathlib
 import pickle
 import re
 import shutil
@@ -39,10 +40,14 @@ from collections import OrderedDict
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pandas as pd
 import pytest
+from nibabel import Nifti1Image
 from requests.exceptions import HTTPError
+from sklearn.utils import Bunch
 
 from nilearn._utils.testing import serialize_niimg
+from nilearn.surface.surface import PolyMesh, SurfaceImage
 
 
 @pytest.fixture(autouse=True)
@@ -449,3 +454,42 @@ def list_to_archive(sequence, archive_format="gztar", content=""):
     return dict_to_archive(
         dict.fromkeys(sequence, content), archive_format=archive_format
     )
+
+
+def check_type_fetcher(data):
+    """Check type content of datasets.
+
+    Recursively checks the content returned by fetchers
+    to make sure they do not contain only some allowed type of objects.
+
+    If the data is a Bunch and contains a dataset description,
+    ensures the description is not empty.
+    """
+    if isinstance(
+        data,
+        (
+            str,
+            int,
+            float,
+            Nifti1Image,
+            SurfaceImage,
+            pd.DataFrame,
+            PolyMesh,
+            pathlib.Path,
+        ),
+    ):
+        pass
+    elif isinstance(data, (Bunch, dict)):
+        for k, v in data.items():
+            if k == "description":
+                assert isinstance(v, str)
+                assert v != ""
+            if not check_type_fetcher(v):
+                raise TypeError(f"Found {k} : {type(v)}")
+    elif isinstance(data, (set, list, tuple)):
+        for v in data:
+            if not check_type_fetcher(v):
+                raise TypeError(f"{type(v)}")
+    else:
+        return False
+    return True

@@ -31,6 +31,7 @@ from nilearn.datasets import (
     fetch_openneuro_dataset,
     load_fsaverage,
     load_nki,
+    load_sample_motor_activation_image,
     select_from_index,
 )
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
@@ -83,6 +84,7 @@ def report_flm_adhd_dmn(build_type):
         high_pass=0.01,
         t_r=t_r,
         memory="nilearn_cache",
+        memory_level=1,
     )
 
     adhd_dataset = fetch_adhd(n_subjects=1)
@@ -357,6 +359,7 @@ def report_nifti_maps_masker(build_type):
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
         cmap="gray",
+        memory_level=1,
     )
     masker.fit(data.func[0])
 
@@ -465,7 +468,7 @@ def report_multi_nifti_labels_masker(build_type):
         )
         return None
 
-    yeo = fetch_atlas_yeo_2011(thichness="thick", n_networks=17)
+    yeo = fetch_atlas_yeo_2011(thickness="thick", n_networks=17)
 
     data = fetch_development_fmri(n_subjects=2)
 
@@ -475,6 +478,7 @@ def report_multi_nifti_labels_masker(build_type):
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
         n_jobs=2,
+        memory_level=1,
     )
 
     masker.fit()
@@ -509,6 +513,7 @@ def report_multi_nifti_maps_masker(build_type):
         standardize="zscore_sample",
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
+        memory_level=1,
         n_jobs=2,
     )
 
@@ -532,9 +537,15 @@ def report_surface_masker(build_type):
         )
         return None, None
 
+    img = load_sample_motor_activation_image()
+    fsaverage_meshes = load_fsaverage()
+    surface_stat_image = SurfaceImage.from_volume(
+        mesh=fsaverage_meshes["pial"],
+        volume_img=img,
+    )
+
     masker = SurfaceMasker()
-    img = load_nki(mesh_type="inflated")[0]
-    masker.fit_transform(img)
+    masker.fit_transform(surface_stat_image)
     surface_masker_report = masker.generate_report()
     surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
 
@@ -553,7 +564,7 @@ def report_surface_masker(build_type):
         mask.data.parts[part] = mask.data.parts[part] == 34
 
     masker = SurfaceMasker(mask)
-    masker.fit_transform(img)
+    masker.fit_transform(surface_stat_image)
     surface_masker_with_mask_report = masker.generate_report()
     surface_masker_with_mask_report.save_as_html(
         REPORTS_DIR / "surface_masker_with_mask.html"
@@ -585,15 +596,20 @@ def report_surface_label_masker(build_type):
         },
     )
 
-    labels_masker = SurfaceLabelsMasker(labels_img, destrieux.labels).fit()
+    labels_masker = SurfaceLabelsMasker(labels_img, lut=destrieux.lut).fit()
     labels_masker_report_unfitted = labels_masker.generate_report()
     labels_masker_report_unfitted.save_as_html(
         REPORTS_DIR / "surface_label_masker_unfitted.html"
     )
 
-    img = load_nki(mesh_type="inflated")[0]
+    stat_img = load_sample_motor_activation_image()
+    fsaverage_meshes = load_fsaverage()
+    surface_stat_image = SurfaceImage.from_volume(
+        mesh=fsaverage_meshes["pial"],
+        volume_img=stat_img,
+    )
 
-    labels_masker.transform(img)
+    labels_masker.transform(surface_stat_image)
     labels_masker_report = labels_masker.generate_report()
     labels_masker_report.save_as_html(
         REPORTS_DIR / "surface_label_masker.html"

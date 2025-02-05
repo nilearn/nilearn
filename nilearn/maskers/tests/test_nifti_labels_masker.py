@@ -107,14 +107,6 @@ def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
 
     assert signals.shape == (length, n_regions)
 
-    # Transform, with smoothing (smoke test)
-    masker = NiftiLabelsMasker(
-        labels_img, smoothing_fwhm=3, resampling_target=None
-    )
-    signals = masker.fit().transform(fmri_img)
-
-    assert signals.shape == (length, n_regions)
-
     # Call inverse transform (smoke test)
     fmri_img_r = masker.inverse_transform(signals)
 
@@ -141,10 +133,6 @@ def test_nifti_labels_masker_errors(
     shape2 = (12, 10, 14, length)
     affine2 = np.diag((1, 2, 3, 1))
 
-    fmri11_img, _ = generate_random_img(
-        shape1,
-        affine=affine_eye,
-    )
     fmri12_img, mask12_img = generate_random_img(
         shape1,
         affine=affine2,
@@ -187,11 +175,6 @@ def test_nifti_labels_masker_errors(
         ValueError, match="Regions and mask do not have the same shape"
     ):
         masker11.fit()
-
-    masker11 = NiftiLabelsMasker(
-        labels11_img, smoothing_fwhm=3, resampling_target=None
-    )
-    masker11.fit_transform(fmri11_img)
 
 
 def test_nifti_labels_masker_io_shapes(

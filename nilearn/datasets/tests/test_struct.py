@@ -15,13 +15,18 @@ from nilearn.datasets.struct import (
     load_fsaverage,
     load_fsaverage_data,
 )
-from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
+from nilearn.datasets.tests._testing import (
+    check_type_fetcher,
+    dict_to_archive,
+    list_to_archive,
+)
 from nilearn.surface import PolyMesh, SurfaceImage
 
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
 
+    check_type_fetcher(dataset)
     assert isinstance(dataset.csf, str)
     assert isinstance(dataset.eye_mask, str)
     assert isinstance(dataset.face_mask, str)
@@ -33,7 +38,6 @@ def test_fetch_icbm152_2009(tmp_path, request_mocker):
     assert isinstance(dataset.t2_relax, str)
     assert isinstance(dataset.wm, str)
     assert request_mocker.url_count == 1
-    assert dataset.description != ""
 
 
 def _make_oasis_data(dartel=True):
@@ -61,6 +65,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
 
     dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path), verbose=0)
 
+    check_type_fetcher(dataset)
     assert len(dataset.gray_matter_maps) == 403
     assert len(dataset.white_matter_maps) == 403
     assert isinstance(dataset.gray_matter_maps[0], str)
@@ -73,6 +78,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
         data_dir=str(tmp_path), dartel_version=False, verbose=0
     )
 
+    check_type_fetcher(dataset)
     assert len(dataset.gray_matter_maps) == 415
     assert len(dataset.white_matter_maps) == 415
     assert isinstance(dataset.gray_matter_maps[0], str)
@@ -80,7 +86,6 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 2
-    assert dataset.description != ""
 
 
 @pytest.mark.parametrize(
@@ -100,6 +105,8 @@ def test_load_mni152(func, resolution):
 
     assert isinstance(img, Nifti1Image)
 
+    check_type_fetcher(img)
+
     if resolution is None:
         expected_shape = (197, 233, 189)
         expected_zooms = (1.0, 1.0, 1.0)
@@ -118,6 +125,7 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
         data_dir=str(tmp_path), verbose=0
     )
 
+    check_type_fetcher(grey_matter_img)
     assert isinstance(grey_matter_img, Nifti1Image)
 
 
@@ -166,13 +174,15 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
 
     dataset = fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
 
+    check_type_fetcher(dataset)
+
     assert mesh_attributes.issubset(set(dataset.keys()))
-    assert dataset.description != ""
 
 
 def test_fetch_load_fsaverage():
     """Check that PolyMesh are returned."""
     result = load_fsaverage()
+    check_type_fetcher(result)
     assert isinstance(result, Bunch)
     assert isinstance(result.pial, PolyMesh)
     nb_vertices_fsaverage5 = 10242

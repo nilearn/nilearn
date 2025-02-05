@@ -16,34 +16,44 @@ from pathlib import Path
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import gridspec
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
+from nibabel import Nifti1Image
 from nibabel.spatialimages import SpatialImage
 from scipy import stats
 from scipy.ndimage import binary_fill_holes
 
-from nilearn.image.resampling import reorder_img
-from nilearn.maskers import NiftiMasker
-from nilearn.plotting.displays import get_projector, get_slicer
-from nilearn.plotting.displays._slicers import get_cbar_ticks
-
-from .. import _utils
-from .._utils import (
+from nilearn._utils import (
+    check_niimg_3d,
+    check_niimg_4d,
     compare_version,
     constrained_layout_kwargs,
     fill_doc,
     logger,
 )
-from .._utils.extmath import fast_abs_percentile
-from .._utils.ndimage import get_border_data
-from .._utils.niimg import safe_get_data
-from .._utils.numpy_conversions import as_ndarray
-from .._utils.param_validation import check_threshold
-from ..datasets import load_mni152_template
-from ..image import get_data, iter_img, math_img, new_img_like, resample_to_img
-from ..masking import apply_mask, compute_epi_mask
-from ..signal import clean
-from . import cm
+from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.ndimage import get_border_data
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn._utils.param_validation import check_threshold
+from nilearn.datasets import load_mni152_template
+from nilearn.image import (
+    get_data,
+    iter_img,
+    math_img,
+    new_img_like,
+    resample_to_img,
+)
+from nilearn.image.resampling import reorder_img
+from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.masking import apply_mask, compute_epi_mask
+from nilearn.plotting import cm
+from nilearn.plotting._utils import _check_threshold
+from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.plotting.displays._slicers import get_cbar_ticks
+from nilearn.signal import clean
+from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
 
 
 def show():
@@ -95,8 +105,14 @@ def get_colorbar_and_data_ranges(
     stat_map_max = np.nanmax(stat_map_data)
 
     if symmetric_cbar == "auto":
-        if (vmin is None) or (vmax is None):
-            symmetric_cbar = stat_map_min < 0 < stat_map_max
+        if vmin is None or vmax is None:
+            min_value = (
+                stat_map_min if vmin is None else max(vmin, stat_map_min)
+            )
+            max_value = (
+                stat_map_max if vmax is None else min(stat_map_max, vmax)
+            )
+            symmetric_cbar = min_value < 0 < max_value
         else:
             symmetric_cbar = np.isclose(vmin, -vmax)
 
@@ -115,7 +131,6 @@ def get_colorbar_and_data_ranges(
             )
         cbar_vmin = vmin
         cbar_vmax = vmax
-
     # set colorbar limits
     else:
         negative_range = stat_map_max <= 0
@@ -176,6 +191,38 @@ def _plot_img_with_bg(
     %(img)s
         Image to plot.
 
+    %(bg_img)s
+        If nothing is specified, no background image is plotted.
+        Default=None.
+
+    %(cut_coords)s
+
+    %(output_file)s
+
+    %(display_mode)s
+
+    %(colorbar)s
+        Default=False.
+
+    %(figure)s
+
+    %(axes)s
+
+    %(title)s
+
+    %(threshold)s
+
+    %(annotate)s
+
+    %(draw_cross)s
+
+    %(black_bg)s
+        Default=False.
+
+    %(vmin)s
+
+    %(vmax)s
+
     bg_vmin : :obj:`float`, optional
         vmin for `bg_img`.
 
@@ -187,6 +234,17 @@ def _plot_img_with_bg(
 
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
+
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
+        Controls how to format the tick labels of the colorbar.
+        Ex: use "%%i" to display as integers.
+
+    decimals : :obj:`int` or :obj:`bool`, default=False
+        Number of decimal places on slice position annotation.
+        If False,
+        the slice position is integer without decimal point.
+
+    %(radiological)s
 
     kwargs :  extra keyword arguments, optional
         Extra keyword arguments passed
@@ -201,7 +259,14 @@ def _plot_img_with_bg(
         An instance of the OrthoSlicer or OrthoProjector class depending on the
         function defined in ``display_factory``. If ``output_file`` is defined,
         None is returned.
+
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
     """
+    _check_threshold(threshold)
+
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
         vmax = None
@@ -228,7 +293,7 @@ def _plot_img_with_bg(
         )
 
     if img is not False and img is not None:
-        img = _utils.check_niimg_3d(img, dtype="auto")
+        img = check_niimg_3d(img, dtype="auto")
         data = safe_get_data(img, ensure_finite=True)
         affine = img.affine
 
@@ -255,7 +320,7 @@ def _plot_img_with_bg(
         radiological=radiological,
     )
     if bg_img is not None:
-        bg_img = _utils.check_niimg_3d(bg_img)
+        bg_img = check_niimg_3d(bg_img)
         display.add_overlay(
             bg_img,
             vmin=bg_vmin,
@@ -375,14 +440,6 @@ def plot_img(
 
     %(annotate)s
 
-    decimals : :obj:`int` or :obj:`bool`, default=False
-        Number of decimal places on slice position annotation.
-        If False,
-        the slice position is integer without decimal point.
-
-    %(cmap)s
-        default="gray"
-
     %(draw_cross)s
 
     %(black_bg)s
@@ -408,6 +465,14 @@ def plot_img(
 
     %(radiological)s
 
+    decimals : :obj:`int` or :obj:`bool`, default=False
+        Number of decimal places on slice position annotation.
+        If False,
+        the slice position is integer without decimal point.
+
+    %(cmap)s
+        default="gray"
+
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
@@ -418,6 +483,11 @@ def plot_img(
     display : :class:`~nilearn.plotting.displays.OrthoSlicer` or None
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
+
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
 
     .. note::
 
@@ -558,7 +628,7 @@ def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
         if black_bg == "auto":
             black_bg = False
     else:
-        anat_img = _utils.check_niimg_3d(anat_img)
+        anat_img = check_niimg_3d(anat_img)
         # Clean anat_img for non-finite values to avoid computing unnecessary
         # border data values.
         data = safe_get_data(anat_img, ensure_finite=True)
@@ -679,6 +749,11 @@ def plot_anat(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -687,6 +762,8 @@ def plot_anat(
     are set to zero.
 
     """
+    _check_threshold(threshold)
+
     anat_img, black_bg, anat_vmin, anat_vmax = load_anat(
         anat_img, dim=dim, black_bg=black_bg
     )
@@ -850,7 +927,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         Contours displayed on the background image.
 
     """
-    roi_img = _utils.check_niimg_3d(roi_img)
+    roi_img = check_niimg_3d(roi_img)
     roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
     cmap = plt.get_cmap(cmap)
@@ -984,6 +1061,11 @@ def plot_roi(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     Notes
     -----
     A small threshold is applied by default to eliminate numerical
@@ -997,6 +1079,8 @@ def plot_roi(
     nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
         (4D images)
     """
+    _check_threshold(threshold)
+
     valid_view_types = ["continuous", "contours"]
     if view_type not in valid_view_types:
         raise ValueError(
@@ -1096,11 +1180,12 @@ def plot_prob_atlas(
         If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
 
-    threshold : a :obj:`str` or a number, :obj:`list` of :obj:`str` or \
-        numbers, default='auto'
+    threshold : a :obj:`int` or :obj:`float` or :obj:`str` or :obj:`list` of
+        :obj:`int` or :obj:`float` or :obj:`str`, default='auto'
         This parameter is optional and is used to threshold the maps image
         using the given value or automatically selected value. The values
-        in the image above the threshold level will be visualized.
+        in the image (in absolute value) above the threshold level will be
+        visualized.
         The default strategy, computes a threshold level that seeks to
         minimize (yet not eliminate completely) the overlap between several
         maps for a better visualization.
@@ -1112,8 +1197,9 @@ def plot_prob_atlas(
         provided, each 3D map is thresholded with certain percentile
         sequentially. Length of percentiles given should match the number
         of 3D map in time (4th) dimension.
-        If a number or a list of numbers, the given value will be used
-        directly to threshold the maps without any percentile calculation.
+        If a number or a list of numbers, the numbers should be
+        non-negative. The given value will be used directly to threshold the
+        maps without any percentile calculation.
         If None, a very small threshold is applied to remove numerical
         noise from the maps background.
 
@@ -1167,10 +1253,17 @@ def plot_prob_atlas(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     See Also
     --------
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
     """
+    _check_threshold(threshold)
+
     display = plot_anat(
         bg_img,
         cut_coords=cut_coords,
@@ -1188,7 +1281,7 @@ def plot_prob_atlas(
         **kwargs,
     )
 
-    maps_img = _utils.check_niimg_4d(maps_img)
+    maps_img = check_niimg_4d(maps_img)
     n_maps = maps_img.shape[3]
 
     valid_view_types = ["auto", "contours", "filled_contours", "continuous"]
@@ -1366,9 +1459,6 @@ def plot_stat_map(
 
     %(cmap)s
 
-        .. note::
-            The colormap *must* be symmetrical.
-
         Default=default="RdBu_r".
 
     %(symmetric_cbar)s
@@ -1396,6 +1486,11 @@ def plot_stat_map(
         An instance of the OrthoSlicer class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
@@ -1409,12 +1504,14 @@ def plot_stat_map(
     nilearn.plotting.plot_epi : To simply plot raw EPI images
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
     """
+    _check_threshold(threshold)
+
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
     )
 
-    stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
+    stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
 
     cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
         safe_get_data(stat_map_img, ensure_finite=True),
@@ -1561,10 +1658,17 @@ def plot_glass_brain(
         An instance of the OrthoProjector class. If ``output_file`` is defined,
         None is returned.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
+
     Notes
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
+    _check_threshold(threshold)
+
     if cmap is None:
         cmap = cm.cold_white_hot
         if black_bg:
@@ -1579,7 +1683,7 @@ def plot_glass_brain(
             )
 
     if stat_map_img:
-        stat_map_img = _utils.check_niimg_3d(stat_map_img, dtype="auto")
+        stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
         if plot_abs:
             if vmin is not None and vmin < 0:
                 warnings.warn(
@@ -2030,7 +2134,7 @@ def plot_carpet(
     .. footbibliography::
 
     """
-    img = _utils.check_niimg_4d(img, dtype="auto")
+    img = check_niimg_4d(img, dtype="auto")
 
     # Define TR and number of frames
     t_r = t_r or img.header.get_zooms()[-1]
@@ -2039,7 +2143,7 @@ def plot_carpet(
     if mask_img is None:
         mask_img = compute_epi_mask(img)
     else:
-        mask_img = _utils.check_niimg_3d(mask_img, dtype="auto")
+        mask_img = check_niimg_3d(mask_img, dtype="auto")
 
     is_atlas = len(np.unique(mask_img.get_fdata())) > 2
     if is_atlas:
@@ -2305,3 +2409,298 @@ def plot_img_comparison(
                 plt.savefig(output_dir / f"{int(i):04}.png")
 
     return corrs
+
+
+@fill_doc
+def plot_bland_altman(
+    ref_img,
+    src_img,
+    masker=None,
+    ref_label="reference image",
+    src_label="source image",
+    figure=None,
+    title=None,
+    cmap="inferno",
+    colorbar=True,
+    gridsize=100,
+    lims=None,
+    output_file=None,
+):
+    """Create a Bland-Altman plot between 2 images.
+
+    Plot the the 2D distribution of voxel-wise differences
+    as a function of the voxel-wise mean,
+    along with an histogram for the distribution of each.
+
+    .. note::
+
+        Bland-Altman plots show
+        the difference between the statistic values (y-axis)
+        against the mean statistic value (x-axis) for all voxels.
+
+        The plots provide an assessment of the level of agreement
+        between two images about the magnitude of the statistic value
+        observed at each voxel.
+
+        If two images were in perfect agreement,
+        all points on the Bland-Altman plot would lie on the x-axis,
+        since the difference between the statistic values
+        at each voxel would be zero.
+
+        The degree of disagreement is therefore evaluated
+        by the perpendicular distance of points from the x-axis.
+
+    Parameters
+    ----------
+    ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Reference image.
+
+    src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Source image. Its type must match that of the ``ref_img``.
+        If the source image is Niimg-Like,
+        it will be resampled to match that or the source image.
+
+    masker : 3D Niimg-like binary mask or \
+            :obj:`~nilearn.maskers.NiftiMasker` or \
+            binary :obj:`~nilearn.surface.SurfaceImage` or \
+            or :obj:`~nilearn.maskers.SurfaceMasker` or \
+            None
+        Mask to be used on data.
+        Its type must be compatible with that of the ``ref_img``.
+        If ``None`` is passed,
+        an appropriate masker will be fitted on the reference image.
+
+    ref_label : :obj:`str`, default='reference image'
+        Name of reference image.
+
+    src_label : :obj:`str`, default='source image'
+        Name of source image.
+
+    %(figure)s
+
+    %(title)s
+
+    %(cmap)s
+        default="inferno"
+
+    %(colorbar)s
+        default=True
+
+    gridsize : :obj:`int` or :obj:`tuple` of 2 :obj:`int`, default=100
+        Dimension of the grid on which to display the main plot.
+        If a single value is passed, then the grid is square.
+        If a tuple is passed, the first value corresponds
+        to the length of the x axis,
+        and the second value corresponds to the length of the y axis.
+
+    lims : A :obj:`list` or :obj:`tuple` of 4 :obj:`int` or None, default=None
+        Determines the limit the central hexbin plot
+        and the marginal histograms.
+        Values in the list or tuple are: [-lim_x, lim_x, -lim_y, lim_y].
+        If ``None`` is passed values are determined based on the data.
+
+    %(output_file)s
+
+    Notes
+    -----
+    This function and the plot description was adapted
+    from :footcite:t:`Bowring2019`
+    and its associated `code base <https://github.com/AlexBowring/Software_Comparison/blob/master/figures/lib/bland_altman.py>`_.
+
+
+    References
+    ----------
+
+    .. footbibliography::
+
+
+    """
+    data_ref, data_src = _extract_data_2_images(
+        ref_img, src_img, masker=masker
+    )
+
+    mean = np.mean([data_ref, data_src], axis=0)
+    diff = data_ref - data_src
+
+    if lims is None:
+        lim_x = np.max(np.abs(mean))
+        if lim_x == 0:
+            lim_x = 1
+        lim_y = np.max(np.abs(diff))
+        if lim_y == 0:
+            lim_y = 1
+        lims = [-lim_x, lim_x, -lim_y, lim_y]
+
+    if (
+        not isinstance(lims, (list, tuple))
+        or len(lims) != 4
+        or any(x == 0 for x in lims)
+    ):
+        raise TypeError(
+            "'lims' must be a list or tuple of length == 4, "
+            "with all values different from 0."
+        )
+
+    if isinstance(gridsize, int):
+        gridsize = (gridsize, gridsize)
+
+    if figure is None:
+        figure = plt.figure(figsize=(6, 6))
+
+    gs0 = gridspec.GridSpec(1, 1)
+
+    gs = gridspec.GridSpecFromSubplotSpec(
+        5, 6, subplot_spec=gs0[0], hspace=0.5, wspace=0.5
+    )
+
+    ax1 = figure.add_subplot(gs[:-1, 1:5])
+    hb = ax1.hexbin(
+        mean,
+        diff,
+        bins="log",
+        cmap=cmap,
+        gridsize=gridsize,
+        extent=lims,
+    )
+    ax1.axis(lims)
+    ax1.axhline(linewidth=1, color="r")
+    ax1.axvline(linewidth=1, color="r")
+    if title:
+        ax1.set_title(title)
+
+    ax2 = figure.add_subplot(gs[:-1, 0], xticklabels=[], sharey=ax1)
+    ax2.set_ylim(lims[2:])
+    ax2.hist(
+        diff,
+        bins=gridsize[0],
+        range=lims[2:],
+        histtype="stepfilled",
+        orientation="horizontal",
+        color="gray",
+    )
+    ax2.invert_xaxis()
+    ax2.set_ylabel(f"Difference : {ref_label} - {src_label}")
+
+    ax3 = figure.add_subplot(gs[-1, 1:5], yticklabels=[], sharex=ax1)
+    ax3.hist(
+        mean,
+        bins=gridsize[1],
+        range=lims[0:2],
+        histtype="stepfilled",
+        orientation="vertical",
+        color="gray",
+    )
+    ax3.set_xlim(lims[0:2])
+    ax3.invert_yaxis()
+    ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label}")
+
+    ax4 = figure.add_subplot(gs[:-1, 5])
+    ax4.set_aspect(20)
+    pos1 = ax4.get_position()
+    ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
+
+    if colorbar:
+        cb = figure.colorbar(hb, cax=ax4)
+        cb.set_label("log10(N)")
+
+    if output_file is not None:
+        figure.savefig(output_file)
+        plt.close(figure)
+        figure = None
+
+    return figure
+
+
+def _extract_data_2_images(ref_img, src_img, masker=None):
+    """Return data of 2 images as 2 vectors.
+
+    Parameters
+    ----------
+    ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Reference image.
+
+    src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Source image. Its type must match that of the ``ref_img``.
+        If the source image is Niimg-Like,
+        it will be resampled to match that or the source image.
+
+    masker : 3D Niimg-like binary mask or \
+            :obj:`~nilearn.maskers.NiftiMasker` or \
+            binary :obj:`~nilearn.surface.SurfaceImage` or \
+            or :obj:`~nilearn.maskers.SurfaceMasker` or \
+            None
+        Mask to be used on data.
+        Its type must be compatible with that of the ``ref_img``.
+        If None is passed,
+        an appropriate masker will be fitted on the reference image.
+
+    """
+    if isinstance(ref_img, (str, Path, Nifti1Image)) and isinstance(
+        src_img, (str, Path, Nifti1Image)
+    ):
+        image_type = "volume"
+        ref_img = check_niimg_3d(ref_img)
+        src_img = check_niimg_3d(src_img)
+
+    elif isinstance(ref_img, (SurfaceImage)) and isinstance(
+        src_img, (SurfaceImage)
+    ):
+        image_type = "surface"
+        ref_img.data._check_ndims(1)
+        src_img.data._check_ndims(1)
+        check_same_n_vertices(ref_img.mesh, src_img.mesh)
+
+    else:
+        raise TypeError(
+            "'ref_img' and 'src_img' "
+            "must both be Niimg-like or SurfaceImage.\n"
+            f"Got {type(src_img)=} and {type(ref_img)=}."
+        )
+
+    if masker is None:
+        if image_type == "volume":
+            masker = NiftiMasker(
+                target_affine=ref_img.affine,
+                target_shape=ref_img.shape,
+            )
+        else:
+            masker = SurfaceMasker()
+
+    if image_type == "volume":
+        if not isinstance(masker, (NiftiMasker, Nifti1Image, str, Path)):
+            raise TypeError(
+                "'masker' must be NiftiMasker or Niimg-Like "
+                "for volume based images.\n"
+                f"Got {type(masker)}"
+            )
+        elif isinstance(masker, (Nifti1Image, str, Path)):
+            masker = NiftiMasker(
+                mask_img=masker,
+                target_affine=ref_img.affine,
+                target_shape=ref_img.shape,
+            )
+
+    else:
+        if not isinstance(masker, (SurfaceMasker, SurfaceImage)):
+            raise TypeError(
+                "'masker' must be SurfaceMasker or SurfaceImage "
+                "for surface based images.\n"
+                f"Got {type(masker)}"
+            )
+        if isinstance(masker, SurfaceImage):
+            check_same_n_vertices(ref_img.mesh, masker.mesh)
+            masker = SurfaceMasker(
+                mask_img=masker,
+            )
+
+    # TODO replace with proper method
+    if not hasattr(masker, "mask_img_"):
+        masker.fit(ref_img)
+
+    data_ref = masker.transform(ref_img)
+    data_src = masker.transform(src_img)
+
+    data_ref = data_ref.ravel()
+    data_src = data_src.ravel()
+
+    return data_ref, data_src
