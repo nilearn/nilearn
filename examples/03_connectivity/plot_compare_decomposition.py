@@ -26,9 +26,9 @@ The reference paper is :footcite:t:`Varoquaux2010c`.
 # %%
 # Load brain development :term:`fMRI` dataset
 # -------------------------------------------
-from nilearn import datasets
+from nilearn.datasets import fetch_development_fmri
 
-rest_dataset = datasets.fetch_development_fmri(n_subjects=30)
+rest_dataset = fetch_development_fmri(n_subjects=30)
 func_filenames = rest_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset

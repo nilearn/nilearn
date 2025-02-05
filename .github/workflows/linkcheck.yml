@@ -1,0 +1,46 @@
+---
+# Check for dead links in the the documentation.
+#
+# Links to ignore are set in doc/conf.py
+# (see ``linkcheck_.*`` variables).
+#
+###
+name: linkcheck
+
+on:
+    push:
+        branches:
+        -   main
+    schedule:
+    # Run every Monday at 8am UTC
+    -   cron: 0 8 * * 1
+
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    # Force to use color
+    FORCE_COLOR: true
+
+jobs:
+
+    # check the links in the doc
+    linkcheck:
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v5
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: '3.13'
+        -   name: Install packages
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+        -   name: check links
+            run: tox run -e linkcheck

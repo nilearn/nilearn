@@ -139,3 +139,8 @@ def _get_hemi(mesh, hemi):
         return mesh.parts[hemi]
     else:
         raise ValueError("hemi must be one of left, right or both.")
+
+
+def _check_threshold(threshold):
+    if isinstance(threshold, (int, float)) and threshold < 0:
+        raise ValueError("Threshold should be a non-negative number!")
