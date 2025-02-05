@@ -1456,9 +1456,6 @@ def plot_stat_map(
 
     %(cmap)s
 
-        .. note::
-            The colormap *must* be symmetrical.
-
         Default=default="RdBu_r".
 
     %(symmetric_cbar)s

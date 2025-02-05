@@ -84,6 +84,7 @@ def report_flm_adhd_dmn(build_type):
         high_pass=0.01,
         t_r=t_r,
         memory="nilearn_cache",
+        memory_level=1,
     )
 
     adhd_dataset = fetch_adhd(n_subjects=1)
@@ -358,6 +359,7 @@ def report_nifti_maps_masker(build_type):
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
         cmap="gray",
+        memory_level=1,
     )
     masker.fit(data.func[0])
 
@@ -476,6 +478,7 @@ def report_multi_nifti_labels_masker(build_type):
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
         n_jobs=2,
+        memory_level=1,
     )
 
     masker.fit()
@@ -510,6 +513,7 @@ def report_multi_nifti_maps_masker(build_type):
         standardize="zscore_sample",
         standardize_confounds="zscore_sample",
         memory="nilearn_cache",
+        memory_level=1,
         n_jobs=2,
     )
 
