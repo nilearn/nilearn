@@ -2430,7 +2430,7 @@ def plot_bland_altman(
 ):
     """Create a Bland-Altman plot between 2 images.
 
-    Plot the the 2D dsitribution of voxel-wise differences
+    Plot the the 2D distribution of voxel-wise differences
     as a function of the voxel-wise mean,
     along with an histogram for the distribution of each.
 
@@ -2524,8 +2524,7 @@ def plot_bland_altman(
         gridsize = (gridsize, gridsize)
 
     if figure is None:
-        figsize = (6, 6)
-        figure = plt.figure(figsize=figsize)
+        figure = plt.figure(figsize=(6, 6))
 
     gs0 = gridspec.GridSpec(1, 1)
 
