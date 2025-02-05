@@ -28,6 +28,8 @@ Enhancements
 
 - :bdg-dark:`Code` Extend :func:`~nilearn.image.threshold_img` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`4999` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` Add a :func:`~nilearn.plotting.plot_bland_altman` to create Bland-Altman plots to compare images (:gh:`5112` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Add reports for the surface based GLMs (:gh:`4442` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Enhance :func:`~nilearn.glm.second_level.non_parametric_inference` to support surface data. Please, note that cluster analysis, TFCE and smoothing are not yet implemented. (:gh:`5078` by `Rémi Gau`_).
