@@ -23,7 +23,6 @@ Functions
    find_parcellation_cut_coords
    find_probabilistic_atlas_cut_coords
    plot_anat
-   plot_bland_altman
    plot_carpet
    plot_connectome
    plot_contrast_matrix
@@ -33,7 +32,6 @@ Functions
    plot_event
    plot_glass_brain
    plot_img
-   plot_img_comparison
    plot_img_on_surf
    plot_markers
    plot_matrix
@@ -50,6 +48,29 @@ Functions
    view_connectome
    view_markers
    view_img
+
+
+:mod:`nilearn.plotting`: Comparing images
+=========================================
+
+.. automodule:: nilearn.plotting
+   :no-members:
+   :no-inherited-members:
+
+.. No relevant user manual section yet.
+
+Functions
+---------
+
+.. currentmodule:: nilearn.plotting
+
+.. autosummary::
+   :toctree: generated/
+   :template: function.rst
+
+   plot_bland_altman
+   plot_img_comparison
+
 
 :mod:`nilearn.plotting.displays`: Interacting with figures
 ----------------------------------------------------------
