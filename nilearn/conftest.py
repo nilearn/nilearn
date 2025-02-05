@@ -38,7 +38,7 @@ else:
             "reporting/tests/test_html_report.py",
         ]
     )
-    matplotlib = None
+    matplotlib = None  # type: ignore[assignment]
 
 
 def pytest_configure(config):  # noqa: ARG001
@@ -647,3 +647,40 @@ def surface_glm_data(rng, surf_img_2d):
         return surf_img_2d(n_samples), des
 
     return _make_surface_img_and_design
+
+
+# ------------------------ PLOTTING ------------------------#
+
+
+@pytest.fixture(scope="function")
+def matplotlib_pyplot():
+    """Set up and teardown fixture for matplotlib.
+
+    This fixture checks if we can import matplotlib. If not, the tests will be
+    skipped. Otherwise, we close the figures before and after running the
+    functions.
+
+    Returns
+    -------
+    pyplot : module
+        The ``matplotlib.pyplot`` module.
+    """
+    pyplot = pytest.importorskip("matplotlib.pyplot")
+    pyplot.close("all")
+    yield pyplot
+    pyplot.close("all")
+
+
+@pytest.fixture(scope="function")
+def plotly():
+    """Check if we can import plotly.
+
+    If not, the tests will be skipped.
+
+    Returns
+    -------
+    plotly : module
+        The ``plotly`` module.
+    """
+    plotly = pytest.importorskip("plotly")
+    yield plotly

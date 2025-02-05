@@ -10,11 +10,14 @@ from xml.etree import ElementTree
 
 import numpy as np
 import pandas as pd
-from nibabel import Nifti1Image, freesurfer, load
+from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, rename_parameters
-from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.bids import (
+    check_look_up_table,
+    generate_atlas_look_up_table,
+)
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
@@ -23,8 +26,6 @@ from nilearn.datasets._utils import (
 )
 from nilearn.image import get_data as get_img_data
 from nilearn.image import new_img_like, reorder_img
-from nilearn.surface.surface import SurfaceImage
-from nilearn.surface.surface import get_data as get_surface_data
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -58,161 +59,6 @@ def rgb_to_hex_lookup(
     bb.index = blue.index
     # Concatenate and return
     return rr + gg + bb
-
-
-def _generate_atlas_look_up_table(function=None, name=None, index=None):
-    """Generate a look up table for an atlas.
-
-    For a given deterministic atlas supported by Nilearn,
-    this returns a pandas dataframe to use as look up table (LUT)
-    between the name of a ROI and its index in the associated image.
-    This LUT is compatible with the dseg.tsv BIDS format
-    describing brain segmentations and parcellations,
-    with an 'index' and 'name' column
-    ('color' may be an example of an optional column).
-    https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels
-
-    For some atlases some 'clean up' of the LUT is done
-    (for example make sure that the LUT contains the background 'ROI').
-
-    This can also generate a look up table
-    for an arbitrary niimg-like or surface image.
-
-    Parameters
-    ----------
-    function : obj:`str` or None, default=None
-        Atlas fetching function name as a string.
-        Defaults to "unknown" in case None is passed.
-
-    name : iterable of bytes or string, or int or None, default=None
-        If an integer is passed,
-        this corresponds to the number of ROIs in the atlas.
-        If an iterable is passed, then it contains the ROI names.
-        If None is passed, then it is inferred from index.
-
-    index : iterable of integers, niimg like or None, default=None
-        If None, then the index of each ROI is derived from name.
-        If a Niimg like or SurfaceImage is passed,
-        then a LUT is generated for this image.
-    """
-    if name is None and index is None:
-        raise ValueError("'index' and 'name' cannot both be None.")
-
-    fname = "unknown" if function is None else function
-
-    # deal with names
-    if name is None:
-        if fname == "unknown":
-            if isinstance(index, (str, Path, Nifti1Image)):
-                img = check_niimg(index)
-                index = np.unique(safe_get_data(img))
-            elif isinstance(index, SurfaceImage):
-                index = np.unique(get_surface_data(index))
-        name = [str(x) for x in index]
-
-    # deal with indices
-    if index is None:
-        index = list(range(len(name)))
-    if fname in ["fetch_atlas_basc_multiscale_2015"]:
-        index = []
-        for x in name:
-            tmp = x if isinstance(x, str) else int(x)
-            index.append(tmp)
-    elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
-        index = list(range(1, len(name) + 1))
-
-    # convert to dataframe and do some cleaning where required
-    lut = pd.DataFrame({"index": index, "name": name})
-
-    if fname in [
-        "fetch_atlas_pauli_2017",
-    ]:
-        lut = pd.concat(
-            [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
-            ignore_index=True,
-        )
-
-    return lut
-
-
-def _check_look_up_table(lut, atlas, strict=False):
-    """Validate atlas look up table (LUT).
-
-    Throws warning / errors:
-    - lut is not a dataframe with the required columns
-    - if there are mismatches between the number of ROIs
-      in the LUT and th number of unique ROIs in the associated image.
-
-    Parameters
-    ----------
-    lut : :obj:`pandas.DataFrame`
-        Must be a pandas dataframe with at least "name" and "index" columns.
-
-    atlas : Niimg like object or SurfaceImage
-
-    strict : bool, default = False
-        Errors are raised instead of warnings if strict == True.
-
-    Raises
-    ------
-    AssertionError
-        If:
-        - lut is not a dataframe with the required columns
-        - if there are mismatches between the number of ROIs
-          in the LUT and th number of unique ROIs in the associated image.
-
-    ValueError
-        If regions in the image do not exist in the atlas lookup table
-        and `strict=True`.
-
-    Warns
-    -----
-    UserWarning
-        If regions in the image do not exist in the atlas lookup table
-        and `strict=False`.
-
-    """
-    assert isinstance(lut, pd.DataFrame)
-    assert "name" in lut.columns
-    assert "index" in lut.columns
-
-    if isinstance(atlas, (str, Path)):
-        atlas = check_niimg(atlas)
-
-    if isinstance(atlas, Nifti1Image):
-        data = safe_get_data(atlas, ensure_finite=True)
-    elif isinstance(atlas, SurfaceImage):
-        data = get_surface_data(atlas)
-    elif isinstance(atlas, np.ndarray):
-        data = atlas
-
-    roi_id = np.unique(data)
-
-    if len(lut) != len(roi_id):
-        if missing_from_image := set(lut["index"].to_list()) - set(roi_id):
-            missing_rows = lut[
-                lut["index"].isin(list(missing_from_image))
-            ].to_string(index=False)
-            msg = (
-                "\nThe following regions are present "
-                "in the atlas look-up table,\n"
-                "but missing from the atlas image:\n\n"
-                f"{missing_rows}\n"
-            )
-            if strict:
-                raise ValueError(msg)
-            warnings.warn(msg, stacklevel=3)
-
-        if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
-            msg = (
-                "\nThe following regions are present "
-                "in the atlas image,\n"
-                "but missing from the atlas look-up table:\n\n"
-                f"{missing_from_lut}"
-            )
-            if strict:
-                raise ValueError(msg)
-            warnings.warn(msg, stacklevel=3)
 
 
 @fill_doc
@@ -759,7 +605,7 @@ def fetch_atlas_harvard_oxford(
             labels=names,
             description=get_dataset_descr("harvard_oxford"),
             atlas_type=atlas_type,
-            lut=_generate_atlas_look_up_table(
+            lut=generate_atlas_look_up_table(
                 "fetch_atlas_harvard_oxford", name=names
             ),
             filename=atlas_filename,
@@ -777,7 +623,7 @@ def fetch_atlas_harvard_oxford(
         labels=new_names,
         description=get_dataset_descr("harvard_oxford"),
         atlas_type=atlas_type,
-        lut=_generate_atlas_look_up_table(
+        lut=generate_atlas_look_up_table(
             "fetch_atlas_harvard_oxford", name=new_names
         ),
         filename=atlas_filename,
@@ -932,7 +778,7 @@ def fetch_atlas_juelich(
         labels=list(new_names),
         description=get_dataset_descr("juelich"),
         atlas_type=atlas_type,
-        lut=_generate_atlas_look_up_table(
+        lut=generate_atlas_look_up_table(
             "fetch_atlas_juelich", name=list(new_names)
         ),
         filename=atlas_filename,
@@ -1392,7 +1238,14 @@ def fetch_atlas_smith_2009(
 
 
 @fill_doc
-def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
+def fetch_atlas_yeo_2011(
+    data_dir=None,
+    url=None,
+    resume=True,
+    verbose=1,
+    n_networks=None,
+    thickness=None,
+):
     """Download and return file names for the Yeo 2011 :term:`parcellation`.
 
     This function retrieves the so-called yeo
@@ -1412,54 +1265,98 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
     %(resume)s
     %(verbose)s
 
+    n_networks : {7, 17, None}, default = None
+        If not None,
+        then only specific version of the atlas is returned:
+
+        - 7 networks parcellation,
+        - 17 networks parcellation.
+
+        If ``thickness`` is not None, this will default to ``7``.
+        The default will be set to ``7`` in version 0.13.2.
+
+        .. versionadded:: 0.11.2dev
+
+    thickness : {"thin", "thick", None}, default = None
+        If not None,
+        then only specific version of the atlas is returned:
+
+        - ``"thick"``: parcellation fitted to thick cortex segmentations,
+        - ``"thin"``: parcellation fitted to thin cortex segmentations.
+
+        If ``n_networks`` is not None, this will default to ``"thick"``.
+        The default will be set to ``"thick"`` in version 0.13.2.
+
+        .. versionadded:: 0.11.2dev
+
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
-        Dictionary-like object, keys are:
+        Dictionary-like object.
+
+        If ``n_networks`` and ``thickness`` are None, keys are:
 
         - 'thin_7': :obj:`str`
             Path to nifti file containing the
-            7 regions :term:`parcellation` fitted to thin template cortex
+            7 networks :term:`parcellation` fitted to thin template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_7``.
 
         - 'thick_7': :obj:`str`
             Path to nifti file containing the
-            7 region :term:`parcellation` fitted to thick template cortex
+            7 networks :term:`parcellation` fitted to thick template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_7``.
 
         - 'thin_17': :obj:`str`
             Path to nifti file containing the
-            17 region :term:`parcellation` fitted to thin template cortex
+            17 networks :term:`parcellation` fitted to thin template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_17``.
 
         - 'thick_17': :obj:`str`
             Path to nifti file containing the
-            17 region :term:`parcellation` fitted to thick template cortex
+            17 networks :term:`parcellation` fitted to thick template cortex
             segmentations.
             The image contains integer values which can be
             interpreted as the indices in ``colors_17``.
 
         - 'colors_7': :obj:`str`
             Path to colormaps text file for
-            7 region :term:`parcellation`.
+            7 networks :term:`parcellation`.
             This file maps :term:`voxel` integer
             values from ``data.thin_7`` and ``data.tick_7`` to network names.
 
         - 'colors_17': :obj:`str`
             Path to colormaps text file for
-            17 region :term:`parcellation`.
+            17 networks :term:`parcellation`.
             This file maps :term:`voxel` integer
             values from ``data.thin_17`` and ``data.tick_17``
             to network names.
 
         - 'anat': :obj:`str`
             Path to nifti file containing the anatomy image.
+
+        - %(description)s
+
+        - %(template)s
+
+        - %(atlas_type)s
+
+        otherwise the keys are:
+
+        - 'anat': :obj:`str`
+            Path to nifti file containing the anatomy image.
+
+        - 'maps': 3D :class:`~nibabel.nifti1.Nifti1Image`.
+          The image contains integer values for each network.
+
+        - %(labels)s
+
+        - %(lut)s
 
         - %(description)s
 
@@ -1477,6 +1374,34 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     """
     atlas_type = "deterministic"
+
+    if n_networks is None and thickness is None:
+        warnings.warn(
+            category=DeprecationWarning,
+            message=(
+                deprecation_message.format(version="0.13.2")
+                + (
+                    "To suppress this warning, "
+                    "Please use the parameters 'n_networks' and 'thickness' "
+                    "to specify the exact atlas image you want."
+                )
+            ),
+        )
+
+    if n_networks is not None:
+        if n_networks not in (7, 17):
+            raise ValueError(
+                f"'n_networks' must be 7 or 17. Got {n_networks=}"
+            )
+        if thickness is None:
+            thickness = "thick"
+    if thickness is not None:
+        if thickness not in ("thin", "thick"):
+            raise ValueError(
+                f"'thickness' must be 'thin' or 'thick'. Got {thickness=}"
+            )
+        if n_networks is None:
+            n_networks = 7
 
     if url is None:
         url = (
@@ -1526,26 +1451,29 @@ def fetch_atlas_yeo_2011(data_dir=None, url=None, resume=True, verbose=1):
         ]
     )
 
-    lut = pd.read_csv(
-        params["colors_7"],
-        sep="\\s+",
-        names=["index", "name", "r", "g", "b", "fs"],
-        header=0,
-    )
-    params["lut_7"] = _update_lut_freesurder(lut)
+    if n_networks and thickness:
+        lut_file = (
+            params["colors_7"] if n_networks == 7 else params["colors_17"]
+        )
+        lut = pd.read_csv(
+            lut_file,
+            sep="\\s+",
+            names=["index", "name", "r", "g", "b", "fs"],
+            header=0,
+        )
+        lut = _update_lut_freesurder(lut)
 
-    lut = pd.read_csv(
-        params["colors_17"],
-        sep="\\s+",
-        names=["index", "name", "r", "g", "b", "fs"],
-        header=0,
-    )
-    params["lut_17"] = _update_lut_freesurder(lut)
+        maps = params[f"{thickness}_{n_networks}"]
 
-    _check_look_up_table(params["lut_7"], params["thin_7"])
-    _check_look_up_table(params["lut_7"], params["thick_7"])
-    _check_look_up_table(params["lut_17"], params["thin_17"])
-    _check_look_up_table(params["lut_17"], params["thick_17"])
+        return Atlas(
+            maps=maps,
+            labels=lut.name.to_list(),
+            description=fdescr,
+            template="fsaverage",
+            lut=lut,
+            atlas_type=atlas_type,
+            anat=params["anat"],
+        )
 
     return Bunch(**params)
 
@@ -1724,8 +1652,10 @@ def fetch_atlas_aal(
         maps=atlas_img,
         labels=labels,
         description=fdescr,
-        lut=_generate_atlas_look_up_table(
-            "fetch_atlas_aal", index=[int(x) for x in indices], name=labels
+        lut=generate_atlas_look_up_table(
+            "fetch_atlas_aal",
+            index=np.array([int(x) for x in indices]),
+            name=labels,
         ),
         atlas_type=atlas_type,
         indices=indices,
@@ -1877,7 +1807,7 @@ def fetch_atlas_basc_multiscale_2015(
             maps=data[0],
             labels=labels,
             description=fdescr,
-            lut=_generate_atlas_look_up_table(
+            lut=generate_atlas_look_up_table(
                 "fetch_atlas_basc_multiscale_2015", name=labels
             ),
             atlas_type=atlas_type,
@@ -2260,11 +2190,11 @@ def fetch_atlas_surf_destrieux(
     annot_right = freesurfer.read_annot(annots[1])
 
     labels = [x.decode("utf-8") for x in annot_left[2]]
-    lut = _generate_atlas_look_up_table(
+    lut = generate_atlas_look_up_table(
         "fetch_atlas_surf_destrieux", name=labels
     )
-    _check_look_up_table(lut=lut, atlas=annot_left[0])
-    _check_look_up_table(lut=lut, atlas=annot_right[0])
+    check_look_up_table(lut=lut, atlas=annot_left[0])
+    check_look_up_table(lut=lut, atlas=annot_right[0])
 
     return Bunch(
         labels=labels,
@@ -2405,9 +2335,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
         maps=atlas_img,
         labels=labels,
         description=get_dataset_descr("talairach_atlas").format(level_name),
-        lut=_generate_atlas_look_up_table(
-            "fetch_atlas_talairach", name=labels
-        ),
+        lut=generate_atlas_look_up_table("fetch_atlas_talairach", name=labels),
         atlas_type=atlas_type,
         template="Talairach",
     )
@@ -2521,7 +2449,7 @@ def fetch_atlas_pauli_2017(
         maps=atlas_file,
         labels=labels,
         description=get_dataset_descr(dataset_name),
-        lut=_generate_atlas_look_up_table(
+        lut=generate_atlas_look_up_table(
             "fetch_atlas_pauli_2017", name=labels
         ),
         atlas_type=atlas_type,
@@ -2708,18 +2636,27 @@ class Atlas(Bunch):
             template = "volume"
 
         if atlas_type == "probabilistic":
-            super().__init__(
-                maps=maps,
-                labels=labels,
-                description=description,
-                atlas_type=atlas_type,
-                template=template,
-                **kwargs,
-            )
+            if labels is None:
+                super().__init__(
+                    maps=maps,
+                    description=description,
+                    atlas_type=atlas_type,
+                    template=template,
+                    **kwargs,
+                )
+            else:
+                super().__init__(
+                    maps=maps,
+                    labels=labels,
+                    description=description,
+                    atlas_type=atlas_type,
+                    template=template,
+                    **kwargs,
+                )
 
             return None
 
-        _check_look_up_table(lut=lut, atlas=maps)
+        check_look_up_table(lut=lut, atlas=maps)
 
         super().__init__(
             maps=maps,

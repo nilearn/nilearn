@@ -22,7 +22,7 @@ from nilearn.plotting._utils import (
     check_surface_plotting_inputs,
     sanitize_hemi_for_surface_image,
 )
-from nilearn.plotting.cm import cold_hot, mix_colormaps
+from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
 from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
@@ -327,7 +327,7 @@ def _plot_surf_plotly(
     i, j, k = faces.T
 
     if cmap is None:
-        cmap = cold_hot
+        cmap = "RdBu_r"
 
     bg_data = None
     if bg_map is not None:

@@ -598,18 +598,18 @@ def connected_label_regions(
 
     this_labels = [None] * len(unique_labels) if labels is None else labels
 
-    new_labels_data = np.zeros(labels_data.shape, dtype=int)
+    new_labels_data = np.zeros(labels_data.shape, dtype=np.int32)
     current_max_label = 0
     for label_id, name in zip(unique_labels, this_labels):
         this_label_mask = labels_data == label_id
         # Extract regions assigned to each label id
         if connect_diag:
-            structure = np.ones((3, 3, 3), dtype=int)
+            structure = np.ones((3, 3, 3), dtype=np.int32)
             regions, this_n_labels = label(
-                this_label_mask.astype(int), structure=structure
+                this_label_mask.astype(np.int32), structure=structure
             )
         else:
-            regions, this_n_labels = label(this_label_mask.astype(int))
+            regions, this_n_labels = label(this_label_mask.astype(np.int32))
 
         if min_size is not None:
             regions = _remove_small_regions(regions, affine, min_size=min_size)

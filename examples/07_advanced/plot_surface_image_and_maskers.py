@@ -138,7 +138,7 @@ labels_img = SurfaceImage(
 
 labels_masker = SurfaceLabelsMasker(
     labels_img=labels_img,
-    labels=destrieux.labels,
+    lut=destrieux.lut,
 ).fit()
 
 masked_data = labels_masker.transform(surf_img_nki)

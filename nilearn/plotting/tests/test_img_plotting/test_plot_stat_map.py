@@ -15,7 +15,7 @@ from nilearn.plotting import plot_stat_map
 from nilearn.plotting.find_cuts import find_cut_slices
 
 
-def test_plot_stat_map_bad_input(pyplot, img_3d_mni, tmp_path):
+def test_plot_stat_map_bad_input(matplotlib_pyplot, img_3d_mni, tmp_path):
     """Test for bad input arguments (cf. #510)."""
     filename = tmp_path / "temp.png"
 
@@ -33,7 +33,7 @@ def test_plot_stat_map_bad_input(pyplot, img_3d_mni, tmp_path):
 @pytest.mark.parametrize(
     "params", [{}, {"display_mode": "x", "cut_coords": 3}]
 )
-def test_save_plot_stat_map(pyplot, params, img_3d_mni, tmp_path):
+def test_save_plot_stat_map(matplotlib_pyplot, params, img_3d_mni, tmp_path):
     """Test saving figure to file in different ways."""
     filename = tmp_path / "test.png"
 
@@ -51,7 +51,7 @@ def test_save_plot_stat_map(pyplot, params, img_3d_mni, tmp_path):
     [("ortho", (80, -120, -60)), ("y", 2), ("yx", None)],
 )
 def test_plot_stat_map_cut_coords_and_display_mode(
-    pyplot, display_mode, cut_coords, img_3d_mni
+    matplotlib_pyplot, display_mode, cut_coords, img_3d_mni
 ):
     """Smoke-tests for plot_stat_map.
 
@@ -65,7 +65,9 @@ def test_plot_stat_map_cut_coords_and_display_mode(
     )
 
 
-def test_plot_stat_map_with_masked_image(pyplot, img_3d_mni, affine_mni):
+def test_plot_stat_map_with_masked_image(
+    matplotlib_pyplot, img_3d_mni, affine_mni
+):
     """Smoke test coordinate finder with mask."""
     masked_img = Nifti1Image(
         np.ma.masked_equal(get_data(img_3d_mni), 0),
@@ -82,12 +84,14 @@ def test_plot_stat_map_with_masked_image(pyplot, img_3d_mni, affine_mni):
         _rng().standard_normal(size=(91, 109, 91)),
     ],
 )
-def test_plot_stat_map_threshold(pyplot, data, affine_eye):
+def test_plot_stat_map_threshold(matplotlib_pyplot, data, affine_eye):
     """Tests plot_stat_map with threshold (see #510)."""
     plot_stat_map(Nifti1Image(data, affine_eye), threshold=1000, colorbar=True)
 
 
-def test_plot_stat_map_threshold_for_affine_with_rotation(pyplot, rng):
+def test_plot_stat_map_threshold_for_affine_with_rotation(
+    matplotlib_pyplot, rng
+):
     """Tests for plot_stat_map with thresholding and resampling.
 
     Threshold was not being applied when affine has a rotation.
@@ -128,7 +132,7 @@ def test_plot_stat_map_threshold_for_affine_with_rotation(pyplot, rng):
     ],
 )
 def test_plot_stat_map_colorbar_variations(
-    pyplot, params, img_3d_mni, affine_mni, rng
+    matplotlib_pyplot, params, img_3d_mni, affine_mni, rng
 ):
     """Smoke test for plot_stat_map with different colorbar configurations."""
     data_positive = get_data(img_3d_mni)
@@ -148,14 +152,16 @@ def test_plot_stat_map_colorbar_variations(
 @pytest.mark.parametrize(
     "shape,direction", [((1, 6, 7), "x"), ((5, 1, 7), "y"), ((5, 6, 1), "z")]
 )
-def test_plot_stat_map_singleton_ax_dim(pyplot, shape, direction, affine_eye):
+def test_plot_stat_map_singleton_ax_dim(
+    matplotlib_pyplot, shape, direction, affine_eye
+):
     """Tests for plot_stat_map and singleton display mode."""
     plot_stat_map(
         Nifti1Image(np.ones(shape), affine_eye), None, display_mode=direction
     )
 
 
-def test_outlier_cut_coords(pyplot):
+def test_outlier_cut_coords(matplotlib_pyplot):
     """Test to plot a subset of a large set of cuts found for a small area."""
     bg_img = load_mni152_template(resolution=2)
     data = np.zeros((79, 95, 79))
@@ -181,7 +187,9 @@ def test_outlier_cut_coords(pyplot):
     plot_stat_map(img, display_mode="z", cut_coords=cuts[-4:], bg_img=bg_img)
 
 
-def test_plotting_functions_with_dim_invalid_input(pyplot, img_3d_mni):
+def test_plotting_functions_with_dim_invalid_input(
+    matplotlib_pyplot, img_3d_mni
+):
     """Test whether error raises with bad error to input."""
     with pytest.raises(ValueError):
         plot_stat_map(img_3d_mni, dim="-10")

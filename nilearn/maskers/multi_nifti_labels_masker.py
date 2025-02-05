@@ -82,6 +82,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
+    %(clean_args)s
+
     %(masker_kwargs)s
 
     Attributes
@@ -128,6 +130,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         strategy="mean",
         reports=True,
         n_jobs=1,
+        clean_args=None,
         **kwargs,
     ):
         self.n_jobs = n_jobs
@@ -151,6 +154,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             verbose=verbose,
             strategy=strategy,
             reports=reports,
+            clean_args=clean_args,
             **kwargs,
         )
 

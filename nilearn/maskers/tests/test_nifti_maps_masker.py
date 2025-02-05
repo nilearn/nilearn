@@ -73,24 +73,6 @@ def test_nifti_maps_masker(
 
     assert signals11.shape == (length, n_regions)
 
-    # Transform, with smoothing (smoke test)
-    masker11 = NiftiMapsMasker(
-        img_maps, smoothing_fwhm=3, resampling_target=None
-    )
-
-    masker11.fit()
-    signals11 = masker11.transform(fmri11_img)
-
-    assert signals11.shape == (length, n_regions)
-
-    masker11 = NiftiMapsMasker(
-        img_maps, smoothing_fwhm=3, resampling_target=None
-    )
-
-    signals11 = masker11.fit_transform(fmri11_img)
-
-    assert signals11.shape == (length, n_regions)
-
     # Call inverse transform (smoke test)
     fmri11_img_r = masker11.inverse_transform(signals11)
 
@@ -142,9 +124,7 @@ def test_nifti_maps_masker_fit(n_regions, img_maps):
     assert masker.n_elements_ == n_regions
 
 
-def test_nifti_maps_masker_errors(
-    length, n_regions, affine_eye, shape_3d_default, img_maps
-):
+def test_nifti_maps_masker_errors():
     """Check fitting errors."""
     masker = NiftiMapsMasker()
     with pytest.raises(
@@ -155,16 +135,6 @@ def test_nifti_maps_masker_errors(
         ),
     ):
         masker.fit()
-
-    fmri11_img, _ = generate_fake_fmri(
-        shape_3d_default, affine=affine_eye, length=length
-    )
-
-    masker = NiftiMapsMasker(
-        img_maps, smoothing_fwhm=3, resampling_target=None
-    )
-    signals11 = masker.fit_transform(fmri11_img)
-    assert signals11.shape == (length, n_regions)
 
 
 @pytest.mark.parametrize("create_files", (True, False))

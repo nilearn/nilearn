@@ -187,25 +187,16 @@ plt.show()
 # These 20 percentile voxels are with respect to the volume of the standard
 # MNI152 brain template. Furthermore, if the provided mask image has less
 # voxels than the selected percentile, all voxels in the mask are used.
-# This is done via the ``adjust_screening_percentile`` function.
 #
 # Also note that these top 20 percentile voxels are selected based on training
 # set and then these selected voxels are picked for the test set too for each
 # train-test split.
 #
-# So let's define a feature selector for later use in our Scikit-Learn decoding
-# pipeline.
-
-from nilearn._utils.param_validation import adjust_screening_percentile
-from nilearn.image import load_img
-
-mask_vt_loaded = load_img(mask_vt)
-screen_percent = adjust_screening_percentile(20, mask_vt_loaded)
-print(f"Adjusted screening percentile: {screen_percent}")
-
+# For simplicity we will just keep all (100 percentile) voxels in this example.
 from sklearn.feature_selection import SelectPercentile, f_classif
 
-feature_selector = SelectPercentile(f_classif, percentile=int(screen_percent))
+screening_percentile = 100
+feature_selector = SelectPercentile(f_classif, percentile=screening_percentile)
 
 # %%
 # Hyperparameter optimization
@@ -306,7 +297,7 @@ decoder = Decoder(
     standardize="zscore_sample",
     n_jobs=n_labels,
     cv=logo_cv,
-    screening_percentile=20,
+    screening_percentile=screening_percentile,
     scoring="roc_auc_ovr",
 )
 decoder.fit(fmri_img, y, groups=run)

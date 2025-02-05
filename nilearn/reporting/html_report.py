@@ -1,9 +1,12 @@
 """Generate HTML reports."""
 
 import copy
+import html
 import uuid
 import warnings
 from string import Template
+
+import pandas as pd
 
 from nilearn._version import __version__
 from nilearn.externals import tempita
@@ -13,7 +16,10 @@ from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_PARTIALS_PATH,
     HTML_TEMPLATE_PATH,
+    JS_PATH,
+    dataframe_to_html,
     figure_to_svg_base64,
+    model_attributes_to_dataframe,
 )
 
 ESTIMATOR_TEMPLATES = {
@@ -24,7 +30,13 @@ ESTIMATOR_TEMPLATES = {
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
     "SurfaceMasker": "report_body_template_surfacemasker.html",
     "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
+    "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "default": "report_body_template.html",
+}
+
+JS_TEMPLATE = {
+    "MapsMasker": "maps_carousel.js.tpl",
+    "SpheresMasker": "spheres_carousel.js.tpl",
 }
 
 
@@ -48,6 +60,28 @@ def _get_estimator_template(estimator):
         return ESTIMATOR_TEMPLATES[estimator.__class__.__name__]
     else:
         return ESTIMATOR_TEMPLATES["default"]
+
+
+def _get_js_template(estimator_name):
+    """Return the JS template to use for a given estimator \
+    if a specific template was defined in JS_TEMPLATES, \
+    otherwise return None.
+
+    Parameters
+    ----------
+    estimator : str
+        The name of the estimator.
+
+    Returns
+    -------
+    template : str
+        Name of the template file to use.
+
+    """
+    for key in JS_TEMPLATE:
+        if key in estimator_name:
+            return JS_PATH / JS_TEMPLATE[key]
+    return None
 
 
 def embed_img(display):
@@ -95,6 +129,7 @@ def _update_template(
     overlay,
     parameters,
     data,
+    summary_html=None,
     template_name=None,
     warning_messages=None,
 ):
@@ -132,6 +167,9 @@ def _update_template(
               region labels and sizes. This will be displayed
               as an expandable table in the report.
 
+    summary_html : dict if estimator is Surface masker str otherwise, optional
+        Summary of the region labels and sizes converted to html table.
+
     template_name : str, optional
         The name of the template to use. If not provided, the
         default template `report_body_template.html` will be
@@ -154,6 +192,19 @@ def _update_template(
         str(body_template_path), encoding="utf-8"
     )
 
+    # Load JS template
+    js_template_path = _get_js_template(title)
+    if js_template_path is not None:
+        with js_template_path.open(encoding="utf-8") as js_file:
+            js_tpl = js_file.read()
+            # remove comments from the top of the file
+            # our scripts start with "document.addEventListener"
+            # so we can find the start
+            js_tpl = js_tpl[js_tpl.find("document.addEventListener") :]
+        js_content = tempita.Template(js_tpl).substitute(**data)
+    else:
+        js_content = None
+
     css_file_path = CSS_PATH / "masker_report.css"
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
@@ -163,14 +214,33 @@ def _update_template(
         content=content,
         overlay=overlay,
         docstring=docstring,
-        parameters=_render_parameters_partial(parameters),
+        parameters=parameters,
+        figure=(
+            _insert_figure_partial(
+                data["engine"],
+                content,
+                data["displayed_maps"],
+                data["unique_id"],
+            )
+            if "engine" in data
+            else None
+        ),
         **data,
         css=css,
+        js_content=js_content,
         warning_messages=_render_warnings_partial(warning_messages),
+        summary_html=summary_html,
     )
 
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
+
+    # revert HTML safe substitutions in JS sections
+    if js_template_path is not None:
+        js_start = body.find("<script>")
+        js_end = body.find("</script>") + len("</script>")
+        unescaped_js = html.unescape(body[js_start:js_end])
+        body = body[:js_start] + unescaped_js + body[js_end:]
 
     head_template_name = "report_head_template.html"
     head_template_path = HTML_TEMPLATE_PATH / head_template_name
@@ -271,6 +341,20 @@ def generate_report(estimator):
     return _create_report(estimator, data)
 
 
+def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(HTML_PARTIALS_PATH / "figure.html"), encoding="utf-8"
+    )
+    if not isinstance(content, list):
+        content = [content]
+    return tpl.substitute(
+        engine=engine,
+        content=content,
+        displayed_maps=displayed_maps,
+        unique_id=unique_id,
+    )
+
+
 def _render_parameters_partial(parameters):
     tpl = tempita.HTMLTemplate.from_filename(
         str(HTML_PARTIALS_PATH / "parameters.html"), encoding="utf-8"
@@ -295,7 +379,42 @@ def _create_report(estimator, data):
         if isinstance(image, list)
         else embed_img(image)
     )
-    parameters = _str_params(estimator.get_params())
+    summary_html = None
+    # only convert summary to html table if summary exists
+    if "summary" in data and data["summary"] is not None:
+        # convert region summary to html table
+        # for Surface maskers create a table for each part
+        if "Surface" in estimator.__class__.__name__:
+            summary_html = {}
+            for part in data["summary"]:
+                summary_html[part] = pd.DataFrame.from_dict(
+                    data["summary"][part]
+                )
+                summary_html[part] = dataframe_to_html(
+                    summary_html[part],
+                    precision=2,
+                    header=True,
+                    index=False,
+                    sparsify=False,
+                )
+        # otherwise we just have one table
+        elif "Nifti" in estimator.__class__.__name__:
+            summary_html = pd.DataFrame.from_dict(data["summary"])
+            summary_html = dataframe_to_html(
+                summary_html,
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
+    parameters = model_attributes_to_dataframe(estimator)
+    with pd.option_context("display.max_colwidth", 100):
+        parameters = dataframe_to_html(
+            parameters,
+            precision=2,
+            header=True,
+            sparsify=False,
+        )
     docstring = estimator.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
@@ -310,6 +429,7 @@ def _create_report(estimator, data):
         parameters=parameters,
         data={**data, "unique_id": unique_id},
         template_name=html_template,
+        summary_html=summary_html,
     )
 
 

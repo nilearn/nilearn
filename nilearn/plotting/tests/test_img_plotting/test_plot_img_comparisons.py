@@ -10,7 +10,7 @@ from nilearn.maskers import NiftiMasker
 from nilearn.plotting import plot_img_comparison
 
 
-def test_plot_img_comparison(pyplot, rng):  # noqa: ARG001
+def test_plot_img_comparison(matplotlib_pyplot, rng):  # noqa: ARG001
     """Tests for plot_img_comparision."""
     fig, axes = plt.subplots(2, 1)
     axes = axes.ravel()
