@@ -15,10 +15,7 @@ from nilearn.maskers._utils import (
     compute_middle_image,
     sanitize_cleaning_parameters,
 )
-from nilearn.maskers.base_masker import (
-    BaseMasker,
-    filter_and_extract
-)
+from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import load_mask_img
 
 
