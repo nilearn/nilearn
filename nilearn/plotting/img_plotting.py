@@ -2451,18 +2451,23 @@ def plot_bland_altman(
 
     Parameters
     ----------
-    ref_img : 3D nifti_like
+    ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Reference image.
 
-    src_img : 3D nifti_like
-        Source image.
+    src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Source image. Its type must match that of the ``ref_img``.
         If the source image is Niimg-Like,
         it will be resampled to match that or the source image.
 
-    masker : Nifti_like to use as mask or NiftiMasker object or None
+    masker : 3D Niimg-like binary mask or \
+            :obj:`~nilearn.masker.NiftiMasker` or \
+            binary :obj:`~nilearn.surface.SurfaceImage` ort \
+            or :obj:`~nilearn.masker.SurfaceMasker` or \
+            None
         Mask to be used on data.
+        Its type must be compatible with that of the ``ref_img``.
         If None is passed,
-        a NiftiMasker will be fitted on the reference image.
+        an appropriate masker will be fitted on the reference image.
 
     ref_label : :obj:`str`, default='reference image'
         Name of reference image.
@@ -2517,8 +2522,15 @@ def plot_bland_altman(
             lim_y = 1
         lims = [-lim_x, lim_x, -lim_y, lim_y]
 
-    if not isinstance(lims, (list, tuple)) or len(lims) != 4:
-        raise TypeError("'lims must be a list or tuple of length == 4'")
+    if (
+        not isinstance(lims, (list, tuple))
+        or len(lims) != 4
+        or any(x == 0 for x in lims)
+    ):
+        raise TypeError(
+            "'lims' must be a list or tuple of length == 4, "
+            "with all values different from 0."
+        )
 
     if isinstance(gridsize, int):
         gridsize = (gridsize, gridsize)
