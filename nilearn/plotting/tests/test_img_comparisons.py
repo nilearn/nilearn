@@ -26,9 +26,9 @@ def test_deprecation_function_moved(matplotlib_pyplot, img_3d_ones_eye):
         )
 
 
-def test_plot_img_comparison(matplotlib_pyplot, rng):
+def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     """Tests for plot_img_comparision."""
-    fig, axes = plt.subplots(2, 1)
+    _, axes = plt.subplots(2, 1)
     axes = axes.ravel()
     kwargs = {"shape": (3, 2, 4), "length": 5}
 
@@ -43,7 +43,12 @@ def test_plot_img_comparison(matplotlib_pyplot, rng):
     masker = NiftiMasker(mask_img).fit()
 
     correlations = plot_img_comparison(
-        target_images, query_images, masker, axes=axes, src_label="query"
+        target_images,
+        query_images,
+        masker,
+        axes=axes,
+        src_label="query",
+        output_dir=tmp_path,
     )
 
     assert len(correlations) == len(query_images)
