@@ -3,6 +3,7 @@ functional datasets (task + resting-state).
 """
 
 import fnmatch
+import itertools
 import json
 import numbers
 import os
@@ -34,7 +35,7 @@ from nilearn.datasets._utils import (
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
-from nilearn.surface import SurfaceImage, load_surf_data
+from nilearn.surface import SurfaceImage
 
 from .._utils.numpy_conversions import csv_to_array
 
@@ -55,13 +56,13 @@ def fetch_haxby(
     Parameters
     ----------
     %(data_dir)s
-    subjects : list or int, default=(2,)
+    subjects : :obj:`list` or :obj:`tuple` or :obj:`int`, default=(2,)
         Either a list of subjects or the number of subjects to load,
         from 1 to 6.
         By default, 2nd subject will be loaded.
         Empty list returns no subject data.
 
-    fetch_stimuli : boolean, default=False
+    fetch_stimuli : :obj:`bool`, default=False
         Indicate if stimuli images must be downloaded.
         They will be presented as a dictionary of categories.
     %(url)s
@@ -270,7 +271,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     Parameters
     ----------
-    n_subjects : int, default=30
+    n_subjects : :obj:`int`, default=30
         The number of subjects to load from maximum of 40 subjects.
         By default, 30 subjects will be loaded. If None is given,
         all 40 subjects will be loaded.
@@ -284,9 +285,9 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-         - 'func': Paths to functional :term:`resting-state` images
-         - 'phenotypic': Explanations of preprocessing steps
-         - 'confounds': CSV files containing the nuisance variables
+        - 'func': Paths to functional :term:`resting-state` images
+        - 'phenotypic': pd.dataframe with explanations of preprocessing steps
+        - 'confounds': CSV files containing the nuisance variables
 
     References
     ----------
@@ -329,15 +330,11 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     )[0]
 
     # Load the csv file
-    phenotypic = np.genfromtxt(
-        phenotypic, names=True, delimiter=",", dtype=None, encoding=None
-    )
+    phenotypic = pd.read_table(phenotypic, delimiter=",")
 
     # Keep phenotypic information for selected subjects
-    int_ids = np.asarray(ids, dtype=int)
-    phenotypic = phenotypic[
-        [np.where(phenotypic["Subject"] == i)[0][0] for i in int_ids]
-    ]
+    mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
+    phenotypic = phenotypic[mask]
 
     # Download dataset files
 
@@ -452,10 +449,10 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     Notes
     -----
     This dataset is available on the `brainliner website
-    <http://brainliner.jp/data/brainliner-admin/Reconstruct>`_
+    <http://brainliner.jp/restrictedProject.atr>`_
 
     See `additional information
-    <http://www.cns.atr.jp/dni/en/downloads/
+    <https://bicr.atr.jp//dni/en/downloads/\
     fmri-data-set-for-visual-image-reconstruction/>`_
 
     """
@@ -529,6 +526,51 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     )
 
 
+# we allow the user to use alternatives to Brainomics contrast names
+CONTRAST_NAME_WRAPPER = {
+    # Checkerboard
+    "checkerboard": "checkerboard",
+    "horizontal checkerboard": "horizontal checkerboard",
+    "vertical checkerboard": "vertical checkerboard",
+    "horizontal vs vertical checkerboard": "horizontal vs vertical checkerboard",  # noqa: E501
+    "vertical vs horizontal checkerboard": "vertical vs horizontal checkerboard",  # noqa: E501
+    # Sentences
+    "sentence listening": "auditory sentences",
+    "sentence reading": "visual sentences",
+    "sentence listening and reading": "auditory&visual sentences",
+    "sentence reading vs checkerboard": "visual sentences vs checkerboard",
+    # Calculation
+    "calculation (auditory cue)": "auditory calculation",
+    "calculation (visual cue)": "visual calculation",
+    "calculation (auditory and visual cue)": "auditory&visual calculation",
+    "calculation (auditory cue) vs sentence listening": "auditory calculation vs auditory sentences",  # noqa: E501
+    "calculation (visual cue) vs sentence reading": "visual calculation vs sentences",  # noqa: E501
+    "calculation vs sentences": "auditory&visual calculation vs sentences",
+    # Calculation + Sentences
+    "calculation (auditory cue) and sentence listening": "auditory processing",
+    "calculation (visual cue) and sentence reading": "visual processing",
+    "calculation (visual cue) and sentence reading vs "
+    "calculation (auditory cue) and sentence listening": "visual processing vs auditory processing",  # noqa: E501
+    "calculation (auditory cue) and sentence listening vs "
+    "calculation (visual cue) and sentence reading": "auditory processing vs visual processing",  # noqa: E501
+    "calculation (visual cue) and sentence reading vs checkerboard": "visual processing vs checkerboard",  # noqa: E501
+    "calculation and sentence listening/reading vs button press": "cognitive processing vs motor",  # noqa: E501
+    # Button press
+    "left button press (auditory cue)": "left auditory click",
+    "left button press (visual cue)": "left visual click",
+    "left button press": "left auditory&visual click",
+    "left vs right button press": "left auditory & visual click vs right auditory&visual click",  # noqa: E501
+    "right button press (auditory cue)": "right auditory click",
+    "right button press (visual cue)": "right visual click",
+    "right button press": "right auditory & visual click",
+    "right vs left button press": "right auditory & visual click vs left auditory&visual click",  # noqa: E501
+    "button press (auditory cue) vs sentence listening": "auditory click vs auditory sentences",  # noqa: E501
+    "button press (visual cue) vs sentence reading": "visual click vs visual sentences",  # noqa: E501
+    "button press vs calculation and sentence listening/reading": "auditory&visual motor vs cognitive processing",  # noqa: E501
+}
+ALLOWED_CONTRASTS = list(CONTRAST_NAME_WRAPPER.values())
+
+
 @fill_doc
 def fetch_localizer_contrasts(
     contrasts,
@@ -539,7 +581,6 @@ def fetch_localizer_contrasts(
     data_dir=None,
     resume=True,
     verbose=1,
-    legacy_format=False,
 ):
     """Download and load Brainomics/Localizer dataset (94 subjects).
 
@@ -635,22 +676,24 @@ def fetch_localizer_contrasts(
         - "visual click vs visual sentences"
         - "auditory&visual motor vs cognitive processing"
 
-    n_subjects : int or list, optional
+    n_subjects : :obj:`int` or :obj:`list` or None, default=None
         The number or list of subjects to load. If None is given,
         all 94 subjects are used.
 
-    get_tmaps : boolean, default=False
+    get_tmaps : :obj:`bool`, default=False
         Whether t maps should be fetched or not.
 
-    get_masks : boolean, default=False
+    get_masks : :obj:`bool`, default=False
         Whether individual masks should be fetched or not.
 
-    get_anats : boolean, default=False
+    get_anats : :obj:`bool`, default=False
         Whether individual structural images should be fetched or not.
+
     %(data_dir)s
+
     %(resume)s
+
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -676,11 +719,8 @@ def fetch_localizer_contrasts(
     nilearn.datasets.fetch_localizer_button_task
 
     """
-    if isinstance(contrasts, str):
-        raise ValueError(
-            "Contrasts should be a list of strings, but "
-            f'a single string was given: "{contrasts}"'
-        )
+    _check_inputs_fetch_localizer_contrasts(contrasts)
+
     if n_subjects is None:
         n_subjects = 94  # 94 subjects available
     if isinstance(n_subjects, numbers.Number) and (
@@ -692,65 +732,19 @@ def fetch_localizer_contrasts(
         )
         n_subjects = 94  # 94 subjects available
 
-    # we allow the user to use alternatives to Brainomics contrast names
-    contrast_name_wrapper = {
-        # Checkerboard
-        "checkerboard": "checkerboard",
-        "horizontal checkerboard": "horizontal checkerboard",
-        "vertical checkerboard": "vertical checkerboard",
-        "horizontal vs vertical checkerboard": "horizontal vs vertical checkerboard",  # noqa: E501
-        "vertical vs horizontal checkerboard": "vertical vs horizontal checkerboard",  # noqa: E501
-        # Sentences
-        "sentence listening": "auditory sentences",
-        "sentence reading": "visual sentences",
-        "sentence listening and reading": "auditory&visual sentences",
-        "sentence reading vs checkerboard": "visual sentences vs checkerboard",
-        # Calculation
-        "calculation (auditory cue)": "auditory calculation",
-        "calculation (visual cue)": "visual calculation",
-        "calculation (auditory and visual cue)": "auditory&visual calculation",
-        "calculation (auditory cue) vs sentence listening": "auditory calculation vs auditory sentences",  # noqa: E501
-        "calculation (visual cue) vs sentence reading": "visual calculation vs sentences",  # noqa: E501
-        "calculation vs sentences": "auditory&visual calculation vs sentences",
-        # Calculation + Sentences
-        "calculation (auditory cue) and sentence listening": "auditory processing",  # noqa: E501
-        "calculation (visual cue) and sentence reading": "visual processing",
-        "calculation (visual cue) and sentence reading vs "
-        "calculation (auditory cue) and sentence listening": "visual processing vs auditory processing",  # noqa: E501
-        "calculation (auditory cue) and sentence listening vs "
-        "calculation (visual cue) and sentence reading": "auditory processing vs visual processing",  # noqa: E501
-        "calculation (visual cue) and sentence reading vs checkerboard": "visual processing vs checkerboard",  # noqa: E501
-        "calculation and sentence listening/reading vs button press": "cognitive processing vs motor",  # noqa: E501
-        # Button press
-        "left button press (auditory cue)": "left auditory click",
-        "left button press (visual cue)": "left visual click",
-        "left button press": "left auditory&visual click",
-        "left vs right button press": "left auditory & visual click vs right auditory&visual click",  # noqa: E501
-        "right button press (auditory cue)": "right auditory click",
-        "right button press (visual cue)": "right visual click",
-        "right button press": "right auditory & visual click",
-        "right vs left button press": "right auditory & visual click vs left auditory&visual click",  # noqa: E501
-        "button press (auditory cue) vs sentence listening": "auditory click vs auditory sentences",  # noqa: E501
-        "button press (visual cue) vs sentence reading": "visual click vs visual sentences",  # noqa: E501
-        "button press vs calculation and sentence listening/reading": "auditory&visual motor vs cognitive processing",  # noqa: E501
-    }
-    allowed_contrasts = list(contrast_name_wrapper.values())
-
     # convert contrast names
     contrasts_wrapped = []
     # get a unique ID for each contrast. It is used to give a unique name to
     # each download file and avoid name collisions.
     contrasts_indices = []
     for contrast in contrasts:
-        if contrast in allowed_contrasts:
+        if contrast in ALLOWED_CONTRASTS:
             contrasts_wrapped.append(contrast.title().replace(" ", ""))
-            contrasts_indices.append(allowed_contrasts.index(contrast))
-        elif contrast in contrast_name_wrapper:
-            name = contrast_name_wrapper[contrast]
+            contrasts_indices.append(ALLOWED_CONTRASTS.index(contrast))
+        elif contrast in CONTRAST_NAME_WRAPPER:
+            name = CONTRAST_NAME_WRAPPER[contrast]
             contrasts_wrapped.append(name.title().replace(" ", ""))
-            contrasts_indices.append(allowed_contrasts.index(name))
-        else:
-            raise ValueError(f"Contrast '{contrast}' is not available")
+            contrasts_indices.append(ALLOWED_CONTRASTS.index(name))
 
     # Get the dataset OSF index
     dataset_name = "brainomics_localizer"
@@ -784,33 +778,32 @@ def fetch_localizer_contrasts(
     root_url = "https://osf.io/download/{0}/"
     files = {}
     filenames = []
-    for subject_id in subject_ids:
-        for data_type in data_types:
-            for contrast in contrasts_wrapped:
-                name_aux = f"{data_type}_{contrast}"
-                name_aux.replace(" ", "_")
-                file_path = Path(
-                    "brainomics_data", subject_id, f"{name_aux}.nii.gz"
-                )
 
-                path = "/".join(
-                    [
-                        "/localizer",
-                        "derivatives",
-                        "spm_1st_level",
-                        f"sub-{subject_id}",
-                        (
-                            f"sub-{subject_id}_task-localizer"
-                            f"_acq-{contrast}_{data_type}.nii.gz"
-                        ),
-                    ]
-                )
+    for subject_id, data_type, contrast in itertools.product(
+        subject_ids, data_types, contrasts_wrapped
+    ):
+        name_aux = f"{data_type}_{contrast}"
+        name_aux.replace(" ", "_")
+        file_path = Path("brainomics_data", subject_id, f"{name_aux}.nii.gz")
 
-                if _is_valid_path(path, index, verbose=verbose):
-                    file_url = root_url.format(index[path][1:])
-                    opts = {"move": file_path}
-                    filenames.append((file_path, file_url, opts))
-                    files.setdefault(data_type, []).append(file_path)
+        path = "/".join(
+            [
+                "/localizer",
+                "derivatives",
+                "spm_1st_level",
+                f"sub-{subject_id}",
+                (
+                    f"sub-{subject_id}_task-localizer"
+                    f"_acq-{contrast}_{data_type}.nii.gz"
+                ),
+            ]
+        )
+
+        if _is_valid_path(path, index, verbose=verbose):
+            file_url = root_url.format(index[path][1:])
+            opts = {"move": file_path}
+            filenames.append((file_path, file_url, opts))
+            files.setdefault(data_type, []).append(file_path)
 
     # Fetch masks if asked by user
     if get_masks:
@@ -868,7 +861,7 @@ def fetch_localizer_contrasts(
         opts = {"move": participants_file}
         filenames.append((participants_file, file_url, opts))
 
-    # Fetch behavioural
+    # Fetch behavioral
     behavioural_file = Path("brainomics_data", "phenotype", "behavioural.tsv")
 
     path = "/localizer/phenotype/behavioural.tsv"
@@ -896,10 +889,27 @@ def fetch_localizer_contrasts(
             continue
         subjects_indices.append(subject_names.index(name))
     csv_data = csv_data.iloc[subjects_indices]
-    if legacy_format:
-        csv_data = csv_data.to_records(index=False)
 
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
+
+
+def _check_inputs_fetch_localizer_contrasts(contrasts):
+    """Check that requested contrast name exists."""
+    if isinstance(contrasts, str):
+        raise ValueError(
+            "Contrasts should be a list of strings, but "
+            f'a single string was given: "{contrasts}"'
+        )
+    unknown_contrasts = [
+        x
+        for x in contrasts
+        if (x not in ALLOWED_CONTRASTS and x not in CONTRAST_NAME_WRAPPER)
+    ]
+    if unknown_contrasts:
+        raise ValueError(
+            "The following contrasts are not available:\n"
+            f"- {'- '.join(unknown_contrasts)}"
+        )
 
 
 def _is_valid_path(path, index, verbose):
@@ -910,9 +920,7 @@ def _is_valid_path(path, index, verbose):
 
 
 @fill_doc
-def fetch_localizer_calculation_task(
-    n_subjects=1, data_dir=None, verbose=1, legacy_format=True
-):
+def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
     """Fetch calculation task contrast maps from the localizer.
 
     Parameters
@@ -920,9 +928,10 @@ def fetch_localizer_calculation_task(
     n_subjects : :obj:`int`, default=1
         The number of subjects to load. If None is given,
         all 94 subjects are used.
+
     %(data_dir)s
+
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -951,21 +960,20 @@ def fetch_localizer_calculation_task(
         data_dir=data_dir,
         resume=True,
         verbose=verbose,
-        legacy_format=legacy_format,
     )
     return data
 
 
 @fill_doc
-def fetch_localizer_button_task(data_dir=None, verbose=1, legacy_format=True):
+def fetch_localizer_button_task(data_dir=None, verbose=1):
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
     Parameters
     ----------
     %(data_dir)s
+
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -997,7 +1005,6 @@ def fetch_localizer_button_task(data_dir=None, verbose=1, legacy_format=True):
         data_dir=data_dir,
         resume=True,
         verbose=verbose,
-        legacy_format=legacy_format,
     )
     # Additional keys for backward compatibility
     data["tmap"] = data["tmaps"][0]
@@ -1016,7 +1023,6 @@ def fetch_abide_pcp(
     quality_checked=True,
     url=None,
     verbose=1,
-    legacy_format=False,
     **kwargs,
 ):
     """Fetch ABIDE dataset.
@@ -1029,7 +1035,7 @@ def fetch_abide_pcp(
     Parameters
     ----------
     %(data_dir)s
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=None
         The number of subjects to load. If None is given,
         all available subjects are used (this number depends on the
         preprocessing pipeline used).
@@ -1045,7 +1051,7 @@ def fetch_abide_pcp(
         Indicates if global signal regression should be applied on the
         signals.
 
-    derivatives : :obj:`list` of :obj:`str`, default=['func_preproc']
+    derivatives : :obj:`list` of :obj:`str`, default=None
         Types of downloaded files. Possible values are: alff, degree_binarize,
         degree_weighted, dual_regression, eigenvector_binarize,
         eigenvector_weighted, falff, func_mask, func_mean, func_preproc, lfcd,
@@ -1059,32 +1065,32 @@ def fetch_abide_pcp(
         passed quality assessment for all raters.
     %(url)s
     %(verbose)s
-    %(legacy_format)s
-    kwargs : parameter list, optional
+
+    kwargs : extra parameters, optional
         Any extra keyword argument will be used to filter downloaded subjects
         according to the CSV phenotypic file. Some examples of filters are
         indicated below.
 
-    SUB_ID : list of integers in [50001, 50607], optional
+    SUB_ID : :obj:`list` of :obj:`int` in [50001, 50607], optional
         Ids of the subjects to be loaded.
 
-    DX_GROUP : integer in {1, 2}, optional
+    DX_GROUP : :obj:`int` in {1, 2}, optional
         1 is autism, 2 is control.
 
-    DSM_IV_TR : integer in [0, 4], optional
+    DSM_IV_TR : :obj:`int` in [0, 4], optional
         O is control, 1 is autism, 2 is Asperger, 3 is PPD-NOS,
         4 is Asperger or PPD-NOS.
 
-    AGE_AT_SCAN : float in [6.47, 64], optional
+    AGE_AT_SCAN : :obj:`float` in [6.47, 64], optional
         Age of the subject.
 
-    SEX : integer in {1, 2}, optional
+    SEX : :obj:`int` in {1, 2}, optional
         1 is male, 2 is female.
 
-    HANDEDNESS_CATEGORY : string in {'R', 'L', 'Mixed', 'Ambi'}, optional
+    HANDEDNESS_CATEGORY : :obj:`str` in {'R', 'L', 'Mixed', 'Ambi'}, optional
         R = Right, L = Left, Ambi = Ambidextrous.
 
-    HANDEDNESS_SCORE : integer in [-100, 100], optional
+    HANDEDNESS_SCORE : :obj:`int` in [-100, 100], optional
         Positive = Right, Negative = Left, 0 = Ambidextrous.
 
     Returns
@@ -1159,7 +1165,7 @@ def fetch_abide_pcp(
     Notes
     -----
     Code and description of preprocessing pipelines are provided on the
-    `PCP website <http://preprocessed-connectomes-project.github.io/>`_.
+    `PCP website <http://preprocessed-connectomes-project.org/>`_.
 
     References
     ----------
@@ -1215,8 +1221,7 @@ def fetch_abide_pcp(
 
     if url is None:
         url = (
-            "https://s3.amazonaws.com/fcp-indi/data/Projects/"
-            "ABIDE_Initiative"
+            "https://s3.amazonaws.com/fcp-indi/data/Projects/ABIDE_Initiative"
         )
 
     if quality_checked:
@@ -1265,9 +1270,6 @@ def fetch_abide_pcp(
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
         pheno = pheno[:n_subjects]
-
-    if legacy_format:
-        pheno = pheno.to_records(index=False)
 
     results = {
         "description": get_dataset_descr(dataset_name),
@@ -1327,7 +1329,7 @@ def _load_mixed_gambles(zmap_imgs):
         X.append(this_X)
         y.extend(this_y)
         mask.append(this_mask)
-    y = np.array(y)
+    y = pd.DataFrame({"gain": y})
     X = np.concatenate(X, axis=-1)
     mask = np.sum(mask, axis=0) > 0.5 * len(mask)
     mask = np.logical_and(mask, np.all(np.isfinite(X), axis=-1))
@@ -1350,7 +1352,8 @@ def fetch_mixed_gambles(
 ):
     """Fetch Jimura "mixed gambles" dataset.
 
-    See :footcite:t:`Jimura2012`.
+    See the :ref:`dataset description <mixed_gamble_maps>`
+    for more information.
 
     Parameters
     ----------
@@ -1375,21 +1378,18 @@ def fetch_mixed_gambles(
 
         - 'zmaps': :obj:`list` of :obj:`str`
           Paths to realigned gain betamaps (one nifti per subject).
+        - 'subject_id':  pd.DataFrame of subjects IDs
         - 'gain': :obj:`list` of :class:`~nibabel.nifti1.Nifti1Image` \
-        or ``None``
-          If ``make_Xy`` is ``True``, this is a list of
-          ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image`
-          objects, else it is ``None``.
-        - 'y': :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)`` \
-        or ``None``
-          If ``make_Xy`` is ``True``, then this is a
-          :class:`~numpy.ndarray` of shape ``(n_subjects * 48,)``,
+          or ``None``
+          If ``return_raw_data`` is ``True``,
+          this is a list of
+          ``n_subjects * 48`` :class:`~nibabel.nifti1.Nifti1Image` objects,
+          else it is ``None``.
+        - 'y': DataFrame of shape ``(n_subjects * 48,)`` or ``None``
+          If ``return_raw_data`` is ``True``,
+          then this is a DataFrame of shape ``(n_subjects * 48,)``,
           else it is ``None``.
         - 'description': data description
-
-    References
-    ----------
-    .. footbibliography::
 
     """
     if n_subjects > 16:
@@ -1407,7 +1407,9 @@ def fetch_mixed_gambles(
     ]
     data_dir = get_dataset_dir("jimura_poldrack_2012_zmaps", data_dir=data_dir)
     zmap_fnames = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    subject_id = np.repeat(np.arange(n_subjects), 6 * 8)
+    subject_id = pd.DataFrame(
+        {"subject_id": np.repeat(np.arange(n_subjects), 6 * 8).tolist()}
+    )
     description = get_dataset_descr("mixed_gambles")
     data = Bunch(
         zmaps=zmap_fnames, subject_id=subject_id, description=description
@@ -1433,13 +1435,25 @@ def fetch_megatrawls_netmats(
     from MegaTrawls release in HCP.
 
     This data can be used to predict relationships between imaging data and
-    non-imaging behavioural measures such as age, sex, education, etc.
+    non-imaging behavioral measures such as age, sex, education, etc.
     The network matrices are estimated from functional connectivity
-    datasets of 461 subjects. Full technical details in references.
+    datasets of 461 subjects.
 
-    More information available in :footcite:t:`Smith2015b`,
-    :footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
-    :footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
+    ..  admonition:: Technical details
+        :class: important
+
+        For more technical details about predicting the measures, refer to:
+        Stephen Smith et al,
+        HCP beta-release of the Functional Connectivity MegaTrawl.
+        April 2015 "HCP500-MegaTrawl" release.
+        https://db.humanconnectome.org/megatrawl/
+
+    ..  admonition:: Terms and conditions
+        :class: attention
+
+        This is open access data. You must agree to Terms and conditions
+        of using this data before using it, available at:
+        http://humanconnectome.org/data/data-use-terms/open-access.html
 
     Parameters
     ----------
@@ -1476,19 +1490,17 @@ def fetch_megatrawls_netmats(
 
         - 'matrices': str, consists of given type of specific matrices.
 
-        - 'correlation_matrices': ndarray, consists of correlation matrices
+        - 'correlation_matrices': pd.DataFrame
+          consists of correlation matrices
           based on given type of matrices. Array size will depend on given
           dimensions (n, n).
 
         - 'description': data description
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
-    See description for terms & conditions on data usage.
+    For more information
+    see the :ref:`dataset description <megatrawls_maps>`.
 
     """
     url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
@@ -1544,8 +1556,8 @@ def fetch_megatrawls_netmats(
     # Fetch all the files
     files = fetch_files(data_dir, filepath, resume=resume, verbose=verbose)
 
-    # Load the files into arrays
-    correlation_matrices = csv_to_array(files[0])
+    # Load the files into dataframe
+    correlation_matrices = pd.read_table(files[0], sep=r"\s+", header=None)
 
     return Bunch(
         dimensions=dimensionality,
@@ -1671,10 +1683,6 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
-    See :footcite:t:`Nooner2012`.
-
-    Direct download link :footcite:t:`NKIdataset`.
-
     .. versionadded:: 0.3
 
     Parameters
@@ -1697,18 +1705,21 @@ def fetch_surf_nki_enhanced(
                         time series left hemisphere
         - 'func_right': Paths to Gifti files containing resting state
                          time series right hemisphere
-        - 'phenotypic': array containing tuple with subject ID, age,
+        - 'phenotypic': pd.DataFrame containing tuple with subject ID, age,
                          dominant hand and sex for each subject.
         - 'description': data description of the release and references.
 
-    Note that the it may be necessary
-    to coerce to float the data loaded from the Gifti files
-    to avoid issues with scipy >= 0.14.0.
+    ..  admonition:: scipy >= 0.14.0 compatibility
+        :class: important
 
-    References
-    ----------
-    .. footbibliography::
+        It may be necessary
+        to coerce to float the data loaded from the Gifti files
+        to avoid issues with scipy >= 0.14.0.
 
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
     """
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
@@ -1745,20 +1756,15 @@ def fetch_surf_nki_enhanced(
     )[0]
 
     # Load the csv file
-    phenotypic = np.genfromtxt(
+    phenotypic = pd.read_csv(
         phenotypic,
-        skip_header=True,
+        header=1,
         names=["Subject", "Age", "Dominant Hand", "Sex"],
-        delimiter=",",
-        dtype=["U9", "<f8", "U1", "U1"],
-        encoding=None,
     )
 
     # Keep phenotypic information for selected subjects
-    int_ids = np.asarray(ids)
-    phenotypic = phenotypic[
-        [np.where(phenotypic["Subject"] == i)[0][0] for i in int_ids]
-    ]
+    mask = phenotypic["Subject"].apply(lambda x: str(x) in ids)
+    phenotypic = phenotypic[mask]
 
     # Download subjects' datasets
     func_right = []
@@ -1831,10 +1837,10 @@ def load_nki(
          - ``"sphere"``
          - ``"flat"``
 
-    n_subjects : :obj:`int`, default=10
+    n_subjects : :obj:`int`, default=1
         The number of subjects to load from maximum of 102 subjects.
-        By default, 10 subjects will be loaded. If None is given,
-        all 102 subjects will be loaded.
+        By default, 1 subjects will be loaded.
+        If None is given, all 102 subjects will be loaded.
 
     %(data_dir)s
 
@@ -1848,6 +1854,11 @@ def load_nki(
     -------
     list of SurfaceImage objects
         One image per subject.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <nki_dataset>`.
     """
     if mesh_type not in ALLOWED_MESH_TYPES:
         raise ValueError(
@@ -1871,13 +1882,11 @@ def load_nki(
     ):
         logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
 
-        left_data = load_surf_data(left)
-        right_data = load_surf_data(right)
         img = SurfaceImage(
             mesh=fsaverage[mesh_type],
             data={
-                "left": left_data,
-                "right": right_data,
+                "left": left,
+                "right": right,
             },
         )
         images.append(img)
@@ -1903,7 +1912,7 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
 
     Returns
     -------
-    participants : numpy.ndarray
+    participants : pandas.DataFrame
         Contains data of each subject age, age group, child or adult,
         gender, handedness.
 
@@ -1920,14 +1929,6 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
     path_to_participants = fetch_files(data_dir, files, verbose=verbose)[0]
 
     # Load path to participants
-    dtype = [
-        ("participant_id", "U12"),
-        ("Age", "<f8"),
-        ("AgeGroup", "U6"),
-        ("Child_Adult", "U5"),
-        ("Gender", "U4"),
-        ("Handedness", "U4"),
-    ]
     names = [
         "participant_id",
         "Age",
@@ -1936,9 +1937,7 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
         "Gender",
         "Handedness",
     ]
-    participants = csv_to_array(
-        path_to_participants, skip_header=True, dtype=dtype, names=names
-    )
+    participants = pd.read_table(path_to_participants, usecols=names)
     return participants
 
 
@@ -1955,7 +1954,7 @@ def _fetch_development_fmri_functional(
 
     Parameters
     ----------
-    participants : numpy.ndarray
+    participants : pandas.DataFrame
         Should contain column participant_id which represents subjects id. The
         number of files are fetched based on ids in this column.
     %(data_dir)s
@@ -2058,7 +2057,7 @@ def fetch_development_fmri(
 
     Parameters
     ----------
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=None
         The number of subjects to load. If None, all the subjects are
         loaded. Total 155 subjects.
 
@@ -2072,7 +2071,7 @@ def fetch_development_fmri(
     %(data_dir)s
     %(resume)s
     %(verbose)s
-    age_group : str, default='both'
+    age_group : :obj:`str`, default='both'
         Which age group to fetch
 
         - 'adults' = fetch adults only (n=33, ages 18-39)
@@ -2090,7 +2089,7 @@ def fetch_development_fmri(
         - 'confounds': :obj:`list` of :obj:`str` (tsv files)
             Paths to confounds related to each subject.
 
-        - 'phenotypic': numpy.ndarray
+        - 'phenotypic': pandas.DataFame
             Contains each subject age, age group, child or adult, gender,
             handedness.
 
@@ -2192,7 +2191,7 @@ def _filter_func_regressors_by_participants(participants, age_group):
             f"Valid arguments are: {valid_age_groups}"
         )
 
-    child_adult = participants["Child_Adult"].tolist()
+    child_adult = participants["Child_Adult"].to_list()
 
     child_count = child_adult.count("child") if age_group != "adult" else 0
     adult_count = child_adult.count("adult") if age_group != "child" else 0
@@ -2209,7 +2208,7 @@ def _filter_csv_by_n_subjects(participants, n_adult, n_child):
     ][:n_adult]
     ids = np.hstack([adult_ids, child_ids])
     participants = participants[np.isin(participants["participant_id"], ids)]
-    participants = participants[np.argsort(participants, order="Child_Adult")]
+    participants = participants.sort_values(by=["Child_Adult"])
     return participants
 
 
@@ -2458,7 +2457,7 @@ def select_from_index(
     urls : :obj:`list` of :obj:`str`
         List of dataset urls obtained from index download.
 
-    inclusion_filters : :obj:`list` of :obj:`str`, optional
+    inclusion_filters : :obj:`list` of :obj:`str` or None, default=None
         List of unix shell-style wildcard strings
         that will be used to filter the url list.
         If a filter matches the url it is retained for download.
@@ -2468,7 +2467,7 @@ def select_from_index(
         For example the filter '*task-rest*'' would keep only urls
         that contain the 'task-rest' string.
 
-    exclusion_filters : :obj:`list` of :obj:`str`, optional
+    exclusion_filters : :obj:`list` of :obj:`str` or None, default=None
         List of unix shell-style wildcard strings
         that will be used to filter the url list.
         If a filter matches the url it is discarded for download.
@@ -2478,7 +2477,7 @@ def select_from_index(
         For example the filter '*task-rest*' would discard all urls
         that contain the 'task-rest' string.
 
-    n_subjects : :obj:`int`, optional
+    n_subjects : :obj:`int`, default=None
         Number of subjects to download from the dataset. All by default.
 
     Returns
@@ -2568,7 +2567,7 @@ def fetch_openneuro_dataset(
 
     Parameters
     ----------
-    urls : :obj:`list` of :obj:`str`, optional
+    urls : :obj:`list` of :obj:`str`, default=None
         List of URLs to dataset files to download.
         If not specified, all files from the default dataset
         (``ds000030_R1.0.4``) will be downloaded.

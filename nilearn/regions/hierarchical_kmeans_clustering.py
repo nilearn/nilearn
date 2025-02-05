@@ -8,6 +8,9 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
+from nilearn._utils import fill_doc
+from nilearn._utils.tags import SKLEARN_LT_1_6
+
 
 def _remove_empty_labels(labels):
     """Remove empty values label values from labels list.
@@ -46,6 +49,7 @@ def _adjust_small_clusters(array, n_clusters):
     return array_round
 
 
+@fill_doc
 def hierarchical_k_means(
     X,
     n_clusters,
@@ -66,7 +70,7 @@ def hierarchical_k_means(
     X : ndarray (n_samples, n_features)
         Data to cluster
 
-    n_clusters : int,
+    n_clusters : :obj:`int`,
         The number of clusters to find.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
@@ -79,23 +83,25 @@ def hierarchical_k_means(
         If an ndarray is passed, it should be of shape (n_clusters, n_features)
         and gives the initial centers.
 
-    batch_size : int, optional, default: 1000
+    batch_size : :obj:`int`, default: 1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
-    n_init : int, default=10
+    n_init : :obj:`int`, default=10
         Number of random initializations that are tried.
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : int, default: 10
+    max_no_improvement : :obj:`int`, default: 10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set
         max_no_improvement to None.
 
-    random_state : int, RandomState instance or None (default)
+    random_state : :obj:`int`, RandomState instance or None, default=0
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
+
+    %(verbose0)s
 
     Returns
     -------
@@ -140,6 +146,7 @@ def hierarchical_k_means(
     return _remove_empty_labels(fine_labels)
 
 
+@fill_doc
 class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     """Hierarchical KMeans.
 
@@ -148,7 +155,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-    n_clusters : int
+    n_clusters : :obj:`int`
         The number of clusters to find.
 
     init : {'k-means++', 'random' or an ndarray}, default='k-means++'
@@ -164,32 +171,31 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         * If an ndarray is passed, it should be of shape (n_clusters,
           n_features) and gives the initial centers.
 
-    batch_size : int, optional, default: 1000
+    batch_size : :obj:`int`, optional, default: 1000
         Size of the mini batches. (Kmeans performed through MiniBatchKMeans)
 
-    n_init : int, default=10
+    n_init : :obj:`int`, default=10
         Number of random initializations that are tried.
         In contrast to KMeans, the algorithm is only run once, using the
         best of the ``n_init`` initializations as measured by inertia.
 
-    max_no_improvement : int, default: 10
+    max_no_improvement : :obj:`int`, default: 10
         Control early stopping based on the consecutive number of mini
         batches that does not yield an improvement on the smoothed inertia.
         To disable convergence detection based on inertia, set
         max_no_improvement to None.
 
-    random_state : int, RandomState instance or None (default)
+    random_state : :obj:`int`, RandomState instance or None, default=0
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
 
-    scaling : bool, optional (default False)
+    scaling : :obj:`bool`, default=False
         If scaling is True, each cluster is scaled by the square root of its
         size during transform(), preserving the l2-norm of the image.
         inverse_transform() will apply inversed scaling to yield an image with
         same l2-norm as input.
 
-    verbose : int, optional (default 0)
-        Verbosity level.
+    %(verbose0)s
 
     Attributes
     ----------
@@ -203,7 +209,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
     def __init__(
         self,
-        n_clusters,
+        n_clusters=None,
         init="k-means++",
         batch_size=1000,
         n_init=10,
@@ -221,6 +227,33 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         self.random_state = random_state
         self.scaling = scaling
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags()
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags()
+        return tags
+
     def fit(
         self,
         X,
@@ -230,7 +263,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : ndarray, shape = [n_features, n_samples]
+        X : ndarray, shape = [n_samples, n_features]
             Training data.
         y : Ignored
 
@@ -241,9 +274,16 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         X = check_array(
             X, ensure_min_features=2, ensure_min_samples=2, estimator=self
         )
+        # Transpose the data so that we can cluster features (voxels)
+        # and input them as samples to the sklearn's clustering algorithm
+        # This is because sklearn's clustering algorithm does clustering
+        # on samples and not on features
+        X = X.T
+        # n_features for the sklearn's clustering algorithm would be the
+        # number of samples in the input data
         n_features = X.shape[1]
 
-        if self.n_clusters <= 0:
+        if not isinstance(self.n_clusters, int) or self.n_clusters <= 0:
             raise ValueError(
                 "n_clusters should be an integer greater than 0."
                 f" {self.n_clusters} was provided."
@@ -253,7 +293,8 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
             self.n_clusters = n_features
             warnings.warn(
                 "n_clusters should be at most the number of "
-                f"features. Taking n_clusters = {n_features} instead."
+                f"features. Taking n_clusters = {n_features} instead.",
+                stacklevel=2,
             )
         self.labels_ = hierarchical_k_means(
             X,
@@ -280,15 +321,19 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : ndarray, shape = [n_features, n_samples]
+        X : ndarray, shape = [n_samples, n_features]
             Data to transform with the fitted clustering.
 
         Returns
         -------
-        X_red : ndarray, shape = [n_clusters, n_samples]
+        X_red : ndarray, shape = [n_samples, n_clusters]
             Data reduced with agglomerated signal for each cluster
         """
         check_is_fitted(self, "labels_")
+
+        # Transpose the data so that we can cluster features (voxels)
+        # and input them as samples to the sklearn's clustering algorithm
+        X = X.T
         unique_labels = np.arange(self.n_clusters)
 
         mean_cluster = np.empty(
@@ -302,6 +347,9 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         if self.scaling:
             X_red = X_red * np.sqrt(self.sizes_[:, np.newaxis])
 
+        # Transpose the data back to the original shape i.e.
+        # (n_samples, n_clusters)
+        X_red = X_red.T
         return X_red
 
     def inverse_transform(self, X_red):
@@ -310,18 +358,19 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X_red : ndarray , shape = [n_clusters, n_samples]
+        X_red : ndarray , shape = [n_samples, n_clusters]
             Data reduced with agglomerated signal for each cluster
 
         Returns
         -------
-        X_inv : ndarray, shape = [n_features, n_samples]
+        X_inv : ndarray, shape = [n_samples, n_features]
             Data reduced expanded to the original feature space
         """
         check_is_fitted(self, "labels_")
+        X_red = X_red.T
         inverse = self.labels_
         if self.scaling:
             X_red = X_red / np.sqrt(self.sizes_[:, np.newaxis])
         X_inv = X_red[inverse, ...]
-
+        X_inv = X_inv.T
         return X_inv

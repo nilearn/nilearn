@@ -5,9 +5,10 @@ import pytest
 from nibabel import Nifti1Image
 from scipy.ndimage import label
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_default
+from nilearn.conftest import _img_4d_zeros
 from nilearn.image import get_data
 from nilearn.regions import (
     RegionExtractor,
@@ -19,44 +20,104 @@ from nilearn.regions.region_extractor import (
     _threshold_maps_ratio,
 )
 
-N_REGIONS = 3
 
-MAP_SHAPE = (30, 30, 30)
+@pytest.fixture
+def negative_regions():
+    return False
 
 
-@pytest.fixture(scope="module")
-def dummy_map():
+@pytest.fixture
+def dummy_map(shape_3d_default, n_regions):
     """Generate a small dummy map.
 
     Use for error testing
     """
-    return generate_maps(shape=(6, 6, 6), n_regions=N_REGIONS)[0]
+    return generate_maps(shape=shape_3d_default, n_regions=n_regions)[0]
 
 
 @pytest.fixture
-def labels_img():
-    n_regions = 9  # DO NOT CHANGE (some tests expect this value)
+def labels_img(shape_3d_default, affine_eye, n_regions):
+    # DO NOT CHANGE n_regions (some tests expect this value)
     return generate_labeled_regions(
-        shape=_shape_3d_default(), affine=_affine_eye(), n_regions=n_regions
+        shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
     )
 
 
 @pytest.fixture
-def maps():
+def map_img_3d(rng, affine_eye, shape_3d_default):
+    map_img = np.zeros(shape_3d_default) + 0.1 * rng.standard_normal(
+        size=shape_3d_default
+    )
+    return Nifti1Image(map_img, affine=affine_eye)
+
+
+N_REGIONS = 3
+
+# some tests require larger images
+MAP_SHAPE = (29, 30, 31)
+
+
+@pytest.fixture
+def maps(negative_regions, n_regions):
     return generate_maps(
-        shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+        shape=MAP_SHAPE,
+        n_regions=n_regions,
+        random_state=42,
+        negative_regions=negative_regions,
     )[0]
 
 
 @pytest.fixture
-def maps_and_mask():
-    return generate_maps(shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42)
+def maps_and_mask(n_regions):
+    return generate_maps(shape=MAP_SHAPE, n_regions=n_regions, random_state=42)
 
 
-@pytest.fixture
-def map_img_3d(rng):
-    map_img = np.zeros(MAP_SHAPE) + 0.1 * rng.standard_normal(size=MAP_SHAPE)
-    return Nifti1Image(map_img, affine=_affine_eye())
+extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_estimators_fit_returns_self",
+    "check_estimators_unfitted",
+    "check_fit_check_is_fitted",
+    "check_positive_only_tag_during_fit",
+    "check_readonly_memmap_input",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            RegionExtractor(
+                maps_img=generate_maps(
+                    shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+                )[0]
+            )
+        ],
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[
+            RegionExtractor(
+                maps_img=generate_maps(
+                    shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+                )[0]
+            )
+        ],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize("invalid_threshold", ["80%", "auto", -1.0])
@@ -228,6 +289,39 @@ def test_region_extractor_strategy_ratio_n_voxels(maps):
     assert extract_ratio.regions_img_.shape[-1] >= N_REGIONS
 
 
+@pytest.mark.parametrize("negative_regions", [True])
+def test_region_extractor_two_sided(maps):
+    threshold = 0.4
+    thresholding_strategy = "img_value"
+    min_region_size = 5
+
+    extract_ratio1 = RegionExtractor(
+        maps,
+        threshold=threshold,
+        thresholding_strategy=thresholding_strategy,
+        two_sided=False,
+        min_region_size=min_region_size,
+        extractor="connected_components",
+    )
+    extract_ratio1.fit()
+
+    extract_ratio2 = RegionExtractor(
+        maps,
+        threshold=threshold,
+        thresholding_strategy=thresholding_strategy,
+        two_sided=True,
+        min_region_size=min_region_size,
+        extractor="connected_components",
+    )
+
+    extract_ratio2.fit()
+
+    assert not np.array_equal(
+        np.unique(extract_ratio1.regions_img_.get_fdata()),
+        np.unique(extract_ratio2.regions_img_.get_fdata()),
+    )
+
+
 def test_region_extractor_strategy_percentile(maps_and_mask):
     maps, mask_img = maps_and_mask
 
@@ -236,6 +330,7 @@ def test_region_extractor_strategy_percentile(maps_and_mask):
         threshold=30,
         thresholding_strategy="percentile",
         mask_img=mask_img,
+        two_sided=True,
     )
     extractor.fit()
 
@@ -254,8 +349,7 @@ def test_region_extractor_strategy_percentile(maps_and_mask):
         assert expected_signal_shape == signal.shape
 
 
-def test_region_extractor_high_resolution_image(affine_eye):
-    n_regions = 9
+def test_region_extractor_high_resolution_image(affine_eye, n_regions):
     maps, _ = generate_maps(
         shape=MAP_SHAPE, n_regions=n_regions, affine=0.2 * affine_eye
     )
@@ -269,11 +363,10 @@ def test_region_extractor_high_resolution_image(affine_eye):
     extract_ratio.fit()
 
     assert extract_ratio.regions_img_ != ""
-    assert extract_ratio.regions_img_.shape[-1] >= 9
+    assert extract_ratio.regions_img_.shape[-1] >= n_regions
 
 
-def test_region_extractor_zeros_affine_diagonal(affine_eye):
-    n_regions = 9
+def test_region_extractor_zeros_affine_diagonal(affine_eye, n_regions):
     affine = affine_eye
     affine[[0, 1]] = affine[[1, 0]]  # permutes first and second lines
     maps, _ = generate_maps(
@@ -308,7 +401,7 @@ def test_remove_small_regions(affine_eye):
             [[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 1.0]],
         ]
     )
-    # To remove small regions, data should be labelled
+    # To remove small regions, data should be labeled
     label_map, n_labels = label(data)
     sum_label_data = np.sum(label_map)
 

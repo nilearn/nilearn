@@ -1,28 +1,93 @@
 """Extract data from a SurfaceImage, averaging over atlas regions."""
 
 import warnings
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
-from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs, fill_doc
-from nilearn._utils.cache_mixin import CacheMixin, cache
-from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.maskers._utils import (
-    check_same_n_vertices,
-    compute_mean_surface_image,
-    concatenate_surface_images,
-    get_min_max_surface_image,
+from nilearn._utils.bids import (
+    generate_atlas_look_up_table,
+    sanitize_look_up_table,
 )
+from nilearn._utils.cache_mixin import cache
+from nilearn._utils.class_inspect import get_params
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import (
+    constrained_layout_kwargs,
+    is_matplotlib_installed,
+)
+from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.regions.signal_extraction import check_reduction_strategy
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import (
+    SurfaceImage,
+    check_same_n_vertices,
+    concat_imgs,
+    mean_img,
+)
+
+
+def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
+    """Apply mask to labels data.
+
+    Ensures that we only get the data back
+    according to the mask that was applied. So if some labels were removed,
+    we will only get the data for the remaining labels, the vertices that were
+    masked out will be set to the background label.
+    """
+    labels_before_mask = {int(label) for label in np.unique(labels_data)}
+    labels_data[np.logical_not(mask_data.flatten())] = background_label
+    labels_after_mask = {int(label) for label in np.unique(labels_data)}
+    labels_diff = labels_before_mask - labels_after_mask
+    if labels_diff:
+        warnings.warn(
+            "After applying mask to the labels image, "
+            "the following labels were "
+            f"removed: {labels_diff}. "
+            f"Out of {len(labels_before_mask)} labels, the "
+            "masked labels image only contains "
+            f"{len(labels_after_mask)} labels "
+            "(including background).",
+            stacklevel=3,
+        )
+    labels = np.unique(labels_data)
+    labels = labels[labels != background_label]
+
+    return labels_data, labels
+
+
+def signals_to_surf_img_labels(
+    signals,
+    labels,
+    labels_img,
+    mask_img,
+    background_label=0,
+):
+    """Transform signals to surface image labels."""
+    if mask_img is not None:
+        mask_data = np.concatenate(list(mask_img.data.parts.values()), axis=0)
+        labels_data = np.concatenate(
+            list(labels_img.data.parts.values()), axis=0
+        )
+        _, labels = _apply_surf_mask_on_labels(
+            mask_data, labels_data, background_label
+        )
+
+    data = {}
+    for part_name, labels_part in labels_img.data.parts.items():
+        data[part_name] = np.zeros(
+            (labels_part.shape[0], signals.shape[0]),
+            dtype=signals.dtype,
+        )
+        for label_idx, label in enumerate(labels):
+            data[part_name][labels_part == label] = signals[:, label_idx].T
+    return SurfaceImage(mesh=labels_img.mesh, data=data)
 
 
 @fill_doc
-class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class SurfaceLabelsMasker(_BaseSurfaceMasker):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
     .. versionadded:: 0.11.0
@@ -31,14 +96,27 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     ----------
     labels_img : :obj:`~nilearn.surface.SurfaceImage` object
         Region definitions, as one image of labels.
+        The data for each hemisphere
+        is of shape (n_vertices_per_hemisphere, n_regions).
 
     labels : :obj:`list` of :obj:`str`, default=None
-        Full labels corresponding to the labels image.
+        Mutually exclusive with ``lut``.
+        Labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
 
         .. warning::
-            The labels must be consistent with the label values
-            provided through ``labels_img``.
+            If the labels are not be consistent with the label values
+            provided through ``labels_img``,
+            excess labels will be dropped,
+            and missing labels will be labeled ``'unknown'``.
+
+    'lut' : :obj:`pandas.DataFrame` or :obj:`str` \
+            or :obj:`pathlib.Path` to a TSV file or None, default=None
+        Mutually exclusive with ``labels``.
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
@@ -47,6 +125,11 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
             This value must be consistent with label values
             and image provided.
+
+    mask_img : :obj:`~nilearn.surface.SurfaceImage` object, optional
+        Mask to apply to labels_img before extracting signals. Defines the \
+        overall area of the brain to consider. The data for each \
+        hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
@@ -81,10 +164,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         default="inferno"
         Only relevant for the report figures.
 
-    clean_args : :obj:`dict` or None, default=None
-        Keyword arguments to be passed
-        to :func:`nilearn.signal.clean`
-        called within the masker.
+    %(clean_args)s
 
     Attributes
     ----------
@@ -92,13 +172,19 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         The number of discrete values in the mask.
         This is equivalent to the number of unique values in the mask image,
         ignoring the background value.
+
+    lut_ : :obj:`pandas.DataFrame`
+        Look-up table derived from the ``labels`` or ``lut``
+        or from the values of the label image.
     """
 
     def __init__(
         self,
-        labels_img,
+        labels_img=None,
         labels=None,
+        lut=None,
         background_label=0,
+        mask_img=None,
         smoothing_fwhm=None,
         standardize=False,
         standardize_confounds=True,
@@ -117,7 +203,9 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
     ):
         self.labels_img = labels_img
         self.labels = labels
+        self.lut = lut
         self.background_label = background_label
+        self.mask_img = mask_img
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
         self.standardize_confounds = standardize_confounds
@@ -133,19 +221,6 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         self.strategy = strategy
         self.cmap = cmap
         self.clean_args = clean_args
-        self._shelving = False
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            "number_of_regions": 0,
-            "summary": {},
-        }
 
     @property
     def _labels_data(self):
@@ -173,22 +248,70 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         check_reduction_strategy(self.strategy)
 
+        if self.labels_img is None:
+            raise ValueError(
+                "Please provide a labels_img to the masker. For example, "
+                "masker = SurfaceLabelsMasker(labels_img=labels_img)"
+            )
+
+        if self.labels and self.lut is not None:
+            raise ValueError(
+                "Pass either labels or a lookup table (lut) to the masker, "
+                "but not both."
+            )
+
+        self._shelving = False
+
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)
         self._labels_ = list(all_labels)
 
         self.n_elements_ = len(self._labels_)
 
-        if self.labels is None:
-            self.label_names_ = [str(label) for label in self._labels_]
+        # generate a look up table if one was not provided
+        if self.lut is not None:
+            if isinstance(self.lut, (str, Path)):
+                lut = pd.read_table(self.lut, sep=None)
+            else:
+                lut = self.lut
+        elif self.labels:
+            lut = generate_atlas_look_up_table(
+                function=None,
+                name=self.labels,
+                index=self.labels_img,
+            )
         else:
-            self.label_names_ = [self.labels[x] for x in self._labels_]
+            lut = generate_atlas_look_up_table(
+                function=None, index=self.labels_img
+            )
+
+        self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img)
+
+        self.label_names_ = self.lut_.name.to_list()
+
+        if self.mask_img is not None:
+            check_same_n_vertices(self.labels_img.mesh, self.mask_img.mesh)
+        self.mask_img_ = self.mask_img
+
+        self._shelving = False
 
         if not self.reports:
             self._reporting_data = None
             return self
 
-        self._report_content["number_of_regions"] = self.n_elements_
+        # content to inject in the HTML template
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image overlaid "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "n_vertices": {},
+            "number_of_regions": self.n_elements_,
+            "summary": {},
+        }
+
         for part in self.labels_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.labels_img.mesh.parts[part].n_vertices
@@ -202,47 +325,40 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         for part in self.labels_img.data.parts:
             size = []
             relative_size = []
-            regions_summary = {
-                "label value": [],
-                "region name": [],
-                "size<br>(number of vertices)": [],
-                "relative size<br>(% vertices in hemisphere)": [],
-            }
 
-            for i, label in enumerate(self.label_names_):
-                regions_summary["label value"].append(i)
-                regions_summary["region name"].append(label)
+            table = self.lut_.copy()
 
-                n_vertices = self.labels_img.data.parts[part] == i
+            for _, row in table.iterrows():
+                n_vertices = self.labels_img.data.parts[part] == row["index"]
                 size.append(n_vertices.sum())
                 tmp = (
                     n_vertices.sum()
                     / self.labels_img.mesh.parts[part].n_vertices
                     * 100
                 )
-                relative_size.append(f"{tmp :.2}")
+                relative_size.append(f"{tmp:.2}")
 
-            regions_summary["size<br>(number of vertices)"] = size
-            regions_summary["relative size<br>(% vertices in hemisphere)"] = (
-                relative_size
-            )
+            table["size"] = size
+            table["relative size"] = relative_size
 
-            self._report_content["summary"][part] = regions_summary
+            self._report_content["summary"][part] = table
 
         return {
             "labels_image": self.labels_img,
-            "label_names": [str(x) for x in self.label_names_],
             "images": None,
         }
 
     def __sklearn_is_fitted__(self):
-        return hasattr(self, "n_elements_")
+        return (
+            hasattr(self, "n_elements_")
+            and hasattr(self, "lut_")
+            and hasattr(self, "mask_img_")
+        )
 
     def _check_fitted(self):
         if not self.__sklearn_is_fitted__():
             raise ValueError(
-                f"It seems that {self.__class__.__name__} "
-                "has not been fitted."
+                f"It seems that {self.__class__.__name__} has not been fitted."
             )
 
     def transform(self, img, confounds=None, sample_mask=None):
@@ -263,7 +379,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         sample_mask : None, Any type compatible with numpy-array indexing, \
                   or :obj:`list` of \
-                  shape: (number of scans - number of volumes removed) \
+                  shape: (total number of scans - number of scans removed) \
                   for explicit index, or (number of scans) for binary mask, \
                   default=None
             sample_mask to pass to :func:`nilearn.signal.clean`.
@@ -280,10 +396,22 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # to be able to concatenate it
         if not isinstance(img, list):
             img = [img]
-        img = concatenate_surface_images(img)
+        img = concat_imgs(img)
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
         # concatenate data over hemispheres
         img_data = np.concatenate(list(img.data.parts.values()), axis=0)
+
+        labels_data = self._labels_data
+        labels = self._labels_
+        if self.mask_img_ is not None:
+            mask_data = np.concatenate(
+                list(self.mask_img.data.parts.values()), axis=0
+            )
+            labels_data, labels = _apply_surf_mask_on_labels(
+                mask_data,
+                self._labels_data,
+                self.background_label,
+            )
 
         if self.smoothing_fwhm is not None:
             warnings.warn(
@@ -311,9 +439,10 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.memory is None:
             self.memory = Memory(location=None)
 
-        output = np.empty((img_data.shape[1], len(self._labels_)))
-        for i, label in enumerate(self._labels_):
-            output[:, i] = img_data[self._labels_data == label].mean(axis=0)
+        n_time_points = 1 if len(img_data.shape) == 1 else img_data.shape[1]
+        output = np.empty((n_time_points, len(labels)))
+        for i, label in enumerate(labels):
+            output[:, i] = img_data[labels_data == label].mean(axis=0)
 
         # signal cleaning here
         output = cache(
@@ -337,7 +466,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return output
 
-    def fit_transform(self, img, y=None):
+    def fit_transform(self, img, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -351,6 +480,19 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             This parameter is unused.
             It is solely included for scikit-learn compatibility.
 
+        confounds : :class:`numpy.ndarray`, :obj:`str`,\
+                    :class:`pathlib.Path`, \
+                    :class:`pandas.DataFrame` \
+                    or :obj:`list` of confounds timeseries, default=None
+            Confounds to pass to :func:`nilearn.signal.clean`.
+
+        sample_mask : None, Any type compatible with numpy-array indexing, \
+                  or :obj:`list` of \
+                  shape: (total number of scans - number of scans removed) \
+                  for explicit index, or (number of scans) for binary mask, \
+                  default=None
+            sample_mask to pass to :func:`nilearn.signal.clean`.
+
         Returns
         -------
         :obj:`numpy.ndarray`
@@ -358,40 +500,42 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             shape: (img data shape, total number of vertices)
         """
         del y
-        return self.fit().transform(img)
+        return self.fit().transform(img, confounds, sample_mask)
 
-    def inverse_transform(self, masked_img):
-        """Transform extracted signal back to surface object.
+    def inverse_transform(self, signals):
+        """Transform extracted signal back to surface image.
 
         Parameters
         ----------
-        masked_img : :obj:`numpy.ndarray`
-            Extracted signal.
+        signals : :obj:`numpy.ndarray`
+            Extracted signal for each region.
+            If a 1D array is provided, then the shape of each hemisphere's data
+            should be (number of elements,) in the returned surface image.
+            If a 2D array is provided, then it would be
+            (number of scans, number of elements).
+
 
         Returns
         -------
         :obj:`~nilearn.surface.SurfaceImage` object
             Mesh and data for both hemispheres.
         """
-        data = {}
-        for part_name, labels_part in self.labels_img.data.parts.items():
-            data[part_name] = np.zeros(
-                (labels_part.shape[0], masked_img.shape[0]),
-                dtype=masked_img.dtype,
-            )
-            for label_idx, label in enumerate(self._labels_):
-                data[part_name][labels_part[:, 0] == label] = masked_img[
-                    :, label_idx
-                ].T
-        return SurfaceImage(mesh=self.labels_img.mesh, data=data)
+        self._check_fitted()
+
+        return signals_to_surf_img_labels(
+            signals,
+            self._labels_,
+            self.labels_img,
+            self.mask_img,
+            self.background_label,
+        )
 
     def generate_report(self):
         """Generate a report."""
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -441,8 +585,8 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         img = self._reporting_data["images"]
         if img:
-            img = compute_mean_surface_image(img)
-            vmin, vmax = get_min_max_surface_image(img)
+            img = mean_img(img)
+            vmin, vmax = img.data._get_min_max()
 
         # TODO: possibly allow to generate a report with other views
         views = ["lateral", "medial"]
@@ -453,7 +597,7 @@ class SurfaceLabelsMasker(TransformerMixin, CacheMixin, BaseEstimator):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
 

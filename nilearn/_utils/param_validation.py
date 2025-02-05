@@ -7,49 +7,64 @@ import numpy as np
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
 from nilearn._utils import logger
-
-from .niimg import _get_data
+from nilearn._utils.niimg import _get_data
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1827243.0
 
 
-def check_threshold(threshold, data, percentile_func, name="threshold"):
-    """Check if the given threshold is in correct format \
-    and within the limit.
+def check_threshold(
+    threshold, data, percentile_func, name="threshold", two_sided=True
+):
+    """Check if the given threshold is in correct format and within the limit.
 
-    If necessary, this function also returns score of the data calculated based
-    upon the given specific percentile function.
-    Note: This is only for threshold as string.
+    If threshold is string, this function returns score of the data calculated
+    based upon the given specific percentile function.
 
     Parameters
     ----------
-    threshold : float or str
-        If threshold is a float value, it should be within the range of the
-        maximum intensity value of the data.
-        If threshold is a percentage expressed in a string it must finish with
-        a percent sign like "99.7%".
+    threshold : :obj:`float` or :obj:`str`
+        Threshold that is used to set certain data values to zero.
+        If threshold is float, it should be within the range of minimum and the
+        maximum intensity of the data.
+        If `two_sided` is True, threshold cannot be negative.
+        If threshold is str, the given string should be within the range of
+        "0%" to "100%".
 
     data : ndarray
         An array of the input masked data.
 
-    percentile_func : function {scoreatpercentile, fastabspercentile}
+    percentile_func : function {scoreatpercentile, fast_abs_percentile}
         Percentile function for example scipy.stats.scoreatpercentile
         to calculate the score on the data.
 
-    name : str, default='threshold'
-        A string just used for representing
-        the name of the threshold for a precise
-        error message.
+    name : :obj:`str`, default='threshold'
+        A string just used for representing the name of the threshold for a
+        precise error message.
+
+    two_sided : :obj:`bool`, default=True
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+
+        .. versionadded:: 0.11.2dev
 
     Returns
     -------
-    threshold : number
-        Returns the score of the percentile on the data or
-        returns threshold as it is
-        if given threshold is not a string percentile.
+    threshold : :obj:`float`
+        Returns the score of the percentile on the data or returns threshold as
+        it is if given threshold is not a string percentile.
 
+    Raises
+    ------
+    ValueError
+        If threshold is of type str but is not a non-negative number followed
+        by the percent sign.
+        If threshold is a negative float and `two_sided` is True.
+    TypeError
+        If threshold is neither float nor a string in correct percentile
+        format.
     """
+    percentile = False
     if isinstance(threshold, str):
         message = (
             f'If "{name}" is given as string it '
@@ -58,30 +73,52 @@ def check_threshold(threshold, data, percentile_func, name="threshold"):
         )
         if not threshold.endswith("%"):
             raise ValueError(message)
-
         try:
-            percentile = float(threshold[:-1])
+            threshold = float(threshold[:-1])
+            percentile = True
         except ValueError as exc:
             exc.args += (message,)
             raise
-
-        threshold = percentile_func(data, percentile)
-    elif isinstance(threshold, numbers.Real):
-        # checks whether given float value exceeds the maximum
-        # value of the image data
-        value_check = abs(data).max()
-        if abs(threshold) > value_check:
-            warnings.warn(
-                f"The given float value must not exceed {value_check}. "
-                f"But, you have given threshold={threshold}.",
-                category=UserWarning,
-                stacklevel=3,
-            )
-    else:
+    elif not isinstance(threshold, numbers.Real):
         raise TypeError(
             f"{name} should be either a number "
             "or a string finishing with a percent sign"
         )
+
+    if threshold >= 0:
+        data = abs(data) if two_sided else np.extract(data >= 0, data)
+
+        if percentile:
+            threshold = percentile_func(data, threshold)
+        else:
+            value_check = data.max()
+            if threshold > value_check:
+                warnings.warn(
+                    f"The given float value must not exceed {value_check}. "
+                    f"But, you have given threshold={threshold}.",
+                    category=UserWarning,
+                    stacklevel=3,
+                )
+    else:
+        if two_sided:
+            raise ValueError(
+                f'"{name}" should not be a negative value when two_sided=True.'
+            )
+        if percentile:
+            raise ValueError(
+                f'"{name}" should not be a negative percentile value.'
+            )
+        data = np.extract(data <= 0, data)
+        value_check = data.min()
+        if threshold < value_check:
+            warnings.warn(
+                f"The given float value must not be less than "
+                f"{value_check}. But, you have given "
+                f"threshold={threshold}.",
+                category=UserWarning,
+                stacklevel=3,
+            )
+
     return threshold
 
 
@@ -106,14 +143,13 @@ def _get_mask_extent(mask_img):
     if hasattr(mask_img, "affine"):
         affine = mask_img.affine
         prod_vox_dims = 1.0 * np.abs(np.linalg.det(affine[:3, :3]))
-        mask_extent = prod_vox_dims * _get_data(mask_img).astype(bool).sum()
+        return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
     else:
         # sum number of True values in both hemispheres
-        mask_extent = (
+        return (
             mask_img.data.parts["left"].sum()
             + mask_img.data.parts["right"].sum()
         )
-    return mask_extent
 
 
 def adjust_screening_percentile(
@@ -141,8 +177,7 @@ def adjust_screening_percentile(
         The Nifti1Image whose voxel dimensions or the SurfaceImage whose
         number of vertices are to be computed.
 
-    verbose : int, default=0
-        Verbosity level.
+    %(verbose0)s
 
     mesh_n_vertices : int, default=None
         Number of vertices of the reference brain mesh, eg., fsaverage5
@@ -248,8 +283,7 @@ def check_feature_screening(
         If is_classification is True, it indicates that a classification task
         is performed. Otherwise, a regression task is performed.
 
-    verbose : int, default=0
-        Verbosity level.
+    %(verbose0)s
 
     mesh_n_vertices : int, default=None
         Number of vertices of the reference mesh, eg., fsaverage5 or
@@ -295,6 +329,7 @@ def check_run_sample_masks(n_runs, sample_masks):
         sample_masks = (sample_masks,)
 
     checked_sample_masks = [_convert_bool2index(sm) for sm in sample_masks]
+    checked_sample_masks = [_cast_to_int32(sm) for sm in checked_sample_masks]
 
     if len(checked_sample_masks) != n_runs:
         raise ValueError(
@@ -312,3 +347,17 @@ def _convert_bool2index(sample_mask):
     if all(check_boolean):
         sample_mask = np.where(sample_mask)[0]
     return sample_mask
+
+
+def _cast_to_int32(sample_mask):
+    """Ensure the sample mask dtype is signed."""
+    new_dtype = np.int32
+    if np.min(sample_mask) < 0:
+        msg = "sample_mask should not contain negative values."
+        raise ValueError(msg)
+
+    if highest := np.max(sample_mask) > np.iinfo(new_dtype).max:
+        msg = f"Max value in sample mask is larger than \
+            what can be represented by int32: {highest}."
+        raise ValueError(msg)
+    return np.asarray(sample_mask, new_dtype)

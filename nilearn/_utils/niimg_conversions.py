@@ -39,7 +39,7 @@ def check_same_fov(*args, **kwargs):
     Parameters
     ----------
     args : images
-        Images to be checked. Images passed without keywords will be labelled
+        Images to be checked. Images passed without keywords will be labeled
         as img_#1 in the error message (replace 1 with the appropriate index).
 
     kwargs : images
@@ -61,7 +61,7 @@ def check_same_fov(*args, **kwargs):
             errors.append((a_name, b_name, "shape"))
         if not np.allclose(a_img.affine, b_img.affine):
             errors.append((a_name, b_name, "affine"))
-    if len(errors) > 0 and raise_error:
+    if errors and raise_error:
         raise ValueError(
             "Following field of view errors were detected:\n"
             + "\n".join(
@@ -71,7 +71,7 @@ def check_same_fov(*args, **kwargs):
                 ]
             )
         )
-    return len(errors) == 0
+    return not errors
 
 
 def _index_img(img, index):
@@ -109,10 +109,7 @@ def iter_check_niimg(
     target_fov : tuple of affine and shape, optional
        If specified, images are resampled to this field of view.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     memory : instance of joblib.Memory or string, default=None
         Used to cache the masking process.
@@ -155,28 +152,7 @@ def iter_check_niimg(
                     resample_to_first_img = True
 
             if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
-                if target_fov is not None:
-                    from nilearn import image  # we avoid a circular import
-
-                    if resample_to_first_img:
-                        warnings.warn(
-                            "Affine is different across subjects."
-                            " Realignement on first subject "
-                            "affine forced"
-                        )
-                    niimg = cache(
-                        image.resample_img,
-                        memory,
-                        func_memory_level=2,
-                        memory_level=memory_level,
-                    )(
-                        niimg,
-                        target_affine=ref_fov[0],
-                        target_shape=ref_fov[1],
-                        copy_header=True,
-                        force_resample=False,  # TODO update to True in 0.13.0
-                    )
-                else:
+                if target_fov is None:
                     raise ValueError(
                         f"Field of view of image #{i} is different from "
                         "reference FOV.\n"
@@ -185,6 +161,26 @@ def iter_check_niimg(
                         f"Reference shape:\n{ref_fov[1]!r}\n"
                         f"Image shape:\n{niimg.shape!r}\n"
                     )
+                from nilearn import image  # we avoid a circular import
+
+                if resample_to_first_img:
+                    warnings.warn(
+                        "Affine is different across subjects."
+                        " Realignement on first subject "
+                        "affine forced"
+                    )
+                niimg = cache(
+                    image.resample_img,
+                    memory,
+                    func_memory_level=2,
+                    memory_level=memory_level,
+                )(
+                    niimg,
+                    target_affine=ref_fov[0],
+                    target_shape=ref_fov[1],
+                    copy_header=True,
+                    force_resample=False,  # TODO update to True in 0.13.0
+                )
             yield niimg
         except DimensionError as exc:
             # Keep track of the additional dimension in the error
@@ -233,10 +229,8 @@ def check_niimg(
     atleast_4d : boolean, default=False
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
 
-    dtype : {None, dtype, "auto"}, default=None
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous. If None, data will not be converted to a new data type.
+    %(dtype)s
+        If None, data will not be converted to a new data type.
 
     return_iterator : boolean, default=False
         Returns an iterator on the content of the niimg file input.
@@ -276,24 +270,27 @@ def check_niimg(
 
     if isinstance(niimg, str):
         if wildcards and ni.EXPAND_PATH_WILDCARDS:
-            # Ascending sorting + expand user path
-            filenames = sorted(glob.glob(str(Path(niimg).expanduser())))
+            # Expand user path
+            expanded_niimg = str(Path(niimg).expanduser())
+            # Ascending sorting
+            filenames = sorted(glob.glob(expanded_niimg))
 
             # processing filenames matching globbing expression
             if len(filenames) >= 1 and glob.has_magic(niimg):
                 niimg = filenames  # iterable case
             # niimg is an existing filename
-            elif [niimg] == filenames:
+            elif [expanded_niimg] == filenames:
                 niimg = filenames[0]
             # No files found by glob
             elif glob.has_magic(niimg):
                 # No files matching the glob expression, warn the user
                 message = (
                     "No files matching the entered niimg expression: "
-                    f"'{niimg}'.\n You may have left wildcards usage "
-                    "activated: please set the global constant "
-                    "'nilearn.EXPAND_PATH_WILDCARDS' to False to "
-                    "deactivate this behavior."
+                    f"'{niimg}'.\n"
+                    "You may have left wildcards usage activated: "
+                    "please set the global constant "
+                    "'nilearn.EXPAND_PATH_WILDCARDS' to False "
+                    "to deactivate this behavior."
                 )
                 raise ValueError(message)
             else:
@@ -345,10 +342,7 @@ def check_niimg_3d(niimg, dtype=None):
         If it is an object, check if the affine attribute present and that
         nilearn.image.get_data returns a result, raise TypeError otherwise.
 
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     Returns
     -------

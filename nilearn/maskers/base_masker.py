@@ -10,6 +10,7 @@ import numpy as np
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
 
 from .. import _utils, image, masking, signal
@@ -17,7 +18,7 @@ from .._utils import logger, stringify_path
 from .._utils.cache_mixin import CacheMixin, cache
 
 
-def _filter_and_extract(
+def filter_and_extract(
     imgs,
     extraction_function,
     parameters,
@@ -172,12 +173,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like, optional
+        confounds : CSV file or array-like, default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
@@ -185,7 +187,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
                 .. versionadded:: 0.8.0
 
-        copy : Boolean, default=True
+        copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
 
         Returns
@@ -205,6 +207,33 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         raise NotImplementedError()
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(masker=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(masker=True)
+        return tags
+
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
         ...
@@ -220,12 +249,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like, optional
+        confounds : CSV file or array-like, default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
@@ -280,14 +310,14 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         X : Niimg-like object
             See :ref:`extracting_data`.
 
-        y : numpy array of shape [n_samples], optional
+        y : numpy array of shape [n_samples], default=None
             Target values.
 
-        confounds : list of confounds, optional
+        confounds : :obj:`list` of confounds, default=None
             List of confounds (2D arrays or filenames pointing to CSV
             files). Must be of same length than imgs_list.
 
-        sample_mask : list of sample_mask, optional
+        sample_mask : :obj:`list` of sample_mask, default=None
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 
@@ -368,3 +398,35 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "has not been fitted. "
                 "You must call fit() before calling transform()."
             )
+
+
+class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
+    """Class from which all surface maskers should inherit."""
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(surf_img=True, niimg_like=False, masker=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(
+            surf_img=True, niimg_like=False, masker=True
+        )
+        return tags

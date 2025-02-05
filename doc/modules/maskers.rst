@@ -28,6 +28,10 @@ Classes
    NiftiSpheresMasker
    SurfaceLabelsMasker
    SurfaceMasker
+   SurfaceMapsMasker
+
+.. autoclasstree:: nilearn.maskers
+   :full:
 
 .. toctree::
 

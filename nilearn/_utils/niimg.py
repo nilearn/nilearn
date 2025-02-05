@@ -106,10 +106,7 @@ def load_niimg(niimg, dtype=None):
         See :ref:`extracting_data`.
         Image to load.
 
-    dtype : {dtype, "auto"}
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+    %(dtype)s
 
     Returns
     -------
@@ -190,14 +187,14 @@ def repr_niimgs(niimgs, shorten=True):
     repr : str
         String representation of the image.
     """
-    # Maximum number of elements to be displayed
-    # Note: should be >= 3 to make sense...
-    list_max_display = 3
     # Simple string case
     if isinstance(niimgs, (str, Path)):
         return _short_repr(niimgs, shorten=shorten)
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
+        # Maximum number of elements to be displayed
+        # Note: should be >= 3 to make sense...
+        list_max_display = 3
         if shorten and len(niimgs) > list_max_display:
             tmp = ",\n         ...\n ".join(
                 repr_niimgs(niimg, shorten=shorten)
@@ -239,21 +236,21 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
     path_to_niimg = Path(niimg_rep)
     if not shorten:
         return str(path_to_niimg)
-    # If the name of the file itself is larger than
-    # truncate, then shorten the name only
+    # If the name of the file itself
+    # is larger than truncate,
+    # then shorten the name only
+    # else add some folder structure if available
     if len(path_to_niimg.name) > truncate:
         return f"{path_to_niimg.name[: (truncate - 2)]}..."
-    # Else add some folder structure if available
-    else:
-        rep = path_to_niimg.name
-        if len(path_to_niimg.parts) > 1:
-            for p in path_to_niimg.parts[::-1][1:]:
-                if len(rep) + len(p) < truncate - 3:
-                    rep = str(Path(p, rep))
-                else:
-                    rep = str(Path("...", rep))
-                    break
-        return rep
+    rep = path_to_niimg.name
+    if len(path_to_niimg.parts) > 1:
+        for p in path_to_niimg.parts[::-1][1:]:
+            if len(rep) + len(p) < truncate - 3:
+                rep = str(Path(p, rep))
+            else:
+                rep = str(Path("...", rep))
+                break
+    return rep
 
 
 def img_data_dtype(niimg):

@@ -218,16 +218,11 @@ def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
         non_symmetric_matrix, node_coords, display_mode="lzry"
     )
     # No edge in direction 'l' because of node coords
-    assert (
-        len(
-            [
-                patch
-                for patch in ax.axes["l"].ax.patches
-                if isinstance(patch, FancyArrow)
-            ]
-        )
-        == 0
-    )
+    assert not [
+        patch
+        for patch in ax.axes["l"].ax.patches
+        if isinstance(patch, FancyArrow)
+    ]
     for direction in ["z", "r", "y"]:
         assert (
             len(
@@ -241,7 +236,7 @@ def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
         )
 
 
-def plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
+def test_plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
     """Test for plot_connectome with edge thresholding."""
     # Case 1: Threshold is a number
     thresh = 1.1

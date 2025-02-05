@@ -9,7 +9,7 @@ Nilearn
 
     It supports general linear model (GLM) based analysis and leverages
     the :sklearn:`scikit-learn <>` Python toolbox
-    for multivariate statistics with applications such as predictive modelling,
+    for multivariate statistics with applications such as predictive modeling,
     classification, decoding, or connectivity analysis.
 
 
@@ -312,9 +312,11 @@ Featured examples
    :caption: Development
 
    development.rst
+   ci.rst
    maintenance.rst
    changes/whats_new.rst
    authors.rst
+   Versions <versions.rst>
    GitHub Repository <https://github.com/nilearn/nilearn>
 
 

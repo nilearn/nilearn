@@ -6,24 +6,23 @@ import warnings
 
 import numpy as np
 from joblib import Memory
-from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn import signal
-from nilearn._utils import _constrained_layout_kwargs, fill_doc
-from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils import constrained_layout_kwargs, fill_doc
+from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.maskers._utils import (
+from nilearn.maskers.base_masker import _BaseSurfaceMasker
+from nilearn.surface.surface import (
+    SurfaceImage,
     check_same_n_vertices,
-    compute_mean_surface_image,
-    concatenate_surface_images,
-    get_min_max_surface_image,
+    concat_imgs,
+    mean_img,
 )
-from nilearn.surface import SurfaceImage
 
 
 @fill_doc
-class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class SurfaceMasker(_BaseSurfaceMasker):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
     .. versionadded:: 0.11.0
@@ -65,10 +64,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         default="inferno"
         Only relevant for the report figures.
 
-    clean_args : :obj:`dict` or None, default=None
-        Keyword arguments to be passed
-        to :func:`nilearn.signal.clean`
-        called within the masker.
+    %(clean_args)s
 
     Attributes
     ----------
@@ -150,22 +146,26 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         ----------
         img : SurfaceImage object or :obj:`list` of SurfaceImage or None
         """
-        if self.mask_img is not None:
-            if img is not None:
-                check_same_n_vertices(self.mask_img.mesh, img.mesh)
-            self.mask_img_ = self.mask_img
-            return
-
         if img is None:
-            raise ValueError(
-                "Please provide either a mask_img "
-                "when initializing the masker "
-                "or an img when calling fit()."
-            )
+            if self.mask_img is None:
+                raise ValueError(
+                    "Please provide either a mask_img "
+                    "when initializing the masker "
+                    "or an img when calling fit()."
+                )
+
+            if self.mask_img is not None:
+                self.mask_img_ = self.mask_img
+                return
 
         if not isinstance(img, list):
             img = [img]
-        img = concatenate_surface_images(img)
+        img = concat_imgs(img)
+
+        if self.mask_img is not None:
+            check_same_n_vertices(self.mask_img.mesh, img.mesh)
+            self.mask_img_ = self.mask_img
+            return
 
         # TODO: don't store a full array of 1 to mean "no masking"; use some
         # sentinel value
@@ -276,14 +276,16 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         if not isinstance(img, list):
             img = [img]
-        img = concatenate_surface_images(img)
+        img = concat_imgs(img)
 
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
 
         if self.reports:
             self._reporting_data["images"] = img
 
-        output = np.empty((img.shape[1], self.output_dimension_))
+        output = np.empty((1, self.output_dimension_))
+        if len(img.shape) == 2:
+            output = np.empty((img.shape[1], self.output_dimension_))
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = img.data.parts[part_name][mask].T
@@ -354,12 +356,12 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del y
         return self.fit(img).transform(img, confounds, sample_mask)
 
-    def inverse_transform(self, masked_img):
+    def inverse_transform(self, signals):
         """Transform extracted signal back to surface object.
 
         Parameters
         ----------
-        masked_img : :class:`numpy.ndarray`
+        signals : :class:`numpy.ndarray`
             Extracted signal.
 
         Returns
@@ -369,24 +371,24 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         self._check_fitted()
 
-        if masked_img.ndim == 1:
-            masked_img = np.array([masked_img])
+        if signals.ndim == 1:
+            signals = np.array([signals])
 
-        if masked_img.shape[1] != self.output_dimension_:
+        if signals.shape[1] != self.output_dimension_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
                 f"Last dimension should be {self.output_dimension_}.\n"
-                f"Got {masked_img.shape[1]}."
+                f"Got {signals.shape[1]}."
             )
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
             data[part_name] = np.zeros(
-                (mask.shape[0], masked_img.shape[0]),
-                dtype=masked_img.dtype,
+                (mask.shape[0], signals.shape[0]),
+                dtype=signals.dtype,
             )
             start, stop = self._slices[part_name]
-            data[part_name][mask.ravel()] = masked_img[:, start:stop].T
+            data[part_name][mask.ravel()] = signals[:, start:stop].T
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
@@ -400,8 +402,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -465,8 +466,8 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         vmax = None
         if self._reporting_data["images"]:
             background_data = self._reporting_data["images"]
-            background_data = compute_mean_surface_image(background_data)
-            vmin, vmax = get_min_max_surface_image(background_data)
+            background_data = mean_img(background_data)
+            vmin, vmax = background_data.data._get_min_max()
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
@@ -476,7 +477,7 @@ class SurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
         axes = np.atleast_2d(axes)
 

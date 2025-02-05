@@ -4,7 +4,7 @@ Copying headers from input images with ``math_img``
 
 This example shows how to copy the header information from one of
 the input images to the result image when using the function
-:func:`nilearn.image.math_img`.
+:func:`~nilearn.image.math_img`.
 
 The header information contains metadata about the image, such as the
 dimensions, the voxel sizes, the affine matrix, repetition time (:term:`TR`),
@@ -14,9 +14,9 @@ depending on the software used.
 
 # %%
 # Let's fetch an example :term:`fMRI` dataset
-from nilearn import datasets
+from nilearn.datasets import fetch_adhd
 
-dataset = datasets.fetch_adhd(n_subjects=2)
+dataset = fetch_adhd(n_subjects=2)
 
 # %%
 # Now let's look at the header of one of these images
@@ -27,13 +27,13 @@ subj2_img = load_img(dataset.func[1])
 
 print(f"Subject 1 header:\n{subj1_img.header}")
 # %%
-# Let's apply a simple operation using :func:`nilearn.image.math_img`
+# Let's apply a simple operation using :func:`~nilearn.image.math_img`
 from nilearn.image import math_img
 
 result_img = math_img("img1 * 1", img1=subj1_img)
 
 # %%
-# By default, :func:`nilearn.image.math_img` simply resets result image's
+# By default, :func:`~nilearn.image.math_img` simply resets result image's
 # header to the default :class:`~nibabel.nifti1.Nifti1Header`.
 #
 # This means that it will contain different information as compared to the
@@ -91,9 +91,9 @@ for key in result_img_with_header.header:
 # Copying the header with the ``copy_header_from`` parameter will not work
 # in this case.
 #
-# So, in such cases we could just use :func:`nilearn.image.math_img` without
+# So, in such cases we could just use :func:`~nilearn.image.math_img` without
 # specifying ``copy_header_from`` and then explicitly copy the header from one
-# of the images using :func:`nilearn.image.new_img_like`
+# of the images using :func:`~nilearn.image.new_img_like`
 result_img = math_img(
     "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)",
     img1=subj1_img,

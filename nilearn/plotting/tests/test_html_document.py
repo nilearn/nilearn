@@ -14,10 +14,13 @@ from nilearn.plotting import html_document
 
 
 class Get:
+    """Dummy class to implement GET requests."""
+
     def __init__(self, delay=0.0):
         self.delay = delay
 
     def __call__(self, url):
+        """Get implementation."""
         time.sleep(self.delay)
         self.url = url
         requests.get(url.replace("index.html", "favicon.ico"))
@@ -62,7 +65,7 @@ def test_open_in_browser_file(tmp_path, monkeypatch):
 
 
 def _open_views():
-    return [html_document.HTMLDocument("") for i in range(12)]
+    return [html_document.HTMLDocument("") for _ in range(12)]
 
 
 def _open_one_view():

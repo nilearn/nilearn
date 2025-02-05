@@ -294,6 +294,54 @@ def test_get_bids_files(tmp_path):
     assert len(selection) == 12 * n_sub
 
 
+def test_get_bids_files_no_space_entity(tmp_path):
+    """Pass empty string for a label ignores files containing that label.
+
+    - remove space entity only from subject 01
+    - check that only files from the appropriate subject are returned
+      when passing ("space", "T1w") or ("space", "")
+    """
+    n_sub = 2
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=2,
+        tasks=["main"],
+        n_runs=[2],
+    )
+
+    for file in (bids_path / "derivatives" / "sub-01").glob(
+        "**/*_space-*.nii.gz"
+    ):
+        stem = [
+            entity
+            for entity in file.stem.split("_")
+            if not entity.startswith("space")
+        ]
+        file.replace(file.with_stem("_".join(stem)))
+
+    selection = get_bids_files(
+        bids_path / "derivatives",
+        file_tag="bold",
+        file_type="nii.gz",
+        filters=[("space", "T1w")],
+    )
+
+    assert selection
+    assert all("sub-01" not in file for file in selection)
+
+    selection = get_bids_files(
+        bids_path / "derivatives",
+        file_tag="bold",
+        file_type="nii.gz",
+        filters=[("space", "")],
+    )
+
+    assert selection
+    assert all("sub-02" not in file for file in selection)
+
+
 def test_parse_bids_filename():
     fields = ["sub", "ses", "task", "lolo"]
     labels = ["01", "01", "langloc", "lala"]

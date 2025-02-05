@@ -1,3 +1,5 @@
+import re
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -5,11 +7,11 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils import _constrained_layout_kwargs
+from nilearn._utils import constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
-from nilearn.glm.tests._testing import design_with_null_durations
+from nilearn.glm.tests._testing import block_paradigm, modulated_event_paradigm
 from nilearn.plotting.matrix_plotting import (
     pad_contrast_matrix,
     plot_contrast_matrix,
@@ -59,7 +61,10 @@ def test_sanitize_labels():
 
     labs = ["foo", "bar"]
     with pytest.raises(
-        ValueError, match="Length of labels unequal to length of matrix."
+        ValueError,
+        match=re.escape(
+            "Length of labels (2) unequal to length of matrix (6)."
+        ),
     ):
         _sanitize_labels((6, 6), labs)
     for lab in [labs, np.array(labs)]:
@@ -83,8 +88,7 @@ def test_sanitize_tri_error(tri):
     with pytest.raises(
         ValueError,
         match=(
-            "Parameter tri needs to be "
-            f"one of: {', '.join(VALID_TRI_VALUES)}"
+            f"Parameter tri needs to be one of: {', '.join(VALID_TRI_VALUES)}"
         ),
     ):
         _sanitize_tri(tri)
@@ -187,9 +191,9 @@ def test_matrix_plotting_reorder(mat, labels):
         int(lbl.get_text()) for lbl in ax.axes.get_xticklabels()
     ]
     # block order does not matter
-    assert (
-        reordered_labels[:3] == idx or reordered_labels[-3:] == idx
-    ), "Clustering does not find block structure."
+    assert reordered_labels[:3] == idx or reordered_labels[-3:] == idx, (
+        "Clustering does not find block structure."
+    )
     plt.close()
     # test if reordering with specific linkage works
     ax = plot_matrix(mat, labels=labels, reorder="complete")
@@ -210,6 +214,25 @@ def test_show_design_matrix(tmp_path):
     assert ax is None
     plot_design_matrix(dmtx, output_file=tmp_path / "dmtx.pdf")
     assert (tmp_path / "dmtx.pdf").exists()
+
+
+@pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
+def test_plot_design_matrix_path_str(tmp_path, suffix, sep):
+    # test that the show code indeed (formally) runs
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3
+    )
+    filename = (tmp_path / "tmp").with_suffix(suffix)
+    dmtx.to_csv(filename, sep=sep, index=False)
+
+    ax = plot_design_matrix(filename)
+
+    assert ax is not None
+
+    ax = plot_design_matrix(str(filename))
+
+    assert ax is not None
 
 
 def test_show_event_plot(tmp_path):
@@ -255,6 +278,17 @@ def test_show_event_plot(tmp_path):
     assert (tmp_path / "event.pdf").exists()
 
 
+@pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
+def test_plot_event_path_tsv_csv(tmp_path, suffix, sep):
+    """Test plot_events directly from file."""
+    model_event = block_paradigm()
+    filename = (tmp_path / "tmp").with_suffix(suffix)
+    model_event.to_csv(filename, sep=sep, index=False)
+
+    plot_event(filename)
+    plot_event([filename, str(filename)])
+
+
 def test_show_contrast_matrix(tmp_path):
     # test that the show code indeed (formally) runs
     frame_times = np.linspace(0, 127 * 1.0, 128)
@@ -281,7 +315,7 @@ def test_show_contrast_matrix_axes():
         frame_times, drift_model="polynomial", drift_order=3
     )
     contrast = np.ones(4)
-    fig, ax = plt.subplots(**_constrained_layout_kwargs())
+    fig, ax = plt.subplots(**constrained_layout_kwargs())
     plot_contrast_matrix(contrast, dmtx, axes=ax)
 
     # to actually check we need get_layout_engine, but even without it the
@@ -318,7 +352,7 @@ def test_pad_contrast_matrix():
 
 
 def test_show_event_plot_duration_0():
-    plot_event(design_with_null_durations())
+    plot_event(modulated_event_paradigm())
 
 
 @pytest.mark.parametrize("tri", ["full", "diag"])
@@ -327,7 +361,7 @@ def test_plot_design_matrix_correlation(tri, cmap, tmp_path):
     """Smoke test for the 'happy path'."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
-        frame_times, events=design_with_null_durations()
+        frame_times, events=modulated_event_paradigm()
     )
 
     plot_design_matrix_correlation(
@@ -337,8 +371,23 @@ def test_plot_design_matrix_correlation(tri, cmap, tmp_path):
     assert (tmp_path / "corr_mat.png").exists()
 
 
+def test_plot_design_matrix_correlation_smoke_path(tmp_path):
+    """Check that plot_design_matrix_correlation works with paths."""
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, events=modulated_event_paradigm()
+    )
+
+    dmtx.to_csv(tmp_path / "tmp.tsv", sep="\t", index=False)
+
+    plot_design_matrix_correlation(tmp_path / "tmp.tsv")
+    plot_design_matrix_correlation(str(tmp_path / "tmp.tsv"))
+
+
 def test_plot_design_matrix_correlation_errors(mat):
-    with pytest.raises(TypeError, match="must be a pandas dataframe"):
+    with pytest.raises(
+        ValueError, match="Tables to load can only be TSV or CSV."
+    ):
         plot_design_matrix_correlation("foo")
 
     with pytest.raises(ValueError, match="dataframe cannot be empty."):

@@ -1,17 +1,77 @@
 ---
 # Workflow to build the documentation.
 #
-#  On pull requests, partial builds are run except
-#  if "[full doc]" is defined in commit message.
-#  Full builds are always run on "main".
-#  This is done every time there is a push on "main" and every week.
+# - validate CITATION.CFF file
+# - get datasets from cache or from source
+# - build doc and upload it as artifact
+# - on `main` (or on github release): trigger hosting of dev (or stable) doc on https://github.com/nilearn//nilearn.github.io.git
 #
-#  Most of this workflow is skipped if "[skip doc]" is in the commit message.
+# .. admonition:: Control via commit message
+#    :class: tip
 #
-#  Data is cached after the get_data job to be passed to the build_docs job.
-#  Data can be cached and restore across attempts of a run of this workflow.
-#  Data can be cached and restored across run of this workflow.
-#  Using "[force download]" in the commit message should prevent from using any cache.
+#    This workflow can be controlled if your commit message contains:
+#
+#    - ``[full doc]`` runs a full build on pull-request.
+#    - ``[skip doc]`` skip build of the documentation.
+#    - ``[example] name_of_example.py`` trigger build of some specific examples.
+#    - ``[force download]`` do not rely of cached datasets and force to redownload them.
+#
+# On Pull Requests, "partial builds" are run by default which render all the rst files,
+# but only build examples modified in the Pull Request.
+# This saves a lot of time and resources when working on Pull Requests.
+#
+# Occasionally, some changes necessitate rebuilding the documentation from scratch,
+# for example to see the full effect of the changes.
+# These are called "full builds".
+#
+# You can request a full build from a Pull Request at any time by including the tag ``[full doc]`` in your commit message.
+# Note that this will trigger a full build of the documentation which usually takes >90 minutes.
+#
+# .. code-block:: bash
+#
+#   $ git commit -m "[full doc] request full build"
+#
+# Full builds are always run on "main".
+# This is done every time there is a push on "main" and every week.
+#
+# Most of this workflow is skipped if ``[skip doc]`` is in the commit message.
+#
+# Though partial builds will build modified examples,
+# sometimes code changes on the module side could affect the plots in unmodified examples.
+# For this, you can request for the CI to build a specific example
+# by using the tag ``[example]`` and the name of the example.
+# This is useful when wanting to get quick feedback from reviewers.
+#
+# .. code-block:: bash
+#
+#   $ git commit -m "[example] plot_nilearn_101.py"
+#
+# However for quick checks to do yourself
+# you should always opt for local builds following the instructions here:
+# in the :ref:`building documentation` section.
+#
+# Dataset caching
+# """""""""""""""
+#
+# We also implemented a dataset caching strategy within this workflow such that datasets are only downloaded once every month.
+# Once these datasets are cached,
+# they will be used by all jobs running without requiring any download.
+# This saves a lot of time and avoids potential network errors that can happen
+# when downloading datasets from remote servers.
+#
+# Data is cached after the ``get_data`` job to be passed to the ``build_docs`` job.
+# Data can be cached and restored across attempts of a run of this workflow.
+# Data can be cached and restored across run of this workflow.
+#
+# Note that you can request to download all datasets and ignore the cache at any time
+# by including the tag ``[force download]`` in your commit message.
+#
+# To run a full build and download all datasets, you would then combine both tags:
+#
+# .. code-block:: bash
+#
+#   $ git commit -m "[full doc][force download] request full build"
+###
 name: DocumentationBuilder
 
 on:
@@ -27,6 +87,10 @@ on:
 
     # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
+
+    # This will run automatically when a release is published
+    release:
+        types: [published]
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -46,8 +110,6 @@ jobs:
     # Make citation metadata from CITATION.cff is valid.
     # as it is used in the documentation build.
     validate_cff:
-        # This prevents this workflow from running on a fork.
-        # To test this workflow on a fork, uncomment the following line.
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
@@ -63,22 +125,54 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Get repo
-            uses: actions/checkout@v3
+            uses: actions/checkout@v4
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
         -   name: Check head git commit message
             run: |
                 headCommitMsg=$(git show -s --format=%s)
                 if [[ $headCommitMsg == *"[skip doc]"* ]]; then
-                    echo "skipping tests"
+                    echo "skipping doc build"
                     exit 1
                 fi
+
+    # Check the build type and files examples to generate
+    # Upload as an artifact for other jobs.
+    build_type:
+        needs: [check_skip_flags, validate_cff]
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+            with:
+                # If pull request, checkout HEAD commit with all commit history
+                ref: ${{ github.event.pull_request.head.sha }}
+                fetch-depth: 0
+        -   name: Merge with upstream
+            run: ./build_tools/github/merge_upstream.sh
+        -   name: Check if we are doing a full or partial build
+            run: ./build_tools/github/build_type.sh
+            env:
+                COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        -   name: Verify build type
+            run: |
+                echo "PATTERN = $(cat pattern.txt)"
+                echo "BUILD = $(cat build.txt)"
+        -   name: Upload build.txt and pattern.txt
+            uses: actions/upload-artifact@v4
+            with:
+                name: build_type
+                path: |
+                    build.txt
+                    pattern.txt
+                retention-days: 1
+                overwrite: true
 
     get_data:
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
         if: github.repository == 'nilearn/nilearn'
-        needs: [check_skip_flags]
+        needs: [build_type]
         runs-on: ubuntu-latest
         defaults:
             run:
@@ -92,9 +186,6 @@ jobs:
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
 
-        -   name: Merge with upstream
-            run: ./build_tools/github/merge_upstream.sh
-
         # Set up environment
         -   name: Setup python
             uses: actions/setup-python@v5
@@ -106,16 +197,13 @@ jobs:
                 python -m pip install --user --upgrade pip setuptools
                 python -m pip install .
 
-        -   name: Check if we are doing a full or partial build
-            run: ./build_tools/github/build_type.sh
-            env:
-                COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
+        -   name: Download build type
+            uses: actions/download-artifact@v4
+            with:
+                name: build_type
         -   name: Verify build type
             id: build-type
-            run: |
-                echo "PATTERN = $(cat pattern.txt)"
-                echo "BUILD = $(cat build.txt)"
-                echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
+            run: echo "build=$(cat build.txt)" >> $GITHUB_OUTPUT
 
         -   name: Determine if we will use cached data
             run: ./build_tools/github/determine_restore_data.sh
@@ -189,7 +277,7 @@ jobs:
 
     # Steps to build the documentation.
     build_docs:
-        needs: [get_data, validate_cff]
+        needs: [get_data]
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
         runs-on: ubuntu-latest
@@ -214,16 +302,6 @@ jobs:
                 sudo -E apt-get -yq --no-install-suggests --no-install-recommends install \
                     dvipng texlive-latex-base texlive-latex-extra
 
-        # Check if we are doing a full or partial build
-        -   name: Find build type
-            run: ./build_tools/github/build_type.sh
-            env:
-                COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
-        -   name: Verify build type
-            run: |
-                echo "PATTERN = $(cat pattern.txt)"
-                echo "BUILD = $(cat build.txt)"
-
         -   name: Key for cache based on month number
             run: date +%m > month_num;
 
@@ -240,13 +318,21 @@ jobs:
         -   name: Set up display server for virtual browser
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v5
+
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
 
+        -   name: Download build type
+            uses: actions/download-artifact@v4
+            with:
+                name: build_type
+
         -   name: Install tox
-            run: python -m pip install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
 
         -   name: Show tox config
             run: tox c
@@ -283,8 +369,13 @@ jobs:
     deploy_on_main:
         runs-on: ubuntu-latest
         needs: [build_docs]
-        if: ${{ contains(fromJSON('["push", "workflow_dispatch", "schedule"]'), github.event_name)}}
+        if: ${{ contains(fromJSON('["push", "workflow_dispatch", "schedule", "release"]'), github.event_name)}}
         steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+            with:
+                fetch-depth: 0
+
         -   name: Add SSH key
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent.sock
@@ -299,29 +390,23 @@ jobs:
         -   uses: actions/download-artifact@v4
             with:
                 name: doc
-                path: ~/doc/_build/html
+                path: doc/_build/html
+
+        -   name: Identify deploy type
+            id: deploy-type
+            run: |
+                if ${{ contains(fromJSON('["release"]'), github.event_name)}}; then
+                    echo "DEPLOY_TYPE=stable" >> $GITHUB_OUTPUT
+                else
+                    echo "DEPLOY_TYPE=dev" >> $GITHUB_OUTPUT
+                fi
 
         -   name: deploy
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+                COMMIT_SHA: ${{ github.event.head_commit.id }}
+                DEPLOY_TYPE: ${{ steps.deploy-type.outputs.DEPLOY_TYPE }}
             run: |
                 git config --global user.email "actions@github.com"
                 git config --global user.name "GitHub actions"
-
-                git clone git@github.com:nilearn/nilearn.github.io.git ~/nilearn.github.io --depth=1
-                cd ~/nilearn.github.io;
-
-                git checkout main
-
-                git remote -v
-
-                git fetch origin
-                git reset --hard origin/main
-                git clean -xdf
-
-                echo "Deploying dev docs.";
-                rm -Rf dev;
-                cp -a ~/doc/_build/html dev;
-                git add -A;
-                git commit -m "Dev docs https://github.com/nilearn/nilearn/commit/${{ github.event.head_commit.id }} : $HEAD_COMMIT_MESSAGE";
-                git push origin main;
+                ./build_tools/github/deploy_doc.sh

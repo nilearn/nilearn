@@ -33,10 +33,6 @@ subject_data = fetch_spm_auditory()
 # ----------------------
 
 # %%
-# print dataset descriptions
-print(subject_data.description)
-
-# %%
 # print paths of func image
 subject_data.func[0]
 
@@ -47,7 +43,7 @@ from nilearn.plotting import plot_anat, plot_img, plot_stat_map, show
 
 fmri_img = subject_data.func
 mean_img = mean_img(subject_data.func[0], copy_header=True)
-plot_img(mean_img, colorbar=True, cbar_tick_format="%i", cmap="gray")
+plot_img(mean_img, colorbar=True, cbar_tick_format="%i")
 
 plot_anat(subject_data.anat, colorbar=True, cbar_tick_format="%i")
 
@@ -220,7 +216,7 @@ show()
 # %%
 # .. note::
 #
-#   Notice how the visualisations above shows both 'activated' voxels
+#   Notice how the visualizations above shows both 'activated' voxels
 #   with Z > 3,
 #   as well as 'deactivated' voxels with Z < -3.
 #   In the rest of this example we will show only the activate voxels
@@ -248,13 +244,12 @@ clean_map, threshold = threshold_stats_img(
     two_sided=False,  # using a one-sided test
 )
 # Let's use a sequential colormap as we will only display positive values.
-plotting_config["cmap"] = "black_red"
+plotting_config["cmap"] = "inferno"
 plot_stat_map(
     clean_map,
     threshold=threshold,
     title=(
-        "listening > rest (Uncorrected p<0.001; "
-        f"threshold: {threshold:.3f})"
+        f"listening > rest (Uncorrected p<0.001; threshold: {threshold:.3f})"
     ),
     figure=plt.figure(figsize=(10, 4)),
     **plotting_config,
@@ -296,8 +291,7 @@ plot_stat_map(
     clean_map,
     threshold=threshold,
     title=(
-        "listening > rest (p<0.05 FDR-corrected; "
-        f"threshold: {threshold:.3f})"
+        f"listening > rest (p<0.05 FDR-corrected; threshold: {threshold:.3f})"
     ),
     figure=plt.figure(figsize=(10, 4)),
     **plotting_config,

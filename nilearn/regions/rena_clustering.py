@@ -4,7 +4,6 @@ Fastclustering for approximation of structured signals
 """
 
 # Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
-
 import itertools
 import warnings
 
@@ -17,6 +16,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -216,7 +216,7 @@ def _circular_pairwise(iterable):
     return itertools.zip_longest(a, b, fillvalue=next(b, None))
 
 
-def _make_edges_surface(faces, mask):
+def make_edges_surface(faces, mask):
     """Create the edges set: Returns a list of edges for a surface mesh.
 
     Parameters
@@ -274,9 +274,13 @@ def _make_edges_and_weights_surface(X, mask_img):
     len_previous_mask = 0
     for part in mask_img.mesh.parts:
         face_part = mask_img.mesh.parts[part].faces
-        mask_part = mask_img.data.parts[part][:, 0]
 
-        edges_unmasked, edges_mask = _make_edges_surface(face_part, mask_part)
+        if len(mask_img.shape) == 1:
+            mask_part = mask_img.data.parts[part]
+        else:
+            mask_part = mask_img.data.parts[part][:, 0]
+
+        edges_unmasked, edges_mask = make_edges_surface(face_part, mask_part)
 
         idxs = np.array(range(mask_part.sum())) + len_previous_mask
         weights_unmasked = _compute_weights_surface(
@@ -518,6 +522,7 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     return reduced_connectivity, reduced_X, labels
 
 
+@fill_doc
 def recursive_neighbor_agglomeration(
     X, mask_img, n_clusters, n_iter=10, threshold=1e-7, verbose=0
 ):
@@ -540,11 +545,10 @@ def recursive_neighbor_agglomeration(
     n_iter : :obj:`int`, default=10
         Number of iterations.
 
-    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-07
         The threshold is set to handle eccentricities.
 
-    verbose : :obj:`int`, default=0
-        Verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -595,8 +599,9 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-    or :obj:`~nilearn.maskers.SurfaceMasker` object
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+                or :obj:`~nilearn.maskers.SurfaceMasker` object \
+                or None, default=None
         Object used for masking the data.
 
     n_clusters : :obj:`int`, default=2
@@ -634,7 +639,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
     def __init__(
         self,
-        mask_img,
+        mask_img=None,
         n_clusters=2,
         scaling=False,
         n_iter=10,
@@ -651,6 +656,33 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags()
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags()
+        return tags
 
     def fit(
         self,
@@ -679,7 +711,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         if not isinstance(
             self.mask_img, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
         ):
-            raise ValueError(
+            raise TypeError(
                 "The mask image should be a Niimg-like object, "
                 "a SurfaceImage object or a SurfaceMasker."
                 f"Instead a {type(self.mask_img)} object was provided."
@@ -712,7 +744,8 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             self.n_clusters = n_features
             warnings.warn(
                 "n_clusters should be at most the number of features. "
-                f"Taking n_clusters = {n_features} instead."
+                f"Taking n_clusters = {n_features} instead.",
+                stacklevel=2,
             )
 
         n_components, labels = self.memory_.cache(

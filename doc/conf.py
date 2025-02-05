@@ -16,9 +16,6 @@ import re
 import sys
 from pathlib import Path
 
-import sphinx
-
-from nilearn._utils import compare_version
 from nilearn._version import __version__
 
 # ----------------------------------------------------------------------------
@@ -39,20 +36,21 @@ sys.path.insert(0, str(Path("..").absolute()))
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
+    "gh_substitutions",
+    "myst_parser",
+    "numpydoc",
+    "sphinx_copybutton",
+    "sphinx_design",
     "sphinx_gallery.gen_gallery",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx.ext.extlinks",
     "sphinx.ext.imgmath",
     "sphinx.ext.intersphinx",
-    "sphinxcontrib.bibtex",
-    "numpydoc",
     "sphinx.ext.linkcode",
-    "gh_substitutions",
-    "sphinx_copybutton",
+    "sphinxcontrib.bibtex",
+    "sphinxcontrib.mermaid",
     "sphinxext.opengraph",
-    "myst_parser",
-    "sphinx_design",
-    "sphinx.ext.extlinks",
 ]
 
 autosummary_generate = True
@@ -106,10 +104,15 @@ copyright = "The nilearn developers"
 # built documents.
 
 # Latest release version
-latest_release = re.match(
-    r"v?([0-9]+.[0-9]+.[0-9]+).*",
-    os.popen("git describe --tags").read().strip(),
-).groups()[0]
+try:
+    latest_release = re.match(
+        r"v?([0-9]+.[0-9]+.[0-9]+).*",
+        os.popen("git describe --tags").read().strip(),
+    ).groups()[0]
+except AttributeError:
+    # This may fail in case the git tags were not fetched.
+    # So let's have a back up.
+    latest_release = "0.11.0"
 
 # The full current version, including alpha/beta/rc tags.
 current_version = __version__
@@ -152,17 +155,62 @@ add_function_parentheses = False
 # show_authors = False
 
 # The name of the Pygments (syntax highlighting) style to use.
-# pygments_style = 'friendly'
-# pygments_style = 'manni'
+# https://pygments.org/styles/
 pygments_style = "sas"
-pygments_dark_style = "stata-dark"
-
+pygments_dark_style = "monokai"
 
 # A list of ignored prefixes for module index sorting.
 # modindex_common_prefix = []
 
 # A list of warning types to suppress arbitrary warning messages
 suppress_warnings = ["image.not_readable", "config.cache"]
+
+linkcheck_allowed_redirects = {
+    "https://db.humanconnectome.org/": r"https://db.humanconnectome.org/app/template/.*",
+    r"http://humanconnectome.org/.*": r"https://store.humanconnectome.org/.*",
+    # Issue redirect to PR
+    r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
+    # OSF downloads
+    r"https://osf.io/.*/download": r"https://files.osf.io/.*",
+    # doi redirect
+    "https://doi.org/": r"https://.*",
+}
+
+linkcheck_ignore = [
+    r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
+    r"https://fcon_1000.projects.nitrc.org/.*",
+    r"https://www.cambridge.org/be/universitypress/.*",
+    r"https://sites.wustl.edu/oasisbrains/.*"
+    "http://brainomics.cea.fr/localizer/",
+    "https://github.com/nilearn/nilearn/issues/new/choose",
+    "https://pages.saclay.inria.fr/bertrand.thirion/",
+    "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
+    "http://brainomics.cea.fr/localizer/",
+    "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    "https://pkgs.org/search/.*",
+    # ignore nilearn github issues mostly for the sake of speed
+    # given that there many of those in our changelog
+    r"https://github.com/nilearn/nilearn/issues/.*",
+    # those are needed because figures cannot take sphinx gallery reference
+    # as target
+    r"../auto_examples/.*html",
+    r"auto_examples/.*html",
+    # give a 403 Client Error: Forbidden for url:
+    r"https://sites.wustl.edu/oasisbrains/.*",
+    # similarly below are publishers that do not like doi redirects:
+    r"https://doi.org/.*",
+    # do not check download links for OSF
+    r"https://osf.io/.*/download",
+]
+
+linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
+
+linkcheck_allow_unauthorized = True
+
+linkcheck_report_timeouts_as_broken = False
+
+# double default rate_limit_timeout
+linkcheck_rate_limit_timeout = 600.0
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -213,7 +261,7 @@ html_theme_options = {
         },
         {
             "name": "Twitter",
-            "url": "https://twitter.com/nilearn",
+            "url": "https://x.com/nilearn",
             "html": "",
             "class": "fa-brands fa-solid fa-twitter fa-2x",
         },
@@ -231,7 +279,7 @@ html_theme_options = {
         },
         {
             "name": "Discord",
-            "url": "https://discord.gg/SsQABEJHkZ",
+            "url": "https://discord.com/invite/SsQABEJHkZ",
             "html": "",
             "class": "fa-brands fa-solid fa-discord fa-2x",
         },
@@ -325,71 +373,6 @@ htmlhelp_basename = "PythonScientic"
 # Sphinx copybutton config
 copybutton_prompt_text = ">>> "
 
-# -- Options for LaTeX output ------------------------------------------------
-
-# The paper size ('letter' or 'a4').
-# latex_paper_size = 'letter'
-
-# The font size ('10pt', '11pt' or '12pt').
-# latex_font_size = '10pt'
-
-# Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass
-# [howto/manual]).
-latex_documents = [
-    (
-        "index",
-        "nilearn.tex",
-        "NeuroImaging with scikit-learn",
-        "Gaël Varoquaux and Alexandre Abraham"
-        + r"\\\relax ~\\\relax https://nilearn.github.io",
-        "manual",
-    ),
-]
-
-# The name of an image file (relative to this directory) to place at the top of
-# the title page.
-latex_logo = "logos/nilearn-transparent.png"
-
-# For "manual" documents, if this is true, then toplevel headings are parts,
-# not chapters.
-# latex_use_parts = False
-
-# Additional stuff for the LaTeX preamble.
-
-# Documents to append as an appendix to all manuals.
-# latex_appendices = []
-latex_elements = {
-    "classoptions": ",oneside",
-    "babel": "\\usepackage[english]{babel}",
-    # Get completely rid of index
-    "printindex": "",
-}
-
-if compare_version(sphinx.__version__, "<", "1.5"):
-    latex_preamble = r"""
-    \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-    \let\oldfootnote\footnote
-    \def\footnote#1{\oldfootnote{\small #1}}
-    """
-    # If false, no module index is generated.
-    latex_use_modindex = False
-else:
-    latex_elements["preamble"] = r"""
-    \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
-    \let\oldfootnote\footnote
-    \def\footnote#1{\oldfootnote{\small #1}}
-    """
-
-
-latex_domain_indices = False
-
-# Show the page numbers in the references
-latex_show_pagerefs = True
-
-# Show URLs in footnotes
-latex_show_urls = "footnote"
-
 trim_doctests_flags = True
 
 _python_doc_base = "https://docs.python.org/3.9"
@@ -447,6 +430,8 @@ sphinx_gallery_conf = {
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
 }
+
+mermaid_version = "11.4.0"
 
 
 def touch_example_backreferences(

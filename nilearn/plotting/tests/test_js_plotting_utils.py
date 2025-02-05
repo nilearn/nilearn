@@ -88,7 +88,11 @@ def test_colorscale_no_threshold():
 def expected_abs_threshold(threshold):
     """Return the expected absolute threshold."""
     expected = {"0%": 1.5, "50%": 7.55, "99%": 13}
-    return expected[threshold] if threshold in expected else abs(threshold)
+    return (
+        expected.get(threshold)
+        if isinstance(threshold, str)
+        else abs(threshold)
+    )
 
 
 @pytest.mark.parametrize("threshold", ["0%", "50%", "99%", 0.5, 7.25])
@@ -223,7 +227,7 @@ def check_html(
     assert len(selects) == 3
     hemi = selects[0]
     assert ("id", "select-hemisphere") in hemi.items()
-    assert len(hemi.findall("option")) == 2
+    assert len(hemi.findall("option")) == 3
     kind = selects[1]
     assert ("id", "select-kind") in kind.items()
     assert len(kind.findall("option")) == 2

@@ -536,7 +536,7 @@ plt.show()
 # The approach taken by FirstLeveModel is to estimate it from the :term:`fMRI`
 # data itself when no mask is explicitly provided.  Since the data
 # have been resampled into :term:`MNI` space, we can use instead a mask of the
-# grey matter in :term:`MNI` space. The benefit is that it makes voxel-level
+# gray matter in :term:`MNI` space. The benefit is that it makes voxel-level
 # comparisons easier across subjects and datasets, and removes
 # non-grey matter regions, in which no :term:`BOLD` signal is expected.
 # The downside is that the mask may not fit very well this particular data.

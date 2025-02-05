@@ -9,7 +9,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import scipy.linalg
 import scipy.signal
 from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
@@ -37,9 +36,8 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
     res : :obj:`int`, default=30
         Desired resolution, in mm, of output images.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     mask_dilation : :obj:`int`, default=2
         The number of times the binary :term:`dilation<Dilation>` is repeated
@@ -81,9 +79,8 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
     n_features : :obj:`int`
         Number of features
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -96,7 +93,12 @@ def generate_timeseries(n_timepoints, n_features, random_state=0):
 
 
 def generate_regions_ts(
-    n_features, n_regions, overlap=0, random_state=0, window="boxcar"
+    n_features,
+    n_regions,
+    overlap=0,
+    random_state=0,
+    window="boxcar",
+    negative_regions=False,
 ):
     """Generate some regions as timeseries.
 
@@ -111,12 +113,17 @@ def generate_regions_ts(
     overlap : :obj:`int`, default=0
         Number of overlapping voxels between two regions (more or less).
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. e.g. "hamming".
+
+    negative_regions : :obj:`bool`, default=False
+        If True, creates negative and positive valued regions randomly; all
+        generated region values are positive otherwise.
+
+        .. versionadded:: 0.11.1
 
     Returns
     -------
@@ -148,6 +155,8 @@ def generate_regions_ts(
         end = int(min(n_features, boundaries[n + 1] + overlap_end))
         win = scipy.signal.get_window(window, end - start)
         win /= win.mean()  # unity mean
+        if negative_regions and rand_gen.choice(a=[True, False]):
+            win = -1 * win
         regions[n, start:end] = win
 
     return regions
@@ -161,6 +170,7 @@ def generate_maps(
     window="boxcar",
     random_state=0,
     affine=None,
+    negative_regions=False,
 ):
     """Generate a 4D volume containing several maps.
 
@@ -175,9 +185,8 @@ def generate_maps(
     window : :obj:`str`, default='boxcar'
         Name of a window in scipy.signal. Used to get non-uniform regions.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     affine : :obj:`numpy.ndarray`, default=None
         Affine transformation to use.
@@ -185,6 +194,12 @@ def generate_maps(
 
     border : :obj:`int`, default=1
         Number of background voxels on each side of the 3D volumes.
+
+    negative_regions : :obj:`bool`, default=False
+        If True, creates negative and positive valued regions randomly; all
+        generated region values are positive otherwise.
+
+        .. versionadded:: 0.11.1
 
     Returns
     -------
@@ -205,6 +220,7 @@ def generate_maps(
         overlap=overlap,
         random_state=random_state,
         window=window,
+        negative_regions=negative_regions,
     )
     mask_img = Nifti1Image(mask, affine)
     return masking.unmask(ts, mask_img), mask_img
@@ -229,9 +245,8 @@ def generate_labeled_regions(
         Number of regions to generate. By default (if "labels" is None),
         add a background with value zero.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     labels : iterable, optional
         Labels to use for each zone. If provided, n_regions is unused.
@@ -316,9 +331,8 @@ def generate_fake_fmri(
         'classification' or 'regression'.
         Used only if n_blocks is not None.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -423,9 +437,8 @@ def generate_fake_fmri_data_and_design(
         Affine of returned images. Must be a 4x4 array.
         Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -480,9 +493,8 @@ def write_fake_fmri_data_and_design(
         Affine of returned images.
         Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     file_path : :obj:`str` or :obj:`pathlib.Path`, default=None
         Output file path.
@@ -516,8 +528,8 @@ def write_fake_fmri_data_and_design(
         fmri_files.append(str(file_path / f"fmri_run{i:d}.nii"))
         fmri.to_filename(fmri_files[-1])
     for i, design in enumerate(design_matrices):
-        design_files.append(str(file_path / f"dmtx_{i:d}.csv"))
-        design.to_csv(design_files[-1])
+        design_files.append(str(file_path / f"dmtx_{i:d}.tsv"))
+        design.to_csv(design_files[-1], sep="\t", index=False)
 
     return mask_file, fmri_files, design_files
 
@@ -548,9 +560,8 @@ def _write_fake_bold_gifti(
         Shape of output array with m vertices by n timepoints.
         If number of vertices is 0, only a dummy file is created.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
     """
     rand_gen = np.random.default_rng(random_state)
     data = rand_gen.standard_normal((n_time_points, n_vertices))
@@ -576,9 +587,8 @@ def write_fake_bold_img(file_path, shape, affine=None, random_state=0):
         Affine of returned images.
         Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -612,9 +622,8 @@ def _generate_signals_from_precisions(
         The number of samples drawn for each timeseries is taken at random
         between these two numbers. Defaults are 50 and 100.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -631,10 +640,10 @@ def _generate_signals_from_precisions(
     )
 
     mean = np.zeros(precisions[0].shape[0])
-    for n, prec in zip(n_samples, precisions):
-        signals.append(
-            rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
-        )
+    signals.extend(
+        rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
+        for n, prec in zip(n_samples, precisions)
+    )
     return signals
 
 
@@ -665,12 +674,10 @@ def generate_group_sparse_gaussian_graphs(
     density : :obj:`float`, default=0.1
         Density of edges in graph topology.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
-    verbose : :obj:`int`, default=0
-        Verbosity level (0 means no message).
+    %(verbose0)s
 
     Returns
     -------
@@ -787,9 +794,8 @@ def _basic_confounds(length, random_state=0):
     length : :obj:`int`
         Length of basic confounds.
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance, \
-                   default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -879,8 +885,8 @@ def generate_random_img(
         The affine of the image
         Will default to ``np.eye(4)`` if ``None`` is passed.
 
-    random_state : int, optional
-        Seed for random number generator.
+    %(random_state)s
+        default=0
 
     Returns
     -------
@@ -967,9 +973,8 @@ def create_fake_bids_dataset(
         but can be other values (e.g. "desc-confounds_regressors" as
         in :term:`fMRIPrep` < 20.2).
 
-    random_state : :obj:`int` or :obj:`numpy.random.RandomState` instance. \
-                    default=0
-        Random number generator, or seed.
+    %(random_state)s
+        default=0
 
     entities : :obj:`dict`, optional
         Extra entity to add to the :term:`BIDS` filename with a list of values.

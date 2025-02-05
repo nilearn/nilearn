@@ -13,6 +13,10 @@ from nilearn._utils.helpers import compare_version
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
 
+# mypy: disable_error_code="attr-defined"
+
+__all__ = ["_cmap_d"]
+
 
 def mix_colormaps(fg, bg):
     """Mixes foreground and background arrays of RGBA colors.
@@ -119,17 +123,17 @@ def alpha_cmap(color, name="", alpha_min=0.5, alpha_max=1.0):
 
     Parameters
     ----------
-    color : (r, g, b), or a string
+    color : (r, g, b), or a :obj:`str`
         A triplet of floats ranging from 0 to 1, or a matplotlib
         color string.
 
-    name : string, default=''
+    name : :obj:`str` , default=''
         Name of the colormap.
 
-    alpha_min : Float, default=0.5
+    alpha_min : :obj:`float`, default=0.5
         Minimum value for alpha.
 
-    alpha_max : Float, default=1.0
+    alpha_max : :obj:`float`, default=1.0
         Maximum value for alpha.
 
     """
@@ -174,12 +178,11 @@ _cmaps_data = {
     "black_red": _cm.hot._segmentdata.copy(),
 }
 
-# MPL 0.99 doesn't have Ocean or afmhot
-if hasattr(_cm, "ocean"):
-    _cmaps_data["ocean_hot"] = _concat_cmap(_cm.ocean, _cm.hot_r)
-if hasattr(_cm, "afmhot"):
-    _cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
-    _cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
+_cmaps_data["ocean_hot"] = _concat_cmap(_cm.ocean, _cm.hot_r)
+_cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
+
+_cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
+
 
 # Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
 _bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
@@ -194,9 +197,10 @@ _cmaps_data["bwr"] = _colors.LinearSegmentedColormap.from_list(
 
 # backported and adapted from matplotlib since it's deprecated in 3.2
 def _revcmap(data):
-    data_r = {}
-    for key, val in data.items():
-        data_r[key] = [(1.0 - x, y1, y0) for x, y0, y1 in reversed(val)]
+    data_r = {
+        key: [(1.0 - x, y1, y0) for x, y0, y1 in reversed(val)]
+        for key, val in data.items()
+    }
     return data_r
 
 
@@ -334,9 +338,9 @@ def dim_cmap(cmap, factor=0.3, to_white=True):
 
 def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     """Replace a colormap by another inside a pair of values."""
-    assert (
-        vmin < vmax
-    ), f"'vmin' must be smaller than 'vmax'. Got {vmin=} and {vmax=}."
+    assert vmin < vmax, (
+        f"'vmin' must be smaller than 'vmax'. Got {vmin=} and {vmax=}."
+    )
     assert vmin >= 0, f"'vmin' must be larger than 0, {vmin=} was passed."
     assert vmax <= 1, f"'vmax' must be smaller than 1, {vmax=} was passed."
     outer_cdict = outer_cmap._segmentdata.copy()

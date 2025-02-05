@@ -15,7 +15,7 @@ from .helpers import stringify_path
 MEMORY_CLASSES = (Memory,)
 
 
-def _check_memory(memory, verbose=0):
+def check_memory(memory, verbose=0):
     """Ensure an instance of a joblib.Memory object.
 
     Parameters
@@ -81,7 +81,7 @@ class _ShelvedFunc:
 
     def __init__(self, func):
         self.func = func
-        self.func_name = func.__name__ + "_shelved"
+        self.func_name = f"{func.__name__}_shelved"
 
     def __call__(self, *args, **kwargs):
         return self.func.call_and_shelve(*args, **kwargs)
@@ -235,7 +235,7 @@ class CacheMixin:
             self.memory_level = 0
         if not hasattr(self, "memory"):
             self.memory = Memory(location=None, verbose=verbose)
-        self.memory = _check_memory(self.memory, verbose=verbose)
+        self.memory = check_memory(self.memory, verbose=verbose)
 
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.

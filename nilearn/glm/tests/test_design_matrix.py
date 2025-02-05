@@ -402,6 +402,21 @@ def test_oversampling(n_frames):
     assert_almost_equal(X4.to_numpy(), X5.to_numpy())
 
 
+def test_events_as_path(n_frames, tmp_path):
+    events = basic_paradigm()
+    frame_times = np.linspace(0, n_frames - 1, n_frames)
+
+    events_file = tmp_path / "design.csv"
+    events.to_csv(events_file)
+    make_first_level_design_matrix(frame_times, events=events_file)
+    make_first_level_design_matrix(frame_times, events=str(events_file))
+
+    events_file = tmp_path / "design.tsv"
+    events.to_csv(events_file, sep="\t")
+    make_first_level_design_matrix(frame_times, events=events_file)
+    make_first_level_design_matrix(frame_times, events=str(events_file))
+
+
 def test_high_pass(n_frames):
     """Test that high-pass values lead to reasonable design matrices."""
     t_r = 2.0

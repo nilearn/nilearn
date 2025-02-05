@@ -362,7 +362,7 @@ def test_order_comp():
     gt = neurovault.GreaterThan("abc")
 
     assert gt != "abc"
-    assert gt == "abd"
+    assert gt == "abd"  # codespell:ignore abd
     assert str(gt) == "GreaterThan('abc')"
 
     lt = neurovault.LessThan(7)
@@ -527,7 +527,7 @@ def test_result_filter_combinations():
 
 def test_simple_download(tmp_path):
     downloaded_file = neurovault._simple_download(
-        "http://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz",
+        "https://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz",
         tmp_path / "image_35.nii.gz",
         tmp_path,
     )
@@ -783,7 +783,7 @@ def test_fetch_neurovault_errors(capsys, request_mocker):
     data = neurovault.fetch_neurovault()
 
     captured = capsys.readouterr()
-    match = re.search("500 Error", captured.err)
+    match = re.search(r"500 Error", captured.err)
     assert match is not None
 
     assert len(data.images) == 0

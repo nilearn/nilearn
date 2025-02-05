@@ -189,7 +189,7 @@ def _get_labels_data(
         labels_after_mask = {int(label) for label in np.unique(labels_data)}
         labels_diff = labels_before_mask.difference(labels_after_mask)
         # Raising a warning if any label is removed due to the mask
-        if len(labels_diff) > 0 and (not keep_masked_labels):
+        if labels_diff and not keep_masked_labels:
             warnings.warn(
                 "After applying mask to the labels image, "
                 "the following labels were "
@@ -263,7 +263,7 @@ def img_to_signals_labels(
         Regions definition as labels. By default, the label zero is used to
         denote an absence of region. Use background_label to change it.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Mask to apply to labels before extracting signals.
         Every point outside the mask is considered
@@ -272,7 +272,7 @@ def img_to_signals_labels(
     background_label : number, default=0
         Number representing background in labels_img.
 
-    order : :obj:`str`, default="F"
+    order : :obj:`str`, default='F'
         Ordering of output array ("C" or "F").
 
     %(strategy)s
@@ -334,7 +334,7 @@ def img_to_signals_labels(
         signals[n] = np.asarray(
             reduction_function(img, labels=labels_data, index=labels)
         )
-    # Set to zero signals for missing labels. Workaround for Scipy behaviour
+    # Set to zero signals for missing labels. Workaround for Scipy behavior
     if keep_masked_labels:
         missing_labels = set(labels) - set(np.unique(labels_data))
         labels_index = {l: n for n, l in enumerate(labels)}
@@ -385,7 +385,7 @@ def signals_to_img_labels(
         See :ref:`extracting_data`.
         Region definitions using labels.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Boolean array giving voxels to process. integer arrays also accepted,
         In this array, zero means False, non-zero means True.
@@ -393,7 +393,7 @@ def signals_to_img_labels(
     background_label : number, default=0
         Label to use for "no region".
 
-    order : :obj:`str`, default="F"
+    order : :obj:`str`, default='F'
         Ordering of output array ("C" or "F").
 
     Returns
@@ -459,7 +459,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         Regions definition as maps (array of weights).
         shape: imgs.shape + (region number, )
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
         Every point outside the mask is considered
@@ -520,7 +520,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
             labels_after_mask = {int(label) for label in labels}
             labels_diff = labels_before_mask.difference(labels_after_mask)
             # Raising a warning if any map is removed due to the mask
-            if len(labels_diff) > 0:
+            if labels_diff:
                 warnings.warn(
                     "After applying mask to the maps image, "
                     "maps with the following indices were "
@@ -558,7 +558,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
         See :ref:`extracting_data`.
         Region definitions using maps.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         See :ref:`extracting_data`.
         Boolean array giving :term:`voxels<voxel>` to process.
         Integer arrays also accepted, zero meaning False.

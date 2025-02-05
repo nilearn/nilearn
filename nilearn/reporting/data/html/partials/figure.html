@@ -1,0 +1,38 @@
+{{if engine == 'plotly'}}
+<div style="margin-top: 20px">
+  <div
+    class="pure-img"
+    width="100%"
+    id="map-{{unique_id}}-0"
+    style="display: block"
+    alt="image"
+  >
+    {{content[0]|html}}
+  </div>
+
+  {{for map in range(1, len(displayed_maps))}}
+  <div id="map-{{unique_id}}-{{map}}" style="display: none">
+    {{content[map]|html}}
+  </div>
+  {{endfor}}
+</div>
+{{else}}
+<img
+  id="map-{{unique_id}}-0"
+  class="pure-img"
+  width="100%"
+  src="data:image/png;base64,{{content[0]}}"
+  style="display: block"
+  alt="image"
+/>
+
+{{for map in range(1, len(displayed_maps))}}
+<img
+  id="map-{{unique_id}}-{{map}}"
+  class="pure-img"
+  width="100%"
+  src="data:image/png;base64,{{content[map]}}"
+  style="display: none"
+  alt="image"
+/>
+{{endfor}} {{endif}}

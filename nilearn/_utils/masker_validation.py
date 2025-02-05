@@ -9,7 +9,7 @@ from nibabel import Nifti1Image
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 
-from .cache_mixin import _check_memory
+from .cache_mixin import check_memory
 from .class_inspect import get_params
 
 
@@ -76,7 +76,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
     )
 
     if hasattr(estimator, "memory"):
-        new_masker_params["memory"] = _check_memory(estimator.memory)
+        new_masker_params["memory"] = check_memory(estimator.memory)
     else:
         warnings.warn(
             warning_msg.substitute(
@@ -85,7 +85,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
             ),
             stacklevel=3,
         )
-        new_masker_params["memory"] = _check_memory(None)
+        new_masker_params["memory"] = check_memory(None)
 
     if hasattr(estimator, "memory_level"):
         new_masker_params["memory_level"] = max(0, estimator.memory_level - 1)
@@ -106,23 +106,27 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
             stacklevel=3,
         )
         new_masker_params["verbose"] = 0
-    # Raising warning if masker override parameters
-    conflict_string = ""
-    for param_key in sorted(estimator_params):
-        if np.any(new_masker_params[param_key] != estimator_params[param_key]):
-            conflict_string += (
-                f"Parameter {param_key} :\n"
-                f"    Masker parameter {new_masker_params[param_key]}"
-                " - overriding estimator parameter "
-                f"{estimator_params[param_key]}\n"
-            )
 
-    if conflict_string != "":
+    conflicting_param = [
+        k
+        for k in sorted(estimator_params)
+        if np.any(new_masker_params[k] != estimator_params[k])
+    ]
+    if conflicting_param:
+        conflict_string = "".join(
+            (
+                f"Parameter {k} :\n"
+                f"    Masker parameter {new_masker_params[k]}"
+                f" - overriding estimator parameter {estimator_params[k]}\n"
+            )
+            for k in conflicting_param
+        )
         warn_str = (
             "Overriding provided-default estimator parameters with"
             f" provided masker parameters :\n{conflict_string}"
         )
         warnings.warn(warn_str, stacklevel=3)
+
     masker = masker_type(**new_masker_params)
 
     # Forwarding potential attribute of provided masker

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+import operator
 from pathlib import Path
 from typing import Any
 
 import ruamel.yaml
+from utils import root_dir
 
 yaml = ruamel.yaml.YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
+yaml.width = 4096
 
 CORE_DEVS = [
     "Alexis Thual",
@@ -21,11 +24,6 @@ CORE_DEVS = [
     "Rémi Gau",
     "Taylor Salo",
 ]
-
-
-def root_dir() -> Path:
-    """Return path to root directory."""
-    return Path(__file__).parent.parent
 
 
 def names_rst() -> Path:
@@ -71,11 +69,12 @@ def write_names_rst(citation: list[dict[str, str]]) -> None:
         print(header, file=f)
 
         for i, author in enumerate(citation["authors"]):
-            line = (
-                f'.. _{author["given-names"]} {author["family-names"]}: '
-                f'{author["website"]}'
-            )
-            print(line, file=f)
+            if "website" in author:
+                line = (
+                    f".. _{author['given-names']} {author['family-names']}: "
+                    f"{author['website']}"
+                )
+                print(line, file=f)
             if i < len(citation["authors"]) - 1:
                 print("", file=f)
 
@@ -143,7 +142,10 @@ Some other past or present contributors are:
 """
     )
     for author_ in authors:
-        f.write(f"* `{author_['given-names']} {author_['family-names']}`_")
+        if "website" in author_:
+            f.write(f"* `{author_['given-names']} {author_['family-names']}`_")
+        else:
+            f.write(f"* {author_['given-names']} {author_['family-names']}")
         if author_.get("affiliation"):
             f.write(f": {author_['affiliation']}")
         f.write("\n")
@@ -166,7 +168,7 @@ def write_core_devs(f):
 def sort_authors(authors: list[dict[str, str]]) -> list[dict[str, str]]:
     """Sort authors by given name."""
     print(" Sorting authors by given name")
-    authors.sort(key=lambda x: x["given-names"])
+    authors.sort(key=operator.itemgetter("given-names"))
     return authors
 
 

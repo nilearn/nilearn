@@ -506,10 +506,10 @@ def tvl1_solver(
     y : ndarray, shape (n_samples,)
         Target / response vector.
 
-    alpha : float, default=1.0
+    alpha : :obj:`float`, default=1.0
         Constant that scales the overall regularization term.
 
-    l1_ratio : float in the interval [0, 1]; default=0.5
+    l1_ratio : :obj:`float` in the interval [0, 1]; default=0.5
         Constant that mixes L1 and TV penalization.
         l1_ratio == 0 : just smooth. l1_ratio == 1 : just lasso.
 
@@ -517,26 +517,26 @@ def tvl1_solver(
         The support of this mask defines the ROIs being considered in
         the problem.
 
-    max_iter : int, default=100
+    max_iter : :obj:`int`, default=100
         Defines the iterations for the solver.
 
-    prox_max_iter : int, default=5000
+    prox_max_iter : :obj:`int`, default=5000
         Maximum number of iterations for inner FISTA loop in which
         the prox of TV is approximated.
 
-    tol : float, default=1e-4
+    tol : :obj:`float`, default=1e-4
         Defines the tolerance for convergence.
 
-    loss : string
+    loss : :obj:`str` or None
         Loss model for regression. Can be "mse" (for squared loss) or
         "logistic" (for logistic loss).
 
-    lipschitz_constant : float, optional (default None)
+    lipschitz_constant : :obj:`float`, default=None
         Lipschitz constant (i.e an upper bound of) of gradient of smooth part
         of the energy being minimized. If no value is specified (None),
         then it will be calculated.
 
-    callback : callable(dict) -> bool, optional (default None)
+    callback : callable(dict) -> bool, default=None
         Function called at the end of every energy descendent iteration of the
         solver. If it returns True, the loop breaks.
 
@@ -573,10 +573,11 @@ def tvl1_solver(
             return np.append(unmask_from_to_3d_array(w[:-1], mask), w[-1])
 
     def maskvec(w):
-        if loss == "mse":
-            return w[flat_mask]
-        else:
-            return np.append(w[:-1][flat_mask], w[-1])
+        return (
+            w[flat_mask]
+            if loss == "mse"
+            else np.append(w[:-1][flat_mask], w[-1])
+        )
 
     # function to compute derivative of f1
     def f1_grad(w):

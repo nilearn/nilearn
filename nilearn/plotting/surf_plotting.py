@@ -18,16 +18,17 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
-from nilearn.plotting._utils import check_surface_plotting_inputs
-from nilearn.plotting.cm import cold_hot, mix_colormaps
+from nilearn.plotting._utils import (
+    check_surface_plotting_inputs,
+    sanitize_hemi_for_surface_image,
+)
+from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
-from nilearn.plotting.displays._slicers import _get_cbar_ticks
+from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import (
-    PolyMesh,
-    SurfaceImage,
     load_surf_data,
     load_surf_mesh,
     vol_to_surf,
@@ -35,11 +36,20 @@ from nilearn.surface import (
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
     check_extensions,
-    check_mesh,
+    check_mesh_is_fsaverage,
 )
 
-VALID_VIEWS = "anterior", "posterior", "medial", "lateral", "dorsal", "ventral"
-VALID_HEMISPHERES = "left", "right"
+VALID_VIEWS = (
+    "anterior",
+    "posterior",
+    "medial",
+    "lateral",
+    "dorsal",
+    "ventral",
+    "left",
+    "right",
+)
+VALID_HEMISPHERES = "left", "right", "both"
 
 # subset of data format extensions supported
 DATA_EXTENSIONS = (
@@ -61,6 +71,14 @@ MATPLOTLIB_VIEWS = {
     "right": {
         "lateral": (0, 0),
         "medial": (0, 180),
+        "dorsal": (90, 0),
+        "ventral": (270, 0),
+        "anterior": (0, 90),
+        "posterior": (0, 270),
+    },
+    "both": {
+        "right": (0, 0),
+        "left": (0, 180),
         "dorsal": (90, 0),
         "ventral": (270, 0),
         "anterior": (0, 90),
@@ -129,18 +147,24 @@ LAYOUT = {
 
 def _get_camera_view_from_string_view(hemi, view):
     """Return plotly camera parameters from string view."""
-    if view == "lateral":
-        return CAMERAS[hemi]
-    elif view == "medial":
-        return CAMERAS[
-            (
-                VALID_HEMISPHERES[0]
-                if hemi == VALID_HEMISPHERES[1]
-                else VALID_HEMISPHERES[1]
-            )
-        ]
-    else:
-        return CAMERAS[view]
+    if hemi in ["left", "right"]:
+        if view == "lateral":
+            return CAMERAS[hemi]
+        elif view == "medial":
+            return CAMERAS[
+                (
+                    VALID_HEMISPHERES[0]
+                    if hemi == VALID_HEMISPHERES[1]
+                    else VALID_HEMISPHERES[1]
+                )
+            ]
+    elif hemi == "both" and view in ["lateral", "medial"]:
+        raise ValueError(
+            "Invalid view definition: when hemi is 'both', "
+            "view cannot be 'lateral' or 'medial'.\n"
+            "Maybe you meant 'left' or 'right'?"
+        )
+    return CAMERAS[view]
 
 
 def _get_camera_view_from_elevation_and_azimut(view):
@@ -303,7 +327,7 @@ def _plot_surf_plotly(
     i, j, k = faces.T
 
     if cmap is None:
-        cmap = cold_hot
+        cmap = "RdBu_r"
 
     bg_data = None
     if bg_map is not None:
@@ -365,7 +389,9 @@ def _plot_surf_plotly(
     )
 
     # save figure
-    plotly_figure = PlotlySurfaceFigure(figure=fig, output_file=output_file)
+    plotly_figure = PlotlySurfaceFigure(
+        figure=fig, output_file=output_file, hemi=hemi
+    )
 
     if output_file is not None:
         if not is_kaleido_installed():
@@ -388,6 +414,12 @@ def _get_view_plot_surf_matplotlib(hemi, view):
     _check_views([view])
     _check_hemispheres([hemi])
     if isinstance(view, str):
+        if hemi == "both" and view in ["lateral", "medial"]:
+            raise ValueError(
+                "Invalid view definition: when hemi is 'both', "
+                "view cannot be 'lateral' or 'medial'.\n"
+                "Maybe you meant 'left' or 'right'?"
+            )
         return MATPLOTLIB_VIEWS[hemi][view]
     return view
 
@@ -479,7 +511,7 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
     if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
         return np.arange(vmin, vmax + 1)
     else:
-        return _get_cbar_ticks(vmin, vmax, threshold, n_ticks)
+        return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
 def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
@@ -496,7 +528,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
                 "You provided a non integer threshold "
                 "but configured the colorbar to use integer formatting."
             )
-        # set colors to grey for absolute values < threshold
+        # set colors to gray for absolute values < threshold
         istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
         istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
         for i in range(istart, istop):
@@ -719,17 +751,19 @@ def _plot_surf_matplotlib(
                 orientation="vertical",
             )
 
+        # fix floating point bug causing highest to sometimes surpass 1
+        # (for example 1.0000000000000002)
+        face_colors[face_colors > 1] = 1
+
         p3dcollec.set_facecolors(face_colors)
         p3dcollec.set_edgecolors(face_colors)
 
     if title is not None:
         axes.set_title(title)
-    # save figure if output file is given
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close()
-    else:
+    if output_file is None:
         return figure
+    figure.savefig(output_file)
+    plt.close()
 
 
 @fill_doc
@@ -738,7 +772,7 @@ def plot_surf(
     surf_map=None,
     bg_map=None,
     hemi="left",
-    view="lateral",
+    view=None,
     engine="matplotlib",
     cmap=None,
     symmetric_cmap=False,
@@ -766,7 +800,8 @@ def plot_surf(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a Mesh, or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.InMemoryMesh`, \
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -774,7 +809,8 @@ def plot_surf(
         of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes,
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with
+        "coordinates" and "faces" attributes,
         or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``surf_map``
@@ -801,7 +837,7 @@ def plot_surf(
              or :obj:`~nilearn.surface.SurfaceImage` or None,\
              default=None
         Background image to be plotted on the :term:`mesh`
-        underneath the surf_data in greyscale,
+        underneath the surf_data in grayscale,
         most likely a sulcal depth map for realistic shading.
         If the map contains values outside [0, 1],
         it will be rescaled such that all values are in [0, 1].
@@ -948,6 +984,9 @@ def plot_surf(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+
     parameters_not_implemented_in_plotly = {
         "avg_method": avg_method,
         "figure": figure,
@@ -1092,7 +1131,8 @@ def plot_surf_contours(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a Mesh, or a :obj:`~nilearn.surface.PolyMesh`, or None
+                or a :obj:`~nilearn.surface.InMemoryMesh`, \
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1100,7 +1140,8 @@ def plot_surf_contours(
         of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes,
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
+        and "faces" attributes,
         or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``roi_map``
@@ -1125,7 +1166,7 @@ def plot_surf_contours(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    hemi : {"left", "right", None}, default=None
+    hemi : {"left", "right", "both", None}, default=None
         Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
         is passed as ``roi_map``
         and / or if PolyMesh is passed as ``surf_mesh``.
@@ -1155,7 +1196,7 @@ def plot_surf_contours(
         default=None
         Colors to be used.
 
-    legend : :obj:`bool`,  optional, default=False
+    legend : :obj:`bool`,  default=False
         Whether to plot a legend of region's labels.
 
     %(cmap)s
@@ -1179,40 +1220,13 @@ def plot_surf_contours(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    if hemi is None and (
-        isinstance(roi_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
-    ):
-        hemi = "left"
-    elif (
-        hemi is not None
-        and not isinstance(roi_map, SurfaceImage)
-        and not isinstance(surf_mesh, PolyMesh)
-    ):
-        warn(
-            category=UserWarning,
-            message=(
-                f"{hemi=} was passed "
-                f"with {type(roi_map)=} and {type(surf_mesh)=}.\n"
-                "This value will be ignored as it is only used when "
-                "'roi_map' is a SurfaceImage instance "
-                "and  / or 'surf_mesh' is a PolyMesh instance."
-            ),
-            stacklevel=2,
-        )
+    hemi = sanitize_hemi_for_surface_image(hemi, roi_map, surf_mesh)
     roi_map, surf_mesh, _ = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, map_var_name="roi_map"
     )
 
-    if isinstance(figure, PlotlySurfaceFigure):
-        raise ValueError(
-            "figure argument is a PlotlySurfaceFigure"
-            "but it should be None or a matplotlib figure"
-        )
-    if isinstance(axes, PlotlySurfaceFigure):
-        raise ValueError(
-            "axes argument is a PlotlySurfaceFigure"
-            "but it should be None or a matplotlib axes"
-        )
+    _check_figure_axes_inputs_plot_surf_contours(figure, axes)
+
     if figure is None and axes is None:
         figure = plot_surf(surf_mesh, **kwargs)
         axes = figure.axes[0]
@@ -1289,12 +1303,23 @@ def plot_surf_contours(
         title = figure._suptitle._text
     if title:
         axes.set_title(title)
-    # save figure if output file is given
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-    else:
+    if output_file is None:
         return figure
+    figure.savefig(output_file)
+    plt.close(figure)
+
+
+def _check_figure_axes_inputs_plot_surf_contours(figure, axes):
+    if isinstance(figure, PlotlySurfaceFigure):
+        raise ValueError(
+            "figure argument is a PlotlySurfaceFigure"
+            "but it should be None or a matplotlib figure"
+        )
+    if isinstance(axes, PlotlySurfaceFigure):
+        raise ValueError(
+            "axes argument is a PlotlySurfaceFigure"
+            "but it should be None or a matplotlib axes"
+        )
 
 
 @fill_doc
@@ -1303,13 +1328,13 @@ def plot_surf_stat_map(
     stat_map=None,
     bg_map=None,
     hemi="left",
-    view="lateral",
+    view=None,
     engine="matplotlib",
     threshold=None,
     alpha=None,
     vmin=None,
     vmax=None,
-    cmap="cold_hot",
+    cmap="RdBu_r",
     colorbar=True,
     symmetric_cbar="auto",
     cbar_tick_format="auto",
@@ -1330,7 +1355,8 @@ def plot_surf_stat_map(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a Mesh, or a PolyMesh, or None
+                or a :obj:`~nilearn.surface.InMemoryMesh`, \
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1338,15 +1364,15 @@ def plot_surf_stat_map(
         coordinates of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes,
-        or a PolyMesh object,
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
+        and "faces" attributes, or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``surf_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and the mesh from
         that :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
-    stat_map : :obj:`str` or :class:`numpy.ndarray`
+    stat_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
         Statistical map to be displayed on the surface :term:`mesh`,
         can be a file
         (valid formats are .gii, .mgz, or
@@ -1362,7 +1388,7 @@ def plot_surf_stat_map(
              :obj:`~nilearn.surface.SurfaceImage` or None,\
              default=None
         Background image to be plotted on the :term:`mesh` underneath
-        the stat_map in greyscale, most likely a sulcal depth map
+        the stat_map in grayscale, most likely a sulcal depth map
         for realistic shading.
         If the map contains values outside [0, 1], it will be
         rescaled such that all values are in [0, 1]. Otherwise,
@@ -1399,6 +1425,7 @@ def plot_surf_stat_map(
         as transparent.
 
     %(cmap)s
+        default="RdBu_r"
 
     %(cbar_tick_format)s
         Default="auto" which will select:
@@ -1488,6 +1515,10 @@ def plot_surf_stat_map(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    # set default view to dorsal if hemi is both and view is not set
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+
     stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
     )
@@ -1652,7 +1683,7 @@ def _colorbar_from_array(
     if threshold is None:
         threshold = 0.0
 
-    # set colors to grey for absolute values < threshold
+    # set colors to gray for absolute values < threshold
     istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
     istop = int(norm(threshold, clip=True) * (cmap.N - 1))
     for i in range(istart, istop):
@@ -1684,7 +1715,7 @@ def plot_img_on_surf(
     vmax=None,
     threshold=None,
     symmetric_cbar="auto",
-    cmap="cold_hot",
+    cmap="RdBu_r",
     cbar_tick_format="%i",
     **kwargs,
 ):
@@ -1721,7 +1752,7 @@ def plot_img_on_surf(
 
     hemispheres : :obj:`list` of :obj:`str`, default=None
         Hemispheres to display.
-        Will default to ``['left', 'right']`` if ``None`` is passed.
+        Will default to ``['left', 'right']`` if ``None`` or "both" is passed.
 
     inflate : :obj:`bool`, default=False
         If True, display images in inflated brain.
@@ -1746,7 +1777,7 @@ def plot_img_on_surf(
     %(threshold)s
     %(symmetric_cbar)s
     %(cmap)s
-        Default='cold_hot'.
+        Default="RdBu_r".
     %(cbar_tick_format)s
     kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.
@@ -1762,7 +1793,7 @@ def plot_img_on_surf(
         accepted by plot_img_on_surf.
 
     """
-    if hemispheres is None:
+    if hemispheres in (None, "both"):
         hemispheres = ["left", "right"]
     if views is None:
         views = ["lateral", "medial"]
@@ -1775,7 +1806,7 @@ def plot_img_on_surf(
     stat_map = check_niimg_3d(stat_map, dtype="auto")
     modes = _check_views(views)
     hemis = _check_hemispheres(hemispheres)
-    surf_mesh = check_mesh(surf_mesh)
+    surf_mesh = check_mesh_is_fsaverage(surf_mesh)
 
     mesh_prefix = "infl" if inflate else "pial"
     surf = {
@@ -1880,11 +1911,10 @@ def plot_img_on_surf(
     if title is not None:
         fig.suptitle(title, y=1.0 - title_h / sum(height_ratios), va="bottom")
 
-    if output_file is not None:
-        fig.savefig(output_file, bbox_inches="tight")
-        plt.close(fig)
-    else:
+    if output_file is None:
         return fig, axes
+    fig.savefig(output_file, bbox_inches="tight")
+    plt.close(fig)
 
 
 @fill_doc
@@ -1893,7 +1923,7 @@ def plot_surf_roi(
     roi_map=None,
     bg_map=None,
     hemi="left",
-    view="lateral",
+    view=None,
     engine="matplotlib",
     avg_method=None,
     threshold=1e-14,
@@ -1918,7 +1948,8 @@ def plot_surf_roi(
     Parameters
     ----------
     surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a Mesh, or a PolyMesh, or None
+                or a :obj:`~nilearn.surface.InMemoryMesh`, \
+                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
         Surface :term:`mesh` geometry, can be a file (valid formats are
         .gii or Freesurfer specific files such as .orig, .pial,
         .sphere, .white, .inflated) or
@@ -1926,8 +1957,8 @@ def plot_surf_roi(
         of the :term:`mesh` :term:`vertices<vertex>`,
         the second containing the indices (into coords)
         of the :term:`mesh` :term:`faces`,
-        or a Mesh object with "coordinates" and "faces" attributes,
-        or a PolyMesh object,
+        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
+        and "faces" attributes, or a :obj:`~nilearn.surface.PolyMesh` object,
         or None.
         If None is passed, then ``surf_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
@@ -1956,7 +1987,7 @@ def plot_surf_roi(
              :obj:`~nilearn.surface.SurfaceImage` or None,\
              default=None
         Background image to be plotted on the :term:`mesh` underneath
-        the stat_map in greyscale, most likely a sulcal depth map for
+        the stat_map in grayscale, most likely a sulcal depth map for
         realistic shading.
         If the map contains values outside [0, 1], it will be
         rescaled such that all values are in [0, 1]. Otherwise,
@@ -1995,7 +2026,7 @@ def plot_surf_roi(
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
     threshold : a number or None, default=1e-14
-        Threshold regions that are labelled 0.
+        Threshold regions that are labeled 0.
         If you want to use 0 as a label, set threshold to None.
 
     %(cmap)s
@@ -2019,6 +2050,10 @@ def plot_surf_roi(
         .. note::
             This option is currently only implemented for the
             ``matplotlib`` engine.
+
+    %(vmin)s
+
+    %(vmax)s
 
     %(bg_on_data)s
 
@@ -2065,6 +2100,10 @@ def plot_surf_roi(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    # set default view to dorsal if hemi is both and view is not set
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+
     roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, bg_map
     )
@@ -2075,6 +2114,7 @@ def plot_surf_roi(
     # preload roi and mesh to determine vmin, vmax and give more useful error
     # messages in case of wrong inputs
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
     roi = load_surf_data(roi_map)
 
     idx_not_na = ~np.isnan(roi)
@@ -2090,7 +2130,7 @@ def plot_surf_roi(
             "roi_map can only have one dimension but has "
             f"{roi.ndim} dimensions"
         )
-    if roi.shape[0] != mesh[0].shape[0]:
+    if roi.shape[0] != mesh.n_vertices:
         raise ValueError(
             "roi_map does not have the same number of vertices "
             "as the mesh. If you have a list of indices for the "

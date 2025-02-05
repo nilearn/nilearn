@@ -6,7 +6,7 @@ from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.surface import SurfaceImage
-from nilearn.surface.surface import load_surf_data
+from nilearn.surface.surface import get_data, load_surf_data
 
 if is_plotly_installed():
     import plotly.graph_objects as go
@@ -24,9 +24,10 @@ class SurfaceFigure:
         Path to output file.
     """
 
-    def __init__(self, figure=None, output_file=None):
+    def __init__(self, figure=None, output_file=None, hemi="left"):
         self.figure = figure
         self.output_file = output_file
+        self.hemi = hemi
 
     def show(self):
         """Show the figure."""
@@ -44,8 +45,7 @@ class SurfaceFigure:
         if output_file is None:
             if self.output_file is None:
                 raise ValueError(
-                    "You must provide an output file "
-                    "name to save the figure."
+                    "You must provide an output file name to save the figure."
                 )
         else:
             self.output_file = output_file
@@ -90,7 +90,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             [self.figure._data[0].get(d) for d in ["x", "y", "z"]]
         ).T
 
-    def __init__(self, figure=None, output_file=None):
+    def __init__(self, figure=None, output_file=None, hemi="left"):
         if not is_plotly_installed():
             raise ImportError(
                 "Plotly is required to use `PlotlySurfaceFigure`."
@@ -101,7 +101,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             raise TypeError(
                 "`PlotlySurfaceFigure` accepts only plotly figure objects."
             )
-        super().__init__(figure=figure, output_file=output_file)
+        super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 
     def show(self, renderer="browser"):
         """Show the figure.
@@ -139,7 +139,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
         labels=None,
         lines=None,
         elevation=0.1,
-        hemi="left",
     ):
         """Draw boundaries around roi.
 
@@ -188,7 +187,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
             faces (triangles).
         """
         if isinstance(roi_map, SurfaceImage):
-            roi_map = roi_map.data.parts[hemi][:, 0]
+            assert len(roi_map.shape) == 1 or roi_map.shape[1] == 1
+            if self.hemi in ["left", "right"]:
+                roi_map = roi_map.data.parts[self.hemi]
+            elif self.hemi == "both":
+                roi_map = get_data(roi_map)
 
         if levels is None:
             levels = np.unique(roi_map)
@@ -198,11 +201,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
             lines = [None] * len(levels)
         elif len(lines) == 1 and len(levels) > 1:
             lines *= len(levels)
-        if not (len(levels) == len(labels)):
+        if len(levels) != len(labels):
             raise ValueError(
                 "levels and labels need to be either the same length or None."
             )
-        if not (len(levels) == len(lines)):
+        if len(levels) != len(lines):
             raise ValueError(
                 "levels and lines need to be either the same length or None."
             )
@@ -366,8 +369,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
                     centroids[remaining_vertices[shortest_idx]],
                     *vs[current_vertex],
                 )
-                if not any(
-                    v in idxs[current_vertex]
+                if all(
+                    v not in idxs[current_vertex]
                     for v in idxs[remaining_vertices[shortest_idx]]
                 ):
                     # this does not share vertex, so try again
@@ -403,10 +406,11 @@ class PlotlySurfaceFigure(SurfaceFigure):
             # vertex is very far away
             if remaining_distances[0, next_index] > last_distance * 3:
                 # close the current contour
-                sorted_vertices.append(centroids[prev_first])
                 # add triple of None, which is parsed by plotly
                 # as a signal to start a new closed contour
-                sorted_vertices.append(np.array([None] * 3))
+                sorted_vertices.extend(
+                    (centroids[prev_first], np.array([None] * 3))
+                )
                 # start the new contour
                 prev_first = closest_vertex
 

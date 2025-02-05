@@ -28,7 +28,7 @@ def expression_to_contrast_vector(expression, design_columns):
     expression : :obj:`str`
         The expression to convert to a vector.
 
-    design_columns : :obj:`list` or array of strings
+    design_columns : :obj:`list` or array of :obj:`str`
         The column names of the design matrix.
 
     """
@@ -235,10 +235,7 @@ class Contrast:
         self.variance = variance
         self.dof = float(dof)
         if dim is None:
-            if effect.ndim == 2:
-                self.dim = effect.shape[0]
-            else:
-                self.dim = 1
+            self.dim = effect.shape[0] if effect.ndim == 2 else 1
         else:
             self.dim = dim
 
@@ -393,7 +390,7 @@ class Contrast:
 
         Parameters
         ----------
-        baseline : :obj:`float`, optional, default=0.0
+        baseline : :obj:`float`, default=0.0
             Baseline value for the test statistic.
 
 
@@ -484,7 +481,7 @@ def compute_fixed_effects(
         The input variance images.
 
     mask : Nifti1Image or NiftiMasker instance or \
-        :obj:`~nilearn.maskers.SurfaceMasker` instance
+        :obj:`~nilearn.maskers.SurfaceMasker` instance \
         or None, default=None
         Mask image. If ``None``, it is recomputed from ``contrast_imgs``.
 

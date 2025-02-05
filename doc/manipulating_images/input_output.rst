@@ -18,7 +18,7 @@ File names and objects, 3D and 4D images
 
 All Nilearn functions accept file names as arguments:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import image
      smoothed_img = image.smooth_img('/home/user/t_map001.nii')
@@ -37,7 +37,7 @@ Niimgs can be 3D or 4D. A 4D niimg may for instance represent a time
 series of 3D images. It can be **a list of file names**, if these contain
 3D information:
 
-.. code-block:: default
+.. code-block:: python
 
      # dataset folder contains subject1.nii and subject2.nii
      from nilearn.image import smooth_img
@@ -55,29 +55,27 @@ File name matching: "globbing" and user path expansion
 You can specify files with *wildcard* matching patterns (as in Unix
 shell):
 
- * **Matching multiple files**: suppose the dataset folder contains
-   subject_01.nii, subject_03.nii, and subject_03.nii;
-   ``dataset/subject_*.nii`` is a glob expression matching all filenames:
+* **Matching multiple files**: suppose the dataset folder contains
+  subject_01.nii, subject_03.nii, and subject_03.nii;
+  ``dataset/subject_*.nii`` is a glob expression matching all filenames:
 
- .. code-block:: default
+.. code-block:: python
 
-    # Example with a smoothing process:
-    from nilearn.image import smooth_img
-    result_img = smooth_img("dataset/subject_*.nii")
+  # Example with a smoothing process:
+  from nilearn.image import smooth_img
+  result_img = smooth_img("dataset/subject_*.nii")
 
- Note that the resulting is a 4D image.
+Note that the resulting is a 4D image.
 
- * **Expanding the home directory** ``~`` is expanded to your home
-   directory:
+* **Expanding the home directory** ``~`` is expanded to your home directory:
 
- .. code-block:: default
+.. code-block:: python
 
-    result_img = smooth_img("~/dataset/subject_01.nii")
+  result_img = smooth_img("~/dataset/subject_01.nii")
 
- Using ``~`` rather than specifying the details of the path is good
- practice, as it will make it more likely that your script work on
- different computers.
-
+Using ``~`` rather than specifying the details of the path is good
+practice, as it will make it more likely that your script work on
+different computers.
 
 .. topic:: **Python globbing**
 
@@ -107,7 +105,7 @@ automatically downloads reference
 datasets and atlases. They can be imported from
 :mod:`nilearn.datasets`:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import datasets
      haxby_dataset = datasets.fetch_haxby()
@@ -116,7 +114,7 @@ They return a data structure that contains different pieces of
 information on the retrieved dataset, including the
 file names on hard disk:
 
-.. code-block:: default
+.. code-block:: python
 
      # The different files
      print(sorted(list(haxby_dataset.keys())))
@@ -129,7 +127,7 @@ file names on hard disk:
 Explanation and further resources of the dataset at hand can be retrieved as
 follows:
 
-.. code-block:: default
+.. code-block:: python
 
      print(haxby_dataset.description)
      # Haxby 2001 results
@@ -154,10 +152,10 @@ follows:
     They save it locally for future use, in one of the
     following directories (in order of priority, if present):
 
-     * the folder specified by `data_dir` parameter in the fetching function
-     * the global environment variable `NILEARN_SHARED_DATA`
-     * the user environment variable `NILEARN_DATA`
-     * the `nilearn_data` folder in the user home folder
+    * the folder specified by `data_dir` parameter in the fetching function
+    * the global environment variable `NILEARN_SHARED_DATA`
+    * the user environment variable `NILEARN_DATA`
+    * the `nilearn_data` folder in the user home folder
 
     The two different environment variables (NILEARN_SHARED_DATA and
     NILEARN_DATA) are provided for multi-user systems, to distinguish a
@@ -219,10 +217,10 @@ with ``get_affine()`` and ``get_header()``.
 
     - a big 4D matrix representing (3D MRI + 1D for time), stored in a single
       Nifti file.
-      `FSL <https://fsl.fmrib.ox.ac.uk/fsl/>`_ users tend to
+      `FSL <https://fsl.fmrib.ox.ac.uk/fsl/docs/>`_ users tend to
       prefer this format.
     - several 3D matrices representing each time point (single 3D volume) of the
-      run, stored in set of 3D Nifti or analyse files.
+      run, stored in set of 3D Nifti or analyze files.
       `SPM <https://www.fil.ion.ucl.ac.uk/spm/>`_ users tend
       to prefer this format.
 
@@ -236,17 +234,18 @@ objects":
 
 **Niimg:** A Niimg-like object can be one of the following:
 
-  * A string or pathlib.Path object with a file path to a Nifti or Analyse image
-  * An ``SpatialImage`` from nibabel, ie an object exposing ``get_fdata()``
-    method and ``affine`` attribute, typically a ``Nifti1Image`` from nibabel_.
+* A string or pathlib.Path object with a file path to a Nifti or Analyze image
+
+* An ``SpatialImage`` from nibabel, ie an object exposing ``get_fdata()``
+  method and ``affine`` attribute, typically a ``Nifti1Image`` from nibabel_.
 
 **Niimg-4D:** Similarly, some functions require 4D Nifti-like
 data, which we call Niimgs or Niimg-4D. Accepted input arguments are:
 
-  * A path to a 4D Nifti image
-  * List of paths to 3D Nifti images
-  * 4D Nifti-like object
-  * List of 3D Nifti-like objects
+* A path to a 4D Nifti image
+* List of paths to 3D Nifti images
+* 4D Nifti-like object
+* List of 3D Nifti-like objects
 
 .. topic:: **Image affines**
 
@@ -274,7 +273,7 @@ can be loaded with ``pd.read_csv`` but you may have to specify some options
 For the Haxby datasets, we can load the categories of the images
 presented to the subject:
 
-.. code-block:: default
+.. code-block:: python
 
      from nilearn import datasets
      haxby_dataset = datasets.fetch_haxby()

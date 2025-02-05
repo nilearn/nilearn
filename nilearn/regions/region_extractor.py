@@ -4,11 +4,11 @@ import collections.abc
 import numbers
 
 import numpy as np
-from joblib import Memory
 from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
 from nilearn.maskers import NiftiMapsMasker
+from nilearn.masking import load_mask_img
 
 from .. import masking
 from .._utils import check_niimg, check_niimg_3d, check_niimg_4d, fill_doc
@@ -166,7 +166,7 @@ def connected_regions(
 
         Default=6.
 
-    mask_img : Niimg-like object, optional
+    mask_img : Niimg-like object, default=None
         If given, mask image is applied to input data.
         If None, no masking is applied.
 
@@ -275,7 +275,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     Parameters
     ----------
-    maps_img : 4D Niimg-like object
+    maps_img : 4D Niimg-like object or None, default=None
         Image containing a set of whole brain atlas maps or statistically
         decomposed brain maps.
 
@@ -310,6 +310,13 @@ class RegionExtractor(NiftiMapsMasker):
         intensities across all maps. A value given in `threshold`
         parameter indicates that we keep only those voxels which have
         intensities more than this value.
+
+    two_sided : :obj:`bool`, default=False
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+
+        .. versionadded:: 0.11.1
+
     %(extractor)s
     %(smoothing_fwhm)s
         Use this parameter to smooth an image
@@ -384,11 +391,12 @@ class RegionExtractor(NiftiMapsMasker):
 
     def __init__(
         self,
-        maps_img,
+        maps_img=None,
         mask_img=None,
         min_region_size=1350,
         threshold=1.0,
         thresholding_strategy="ratio_n_voxels",
+        two_sided=False,
         extractor="local_regions",
         smoothing_fwhm=6,
         standardize=False,
@@ -401,8 +409,6 @@ class RegionExtractor(NiftiMapsMasker):
         memory_level=0,
         verbose=0,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             maps_img=maps_img,
             mask_img=mask_img,
@@ -421,6 +427,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.min_region_size = min_region_size
         self.thresholding_strategy = thresholding_strategy
         self.threshold = threshold
+        self.two_sided = two_sided
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
@@ -431,6 +438,11 @@ class RegionExtractor(NiftiMapsMasker):
     ):
         """Prepare the data and setup for the region extraction."""
         maps_img = check_niimg_4d(self.maps_img)
+
+        # Check mask
+        if self.mask_img is not None:
+            self.mask_img = check_niimg_3d(self.mask_img)
+            load_mask_img(self.mask_img)
 
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
         if self.thresholding_strategy not in list_of_strategies:
@@ -460,6 +472,7 @@ class RegionExtractor(NiftiMapsMasker):
                     mask_img=self.mask_img,
                     copy=True,
                     threshold=self.threshold,
+                    two_sided=self.two_sided,
                     copy_header=True,
                 )
 
@@ -493,7 +506,7 @@ def connected_label_regions(
         A 3D image which contains regions denoted as labels. Each region
         is assigned with integers.
 
-    min_size : :obj:`float`, optional
+    min_size : :obj:`float`, default=None
         Minimum region size (in mm^3) in volume required
         to keep after extraction.
         Removes small or spurious regions.
@@ -504,7 +517,8 @@ def connected_label_regions(
         False, two voxels are considered connected only if they are within the
         same x, y, or z direction.
 
-    labels : 1D :class:`numpy.ndarray` or :obj:`list` of :obj:`str`, optional
+    labels : 1D :class:`numpy.ndarray` or :obj:`list` of :obj:`str`, \
+        default=None
         Each string in a list or array denote the name of the brain atlas
         regions given in labels_img input. If provided, same names will be
         re-assigned corresponding to each connected component based extraction
@@ -584,18 +598,18 @@ def connected_label_regions(
 
     this_labels = [None] * len(unique_labels) if labels is None else labels
 
-    new_labels_data = np.zeros(labels_data.shape, dtype=int)
+    new_labels_data = np.zeros(labels_data.shape, dtype=np.int32)
     current_max_label = 0
     for label_id, name in zip(unique_labels, this_labels):
         this_label_mask = labels_data == label_id
         # Extract regions assigned to each label id
         if connect_diag:
-            structure = np.ones((3, 3, 3), dtype=int)
+            structure = np.ones((3, 3, 3), dtype=np.int32)
             regions, this_n_labels = label(
-                this_label_mask.astype(int), structure=structure
+                this_label_mask.astype(np.int32), structure=structure
             )
         else:
-            regions, this_n_labels = label(this_label_mask.astype(int))
+            regions, this_n_labels = label(this_label_mask.astype(np.int32))
 
         if min_size is not None:
             regions = _remove_small_regions(regions, affine, min_size=min_size)

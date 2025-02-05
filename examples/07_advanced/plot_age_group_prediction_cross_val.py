@@ -100,7 +100,7 @@ param_grid = [
 from sklearn.model_selection import StratifiedShuffleSplit
 from sklearn.preprocessing import LabelEncoder
 
-groups = [pheno["Child_Adult"] for pheno in development_dataset.phenotypic]
+groups = development_dataset.phenotypic["Child_Adult"].to_list()
 classes = LabelEncoder().fit_transform(groups)
 
 cv = StratifiedShuffleSplit(n_splits=30, random_state=0, test_size=10)
@@ -144,4 +144,4 @@ plt.show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

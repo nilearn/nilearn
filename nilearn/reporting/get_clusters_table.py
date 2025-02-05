@@ -102,8 +102,12 @@ def _identify_subpeaks(data):
     )
     if np.any(subpeaks_outside_cluster):
         warnings.warn(
-            "Attention: At least one of the (sub)peaks falls outside of the "
-            "cluster body. Identifying the nearest in-cluster voxel."
+            (
+                "Attention: At least one of the (sub)peaks "
+                "falls outside of the cluster body. "
+                "Identifying the nearest in-cluster voxel."
+            ),
+            stacklevel=4,
         )
         # Replace centers of mass with their nearest neighbor points in the
         # corresponding clusters. Note this is also equivalent to computing the
@@ -250,7 +254,7 @@ def get_clusters_table(
         Whether to employ two-sided thresholding or to evaluate positive values
         only.
 
-    min_distance : :obj:`float`, default=8
+    min_distance : :obj:`float`, default=8.0
         Minimum distance between subpeaks, in millimeters.
 
         .. note::
@@ -314,7 +318,7 @@ def get_clusters_table(
     stat_map = safe_get_data(
         stat_img,
         ensure_finite=True,
-        copy_data=(cluster_threshold is not None),
+        copy_data=(cluster_threshold != 0),
     )
 
     # Define array for 6-connectivity, aka NN1 or "faces"
@@ -338,7 +342,7 @@ def get_clusters_table(
         if np.sum(binarized) == 0:
             warnings.warn(
                 "Attention: No clusters "
-                f'with stat {"higher" if sign == 1 else "lower"} '
+                f"with stat {'higher' if sign == 1 else 'lower'} "
                 f"than {stat_threshold * sign}",
                 category=UserWarning,
                 stacklevel=2,

@@ -8,18 +8,17 @@ import warnings
 import numpy as np
 from scipy.ndimage import center_of_mass, find_objects, label
 
-from nilearn.image import get_data
-
-from .._utils import check_niimg_3d, check_niimg_4d
-from .._utils.extmath import fast_abs_percentile
-from .._utils.ndimage import largest_connected_component
-from .._utils.niimg import safe_get_data
-from .._utils.numpy_conversions import as_ndarray
+from nilearn._utils import check_niimg_3d, check_niimg_4d
+from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.ndimage import largest_connected_component
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.numpy_conversions import as_ndarray
 
 # Local imports
-from ..image import iter_img, new_img_like, reorder_img
-from ..image.image import smooth_array
-from ..image.resampling import coord_transform, get_mask_bounds
+from nilearn.image import get_data, iter_img, new_img_like, reorder_img
+from nilearn.image.image import smooth_array
+from nilearn.image.resampling import coord_transform, get_mask_bounds
+from nilearn.plotting._utils import _check_threshold
 
 ###############################################################################
 # Functions for automatic choice of cuts coordinates
@@ -55,7 +54,12 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     z : :obj:`float`
         The z world coordinate.
 
+    Raises
+    ------
+    ValueError
+        if the specified threshold is a negative number
     """
+    _check_threshold(activation_threshold)
     # if a pseudo-4D image or several images were passed (cf. #922),
     # we reduce to a single 3D image to find the coordinates
     img = check_niimg_3d(img)
@@ -228,9 +232,7 @@ def _transform_cut_coords(cut_coords, direction, affine):
     """
     # make kwargs
     axis = "xyz".index(direction)
-    kwargs = {}
-    for name in "xyz":
-        kwargs[name] = np.zeros(len(cut_coords))
+    kwargs = {name: np.zeros(len(cut_coords)) for name in "xyz"}
     kwargs[direction] = cut_coords
     kwargs["affine"] = affine
 

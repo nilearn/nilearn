@@ -10,6 +10,8 @@ Order of tests from top to bottom:
 
 """
 
+# ruff: noqa: ARG001
+
 # Author: Andres Hoyos-Idrobo
 #         Binh Nguyen
 #         Thomas Bazeiile
@@ -21,11 +23,9 @@ import warnings
 
 import numpy as np
 import pytest
-import sklearn
 from nibabel import save
 from numpy.testing import assert_array_almost_equal
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
+from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
@@ -43,22 +43,30 @@ from sklearn.metrics import (
     r2_score,
     roc_auc_score,
 )
-from sklearn.model_selection import KFold, LeaveOneGroupOut, ParameterGrid
-from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import (
+    KFold,
+    LeaveOneGroupOut,
+    ParameterGrid,
+    StratifiedKFold,
+)
+from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
-from nilearn._utils import compare_version
 from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.param_validation import (
     _get_mask_extent,
     check_feature_screening,
 )
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _rng
-from nilearn.decoding.decoder import (
+from nilearn.decoding import (
     Decoder,
     DecoderRegressor,
     FREMClassifier,
     FREMRegressor,
+)
+from nilearn.decoding.decoder import (
+    SUPPORTED_ESTIMATORS,
     _BaseDecoder,
     _check_estimator,
     _check_param_grid,
@@ -74,6 +82,7 @@ ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
+    "check_no_attributes_set_in_init",
 ]
 
 
@@ -81,13 +90,10 @@ extra_valid_checks = [
     "estimator, check, name",
     check_estimator(
         estimator=[DecoderRegressor()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_decoder_regressor(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -97,14 +103,11 @@ def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG
     "estimator, check, name",
     check_estimator(
         estimator=[DecoderRegressor()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
-def test_check_estimator_invalid_decoder_regressor(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid_decoder_regressor(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -116,7 +119,7 @@ def test_check_estimator_invalid_decoder_regressor(estimator, check, name):  # n
         extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_frem_regressor(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -130,7 +133,7 @@ def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
         extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid_frem_regressor(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -139,14 +142,10 @@ def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa
     "estimator, check, name",
     check_estimator(
         estimator=[Decoder()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_decoder(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -156,15 +155,11 @@ def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[Decoder()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
-def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid_decoder(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -172,15 +167,10 @@ def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG00
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[_BaseDecoder()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
-        ],
+        estimator=[_BaseDecoder()], extra_valid_checks=extra_valid_checks
     ),
 )
-def test_check_estimator_base_decoder(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_base_decoder(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -190,15 +180,11 @@ def test_check_estimator_base_decoder(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[_BaseDecoder()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
-def test_check_estimator_invalid_base_decoder(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid_base_decoder(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -207,13 +193,10 @@ def test_check_estimator_invalid_base_decoder(estimator, check, name):  # noqa: 
     "estimator, check, name",
     check_estimator(
         estimator=[FREMClassifier()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-        ],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_frem_classifier(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -223,14 +206,11 @@ def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG00
     "estimator, check, name",
     check_estimator(
         estimator=[FREMClassifier()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-        ],
+        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
-def test_check_estimator_invalid_frem_classifier(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid_frem_classifier(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -561,7 +541,6 @@ def test_parallel_fit(rand_x_y):
                     train=train,
                     test=test,
                     param_grid=param_grid,
-                    is_classification=False,
                     scorer=scorer,
                     mask_img=None,
                     class_index=1,
@@ -641,7 +620,6 @@ def test_parallel_fit_builtin_cv(
         train=train,
         test=test,
         param_grid=param_grid,
-        is_classification=is_classification,
         scorer=scorer,
         mask_img=None,
         class_index=1,
@@ -659,13 +637,13 @@ def test_decoder_param_grid_sequence(binary_classification_data):
         {
             "penalty": ["l2"],
             "C": [100, 1000],
-            "random_state": [42],  # fix the seed for consistent behaviour
+            "random_state": [42],  # fix the seed for consistent behavior
         },
         {
             "penalty": ["l1"],
             "dual": [False],  # "dual" is not in the first dict
             "C": [100, 10],
-            "random_state": [42],  # fix the seed for consistent behaviour
+            "random_state": [42],  # fix the seed for consistent behavior
         },
     ]
 
@@ -862,18 +840,11 @@ def test_decoder_error_unknown_scoring_metrics(
 
     model = Decoder(estimator=dummy_classifier, mask=mask, scoring="foo")
 
-    if compare_version(sklearn.__version__, ">", "1.2.2"):
-        with pytest.raises(
-            ValueError,
-            match="The 'scoring' parameter of check_scoring "
-            "must be a str among",
-        ):
-            model.fit(X, y)
-    else:
-        with pytest.raises(
-            ValueError, match="'foo' is not a valid scoring value"
-        ):
-            model.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match="The 'scoring' parameter of check_scoring must be a str among",
+    ):
+        model.fit(X, y)
 
 
 def test_decoder_dummy_classifier_default_scoring():
@@ -1175,8 +1146,7 @@ def test_decoder_tags_classification():
     model = Decoder()
     # TODO
     # remove if block when bumping sklearn_version to > 1.5
-    ver = parse(sklearn_version)
-    if ver.release[1] < 6:
+    if SKLEARN_LT_1_6:
         assert model.__sklearn_tags__()["require_y"] is True
     else:
         assert model.__sklearn_tags__().target_tags.required is True
@@ -1186,8 +1156,7 @@ def test_decoder_tags_regression():
     """Check value returned by _more_tags."""
     model = DecoderRegressor()
     # remove if block when bumping sklearn_version to > 1.5
-    ver = parse(sklearn_version)
-    if ver.release[1] < 6:
+    if SKLEARN_LT_1_6:
         assert model.__sklearn_tags__()["multioutput"] is True
     else:
         assert model.__sklearn_tags__().target_tags.multi_output is True
@@ -1243,17 +1212,17 @@ def test_decoder_decision_function_raises_value_error(
 
 
 @pytest.fixture()
-def _make_surface_class_data(rng, surf_img, shape=50):
+def _make_surface_class_data(rng, surf_img_2d, n_samples=50):
     """Create a surface image classification for testing."""
-    y = rng.choice([0, 1], size=shape)
-    return surf_img(shape), y
+    y = rng.choice([0, 1], size=n_samples)
+    return surf_img_2d(n_samples), y
 
 
 @pytest.fixture()
-def _make_surface_reg_data(rng, surf_img, shape=50):
+def _make_surface_reg_data(rng, surf_img_2d, n_samples=50):
     """Create a surface image regression for testing."""
-    y = rng.random(shape)
-    return surf_img(shape), y
+    y = rng.random(n_samples)
+    return surf_img_2d(n_samples), y
 
 
 @pytest.mark.filterwarnings("ignore:Overriding provided")
@@ -1297,9 +1266,12 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
         assert model.screening_percentile_ == perc
 
 
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
 def test_decoder_adjust_screening_lessthan_mask_surface(
-    surf_mask,
+    surf_mask_dim,
+    surf_mask_1d,
+    surf_mask_2d,
     _make_surface_class_data,
     screening_percentile=30,
 ):
@@ -1307,12 +1279,13 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
     the mesh size, it is adjusted to the ratio of mesh to mask.
     """
     img, y = _make_surface_class_data
-    mask_n_vertices = _get_mask_extent(surf_mask())
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+    mask_n_vertices = _get_mask_extent(surf_mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
     assert screening_percentile <= mask_to_mesh_ratio
     decoder = Decoder(
-        mask=surf_mask(),
+        mask=surf_mask,
         param_grid={"C": [0.01, 0.1]},
         cv=3,
         screening_percentile=screening_percentile,
@@ -1324,9 +1297,12 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
     )
 
 
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
 def test_decoder_adjust_screening_greaterthan_mask_surface(
-    surf_mask,
+    surf_mask_dim,
+    surf_mask_1d,
+    surf_mask_2d,
     _make_surface_class_data,
     screening_percentile=80,
 ):
@@ -1334,12 +1310,13 @@ def test_decoder_adjust_screening_greaterthan_mask_surface(
     size, it is changed to 100% of mask.
     """
     img, y = _make_surface_class_data
-    mask_n_vertices = _get_mask_extent(surf_mask())
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+    mask_n_vertices = _get_mask_extent(surf_mask)
     mesh_n_vertices = img.mesh.n_vertices
     mask_to_mesh_ratio = (mask_n_vertices / mesh_n_vertices) * 100
     assert screening_percentile > mask_to_mesh_ratio
     decoder = Decoder(
-        mask=surf_mask(),
+        mask=surf_mask_1d,
         param_grid={"C": [0.01, 0.1]},
         cv=3,
         screening_percentile=screening_percentile,
@@ -1362,14 +1339,20 @@ def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
 
 
 @pytest.mark.filterwarnings("ignore:After clustering and screening")
+@pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_fit_surface_with_mask_image(
-    _make_surface_class_data, decoder, surf_mask
+    _make_surface_class_data,
+    decoder,
+    surf_mask_dim,
+    surf_mask_1d,
+    surf_mask_2d,
 ):
     """Test fit for surface image."""
     warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data
-    model = decoder(mask=surf_mask())
+    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
+    model = decoder(mask=surf_mask)
     model.fit(X, y)
 
     assert model.coef_ is not None
@@ -1378,11 +1361,11 @@ def test_decoder_fit_surface_with_mask_image(
 @pytest.mark.filterwarnings("ignore:Overriding provided")
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_error_incompatible_surface_mask_and_volume_data(
-    decoder, surf_mask, tiny_binary_classification_data
+    decoder, surf_mask_1d, tiny_binary_classification_data
 ):
     """Test error when fitting volume data with a surface mask."""
     data_volume, y, _ = tiny_binary_classification_data
-    model = decoder(mask=surf_mask())
+    model = decoder(mask=surf_mask_1d)
 
     with pytest.raises(
         TypeError, match="Mask and images to fit must be of compatible types."
@@ -1452,9 +1435,160 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
 def test_frem_decoder_fit_surface(
     frem,
     _make_surface_class_data,
-    surf_mask,
+    surf_mask_1d,
 ):
     """Test fit for using FREM decoding with surface image."""
     X, y = _make_surface_class_data
-    model = frem(mask=surf_mask(), clustering_percentile=90)
+    model = frem(mask=surf_mask_1d, clustering_percentile=90)
     model.fit(X, y)
+
+
+# ------------------------ test decoder vs sklearn -------------------------- #
+
+
+@pytest.mark.parametrize(
+    "classifier_penalty",
+    ["svc_l1", "svc_l2", "logistic_l1", "logistic_l2", "ridge_classifier"],
+)
+def test_decoder_vs_sklearn(
+    classifier_penalty, strings_to_sklearn=SUPPORTED_ESTIMATORS
+):
+    """Compare scores from nilearn Decoder with sklearn classifiers."""
+    X, y, mask = _make_multiclass_classification_test_data(
+        n_samples=100, dim=10
+    )
+    n_classes = len(np.unique(y))
+    # default cross-validation in nilearn is StratifiedKFold
+    # with 10 splits
+    cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+    # default scoring is accuracy
+    scorer = check_scoring(strings_to_sklearn[classifier_penalty], "accuracy")
+
+    ## nilearn decoding
+    nilearn_decoder = Decoder(
+        estimator=classifier_penalty,
+        mask=mask,
+        standardize=True,
+        cv=cv,
+        scoring=scorer,
+        screening_percentile=100,  # disable screening
+    )
+    nilearn_decoder.fit(X, y)
+    scores_nilearn = nilearn_decoder.cv_scores_
+
+    ## start decoding with sklearn
+    masker = NiftiMasker(mask_img=mask, standardize=True)
+    X_transformed = masker.fit_transform(X)
+
+    sklearn_classifier = strings_to_sklearn[classifier_penalty]
+    scores_sklearn = {c: [] for c in range(n_classes)}
+    # convert multiclass to n_classes binary classifications
+    label_binarizer = LabelBinarizer()
+    y_binary = label_binarizer.fit_transform(y)
+    for klass in range(n_classes):
+        for count, (train_idx, test_idx) in enumerate(
+            cv.split(X_transformed, y)
+        ):
+            X_train, X_test = X_transformed[train_idx], X_transformed[test_idx]
+            y_train, y_test = (
+                y_binary[train_idx, klass],
+                y_binary[test_idx, klass],
+            )
+            # set best hyperparameters for each fold
+            if classifier_penalty in ["svc_l1", "svc_l2"]:
+                # LinearSVC does not have a CV variant, so we use exactly the
+                # parameter selected by nilearn
+                sklearn_classifier = clone(sklearn_classifier).set_params(
+                    C=nilearn_decoder.cv_params_[klass]["C"][count]
+                )
+            elif classifier_penalty in ["logistic_l1", "logistic_l2"]:
+                # this sets the list of Cs as coded within nilearn and
+                # LogisticRegressionCV will select the best one using
+                # cross-validation
+                sklearn_classifier = clone(sklearn_classifier).set_params(
+                    Cs=nilearn_decoder.cv_params_[klass]["Cs"][count],
+                )
+            elif classifier_penalty in ["ridge_classifier"]:
+                # same as logistic regression
+                sklearn_classifier = clone(sklearn_classifier).set_params(
+                    alphas=nilearn_decoder.cv_params_[klass]["alphas"][count]
+                )
+            sklearn_classifier.fit(X_train, y_train)
+            score = scorer(sklearn_classifier, X_test, y_test)
+            scores_sklearn[klass].append(score)
+
+    # Flatten scores
+    flat_sklearn_scores = np.concatenate(list(scores_sklearn.values()))
+    flat_nilearn_scores = np.concatenate(list(scores_nilearn.values()))
+
+    # check average scores are within 2% of each other
+    assert np.isclose(
+        np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores), atol=0.02
+    )
+
+
+@pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
+def test_regressor_vs_sklearn(
+    regressor, strings_to_sklearn=SUPPORTED_ESTIMATORS
+):
+    """Compare scores from nilearn DecoderRegressor with sklearn regressors."""
+    X, y, mask = _make_regression_test_data(n_samples=100, dim=10)
+    # for regression default cv in nilearn is KFold with 10 splits
+    # shuffling is False by default but we use it here with a fixed seed
+    # to reduce variability in the test
+    cv = KFold(n_splits=10, shuffle=True, random_state=42)
+    # r2 is the default scoring for regression
+    scorer = check_scoring(strings_to_sklearn[regressor], "r2")
+
+    ## nilearn decoding
+    nilearn_regressor = DecoderRegressor(
+        estimator=regressor,
+        mask=mask,
+        standardize=True,
+        cv=cv,
+        scoring=scorer,
+        screening_percentile=100,  # disable screening
+    )
+    nilearn_regressor.fit(X, y)
+    scores_nilearn = nilearn_regressor.cv_scores_["beta"]
+
+    ## start decoding with sklearn
+    masker = NiftiMasker(mask_img=mask, standardize=True)
+    X_transformed = masker.fit_transform(X)
+
+    sklearn_regressor = strings_to_sklearn[regressor]
+    scores_sklearn = []
+
+    for count, (train_idx, test_idx) in enumerate(cv.split(X_transformed, y)):
+        X_train, X_test = X_transformed[train_idx], X_transformed[test_idx]
+        y_train, y_test = (y[train_idx], y[test_idx])
+        # set best hyperparameters for each fold
+        if regressor == "svr":
+            # SVR does not have a CV variant, so we use exactly the
+            # parameter selected by nilearn
+            sklearn_regressor = clone(sklearn_regressor).set_params(
+                C=nilearn_regressor.cv_params_["beta"]["C"][count]
+            )
+        elif regressor == "lasso":
+            # this sets n_alphas as coded within nilearn and
+            # LassoCV will select the best one using cross-validation
+            sklearn_regressor = clone(sklearn_regressor).set_params(
+                n_alphas=nilearn_regressor.cv_params_["beta"]["n_alphas"][
+                    count
+                ],
+            )
+        elif regressor in ["ridge"]:
+            # same as lasso but with alphas
+            sklearn_regressor = clone(sklearn_regressor).set_params(
+                alphas=nilearn_regressor.cv_params_["beta"]["alphas"][count]
+            )
+        sklearn_regressor.fit(X_train, y_train)
+        score = scorer(sklearn_regressor, X_test, y_test)
+        scores_sklearn.append(score)
+
+    # check average scores are within 1% of each other
+    assert np.isclose(
+        np.mean(scores_sklearn), np.mean(scores_nilearn), atol=0.01
+    )
+    # also check individual scores are within 1% of each other
+    assert np.allclose(scores_sklearn, scores_nilearn, atol=0.01)

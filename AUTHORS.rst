@@ -59,7 +59,7 @@ Some other past or present contributors are:
 * `Alexandre Sayal`_: CIBIT, University of Coimbra, Portugal
 * `Alexis Thual`_: Inria, Saclay, France
 * `Alisha Kodibagkar`_: MIT McGovern Institute, Cambridge, Massachusetts, United States
-* `Amadeus Kanaan`_
+* Amadeus Kanaan
 * `Ana Luisa Pinho`_: Western University, London, Ontario, Canada
 * `Anand Joshi`_: University of Southern California, Los Angeles, California, United States
 * `Andrés Hoyos Idrobo`_: Rakuten, France
@@ -106,6 +106,7 @@ Some other past or present contributors are:
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: Inria, Saclay, France
 * `Ian Abenes`_
+* `Idrissa Traore`_: IMT Atlantique, Brest, France
 * `Jake Vogel`_: Department of Clinical Sciences, SciLifeLab, Lund University, Lund, Sweden
 * `Jan Margeta`_: KardioMe, Nova Dubnica, Slovakia
 * `Jaques Grobler`_: Anyline GmbH, Vienna, Austria
@@ -197,6 +198,7 @@ Some other past or present contributors are:
 * `Tarun Samanta`_: Acharya Prafulla Chandra College
 * `Taylor Salo`_: Lifespan Informatics & Neuroimaging Center, University of Pennsylvania, USA
 * `Tharun K`_
+* `Thiti Premrudeepreechacharn`_
 * `Thomas Bazeille`_: Inria, Saclay, France
 * `Tom Vanasse`_: Wisconsin Institute for Sleep and Consciousness, USA
 * `Vasco Diogo`_
@@ -223,15 +225,15 @@ Funding
 `Mehdi Rahim`_, `Philippe Gervais`_ were paid by the
 :inria:`NiConnect <parietal/research/spatial_patterns/niconnect/>`.
 project, funded by the French `Investissement d'Avenir
-<https://www.gouvernement.fr/investissements-d-avenir-cgi>`_.
+<https://www.info.gouv.fr/organisation/secretariat-general-pour-l-investissement-sgpi>`_.
 
 `Kshitij Chawla`_ was paid by `INRIA <https://www.inria.fr/en>`_.
 
 `Yasmin Mzayek`_ and `Nicolas Gensollen`_ were paid by the `Human Brain Project <https://www.humanbrainproject.eu/en/>`_
 |HBP logo|.
 
-NiLearn is also supported by `DigiCosme <https://digicosme.lri.fr>`_
-|digicosme logo| and `DataIA <https://dataia.eu/en>`_ |dataia_logo|.
+NiLearn is also supported by `DigiCosme <https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/>`_
+|digicosme logo| and `DataIA <https://www.dataia.eu/en>`_ |dataia_logo|.
 
 .. _citing:
 
@@ -251,7 +253,7 @@ If you want to cite Nilearn, we suggest you do it using our Zenodo DOI:
     }
 
 Nilearn's Research Resource Identifier (RRID) is:
-`RRID:SCR_001362 <https://scicrunch.org/resources/data/record/nlx_144509-1/SCR_001362/resolver?q=nilearn&l=nilearn&i=rrid:scr_001362>`_
+`RRID:SCR_001362 <https://rrid.site/data/record/nlx_144509-1/SCR_001362/resolver?q=nilearn&l=nilearn&i=rrid:scr_001362>`_
 
 There is no paper published about nilearn.
 However, the patterns underlying the package have been described in:

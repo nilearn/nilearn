@@ -7,8 +7,8 @@ from importlib import import_module
 from pathlib import Path
 
 from nilearn._utils.helpers import (  # noqa: F401
-    _constrained_layout_kwargs,
     compare_version,
+    constrained_layout_kwargs,
     remove_parameters,
     rename_parameters,
     stringify_path,
