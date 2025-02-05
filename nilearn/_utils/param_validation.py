@@ -366,10 +366,46 @@ def _cast_to_int32(sample_mask):
 
 
 def check_params(fn_dict):
-    """Check types of inputs passed to a function/method.
+    """Check types of inputs passed to a function / method / class.
 
-    Rely on types declared in nilearn.typing to do this.
+    This function checks the types of function / method parameters or
+    the attributes of the class.
+
+    This function is made to check the types of the parameters
+    described in ``nilearn._utils.docs``
+    that are shared by many functions / methods / class
+    and thus ensure a generic way to do input validation
+    in several important points in the code base.
+
+    In most cases this means that this function can be used
+    on functions / classes that have the ``@fill_doc`` decorator,
+    or whose doc string uses parameter templates
+    (for example ``%(data_dir)s``).
+
+    If the function cannot (yet) check any of the parameters / attributes,
+    it will throw an error to say that its use is not needed.
+
+    Typical usage:
+
+    .. code-block:: python
+
+        def some_function(param_1, param_2="a"):
+            check_params(locals())
+            ...
+
+        Class MyClass:
+            def __init__(param_1, param_2="a")
+            ...
+
+            def fit(X):
+                # check attributes of the class instance
+                check_params(self.__dict__)
+                # check parameters passed to the method
+                check_params(locals())
+
     """
+    # dictionary that matches a given parameter / attribute name
+    # to a type
     type_map = {
         "data_dir": nil_typing.DataDir,
         "high_pass": nil_typing.HighPass,
