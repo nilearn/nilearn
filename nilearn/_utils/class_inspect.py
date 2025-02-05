@@ -204,7 +204,7 @@ def nilearn_check_estimator(estimator):
         is_masker = getattr(tags.input_tags, "masker", False)
         surf_img_input = getattr(tags.input_tags, "surf_img", False)
 
-    yield (clone(estimator), check_estimator_fitted)
+    yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
 
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
@@ -261,12 +261,12 @@ def _not_fitted_error_message(estimator):
     )
 
 
-def check_estimator_fitted(estimator):
+def check_estimator_has_sklearn_is_fitted(estimator):
     """Check appropriate response to check_fitted from sklearn before fitting.
 
     check that before fitting
-    - masker has a __sklearn_is_fitted__ method
-    - running sklearn check_fitted on masker throws an error
+    - estimator has a __sklearn_is_fitted__ method
+    - running sklearn check_is_fitted on estimator throws an error
     """
     import pytest
 
