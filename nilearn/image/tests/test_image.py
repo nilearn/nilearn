@@ -1002,7 +1002,6 @@ def test_threshold_img_with_mask(
         mask_img=mask_img,
         threshold=threshold,
         two_sided=two_sided,
-        copy=True,
         copy_header=True,
     )
 
@@ -1032,7 +1031,6 @@ def test_threshold_img_with_cluster_threshold(
         threshold=threshold,
         two_sided=two_sided,
         cluster_threshold=cluster_threshold,
-        copy=True,
         copy_header=True,
     )
 
@@ -1048,11 +1046,19 @@ def test_threshold_img_threshold_n_clusters(stat_img_test_data):
         threshold=2,
         two_sided=True,
         cluster_threshold=5,
-        copy=True,
         copy_header=True,
     )
 
     assert np.sum(thr_img.get_fdata() == 4) == 8
+
+
+@pytest.mark.parametrize("copy", [True, False])
+def test_threshold_img_copy_smoke(shape_3d_default, surf_img_1d, copy):
+    """Smoke test that copy can be used for both surface and volume."""
+    vol_img, _ = generate_maps(shape_3d_default, n_regions=2)
+    threshold_img(vol_img, threshold=1, copy=copy)
+
+    threshold_img(surf_img_1d, threshold=1, copy=copy)
 
 
 def test_threshold_img_copy(img_4d_ones_eye):

@@ -1024,7 +1024,8 @@ def threshold_img(
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
+    :obj:`~nibabel.nifti1.Nifti1Image` \
+        or a :obj:`~nilearn.surface.SurfaceImage`
         Thresholded image of the given input image.
 
     Raises
@@ -1087,7 +1088,8 @@ def threshold_img(
     else:
         img_data = get_surface_data(img, ensure_finite=True)
 
-    mask_data = None
+    img_data_for_cutoff = img_data
+
     if mask_img is not None:
         # Set as 0 for the values which are outside of the mask
         if isinstance(mask_img, NiimgLike):
@@ -1105,6 +1107,9 @@ def threshold_img(
                 )
             mask_data, _ = load_mask_img(mask_img)
 
+            # Take only points that are within the mask to check for threshold
+            img_data_for_cutoff = img_data_for_cutoff[mask_data != 0.0]
+
             img_data[mask_data == 0.0] = 0.0
 
         else:
@@ -1112,13 +1117,12 @@ def threshold_img(
 
             mask_data = get_surface_data(mask_img)
 
+            # Take only points that are within the mask to check for threshold
+            img_data_for_cutoff = img_data_for_cutoff[mask_data != 0.0]
+
             for hemi in mask_img.data.parts:
                 mask = mask_img.data.parts[hemi]
                 img.data.parts[hemi][mask == 0.0] = 0.0
-
-    img_data_for_cutoff = _get_img_data_for_cutoff(
-        img, mask_img, data=img_data, mask_data=mask_data
-    )
 
     cutoff_threshold = check_threshold(
         threshold,
@@ -1160,51 +1164,6 @@ def threshold_img(
     else:
         img.data = img_data.data
         return img
-
-
-def _get_img_data_for_cutoff(img, mask_img, data=None, mask_data=None):
-    """Get image data that thershold will be applied to.
-
-    Parameters
-    ----------
-    img: Niimg-like object or SurfaceImage
-
-    mask_img: Niimg-like object or SurfaceImage
-
-    data: numpy.ndarray or None
-        Image data.
-        If None, it will be extracted from `img`.
-
-    mask_data: numpy.ndarray or None
-        Mask data.
-        If None, it will be extracted from `mask_img`.
-
-    Returns
-    -------
-    img_data_for_cutoff: numpy.ndarray
-    """
-    # avoid circular import
-    from nilearn.masking import load_mask_img
-
-    img_data_for_cutoff = data
-    if not isinstance(img_data_for_cutoff, np.ndarray):
-        if isinstance(img, SurfaceImage):
-            img_data_for_cutoff = get_surface_data(img, ensure_finite=True)
-        else:
-            img_data_for_cutoff = safe_get_data(
-                img, ensure_finite=True, copy_data=copy
-            )
-
-    if mask_img is not None:
-        # Take only points that are within the mask to check for threshold
-        if not isinstance(mask_data, np.ndarray):
-            mask_data, _ = load_mask_img(mask_img)
-            if isinstance(mask_img, SurfaceImage):
-                mask_data = get_surface_data(mask_data)
-
-        img_data_for_cutoff = img_data_for_cutoff[mask_data != 0.0]
-
-    return img_data_for_cutoff
 
 
 def _apply_threhold(img_data, two_sided, cutoff_threshold):
