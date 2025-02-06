@@ -162,6 +162,21 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "For example, masker = SurfaceMapsMasker(maps_img=maps_img)"
             )
 
+        if self.clean_args is None:
+            self.clean_args = {}
+
+        if self.memory is None:
+            self.memory = Memory(location=None)
+
+        if self.smoothing_fwhm is not None:
+            warnings.warn(
+                "Parameter smoothing_fwhm "
+                "is not yet supported for surface data",
+                UserWarning,
+                stacklevel=2,
+            )
+            self.smoothing_fwhm = None
+
         logger.log(
             msg=f"loading regions from {self.maps_img.__repr__()}",
             verbose=self.verbose,
@@ -276,15 +291,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         else:
             mask_data = None
 
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                UserWarning,
-                stacklevel=2,
-            )
-            self.smoothing_fwhm = None
-
         # add the image to the reporting data
         if self.reports:
             self._reporting_data["images"] = img
@@ -293,12 +299,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             self.__class__,
             self,
         )
-        if self.clean_args is None:
-            self.clean_args = {}
         parameters["clean_args"] = self.clean_args
-
-        if self.memory is None:
-            self.memory = Memory(location=None)
 
         # apply mask if provided
         # and then extract signal via least square regression

@@ -664,6 +664,9 @@ class NiftiLabelsMasker(BaseMasker):
             # obviates need to run .transform() before .inverse_transform()
             self._resampled_labels_img_ = self.labels_img_
 
+        if not hasattr(self, "_resampled_mask_img"):
+            self._resampled_mask_img = self.mask_img_
+
         if self.reports:
             self._reporting_data = {
                 "labels_image": self._resampled_labels_img_,
@@ -770,13 +773,6 @@ class NiftiLabelsMasker(BaseMasker):
         """
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
-
-        if not hasattr(self, "_resampled_labels_img_"):
-            self._resampled_labels_img_ = self.labels_img_
-
-        if not hasattr(self, "_resampled_mask_img"):
-            self._resampled_mask_img = self.mask_img_
-
         if self.resampling_target == "data":
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
             if not _utils.niimg_conversions.check_same_fov(
