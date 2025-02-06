@@ -22,6 +22,7 @@ import pathlib
 import sys
 from typing import Callable
 
+import numpy as np
 from joblib.memory import Memory
 from numpy import ndarray
 from numpy.typing import DTypeLike
@@ -32,8 +33,11 @@ Detrend = bool
 LowerCutoff = float
 MemoryLevel = int
 NJobs = int
+NPerm = int
 Resume = bool
 Standardize = bool
+Tfce = bool
+TwoSidedTest = bool
 UpperCutoff = float
 Verbose = int
 
@@ -47,12 +51,17 @@ if sys.version_info[1] < 10:
     LowPass = (float, int)
     MemoryLike = (Memory, str, pathlib.Path)
     Opening = (bool, int)
+    RandomState = (int, np.random.RandomState)
     Resolution = int
     SmoothingFwhm = (float, int)
     TargetAffine = ndarray
     TargetShape = (tuple, list)
+    Threshold = (int, float, str)
+    Title = str
     Tr = (float, int)
     Url = str
+    Vmin = (float, int)
+    Vmax = (float, int)
 
 
 else:
@@ -70,6 +79,7 @@ else:
     HighPass: TypeAlias = float | int | None
     LowPass: TypeAlias = float | int | None
     MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
+    RandomState = int | np.random.RandomState | None
     Opening: TypeAlias = bool | int
     Resolution: TypeAlias = int | None
     SmoothingFwhm: TypeAlias = float | int | None
@@ -80,5 +90,11 @@ else:
     # about using a generic and would prefer "list[int]" to "list".
     TargetShape: TypeAlias = tuple | list | None
 
+    # str is too generic: should be Literal["auto"]
+    Threshold: TypeAlias = int | float | str | None
+
+    Title: TypeAlias = str | None
     Tr: TypeAlias = float | int | None
     Url: TypeAlias = str | None
+    Vmin = float | int | None
+    Vmax = float | int | None

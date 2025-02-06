@@ -31,7 +31,7 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_threshold
+from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn.image import (
     get_data,
@@ -259,6 +259,7 @@ def _plot_img_with_bg(
     ValueError
         if the specified threshold is a negative number
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     show_nan_msg = False
@@ -501,6 +502,9 @@ def plot_img(
         :mod:`nilearn.plotting`
             See API reference for other options
     """
+    check_params(locals())
+    _check_threshold(threshold)
+
     display = _plot_img_with_bg(
         img,
         cut_coords=cut_coords,
@@ -756,6 +760,7 @@ def plot_anat(
     are set to zero.
 
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     anat_img, black_bg, anat_vmin, anat_vmax = load_anat(
@@ -869,6 +874,7 @@ def plot_epi(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
+    check_params(locals())
     display = plot_img(
         epi_img,
         cut_coords=cut_coords,
@@ -1073,6 +1079,7 @@ def plot_roi(
     nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
         (4D images)
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     valid_view_types = ["continuous", "contours"]
@@ -1256,6 +1263,7 @@ def plot_prob_atlas(
     --------
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     display = plot_anat(
@@ -1498,6 +1506,7 @@ def plot_stat_map(
     nilearn.plotting.plot_epi : To simply plot raw EPI images
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     # dim the background
@@ -1661,6 +1670,7 @@ def plot_glass_brain(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     if cmap is None:
@@ -2128,6 +2138,7 @@ def plot_carpet(
     .. footbibliography::
 
     """
+    check_params(locals())
     img = check_niimg_4d(img, dtype="auto")
 
     # Define TR and number of frames

@@ -12,6 +12,7 @@ from matplotlib.transforms import Bbox
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
+from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
 from nilearn.plotting._utils import _check_threshold
@@ -144,6 +145,7 @@ class BaseSlicer:
         ValueError
             if the specified threshold is a negative number
         """
+        check_params(locals())
         _check_threshold(threshold)
 
         # deal with "fake" 4D images
@@ -517,6 +519,7 @@ class BaseSlicer:
         ValueError
             if the specified threshold is a negative number
         """
+        check_params(locals())
         _check_threshold(threshold)
 
         if threshold is not None:

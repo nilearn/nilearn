@@ -16,6 +16,7 @@ from sklearn.utils import check_random_state
 
 from nilearn import image
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.param_validation import check_params
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -582,6 +583,7 @@ def permuted_ols(
     .. footbibliography::
 
     """
+    check_params(locals())
     _check_inputs_permuted_ols(
         n_jobs, n_perm, tfce, masker, threshold, target_vars
     )
