@@ -146,7 +146,7 @@ def get_colorbar_and_data_ranges(
     if vmax is None:
         vmax = stat_map_max
 
-    return cbar_vmin, cbar_vmax, vmin, vmax
+    return cbar_vmin, cbar_vmax, float(vmin), float(vmax)
 
 
 @fill_doc

@@ -489,8 +489,8 @@ class BaseSlicer:
                 data_2d = self._threshold(
                     data_2d,
                     threshold,
-                    vmin=kwargs.get("vmin"),
-                    vmax=kwargs.get("vmax"),
+                    vmin=float(kwargs.get("vmin")),
+                    vmax=float(kwargs.get("vmax")),
                 )
 
                 im = display_ax.draw_2d(

@@ -584,9 +584,7 @@ def permuted_ols(
 
     """
     check_params(locals())
-    _check_inputs_permuted_ols(
-        n_jobs, n_perm, tfce, masker, threshold, target_vars
-    )
+    _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
 
     n_jobs, output_type, target_vars, tested_vars = (
         _sanitize_inputs_permuted_ols(
@@ -862,11 +860,7 @@ def _compute_t_stat_threshold(
     )
 
 
-def _check_inputs_permuted_ols(
-    n_jobs, n_perm, tfce, masker, threshold, target_vars
-):
-    if not isinstance(n_perm, int):
-        raise TypeError(f"'n_perm' must be an int. Got {type(n_perm)=}")
+def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(
