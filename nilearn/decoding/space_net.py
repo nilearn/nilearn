@@ -27,6 +27,7 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
+from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
 
 from nilearn._utils.masker_validation import check_embedded_masker
@@ -1021,6 +1022,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         return self
 
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "masker_")
+
     def decision_function(self, X):
         """Predict confidence scores for samples.
 
@@ -1073,10 +1077,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             Predicted class label per sample.
         """
         # cast X into usual 2D array
-        if not hasattr(self, "masker_"):
-            raise RuntimeError(
-                f"This {self.__class__.__name__} instance is not fitted yet!"
-            )
+        check_is_fitted(self)
+
         X = self.masker_.transform(X)
 
         # handle regression (least-squared loss)
