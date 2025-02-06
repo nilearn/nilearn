@@ -235,9 +235,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         tags.input_tags = InputTags(masker=True)
         return tags
 
-    def __sklearn_is_fitted__(self):
-        return hasattr(self, "mask_img_")
-
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
         ...
