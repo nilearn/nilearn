@@ -10,6 +10,7 @@ from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.param_validation import check_params
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import (
     compute_middle_image,
@@ -206,6 +207,33 @@ class NiftiMapsMasker(BaseMasker):
 
         self.keep_masked_maps = keep_masked_maps
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(masker=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(masker=True, maps_masker=True)
+        return tags
+
     def generate_report(self, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
@@ -312,7 +340,7 @@ class NiftiMapsMasker(BaseMasker):
                 msg = (
                     "`generate_report()` received "
                     f"{self.displayed_maps} to be displayed. "
-                    f"But masker only has {n_maps} maps."
+                    f"But masker only has {n_maps} maps. "
                     f"Setting number of displayed maps to {n_maps}."
                 )
                 warnings.warn(category=UserWarning, message=msg)

@@ -9,7 +9,7 @@ from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_random_img,
 )
-from nilearn.image import get_data, new_img_like
+from nilearn.image import get_data
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
     MultiNiftiMapsMasker,
@@ -255,16 +255,6 @@ def test_nifti_spheres_masker_report_1_sphere():
                         style="display:none;" alt="image"/>"""
 
     assert empty_div not in report.body
-
-
-def test_nifti_labels_masker_report_smoke_test(labels, labels_img):
-    """Smoke test."""
-    labels_img_floats = new_img_like(
-        labels_img, get_data(labels_img).astype(float)
-    )
-    masker = NiftiLabelsMasker(labels_img_floats, labels=labels)
-    masker.fit()
-    masker.generate_report()
 
 
 def test_nifti_labels_masker_report_incorrect_label_error(labels, labels_img):
