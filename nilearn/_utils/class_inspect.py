@@ -224,6 +224,7 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)
+            yield (clone(estimator), check_nifti_masker_fit_with_only_mask)
             yield (clone(estimator), check_nifti_masker_clean_error)
             yield (clone(estimator), check_nifti_masker_clean_warning)
             yield (clone(estimator), check_nifti_masker_dtype)
@@ -664,6 +665,24 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
     assert hasattr(estimator, "mask_img_")
 
 
+def check_nifti_masker_fit_with_only_mask(estimator):
+    """Check 3D mask is enough to run with nifti maskers."""
+    from nilearn.conftest import _affine_eye
+
+    mask = np.ones((29, 30, 31))
+    mask_img = Nifti1Image(mask, affine=_affine_eye())
+
+    estimator.mask_img = mask_img
+
+    assert not hasattr(estimator, "mask_img_")
+
+    estimator.fit()
+
+    assert hasattr(estimator, "mask_img_")
+
+    assert estimator.mask_img_ is mask_img
+
+
 def check_nifti_masker_fit_with_empty_mask(estimator):
     """Check mask that excludes all voxels raise an error."""
     import pytest
@@ -690,7 +709,14 @@ def check_nifti_masker_fit_with_4d_mask(estimator):
 
 
 def check_masker_generate_report(estimator):
-    """Check that maskers can generate report."""
+    """Check that maskers can generate report.
+
+    - check that we get a warning:
+      - when matplotlib is not installed
+      - when generating reports before fit
+    - check content of report before fit and after fit
+
+    """
     from nilearn.conftest import _img_4d_rand_eye_medium, _make_surface_img
     from nilearn.reporting.tests.test_html_report import _check_html
 
@@ -704,7 +730,9 @@ def check_masker_generate_report(estimator):
 
         return
 
-    report = estimator.generate_report()
+    with warnings.catch_warnings(record=True) as warning_list:
+        report = estimator.generate_report()
+        assert len(warning_list) == 1
 
     _check_html(report, is_fit=False)
     assert "Make sure to run `fit`" in str(report)
@@ -716,13 +744,50 @@ def check_masker_generate_report(estimator):
 
     estimator.fit(input_img)
 
-    report = estimator.generate_report()
+    assert estimator._report_content["warning_message"] is None
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        report = estimator.generate_report()
+        assert len(warning_list) == 1
 
     _check_html(report)
 
     with TemporaryDirectory() as tmp_dir:
         report.save_as_html(Path(tmp_dir) / "report.html")
         assert (Path(tmp_dir) / "report.html").is_file()
+
+
+def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
+    """Check 3D mask is enough to run with fit and generate report."""
+    from nilearn.conftest import _affine_eye, _img_4d_rand_eye_medium
+    from nilearn.reporting.tests.test_html_report import _check_html
+
+    mask = np.ones((29, 30, 31))
+    mask_img = Nifti1Image(mask, affine=_affine_eye())
+
+    estimator.mask_img = mask_img
+
+    assert not hasattr(estimator, "mask_img_")
+
+    estimator.fit()
+
+    assert estimator._report_content["warning_message"] is None
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        report = estimator.generate_report()
+        assert len(warning_list) == 1
+
+    _check_html(report)
+
+    input_img = _img_4d_rand_eye_medium()
+
+    estimator.fit(input_img)
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        report = estimator.generate_report()
+        assert len(warning_list) == 1
+
+    _check_html(report)
 
 
 def check_masker_generate_report_false(estimator):

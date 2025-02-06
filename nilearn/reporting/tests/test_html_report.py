@@ -84,38 +84,6 @@ def input_parameters(masker_class, mask, labels, labels_img, img_maps):
 
 @pytest.mark.parametrize(
     "masker_class",
-    [
-        NiftiMasker,
-        MultiNiftiMasker,
-        NiftiLabelsMasker,
-        MultiNiftiLabelsMasker,
-        NiftiMapsMasker,
-        MultiNiftiMapsMasker,
-        NiftiSpheresMasker,
-    ],
-)
-def test_report_empty_fit(masker_class, input_parameters):
-    """Test minimal report generation."""
-    masker = masker_class(**input_parameters)
-    masker = masker.fit()
-    _check_html(masker.generate_report())
-
-
-@pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
-def test_reports_after_fit_3d_data_with_mask(
-    masker_class, input_parameters, img_3d_rand_eye, mask
-):
-    """Tests report generation after fitting on 3D data with mask_img."""
-    input_parameters["mask_img"] = mask
-    masker = masker_class(**input_parameters)
-    masker.fit(img_3d_rand_eye)
-    assert masker._report_content["warning_message"] is None
-    html = masker.generate_report()
-    _check_html(html)
-
-
-@pytest.mark.parametrize(
-    "masker_class",
     [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker, NiftiSpheresMasker],
 )
 def test_warning_in_report_after_empty_fit(masker_class, input_parameters):
@@ -124,7 +92,7 @@ def test_warning_in_report_after_empty_fit(masker_class, input_parameters):
     """
     masker = masker_class(**input_parameters)
     masker.fit()
-    assert masker._report_content["warning_message"] is None
+
     warn_message = f"No image provided to fit in {masker_class.__name__}."
     with pytest.warns(UserWarning, match=warn_message):
         html = masker.generate_report()
@@ -223,7 +191,7 @@ def test_nifti_maps_masker_report_image_in_fit(
     html = masker.generate_report(2)
 
     assert masker._report_content["number_of_maps"] == n_regions
-    assert masker._report_content["warning_message"] is None
+
     assert html.body.count("<img") == 2
 
 
@@ -434,14 +402,14 @@ def test_4d_reports(mask, affine_eye):
     # test .fit method
     masker = NiftiMasker(mask_strategy="epi")
     masker.fit(data_img_4d)
-    assert masker._report_content["warning_message"] is None
+
     html = masker.generate_report()
     _check_html(html)
 
     # test .fit_transform method
     masker = NiftiMasker(mask_img=mask, standardize=True)
     masker.fit_transform(data_img_4d)
-    assert masker._report_content["warning_message"] is None
+
     html = masker.generate_report()
     _check_html(html)
 

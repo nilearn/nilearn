@@ -122,6 +122,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             # unused but required in HTML template
             "number_of_regions": None,
             "summary": None,
+            "warning_message": None,
         }
         # data necessary to construct figure for the report
         self._reporting_data = None

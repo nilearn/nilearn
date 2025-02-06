@@ -1,6 +1,5 @@
 # ruff: noqa: ARG001
 
-import warnings
 from os.path import join
 from pathlib import Path
 
@@ -268,27 +267,6 @@ def test_surface_maps_masker_sample_mask_to_fit_transform(
 
 
 # ------------------ Tests for reporting ------------------
-
-
-def test_reports_false(matplotlib_pyplot, surf_maps_img, surf_img_2d):
-    """Test when reports=False, corresponding attributes should not exist."""
-    masker = SurfaceMapsMasker(surf_maps_img, reports=False)
-    masker.fit_transform(surf_img_2d(10))
-    assert masker._reporting_data is None
-    # reporting_content does not exist when reports=False
-    assert not hasattr(masker, "_report_content")
-    # check _reporting methods returns [None]
-    assert masker._reporting() == [None]
-    # generate_report should throw warnings
-    with warnings.catch_warnings(record=True) as record:
-        warnings.simplefilter("always")
-        report = masker.generate_report()
-    assert len(record) == 2
-    assert "Report generation not enabled" in record[0].message.args[0]
-    assert "This report was not generated" in record[1].message.args[0]
-    # generated report should have "Empty Report" in it
-    report_str = report.__str__()
-    assert "Empty Report" in report_str
 
 
 def test_generate_report_engine_error(

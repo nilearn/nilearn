@@ -208,6 +208,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             "n_vertices": {},
             "number_of_regions": self.n_elements_,
             "summary": {},
+            "warning_message": None,
         }
 
         for part in self.maps_img.data.parts:
