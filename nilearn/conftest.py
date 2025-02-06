@@ -9,7 +9,11 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn import image
-from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
+from nilearn._utils.data_gen import (
+    generate_fake_fmri,
+    generate_labeled_regions,
+    generate_maps,
+)
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
@@ -402,6 +406,9 @@ def img_4d_long_mni(rng, shape_4d_long, affine_mni):
     return Nifti1Image(rng.uniform(size=shape_4d_long), affine=affine_mni)
 
 
+# ------------------------ ATLAS, LABELS, MAPS ------------------------#
+
+
 @pytest.fixture()
 def img_atlas(shape_3d_default, affine_mni):
     """Return an atlas and its labels."""
@@ -440,6 +447,21 @@ def _img_maps():
 def img_maps():
     """Generate fixture for default map image."""
     return _img_maps()
+
+
+def _img_labels():
+    """Generate fixture for default label image."""
+    return generate_labeled_regions(
+        shape=(7, 8, 9),
+        affine=np.eye(4),
+        n_regions=9,
+    )
+
+
+@pytest.fixture
+def img_labels():
+    """Generate fixture for default label image."""
+    return _img_labels()
 
 
 @pytest.fixture
