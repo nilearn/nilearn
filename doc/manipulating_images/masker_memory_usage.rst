@@ -81,6 +81,7 @@ Here's the script we will use:
         )
         from nilearn.maskers import NiftiMasker
         from memory_profiler import memory_usage
+        import matplotlib.pyplot as plt
 
 
         def get_fmri_path(n_subjects=1):
@@ -171,7 +172,90 @@ Here's the script we will use:
             )
 
 
-        def main(n_images=1, n_regions=6):
+        def plot_memory_usage(usage, peak_usage, n_subjects, n_regions, wait_time):
+
+            # get zero time
+            zero_time = usage[0][1]
+            # subtract zero time from all timestamps and convert to dict
+            usage = {time - zero_time: mem for mem, time in usage}
+
+            fig, ax = plt.subplots(figsize=(10, 6))
+            # plot memory usage over time
+            ax.plot(usage.keys(), usage.values())
+            ax.set_xlabel("Time (s)")
+            ax.set_ylabel("Memory (MiB)")
+            ax.set_title(
+                f"Memory usage over time with N_SUBJECTS={n_subjects},"
+                f" N_REGIONS={n_regions}"
+            )
+
+            # use order of max usage to calculate offset for annotations
+            offset = np.array(list(usage.values())).max() * 0.006
+
+            # add annotations on each peak
+            for peak in peak_usage:
+                if isinstance(peak_usage[peak], dict):
+                    for sub_peak in peak_usage[peak]:
+                        for sub_sub_peak in peak_usage[peak][sub_peak]:
+
+                            # # get baseline memory usage before the peak
+                            # # it should be wait_time/2 seconds before the peak
+                            # try:
+                            #     baseline = usage[
+                            #         peak_usage[peak][sub_peak][sub_sub_peak][1]
+                            #         - (wait_time / 2)
+                            #     ]
+                            # except KeyError:
+                            #     step = 0.05
+                            #     while True:
+                            #         baseline = usage[
+                            #             peak_usage[peak][sub_peak][sub_sub_peak][1]
+                            #             - (wait_time / 2)
+                            #             - step
+                            #         ]
+                            #         if baseline:
+                            #             break
+                            #         step += 0.05
+                            ax.annotate(
+                                f"{peak_usage[peak][sub_peak][sub_sub_peak][0]:.2f}"
+                                f" MiB\n{peak},\n{sub_peak},\n{sub_sub_peak}",
+                                xy=(
+                                    peak_usage[peak][sub_peak][sub_sub_peak][1]
+                                    - zero_time,
+                                    peak_usage[peak][sub_peak][sub_sub_peak][0],
+                                ),
+                                xytext=(
+                                    (
+                                        peak_usage[peak][sub_peak][sub_sub_peak][1]
+                                        - zero_time
+                                    )
+                                    - offset,
+                                    peak_usage[peak][sub_peak][sub_sub_peak][0]
+                                    - offset,
+                                ),
+                                # arrowprops=dict(facecolor="black", shrink=0.05),
+                            )
+                else:
+                    ax.annotate(
+                        f"{peak_usage[peak][0]:.2f} MiB\n"
+                        f"numpy_masker,\nparallel,\nshared",
+                        xy=(peak_usage[peak][1] - zero_time, peak_usage[peak][0]),
+                        xytext=(
+                            (peak_usage[peak][1] - zero_time) - offset,
+                            peak_usage[peak][0] + offset,
+                        ),
+                        arrowprops=dict(facecolor="black", shrink=0.05),
+                    )
+
+            # increase the y-axis limit by 10% to make the plot more readable
+            ax.set_ylim(ax.get_ylim()[0], ax.get_ylim()[1] * 1.1)
+            plt.savefig(
+                f"memory_usage_n{n_subjects}_j{n_regions}.png", bbox_inches="tight"
+            )
+            plt.close()
+
+
+        def main(n_images=1, n_regions=6, wait_time=30):
             """
             Compare the performance of NiftiMasker vs. numpy masking vs.
             numpy masking + shared memory both with single and
@@ -180,7 +264,7 @@ Here's the script we will use:
             The first two methods can be used with either file paths
             or in-memory images. So we also compare their memory usage.
 
-            We add 30 second sleep between each method to see the memory usage
+            We add `wait_time` between each method to see the memory usage
             of each method separately in the plot.
 
             Steps:
@@ -213,6 +297,10 @@ Here's the script we will use:
                 Number of regions to fetch from the Difumo atlas. These regions would
                 be converted to binary masks and used to mask the fMRI data. This is
                 also the number of jobs to run in parallel.
+
+            wait_time : int, default=30
+                Time to wait between each method to see the memory usage of each
+                method separately in the plot.
             """
             fmri_img, fmri_path = get_fmri_path(n_subjects=n_images)
             atlas_path = get_atlas_path()
@@ -220,56 +308,108 @@ Here's the script we will use:
                 atlas_path, fmri_path, n_regions=n_regions
             )
 
+            peak_usage = {
+                "nifti_masker": {
+                    "single": {"path": [], "in_memory": []},
+                    "parallel": {"path": [], "in_memory": []},
+                },
+                "numpy_masker": {
+                    "single": {"path": [], "in_memory": []},
+                    "parallel": {"path": [], "in_memory": []},
+                },
+                "numpy_masker_shared": [],
+            }
+
             print("waiting")
-            time.sleep(30)
+            time.sleep(wait_time)
             print("start single nifti masker with path")
 
-            nifti_masker_single(fmri_path, mask_paths[0])
+            peak_usage["nifti_masker"]["single"]["path"] = memory_usage(
+                (nifti_masker_single, (fmri_path, mask_paths[0])),
+                max_usage=True,
+                timestamps=True,
+            )
 
             print("waiting")
-            time.sleep(30)
+            time.sleep(wait_time)
             print("start single nifti masker with in memory images")
 
-            nifti_masker_single(fmri_img, mask_imgs[0])
+            peak_usage["nifti_masker"]["single"]["in_memory"] = memory_usage(
+                (nifti_masker_single, (fmri_img, mask_imgs[0])),
+                max_usage=True,
+                timestamps=True,
+            )
 
             print("waiting")
-            time.sleep(30)
+            time.sleep(wait_time)
             print("start parallel nifti masker with paths")
 
-            nifti_masker_parallel(fmri_path, mask_paths, n_regions=n_regions)
+            peak_usage["nifti_masker"]["parallel"]["path"] = memory_usage(
+                (nifti_masker_parallel, (fmri_path, mask_paths, n_regions)),
+                max_usage=True,
+                timestamps=True,
+                include_children=True,
+                multiprocess=True,
+            )
 
             print("waiting")
-            time.sleep(30)
+            time.sleep(wait_time)
             print("start parallel nifti masker with in memory images")
 
-            nifti_masker_parallel(fmri_img, mask_imgs, n_regions=n_regions)
+            peak_usage["nifti_masker"]["parallel"]["in_memory"] = memory_usage(
+                (nifti_masker_parallel, (fmri_img, mask_imgs, n_regions)),
+                max_usage=True,
+                timestamps=True,
+                include_children=True,
+                multiprocess=True,
+            )
 
             print("waiting")
-            time.sleep(30)
+            time.sleep(wait_time)
             print("start single numpy masker with path")
 
-            numpy_masker_single_path(fmri_path, mask_paths[0])
+            peak_usage["numpy_masker"]["single"]["path"] = memory_usage(
+                (numpy_masker_single_path, (fmri_path, mask_paths[0])),
+                max_usage=True,
+                timestamps=True,
+            )
 
             print("waiting")
             time.sleep(30)
             print("start single numpy masker with in memory image")
 
-            numpy_masker_single_inmemory(fmri_img, mask_imgs[0])
+            peak_usage["numpy_masker"]["single"]["in_memory"] = memory_usage(
+                (numpy_masker_single_inmemory, (fmri_img, mask_imgs[0])),
+                max_usage=True,
+                timestamps=True,
+            )
 
             print("waiting")
-            time.sleep(30)
+            time.sleep(wait_time)
             print("start parallel numpy masker with paths")
 
-            numpy_masker_parallel_path(fmri_path, mask_paths, n_regions=n_regions)
+            peak_usage["numpy_masker"]["parallel"]["path"] = memory_usage(
+                (numpy_masker_parallel_path, (fmri_path, mask_paths, n_regions)),
+                max_usage=True,
+                timestamps=True,
+                include_children=True,
+                multiprocess=True,
+            )
 
             print("waiting")
-            time.sleep(30)
+            time.sleep(wait_time)
             print("start parallel numpy masker with memory image")
 
-            numpy_masker_parallel_inmemory(fmri_img, mask_imgs, n_regions=n_regions)
+            peak_usage["numpy_masker"]["parallel"]["in_memory"] = memory_usage(
+                (numpy_masker_parallel_inmemory, (fmri_img, mask_imgs, n_regions)),
+                max_usage=True,
+                timestamps=True,
+                include_children=True,
+                multiprocess=True,
+            )
 
             print("waiting")
-            time.sleep(30)
+            time.sleep(wait_time)
             print("load image in shared memory")
 
             fmri_data = np.asarray(fmri_img.dataobj)
@@ -281,16 +421,37 @@ Here's the script we will use:
             del fmri_data
 
             print("waiting")
-            time.sleep(30)
+            time.sleep(wait_time)
             print("start parallel numpy masker with shared memory")
-            numpy_masker_shared_parallel(shared_data, mask_imgs, n_regions=n_regions)
+            peak_usage["numpy_masker_shared"] = memory_usage(
+                (numpy_masker_shared_parallel, (shared_data, mask_imgs, n_regions)),
+                max_usage=True,
+                timestamps=True,
+                include_children=True,
+                multiprocess=True,
+            )
 
             shm.close()
             shm.unlink()
 
+            return peak_usage
+
 
         if __name__ == "__main__":
-            main(n_images=10, n_regions=20)
+            N_SUBJECTS = 10
+            N_REGIONS = 20
+            WAIT_TIME = 30
+            usage, peak_usage = memory_usage(
+                (main, (N_SUBJECTS, N_REGIONS, WAIT_TIME)),
+                include_children=True,
+                multiprocess=True,
+                timestamps=True,
+                retval=True,
+            )
+
+            # plot memory usage over time
+            plot_memory_usage(usage, peak_usage, N_SUBJECTS, N_REGIONS, WAIT_TIME)
+
 
 
 Result
