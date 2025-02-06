@@ -471,6 +471,8 @@ def _init_omega(emp_covs, precisions_init):
     else:
         omega = precisions_init.copy()
 
+    return omega
+
 
 def _check_alpha(alpha):
     if not isinstance(alpha, (int, float)) or alpha < 0:
