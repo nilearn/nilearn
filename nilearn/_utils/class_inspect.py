@@ -326,7 +326,7 @@ def check_masker_fitted(estimator):
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         estimator.inverse_transform(signals)
 
-    # BNote that NiftiMasker and SurfaceMasker cannot accept None on fit
+    # Note that NiftiMasker and SurfaceMasker cannot accept None on fit
     estimator = _fit_masker(estimator)
 
     assert estimator.__sklearn_is_fitted__()
