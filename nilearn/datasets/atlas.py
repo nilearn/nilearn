@@ -18,6 +18,7 @@ from nilearn._utils.bids import (
     check_look_up_table,
     generate_atlas_look_up_table,
 )
+from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
@@ -131,6 +132,7 @@ def fetch_atlas_difumo(
     .. footbibliography::
 
     """
+    check_params(locals())
     atlas_type = "probabilistic"
 
     dic = {
@@ -273,6 +275,7 @@ def fetch_atlas_craddock_2012(
     .. footbibliography::
 
     """
+    check_params(locals())
     atlas_type = "probabilistic"
 
     if url is None:
@@ -410,6 +413,8 @@ def fetch_atlas_destrieux_2009(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     atlas_type = "deterministic"
 
     if url is None:
@@ -545,6 +550,8 @@ def fetch_atlas_harvard_oxford(
     nilearn.datasets.fetch_atlas_juelich
 
     """
+    check_params(locals())
+
     atlases = [
         "cort-maxprob-thr0-1mm",
         "cort-maxprob-thr0-2mm",
@@ -723,6 +730,8 @@ def fetch_atlas_juelich(
     nilearn.datasets.fetch_atlas_harvard_oxford
 
     """
+    check_params(locals())
+
     atlases = [
         "maxprob-thr0-1mm",
         "maxprob-thr0-2mm",
@@ -1000,6 +1009,8 @@ def fetch_atlas_msdl(data_dir=None, url=None, resume=True, verbose=1):
 
 
     """
+    check_params(locals())
+
     atlas_type = "probabilistic"
 
     url = "https://team.inria.fr/parietal/files/2015/01/MSDL_rois.zip"
@@ -1162,6 +1173,8 @@ def fetch_atlas_smith_2009(
     https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
 
     """
+    check_params(locals())
+
     atlas_type = "probabilistic"
 
     if url is None:
@@ -1373,6 +1386,8 @@ def fetch_atlas_yeo_2011(
     License: unknown.
 
     """
+    check_params(locals())
+
     atlas_type = "deterministic"
 
     if n_networks is None and thickness is None:
@@ -1588,6 +1603,8 @@ def fetch_atlas_aal(
     License: unknown.
 
     """
+    check_params(locals())
+
     atlas_type = "deterministic"
 
     versions = ["SPM5", "SPM8", "SPM12", "3v2"]
@@ -1754,6 +1771,8 @@ def fetch_atlas_basc_multiscale_2015(
     https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615
 
     """
+    check_params(locals())
+
     atlas_type = "deterministic"
 
     versions = ["sym", "asym"]
@@ -2050,6 +2069,8 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     on this dataset.
 
     """
+    check_params(locals())
+
     atlas_type = "probabilistic"
 
     if url is None:
@@ -2154,6 +2175,8 @@ def fetch_atlas_surf_destrieux(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     atlas_type = "deterministic"
 
     if url is None:
@@ -2314,6 +2337,8 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     .. footbibliography::
 
     """
+    check_params(locals())
+
     atlas_type = "deterministic"
 
     if level_name not in _TALAIRACH_LEVELS:
@@ -2403,6 +2428,8 @@ def fetch_atlas_pauli_2017(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     # TODO: remove this part after release 0.13.0
     if atlas_type in ("prob", "det"):
         atlas_type_values = (
@@ -2531,6 +2558,8 @@ def fetch_atlas_schaefer_2018(
     License: MIT.
 
     """
+    check_params(locals())
+
     atlas_type = "deterministic"
 
     valid_n_rois = list(range(100, 1100, 100))

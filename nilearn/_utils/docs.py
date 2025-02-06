@@ -266,7 +266,7 @@ darkness : :obj:`float` between 0 and 1, optional
 
 # data_dir
 docdict["data_dir"] = """
-data_dir : :obj:`pathlib.Path` or :obj:`str`, optional
+data_dir : :obj:`pathlib.Path` or :obj:`str` or None, optional
     Path where data should be downloaded.
     By default, files are downloaded in a ``nilearn_data`` folder
     in the home directory of the user.
@@ -348,23 +348,6 @@ figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     If `None` is given, a new figure is created.
 """
 
-# fsaverage options
-docdict["fsaverage_options"] = """
-
-    - ``"fsaverage3"``: the low-resolution fsaverage3 mesh (642 nodes)
-    - ``"fsaverage4"``: the low-resolution fsaverage4 mesh (2562 nodes)
-    - ``"fsaverage5"``: the low-resolution fsaverage5 mesh (10242 nodes)
-    - ``"fsaverage6"``: the medium-resolution fsaverage6 mesh (40962 nodes)
-    - ``"fsaverage7"``: same as `"fsaverage"`
-    - ``"fsaverage"``: the high-resolution fsaverage mesh (163842 nodes)
-
-    .. note::
-
-        The high-resolution fsaverage will result in more computation
-        time and memory usage
-
-"""
-
 # fwhm
 docdict["fwhm"] = """
 fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
@@ -416,7 +399,7 @@ hemi : {"left", "right", "both"}, default="left"
 
 # high_pass
 docdict["high_pass"] = """
-high_pass : :obj:`float` or None, default=None
+high_pass : :obj:`float` or :obj:`int` or None, default=None
     High cutoff frequency in Hertz.
     If specified, signals below this frequency will be filtered out.
 """
@@ -543,7 +526,7 @@ linewidths : :obj:`float`, optional
 
 # low_pass
 docdict["low_pass"] = """
-low_pass : :obj:`float` or None, default=None
+low_pass : :obj:`float` or :obj:`int` or None, default=None
     Low cutoff frequency in Hertz.
     If specified, signals above this frequency will be filtered out.
     If `None`, no low-pass filtering will be performed.
@@ -774,7 +757,7 @@ resampling_interpolation : :obj:`str`, optional
 
 # resolution template
 docdict["resolution"] = """
-resolution : :obj:`int`, default=None
+resolution : :obj:`int` or None, default=None
         Resolution in millimeters.
         If resolution is different from 1,
         the template is re-sampled with the specified resolution.
@@ -894,7 +877,7 @@ docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
 
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
-smoothing_fwhm : :obj:`float` or None, optional.
+smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
     If `smoothing_fwhm` is not `None`,
     it gives the :term:`full-width at half maximum<FWHM>` in millimeters
     of the spatial smoothing to apply to the signal.
@@ -939,6 +922,14 @@ standardize_confounds : :obj:`bool`, default=True
     their mean is put to 0 and their variance to 1 in the time dimension.
 """
 
+# standardize_confounds
+docdict["strategy"] = """
+strategy : :obj:`str`, default="mean"
+    The name of a valid function to reduce the region with.
+    Must be one of: sum, mean, median, minimum, maximum, variance,
+    standard_deviation.
+"""
+
 # symmetric_cbar
 docdict["symmetric_cbar"] = """
 symmetric_cbar : :obj:`bool`, or "auto", default="auto"
@@ -952,21 +943,21 @@ symmetric_cbar : :obj:`bool`, or "auto", default="auto"
 
 # t_r
 docdict["t_r"] = """
-t_r : :obj:`float` or None, default=None
+t_r : :obj:`float` or :obj:`int` or None, default=None
     :term:`Repetition time<TR>`, in seconds (sampling period).
     Set to `None` if not provided.
 """
 
 # target_affine
 docdict["target_affine"] = """
-target_affine : :class:`numpy.ndarray`, default=None
+target_affine : :class:`numpy.ndarray` or None, default=None
     If specified, the image is resampled corresponding to this new affine.
     `target_affine` can be a 3x3 or a 4x4 matrix.
 """
 
 # target_shape
 docdict["target_shape"] = """
-target_shape : :obj:`tuple` or :obj:`list`, default=None
+target_shape : :obj:`tuple` or :obj:`list` or None, default=None
     If specified, the image will be resized to match this new shape.
     `len(target_shape)` must be equal to 3.
 
@@ -974,22 +965,6 @@ target_shape : :obj:`tuple` or :obj:`list`, default=None
 
         If `target_shape` is specified, a `target_affine` of shape
         `(4, 4)` must also be given.
-
-"""
-
-# templateflow
-docdict["templateflow"] = """
-
-.. admonition:: Nilearn MNI template
-   :class: important
-
-   The Nilearn template is asymmetrical ICBM152 2009, release a.
-
-   The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
-   release c (MNI152NLin2009cSAsym).
-
-   If you wish to use the exact same release as :term:`fMRIPrep`,
-   please refer to `TemplateFlow <https://www.templateflow.org>`_.
 
 """
 
@@ -1047,7 +1022,7 @@ two_sided_test : :obj:`bool`, default=False
 
 # url
 docdict["url"] = """
-url : :obj:`str`, default=None
+url : :obj:`str` or None, default=None
     URL of file to download.
     Override download URL.
     Used for test only (or if you setup a mirror of the data).
@@ -1196,6 +1171,23 @@ docdict["base_decoder_fit_attributes"] = """
 docdict["description"] = """'description' : :obj:`str`
         Description of the dataset."""
 
+# fsaverage options
+docdict["fsaverage_options"] = """
+
+    - ``"fsaverage3"``: the low-resolution fsaverage3 mesh (642 nodes)
+    - ``"fsaverage4"``: the low-resolution fsaverage4 mesh (2562 nodes)
+    - ``"fsaverage5"``: the low-resolution fsaverage5 mesh (10242 nodes)
+    - ``"fsaverage6"``: the medium-resolution fsaverage6 mesh (40962 nodes)
+    - ``"fsaverage7"``: same as `"fsaverage"`
+    - ``"fsaverage"``: the high-resolution fsaverage mesh (163842 nodes)
+
+    .. note::
+
+        The high-resolution fsaverage will result in more computation
+        time and memory usage
+
+"""
+
 # atlas labels
 docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""
@@ -1218,11 +1210,18 @@ docdict["template"] = """'template' : :obj:`str`
 
 # templateflow
 docdict["templateflow"] = """
-    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
-    release c (MNI152NLin2009cSAsym).
-    The NiLearn template is asymmetrical ICBM152 2009, release a.
-    If you wish to use the exact same release as :term:`fMRIPrep`,
-    please refer to TemplateFlow (https://www.templateflow.org/).
+
+.. admonition:: Nilearn MNI template
+   :class: important
+
+   The Nilearn template is asymmetrical ICBM152 2009, release a.
+
+   The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+   release c (MNI152NLin2009cSAsym).
+
+   If you wish to use the exact same release as :term:`fMRIPrep`,
+   please refer to `TemplateFlow <https://www.templateflow.org>`_.
+
 """
 
 ##############################################################################

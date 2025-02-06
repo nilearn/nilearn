@@ -14,18 +14,12 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
-
-extra_valid_checks = [
-    *check_valid_for_all_maskers(),
-]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[MultiNiftiMasker()],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -38,7 +32,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[MultiNiftiMasker()],
-        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
@@ -136,13 +129,7 @@ def test_3d_images():
     epi_img2 = Nifti1Image(np.ones((2, 2, 2)), affine=np.diag((2, 2, 2, 1)))
     masker = MultiNiftiMasker(mask_img=mask_img)
 
-    # Check attributes defined at fit
-    assert not hasattr(masker, "n_elements_")
-
     masker.fit_transform([epi_img1, epi_img2])
-
-    # Check attributes defined at fit
-    assert hasattr(masker, "n_elements_")
 
 
 def test_joblib_cache(mask_img_1, tmp_path):

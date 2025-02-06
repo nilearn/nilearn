@@ -7,12 +7,14 @@ import warnings
 import numpy as np
 from joblib import Memory
 from scipy import linalg
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import signal
 from nilearn._utils import constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.param_validation import check_params
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -153,6 +155,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         -------
         SurfaceMapsMasker object
         """
+        check_params(self.__dict__)
         del img, y
 
         if self.maps_img is None:
@@ -223,12 +226,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
 
-    def _check_fitted(self):
-        if not self.__sklearn_is_fitted__():
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been fitted."
-            )
-
     def transform(self, img, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
@@ -260,7 +257,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             Signal for each region as provided in the maps (via `maps_img`).
             shape: (n_timepoints, n_regions)
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         # if img is a single image, convert it to a list
         # to be able to concatenate it
@@ -405,7 +402,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             The data for each hemisphere is of shape
             (n_vertices_per_hemisphere, n_timepoints).
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)

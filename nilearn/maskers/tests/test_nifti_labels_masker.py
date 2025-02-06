@@ -20,7 +20,6 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 
 
 def _labels_img():
@@ -31,16 +30,10 @@ def _labels_img():
     )
 
 
-extra_valid_checks = [
-    *check_valid_for_all_maskers(),
-]
-
-
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[NiftiLabelsMasker(labels_img=_labels_img())],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -54,7 +47,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[NiftiLabelsMasker(labels_img=_labels_img())],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
@@ -86,15 +78,9 @@ def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
     # No exception should be raised either
     masker = NiftiLabelsMasker(labels_img, resampling_target=None)
 
-    # Check attributes defined at fit
-    assert not hasattr(masker, "labels_img_")
-    assert not hasattr(masker, "n_elements_")
-
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "labels_img_")
-    assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == n_regions
 
     masker.inverse_transform(signals)

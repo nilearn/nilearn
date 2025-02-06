@@ -3,7 +3,6 @@ graphical models.
 """
 
 # Authors: Philippe Gervais
-
 import collections.abc
 import itertools
 import operator
@@ -20,6 +19,7 @@ from sklearn.utils.extmath import fast_logdet
 
 from nilearn._utils import CacheMixin, fill_doc, logger
 from nilearn._utils.extmath import is_spd
+from nilearn._utils.param_validation import check_params
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -613,6 +613,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
             the object itself. Useful for chaining operations.
 
         """
+        check_params(self.__dict__)
         for x in subjects:
             check_array(x, accept_sparse=False)
 
@@ -637,6 +638,9 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
 
         self.precisions_ = ret
         return self
+
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "precisions_") and hasattr(self, "covariances_")
 
 
 def empirical_covariances(subjects, assume_centered=False, standardize=False):
@@ -1251,3 +1255,6 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             debug=self.debug,
         )
         return self
+
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "precisions_") and hasattr(self, "covariances_")

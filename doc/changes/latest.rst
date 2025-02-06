@@ -26,7 +26,9 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-info:`Plotting` Add a :func:`~nilearn.plotting.plot_bland_altman` to create Bland-Altman plots to compare images (:gh:`5112` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add different reduction strategies to :class:`nilearn.maskers.SurfaceLabelsMasker` (:gh:`4809` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Add a :func:`~nilearn.plotting.img_comparison.plot_bland_altman` to create Bland-Altman plots to compare images (:gh:`5112` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add reports for the surface based GLMs (:gh:`4442` by `Rémi Gau`_).
 
@@ -46,6 +48,8 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-info:`Deprecation` Add a ``nilearn.plotting.img_plotting.plot_img_comparison`` was moved to ``nilearn.plotting.img_comparison.plot_img_comparison`` (:gh:`5120` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` From version 0.13.2, :func:`nilearn.datasets.fetch_atlas_yeo_2011` will return a single parcellation (:gh:`5085` by `Rémi Gau`_).
 

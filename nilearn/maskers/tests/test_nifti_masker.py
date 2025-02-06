@@ -22,18 +22,12 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
-
-extra_valid_checks = [
-    *check_valid_for_all_maskers(),
-]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[NiftiMasker()],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -46,7 +40,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[NiftiMasker()],
-        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
@@ -226,13 +219,9 @@ def test_4d_single_scan(rng, shape_3d_default, affine_eye):
 
     masker = NiftiMasker(mask_img=mask_img)
 
-    # Check attributes defined at fit
-    assert not hasattr(masker, "n_elements_")
-
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == np.sum(mask)
 
     data_trans_5d = masker.transform(data_5d)

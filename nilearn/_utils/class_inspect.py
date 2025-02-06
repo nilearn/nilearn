@@ -11,6 +11,7 @@ from sklearn import clone
 from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import compare_version
 from nilearn._utils.exceptions import DimensionError
@@ -23,6 +24,8 @@ VALID_CHECKS = [
     "check_estimator_repr",
     "check_estimator_tags_renamed",
     "check_estimators_partial_fit_n_features",
+    "check_estimators_unfitted",
+    "check_fit_check_is_fitted",
     "check_get_params_invariance",
     "check_mixin_order",
     "check_non_transformer_estimators_n_iter",
@@ -58,6 +61,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_estimators_pickle",
     "check_estimators_fit_returns_self",
     "check_f_contiguous_array_estimator",
+    "check_fit_check_is_fitted",
     "check_fit1d",
     "check_fit2d_1feature",
     "check_fit2d_1sample",
@@ -88,7 +92,12 @@ except ImportError:
     ...
 
 
-def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
+def check_estimator(
+    estimator=None,
+    valid=True,
+    extra_valid_checks=None,
+    expected_failed_checks=None,
+):
     """Yield a valid or invalid scikit-learn estimators check.
 
     As some of Nilearn estimators do not comply
@@ -122,6 +131,16 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
 
     extra_valid_checks : list of strings
         Names of checks to be tested as valid for this estimator.
+
+    expected_failed_checks: dict, default=None
+        A dictionary of the form::
+
+            {
+                "check_name": "this check is expected to fail because ...",
+            }
+
+        Where `"check_name"` is the name of the check, and `"my reason"` is why
+        the check fails.
     """
     valid_checks = VALID_CHECKS
     if extra_valid_checks is not None:
@@ -133,6 +152,15 @@ def check_estimator(estimator=None, valid=True, extra_valid_checks=None):
         for e, check in sklearn_check_estimator(
             estimator=est, generate_only=True
         ):
+            # TODO when dropping sklearn 1.5,
+            # pass expected_failed_checks directly to
+            # sklearn_check_estimator above
+            if (
+                isinstance(expected_failed_checks, dict)
+                and check.func.__name__ in expected_failed_checks
+            ):
+                continue
+
             tags = est._more_tags()
 
             niimg_input = False
@@ -176,6 +204,8 @@ def nilearn_check_estimator(estimator):
         is_masker = getattr(tags.input_tags, "masker", False)
         surf_img_input = getattr(tags.input_tags, "surf_img", False)
 
+    yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
+
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -212,7 +242,7 @@ def is_multimasker(estimator):
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
-        return "niimg_like" in tags["X_types"]
+        return "multi_masker" in tags["X_types"]
     else:
         return getattr(tags.input_tags, "multi_masker", False)
 
@@ -223,30 +253,79 @@ def accept_niimg_input(estimator):
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
-        return "multi_masker" in tags["X_types"]
+        return "niimg_like" in tags["X_types"]
     else:
         return getattr(tags.input_tags, "niimg_like", False)
 
 
-def check_masker_fitted(estimator):
-    """Check that transform() and inverse_transform() \
-       fail for maskers if they have not been fitted.
+def _not_fitted_error_message(estimator):
+    return (
+        f"This {type(estimator).__name__} instance is not fitted yet. "
+        "Call 'fit' with appropriate arguments before using this estimator."
+    )
+
+
+def check_estimator_has_sklearn_is_fitted(estimator):
+    """Check appropriate response to check_fitted from sklearn before fitting.
+
+    check that before fitting
+    - estimator has a __sklearn_is_fitted__ method
+    - running sklearn check_is_fitted on estimator throws an error
     """
     import pytest
 
-    from nilearn._utils.data_gen import generate_random_img
+    if not hasattr(estimator, "__sklearn_is_fitted__"):
+        raise TypeError(
+            "All nilearn estimators must have __sklearn_is_fitted__ method."
+        )
+
+    if estimator.__sklearn_is_fitted__() is True:
+        raise ValueError(
+            "Estimator __sklearn_is_fitted__ must return False before fit."
+        )
+
+    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
+        check_is_fitted(estimator)
+
+
+def check_masker_fitted(estimator):
+    """Check appropriate response of maskers to check_fitted from sklearn.
+
+    Should act as a replacement in the case of the maskers
+    for sklearn's check_fit_check_is_fitted
+
+    check that before fitting
+    - transform() and inverse_transform() \
+      throw same error
+
+    check that after fitting
+    - __sklearn_is_fitted__ returns true
+    - running sklearn check_fitted throws no error
+    """
+    import pytest
+
+    from nilearn.conftest import _img_3d_rand, _make_surface_img
 
     # Failure should happen before the input type is determined
     # so we can pass nifti image to surface maskers.
-    img_3d_rand_eye = generate_random_img(shape=(7, 8, 9), affine=np.eye(4))
-    with pytest.raises(ValueError, match="has not been fitted."):
-        estimator.transform(img_3d_rand_eye)
+    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
+        estimator.transform(_img_3d_rand())
 
     # Failure should happen before the size of the input type is determined
     # so we can pass any array here.
     signals = np.ones((10, 11))
-    with pytest.raises(ValueError, match="has not been fitted."):
+    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         estimator.inverse_transform(signals)
+
+    # NiftiMasker and SurfaceMasker cannot accept None on fit
+    if accept_niimg_input(estimator):
+        estimator.fit(_img_3d_rand())
+    else:
+        estimator.fit(_make_surface_img(10))
+
+    assert estimator.__sklearn_is_fitted__()
+
+    check_is_fitted(estimator)
 
 
 def check_nifti_masker_fit_returns_self(estimator):
@@ -264,7 +343,7 @@ def check_surface_masker_fit_returns_self(estimator):
     """
     from nilearn.conftest import _make_surface_img
 
-    assert estimator.fit(_make_surface_img(100)) is estimator
+    assert estimator.fit(_make_surface_img(10)) is estimator
 
 
 def check_nifti_masker_fit_transform(estimator):

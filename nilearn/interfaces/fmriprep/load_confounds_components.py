@@ -22,7 +22,7 @@ from .load_confounds_scrub import optimize_scrub
 from .load_confounds_utils import (
     MissingConfoundError,
     add_suffix,
-    check_params,
+    check_params_confounds,
     find_confounds,
 )
 
@@ -54,7 +54,9 @@ def _load_motion(confounds_raw, motion):
         ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"],
         motion,
     )
-    motion_regressor_check = check_params(confounds_raw, motion_params)
+    motion_regressor_check = check_params_confounds(
+        confounds_raw, motion_params
+    )
     if isinstance(motion_regressor_check, list):
         raise MissingConfoundError(params=motion_regressor_check)
 
@@ -108,7 +110,7 @@ def _load_wm_csf(confounds_raw, wm_csf):
         wm_csf is not a valid choice of strategy.
     """
     wm_csf_params = add_suffix(["csf", "white_matter"], wm_csf)
-    if check_params(confounds_raw, wm_csf_params):
+    if check_params_confounds(confounds_raw, wm_csf_params):
         return confounds_raw[wm_csf_params]
     else:
         raise MissingConfoundError(keywords=["wm_csf"])
@@ -138,7 +140,7 @@ def _load_global_signal(confounds_raw, global_signal):
         signal is not a valid choice of strategy.
     """
     global_params = add_suffix(["global_signal"], global_signal)
-    if check_params(confounds_raw, global_params):
+    if check_params_confounds(confounds_raw, global_params):
         return confounds_raw[global_params]
     else:
         raise MissingConfoundError(keywords=["global_signal"])
@@ -175,7 +177,7 @@ def _load_compcor(confounds_raw, meta_json, compcor, n_compcor):
         not a valid choice of strategy.
     """
     compcor_cols = find_compcor(meta_json, compcor, n_compcor)
-    if check_params(confounds_raw, compcor_cols):
+    if check_params_confounds(confounds_raw, compcor_cols):
         return confounds_raw[compcor_cols]
     else:
         raise MissingConfoundError(keywords=["compcor"])
