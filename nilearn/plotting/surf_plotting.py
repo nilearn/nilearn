@@ -2124,9 +2124,9 @@ def plot_surf_roi(
 
     idx_not_na = ~np.isnan(roi)
     if vmin is None:
-        vmin = np.nanmin(roi)
+        vmin = float(np.nanmin(roi))
     if vmax is None:
-        vmax = 1 + np.nanmax(roi)
+        vmax = float(1 + np.nanmax(roi))
 
     mesh = load_surf_mesh(surf_mesh)
 
