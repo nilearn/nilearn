@@ -3,6 +3,7 @@
 import itertools
 
 from joblib import Parallel, delayed
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import iter_check_niimg
@@ -205,7 +206,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
-        self._check_fitted()
+        check_is_fitted(self)
         niimg_iter = iter_check_niimg(
             imgs_list,
             ensure_ndim=None,
@@ -246,7 +247,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             shape: list of (number of scans, number of labels)
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
         if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
         return self.transform_imgs(

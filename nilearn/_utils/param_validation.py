@@ -445,3 +445,27 @@ def check_params(fn_dict):
                 raise TypeError(error_msg)
         elif value is not None and not isinstance(value, type_to_check):
             raise TypeError(error_msg)
+
+
+def check_reduction_strategy(strategy: str):
+    """Check that the provided strategy is supported.
+
+    Parameters
+    ----------
+    %(strategy)s
+    """
+    available_reduction_strategies = {
+        "mean",
+        "median",
+        "sum",
+        "minimum",
+        "maximum",
+        "standard_deviation",
+        "variance",
+    }
+
+    if strategy not in available_reduction_strategies:
+        raise ValueError(
+            f"Invalid strategy '{strategy}'. "
+            f"Valid strategies are {available_reduction_strategies}."
+        )

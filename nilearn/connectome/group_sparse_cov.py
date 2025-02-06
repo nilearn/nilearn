@@ -639,6 +639,9 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         self.precisions_ = ret
         return self
 
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "precisions_") and hasattr(self, "covariances_")
+
 
 def empirical_covariances(subjects, assume_centered=False, standardize=False):
     """Compute empirical covariances for several signals.
@@ -1252,3 +1255,6 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             debug=self.debug,
         )
         return self
+
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "precisions_") and hasattr(self, "covariances_")

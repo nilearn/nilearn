@@ -922,6 +922,14 @@ standardize_confounds : :obj:`bool`, default=True
     their mean is put to 0 and their variance to 1 in the time dimension.
 """
 
+# standardize_confounds
+docdict["strategy"] = """
+strategy : :obj:`str`, default="mean"
+    The name of a valid function to reduce the region with.
+    Must be one of: sum, mean, median, minimum, maximum, variance,
+    standard_deviation.
+"""
+
 # symmetric_cbar
 docdict["symmetric_cbar"] = """
 symmetric_cbar : :obj:`bool`, or "auto", default="auto"

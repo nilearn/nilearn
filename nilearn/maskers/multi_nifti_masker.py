@@ -10,6 +10,7 @@ import warnings
 from functools import partial
 
 from joblib import Parallel, delayed
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import (
     check_niimg_3d,
@@ -528,7 +529,7 @@ class MultiNiftiMasker(NiftiMasker):
             inputs.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
         if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
 

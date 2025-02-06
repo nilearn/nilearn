@@ -4,6 +4,7 @@ import warnings
 
 import numpy as np
 from joblib import Memory
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
 from nilearn._utils import logger
@@ -505,13 +506,8 @@ class NiftiMapsMasker(BaseMasker):
 
         return self
 
-    def _check_fitted(self):
-        if not hasattr(self, "maps_img_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been "
-                "fitted. "
-                "You must call fit() before calling transform()."
-            )
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction."""
@@ -706,7 +702,7 @@ class NiftiMapsMasker(BaseMasker):
         """
         from ..regions import signal_extraction
 
-        self._check_fitted()
+        check_is_fitted(self)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_maps(

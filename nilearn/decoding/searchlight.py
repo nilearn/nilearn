@@ -18,6 +18,7 @@ from sklearn import svm
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc, logger
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -437,19 +438,15 @@ class SearchLight(TransformerMixin, BaseEstimator):
             and self.process_mask_ is not None
         )
 
-    def _check_fitted(self):
-        if not self.__sklearn_is_fitted__():
-            raise ValueError("The model has not been fitted yet.")
-
     @property
     def scores_img_(self):
         """Convert the 3D scores array into a NIfTI image."""
-        self._check_fitted()
+        check_is_fitted(self)
         return new_img_like(self.mask_img, self.scores_)
 
     def transform(self, imgs):
         """Apply the fitted searchlight on new images."""
-        self._check_fitted()
+        check_is_fitted(self)
 
         imgs = check_niimg_4d(imgs)
 

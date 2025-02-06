@@ -11,7 +11,6 @@ import collections.abc
 import functools
 import numbers
 import warnings
-from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -19,14 +18,12 @@ import numpy as np
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
-from scipy import stats
 from scipy.ndimage import binary_fill_holes
 
 from nilearn._utils import (
     check_niimg_3d,
     check_niimg_4d,
     compare_version,
-    constrained_layout_kwargs,
     fill_doc,
     logger,
 )
@@ -2315,94 +2312,31 @@ def plot_img_comparison(
     output_dir=None,
     axes=None,
 ):
-    """Create plots to compare two lists of images and measure correlation.
+    """Redirect to plot_img_comparison."""
+    from nilearn.plotting.img_comparison import plot_img_comparison
 
-    The first plot displays linear correlation between :term:`voxel` values.
-    The second plot superimposes histograms to compare values distribution.
+    warnings.warn(
+        (
+            "The 'plot_img_comparison' has been moved to  "
+            "'nilearn.plotting.img_comparison'.\n"
+            "It will be removed from 'nilearn.plotting.img_plotting' "
+            "in version >= 0.13.1.\n"
+            "Import 'plot_img_comparison' "
+            "from 'nilearn.plotting.img_comparison' "
+            "to silence this warning."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
-    Parameters
-    ----------
-    ref_imgs : nifti_like
-        Reference images.
-
-    src_imgs : nifti_like
-        Source images.
-
-    masker : NiftiMasker object
-        Mask to be used on data.
-
-    plot_hist : :obj:`bool`, default=True
-        If True then histograms of each img in ref_imgs will be plotted
-        along-side the histogram of the corresponding image in src_imgs.
-
-    log : :obj:`bool`, default=True
-        Passed to plt.hist.
-
-    ref_label : :obj:`str`, default='image set 1'
-        Name of reference images.
-
-    src_label : :obj:`str`, default='image set 2'
-        Name of source images.
-
-    output_dir : :obj:`str` or None, default=None
-        Directory where plotted figures will be stored.
-
-    axes : :obj:`list` of two matplotlib Axes objects, or None, default=None
-        Can receive a list of the form [ax1, ax2] to render the plots.
-        By default new axes will be created.
-
-    Returns
-    -------
-    corrs : :class:`numpy.ndarray`
-        Pearson correlation between the images.
-
-    """
-    # note: doesn't work with 4d images;
-    # when plot_hist is False creates two empty axes and doesn't plot anything
-    corrs = []
-    for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
-        if axes is None:
-            _, (ax1, ax2) = plt.subplots(
-                1,
-                2,
-                figsize=(12, 5),
-                **constrained_layout_kwargs(),
-            )
-        else:
-            (ax1, ax2) = axes
-        ref_data = masker.transform(ref_img).ravel()
-        src_data = masker.transform(src_img).ravel()
-        if ref_data.shape != src_data.shape:
-            warnings.warn("Images are not shape-compatible")
-            return
-
-        corr = stats.pearsonr(ref_data, src_data)[0]
-        corrs.append(corr)
-
-        if plot_hist:
-            ax1.scatter(
-                ref_data,
-                src_data,
-                label=f"Pearsonr: {corr:.2f}",
-                c="g",
-                alpha=0.6,
-            )
-            x = np.linspace(*ax1.get_xlim(), num=100)
-            ax1.plot(x, x, linestyle="--", c="k")
-            ax1.grid("on")
-            ax1.set_xlabel(ref_label)
-            ax1.set_ylabel(src_label)
-            ax1.legend(loc="best")
-
-            ax2.hist(ref_data, alpha=0.6, bins=128, log=log, label=ref_label)
-            ax2.hist(src_data, alpha=0.6, bins=128, log=log, label=src_label)
-            ax2.set_title("Histogram of imgs values")
-            ax2.grid("on")
-            ax2.legend(loc="best")
-
-            if output_dir is not None:
-                output_dir = Path(output_dir)
-                output_dir.mkdir(exist_ok=True, parents=True)
-                plt.savefig(output_dir / f"{int(i):04}.png")
-
-    return corrs
+    plot_img_comparison(
+        ref_imgs,
+        src_imgs,
+        masker,
+        plot_hist=plot_hist,
+        log=log,
+        ref_label=ref_label,
+        src_label=src_label,
+        output_dir=output_dir,
+        axes=axes,
+    )

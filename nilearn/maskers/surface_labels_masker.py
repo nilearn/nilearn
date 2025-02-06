@@ -6,6 +6,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from joblib import Memory
+from scipy import ndimage
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import signal
 from nilearn._utils.bids import (
@@ -19,10 +21,14 @@ from nilearn._utils.helpers import (
     constrained_layout_kwargs,
     is_matplotlib_installed,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_params,
+    check_reduction_strategy,
+)
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
+    at_least_2d,
     check_same_n_vertices,
     concat_imgs,
     mean_img,
@@ -33,9 +39,10 @@ def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
     """Apply mask to labels data.
 
     Ensures that we only get the data back
-    according to the mask that was applied. So if some labels were removed,
-    we will only get the data for the remaining labels, the vertices that were
-    masked out will be set to the background label.
+    according to the mask that was applied.
+    So if some labels were removed,
+    we will only get the data for the remaining labels,
+    the vertices that were masked out will be set to the background label.
     """
     labels_before_mask = {int(label) for label in np.unique(labels_data)}
     labels_data[np.logical_not(mask_data.flatten())] = background_label
@@ -196,6 +203,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         memory=None,
         memory_level=1,
         verbose=0,
+        strategy="mean",
         reports=True,
         cmap="inferno",
         clean_args=None,
@@ -217,6 +225,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.memory_level = memory_level
         self.verbose = verbose
         self.reports = reports
+        self.strategy = strategy
         self.cmap = cmap
         self.clean_args = clean_args
 
@@ -244,6 +253,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         check_params(self.__dict__)
         del img, y
+
+        check_reduction_strategy(self.strategy)
 
         if self.labels_img is None:
             raise ValueError(
@@ -352,12 +363,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             and hasattr(self, "mask_img_")
         )
 
-    def _check_fitted(self):
-        if not self.__sklearn_is_fitted__():
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been fitted."
-            )
-
     def transform(self, img, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
@@ -383,11 +388,11 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         Returns
         -------
-        output : :obj:`numpy.ndarray`
+        region_signals : 2D :obj:`numpy.ndarray`
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         # if img is a single image, convert it to a list
         # to be able to concatenate it
@@ -395,6 +400,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             img = [img]
         img = concat_imgs(img)
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
+        img = at_least_2d(img)
         # concatenate data over hemispheres
         img_data = np.concatenate(list(img.data.parts.values()), axis=0)
 
@@ -437,19 +443,25 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             self.memory = Memory(location=None)
 
         n_time_points = 1 if len(img_data.shape) == 1 else img_data.shape[1]
-        output = np.empty((n_time_points, len(labels)))
-        for i, label in enumerate(labels):
-            output[:, i] = img_data[labels_data == label].mean(axis=0)
+        region_signals = np.empty((n_time_points, len(labels)))
+
+        # adapted from nilearn.regions.signal_extraction.img_to_signals_labels
+        # iterate over time points and apply reduction function over labels.
+        reduction_function = getattr(ndimage, self.strategy)
+        for n, img in enumerate(np.rollaxis(img_data, -1)):
+            region_signals[n] = np.asarray(
+                reduction_function(img, labels=labels_data, index=labels)
+            )
 
         # signal cleaning here
-        output = cache(
+        region_signals = cache(
             signal.clean,
             memory=self.memory,
             func_memory_level=2,
             memory_level=self.memory_level,
             shelve=self._shelving,
         )(
-            output,
+            region_signals,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],
             standardize_confounds=parameters["standardize_confounds"],
@@ -461,7 +473,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             **parameters["clean_args"],
         )
 
-        return output
+        return region_signals
 
     def fit_transform(self, img, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
@@ -517,7 +529,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         :obj:`~nilearn.surface.SurfaceImage` object
             Mesh and data for both hemispheres.
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         return signals_to_surf_img_labels(
             signals,

@@ -477,22 +477,6 @@ def test_crop_mask_empty_mask(mask_empty):
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
-def test_space_net_no_crash_not_fitted(model):
-    """Regression test."""
-    iris = load_iris()
-    X, y = iris.data, iris.target
-    X, mask = to_niimgs(X, [2, 2, 2])
-
-    with pytest.raises(
-        RuntimeError,
-        match=f"This {model.__name__} instance is not fitted yet",
-    ):
-        model().predict(X)
-
-    model(mask=mask, alphas=1.0).fit(X, y).predict(X)
-
-
-@pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
 def test_space_net_one_alpha_no_crash(model):
     """Regression test."""
     iris = load_iris()
