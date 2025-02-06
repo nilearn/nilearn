@@ -768,6 +768,9 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
         return self
 
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "labels_")
+
     def transform(
         self,
         X,
@@ -786,7 +789,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             Data reduced with agglomerated signal for each cluster.
 
         """
-        check_is_fitted(self, "labels_")
+        check_is_fitted(self)
 
         unique_labels = np.unique(self.labels_)
 
@@ -816,7 +819,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             Data reduced expanded to the original feature space.
 
         """
-        check_is_fitted(self, "labels_")
+        check_is_fitted(self)
 
         _, inverse = np.unique(self.labels_, return_inverse=True)
 

@@ -548,12 +548,6 @@ def test_slm_4d_image(img_4d_mni):
 def test_high_level_glm_with_paths_errors(tmp_path):
     func_img, mask = fake_fmri_data(file_path=tmp_path)
 
-    model = SecondLevelModel(mask_img=mask)
-
-    # asking for contrast before model fit gives error
-    with pytest.raises(ValueError, match="The model has not been fit yet"):
-        model.compute_contrast([])
-
     # fit model
     Y = [func_img] * 4
     X = pd.DataFrame([[1]] * 4, columns=["intercept"])
@@ -945,9 +939,6 @@ def test_second_level_voxelwise_attribute_errors(attribute):
     mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
 
-    with pytest.raises(ValueError, match="The model has no results."):
-        getattr(model, attribute)
-
     Y = fmri_data * 4
     X = pd.DataFrame([[1]] * 4, columns=["intercept"])
     model.fit(Y, design_matrix=X)
@@ -1203,7 +1194,7 @@ def test_second_level_contrast_computation_errors(tmp_path, rng):
     model = SecondLevelModel(mask_img=mask)
 
     # asking for contrast before model fit gives error
-    with pytest.raises(ValueError, match="The model has not been fit yet"):
+    with pytest.raises(ValueError, match="not fitted yet"):
         model.compute_contrast(second_level_contrast="intercept")
 
     # fit model

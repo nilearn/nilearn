@@ -150,15 +150,8 @@ def test_threshold_bound_error(canica_data):
         canica.fit(canica_data)
 
 
-def test_transform_and_fit_errors(canica_data, mask_img):
+def test_transform_and_fit_errors(mask_img):
     canica = CanICA(mask=mask_img, n_components=3)
-
-    with pytest.raises(
-        ValueError,
-        match="Object has no components_ attribute. "
-        "This is probably because fit has not been called.",
-    ):
-        canica.transform(canica_data)
 
     # error when empty list of provided.
     with pytest.raises(

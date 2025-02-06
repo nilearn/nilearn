@@ -15,6 +15,7 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from nibabel.funcs import four_to_three
 from sklearn.base import clone
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.glm import check_and_load_tables
@@ -716,11 +717,7 @@ class SecondLevelModel(BaseGLM):
             keyed by the type of image.
 
         """
-        if (
-            not hasattr(self, "second_level_input_")
-            or self.second_level_input_ is None
-        ):
-            raise ValueError("The model has not been fit yet.")
+        check_is_fitted(self)
 
         # check first_level_contrast
         _check_first_level_contrast(
@@ -821,6 +818,7 @@ class SecondLevelModel(BaseGLM):
             A list of Nifti1Image(s).
 
         """
+        check_is_fitted(self)
         # check if valid attribute is being accessed.
         all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
@@ -847,10 +845,7 @@ class SecondLevelModel(BaseGLM):
             or self.results_ is None
         ):
             raise ValueError(
-                "The model has no results. This could be "
-                "because the model has not been fitted yet "
-                "or because no contrast has been computed "
-                "already."
+                "The model has no results. No contrast has been computed yet."
             )
 
         if result_as_time_series:

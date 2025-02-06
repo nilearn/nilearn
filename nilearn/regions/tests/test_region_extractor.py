@@ -75,7 +75,6 @@ def maps_and_mask(n_regions):
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_estimators_fit_returns_self",
-    "check_fit_check_is_fitted",
     "check_positive_only_tag_during_fit",
     "check_readonly_memmap_input",
 ]

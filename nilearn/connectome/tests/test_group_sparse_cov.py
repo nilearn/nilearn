@@ -24,6 +24,9 @@ extra_valid_checks = [
         check_estimator(
             estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
             extra_valid_checks=extra_valid_checks,
+            expected_failed_checks={
+                "check_fit_check_is_fitted": "handled by nilearn checks"
+            },
         )
     ),
 )
@@ -39,6 +42,9 @@ def test_check_estimator_group_sparse_covariance(estimator, check, name):  # noq
         estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
         valid=False,
         extra_valid_checks=extra_valid_checks,
+        expected_failed_checks={
+            "check_fit_check_is_fitted": "handled by nilearn checks"
+        },
     ),
 )
 def test_check_estimator_invalid_group_sparse_covariance(

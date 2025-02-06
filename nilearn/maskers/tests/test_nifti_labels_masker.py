@@ -78,15 +78,9 @@ def test_nifti_labels_masker(affine_eye, shape_3d_default, n_regions, length):
     # No exception should be raised either
     masker = NiftiLabelsMasker(labels_img, resampling_target=None)
 
-    # Check attributes defined at fit
-    assert not hasattr(masker, "labels_img_")
-    assert not hasattr(masker, "n_elements_")
-
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "labels_img_")
-    assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == n_regions
 
     masker.inverse_transform(signals)

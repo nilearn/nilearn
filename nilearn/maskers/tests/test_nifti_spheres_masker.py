@@ -75,19 +75,10 @@ def test_sphere_extraction(rng, affine_eye):
 
     masker = NiftiSpheresMasker([seed], radius=1)
 
-    # Check attributes defined at fit
-    assert not hasattr(masker, "seeds_")
-    assert not hasattr(masker, "n_elements_")
-
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "seeds_")
-    assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == 1
-
-    # Test the fit
-    masker.fit()
 
     # Test the transform
     s = masker.transform(img)

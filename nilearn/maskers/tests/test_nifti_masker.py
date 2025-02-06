@@ -219,13 +219,9 @@ def test_4d_single_scan(rng, shape_3d_default, affine_eye):
 
     masker = NiftiMasker(mask_img=mask_img)
 
-    # Check attributes defined at fit
-    assert not hasattr(masker, "n_elements_")
-
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == np.sum(mask)
 
     data_trans_5d = masker.transform(data_5d)
