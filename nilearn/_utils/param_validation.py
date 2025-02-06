@@ -7,7 +7,7 @@ import warnings
 import numpy as np
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
-import nilearn.typing as nil_typing
+import nilearn.typing as nilearn_typing
 from nilearn._utils import logger
 from nilearn._utils.niimg import _get_data
 
@@ -407,21 +407,21 @@ def check_params(fn_dict):
     # dictionary that matches a given parameter / attribute name
     # to a type
     type_map = {
-        "data_dir": nil_typing.DataDir,
-        "high_pass": nil_typing.HighPass,
-        "hrf_model": nil_typing.HrfModel,
-        "low_pass": nil_typing.LowPass,
-        "memory": nil_typing.MemoryLike,
-        "memory_level": nil_typing.MemoryLevel,
-        "n_jobs": nil_typing.NJobs,
-        "resolution": nil_typing.Resolution,
-        "resume": nil_typing.Resume,
-        "smoothing_fwhm": nil_typing.SmoothingFwhm,
-        "t_r": nil_typing.Tr,
-        "target_affine": nil_typing.TargetAffine,
-        "target_shape": nil_typing.TargetShape,
-        "url": nil_typing.Url,
-        "verbose": nil_typing.Verbose,
+        "data_dir": nilearn_typing.DataDir,
+        "high_pass": nilearn_typing.HighPass,
+        "hrf_model": nilearn_typing.HrfModel,
+        "low_pass": nilearn_typing.LowPass,
+        "memory": nilearn_typing.MemoryLike,
+        "memory_level": nilearn_typing.MemoryLevel,
+        "n_jobs": nilearn_typing.NJobs,
+        "resolution": nilearn_typing.Resolution,
+        "resume": nilearn_typing.Resume,
+        "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
+        "t_r": nilearn_typing.Tr,
+        "target_affine": nilearn_typing.TargetAffine,
+        "target_shape": nilearn_typing.TargetShape,
+        "url": nilearn_typing.Url,
+        "verbose": nilearn_typing.Verbose,
     }
 
     keys_to_check = set(type_map.keys()).intersection(set(fn_dict.keys()))
