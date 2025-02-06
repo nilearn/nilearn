@@ -5,11 +5,6 @@ import pytest
 from nibabel import Nifti1Image
 
 
-def check_valid_for_all_maskers():
-    """Return list of names of sklearn checks valid for all maskers."""
-    return []
-
-
 @pytest.fixture
 def data_1(shape_3d_default):
     """Return 3D zeros with a few 10 in the center."""
