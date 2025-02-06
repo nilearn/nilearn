@@ -24,6 +24,7 @@ VALID_CHECKS = [
     "check_estimator_repr",
     "check_estimator_tags_renamed",
     "check_estimators_partial_fit_n_features",
+    "check_estimators_unfitted",
     "check_fit_check_is_fitted",
     "check_get_params_invariance",
     "check_mixin_order",

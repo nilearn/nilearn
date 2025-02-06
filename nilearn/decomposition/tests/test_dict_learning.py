@@ -33,7 +33,6 @@ def canica_data():
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
     "check_no_attributes_set_in_init",
 ]
 

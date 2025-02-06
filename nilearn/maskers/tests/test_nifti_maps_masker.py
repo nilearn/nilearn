@@ -24,18 +24,12 @@ from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
-
-extra_valid_checks = [
-    *check_valid_for_all_maskers(),
-]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[NiftiMapsMasker(maps_img=_img_maps())],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -49,7 +43,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[NiftiMapsMasker(maps_img=_img_maps())],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001

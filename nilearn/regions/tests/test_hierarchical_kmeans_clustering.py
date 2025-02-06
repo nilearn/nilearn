@@ -24,7 +24,6 @@ extra_valid_checks = [
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
     "check_estimators_empty_data_messages",
-    "check_estimators_unfitted",
     "check_f_contiguous_array_estimator",
     "check_fit2d_1sample",
     "check_fit2d_1feature",

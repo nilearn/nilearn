@@ -826,6 +826,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         y_pred : :class:`numpy.ndarray`, shape (n_samples,)
             Predicted class label per sample.
         """
+        check_is_fitted(self)
         # for backwards compatibility - apply masker transform if X is
         # niimg-like or a list of strings
         if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
