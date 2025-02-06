@@ -171,7 +171,6 @@ Here's the script we will use:
             )
 
 
-        # %%
         def main(n_images=1, n_regions=6):
             """
             Compare the performance of NiftiMasker vs. numpy masking vs.
