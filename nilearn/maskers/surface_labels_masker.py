@@ -438,15 +438,22 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if self.memory is None:
             self.memory = Memory(location=None)
 
+        target_datatype = (
+            np.float32 if img_data.dtype == np.float32 else np.float64
+        )
+        img_data = img_data.astype(target_datatype)
+
         n_time_points = 1 if len(img_data.shape) == 1 else img_data.shape[1]
-        region_signals = np.empty((n_time_points, len(labels)))
+        region_signals = np.ndarray(
+            (n_time_points, len(labels)), dtype=target_datatype
+        )
 
         # adapted from nilearn.regions.signal_extraction.img_to_signals_labels
         # iterate over time points and apply reduction function over labels.
         reduction_function = getattr(ndimage, self.strategy)
-        for n, img in enumerate(np.rollaxis(img_data, -1)):
+        for n, sample in enumerate(np.rollaxis(img_data, -1)):
             region_signals[n] = np.asarray(
-                reduction_function(img, labels=labels_data, index=labels)
+                reduction_function(sample, labels=labels_data, index=labels)
             )
 
         # signal cleaning here
