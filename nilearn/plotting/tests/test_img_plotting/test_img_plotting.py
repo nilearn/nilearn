@@ -153,7 +153,7 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
     else:
         data[0, 0] = 0
     img = Nifti1Image(data, affine_eye)
-    threshold = np.array(5, dtype="uint8")
+    threshold = 5
     kwargs = {"threshold": threshold, "display_mode": "z"}
     if plot_func is plot_stat_map:
         kwargs["bg_img"] = None

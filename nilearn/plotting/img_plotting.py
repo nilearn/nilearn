@@ -299,7 +299,7 @@ def _plot_img_with_bg(
         if threshold == "auto":
             # Threshold epsilon below a percentile value, to be sure that some
             # voxels pass the threshold
-            threshold = fast_abs_percentile(data) - 1e-5
+            threshold = float(fast_abs_percentile(data)) - 1e-5
 
         img = new_img_like(img, as_ndarray(data), affine)
 
