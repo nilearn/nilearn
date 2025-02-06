@@ -1,8 +1,19 @@
-"""Types or Types alias used by Nilearn.
-
+"""Types or Type aliases used by Nilearn.
 
 Many of those correspond to the types of variable
 declared in nilearn._utils.doc.
+
+Several of them can be enforced at run time using
+nilearn._utils.param_validaton.check_params.
+
+To expand the functionality of check_params you need to:
+
+-   describe the expected type for that parameter / attribute
+    in this module ``nilearn.typing``
+    It must be something that ``isinstance`` can handle.
+
+-   expand the ``type_map`` dictionary of ``check_params``
+    to pair the name of the parameter / attribute with its expected type.
 """
 
 from __future__ import annotations
@@ -15,11 +26,17 @@ from joblib.memory import Memory
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
+BorderSize = int
+Connected = int
+Detrend = bool
+LowerCutoff = float
 MemoryLevel = int
 NJobs = int
 Resume = bool
 Standardize = bool
+UpperCutoff = float
 Verbose = int
+
 
 # TODO update when dropping python 3.9
 if sys.version_info[1] < 10:
@@ -29,6 +46,7 @@ if sys.version_info[1] < 10:
     HrfModel = (str, Callable, list)
     LowPass = (float, int)
     MemoryLike = (Memory, str, pathlib.Path)
+    Opening = (bool, int)
     Resolution = int
     SmoothingFwhm = (float, int)
     TargetAffine = ndarray
@@ -52,6 +70,7 @@ else:
     HighPass: TypeAlias = float | int | None
     LowPass: TypeAlias = float | int | None
     MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
+    Opening: TypeAlias = bool | int
     Resolution: TypeAlias = int | None
     SmoothingFwhm: TypeAlias = float | int | None
     TargetAffine: TypeAlias = ndarray | None

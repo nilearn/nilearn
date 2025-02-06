@@ -407,13 +407,18 @@ def check_params(fn_dict):
     # dictionary that matches a given parameter / attribute name
     # to a type
     type_map = {
+        "border_size": nilearn_typing.BorderSize,
+        "connected": nilearn_typing.Connected,
         "data_dir": nilearn_typing.DataDir,
+        "detrend": nilearn_typing.Detrend,
         "high_pass": nilearn_typing.HighPass,
         "hrf_model": nilearn_typing.HrfModel,
         "low_pass": nilearn_typing.LowPass,
+        "lower_cutoff": nilearn_typing.LowerCutoff,
         "memory": nilearn_typing.MemoryLike,
         "memory_level": nilearn_typing.MemoryLevel,
         "n_jobs": nilearn_typing.NJobs,
+        "opening": nilearn_typing.Opening,
         "resolution": nilearn_typing.Resolution,
         "resume": nilearn_typing.Resume,
         "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
@@ -421,6 +426,7 @@ def check_params(fn_dict):
         "target_affine": nilearn_typing.TargetAffine,
         "target_shape": nilearn_typing.TargetShape,
         "url": nilearn_typing.Url,
+        "upper_cutoff": nilearn_typing.UpperCutoff,
         "verbose": nilearn_typing.Verbose,
     }
 
