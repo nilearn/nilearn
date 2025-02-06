@@ -163,6 +163,7 @@ show()
 # and timeseries of all cortical nodes.
 from scipy.stats import pearsonr
 
+# %%
 # Let's in initialize the data
 # we will use to create our results image.
 results = {}
@@ -170,6 +171,7 @@ for hemi, mesh in surf_img_nki.mesh.parts.items():
     n_vertices = mesh.n_vertices
     results[hemi] = np.zeros(n_vertices)
 
+# %%
 # Let's avoid computing results
 # in unknown regions
 # and on the medial wall.

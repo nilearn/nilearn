@@ -26,6 +26,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add different reduction strategies to :class:`nilearn.maskers.SurfaceLabelsMasker` (:gh:`4809` by `Rémi Gau`_).
+
 - :bdg-info:`Plotting` Add a :func:`~nilearn.plotting.img_comparison.plot_bland_altman` to create Bland-Altman plots to compare images (:gh:`5112` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add reports for the surface based GLMs (:gh:`4442` by `Rémi Gau`_).
