@@ -9,6 +9,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import (
     compute_middle_image,
@@ -393,6 +394,7 @@ class NiftiMapsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        check_params(self.__dict__)
         if self.resampling_target not in ("mask", "maps", "data", None):
             raise ValueError(
                 "invalid value for 'resampling_target' "

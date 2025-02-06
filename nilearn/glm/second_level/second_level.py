@@ -20,6 +20,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import fill_doc, logger, stringify_path
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -560,6 +561,7 @@ class SecondLevelModel(BaseGLM):
         %(second_level_design_matrix)s
 
         """
+        check_params(self.__dict__)
         self.second_level_input_ = None
         self.confounds_ = None
         self.labels_ = None

@@ -8,17 +8,19 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy.ndimage import binary_dilation, binary_erosion
 
-from . import _utils
-from ._utils import fill_doc, logger
-from ._utils.cache_mixin import cache
-from ._utils.ndimage import get_border_data, largest_connected_component
-from ._utils.niimg import safe_get_data
-from .datasets import (
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import cache
+from nilearn._utils.ndimage import get_border_data, largest_connected_component
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.param_validation import check_params
+from nilearn.datasets import (
     load_mni152_gm_template,
     load_mni152_template,
     load_mni152_wm_template,
 )
-from .image import get_data, new_img_like, resampling
+from nilearn.image import get_data, new_img_like, resampling
+
+from . import _utils
 
 __all__ = [
     "apply_mask",
@@ -294,6 +296,7 @@ def compute_epi_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
     """
+    check_params(locals())
     logger.log("EPI mask computation", verbose)
 
     # Delayed import to avoid circular imports
@@ -414,6 +417,7 @@ def compute_multi_epi_mask(
     mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         The brain mask.
     """
+    check_params(locals())
     if len(epi_imgs) == 0:
         raise TypeError(
             f"An empty object - {epi_imgs:r} - was passed instead of an "
@@ -486,6 +490,7 @@ def compute_background_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
     """
+    check_params(locals())
     logger.log("Background mask computation", verbose)
 
     data_imgs = _utils.check_niimg(data_imgs)
@@ -585,6 +590,7 @@ def compute_multi_background_mask(
     mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         The brain mask.
     """
+    check_params(locals())
     if len(data_imgs) == 0:
         raise TypeError(
             f"An empty object - {data_imgs:r} - was passed instead of an "
@@ -646,6 +652,7 @@ def compute_brain_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The whole-brain mask (3D image).
     """
+    check_params(locals())
     logger.log(f"Template {mask_type} mask computation", verbose)
 
     target_img = _utils.check_niimg(target_img)
@@ -695,7 +702,7 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-    **kwargs,  # noqa: ARG001
+    **kwargs,
 ):
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.
@@ -749,6 +756,7 @@ def compute_multi_brain_mask(
     --------
     nilearn.masking.compute_brain_mask
     """
+    check_params(locals())
     if len(target_imgs) == 0:
         raise TypeError(
             f"An empty object - {target_imgs:r} - was passed instead of an "

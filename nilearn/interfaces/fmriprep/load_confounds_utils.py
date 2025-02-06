@@ -32,7 +32,7 @@ img_file_error = {
 }
 
 
-def check_params(confounds_raw, params):
+def check_params_confounds(confounds_raw, params):
     """Check that specified parameters can be found in the confounds.
 
     Used for motion, wm_csf, global_signal, and compcor regressors.

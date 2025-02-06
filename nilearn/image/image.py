@@ -38,7 +38,7 @@ from nilearn._utils.niimg_conversions import (
     check_same_fov,
     iter_check_niimg,
 )
-from nilearn._utils.param_validation import check_threshold
+from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
 
 
@@ -1571,6 +1571,7 @@ def concat_imgs(
     """
     from ..image import new_img_like  # avoid circular imports
 
+    check_params(locals())
     if memory is None:
         memory = Memory(location=None)
 

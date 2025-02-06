@@ -7,17 +7,27 @@ import numpy as np
 from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
+from nilearn import masking
+from nilearn._utils import (
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+    fill_doc,
+)
+from nilearn._utils.ndimage import peak_local_max
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_same_fov
+from nilearn._utils.param_validation import check_params
+from nilearn._utils.segmentation import random_walker
+from nilearn.image.image import (
+    concat_imgs,
+    new_img_like,
+    smooth_array,
+    threshold_img,
+)
+from nilearn.image.resampling import resample_img
 from nilearn.maskers import NiftiMapsMasker
 from nilearn.masking import load_mask_img
-
-from .. import masking
-from .._utils import check_niimg, check_niimg_3d, check_niimg_4d, fill_doc
-from .._utils.ndimage import peak_local_max
-from .._utils.niimg import safe_get_data
-from .._utils.niimg_conversions import check_same_fov
-from .._utils.segmentation import random_walker
-from ..image import new_img_like, resample_img
-from ..image.image import concat_imgs, smooth_array, threshold_img
 
 
 def _threshold_maps_ratio(maps_img, threshold):
@@ -437,6 +447,7 @@ class RegionExtractor(NiftiMapsMasker):
         y=None,  # noqa: ARG002
     ):
         """Prepare the data and setup for the region extraction."""
+        check_params(self.__dict__)
         maps_img = check_niimg_4d(self.maps_img)
 
         # Check mask

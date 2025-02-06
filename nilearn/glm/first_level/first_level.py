@@ -26,7 +26,10 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn._utils.param_validation import (
+    check_params,
+    check_run_sample_masks,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
@@ -809,6 +812,7 @@ class FirstLevelModel(BaseGLM):
             will be clustered via K-means with `bins` number of clusters.
 
         """
+        check_params(self.__dict__)
         #  check attributes passed at construction
         if self.t_r is not None:
             _check_repetition_time(self.t_r)

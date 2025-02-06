@@ -15,6 +15,7 @@ from nilearn._utils.param_validation import (
     _cast_to_int32,
     _get_mask_extent,
     check_feature_screening,
+    check_params,
     check_threshold,
 )
 
@@ -233,3 +234,27 @@ def test_sample_mask_raises_on_high_index():
         ValueError, match="Max value in sample mask is larger than"
     ):
         _cast_to_int32(np.array(2**66))
+
+
+def test_check_params():
+    """Check that passing incorrect type to a function raises TypeError."""
+
+    def f_with_param_to_check(data_dir):
+        check_params(locals())
+        return data_dir
+
+    f_with_param_to_check(data_dir="foo")
+
+    with pytest.raises(TypeError, match="'data_dir' should be of type"):
+        f_with_param_to_check(data_dir=1)
+
+
+def test_check_params_not_necessary():
+    """Check an error is raised when function is used when not needed."""
+
+    def f_with_unknown_param(foo):
+        check_params(locals())
+        return foo
+
+    with pytest.raises(ValueError, match="No known parameter to check."):
+        f_with_unknown_param(foo=1)

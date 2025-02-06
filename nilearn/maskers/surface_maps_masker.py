@@ -14,6 +14,7 @@ from nilearn._utils import constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.param_validation import check_params
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -154,6 +155,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         -------
         SurfaceMapsMasker object
         """
+        check_params(self.__dict__)
         del img, y
 
         if self.maps_img is None:

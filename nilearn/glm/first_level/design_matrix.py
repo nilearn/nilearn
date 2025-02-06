@@ -40,6 +40,7 @@ import pandas as pd
 
 from nilearn._utils import fill_doc
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.param_validation import check_params
 from nilearn.glm._utils import full_rank
 from nilearn.glm.first_level.experimental_paradigm import (
     check_events,
@@ -198,10 +199,7 @@ def _convolve_regressors(
         see nilearn.glm.first_level.experimental_paradigm to check the
         specification for these to be valid paradigm descriptors
 
-    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'glover + derivative + dispersion',
-        'fir', None}
-        String that specifies the hemodynamic response function
+    %(hrf_model)s
 
     frame_times : array of shape (n_scans,)
         The targeted timing for the design matrix.
@@ -235,6 +233,7 @@ def _convolve_regressors(
         if 'fir', the regressos are numbered according to '#name_#delay'
 
     """
+    check_params(locals())
     if fir_delays is None:
         fir_delays = [0]
     regressor_names = []
@@ -376,6 +375,7 @@ def make_first_level_design_matrix(
         and each column a regressor.
 
     """
+    check_params(locals())
     if fir_delays is None:
         fir_delays = [0]
     # check arguments

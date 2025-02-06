@@ -10,6 +10,7 @@ from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     ALLOWED_DATA_TYPES,
     ALLOWED_MESH_TYPES,
@@ -107,6 +108,8 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     if url is None:
         # The URL can be retrieved from the nilearn account on OSF (Open
         # Science Framework), https://osf.io/4r3jt/quickfiles/
@@ -553,6 +556,8 @@ def fetch_icbm152_brain_gm_mask(
     see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     # Fetching ICBM152 gray matter mask image
     icbm = fetch_icbm152_2009(
         data_dir=data_dir, resume=resume, verbose=verbose
@@ -669,6 +674,8 @@ def fetch_oasis_vbm(
     see the :ref:`dataset description <oasis_maps>`.
 
     """
+    check_params(locals())
+
     # check number of subjects
     if n_subjects is None:
         n_subjects = 403 if dartel_version else 415
@@ -893,6 +900,8 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
     .. footbibliography::
 
     """
+    check_params(locals())
+
     available_meshes = (
         "fsaverage3",
         "fsaverage4",
@@ -1041,6 +1050,8 @@ def load_fsaverage(mesh="fsaverage5", data_dir=None):
          - ``'flat'``: Polymesh for flattened surface
                        for left and right hemispheres
     """
+    check_params(locals())
+
     fsaverage = fetch_surf_fsaverage(mesh, data_dir=data_dir)
     renaming = {
         "pial": "pial",
@@ -1093,6 +1104,8 @@ def load_fsaverage_data(
     img : :obj:`~nilearn.surface.SurfaceImage`
         SurfaceImage with the freesurfer mesh and data.
     """
+    check_params(locals())
+
     if mesh_type not in ALLOWED_MESH_TYPES:
         raise ValueError(
             f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
