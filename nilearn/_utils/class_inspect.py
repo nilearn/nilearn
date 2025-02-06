@@ -1,5 +1,6 @@
 """Small utilities to inspect classes."""
 
+import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -15,6 +16,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import compare_version
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.helpers import is_matplotlib_installed
 
 # List of sklearn estimators checks that are valid
 # for all nilearn estimators.
@@ -209,6 +211,8 @@ def nilearn_check_estimator(estimator):
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_clean_kwargs)
+        yield (clone(estimator), check_masker_generate_report)
+        yield (clone(estimator), check_masker_generate_report_false)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -683,6 +687,74 @@ def check_nifti_masker_fit_with_4d_mask(estimator):
     with pytest.raises(DimensionError, match="Expected dimension is 3D"):
         estimator.mask_img = _img_4d_zeros()
         estimator.fit([_img_3d_rand()])
+
+
+def check_masker_generate_report(estimator):
+    """Check that maskers can generate report."""
+    from nilearn.conftest import _img_4d_rand_eye_medium, _make_surface_img
+    from nilearn.reporting.tests.test_html_report import _check_html
+
+    if not is_matplotlib_installed():
+        with warnings.catch_warnings(record=True) as warning_list:
+            result = estimator.generate_report()
+
+        assert len(warning_list) == 1
+        assert issubclass(warning_list[0].category, ImportWarning)
+        assert result == [None]
+
+        return
+
+    report = estimator.generate_report()
+
+    _check_html(report, is_fit=False)
+    assert "Make sure to run `fit`" in str(report)
+
+    if accept_niimg_input(estimator):
+        input_img = _img_4d_rand_eye_medium()
+    else:
+        input_img = _make_surface_img(2)
+
+    estimator.fit(input_img)
+
+    report = estimator.generate_report()
+
+    _check_html(report)
+
+    with TemporaryDirectory() as tmp_dir:
+        report.save_as_html(Path(tmp_dir) / "report.html")
+        assert (Path(tmp_dir) / "report.html").is_file()
+
+
+def check_masker_generate_report_false(estimator):
+    """Test with reports set to False."""
+    import pytest
+
+    from nilearn.conftest import _img_4d_rand_eye_medium, _make_surface_img
+    from nilearn.reporting.tests.test_html_report import _check_html
+
+    if not is_matplotlib_installed():
+        return
+
+    estimator.reports = False
+
+    if accept_niimg_input(estimator):
+        input_img = _img_4d_rand_eye_medium()
+    else:
+        input_img = _make_surface_img(2)
+
+    estimator.fit(input_img)
+
+    assert estimator._reporting_data is None
+    assert estimator._reporting() == [None]
+    with pytest.warns(
+        UserWarning,
+        match=("No visual outputs created."),
+    ):
+        report = estimator.generate_report()
+
+    _check_html(report, reports_requested=False)
+
+    assert "Empty Report" in str(report)
 
 
 def get_params(cls, instance, ignore=None):

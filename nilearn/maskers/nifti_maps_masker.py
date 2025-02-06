@@ -281,7 +281,7 @@ class NiftiMapsMasker(BaseMasker):
                 f"{type(displayed_maps)}"
             )
         self.displayed_maps = displayed_maps
-        self.report_id += 1
+
         return generate_report(self)
 
     def _reporting(self):
@@ -328,7 +328,6 @@ class NiftiMapsMasker(BaseMasker):
                 )
             maps_to_be_displayed = self.displayed_maps
 
-        self._report_content["report_id"] = self.report_id
         self._report_content["number_of_maps"] = n_maps
         self._report_content["displayed_maps"] = list(maps_to_be_displayed)
 
@@ -413,7 +412,6 @@ class NiftiMapsMasker(BaseMasker):
 
         self = sanitize_cleaning_parameters(self)
 
-        self.report_id = -1
         self._report_content = {
             "description": (
                 "This reports shows the spatial maps provided to the mask."

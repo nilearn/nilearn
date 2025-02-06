@@ -320,22 +320,6 @@ def test_generate_report_engine_no_plotly_warning(surf_maps_img, surf_img_2d):
     assert masker._report_content["engine"] == "matplotlib"
 
 
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
-def test_generate_report_engine_no_matplotlib_warning(
-    surf_maps_img, surf_img_2d
-):
-    """Test warning is raised when engine selected is matplotlib but it is not
-    installed.
-    """
-    masker = SurfaceMapsMasker(surf_maps_img)
-    masker.fit_transform(surf_img_2d(10))
-    with pytest.warns(ImportWarning, match="Matplotlib not installed"):
-        assert masker.generate_report(engine="matplotlib") == [None]
-
-
 @pytest.mark.parametrize("displayed_maps", [4, [1, 3, 4, 5], "all", [1]])
 def test_generate_report_displayed_maps_valid_inputs(
     matplotlib_pyplot, surf_maps_img, surf_img_2d, displayed_maps

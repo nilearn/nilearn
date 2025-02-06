@@ -9,7 +9,6 @@ from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import check_estimator
-from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
 
@@ -432,17 +431,3 @@ def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
 
     with pytest.raises(ValueError):
         masker.inverse_transform(data_2d.T)
-
-
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
-def test_nifti_spheres_masker_reporting_mpl_warning():
-    """Raise warning after exception if matplotlib is not installed."""
-    with warnings.catch_warnings(record=True) as warning_list:
-        result = NiftiSpheresMasker([(1, 1, 1)]).fit().generate_report()
-
-    assert len(warning_list) == 1
-    assert issubclass(warning_list[0].category, ImportWarning)
-    assert result == [None]

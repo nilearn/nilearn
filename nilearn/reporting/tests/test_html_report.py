@@ -18,7 +18,6 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
-    SurfaceLabelsMasker,
     SurfaceMasker,
 )
 
@@ -102,42 +101,6 @@ def test_report_empty_fit(masker_class, input_parameters):
     _check_html(masker.generate_report())
 
 
-@pytest.mark.parametrize(
-    "masker_class",
-    [
-        NiftiMasker,
-        MultiNiftiMasker,
-        NiftiLabelsMasker,
-        MultiNiftiLabelsMasker,
-        NiftiMapsMasker,
-        MultiNiftiMapsMasker,
-        NiftiSpheresMasker,
-    ],
-)
-def test_empty_report(masker_class, input_parameters):
-    """Test with reports set to False."""
-    masker = masker_class(**input_parameters, reports=False)
-    masker.fit()
-    assert masker._reporting_data is None
-    assert masker._reporting() == [None]
-    with pytest.warns(
-        UserWarning,
-        match=("No visual outputs created."),
-    ):
-        masker.generate_report()
-
-
-@pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
-def test_reports_after_fit_3d_data(
-    masker_class, input_parameters, data_img_3d
-):
-    """Tests report generation after fitting on 3D data."""
-    masker = masker_class(**input_parameters)
-    masker.fit(data_img_3d)
-    html = masker.generate_report()
-    _check_html(html)
-
-
 @pytest.mark.parametrize("masker_class", [NiftiMasker, NiftiLabelsMasker])
 def test_reports_after_fit_3d_data_with_mask(
     masker_class, input_parameters, img_3d_rand_eye, mask
@@ -207,7 +170,7 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     html = masker.generate_report(displayed_maps)
-    assert masker._report_content["report_id"] == 0
+
     assert masker._report_content["number_of_maps"] == n_regions
     assert masker._report_content["displayed_maps"] == list(displayed_maps)
     msg = (
@@ -237,7 +200,7 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
             html = masker.generate_report(displayed_maps)
     else:
         html = masker.generate_report(displayed_maps)
-    assert masker._report_content["report_id"] == 0
+
     assert masker._report_content["number_of_maps"] == n_regions
     assert masker._report_content["displayed_maps"] == list(
         range(expected_n_maps)
@@ -258,7 +221,7 @@ def test_nifti_maps_masker_report_image_in_fit(
     image, _ = generate_random_img((13, 11, 12, 3), affine=affine_eye)
     masker.fit(image)
     html = masker.generate_report(2)
-    assert masker._report_content["report_id"] == 0
+
     assert masker._report_content["number_of_maps"] == n_regions
     assert masker._report_content["warning_message"] is None
     assert html.body.count("<img") == 2
@@ -287,8 +250,6 @@ def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
     masker.fit()
     with pytest.warns(UserWarning, match="masker only has 1 seeds."):
         masker.generate_report(displayed_spheres=displayed_spheres)
-
-    assert masker._report_content["report_id"] == 0
 
 
 def test_nifti_spheres_masker_report_displayed_spheres_list():
@@ -599,47 +560,3 @@ def test_surface_masker_minimal_report_fit(
     if not reports:
         assert "Make sure to run `fit`" in str(report)
         assert 'src="data:image/svg+xml;base64,"' in str(report)
-
-
-def test_surface_masker_report_no_report(surf_img_1d):
-    """Check content of no report."""
-    masker = SurfaceMasker(reports=False)
-    masker.fit_transform(surf_img_1d)
-    report = masker.generate_report()
-
-    _check_html(report, reports_requested=False)
-    assert "No visual outputs created." in str(report)
-    assert "Empty Report" in str(report)
-
-
-@pytest.mark.parametrize("reports", [True, False])
-@pytest.mark.parametrize("label_names", [None, ["region 1", "region 2"]])
-def test_surface_label_masker_report_unfitted(
-    surf_label_img, label_names, reports
-):
-    masker = SurfaceLabelsMasker(surf_label_img, label_names, reports=reports)
-    report = masker.generate_report()
-
-    _check_html(report, reports_requested=reports, is_fit=False)
-    assert "Make sure to run `fit`" in str(report)
-
-
-def test_surface_label_masker_report(surf_label_img, surf_img_1d, tmp_path):
-    """Test that a report can be generated and saved as html."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
-    masker = masker.fit()
-    masker.transform(surf_img_1d)
-    report = masker.generate_report()
-    report.save_as_html(tmp_path / "surface_label_masker.html")
-
-
-def test_surface_label_masker_report_no_report(surf_label_img, surf_img_1d):
-    """Check content of no report."""
-    masker = SurfaceLabelsMasker(surf_label_img, reports=False)
-    masker = masker.fit()
-    masker.transform(surf_img_1d)
-    report = masker.generate_report()
-
-    _check_html(report, reports_requested=False)
-    assert "No visual outputs created." in str(report)
-    assert "Empty Report" in str(report)
