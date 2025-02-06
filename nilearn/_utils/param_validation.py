@@ -434,6 +434,8 @@ def check_params(fn_dict):
         "url": nilearn_typing.Url,
         "upper_cutoff": nilearn_typing.UpperCutoff,
         "verbose": nilearn_typing.Verbose,
+        "vmax": nilearn_typing.Vmax,
+        "vmin": nilearn_typing.Vmin,
     }
 
     keys_to_check = set(type_map.keys()).intersection(set(fn_dict.keys()))
