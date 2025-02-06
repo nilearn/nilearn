@@ -13,6 +13,7 @@ from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.param_validation import check_params
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -188,6 +189,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         -------
         SurfaceMasker object
         """
+        check_params(self.__dict__)
         del y
         self._fit_mask_img(img)
         assert self.mask_img_ is not None

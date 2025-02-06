@@ -10,7 +10,10 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.param_validation import check_reduction_strategy
+from nilearn._utils.param_validation import (
+    check_params,
+    check_reduction_strategy,
+)
 from nilearn.image import get_data, load_img, resample_img
 from nilearn.maskers._utils import (
     compute_middle_image,
@@ -530,6 +533,7 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        check_params(self.__dict__)
         check_reduction_strategy(self.strategy)
 
         if self.resampling_target not in ("labels", "data", None):

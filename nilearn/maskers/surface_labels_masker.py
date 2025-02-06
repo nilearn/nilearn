@@ -21,7 +21,10 @@ from nilearn._utils.helpers import (
     constrained_layout_kwargs,
     is_matplotlib_installed,
 )
-from nilearn._utils.param_validation import check_reduction_strategy
+from nilearn._utils.param_validation import (
+    check_params,
+    check_reduction_strategy,
+)
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -248,6 +251,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         -------
         SurfaceLabelsMasker object
         """
+        check_params(self.__dict__)
         del img, y
 
         check_reduction_strategy(self.strategy)

@@ -2131,7 +2131,7 @@ def plot_carpet(
     img = check_niimg_4d(img, dtype="auto")
 
     # Define TR and number of frames
-    t_r = t_r or img.header.get_zooms()[-1]
+    t_r = t_r or float(img.header.get_zooms()[-1])
     n_tsteps = img.shape[-1]
 
     if mask_img is None:
