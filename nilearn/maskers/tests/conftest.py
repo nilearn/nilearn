@@ -7,9 +7,7 @@ from nibabel import Nifti1Image
 
 def check_valid_for_all_maskers():
     """Return list of names of sklearn checks valid for all maskers."""
-    return [
-        "check_estimators_unfitted",
-    ]
+    return []
 
 
 @pytest.fixture

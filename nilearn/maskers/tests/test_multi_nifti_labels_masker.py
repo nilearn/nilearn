@@ -10,11 +10,6 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn.conftest import _affine_eye, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
-
-extra_valid_checks = [
-    *check_valid_for_all_maskers(),
-]
 
 
 @pytest.mark.parametrize(
@@ -32,7 +27,6 @@ extra_valid_checks = [
                 )
             ),
         ],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -56,7 +50,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
                 )
             ),
         ],
-        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
