@@ -365,10 +365,52 @@ def _cast_to_int32(sample_mask):
     return np.asarray(sample_mask, new_dtype)
 
 
+# dictionary that matches a given parameter / attribute name to a type
+TYPE_MAPS = {
+    "annotate": nilearn_typing.Annotate,
+    "border_size": nilearn_typing.BorderSize,
+    "bg_on_data": nilearn_typing.BgOnData,
+    "colorbar": nilearn_typing.ColorBar,
+    "connected": nilearn_typing.Connected,
+    "data_dir": nilearn_typing.DataDir,
+    "draw_cross": nilearn_typing.DrawCross,
+    "detrend": nilearn_typing.Detrend,
+    "high_pass": nilearn_typing.HighPass,
+    "hrf_model": nilearn_typing.HrfModel,
+    "keep_masked_labels": nilearn_typing.KeepMaskedLabels,
+    "keep_masked_maps": nilearn_typing.KeepMaskedMaps,
+    "low_pass": nilearn_typing.LowPass,
+    "lower_cutoff": nilearn_typing.LowerCutoff,
+    "memory": nilearn_typing.MemoryLike,
+    "memory_level": nilearn_typing.MemoryLevel,
+    "n_jobs": nilearn_typing.NJobs,
+    "n_perm": nilearn_typing.NPerm,
+    "opening": nilearn_typing.Opening,
+    "radiological": nilearn_typing.Radiological,
+    "random_state": nilearn_typing.RandomState,
+    "resolution": nilearn_typing.Resolution,
+    "resume": nilearn_typing.Resume,
+    "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
+    "standardize_confounds": nilearn_typing.StandardizeConfounds,
+    "t_r": nilearn_typing.Tr,
+    "tfce": nilearn_typing.Tfce,
+    "threshold": nilearn_typing.Threshold,
+    "title": nilearn_typing.Title,
+    "two_sided_test": nilearn_typing.TwoSidedTest,
+    "target_affine": nilearn_typing.TargetAffine,
+    "target_shape": nilearn_typing.TargetShape,
+    "url": nilearn_typing.Url,
+    "upper_cutoff": nilearn_typing.UpperCutoff,
+    "verbose": nilearn_typing.Verbose,
+    "vmax": nilearn_typing.Vmax,
+    "vmin": nilearn_typing.Vmin,
+}
+
+
 def check_params(fn_dict):
     """Check types of inputs passed to a function / method / class.
 
-    This function checks the types of function / method parameters or
+    This function checks the types of function / method parameters ortype_map
     the attributes of the class.
 
     This function is made to check the types of the parameters
@@ -404,41 +446,7 @@ def check_params(fn_dict):
                 check_params(locals())
 
     """
-    # dictionary that matches a given parameter / attribute name
-    # to a type
-    type_map = {
-        "border_size": nilearn_typing.BorderSize,
-        "connected": nilearn_typing.Connected,
-        "data_dir": nilearn_typing.DataDir,
-        "detrend": nilearn_typing.Detrend,
-        "high_pass": nilearn_typing.HighPass,
-        "hrf_model": nilearn_typing.HrfModel,
-        "low_pass": nilearn_typing.LowPass,
-        "lower_cutoff": nilearn_typing.LowerCutoff,
-        "memory": nilearn_typing.MemoryLike,
-        "memory_level": nilearn_typing.MemoryLevel,
-        "n_jobs": nilearn_typing.NJobs,
-        "n_perm": nilearn_typing.NPerm,
-        "opening": nilearn_typing.Opening,
-        "random_state": nilearn_typing.RandomState,
-        "resolution": nilearn_typing.Resolution,
-        "resume": nilearn_typing.Resume,
-        "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
-        "t_r": nilearn_typing.Tr,
-        "tfce": nilearn_typing.Tfce,
-        "threshold": nilearn_typing.Threshold,
-        "title": nilearn_typing.Title,
-        "two_sided_test": nilearn_typing.TwoSidedTest,
-        "target_affine": nilearn_typing.TargetAffine,
-        "target_shape": nilearn_typing.TargetShape,
-        "url": nilearn_typing.Url,
-        "upper_cutoff": nilearn_typing.UpperCutoff,
-        "verbose": nilearn_typing.Verbose,
-        "vmax": nilearn_typing.Vmax,
-        "vmin": nilearn_typing.Vmin,
-    }
-
-    keys_to_check = set(type_map.keys()).intersection(set(fn_dict.keys()))
+    keys_to_check = set(TYPE_MAPS.keys()).intersection(set(fn_dict.keys()))
     # Send a message to dev if they are using this function needlessly.
     if not keys_to_check:
         raise ValueError(
@@ -447,7 +455,7 @@ def check_params(fn_dict):
         )
 
     for k in keys_to_check:
-        type_to_check = type_map[k]
+        type_to_check = TYPE_MAPS[k]
         value = fn_dict[k]
 
         # TODO update when dropping python 3.9

@@ -27,20 +27,27 @@ from joblib.memory import Memory
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
+Annotate = bool
 BorderSize = int
+BgOnData = bool
+ColorBar = bool
 Connected = int
 Detrend = bool
+DrawCross = bool
+KeepMaskedLabels = bool
+KeepMaskedMaps = bool
 LowerCutoff = float
 MemoryLevel = int
 NJobs = int
 NPerm = int
+Radiological = bool
 Resume = bool
 Standardize = bool
+StandardizeConfounds = bool
 Tfce = bool
 TwoSidedTest = bool
 UpperCutoff = float
 Verbose = int
-
 
 # TODO update when dropping python 3.9
 if sys.version_info[1] < 10:

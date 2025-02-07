@@ -186,7 +186,7 @@ docdict["classifier_options"] = f"""
 
 """
 
-# cmap
+# clean_args
 docdict["clean_args"] = """
 clean_args : :obj:`dict` or None, default=None
     Keyword arguments to be passed
