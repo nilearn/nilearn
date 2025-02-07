@@ -309,7 +309,7 @@ print(
 # For this method, we would have to load the fMRI image into shared memory
 # that can be accessed by multiple processes. This way, each process can
 # access the data directly from the shared memory without loading the entire
-# image into memory.
+# image into memory again.
 
 from multiprocessing.shared_memory import SharedMemory
 
