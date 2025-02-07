@@ -144,12 +144,20 @@ def plot_img_comparison(
         # when plot_hist is False creates two empty axes
         # and doesn't plot anything
         if plot_hist:
-            ax1.scatter(
+            # ax1.scatter(
+            #     ref_data,
+            #     src_data,
+            #     label=f"Pearsonr: {corr:.2f}",
+            #     c="g",
+            #     alpha=0.6,
+            # )
+            ax1.hexbin(
                 ref_data,
                 src_data,
-                label=f"Pearsonr: {corr:.2f}",
-                c="g",
-                alpha=0.6,
+                bins="log",
+                # cmap=cmap,
+                # gridsize=gridsize,
+                # extent=lims,
             )
             x = np.linspace(*ax1.get_xlim(), num=100)
             ax1.plot(x, x, linestyle="--", c="k")
