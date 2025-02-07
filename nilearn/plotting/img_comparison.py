@@ -88,24 +88,25 @@ def plot_img_comparison(
         raise TypeError(
             "'ref_imgs' and 'src_imgs' "
             "must both be list of Niimg-like or SurfaceImage.\n"
-            f"Got {type(src_imgs)=} and {type(ref_imgs)=}."
+            f"Got {type(ref_imgs)=} and {type(src_imgs)=}."
         )
 
-    if isinstance(ref_imgs[0], (str, Path, Nifti1Image)) and isinstance(
-        src_imgs[0], (str, Path, Nifti1Image)
+    if all(isinstance(x, (str, Path, Nifti1Image)) for x in ref_imgs) and all(
+        isinstance(x, (str, Path, Nifti1Image)) for x in src_imgs
     ):
         image_type = "volume"
 
-    elif isinstance(ref_imgs[0], (SurfaceImage)) and isinstance(
-        src_imgs[0], (SurfaceImage)
+    elif all(isinstance(x, SurfaceImage) for x in ref_imgs) and all(
+        isinstance(x, SurfaceImage) for x in src_imgs
     ):
         image_type = "surface"
-
     else:
+        types_ref_imgs = {type(x) for x in ref_imgs}
+        types_src_imgs = {type(x) for x in src_imgs}
         raise TypeError(
-            "'ref_img' and 'src_img' "
-            "must both be Niimg-like or SurfaceImage.\n"
-            f"Got {type(src_imgs)=} and {type(ref_imgs)=}."
+            "'ref_imgs' and 'src_imgs' "
+            "must both be list of Niimg-like or SurfaceImage.\n"
+            f"Got {types_ref_imgs=} and {types_src_imgs=}."
         )
 
     masker = _sanitize_masker(masker, image_type, ref_imgs[0])
@@ -122,16 +123,10 @@ def plot_img_comparison(
         else:
             (ax1, ax2) = axes
 
-        if image_type == "volume":
-            ref_img = check_niimg_3d(ref_img)
-            src_img = check_niimg_3d(src_img)
-        elif image_type == "surface":
-            ref_img.data._check_ndims(1)
-            src_img.data._check_ndims(1)
-            check_same_n_vertices(ref_img.mesh, src_img.mesh)
+        ref_data, src_data = _extract_data_2_images(
+            ref_img, src_img, masker=masker
+        )
 
-        ref_data = masker.transform(ref_img).ravel()
-        src_data = masker.transform(src_img).ravel()
         if ref_data.shape != src_data.shape:
             warnings.warn("Images are not shape-compatible")
             return
