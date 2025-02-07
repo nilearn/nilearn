@@ -40,23 +40,15 @@ Method
 ======
 
 We will use `memory_profiler
-<https://github.com/pythonprofilers/memory_profiler>`_'s command-line tool
-``mprof`` to measure the memory of the whole script.
+<https://github.com/pythonprofilers/memory_profiler>`_'s ``memory_usage``
+function to measure the peak memory usage of each method as well as the
+overall memory usage of the script.
 
-.. code-block:: bash
+To better resolve the memory usage peaks for each method, we will add 30 second
+wait time between them.
 
-        mprof run --include-children --multiprocess script.py
-
-After it has finished running, you can generate a plot showing the memory
-usage of the script over time.
-
-.. code-block:: bash
-
-        mprof plot
-
-To resolve the memory usage peaks for each method, we will add 30 second sleep
-between each method. This will allow us to see the memory usage of each method
-separately in the plot.
+After it has finished running, we will get a plot of the memory usage over
+time with each method's peak memory usage annotated on the plot.
 
 Here's the script we will use:
 
@@ -427,8 +419,6 @@ Here's the script we will use:
 
             # plot memory usage over time
             plot_memory_usage(usage, peak_usage, N_SUBJECTS, N_REGIONS, WAIT_TIME)
-
-
 
 
 Result
