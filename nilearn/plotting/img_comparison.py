@@ -36,11 +36,18 @@ def plot_img_comparison(
 
     Parameters
     ----------
-    ref_imgs : nifti_like
-        Reference images.
+    ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+              or a :obj:`list` of
+              3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Reference image.
 
-    src_imgs : nifti_like
-        Source images.
+    src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+              or a :obj:`list` of
+              3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Source image.
+        Its type must match that of the ``ref_img``.
+        If the source image is Niimg-Like,
+        it will be resampled to match that or the source image.
 
     masker : 3D Niimg-like binary mask or \
             :obj:`~nilearn.maskers.NiftiMasker` or \
@@ -87,7 +94,7 @@ def plot_img_comparison(
     if not isinstance(ref_imgs, list) or not isinstance(src_imgs, list):
         raise TypeError(
             "'ref_imgs' and 'src_imgs' "
-            "must both be list of Niimg-like or SurfaceImage.\n"
+            "must both be list of 3D Niimg-like or SurfaceImage.\n"
             f"Got {type(ref_imgs)=} and {type(src_imgs)=}."
         )
 
@@ -105,7 +112,7 @@ def plot_img_comparison(
         types_src_imgs = {type(x) for x in src_imgs}
         raise TypeError(
             "'ref_imgs' and 'src_imgs' "
-            "must both be list of Niimg-like or SurfaceImage.\n"
+            "must both be list of 3D Niimg-like or SurfaceImage.\n"
             f"Got {types_ref_imgs=} and {types_src_imgs=}."
         )
 
@@ -210,7 +217,8 @@ def plot_bland_altman(
         Reference image.
 
     src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-        Source image. Its type must match that of the ``ref_img``.
+        Source image.
+        Its type must match that of the ``ref_img``.
         If the source image is Niimg-Like,
         it will be resampled to match that or the source image.
 
