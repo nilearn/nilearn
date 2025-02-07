@@ -50,7 +50,8 @@ def plot_img_comparison(
         Mask to be used on data.
         Its type must be compatible with that of the ``ref_img``.
         If ``None`` is passed,
-        an appropriate masker will be fitted on the reference image.
+        an appropriate masker will be fitted
+        on the first reference image.
 
     plot_hist : :obj:`bool`, default=True
         If True then histograms of each img in ref_imgs will be plotted
@@ -81,7 +82,7 @@ def plot_img_comparison(
     # Cast to list
     if isinstance(ref_imgs, (str, Path, Nifti1Image, SurfaceImage)):
         ref_imgs = [ref_imgs]
-    if isinstance(ref_imgs, (str, Path, Nifti1Image, SurfaceImage)):
+    if isinstance(src_imgs, (str, Path, Nifti1Image, SurfaceImage)):
         src_imgs = [src_imgs]
     if not isinstance(ref_imgs, list) or not isinstance(src_imgs, list):
         raise TypeError(
@@ -120,6 +121,15 @@ def plot_img_comparison(
             )
         else:
             (ax1, ax2) = axes
+
+        if image_type == "volume":
+            ref_img = check_niimg_3d(ref_img)
+            src_img = check_niimg_3d(src_img)
+        elif image_type == "surface":
+            ref_img.data._check_ndims(1)
+            src_img.data._check_ndims(1)
+            check_same_n_vertices(ref_img.mesh, src_img.mesh)
+
         ref_data = masker.transform(ref_img).ravel()
         src_data = masker.transform(src_img).ravel()
         if ref_data.shape != src_data.shape:
@@ -261,7 +271,6 @@ def plot_bland_altman(
     ----------
 
     .. footbibliography::
-
 
     """
     data_ref, data_src = _extract_data_2_images(

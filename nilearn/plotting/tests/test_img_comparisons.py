@@ -27,8 +27,8 @@ def test_deprecation_function_moved(matplotlib_pyplot, img_3d_ones_eye):
 
     with pytest.warns(DeprecationWarning, match="moved"):
         plot_img_comparison(
-            [img_3d_ones_eye],
-            [img_3d_ones_eye],
+            img_3d_ones_eye,
+            img_3d_ones_eye,
             NiftiMasker(img_3d_ones_eye).fit(),
         )
 
@@ -45,10 +45,24 @@ def test_deprecation_function_moved(matplotlib_pyplot, img_3d_ones_eye):
 def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
     """Tests for plot_img_comparision with masker or mask image."""
     plot_img_comparison(
-        [img_3d_mni],
-        [img_3d_mni],
+        img_3d_mni,
+        img_3d_mni,
         masker,
     )
+
+
+@pytest.mark.parametrize(
+    "masker",
+    [
+        None,
+        _make_surface_mask(),
+        SurfaceMasker(mask_img=_make_surface_mask()),
+        SurfaceMasker(mask_img=_make_surface_mask()).fit(),
+    ],
+)
+def test_plot_img_comparison_surface(matplotlib_pyplot, surf_img_1d, masker):
+    """Test Bland-Altman plot with 2 surface images."""
+    plot_img_comparison(surf_img_1d, [surf_img_1d, surf_img_1d], masker=masker)
 
 
 def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
