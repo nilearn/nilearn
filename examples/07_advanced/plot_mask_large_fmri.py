@@ -12,10 +12,8 @@ and we will compare these strategies against a naive usage of :class:`~nilearn.m
 To make this more concrete, we will create a large fMRI image with over 800 time points by concatenating individual subjects in the :func:`~nilearn.datasets.fetch_development_fmri` dataset.
 Our goal is to extract data from several regions of interest (ROIs) defined by a number of binary masks, all in parallel.
 
-The issue when trying to process a large fMRI image in parallel like this is
-that each parallel process will load the entire fMRI image into memory. This
-can lead to a significant increase in memory usage and can slow down the
-processing.
+When using :class:`~nilearn.maskers.NiftiMasker` to extract data from each ROI in parallel, each parallel process will load the entire fMRI image into memory.
+This can lead to a significant increase in memory usage and may be infeasible in some computational environments.
 
 We will compare three different methods to mask the data from the fMRI image:
 
