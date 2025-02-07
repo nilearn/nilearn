@@ -189,66 +189,42 @@ Here's the script we will use:
                 f" N_REGIONS={n_regions}"
             )
 
-            # use order of max usage to calculate offset for annotations
-            offset = np.array(list(usage.values())).max() * 0.006
+            # use order of max usage and time to calculate offset for annotations
+            xoffset = np.array(list(usage.keys())).max() * 0.001
+            yoffset = np.array(list(usage.values())).max() * 0.01
 
             # add annotations on each peak
             for peak in peak_usage:
                 if isinstance(peak_usage[peak], dict):
                     for sub_peak in peak_usage[peak]:
+                        if sub_peak == "single":
+                            continue
                         for sub_sub_peak in peak_usage[peak][sub_peak]:
-
-                            # # get baseline memory usage before the peak
-                            # # it should be wait_time/2 seconds before the peak
-                            # try:
-                            #     baseline = usage[
-                            #         peak_usage[peak][sub_peak][sub_sub_peak][1]
-                            #         - (wait_time / 2)
-                            #     ]
-                            # except KeyError:
-                            #     step = 0.05
-                            #     while True:
-                            #         baseline = usage[
-                            #             peak_usage[peak][sub_peak][sub_sub_peak][1]
-                            #             - (wait_time / 2)
-                            #             - step
-                            #         ]
-                            #         if baseline:
-                            #             break
-                            #         step += 0.05
+                            peak_time = (
+                                peak_usage[peak][sub_peak][sub_sub_peak][1] - zero_time
+                            )
+                            peak_mem = peak_usage[peak][sub_peak][sub_sub_peak][0]
                             ax.annotate(
-                                f"{peak_usage[peak][sub_peak][sub_sub_peak][0]:.2f}"
+                                f"{peak_mem:.2f}"
                                 f" MiB\n{peak},\n{sub_peak},\n{sub_sub_peak}",
-                                xy=(
-                                    peak_usage[peak][sub_peak][sub_sub_peak][1]
-                                    - zero_time,
-                                    peak_usage[peak][sub_peak][sub_sub_peak][0],
-                                ),
-                                xytext=(
-                                    (
-                                        peak_usage[peak][sub_peak][sub_sub_peak][1]
-                                        - zero_time
-                                    )
-                                    - offset,
-                                    peak_usage[peak][sub_peak][sub_sub_peak][0]
-                                    - offset,
-                                ),
-                                # arrowprops=dict(facecolor="black", shrink=0.05),
+                                xy=(peak_time, peak_mem),
+                                xytext=(peak_time - xoffset, peak_mem + yoffset),
                             )
                 else:
+                    peak_time = peak_usage[peak][1] - zero_time
+                    peak_mem = peak_usage[peak][0]
+
                     ax.annotate(
-                        f"{peak_usage[peak][0]:.2f} MiB\n"
-                        f"numpy_masker,\nparallel,\nshared",
-                        xy=(peak_usage[peak][1] - zero_time, peak_usage[peak][0]),
+                        f"{peak_mem:.2f} MiB\n" f"numpy_masker,\nparallel,\nshared",
+                        xy=(peak_time, peak_mem),
                         xytext=(
-                            (peak_usage[peak][1] - zero_time) - offset,
-                            peak_usage[peak][0] + offset,
+                            peak_time - xoffset,
+                            peak_mem + yoffset,
                         ),
-                        arrowprops=dict(facecolor="black", shrink=0.05),
                     )
 
-            # increase the y-axis limit by 10% to make the plot more readable
-            ax.set_ylim(ax.get_ylim()[0], ax.get_ylim()[1] * 1.1)
+            # increase the y-axis limit by 20% to make the plot more readable
+            ax.set_ylim(ax.get_ylim()[0], ax.get_ylim()[1] * 1.2)
             plt.savefig(
                 f"memory_usage_n{n_subjects}_j{n_regions}.png", bbox_inches="tight"
             )
@@ -451,6 +427,7 @@ Here's the script we will use:
 
             # plot memory usage over time
             plot_memory_usage(usage, peak_usage, N_SUBJECTS, N_REGIONS, WAIT_TIME)
+
 
 
 
