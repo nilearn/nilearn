@@ -1,25 +1,33 @@
 """
 Working with long time series fMRI images
-================================
+=========================================
 
-In this example, we will demonstrate how one can work with large fMRI images more efficiently.
-Note that fMRI images can be large on-disk due to several different factors, including a long acquisition or high-resolution sampling.
-Currently, this example focuses on memory-efficient interactions with long time series fMRI data.
-In this case, loading the whole time series into memory may represent a significant computational cost.
-We will therefore explore strategies to minimize the amount of data that is loaded into memory,
-and we will compare these strategies against a naive usage of :class:`~nilearn.maskers.NiftiMasker`.
+In this example, we will demonstrate how one can work with large fMRI images
+more efficiently.Note that fMRI images can be large on-disk due to several
+different factors, including a long acquisition or high-resolution sampling.
+Currently, this example focuses on memory-efficient interactions with long
+time series fMRI data. In this case, loading the whole time series into memory
+may represent a significant computational cost. We will therefore explore
+strategies to minimize the amount of data that is loaded into memory,
+and we will compare these strategies against a naive usage of
+:class:`~nilearn.maskers.NiftiMasker`.
 
-To make this more concrete, we will create a large fMRI image with over 800 time points by concatenating individual subjects in the :func:`~nilearn.datasets.fetch_development_fmri` dataset.
-Our goal is to extract data from several regions of interest (ROIs) defined by a number of binary masks, all in parallel.
+To make this more concrete, we will create a large fMRI image with over
+800 time points by concatenating individual subjects in the
+:func:`~nilearn.datasets.fetch_development_fmri` dataset.
+Our goal is to extract data from several regions of interest (ROIs)
+defined by a number of binary masks, all in parallel.
 
-When using :class:`~nilearn.maskers.NiftiMasker` to extract data from each ROI in parallel, each parallel process will load the entire fMRI image into memory.
-This can lead to a significant increase in memory usage and may be infeasible in some computational environments.
+When using :class:`~nilearn.maskers.NiftiMasker` to extract data from each
+ROI in parallel, each parallel process will load the entire fMRI image into
+memory. This can lead to a significant increase in memory usage and may be
+infeasible in some computational environments.
 
 We will compare three different methods to mask the data from the fMRI image:
 
-1. Using the :class:`~nilearn.maskers.NiftiMasker`
-2. Using numpy indexing
-3. Using numpy indexing with shared memory
+1. A naive, unoptimized usage of :class:`~nilearn.maskers.NiftiMasker`
+2. Using array proxies defined with :mod:`nibabel`
+3. Using :class:`multiprocessing.SharedMemory`
 
 """
 
@@ -52,51 +60,46 @@ fmri_img.to_filename(fmri_path)
 # Create a set of binary masks
 # ----------------------------
 # We will now create 6 binary masks from a brain atlas. Here we will use the
-# DIFUMO atlas via the :func:`~nilearn.datasets.fetch_atlas_difumo` function.
-# This atlas is a probabilistic atlas so we will threshold it to create binary
-# masks. You might want to use a different atlas or create your own masks.
+# multiscale functional brain parcellations via the
+# :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` function.
+# We will fetch a 64-region version of this atlas and then create separate
+# binary masks for the first 6 regions.
 
-from nilearn.datasets import fetch_atlas_difumo
-from nilearn.image import (
-    index_img,
-    load_img,
-    resample_to_img,
-)
+from nilearn.datasets import fetch_atlas_basc_multiscale_2015
+from nilearn.image import load_img, new_img_like, resample_to_img
 
-atlas_path = fetch_atlas_difumo(dimension=64).maps
+atlas_path = fetch_atlas_basc_multiscale_2015(resolution=64).maps
 
-masks = load_img(atlas_path)
-# only keep the first 6 regions
-masks = index_img(masks, slice(0, N_REGIONS))
+atlas_img = load_img(atlas_path)
 
 # %%
-# In this case, the atlas and the mask have different resolutions. So we will
-# resample the mask to the fMRI image. It is important to do that because
-# only :class:`~nilearn.maskers.NiftiMasker` can handle the resampling of the
-# mask to the fMRI image but other methods considered here will not.
+# In this case, the atlas and the fMRI image have different resolutions.
+# So we will resample the atlas to the fMRI image. It is important to do that
+# because only :class:`~nilearn.maskers.NiftiMasker` can handle the resampling
+# of the mask to the fMRI image but other methods considered here will not.
 
-masks = datasets.fetch_atlas_basc_multiscale_2015(resolution=7).maps
-mask_img = nib.load(masks)
-resampled_mask = resample_to_img(
-    mask_img,
-    fmri_path,
+resampled_atlas = resample_to_img(
+    atlas_img,
+    fmri_img,
     interpolation="nearest",
     copy_header=True,
     force_resample=True,
 )
 
+mask_imgs = []
+mask_paths = []
 for idx in range(N_REGIONS):
-    mask = mask_img.get_fdata() == idx
-    resampled_mask = image.new_img_like(
-        ref_niimg=fmri_path,
+    mask = resampled_atlas.get_fdata() == idx
+    mask = new_img_like(
+        ref_niimg=fmri_img,
         data=mask,
-        affine=mask_img.affine,
+        affine=resampled_atlas.affine,
         copy_header=True,
     )
 
-    mask_imgs.append(resampled_mask)
-    path = output_dir / f"mask_{i}.nii.gz"
-    resampled_mask.to_filename(path)
+    mask_imgs.append(mask)
+    path = output_dir / f"mask_{idx}.nii.gz"
+    mask.to_filename(path)
     mask_paths.append(path)
 
 # %%
