@@ -75,7 +75,7 @@ masks = index_img(masks, slice(0, N_REGIONS))
 # In this case, the atlas and the mask have different resolutions. So we will
 # resample the mask to the fMRI image. It is important to do that because
 # only :class:`~nilearn.maskers.NiftiMasker` can handle the resampling of the
-# mask to the fMRI image but not the numpy indexing method we will use later.
+# mask to the fMRI image but other methods considered here will not.
 
 mask_paths = []
 mask_imgs = []
