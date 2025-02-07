@@ -27,7 +27,7 @@ We will compare three different methods to mask the data from the fMRI image:
 
 1. A naive, unoptimized usage of :class:`~nilearn.maskers.NiftiMasker`
 2. Using array proxies defined with :mod:`nibabel`
-3. Using :class:`multiprocessing.SharedMemory`
+3. Using :class:`multiprocessing.shared_memory.SharedMemory`
 
 """
 
