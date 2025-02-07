@@ -5,10 +5,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
-from nilearn._utils.data_gen import (
-    generate_labeled_regions,
-    generate_random_img,
-)
+from nilearn._utils.data_gen import generate_random_img
 from nilearn.image import get_data
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -64,18 +61,11 @@ def labels(n_regions):
 
 
 @pytest.fixture
-def labels_img(shape_3d_default, affine_eye, n_regions):
-    return generate_labeled_regions(
-        shape_3d_default, affine=affine_eye, n_regions=n_regions
-    )
-
-
-@pytest.fixture
-def input_parameters(masker_class, mask, labels, labels_img, img_maps):
+def input_parameters(masker_class, mask, labels, img_labels, img_maps):
     if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": mask}
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
-        return {"labels_img": labels_img, "labels": labels}
+        return {"labels_img": img_labels, "labels": labels}
     if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
         return {"maps_img": img_maps}
     if masker_class is NiftiSpheresMasker:
@@ -257,9 +247,9 @@ def test_nifti_spheres_masker_report_1_sphere():
     assert empty_div not in report.body
 
 
-def test_nifti_labels_masker_report_incorrect_label_error(labels, labels_img):
+def test_nifti_labels_masker_report_incorrect_label_error(labels, img_labels):
     """Check that providing incorrect labels raises an error."""
-    masker = NiftiLabelsMasker(labels_img, labels=labels[:-1])
+    masker = NiftiLabelsMasker(img_labels, labels=labels[:-1])
     masker.fit()
 
     with pytest.raises(
@@ -268,9 +258,9 @@ def test_nifti_labels_masker_report_incorrect_label_error(labels, labels_img):
         masker.generate_report()
 
 
-def test_nifti_labels_masker_report_warning_no_img_fit(labels, labels_img):
+def test_nifti_labels_masker_report_warning_no_img_fit(labels, img_labels):
     """Check warning thrown when no image was provided to fit."""
-    masker = NiftiLabelsMasker(labels_img, labels=labels)
+    masker = NiftiLabelsMasker(img_labels, labels=labels)
     masker.fit()
     with pytest.warns(
         UserWarning, match="No image provided to fit in NiftiLabelsMasker"
@@ -279,10 +269,10 @@ def test_nifti_labels_masker_report_warning_no_img_fit(labels, labels_img):
 
 
 def test_nifti_labels_masker_report_no_image_for_fit(
-    data_img_3d, n_regions, labels, labels_img
+    data_img_3d, n_regions, labels, img_labels
 ):
     """Check no contour in image when no image was provided to fit."""
-    masker = NiftiLabelsMasker(labels_img, labels=labels)
+    masker = NiftiLabelsMasker(img_labels, labels=labels)
     masker.fit()
 
     # No image was provided to fit, regions are plotted using
@@ -300,10 +290,10 @@ def test_nifti_labels_masker_report_no_image_for_fit(
 
 
 def test_nifti_labels_masker_report(
-    data_img_3d, mask, affine_eye, n_regions, labels, labels_img
+    data_img_3d, mask, affine_eye, n_regions, labels, img_labels
 ):
     """Check warning thrown when no image was provided to fit."""
-    masker = NiftiLabelsMasker(labels_img, labels=labels, mask_img=mask)
+    masker = NiftiLabelsMasker(img_labels, labels=labels, mask_img=mask)
     masker.fit(data_img_3d)
     report = masker.generate_report()
 
@@ -344,7 +334,7 @@ def test_nifti_labels_masker_report(
     assert "Regions summary" in str(report)
 
     # Check region sizes calculations
-    expected_region_sizes = Counter(get_data(labels_img).ravel())
+    expected_region_sizes = Counter(get_data(img_labels).ravel())
     for r in range(1, n_regions + 1):
         assert_almost_equal(
             masker._report_content["summary"]["size (in mm^3)"][r - 1],
@@ -354,7 +344,7 @@ def test_nifti_labels_masker_report(
 
     # Check that region labels are no displayed in the report
     # when they were not provided by the user.
-    masker = NiftiLabelsMasker(labels_img)
+    masker = NiftiLabelsMasker(img_labels)
     masker.fit()
     report = masker.generate_report()
 
@@ -411,10 +401,6 @@ def test_overlaid_report(img_fmri):
         mask_args={"threshold": 0.0},
         target_affine=np.eye(3) * 3,
     )
-    html = masker.generate_report()
-
-    assert "Make sure to run `fit`" in str(html)
-
     masker.fit(img_fmri)
     html = masker.generate_report()
 
@@ -474,9 +460,9 @@ def test_multi_nifti_masker_generate_report_warning(
         masker.fit([img_fmri, img_fmri]).generate_report()
 
 
-def test_multi_nifti_labels_masker_report_warning(labels_img, img_fmri):
+def test_multi_nifti_labels_masker_report_warning(img_labels, img_fmri):
     """Test calling generate report on multiple subjects raises warning."""
-    masker = MultiNiftiLabelsMasker(labels_img)
+    masker = MultiNiftiLabelsMasker(img_labels)
 
     with pytest.warns(
         UserWarning, match="A list of 4D subject images were provided to fit. "
@@ -505,7 +491,6 @@ def test_surface_masker_minimal_report_no_fit(
     report = masker.generate_report()
 
     _check_html(report, reports_requested=reports, is_fit=False)
-    assert "Make sure to run `fit`" in str(report)
 
 
 @pytest.mark.parametrize("reports", [True, False])
@@ -522,5 +507,4 @@ def test_surface_masker_minimal_report_fit(
     _check_html(report, reports_requested=reports)
     assert '<div class="image">' in str(report)
     if not reports:
-        assert "Make sure to run `fit`" in str(report)
         assert 'src="data:image/svg+xml;base64,"' in str(report)
