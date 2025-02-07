@@ -1033,6 +1033,7 @@ def non_parametric_inference(
     ----------
     .. footbibliography::
     """
+    check_params(locals())
     _check_second_level_input(second_level_input, design_matrix)
     _check_confounds(confounds)
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]

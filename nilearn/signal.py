@@ -516,6 +516,7 @@ def high_variance_confounds(
     --------
     nilearn.image.high_variance_confounds
     """
+    check_params(locals())
     if detrend:
         series = _detrend(series)  # copy
 

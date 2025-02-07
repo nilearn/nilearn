@@ -21,6 +21,7 @@ from sklearn.model_selection import KFold, cross_val_score
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc, logger
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import new_img_like
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
@@ -125,6 +126,7 @@ class GroupIterator:
         if n_jobs == -1:
             n_jobs = cpu_count()
         self.n_jobs = n_jobs
+        check_params(self.__dict__)
 
     def __iter__(self):
         yield from np.array_split(np.arange(self.n_features), self.n_jobs)
@@ -377,6 +379,8 @@ class SearchLight(TransformerMixin, BaseEstimator):
             group label for each sample for cross validation. Must have
             exactly as many elements as 3D images in img.
         """
+        check_params(self.__dict__)
+
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
 

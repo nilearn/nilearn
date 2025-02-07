@@ -1052,7 +1052,7 @@ view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"\
 
 # vmax
 docdict["vmax"] = """
-vmax : :obj:`float`, optional
+vmax : :obj:`float` or obj:`int` or None, optional
     Upper bound of the colormap. The values above vmax are masked.
     If `None`, the max of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
@@ -1060,7 +1060,7 @@ vmax : :obj:`float`, optional
 
 # vmin
 docdict["vmin"] = """
-vmin : :obj:`float`, optional
+vmin : :obj:`float`  or obj:`int` or None, optional
     Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.

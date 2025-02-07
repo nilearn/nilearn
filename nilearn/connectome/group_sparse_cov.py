@@ -1099,6 +1099,8 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             the object instance itself.
 
         """
+        check_params(self.__dict__)
+
         for x in subjects:
             check_array(x, accept_sparse=False)
 
