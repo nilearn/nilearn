@@ -16,7 +16,7 @@ import numpy as np
 import pytest
 import requests
 
-from nilearn.datasets import _utils
+from nilearn.datasets import _utils, utils
 from nilearn.datasets.tests._testing import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
@@ -604,10 +604,6 @@ def test_naive_ftp_adapter():
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare()
         )
-
-
-# TODO remove for release 0.13.0
-from nilearn.datasets import utils
 
 
 def test_load_sample_motor_activation_image():
