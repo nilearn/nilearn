@@ -59,9 +59,7 @@ fmri_img.to_filename(fmri_path)
 from nilearn.datasets import fetch_atlas_difumo
 from nilearn.image import (
     index_img,
-    iter_img,
     load_img,
-    new_img_like,
     resample_to_img,
 )
 
@@ -88,14 +86,14 @@ resampled_mask = resample_to_img(
 )
 
 for idx in range(N_REGIONS):
-    mask = (mask_img.get_fdata() == idx)
+    mask = mask_img.get_fdata() == idx
     resampled_mask = image.new_img_like(
         ref_niimg=fmri_path,
         data=mask,
         affine=mask_img.affine,
         copy_header=True,
     )
-    
+
     mask_imgs.append(resampled_mask)
     path = output_dir / f"mask_{i}.nii.gz"
     resampled_mask.to_filename(path)
