@@ -1,6 +1,6 @@
 """
-Working with large fMRI images
-==============================
+Working with long time series fMRI images
+================================
 
 In this example, we will demonstrate how one can work with large fMRI images more efficiently.
 Note that fMRI images can be large on-disk due to several different factors, including a long acquisition or high-resolution sampling.
