@@ -15,6 +15,13 @@ from nilearn.plotting.img_comparison import plot_img_comparison
 # ruff: noqa: ARG001
 
 
+def _mask():
+    affine = _affine_mni()
+    data_positive = np.zeros((7, 7, 3))
+    data_positive[1:-1, 2:-1, 1:] = 1
+    return Nifti1Image(data_positive, affine)
+
+
 def test_deprecation_function_moved(matplotlib_pyplot, img_3d_ones_eye):
     from nilearn.plotting.img_plotting import plot_img_comparison
 
@@ -24,6 +31,24 @@ def test_deprecation_function_moved(matplotlib_pyplot, img_3d_ones_eye):
             [img_3d_ones_eye],
             NiftiMasker(img_3d_ones_eye).fit(),
         )
+
+
+@pytest.mark.parametrize(
+    "masker",
+    [
+        None,
+        _mask(),
+        NiftiMasker(mask_img=_img_mask_mni()),
+        NiftiMasker(mask_img=_img_mask_mni()).fit(),
+    ],
+)
+def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
+    """Tests for plot_img_comparision with masker or mask image."""
+    plot_img_comparison(
+        [img_3d_mni],
+        [img_3d_mni],
+        masker,
+    )
 
 
 def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
@@ -73,13 +98,6 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     )
 
     assert np.allclose(correlations, correlations_1)
-
-
-def _mask():
-    affine = _affine_mni()
-    data_positive = np.zeros((7, 7, 3))
-    data_positive[1:-1, 2:-1, 1:] = 1
-    return Nifti1Image(data_positive, affine)
 
 
 @pytest.mark.parametrize(

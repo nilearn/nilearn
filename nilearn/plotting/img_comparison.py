@@ -21,7 +21,7 @@ from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
 def plot_img_comparison(
     ref_imgs,
     src_imgs,
-    masker,
+    masker=None,
     plot_hist=True,
     log=True,
     ref_label="image set 1",
@@ -42,8 +42,15 @@ def plot_img_comparison(
     src_imgs : nifti_like
         Source images.
 
-    masker : NiftiMasker object
+    masker : 3D Niimg-like binary mask or \
+            :obj:`~nilearn.maskers.NiftiMasker` or \
+            binary :obj:`~nilearn.surface.SurfaceImage` or \
+            or :obj:`~nilearn.maskers.SurfaceMasker` or \
+            None
         Mask to be used on data.
+        Its type must be compatible with that of the ``ref_img``.
+        If ``None`` is passed,
+        an appropriate masker will be fitted on the reference image.
 
     plot_hist : :obj:`bool`, default=True
         If True then histograms of each img in ref_imgs will be plotted
@@ -71,8 +78,37 @@ def plot_img_comparison(
         Pearson correlation between the images.
 
     """
-    # note: doesn't work with 4d images;
-    # when plot_hist is False creates two empty axes and doesn't plot anything
+    # Cast to list
+    if isinstance(ref_imgs, (str, Path, Nifti1Image, SurfaceImage)):
+        ref_imgs = [ref_imgs]
+    if isinstance(ref_imgs, (str, Path, Nifti1Image, SurfaceImage)):
+        src_imgs = [src_imgs]
+    if not isinstance(ref_imgs, list) or not isinstance(src_imgs, list):
+        raise TypeError(
+            "'ref_imgs' and 'src_imgs' "
+            "must both be list of Niimg-like or SurfaceImage.\n"
+            f"Got {type(src_imgs)=} and {type(ref_imgs)=}."
+        )
+
+    if isinstance(ref_imgs[0], (str, Path, Nifti1Image)) and isinstance(
+        src_imgs[0], (str, Path, Nifti1Image)
+    ):
+        image_type = "volume"
+
+    elif isinstance(ref_imgs[0], (SurfaceImage)) and isinstance(
+        src_imgs[0], (SurfaceImage)
+    ):
+        image_type = "surface"
+
+    else:
+        raise TypeError(
+            "'ref_img' and 'src_img' "
+            "must both be Niimg-like or SurfaceImage.\n"
+            f"Got {type(src_imgs)=} and {type(ref_imgs)=}."
+        )
+
+    masker = _sanitize_masker(masker, image_type, ref_imgs[0])
+
     corrs = []
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
         if axes is None:
@@ -93,6 +129,8 @@ def plot_img_comparison(
         corr = stats.pearsonr(ref_data, src_data)[0]
         corrs.append(corr)
 
+        # when plot_hist is False creates two empty axes
+        # and doesn't plot anything
         if plot_hist:
             ax1.scatter(
                 ref_data,
@@ -368,6 +406,23 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
             f"Got {type(src_img)=} and {type(ref_img)=}."
         )
 
+    masker = _sanitize_masker(masker, image_type, ref_img)
+
+    data_ref = masker.transform(ref_img)
+    data_src = masker.transform(src_img)
+
+    data_ref = data_ref.ravel()
+    data_src = data_src.ravel()
+
+    return data_ref, data_src
+
+
+def _sanitize_masker(masker, image_type, ref_img):
+    """Return an appropriate fiited masker.
+
+    Raise exception
+    if there is type mismatch between the masker and ref_img.
+    """
     if masker is None:
         if image_type == "volume":
             masker = NiftiMasker(
@@ -404,14 +459,7 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
                 mask_img=masker,
             )
 
-    # TODO replace with proper method
-    if not hasattr(masker, "mask_img_"):
+    if not masker.__sklearn_is_fitted__():
         masker.fit(ref_img)
 
-    data_ref = masker.transform(ref_img)
-    data_src = masker.transform(src_img)
-
-    data_ref = data_ref.ravel()
-    data_src = data_src.ravel()
-
-    return data_ref, data_src
+    return masker
