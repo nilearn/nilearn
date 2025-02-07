@@ -9,9 +9,8 @@ In this case, loading the whole time series into memory may represent a signific
 We will therefore explore strategies to minimize the amount of data that is loaded into memory,
 and we will compare these strategies against a naive usage of :class:`~nilearn.maskers.NiftiMasker`.
 
-Particularly, we will consider a case where we have a large fMRI image
-and we want to extract the data from several regions of interest (ROIs) defined
-by a number of binary masks, all in parallel.
+To make this more concrete, we will create a large fMRI image with over 800 time points by concatenating individual subjects in the :func:`~nilearn.datasets.fetch_development_fmri` dataset.
+Our goal is to extract data from several regions of interest (ROIs) defined by a number of binary masks, all in parallel.
 
 The issue when trying to process a large fMRI image in parallel like this is
 that each parallel process will load the entire fMRI image into memory. This
