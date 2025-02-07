@@ -77,26 +77,26 @@ masks = index_img(masks, slice(0, N_REGIONS))
 # only :class:`~nilearn.maskers.NiftiMasker` can handle the resampling of the
 # mask to the fMRI image but other methods considered here will not.
 
-mask_paths = []
-mask_imgs = []
-for i, mask in enumerate(iter_img(masks)):
-    resampled_mask = resample_to_img(
-        mask,
-        fmri_path,
-        interpolation="nearest",
-        copy_header=True,
-        force_resample=True,
-    )
-    data = resampled_mask.get_fdata()
-    data[data != 0] = 1
-    resampled_mask = new_img_like(
-        ref_niimg=resampled_mask,
-        data=data,
-        affine=resampled_mask.affine,
-        copy_header=True,
-    )
-    mask_imgs.append(resampled_mask)
+masks = datasets.fetch_atlas_basc_multiscale_2015(resolution=7).maps
+mask_img = nib.load(masks)
+resampled_mask = resample_to_img(
+    mask_img,
+    fmri_path,
+    interpolation="nearest",
+    copy_header=True,
+    force_resample=True,
+)
 
+for idx in range(N_REGIONS):
+    mask = (mask_img.get_fdata() == idx)
+    resampled_mask = image.new_img_like(
+        ref_niimg=fmri_path,
+        data=mask,
+        affine=mask_img.affine,
+        copy_header=True,
+    )
+    
+    mask_imgs.append(resampled_mask)
     path = output_dir / f"mask_{i}.nii.gz"
     resampled_mask.to_filename(path)
     mask_paths.append(path)
