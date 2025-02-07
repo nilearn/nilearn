@@ -185,7 +185,7 @@ print(
 )
 
 nifti_masker["parallel"]["in_memory"] = memory_usage(
-    (nifti_masker_parallel, (fmri_path, mask_paths)),
+    (nifti_masker_parallel, (fmri_img, mask_imgs)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
