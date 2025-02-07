@@ -50,7 +50,18 @@ wait time between them.
 After it has finished running, we will get a plot of the memory usage over
 time with each method's peak memory usage annotated on the plot.
 
-Here's the script we will use:
+You will find the script at the end of this page.
+
+Result
+======
+
+.. image:: ../images/memory_usage_n10_j20.png
+    :align: center
+    :width: 200%
+
+
+Script
+======
 
 .. code-block:: python
 
@@ -419,11 +430,3 @@ Here's the script we will use:
 
             # plot memory usage over time
             plot_memory_usage(usage, peak_usage, N_SUBJECTS, N_REGIONS, WAIT_TIME)
-
-
-Result
-======
-
-.. image:: ../images/mprofile_n10_j20_edited.png
-    :align: center
-    :width: 200%
