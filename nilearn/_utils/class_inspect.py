@@ -220,6 +220,10 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)
+            yield (
+                clone(estimator),
+                check_nifti_masker_fit_with_non_finite_in_mask,
+            )
             yield (clone(estimator), check_nifti_masker_clean_error)
             yield (clone(estimator), check_nifti_masker_clean_warning)
             yield (clone(estimator), check_nifti_masker_dtype)
@@ -658,6 +662,33 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
     estimator.fit([_img_3d_rand()])
 
     assert hasattr(estimator, "mask_img_")
+
+
+def check_nifti_masker_fit_with_non_finite_in_mask(estimator):
+    """Check 3D mask with non finite values can be used with nifti maskers.
+
+    - Warning is thrown.
+    - Output of transform must contain only finite values.
+    """
+    import pytest
+
+    from nilearn.conftest import _affine_eye, _img_3d_rand
+
+    # TODO
+    # (29, 30, 31) is used to match MAP_SHAPE in
+    # nilearn/regions/tests/test_region_extractor.py
+    # this test would fail for RegionExtractor otherwise
+    mask = np.ones((29, 30, 31))
+    mask[:, :, 7] = np.nan
+    mask[:, :, 4] = np.inf
+    mask_img = Nifti1Image(mask, affine=_affine_eye())
+
+    estimator.mask_img = mask_img
+    with pytest.warns(UserWarning, match="Non-finite values detected."):
+        estimator.fit()
+
+    signal = estimator.transform(_img_3d_rand())
+    assert np.all(np.isfinite(signal))
 
 
 def check_nifti_masker_fit_with_empty_mask(estimator):
