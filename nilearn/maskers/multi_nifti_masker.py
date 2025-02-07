@@ -405,9 +405,7 @@ class MultiNiftiMasker(NiftiMasker):
             If True, guarantees that output array has no memory in common with
             input array.
 
-        n_jobs : :obj:`int`, default=1
-            The number of cpus to use to do the computation. -1 means
-            'all cpus'.
+        %(n_jobs)s
 
         Returns
         -------

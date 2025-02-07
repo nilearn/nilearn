@@ -286,21 +286,25 @@ def test_fit_no_mask_no_img_error():
         mask.fit()
 
 
-def test_mask_strategy_errors(img_3d_rand_eye):
+def test_mask_strategy_errors_warnings(img_fmri):
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
-    mask = NiftiMasker(mask_strategy="oops")
+
+    masker = NiftiMasker(mask_strategy="oops", mask_args={"threshold": 0.0})
     with pytest.raises(
         ValueError, match="Unknown value of mask_strategy 'oops'"
     ):
-        mask.fit(img_3d_rand_eye)
+        masker.fit(img_fmri)
+
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
-    mask = NiftiMasker(mask_strategy="template")
+    masker = NiftiMasker(
+        mask_strategy="template", mask_args={"threshold": 0.0}
+    )
     with pytest.warns(
         UserWarning, match="Masking strategy 'template' is deprecated."
     ):
-        mask.fit(img_3d_rand_eye)
+        masker.fit(img_fmri)
 
 
 def test_compute_epi_mask(affine_eye):
@@ -362,12 +366,26 @@ def expected_mask(mask_args):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-@pytest.mark.parametrize("mask_args", [{}, {"threshold": 0.0}])
-def test_compute_brain_mask(strategy, mask_args, expected_mask):
-    """Check masker for template masking strategy."""
+@pytest.mark.parametrize("mask_args", [{}])
+def test_compute_brain_mask_empty_mask_error(strategy, mask_args):
+    """Check masker raise error when estimated mask is empty."""
+    masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
+
     img, _ = data_gen.generate_random_img((9, 9, 5))
 
+    with pytest.raises(ValueError, match="masks all data"):
+        masker.fit(img)
+
+
+@pytest.mark.parametrize(
+    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+)
+@pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
+def test_compute_brain_mask(strategy, expected_mask, mask_args):
+    """Check masker for template masking strategy."""
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
+    img, _ = data_gen.generate_random_img((9, 9, 5))
+
     masker.fit(img)
 
     np.testing.assert_array_equal(get_data(masker.mask_img_), expected_mask)

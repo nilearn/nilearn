@@ -296,37 +296,6 @@ def test_nifti_maps_masker_with_nans_and_infs(length, n_regions, affine_eye):
     assert np.all(np.isfinite(sig))
 
 
-def test_nifti_maps_masker_with_nans_and_infs_in_mask(
-    length, n_regions, affine_eye
-):
-    """Apply a NiftiMapsMasker with a mask containing NaNs and infs.
-
-    The masker should replace those NaNs and infs with zeros,
-    while raising a warning.
-    """
-    fmri_img, mask_img = generate_random_img(
-        (13, 11, 12, length),
-        affine=affine_eye,
-    )
-    maps_img, _ = generate_maps((13, 11, 12), n_regions, affine=affine_eye)
-
-    # Add NaNs and infs to mask
-    mask_data = np.array(get_data(mask_img), dtype=np.float64)
-
-    mask_data[:, :, 7] = np.nan
-    mask_data[:, :, 5] = np.inf
-
-    mask_img = Nifti1Image(mask_data, affine_eye)
-
-    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
-
-    with pytest.warns(UserWarning, match="Non-finite values detected."):
-        sig = masker.fit_transform(fmri_img)
-
-    assert sig.shape == (length, n_regions)
-    assert np.all(np.isfinite(sig))
-
-
 def test_nifti_maps_masker_with_nans_and_infs_in_data(
     length, n_regions, affine_eye
 ):

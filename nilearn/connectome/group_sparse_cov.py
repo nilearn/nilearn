@@ -258,15 +258,7 @@ def _group_sparse_covariance(
 
     _check_diagonal_normalization(emp_covs, n_subjects)
 
-    if precisions_init is None:
-        # Fortran order make omega[..., k] contiguous, which is often useful.
-        omega = np.ndarray(shape=emp_covs.shape, dtype=np.float64, order="F")
-        for k in range(n_subjects):
-            # Values on main diagonals are far from zero, because they
-            # are timeseries energy.
-            omega[..., k] = np.diag(1.0 / np.diag(emp_covs[..., k]))
-    else:
-        omega = precisions_init.copy()
+    omega = _init_omega(emp_covs, precisions_init)
 
     # Preallocate arrays
     y = np.ndarray(shape=(n_subjects, n_features - 1), dtype=np.float64)
@@ -462,6 +454,22 @@ def _group_sparse_covariance(
             "Maximum number of iterations reached without getting "
             "to the requested tolerance level."
         )
+
+    return omega
+
+
+def _init_omega(emp_covs, precisions_init):
+    """Initialize omega value."""
+    if precisions_init is None:
+        n_subjects = emp_covs.shape[-1]
+        # Fortran order make omega[..., k] contiguous, which is often useful.
+        omega = np.ndarray(shape=emp_covs.shape, dtype=np.float64, order="F")
+        for k in range(n_subjects):
+            # Values on main diagonals are far from zero, because they
+            # are timeseries energy.
+            omega[..., k] = np.diag(1.0 / np.diag(emp_covs[..., k]))
+    else:
+        omega = precisions_init.copy()
 
     return omega
 
@@ -1091,6 +1099,8 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             the object instance itself.
 
         """
+        check_params(self.__dict__)
+
         for x in subjects:
             check_array(x, accept_sparse=False)
 

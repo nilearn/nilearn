@@ -161,6 +161,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     grp_mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         Intersection of all masks.
     """
+    check_params(locals())
     if len(mask_imgs) == 0:
         raise ValueError("No mask provided for intersection")
     grp_mask = None
