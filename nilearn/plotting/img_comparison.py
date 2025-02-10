@@ -76,10 +76,6 @@ def plot_img_comparison(
     # when plot_hist is False creates two empty axes and doesn't plot anything
     corrs = []
 
-    if output_dir is not None:
-        output_dir = Path(output_dir)
-        output_dir.mkdir(exist_ok=True, parents=True)
-
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
         if axes is None:
             fig, (ax1, ax2) = plt.subplots(

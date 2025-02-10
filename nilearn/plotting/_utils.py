@@ -13,6 +13,8 @@ from nilearn.surface.surface import combine_hemispheres_meshes, get_data
 def save_figure_if_needed(fig, output_file):
     """Save figure if an output file value is given.
 
+    Create output path if required.
+
     Parameters
     ----------
     fig: figure, axes, or display instance
