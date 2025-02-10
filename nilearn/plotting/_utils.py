@@ -1,10 +1,24 @@
 from warnings import warn
 
+import matplotlib as mpl
+
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
 )
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
+
+
+def save_figure_if_needed(fig, output_file):
+    if output_file is None:
+        return fig
+
+    if isinstance(fig, mpl.axes.Axes):
+        fig = fig.figure
+
+    fig.savefig(output_file)
+    fig.close()
+    return None
 
 
 def sanitize_hemi_for_surface_image(hemi, map, mesh):
@@ -141,6 +155,6 @@ def _get_hemi(mesh, hemi):
         raise ValueError("hemi must be one of left, right or both.")
 
 
-def _check_threshold(threshold):
+def check_threshold_not_negative(threshold):
     if isinstance(threshold, (int, float)) and threshold < 0:
         raise ValueError("Threshold should be a non-negative number!")

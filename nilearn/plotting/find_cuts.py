@@ -18,7 +18,7 @@ from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn.image import get_data, iter_img, new_img_like, reorder_img
 from nilearn.image.image import smooth_array
 from nilearn.image.resampling import coord_transform, get_mask_bounds
-from nilearn.plotting._utils import _check_threshold
+from nilearn.plotting._utils import check_threshold_not_negative
 
 ###############################################################################
 # Functions for automatic choice of cuts coordinates
@@ -59,7 +59,7 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     ValueError
         if the specified threshold is a negative number
     """
-    _check_threshold(activation_threshold)
+    check_threshold_not_negative(activation_threshold)
     # if a pseudo-4D image or several images were passed (cf. #922),
     # we reduce to a single 3D image to find the coordinates
     img = check_niimg_3d(img)

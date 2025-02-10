@@ -15,6 +15,7 @@ from nilearn._utils import (
     fill_doc,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.plotting._utils import save_figure_if_needed
 from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
 
 
@@ -74,9 +75,14 @@ def plot_img_comparison(
     # note: doesn't work with 4d images;
     # when plot_hist is False creates two empty axes and doesn't plot anything
     corrs = []
+
+    if output_dir is not None:
+        output_dir = Path(output_dir)
+        output_dir.mkdir(exist_ok=True, parents=True)
+
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
         if axes is None:
-            _, (ax1, ax2) = plt.subplots(
+            fig, (ax1, ax2) = plt.subplots(
                 1,
                 2,
                 figsize=(12, 5),
@@ -114,10 +120,10 @@ def plot_img_comparison(
             ax2.grid("on")
             ax2.legend(loc="best")
 
+            output_file = None
             if output_dir is not None:
-                output_dir = Path(output_dir)
-                output_dir.mkdir(exist_ok=True, parents=True)
-                plt.savefig(output_dir / f"{int(i):04}.png")
+                output_file = output_dir / f"{int(i):04}.png"
+            save_figure_if_needed(fig, output_file)
 
     return corrs
 
@@ -314,12 +320,7 @@ def plot_bland_altman(
         cb = figure.colorbar(hb, cax=ax4)
         cb.set_label("log10(N)")
 
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-        figure = None
-
-    return figure
+    return save_figure_if_needed(figure, output_file)
 
 
 def _extract_data_2_images(ref_img, src_img, masker=None):
