@@ -10,6 +10,7 @@ import warnings
 from functools import partial
 
 from joblib import Parallel, delayed
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import (
     check_niimg_3d,
@@ -22,6 +23,7 @@ from nilearn._utils.class_inspect import (
     get_params,
 )
 from nilearn._utils.niimg_conversions import iter_check_niimg
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import resample_img
 from nilearn.maskers._utils import (
@@ -254,6 +256,7 @@ class MultiNiftiMasker(NiftiMasker):
             compatibility.
 
         """
+        check_params(self.__dict__)
         if getattr(self, "_shelving", None) is None:
             self._shelving = False
 
@@ -402,9 +405,7 @@ class MultiNiftiMasker(NiftiMasker):
             If True, guarantees that output array has no memory in common with
             input array.
 
-        n_jobs : :obj:`int`, default=1
-            The number of cpus to use to do the computation. -1 means
-            'all cpus'.
+        %(n_jobs)s
 
         Returns
         -------
@@ -526,7 +527,7 @@ class MultiNiftiMasker(NiftiMasker):
             inputs.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
         if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
 

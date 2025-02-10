@@ -12,7 +12,6 @@ from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 from nilearn.conftest import _make_mesh, _rng
 from nilearn.maskers import SurfaceMapsMasker
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 from nilearn.surface import SurfaceImage
 
 
@@ -55,12 +54,10 @@ def surf_maps_img():
 
 
 extra_valid_checks = [
-    *check_valid_for_all_maskers(),
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_dont_overwrite_parameters",
     "check_estimators_fit_returns_self",
     "check_estimators_overwrite_params",
-    "check_fit_check_is_fitted",
     "check_no_attributes_set_in_init",
     "check_positive_only_tag_during_fit",
     "check_readonly_memmap_input",
@@ -224,23 +221,6 @@ def test_surface_maps_masker_1d_img(surf_maps_img, surf_img_1d):
     ):
         masker = SurfaceMapsMasker(maps_img=surf_maps_img).fit()
         masker.transform(surf_img_1d)
-
-
-def test_surface_maps_masker_not_fitted_error(surf_maps_img):
-    """Test that an error is raised when transform or inverse_transform is
-    called before fit.
-    """
-    masker = SurfaceMapsMasker(surf_maps_img)
-    with pytest.raises(
-        ValueError,
-        match="SurfaceMapsMasker has not been fitted",
-    ):
-        masker.transform(None)
-    with pytest.raises(
-        ValueError,
-        match="SurfaceMapsMasker has not been fitted",
-    ):
-        masker.inverse_transform(None)
 
 
 def test_surface_maps_masker_labels_img_none():

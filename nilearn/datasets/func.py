@@ -20,6 +20,7 @@ from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, remove_parameters
+from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     ALLOWED_MESH_TYPES,
     PACKAGE_DIRECTORY,
@@ -110,6 +111,8 @@ def fetch_haxby(
     The anatomical image for subject 6 is unavailable.
 
     """
+    check_params(locals())
+
     if isinstance(subjects, numbers.Number) and subjects > 6:
         subjects = 6
 
@@ -294,6 +297,8 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     .. footbibliography::
 
     """
+    check_params(locals())
+
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
 
@@ -456,6 +461,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     fmri-data-set-for-visual-image-reconstruction/>`_
 
     """
+    check_params(locals())
+
     url = (
         "https://www.nitrc.org/frs/download.php"
         "/8486/miyawaki2008.tgz?i_agree=1&download_now=1"
@@ -719,6 +726,8 @@ def fetch_localizer_contrasts(
     nilearn.datasets.fetch_localizer_button_task
 
     """
+    check_params(locals())
+
     _check_inputs_fetch_localizer_contrasts(contrasts)
 
     if n_subjects is None:
@@ -951,6 +960,8 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
     nilearn.datasets.fetch_localizer_contrasts
 
     """
+    check_params(locals())
+
     data = fetch_localizer_contrasts(
         ["calculation (auditory and visual cue)"],
         n_subjects=n_subjects,
@@ -996,6 +1007,8 @@ def fetch_localizer_button_task(data_dir=None, verbose=1):
     nilearn.datasets.fetch_localizer_contrasts
 
     """
+    check_params(locals())
+
     data = fetch_localizer_contrasts(
         ["left vs right button press"],
         n_subjects=[2],
@@ -1172,6 +1185,8 @@ def fetch_abide_pcp(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     if derivatives is None:
         derivatives = ["func_preproc"]
     # People keep getting it wrong and submitting a string instead of a
@@ -1392,6 +1407,8 @@ def fetch_mixed_gambles(
         - 'description': data description
 
     """
+    check_params(locals())
+
     if n_subjects > 16:
         warnings.warn("Warning: there are only 16 subjects!")
         n_subjects = 16
@@ -1503,6 +1520,8 @@ def fetch_megatrawls_netmats(
     see the :ref:`dataset description <megatrawls_maps>`.
 
     """
+    check_params(locals())
+
     url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
     opts = {"uncompress": True}
 
@@ -1721,6 +1740,8 @@ def fetch_surf_nki_enhanced(
     For more information
     see the :ref:`dataset description <nki_dataset>`.
     """
+    check_params(locals())
+
     if url is None:
         url = "https://www.nitrc.org/frs/download.php/"
 
@@ -1860,6 +1881,8 @@ def load_nki(
     For more information
     see the :ref:`dataset description <nki_dataset>`.
     """
+    check_params(locals())
+
     if mesh_type not in ALLOWED_MESH_TYPES:
         raise ValueError(
             f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
@@ -1917,6 +1940,8 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
         gender, handedness.
 
     """
+    check_params(locals())
+
     dataset_name = "development_fmri"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
@@ -1971,6 +1996,8 @@ def _fetch_development_fmri_functional(
         Paths to regressors related to each subject.
 
     """
+    check_params(locals())
+
     dataset_name = "development_fmri"
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
@@ -2112,6 +2139,8 @@ def fetch_development_fmri(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     dataset_name = "development_fmri"
     data_dir = get_dataset_dir(dataset_name, data_dir=data_dir, verbose=1)
     keep_confounds = [
@@ -2297,6 +2326,8 @@ def fetch_language_localizer_demo_dataset(
             Absolute paths of downloaded files on disk
 
     """
+    check_params(locals())
+
     url = "https://osf.io/3dj2a/download"
     # When it starts working again change back to:
     # url = 'https://osf.io/nh987/download'
@@ -2359,6 +2390,8 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     downloaded_files : :obj:`list` of :obj:`str`
         Absolute paths of downloaded files on disk.
     """
+    check_params(locals())
+
     warnings.warn(
         (
             "The 'fetch_bids_langloc_dataset' function will be removed "
@@ -2419,6 +2452,8 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
     ----------
     .. footbibliography::
     """
+    check_params(locals())
+
     DATA_PREFIX = "ds000030/ds000030_R1.0.4/uncompressed"
     FILE_URL = "https://osf.io/86xj7/download"
 
@@ -2603,6 +2638,8 @@ def fetch_openneuro_dataset(
     ----------
     .. footbibliography::
     """
+    check_params(locals())
+
     # if urls are not specified we download the complete dataset index
     if urls is None:
         DATASET_VERSION = "ds000030_R1.0.4"
@@ -2705,6 +2742,8 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
         - description: data description
 
     """
+    check_params(locals())
+
     url = "https://osf.io/2bqxn/download"
     epi_img = "sub-12069_task-localizer_space-MNI305.nii.gz"
     events = "sub-12069_task-localizer_events.tsv"
@@ -2753,7 +2792,7 @@ def _download_spm_auditory_data(data_dir):
 def fetch_spm_auditory(
     data_dir=None,
     data_name="spm_auditory",
-    subject_id=None,  # noqa: ARG001
+    subject_id=None,
     verbose=1,
 ):
     """Fetch :term:`SPM` auditory single-subject data.
@@ -2787,6 +2826,8 @@ def fetch_spm_auditory(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
 
     if not (data_dir / "MoAEpilot" / "sub-01").exists():
@@ -2991,6 +3032,8 @@ def fetch_spm_multimodal_fmri(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
     subject_dir = data_dir / subject_id
 
@@ -3032,6 +3075,8 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         - 'description': :obj:`str`. Data description
 
     """
+    check_params(locals())
+
     data_dir = get_dataset_dir(
         "fiac_nilearn.glm", data_dir=data_dir, verbose=verbose
     )

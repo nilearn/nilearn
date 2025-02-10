@@ -12,11 +12,6 @@ from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
-
-extra_valid_checks = [
-    *check_valid_for_all_maskers(),
-]
 
 
 @pytest.mark.parametrize(
@@ -29,7 +24,6 @@ extra_valid_checks = [
                 ]
             )
         ],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -48,7 +42,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
                 ]
             )
         ],
-        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
@@ -82,19 +75,10 @@ def test_sphere_extraction(rng, affine_eye):
 
     masker = NiftiSpheresMasker([seed], radius=1)
 
-    # Check attributes defined at fit
-    assert not hasattr(masker, "seeds_")
-    assert not hasattr(masker, "n_elements_")
-
     masker.fit()
 
     # Check attributes defined at fit
-    assert hasattr(masker, "seeds_")
-    assert hasattr(masker, "n_elements_")
     assert masker.n_elements_ == 1
-
-    # Test the fit
-    masker.fit()
 
     # Test the transform
     s = masker.transform(img)

@@ -20,7 +20,10 @@ from sklearn.utils import as_float_array, gen_even_slices
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
-from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn._utils.param_validation import (
+    check_params,
+    check_run_sample_masks,
+)
 
 __all__ = [
     "butterworth",
@@ -376,6 +379,7 @@ def butterworth(
     filtered_signals : :class:`numpy.ndarray`
         Signals filtered according to the given parameters.
     """
+    check_params(locals())
     if low_pass is None and high_pass is None:
         return signals.copy() if copy else signals
 
@@ -512,6 +516,7 @@ def high_variance_confounds(
     --------
     nilearn.image.high_variance_confounds
     """
+    check_params(locals())
     if detrend:
         series = _detrend(series)  # copy
 
@@ -705,6 +710,7 @@ def clean(
     --------
     nilearn.image.clean_img
     """
+    check_params(locals())
     # Raise warning for some parameter combinations when confounds present
     confounds = stringify_path(confounds)
     if confounds is not None:

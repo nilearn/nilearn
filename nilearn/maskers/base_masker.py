@@ -9,6 +9,7 @@ import warnings
 import numpy as np
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
@@ -278,7 +279,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             inputs.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         if confounds is None and not self.high_variance_confounds:
             return self.transform_single_imgs(
@@ -382,7 +383,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         img : Transformed image in brain space.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         img = self._cache(masking.unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
@@ -390,14 +391,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
-
-    def _check_fitted(self):
-        if not hasattr(self, "mask_img_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} "
-                "has not been fitted. "
-                "You must call fit() before calling transform()."
-            )
 
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):

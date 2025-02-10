@@ -11,24 +11,19 @@ import collections.abc
 import functools
 import numbers
 import warnings
-from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import gridspec
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
-from nibabel import Nifti1Image
 from nibabel.spatialimages import SpatialImage
-from scipy import stats
 from scipy.ndimage import binary_fill_holes
 
 from nilearn._utils import (
     check_niimg_3d,
     check_niimg_4d,
     compare_version,
-    constrained_layout_kwargs,
     fill_doc,
     logger,
 )
@@ -36,7 +31,7 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_threshold
+from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn.image import (
     get_data,
@@ -46,14 +41,13 @@ from nilearn.image import (
     resample_to_img,
 )
 from nilearn.image.resampling import reorder_img
-from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
 from nilearn.plotting._utils import _check_threshold
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.signal import clean
-from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
 
 
 def show():
@@ -152,7 +146,7 @@ def get_colorbar_and_data_ranges(
     if vmax is None:
         vmax = stat_map_max
 
-    return cbar_vmin, cbar_vmax, vmin, vmax
+    return cbar_vmin, cbar_vmax, float(vmin), float(vmax)
 
 
 @fill_doc
@@ -265,6 +259,7 @@ def _plot_img_with_bg(
     ValueError
         if the specified threshold is a negative number
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     show_nan_msg = False
@@ -304,7 +299,7 @@ def _plot_img_with_bg(
         if threshold == "auto":
             # Threshold epsilon below a percentile value, to be sure that some
             # voxels pass the threshold
-            threshold = fast_abs_percentile(data) - 1e-5
+            threshold = float(fast_abs_percentile(data)) - 1e-5
 
         img = new_img_like(img, as_ndarray(data), affine)
 
@@ -507,6 +502,9 @@ def plot_img(
         :mod:`nilearn.plotting`
             See API reference for other options
     """
+    check_params(locals())
+    _check_threshold(threshold)
+
     display = _plot_img_with_bg(
         img,
         cut_coords=cut_coords,
@@ -762,6 +760,7 @@ def plot_anat(
     are set to zero.
 
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     anat_img, black_bg, anat_vmin, anat_vmax = load_anat(
@@ -875,6 +874,7 @@ def plot_epi(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
+    check_params(locals())
     display = plot_img(
         epi_img,
         cut_coords=cut_coords,
@@ -1079,6 +1079,7 @@ def plot_roi(
     nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
         (4D images)
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     valid_view_types = ["continuous", "contours"]
@@ -1262,6 +1263,7 @@ def plot_prob_atlas(
     --------
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     display = plot_anat(
@@ -1504,6 +1506,7 @@ def plot_stat_map(
     nilearn.plotting.plot_epi : To simply plot raw EPI images
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     # dim the background
@@ -1667,6 +1670,7 @@ def plot_glass_brain(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
+    check_params(locals())
     _check_threshold(threshold)
 
     if cmap is None:
@@ -2134,10 +2138,11 @@ def plot_carpet(
     .. footbibliography::
 
     """
+    check_params(locals())
     img = check_niimg_4d(img, dtype="auto")
 
     # Define TR and number of frames
-    t_r = t_r or img.header.get_zooms()[-1]
+    t_r = t_r or float(img.header.get_zooms()[-1])
     n_tsteps = img.shape[-1]
 
     if mask_img is None:
@@ -2318,389 +2323,31 @@ def plot_img_comparison(
     output_dir=None,
     axes=None,
 ):
-    """Create plots to compare two lists of images and measure correlation.
+    """Redirect to plot_img_comparison."""
+    from nilearn.plotting.img_comparison import plot_img_comparison
 
-    The first plot displays linear correlation between :term:`voxel` values.
-    The second plot superimposes histograms to compare values distribution.
-
-    Parameters
-    ----------
-    ref_imgs : nifti_like
-        Reference images.
-
-    src_imgs : nifti_like
-        Source images.
-
-    masker : NiftiMasker object
-        Mask to be used on data.
-
-    plot_hist : :obj:`bool`, default=True
-        If True then histograms of each img in ref_imgs will be plotted
-        along-side the histogram of the corresponding image in src_imgs.
-
-    log : :obj:`bool`, default=True
-        Passed to plt.hist.
-
-    ref_label : :obj:`str`, default='image set 1'
-        Name of reference images.
-
-    src_label : :obj:`str`, default='image set 2'
-        Name of source images.
-
-    output_dir : :obj:`str` or None, default=None
-        Directory where plotted figures will be stored.
-
-    axes : :obj:`list` of two matplotlib Axes objects, or None, default=None
-        Can receive a list of the form [ax1, ax2] to render the plots.
-        By default new axes will be created.
-
-    Returns
-    -------
-    corrs : :class:`numpy.ndarray`
-        Pearson correlation between the images.
-
-    """
-    # note: doesn't work with 4d images;
-    # when plot_hist is False creates two empty axes and doesn't plot anything
-    corrs = []
-    for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
-        if axes is None:
-            _, (ax1, ax2) = plt.subplots(
-                1,
-                2,
-                figsize=(12, 5),
-                **constrained_layout_kwargs(),
-            )
-        else:
-            (ax1, ax2) = axes
-        ref_data = masker.transform(ref_img).ravel()
-        src_data = masker.transform(src_img).ravel()
-        if ref_data.shape != src_data.shape:
-            warnings.warn("Images are not shape-compatible")
-            return
-
-        corr = stats.pearsonr(ref_data, src_data)[0]
-        corrs.append(corr)
-
-        if plot_hist:
-            ax1.scatter(
-                ref_data,
-                src_data,
-                label=f"Pearsonr: {corr:.2f}",
-                c="g",
-                alpha=0.6,
-            )
-            x = np.linspace(*ax1.get_xlim(), num=100)
-            ax1.plot(x, x, linestyle="--", c="k")
-            ax1.grid("on")
-            ax1.set_xlabel(ref_label)
-            ax1.set_ylabel(src_label)
-            ax1.legend(loc="best")
-
-            ax2.hist(ref_data, alpha=0.6, bins=128, log=log, label=ref_label)
-            ax2.hist(src_data, alpha=0.6, bins=128, log=log, label=src_label)
-            ax2.set_title("Histogram of imgs values")
-            ax2.grid("on")
-            ax2.legend(loc="best")
-
-            if output_dir is not None:
-                output_dir = Path(output_dir)
-                output_dir.mkdir(exist_ok=True, parents=True)
-                plt.savefig(output_dir / f"{int(i):04}.png")
-
-    return corrs
-
-
-@fill_doc
-def plot_bland_altman(
-    ref_img,
-    src_img,
-    masker=None,
-    ref_label="reference image",
-    src_label="source image",
-    figure=None,
-    title=None,
-    cmap="inferno",
-    colorbar=True,
-    gridsize=100,
-    lims=None,
-    output_file=None,
-):
-    """Create a Bland-Altman plot between 2 images.
-
-    Plot the the 2D distribution of voxel-wise differences
-    as a function of the voxel-wise mean,
-    along with an histogram for the distribution of each.
-
-    .. note::
-
-        Bland-Altman plots show
-        the difference between the statistic values (y-axis)
-        against the mean statistic value (x-axis) for all voxels.
-
-        The plots provide an assessment of the level of agreement
-        between two images about the magnitude of the statistic value
-        observed at each voxel.
-
-        If two images were in perfect agreement,
-        all points on the Bland-Altman plot would lie on the x-axis,
-        since the difference between the statistic values
-        at each voxel would be zero.
-
-        The degree of disagreement is therefore evaluated
-        by the perpendicular distance of points from the x-axis.
-
-    Parameters
-    ----------
-    ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-        Reference image.
-
-    src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-        Source image. Its type must match that of the ``ref_img``.
-        If the source image is Niimg-Like,
-        it will be resampled to match that or the source image.
-
-    masker : 3D Niimg-like binary mask or \
-            :obj:`~nilearn.maskers.NiftiMasker` or \
-            binary :obj:`~nilearn.surface.SurfaceImage` or \
-            or :obj:`~nilearn.maskers.SurfaceMasker` or \
-            None
-        Mask to be used on data.
-        Its type must be compatible with that of the ``ref_img``.
-        If ``None`` is passed,
-        an appropriate masker will be fitted on the reference image.
-
-    ref_label : :obj:`str`, default='reference image'
-        Name of reference image.
-
-    src_label : :obj:`str`, default='source image'
-        Name of source image.
-
-    %(figure)s
-
-    %(title)s
-
-    %(cmap)s
-        default="inferno"
-
-    %(colorbar)s
-        default=True
-
-    gridsize : :obj:`int` or :obj:`tuple` of 2 :obj:`int`, default=100
-        Dimension of the grid on which to display the main plot.
-        If a single value is passed, then the grid is square.
-        If a tuple is passed, the first value corresponds
-        to the length of the x axis,
-        and the second value corresponds to the length of the y axis.
-
-    lims : A :obj:`list` or :obj:`tuple` of 4 :obj:`int` or None, default=None
-        Determines the limit the central hexbin plot
-        and the marginal histograms.
-        Values in the list or tuple are: [-lim_x, lim_x, -lim_y, lim_y].
-        If ``None`` is passed values are determined based on the data.
-
-    %(output_file)s
-
-    Notes
-    -----
-    This function and the plot description was adapted
-    from :footcite:t:`Bowring2019`
-    and its associated `code base <https://github.com/AlexBowring/Software_Comparison/blob/master/figures/lib/bland_altman.py>`_.
-
-
-    References
-    ----------
-
-    .. footbibliography::
-
-
-    """
-    data_ref, data_src = _extract_data_2_images(
-        ref_img, src_img, masker=masker
+    warnings.warn(
+        (
+            "The 'plot_img_comparison' has been moved to  "
+            "'nilearn.plotting.img_comparison'.\n"
+            "It will be removed from 'nilearn.plotting.img_plotting' "
+            "in version >= 0.13.1.\n"
+            "Import 'plot_img_comparison' "
+            "from 'nilearn.plotting.img_comparison' "
+            "to silence this warning."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
     )
 
-    mean = np.mean([data_ref, data_src], axis=0)
-    diff = data_ref - data_src
-
-    if lims is None:
-        lim_x = np.max(np.abs(mean))
-        if lim_x == 0:
-            lim_x = 1
-        lim_y = np.max(np.abs(diff))
-        if lim_y == 0:
-            lim_y = 1
-        lims = [-lim_x, lim_x, -lim_y, lim_y]
-
-    if (
-        not isinstance(lims, (list, tuple))
-        or len(lims) != 4
-        or any(x == 0 for x in lims)
-    ):
-        raise TypeError(
-            "'lims' must be a list or tuple of length == 4, "
-            "with all values different from 0."
-        )
-
-    if isinstance(gridsize, int):
-        gridsize = (gridsize, gridsize)
-
-    if figure is None:
-        figure = plt.figure(figsize=(6, 6))
-
-    gs0 = gridspec.GridSpec(1, 1)
-
-    gs = gridspec.GridSpecFromSubplotSpec(
-        5, 6, subplot_spec=gs0[0], hspace=0.5, wspace=0.5
+    plot_img_comparison(
+        ref_imgs,
+        src_imgs,
+        masker,
+        plot_hist=plot_hist,
+        log=log,
+        ref_label=ref_label,
+        src_label=src_label,
+        output_dir=output_dir,
+        axes=axes,
     )
-
-    ax1 = figure.add_subplot(gs[:-1, 1:5])
-    hb = ax1.hexbin(
-        mean,
-        diff,
-        bins="log",
-        cmap=cmap,
-        gridsize=gridsize,
-        extent=lims,
-    )
-    ax1.axis(lims)
-    ax1.axhline(linewidth=1, color="r")
-    ax1.axvline(linewidth=1, color="r")
-    if title:
-        ax1.set_title(title)
-
-    ax2 = figure.add_subplot(gs[:-1, 0], xticklabels=[], sharey=ax1)
-    ax2.set_ylim(lims[2:])
-    ax2.hist(
-        diff,
-        bins=gridsize[0],
-        range=lims[2:],
-        histtype="stepfilled",
-        orientation="horizontal",
-        color="gray",
-    )
-    ax2.invert_xaxis()
-    ax2.set_ylabel(f"Difference : {ref_label} - {src_label}")
-
-    ax3 = figure.add_subplot(gs[-1, 1:5], yticklabels=[], sharex=ax1)
-    ax3.hist(
-        mean,
-        bins=gridsize[1],
-        range=lims[0:2],
-        histtype="stepfilled",
-        orientation="vertical",
-        color="gray",
-    )
-    ax3.set_xlim(lims[0:2])
-    ax3.invert_yaxis()
-    ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label}")
-
-    ax4 = figure.add_subplot(gs[:-1, 5])
-    ax4.set_aspect(20)
-    pos1 = ax4.get_position()
-    ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
-
-    if colorbar:
-        cb = figure.colorbar(hb, cax=ax4)
-        cb.set_label("log10(N)")
-
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-        figure = None
-
-    return figure
-
-
-def _extract_data_2_images(ref_img, src_img, masker=None):
-    """Return data of 2 images as 2 vectors.
-
-    Parameters
-    ----------
-    ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-        Reference image.
-
-    src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-        Source image. Its type must match that of the ``ref_img``.
-        If the source image is Niimg-Like,
-        it will be resampled to match that or the source image.
-
-    masker : 3D Niimg-like binary mask or \
-            :obj:`~nilearn.maskers.NiftiMasker` or \
-            binary :obj:`~nilearn.surface.SurfaceImage` or \
-            or :obj:`~nilearn.maskers.SurfaceMasker` or \
-            None
-        Mask to be used on data.
-        Its type must be compatible with that of the ``ref_img``.
-        If None is passed,
-        an appropriate masker will be fitted on the reference image.
-
-    """
-    if isinstance(ref_img, (str, Path, Nifti1Image)) and isinstance(
-        src_img, (str, Path, Nifti1Image)
-    ):
-        image_type = "volume"
-        ref_img = check_niimg_3d(ref_img)
-        src_img = check_niimg_3d(src_img)
-
-    elif isinstance(ref_img, (SurfaceImage)) and isinstance(
-        src_img, (SurfaceImage)
-    ):
-        image_type = "surface"
-        ref_img.data._check_ndims(1)
-        src_img.data._check_ndims(1)
-        check_same_n_vertices(ref_img.mesh, src_img.mesh)
-
-    else:
-        raise TypeError(
-            "'ref_img' and 'src_img' "
-            "must both be Niimg-like or SurfaceImage.\n"
-            f"Got {type(src_img)=} and {type(ref_img)=}."
-        )
-
-    if masker is None:
-        if image_type == "volume":
-            masker = NiftiMasker(
-                target_affine=ref_img.affine,
-                target_shape=ref_img.shape,
-            )
-        else:
-            masker = SurfaceMasker()
-
-    if image_type == "volume":
-        if not isinstance(masker, (NiftiMasker, Nifti1Image, str, Path)):
-            raise TypeError(
-                "'masker' must be NiftiMasker or Niimg-Like "
-                "for volume based images.\n"
-                f"Got {type(masker)}"
-            )
-        elif isinstance(masker, (Nifti1Image, str, Path)):
-            masker = NiftiMasker(
-                mask_img=masker,
-                target_affine=ref_img.affine,
-                target_shape=ref_img.shape,
-            )
-
-    else:
-        if not isinstance(masker, (SurfaceMasker, SurfaceImage)):
-            raise TypeError(
-                "'masker' must be SurfaceMasker or SurfaceImage "
-                "for surface based images.\n"
-                f"Got {type(masker)}"
-            )
-        if isinstance(masker, SurfaceImage):
-            check_same_n_vertices(ref_img.mesh, masker.mesh)
-            masker = SurfaceMasker(
-                mask_img=masker,
-            )
-
-    # TODO replace with proper method
-    if not hasattr(masker, "mask_img_"):
-        masker.fit(ref_img)
-
-    data_ref = masker.transform(ref_img)
-    data_src = masker.transform(src_img)
-
-    data_ref = data_ref.ravel()
-    data_src = data_src.ravel()
-
-    return data_ref, data_src

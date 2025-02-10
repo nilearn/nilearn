@@ -1,11 +1,13 @@
 """Utilities to check for valid parameters."""
 
 import numbers
+import sys
 import warnings
 
 import numpy as np
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
+import nilearn.typing as nilearn_typing
 from nilearn._utils import logger
 from nilearn._utils.niimg import _get_data
 
@@ -361,3 +363,123 @@ def _cast_to_int32(sample_mask):
             what can be represented by int32: {highest}."
         raise ValueError(msg)
     return np.asarray(sample_mask, new_dtype)
+
+
+def check_params(fn_dict):
+    """Check types of inputs passed to a function / method / class.
+
+    This function checks the types of function / method parameters or
+    the attributes of the class.
+
+    This function is made to check the types of the parameters
+    described in ``nilearn._utils.docs``
+    that are shared by many functions / methods / class
+    and thus ensure a generic way to do input validation
+    in several important points in the code base.
+
+    In most cases this means that this function can be used
+    on functions / classes that have the ``@fill_doc`` decorator,
+    or whose doc string uses parameter templates
+    (for example ``%(data_dir)s``).
+
+    If the function cannot (yet) check any of the parameters / attributes,
+    it will throw an error to say that its use is not needed.
+
+    Typical usage:
+
+    .. code-block:: python
+
+        def some_function(param_1, param_2="a"):
+            check_params(locals())
+            ...
+
+        Class MyClass:
+            def __init__(param_1, param_2="a")
+            ...
+
+            def fit(X):
+                # check attributes of the class instance
+                check_params(self.__dict__)
+                # check parameters passed to the method
+                check_params(locals())
+
+    """
+    # dictionary that matches a given parameter / attribute name
+    # to a type
+    type_map = {
+        "border_size": nilearn_typing.BorderSize,
+        "connected": nilearn_typing.Connected,
+        "data_dir": nilearn_typing.DataDir,
+        "detrend": nilearn_typing.Detrend,
+        "high_pass": nilearn_typing.HighPass,
+        "hrf_model": nilearn_typing.HrfModel,
+        "low_pass": nilearn_typing.LowPass,
+        "lower_cutoff": nilearn_typing.LowerCutoff,
+        "memory": nilearn_typing.MemoryLike,
+        "memory_level": nilearn_typing.MemoryLevel,
+        "n_jobs": nilearn_typing.NJobs,
+        "n_perm": nilearn_typing.NPerm,
+        "opening": nilearn_typing.Opening,
+        "random_state": nilearn_typing.RandomState,
+        "resolution": nilearn_typing.Resolution,
+        "resume": nilearn_typing.Resume,
+        "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
+        "t_r": nilearn_typing.Tr,
+        "tfce": nilearn_typing.Tfce,
+        "threshold": nilearn_typing.Threshold,
+        "title": nilearn_typing.Title,
+        "two_sided_test": nilearn_typing.TwoSidedTest,
+        "target_affine": nilearn_typing.TargetAffine,
+        "target_shape": nilearn_typing.TargetShape,
+        "url": nilearn_typing.Url,
+        "upper_cutoff": nilearn_typing.UpperCutoff,
+        "verbose": nilearn_typing.Verbose,
+        "vmax": nilearn_typing.Vmax,
+        "vmin": nilearn_typing.Vmin,
+    }
+
+    keys_to_check = set(type_map.keys()).intersection(set(fn_dict.keys()))
+    # Send a message to dev if they are using this function needlessly.
+    if not keys_to_check:
+        raise ValueError(
+            "No known parameter to check.\n"
+            "You probably do not need to use 'check_params' here."
+        )
+
+    for k in keys_to_check:
+        type_to_check = type_map[k]
+        value = fn_dict[k]
+
+        # TODO update when dropping python 3.9
+        error_msg = (
+            f"'{k}' should be of type '{type_to_check}'.\nGot: '{type(value)}'"
+        )
+        if sys.version_info[1] > 9:
+            if not isinstance(value, type_to_check):
+                raise TypeError(error_msg)
+        elif value is not None and not isinstance(value, type_to_check):
+            raise TypeError(error_msg)
+
+
+def check_reduction_strategy(strategy: str):
+    """Check that the provided strategy is supported.
+
+    Parameters
+    ----------
+    %(strategy)s
+    """
+    available_reduction_strategies = {
+        "mean",
+        "median",
+        "sum",
+        "minimum",
+        "maximum",
+        "standard_deviation",
+        "variance",
+    }
+
+    if strategy not in available_reduction_strategies:
+        raise ValueError(
+            f"Invalid strategy '{strategy}'. "
+            f"Valid strategies are {available_reduction_strategies}."
+        )

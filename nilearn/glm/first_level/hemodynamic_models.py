@@ -13,6 +13,7 @@ import numpy as np
 from scipy.stats import gamma
 
 from nilearn._utils import fill_doc, rename_parameters
+from nilearn._utils.param_validation import check_params
 
 
 def _gamma_difference_hrf(
@@ -569,6 +570,7 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
         regressor names
 
     """
+    check_params(locals())
     # Default value
     names = [con_name]
 
@@ -606,8 +608,7 @@ def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
 
     Parameters
     ----------
-    hrf_model : :obj:`str`, function, list of functions, or None,
-        HRF model to be used.
+    %(hrf_model)s
 
     t_r : :obj:`float`
         the repetition time in seconds
@@ -624,6 +625,7 @@ def _hrf_kernel(hrf_model, t_r, oversampling=50, fir_delays=None):
         Samples of the hrf (the number depends on the hrf_model used).
 
     """
+    check_params(locals())
     acceptable_hrfs = [
         "spm",
         "spm + derivative",
@@ -740,6 +742,7 @@ def compute_regressor(
         Corresponding regressor names.
 
     """
+    check_params(locals())
     # fir_delays should be integers
     if fir_delays is not None:
         fir_delays = [int(x) for x in fir_delays]
@@ -794,4 +797,4 @@ def _calculate_tr(frame_times):
     :obj:`float`
         repetition time
     """
-    return np.min(np.diff(frame_times))
+    return float(np.min(np.diff(frame_times)))
