@@ -120,9 +120,9 @@ def plot_img_comparison(
             ax2.grid("on")
             ax2.legend(loc="best")
 
-            output_file = None
-            if output_dir is not None:
-                output_file = output_dir / f"{int(i):04}.png"
+            output_file = (
+                output_dir / f"{int(i):04}.png" if output_dir else None
+            )
             save_figure_if_needed(fig, output_file)
 
     return corrs

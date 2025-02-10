@@ -1,3 +1,4 @@
+from pathlib import Path
 from warnings import warn
 
 import matplotlib as mpl
@@ -10,14 +11,30 @@ from nilearn.surface.surface import combine_hemispheres_meshes, get_data
 
 
 def save_figure_if_needed(fig, output_file):
+    """Save figure if an output file value is given.
+
+    Parameters
+    ----------
+    fig: figure, axes, or display instance
+
+    output_file: str, Path or None
+
+    Returns
+    -------
+    None if ``output_file`` is None, ``fig`` otherwise.
+    """
     if output_file is None:
         return fig
+
+    output_file = Path(output_file)
+    output_file.parent.mkdir(exist_ok=True, parents=True)
 
     if isinstance(fig, mpl.axes.Axes):
         fig = fig.figure
 
     fig.savefig(output_file)
     fig.close()
+
     return None
 
 
