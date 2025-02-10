@@ -49,7 +49,7 @@ N_REGIONS = 6
 fmri_data = fetch_development_fmri(n_subjects=N_SUBJECTS)
 fmri_img = concat_imgs(fmri_data.func)
 
-output_dir = Path.cwd() / "results" / "plot_large_fmri_img"
+output_dir = Path.cwd() / "results" / "plot_mask_large_fmri"
 output_dir.mkdir(parents=True, exist_ok=True)
 print(f"Large fmri file will be saved to:\n{output_dir}")
 
@@ -369,14 +369,14 @@ shm.unlink()
 # Let's plot the memory usage for each method to compare them.
 import matplotlib.pyplot as plt
 
-plt.figure(figsize=(8, 6))
+plt.figure(figsize=(10, 6))
 plt.bar(
     [
         "NiftiMasker,\nwith path",
         "NiftiMasker,\nwith in-memory\nimage",
         "Numpy indexing,\nwith path",
         "Numpy indexing,\nwith in-memory\nimage",
-        "Numpy indexing\nwith shared\nmemory",
+        "Numpy indexing,\nwith shared\nmemory",
     ],
     [
         nifti_masker["parallel"]["path"],
