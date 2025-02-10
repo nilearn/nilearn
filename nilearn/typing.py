@@ -46,22 +46,22 @@ Verbose = int
 if sys.version_info[1] < 10:
     DataDir = (str, pathlib.Path)
     DType = DTypeLike
-    HighPass = (float, int)
+    HighPass = (float, int, np.floating, np.integer)
     HrfModel = (str, Callable, list)
-    LowPass = (float, int)
+    LowPass = (float, int, np.floating, np.integer)
     MemoryLike = (Memory, str, pathlib.Path)
-    Opening = (bool, int)
-    RandomState = (int, np.random.RandomState)
-    Resolution = int
-    SmoothingFwhm = (float, int)
+    Opening = (bool, int, np.integer)
+    RandomState = (int, np.integer, np.random.RandomState)
+    Resolution = (int, np.integer)
+    SmoothingFwhm = (float, int, np.floating, np.integer)
     TargetAffine = ndarray
     TargetShape = (tuple, list)
-    Threshold = (int, float, str)
+    Threshold = (float, int, str, np.floating, np.integer)
     Title = str
     Tr = (float, int)
     Url = str
-    Vmin = (float, int)
-    Vmax = (float, int)
+    Vmin = (float, int, np.floating, np.integer)
+    Vmax = (float, int, np.floating, np.integer)
 
 
 else:
@@ -76,13 +76,13 @@ else:
     # if we wanted to use proper type annotation
     HrfModel: TypeAlias = str | Callable | list | None
 
-    HighPass: TypeAlias = float | int | None
-    LowPass: TypeAlias = float | int | None
+    HighPass: TypeAlias = float | int | np.floating | np.integer | None
+    LowPass: TypeAlias = float | int | np.floating | np.integer | None
     MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
-    RandomState = int | np.random.RandomState | None
-    Opening: TypeAlias = bool | int
-    Resolution: TypeAlias = int | None
-    SmoothingFwhm: TypeAlias = float | int | None
+    RandomState = int | np.floating | np.integer | np.random.RandomState | None
+    Opening: TypeAlias = bool | int | np.integer
+    Resolution: TypeAlias = int | np.integer | None
+    SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
     TargetAffine: TypeAlias = ndarray | None
 
     # Note that this is usable as for static type checking,
@@ -91,10 +91,10 @@ else:
     TargetShape: TypeAlias = tuple | list | None
 
     # str is too generic: should be Literal["auto"]
-    Threshold: TypeAlias = int | float | str | None
+    Threshold: TypeAlias = float | int | np.floating | np.integer | str | None
 
     Title: TypeAlias = str | None
-    Tr: TypeAlias = float | int | None
+    Tr: TypeAlias = float | int | np.floating | np.integer | None
     Url: TypeAlias = str | None
-    Vmin = float | int | None
-    Vmax = float | int | None
+    Vmin = float | int | np.floating | np.integer | None
+    Vmax = float | int | np.floating | np.integer | None
