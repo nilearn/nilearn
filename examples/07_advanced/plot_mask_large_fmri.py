@@ -3,7 +3,7 @@ Working with long time series fMRI images
 =========================================
 
 In this example, we will demonstrate how one can work with large fMRI images
-more efficiently.Note that fMRI images can be large on-disk due to several
+more efficiently. Note that fMRI images can be large on-disk due to several
 different factors, including a long acquisition or high-resolution sampling.
 Currently, this example focuses on memory-efficient interactions with long
 time series fMRI data. In this case, loading the whole time series into memory
@@ -35,18 +35,18 @@ We will compare three different methods to mask the data from the fMRI image:
 # Create a large fMRI image
 # -------------------------
 # Here we will create a "large" fMRI image by fetch 5 subjects'
-# fMRI images via the :func:`~nilearn.datasets.fetch_development_fmri`
+# fMRI images via the :func:`~nilearn.datasets.fetch_adhd`
 # function, concatenating them and then saving to a file.
 
 from pathlib import Path
 
-from nilearn.datasets import fetch_development_fmri
+from nilearn.datasets import fetch_adhd
 from nilearn.image import concat_imgs
 
-N_SUBJECTS = 5
+N_SUBJECTS = 6
 N_REGIONS = 6
 
-fmri_data = fetch_development_fmri(n_subjects=N_SUBJECTS)
+fmri_data = fetch_adhd(n_subjects=N_SUBJECTS)
 fmri_img = concat_imgs(fmri_data.func)
 
 output_dir = Path.cwd() / "results" / "plot_mask_large_fmri"
