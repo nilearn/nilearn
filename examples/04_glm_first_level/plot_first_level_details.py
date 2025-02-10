@@ -85,15 +85,39 @@ first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 
 # %%
-# Let us take a look at the design matrix: it has 10 main columns corresponding
-# to 10 experimental conditions, followed by 3 columns describing low-frequency
-# signals (drifts) and a constant regressor.
-from nilearn.plotting import plot_design_matrix
+# Let us take a look at the design matrix.
+# It has 10 main columns corresponding
+# to 10 experimental conditions,
+# followed by 3 columns describing low-frequency signals (drifts)
+# and a constant regressor.
+#
+# Let's also plot the correlation between regressors,
+# so we can keep track of the colinearity between them.
+#
+# As this script will be repeated several times,
+# we encapsulate this in a function that we call when needed.
+#
+from matplotlib import pyplot as plt
 
-plot_design_matrix(design_matrix)
-import matplotlib.pyplot as plt
+from nilearn.plotting import (
+    plot_design_matrix,
+    plot_design_matrix_correlation,
+    show,
+)
 
-plt.show()
+
+def inspect_design_matrix(design_matrix):
+    plt.figure(figsize=(10, 10))
+
+    ax = plt.subplot(211)
+    plot_design_matrix(design_matrix, axes=ax)
+
+    ax = plt.subplot(212)
+    plot_design_matrix_correlation(design_matrix, axes=ax)
+
+
+inspect_design_matrix(design_matrix)
+show()
 
 # %%
 # Specification of the contrasts.
@@ -180,7 +204,7 @@ for key, values in contrasts.items():
     plot_contrast_matrix(values, design_matrix=design_matrix)
     plt.suptitle(key)
 
-plt.show()
+show()
 
 # %%
 # A first contrast estimation and plotting
@@ -189,27 +213,34 @@ plt.show()
 # As this script will be repeated several times, we encapsulate model
 # fitting and plotting in a function that we call when needed.
 #
-from nilearn import plotting
+from nilearn.plotting import plot_stat_map
 
 
 def plot_contrast(first_level_model):
     """Specify, estimate and plot the main contrasts \
         for given a first model.
     """
+    # Set vmax to keep range of values equal
+    # across models / contrasts
+    vmax = 9.5
+
     design_matrix = first_level_model.design_matrices_[0]
+
     # Call the contrast specification within the function
     contrasts = make_localizer_contrasts(design_matrix)
-    plt.figure(figsize=(20, 4))
+    plt.figure(figsize=(10, 10))
+
     # compute the per-contrast z-map
     for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
-        ax = plt.subplot(1, len(contrasts), 1 + index)
+        ax = plt.subplot(2, 2, 1 + index)
         z_map = first_level_model.compute_contrast(
             contrast_val, output_type="z_score"
         )
-        plotting.plot_stat_map(
+        plot_stat_map(
             z_map,
             display_mode="z",
-            threshold=3.0,
+            threshold=1.96,
+            vmax=vmax,
             title=contrast_id,
             axes=ax,
             cut_coords=1,
@@ -220,7 +251,7 @@ def plot_contrast(first_level_model):
 # Let's run the model and look at the outcome.
 
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # Changing the drift model
@@ -241,13 +272,13 @@ plt.show()
 first_level_model = FirstLevelModel(t_r, high_pass=0.016)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
+inspect_design_matrix(design_matrix)
 
 # %%
 # Does the model perform worse or better ?
 
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # We notice however that this model performs rather poorly.
@@ -258,9 +289,9 @@ plt.show()
 first_level_model = FirstLevelModel(t_r, drift_model=None)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
+inspect_design_matrix(design_matrix)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # Is it better than the original? No!
@@ -276,9 +307,9 @@ first_level_model = FirstLevelModel(
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
+inspect_design_matrix(design_matrix)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # Is it good? No better, no worse. Let's turn to another parameter.
@@ -297,9 +328,9 @@ plt.show()
 first_level_model = FirstLevelModel(t_r, hrf_model="spm")
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
+inspect_design_matrix(design_matrix)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # No strong --positive or negative-- effect.
@@ -320,9 +351,9 @@ plt.show()
 first_level_model = FirstLevelModel(t_r, hrf_model="spm + derivative")
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
+inspect_design_matrix(design_matrix)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # Not a huge effect, but rather positive overall. We could keep that one.
@@ -336,10 +367,16 @@ contrast_val = np.eye(design_matrix.shape[1])[1:21:2]
 plot_contrast_matrix(contrast_val, design_matrix)
 
 z_map = first_level_model.compute_contrast(contrast_val, output_type="z_score")
-plotting.plot_stat_map(
-    z_map, display_mode="z", threshold=3.0, title="effect of time derivatives"
+plot_stat_map(
+    z_map,
+    display_mode="z",
+    threshold=1.96,
+    title="effect of time derivatives",
+    vmin=0,
+    vmax=6,
+    cmap="inferno",
 )
-plt.show()
+show()
 
 # %%
 # There seems to be something here. Maybe we could adjust the
@@ -352,13 +389,16 @@ first_level_model = FirstLevelModel(
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 z_map = first_level_model.compute_contrast(contrast_val, output_type="z_score")
-plotting.plot_stat_map(
+plot_stat_map(
     z_map,
     display_mode="z",
-    threshold=3.0,
+    threshold=1.96,
     title="effect of time derivatives after model shift",
+    vmin=0,
+    vmax=6,
+    cmap="inferno",
 )
-plt.show()
+show()
 
 # %%
 # The time derivatives regressors capture less signal: it's better like that.
@@ -375,9 +415,9 @@ first_level_model = FirstLevelModel(
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
+inspect_design_matrix(design_matrix)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # Not a huge effect. For the sake of simplicity and readability, we
@@ -403,7 +443,7 @@ first_level_model = FirstLevelModel(
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 
 # %%
@@ -415,7 +455,7 @@ first_level_model = FirstLevelModel(
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # While the difference is not obvious you should rather stick to the
@@ -429,7 +469,7 @@ first_level_model = FirstLevelModel(
 )
 first_level_model = first_level_model.fit(fmri_img, events=events)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # This noise model arguably reduces the amount of spurious activity.
@@ -461,9 +501,9 @@ first_level_model = first_level_model.fit(
     fmri_img, events=events, confounds=confounds
 )
 design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
+inspect_design_matrix(design_matrix)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 #  Note the five additional columns in the design matrix.
@@ -496,8 +536,8 @@ first_level_model = first_level_model.fit(
     fmri_img, events=events, sample_masks=sample_masks
 )
 design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
-plt.show()
+inspect_design_matrix(design_matrix)
+show()
 
 # %%
 # Note the significantly shorter design matrix compared to the previous
@@ -518,9 +558,9 @@ first_level_model = FirstLevelModel(
     t_r, hrf_model="spm + derivative", smoothing_fwhm=5, slice_time_ref=0.5
 ).fit(fmri_img, events=events, confounds=confounds)
 design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
+inspect_design_matrix(design_matrix)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # The design is unchanged but the maps are smoother and more contrasted.
@@ -548,11 +588,11 @@ data_mask = first_level_model.masker_.mask_img_
 icbm_mask = fetch_icbm152_brain_gm_mask()
 
 plt.figure(figsize=(16, 4))
-ax = plt.subplot(121)
+ax = plt.subplot(211)
 plot_roi(icbm_mask, title="ICBM mask", axes=ax)
-ax = plt.subplot(122)
+ax = plt.subplot(212)
 plot_roi(data_mask, title="Data-driven mask", axes=ax)
-plt.show()
+show()
 
 # %%
 # For the sake of time saving, we resample icbm_mask to our data.
@@ -578,9 +618,9 @@ first_level_model = FirstLevelModel(
     mask_img=resampled_icbm_mask,
 ).fit(fmri_img, events=events, confounds=confounds)
 design_matrix = first_level_model.design_matrices_[0]
-plot_design_matrix(design_matrix)
+inspect_design_matrix(design_matrix)
 plot_contrast(first_level_model)
-plt.show()
+show()
 
 # %%
 # Note that it removed spurious spots in the white matter.
