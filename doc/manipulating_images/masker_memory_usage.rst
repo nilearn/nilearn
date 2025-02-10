@@ -74,7 +74,7 @@ Script
         from joblib import Parallel, delayed
         import nibabel as nib
 
-        from nilearn.datasets import fetch_atlas_difumo, fetch_development_fmri
+        from nilearn.datasets import fetch_atlas_difumo, fetch_adhd
         from nilearn.image import (
             concat_imgs,
             index_img,
@@ -88,7 +88,7 @@ Script
 
 
         def get_fmri_path(n_subjects=1):
-            fmri_data = fetch_development_fmri(n_subjects=n_subjects)
+            fmri_data = fetch_adhd(n_subjects=n_subjects)
             concat = concat_imgs(fmri_data.func)
             Path("temp").mkdir(parents=True, exist_ok=True)
             fmri_path = Path("temp", "fmri.nii.gz")
