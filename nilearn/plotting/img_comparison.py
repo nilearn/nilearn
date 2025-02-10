@@ -119,7 +119,7 @@ def plot_img_comparison(
             output_file = (
                 output_dir / f"{int(i):04}.png" if output_dir else None
             )
-            save_figure_if_needed(fig, output_file)
+            save_figure_if_needed(ax1, output_file)
 
     return corrs
 

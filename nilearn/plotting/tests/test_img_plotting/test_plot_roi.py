@@ -82,8 +82,7 @@ def test_plot_roi_view_type_error(matplotlib_pyplot):
 def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
     """Tests plot_roi file saving capabilities."""
     filename = tmp_path / "test.png"
-    with filename.open("wb") as fp:
-        out = demo_plot_roi(output_file=fp)
+    out = demo_plot_roi(output_file=filename)
     assert out is None
 
 

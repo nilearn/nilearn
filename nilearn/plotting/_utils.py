@@ -1,7 +1,7 @@
 from pathlib import Path
 from warnings import warn
 
-import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 from nilearn.surface import (
     PolyMesh,
@@ -25,17 +25,23 @@ def save_figure_if_needed(fig, output_file):
     -------
     None if ``output_file`` is None, ``fig`` otherwise.
     """
+    # avoid circular import
+    from nilearn.plotting.displays import BaseSlicer
+
     if output_file is None:
         return fig
 
     output_file = Path(output_file)
     output_file.parent.mkdir(exist_ok=True, parents=True)
 
-    if isinstance(fig, mpl.axes.Axes):
+    if not isinstance(fig, (plt.Figure, BaseSlicer)):
         fig = fig.figure
 
     fig.savefig(output_file)
-    fig.close()
+    if isinstance(fig, plt.Figure):
+        plt.close(fig)
+    else:
+        fig.close()
 
     return None
 
