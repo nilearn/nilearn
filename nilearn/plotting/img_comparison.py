@@ -348,7 +348,7 @@ def plot_bland_altman(
         color="gray",
     )
     ax2.invert_xaxis()
-    ax2.set_ylabel(f"Difference : {ref_label} - {src_label}")
+    ax2.set_ylabel(f"Difference : ({ref_label} - {src_label})")
 
     ax3 = figure.add_subplot(gs[-1, 1:5], yticklabels=[], sharex=ax1)
     ax3.hist(
@@ -361,7 +361,7 @@ def plot_bland_altman(
     )
     ax3.set_xlim(lims[0:2])
     ax3.invert_yaxis()
-    ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label}")
+    ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label})")
 
     ax4 = figure.add_subplot(gs[:-1, 5])
     ax4.set_aspect(20)
