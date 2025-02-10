@@ -27,29 +27,26 @@ from joblib.memory import Memory
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
-BorderSize = int
-Connected = int
+Connected = bool
 Detrend = bool
-LowerCutoff = float
-MemoryLevel = int
-NJobs = int
-NPerm = int
 Resume = bool
 Standardize = bool
 Tfce = bool
 TwoSidedTest = bool
-UpperCutoff = float
-Verbose = int
-
 
 # TODO update when dropping python 3.9
 if sys.version_info[1] < 10:
+    BorderSize = (int, np.integer)
     DataDir = (str, pathlib.Path)
     DType = DTypeLike
     HighPass = (float, int, np.floating, np.integer)
     HrfModel = (str, Callable, list)
     LowPass = (float, int, np.floating, np.integer)
+    LowerCutoff = (float, np.floating)
+    MemoryLevel = (int, np.integer)
     MemoryLike = (Memory, str, pathlib.Path)
+    NJobs = (int, np.integer)
+    NPerm = (int, np.integer)
     Opening = (bool, int, np.integer)
     RandomState = (int, np.integer, np.random.RandomState)
     Resolution = (int, np.integer)
@@ -60,6 +57,8 @@ if sys.version_info[1] < 10:
     Title = str
     Tr = (float, int)
     Url = str
+    UpperCutoff = (float, np.floating)
+    Verbose = (int, np.integer)
     Vmin = (float, int, np.floating, np.integer)
     Vmax = (float, int, np.floating, np.integer)
 
@@ -67,6 +66,7 @@ if sys.version_info[1] < 10:
 else:
     from typing import TypeAlias
 
+    BorderSize: TypeAlias = int | np.integer
     DataDir: TypeAlias = str | pathlib.Path | None
     DType: TypeAlias = DTypeLike | None
 
@@ -77,8 +77,12 @@ else:
     HrfModel: TypeAlias = str | Callable | list | None
 
     HighPass: TypeAlias = float | int | np.floating | np.integer | None
+    LowerCutoff: TypeAlias = float | np.floating
     LowPass: TypeAlias = float | int | np.floating | np.integer | None
     MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
+    MemoryLevel: TypeAlias = int | np.integer
+    NJobs: TypeAlias = int | np.integer
+    NPerm: TypeAlias = int | np.integer
     RandomState = int | np.floating | np.integer | np.random.RandomState | None
     Opening: TypeAlias = bool | int | np.integer
     Resolution: TypeAlias = int | np.integer | None
@@ -96,5 +100,7 @@ else:
     Title: TypeAlias = str | None
     Tr: TypeAlias = float | int | np.floating | np.integer | None
     Url: TypeAlias = str | None
+    UpperCutoff: TypeAlias = float | np.floating
+    Verbose: TypeAlias = int | np.integer
     Vmin = float | int | np.floating | np.integer | None
     Vmax = float | int | np.floating | np.integer | None
