@@ -12,14 +12,16 @@ from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.plotting.html_document import HTMLDocument
+from nilearn.reporting._utils import (
+    dataframe_to_html,
+    model_attributes_to_dataframe,
+)
 from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_PARTIALS_PATH,
     HTML_TEMPLATE_PATH,
     JS_PATH,
-    dataframe_to_html,
     figure_to_svg_base64,
-    model_attributes_to_dataframe,
 )
 
 ESTIMATOR_TEMPLATES = {
