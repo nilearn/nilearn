@@ -27,10 +27,18 @@ from joblib.memory import Memory
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
+Annotate = bool
+BgOnData = bool
+ColorBar = bool
 Connected = bool
 Detrend = bool
+DrawCross = bool
+KeepMaskedLabels = bool
+KeepMaskedMaps = bool
+Radiological = bool
 Resume = bool
 Standardize = bool
+StandardizeConfounds = bool
 Tfce = bool
 TwoSidedTest = bool
 
