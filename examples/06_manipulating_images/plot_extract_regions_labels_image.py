@@ -1,9 +1,9 @@
 """
 Breaking an atlas of labels in separated regions
-=================================================
+================================================
 
 This example shows how to use
-:class:`nilearn.regions.connected_label_regions`
+:class:`~nilearn.regions.connected_label_regions`
 to assign each spatially-separated region of the atlas a unique label.
 
 Indeed, often in a given atlas of labels, the same label (number) may
@@ -14,48 +14,64 @@ label to each region. We end up with a new atlas that has more labels,
 but each one points to a single region.
 
 We use the Yeo atlas as an example for labeling regions,
-:func:`nilearn.datasets.fetch_atlas_yeo_2011`
+:func:`~nilearn.datasets.fetch_atlas_yeo_2011`
 
 """
 
-##############################################################################
+# %%
 # The original Yeo atlas
 # -----------------------
 
 # First we fetch the Yeo atlas
-from nilearn import datasets
 
-atlas_yeo_2011 = datasets.fetch_atlas_yeo_2011()
-atlas_yeo = atlas_yeo_2011.thick_7
+from nilearn.datasets import fetch_atlas_yeo_2011
+from nilearn.plotting import plot_roi, show
+
+atlas_yeo_2011 = fetch_atlas_yeo_2011(thickness="thick", n_networks=7)
+
+atlas_yeo = atlas_yeo_2011.maps
 
 # Let's now plot it
-from nilearn import plotting
+plot_roi(
+    atlas_yeo,
+    title="Original Yeo atlas",
+    cut_coords=(8, -4, 9),
+    colorbar=True,
+    cmap="Paired",
+)
 
-plotting.plot_roi(atlas_yeo, title='Original Yeo atlas',
-                  cut_coords=(8, -4, 9), colorbar=True, cmap='Paired')
+show()
 
-##############################################################################
+# %%
 # The original Yeo atlas has 7 labels, that is indicated in the colorbar.
 # The colorbar also shows the correspondence between the color and the label
 #
 # Note that these 7 labels correspond actually to networks that comprise
 # several regions. We are going to split them up.
 
-##############################################################################
+# %%
 # Relabeling the atlas into separated regions
-# ---------------------------------------------
+# -------------------------------------------
 #
 # Now we use the connected_label_regions to break apart the networks
 # of the Yeo atlas into separated regions
 from nilearn.regions import connected_label_regions
+
 region_labels = connected_label_regions(atlas_yeo)
 
-##############################################################################
+# %%
 # Plotting the new regions
-plotting.plot_roi(region_labels, title='Relabeled Yeo atlas',
-                  cut_coords=(8, -4, 9), colorbar=True, cmap='Paired')
+plot_roi(
+    region_labels,
+    title="Relabeled Yeo atlas",
+    cut_coords=(8, -4, 9),
+    colorbar=True,
+    cmap="Paired",
+)
 
-##############################################################################
+show()
+
+# %%
 # Note that the same cluster in original and labeled atlas could have
 # different color, so, you cannot directly compare colors.
 #
@@ -69,47 +85,58 @@ plotting.plot_roi(region_labels, title='Relabeled Yeo atlas',
 # ROIs.
 #
 # You can save the new atlas to a nifti file using to_filename method.
-region_labels.to_filename('relabeled_yeo_atlas.nii.gz')
+from pathlib import Path
 
-# The images are saved to the current folder. It is possible to specify the
-# folder for saving the results, i.e.
-# import os
-# region_labels.to_filename(os.path.join(folder_path,
-#                                        'relabeled_yeo_atlas.nii.gz'))
+output_dir = Path.cwd() / "results" / "plot_extract_regions_labels_image"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+
+region_labels.to_filename(output_dir / "relabeled_yeo_atlas.nii.gz")
 
 
-##############################################################################
+# %%
 # Different connectivity modes
-# -----------------------------
+# ----------------------------
 #
 # Using the parameter connect_diag=False we separate in addition two regions
 # that are connected only along the diagonal.
 
-region_labels_not_diag = connected_label_regions(atlas_yeo,
-                                                 connect_diag=False)
+region_labels_not_diag = connected_label_regions(atlas_yeo, connect_diag=False)
 
-plotting.plot_roi(region_labels_not_diag,
-                  title='Relabeling and connect_diag=False',
-                  cut_coords=(8, -4, 9), colorbar=True, cmap='Paired')
+plot_roi(
+    region_labels_not_diag,
+    title="Relabeling and connect_diag=False",
+    cut_coords=(8, -4, 9),
+    colorbar=True,
+    cmap="Paired",
+)
+
+show()
 
 
-##############################################################################
+# %%
 # A consequence of using connect_diag=False is that we can get a lot of
 # small regions, around 110 judging from the colorbar.
 #
 # Hence we suggest use connect_diag=True
 
-##############################################################################
+# %%
 # Parameter min_size
-# -------------------
+# ------------------
 #
 # In the above, we get around 110 regions, but many of these are very
 # small. We can remove them with the min_size parameter, keeping only the
 # regions larger than 100mm^3.
-region_labels_min_size = connected_label_regions(atlas_yeo, min_size=100,
-                                                 connect_diag=False)
+region_labels_min_size = connected_label_regions(
+    atlas_yeo, min_size=100, connect_diag=False
+)
 
-plotting.plot_roi(region_labels_min_size, title='Relabeling and min_size',
-                  cut_coords=(8, -4, 9), colorbar=True, cmap='Paired')
+plot_roi(
+    region_labels_min_size,
+    title="Relabeling and min_size",
+    cut_coords=(8, -4, 9),
+    colorbar=True,
+    cmap="Paired",
+)
 
-plotting.show()
+show()

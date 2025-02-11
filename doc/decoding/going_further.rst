@@ -10,12 +10,8 @@ scikit-learn. This builds on the :ref:`didactic introduction to decoding <decodi
 .. note::
 
    This documentation gives links and additional definitions needed to work
-   correctly with scikit-learn. For a full code example, please check out: :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
-
-
-.. contents:: **Contents**
-    :local:
-    :depth: 1
+   correctly with scikit-learn. For a full code example,
+   please check out: :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
 
 
 Performing decoding with scikit-learn
@@ -24,10 +20,14 @@ Performing decoding with scikit-learn
 Using scikit-learn estimators
 --------------------------------
 
-You can easily import estimators from the `scikit-learn <http://scikit-learn.org>`_ machine-learning library, those available in the `Decoder` object and many others.
-They all have the `fit` and `predict` functions. For example you can directly import the versatile `Support Vector Classifier <http://scikit-learn.org/stable/modules/svm.html>`_ (or SVC).
+You can easily import estimators from the `scikit-learn <https://scikit-learn.org>`_ machine-learning library,
+those available in the ``Decoder`` object and many others.
+They all have the ``fit`` and ``predict`` functions.
+For example you can directly import the versatile
+`Support Vector Classifier <https://scikit-learn.org/stable/modules/svm.html>`_ (or SVC).
 
-To learn more about the variety of classifiers available in scikit-learn, see the `scikit-learn documentation on supervised learning <http://scikit-learn.org/stable/supervised_learning.html>`_.
+To learn more about the variety of classifiers available in scikit-learn, see the
+`scikit-learn documentation on supervised learning <https://scikit-learn.org/stable/supervised_learning.html>`_.
 
 
 Cross-validation with scikit-learn
@@ -51,9 +51,9 @@ You can change many parameters of the cross_validation here, for example:
 
 * use a different cross-validation scheme, for example :class:`sklearn.model_selection.LeaveOneGroupOut`.
 
-* speed up the computation by using `n_jobs=-1`, which will spread the computation equally across all processors.
+* speed up the computation by using ``n_jobs=-1``, which will spread the computation equally across all processors.
 
-* use a different scoring function, as a keyword or imported from scikit-learn such as `scoring='roc_auc'`.
+* use a different scoring function, as a keyword or imported from scikit-learn such as ``scoring="roc_auc"``.
 
 .. seealso::
 
@@ -62,15 +62,17 @@ You can change many parameters of the cross_validation here, for example:
      see `here <https://scikit-learn.org/stable/modules/cross_validation.html>`_.
 
    * `How to evaluate a model using scikit-learn
-     <http://scikit-learn.org/stable/modules/model_evaluation.html#common-cases-predefined-values>`_.
+     <https://scikit-learn.org/stable/modules/model_evaluation.html>`_.
 
 
 Measuring the chance level
 ---------------------------
 
-**Dummy estimators**: The simplest way to measure prediction performance at chance is to use a *"dummy"* classifier: :class:`sklearn.dummy.DummyClassifier`.
+**Dummy estimators**: The simplest way to measure prediction performance at chance
+is to use a *"dummy"* classifier: :class:`sklearn.dummy.DummyClassifier`.
 
-**Permutation testing**: A more controlled way, but slower, is to do permutation testing on the labels, with :func:`sklearn.model_selection.permutation_test_score`.
+**Permutation testing**: A more controlled way, but slower,
+is to do permutation testing on the labels, with :func:`sklearn.model_selection.permutation_test_score`.
 
 .. topic:: **Decoding on simulated data**
 
@@ -107,13 +109,13 @@ Using any other model in the pipeline
 :term:`Anova<ANOVA>` - :term:`SVM` is a good baseline that will give reasonable results
 in common settings. However it may be interesting for you to explore the
 `wide variety of supervised learning algorithms in the scikit-learn
-<http://scikit-learn.org/stable/supervised_learning.html>`_. These can readily
+<https://scikit-learn.org/stable/supervised_learning.html>`_. These can readily
 replace the :term:`SVM` in your pipeline and might be better fitted
 to some usecases as discussed in the previous section.
 
 The feature selection step can also be tuned. For example we could use a more
 sophisticated scheme, such as `Recursive Feature Elimination (RFE)
-<http://scikit-learn.org/stable/modules/feature_selection.html#recursive-feature-elimination>`_
+<https://scikit-learn.org/stable/modules/feature_selection.html#recursive-feature-elimination>`_
 or add some `a clustering step <https://scikit-learn.org/stable/modules/clustering.html>`_
 before feature selection. This always amount to creating
 `a pipeline <https://scikit-learn.org/stable/modules/compose.html>`_ that will
@@ -124,7 +126,7 @@ Scikit-learn usually takes care of the rest for us.
 
   * The corresponding full code example to practice with pipelines :ref:`sphx_glr_auto_examples_07_advanced_plot_advanced_decoding_scikit.py`
 
-  * The `scikit-learn documentation <http://scikit-learn.org>`_ with detailed
+  * The `scikit-learn documentation <https://scikit-learn.org>`_ with detailed
     explanations on a large variety of estimators and machine learning techniques.
     To become better at decoding, you need to study it.
 
@@ -150,4 +152,4 @@ CPUs.
 .. seealso::
 
    `The scikit-learn documentation on choosing estimators and their parameters
-   selection <https://scikit-learn.org/stable/tutorial/statistical_inference/model_selection.html>`_
+   selection <https://scikit-learn.org/stable/auto_examples/model_selection/index.html>`_

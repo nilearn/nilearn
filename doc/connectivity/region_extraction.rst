@@ -11,23 +11,17 @@ Region Extraction for better brain parcellations
    region and also shows how to learn functional connectivity
    interactions between each separate region.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
-
 .. topic:: **References**
 
-   * `Abraham et al. "Region segmentation for sparse decompositions: better
-     brain parcellations from rest fMRI", Sparsity Techniques in Medical Imaging,
-     Sep 2014 <https://hal.inria.fr/hal-01093944>`_
+   * Region segmentation for sparse decompositions:
+     better brain parcellations from rest fMRI :footcite:p:`Abraham2014`
 
 .. currentmodule:: nilearn.datasets
 
 Fetching movie-watching based functional datasets
 =================================================
 
-We use a naturalistic stimuli based movie-watching functional connectivity dataset
+We use a naturalistic stimuli based movie-watching :term:`functional connectivity` dataset
 of 20 subjects, which is already preprocessed, downsampled to 4mm isotropic resolution, and publicly available at
 `<https://osf.io/5hju4/files/>`_. We use utilities
 :func:`fetch_development_fmri` implemented in nilearn for automatic fetching of this
@@ -36,7 +30,7 @@ dataset.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # We use nilearn's datasets downloading utilities
-    :end-before: ################################################################################
+    :end-before: # %%
 
 .. currentmodule:: nilearn.decomposition
 
@@ -65,7 +59,7 @@ color and colors are random and automatically picked.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # Show networks using plotting utilities
-    :end-before: ################################################################################
+    :end-before: # %%
 
 .. |dict-maps| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_001.png
     :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
@@ -112,7 +106,7 @@ quite nicely into each hemisphere.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # Visualization of region extraction results
-    :end-before: ################################################################################
+    :end-before: # %%
 
 .. |dict| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_002.png
     :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
@@ -126,7 +120,7 @@ Computing functional connectivity matrices
 ==========================================
 
 Here, we use the object called :class:`ConnectivityMeasure` to compute
-functional connectivity measured between each extracted brain regions. Many different
+:term:`functional connectivity` measured between each extracted brain regions. Many different
 kinds of measures exists in nilearn such as "correlation", "partial correlation", "tangent",
 "covariance", "precision". But, here we show how to compute only correlations by
 selecting parameter as ``kind='correlation'`` as initialized in the object.
@@ -141,7 +135,7 @@ The third step, we compute the mean correlation across all subjects.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # To estimate correlation matrices we import connectome utilities from nilearn
-    :end-before: #################################################################
+    :end-before: # %%
 
 .. currentmodule:: nilearn.plotting
 
@@ -156,7 +150,7 @@ connectivity relations to brain regions plotted using :func:`plot_connectome`
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
     :start-after: # connectome relations.
-    :end-before: ################################################################################
+    :end-before: # %%
 
 .. |matrix| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_003.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
@@ -171,11 +165,12 @@ connectivity relations to brain regions plotted using :func:`plot_connectome`
 Validating results
 ==================
 
-Showing only one specific network regions before and after region extraction. The first image displays the regions of one specific functional network without region extraction. 
+Showing only one specific network regions before and after region extraction.
+The first image displays the regions of one specific functional network without region extraction.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # region extraction (left plot).
-    :end-before: ################################################################################
+    :start-after: # without region extraction (left plot).
+    :end-before: # %%
 
 .. |dmn| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_005.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
@@ -188,7 +183,7 @@ validate that regions are nicely separated identified by each extracted region i
 color.
 
 .. literalinclude:: ../../examples/03_connectivity/plot_extract_regions_dictlearning_maps.py
-    :start-after: # network given as 4.
+    :start-after: # related to original network given as 4.
 
 .. |dmn_reg| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_extract_regions_dictlearning_maps_006.png
    :target: ../auto_examples/03_connectivity/plot_extract_regions_dictlearning_maps.html
@@ -200,3 +195,9 @@ color.
 
    The full code can be found as an example:
    :ref:`sphx_glr_auto_examples_03_connectivity_plot_extract_regions_dictlearning_maps.py`
+
+
+References
+----------
+
+.. footbibliography::

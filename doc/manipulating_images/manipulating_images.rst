@@ -8,10 +8,6 @@ This chapter discusses how nilearn can be used to do simple operations on
 brain images.
 
 
-.. contents:: **Chapter contents**
-    :local:
-    :depth: 1
-
 .. _preprocessing_functions:
 
 Functions for data preparation and image transformation
@@ -71,10 +67,10 @@ Resampling to a specific target affine, shape, or resolution
 -------------------------------------------------------------
 
 :func:`nilearn.image.resample_img` specifies the resampling in terms of
-the `target_affine` to match the spatial configuration defined by the new
+the ``target_affine`` to match the spatial configuration defined by the new
 affine.
 
-Additionally, a `target_shape` can be used to resize images
+Additionally, a ``target_shape`` can be used to resize images
 (i.e., cropping or padding with zeros) to match an expected data
 image dimensions (shape composed of x, y, and z).
 
@@ -100,7 +96,7 @@ of the transformation matrix (i.e., affine).
 .. topic:: **Special case: resampling to a given voxel size**
 
    Specifying a 3x3 matrix that is diagonal as a target_affine fixes the
-   voxel size. For instance to resample to 3x3x3 mm voxels::
+   :term:`voxel` size. For instance to resample to 3x3x3 mm voxels::
 
     >>> import numpy as np
     >>> target_affine = np.diag((3, 3, 3))
@@ -136,7 +132,7 @@ Accessing individual volumes in 4D images
 
 .. topic:: **Examples**
 
-   * :ref:`sphx_glr_auto_examples_plot_3d_and_4d_niimg.py`
+   * :ref:`sphx_glr_auto_examples_00_tutorials_plot_3d_and_4d_niimg.py`
 
    * :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
 
@@ -147,16 +143,16 @@ Computing and applying spatial masks
 
 Relevant functions:
 
-* compute a mask from EPI images: :func:`nilearn.masking.compute_epi_mask`
-* compute a whole-brain, grey-matter or white-matter mask using the MNI template:
+* compute a mask from :term:`EPI` images: :func:`nilearn.masking.compute_epi_mask`
+* compute a whole-brain, grey-matter or white-matter mask using the :term:`MNI` template:
   :func:`nilearn.masking.compute_brain_mask`.
 * compute a mask from images with a flat background:
   :func:`nilearn.masking.compute_background_mask`
-* compute for multiple sessions/subjects:
+* compute for multiple runs/subjects:
   :func:`nilearn.masking.compute_multi_epi_mask`
   :func:`nilearn.masking.compute_multi_background_mask`
 * apply: :func:`nilearn.masking.apply_mask`
-* intersect several masks (useful for multi sessions/subjects): :func:`nilearn.masking.intersect_masks`
+* intersect several masks (useful for multi runs/subjects): :func:`nilearn.masking.intersect_masks`
 * unmasking: :func:`nilearn.masking.unmask`
 
 
@@ -169,18 +165,19 @@ can be computed from the data:
 - :func:`nilearn.masking.compute_background_mask` for brain images where
   the brain stands out of a constant background. This is typically the
   case when working on statistic maps output after a brain extraction
-- :func:`nilearn.masking.compute_epi_mask` for EPI images
+- :func:`nilearn.masking.compute_epi_mask` for :term:`EPI` images
 - :func:`nilearn.masking.compute_brain_mask` to compute a
-  whole-brain, grey-matter or white-matter mask using the MNI template.
+  whole-brain, grey-matter or white-matter mask using the :term:`MNI` template.
 
 
 .. literalinclude:: ../../examples/01_plotting/plot_visualization.py
-     :start-after: # Simple computation of a mask from the fMRI data
+     :start-after: # Simple computation of a mask from the :term:`fMRI` data
      :end-before: # Applying the mask to extract the corresponding time series
 
 .. figure:: ../auto_examples/01_plotting/images/sphx_glr_plot_visualization_002.png
-    :target: ../auto_examples/01_plotting/plot_visualization.html
-    :scale: 50%
+   :target: ../auto_examples/01_plotting/plot_visualization.html
+   :scale: 50%
+   :align: center
 
 
 .. _mask_4d_2_3d:
@@ -188,12 +185,12 @@ can be computed from the data:
 Masking data: from 4D Nifti images to 2D data arrays
 ---------------------------------------------------------------
 
-fMRI data is usually represented as a 4D block of data: 3 spatial
+:term:`fMRI` data is usually represented as a 4D block of data: 3 spatial
 dimensions and one time dimension. In practice, we are usually
-interested in working on the voxel time-series in the
+interested in working on the :term:`voxel` time-series in the
 brain. It is thus convenient to apply a brain mask in order to convert the
 4D brain images representation into a restructured 2D data representation,
-`voxel` **x** `time`, as depicted below:
+``voxel`` **x** ``time``, as depicted below:
 
 .. image:: ../images/masking.jpg
     :align: center
@@ -221,36 +218,35 @@ statistical test. This requires a chain of image
 operations on the input data. Here is a possible recipe for computing an
 ROI mask:
 
- * **Smoothing**: Before a statistical test, it is often useful to smooth the image a bit
-   using :func:`nilearn.image.smooth_img`, typically fwhm=6 for
-   fMRI.
+* **Smoothing**: Before a statistical test, it is often useful to smooth the image a bit
+  using :func:`nilearn.image.smooth_img`, typically fwhm=6 for fMRI.
 
- * **Selecting voxels**: Given the smoothed data, we can select voxels
-   with a statistical test (eg opposing face and house experimental
-   conditions), for instance with a simple Student's t-test using scipy
-   function :func:`scipy.stats.ttest_ind`.
+* **Selecting voxels**: Given the smoothed data, we can select voxels
+  with a statistical test (eg opposing face and house experimental
+  conditions), for instance with a simple Student's t-test using scipy
+  function :func:`scipy.stats.ttest_ind`.
 
- * **Thresholding**: Then we need threshold the statistical map to have
-   better representation of voxels of interest.
+* **Thresholding**: Then we need threshold the statistical map to have
+  better representation of voxels of interest.
 
- * **Mask intersection and dilation**: Post-processing the results with
-   simple morphological operations, mask intersection and dilation.
+* **Mask intersection and dilation**: Post-processing the results with
+  simple morphological operations, mask intersection and dilation.
 
-   * we can use another mask, such as a grey-matter mask, to select
-     only the voxels which are common in both masks.
+  * we can use another mask, such as a grey-matter mask, to select
+    only the voxels which are common in both masks.
 
-   * we can do `morphological dilation
-     <http://en.wikipedia.org/wiki/Dilation_(morphology)>`_ to achieve
-     more compact blobs with more regular boundaries. The function is
-     used from :func:`scipy.ndimage.binary_dilation`.
+  * we can do `morphological dilation
+    <https://en.wikipedia.org/wiki/Dilation_(morphology)>`_ to achieve
+    more compact blobs with more regular boundaries. The function is
+    used from :func:`scipy.ndimage.binary_dilation`.
 
- * **Extracting connected components**: We end with splitting the connected
-   ROIs into two separate regions (ROIs), one in each hemisphere. The
-   function :func:`scipy.ndimage.label` from the scipy library is used.
+* **Extracting connected components**: We end with splitting the connected
+  ROIs into two separate regions (ROIs), one in each hemisphere. The
+  function :func:`scipy.ndimage.label` from the scipy library is used.
 
- * **Saving the result**: The final voxel mask is saved to disk using
-   the 'to_filename' method of the image object.
-   (or **nibabel.save**).
+* **Saving the result**: The final :term:`voxel` mask is saved to disk using
+  the 'to_filename' method of the image object.
+  (or **nibabel.save**).
 
 
 .. seealso::
@@ -258,12 +254,12 @@ ROI mask:
    For extracting connected components:
 
    * A function :func:`nilearn.regions.connected_regions` can be used readily
-     on probabilistic atlas Nifti-like images whereas
+     on :term:`probabilistic atlas` Nifti-like images whereas
 
    * A function :func:`nilearn.regions.connected_label_regions` can be used on
-     atlases denoted as labels. For instance, atlases labelled using KMeans.
+     atlases denoted as labels. For instance, atlases labeled using KMeans.
 
-.. _nibabel: http://nipy.sourceforge.net/nibabel/
+.. _nibabel: https://nipy.org/nibabel/
 
 .. topic:: **Code**
 

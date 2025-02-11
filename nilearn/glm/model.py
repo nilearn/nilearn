@@ -1,76 +1,73 @@
-"""
-This module implement classes to handle statistical tests on likelihood models
+"""Implement classes to handle statistical tests on likelihood models.
 
 Author: Bertrand Thirion, 2011--2015
 """
-import numpy as np
 
+import numpy as np
 from nibabel.onetime import auto_attr
 from scipy.linalg import inv
 from scipy.stats import t as t_distribution
 
-from nilearn._utils.glm import positive_reciprocal
+from nilearn.glm._utils import pad_contrast, positive_reciprocal
 
 # Inverse t cumulative distribution
 inv_t_cdf = t_distribution.ppf
 
 
-class LikelihoodModelResults(object):
-    """ Class to contain results from likelihood models.
+class LikelihoodModelResults:
+    """Class to contain results from likelihood models.
 
     This is the class in which things like AIC, BIC, llf
     can be implemented as methods, not computed in, say,
     the fit method of OLSModel.
 
+    Parameters
+    ----------
+    theta : ndarray
+        Parameter estimates from estimated model.
+
+    Y : ndarray
+        Data.
+
+    model : ``LikelihoodModel`` instance
+        Model used to generate fit.
+
+    cov : None or ndarray, optional
+        Covariance of thetas.
+
+    dispersion : scalar, default=1
+        Multiplicative factor in front of `cov`.
+
+    nuisance : None of ndarray, optional
+        Parameter estimates needed to compute logL.
+
+    Notes
+    -----
+    The covariance of thetas is given by:
+
+        dispersion * cov
+
+    For (some subset of models) `dispersion` will typically be the mean
+    square error from the estimated model (sigma^2)
+
     """
-    def __init__(self, theta, Y, model, cov=None, dispersion=1.,
-                 nuisance=None, rank=None):
-        """ Set up results structure
 
-        Parameters
-        ----------
-        theta : ndarray
-            Parameter estimates from estimated model.
-
-        Y : ndarray
-            Data.
-
-        model : ``LikelihoodModel`` instance
-            Model used to generate fit.
-
-        cov : None or ndarray, optional
-            Covariance of thetas.
-
-        dispersion : scalar, optional
-            Multiplicative factor in front of `cov`.
-            Default=1.
-
-        nuisance : None of ndarray, optional
-            Parameter estimates needed to compute logL.
-
-        rank : None or scalar, optional
-            Rank of the model.  If rank is not None, it is used for df_model
-            instead of the usual counting of parameters.
-
-        Notes
-        -----
-        The covariance of thetas is given by:
-
-            dispersion * cov
-
-        For (some subset of models) `dispersion` will typically be the mean
-        square error from the estimated model (sigma^2)
-
-        This class is experimental.
-        It may change in any future release of Nilearn.
-
-        """
+    def __init__(
+        self,
+        theta,
+        Y,
+        model,
+        cov=None,
+        dispersion=1.0,
+        nuisance=None,
+    ):
         self.theta = theta
         self.Y = Y
         self.model = model
         if cov is None:
-            self.cov = self.model.information(self.theta,
-                                              nuisance=self.nuisance)
+            self.cov = self.model.information(
+                self.theta, nuisance=self.nuisance
+            )
         else:
             self.cov = cov
         self.dispersion = dispersion
@@ -81,11 +78,11 @@ class LikelihoodModelResults(object):
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
+    # @auto_attr store the value as an object attribute after initial call
+    # better performance than @property
     @auto_attr
-    def logL(self):
-        """
-        The maximized log-likelihood
-        """
+    def logL(self):  # noqa: N802
+        """Return the maximized log-likelihood."""
         return self.model.logL(self.theta, self.Y, nuisance=self.nuisance)
 
     def t(self, column=None):
@@ -107,23 +104,25 @@ class LikelihoodModelResults(object):
         return _t
 
     def vcov(self, matrix=None, column=None, dispersion=None, other=None):
-        """ Variance/covariance matrix of linear contrast
+        """Return Variance/covariance matrix of linear :term:`contrast`.
 
         Parameters
         ----------
-        matrix : (dim, self.theta.shape[0]) array, optional
-            Numerical contrast specification, where ``dim`` refers to the
-            'dimension' of the contrast i.e. 1 for t contrasts, 1 or more
-            for F contrasts.
+        matrix : (dim, self.theta.shape[0]) array, default=None
+            Numerical :term:`contrast` specification,
+            where ``dim`` refers to the 'dimension' of the contrast
+            i.e. 1 for t contrasts, 1
+            or more for F :term:`contrasts<contrast>`.
 
-        column : int, optional
-            Alternative way of specifying contrasts (column index).
+        column : :obj:`int`, default=None
+            Alternative way of specifying :term:`contrasts<contrast>`
+            (column index).
 
-        dispersion : float or (n_voxels,) array, optional
+        dispersion : :obj:`float` or (n_voxels,) array, default=None
             Value(s) for the dispersion parameters.
 
-        other : (dim, self.theta.shape[0]) array, optional
-            Alternative contrast specification (?).
+        other : (dim, self.theta.shape[0]) array, default=None
+            Alternative :term:`contrast` specification (?).
 
         Returns
         -------
@@ -139,11 +138,16 @@ class LikelihoodModelResults(object):
 
         """
         if self.cov is None:
-            raise ValueError('need covariance of parameters for computing'
-                             '(unnormalized) covariances')
+            raise ValueError(
+                "need covariance of parameters for computing"
+                "(unnormalized) covariances"
+            )
 
         if dispersion is None:
             dispersion = self.dispersion
+
+        if matrix is None and column is None:
+            return self.cov * dispersion
 
         if column is not None:
             column = np.asarray(column)
@@ -160,11 +164,9 @@ class LikelihoodModelResults(object):
                 return tmp * dispersion
             else:
                 return tmp[:, :, np.newaxis] * dispersion
-        if matrix is None and column is None:
-            return self.cov * dispersion
 
-    def Tcontrast(self, matrix, store=('t', 'effect', 'sd'), dispersion=None):
-        """ Compute a Tcontrast for a row vector `matrix`
+    def Tcontrast(self, matrix, store=("t", "effect", "sd"), dispersion=None):  # noqa: N802
+        """Compute a Tcontrast for a row vector `matrix`.
 
         To get the t-statistic for a single column, use the 't' method.
 
@@ -173,11 +175,10 @@ class LikelihoodModelResults(object):
         matrix : 1D array-like
             Contrast matrix.
 
-        store : sequence, optional
+        store : sequence, default=('t', 'effect', 'sd')
             Components of t to store in results output object.
-            Defaults to all components ('t', 'effect', 'sd').
 
-        dispersion : None or float, optional
+        dispersion : None or :obj:`float`, default = None
 
         Returns
         -------
@@ -188,33 +189,35 @@ class LikelihoodModelResults(object):
         # 1D vectors assumed to be row vector
         if matrix.ndim == 1:
             matrix = matrix[None]
+        if matrix.size == 0:
+            raise ValueError(f"t contrasts cannot be empty: got {matrix}")
         if matrix.shape[0] != 1:
-            raise ValueError("t contrasts should have only one row")
-        if matrix.shape[1] != self.theta.shape[0]:
-            raise ValueError("t contrasts should be length P=%d, "
-                             "but this is length %d" % (self.theta.shape[0],
-                                                        matrix.shape[1]))
+            raise ValueError(
+                f"t contrasts should have only one row: got {matrix}."
+            )
+        matrix = pad_contrast(con_val=matrix, theta=self.theta, stat_type="t")
         store = set(store)
-        if not store.issubset(('t', 'effect', 'sd')):
-            raise ValueError('Unexpected store request in %s' % store)
+        if not store.issubset(("t", "effect", "sd")):
+            raise ValueError(f"Unexpected store request in {store}")
         st_t = st_effect = st_sd = effect = sd = None
-        if 't' in store or 'effect' in store:
+        if "t" in store or "effect" in store:
             effect = np.dot(matrix, self.theta)
-            if 'effect' in store:
-                st_effect = np.squeeze(effect)
-        if 't' in store or 'sd' in store:
+        if "effect" in store:
+            st_effect = np.squeeze(effect)
+        if "t" in store or "sd" in store:
             sd = np.sqrt(self.vcov(matrix=matrix, dispersion=dispersion))
-            if 'sd' in store:
-                st_sd = np.squeeze(sd)
-        if 't' in store:
+        if "sd" in store:
+            st_sd = np.squeeze(sd)
+        if "t" in store:
             st_t = np.squeeze(effect * positive_reciprocal(sd))
-        return TContrastResults(effect=st_effect, t=st_t, sd=st_sd,
-                                df_den=self.df_residuals)
+        return TContrastResults(
+            effect=st_effect, t=st_t, sd=st_sd, df_den=self.df_residuals
+        )
 
-    def Fcontrast(self, matrix, dispersion=None, invcov=None):
-        """ Compute an Fcontrast for a contrast matrix `matrix`.
+    def Fcontrast(self, matrix, dispersion=None, invcov=None):  # noqa: N802
+        """Compute an F contrast for a :term:`contrast` matrix ``matrix``.
 
-        Here, `matrix` M is assumed to be non-singular. More precisely
+        Here, ``matrix`` M is assumed to be non-singular. More precisely
 
         .. math::
 
@@ -225,7 +228,7 @@ class LikelihoodModelResults(object):
         There can be problems in non-OLS models where
         the rank of the covariance of the noise is not full.
 
-        See the contrast module to see how to specify contrasts.
+        See the contrasts module to see how to specify contrasts.
         In particular, the matrices from these contrasts will always be
         non-singular in the sense above.
 
@@ -234,10 +237,10 @@ class LikelihoodModelResults(object):
         matrix : 1D array-like
             Contrast matrix.
 
-        dispersion : None or float, optional
+        dispersion : None or :obj:`float`, default=None
             If None, use ``self.dispersion``.
 
-        invcov : None or array, optional
+        invcov : None or array, default=None
             Known inverse of variance covariance matrix.
             If None, calculate this matrix.
 
@@ -257,9 +260,10 @@ class LikelihoodModelResults(object):
             matrix = matrix[None]
         if matrix.shape[1] != self.theta.shape[0]:
             raise ValueError(
-                "F contrasts should have shape[1] P=%d, "
-                "but this has shape[1] %d" % (self.theta.shape[0],
-                                              matrix.shape[1]))
+                f"F contrasts should have shape[1]={self.theta.shape[0]}, "
+                f"but this has shape[1]={matrix.shape[1]}"
+            )
+        matrix = pad_contrast(con_val=matrix, theta=self.theta, stat_type="F")
         ctheta = np.dot(matrix, self.theta)
         if matrix.ndim == 1:
             matrix = matrix.reshape((1, matrix.shape[0]))
@@ -268,29 +272,34 @@ class LikelihoodModelResults(object):
         q = matrix.shape[0]
         if invcov is None:
             invcov = inv(self.vcov(matrix=matrix, dispersion=1.0))
-        F = (np.add.reduce(np.dot(invcov, ctheta) * ctheta, 0)
-             * positive_reciprocal((q * dispersion))
-             )
+        F = np.add.reduce(
+            np.dot(invcov, ctheta) * ctheta, 0
+        ) * positive_reciprocal(q * dispersion)
         F = np.squeeze(F)
         return FContrastResults(
-            effect=ctheta, covariance=self.vcov(
-                matrix=matrix, dispersion=dispersion[np.newaxis]),
-            F=F, df_den=self.df_residuals, df_num=invcov.shape[0])
+            effect=ctheta,
+            covariance=self.vcov(
+                matrix=matrix, dispersion=dispersion[np.newaxis]
+            ),
+            F=F,
+            df_den=self.df_residuals,
+            df_num=invcov.shape[0],
+        )
 
-    def conf_int(self, alpha=.05, cols=None, dispersion=None):
-        ''' The confidence interval of the specified theta estimates.
+    def conf_int(self, alpha=0.05, cols=None, dispersion=None):
+        """Return the confidence interval of the specified theta estimates.
 
         Parameters
         ----------
-        alpha : float, optional
+        alpha : :obj:`float`, default=0.05
             The `alpha` level for the confidence interval.
             ie., `alpha` = .05 returns a 95% confidence interval.
-            Default=0.05.
 
-        cols : tuple, optional
+
+        cols : :obj:`tuple`, default=None
             `cols` specifies which confidence intervals to return.
 
-        dispersion : None or scalar, optional
+        dispersion : None or scalar, default=None
             Scale factor for the variance / covariance
             (see class docstring and ``vcov`` method docstring).
 
@@ -304,11 +313,11 @@ class LikelihoodModelResults(object):
         --------
         >>> from numpy.random import standard_normal as stan
         >>> from nilearn.glm import OLSModel
-        >>> x = np.hstack((stan((30,1)),stan((30,1)),stan((30,1))))
-        >>> beta=np.array([3.25, 1.5, 7.0])
-        >>> y = np.dot(x,beta) + stan((30))
+        >>> x = np.hstack((stan((30, 1)), stan((30, 1)), stan((30, 1))))
+        >>> beta = np.array([3.25, 1.5, 7.0])
+        >>> y = np.dot(x, beta) + stan((30))
         >>> model = OLSModel(x).fit(y)
-        >>> confidence_intervals = model.conf_int(cols=(1,2))
+        >>> confidence_intervals = model.conf_int(cols=(1, 2))
 
         Notes
         -----
@@ -317,16 +326,14 @@ class LikelihoodModelResults(object):
         tails : string, optional
             Possible values: 'two' | 'upper' | 'lower'
 
-        '''
+        """
         if cols is None:
-            lower = (self.theta
-                     - inv_t_cdf(1 - alpha / 2, self.df_residuals)
-                     * np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
-                     )
-            upper = (self.theta
-                     + inv_t_cdf(1 - alpha / 2, self.df_residuals)
-                     * np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
-                     )
+            lower = self.theta - inv_t_cdf(
+                1 - alpha / 2, self.df_residuals
+            ) * np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
+            upper = self.theta + inv_t_cdf(
+                1 - alpha / 2, self.df_residuals
+            ) * np.sqrt(np.diag(self.vcov(dispersion=dispersion)))
         else:
             lower, upper = [], []
             for i in cols:
@@ -343,14 +350,15 @@ class LikelihoodModelResults(object):
         return np.asarray(list(zip(lower, upper)))
 
 
-class TContrastResults(object):
-    """Results from a t contrast of coefficients in a parametric model.
+class TContrastResults:
+    """Results from a t :term:`contrast` of coefficients in a parametric model.
 
     The class does nothing.
-    It is a container for the results from T contrasts,
+    It is a container for the results from T :term:`contrasts<contrast>`,
     and returns the T-statistics when np.asarray is called.
 
     """
+
     def __init__(self, t, sd, effect, df_den=None):
         if df_den is None:
             df_den = np.inf
@@ -363,18 +371,24 @@ class TContrastResults(object):
         return np.asarray(self.t)
 
     def __str__(self):
-        return ('<T contrast: effect=%s, sd=%s, t=%s, df_den=%d>' %
-                (self.effect, self.sd, self.t, self.df_den))
+        return (
+            "<T contrast: "
+            f"effect={self.effect}, "
+            f"sd={self.sd}, "
+            f"t={self.t}, "
+            f"df_den={self.df_den}>"
+        )
 
 
-class FContrastResults(object):
-    """Results from an F contrast of coefficients in a parametric model.
+class FContrastResults:
+    """Results from an F :term:`contrast` of coefficients \
+       in a parametric model.
 
     The class does nothing.
-    It is a container for the results from F contrasts,
+    It is a container for the results from F :term:`contrasts<contrast>`,
     and returns the F-statistics when np.asarray is called.
-
     """
+
     def __init__(self, effect, covariance, F, df_num, df_den=None):
         if df_den is None:
             df_den = np.inf
@@ -388,5 +402,9 @@ class FContrastResults(object):
         return np.asarray(self.F)
 
     def __str__(self):
-        return '<F contrast: F=%s, df_den=%d, df_num=%d>' % \
-               (repr(self.F), self.df_den, self.df_num)
+        return (
+            "<F contrast: "
+            f"F={self.F!r}, "
+            f"df_den={self.df_den}, "
+            f"df_num={self.df_num}>"
+        )

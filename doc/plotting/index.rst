@@ -10,10 +10,6 @@ neuroimaging volumes and surfaces with nilearn.
 Nilearn comes with plotting function to display brain maps coming from
 Nifti-like images, in the :mod:`nilearn.plotting` module.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 .. topic:: **Code examples**
 
    Nilearn has a whole section of the example gallery on plotting.
@@ -74,6 +70,8 @@ different heuristics to find cutting coordinates.
 
    <br>
 
+
+.. rst-class:: plotting-table
 
 =================== =========================================================
 =================== =========================================================
@@ -140,13 +138,14 @@ different heuristics to find cutting coordinates.
    are not displayed, but still accumulate and eventually lead to slowing
    the execution and running out of memory.
 
-   To avoid this, you must close the plot as follow::
+   To avoid this, you must close the plot as follow:
 
-    >>> from nilearn import plotting
-    >>> display = plotting.plot_stat_map(img)     # doctest: +SKIP
-    >>> display.close()     # doctest: +SKIP
+   .. code-block:: python
 
-|
+     from nilearn import plotting
+     display = plotting.plot_stat_map(img)
+     display.close()
+
 
 .. seealso::
 
@@ -204,68 +203,70 @@ Different display modes
      :scale: 50
 
 
+.. rst-class:: plotting-table
+
 ================= =========================================================
 ================= =========================================================
-|plot_ortho|       `display_mode='ortho', cut_coords=[36, -27, 60]`
+|plot_ortho|       ``display_mode="ortho", cut_coords=[36, -27, 60]``
                    |hack|
                    Ortho slicer: 3 cuts along the x, y, z directions
 
-|plot_z_many|      `display_mode='z', cut_coords=5`
+|plot_z_many|      ``display_mode="z", cut_coords=5``
                    |hack|
                    Cutting in the z direction, specifying the number of
                    cuts
 
-|plot_x|           `display_mode='x', cut_coords=[-36, 36]`
+|plot_x|           ``display_mode="x", cut_coords=[-36, 36]``
                    |hack|
                    Cutting in the x direction, specifying the exact
                    cuts
 
-|plot_y_small|     `display_mode='y', cut_coords=1`
+|plot_y_small|     ``display_mode="y", cut_coords=1``
                    |hack|
                    Cutting in the y direction, with only 1 cut, that is
                    automatically positioned
 
-|plot_z_small|     `display_mode='z', cut_coords=1, colorbar=False`
+|plot_z_small|     ``display_mode="z", cut_coords=1, colorbar=False``
                    |hack|
                    Cutting in the z direction, with only 1 cut, that is
                    automatically positioned
 
-|plot_xz|          `display_mode='xz', cut_coords=[36, 60]`
+|plot_xz|          ``display_mode="xz", cut_coords=[36, 60]``
                    |hack|
                    Cutting in the x and z direction, with cuts manually
                    positioned
 
-|plot_yx|          `display_mode='yx', cut_coords=[-27, 36]`
+|plot_yx|          ``display_mode="yx", cut_coords=[-27, 36]``
                    |hack|
                    Cutting in the y and x direction, with cuts manually
                    positioned
 
-|plot_yz|          `display_mode='yz', cut_coords=[-27, 60]`
+|plot_yz|          ``display_mode="yz", cut_coords=[-27, 60]``
                    |hack|
                    Cutting in the y and z direction, with cuts manually
                    positioned
 
-|plot_tiled|       `display_mode='tiled', cut_coords=[36, -27, 60]`
+|plot_tiled|       ``display_mode="tiled", cut_coords=[36, -27, 60]``
                    |hack|
                    Tiled slicer: 3 cuts along the x, y, z directions,
                    arranged in a 2x2 grid
 
-|plot_mosaic|      `display_mode='mosaic'`
+|plot_mosaic|      ``display_mode="mosaic"``
                    |hack|
                    Mosaic slicer: multiple cuts along the x, y, z directions,
                    with cuts automatically positioned by default
 
-|plot_lzr|         `Glass brain display_mode='lzr'`
+|plot_lzr|         ``Glass brain display_mode="lzr"``
                    |hack|
                    Glass brain and Connectome provide additional display modes
                    due to the possibility of doing hemispheric projections.
-                   Check out: 'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
+                   Check out: ``'l'``, ``'r'``, ``'lr'``, ``'lzr'``, ``'lyr'``, '``lzry'``, ``'lyrz'``.
 
-|plot_lyrz|        `Glass brain display_mode='lyrz'`
+|plot_lyrz|        ``Glass brain display_mode="lyrz"``
                    |hack|
                    Glass brain and Connectome provide additional display modes
                    due to the possibility of doing hemispheric projections.
-                   Check out: 'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
+                   Check out: ``'l'``, ``'r'``, ``'lr'``, ``'lzr'``, ``'lyr'``, '``lzry'``, ``'lyrz'``.
 
 
 ================= =========================================================
@@ -295,7 +296,9 @@ Adding overlays, edges, contours, contour fillings, markers, scale bar
 To add overlays, contours, or edges, use the return value of the plotting
 functions. Indeed, these return a display object, such as the
 :class:`nilearn.plotting.displays.OrthoSlicer`. This object represents the
-plot, and has methods to add overlays, contours or edge maps::
+plot, and has methods to add overlays, contours or edge maps:
+
+.. code-block:: python
 
         display = plotting.plot_epi(...)
 
@@ -323,36 +326,39 @@ plot, and has methods to add overlays, contours or edge maps::
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
+
+.. rst-class:: plotting-table
+
 ================= =========================================================
 ================= =========================================================
-|plot_edges|       `display.add_edges(img)`
+|plot_edges|       ``display.add_edges(img)``
                    |hack|
-                   Add a plot of the edges of `img`, where edges are
+                   Add a plot of the edges of ``img``, where edges are
                    extracted using a Canny edge-detection routine. This
                    is typically useful to check registration. Note that
-                   `img` should have some visible sharp edges. Typically
+                   ``img`` should have some visible sharp edges. Typically
                    an EPI img does not, but a T1 does.
 
-|plot_contours|    `display.add_contours(img, levels=[.5], colors='r')`
+|plot_contours|    ``display.add_contours(img, levels=[0.5], colors="r")``
                    |hack|
-                   Add a plot of the contours of `img`, where contours
+                   Add a plot of the contours of ``img``, where contours
                    are computed for constant values, specified in
                    'levels'. This is typically useful to outline a mask,
                    or ROI on top of another map.
                    |hack|
                    **Example:** :ref:`sphx_glr_auto_examples_01_plotting_plot_haxby_masks.py`
 
-|plot_fill|        `display.add_contours(img, filled=True, alpha=0.7, levels=[0.5], colors='b')`
+|plot_fill|        ``display.add_contours(img, filled=True, alpha=0.7, levels=[0.5], colors="b")``
                    |hack|
-                   Add a plot of `img` with contours filled with colors
+                   Add a plot of ``img`` with contours filled with colors
 
-|plot_overlay|    `display.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)`
+|plot_overlay|    ``display.add_overlay(img, cmap=plotting.cm.purple_green, threshold=3)``
                   |hack|
                   Add a new overlay on the existing figure
                   |hack|
                   **Example:** :ref:`sphx_glr_auto_examples_01_plotting_plot_overlay.py`
 
-|plot_markers|    `display.add_markers(coords, marker_color='y', marker_size=100)`
+|plot_markers|    ``display.add_markers(coords, marker_color="y", marker_size=100)``
                   |hack|
                   Add seed based MNI coordinates as spheres on top of
                   statistical image or EPI image. This is useful for seed
@@ -360,7 +366,7 @@ plot, and has methods to add overlays, contours or edge maps::
                   |hack|
                   **Example:** :ref:`sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py`
 
-|plot_scalebar|   `display.annotate(scalebar=True)`
+|plot_scalebar|   ``display.annotate(scalebar=True)``
                   |hack|
                   Adds annotations such as a scale bar, or the cross of
                   the cut coordinates
@@ -373,17 +379,21 @@ Displaying or saving to an image file
 =====================================
 
 To display the figure when running a script, you need to call
-:func:`nilearn.plotting.show`: (this is just an alias to
-:func:`matplotlib.pyplot.show`)::
+:func:`nilearn.plotting.show` (this is just an alias to
+:func:`matplotlib.pyplot.show`):
 
-    >>> from nilearn import plotting
-    >>> plotting.show() # doctest: +SKIP
+.. code-block:: python
+
+     from nilearn import plotting
+     plotting.show()
 
 The simplest way to output an image file from the plotting functions is
-to specify the `output_file` argument::
+to specify the ``output_file`` argument:
 
-    >>> from nilearn import plotting
-    >>> plotting.plot_stat_map(img, output_file='pretty_brain.png')     # doctest: +SKIP
+.. code-block:: python
+
+     from nilearn import plotting
+     plotting.plot_stat_map(img, output_file='pretty_brain.png')
 
 In this case, the display is closed automatically and the plotting
 function returns None.
@@ -391,13 +401,15 @@ function returns None.
 |
 
 The display object returned by the plotting function has a savefig method
-that can be used to save the plot to an image file::
+that can be used to save the plot to an image file:
 
-    >>> from nilearn import plotting
-    >>> display = plotting.plot_stat_map(img)     # doctest: +SKIP
-    >>> display.savefig('pretty_brain.png')     # doctest: +SKIP
-    # Don't forget to close the display
-    >>> display.close()     # doctest: +SKIP
+.. code-block:: python
+
+     from nilearn import plotting
+     display = plotting.plot_stat_map(img)
+     display.savefig('pretty_brain.png')
+     # Remember to close the display
+     display.close()
 
 .. _surface-plotting:
 
@@ -416,6 +428,8 @@ on a brain surface.
 .. |plot_surf_stat_map| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_stat_map_001.png
      :target: ../auto_examples/01_plotting/plot_surf_stat_map.html
      :scale: 50
+
+.. rst-class:: plotting-table
 
 =====================   ===================================================================
 =====================   ===================================================================
@@ -445,8 +459,8 @@ Nilearn also has functions for making interactive plots that can be
 seen in a web browser. There are two kinds of plots for which an
 interactive mode is available:
 
-    - :ref:`interactive-surface-plotting`
-    - :ref:`interactive-connectome-plotting`
+- :ref:`interactive-surface-plotting`
+- :ref:`interactive-connectome-plotting`
 
 .. versionadded:: 0.5
 
@@ -466,28 +480,30 @@ interactive mode is available:
 For 3D surface plots of statistical maps or surface atlases, you have different options
 depending on what you want to do and the packages you have installed.
 
-    - If you have `plotly`_ installed: Since Nilearn ``0.9.0``, it is possible to use
-      `plotly`_ as the plotting engine in most surface plotting functions of Nilearn like
-      :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`. By default
-      these functions use `matplotlib`_ as the plotting engine which results in
-      non-interactive plots. By setting ``engine='plotly'``, an interactive version of
-      these plots will be automatically opened in your web browser. In addition, if you
-      have `kaleido`_ installed, you can save the plots automatically to png files.
-      Finally, the `plotly`_ figure returned can be further customized in order to make
-      more elaborate plots.
+-    If you have `plotly`_ installed
 
-    - If you don't have `plotly`_:
+     Since Nilearn ``0.9.0``, it is possible to use
+     `plotly`_ as the plotting engine in most surface plotting functions of Nilearn like
+     :func:`plot_surf`, :func:`plot_surf_stat_map`, or :func:`plot_surf_roi`. By default
+     these functions use `matplotlib`_ as the plotting engine which results in
+     non-interactive plots. By setting ``engine='plotly'``, an interactive version of
+     these plots will be automatically opened in your web browser. In addition, if you
+     have `kaleido`_ installed, you can save the plots automatically to png files.
+     Finally, the `plotly`_ figure returned can be further customized in order to make
+     more elaborate plots.
 
-        - If you don't need to save the plots to png and want to interactively visualize
-          the surface, you can rely on `view` functions:
+-    If you don't have `plotly`_
 
-            - :func:`view_img_on_surf` which takes as input a volume statistical map and
-              projects it on the cortical surface before making a 3D interactive plot.
+     -    If you don't need to save the plots to png and want to interactively visualize
+          the surface, you can rely on ``view`` functions:
 
-            - :func:`view_surf` which takes as input a surface map and a cortical mesh
-              and produces a 3D interactive plot on the cortical surface.
+          -    :func:`view_img_on_surf` which takes as input a volume statistical map and
+               projects it on the cortical surface before making a 3D interactive plot.
 
-        - The last option is to rely on surface plotting functions (:func:`plot_surf`,
+          -    :func:`view_surf` which takes as input a surface map and a cortical mesh
+               and produces a 3D interactive plot on the cortical surface.
+
+     -    The last option is to rely on surface plotting functions (:func:`plot_surf`,
           :func:`plot_surf_stat_map`, :func:`plot_surf_roi`...) with the default
           `matplotlib`_ plotting engine. In this case, you will be able to save to png
           but you will lose the interactivity of the plots.
@@ -496,11 +512,13 @@ depending on what you want to do and the packages you have installed.
 .................................................................
 
 You can use :func:`view_img_on_surf` to display a 3D statistical map projected on the
-cortical surface::
+cortical surface:
 
-    >>> from nilearn import plotting, datasets     # doctest: +SKIP
-    >>> img = datasets.fetch_localizer_button_task()['tmap']     # doctest: +SKIP
-    >>> view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')     # doctest: +SKIP
+.. code-block:: python
+
+     from nilearn import plotting, datasets
+     img = datasets.fetch_localizer_button_task()['tmap']
+     view = plotting.view_img_on_surf(img, threshold='90%', surf_mesh='fsaverage')
 
 If you are running a notebook, displaying ``view`` will embed an interactive
 plot (this is the case for all interactive plots produced by nilearn's "view"
@@ -508,33 +526,38 @@ functions):
 
 .. image:: ../images/plotly_surface_plot_notebook_screenshot.png
 
-If you are not using a notebook, you can open the plot in a browser like this::
+If you are not using a notebook, you can open the plot in a browser like this:
 
-    >>> view.open_in_browser()     # doctest: +SKIP
+.. code-block:: python
+
+     view.open_in_browser()
 
 This will open this 3D plot in your web browser:
 
 .. image:: ../images/plotly_surface_plot.png
 
 
-Or you can save it to an html file::
+Or you can save it to an html file:
 
-    >>> view.save_as_html("surface_plot.html")     # doctest: +SKIP
+.. code-block:: python
+
+     view.save_as_html("surface_plot.html")
 
 
 :func:`view_surf`: Surface plot using a surface map and a cortical mesh
 .......................................................................
 
 You can use :func:`view_surf` to display a 3D surface statistical map over
-a cortical mesh::
+a cortical mesh:
 
-    >>> from nilearn import plotting, datasets     # doctest: +SKIP
-    >>> destrieux = datasets.fetch_atlas_surf_destrieux()     # doctest: +SKIP
-    >>> fsaverage = datasets.fetch_surf_fsaverage()     # doctest: +SKIP
-    >>> view = plotting.view_surf(fsaverage['infl_left'], destrieux['map_left'],     # doctest: +SKIP
-    ...                           cmap='gist_ncar', symmetric_cmap=False)     # doctest: +SKIP
-    ...
-    >>> view.open_in_browser()     # doctest: +SKIP
+.. code-block:: python
+
+     from nilearn import plotting, datasets
+     destrieux = datasets.fetch_atlas_surf_destrieux()
+     fsaverage = datasets.fetch_surf_fsaverage()
+     view = plotting.view_surf(fsaverage['infl_left'], destrieux['map_left'],
+                               cmap='gist_ncar', symmetric_cmap=False)
+     view.open_in_browser()
 
 
 .. image:: ../images/plotly_surface_atlas_plot.png
@@ -545,17 +568,21 @@ a cortical mesh::
 
 If you have `plotly`_ installed, you can also use :func:`plot_surf_stat_map` with
 the ``engine`` parameter set to "plotly" to display a statistical map over a
-cortical mesh::
+cortical mesh:
 
-    >>> from nilearn import plotting, datasets, surface  # doctest: +SKIP
-    >>> fsaverage = datasets.fetch_surf_fsaverage()  # doctest: +SKIP
-    >>> motor_images = datasets.fetch_neurovault_motor_task()  # doctest: +SKIP
-    >>> mesh = surface.load_surf_mesh(fsaverage.pial_right)  # doctest: +SKIP
-    >>> map = surface.vol_to_surf(motor_images.images[0], mesh)  # doctest: +SKIP
-    >>> fig = plotting.plot_surf_stat_map(mesh, map, hemi='right',  # doctest: +SKIP
-    ...     view='lateral', colorbar=True, threshold=1.2,  # doctest: +SKIP
-    ...     bg_map=fsaverage.sulc_right, engine='plotly')  # doctest: +SKIP
-    >>> fig.show()  # doctest: +SKIP
+.. code-block:: python
+
+     from nilearn import plotting, datasets, surface
+     fsaverage = datasets.fetch_surf_fsaverage()
+     motor_images = datasets.fetch_neurovault_motor_task()
+     mesh = surface.load_surf_mesh(fsaverage.pial_right)
+     map = surface.vol_to_surf(motor_images.images[0], mesh)
+     fig = plotting.plot_surf_stat_map(mesh, map, hemi='right',
+                                       view='lateral', colorbar=True,
+                                       threshold=1.2,
+                                       bg_map=fsaverage.sulc_right,
+                                       engine='plotly')
+     fig.show()
 
 .. image:: ../images/plotly_plot_surf_stat_map.png
 
@@ -567,10 +594,12 @@ cortical mesh::
 For 3D plots of a connectome, use :func:`view_connectome`. To see only markers,
 use :func:`view_markers`.
 
-:func:`view_connectome`: 3D plot of a connectome::
+:func:`view_connectome`: 3D plot of a connectome:
 
-      >>> view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')    # doctest: +SKIP
-      >>> view.open_in_browser() # doctest: +SKIP
+.. code-block:: python
+
+     view = plotting.view_connectome(correlation_matrix, coords, edge_threshold='90%')
+     view.open_in_browser()
 
 
 .. image:: ../images/plotly_connectome_plot.png
@@ -581,14 +610,15 @@ use :func:`view_markers`.
 3D Plots of markers
 -------------------
 
-:func:`view_markers`: showing markers (e.g. seed locations) in 3D::
+:func:`view_markers`: showing markers (e.g. seed locations) in 3D:
 
-    >>> from nilearn import plotting  # doctest: +SKIP
-    >>> dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)] # doctest: +SKIP
-    >>> view = plotting.view_markers( # doctest: +SKIP
-    >>>       dmn_coords, ['red', 'cyan', 'magenta', 'orange'], marker_size=10) # doctest: +SKIP
-    >>> view.open_in_browser() # doctest: +SKIP
+.. code-block:: python
 
+     from nilearn import plotting
+     dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
+     view = plotting.view_markers(dmn_coords, ['red', 'cyan', 'magenta', 'orange'],
+                                  marker_size=10)
+     view.open_in_browser()
 
 
 .. image:: ../images/plotly_markers_plot.png
@@ -599,24 +629,27 @@ use :func:`view_markers`.
 Interactive visualization of statistical map slices
 ---------------------------------------------------
 
-:func:`view_img`: open stat map in a Brainsprite viewer (https://github.com/simexp/brainsprite.js)::
+:func:`view_img`: open stat map in a Brainsprite viewer (https://github.com/simexp/brainsprite.js):
 
-    >>> from nilearn import plotting, datasets     # doctest: +SKIP
-    >>> img = datasets.fetch_localizer_button_task()['tmap']     # doctest: +SKIP
-    >>> html_view = plotting.view_img(img, threshold=2, vmax=4, cut_coords=[-42, -16, 52],
-    ...                                     title="Motor contrast")     # doctest: +SKIP
+.. code-block:: python
 
-in a Jupyter notebook, if `html_view` is not requested, the viewer will be inserted in the notebook:
+     from nilearn import plotting, datasets
+     img = datasets.fetch_localizer_button_task()['tmap']
+     html_view = plotting.view_img(img, threshold=2, vmax=4,
+                                   cut_coords=[-42, -16, 52],
+                                   title="Motor contrast")
+
+in a Jupyter notebook, if ``html_view`` is not requested, the viewer will be inserted in the notebook:
 
 .. image:: ../images/view_img_screenshot_notebook.png
 
 Or you can open a viewer in your web browser if you are not in a notebook::
 
-    >>> html_view.open_in_browser()   # doctest: +SKIP
+     html_view.open_in_browser()
 
 Finally, you can also save the viewer as a stand-alone html file::
 
-    >>> html_view.save_as_html('viewer.html') # doctest: +SKIP
+     html_view.save_as_html('viewer.html')
 
 .. _`kaleido`:
     https://pypi.org/project/kaleido/

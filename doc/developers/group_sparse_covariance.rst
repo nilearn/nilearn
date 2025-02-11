@@ -18,11 +18,7 @@ Description
 
 :func:`group_sparse_covariance`, and :class:`GroupSparseCovariance` are
 two different interfaces to an implementation of the algorithm described
-in this article:
-
-    Jean Honorio and Dimitris Samaras.
-    "Simultaneous and Group-Sparse Multi-Task Learning of Gaussian Graphical
-    Models". arXiv:1207.4255 (17 July 2012). http://arxiv.org/abs/1207.4255.
+in :footcite:t:`Honorio2012`.
 
 The goal of the algorithm is to take a set of K covariance matrices as
 input, and estimate a set of K sparse precision matrices, using a
@@ -69,14 +65,14 @@ What is relevant is:
   implementation). Failing to do this leads quickly to instability,
   because too large numbers are used in the computation.
 - an on-line computation of an inverse is performed in function
-  `_update_submatrix`. For large problems, this is faster than
+  ``_update_submatrix``. For large problems, this is faster than
   computing the full inverse each time, but gives unfortunately less
   precision. In particular, symmetry is not always perfect, that's why
   it is enforced at the end on the final result.
 - the Newton-Raphson tolerance value has no influence on numerical
   stability, unless very large values (like 0.5) are used.
 
-The `debug` keyword in :func:`group_sparse_covariance` activates a set
+The ``debug`` keyword in :func:`group_sparse_covariance` activates a set
 of numerical consistency checks (mainly that matrices are s.p.d.) that
 can be useful to track down numerical instability problems.
 
@@ -84,7 +80,7 @@ can be useful to track down numerical instability problems.
 Execution time
 ==============
 
-The `line profiler <http://pythonhosted.org/line_profiler/>`_ from
+The `line profiler <https://github.com/pyutils/line_profiler>`_ from
 Robert Kern was used to locate execution time bottlenecks. Its
 overhead proved not to be negligible (around 50% more execution time
 when activated), and not evenly distributed in code lines. Global
@@ -117,7 +113,7 @@ particular, three-dimensional arrays containing precision matrices are
 in Fortran order, to get prec[..., k] contiguous for any k. This is
 important to avoid copies by lapack/atlas functions, such as matrix
 inverse or dot product. It is also consistent with arrays returned by
-`nibabel.load`.
+``nibabel.load``.
 
 An optimization that can be performed, but couldn't be implemented
 short of having proper linalg functions for it is to process only half
@@ -135,7 +131,7 @@ Synthetic dataset
 =================
 For testing purposes, a function for synthesis of signals based on
 sparse precision matrices has been written:
-`nilearn._utils.data_gen.generate_group_sparse_gaussian_graphs`.
+``nilearn._utils.data_gen.generate_group_sparse_gaussian_graphs``.
 Synthesizing such signals is a hard problem that wasn't solved in the
 present implementation. It is hopefully good enough.
 
@@ -165,8 +161,8 @@ level depends not only on the initial sparsity level, but also on the
 precise location of zeros. Two different sparsity patterns with the
 same number of zeros can lead to two significantly different sparsity
 level in precision matrices. In practice, it means that for a given
-value of the `density` parameter in
-`nilearn._utils.data_gen.generate_group_sparse_gaussian_graphs`,
+value of the ``density`` parameter in
+``nilearn._utils.data_gen.generate_group_sparse_gaussian_graphs``,
 the actual number of zeros in the precision matrices can fluctuate
 widely depending on the random number generation.
 
@@ -207,7 +203,7 @@ Duality gap
 
 A better way to stop iteration is to use an upper bound on the duality
 gap value, since the problem is convex. This is performed in
-`group_sparse_covariance_costs`. The article by Honorio &
+``group_sparse_covariance_costs``. The article by Honorio &
 Samaras gives the formula for the dual cost, and proves that the
 derived bound at optimum is tight (strong duality holds). However, the
 dual problem is *not* solved by this algorithm, thus bounding the
@@ -255,7 +251,7 @@ stopped.
 This technique it is only a way to stop iterating based on the
 estimate value instead of the criterion value. It does *not* ensure a
 given uncertainty on the estimate. This has been tested on synthetic
-and real fMRI data: using two different starting points leads to two
+and real :term:`fMRI` data: using two different starting points leads to two
 estimates that can differ (in max norm) by more than the threshold
 (see next paragraph). However, it has the same property as the duality
 gap criterion: quickly converging cases use fewer iterations than
@@ -295,7 +291,7 @@ parameter. If that function returns True, iteration is stopped.
 Changing the stopping criterion is thus just a matter of writing a
 function and passing it to :func:`group_sparse_covariance`. The same
 feature can be used to study the algorithm convergence properties. An
-example is the `EarlyStopProbe` class used by the
+example is the ``EarlyStopProbe`` class used by the
 cross-validation object.
 
 
@@ -338,19 +334,15 @@ Bounds on alpha
 The simplest and fastest thing is to get bounds for the value of
 alpha. Above a critical value, the optimal precision matrices are
 fully sparse (i.e. diagonal). This critical value depends on the input
-covariance matrices, and can be obtained by `compute_alpha_max`.
+covariance matrices, and can be obtained by ``compute_alpha_max``.
 The formula for computing this critical value can be obtained with
-techniques presented in:
-
-    Duchi, John, Stephen Gould, and Daphne Koller. 'Projected Subgradient
-    Methods for Learning Sparse Gaussians'. ArXiv E-prints 1206 (1 June
-    2012): 3249.
+techniques presented in :footcite:t:`Duchi2012`.
 
 This very same method can be also used for determining a lower
 critical value, for which the optimal precision matrices are fully
 dense (no zero values). In practice, this critical value is zero if
 there is a zero in the input matrices. For this reason, the second
-value returned by `compute_alpha_max` is that under which all
+value returned by ``compute_alpha_max`` is that under which all
 coefficients *that can be non-zero* are non-zero in the optimal
 precision matrices.
 
@@ -445,7 +437,13 @@ criterion is also computed for the rare cases when the log-likelihood
 never decreases, and a maximum number of iterations is enforced,
 to limit the time spent optimizing in any case.
 
-It is possible to disable the first criterion with `the
-early_stopping` keyword in :class:`GroupSparseCovarianceCV`. In that
+It is possible to disable the first criterion with ``the
+early_stopping`` keyword in :class:`GroupSparseCovarianceCV`. In that
 case, only the two latter criteria are used. This provides a mean to
 test for the validity of the heuristic.
+
+
+References
+----------
+
+.. footbibliography::

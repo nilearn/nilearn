@@ -1,5 +1,3 @@
-	.. -*- mode: rst -*-
-
 .. image:: https://img.shields.io/pypi/v/nilearn.svg
     :target: https://pypi.org/project/nilearn/
     :alt: Pypi Package
@@ -8,64 +6,142 @@
     :target: https://pypi.org/project/nilearn/
     :alt: PyPI - Python Version
 
-.. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=main&event=push
-   :target: https://github.com/nilearn/nilearn/actions
-   :alt: Github Actions Build Status
+.. image:: https://github.com/nilearn/nilearn/actions/workflows/build-docs.yml/badge.svg
+    :target: https://github.com/nilearn/nilearn/actions/workflows/build-docs.yml
+    :alt: Github Actions Doc Build Status
 
-.. image:: https://codecov.io/gh/nilearn/nilearn/branch/main/graph/badge.svg
-   :target: https://codecov.io/gh/nilearn/nilearn
-   :alt: Coverage Status
+.. image:: https://github.com/nilearn/nilearn/actions/workflows/test_with_tox.yml/badge.svg?branch=main&event=push
+    :target: https://github.com/nilearn/nilearn/actions/workflows/test_with_tox.yml
+    :alt: Github Actions Test Status
 
-.. image:: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=main
-   :target: https://dev.azure.com/Parietal/Nilearn/_apis/build/status/nilearn.nilearn?branchName=main
-   :alt: Azure Build Status
+.. image:: https://codecov.io/gh/nilearn/nilearn/graph/badge.svg?token=KpYArSdyXv
+    :target: https://app.codecov.io/gh/nilearn/nilearn
+    :alt: Coverage Status
+
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.8397156.svg
+    :target: https://doi.org/10.5281/zenodo.8397156
+
+.. image:: https://img.shields.io/badge/bluesky-Follow_nilearn-blue?logo=bluesky
+    :target: https://bsky.app/profile/nilearn.bsky.social
+    :alt: Bluesky
+
+.. image:: https://img.shields.io/youtube/channel/subscribers/UCU6BMAi2zOhNFnDkbdevmPw
+    :target: https://www.youtube.com/@nilearnevents5116
+    :alt: YouTube Channel Subscribers
+
+.. image:: https://img.shields.io/twitter/follow/nilearn.svg
+    :target: https://x.com/nilearn
+    :alt: Twitter
+
+.. image:: https://img.shields.io/mastodon/follow/109669703955432270?domain=https%3A%2F%2Ffosstodon.org%2F
+    :target: https://fosstodon.org/@nilearn
+    :alt: Mastodon
+
+.. image:: https://img.shields.io/discord/711993354929569843
+    :target: https://discord.com/invite/SsQABEJHkZ
+    :alt: Discord
 
 nilearn
 =======
 
-Nilearn enables approachable and versatile analyses of brain volumes. It provides statistical and machine-learning tools, with instructive documentation & friendly community.
+Nilearn enables approachable and versatile analyses of brain volumes.
+It provides statistical and machine-learning tools, with instructive documentation & friendly community.
 
-It supports general linear model (GLM) based analysis and leverages the `scikit-learn <http://scikit-learn.org>`_ Python toolbox for multivariate statistics with applications such as predictive modelling, classification, decoding, or connectivity analysis.
+It supports general linear model (GLM) based analysis
+and leverages the `scikit-learn <https://scikit-learn.org>`_ Python toolbox
+for multivariate statistics with applications
+such as predictive modeling, classification, decoding, or connectivity analysis.
 
 Important links
 ===============
 
 - Official source code repo: https://github.com/nilearn/nilearn/
-- HTML documentation (stable release): http://nilearn.github.io/
-
-Office Hours
-============
-
-The nilearn team organizes regular online office hours to answer questions, discuss feature requests, or have any Nilearn-related discussions. Nilearn office hours occur *every Friday from 4pm to 5pm UTC*, and we make sure that at least one member of the core-developer team is available. These events are held on our on `Discord server <https://discord.gg/bMBhb7w>`_ and are fully open, anyone is welcome to join!
-
-
-Dependencies
-============
-
-The required dependencies to use the software are listed in the file `nilearn/setup.cfg <https://github.com/nilearn/nilearn/blob/main/setup.cfg>`_.
-
-If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.0 is required.
-
-Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
-In order to use the plotly engine in these functions, you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
-
-If you want to run the tests, you need pytest >= 3.9 and pytest-cov for coverage reporting.
-
+- HTML documentation (stable release): https://nilearn.github.io/
 
 Install
 =======
 
-First make sure you have installed all the dependencies listed above.
-Then you can install nilearn by running the following command in
-a command prompt::
+Latest release
+--------------
 
-    pip install -U --user nilearn
+**1. Setup a virtual environment**
 
-More detailed instructions are available at
-http://nilearn.github.io/introduction.html#installation.
+We recommend that you install ``nilearn`` in a virtual Python environment,
+either managed with the standard library ``venv`` or with ``conda``
+(see `miniconda <https://docs.conda.io/en/latest/miniconda.html>`_ for instance).
+Either way, create and activate a new python environment.
+
+With ``venv``:
+
+.. code-block:: bash
+
+    python3 -m venv /<path_to_new_env>
+    source /<path_to_new_env>/bin/activate
+
+Windows users should change the last line to ``\<path_to_new_env>\Scripts\activate.bat``
+in order to activate their virtual environment.
+
+With ``conda``:
+
+.. code-block:: bash
+
+    conda create -n nilearn python=3.9
+    conda activate nilearn
+
+**2. Install nilearn with pip**
+
+Execute the following command in the command prompt / terminal
+in the proper python environment:
+
+.. code-block:: bash
+
+    python -m pip install -U nilearn
+
+Development version
+-------------------
+
+Please find all development setup instructions in the
+`contribution guide <https://nilearn.github.io/stable/development.html#setting-up-your-environment>`_.
+
+Check installation
+------------------
+
+Try importing nilearn in a python / iPython session:
+
+.. code-block:: python
+
+    import nilearn
+
+If no error is raised, you have installed nilearn correctly.
+
+Drop-in Hours
+=============
+
+The Nilearn team organizes regular online drop-in hours to answer questions,
+discuss feature requests, or have any Nilearn-related discussions. Nilearn
+drop-in hours occur *every Wednesday from 4pm to 5pm UTC*, and we make sure that at
+least one member of the core-developer team is available. These events are held
+on `Jitsi Meet <https://meet.jit.si/nilearn-drop-in-hours>`_ and are fully open,
+anyone is welcome to join!
+For more information and ways to engage with the Nilearn team see
+`How to get help <https://nilearn.github.io/stable/development.html#how-to-get-help>`_.
+
+Dependencies
+============
+
+The required dependencies to use the software are listed
+in the file `pyproject.toml <https://github.com/nilearn/nilearn/blob/main/pyproject.toml>`_.
+
+If you are using nilearn plotting functionalities or running the examples, matplotlib >= 3.3.0 is required.
+
+Some plotting functions in Nilearn support both matplotlib and plotly as plotting engines.
+In order to use the plotly engine in these functions,
+you will need to install both plotly and kaleido, which can both be installed with pip and anaconda.
+
+If you want to run the tests, you need pytest >= 6.0.0 and pytest-cov for coverage reporting.
 
 Development
 ===========
 
 Detailed instructions on how to contribute are available at
-http://nilearn.github.io/development.html
+https://nilearn.github.io/stable/development.html

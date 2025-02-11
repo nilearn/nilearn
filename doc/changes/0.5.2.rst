@@ -20,13 +20,13 @@ NEW
 Fixes
 -----
 
-- Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
+- :bdg-info:`Plotting` Plotting ``.mgz`` files in MNE broke in ``0.5.1`` and has been fixed.
 
 Contributors
 ------------
 
 The following people contributed to this release:
 
-    * `Kshitij Chawla`_ (11)
-    * `Gael Varoquaux`_ (3)
-    * `Alexandre Gramfort`_ (2)
+* `Kshitij Chawla`_ (11)
+* `Gael Varoquaux`_ (3)
+* `Alexandre Gramfort`_ (2)

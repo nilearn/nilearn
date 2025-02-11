@@ -1,15 +1,13 @@
-""" Testing models module
-"""
+"""Testing models module."""
 
 import numpy as np
 import pytest
-
 from numpy.testing import assert_array_almost_equal
+
 from nilearn.glm import OLSModel
 
-
 N = 10
-X = np.c_[np.linspace(- 1, 1, N), np.ones((N,))]
+X = np.c_[np.linspace(-1, 1, N), np.ones((N,))]
 Y = np.r_[range(5), range(1, 6)]
 MODEL = OLSModel(X)
 RESULTS = MODEL.fit(Y)
@@ -67,13 +65,18 @@ def test_t_contrast():
     # And contrast
     assert_array_almost_equal(RESULTS.Tcontrast([1, 0]).t, 3.25)
     assert_array_almost_equal(RESULTS.Tcontrast([0, 1]).t, 7.181, 3)
-    # Input matrix checked for size
-    with pytest.raises(ValueError):
+
+
+def test_t_contrast_errors():
+    match = "t contrasts should be of length P=.*, but it has length .*"
+    with pytest.warns(UserWarning, match=match):
         RESULTS.Tcontrast([1])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         RESULTS.Tcontrast([1, 0, 0])
     # And shape
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="t contrasts should have only one row"
+    ):
         RESULTS.Tcontrast(np.array([1, 0])[:, None])
 
 
@@ -82,23 +85,33 @@ def test_t_output():
     exp_t = RESULTS.t(0)
     exp_effect = RESULTS.theta[0]
     exp_sd = exp_effect / exp_t
+
     res = RESULTS.Tcontrast([1, 0])
+
     assert_array_almost_equal(res.t, exp_t)
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
-    res = RESULTS.Tcontrast([1, 0], store=('effect',))
+
+    res = RESULTS.Tcontrast([1, 0], store=("effect",))
+
     assert res.t is None
     assert_array_almost_equal(res.effect, exp_effect)
     assert res.sd is None
-    res = RESULTS.Tcontrast([1, 0], store=('t',))
+
+    res = RESULTS.Tcontrast([1, 0], store=("t",))
+
     assert_array_almost_equal(res.t, exp_t)
     assert res.effect is None
     assert res.sd is None
-    res = RESULTS.Tcontrast([1, 0], store=('sd',))
+
+    res = RESULTS.Tcontrast([1, 0], store=("sd",))
+
     assert res.t is None
     assert res.effect is None
     assert_array_almost_equal(res.sd, exp_sd)
-    res = RESULTS.Tcontrast([1, 0], store=('effect', 'sd'))
+
+    res = RESULTS.Tcontrast([1, 0], store=("effect", "sd"))
+
     assert res.t is None
     assert_array_almost_equal(res.effect, exp_effect)
     assert_array_almost_equal(res.sd, exp_sd)
@@ -108,33 +121,48 @@ def test_f_output():
     # Test f_output
     res = RESULTS.Fcontrast([1, 0])
     exp_f = RESULTS.t(0) ** 2
+
     assert_array_almost_equal(exp_f, res.F)
+
     # Test arrays work as well as lists
     res = RESULTS.Fcontrast(np.array([1, 0]))
+
     assert_array_almost_equal(exp_f, res.F)
+
     # Test with matrix against R
     res = RESULTS.Fcontrast(np.eye(2))
+
     assert_array_almost_equal(31.06, res.F, 2)
+
+
+def test_f_output_errors():
     # Input matrix checked for size
-    with pytest.raises(ValueError):
+    match = (
+        r"F contrasts should have shape\[1\]=.*, but this has shape\[1\]=.*"
+    )
+    with pytest.raises(ValueError, match=match):
         RESULTS.Fcontrast([1])
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         RESULTS.Fcontrast([1, 0, 0])
     # And shape
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=match):
         RESULTS.Fcontrast(np.array([1, 0])[:, None])
 
 
 def test_f_output_new_api():
     res = RESULTS.Fcontrast([1, 0])
+
     assert_array_almost_equal(res.effect, RESULTS.theta[0])
     assert_array_almost_equal(res.covariance, RESULTS.vcov()[0][0])
 
 
 def test_conf_int():
     lower_, upper_ = RESULTS.conf_int()
+
     assert (lower_ < upper_).all()
     assert (lower_ > upper_ - 10).all()
+
     lower_, upper_ = RESULTS.conf_int(cols=[1]).T
+
     assert lower_ < upper_
     assert lower_ > upper_ - 10

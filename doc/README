@@ -3,8 +3,8 @@ NILEARN: neuroimaging with the scikit-learn
 ===========================================
 
 This repository contains code and documentation to use the scikit-learn
-( http://scikit-learn.org ) for neuroimaging data analysis. The only
-requirements are scikit-learn and nibabel ( http://nipy.org/nibabel ), as
+( https://scikit-learn.org ) for neuroimaging data analysis. The only
+requirements are scikit-learn and nibabel ( https://nipy.org/nibabel ), as
 well as their dependencies (numpy, scipy and matplotlib).
 
 The code comes with fully-runnable examples that download the data

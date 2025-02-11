@@ -6,8 +6,9 @@ Glossary
 The Glossary provides short definitions of neuro-imaging concepts as well
 as Nilearn specific vocabulary.
 
-If you wish to add a missing term, please `create a new issue`_ or
-`open a Pull Request`_.
+If you wish to add a missing term, please
+:nilearn-gh:`create an issue <issues/new/choose>` or
+:nilearn-gh:`open a Pull Request <compare>`.
 
 .. glossary::
     :sorted:
@@ -19,7 +20,10 @@ If you wish to add a missing term, please `create a new issue`_ or
         among means.
 
     AUC
-        `Area under the curve`_.
+        :sklearn:`Area under the curve <modules/model_evaluation.html#roc-metrics>`.
+
+    Beta
+        See :term:`Parameter estimate`.
 
     BIDS
         `Brain Imaging Data Structure`_ is a simple and easy to adopt way
@@ -44,8 +48,8 @@ If you wish to add a missing term, please `create a new issue`_ or
         of different treatments.
 
     Decoding
-        `Decoding`_ consists in predicting, from brain images, the conditions
-        associated to trial.
+        :ref:`Decoding <decoding_intro>` consists in predicting, from brain
+        images, the conditions associated to trial.
 
     Deterministic atlas
         A deterministic atlas is a hard parcellation of the brain into
@@ -85,6 +89,10 @@ If you wish to add a missing term, please `create a new issue`_ or
         like :term:`opening<Opening>` or :term:`closing<Closing>` are based.
         Erosion uses a structuring element for probing and reducing the shapes
         contained in the input image.
+
+    faces
+        When referring to surface data, a face corresponds to one of the triangles
+        of a triangular :term:`mesh`.
 
     FDR correction
         `False discovery rate`_ controlling procedures are designed to control
@@ -136,14 +144,14 @@ If you wish to add a missing term, please `create a new issue`_ or
         patterns in two or more regions.
 
     functional connectome
-        A `functional connectome`_ is a set of connections representing brain
-        interactions between regions.
+        A :ref:`functional connectome <functional_connectomes>` is a set of
+        connections representing brain interactions between regions.
 
     FWER correction
         `Family-wise error rate`_ is the probability of making one or more
         false discoveries, or type I errors when performing multiple
         hypotheses tests.
-    
+
     FWHM
         `FWHM`_ stands for "full width at half maximum". In a distribution, it
         refers to the width of a filter, expressed as the diameter of the area
@@ -166,6 +174,16 @@ If you wish to add a missing term, please `create a new issue`_ or
         brain activity by recording magnetic fields produced by electrical currents
         occurring naturally in the brain.
 
+    mesh
+        In the context of brain surface data, a mesh refers to a 3D representation
+        of the brain's surface geometry.
+        It is a collection of vertices, edges, and faces
+        that define the shape and structure of the brain's outer surface.
+        Each :term:`vertex` represents a point in 3D space,
+        and edges connect these vertices to form a network.
+        :term:`Faces<faces>` are then created by connecting
+        three or more vertices to form triangles.
+
     MNI
         MNI stands for "Montreal Neurological Institute". Usually, this is
         used to reference the MNI space/template. The current standard MNI
@@ -173,7 +191,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         that have been matched to the MNI305 using a 9 parameter affine transform.
 
     MVPA
-        Mutli-Voxel Pattern Analysis. This is the way :term:`supervised learning`
+        Multi-Voxel Pattern Analysis. This is the way :term:`supervised learning`
         methods are called in the field of brain imaging.
 
     Neurovault
@@ -186,6 +204,15 @@ If you wish to add a missing term, please `create a new issue`_ or
         :term:`dilation<Dilation>` of the :term:`erosion<Erosion>` of a set by a
         structuring element.
 
+    Parameter estimate
+        In the context of a :term:`GLM`, each :term:`contrast` comparing rows in the
+        design matrix results in a parameter estimate (PE) that signifies how
+        well the underlying model fits the data at each :term:`voxel`. For statistical
+        inferences the parameter estimate, sometimes also referred to as
+        :term:`beta`, is commonly converted to either a t-, or z-statistic. In
+        nilearn the parameter estimate (or beta) is referred to as
+        ``effect_size``.
+
     parcellation
         Act of dividing the brain into smaller regions, i.e. parcels. Parcellations
         can be defined by many different criteria including anatomical or functional
@@ -193,8 +220,8 @@ If you wish to add a missing term, please `create a new issue`_ or
         parcels with no overlap between individual regions or "soft" probabilistic
         parcels with a non-zero probability of overlap.
 
-    predictive modelling
-        `Predictive modelling`_ uses statistics to predict outcomes.
+    predictive modeling
+        `Predictive modeling`_ uses statistics to predict outcomes.
 
     Probabilistic atlas
         Probabilistic atlases define soft parcellations of the brain in which
@@ -220,7 +247,7 @@ If you wish to add a missing term, please `create a new issue`_ or
         (TPR) against the false positive rate (FPR) at various threshold settings.
 
     Searchlight
-        `Searchlight analysis`_ consists of scanning the brain with a searchlight.
+        :ref:`Searchlight analysis <searchlight>` consists of scanning the brain with a searchlight.
         That is, a ball of given radius is scanned across the brain volume and the
         prediction accuracy of a classifier trained on the corresponding voxels is measured.
 
@@ -229,8 +256,8 @@ If you wish to add a missing term, please `create a new issue`_ or
         of a given signal to the level of the background noise.
 
     SpaceNet
-        `SpaceNet`_ is a decoder implementing spatial penalties which improve brain
-        decoding power as well as decoder maps.
+        :ref:`SpaceNet <space_net>` is a decoder implementing spatial penalties
+        which improve brain decoding power as well as decoder maps.
 
     SPM
         `Statistical Parametric Mapping`_ is a statistical technique for examining
@@ -264,8 +291,17 @@ If you wish to add a missing term, please `create a new issue`_ or
         (e.g., schizophrenia versus healthy) from brain images.
 
     SVM
-        `Support vector machines`_ are a set of :term:`supervised learning` methods used
-        for :term:`classification`, :term:`regression` and outliers detection.
+        :sklearn:`Support vector machines <modules/svm.html>` are a set of
+        :term:`supervised learning` methods used for :term:`classification`,
+        :term:`regression` and outliers detection.
+
+    TFCE
+        Threshold-free cluster enhancement is a voxel-level metric that combines signal
+        magnitude and cluster extent to enhance the importance of clusters that are large,
+        have high magnitude, or both.
+
+        For more information about TFCE, see :footcite:t:`Smith2009a` or
+        `Jeanette Mumford's video <https://www.youtube.com/watch?v=q7cWw8WC0Ws>`_ about it.
 
     TR
         Repetition time. This is the time in seconds between the beginning of an
@@ -287,27 +323,28 @@ If you wish to add a missing term, please `create a new issue`_ or
         `Voxel-Based Morphometry`_ measures differences in local concentrations of brain
         tissue, through a voxel-wise comparison of multiple brain images.
 
+    vertex
+        A vertex (plural vertices) represents the coordinate
+        of an angle of :term:`face<faces>`
+        on a triangular :term:`mesh` in 3D space.
+
     voxel
         A voxel represents a value on a regular grid in 3D space.
 
     Ward clustering
-        Ward’s algorithm is a hierarchical clustering algorithm: it recursively merges voxels,
+        Ward's algorithm is a hierarchical clustering algorithm: it recursively merges voxels,
         then clusters that have similar signal (parameters, measurements or time courses).
+
+References
+----------
+
+.. footbibliography::
 
 
 .. LINKS
 
-.. _`create a new issue`:
-    https://github.com/nilearn/nilearn/issues/new/choose
-
-.. _`open a Pull Request`:
-    https://github.com/nilearn/nilearn/compare
-
 .. _`Analysis of variance`:
     https://en.wikipedia.org/wiki/Analysis_of_variance
-
-.. _`Area under the curve`:
-    https://scikit-learn.org/stable/modules/model_evaluation.html#roc-metrics
 
 .. _`Brain Imaging Data Structure`:
     https://bids.neuroimaging.io/
@@ -320,9 +357,6 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. _`contrast`:
     https://en.wikipedia.org/wiki/Contrast_(statistics)
-
-.. _`Decoding`:
-    https://nilearn.github.io/stable/decoding/decoding_intro.html
 
 .. _`Dictionary learning`:
     https://en.wikipedia.org/wiki/Sparse_dictionary_learning
@@ -346,13 +380,10 @@ If you wish to add a missing term, please `create a new issue`_ or
     https://fmriprep.org/en/stable/
 
 .. _`FREM`:
-    https://www.sciencedirect.com/science/article/abs/pii/S1053811917308182
-
-.. _`functional connectome`:
-    https://nilearn.github.io/stable/connectivity/functional_connectomes.html
+    https://doi.org/10.1016/j.neuroimage.2017.10.005
 
 .. _`FWHM`:
-    https://en.wikipedia.org/wiki/Full_width_at_half_maximum    
+    https://en.wikipedia.org/wiki/Full_width_at_half_maximum
 
 .. _`Independent component analysis`:
     https://en.wikipedia.org/wiki/Independent_component_analysis
@@ -369,11 +400,11 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Opening`:
     https://en.wikipedia.org/wiki/Opening_(morphology)
 
-.. _`Predictive modelling`:
+.. _`Predictive modeling`:
     https://en.wikipedia.org/wiki/Predictive_modelling
 
 .. _`Recursive nearest agglomeration`:
-    https://hal.archives-ouvertes.fr/hal-01366651/
+    https://hal.science/hal-01366651/
 
 .. _`receiver operating characteristic curve`:
     https://en.wikipedia.org/wiki/Receiver_operating_characteristic
@@ -381,17 +412,11 @@ If you wish to add a missing term, please `create a new issue`_ or
 .. _`Resting state`:
     https://en.wikipedia.org/wiki/Resting_state_fMRI
 
-.. _`Searchlight analysis`:
-    https://nilearn.github.io/stable/decoding/searchlight.html
-
 .. _`SNR`:
     https://en.wikipedia.org/wiki/Signal-to-noise_ratio
 
 .. _`software`:
     https://www.fil.ion.ucl.ac.uk/spm/software/
-
-.. _`SpaceNet`:
-    https://nilearn.github.io/stable/decoding/space_net.html
 
 .. _`Statistical Parametric Mapping`:
     https://en.wikipedia.org/wiki/Statistical_parametric_mapping
@@ -401,9 +426,6 @@ If you wish to add a missing term, please `create a new issue`_ or
 
 .. _`Unsupervised learning`:
     https://en.wikipedia.org/wiki/Unsupervised_learning
-
-.. _`Support vector machines`:
-    https://scikit-learn.org/stable/modules/svm.html
 
 .. _`Voxel-Based Morphometry`:
     https://en.wikipedia.org/wiki/Voxel-based_morphometry

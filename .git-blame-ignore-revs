@@ -1,0 +1,94 @@
+# Run this command to always ignore formatting commits in git blame
+# git config blame.ignoreRevsFile .git-blame-ignore-revs
+# ---------------------------------------------------------------------------- #
+#                             REFACTORING PRs
+#
+# Most recently merged PRs are at the top
+#
+# ---------------------------------------------------------------------------- #
+# refactor nilearn/maskers (sourcery, f-strings) (#3685)
+37333f4604488ccef0ace5870ad442b725f60860
+# refactor nilearn/glm (sourcery, f-strings) (#3672)
+3522d9086eb9999d05549fc2ad0d13a83c590f8c
+# refactor nilearn/surface (sourcery, f-strings) (#3682)
+9352506d7d32fa17cc83971b011ad00932befe56
+# refactor nilearn/interfaces (sourcery, f-strings) (#3683)
+2e18c91342b65048307a21a45b5a8473414b6d16
+# ---------------------------------------------------------------------------- #
+#                             FORMATTING PRs
+#
+# Most recently merged PRs are at the top
+#
+# ---------------------------------------------------------------------------- #
+# [FMT] apply black (#3836)
+1b8c6ed6028e3ecf880597539f1de0910eb8d230
+# [FMT] apply black to plotting - part 4 (#3833)
+34613ab01d219924a8ed34677f48779d5d0b0cd1
+# [FMT] apply black to plotting - part 3 (#3827)
+ea375e01b35208f26aae9e66183fab245dd9862e
+# [FMT] apply black to plotting - part 2 (#3810)
+787d662116a0808d074b0dd40c9b4c2498712819
+# [FMT] apply black to maskers - part 2 (#3803)
+3f2628ffd016c9504c62db8560c5c4cc06d024c8
+# [FMT] apply black to plotting - part 1 (#3802)
+90dd16e20afafd2f9628bd5e08d3db3fe50353f2
+# [FMT] apply black to maskers - part 1 (#3795)
+aece81bb22bff7ad84427bda8d777eb072ade0b0
+# [FMT] apply black nilearn.plotting.display (#3790)
+186845cc04cb8c13c2dd5aa50eff2b426ec2329c
+# apply black to interface (#3783)
+43ff123df9e3849019c12d1c4125ed5fc8d21328
+# [MAINT] Update config black and pre-commit (#3777)
+caa8da8172c2ea56929ef6ecd3b592b963384370
+# run isort and flake8 on the whole nilearn code base in CI (#3651)
+44933309ecd09add795ce1c3ea5edaab4294da87
+# Format nilearn/plotting: apply isort and fix flake8 errors (#3648)
+115816702222182a244414540bb74687d7ea9597
+# Update config for formatting of nilearn/datasets (#3697)
+54aed7305f75be38d52d15ed30f80f45bfdd839f
+# Format datasets/atlas.py (#3694)
+983accf6d83983bae261143d311b2a9b10374d3a
+# Formatting _utils (#3614)
+9a507162952e8598c1281bfdd1b86f6d6ad14425
+# Format reporting (#3615)
+9ed76218dcef6814030c7473a52ae836d7a9ca7a
+# Format nilearn/surface: apply isort and fix flake8 errors (#3645)
+17d4b53d2bdb3a7722530eef9be1d58b305c9a0d
+# apply to black nilearn/glm (#3662)
+a9e13a62f4cbc9eddc4f789ee46c2e096c921f03
+# Format nilearn/glm: apply isort and fix flake8 errors (#3640)
+1c334c9f2bfc5f2f5057489ea199aee483b8874d
+# Format nilearn/interfaces: apply isort and fix flake8 errors (#3647)
+32787d285228dc6c741198ed56d4a6af89445489
+# Format nilearn/maskers: apply isort and fix flake8 errors (#3650)
+d15ae59eb181f9980934452f9595d0625681c955
+# Format nilearn/input_data (#3646)
+4a0808b8ef3fe8da1a1e6f910725dacf11e21edd
+# Format files in nilearn folder (#3609)
+d5f11821da6c8852712a5d105d0afb478a04790f
+# Format mass univariate module (#3601)
+d5dd4ed4b402e0918ac791b20716db05ce14280f
+# clean example/07_advanced and fix remaining style issues in examples (#3556)
+6cf7b0e0a897d8b5f16d81d3831103af1123130b
+# format image module (#3548)
+92c9bf1e5ced1e9062576bfcc846bee4d20598cc
+# format example/03_connectivity (#3552)
+48fb614ca9ebf99635c78598d5b748080f67fb4d
+# format example/02_decoding (#3551)
+1c87dc98574774f62da632284442a4056f77fea1
+# Apply precommit hooks to doc (#3566)
+5ddc12b585d8bd956df5e8f89c8d9d2ca37bc981
+# format example/04_glm_first_level (#3553)
+946440c527a077dc759d76bce7964dad18cd6b13
+# format example/01_plotting (#3550)
+686a7debd73e746c282d8111d24343abb5c19d34
+# format example/00_tutorials (#3549)
+859a2b5141fc36fc01c402bdd3152683feab82e4
+# start applying isort to organize imports (#3538)
+bf2eb514acf75f338b28164563f6023d762fc95b
+# apply pre-commit to root files (#3533)
+f6db5d424cfb794dd9cf4ea93d8319e5fbc4565b
+# apply black, flake8, pyupgrade to nilearn/decoding (#3491)
+f62e896234e389c9579bbf41b3c2531111cc6371
+# Initial formatting with black and precommit (#3484)
+77c1d785df4995166ea0a6798bc756f58f172812

@@ -3,12 +3,21 @@
 Authors: Pierre Bellec, François Paugam, Hanad Sharmarke, Hao-Ting Wang,
 Michael W. Weiss, Steven Meisler, Thibault Piront.
 """
-import warnings
-import pandas as pd
-from .load_confounds_utils import (_sanitize_confounds, _confounds_to_df,
-                                   _prepare_output, MissingConfound)
-from . import load_confounds_components as components
 
+import warnings
+
+import pandas as pd
+
+from . import load_confounds_components as components
+from .load_confounds_utils import (
+    MissingConfoundError,
+    get_confounds_file,
+    get_json,
+    load_confounds_file_as_dataframe,
+    load_confounds_json,
+    prepare_output,
+    sanitize_confounds,
+)
 
 # Global variables listing the admissible types of noise components
 all_confounds = [
@@ -19,7 +28,7 @@ all_confounds = [
     "compcor",
     "ica_aroma",
     "scrub",
-    "non_steady_state"
+    "non_steady_state",
 ]
 
 # extra parameters needed for each noise component
@@ -34,23 +43,48 @@ component_parameters = {
 
 
 def _check_strategy(strategy):
-    """Ensure the denoising strategies are valid."""
+    """Ensure the denoising strategies combinations are valid.
+
+    Parameters
+    ----------
+    strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Raises
+    ------
+    ValueError
+        If any of the confounds specified in the strategy are not supported,
+        or the combination of the strategies are not valid.
+    """
     if (not isinstance(strategy, tuple)) and (not isinstance(strategy, list)):
-        raise ValueError("strategy needs to be a tuple or list of strings"
-                         f" A {type(strategy)} was provided instead.")
+        raise ValueError(
+            "strategy needs to be a tuple or list of strings"
+            f" A {type(strategy)} was provided instead."
+        )
+
+    if len(strategy) == 0:
+        warnings.warn(
+            "strategy is empty, confounds will return None.", stacklevel=3
+        )
+
     for conf in strategy:
         if conf == "non_steady_state":
-            warnings.warn("Non-steady state volumes are always detected. It "
-                          "doesn't need to be supplied as part of the "
-                          "strategy. Supplying non_steady_state in strategy "
-                          "will not have additional effect.")
+            warnings.warn(
+                "Non-steady state volumes are always detected. It "
+                "doesn't need to be supplied as part of the "
+                "strategy. Supplying non_steady_state in strategy "
+                "will not have additional effect.",
+                stacklevel=3,
+            )
         if conf not in all_confounds:
             raise ValueError(f"{conf} is not a supported type of confounds.")
 
     # high pass filtering must be present if using fmriprep compcor outputs
     if ("compcor" in strategy) and ("high_pass" not in strategy):
-        raise ValueError("When using compcor, `high_pass` must be included in "
-                         f"strategy. Current strategy: '{strategy}'")
+        raise ValueError(
+            "When using compcor, `high_pass` must be included in "
+            f"strategy. Current strategy: '{strategy}'"
+        )
 
 
 def _check_error(missing):
@@ -58,22 +92,27 @@ def _check_error(missing):
     if missing["confounds"] or missing["keywords"]:
         error_msg = (
             "The following keywords or parameters are missing: "
-            + f" {missing['confounds']}"
-            + f" {missing['keywords']}"
-            + ". You may want to try a different denoising strategy."
+            f" {missing['confounds']}"
+            f" {missing['keywords']}"
+            ". You may want to try a different denoising strategy."
         )
         raise ValueError(error_msg)
 
 
-def load_confounds(img_files,
-                   strategy=("motion", "high_pass", "wm_csf"),
-                   motion="full",
-                   scrub=5, fd_threshold=0.2, std_dvars_threshold=3,
-                   wm_csf="basic",
-                   global_signal="basic",
-                   compcor="anat_combined", n_compcor="all",
-                   ica_aroma="full",
-                   demean=True):
+def load_confounds(
+    img_files,
+    strategy=("motion", "high_pass", "wm_csf"),
+    motion="full",
+    scrub=5,
+    fd_threshold=0.2,
+    std_dvars_threshold=3,
+    wm_csf="basic",
+    global_signal="basic",
+    compcor="anat_combined",
+    n_compcor="all",
+    ica_aroma="full",
+    demean=True,
+):
     """
     Use confounds from :term:`fMRIPrep`.
 
@@ -91,8 +130,8 @@ def load_confounds(img_files,
 
     Parameters
     ----------
-    img_files : path to processed image files, optionally as a list.
-        Processed nii.gz/dtseries.nii/func.gii file reside in a
+    img_files : :obj:`str` or :obj:`list` of :obj:`str`
+        Path of processed nii.gz/dtseries.nii/func.gii file reside in a
         :term:`fMRIPrep` generated functional derivative directory (i.e.The
         associated confound files should be in the same directory as the image
         file). As long as the image file, confound related tsv and json are in
@@ -103,8 +142,8 @@ def load_confounds(img_files,
         - `func.gii`: list of a pair of paths to files, optionally as a list
           of lists.
 
-    strategy : tuple or list of strings.
-        Default ("motion", "high_pass", "wm_csf")
+    strategy : :obj:`tuple` or :obj:`list` of :obj:`str`, \
+               default=("motion", "high_pass", "wm_csf")
         The type of noise components to include.
 
         - "motion":  head motion estimates. Associated parameter: `motion`
@@ -112,12 +151,13 @@ def load_confounds(img_files,
           Associated parameter: `wm_csf`
         - "global_signal" confounds derived from the global signal.
           Associated parameter: `global_signal`
-        - "compcor" confounds derived from CompCor :footcite:`BEHZADI200790`.
+        - "compcor" confounds derived from CompCor (:footcite:t:`Behzadi2007`).
           When using this noise component, "high_pass" must also be applied.
           Associated parameter: `compcor`, `n_compcor`
-        - "ica_aroma" confounds derived from ICA-AROMA :footcite:`Pruim2015`.
+        - "ica_aroma" confounds derived
+          from ICA-AROMA (:footcite:t:`Pruim2015`).
           Associated parameter: `ica_aroma`
-        - "scrub" regressors for :footcite:`Power2014` scrubbing approach.
+        - "scrub" regressors for :footcite:t:`Power2014` scrubbing approach.
           Associated parameter: `scrub`, `fd_threshold`, `std_dvars_threshold`
 
         For each component above, associated parameters will be applied if
@@ -138,7 +178,7 @@ def load_confounds(img_files,
         Non-steady-state volumes will always be checked. There's no need to
         supply this component to the strategy.
 
-    motion : {'basic', 'power2', 'derivatives', 'full'}
+    motion : :obj:`str`, default="full"
         Type of confounds extracted from head motion estimates.
 
         - "basic" translation/rotation (6 parameters)
@@ -147,7 +187,7 @@ def load_confounds(img_files,
         - "full" translation/rotation + derivatives + quadratic terms + power2d
           derivatives (24 parameters)
 
-    wm_csf : {'basic', 'power2', 'derivatives', 'full'}
+    wm_csf : :obj:`str`, default="basic"
         Type of confounds extracted from masks of white matter and
         cerebrospinal fluids.
 
@@ -157,7 +197,7 @@ def load_confounds(img_files,
         - "full" averages + derivatives + quadratic terms + power2d derivatives
           (8 parameters)
 
-    global_signal : {'basic', 'power2', 'derivatives', 'full'}
+    global_signal : :obj:`str`, default="basic"
         Type of confounds extracted from the global signal.
 
         - "basic" just the global signal (1 parameter)
@@ -166,32 +206,39 @@ def load_confounds(img_files,
         - "full" global signal + derivatives + quadratic terms + power2d
           derivatives (4 parameters)
 
-    scrub : int, default 5
+    scrub : :obj:`int`, default=5
         After accounting for time frames with excessive motion, further remove
-        segments shorter than the given number. The default value is 5
-        (referred as full scrubbing in :footcite:`Power2014`). When the value
-        is 0, temove time frames based on excessive framewise displacement and
-        DVARS only. One-hot encoding vectors are added as regressors for each
-        scrubbed frame.
+        segments shorter than the given number. The default value is referred
+        as full scrubbing in :footcite:t:`Power2014`. When the value is 0,
+        remove time frames based on excessive framewise displacement and
+        DVARS only.
 
-    fd_threshold : float, default 0.2
-        Framewise displacement threshold for scrub (default = 0.2 mm)
+    fd_threshold : :obj:`float`, default=0.2
 
-    std_dvars_threshold : float, default 3
-        Standardized DVARS threshold for scrub (default = 3).
+        .. deprecated:: 0.10.3
+           The default value will be changed to 0.5 in 0.13.0
+
+        Framewise displacement threshold for scrub in mm.
+
+    std_dvars_threshold : :obj:`float`, default=3
+
+        .. deprecated:: 0.10.3
+           The default value will be changed to 1.5 in 0.13.0
+
+        Standardized DVARS threshold for scrub.
+        The default threshold matching :term:`fMRIPrep`.
         DVARs is defined as root mean squared intensity difference of volume N
-        to volume N+1 :footcite:`Power2012`. D referring to temporal derivative
-        of timecourses, VARS referring to root mean squared variance over
-        voxels.
+        to volume N+1 :footcite:t:`Power2012`.
+        D referring to temporal derivative of timecourses,
+        VARS referring to root mean squared variance over voxels.
 
-    compcor : {'anat_combined', 'anat_separated', 'temporal',\
-    'temporal_anat_combined', 'temporal_anat_separated'}
+    compcor : :obj:`str`, default="anat_combined"
 
         .. warning::
-            Require fmriprep >= v:1.4.0.
+            Require :term:`fMRIPrep` >= v:1.4.0.
 
         Type of confounds extracted from a component based noise correction
-        method :footcite:`BEHZADI200790`.
+        method :footcite:t:`Behzadi2007`.
 
         - "anat_combined" noise components calculated using a white matter and
           CSF combined anatomical mask
@@ -202,20 +249,20 @@ def load_confounds(img_files,
         - "temporal_anat_separated" components of "temporal" and
           "anat_separated"
 
-    n_compcor : "all" or int, default "all"
+    n_compcor : :obj:`str` or :obj:`int`, default="all"
         The number of noise components to be extracted.
         For acompcor_combined=False, and/or compcor="full", this is the number
         of components per mask.
         "all": select all components (50% variance explained by
         :term:`fMRIPrep` defaults)
 
-    ica_aroma : {'full', 'basic'}
+    ica_aroma : :obj:`str`, default="full"
 
         - "full": use :term:`fMRIPrep` output
           `~desc-smoothAROMAnonaggr_bold.nii.gz`.
         - "basic": use noise independent components only.
 
-    demean : boolean, default True
+    demean : :obj:`bool`, default=True
         If True, the confounds are standardized to a zero mean (over time).
         When using :class:`nilearn.maskers.NiftiMasker` with default
         parameters, the recommended option is True.
@@ -226,13 +273,14 @@ def load_confounds(img_files,
 
     Returns
     -------
-    confounds : pandas.DataFrame, or list of
+    confounds : :class:`pandas.DataFrame`, or :obj:`list` of \
+        :class:`pandas.DataFrame`
         A reduced version of :term:`fMRIPrep` confounds based on selected
         strategy and flags.
-        An intercept is automatically added to the list of confounds.
         The columns contains the labels of the regressors.
 
-    sample_mask : None, numpy.ndarray, or list of
+    sample_mask : None, :class:`numpy.ndarray` or, :obj:`list` of \
+        :class:`numpy.ndarray` or None
         When no volumns require removal, the value is None.
         Otherwise, shape: (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid volumes
@@ -248,9 +296,10 @@ def load_confounds(img_files,
     Notes
     -----
     The noise components implemented in this class are adapted from
-    :footcite:`Ciric2017`. Band-pass filter is replaced by high-pass filter.
-    Low-pass filters can be implemented, e.g., through `NifitMaskers`. Other
-    aspects of the preprocessing listed in :footcite:`Ciric2017` are controlled
+    :footcite:t:`Ciric2017`. Band-pass filter is replaced by high-pass filter.
+    Low-pass filters can be implemented, e.g., through `NifitMaskers`.
+    Other aspects of the preprocessing listed
+    in :footcite:t:`Ciric2017` are controlled
     through :term:`fMRIPrep`, e.g. distortion correction.
 
     See Also
@@ -258,27 +307,54 @@ def load_confounds(img_files,
     :func:`nilearn.interfaces.fmriprep.load_confounds_strategy`
 
     References
-    -----------
+    ----------
     .. footbibliography::
 
     """
     _check_strategy(strategy)
-
+    if "scrub" in strategy and fd_threshold == 0.2:
+        fd_threshold_default = (
+            "The default parameter for fd_threshold is currently 0.2 "
+            "which is inconsistent with the fMRIPrep default of 0.5. "
+            "In release 0.13.0, "
+            "the default strategy will be replaced by 0.5."
+        )
+        warnings.warn(
+            category=DeprecationWarning,
+            message=fd_threshold_default,
+            stacklevel=2,
+        )
+    if "scrub" in strategy and std_dvars_threshold == 3:
+        std_dvars_threshold_default = (
+            "The default parameter for std_dvars_threshold is currently 3 "
+            "which is inconsistent with the fMRIPrep default of 1.5. "
+            "In release 0.13.0, "
+            "the default strategy will be replaced by 1.5."
+        )
+        warnings.warn(
+            category=DeprecationWarning,
+            message=std_dvars_threshold_default,
+            stacklevel=2,
+        )
     # load confounds per image provided
-    img_files, flag_single = _sanitize_confounds(img_files)
+    img_files, flag_single = sanitize_confounds(img_files)
     confounds_out = []
     sample_mask_out = []
     for file in img_files:
-        sample_mask, conf = _load_single(
-            file, strategy, demean,
+        sample_mask, conf = _load_confounds_for_single_image_file(
+            file,
+            strategy,
+            demean,
             motion=motion,
             scrub=scrub,
             fd_threshold=fd_threshold,
             std_dvars_threshold=std_dvars_threshold,
             wm_csf=wm_csf,
             global_signal=global_signal,
-            compcor=compcor, n_compcor=n_compcor,
-            ica_aroma=ica_aroma)
+            compcor=compcor,
+            n_compcor=n_compcor,
+            ica_aroma=ica_aroma,
+        )
         confounds_out.append(conf)
         sample_mask_out.append(sample_mask)
 
@@ -287,51 +363,176 @@ def load_confounds(img_files,
     if flag_single:
         confounds_out = confounds_out[0]
         sample_mask_out = sample_mask_out[0]
+
+    # If no strategy was provided, return None for confounds
+    if len(strategy) == 0:
+        confounds_out = None
+
     return confounds_out, sample_mask_out
 
 
-def _load_single(confounds_raw, strategy, demean, **kargs):
-    """Load confounds for a single image file."""
-    # Convert tsv file to pandas dataframe
-    # check if relevant imaging files are present according to the strategy
-    flag_acompcor = ("compcor" in strategy) and (
-        "anat" in kargs.get("compcor")
-    )
+def _load_confounds_for_single_image_file(
+    image_file, strategy, demean, **kwargs
+):
+    """Load confounds for a single image file.
+
+    Parameters
+    ----------
+    image_file : :obj:`str`
+        Path to processed image file.
+
+    strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    demean : :obj:`bool`, default=True
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    kwargs : :obj:`dict`
+        Extra relevant parameters for the given `strategy`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Returns
+    -------
+    sample_mask : None, :class:`numpy.ndarray` or, :obj:`list` of \
+        :class:`numpy.ndarray` or None
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    confounds : :class:`pandas.DataFrame`, or :obj:`list` of \
+        :class:`pandas.DataFrame`
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+    """
+    # Check for ica_aroma in strategy, this will change the required image_file
     flag_full_aroma = ("ica_aroma" in strategy) and (
-        kargs.get("ica_aroma") == "full"
+        kwargs.get("ica_aroma") == "full"
     )
-    confounds_raw, meta_json = _confounds_to_df(
-        confounds_raw, flag_acompcor, flag_full_aroma
+
+    confounds_file = get_confounds_file(
+        image_file, flag_full_aroma=flag_full_aroma
+    )
+    confounds_json_file = get_json(confounds_file)
+
+    return _load_single_confounds_file(
+        confounds_file=confounds_file,
+        strategy=strategy,
+        demean=demean,
+        confounds_json_file=confounds_json_file,
+        **kwargs,
+    )
+
+
+def _load_single_confounds_file(
+    confounds_file, strategy, demean=True, confounds_json_file=None, **kwargs
+):
+    """Load and extract specified confounds from the confounds file.
+
+    Parameters
+    ----------
+    confounds_file : :obj:`str`
+        Path to confounds file.
+
+    strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    demean : :obj:`bool`, default=True
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    confounds_json_file : :obj:`str`, default=None
+        Path to confounds json file.
+
+    kwargs : :obj:`dict`
+        Extra relevant parameters for the given `strategy`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Returns
+    -------
+    confounds : :class:`pandas.DataFrame`
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Raises
+    ------
+    ValueError
+        If any of the confounds specified in the strategy are not found in the
+        confounds file or confounds json file.
+    """
+    flag_acompcor = ("compcor" in strategy) and (
+        "anat" in kwargs.get("compcor")
+    )
+    # Convert tsv file to pandas dataframe
+    confounds_all = load_confounds_file_as_dataframe(confounds_file)
+
+    if confounds_json_file is None:
+        confounds_json_file = get_json(confounds_file)
+
+    # Read the associated json file
+    meta_json = load_confounds_json(
+        confounds_json_file, flag_acompcor=flag_acompcor
     )
 
     missing = {"confounds": [], "keywords": []}
     # always check non steady state volumes are loaded
-    confounds, missing = _load_noise_component(confounds_raw,
-                                               "non_steady_state",
-                                               missing, meta_json=meta_json,
-                                               **kargs)
+    confounds_select, missing = _load_noise_component(
+        confounds_all,
+        "non_steady_state",
+        missing,
+        meta_json=meta_json,
+        **kwargs,
+    )
     for component in strategy:
         loaded_confounds, missing = _load_noise_component(
-            confounds_raw, component, missing, meta_json=meta_json,
-            **kargs)
-        confounds = pd.concat([confounds, loaded_confounds], axis=1)
+            confounds_all, component, missing, meta_json=meta_json, **kwargs
+        )
+        confounds_select = pd.concat(
+            [confounds_select, loaded_confounds], axis=1
+        )
 
     _check_error(missing)  # raise any missing
-    return _prepare_output(confounds, demean)
+    return prepare_output(confounds_select, demean)
 
 
 def _load_noise_component(confounds_raw, component, missing, **kargs):
-    """Load confound of a single noise component."""
+    """Load confound of a single noise component.
+
+    Parameters
+    ----------
+    confounds_raw : :class:`pandas.DataFrame`
+        The confounds loaded from the confounds file.
+
+    component : :obj:`str`
+        The noise component to be loaded. The item from the strategy list.
+
+    missing : :obj:`dict`
+        A dictionary of missing confounds and noise component keywords.
+
+    kargs : :obj:`dict`
+        Extra relevant parameters for the given `component`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Returns
+    -------
+    loaded_confounds : :class:`pandas.DataFrame`
+        The confounds loaded from the confounds file for the given component.
+
+    missing : :obj:`dict`
+        A dictionary of missing confounds and noise component keywords.
+
+    Raises
+    ------
+    MissingConfoundError
+        If any of the confounds specified in the strategy are not found in the
+        confounds file or confounds json file.
+    """
     try:
         need_params = component_parameters.get(component)
         if need_params:
             params = {param: kargs.get(param) for param in need_params}
             loaded_confounds = getattr(components, f"_load_{component}")(
-                confounds_raw, **params)
+                confounds_raw, **params
+            )
         else:
             loaded_confounds = getattr(components, f"_load_{component}")(
-                confounds_raw)
-    except MissingConfound as exception:
+                confounds_raw
+            )
+    except MissingConfoundError as exception:
         missing["confounds"] += exception.params
         missing["keywords"] += exception.keywords
         loaded_confounds = pd.DataFrame()

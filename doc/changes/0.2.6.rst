@@ -17,31 +17,31 @@ Several bugs related to masks in Searchlight and ABIDE fetching have been resolv
 Fixes
 -----
 
-- Change default ``dtype`` in function :func:`~image.concat_imgs` to be the original type of the data (see :gh:`1238`).
+- :bdg-dark:`Code` Change default ``dtype`` in function :func:`~image.concat_imgs` to be the original type of the data (see :gh:`1238`).
 
-- Fix ``SearchLight`` that did not run without ``process_mask`` or with one :term:`voxel` mask.
+- :bdg-dark:`Code` Fix ``SearchLight`` that did not run without ``process_mask`` or with one :term:`voxel` mask.
 
-- Fix flipping of left hemisphere when plotting glass brain.
+- :bdg-dark:`Code` Fix bug when downloading ABIDE timeseries.
 
-- Fix bug when downloading ABIDE timeseries.
+- :bdg-info:`Plotting` Fix flipping of left hemisphere when plotting glass brain.
 
 Enhancements
 ------------
 
-- ``Sphinx-gallery`` updated to version ``0.1.3``.
+- :bdg-danger:`Deprecation` Remove outdated power atlas example.
 
-- Refactoring of examples and documentation.
+- :bdg-secondary:`Maint` ``Sphinx-gallery`` updated to version ``0.1.3``.
 
-- Better ordering of regions in function :func:`~datasets.fetch_coords_dosenbach_2010`.
+- :bdg-secondary:`Maint` Refactoring of examples and documentation.
 
-- Remove outdated power atlas example.
+- :bdg-secondary:`Maint` Better ordering of regions in function :func:`~datasets.fetch_coords_dosenbach_2010`.
 
 
 Changes
 -------
 
-- The parameter ``n_subjects`` is deprecated and will be removed in future release. Use ``subjects`` instead in function :func:`~datasets.fetch_haxby`.
+- :bdg-success:`API` The function :func:`~datasets.fetch_haxby` will now fetch the data accepting input given in ``subjects`` as a list than integer.
 
-- The function :func:`~datasets.fetch_haxby` will now fetch the data accepting input given in ``subjects`` as a list than integer.
+- :bdg-danger:`Deprecation` The parameter ``n_subjects`` is deprecated and will be removed in future release. Use ``subjects`` instead in function :func:`~datasets.fetch_haxby`.
 
-- Replace ``get_affine`` by ``affine`` with recent versions of ``nibabel``.
+- :bdg-danger:`Deprecation` Replace ``get_affine`` by ``affine`` with recent versions of ``nibabel``.

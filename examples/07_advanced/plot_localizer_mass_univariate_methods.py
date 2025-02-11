@@ -17,111 +17,148 @@ is included in the model.
 
 .. include:: ../../../examples/masker_note.rst
 
+..
+    Original authors:
+
+    - Virgile Fritsch, May. 2014
+
 """
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
+
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
+# %%
 import numpy as np
-import matplotlib.pyplot as plt
+
 from nilearn import datasets
 from nilearn.maskers import NiftiMasker
 from nilearn.mass_univariate import permuted_ols
-from nilearn.image import get_data
 
-##############################################################################
+# %%
 # Load Localizer contrast
 n_samples = 94
 localizer_dataset = datasets.fetch_localizer_contrasts(
-    ['left button press (auditory cue)'],
-    n_subjects=n_samples, legacy_format=False
+    ["left button press (auditory cue)"],
+    n_subjects=n_samples,
 )
 
 # print basic information on the dataset
-print('First contrast nifti image (3D) is located at: %s' %
-      localizer_dataset.cmaps[0])
+print(
+    "First contrast nifti image (3D) is located "
+    f"at: {localizer_dataset.cmaps[0]}"
+)
 
-tested_var = localizer_dataset.ext_vars['pseudo']
+tested_var = localizer_dataset.ext_vars["pseudo"]
+
 # Quality check / Remove subjects with bad tested variate
-mask_quality_check = np.where(
-    np.logical_not(np.isnan(tested_var))
-)[0]
+mask_quality_check = np.where(np.logical_not(np.isnan(tested_var)))[0]
 n_samples = mask_quality_check.size
-contrast_map_filenames = [localizer_dataset.cmaps[i]
-                          for i in mask_quality_check]
-tested_var = tested_var[mask_quality_check].values.reshape((-1, 1))
-print("Actual number of subjects after quality check: %d" % n_samples)
+contrast_map_filenames = [
+    localizer_dataset.cmaps[i] for i in mask_quality_check
+]
+tested_var = tested_var[mask_quality_check].to_numpy().reshape((-1, 1))
+print(f"Actual number of subjects after quality check: {int(n_samples)}")
 
-
-##############################################################################
+# %%
 # Mask data
 nifti_masker = NiftiMasker(
-    smoothing_fwhm=5,
-    memory='nilearn_cache', memory_level=1)  # cache options
+    smoothing_fwhm=5, memory="nilearn_cache", memory_level=1
+)
 fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 
 
-##############################################################################
+# %%
 # Anova (parametric F-scores)
 from sklearn.feature_selection import f_regression
+
 _, pvals_anova = f_regression(fmri_masked, tested_var, center=True)
 pvals_anova *= fmri_masked.shape[1]
 pvals_anova[np.isnan(pvals_anova)] = 1
 pvals_anova[pvals_anova > 1] = 1
-neg_log_pvals_anova = - np.log10(pvals_anova)
+neg_log_pvals_anova = -np.log10(pvals_anova)
 neg_log_pvals_anova_unmasked = nifti_masker.inverse_transform(
-    neg_log_pvals_anova)
+    neg_log_pvals_anova
+)
 
-
-##############################################################################
+# %%
 # Perform massively univariate analysis with permuted OLS
-neg_log_pvals_permuted_ols, _, _ = permuted_ols(
-    tested_var, fmri_masked,
+#
+# This method will produce both voxel-level FWE-corrected -log10 p-values and
+# :term:`TFCE`-based FWE-corrected -log10 p-values.
+#
+# .. note::
+#   :func:`~nilearn.mass_univariate.permuted_ols` can support a wide range
+#   of analysis designs, depending on the ``tested_var``.
+#   For example, if you wished to perform a one-sample test, you could
+#   simply provide an array of ones (e.g., ``np.ones(n_samples)``).
+
+ols_outputs = permuted_ols(
+    tested_var,  # this is equivalent to the design matrix, in array form
+    fmri_masked,
     model_intercept=True,
-    n_perm=5000,  # 5,000 for the sake of time. Idealy, this should be 10,000
-    verbose=1, # display progress bar
-    n_jobs=1)  # can be changed to use more CPUs
+    masker=nifti_masker,
+    tfce=True,
+    n_perm=100,  # 100 for the sake of time. Ideally, this should be 10000.
+    verbose=1,  # display progress bar
+    n_jobs=2,  # can be changed to use more CPUs
+    output_type="dict",
+)
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
-    np.ravel(neg_log_pvals_permuted_ols))
+    ols_outputs["logp_max_t"][0, :]  # select first regressor
+)
+neg_log_pvals_tfce_unmasked = nifti_masker.inverse_transform(
+    ols_outputs["logp_max_tfce"][0, :]  # select first regressor
+)
 
-
-##############################################################################
+# %%
 # Visualization
-from nilearn.plotting import plot_stat_map, show
+import matplotlib.pyplot as plt
 
-# Various plotting parameters
-z_slice = 12  # plotted slice
+from nilearn import plotting
+from nilearn.image import get_data
 
-threshold = - np.log10(0.1)  # 10% corrected
-vmax = min(np.amax(neg_log_pvals_permuted_ols),
-           np.amax(neg_log_pvals_anova))
+threshold = -np.log10(0.1)  # 10% corrected
 
-# Plot Anova p-values
-fig = plt.figure(figsize=(5, 7), facecolor='k')
+vmax = max(
+    np.amax(ols_outputs["logp_max_t"]),
+    np.amax(neg_log_pvals_anova),
+    np.amax(ols_outputs["logp_max_tfce"]),
+)
 
-display = plot_stat_map(neg_log_pvals_anova_unmasked,
-                        threshold=threshold,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax, black_bg=True)
+images_to_plot = {
+    "Parametric Test\n(Bonferroni FWE)": neg_log_pvals_anova_unmasked,
+    "Permutation Test\n(Max t-statistic FWE)": (
+        neg_log_pvals_permuted_ols_unmasked
+    ),
+    "Permutation Test\n(Max TFCE FWE)": neg_log_pvals_tfce_unmasked,
+}
 
-n_detections = (get_data(neg_log_pvals_anova_unmasked) > threshold).sum()
-title = ('Negative $\\log_{10}$ p-values'
-         '\n(Parametric + Bonferroni correction)'
-         '\n%d detections') % n_detections
+fig, axes = plt.subplots(figsize=(10, 4), ncols=3)
+for i_col, (title, img) in enumerate(images_to_plot.items()):
+    ax = axes[i_col]
+    n_detections = (get_data(img) > threshold).sum()
+    new_title = f"{title}\n{n_detections} sig. voxels"
 
-display.title(title, y=1.2)
+    plotting.plot_glass_brain(
+        img,
+        colorbar=True,
+        vmax=vmax,
+        display_mode="z",
+        threshold=threshold,
+        vmin=threshold,
+        cmap="inferno",
+        figure=fig,
+        axes=ax,
+    )
+    ax.set_title(new_title)
 
-# Plot permuted OLS p-values
-fig = plt.figure(figsize=(5, 7), facecolor='k')
+fig.suptitle(
+    "Group left button press ($-\\log_{10}$ p-values)",
+    y=1,
+    fontsize=16,
+)
 
-display = plot_stat_map(neg_log_pvals_permuted_ols_unmasked,
-                        threshold=threshold,
-                        display_mode='z', cut_coords=[z_slice],
-                        figure=fig, vmax=vmax, black_bg=True)
+fig.subplots_adjust(top=0.75, wspace=0.5)
 
-n_detections = (get_data(neg_log_pvals_permuted_ols_unmasked)
-                > threshold).sum()
-title = ('Negative $\\log_{10}$ p-values'
-         '\n(Non-parametric + max-type correction)'
-         '\n%d detections') % n_detections
-
-display.title(title, y=1.2)
-
-show()
+plotting.show()

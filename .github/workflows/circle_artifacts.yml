@@ -1,14 +1,21 @@
-# Display a link to the artifacts at the bottom of a PR
-# from https://github.com/marketplace/actions/run-circleci-artifacts-redirector
+---
+# Display a link to the circle-CI artifacts at the bottom of a pull-request.
+###
+name: Redirect circleci artifacts
+permissions: read-all
 on: [status]
 jobs:
     circleci_artifacts_redirector_job:
-        runs-on: ubuntu-20.04
+        runs-on: ubuntu-latest
         name: Run CircleCI artifacts redirector
+        permissions:
+            statuses: write
         steps:
-            - name: GitHub Action step
-              uses: larsoner/circleci-artifacts-redirector-action@master
-              with:
-                  repo-token: ${{ secrets.GITHUB_TOKEN }}
-                  artifact-path: 0/dev/index.html
-                  circleci-jobs: build_docs
+        -   name: GitHub Action step
+            uses: scientific-python/circleci-artifacts-redirector-action@v1
+            with:
+                repo-token: ${{ secrets.GITHUB_TOKEN }}
+                api-token: ${{ secrets.CIRCLE_CI_TOKEN }}
+                artifact-path: 0/dev/index.html
+                circleci-jobs: host_docs
+                job-title: Check the HTML doc here!

@@ -1,0 +1,96 @@
+{{inherit "base.html"}}
+<!--  -->
+{{def navbar}} {{enddef}}
+<!--  -->
+{{def report}}
+<div class="pure-g">
+  <div class="pure-u-1 pure-u-md-2-3">
+    <div class="image">
+      <!-- prettier-ignore -->
+      <script>
+        {{js_content}}
+      </script>
+
+      <div align="center" class="btn-container">
+        <button id="prev-btn-{{unique_id}}" class="btn">Previous Sphere</button>
+      </div>
+
+      <div align="center" class="btn-container">
+        <h3
+          id="title-all-{{unique_id}}"
+          class="comp-title"
+          style="display: block"
+        >
+          All Spheres
+        </h3>
+        <h3
+          id="title-sphere-{{unique_id}}"
+          class="comp-title"
+          style="display: none"
+        >
+          Sphere <span id="comp-{{unique_id}}"></span>
+        </h3>
+      </div>
+
+      <div align="center" class="btn-container">
+        <button id="next-btn-{{unique_id}}" class="btn">Next Sphere</button>
+      </div>
+
+      <img
+        id="map-{{unique_id}}-0"
+        class="pure-img"
+        width="100%"
+        src="data:image/svg+xml;base64,{{content[0]}}"
+        style="display: block"
+        alt="image"
+      />
+
+      {{for map in range(1, len(displayed_spheres)+1)}}
+      <img
+        id="map-{{unique_id}}-{{map}}"
+        class="pure-img"
+        width="100%"
+        src="data:image/svg+xml;base64,{{content[map]}}"
+        style="display: none"
+        alt="image"
+      />
+      {{endfor}}
+    </div>
+  </div>
+  <div class="pure-u-1 pure-u-md-1-3">
+    {{if description}}
+    <p>{{description}}</p>
+    {{endif}} {{if number_of_seeds}}
+    <p>
+      The masker has <b>{{number_of_seeds}}</b> spheres in total (displayed
+      together on the first image).
+    </p>
+    {{if len(displayed_spheres) != number_of_seeds}}
+    <p>
+      Only <b>{{len(displayed_spheres)}}</b> specific spheres can be browsed in
+      this report with <b>Previous</b> and <b>Next</b> buttons.
+    </p>
+    {{else}}
+    <p>
+      They can be individually browsed using <b>Previous</b> and
+      <b>Next</b> buttons.
+    </p>
+    {{endif}} {{endif}}
+    <p></p>
+  </div>
+</div>
+<div class="pure-g">
+  <div class="pure-u-1 pure-u-md-3-3">
+    <div class="d-flex flex-row">
+      {{if summary_html}}
+      <details>
+        <summary class="pure-button">Regions summary</summary>
+        {{summary_html|html}}
+      </details>
+      {{endif}}
+      <!--  -->
+      {{ parameters|html }}
+    </div>
+  </div>
+</div>
+{{enddef}}

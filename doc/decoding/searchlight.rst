@@ -9,29 +9,29 @@ This page overviews searchlight analyses and how they are approached
 in nilearn with the :class:`SearchLight` estimator.
 
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 Principle of the Searchlight
 ============================
 
-:class:`SearchLight` analysis was introduced in [:footcite:t:`Kriegeskorte3863`], and consists of scanning the brain with a *searchlight*.
-Briefly, a ball of given radius is scanned across the brain volume and the prediction accuracy of a classifier trained on the corresponding :term:`voxels<voxel>` is measured.
+:class:`SearchLight` analysis was introduced in :footcite:t:`Kriegeskorte2006`,
+and consists of scanning the brain with a *searchlight*.
+Briefly, a ball of given radius is scanned across the brain volume and the prediction accuracy
+of a classifier trained on the corresponding :term:`voxels<voxel>` is measured.
 
-Searchlights are also not limited to :term:`classification`; :term:`regression` (e.g., [:footcite:t:`KAHNT2011549`]) and representational similarity analysis (e.g., [:footcite:t:`Clarke4766`]) are other uses of searchlights.
+Searchlights are also not limited
+to :term:`classification`; :term:`regression` (for example :footcite:t:`Kahnt2011`)
+and representational similarity analysis (for example :footcite:t:`Clarke2014`) are other uses of searchlights.
 Currently, only :term:`classification` and :term:`regression` are supported in nilearn.
 
 .. topic:: **Further Reading**
 
-    For a critical review on searchlights, see [:footcite:t:`ETZEL2013261`].
+    For a critical review on searchlights, see :footcite:t:`Etzel2013`.
 
 
 Preparing the data
 ==================
 
-:class:`SearchLight` requires a series of brain volumes as input, `X`, each with
-a corresponding label, `y`. The number of brain volumes therefore correspond to
+:class:`SearchLight` requires a series of brain volumes as input, ``X``, each with
+a corresponding label, ``y``. The number of brain volumes therefore correspond to
 the number of samples used for decoding.
 
 Masking
@@ -62,9 +62,9 @@ Classifier
 
 The classifier used by default by :class:`SearchLight` is LinearSVC with C=1 but
 this can be customized easily by passing an estimator parameter to the
-Searchlight. See scikit-learn documentation for `other classifiers
-<http://scikit-learn.org/stable/supervised_learning.html>`_. You can
-also pass scikit-learn `Pipelines <https://scikit-learn.org/stable/modules/compose.html>`_
+Searchlight. See scikit-learn documentation for :sklearn:`other classifiers
+<supervised_learning.html>`. You can
+also pass scikit-learn :sklearn:`Pipelines <modules/compose.html>`
 to the :class:`SearchLight` in order to combine estimators and preprocessing steps
 (e.g., feature scaling) for your searchlight.
 
@@ -72,8 +72,8 @@ Score function
 --------------
 
 Metrics can be specified by the "scoring" argument to the :class:`SearchLight`, as
-detailed in the `scikit-learn documentation
-<http://scikit-learn.org/dev/modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`_
+detailed in the
+:sklearn:`scikit-learn documentation <modules/model_evaluation.html#the-scoring-parameter-defining-model-evaluation-rules>`
 
 Cross validation
 ----------------
@@ -85,8 +85,8 @@ cross-validation is used.
 
 Cross-validation can be defined using the "cv" argument. As it
 is computationally costly, *K*-Fold cross validation with *K* = 3 is set as the
-default. A `scikit-learn cross-validation generator
-<https://scikit-learn.org/stable/modules/classes.html#splitter-classes>`_ can also
+default.
+A :sklearn:`scikit-learn cross-validation generator <api/sklearn.model_selection.html#splitters>` can also
 be passed to set a specific type of cross-validation.
 
 Leave-one-run-out cross-validation (LOROCV) is a common approach for searchlights.
@@ -94,8 +94,9 @@ This approach is a specific use-case of grouped cross-validation, where the
 cross-validation folds are determined by the acquisition runs. The held-out fold
 in a given iteration of cross-validation consist of data from a separate run,
 which keeps training and validation sets properly independent. For this reason,
-LOROCV is often recommended. This can be performed by using `LeaveOneGroupOut
-<https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`_,
+LOROCV is often recommended.
+This can be performed by using
+:sklearn:`LeaveOneGroupOut <modules/generated/sklearn.model_selection.LeaveOneGroupOut.html>`,
 and then setting the group/run labels when fitting the estimator.
 
 Sphere radius
@@ -111,7 +112,7 @@ for :term:`classification` (i.e. more :term:`voxels<voxel>` are included with la
     of :term:`voxels<voxel>` included in the sphere will therefore depend on the
     :term:`voxel` size.
 
-    For reference, [:footcite:t:`Kriegeskorte3863`] use a 4mm radius because it yielded
+    For reference, :footcite:t:`Kriegeskorte2006` use a 4mm radius because it yielded
     the best detection performance in their simulation of 2mm isovoxel data.
 
 Visualization
@@ -120,7 +121,7 @@ Visualization
 Searchlight
 -----------
 
-The results of the searchlight can be found in the `scores_` attribute of the
+The results of the searchlight can be found in the ``scores_`` attribute of the
 :class:`SearchLight` object after fitting it to the data. Below is a
 visualization of the results from :ref:`Searchlight analysis of face
 vs house recognition <sphx_glr_auto_examples_02_decoding_plot_haxby_searchlight.py>`.
@@ -212,10 +213,10 @@ permute a parametric t-test. Unlike F-test, a t-test can be signed
 effect are considered. Thus, only positive effects
 can be focused on.  It is still possible to perform a two-sided test
 equivalent to a permuted F-test by setting the argument
-`two_sided_test` to `True`. In the example above, we do perform a two-sided
+``two_sided_test`` to ``True``. In the example above, we do perform a two-sided
 test but add back the sign of the effect at the end using the t-scores obtained
 on the original (non-permuted) data. Thus, we can perform two one-sided tests
-(a given contrast and its opposite) for the price of one single run.
+(a given :term:`contrast` and its opposite) for the price of one single run.
 The example results can be interpreted as follows: viewing faces significantly
 activates the Fusiform Face Area as compared to viewing houses, while viewing
 houses does not reveal significant supplementary activations as compared to
@@ -228,7 +229,7 @@ viewing faces.
     assuming that nothing happens (i.e. under the null hypothesis).
     Therefore, a small *p-value* indicates that there is a small chance
     of getting this data if no real difference existed, so the observed
-    voxel must be significant.
+    :term:`voxel` must be significant.
 
 .. [2]
 

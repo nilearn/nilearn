@@ -1,6 +1,3 @@
-.. include:: ../tune_toc.rst
-
-
 .. _functional_connectivity:
 
 ============================================
@@ -13,9 +10,6 @@ capture functional interactions between regions, or to extract regions
 and networks, via resting-state networks or parcellations.
 
 |
-
-.. include:: ../includes/big_toc_css.rst
-
 
 .. toctree::
 

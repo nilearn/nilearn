@@ -1,14 +1,14 @@
-"""
-Extended math utilities
-"""
+"""Extended math utilities."""
+
 # Author: Gael Varoquaux
-# License: BSD
 
 import numpy as np
 
+from nilearn._utils import logger
+
 
 def fast_abs_percentile(data, percentile=80):
-    """A fast version of the percentile of the absolute value.
+    """Implement a fast version of the percentile of the absolute value.
 
     Parameters
     ----------
@@ -29,12 +29,12 @@ def fast_abs_percentile(data, percentile=80):
     scipy.stats.scoreatpercentile(np.abs(data), percentile)
 
     """
-    if hasattr(data, 'mask'):
+    if hasattr(data, "mask"):
         # Catter for masked arrays
         data = np.asarray(data[np.logical_not(data.mask)])
     data = np.abs(data)
     data = data.ravel()
-    index = int(data.size * .01 * percentile)
+    index = int(data.size * 0.01 * percentile)
     # Partial sort: faster than sort
     data = np.partition(data, index)
     return data[index]
@@ -51,11 +51,10 @@ def is_spd(M, decimal=15, verbose=1):
     M : numpy.ndarray
         Symmetric positive definite matrix.
 
-    decimal : int, optional
-        Decimal. Default=15.
+    decimal : int, default=15
+        Decimal.
 
-    verbose : int, optional
-        Verbosity level (0 means no message). Default=1.
+    %(verbose)s
 
     Returns
     -------
@@ -63,12 +62,16 @@ def is_spd(M, decimal=15, verbose=1):
         True if matrix is symmetric positive definite, False otherwise.
 
     """
-    if not np.allclose(M, M.T, atol=0, rtol=10 ** -decimal):
-        if verbose > 0:
-            print("matrix not symmetric to %d decimals" % decimal)
+    if not np.allclose(M, M.T, atol=0, rtol=10**-decimal):
+        logger.log(f"matrix not symmetric to {decimal:d} decimals", verbose)
         return False
+
     eigvalsh = np.linalg.eigvalsh(M)
     ispd = eigvalsh.min() > 0
-    if not ispd and verbose > 0:
-        print("matrix has a negative eigenvalue: %.3f" % eigvalsh.min())
+
+    if not ispd:
+        logger.log(
+            f"matrix has a negative eigenvalue: {eigvalsh.min():.3f}", verbose
+        )
+
     return ispd

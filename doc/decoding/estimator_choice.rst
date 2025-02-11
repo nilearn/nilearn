@@ -13,10 +13,6 @@ is well suited to your problem and how to implement it easily with Nilearn.
 This builds on concepts introduced in this :ref:`didactic
 introduction to decoding with nilearn <decoding_intro>`.
 
-.. contents:: **Contents**
-    :local:
-    :depth: 1
-
 
 Predictions: regression, classification and multi-class
 =======================================================
@@ -31,7 +27,7 @@ Regression
 
 A :term:`regression` problem is a learning task in which the variable to predict
 --that we often call **y** -- is a continuous value, such as an age.
-Encoding models [:footcite:t:`Naselaris2011`] typically call for regressions.
+Encoding models (:footcite:t:`Naselaris2011`) typically call for regressions.
 :class:`nilearn.decoding.DecoderRegressor` implement easy and efficient
 regression pipelines.
 
@@ -84,23 +80,23 @@ whereas the latter is linear with the number of classes.
     :ref:`userguide <frem>`, yielding state-of-the art decoding performance.
 
 **Confusion matrix** `The confusion matrix
-<http://en.wikipedia.org/wiki/Confusion_matrix>`_,
+<https://en.wikipedia.org/wiki/Confusion_matrix>`_,
 :func:`sklearn.metrics.confusion_matrix` is a useful tool to
 understand the classifier's errors in a multiclass problem.
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_multiclass_001.png
    :target: ../auto_examples/02_decoding/plot_haxby_multiclass.html
-   :align: left
+   :align: center
    :scale: 60
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_multiclass_002.png
    :target: ../auto_examples/02_decoding/plot_haxby_multiclass.html
-   :align: left
+   :align: center
    :scale: 40
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_multiclass_003.png
    :target: ../auto_examples/02_decoding/plot_haxby_multiclass.html
-   :align: left
+   :align: center
    :scale: 40
 
 
@@ -110,28 +106,30 @@ Different linear models
 Using Nilearn high-level objects, several estimators are easily available
 to model the relations between your images and the target to predict.
 For :term:`classification`, :class:`nilearn.decoding.Decoder` let you choose them
-through the `estimator` parameter:
+through the ``estimator`` parameter:
 
-* `svc` (same as `svc_l2`) : The `support vector classifier <https://scikit-learn.org/stable/modules/svm.html>`_.
+* ``svc`` (same as ``svc_l2``) : The `support vector classifier <https://scikit-learn.org/stable/modules/svm.html>`_.
 
-* `svc_l1` : SVC using `L1 penalization <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity>`_ that yields a sparse solution : only a subset of feature weights is different from zero and contribute to prediction.
+* ``svc_l1`` : SVC using `L1 penalization <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity>`_ that yields a sparse solution : only a subset of feature weights is different from zero and contribute to prediction.
 
-* `logistic` (or `logistic_l2`) : The `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with `l2 penalty <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity.html>`_.
+* ``logistic`` (or ``logistic_l2``) : The `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with `l2 penalty <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity.html>`_.
 
-* `logistic_l1` :  The `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with `l1 penalty <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity.html>`_ (**sparse model**).
+* ``logistic_l1`` :  The `logistic regression <https://scikit-learn.org/stable/modules/linear_model.html#logistic-regression>`_ with `l1 penalty <https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_l1_l2_sparsity.html>`_ (**sparse model**).
 
-* `ridge_classifier` : A `Ridge Regression variant
+* ``ridge_classifier`` : A `Ridge Regression variant
   <https://scikit-learn.org/stable/modules/linear_model.html#ridge-regression-and-classification>`_.
 
-* `dummy classifier` : A `dummy classifier <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html>`_ is a classifier that makes predictions using simple rules. It is useful as a simple baseline to compare with other classifiers.
+* ``dummy classifier`` : A `dummy classifier <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyClassifier.html>`_ is a classifier that makes predictions using simple rules. It is useful as a simple baseline to compare with other classifiers.
 
 In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects counterparts for regression :
 
-* `svr` : `Support vector regression <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html>`_.
+* ``svr`` : `Support vector regression <https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html>`_.
 
-* `ridge_regressor` (same as `ridge`) : `Ridge regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeCV.html>`_.
+* ``ridge_regressor`` (same as ``ridge``) : `Ridge regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.RidgeCV.html>`_.
 
-* `dummy_regressor` : A `dummy regressor <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html>`_ is a regressor that makes predictions using simple rules. It is useful as a simple baseline to compare with other regressors.
+* ``lasso_regressor`` (same as ``lasso``) : `Lasso regression <https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LassoCV.html>`_.
+
+* ``dummy_regressor`` : A `dummy regressor <https://scikit-learn.org/stable/modules/generated/sklearn.dummy.DummyRegressor.html>`_ is a regressor that makes predictions using simple rules. It is useful as a simple baseline to compare with other regressors.
 
 .. note::
 
@@ -151,11 +149,11 @@ In :class:`nilearn.decoding.DecoderRegressor` you can use some of these objects 
    * What is done to the data  **before** applying the estimator is
      often  **more important** than the choice of estimator. Typically,
      standardizing the data is important, smoothing can often be useful,
-     and nuisance effects, such as session effect, must be removed.
+     and nuisance effects, such as run effect, must be removed.
 
    * Many more estimators are available in scikit-learn (see the
      `scikit-learn documentation on supervised learning
-     <http://scikit-learn.org/stable/supervised_learning.html>`_). To learn to
+     <https://scikit-learn.org/stable/supervised_learning.html>`_). To learn to
      do decoding with any of these, see : :ref:`going_further`
 
 .. figure:: ../auto_examples/02_decoding/images/sphx_glr_plot_haxby_different_estimators_001.png
@@ -194,9 +192,9 @@ to optimize their performance to a given problem. By default, the Decoder
 objects in Nilearn already try several values to roughly adapt to your problem.
 
 If you want to try more specific sets of parameters relevant to the model
-your using, you can pass a dictionary to `param_grid` argument. It must contain
-values for the suitable argument name. For example SVC has a parameter `C`.
-By default, the values tried for `C` are [1,10,100].
+your using, you can pass a dictionary to ``param_grid`` argument. It must contain
+values for the suitable argument name. For example SVC has a parameter ``C``.
+By default, the values tried for ``C`` are [1,10,100].
 
 .. note::
   Full code example on parameter setting can be found at :
@@ -217,7 +215,7 @@ due to this noise.
 .. seealso::
 
    `The scikit-learn documentation on parameter selection
-   <http://scikit-learn.org/stable/modules/grid_search.html>`_
+   <https://scikit-learn.org/stable/modules/grid_search.html>`_
 
 Bagging several models
 ============================
@@ -229,14 +227,14 @@ the prediction of several models trained on slightly different part of a
 dataset and thus should have different bias that may cancel out.
 
 The :class:`nilearn.decoding.Decoder` and :class:`nilearn.decoding.DecoderRegressor`
-implement a kind of bagging scheme under the hood in their `fit` method to
+implement a kind of bagging scheme under the hood in their ``fit`` method to
 yield better and more stable decoders. For each cross-validation fold,
 the best model coefficients are retained. The average of all those linear
 models is then used to make predictions.
 
 .. seealso::
 
-  * The `scikit-learn documentation <http://scikit-learn.org>`_
+  * The `scikit-learn documentation <https://scikit-learn.org>`_
     has very detailed explanations on a large variety of estimators and
     machine learning techniques. To become better at decoding, you need
     to study it.

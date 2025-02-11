@@ -7,4 +7,4 @@
 Changelog
 ---------
 
-Small bugfix for more flexible input types (targetter in particular at making code easier in nistats).
+- :bdg-dark:`Code` Small bugfix for more flexible input types (targetter in particular at making code easier in nistats).
