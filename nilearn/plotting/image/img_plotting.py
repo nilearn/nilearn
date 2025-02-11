@@ -46,8 +46,8 @@ from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
+    get_colorbar_and_data_ranges,
     save_figure_if_needed,
-    get_colorbar_and_data_ranges
 )
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import get_cbar_ticks

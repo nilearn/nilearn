@@ -21,7 +21,7 @@ from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     get_colorbar_and_data_ranges,
-    save_figure_if_needed
+    save_figure_if_needed,
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
@@ -30,7 +30,7 @@ from nilearn.plotting.html.js_plotting_utils import colorscale
 from nilearn.plotting.surface._utils import (
     check_surface_plotting_inputs,
     get_vertexcolor,
-    sanitize_hemi_for_surface_image
+    sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
     load_surf_data,

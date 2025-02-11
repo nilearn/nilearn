@@ -12,7 +12,6 @@ from nilearn.plotting.image.img_plotting import (
     show,
 )
 
-
 __all__ = [
     "plot_anat",
     "plot_carpet",

@@ -1,8 +1,8 @@
+import numbers
 from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
-import numbers
 import numpy as np
 
 

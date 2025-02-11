@@ -30,7 +30,7 @@ from nilearn.plotting.matrix.matrix_plotting import (
 )
 def test_sanitize_figure_and_axes_error(fig, axes):
     from nilearn.plotting.matrix.matrix_plotting import (
-        _sanitize_figure_and_axes
+        _sanitize_figure_and_axes,
     )
 
     with pytest.raises(
@@ -51,7 +51,7 @@ def test_sanitize_figure_and_axes_error(fig, axes):
 )
 def test_sanitize_figure_and_axes(fig, axes, expected):
     from nilearn.plotting.matrix.matrix_plotting import (
-        _sanitize_figure_and_axes
+        _sanitize_figure_and_axes,
     )
 
     fig2, axes2, own_fig = _sanitize_figure_and_axes(fig, axes)
@@ -61,9 +61,7 @@ def test_sanitize_figure_and_axes(fig, axes, expected):
 
 
 def test_sanitize_labels():
-    from nilearn.plotting.matrix.matrix_plotting import (
-        _sanitize_labels
-    )
+    from nilearn.plotting.matrix.matrix_plotting import _sanitize_labels
 
     labs = ["foo", "bar"]
     with pytest.raises(
@@ -82,18 +80,14 @@ VALID_TRI_VALUES = ("full", "lower", "diag")
 
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
 def test_sanitize_tri(tri):
-    from nilearn.plotting.matrix.matrix_plotting import (
-        _sanitize_tri
-    )
+    from nilearn.plotting.matrix.matrix_plotting import _sanitize_tri
 
     _sanitize_tri(tri)
 
 
 @pytest.mark.parametrize("tri", [None, "foo", 2])
 def test_sanitize_tri_error(tri):
-    from nilearn.plotting.matrix.matrix_plotting import (
-        _sanitize_tri
-    )
+    from nilearn.plotting.matrix.matrix_plotting import _sanitize_tri
 
     with pytest.raises(
         ValueError,
@@ -109,9 +103,7 @@ VALID_REORDER_VALUES = (True, False, "single", "complete", "average")
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
 def test_sanitize_reorder(reorder):
-    from nilearn.plotting.matrix.matrix_plotting import (
-        _sanitize_reorder
-    )
+    from nilearn.plotting.matrix.matrix_plotting import _sanitize_reorder
 
     if reorder is not True:
         assert _sanitize_reorder(reorder) == reorder
@@ -121,9 +113,7 @@ def test_sanitize_reorder(reorder):
 
 @pytest.mark.parametrize("reorder", [None, "foo", 2])
 def test_sanitize_reorder_error(reorder):
-    from nilearn.plotting.matrix.matrix_plotting import (
-        _sanitize_reorder
-    )
+    from nilearn.plotting.matrix.matrix_plotting import _sanitize_reorder
 
     with pytest.raises(
         ValueError, match=("Parameter reorder needs to be one of")

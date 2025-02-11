@@ -7,7 +7,7 @@ import pytest
 
 from nilearn.plotting._utils import (
     get_colorbar_and_data_ranges,
-    to_color_strings
+    to_color_strings,
 )
 
 

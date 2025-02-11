@@ -6,7 +6,6 @@ from nilearn.plotting.matrix.matrix_plotting import (
     plot_matrix,
 )
 
-
 __all__ = [
     "plot_contrast_matrix",
     "plot_design_matrix",

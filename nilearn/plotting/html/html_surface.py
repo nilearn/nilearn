@@ -8,17 +8,17 @@ import numpy as np
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.plotting import cm
-from nilearn.plotting.surface._utils import (
-    check_surface_plotting_inputs,
-    get_vertexcolor,
-    sanitize_hemi_for_surface_image,
-)
 from nilearn.plotting.html import HTMLDocument
 from nilearn.plotting.html.js_plotting_utils import (
     add_js_lib,
     colorscale,
     get_html_template,
     mesh_to_plotly,
+)
+from nilearn.plotting.surface._utils import (
+    check_surface_plotting_inputs,
+    get_vertexcolor,
+    sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
     PolyMesh,

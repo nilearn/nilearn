@@ -9,8 +9,8 @@ from nilearn.plotting._utils import to_color_strings
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
+    load_surf_data,
 )
-from nilearn.surface import load_surf_data
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
 
 

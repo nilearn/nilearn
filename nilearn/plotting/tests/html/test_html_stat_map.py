@@ -10,22 +10,22 @@ from nibabel import Nifti1Image
 from nilearn import datasets, image
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting.html.html_stat_map import (
+    StatMapView,
     _bytes_io_to_base64,
     _data_to_sprite,
+    _get_bg_mask_and_cmap,
+    _get_cut_slices,
     _json_view_data,
     _json_view_params,
     _json_view_size,
     _json_view_to_html,
-    _get_cut_slices,
-    _get_bg_mask_and_cmap,
     _load_bg_img,
     _mask_stat_map,
     _resample_stat_map,
     _save_cm,
     _save_sprite,
     _threshold_data,
-    StatMapView,
-    view_img
+    view_img,
 )
 from nilearn.plotting.html.js_plotting_utils import colorscale
 
@@ -96,9 +96,7 @@ def test_threshold_data():
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
-    data_t, mask, thresh = _threshold_data(
-        data, threshold="auto"
-    )
+    data_t, mask, thresh = _threshold_data(data, threshold="auto")
     gtruth_m = np.array([False, True, True, True, True, True, False])
     gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
     assert (mask == gtruth_m).all()
@@ -134,9 +132,7 @@ def test_save_sprite(rng):
     mask[1:-1, 1:-1, 1:-1] = 1
     # Save the sprite using BytesIO
     sprite_io = BytesIO()
-    _save_sprite(
-        data, sprite_io, vmin=0, vmax=1, mask=mask, format="png"
-    )
+    _save_sprite(data, sprite_io, vmin=0, vmax=1, mask=mask, format="png")
 
     # Load the sprite back in base64
     sprite_base64 = _bytes_io_to_base64(sprite_io)
@@ -178,15 +174,11 @@ def test_mask_stat_map():
     img, data = _simulate_img()
 
     # Try not to threshold anything
-    mask_img, img, data_t, thresh = _mask_stat_map(
-        img, threshold=None
-    )
+    mask_img, img, data_t, thresh = _mask_stat_map(img, threshold=None)
     assert np.max(get_data(mask_img)) == 0
 
     # Now threshold at zero
-    mask_img, img, data_t, thresh = _mask_stat_map(
-        img, threshold=0
-    )
+    mask_img, img, data_t, thresh = _mask_stat_map(img, threshold=0)
     assert np.min((data == 0) == get_data(mask_img))
 
 
@@ -352,9 +344,7 @@ def test_get_cut_slices(affine_eye):
     img, data = _simulate_img()
 
     # Use automatic selection of coordinates
-    cut_slices = _get_cut_slices(
-        img, cut_coords=None, threshold=None
-    )
+    cut_slices = _get_cut_slices(img, cut_coords=None, threshold=None)
     assert (cut_slices == [4, 4, 4]).all()
 
     # Check that using a single number for cut_coords raises an error
@@ -362,17 +352,13 @@ def test_get_cut_slices(affine_eye):
         _get_cut_slices(img, cut_coords=4, threshold=None)
 
     # Check that it is possible to manually specify coordinates
-    cut_slices = _get_cut_slices(
-        img, cut_coords=[2, 2, 2], threshold=None
-    )
+    cut_slices = _get_cut_slices(img, cut_coords=[2, 2, 2], threshold=None)
     assert (cut_slices == [2, 2, 2]).all()
 
     # Check that the affine does not change where the cut is done
     affine = 2 * affine_eye
     img = Nifti1Image(data, affine)
-    cut_slices = _get_cut_slices(
-        img, cut_coords=None, threshold=None
-    )
+    cut_slices = _get_cut_slices(img, cut_coords=None, threshold=None)
     assert (cut_slices == [4, 4, 4]).all()
 
 
@@ -388,9 +374,7 @@ def test_view_img():
         )
         html_view = view_img(img)
         _check_html(html_view, title="Slice viewer")
-        html_view = view_img(
-            img, threshold="95%", title="SOME_TITLE"
-        )
+        html_view = view_img(img, threshold="95%", title="SOME_TITLE")
         _check_html(html_view, title="SOME_TITLE")
         html_view = view_img(img, bg_img=mni)
         _check_html(html_view)

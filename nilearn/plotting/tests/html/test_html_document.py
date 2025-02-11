@@ -6,11 +6,10 @@ import pytest
 import requests
 from numpy.testing import assert_no_warnings
 
-from nilearn.plotting.html import HTMLDocument
+from nilearn.plotting.html import HTMLDocument, html_document
 from nilearn.plotting.html.html_document import (
-    set_max_img_views_before_warning
+    set_max_img_views_before_warning,
 )
-from nilearn.plotting.html import html_document
 
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no

@@ -84,5 +84,3 @@ def test_get_vertexcolor():
             bg_map=bg_map,
             darkness=0.5,
         )
-
-

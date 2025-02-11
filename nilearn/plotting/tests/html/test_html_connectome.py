@@ -4,14 +4,13 @@ import numpy as np
 import pytest
 
 from nilearn.plotting.html.html_connectome import (
+    _get_connectome,
     _prepare_colors_for_markers,
     _prepare_line,
-    _get_connectome,
     view_connectome,
-    view_markers
+    view_markers,
 )
 from nilearn.plotting.html.js_plotting_utils import decode
-
 from nilearn.plotting.tests.html.test_js_plotting_utils import check_html
 
 
@@ -107,14 +106,10 @@ def test_view_connectome(tmp_path):
     adj, coord = _make_connectome()
     html = view_connectome(adj, coord)
     check_html(tmp_path, html, False, "connectome-plot")
-    html = view_connectome(
-        adj, coord, "85.3%", title="SOME_TITLE"
-    )
+    html = view_connectome(adj, coord, "85.3%", title="SOME_TITLE")
     check_html(tmp_path, html, False, "connectome-plot", title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
-    html = view_connectome(
-        adj, coord, "85.3%", linewidth=8.5, node_size=4.2
-    )
+    html = view_connectome(adj, coord, "85.3%", linewidth=8.5, node_size=4.2)
     check_html(
         tmp_path, html, False, "connectome-plot", title="Connectome plot"
     )
@@ -134,13 +129,9 @@ def test_view_markers(tmp_path):
     check_html(tmp_path, html, False, "connectome-plot")
     html = view_markers(coords, marker_size=15)
     check_html(tmp_path, html, False, "connectome-plot")
-    html = view_markers(
-        coords, marker_size=np.arange(len(coords))
-    )
+    html = view_markers(coords, marker_size=np.arange(len(coords)))
     check_html(tmp_path, html, False, "connectome-plot")
-    html = view_markers(
-        coords, marker_size=list(range(len(coords)))
-    )
+    html = view_markers(coords, marker_size=list(range(len(coords))))
     check_html(tmp_path, html, False, "connectome-plot")
     html = view_markers(
         coords, marker_size=5.0, marker_color=colors, marker_labels=labels

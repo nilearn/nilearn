@@ -14,18 +14,17 @@ from nilearn.plotting.html.html_surface import (
     full_brain_info,
     one_mesh_info,
     view_img_on_surf,
-    view_surf
+    view_surf,
 )
 from nilearn.plotting.html.js_plotting_utils import decode
+from nilearn.plotting.tests.html.test_js_plotting_utils import (
+    check_colors,
+    check_html,
+)
 from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     load_surf_data,
     load_surf_mesh,
-)
-
-from nilearn.plotting.tests.html.test_js_plotting_utils import (
-    check_colors,
-    check_html
 )
 
 
@@ -157,9 +156,7 @@ def test_view_surf(tmp_path, rng):
     html = view_surf(fsaverage["pial_right"])
     check_html(tmp_path, html)
     atlas = rng.integers(0, 10, size=len(mesh.coordinates))
-    html = view_surf(
-        fsaverage["pial_left"], atlas, symmetric_cmap=False
-    )
+    html = view_surf(fsaverage["pial_left"], atlas, symmetric_cmap=False)
     check_html(tmp_path, html)
     html = view_surf(
         fsaverage["pial_right"],

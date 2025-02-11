@@ -6,11 +6,10 @@ import numpy as np
 from matplotlib import cm as mpl_cm
 from scipy import sparse
 
-from nilearn.plotting.html import HTMLDocument
-
 from nilearn import datasets
-from nilearn.plotting._utils import to_color_strings
 from nilearn.plotting import cm
+from nilearn.plotting._utils import to_color_strings
+from nilearn.plotting.html import HTMLDocument
 from nilearn.plotting.html.js_plotting_utils import (
     add_js_lib,
     colorscale,

@@ -16,7 +16,6 @@ from numpy.testing import assert_array_equal
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
-from nilearn.plotting.surface._utils import check_surface_plotting_inputs
 from nilearn.plotting.surface import (
     plot_img_on_surf,
     plot_surf,
@@ -24,6 +23,7 @@ from nilearn.plotting.surface import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
+from nilearn.plotting.surface._utils import check_surface_plotting_inputs
 from nilearn.plotting.surface.surf_plotting import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors_matplotlib,
@@ -749,7 +749,9 @@ def test_check_view_is_valid(view, is_valid):
     ],
 )
 def test_check_hemisphere_is_valid(hemi, is_valid):
-    from nilearn.plotting.surface.surf_plotting import _check_hemisphere_is_valid
+    from nilearn.plotting.surface.surf_plotting import (
+        _check_hemisphere_is_valid,
+    )
 
     assert _check_hemisphere_is_valid(hemi) is is_valid
 

@@ -13,7 +13,6 @@ import numpy as np
 
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.param_validation import check_threshold
-
 from nilearn.plotting.html import HTMLDocument  # noqa: F401
 from nilearn.plotting.html.html_document import (  # noqa: F401
     set_max_img_views_before_warning,
