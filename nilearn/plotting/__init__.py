@@ -33,7 +33,7 @@ from nilearn.plotting.img_comparison import (
     plot_bland_altman,
     plot_img_comparison,
 )
-from nilearn.plotting.matrix_plotting import (
+from nilearn.plotting.matrix import (
     plot_contrast_matrix,
     plot_design_matrix,
     plot_design_matrix_correlation,

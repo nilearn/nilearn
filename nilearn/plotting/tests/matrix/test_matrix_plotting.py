@@ -12,7 +12,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.tests._testing import block_paradigm, modulated_event_paradigm
-from nilearn.plotting.matrix_plotting import (
+from nilearn.plotting.matrix.matrix_plotting import (
     pad_contrast_matrix,
     plot_contrast_matrix,
     plot_design_matrix,
@@ -29,7 +29,9 @@ from nilearn.plotting.matrix_plotting import (
     "fig,axes", [("foo", "bar"), (1, 2), plt.subplots(1, 1, figsize=(7, 5))]
 )
 def test_sanitize_figure_and_axes_error(fig, axes):
-    from ..matrix_plotting import _sanitize_figure_and_axes
+    from nilearn.plotting.matrix.matrix_plotting import (
+        _sanitize_figure_and_axes
+    )
 
     with pytest.raises(
         ValueError,
@@ -48,7 +50,9 @@ def test_sanitize_figure_and_axes_error(fig, axes):
     ],
 )
 def test_sanitize_figure_and_axes(fig, axes, expected):
-    from ..matrix_plotting import _sanitize_figure_and_axes
+    from nilearn.plotting.matrix.matrix_plotting import (
+        _sanitize_figure_and_axes
+    )
 
     fig2, axes2, own_fig = _sanitize_figure_and_axes(fig, axes)
     assert isinstance(fig2, plt.Figure)
@@ -57,7 +61,9 @@ def test_sanitize_figure_and_axes(fig, axes, expected):
 
 
 def test_sanitize_labels():
-    from ..matrix_plotting import _sanitize_labels
+    from nilearn.plotting.matrix.matrix_plotting import (
+        _sanitize_labels
+    )
 
     labs = ["foo", "bar"]
     with pytest.raises(
@@ -76,14 +82,18 @@ VALID_TRI_VALUES = ("full", "lower", "diag")
 
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
 def test_sanitize_tri(tri):
-    from ..matrix_plotting import _sanitize_tri
+    from nilearn.plotting.matrix.matrix_plotting import (
+        _sanitize_tri
+    )
 
     _sanitize_tri(tri)
 
 
 @pytest.mark.parametrize("tri", [None, "foo", 2])
 def test_sanitize_tri_error(tri):
-    from ..matrix_plotting import _sanitize_tri
+    from nilearn.plotting.matrix.matrix_plotting import (
+        _sanitize_tri
+    )
 
     with pytest.raises(
         ValueError,
@@ -99,7 +109,9 @@ VALID_REORDER_VALUES = (True, False, "single", "complete", "average")
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
 def test_sanitize_reorder(reorder):
-    from ..matrix_plotting import _sanitize_reorder
+    from nilearn.plotting.matrix.matrix_plotting import (
+        _sanitize_reorder
+    )
 
     if reorder is not True:
         assert _sanitize_reorder(reorder) == reorder
@@ -109,7 +121,9 @@ def test_sanitize_reorder(reorder):
 
 @pytest.mark.parametrize("reorder", [None, "foo", 2])
 def test_sanitize_reorder_error(reorder):
-    from ..matrix_plotting import _sanitize_reorder
+    from nilearn.plotting.matrix.matrix_plotting import (
+        _sanitize_reorder
+    )
 
     with pytest.raises(
         ValueError, match=("Parameter reorder needs to be one of")
