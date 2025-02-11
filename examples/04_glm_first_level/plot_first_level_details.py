@@ -107,13 +107,13 @@ from nilearn.plotting import (
 
 
 def inspect_design_matrix(design_matrix):
-    plt.figure(figsize=(10, 10))
+    plt.figure(figsize=(10, 15))
 
     ax = plt.subplot(211)
     plot_design_matrix(design_matrix, axes=ax)
 
     ax = plt.subplot(212)
-    plot_design_matrix_correlation(design_matrix, axes=ax)
+    plot_design_matrix_correlation(design_matrix, axes=ax, tri="diag")
 
 
 inspect_design_matrix(design_matrix)
