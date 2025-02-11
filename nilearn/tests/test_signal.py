@@ -753,13 +753,12 @@ def test_clean_confounds():
         n_features=41, n_confounds=5, length=45
     )
     # No signal: output must be zero.
-    eps = EPS
     noises1 = noises.copy()
     cleaned_signals = clean(
         noises, confounds=confounds, detrend=True, standardize=False
     )
 
-    assert abs(cleaned_signals).max() < 100.0 * eps
+    assert abs(cleaned_signals).max() < 100.0 * EPS
     # clean should not modify inputs
     assert array_equal(noises, noises1)
 
@@ -768,7 +767,7 @@ def test_clean_confounds():
         signals + noises, confounds=confounds, detrend=False, standardize=True
     )
 
-    assert abs(np.dot(confounds.T, cleaned_signals)).max() < 1000.0 * eps
+    assert abs(np.dot(confounds.T, cleaned_signals)).max() < 1000.0 * EPS
 
     # Same output when a constant confound is added
     confounds1 = np.hstack((np.ones((45, 1)), confounds))
@@ -807,8 +806,7 @@ def test_clean_confounds_detrending():
         np.arange(cleaned_signals.shape[0]), cleaned_signals, 1
     )
 
-    eps = EPS
-    assert (abs(coeffs) < 1000.0 * eps).all()  # trend removed
+    assert (abs(coeffs) < 1000.0 * EPS).all()  # trend removed
 
 
 def test_clean_standardize_trye_false():
