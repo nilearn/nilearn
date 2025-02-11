@@ -356,7 +356,7 @@ def report_nifti_maps_masker(build_type):
     masker = NiftiMapsMasker(
         maps_img=atlas_filename,
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
         cmap="gray",
         memory_level=1,
