@@ -238,8 +238,7 @@ def report_flm_fiac(build_type):
 
     mean_img_ = mean_img(fmri_img[0], copy_header=True)
 
-    design_files = [data["design_matrix1"], data["design_matrix2"]]
-    design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
+    design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 
     fmri_glm = FirstLevelModel(mask_img=data["mask"], minimize_memory=True)
     fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
