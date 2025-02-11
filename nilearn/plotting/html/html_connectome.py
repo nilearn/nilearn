@@ -6,17 +6,17 @@ import numpy as np
 from matplotlib import cm as mpl_cm
 from scipy import sparse
 
-from nilearn.plotting.html_document import HTMLDocument
+from nilearn.plotting.html import HTMLDocument
 
-from .. import datasets
-from . import cm
-from .js_plotting_utils import (
+from nilearn import datasets
+from nilearn.plotting._utils import to_color_strings
+from nilearn.plotting import cm
+from nilearn.plotting.html.js_plotting_utils import (
     add_js_lib,
     colorscale,
     encode,
     get_html_template,
     mesh_to_plotly,
-    to_color_strings,
 )
 
 

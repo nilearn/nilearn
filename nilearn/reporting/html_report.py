@@ -11,7 +11,7 @@ import pandas as pd
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
-from nilearn.plotting.html_document import HTMLDocument
+from nilearn.plotting.html import HTMLDocument
 from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_PARTIALS_PATH,
@@ -437,7 +437,7 @@ class HTMLReport(HTMLDocument):
     """A report written as HTML.
 
     Methods such as ``save_as_html``, or ``open_in_browser``
-    are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
+    are inherited from class ``nilearn.plotting.html.HTMLDocument``.
 
     Parameters
     ----------

@@ -5,14 +5,13 @@ import numpy as np
 import pytest
 
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.plotting.js_plotting_utils import (
+from nilearn.plotting.html.js_plotting_utils import (
     add_js_lib,
     colorscale,
     decode,
     encode,
     get_html_template,
     mesh_to_plotly,
-    to_color_strings,
 )
 from nilearn.surface import load_surf_mesh
 
@@ -236,29 +235,9 @@ def check_html(
     assert len(view.findall("option")) == 7
 
 
-@pytest.mark.parametrize(
-    "colors",
-    [
-        [[0, 0, 1], [1, 0, 0], [0.5, 0.5, 0.5]],
-        [[0, 0, 1, 1], [1, 0, 0, 1], [0.5, 0.5, 0.5, 0]],
-        ["#0000ff", "#ff0000", "#7f7f7f"],
-        [[0, 0, 1, 1], [1, 0, 0, 1], [0.5, 0.5, 0.5, 0]],
-        ["r", "green", "black", "white"],
-        ["#0000ffff", "#ff0000ab", "#7f7f7f00"],
-    ],
-)
-def test_to_color_strings(colors):
-    """Tests for function to_color_strings with different color inputs."""
-    if len(colors) == 3:
-        expected = ["#0000ff", "#ff0000", "#7f7f7f"]
-    else:
-        expected = ["#ff0000", "#008000", "#000000", "#ffffff"]
-    assert to_color_strings(colors) == expected
-
-
 def test_import_html_document_from_js_plotting():
     """Smoke test importing HTMLDocument from js_plotting_utils."""
-    from nilearn.plotting.js_plotting_utils import (  # noqa: F401
+    from nilearn.plotting.html.js_plotting_utils import (  # noqa: F401
         HTMLDocument,
         set_max_img_views_before_warning,
     )

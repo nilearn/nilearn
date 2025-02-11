@@ -19,17 +19,19 @@ from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
-from nilearn.plotting.surface._utils import (
-    check_surface_plotting_inputs,
-    sanitize_hemi_for_surface_image
+from nilearn.plotting._utils import (
+    get_colorbar_and_data_ranges,
+    save_figure_if_needed
 )
-from nilearn.plotting._utils import save_figure_if_needed
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
 from nilearn.plotting.displays._slicers import get_cbar_ticks
-from nilearn.plotting.html_surface import get_vertexcolor
-from nilearn.plotting._utils import get_colorbar_and_data_ranges
-from nilearn.plotting.js_plotting_utils import colorscale
+from nilearn.plotting.html.js_plotting_utils import colorscale
+from nilearn.plotting.surface._utils import (
+    check_surface_plotting_inputs,
+    get_vertexcolor,
+    sanitize_hemi_for_surface_image
+)
 from nilearn.surface import (
     load_surf_data,
     load_surf_mesh,

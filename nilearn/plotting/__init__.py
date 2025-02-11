@@ -13,9 +13,9 @@ from nilearn.plotting.find_cuts import (
     find_probabilistic_atlas_cut_coords,
     find_xyz_cut_coords,
 )
-from nilearn.plotting.html_connectome import view_connectome, view_markers
-from nilearn.plotting.html_stat_map import view_img
-from nilearn.plotting.html_surface import view_img_on_surf, view_surf
+from nilearn.plotting.html.html_connectome import view_connectome, view_markers
+from nilearn.plotting.html.html_stat_map import view_img
+from nilearn.plotting.html.html_surface import view_img_on_surf, view_surf
 from nilearn.plotting.image.img_plotting import (
     plot_anat,
     plot_carpet,

@@ -1,10 +1,70 @@
 from warnings import warn
 
+import matplotlib as mpl
+import matplotlib.pyplot as plt
+import numpy as np
+
+from nilearn.plotting import cm
+from nilearn.plotting._utils import to_color_strings
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
 )
+from nilearn.surface import load_surf_data
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
+
+
+def get_vertexcolor(
+    surf_map,
+    cmap,
+    norm,
+    absolute_threshold=None,
+    bg_map=None,
+    bg_on_data=None,
+    darkness=None,
+):
+    """Get the color of the vertices."""
+    if bg_map is None:
+        bg_data = np.ones(len(surf_map)) * 0.5
+        bg_vmin, bg_vmax = 0, 1
+    else:
+        bg_data = np.copy(load_surf_data(bg_map))
+
+    # scale background map if need be
+    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
+    if bg_vmin < 0 or bg_vmax > 1:
+        bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
+        bg_data = bg_norm(bg_data)
+
+    if darkness is not None:
+        bg_data *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            ),
+            DeprecationWarning,
+        )
+
+    bg_colors = plt.get_cmap("Greys")(bg_data)
+
+    # select vertices which are filtered out by the threshold
+    if absolute_threshold is None:
+        under_threshold = np.zeros_like(surf_map, dtype=bool)
+    else:
+        under_threshold = np.abs(surf_map) < absolute_threshold
+
+    surf_colors = cmap(norm(surf_map).data)
+    # set transparency of voxels under threshold to 0
+    surf_colors[under_threshold, 3] = 0
+    if bg_on_data:
+        # if need be, set transparency of voxels above threshold to 0.7
+        # so that background map becomes visible
+        surf_colors[~under_threshold, 3] = 0.7
+
+    vertex_colors = cm.mix_colormaps(surf_colors, bg_colors)
+
+    return to_color_strings(vertex_colors)
 
 
 def sanitize_hemi_for_surface_image(hemi, map, mesh):

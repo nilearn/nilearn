@@ -11,14 +11,14 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-from nilearn.plotting.html_document import (  # noqa: F401
-    HTMLDocument,
+from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.param_validation import check_threshold
+
+from nilearn.plotting.html import HTMLDocument  # noqa: F401
+from nilearn.plotting.html.html_document import (  # noqa: F401
     set_max_img_views_before_warning,
 )
 from nilearn.surface import load_surf_mesh
-
-from .._utils.extmath import fast_abs_percentile
-from .._utils.param_validation import check_threshold
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 
@@ -154,15 +154,3 @@ def mesh_to_plotly(mesh):
         "_k": k,
     }
     return info
-
-
-def to_color_strings(colors):
-    """Return a list of colors as hex strings."""
-    cmap = mpl.colors.ListedColormap(colors)
-    colors = cmap(np.arange(cmap.N))[:, :3]
-    colors = np.asarray(colors * 255, dtype="uint8")
-    colors = [
-        f"#{int(row[0]):02x}{int(row[1]):02x}{int(row[2]):02x}"
-        for row in colors
-    ]
-    return colors

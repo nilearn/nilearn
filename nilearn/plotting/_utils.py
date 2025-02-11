@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numbers
 import numpy as np
@@ -128,3 +129,15 @@ def get_colorbar_and_data_ranges(
         vmax = stat_map_max
 
     return cbar_vmin, cbar_vmax, float(vmin), float(vmax)
+
+
+def to_color_strings(colors):
+    """Return a list of colors as hex strings."""
+    cmap = mpl.colors.ListedColormap(colors)
+    colors = cmap(np.arange(cmap.N))[:, :3]
+    colors = np.asarray(colors * 255, dtype="uint8")
+    colors = [
+        f"#{int(row[0]):02x}{int(row[1]):02x}{int(row[2]):02x}"
+        for row in colors
+    ]
+    return colors
