@@ -237,6 +237,16 @@ def get_clusters_table(
             In this case, the cluster voxel nearest to the center of mass is
             reported.
 
+    .. seealso::
+
+        This function does not report any named anatomical location
+        for the clusters.
+        To get the names of the location of the clusters
+        according to one or several atlases,
+        we recommend using
+        the `atlasreade package <https://github.com/miykael/atlasreader>`_.
+
+
     Parameters
     ----------
     stat_img : Niimg-like object
