@@ -22,7 +22,7 @@ from .._utils.param_validation import check_threshold
 from ..datasets import load_mni152_template
 from ..image import get_data, new_img_like, reorder_img, resample_to_img
 from ..plotting.find_cuts import find_xyz_cut_coords
-from ..plotting.img_plotting import load_anat
+from ..plotting.image.img_plotting import load_anat
 from .js_plotting_utils import colorscale, get_html_template
 
 

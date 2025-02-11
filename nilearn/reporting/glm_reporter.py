@@ -41,7 +41,7 @@ from nilearn.plotting import (
     plot_surf_stat_map,
 )
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
+from nilearn.plotting.image.img_plotting import MNI152TEMPLATE
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import (
     HTMLReport,

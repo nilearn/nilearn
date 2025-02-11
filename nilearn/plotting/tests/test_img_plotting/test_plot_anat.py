@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import pytest
 
 from nilearn.plotting import plot_anat
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
+from nilearn.plotting.image.img_plotting import MNI152TEMPLATE
 
 
 @pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])

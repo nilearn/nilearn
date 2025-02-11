@@ -5,7 +5,7 @@
 import numpy as np
 import pytest
 
-from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
+from nilearn.plotting.image.img_plotting import get_colorbar_and_data_ranges
 
 
 @pytest.fixture

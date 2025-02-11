@@ -28,7 +28,7 @@ from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
 from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
-from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
+from nilearn.plotting.image.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import (
     load_surf_data,
