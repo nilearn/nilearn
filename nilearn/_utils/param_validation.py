@@ -410,7 +410,7 @@ TYPE_MAPS = {
 def check_params(fn_dict):
     """Check types of inputs passed to a function / method / class.
 
-    This function checks the types of function / method parameters ortype_map
+    This function checks the types of function / method parameters or type_map
     the attributes of the class.
 
     This function is made to check the types of the parameters
