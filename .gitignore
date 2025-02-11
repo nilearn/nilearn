@@ -2,41 +2,85 @@
 *.so
 *~
 .#*
+*.nt.bz2
 *.swp
 *.swo
-.DS_Store
-build
-#*
 *#
 
-nilearn.egg-info/
-env/
-dist/
-doc/.nojekyll
-doc/building_blocks/generated/
+.mypy_cache
+
+# ignore python type annotation stubs for now
+*.pyi
+
 nilearn_cache
 nilearn_data
-doc/_build/
-doc/auto_examples/
-doc/modules/generated/
-doc/datasets/generated/
-doc/generated/
+
 pip-log.txt
-.coverage
-coverage
-nosetests_coverage/
+
+.tox
+
 .ropeproject/
-tags
 
-*.zip
-*.nt.bz2
-*.tar.gz
-*.tgz
+tmp
 
+#  prettier and other JS
+node_modules
+
+# Mac OS X
+.DS_Store
+
+# IDE related
 .idea/
+.vscode/
+
+# build related
+nilearn.egg-info/
+build
+dist/
+nilearn/_version.py
+
+# notebooks
+.ipynb_checkpoints
+
+# virtual environment
+env/
 venv/
 
+# testing
+.pytest_cache
+report.html
+report_doc.html
+
+# CI benchmark
+maint_tools/*_runs_timing.*
+
+# coverage
+.coverage
+coverage
+coverage.xml
+nosetests_coverage/
+
+# documentation
+doc/_build/
+doc/auto_examples/
+doc/building_blocks/generated/
+doc/ci.rst
+doc/generated/
+doc/modules/generated/
+doc/modules/generated_reports/*.html
+doc/modules/description
+doc/sg_execution_times.rst
 doc/themes/nilearn/static/jquery.js
-.vscode/
-examples/results/
-examples/**/*.pdf
+log.txt
+build.txt
+pattern.txt
+examples.txt
+gitlog.txt
+merge.txt
+
+# examples
+results/
+
+# node
+package.json
+package-lock.json
