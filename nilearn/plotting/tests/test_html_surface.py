@@ -342,12 +342,17 @@ def test_view_img_on_surf_errors(img_3d_mni):
 
 
 def test_matplotlib_cm_to_niivue_cm():
-    niivue_cmap = _matplotlib_cm_to_niivue_cm(None)
-    assert niivue_cmap is None
-
-    niivue_cmap = _matplotlib_cm_to_niivue_cm(1)
-    assert niivue_cmap is None
-
-    with pytest.warns(UserWarning, match="Colormap not available"):
-        niivue_cmap = _matplotlib_cm_to_niivue_cm("foo")
+    with pytest.warns(
+        UserWarning, match="'cmap' must be a str or a Colormap. Got"
+    ):
+        niivue_cmap = _matplotlib_cm_to_niivue_cm(None)
         assert niivue_cmap is None
+
+    with pytest.warns(
+        UserWarning, match="'cmap' must be a str or a Colormap. Got"
+    ):
+        niivue_cmap = _matplotlib_cm_to_niivue_cm(1)
+        assert niivue_cmap is None
+
+    with pytest.raises(ValueError, match="spec"):
+        _matplotlib_cm_to_niivue_cm("foo")

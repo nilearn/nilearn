@@ -205,10 +205,12 @@ def _matplotlib_cm_to_niivue_cm(cmap):
 def _one_mesh_info_niivue(
     surf_map,
     surf_mesh,
+    vmax=None,
     threshold=None,
     bg_map=None,
     cmap=None,
     colorbar=None,
+    black_bg=False,
 ):
     """Build dict for plotting one surface map on a single mesh."""
     info = {}
@@ -228,13 +230,16 @@ def _one_mesh_info_niivue(
     if isinstance(colorbar, bool):
         info["colorbar"] = str(colorbar).lower()
 
-    threshold = colorscale_niivue(surf_map, threshold=threshold)
+    vmax, threshold = colorscale_niivue(surf_map, vmax, threshold)
     info["threshold"] = threshold
+    info["vmax"] = vmax
 
     # Handle background map
     if bg_map is not None:
         gii = _data_to_gifti(bg_map)
         info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
+
+    info["back_color"] = [0, 0, 0, 1] if black_bg else [250, 250, 250, 1]
 
     return info
 
@@ -450,7 +455,9 @@ def _fill_html_template_niivue(info, embed_js=True):
             "INSERT_BG_MAP_BASE64_HERE": info["bg_map"],
             "INSERT_COLORBAR_HERE": info["colorbar"],
             "INSERT_THRESHOLD_HERE": json.dumps(info["threshold"]),
+            "INSERT_VMAX_HERE": json.dumps(info["vmax"]),
             "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
+            "BACK_COLOR": info["back_color"],
         }
     )
     as_html = add_js_lib(as_html, libraries=["niivue"], embed_js=embed_js)
@@ -773,6 +780,7 @@ def view_surf(
             cmap=cmap,
             colorbar=colorbar,
             threshold=threshold,
+            vmax=vmax,
         )
         info["title"] = title
         return _fill_html_template_niivue(info, embed_js=True)

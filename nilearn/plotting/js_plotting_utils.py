@@ -85,12 +85,19 @@ def get_html_template(template_name):
         return Template(f.read().decode("utf-8"))
 
 
-def colorscale_niivue(values, threshold=None):
+def colorscale_niivue(values, vmax, threshold=None):
     """Normalize a cmap, put it in plotly format, get threshold and range."""
     if threshold is not None:
         threshold = check_threshold(threshold, values, fast_abs_percentile)
 
-    return threshold
+    abs_values = np.abs(values)
+
+    if vmax is None:
+        vmax = abs_values.max()
+    # cast to float to avoid TypeError if vmax is a numpy boolean
+    vmax = float(vmax)
+
+    return vmax, threshold
 
 
 def colorscale(

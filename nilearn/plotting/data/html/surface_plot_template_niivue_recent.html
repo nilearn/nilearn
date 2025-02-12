@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>$INSERT_PAGE_TITLE_HERE</title>
+
+    <meta charset="UTF-8" />
+
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="https://raw.githubusercontent.com/nilearn/nilearn/main/doc/logos/favicon.ico"
+    />
+
+    <link
+      rel="stylesheet"
+      href="https://niivue.github.io/niivue/features/niivue.css"
+    />
+  </head>
+
+  <body>
+    <header>
+      <label for="shaderDrop">Shader</label>
+      <select id="shaderDrop">
+        <option value="Edge">Edge</option>
+        <option value="Flat">Flat</option>
+        <option value="Matcap" selected>Matcap</option>
+        <option value="Matte">Matte</option>
+        <option value="Outline">Outline</option>
+        <option value="Phong">Phong</option>
+        <option value="Toon">Toon</option>
+      </select>
+
+      <label for="curveSlider">Curvature</label>
+      <input
+        type="range"
+        min="0"
+        max="10"
+        value="7"
+        class="slider"
+        id="curveSlider"
+      />
+
+      <label for="threshSlider">Threshold</label>
+      <input
+        type="range"
+        min="1"
+        max="20"
+        value="90"
+        class="slider"
+        id="threshSlider"
+      />
+
+      <label for="rangeSlider">Range</label>
+      <input
+        type="range"
+        min="1"
+        max="90"
+        value="30"
+        class="slider"
+        id="rangeSlider"
+      />
+
+      <label for="opacitySlider">Opacity</label>
+      <input
+        type="range"
+        min="0"
+        max="10"
+        value="7"
+        class="slider"
+        id="opacitySlider"
+      />
+
+      <label for="negativeCheck">&nbsp;&nbsp; NegativeColors</label>
+      <input type="checkbox" id="negativeCheck" checked />
+
+      <label for="divergeCheck">Diverging Colors</label>
+      <input type="checkbox" id="divergeCheck" unchecked />
+
+      <select id="colormapTypeDrop">
+        <option selected>restrict colorbar to range</option>
+        <option>colorbar from 0,transparent subthreshold</option>
+        <option>colorbar from 0, translucent subthreshold</option>
+      </select>
+
+      <select id="outlineDrop">
+        <option value="0" selected>no outline</option>
+        <option value="1">opaque outline</option>
+        <option value="-1">black outline</option>
+      </select>
+    </header>
+
+    <main id="container">
+      <canvas id="gl1"></canvas>
+    </main>
+  </body>
+
+  $INSERT_JS_LIBRARIES_HERE
+
+  <script type="module" async>
+    curveSlider.onchange = function () {
+      nv1.setMeshLayerProperty(
+        nv1.meshes[0].id,
+        0,
+        "opacity",
+        this.value * 0.1,
+      );
+    };
+    document
+      .getElementById("threshSlider")
+      .addEventListener("change", doThreshChange);
+    document
+      .getElementById("rangeSlider")
+      .addEventListener("change", doThreshChange);
+    function doThreshChange() {
+      let mn = document.getElementById("threshSlider").value * 0.1;
+      let mx = mn + document.getElementById("rangeSlider").value * 0.1;
+      nv1.setMeshLayerProperty(nv1.meshes[0].id, 1, "cal_min", mn);
+      nv1.setMeshLayerProperty(nv1.meshes[0].id, 1, "cal_max", mx);
+    }
+
+    shaderDrop.onchange = function () {
+      const shaderName = this.value;
+      nv1.setMeshShader(nv1.meshes[0].id, shaderName);
+    };
+
+    divergeCheck.onchange = function () {
+      if (!this.checked) {
+        nv1.setMeshLayerProperty(nv1.meshes[0].id, 1, "colormap", "warm");
+        nv1.setMeshLayerProperty(
+          nv1.meshes[0].id,
+          1,
+          "colormapNegative",
+          "winter",
+        );
+      } else {
+        nv1.setMeshLayerProperty(
+          nv1.meshes[0].id,
+          1,
+          "colormap",
+          "green2orange",
+        );
+        nv1.setMeshLayerProperty(
+          nv1.meshes[0].id,
+          1,
+          "colormapNegative",
+          "green2cyan",
+        );
+      }
+    };
+
+    opacitySlider.onchange = function () {
+      nv1.setMeshLayerProperty(
+        nv1.meshes[0].id,
+        1,
+        "opacity",
+        this.value * 0.1,
+      );
+    };
+
+    colormapTypeDrop.onchange = function () {
+      nv1.setMeshLayerProperty(
+        nv1.meshes[0].id,
+        1,
+        "colormapType",
+        this.selectedIndex,
+      );
+    };
+
+    negativeCheck.onchange = function () {
+      nv1.setMeshLayerProperty(
+        nv1.meshes[0].id,
+        1,
+        "useNegativeCmap",
+        this.checked,
+      );
+    };
+
+    outlineDrop.onchange = function () {
+      nv1.setMeshLayerProperty(
+        nv1.meshes[0].id,
+        1,
+        "outlineBorder",
+        parseInt(this.value),
+      );
+    };
+    niivue.NVMesh.loadFromBase64;
+    var nv1 = new niivue.Niivue({
+      show3Dcrosshair: true,
+      backColor: [0, 0, 0, 1],
+    });
+
+    nv1.setSliceType(nv1.sliceTypeRender);
+
+    nv1.attachTo("gl1");
+
+    nv1.opts.isColorbar = true;
+
+    var meshLHLayersList1 = [
+      {
+        name: "bg_map.gii",
+        useNegativeCmap: false,
+        cal_min: 0.3,
+        cal_max: 0.5,
+        opacity: 0.7,
+        colormap: "gray",
+        base64: "$INSERT_BG_MAP_BASE64_HERE",
+      },
+      {
+        name: "surf_map.gii",
+        cal_max: 5,
+        useNegativeCmap: false,
+        opacity: 0.7,
+        cal_min: $INSERT_THRESHOLD_HERE,
+        base64: "$INSERT_SURF_MAP_BASE64_HERE",
+        colormap: $INSERT_SURF_COLORMAP_HERE,
+        colormapNegative: "winter",
+      },
+    ];
+
+    let m = await niivue.NVMesh.loadFromBase64({
+      gl: nv.gl,
+      name: "surf_mesh.gii",
+      layers: layers,
+      base64: "$INSERT_MESH_BASE64_HERE",
+    });
+
+    await nv.addMesh(m);
+
+    // Hide background map colorbar
+    nv1.setMeshLayerProperty(nv1.meshes[0].id, 0, "colorbarVisible", false);
+    doThreshChange();
+    shaderDrop.onchange();
+    divergeCheck.onchange();
+    colormapTypeDrop.onchange();
+  </script>
+</html>
