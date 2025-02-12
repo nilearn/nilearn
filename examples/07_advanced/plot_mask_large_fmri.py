@@ -182,7 +182,9 @@ print(
 # here: https://nipy.org/nibabel/images_and_memory.html
 #
 # As before we will do this by loading the data from the file paths and from
-# the in-memory objects. This time we will define two functions to do that.
+# the in-memory objects. This time, the logic between masking the data using
+# the file paths and the in-memory objects is different, so we will define
+# separate functions for each case.
 
 import nibabel as nib
 import numpy as np
@@ -194,39 +196,10 @@ def numpy_masker_single_path(fmri_path, mask_path):
     ]
 
 
-numpy_masker = {"single": {"path": [], "in_memory": []}}
-
-numpy_masker["single"]["path"] = memory_usage(
-    (numpy_masker_single_path, (fmri_path, mask_paths[0])),
-    max_usage=True,
-)
-print(
-    "Peak memory usage: with numpy indexing, single mask, with path:\n"
-    f"{numpy_masker['single']['path']} MiB"
-)
-
-
 def numpy_masker_single_inmemory(fmri_img, mask_img):
     return np.asarray(fmri_img.dataobj)[
         np.asarray(mask_img.dataobj).astype(bool)
     ]
-
-
-numpy_masker["single"]["in_memory"] = memory_usage(
-    (numpy_masker_single_inmemory, (fmri_img, mask_imgs[0])),
-    max_usage=True,
-)
-print(
-    "Peak memory usage: with numpy indexing, single mask, "
-    "with in-memory image:\n"
-    f"{numpy_masker['single']['in_memory']} MiB"
-)
-
-# %%
-# Masking using numpy indexing in parallel
-# ----------------------------------------
-# Now let's see how we can mask the fMRI image using multiple masks in parallel
-# using numpy indexing.
 
 
 def numpy_masker_parallel_path(fmri_path, mask_paths):
@@ -236,21 +209,6 @@ def numpy_masker_parallel_path(fmri_path, mask_paths):
     )
 
 
-numpy_masker["parallel"] = {"path": [], "in_memory": []}
-
-numpy_masker["parallel"]["path"] = memory_usage(
-    (numpy_masker_parallel_path, (fmri_path, mask_paths)),
-    max_usage=True,
-    include_children=True,
-    multiprocess=True,
-)
-print(
-    f"Peak memory usage: with numpy indexing, {N_REGIONS} jobs in parallel, "
-    "with path:\n"
-    f"{numpy_masker['parallel']['path']} MiB"
-)
-
-
 def numpy_masker_parallel_inmemory(fmri_img, mask_imgs):
     return Parallel(n_jobs=N_REGIONS)(
         delayed(numpy_masker_single_inmemory)(fmri_img, mask)
@@ -258,24 +216,37 @@ def numpy_masker_parallel_inmemory(fmri_img, mask_imgs):
     )
 
 
-numpy_masker["parallel"]["in_memory"] = memory_usage(
+# %%
+# Let's measure the memory usage for each method and store the results in a
+# dictionary.
+
+numpy_masker = {"path": [], "in_memory": []}
+
+numpy_masker["path"] = memory_usage(
+    (numpy_masker_parallel_path, (fmri_path, mask_paths)),
+    max_usage=True,
+    include_children=True,
+    multiprocess=True,
+)
+
+numpy_masker["in_memory"] = memory_usage(
     (numpy_masker_parallel_inmemory, (fmri_img, mask_imgs)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
 )
 print(
-    f"Peak memory usage: with numpy indexing, {N_REGIONS} jobs in parallel, "
-    "with in-memory images:\n"
-    f"{numpy_masker['parallel']['in_memory']} MiB"
+    f"Peak memory usage with numpy indexing, {N_REGIONS} jobs in parallel:\n"
+    f"- with file paths: {numpy_masker['path']} MiB"
+    f"- with in-memory images: {numpy_masker['in_memory']} MiB"
 )
 
 # %%
 # Masking using numpy indexing in parallel with shared memory
 # -----------------------------------------------------------
-# Finally, let's see how we can mask the fMRI image using multiple masks in
-# parallel using numpy indexing and shared memory from the
-# :mod:`multiprocessing` module.
+# Finally, let's see how we can combine numpy indexing and shared memory from
+# the :mod:`multiprocessing` module, and if that makes the masking more
+# memory-efficient.
 #
 # For this method, we would have to load the fMRI image into shared memory
 # that can be accessed by multiple processes. This way, each process can
@@ -307,28 +278,16 @@ def numpy_masker_shared_parallel(img, masks):
     )
 
 
-numpy_masker_shared = {"single": [], "parallel": []}
-
-numpy_masker_shared["single"] = memory_usage(
-    (numpy_masker_shared_single, (shared_array, mask_imgs[0])), max_usage=True
-)
-print(
-    f"Peak memory usage: with numpy indexing, shared memory, "
-    "and single mask:\n"
-    f"{numpy_masker_shared['single']} MiB"
-)
-
-
-numpy_masker_shared["parallel"] = memory_usage(
+numpy_masker_shared = memory_usage(
     (numpy_masker_shared_parallel, (shared_array, mask_imgs)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
 )
 print(
-    f"Peak memory usage: with numpy indexing, shared memory, "
+    f"Peak memory usage with numpy indexing and shared memory, "
     f"{N_REGIONS} jobs in parallel:\n"
-    f"{numpy_masker_shared['parallel']} MiB"
+    f"{numpy_masker_shared} MiB"
 )
 
 # cleanup
@@ -349,11 +308,11 @@ plt.bar(
         "Numpy indexing,\nwith shared\nmemory",
     ],
     [
-        nifti_masker["parallel"]["path"],
-        nifti_masker["parallel"]["in_memory"],
-        numpy_masker["parallel"]["path"],
-        numpy_masker["parallel"]["in_memory"],
-        numpy_masker_shared["parallel"],
+        nifti_masker["path"],
+        nifti_masker["in_memory"],
+        numpy_masker["path"],
+        numpy_masker["in_memory"],
+        numpy_masker_shared,
     ],
     color=[
         (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
