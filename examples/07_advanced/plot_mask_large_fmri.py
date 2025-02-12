@@ -42,7 +42,7 @@ the fMRI image in a different way:
 from pathlib import Path
 
 from nilearn.datasets import fetch_adhd
-from nilearn.image import concat_imgs
+from nilearn.image import concat_imgs, load_img
 
 N_SUBJECTS = 6
 N_REGIONS = 6
@@ -56,6 +56,8 @@ print(f"Large fmri file will be saved to:\n{output_dir}")
 
 fmri_path = output_dir / "large_fmri.nii.gz"
 fmri_img.to_filename(fmri_path)
+del fmri_img
+fmri_img = load_img(fmri_path)
 
 # %%
 # Create a set of binary masks
@@ -67,7 +69,7 @@ fmri_img.to_filename(fmri_path)
 # binary masks for the first 6 regions.
 
 from nilearn.datasets import fetch_atlas_basc_multiscale_2015
-from nilearn.image import load_img, new_img_like, resample_to_img
+from nilearn.image import new_img_like, resample_to_img
 
 atlas_path = fetch_atlas_basc_multiscale_2015(resolution=64).maps
 
