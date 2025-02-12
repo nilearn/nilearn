@@ -28,8 +28,7 @@ the fMRI image in a different way:
 
 1. A naive, unoptimized usage of :class:`~nilearn.maskers.NiftiMasker`.
 2. Masking the fMRI image's data array using numpy indexing.
-3. Combining the above numpy indexing approach with
-:class:`multiprocessing.shared_memory.SharedMemory`.
+3. Using :class:`multiprocessing.shared_memory.SharedMemory`.
 
 """
 
@@ -45,7 +44,7 @@ from pathlib import Path
 from nilearn.datasets import fetch_adhd
 from nilearn.image import concat_imgs, load_img
 
-N_SUBJECTS = 1
+N_SUBJECTS = 6
 N_REGIONS = 6
 
 fmri_data = fetch_adhd(n_subjects=N_SUBJECTS)
@@ -57,8 +56,8 @@ print(f"Large fmri file will be saved to:\n{output_dir}")
 
 fmri_path = output_dir / "large_fmri.nii.gz"
 fmri_img.to_filename(fmri_path)
-# del fmri_img
-# fmri_img = load_img(fmri_path)
+del fmri_img
+fmri_img = load_img(fmri_path)
 
 # %%
 # Create a set of binary masks
