@@ -12,67 +12,68 @@ from nilearn.reporting._utils import (
 )
 
 
-def test_coerce_to_dict_with_string():
-    test_input = "StopSuccess - Go"
-    expected_output = {"StopSuccess - Go": "StopSuccess - Go"}
-    actual_output = coerce_to_dict(test_input)
-    assert actual_output == expected_output
+@pytest.mark.parametrize(
+    "input, output",
+    (
+        # None
+        [None, None],
+        # string
+        ["StopSuccess - Go", {"StopSuccess - Go": "StopSuccess - Go"}],
+        # list_of_strings,
+        [
+            ["contrast_name_0", "contrast_name_1"],
+            {
+                "contrast_name_0": "contrast_name_0",
+                "contrast_name_1": "contrast_name_1",
+            },
+        ],
+        # dict
+        [
+            {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]},
+            {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]},
+        ],
+        # list of lists
+        [
+            [[0, 0, 1], [0, 1, 0]],
+            {"[0, 0, 1]": [0, 0, 1], "[0, 1, 0]": [0, 1, 0]},
+        ],
+    ),
+)
+def test_coerce_to_dict(input, output):
+    """Check that proper dictionary of contrasts are generated."""
+    actual_output = coerce_to_dict(input)
+
+    assert actual_output == output
 
 
-def test_coerce_to_dict_with_list_of_strings():
-    test_input = ["contrast_name_0", "contrast_name_1"]
-    expected_output = {
-        "contrast_name_0": "contrast_name_0",
-        "contrast_name_1": "contrast_name_1",
-    }
-    actual_output = coerce_to_dict(test_input)
-    assert actual_output == expected_output
+@pytest.mark.parametrize(
+    "input, output",
+    (
+        # list of ints
+        [[1, 0, 1], {"[1, 0, 1]": [1, 0, 1]}],
+        # array
+        [np.array([1, 0, 1]), {"[1 0 1]": np.array([1, 0, 1])}],
+        # list of arrays
+        [
+            [np.array([0, 0, 1]), np.array([0, 1, 0])],
+            {
+                "[0 0 1]": np.array([0, 0, 1]),
+                "[0 1 0]": np.array([0, 1, 0]),
+            },
+        ],
+    ),
+)
+def test_coerce_to_dict_with_arrays(input, output):
+    """Check that proper dictionary of contrasts are generated from arrays."""
+    actual_output = coerce_to_dict(input)
 
-
-def test_coerce_to_dict_with_dict():
-    test_input = {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]}
-    expected_output = {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]}
-    actual_output = coerce_to_dict(test_input)
-    assert actual_output == expected_output
-
-
-def test_coerce_to_dict_with_list_of_lists():
-    test_input = [[0, 0, 1], [0, 1, 0]]
-    expected_output = {"[0, 0, 1]": [0, 0, 1], "[0, 1, 0]": [0, 1, 0]}
-    actual_output = coerce_to_dict(test_input)
-    assert actual_output == expected_output
-
-
-def test_coerce_to_dict_with_list_of_arrays():
-    test_input = [np.array([0, 0, 1]), np.array([0, 1, 0])]
-    expected_output = {
-        "[0 0 1]": np.array([0, 0, 1]),
-        "[0 1 0]": np.array([0, 1, 0]),
-    }
-    actual_output = coerce_to_dict(test_input)
-    assert actual_output.keys() == expected_output.keys()
+    assert actual_output.keys() == output.keys()
     for key in actual_output:
-        assert np.array_equal(actual_output[key], expected_output[key])
-
-
-def test_coerce_to_dict_with_list_of_ints():
-    test_input = [1, 0, 1]
-    expected_output = {"[1, 0, 1]": [1, 0, 1]}
-    actual_output = coerce_to_dict(test_input)
-    assert np.array_equal(
-        actual_output["[1, 0, 1]"], expected_output["[1, 0, 1]"]
-    )
-
-
-def test_coerce_to_dict_with_array_of_ints():
-    test_input = np.array([1, 0, 1])
-    expected_output = {"[1 0 1]": np.array([1, 0, 1])}
-    actual_output = coerce_to_dict(test_input)
-    assert expected_output.keys() == actual_output.keys()
-    assert np.array_equal(actual_output["[1 0 1]"], expected_output["[1 0 1]"])
+        assert np.array_equal(actual_output[key], output[key])
 
 
 def test_make_headings_with_contrasts_title_none():
+    """Check SLM report with no title headings."""
     model = SecondLevelModel()
     test_input = (
         {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]},
@@ -85,10 +86,12 @@ def test_make_headings_with_contrasts_title_none():
         "Second Level Model",
     )
     actual_output = make_headings(*test_input)
+
     assert actual_output == expected_output
 
 
 def test_make_headings_with_contrasts_title_custom():
+    """Check SLM report with custom title headings."""
     model = SecondLevelModel()
     test_input = (
         {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]},
@@ -101,10 +104,12 @@ def test_make_headings_with_contrasts_title_custom():
         "Second Level Model",
     )
     actual_output = make_headings(*test_input)
+
     assert actual_output == expected_output
 
 
 def test_make_headings_with_contrasts_none_title_custom():
+    """Check FLM report with custom title headings."""
     model = FirstLevelModel()
     test_input = (None, "Custom Title for report", model)
     expected_output = (
@@ -113,15 +118,18 @@ def test_make_headings_with_contrasts_none_title_custom():
         "First Level Model",
     )
     actual_output = make_headings(*test_input)
+
     assert actual_output == expected_output
 
 
 def test_check_report_dims():
+    """Check that invalid report dimensions are overridden with warning."""
     test_input = (1200, "a")
     expected_output = (1600, 800)
     expected_warning_text = (
         "Report size has invalid values. Using default 1600x800"
     )
+
     with pytest.warns(UserWarning, match=expected_warning_text):
         actual_output = check_report_dims(test_input)
     assert actual_output == expected_output
