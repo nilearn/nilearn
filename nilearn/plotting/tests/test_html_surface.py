@@ -8,7 +8,10 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.image import get_data
 from nilearn.plotting import html_surface
-from nilearn.plotting.html_surface import view_img_on_surf
+from nilearn.plotting.html_surface import (
+    _matplotlib_cm_to_niivue_cm,
+    view_img_on_surf,
+)
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
@@ -336,3 +339,15 @@ def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
 def test_view_img_on_surf_errors(img_3d_mni):
     with pytest.raises(DimensionError):
         view_img_on_surf([img_3d_mni, img_3d_mni])
+
+
+def test_matplotlib_cm_to_niivue_cm():
+    niivue_cmap = _matplotlib_cm_to_niivue_cm(None)
+    assert niivue_cmap is None
+
+    niivue_cmap = _matplotlib_cm_to_niivue_cm(1)
+    assert niivue_cmap is None
+
+    with pytest.warns(UserWarning, match="Colormap not available"):
+        niivue_cmap = _matplotlib_cm_to_niivue_cm("foo")
+        assert niivue_cmap is None

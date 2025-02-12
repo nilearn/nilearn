@@ -7,6 +7,7 @@ from warnings import warn
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import colormaps
 
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
@@ -162,46 +163,43 @@ def _matplotlib_cm_to_niivue_cm(cmap):
     cmap : dict of list
         Converted colormap, with keys "R", "G", "B", "A", "I".
     """
+    if not isinstance(cmap, (mpl.colors.Colormap, str)):
+        warn(
+            f"'cmap' must be a str or a Colormap. Got {type(cmap)}",
+            stacklevel=4,
+        )
+        return None
+
     name = None
     spec = None
     reverse = False
 
     if isinstance(cmap, str):
-        name = cmap
-
-        if name.endswith("_r"):
-            name = name[:-2]
-            reverse = True
-
-        if name not in plt.cm.datad:
-            print(f"Colormap not available 0 {name}")
+        if cmap not in list(colormaps) and cmap not in cm._cmap_d:
+            warn(f"Colormap not available: {cmap}", stacklevel=4)
             return None
 
-        spec = plt.cm.datad[name]
+        name = cmap
 
-    elif isinstance(cmap, mpl.colors.Colormap):
+        spec = plt.get_cmap(name)
+
+    else:
         spec = cmap
         name = cmap.name
 
-    if type(spec) is not tuple:
-        print(f"Colormap not available 1 {name}")
-        print(spec)
-        return None
+    if name.endswith("_r"):
+        name = name[:-2]
+        reverse = True
 
-    n_nodes = len(spec)
-
-    if type(spec[0][1]) is tuple:
-        print(f"Colormap not available 2 {name}")
-        return None
+    n_nodes = 255
+    colors = spec(np.linspace(0, 1, 255))
 
     js = {"R": [], "G": [], "B": [], "A": [], "I": []}
-    for i in range(n_nodes):
-        js["R"].append(int(255 * spec[i][0]))
-        js["G"].append(int(255 * spec[i][1]))
-        js["B"].append(int(255 * spec[i][2]))
-        idx = int(i / (n_nodes - 1) * 255)
-        js["A"].append(int(0.3 * idx))
-        js["I"].append(idx)
+    js["R"] = (255 * colors[..., 0]).astype(int).tolist()
+    js["G"] = (255 * colors[..., 1]).astype(int).tolist()
+    js["B"] = (255 * colors[..., 2]).astype(int).tolist()
+    js["A"] = [64 for _ in range(n_nodes)]
+    js["I"] = list(range(n_nodes))
 
     if reverse:
         for k in js:
@@ -231,8 +229,7 @@ def _one_mesh_info_niivue(
     gii = _data_to_gifti(surf_map)
     info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
 
-    if isinstance(cmap, (mpl.colors.Colormap, str)):
-        info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
+    info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
 
     if isinstance(colorbar, bool):
         info["colorbar"] = str(colorbar).lower()
