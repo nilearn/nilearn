@@ -16,7 +16,7 @@ from nilearn.plotting.img_comparison import plot_img_comparison
 
 
 def test_deprecation_function_moved(matplotlib_pyplot, img_3d_ones_eye):
-    from nilearn.plotting.img_plotting import plot_img_comparison
+    from nilearn.plotting.image.img_plotting import plot_img_comparison
 
     with pytest.warns(DeprecationWarning, match="moved"):
         plot_img_comparison(

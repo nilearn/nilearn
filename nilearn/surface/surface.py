@@ -1011,7 +1011,7 @@ def check_mesh_is_fsaverage(mesh):
     with sufficient entries. Basically ensures that the mesh data is
     Freesurfer-like fsaverage data.
 
-    Used by plotting.surf_plotting.plot_img_on_surf and
+    Used by plotting.surface.surf_plotting.plot_img_on_surf and
     plotting.html_surface._full_brain_info.
     """
     if isinstance(mesh, str):

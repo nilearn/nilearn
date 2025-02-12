@@ -7,7 +7,8 @@ SVG is modified.
 """
 
 from nilearn import plotting
-from nilearn.plotting import glass_brain, img_plotting, show
+from nilearn.plotting import glass_brain, show
+from nilearn.plotting.image import img_plotting
 
 if __name__ == "__main__":
     # plotting anat for coarse alignment
