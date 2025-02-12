@@ -88,7 +88,7 @@ resampled_atlas = resample_to_img(
 
 mask_imgs = []
 mask_paths = []
-for idx in range(N_REGIONS):
+for idx in range(1, N_REGIONS + 1):
     mask = resampled_atlas.get_fdata() == idx
     mask = new_img_like(
         ref_niimg=fmri_img,
