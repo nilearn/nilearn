@@ -341,7 +341,7 @@ eff_map.to_filename(output_dir / "listening_gt_rest_eff_map.nii.gz")
 #     To get the names of the location of the clusters
 #     according to one or several atlases,
 #     we recommend using
-#     the `atlasreade package <https://github.com/miykael/atlasreader>`_.
+#     the `atlasreader package <https://github.com/miykael/atlasreader>`_.
 #
 from nilearn.reporting import get_clusters_table
 
