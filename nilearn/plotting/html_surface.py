@@ -20,6 +20,7 @@ from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
     colorscale,
+    colorscale_niivue,
     get_html_template,
     mesh_to_plotly,
     to_color_strings,
@@ -234,6 +235,7 @@ def _one_mesh_info_niivue(
     if isinstance(colorbar, bool):
         info["colorbar"] = str(colorbar).lower()
 
+    threshold = colorscale_niivue(surf_map, threshold=threshold)
     info["threshold"] = threshold
 
     # Handle background map
