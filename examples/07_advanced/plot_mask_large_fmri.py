@@ -110,14 +110,27 @@ for idx in range(1, N_REGIONS + 1):
 # data from an fMRI image as it makes it easy to standardize, smooth, detrend,
 # etc. the data.
 #
-# We will define a function that will do that so that it's easier to use it
-# with the ``memory_profiler`` package to measure the memory usage.
+# We will first wrap the :func:`~nilearn.maskers.NiftiMasker.fit_transform`
+# within a function so that it is more readable and easier to use.
+# We will then define another function that would mask the fMRI image using
+# multiple masks in parallel using the :mod:`joblib` package.
+#
+# We can then use this function to measure the memory usage using the
+# ``memory_profiler`` package.
+
+from joblib import Parallel, delayed
 
 from nilearn.maskers import NiftiMasker
 
 
 def nifti_masker_single(fmri_path, mask_path):
     return NiftiMasker(mask_img=mask_path).fit_transform(fmri_path)
+
+
+def nifti_masker_parallel(fmri_path, mask_paths):
+    return Parallel(n_jobs=N_REGIONS)(
+        delayed(nifti_masker_single)(fmri_path, mask) for mask in mask_paths
+    )
 
 
 # %%
@@ -132,68 +145,25 @@ def nifti_masker_single(fmri_path, mask_path):
 
 from memory_profiler import memory_usage
 
-nifti_masker = {"single": {"path": [], "in_memory": []}}
+nifti_masker = {"path": [], "in_memory": []}
 
-nifti_masker["single"]["path"] = memory_usage(
-    (nifti_masker_single, (fmri_path, mask_paths[0])),
-    max_usage=True,
-)
-print(
-    "Peak memory usage: with NiftiMasker, single mask, with paths:\n"
-    f"{nifti_masker['single']['path']} MiB"
-)
-
-nifti_masker["single"]["in_memory"] = memory_usage(
-    (nifti_masker_single, (fmri_img, mask_imgs[0])),
-    max_usage=True,
-)
-print(
-    "Peak memory usage: with NiftiMasker, single mask, with in-memory image:\n"
-    f"{nifti_masker['single']['in_memory']} MiB"
-)
-
-# %%
-# Masking using NiftiMasker in parallel
-# -------------------------------------
-# Now let's see how we would mask the fMRI image using multiple masks in
-# parallel using the :mod:`joblib` package.
-#
-# Let's add another key to the previous dictionary to store the memory usage
-# for this case.
-
-from joblib import Parallel, delayed
-
-
-def nifti_masker_parallel(fmri_path, mask_paths):
-    return Parallel(n_jobs=N_REGIONS)(
-        delayed(nifti_masker_single)(fmri_path, mask) for mask in mask_paths
-    )
-
-
-nifti_masker["parallel"] = {"path": [], "in_memory": []}
-
-nifti_masker["parallel"]["path"] = memory_usage(
+nifti_masker["path"] = memory_usage(
     (nifti_masker_parallel, (fmri_path, mask_paths)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
 )
-print(
-    f"Peak memory usage: with NiftiMasker, {N_REGIONS} jobs in parallel, "
-    "with paths:\n"
-    f"{nifti_masker['parallel']['path']} MiB"
-)
-
-nifti_masker["parallel"]["in_memory"] = memory_usage(
+nifti_masker["in_memory"] = memory_usage(
     (nifti_masker_parallel, (fmri_img, mask_imgs)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
 )
+
 print(
-    f"Peak memory usage: with NiftiMasker, {N_REGIONS} jobs in parallel, "
-    "with in-memory images:\n"
-    f"{nifti_masker['parallel']['in_memory']} MiB"
+    f"Peak memory usage with NiftiMasker, {N_REGIONS} jobs in parallel:\n"
+    f"- with file paths: {nifti_masker['path']} MiB"
+    f"- with in-memory images: {nifti_masker['in_memory']} MiB"
 )
 
 
