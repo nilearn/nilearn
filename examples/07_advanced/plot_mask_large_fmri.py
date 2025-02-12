@@ -14,7 +14,7 @@ and we will compare these strategies against a naive usage of
 
 To make this more concrete, we will create a large fMRI image with over
 800 time points by concatenating individual subjects in the
-:func:`~nilearn.datasets.fetch_development_fmri` dataset.
+:func:`~nilearn.datasets.fetch_adhd` dataset.
 Our goal is to extract data from several regions of interest (ROIs)
 defined by a number of binary masks, all in parallel.
 
@@ -34,7 +34,7 @@ We will compare three different methods to mask the data from the fMRI image:
 # %%
 # Create a large fMRI image
 # -------------------------
-# Here we will create a "large" fMRI image by fetch 5 subjects'
+# Here we will create a "large" fMRI image by fetch 6 subjects'
 # fMRI images via the :func:`~nilearn.datasets.fetch_adhd`
 # function, concatenating them and then saving to a file.
 
