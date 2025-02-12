@@ -280,13 +280,15 @@ show()
 # See :ref:`interactive-surface-plotting` for more details.
 from nilearn.plotting import view_surf
 
+engine = "niivue"
 view = view_surf(
     surf_mesh=fsaverage_meshes["inflated"],
     surf_map=surface_image,
-    threshold="90%",
+    # threshold="90%",
     bg_map=fsaverage_sulcal,
     hemi=hemi,
     title="3D visualization in a web browser",
+    engine=engine,
 )
 
 # In a Jupyter notebook, if ``view`` is the output of a cell,

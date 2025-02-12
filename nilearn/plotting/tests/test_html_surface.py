@@ -8,7 +8,10 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.image import get_data
 from nilearn.plotting import html_surface
-from nilearn.plotting.html_surface import view_img_on_surf
+from nilearn.plotting.html_surface import (
+    _matplotlib_cm_to_niivue_cm,
+    view_img_on_surf,
+)
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
@@ -203,42 +206,80 @@ def test_fill_html_template(tmp_path, mni152_template_res_2):
     assert "* plotly.js (gl3d - minified) v1." in html.html
 
 
-def test_view_surf(tmp_path, rng):
+def test_niivue_smoke():
+    fsaverage = fetch_surf_fsaverage()
+    mesh = load_surf_mesh(fsaverage["pial_right"])
+    surf_map = mesh[0][:, 0]
+    html_surface.view_surf(
+        fsaverage["pial_right"],
+        surf_map,
+        fsaverage["sulc_right"],
+        threshold="90%",
+        engine="niivue",
+        hemi="left",
+    )
+
+
+@pytest.mark.parametrize("engine", ["plotly"])  # TODO test with niivue
+def test_view_surf(tmp_path, rng, engine):
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh.coordinates[:, 0]
     html = html_surface.view_surf(
-        fsaverage["pial_right"], surf_map, fsaverage["sulc_right"], "90%"
+        fsaverage["pial_right"],
+        surf_map,
+        fsaverage["sulc_right"],
+        "90%",
+        engine=engine,
     )
     check_html(tmp_path, html, title="Surface plot")
+
     html = html_surface.view_surf(
         fsaverage["pial_right"],
         surf_map,
         fsaverage["sulc_right"],
         0.3,
         title="SOME_TITLE",
+        engine=engine,
     )
     check_html(tmp_path, html, title="SOME_TITLE")
-    assert "SOME_TITLE" in html.html
-    html = html_surface.view_surf(fsaverage["pial_right"])
+
+    html = html_surface.view_surf(fsaverage["pial_right"], engine=engine)
     check_html(tmp_path, html)
+
     atlas = rng.integers(0, 10, size=len(mesh.coordinates))
     html = html_surface.view_surf(
-        fsaverage["pial_left"], atlas, symmetric_cmap=False
+        fsaverage["pial_left"], atlas, symmetric_cmap=False, engine=engine
     )
     check_html(tmp_path, html)
+
     html = html_surface.view_surf(
         fsaverage["pial_right"],
         fsaverage["sulc_right"],
         threshold=None,
         cmap="Greys",
+        engine=engine,
     )
     check_html(tmp_path, html)
-    with pytest.raises(ValueError):
-        html_surface.view_surf(mesh, mesh.coordinates[::2, 0])
+
+
+@pytest.mark.parametrize("engine", ["plotly", "niivue"])
+def test_view_surf_errors(engine):
+    fsaverage = fetch_surf_fsaverage()
+    mesh = load_surf_mesh(fsaverage["pial_right"])
+
     with pytest.raises(ValueError):
         html_surface.view_surf(
-            mesh, mesh.coordinates[:, 0], bg_map=mesh.coordinates[::2, 0]
+            mesh, mesh.coordinates[::2, 0], engine=engine, hemi="left"
+        )
+
+    with pytest.raises(ValueError):
+        html_surface.view_surf(
+            mesh,
+            mesh.coordinates[:, 0],
+            bg_map=mesh.coordinates[::2, 0],
+            engine=engine,
+            hemi="left",
         )
 
 
@@ -298,3 +339,20 @@ def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
 def test_view_img_on_surf_errors(img_3d_mni):
     with pytest.raises(DimensionError):
         view_img_on_surf([img_3d_mni, img_3d_mni])
+
+
+def test_matplotlib_cm_to_niivue_cm():
+    with pytest.warns(
+        UserWarning, match="'cmap' must be a str or a Colormap. Got"
+    ):
+        niivue_cmap = _matplotlib_cm_to_niivue_cm(None)
+        assert niivue_cmap is None
+
+    with pytest.warns(
+        UserWarning, match="'cmap' must be a str or a Colormap. Got"
+    ):
+        niivue_cmap = _matplotlib_cm_to_niivue_cm(1)
+        assert niivue_cmap is None
+
+    with pytest.raises(ValueError, match="spec"):
+        _matplotlib_cm_to_niivue_cm("foo")

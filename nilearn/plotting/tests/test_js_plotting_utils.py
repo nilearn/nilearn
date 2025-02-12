@@ -38,10 +38,11 @@ def test_add_js_lib():
     assert "decodeBase64" in cdn
     assert _normalize_ws(
         """<script
-    src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">
-    </script>
-    <script src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>
-    """
+    src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js">"""
+    ) in _normalize_ws(cdn)
+    assert _normalize_ws(
+        """<script
+    src="https://cdn.plot.ly/plotly-gl3d-latest.min.js"></script>"""
     ) in _normalize_ws(cdn)
     inline = _normalize_ws(add_js_lib(html, embed_js=True))
     assert (
