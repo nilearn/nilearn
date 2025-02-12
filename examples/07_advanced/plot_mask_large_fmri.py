@@ -30,6 +30,17 @@ the fMRI image in a different way:
 2. Masking the fMRI image's data array using numpy indexing.
 3. Using :class:`multiprocessing.shared_memory.SharedMemory`.
 
+For the first two methods, there are two ways to input the fMRI image:
+using the file paths and using the pre-loaded in-memory objects. These two
+input methods can also affect the memory usage of the task. This is because
+when in-memory objects are loaded in a way that allows numpy memory mapping,
+only the segments of data that are accessed are loaded into memory. Joblib
+can handle this efficiently across multiple processes and this results in
+lower memory usage. However, when using file paths, the entire image is loaded
+into memory for each process, which can lead to higher memory usage.
+
+Therefore, we will also compare these two input methods for the first two
+methods.
 """
 
 # %%
@@ -42,7 +53,7 @@ the fMRI image in a different way:
 from pathlib import Path
 
 from nilearn.datasets import fetch_adhd
-from nilearn.image import concat_imgs, load_img
+from nilearn.image import concat_imgs
 
 N_SUBJECTS = 6
 N_REGIONS = 6
@@ -56,8 +67,6 @@ print(f"Large fmri file will be saved to:\n{output_dir}")
 
 fmri_path = output_dir / "large_fmri.nii.gz"
 fmri_img.to_filename(fmri_path)
-del fmri_img
-fmri_img = load_img(fmri_path)
 
 # %%
 # Create a set of binary masks
@@ -69,7 +78,7 @@ fmri_img = load_img(fmri_path)
 # binary masks for the first 6 regions.
 
 from nilearn.datasets import fetch_atlas_basc_multiscale_2015
-from nilearn.image import new_img_like, resample_to_img
+from nilearn.image import load_img, new_img_like, resample_to_img
 
 atlas_path = fetch_atlas_basc_multiscale_2015(resolution=64).maps
 
@@ -137,14 +146,10 @@ def nifti_masker_parallel(fmri_path, mask_paths):
 
 
 # %%
-# Furthermore, we can input the fMRI image and the masks in two different ways:
+# As mentioned previously, we will also compare two ways to input the fMRI
+# image: using the file paths and using the in-memory objects.
 #
-# 1. Using the file paths
-# 2. Using the in-memory objects
-#
-# So we will measure the memory usage for both cases.
-#
-# Let's first create a dictionary to store the memory usage for each method
+# So let's first create a dictionary to store the memory usage for each method.
 
 from memory_profiler import memory_usage
 
