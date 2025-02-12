@@ -457,9 +457,6 @@ class NiftiMasker(BaseMasker):
         if getattr(self, "_shelving", None) is None:
             self._shelving = False
 
-        if self.memory is None:
-            self.memory = Memory(location=None)
-
         self = sanitize_cleaning_parameters(self)
 
         # Load data (if filenames are given, load them)
