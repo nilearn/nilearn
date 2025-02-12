@@ -10,12 +10,8 @@ make_glm_report(model, contrasts):
 """
 
 import datetime
-import os
 import string
 import uuid
-import warnings
-from collections import OrderedDict
-from decimal import Decimal
 from html import escape
 from pathlib import Path
 from string import Template
@@ -30,7 +26,6 @@ from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.glm.first_level import FirstLevelModel
-from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting import (
     plot_contrast_matrix,
@@ -42,6 +37,16 @@ from nilearn.plotting import (
 )
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
+from nilearn.reporting._utils import (
+    check_report_dims,
+    clustering_params_to_dataframe,
+    coerce_to_dict,
+    dataframe_to_html,
+    make_headings,
+    make_stat_maps,
+    model_attributes_to_dataframe,
+    return_model_type,
+)
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import (
     HTMLReport,
@@ -51,11 +56,8 @@ from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_TEMPLATE_PATH,
     TEMPLATE_ROOT_PATH,
-    coerce_to_dict,
-    dataframe_to_html,
     figure_to_png_base64,
     figure_to_svg_quoted,
-    model_attributes_to_dataframe,
 )
 from nilearn.surface import SurfaceImage
 
@@ -200,7 +202,7 @@ def make_glm_report(
             height_control=height_control,
             bg_img=bg_img,
         )
-        report_text.width, report_text.height = _check_report_dims(report_dims)
+        report_text.width, report_text.height = check_report_dims(report_dims)
         return report_text
 
     if bg_img == "MNI152TEMPLATE":
@@ -231,7 +233,7 @@ def make_glm_report(
 
     contrasts = coerce_to_dict(contrasts)
     contrast_plots = _plot_contrasts(contrasts, design_matrices)
-    page_title, page_heading_1, page_heading_2 = _make_headings(
+    page_title, page_heading_1, page_heading_2 = make_headings(
         contrasts,
         title,
         model,
@@ -297,35 +299,8 @@ def make_glm_report(
         head_values=report_values_head,
     )
     # setting report size for better visual experience in Jupyter Notebooks.
-    report_text.width, report_text.height = _check_report_dims(report_dims)
+    report_text.width, report_text.height = check_report_dims(report_dims)
     return report_text
-
-
-def _check_report_dims(report_size):
-    """Warns user & reverts to default if report dimensions are non-numerical.
-
-    Parameters
-    ----------
-    report_size : Tuple[int, int]
-        Report width, height in jupyter notebook.
-
-    Returns
-    -------
-    report_size : Tuple[int, int]
-        Valid values for report width, height in jupyter notebook.
-
-    """
-    width, height = report_size
-    try:
-        width = int(width)
-        height = int(height)
-    except ValueError:
-        warnings.warn(
-            "Report size has invalid values. Using default 1600x800",
-            stacklevel=3,
-        )
-        width, height = (1600, 800)
-    return width, height
 
 
 def _plot_to_svg(plot):
@@ -397,95 +372,6 @@ def _plot_contrasts(contrasts, design_matrices):
             )
             all_contrasts_plots[contrast_name] = contrast_text_
     return all_contrasts_plots
-
-
-def _make_headings(contrasts, title, model):
-    """Create report page title, heading & sub-heading \
-    using title text or contrast names.
-
-    Accepts contrasts and user supplied title string or
-    contrasts and user supplied 3 element list or tuple.
-
-    If title is not in (None, 'auto'),
-    page title == heading,
-    model type == sub-heading
-
-    Parameters
-    ----------
-    contrasts : Dict[str, np.array or str]
-        Contrast information, as a dict in the form
-            {'contrast_title_1': contrast_info_1/title_1, ...}
-        Contrast titles are used in page title and secondary heading
-        if `title` is not 'auto' or None.
-
-    title : String or List/Tuple with 3 elements
-        User supplied text for HTML Page title and primary heading.
-        Or 3 element List/Tuple for Title Heading, sub-heading resp.
-        Overrides title auto-generation.
-
-    model : FirstLevelModel or SecondLevelModel
-        The model, passed in to determine its type
-        to be used in page title & headings.
-
-    Returns
-    -------
-    (HTML page title, heading, sub-heading) : Tuple[str, str, str]
-        If title is user-supplied, then subheading is empty string.
-
-    """
-    model_type = _return_model_type(model)
-
-    if title:
-        return title, title, model_type
-
-    contrasts_names = sorted(contrasts.keys())
-    contrasts_text = ", ".join(contrasts_names)
-
-    page_title = f"Report: {model_type} for {contrasts_text}"
-    page_heading_1 = f"Statistical Report for {contrasts_text}"
-    page_heading_2 = model_type
-    return page_title, page_heading_1, page_heading_2
-
-
-def make_stat_maps(model, contrasts, output_type="z_score"):
-    """Given a model and contrasts, return the corresponding z-maps.
-
-    Parameters
-    ----------
-    model : FirstLevelModel or SecondLevelModel object
-        Must have a fitted design matrix(ces).
-
-    contrasts : Dict[str, ndarray or str]
-        Dict of contrasts for a first or second level model.
-        Corresponds to the contrast_def for the FirstLevelModel
-        (nilearn.glm.first_level.FirstLevelModel.compute_contrast)
-        & second_level_contrast for a SecondLevelModel
-        (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
-
-    output_type : :obj:`str`, default='z_score'
-        The type of statistical map to retain from the contrast.
-
-        .. versionadded:: 0.9.2
-
-    Returns
-    -------
-    statistical_maps : Dict[str, niimg]
-        Dict of statistical z-maps keyed to contrast names/titles.
-
-    See Also
-    --------
-    nilearn.glm.first_level.FirstLevelModel.compute_contrast
-    nilearn.glm.second_level.SecondLevelModel.compute_contrast
-
-    """
-    statistical_maps = {
-        contrast_id: model.compute_contrast(
-            contrast_val,
-            output_type=output_type,
-        )
-        for contrast_id, contrast_val in contrasts.items()
-    }
-    return statistical_maps
 
 
 def _dmtx_to_svg_url(design_matrices):
@@ -710,7 +596,7 @@ def _make_stat_maps_contrast_clusters(
         component_text_ = string.Template(components_template_text)
 
         # Only use threshold_stats_img to adjust the threshold
-        # that we will pass to _clustering_params_to_dataframe
+        # that we will pass to clustering_params_to_dataframe
         # and _stat_map_to_svg
         # Necessary to avoid :
         # https://github.com/nilearn/nilearn/issues/4192
@@ -722,7 +608,7 @@ def _make_stat_maps_contrast_clusters(
             height_control=height_control,
         )
 
-        table_details = _clustering_params_to_dataframe(
+        table_details = clustering_params_to_dataframe(
             threshold,
             cluster_threshold,
             min_distance,
@@ -770,75 +656,6 @@ def _make_stat_maps_contrast_clusters(
         component_text_ = component_text_.safe_substitute(**components_values)
         all_components.append(component_text_)
     return all_components
-
-
-def _clustering_params_to_dataframe(
-    threshold,
-    cluster_threshold,
-    min_distance,
-    height_control,
-    alpha,
-):
-    """Create a Pandas DataFrame from the supplied arguments.
-
-    For use as part of the Cluster Table.
-
-    Parameters
-    ----------
-    threshold : float
-        Cluster forming threshold in same scale as `stat_img` (either a
-        p-value or z-scale value).
-
-    cluster_threshold : int or None
-        Cluster size threshold, in voxels.
-
-    min_distance : float, default=8
-        For display purposes only.
-        Minimum distance between subpeaks in mm.
-
-    height_control : string or None
-        False positive control meaning of cluster forming
-        threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or None
-
-    alpha : float
-        Number controlling the thresholding (either a p-value or q-value).
-        Its actual meaning depends on the height_control parameter.
-        This function translates alpha to a z-scale threshold.
-
-    Returns
-    -------
-    table_details : Pandas.DataFrame
-        Dataframe with clustering parameters.
-
-    """
-    table_details = OrderedDict()
-    threshold = np.around(threshold, 3)
-    if height_control:
-        table_details.update({"Height control": height_control})
-        # HTMLDocument.get_iframe() invoked in Python2 Jupyter Notebooks
-        # mishandles certain unicode characters
-        # & raises error due to greek alpha symbol.
-        # This is simpler than overloading the class using inheritance,
-        # especially given limited Python2 use at time of release.
-        if alpha < 0.001:
-            alpha = f"{Decimal(alpha):.2E}"
-        if os.sys.version_info.major == 2:
-            table_details.update({"alpha": alpha})
-        else:
-            table_details.update({"\u03b1": alpha})
-        table_details.update({"Threshold (computed)": threshold})
-    else:
-        table_details.update({"Height control": "None"})
-        table_details.update({"Threshold Z": threshold})
-    table_details.update(
-        {"Cluster size threshold (voxels)": cluster_threshold}
-    )
-    table_details.update({"Minimum distance (mm)": min_distance})
-    table_details = pd.DataFrame.from_dict(
-        table_details,
-        orient="index",
-    )
-    return table_details
 
 
 @fill_doc
@@ -1066,7 +883,7 @@ def _make_surface_glm_report(
 
         body = tpl.substitute(
             css=css,
-            title=f"Statistical Report - {_return_model_type(model)}{title}",
+            title=f"Statistical Report - {return_model_type(model)}{title}",
             docstring=snippet,
             warning_messages=_render_warnings_partial(warning_messages),
             design_matrices_dict=None,
@@ -1090,7 +907,7 @@ def _make_surface_glm_report(
                 "head_css": head_css,
                 "version": __version__,
                 "page_title": (
-                    f"Statistical Report - {_return_model_type(model)}{title}"
+                    f"Statistical Report - {return_model_type(model)}{title}"
                 ),
             },
         )
@@ -1111,7 +928,7 @@ def _make_surface_glm_report(
     contrasts = coerce_to_dict(contrasts)
     contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
-    cluster_table_details = _clustering_params_to_dataframe(
+    cluster_table_details = clustering_params_to_dataframe(
         threshold,
         cluster_threshold,
         None,
@@ -1164,7 +981,7 @@ def _make_surface_glm_report(
 
     body = tpl.substitute(
         css=css,
-        title=f"Statistical Report - {_return_model_type(model)}{title}",
+        title=f"Statistical Report - {return_model_type(model)}{title}",
         docstring=snippet,
         warning_messages=_render_warnings_partial(warning_messages),
         design_matrices_dict=design_matrices_dict,
@@ -1188,7 +1005,7 @@ def _make_surface_glm_report(
             "head_css": head_css,
             "version": __version__,
             "page_title": (
-                f"Statistical Report - {_return_model_type(model)}{title}"
+                f"Statistical Report - {return_model_type(model)}{title}"
             ),
         },
     )
@@ -1236,10 +1053,3 @@ def _return_contrasts_dict(design_matrices, contrasts):
             contrasts_dict[contrast_name] = url_contrast_plot_svg
 
     return contrasts_dict
-
-
-def _return_model_type(model):
-    if isinstance(model, FirstLevelModel):
-        return "First Level Model"
-    elif isinstance(model, SecondLevelModel):
-        return "Second Level Model"

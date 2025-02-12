@@ -147,6 +147,8 @@
 
 .. _Johannes Wiesner: https://github.com/JohannesWiesner
 
+.. _John T. Johnson: https://github.com/JohnAtl
+
 .. _Jon Haitz Legarreta Gorrono: https://github.com/jhlegarreta
 
 .. _Jona Sassenhagen: https://github.com/jona-sassenhagen
