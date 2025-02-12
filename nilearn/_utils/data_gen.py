@@ -12,6 +12,7 @@ import pandas as pd
 import scipy.signal
 from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
+from sklearn.utils import check_random_state
 
 from nilearn import datasets, image, maskers, masking
 from nilearn._utils import as_ndarray, logger
@@ -922,6 +923,7 @@ def create_fake_bids_dataset(
     confounds_tag="desc-confounds_timeseries",
     random_state=0,
     entities=None,
+    n_voxels=4,
     n_vertices=0,
     spaces=None,
 ):
@@ -982,6 +984,10 @@ def create_fake_bids_dataset(
         with values '1' for some files and '1' for others,
         you would pass: ``entities={"echo": ['1', '2']}``.
 
+
+    n_voxels : :obj:`int`, default=4
+        number of voxels along a given axis in the generated image.
+
     n_vertices : :obj:`int`, default = 0
         Number of vertices for surface data.
         If n_vertices == 0 only dummy gifti files will be generated.
@@ -1001,6 +1007,8 @@ def create_fake_bids_dataset(
         Creates a directory with dummy files.
 
     """
+    rand_gen = check_random_state(random_state)
+
     if base_dir is None:
         base_dir = Path()
     if tasks is None:
@@ -1009,9 +1017,6 @@ def create_fake_bids_dataset(
         n_runs = [1, 3]
     if spaces is None:
         spaces = ("MNI", "T1w")
-    n_voxels = 4
-
-    rand_gen = np.random.default_rng(random_state)
 
     bids_dataset_dir = "bids_dataset"
     bids_path = Path(base_dir) / bids_dataset_dir
