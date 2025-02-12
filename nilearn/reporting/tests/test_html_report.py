@@ -27,10 +27,14 @@ from nilearn.maskers import (
 # warnings
 
 
-def _check_html(html_view):
+def _check_html(html_view, reports_requested=True, is_fit=True):
     """Check the presence of some expected code in the html viewer."""
-    assert "<th>Parameter</th>" in str(html_view)
-    assert "data:image/svg+xml;base64," in str(html_view)
+    if reports_requested and is_fit:
+        assert "<th>Parameter</th>" in str(html_view)
+    if "Surface" in str(html_view):
+        assert "data:image/png;base64," in str(html_view)
+    else:
+        assert "data:image/svg+xml;base64," in str(html_view)
     assert html_view._repr_html_() == html_view.body
 
 
@@ -481,14 +485,20 @@ def test_4d_reports(mask, affine_eye):
     _check_html(html)
 
 
-def test_overlaid_report(img_3d_mni):
-    pytest.importorskip("matplotlib")
+def test_overlaid_report(img_fmri):
+    """Check empty report generated before fit and with image after."""
+    masker = NiftiMasker(
+        mask_strategy="whole-brain-template",
+        mask_args={"threshold": 0.0},
+        target_affine=np.eye(3) * 3,
+    )
+    html = masker.generate_report()
 
-    masker = NiftiMasker(target_affine=np.eye(3) * 8)
-    html = masker.generate_report()
     assert "Make sure to run `fit`" in str(html)
-    masker.fit(img_3d_mni)
+
+    masker.fit(img_fmri)
     html = masker.generate_report()
+
     assert '<div class="overlay">' in str(html)
 
 
@@ -575,7 +585,7 @@ def test_surface_masker_minimal_report_no_fit(
     masker = SurfaceMasker(mask_img=mask, reports=reports)
     report = masker.generate_report()
 
-    _check_html(report)
+    _check_html(report, reports_requested=reports, is_fit=False)
     assert "Make sure to run `fit`" in str(report)
 
 
@@ -590,7 +600,7 @@ def test_surface_masker_minimal_report_fit(
     masker.fit_transform(surf_img_1d)
     report = masker.generate_report()
 
-    _check_html(report)
+    _check_html(report, reports_requested=reports)
     assert '<div class="image">' in str(report)
     if not reports:
         assert "Make sure to run `fit`" in str(report)
@@ -603,7 +613,7 @@ def test_surface_masker_report_no_report(surf_img_1d):
     masker.fit_transform(surf_img_1d)
     report = masker.generate_report()
 
-    _check_html(report)
+    _check_html(report, reports_requested=False)
     assert "No visual outputs created." in str(report)
     assert "Empty Report" in str(report)
 
@@ -616,7 +626,7 @@ def test_surface_label_masker_report_unfitted(
     masker = SurfaceLabelsMasker(surf_label_img, label_names, reports=reports)
     report = masker.generate_report()
 
-    _check_html(report)
+    _check_html(report, reports_requested=reports, is_fit=False)
     assert "Make sure to run `fit`" in str(report)
 
 
@@ -629,11 +639,13 @@ def test_surface_label_masker_report(surf_label_img, surf_img_1d, tmp_path):
     report.save_as_html(tmp_path / "surface_label_masker.html")
 
 
-def test_surface_label_masker_report_no_report(surf_label_img):
+def test_surface_label_masker_report_no_report(surf_label_img, surf_img_1d):
     """Check content of no report."""
     masker = SurfaceLabelsMasker(surf_label_img, reports=False)
+    masker = masker.fit()
+    masker.transform(surf_img_1d)
     report = masker.generate_report()
 
-    _check_html(report)
+    _check_html(report, reports_requested=False)
     assert "No visual outputs created." in str(report)
     assert "Empty Report" in str(report)

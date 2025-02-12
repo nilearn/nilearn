@@ -60,14 +60,16 @@ masker = NiftiSpheresMasker(
     radius=8,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
     memory="nilearn_cache",
     memory_level=1,
     verbose=2,
-    clean__butterworth__padtype="even",  # kwarg to modify Butterworth filter
+    clean_args={
+        "butterworth__padtype": "even"
+    },  # kwarg to modify Butterworth filter
 )
 
 # Additionally, we pass confound information to ensure our extracted
@@ -205,7 +207,7 @@ spheres_masker = NiftiSpheresMasker(
     radius=5.0,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
@@ -342,7 +344,7 @@ spheres_masker = NiftiSpheresMasker(
     radius=4.5,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,

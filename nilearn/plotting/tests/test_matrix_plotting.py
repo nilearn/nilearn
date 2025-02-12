@@ -1,3 +1,5 @@
+import re
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -59,7 +61,10 @@ def test_sanitize_labels():
 
     labs = ["foo", "bar"]
     with pytest.raises(
-        ValueError, match="Length of labels unequal to length of matrix."
+        ValueError,
+        match=re.escape(
+            "Length of labels (2) unequal to length of matrix (6)."
+        ),
     ):
         _sanitize_labels((6, 6), labs)
     for lab in [labs, np.array(labs)]:

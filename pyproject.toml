@@ -60,7 +60,8 @@ doc = [
     "sphinx-design>=0.6.1",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
-    "sphinxext-opengraph>=0.9.1"
+    "sphinxext-opengraph>=0.9.1",
+    "sphinxcontrib-mermaid>=1.0.0"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
@@ -119,6 +120,47 @@ packages = ["nilearn"]
 [tool.hatch.version]
 source = "vcs"
 
+[tool.mypy]
+allow_redefinition = false
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+exclude = [
+    '.*/tests/test_.*',
+    'doc/.*',
+    'examples/.*',
+    'maint_tools/.*',
+    'nilearn_cache/.*',
+    'nilearn/_version.py'
+]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = [
+    "nilearn.externals.*",
+    "nilearn._version"
+]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = [
+    "IPython.*",
+    "joblib.*",
+    "kaleido",
+    "matplotlib.*",
+    "memory_profiler.*",
+    "mpl_toolkits.*",
+    "nibabel.*",
+    "nilearn._version",
+    "packaging.*",
+    "plotly.*",
+    "pytest.*",
+    "rich.*",
+    "scipy.*",
+    "sklearn.*",
+    "statsmodels.*",
+    "svg.*"
+]
+
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
@@ -173,8 +215,6 @@ ignore = [
     "E111",
     "E114",
     "E117",
-    "ISC001",
-    "ISC002",
     "Q000",
     "Q001",
     "Q002",
@@ -211,13 +251,13 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 25
+max-complexity = 22
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
-"**/{tests}/**/test_*" = ["D100", "E402"]
 "__init__.py" = ["D104", "E402"]
+"nilearn/**/tests/test_*" = ["D100"]
 "nilearn/_utils/*" = ["B028"]  # 7 errors to fix
 "nilearn/connectome/*" = ["B028"]  # 5 errors to fix
 "nilearn/connectome/**/{tests}/*" = ["D103"]  # 35 errors to fix
@@ -231,13 +271,6 @@ max-complexity = 25
 "nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
 "nilearn/interfaces/**/{tests}/*" = ["D103"]  # 75 errors to fix
 "nilearn/maskers/*" = ["B028"]  # 17 errors to fix
-"nilearn/maskers/**/test_base_masker.py" = ["D103"]  # 2 errors to fix
-"nilearn/maskers/**/test_multi_nifti_labels_masker.py" = ["D103"]  # 2 errors to fix
-"nilearn/maskers/**/test_multi_nifti_masker.py" = ["D103"]  # 14 errors to fix
-"nilearn/maskers/**/test_nifti_labels_masker.py" = ["D103"]  # 4 errors to fix
-"nilearn/maskers/**/test_nifti_masker.py" = ["D103"]  # 5 errors to fix
-"nilearn/maskers/**/test_nifti_spheres_masker.py" = ["D103"]  # 9 errors to fix
-"nilearn/maskers/**/test_surface_masker.py" = ["D103"]  # 10 errors to fix
 "nilearn/mass_univariate/*" = ["B028"]  # 4 errors to fix
 "nilearn/plotting/*" = ["B028"]  # 18 errors to fix
 "nilearn/plotting/**/{tests}/*" = ["D103"]  # 123 errors to fix
@@ -245,7 +278,6 @@ max-complexity = 25
 "nilearn/reporting/**/{tests}/*" = ["D103"]  # 27 errors to fix
 "nilearn/signal.py" = ["B028"]  # 11 errors to fix
 "nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
-"nilearn/tests/*" = ["D103"]  # 31 errors to fix
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -254,8 +286,8 @@ convention = "numpy"
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 26
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
-max-branches = 27
+max-branches = 24
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 108
+max-statements = 93

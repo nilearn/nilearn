@@ -37,7 +37,13 @@ def demo_plot_roi(**kwargs):
     "display_mode,cut_coords", [("ortho", None), ("z", 3), ("x", [2.0, 10])]
 )
 def test_plot_roi_view_types(
-    pyplot, view_type, black_bg, threshold, alpha, display_mode, cut_coords
+    matplotlib_pyplot,
+    view_type,
+    black_bg,
+    threshold,
+    alpha,
+    display_mode,
+    cut_coords,
 ):
     """Smoke-test for plot_roi.
 
@@ -58,7 +64,7 @@ def test_plot_roi_view_types(
     )
 
 
-def test_plot_roi_no_int_64_warning(pyplot, recwarn):
+def test_plot_roi_no_int_64_warning(matplotlib_pyplot, recwarn):
     """Make sure that no int64 warning is thrown."""
     demo_plot_roi()
     for _ in range(len(recwarn)):
@@ -67,21 +73,20 @@ def test_plot_roi_no_int_64_warning(pyplot, recwarn):
             assert "image contains 64-bit ints" not in str(x.message)
 
 
-def test_plot_roi_view_type_error(pyplot):
+def test_plot_roi_view_type_error(matplotlib_pyplot):
     """Test error message for invalid view_type."""
     with pytest.raises(ValueError, match="Unknown view type:"):
         demo_plot_roi(view_type="flled")
 
 
-def test_demo_plot_roi_output_file(pyplot, tmp_path):
+def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
     """Tests plot_roi file saving capabilities."""
     filename = tmp_path / "test.png"
-    with filename.open("wb") as fp:
-        out = demo_plot_roi(output_file=fp)
+    out = demo_plot_roi(output_file=filename)
     assert out is None
 
 
-def test_cmap_with_one_level(pyplot, shape_3d_default, affine_eye):
+def test_cmap_with_one_level(matplotlib_pyplot, shape_3d_default, affine_eye):
     """Test we can handle cmap with only 1 level.
 
     Regression test for

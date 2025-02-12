@@ -51,7 +51,7 @@ masker = NiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
 ).fit()
 
 # %%
@@ -59,16 +59,16 @@ masker = NiftiMapsMasker(
 children = []
 pooled_subjects = []
 groups = []  # child or adult
-for func_file, confound_file, phenotypic in zip(
+for func_file, confound_file, phenotype in zip(
     development_dataset.func,
     development_dataset.confounds,
-    development_dataset.phenotypic,
+    development_dataset.phenotypic["Child_Adult"],
 ):
     time_series = masker.transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
-    if phenotypic["Child_Adult"] == "child":
+    if phenotype == "child":
         children.append(time_series)
-    groups.append(phenotypic["Child_Adult"])
+    groups.append(phenotype)
 
 print(f"Data has {len(children)} children.")
 

@@ -24,7 +24,8 @@ More specifically:
 # %%
 import numpy as np
 
-from nilearn import datasets, plotting
+from nilearn import plotting
+from nilearn.datasets import fetch_adhd
 from nilearn.glm.first_level import (
     FirstLevelModel,
     make_first_level_design_matrix,
@@ -35,7 +36,7 @@ from nilearn.maskers import NiftiSpheresMasker
 # Prepare data and analysis parameters
 # ------------------------------------
 # Prepare the data.
-adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+adhd_dataset = fetch_adhd(n_subjects=1)
 
 # Prepare timing
 t_r = 2.0

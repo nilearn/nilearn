@@ -55,7 +55,10 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
 )
-from nilearn._utils.param_validation import check_feature_screening
+from nilearn._utils.param_validation import (
+    check_feature_screening,
+    check_params,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
@@ -349,7 +352,6 @@ def _parallel_fit(
     train,
     test,
     param_grid,
-    is_classification,
     selector,
     scorer,
     mask_img,
@@ -404,12 +406,7 @@ def _parallel_fit(
         estimator = clone(estimator).set_params(**params)
         estimator.fit(X_train, y_train)
 
-        if is_classification:
-            score = scorer(estimator, X_test, y_test)
-            if hasattr(estimator, "coef_") and np.all(estimator.coef_ == 0):
-                score = 0
-        else:  # regression
-            score = scorer(estimator, X_test, y_test)
+        score = scorer(estimator, X_test, y_test)
 
         # Store best parameters and estimator coefficients
         if (best_score is None) or (score >= best_score):
@@ -622,6 +619,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
 
+    @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
 
@@ -637,95 +635,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Target variable to predict. Must have exactly as many elements as
             3D images in niimg.
 
-        groups : None
-            Group labels for the samples used while splitting the dataset into
-            train/test set. Default None.
+        %(groups)s
 
-            Note that this parameter must be specified in some scikit-learn
-            cross-validation generators to calculate the number of splits, e.g.
-            sklearn.model_selection.LeaveOneGroupOut or
-            sklearn.model_selection.LeavePGroupsOut.
+        %(base_decoder_fit_attributes)s
 
-            For more details see
-            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
-
-        Attributes
-        ----------
-        masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
-            The masker used to mask the data.
-
-        mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
-            Mask computed by the masker object.
-
-        classes_ : numpy.ndarray
-            Classes to predict. For classification only.
-
-        screening_percentile_ : float
-            Screening percentile corrected according to volume of mask,
-            relative to the volume of standard brain.
-
-        coef_ : numpy.ndarray, shape=(n_classes, n_features)
-            Contains the mean of the models weight vector across
-            fold for each class. Returns None for Dummy estimators.
-
-        coef_img_ : dict of Nifti1Image
-            Dictionary containing `coef_` with class names as keys,
-            and `coef_` transformed in Nifti1Images as values. In the case of
-            a regression, it contains a single Nifti1Image at the key 'beta'.
-            Ignored if Dummy estimators are provided.
-
-        intercept_ : ndarray, shape (nclasses,)
-            Intercept (a.k.a. bias) added to the decision function.
-            Ignored if Dummy estimators are provided.
-
-        cv_ : list of pairs of lists
-            List of the (n_folds,) folds. For the corresponding fold,
-            each pair is composed of two lists of indices,
-            one for the train samples and one for the test samples.
-
-        std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
-            Contains the standard deviation of the models weight vector across
-            fold for each class. Note that folds are not independent, see
-            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
-            Ignored if Dummy estimators are provided.
-
-        std_coef_img_ : dict of Nifti1Image
-            Dictionary containing `std_coef_` with class names as keys,
-            and `coef_` transformed in Nifti1Image as values. In the case of
-            a regression, it contains a single Nifti1Image at the key 'beta'.
-            Ignored if Dummy estimators are provided.
-
-        cv_params_ : dict of lists
-            Best point in the parameter grid for each tested fold
-            in the inner cross validation loop. The grid is empty
-            when Dummy estimators are provided. Note: if the estimator used its
-            built-in cross-validation, this will include an additional key for
-            the single best value estimated by the built-in cross-validation
-            ('best_C' for LogisticRegressionCV and 'best_alpha' for
-            RidgeCV/RidgeClassifierCV/LassoCV), in addition to the input list
-            of values.
-
-        scorer_ : function
-            Scorer function used on the held out data to choose the best
-            parameters for the model.
-
-        cv_scores_ : dict, (classes, n_folds)
-            Scores (misclassification) for each parameter, and on each fold
-
-        n_outputs_ : int
-            Number of outputs (column-wise)
-
-        dummy_output_ : ndarray, shape=(n_classes, 2) \
-                       or shape=(1, 1) for regression
-            Contains dummy estimator attributes after class predictions
-            using strategies of :class:`sklearn.dummy.DummyClassifier`
-            (class_prior)
-            and  :class:`sklearn.dummy.DummyRegressor` (constant)
-            from scikit-learn.
-            This attribute is necessary for estimating class predictions
-            after fit.
-            Returns None if non-dummy estimators are provided.
         """
+        check_params(self.__dict__)
         self.estimator = _check_estimator(self.estimator)
         self.memory_ = check_memory(self.memory, self.verbose)
 
@@ -811,7 +726,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 train=train,
                 test=test,
                 param_grid=self.param_grid,
-                is_classification=self.is_classification,
                 selector=selector,
                 scorer=self.scorer_,
                 mask_img=self.mask_img_,
@@ -867,6 +781,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             if self.is_classification and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "coef_") and hasattr(self, "masker_")
+
     def score(self, X, y, *args):
         """Compute the prediction score using the scoring \
         metric defined by the scoring attribute.
@@ -890,8 +807,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Prediction score.
 
         """
-        check_is_fitted(self, "coef_")
-        check_is_fitted(self, "masker_")
+        check_is_fitted(self)
         return self.scorer_(self, X, y, *args)
 
     def decision_function(self, X):
@@ -910,6 +826,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         y_pred : :class:`numpy.ndarray`, shape (n_samples,)
             Predicted class label per sample.
         """
+        check_is_fitted(self)
         # for backwards compatibility - apply masker transform if X is
         # niimg-like or a list of strings
         if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
@@ -945,8 +862,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             case, confidence score for self.classes_[1] where >0 means this
             class would be predicted.
         """
-        check_is_fitted(self, "coef_")
-        check_is_fitted(self, "masker_")
+        check_is_fitted(self)
 
         n_samples = np.shape(X)[-1]
 
@@ -1267,8 +1183,6 @@ class Decoder(ClassifierMixin, _BaseDecoder):
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
-    _estimator_type = "classifier"
-
     def __init__(
         self,
         estimator="svc",
@@ -1447,8 +1361,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
     nilearn.decoding.SpaceNetClassifier: Graph-Net and TV-L1 priors/penalties
     """
 
-    _estimator_type = "regressor"
-
     def __init__(
         self,
         estimator="svr",
@@ -1470,8 +1382,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         n_jobs=1,
         verbose=0,
     ):
-        self.classes_ = ["beta"]
-
         super().__init__(
             estimator=estimator,
             mask=mask,
@@ -1517,6 +1427,31 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             return tags
         tags.estimator_type = "regressor"
         return tags
+
+    @fill_doc
+    def fit(self, X, y, groups=None):
+        """Fit the decoder (learner).
+
+        Parameters
+        ----------
+        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
+            See :ref:`extracting_data`.
+            Data on which model is to be fitted. If this is a list,
+            the affine is considered the same for all.
+
+        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
+            The dependent variable (age, sex, IQ, yes/no, etc.).
+            Target variable to predict. Must have exactly as many elements as
+            3D images in niimg.
+
+        %(groups)s
+
+        %(base_decoder_fit_attributes)s
+
+        """
+        check_params(self.__dict__)
+        self.classes_ = ["beta"]
+        super().fit(X, y, groups=groups)
 
 
 @fill_doc
@@ -1649,11 +1584,6 @@ class FREMRegressor(_BaseDecoder):
         n_jobs=1,
         verbose=0,
     ):
-        self.classes_ = ["beta"]
-
-        if isinstance(cv, int):
-            cv = ShuffleSplit(cv, random_state=0)
-
         super().__init__(
             estimator=estimator,
             mask=mask,
@@ -1676,6 +1606,33 @@ class FREMRegressor(_BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
+
+    @fill_doc
+    def fit(self, X, y, groups=None):
+        """Fit the decoder (learner).
+
+        Parameters
+        ----------
+        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
+            See :ref:`extracting_data`.
+            Data on which model is to be fitted. If this is a list,
+            the affine is considered the same for all.
+
+        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
+            The dependent variable (age, sex, IQ, yes/no, etc.).
+            Target variable to predict. Must have exactly as many elements as
+            3D images in niimg.
+
+        %(groups)s
+
+        %(base_decoder_fit_attributes)s
+
+        """
+        check_params(self.__dict__)
+        self.classes_ = ["beta"]
+        if isinstance(self.cv, int):
+            self.cv = ShuffleSplit(self.cv, random_state=0)
+        super().fit(X, y, groups=groups)
 
 
 @fill_doc
@@ -1807,9 +1764,6 @@ class FREMClassifier(_BaseDecoder):
         n_jobs=1,
         verbose=0,
     ):
-        if isinstance(cv, int):
-            cv = StratifiedShuffleSplit(cv, random_state=0)
-
         super().__init__(
             estimator=estimator,
             mask=mask,
@@ -1832,3 +1786,32 @@ class FREMClassifier(_BaseDecoder):
             high_pass=high_pass,
             t_r=t_r,
         )
+
+    @fill_doc
+    def fit(self, X, y, groups=None):
+        """Fit the decoder (learner).
+
+        Parameters
+        ----------
+        X : :obj:`list` of Niimg-like \
+            or :obj:`~nilearn.surface.SurfaceImage` objects
+            See :ref:`extracting_data`.
+            Data on which model is to be fitted.
+            If this is a list,
+            the affine is considered the same for all.
+
+        y : numpy.ndarray of shape=(n_samples) \
+            or :obj:`list` of length n_samples
+            The dependent variable (age, sex, IQ, yes/no, etc.).
+            Target variable to predict. Must have exactly as many elements as
+            3D images in niimg.
+
+        %(groups)s
+
+        %(base_decoder_fit_attributes)s
+
+        """
+        check_params(self.__dict__)
+        if isinstance(self.cv, int):
+            self.cv = StratifiedShuffleSplit(self.cv, random_state=0)
+        super().fit(X, y, groups=groups)

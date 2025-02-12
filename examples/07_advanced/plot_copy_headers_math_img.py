@@ -14,9 +14,9 @@ depending on the software used.
 
 # %%
 # Let's fetch an example :term:`fMRI` dataset
-from nilearn import datasets
+from nilearn.datasets import fetch_adhd
 
-dataset = datasets.fetch_adhd(n_subjects=2)
+dataset = fetch_adhd(n_subjects=2)
 
 # %%
 # Now let's look at the header of one of these images

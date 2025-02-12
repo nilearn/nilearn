@@ -5,13 +5,14 @@ from __future__ import annotations
 import warnings
 
 import numpy as np
-from joblib import Memory
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import signal
 from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.param_validation import check_params
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -64,10 +65,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         default="inferno"
         Only relevant for the report figures.
 
-    clean_args : :obj:`dict` or None, default=None
-        Keyword arguments to be passed
-        to :func:`nilearn.signal.clean`
-        called within the masker.
+    %(clean_args)s
 
     Attributes
     ----------
@@ -135,13 +133,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
             and self.output_dimension_ is not None
         )
 
-    def _check_fitted(self):
-        if not self.__sklearn_is_fitted__():
-            raise ValueError(
-                "This masker has not been fitted.\n"
-                "Call fit before calling transform."
-            )
-
     def _fit_mask_img(self, img):
         """Get mask passed during init or compute one from input image.
 
@@ -197,6 +188,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         -------
         SurfaceMasker object
         """
+        check_params(self.__dict__)
         del y
         self._fit_mask_img(img)
         assert self.mask_img_ is not None
@@ -255,6 +247,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
             Signal for each element.
             shape: (n samples, total number of vertices)
         """
+        check_is_fitted(self)
+
         if self.smoothing_fwhm is not None:
             warnings.warn(
                 "Parameter smoothing_fwhm "
@@ -275,8 +269,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
             self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
-        self._check_fitted()
-
         if not isinstance(img, list):
             img = [img]
         img = concat_imgs(img)
@@ -292,9 +284,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = img.data.parts[part_name][mask].T
-
-        if self.memory is None:
-            self.memory = Memory(location=None)
 
         # signal cleaning here
         output = cache(
@@ -372,7 +361,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres.
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         if signals.ndim == 1:
             signals = np.array([signals])
@@ -427,7 +416,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         # avoid circular import
         import matplotlib.pyplot as plt
 
-        from nilearn.reporting.utils import figure_to_svg_base64
+        from nilearn.reporting.utils import figure_to_png_base64
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
@@ -441,7 +430,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         plt.close()
 
-        init_display = figure_to_svg_base64(fig)
+        init_display = figure_to_png_base64(fig)
 
         return [init_display]
 

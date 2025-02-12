@@ -11,7 +11,10 @@ import numpy as np
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.plotting import cm
-from nilearn.plotting._utils import check_surface_plotting_inputs
+from nilearn.plotting._utils import (
+    check_surface_plotting_inputs,
+    sanitize_hemi_for_surface_image,
+)
 from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
@@ -129,8 +132,8 @@ def _one_mesh_info(
         vmax=vmax,
         vmin=vmin,
     )
-    info = {"inflated_left": mesh_to_plotly(surf_mesh)}
-    info["vertexcolor_left"] = get_vertexcolor(
+    info = {"inflated_both": mesh_to_plotly(surf_mesh)}
+    info["vertexcolor_both"] = get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
@@ -734,26 +737,7 @@ def view_surf(
     --------
     nilearn.plotting.view_img_on_surf: Surface plot from a 3D statistical map.
     """
-    if hemi is None and (
-        isinstance(surf_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
-    ):
-        hemi = "left"
-    elif (
-        hemi is not None
-        and not isinstance(surf_map, SurfaceImage)
-        and not isinstance(surf_mesh, PolyMesh)
-    ):
-        warn(
-            category=UserWarning,
-            message=(
-                f"{hemi=} was passed "
-                f"with {type(surf_map)=} and {type(surf_mesh)=}.\n"
-                "This value will be ignored as it is only used when "
-                "'roi_map' is a SurfaceImage instance "
-                "and  / or 'surf_mesh' is a PolyMesh instance."
-            ),
-            stacklevel=2,
-        )
+    hemi = sanitize_hemi_for_surface_image(hemi, surf_map, surf_mesh)
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
     )

@@ -2,13 +2,13 @@
 
 import itertools
 
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
+from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._utils import fill_doc
+from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
-
-from .._utils import fill_doc
-from .._utils.niimg_conversions import iter_check_niimg
-from .nifti_labels_masker import NiftiLabelsMasker
+from nilearn.maskers.nifti_labels_masker import NiftiLabelsMasker
 
 
 @fill_doc
@@ -25,7 +25,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     Parameters
     ----------
-    labels_img : Niimg-like object
+    labels_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
@@ -83,6 +83,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
+    %(clean_args)s
+
     %(masker_kwargs)s
 
     Attributes
@@ -109,7 +111,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     def __init__(
         self,
-        labels_img,
+        labels_img=None,
         labels=None,
         background_label=0,
         mask_img=None,
@@ -129,10 +131,9 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         strategy="mean",
         reports=True,
         n_jobs=1,
+        clean_args=None,
         **kwargs,
     ):
-        if memory is None:
-            memory = Memory(location=None, verbose=0)
         self.n_jobs = n_jobs
         super().__init__(
             labels_img,
@@ -154,6 +155,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             verbose=verbose,
             strategy=strategy,
             reports=reports,
+            clean_args=clean_args,
             **kwargs,
         )
 
@@ -204,7 +206,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
-        self._check_fitted()
+        check_is_fitted(self)
         niimg_iter = iter_check_niimg(
             imgs_list,
             ensure_ndim=None,
@@ -245,7 +247,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             shape: list of (number of scans, number of labels)
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
         if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
             return self.transform_single_imgs(imgs)
         return self.transform_imgs(

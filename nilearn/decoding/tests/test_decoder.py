@@ -10,6 +10,8 @@ Order of tests from top to bottom:
 
 """
 
+# ruff: noqa: ARG001
+
 # Author: Andres Hoyos-Idrobo
 #         Binh Nguyen
 #         Thomas Bazeiile
@@ -23,10 +25,11 @@ import numpy as np
 import pytest
 from nibabel import save
 from numpy.testing import assert_array_almost_equal
+from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import ConvergenceWarning, NotFittedError
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -40,8 +43,13 @@ from sklearn.metrics import (
     r2_score,
     roc_auc_score,
 )
-from sklearn.model_selection import KFold, LeaveOneGroupOut, ParameterGrid
-from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import (
+    KFold,
+    LeaveOneGroupOut,
+    ParameterGrid,
+    StratifiedKFold,
+)
+from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
 from nilearn._utils.class_inspect import check_estimator
@@ -51,11 +59,14 @@ from nilearn._utils.param_validation import (
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _rng
-from nilearn.decoding.decoder import (
+from nilearn.decoding import (
     Decoder,
     DecoderRegressor,
     FREMClassifier,
     FREMRegressor,
+)
+from nilearn.decoding.decoder import (
+    SUPPORTED_ESTIMATORS,
     _BaseDecoder,
     _check_estimator,
     _check_param_grid,
@@ -71,6 +82,7 @@ ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
+    "check_no_attributes_set_in_init",
 ]
 
 
@@ -78,13 +90,10 @@ extra_valid_checks = [
     "estimator, check, name",
     check_estimator(
         estimator=[DecoderRegressor()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_decoder_regressor(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -94,14 +103,11 @@ def test_check_estimator_decoder_regressor(estimator, check, name):  # noqa: ARG
     "estimator, check, name",
     check_estimator(
         estimator=[DecoderRegressor()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
-def test_check_estimator_invalid_decoder_regressor(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid_decoder_regressor(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -113,7 +119,7 @@ def test_check_estimator_invalid_decoder_regressor(estimator, check, name):  # n
         extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_frem_regressor(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -127,7 +133,7 @@ def test_check_estimator_frem_regressor(estimator, check, name):  # noqa: ARG001
         extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid_frem_regressor(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -136,14 +142,10 @@ def test_check_estimator_invalid_frem_regressor(estimator, check, name):  # noqa
     "estimator, check, name",
     check_estimator(
         estimator=[Decoder()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_decoder(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -153,15 +155,11 @@ def test_check_estimator_decoder(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[Decoder()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
-def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid_decoder(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -169,15 +167,10 @@ def test_check_estimator_invalid_decoder(estimator, check, name):  # noqa: ARG00
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[_BaseDecoder()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
-        ],
+        estimator=[_BaseDecoder()], extra_valid_checks=extra_valid_checks
     ),
 )
-def test_check_estimator_base_decoder(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_base_decoder(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -187,15 +180,11 @@ def test_check_estimator_base_decoder(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[_BaseDecoder()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-            "check_parameters_default_constructible",
-        ],
+        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
-def test_check_estimator_invalid_base_decoder(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid_base_decoder(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -204,13 +193,10 @@ def test_check_estimator_invalid_base_decoder(estimator, check, name):  # noqa: 
     "estimator, check, name",
     check_estimator(
         estimator=[FREMClassifier()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-        ],
+        extra_valid_checks=extra_valid_checks,
     ),
 )
-def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_frem_classifier(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -220,14 +206,11 @@ def test_check_estimator_frem_classifier(estimator, check, name):  # noqa: ARG00
     "estimator, check, name",
     check_estimator(
         estimator=[FREMClassifier()],
-        extra_valid_checks=[
-            *extra_valid_checks,
-            "check_no_attributes_set_in_init",
-        ],
+        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
-def test_check_estimator_invalid_frem_classifier(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_invalid_frem_classifier(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -558,7 +541,6 @@ def test_parallel_fit(rand_x_y):
                     train=train,
                     test=test,
                     param_grid=param_grid,
-                    is_classification=False,
                     scorer=scorer,
                     mask_img=None,
                     class_index=1,
@@ -638,7 +620,6 @@ def test_parallel_fit_builtin_cv(
         train=train,
         test=test,
         param_grid=param_grid,
-        is_classification=is_classification,
         scorer=scorer,
         mask_img=None,
         class_index=1,
@@ -781,17 +762,6 @@ def test_decoder_dummy_classifier_with_callable(binary_classification_data):
 
     assert model.scoring == accuracy_scorer
     assert model.score(X, y) == accuracy_score(y, y_pred)
-
-
-def test_decoder_error_model_not_fitted(tiny_binary_classification_data):
-    X, y, mask = tiny_binary_classification_data
-
-    model = Decoder(estimator="dummy_classifier", mask=mask)
-
-    with pytest.raises(
-        NotFittedError, match="This Decoder instance is not fitted yet."
-    ):
-        model.score(X, y)
 
 
 def test_decoder_dummy_classifier_strategy_prior():
@@ -1460,3 +1430,154 @@ def test_frem_decoder_fit_surface(
     X, y = _make_surface_class_data
     model = frem(mask=surf_mask_1d, clustering_percentile=90)
     model.fit(X, y)
+
+
+# ------------------------ test decoder vs sklearn -------------------------- #
+
+
+@pytest.mark.parametrize(
+    "classifier_penalty",
+    ["svc_l1", "svc_l2", "logistic_l1", "logistic_l2", "ridge_classifier"],
+)
+def test_decoder_vs_sklearn(
+    classifier_penalty, strings_to_sklearn=SUPPORTED_ESTIMATORS
+):
+    """Compare scores from nilearn Decoder with sklearn classifiers."""
+    X, y, mask = _make_multiclass_classification_test_data(
+        n_samples=100, dim=10
+    )
+    n_classes = len(np.unique(y))
+    # default cross-validation in nilearn is StratifiedKFold
+    # with 10 splits
+    cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
+    # default scoring is accuracy
+    scorer = check_scoring(strings_to_sklearn[classifier_penalty], "accuracy")
+
+    ## nilearn decoding
+    nilearn_decoder = Decoder(
+        estimator=classifier_penalty,
+        mask=mask,
+        standardize=True,
+        cv=cv,
+        scoring=scorer,
+        screening_percentile=100,  # disable screening
+    )
+    nilearn_decoder.fit(X, y)
+    scores_nilearn = nilearn_decoder.cv_scores_
+
+    ## start decoding with sklearn
+    masker = NiftiMasker(mask_img=mask, standardize=True)
+    X_transformed = masker.fit_transform(X)
+
+    sklearn_classifier = strings_to_sklearn[classifier_penalty]
+    scores_sklearn = {c: [] for c in range(n_classes)}
+    # convert multiclass to n_classes binary classifications
+    label_binarizer = LabelBinarizer()
+    y_binary = label_binarizer.fit_transform(y)
+    for klass in range(n_classes):
+        for count, (train_idx, test_idx) in enumerate(
+            cv.split(X_transformed, y)
+        ):
+            X_train, X_test = X_transformed[train_idx], X_transformed[test_idx]
+            y_train, y_test = (
+                y_binary[train_idx, klass],
+                y_binary[test_idx, klass],
+            )
+            # set best hyperparameters for each fold
+            if classifier_penalty in ["svc_l1", "svc_l2"]:
+                # LinearSVC does not have a CV variant, so we use exactly the
+                # parameter selected by nilearn
+                sklearn_classifier = clone(sklearn_classifier).set_params(
+                    C=nilearn_decoder.cv_params_[klass]["C"][count]
+                )
+            elif classifier_penalty in ["logistic_l1", "logistic_l2"]:
+                # this sets the list of Cs as coded within nilearn and
+                # LogisticRegressionCV will select the best one using
+                # cross-validation
+                sklearn_classifier = clone(sklearn_classifier).set_params(
+                    Cs=nilearn_decoder.cv_params_[klass]["Cs"][count],
+                )
+            elif classifier_penalty in ["ridge_classifier"]:
+                # same as logistic regression
+                sklearn_classifier = clone(sklearn_classifier).set_params(
+                    alphas=nilearn_decoder.cv_params_[klass]["alphas"][count]
+                )
+            sklearn_classifier.fit(X_train, y_train)
+            score = scorer(sklearn_classifier, X_test, y_test)
+            scores_sklearn[klass].append(score)
+
+    # Flatten scores
+    flat_sklearn_scores = np.concatenate(list(scores_sklearn.values()))
+    flat_nilearn_scores = np.concatenate(list(scores_nilearn.values()))
+
+    # check average scores are within 2% of each other
+    assert np.isclose(
+        np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores), atol=0.02
+    )
+
+
+@pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
+def test_regressor_vs_sklearn(
+    regressor, strings_to_sklearn=SUPPORTED_ESTIMATORS
+):
+    """Compare scores from nilearn DecoderRegressor with sklearn regressors."""
+    X, y, mask = _make_regression_test_data(n_samples=100, dim=10)
+    # for regression default cv in nilearn is KFold with 10 splits
+    # shuffling is False by default but we use it here with a fixed seed
+    # to reduce variability in the test
+    cv = KFold(n_splits=10, shuffle=True, random_state=42)
+    # r2 is the default scoring for regression
+    scorer = check_scoring(strings_to_sklearn[regressor], "r2")
+
+    ## nilearn decoding
+    nilearn_regressor = DecoderRegressor(
+        estimator=regressor,
+        mask=mask,
+        standardize=True,
+        cv=cv,
+        scoring=scorer,
+        screening_percentile=100,  # disable screening
+    )
+    nilearn_regressor.fit(X, y)
+    scores_nilearn = nilearn_regressor.cv_scores_["beta"]
+
+    ## start decoding with sklearn
+    masker = NiftiMasker(mask_img=mask, standardize=True)
+    X_transformed = masker.fit_transform(X)
+
+    sklearn_regressor = strings_to_sklearn[regressor]
+    scores_sklearn = []
+
+    for count, (train_idx, test_idx) in enumerate(cv.split(X_transformed, y)):
+        X_train, X_test = X_transformed[train_idx], X_transformed[test_idx]
+        y_train, y_test = (y[train_idx], y[test_idx])
+        # set best hyperparameters for each fold
+        if regressor == "svr":
+            # SVR does not have a CV variant, so we use exactly the
+            # parameter selected by nilearn
+            sklearn_regressor = clone(sklearn_regressor).set_params(
+                C=nilearn_regressor.cv_params_["beta"]["C"][count]
+            )
+        elif regressor == "lasso":
+            # this sets n_alphas as coded within nilearn and
+            # LassoCV will select the best one using cross-validation
+            sklearn_regressor = clone(sklearn_regressor).set_params(
+                n_alphas=nilearn_regressor.cv_params_["beta"]["n_alphas"][
+                    count
+                ],
+            )
+        elif regressor in ["ridge"]:
+            # same as lasso but with alphas
+            sklearn_regressor = clone(sklearn_regressor).set_params(
+                alphas=nilearn_regressor.cv_params_["beta"]["alphas"][count]
+            )
+        sklearn_regressor.fit(X_train, y_train)
+        score = scorer(sklearn_regressor, X_test, y_test)
+        scores_sklearn.append(score)
+
+    # check average scores are within 1% of each other
+    assert np.isclose(
+        np.mean(scores_sklearn), np.mean(scores_nilearn), atol=0.01
+    )
+    # also check individual scores are within 1% of each other
+    assert np.allclose(scores_sklearn, scores_nilearn, atol=0.01)

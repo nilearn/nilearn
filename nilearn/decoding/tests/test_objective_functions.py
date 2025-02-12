@@ -11,7 +11,6 @@ from nilearn.decoding._objective_functions import (
     logistic_loss,
     logistic_loss_grad,
 )
-from nilearn.decoding.space_net import BaseSpaceNet
 
 L1_RATIO = [0.0, 0.1, 0.3, 0.5, 0.7, 0.9, 1.0]
 
@@ -74,8 +73,3 @@ def test_logistic_loss_derivative(rng, n_samples=4, n_features=10, decimal=5):
         0.0,
         decimal=decimal,
     )
-
-
-def test_baseestimator_invalid_l1_ratio():
-    with pytest.raises(ValueError):
-        BaseSpaceNet(l1_ratios=2.0)

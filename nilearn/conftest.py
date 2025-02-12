@@ -9,7 +9,11 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn import image
-from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
+from nilearn._utils.data_gen import (
+    generate_fake_fmri,
+    generate_labeled_regions,
+    generate_maps,
+)
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
@@ -38,7 +42,7 @@ else:
             "reporting/tests/test_html_report.py",
         ]
     )
-    matplotlib = None
+    matplotlib = None  # type: ignore[assignment]
 
 
 def pytest_configure(config):  # noqa: ARG001
@@ -192,6 +196,13 @@ def _shape_4d_default():
     return (7, 8, 9, 5)
 
 
+def _shape_4d_medium():
+    """Return default shape for a long 4D image."""
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (7, 8, 9, 100)
+
+
 def _shape_4d_long():
     """Return default shape for a long 4D image."""
     # avoid having identical shapes values,
@@ -311,6 +322,19 @@ def img_3d_ones_mni():
     return _img_3d_ones(shape=_shape_3d_default(), affine=_affine_mni())
 
 
+def _img_mask_mni():
+    """Return a 3D nifti mask in MNI space with some 1s in the center."""
+    mask = np.zeros(_shape_3d_default(), dtype="int32")
+    mask[3:6, 3:6, 3:6] = 1
+    return Nifti1Image(mask, _affine_mni())
+
+
+@pytest.fixture
+def img_mask_mni():
+    """Return a 3D nifti mask in MNI space with some 1s in the center."""
+    return _img_mask_mni()
+
+
 # ------------------------ 4D IMAGES ------------------------#
 
 
@@ -324,6 +348,18 @@ def _img_4d_zeros(shape=None, affine=None):
     if affine is None:
         affine = _affine_eye()
     return _img_zeros(shape, affine)
+
+
+def _img_4d_rand_eye():
+    """Return a default random filled 4D Nifti1Image (identity affine)."""
+    data = _rng().random(_shape_4d_default())
+    return Nifti1Image(data, _affine_eye())
+
+
+def _img_4d_rand_eye_medium():
+    """Return a random 4D Nifti1Image (identity affine, many volumes)."""
+    data = _rng().random(_shape_4d_medium())
+    return Nifti1Image(data, _affine_eye())
 
 
 def _img_4d_mni(shape=None, affine=None):
@@ -349,8 +385,7 @@ def img_4d_ones_eye():
 @pytest.fixture
 def img_4d_rand_eye():
     """Return a default random filled 4D Nifti1Image (identity affine)."""
-    data = _rng().random(_shape_4d_default())
-    return Nifti1Image(data, _affine_eye())
+    return _img_4d_rand_eye()
 
 
 @pytest.fixture
@@ -360,9 +395,18 @@ def img_4d_mni():
 
 
 @pytest.fixture
+def img_4d_rand_eye_medium():
+    """Return a default random filled 4D Nifti1Image of medium length."""
+    return _img_4d_rand_eye_medium()
+
+
+@pytest.fixture
 def img_4d_long_mni(rng, shape_4d_long, affine_mni):
     """Return a default random filled long 4D Nifti1Image."""
     return Nifti1Image(rng.uniform(size=shape_4d_long), affine=affine_mni)
+
+
+# ------------------------ ATLAS, LABELS, MAPS ------------------------#
 
 
 @pytest.fixture()
@@ -381,18 +425,43 @@ def img_atlas(shape_3d_default, affine_mni):
     }
 
 
-@pytest.fixture
-def n_regions():
+def _n_regions():
     """Return a default numher of regions for maps."""
     return 9
 
 
 @pytest.fixture
-def img_maps(shape_3d_default, n_regions, affine_eye):
+def n_regions():
+    """Return a default numher of regions for maps."""
+    return _n_regions()
+
+
+def _img_maps():
     """Generate a default map image."""
     return generate_maps(
-        shape=shape_3d_default, n_regions=n_regions, affine=affine_eye
+        shape=_shape_3d_default(), n_regions=_n_regions(), affine=_affine_eye()
     )[0]
+
+
+@pytest.fixture
+def img_maps():
+    """Generate fixture for default map image."""
+    return _img_maps()
+
+
+def _img_labels():
+    """Generate fixture for default label image."""
+    return generate_labeled_regions(
+        shape=(7, 8, 9),
+        affine=np.eye(4),
+        n_regions=9,
+    )
+
+
+@pytest.fixture
+def img_labels():
+    """Generate fixture for default label image."""
+    return _img_labels()
 
 
 @pytest.fixture
@@ -463,7 +532,7 @@ def _make_mesh():
 @pytest.fixture()
 def surf_mesh():
     """Return _make_mesh as a function allowing it to be used as a fixture."""
-    return _make_mesh
+    return _make_mesh()
 
 
 def _make_surface_img(n_samples=1):
@@ -549,7 +618,7 @@ def surf_label_img(surf_mesh):
         "left": np.asarray([0, 0, 1, 1]),
         "right": np.asarray([1, 1, 0, 0, 0]),
     }
-    return SurfaceImage(surf_mesh(), data)
+    return SurfaceImage(surf_mesh, data)
 
 
 @pytest.fixture
@@ -561,7 +630,7 @@ def surf_three_labels_img(surf_mesh):
         "left": np.asarray([0, 0, 1, 1]),
         "right": np.asarray([1, 1, 0, 2, 0]),
     }
-    return SurfaceImage(surf_mesh(), data)
+    return SurfaceImage(surf_mesh, data)
 
 
 @pytest.fixture
@@ -613,3 +682,40 @@ def surface_glm_data(rng, surf_img_2d):
         return surf_img_2d(n_samples), des
 
     return _make_surface_img_and_design
+
+
+# ------------------------ PLOTTING ------------------------#
+
+
+@pytest.fixture(scope="function")
+def matplotlib_pyplot():
+    """Set up and teardown fixture for matplotlib.
+
+    This fixture checks if we can import matplotlib. If not, the tests will be
+    skipped. Otherwise, we close the figures before and after running the
+    functions.
+
+    Returns
+    -------
+    pyplot : module
+        The ``matplotlib.pyplot`` module.
+    """
+    pyplot = pytest.importorskip("matplotlib.pyplot")
+    pyplot.close("all")
+    yield pyplot
+    pyplot.close("all")
+
+
+@pytest.fixture(scope="function")
+def plotly():
+    """Check if we can import plotly.
+
+    If not, the tests will be skipped.
+
+    Returns
+    -------
+    plotly : module
+        The ``plotly`` module.
+    """
+    plotly = pytest.importorskip("plotly")
+    yield plotly

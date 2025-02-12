@@ -112,12 +112,7 @@ def canica_data():
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
-    "check_get_params_invariance",
     "check_no_attributes_set_in_init",
-    "check_transformers_unfitted",
-    "check_transformer_n_iter",
-    "check_parameters_default_constructible",
 ]
 
 
@@ -155,15 +150,8 @@ def test_threshold_bound_error(canica_data):
         canica.fit(canica_data)
 
 
-def test_transform_and_fit_errors(canica_data, mask_img):
+def test_transform_and_fit_errors(mask_img):
     canica = CanICA(mask=mask_img, n_components=3)
-
-    with pytest.raises(
-        ValueError,
-        match="Object has no components_ attribute. "
-        "This is probably because fit has not been called.",
-    ):
-        canica.transform(canica_data)
 
     # error when empty list of provided.
     with pytest.raises(

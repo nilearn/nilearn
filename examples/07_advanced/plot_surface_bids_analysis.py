@@ -158,6 +158,8 @@ import pandas as pd
 
 from nilearn.glm.second_level import SecondLevelModel
 
+threshold = 1.96
+
 second_level_glm = SecondLevelModel()
 design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
 second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
@@ -177,7 +179,6 @@ report_slm
 # -------------
 # We can now plot
 # the computed group-level maps for left and right hemisphere
-from nilearn.datasets import load_fsaverage_data
 from nilearn.plotting import plot_surf_stat_map, show
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
@@ -187,7 +188,7 @@ for hemi in ["left", "right"]:
         surf_mesh=fsaverage5["inflated"],
         stat_map=results,
         hemi=hemi,
-        title=f"(language-string), {hemi} hemisphere",
+        title=f"(language-string), {hemi} hemisphere\nabs(t) >= 1.96",
         colorbar=True,
         threshold=1.96,
         bg_map=fsaverage_data,

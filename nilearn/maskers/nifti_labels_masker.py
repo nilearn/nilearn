@@ -3,14 +3,23 @@
 import warnings
 
 import numpy as np
-from joblib import Memory
 from nibabel import Nifti1Image
+from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import _utils, image, masking
+from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.maskers._utils import compute_middle_image
+from nilearn._utils.param_validation import (
+    check_params,
+    check_reduction_strategy,
+)
+from nilearn.image import get_data, load_img, resample_img
+from nilearn.maskers._utils import (
+    compute_middle_image,
+    sanitize_cleaning_parameters,
+)
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.masking import load_mask_img
 
 
 class _ExtractionFunctor:
@@ -62,7 +71,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     Parameters
     ----------
-    labels_img : Niimg-like object
+    labels_img : Niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Region definitions, as one image of labels.
 
@@ -84,16 +93,23 @@ class NiftiLabelsMasker(BaseMasker):
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
+
     %(smoothing_fwhm)s
+
     %(standardize_maskers)s
+
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
     %(detrend)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(dtype)s
@@ -108,15 +124,24 @@ class NiftiLabelsMasker(BaseMasker):
         if shapes and affines do not match, a ValueError is raised.
 
     %(memory)s
+
     %(memory_level1)s
+
     %(verbose0)s
-    strategy : :obj:`str`, default='mean'
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
+
+    %(strategy)s
+
     %(keep_masked_labels)s
+
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
+
+    %(clean_args)s
+        .. versionadded:: 0.11.2dev
 
     %(masker_kwargs)s
 
@@ -174,7 +199,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     def __init__(
         self,
-        labels_img,
+        labels_img=None,
         labels=None,
         background_label=0,
         mask_img=None,
@@ -194,20 +219,17 @@ class NiftiLabelsMasker(BaseMasker):
         strategy="mean",
         keep_masked_labels=True,
         reports=True,
+        cmap="CMRmap_r",
+        clean_args=None,
         **kwargs,
     ):
-        if memory is None:
-            memory = Memory(location=None, verbose=0)
         self.labels_img = labels_img
-
         self.background_label = background_label
-        self._original_region_ids = self._get_labels_values(self.labels_img)
+
         self.labels = labels
-        self._check_mismatch_labels_regions(
-            self._original_region_ids, tolerant=True
-        )
 
         self.mask_img = mask_img
+        self.keep_masked_labels = keep_masked_labels
 
         # Parameters for smooth_array
         self.smoothing_fwhm = smoothing_fwhm
@@ -221,9 +243,8 @@ class NiftiLabelsMasker(BaseMasker):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
-        self.clean_kwargs = {
-            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-        }
+        self.clean_args = clean_args
+        self.clean_kwargs = kwargs
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -232,52 +253,22 @@ class NiftiLabelsMasker(BaseMasker):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
+
+        # Parameters for reports
         self.reports = reports
-        self._report_content = {
-            "description": (
-                "This reports shows the regions "
-                "defined by the labels of the mask."
-            ),
-            "warning_message": None,
-        }
+        self.cmap = cmap
 
-        available_reduction_strategies = {
-            "mean",
-            "median",
-            "sum",
-            "minimum",
-            "maximum",
-            "standard_deviation",
-            "variance",
-        }
-
-        if strategy not in available_reduction_strategies:
-            raise ValueError(
-                f"Invalid strategy '{strategy}'. "
-                f"Valid strategies are {available_reduction_strategies}."
-            )
         self.strategy = strategy
 
-        if resampling_target not in ("labels", "data", None):
-            raise ValueError(
-                "invalid value for 'resampling_target' "
-                f"parameter: {resampling_target}"
-            )
-
-        self.keep_masked_labels = keep_masked_labels
-
-        self.cmap = kwargs.get("cmap", "gray")
-
     def _get_labels_values(self, labels_image):
-        labels_image = image.load_img(labels_image, dtype="int32")
-        labels_image_data = image.get_data(labels_image)
+        labels_image = load_img(labels_image, dtype="int32")
+        labels_image_data = get_data(labels_image)
         return np.unique(labels_image_data)
 
     def _check_labels(self):
-        """Check and clean labels.
+        """Check labels.
 
         - checks that labels is a list of strings.
-        - cast all items of the list into strings if they are bytestrings.
         """
         labels = self.labels
         if labels is not None:
@@ -443,8 +434,8 @@ class NiftiLabelsMasker(BaseMasker):
             if self.labels is None:
                 columns.remove("region name")
 
-            labels_image = image.load_img(labels_image, dtype="int32")
-            labels_image_data = image.get_data(labels_image)
+            labels_image = load_img(labels_image, dtype="int32")
+            labels_image_data = get_data(labels_image)
             labels_image_affine = labels_image.affine
 
             regions_summary = {c: [] for c in columns}
@@ -541,12 +532,37 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        check_params(self.__dict__)
+        check_reduction_strategy(self.strategy)
+
+        if self.resampling_target not in ("labels", "data", None):
+            raise ValueError(
+                "invalid value for 'resampling_target' "
+                f"parameter: {self.resampling_target}"
+            )
+
+        self = sanitize_cleaning_parameters(self)
+
+        self._report_content = {
+            "description": (
+                "This reports shows the regions "
+                "defined by the labels of the mask."
+            ),
+            "warning_message": None,
+        }
+
         self._check_labels()
 
         repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
+
+        self._original_region_ids = self._get_labels_values(self.labels_img_)
+
+        self._check_mismatch_labels_regions(
+            self._original_region_ids, tolerant=True
+        )
 
         # create _region_id_name dictionary
         # this dictionary will be used to store region names and
@@ -625,7 +641,7 @@ class NiftiLabelsMasker(BaseMasker):
                 logger.log("resampling the mask", verbose=self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
-                self.mask_img_ = image.resample_img(
+                self.mask_img_ = resample_img(
                     self.mask_img_,
                     target_affine=self.labels_img_.affine,
                     target_shape=self.labels_img_.shape[:3],
@@ -642,7 +658,7 @@ class NiftiLabelsMasker(BaseMasker):
                 )
 
             # Just check that the mask is valid
-            masking.load_mask_img(self.mask_img_)
+            load_mask_img(self.mask_img_)
 
         if not hasattr(self, "_resampled_labels_img_"):
             # obviates need to run .transform() before .inverse_transform()
@@ -666,7 +682,7 @@ class NiftiLabelsMasker(BaseMasker):
         # This is equal to the number of unique values in the label image,
         # minus the background value.
         self.n_elements_ = (
-            np.unique(image.get_data(self._resampled_labels_img_)).size - 1
+            np.unique(get_data(self._resampled_labels_img_)).size - 1
         )
 
         return self
@@ -708,13 +724,8 @@ class NiftiLabelsMasker(BaseMasker):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
-    def _check_fitted(self):
-        if not hasattr(self, "labels_img_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been "
-                "fitted. "
-                "You must call fit() before calling transform()."
-            )
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "labels_img_") and hasattr(self, "n_elements_")
 
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.
@@ -782,7 +793,7 @@ class NiftiLabelsMasker(BaseMasker):
             ):
                 logger.log("Resampling mask", self.verbose)
                 self._resampled_mask_img = self._cache(
-                    image.resample_img, func_memory_level=2
+                    resample_img, func_memory_level=2
                 )(
                     self.mask_img_,
                     interpolation="nearest",
@@ -809,7 +820,10 @@ class NiftiLabelsMasker(BaseMasker):
         )
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
-        params["clean_kwargs"] = self.clean_kwargs
+        params["clean_kwargs"] = self.clean_args
+        # TODO remove in 0.13.2
+        if self.clean_kwargs:
+            params["clean_kwargs"] = self.clean_kwargs
 
         region_signals, (ids, masked_atlas) = self._cache(
             filter_and_extract,
@@ -867,7 +881,7 @@ class NiftiLabelsMasker(BaseMasker):
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
         )
         self._resampled_labels_img_ = self._cache(
-            image.resample_img, func_memory_level=2
+            resample_img, func_memory_level=2
         )(
             self.labels_img_,
             interpolation="nearest",
@@ -920,7 +934,7 @@ class NiftiLabelsMasker(BaseMasker):
         """
         from ..regions import signal_extraction
 
-        self._check_fitted()
+        check_is_fitted(self)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(

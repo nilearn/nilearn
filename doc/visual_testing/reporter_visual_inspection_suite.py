@@ -31,6 +31,7 @@ from nilearn.datasets import (
     fetch_openneuro_dataset,
     load_fsaverage,
     load_nki,
+    load_sample_motor_activation_image,
     select_from_index,
 )
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
@@ -49,6 +50,7 @@ from nilearn.maskers import (
     NiftiMasker,
     NiftiSpheresMasker,
     SurfaceLabelsMasker,
+    SurfaceMapsMasker,
     SurfaceMasker,
 )
 from nilearn.reporting import make_glm_report
@@ -82,6 +84,7 @@ def report_flm_adhd_dmn(build_type):
         high_pass=0.01,
         t_r=t_r,
         memory="nilearn_cache",
+        memory_level=1,
     )
 
     adhd_dataset = fetch_adhd(n_subjects=1)
@@ -235,8 +238,7 @@ def report_flm_fiac(build_type):
 
     mean_img_ = mean_img(fmri_img[0], copy_header=True)
 
-    design_files = [data["design_matrix1"], data["design_matrix2"]]
-    design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
+    design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 
     fmri_glm = FirstLevelModel(mask_img=data["mask"], minimize_memory=True)
     fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
@@ -353,9 +355,10 @@ def report_nifti_maps_masker(build_type):
     masker = NiftiMapsMasker(
         maps_img=atlas_filename,
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
         cmap="gray",
+        memory_level=1,
     )
     masker.fit(data.func[0])
 
@@ -464,16 +467,17 @@ def report_multi_nifti_labels_masker(build_type):
         )
         return None
 
-    yeo = fetch_atlas_yeo_2011()
+    yeo = fetch_atlas_yeo_2011(thickness="thick", n_networks=17)
 
     data = fetch_development_fmri(n_subjects=2)
 
     masker = MultiNiftiLabelsMasker(
-        labels_img=yeo["thick_17"],
+        labels_img=yeo["maps"],
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
         n_jobs=2,
+        memory_level=1,
     )
 
     masker.fit()
@@ -506,8 +510,9 @@ def report_multi_nifti_maps_masker(build_type):
     masker = MultiNiftiMapsMasker(
         maps_img=difumo.maps,
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
+        memory_level=1,
         n_jobs=2,
     )
 
@@ -531,9 +536,15 @@ def report_surface_masker(build_type):
         )
         return None, None
 
+    img = load_sample_motor_activation_image()
+    fsaverage_meshes = load_fsaverage()
+    surface_stat_image = SurfaceImage.from_volume(
+        mesh=fsaverage_meshes["pial"],
+        volume_img=img,
+    )
+
     masker = SurfaceMasker()
-    img = load_nki(mesh_type="inflated")[0]
-    masker.fit_transform(img)
+    masker.fit_transform(surface_stat_image)
     surface_masker_report = masker.generate_report()
     surface_masker_report.save_as_html(REPORTS_DIR / "surface_masker.html")
 
@@ -552,7 +563,7 @@ def report_surface_masker(build_type):
         mask.data.parts[part] = mask.data.parts[part] == 34
 
     masker = SurfaceMasker(mask)
-    masker.fit_transform(img)
+    masker.fit_transform(surface_stat_image)
     surface_masker_with_mask_report = masker.generate_report()
     surface_masker_with_mask_report.save_as_html(
         REPORTS_DIR / "surface_masker_with_mask.html"
@@ -584,15 +595,20 @@ def report_surface_label_masker(build_type):
         },
     )
 
-    labels_masker = SurfaceLabelsMasker(labels_img, destrieux.labels).fit()
+    labels_masker = SurfaceLabelsMasker(labels_img, lut=destrieux.lut).fit()
     labels_masker_report_unfitted = labels_masker.generate_report()
     labels_masker_report_unfitted.save_as_html(
         REPORTS_DIR / "surface_label_masker_unfitted.html"
     )
 
-    img = load_nki(mesh_type="inflated")[0]
+    stat_img = load_sample_motor_activation_image()
+    fsaverage_meshes = load_fsaverage()
+    surface_stat_image = SurfaceImage.from_volume(
+        mesh=fsaverage_meshes["pial"],
+        volume_img=stat_img,
+    )
 
-    labels_masker.transform(img)
+    labels_masker.transform(surface_stat_image)
     labels_masker_report = labels_masker.generate_report()
     labels_masker_report.save_as_html(
         REPORTS_DIR / "surface_label_masker.html"
@@ -602,6 +618,40 @@ def report_surface_label_masker(build_type):
         labels_masker_report_unfitted,
         labels_masker_report,
     )
+
+
+def report_surface_maps_masker(build_type):
+    if build_type == "partial":
+        _generate_dummy_html(
+            filenames=[
+                "surface_maps_masker_plotly.html",
+                "surface_maps_masker_matplotlib.html",
+            ]
+        )
+        return None, None
+
+    # Fetch a volumetric probabilistic atlas
+    atlas = fetch_atlas_msdl()
+    # Fetch the fsaverage5 mesh
+    fsaverage5_mesh = load_fsaverage("fsaverage5")["pial"]
+    # project atlas to the surface
+    surf_atlas = SurfaceImage.from_volume(
+        volume_img=atlas.maps, mesh=fsaverage5_mesh
+    )
+    # Fetch the NKI dataset
+    surf_img = load_nki()[0]
+    # Create a masker object
+    masker = SurfaceMapsMasker(surf_atlas).fit()
+    masker.transform(surf_img)
+    # generate report with plotly engine
+    report_plotly = masker.generate_report(engine="plotly")
+    report_plotly.save_as_html(REPORTS_DIR / "surface_maps_masker_plotly.html")
+    # now with matplotlib
+    report_mpl = masker.generate_report(engine="matplotlib")
+    report_mpl.save_as_html(
+        REPORTS_DIR / "surface_maps_masker_matplotlib.html"
+    )
+    return report_plotly, report_mpl
 
 
 def _generate_dummy_html(filenames: list[str]):
@@ -634,6 +684,7 @@ def main(args=sys.argv):
 
     report_surface_masker(build_type)
     report_surface_label_masker(build_type)
+    report_surface_maps_masker(build_type)
     report_nifti_masker(build_type)
     report_nifti_maps_masker(build_type)
     report_nifti_labels_masker(build_type)

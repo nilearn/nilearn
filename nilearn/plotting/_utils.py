@@ -1,8 +1,74 @@
+from pathlib import Path
+from warnings import warn
+
+import matplotlib.pyplot as plt
+
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
 )
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
+
+
+def save_figure_if_needed(fig, output_file):
+    """Save figure if an output file value is given.
+
+    Create output path if required.
+
+    Parameters
+    ----------
+    fig: figure, axes, or display instance
+
+    output_file: str, Path or None
+
+    Returns
+    -------
+    None if ``output_file`` is None, ``fig`` otherwise.
+    """
+    # avoid circular import
+    from nilearn.plotting.displays import BaseSlicer
+
+    if output_file is None:
+        return fig
+
+    output_file = Path(output_file)
+    output_file.parent.mkdir(exist_ok=True, parents=True)
+
+    if not isinstance(fig, (plt.Figure, BaseSlicer)):
+        fig = fig.figure
+
+    fig.savefig(output_file)
+    if isinstance(fig, plt.Figure):
+        plt.close(fig)
+    else:
+        fig.close()
+
+    return None
+
+
+def sanitize_hemi_for_surface_image(hemi, map, mesh):
+    if hemi is None and (
+        isinstance(map, SurfaceImage) or isinstance(mesh, PolyMesh)
+    ):
+        return "left"
+
+    if (
+        hemi is not None
+        and not isinstance(map, SurfaceImage)
+        and not isinstance(mesh, PolyMesh)
+    ):
+        warn(
+            category=UserWarning,
+            message=(
+                f"{hemi=} was passed "
+                f"with {type(map)=} and {type(mesh)=}.\n"
+                "This value will be ignored as it is only used when "
+                "'roi_map' is a SurfaceImage instance "
+                "and  / or 'surf_mesh' is a PolyMesh instance."
+            ),
+            stacklevel=3,
+        )
+    return hemi
 
 
 def check_surface_plotting_inputs(
@@ -112,3 +178,9 @@ def _get_hemi(mesh, hemi):
         return mesh.parts[hemi]
     else:
         raise ValueError("hemi must be one of left, right or both.")
+
+
+def check_threshold_not_negative(threshold):
+    """Make sure threshold is non negative number."""
+    if isinstance(threshold, (int, float)) and threshold < 0:
+        raise ValueError("Threshold should be a non-negative number!")

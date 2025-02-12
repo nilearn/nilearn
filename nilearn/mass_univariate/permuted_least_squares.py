@@ -16,6 +16,7 @@ from sklearn.utils import check_random_state
 
 from nilearn import image
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.param_validation import check_params
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -362,17 +363,10 @@ def permuted_ols(
         unless the tested variate is already the intercept or when
         confounding variates already contain an intercept.
 
-    n_perm : :obj:`int`, default=10000
-        Number of permutations to perform.
-        Permutations are costly but the more are performed, the more precision
-        one gets in the p-values estimation.
+    %(n_perm)s
         If ``n_perm`` is set to 0, then no p-values will be estimated.
 
-    two_sided_test : :obj:`bool`, default=True
-        If True, performs an unsigned t-test. Both positive and negative
-        effects are considered; the null hypothesis is that the effect is zero.
-        If False, only positive effects are considered as relevant. The null
-        hypothesis is that the effect is zero or negative.
+    %(two_sided_test)s
 
     %(random_state)s
 
@@ -404,19 +398,7 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    tfce : :obj:`bool`, default=False
-        Whether to calculate :term:`TFCE` as part of the permutation procedure
-        or not.
-        The TFCE calculation is implemented as described in
-        :footcite:t:`Smith2009a`.
-
-        .. warning::
-
-            Performing TFCE-based inference will increase the computation
-            time of the permutation procedure considerably.
-            The permutations may take multiple hours, depending on how many
-            permutations are requested and how many jobs are performed in
-            parallel.
+    %(tfce)s
 
         .. versionadded:: 0.9.2
 
@@ -601,9 +583,8 @@ def permuted_ols(
     .. footbibliography::
 
     """
-    _check_inputs_permuted_ols(
-        n_jobs, n_perm, tfce, masker, threshold, target_vars
-    )
+    check_params(locals())
+    _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
 
     n_jobs, output_type, target_vars, tested_vars = (
         _sanitize_inputs_permuted_ols(
@@ -824,112 +805,33 @@ def permuted_ols(
         "h0_max_t": vfwe_h0,
     }
 
-    if tfce:
-        outputs["tfce"] = tfce_original_data.T
+    if not tfce and threshold is None:
+        return outputs
 
-        # We can use the same approach for TFCE that we use for vFWE
-        h0_tfcemax = np.hstack(h0_tfce_parts)
-        outputs["h0_max_tfce"] = h0_tfcemax
+    outputs = _update_outputs_for_tfce(
+        outputs,
+        tfce,
+        tfce_original_data,
+        h0_tfce_parts,
+        n_regressors,
+        n_descriptors,
+        tfce_scores_as_ranks_parts,
+        n_perm,
+    )
 
-        tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
-        for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
-            tfce_scores_as_ranks += tfce_scores_as_ranks_part
-
-        tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
-        neg_log10_tfce_pvals = -np.log10(tfce_pvals)
-        outputs["logp_max_tfce"] = neg_log10_tfce_pvals
-
-    if threshold is not None:
-        # Cluster-size and cluster-mass FWE
-        # a dictionary to collect mass/size measures
-        cluster_dict = {
-            "size_h0": np.hstack(csfwe_h0_parts),
-            "mass_h0": np.hstack(cmfwe_h0_parts),
-            "size": np.zeros_like(vfwe_pvals).astype(int),
-            "mass": np.zeros_like(vfwe_pvals),
-            "size_pvals": np.zeros_like(vfwe_pvals),
-            "mass_pvals": np.zeros_like(vfwe_pvals),
-        }
-
-        scores_original_data_4d = masker.inverse_transform(
-            scores_original_data.T
-        ).get_fdata()
-
-        for i_regressor in range(n_regressors):
-            scores_original_data_3d = scores_original_data_4d[..., i_regressor]
-
-            # Label the clusters for both cluster mass and size inference
-            labeled_arr3d, _ = label(
-                scores_original_data_3d > threshold_t,
-                bin_struct,
-            )
-
-            if two_sided_test:
-                # Add negative cluster labels
-                temp_labeled_arr3d, _ = label(
-                    scores_original_data_3d < -threshold_t,
-                    bin_struct,
-                )
-                n_negative_clusters = np.max(temp_labeled_arr3d)
-                labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
-                labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
-                del temp_labeled_arr3d
-
-            cluster_labels, idx, cluster_dict["size_regressor"] = np.unique(
-                labeled_arr3d,
-                return_inverse=True,
-                return_counts=True,
-            )
-            assert cluster_labels[0] == 0  # the background
-
-            # Replace background's "cluster size" w zeros
-            cluster_dict["size_regressor"][0] = 0
-
-            # Calculate mass for each cluster
-            cluster_dict["mass_regressor"] = np.zeros(cluster_labels.shape)
-            for j_val in cluster_labels[1:]:  # skip background
-                cluster_mass = np.sum(
-                    np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
-                    - threshold_t
-                )
-                cluster_dict["mass_regressor"][j_val] = cluster_mass
-
-            # Calculate p-values from size/mass values and associated h0s
-            for metric in ["mass", "size"]:
-                p_vals = null_to_p(
-                    cluster_dict[f"{metric}_regressor"],
-                    cluster_dict[f"{metric}_h0"][i_regressor, :],
-                    "larger",
-                )
-                p_map = p_vals[np.reshape(idx, labeled_arr3d.shape)]
-                metric_map = cluster_dict[f"{metric}_regressor"][
-                    np.reshape(idx, labeled_arr3d.shape)
-                ]
-
-                # Convert 3D to image, then to 1D
-                # There is a problem if the masker performs preprocessing,
-                # so we use apply_mask here.
-                cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
-                    apply_mask(
-                        image.new_img_like(masker.mask_img_, p_map),
-                        masker.mask_img_,
-                    )
-                )
-                cluster_dict[metric][i_regressor, :] = np.squeeze(
-                    apply_mask(
-                        image.new_img_like(masker.mask_img_, metric_map),
-                        masker.mask_img_,
-                    )
-                )
-
-        outputs["size"] = cluster_dict["size"]
-        outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
-        outputs["h0_max_size"] = cluster_dict["size_h0"]
-        outputs["mass"] = cluster_dict["mass"]
-        outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
-        outputs["h0_max_mass"] = cluster_dict["mass_h0"]
-
-    return outputs
+    return _prepare_output_permuted_ols(
+        outputs,
+        vfwe_pvals,
+        scores_original_data,
+        n_regressors,
+        threshold,
+        csfwe_h0_parts,
+        cmfwe_h0_parts,
+        masker,
+        threshold_t,
+        bin_struct,
+        two_sided_test,
+    )
 
 
 def _make_array_contiguous(array):
@@ -958,11 +860,7 @@ def _compute_t_stat_threshold(
     )
 
 
-def _check_inputs_permuted_ols(
-    n_jobs, n_perm, tfce, masker, threshold, target_vars
-):
-    if not isinstance(n_perm, int):
-        raise TypeError(f"'n_perm' must be an int. Got {type(n_perm)=}")
+def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(
@@ -1042,3 +940,139 @@ def _sanitize_inputs_permuted_ols(
         tested_vars = np.atleast_2d(tested_vars).T
 
     return n_jobs, output_type, target_vars, tested_vars
+
+
+def _prepare_output_permuted_ols(
+    outputs,
+    vfwe_pvals,
+    scores_original_data,
+    n_regressors,
+    threshold,
+    csfwe_h0_parts,
+    cmfwe_h0_parts,
+    masker,
+    threshold_t,
+    bin_struct,
+    two_sided_test,
+):
+    if threshold is None:
+        return outputs
+
+    # Cluster-size and cluster-mass FWE
+    # a dictionary to collect mass/size measures
+    cluster_dict = {
+        "size_h0": np.hstack(csfwe_h0_parts),
+        "mass_h0": np.hstack(cmfwe_h0_parts),
+        "size": np.zeros_like(vfwe_pvals).astype(int),
+        "mass": np.zeros_like(vfwe_pvals),
+        "size_pvals": np.zeros_like(vfwe_pvals),
+        "mass_pvals": np.zeros_like(vfwe_pvals),
+    }
+
+    scores_original_data_4d = masker.inverse_transform(
+        scores_original_data.T
+    ).get_fdata()
+
+    for i_regressor in range(n_regressors):
+        scores_original_data_3d = scores_original_data_4d[..., i_regressor]
+
+        # Label the clusters for both cluster mass and size inference
+        labeled_arr3d, _ = label(
+            scores_original_data_3d > threshold_t,
+            bin_struct,
+        )
+
+        if two_sided_test:
+            # Add negative cluster labels
+            temp_labeled_arr3d, _ = label(
+                scores_original_data_3d < -threshold_t,
+                bin_struct,
+            )
+            n_negative_clusters = np.max(temp_labeled_arr3d)
+            labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
+            labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
+            del temp_labeled_arr3d
+
+        cluster_labels, idx, cluster_dict["size_regressor"] = np.unique(
+            labeled_arr3d,
+            return_inverse=True,
+            return_counts=True,
+        )
+        assert cluster_labels[0] == 0  # the background
+
+        # Replace background's "cluster size" w zeros
+        cluster_dict["size_regressor"][0] = 0
+
+        # Calculate mass for each cluster
+        cluster_dict["mass_regressor"] = np.zeros(cluster_labels.shape)
+        for j_val in cluster_labels[1:]:  # skip background
+            cluster_mass = np.sum(
+                np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
+                - threshold_t
+            )
+            cluster_dict["mass_regressor"][j_val] = cluster_mass
+
+        # Calculate p-values from size/mass values and associated h0s
+        for metric in ["mass", "size"]:
+            p_vals = null_to_p(
+                cluster_dict[f"{metric}_regressor"],
+                cluster_dict[f"{metric}_h0"][i_regressor, :],
+                "larger",
+            )
+            p_map = p_vals[np.reshape(idx, labeled_arr3d.shape)]
+            metric_map = cluster_dict[f"{metric}_regressor"][
+                np.reshape(idx, labeled_arr3d.shape)
+            ]
+
+            # Convert 3D to image, then to 1D
+            # There is a problem if the masker performs preprocessing,
+            # so we use apply_mask here.
+            cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
+                apply_mask(
+                    image.new_img_like(masker.mask_img_, p_map),
+                    masker.mask_img_,
+                )
+            )
+            cluster_dict[metric][i_regressor, :] = np.squeeze(
+                apply_mask(
+                    image.new_img_like(masker.mask_img_, metric_map),
+                    masker.mask_img_,
+                )
+            )
+
+    outputs["size"] = cluster_dict["size"]
+    outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
+    outputs["h0_max_size"] = cluster_dict["size_h0"]
+    outputs["mass"] = cluster_dict["mass"]
+    outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
+    outputs["h0_max_mass"] = cluster_dict["mass_h0"]
+
+    return outputs
+
+
+def _update_outputs_for_tfce(
+    outputs,
+    tfce,
+    tfce_original_data,
+    h0_tfce_parts,
+    n_regressors,
+    n_descriptors,
+    tfce_scores_as_ranks_parts,
+    n_perm,
+):
+    if not tfce:
+        return outputs
+
+    outputs["tfce"] = tfce_original_data.T
+
+    # We can use the same approach for TFCE that we use for vFWE
+    outputs["h0_max_tfce"] = np.hstack(h0_tfce_parts)
+
+    tfce_scores_as_ranks = np.zeros((n_regressors, n_descriptors))
+    for tfce_scores_as_ranks_part in tfce_scores_as_ranks_parts:
+        tfce_scores_as_ranks += tfce_scores_as_ranks_part
+
+    tfce_pvals = (n_perm + 1 - tfce_scores_as_ranks) / float(1 + n_perm)
+    outputs["logp_max_tfce"] = -np.log10(tfce_pvals)
+
+    return outputs

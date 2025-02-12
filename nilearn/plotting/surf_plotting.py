@@ -18,16 +18,19 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
-from nilearn.plotting._utils import check_surface_plotting_inputs
-from nilearn.plotting.cm import cold_hot, mix_colormaps
+from nilearn._utils.param_validation import check_params
+from nilearn.plotting._utils import (
+    check_surface_plotting_inputs,
+    sanitize_hemi_for_surface_image,
+    save_figure_if_needed,
+)
+from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
 from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.img_plotting import get_colorbar_and_data_ranges
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.surface import (
-    PolyMesh,
-    SurfaceImage,
     load_surf_data,
     load_surf_mesh,
     vol_to_surf,
@@ -326,7 +329,7 @@ def _plot_surf_plotly(
     i, j, k = faces.T
 
     if cmap is None:
-        cmap = cold_hot
+        cmap = "RdBu_r"
 
     bg_data = None
     if bg_map is not None:
@@ -759,10 +762,8 @@ def _plot_surf_matplotlib(
 
     if title is not None:
         axes.set_title(title)
-    if output_file is None:
-        return figure
-    figure.savefig(output_file)
-    plt.close()
+
+    return save_figure_if_needed(figure, output_file)
 
 
 @fill_doc
@@ -983,6 +984,7 @@ def plot_surf(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    check_params(locals())
     if view is None:
         view = "dorsal" if hemi == "both" else "lateral"
 
@@ -1219,40 +1221,13 @@ def plot_surf_contours(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    if hemi is None and (
-        isinstance(roi_map, SurfaceImage) or isinstance(surf_mesh, PolyMesh)
-    ):
-        hemi = "left"
-    elif (
-        hemi is not None
-        and not isinstance(roi_map, SurfaceImage)
-        and not isinstance(surf_mesh, PolyMesh)
-    ):
-        warn(
-            category=UserWarning,
-            message=(
-                f"{hemi=} was passed "
-                f"with {type(roi_map)=} and {type(surf_mesh)=}.\n"
-                "This value will be ignored as it is only used when "
-                "'roi_map' is a SurfaceImage instance "
-                "and  / or 'surf_mesh' is a PolyMesh instance."
-            ),
-            stacklevel=2,
-        )
+    hemi = sanitize_hemi_for_surface_image(hemi, roi_map, surf_mesh)
     roi_map, surf_mesh, _ = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, map_var_name="roi_map"
     )
 
-    if isinstance(figure, PlotlySurfaceFigure):
-        raise ValueError(
-            "figure argument is a PlotlySurfaceFigure"
-            "but it should be None or a matplotlib figure"
-        )
-    if isinstance(axes, PlotlySurfaceFigure):
-        raise ValueError(
-            "axes argument is a PlotlySurfaceFigure"
-            "but it should be None or a matplotlib axes"
-        )
+    _check_figure_axes_inputs_plot_surf_contours(figure, axes)
+
     if figure is None and axes is None:
         figure = plot_surf(surf_mesh, **kwargs)
         axes = figure.axes[0]
@@ -1329,10 +1304,21 @@ def plot_surf_contours(
         title = figure._suptitle._text
     if title:
         axes.set_title(title)
-    if output_file is None:
-        return figure
-    figure.savefig(output_file)
-    plt.close(figure)
+
+    return save_figure_if_needed(figure, output_file)
+
+
+def _check_figure_axes_inputs_plot_surf_contours(figure, axes):
+    if isinstance(figure, PlotlySurfaceFigure):
+        raise ValueError(
+            "figure argument is a PlotlySurfaceFigure"
+            "but it should be None or a matplotlib figure"
+        )
+    if isinstance(axes, PlotlySurfaceFigure):
+        raise ValueError(
+            "axes argument is a PlotlySurfaceFigure"
+            "but it should be None or a matplotlib axes"
+        )
 
 
 @fill_doc
@@ -1529,6 +1515,7 @@ def plot_surf_stat_map(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
     # set default view to dorsal if hemi is both and view is not set
+    check_params(locals())
     if view is None:
         view = "dorsal" if hemi == "both" else "lateral"
 
@@ -1806,6 +1793,7 @@ def plot_img_on_surf(
         accepted by plot_img_on_surf.
 
     """
+    check_params(locals())
     if hemispheres in (None, "both"):
         hemispheres = ["left", "right"]
     if views is None:
@@ -2114,6 +2102,7 @@ def plot_surf_roi(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
     # set default view to dorsal if hemi is both and view is not set
+    check_params(locals())
     if view is None:
         view = "dorsal" if hemi == "both" else "lateral"
 
@@ -2132,9 +2121,9 @@ def plot_surf_roi(
 
     idx_not_na = ~np.isnan(roi)
     if vmin is None:
-        vmin = np.nanmin(roi)
+        vmin = float(np.nanmin(roi))
     if vmax is None:
-        vmax = 1 + np.nanmax(roi)
+        vmax = float(1 + np.nanmax(roi))
 
     mesh = load_surf_mesh(surf_mesh)
 

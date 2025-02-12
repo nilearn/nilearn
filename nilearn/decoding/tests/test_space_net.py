@@ -27,10 +27,11 @@ from nilearn.decoding.space_net_solvers import (
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.image import get_data
 
+from .test_same_api import to_niimgs
+
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
 
-from .test_same_api import to_niimgs
 
 IS_CLASSIF = [True, False]
 
@@ -239,6 +240,39 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
     ).fit(X, y)
 
 
+@pytest.mark.parametrize("l1_ratio", [-2, 2])
+def test_base_estimator_invalid_l1_ratio(rng, l1_ratio):
+    """Check that 0 < L1 ratio < 1."""
+    dim = (4, 4, 4)
+    W_init = np.zeros(dim)
+    W_init[2:3, 1:2, -2:] = 1
+    n = 10
+    p = np.prod(dim)
+    X = np.ones((n, 1)) + W_init.ravel().T
+    X += rng.standard_normal((n, p))
+    y = np.dot(X, W_init.ravel())
+    X, _ = to_niimgs(X, dim)
+
+    with pytest.raises(ValueError, match="l1_ratio must be in the interval"):
+        BaseSpaceNet(l1_ratios=l1_ratio).fit(X, y)
+
+
+@pytest.mark.parametrize("penalty_wrong_case", ["Graph-Net", "TV-L1"])
+def test_string_params_case(rng, penalty_wrong_case):
+    """Check value of penalty."""
+    dim = (4, 4, 4)
+    W_init = np.zeros(dim)
+    W_init[2:3, 1:2, -2:] = 1
+    n = 10
+    p = np.prod(dim)
+    X = np.ones((n, 1)) + W_init.ravel().T
+    X += rng.standard_normal((n, p))
+    y = np.dot(X, W_init.ravel())
+    X, _ = to_niimgs(X, dim)
+    with pytest.raises(ValueError, match="'penalty' parameter .* be one of"):
+        BaseSpaceNet(penalty=penalty_wrong_case).fit(X, y)
+
+
 @pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
 def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     dim = (3, 4, 5)
@@ -437,32 +471,10 @@ def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
     )
 
 
-@pytest.mark.parametrize("penalty_wrong_case", ["Graph-Net", "TV-L1"])
-def test_string_params_case(penalty_wrong_case):
-    with pytest.raises(ValueError, match="'penalty' parameter .* be one of"):
-        BaseSpaceNet(penalty=penalty_wrong_case)
-
-
 @pytest.mark.parametrize("mask_empty", [np.array([]), np.zeros((2, 2, 2))])
 def test_crop_mask_empty_mask(mask_empty):
     with pytest.raises(ValueError, match="Empty mask:."):
         _crop_mask(mask_empty)
-
-
-@pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
-def test_space_net_no_crash_not_fitted(model):
-    """Regression test."""
-    iris = load_iris()
-    X, y = iris.data, iris.target
-    X, mask = to_niimgs(X, [2, 2, 2])
-
-    with pytest.raises(
-        RuntimeError,
-        match=f"This {model.__name__} instance is not fitted yet",
-    ):
-        model().predict(X)
-
-    model(mask=mask, alphas=1.0).fit(X, y).predict(X)
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])

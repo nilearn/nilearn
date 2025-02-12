@@ -5,6 +5,8 @@ Web-based documentation is available for versions listed below:
 
 * `Nilearn 0.11.2dev (dev) documentation <http://nilearn.github.io/dev/>`_
 * `Nilearn 0.11.1 (stable) documentation <http://nilearn.github.io/stable/>`_
+* `Nilearn 0.11.0 documentation <http://nilearn.github.io/0.11.0/>`_
+* `Nilearn 0.10.3 documentation <http://nilearn.github.io/0.10.3/>`_
 * `Nilearn 0.10.2 documentation <http://nilearn.github.io/0.10.2/>`_
 * `Nilearn 0.10.0 documentation <http://nilearn.github.io/0.10.0/>`_
 * `Nilearn 0.9.2 documentation <http://nilearn.github.io/0.9.2/>`_

@@ -12,11 +12,9 @@ from nilearn.connectome.group_sparse_cov import (
 extra_valid_checks = [
     "check_complex_data",
     "check_estimator_sparse_tag",
-    "check_estimators_unfitted",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_fit1d",
     "check_no_attributes_set_in_init",
-    "check_parameters_default_constructible",
 ]
 
 
@@ -26,6 +24,9 @@ extra_valid_checks = [
         check_estimator(
             estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
             extra_valid_checks=extra_valid_checks,
+            expected_failed_checks={
+                "check_fit_check_is_fitted": "handled by nilearn checks"
+            },
         )
     ),
 )
@@ -41,6 +42,9 @@ def test_check_estimator_group_sparse_covariance(estimator, check, name):  # noq
         estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
         valid=False,
         extra_valid_checks=extra_valid_checks,
+        expected_failed_checks={
+            "check_fit_check_is_fitted": "handled by nilearn checks"
+        },
     ),
 )
 def test_check_estimator_invalid_group_sparse_covariance(

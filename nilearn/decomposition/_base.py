@@ -15,10 +15,12 @@ from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
 from sklearn.utils import check_random_state
+from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
 from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -454,8 +456,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         """
         # Base fit for decomposition estimators : compute the embedded masker
-        if self.memory is None:
-            self.memory = Memory(location=None)
+        check_params(self.__dict__)
 
         if (
             isinstance(imgs, str)
@@ -538,13 +539,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         )
         return self.maps_masker_
 
-    def _check_components_(self):
-        if not hasattr(self, "components_"):
-            raise ValueError(
-                "Object has no components_ attribute. "
-                "This is probably because fit has not "
-                "been called."
-            )
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "components_")
 
     def transform(self, imgs, confounds=None):
         """Project the data into a reduced representation.
@@ -569,7 +565,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             shape: number of subjects * (number of scans, number of regions)
 
         """
-        self._check_components_()
+        check_is_fitted(self)
+
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
             confounds = [None] * len(imgs)
@@ -595,14 +592,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         For each loading, reconstructed Nifti1Image or SurfaceImage.
 
         """
-        if not hasattr(self, "components_"):
-            raise ValueError(
-                "Object has no components_ attribute. This is "
-                "either because fit has not been called "
-                "or because _DecompositionEstimator has "
-                "directly been used"
-            )
-        self._check_components_()
+        check_is_fitted(self)
+
         # XXX: dealing properly with 2D/ list of 2D data?
         return [
             self.maps_masker_.inverse_transform(loading)
@@ -652,7 +643,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             is squeezed if the number of subjects is one
 
         """
-        self._check_components_()
+        check_is_fitted(self)
+
         data = _mask_and_reduce(
             self.masker_,
             imgs,

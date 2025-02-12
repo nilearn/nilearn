@@ -20,8 +20,6 @@ from nilearn.conftest import _rng
 from nilearn.datasets import atlas
 from nilearn.datasets._utils import fetch_files
 from nilearn.datasets.atlas import (
-    _check_look_up_table,
-    _generate_atlas_look_up_table,
     fetch_atlas_aal,
     fetch_atlas_allen_2011,
     fetch_atlas_basc_multiscale_2015,
@@ -38,11 +36,11 @@ from nilearn.datasets.atlas import (
     fetch_atlas_talairach,
     fetch_atlas_yeo_2011,
 )
-from nilearn.datasets.tests._testing import dict_to_archive
+from nilearn.datasets.tests._testing import check_type_fetcher, dict_to_archive
 from nilearn.image import get_data
 
 
-def validate_atlas(atlas_data):
+def validate_atlas(atlas_data, check_type=True):
     """Validate content of the atlas bunch.
 
     Atlas must:
@@ -52,9 +50,10 @@ def validate_atlas(atlas_data):
       - a labels attribute that is a list
       - a lut attribute that is a pd.DataFrame
     """
+    if check_type:
+        check_type_fetcher(atlas_data)
     assert isinstance(atlas_data, Bunch)
-    assert isinstance(atlas_data.description, str)
-    assert atlas_data.description != ""
+
     assert atlas_data.template != ""
     assert atlas_data.atlas_type in {"deterministic", "probabilistic"}
     if atlas_data.atlas_type == "deterministic":
@@ -63,49 +62,6 @@ def validate_atlas(atlas_data):
         assert isinstance(atlas_data.lut, pd.DataFrame)
         if "fsaverage" not in atlas_data.template:
             assert "Background" in atlas_data.labels
-
-
-def test_generate_atlas_look_up_table(shape_3d_default, surf_three_labels_img):
-    """Check generation of LUT directly from niimg or surface image."""
-    mock_regions = data_gen.generate_labeled_regions(
-        shape_3d_default, n_regions=10
-    )
-    lut = _generate_atlas_look_up_table(function="unknown", index=mock_regions)
-    _check_look_up_table(lut=lut, atlas=mock_regions, strict=True)
-
-    lut = _generate_atlas_look_up_table(
-        function="unknown", index=surf_three_labels_img
-    )
-    _check_look_up_table(lut=lut, atlas=surf_three_labels_img, strict=True)
-
-
-def test_generate_atlas_look_up_table_errors():
-    with pytest.raises(
-        ValueError, match="'index' and 'name' cannot both be None."
-    ):
-        _generate_atlas_look_up_table(function=None, name=None, index=None)
-
-
-def test_check_look_up_table_errors(shape_3d_default):
-    mock_regions = data_gen.generate_labeled_regions(
-        shape_3d_default, n_regions=10
-    )
-    lut = _generate_atlas_look_up_table(function="unknown", index=mock_regions)
-
-    with pytest.raises(
-        ValueError, match="missing from the atlas look-up table"
-    ):
-        _check_look_up_table(
-            lut=lut.drop(index=2), atlas=mock_regions, strict=True
-        )
-
-    mock_regions_with_missing_labels = data_gen.generate_labeled_regions(
-        shape_3d_default, n_regions=8
-    )
-    with pytest.raises(ValueError, match="missing from the atlas image"):
-        _check_look_up_table(
-            lut=lut, atlas=mock_regions_with_missing_labels, strict=True
-        )
 
 
 def test_downloader(tmp_path, request_mocker):
@@ -486,10 +442,6 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     assert request_mocker.url_count == 1
 
 
-@pytest.mark.xfail(
-    reason="Atlas should return single map with associated labels.",
-    raises=AttributeError,
-)
 def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     """Check fetcher for the yeo atlas.
 
@@ -539,7 +491,10 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
 
     request_mocker.url_mapping["*Yeo_JNeurophysiol11_MNI152*"] = yeo_data
 
-    dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
+    with pytest.warns(
+        DeprecationWarning, match="the parameters 'n_networks' and 'thickness'"
+    ):
+        dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
 
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.colors_17, str)
@@ -549,7 +504,25 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     assert isinstance(dataset.thin_17, str)
     assert isinstance(dataset.thin_7, str)
 
+    dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=7)
+    dataset = fetch_atlas_yeo_2011(
+        data_dir=tmp_path, verbose=0, thickness="thick"
+    )
+
     validate_atlas(dataset)
+
+
+def test_fetch_atlas_yeo_2011_error(tmp_path):
+    """Raise errors when the wrong values are passed."""
+    with pytest.raises(ValueError, match="'n_networks' must be 7 or 17."):
+        fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=10)
+
+    with pytest.raises(
+        ValueError, match="'thickness' must be 'thin' or 'thick'."
+    ):
+        fetch_atlas_yeo_2011(
+            data_dir=tmp_path, verbose=0, thickness="dead_parot"
+        )
 
 
 def test_fetch_atlas_difumo(tmp_path, request_mocker):
@@ -798,7 +771,9 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
 
     bunch = fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
 
-    validate_atlas(bunch)
+    # one exception is made here to return some numpy array
+    # so we do not check the type
+    validate_atlas(bunch, check_type=False)
 
     # Our mock annots have 4 labels
     assert len(bunch.labels) == 4

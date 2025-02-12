@@ -16,6 +16,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
@@ -599,8 +600,9 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
     Parameters
     ----------
-    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-    or :obj:`~nilearn.maskers.SurfaceMasker` object
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+                or :obj:`~nilearn.maskers.SurfaceMasker` object \
+                or None, default=None
         Object used for masking the data.
 
     n_clusters : :obj:`int`, default=2
@@ -638,7 +640,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
     def __init__(
         self,
-        mask_img,
+        mask_img=None,
         n_clusters=2,
         scaling=False,
         n_iter=10,
@@ -702,6 +704,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         self : `ReNA` object
 
         """
+        check_params(self.__dict__)
         X = check_array(
             X, ensure_min_features=2, ensure_min_samples=2, estimator=self
         )
@@ -710,7 +713,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         if not isinstance(
             self.mask_img, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
         ):
-            raise ValueError(
+            raise TypeError(
                 "The mask image should be a Niimg-like object, "
                 "a SurfaceImage object or a SurfaceMasker."
                 f"Instead a {type(self.mask_img)} object was provided."
@@ -767,6 +770,9 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
         return self
 
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "labels_")
+
     def transform(
         self,
         X,
@@ -785,7 +791,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             Data reduced with agglomerated signal for each cluster.
 
         """
-        check_is_fitted(self, "labels_")
+        check_is_fitted(self)
 
         unique_labels = np.unique(self.labels_)
 
@@ -815,7 +821,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             Data reduced expanded to the original feature space.
 
         """
-        check_is_fitted(self, "labels_")
+        check_is_fitted(self)
 
         _, inverse = np.unique(self.labels_, return_inverse=True)
 
