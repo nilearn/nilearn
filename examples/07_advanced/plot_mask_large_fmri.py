@@ -23,18 +23,19 @@ ROI in parallel, each parallel process will load the entire fMRI image into
 memory. This can lead to a significant increase in memory usage and may be
 infeasible in some computational environments.
 
-We will compare three different methods to mask the data from the fMRI image:
+We will thus compare three different methods for this task, each handling
+the fMRI image in a different way:
 
-1. A naive, unoptimized usage of :class:`~nilearn.maskers.NiftiMasker`
-2. Using array proxies defined with :mod:`nibabel`
-3. Using :class:`multiprocessing.shared_memory.SharedMemory`
-
+1. A naive, unoptimized usage of :class:`~nilearn.maskers.NiftiMasker`.
+2. Masking the fMRI image's data array using numpy indexing.
+3. Combining the above numpy indexing approach with
+:class:`multiprocessing.shared_memory.SharedMemory`.
 """
 
 # %%
 # Create a large fMRI image
 # -------------------------
-# Here we will create a "large" fMRI image by fetch 6 subjects'
+# Here we will create a "large" fMRI image by fetching 6 subjects'
 # fMRI images via the :func:`~nilearn.datasets.fetch_adhd`
 # function, concatenating them and then saving to a file.
 
@@ -110,7 +111,7 @@ for idx in range(1, N_REGIONS + 1):
 # data from an fMRI image as it makes it easy to standardize, smooth, detrend,
 # etc. the data.
 #
-# We will first wrap the :func:`~nilearn.maskers.NiftiMasker.fit_transform`
+# We will first wrap the :func:`nilearn.maskers.NiftiMasker.fit_transform`
 # within a function so that it is more readable and easier to use.
 # We will then define another function that would mask the fMRI image using
 # multiple masks in parallel using the :mod:`joblib` package.
@@ -134,7 +135,7 @@ def nifti_masker_parallel(fmri_path, mask_paths):
 
 
 # %%
-# Furthermore, we can input the fmri image and the masks in two different ways:
+# Furthermore, we can input the fMRI image and the masks in two different ways:
 #
 # 1. Using the file paths
 # 2. Using the in-memory objects
@@ -162,7 +163,7 @@ nifti_masker["in_memory"] = memory_usage(
 
 print(
     f"Peak memory usage with NiftiMasker, {N_REGIONS} jobs in parallel:\n"
-    f"- with file paths: {nifti_masker['path']} MiB"
+    f"- with file paths: {nifti_masker['path']} MiB\n"
     f"- with in-memory images: {nifti_masker['in_memory']} MiB"
 )
 
@@ -237,7 +238,7 @@ numpy_masker["in_memory"] = memory_usage(
 )
 print(
     f"Peak memory usage with numpy indexing, {N_REGIONS} jobs in parallel:\n"
-    f"- with file paths: {numpy_masker['path']} MiB"
+    f"- with file paths: {numpy_masker['path']} MiB\n"
     f"- with in-memory images: {numpy_masker['in_memory']} MiB"
 )
 
@@ -296,6 +297,7 @@ shm.unlink()
 
 # %%
 # Let's plot the memory usage for each method to compare them.
+
 import matplotlib.pyplot as plt
 
 plt.figure(figsize=(10, 6))
