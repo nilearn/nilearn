@@ -1909,7 +1909,7 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
-def get_data(img, ensure_finite=False, copy_data=False):
+def get_data(img, ensure_finite=False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
 
@@ -1927,8 +1927,6 @@ def get_data(img, ensure_finite=False, copy_data=False):
     :obj:`~numpy.ndarray`
         Concatenated data across hemispheres.
     """
-    if copy_data:
-        img = copy.deepcopy(img)
     if isinstance(img, SurfaceImage):
         data = img.data
     elif isinstance(img, PolyData):

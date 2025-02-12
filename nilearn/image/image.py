@@ -10,6 +10,7 @@ import collections.abc
 import copy
 import itertools
 import warnings
+from copy import deepcopy
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -1086,7 +1087,7 @@ def threshold_img(
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
         affine = img.affine
     else:
-        img_data = get_surface_data(img, ensure_finite=True, copy_data=copy)
+        img_data = get_surface_data(img, ensure_finite=True)
 
     img_data_for_cutoff = img_data
 
@@ -1161,7 +1162,7 @@ def threshold_img(
     return new_surface_img_like(img, img_data.data)
 
 
-def _apply_threhold(img_data, two_sided, cutoff_threshold):
+def _apply_threhold(img_data, two_sided, cutoff_threshold, copy=False):
     """Apply a given threshold to an 'image'.
 
     If the image is a Surface applies to each part.
@@ -1183,6 +1184,8 @@ def _apply_threhold(img_data, two_sided, cutoff_threshold):
     """
     if isinstance(img_data, SurfaceImage):
         for hemi, value in img_data.data.parts.items():
+            if copy:
+                value = deepcopy(value)
             img_data.data.parts[hemi] = _apply_threhold(
                 value, two_sided, cutoff_threshold
             )

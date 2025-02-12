@@ -1127,13 +1127,13 @@ def test_threshold_img_copy_surface(surf_img_1d):
     # Check that copy does not mutate. It returns modified copy.
     threshold = 0.2
 
-    thresholded = threshold_img(surf_img_1d, threshold=threshold, copy=True)
+    thr_img = threshold_img(surf_img_1d, threshold=threshold, copy=True)
     with pytest.raises(AssertionError):
-        assert_surface_image_equal(thresholded, surf_img_1d)
+        assert_surface_image_equal(thr_img, surf_img_1d)
 
     # Check that not copying does mutate.
     thr_img = threshold_img(surf_img_1d, threshold=threshold, copy=False)
-    assert assert_surface_image_equal(thr_img, surf_img_1d)
+    assert_surface_image_equal(thr_img, surf_img_1d)
 
 
 def test_threshold_img_copy_volume(img_4d_ones_eye):
