@@ -49,6 +49,9 @@ from nilearn.image import (
     threshold_img,
 )
 from nilearn.image.tests._testing import match_headers_keys
+from nilearn.surface._testing import assert_surface_image_equal
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
 
 X64 = platform.architecture()[0] == "64bit"
 
@@ -733,6 +736,8 @@ def test_input_in_threshold_img(
     shape_3d_default, surf_img_1d, surf_mask_1d, affine_eye
 ):
     """Check threshold_img only works with surface OR volume."""
+    threshold = 0.5
+
     # setting copy_header to True to avoid warnings
     # TODO remove when bumping to nilearn > 0.13
     copy_header = True
@@ -741,19 +746,84 @@ def test_input_in_threshold_img(
     vol_mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
 
     # All of those should be OK
-    threshold_img(vol_img, threshold=1, mask_img=None, copy_header=copy_header)
-    threshold_img(
-        surf_img_1d, threshold=1, mask_img=None, copy_header=copy_header
+    thr_img = threshold_img(
+        vol_img, threshold=threshold, mask_img=None, copy_header=copy_header
     )
+
+    _check_thresholded_output(vol_img, thr_img, threshold)
+
+    thr_img = threshold_img(
+        surf_img_1d,
+        threshold=threshold,
+        mask_img=None,
+        copy_header=copy_header,
+    )
+
+    _check_thresholded_output(surf_img_1d, thr_img, threshold)
+
+    # same but with a mask
     threshold_img(
-        vol_img, threshold=1, mask_img=vol_mask, copy_header=copy_header
+        vol_img,
+        threshold=threshold,
+        mask_img=vol_mask,
+        copy_header=copy_header,
     )
     threshold_img(
         surf_img_1d,
-        threshold=1,
+        threshold=threshold,
         mask_img=surf_mask_1d,
         copy_header=copy_header,
     )
+
+
+def test_input_in_threshold_img_several_timepoints(
+    img_4d_rand_eye, surf_img_2d
+):
+    """Check threshold_img works with 2D surface OR 4D volume."""
+    threshold = 0.5
+
+    # setting copy_header to True to avoid warnings
+    # TODO remove when bumping to nilearn > 0.13
+    copy_header = True
+    thr_img = threshold_img(
+        img_4d_rand_eye, threshold=0.5, copy_header=copy_header
+    )
+
+    _check_thresholded_output(img_4d_rand_eye, thr_img, threshold)
+
+    original_image = surf_img_2d(5)
+    thr_img = threshold_img(original_image, threshold=0.5)
+
+    _check_thresholded_output(original_image, thr_img, threshold)
+
+
+def _check_thresholded_output(input, output, threshold):
+    """Check data was properly thresholed.
+
+    Assumes:
+    - a one-sided threshold that keeps data > threshold
+    - no extra mask used
+    """
+    if isinstance(input, Nifti1Image):
+        original_data = input.get_fdata()
+        data = output.get_fdata()
+    elif isinstance(input, SurfaceImage):
+        original_data = get_surface_data(input)
+        data = get_surface_data(output)
+
+    non_zero = data != 0
+    assert np.all(data[non_zero] > threshold)
+
+    data_to_mask = original_data < threshold
+    assert np.all(data[data_to_mask] == 0)
+
+
+def test_input_in_threshold_img_errors(
+    shape_3d_default, surf_img_1d, surf_mask_1d, affine_eye
+):
+    """Check invalid inputs to threshold_img ."""
+    vol_img, _ = generate_maps(shape_3d_default, n_regions=2)
+    vol_mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
 
     # invalid input: img is an int
     with pytest.raises(
@@ -893,9 +963,9 @@ def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
     For left hemisphere: 1 <= values < 10
     For right hemisphere: 10 <= values < 51
     """
-    new_img = threshold_img(surf_img_1d, threshold=threshold)
-    for hemi in new_img.data.parts:
-        data = new_img.data.parts[hemi]
+    thr_img = threshold_img(surf_img_1d, threshold=threshold)
+    for hemi in thr_img.data.parts:
+        data = thr_img.data.parts[hemi]
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
 
@@ -918,11 +988,11 @@ def test_threshold_surf_img_1d_with_mask(
     For left hemisphere: 1 <= values < 10
     For right hemisphere: 10 <= values < 51
     """
-    new_img = threshold_img(
+    thr_img = threshold_img(
         surf_img_1d, threshold=threshold, mask_img=surf_mask_1d
     )
-    for hemi in new_img.data.parts:
-        data = new_img.data.parts[hemi]
+    for hemi in thr_img.data.parts:
+        data = thr_img.data.parts[hemi]
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
 
@@ -953,11 +1023,11 @@ def test_threshold_surf_img_1d_negative_values(
     """
     surf_img_1d.data.parts["left"] *= -10
 
-    new_img = threshold_img(
+    thr_img = threshold_img(
         surf_img_1d, threshold=threshold, two_sided=two_sided
     )
-    for hemi in new_img.data.parts:
-        data = new_img.data.parts[hemi]
+    for hemi in thr_img.data.parts:
+        data = thr_img.data.parts[hemi]
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
 
@@ -1052,36 +1122,41 @@ def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     assert np.sum(thr_img.get_fdata() == 4) == 8
 
 
-@pytest.mark.parametrize("copy", [True, False])
-def test_threshold_img_copy_smoke(shape_3d_default, surf_img_1d, copy):
-    """Smoke test that copy can be used for both surface and volume."""
-    vol_img, _ = generate_maps(shape_3d_default, n_regions=2)
-    threshold_img(vol_img, threshold=1, copy=copy)
+def test_threshold_img_copy_surface(surf_img_1d):
+    """Smoke test that copy can be used with surface."""
+    # Check that copy does not mutate. It returns modified copy.
+    threshold = 0.2
 
-    threshold_img(surf_img_1d, threshold=1, copy=copy)
+    thresholded = threshold_img(surf_img_1d, threshold=threshold, copy=True)
+    with pytest.raises(AssertionError):
+        assert_surface_image_equal(thresholded, surf_img_1d)
+
+    # Check that not copying does mutate.
+    thr_img = threshold_img(surf_img_1d, threshold=threshold, copy=False)
+    assert assert_surface_image_equal(thr_img, surf_img_1d)
 
 
-def test_threshold_img_copy(img_4d_ones_eye):
+def test_threshold_img_copy_volume(img_4d_ones_eye):
     """Test the behavior of threshold_img's copy parameter."""
     # Check that copy does not mutate. It returns modified copy.
-    thresholded = threshold_img(
+    thr_img = threshold_img(
         img_4d_ones_eye, 2, copy_header=True
     )  # threshold 2 > 1
 
     # Original img_ones should have all ones.
     assert_array_equal(get_data(img_4d_ones_eye), np.ones(_shape_4d_default()))
     # Thresholded should have all zeros.
-    assert_array_equal(get_data(thresholded), np.zeros(_shape_4d_default()))
+    assert_array_equal(get_data(thr_img), np.zeros(_shape_4d_default()))
 
     # Check that not copying does mutate.
     img_to_mutate = img_4d_ones_eye
 
-    thresholded = threshold_img(img_to_mutate, 2, copy=False, copy_header=True)
+    thr_img = threshold_img(img_to_mutate, 2, copy=False, copy_header=True)
 
     # Check that original mutates
     assert_array_equal(get_data(img_to_mutate), np.zeros(_shape_4d_default()))
     # And that returned value is also thresholded.
-    assert_array_equal(get_data(img_to_mutate), get_data(thresholded))
+    assert_array_equal(get_data(img_to_mutate), get_data(thr_img))
 
 
 def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
@@ -1097,15 +1172,15 @@ def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
 
 def test_threshold_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
-    result = threshold_img(img_4d_mni_tr2, threshold=0.5, copy_header=True)
+    thr_img = threshold_img(img_4d_mni_tr2, threshold=0.5, copy_header=True)
     # only the min value should be different
     match_headers_keys(
-        result,
+        thr_img,
         img_4d_mni_tr2,
         except_keys=["cal_min"],
     )
     # min value should be 0 in the result
-    assert result.header["cal_min"] == 0
+    assert thr_img.header["cal_min"] == 0
 
 
 def test_math_img_exceptions(affine_eye, img_4d_ones_eye):

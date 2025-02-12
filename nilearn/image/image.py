@@ -40,10 +40,10 @@ from nilearn._utils.niimg_conversions import (
 )
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn._utils.typing import NiimgLike
 from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.surface import new_img_like as new_surface_img_like
+from nilearn.typing import NiimgLike
 
 
 def get_data(img):
@@ -1086,7 +1086,7 @@ def threshold_img(
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
         affine = img.affine
     else:
-        img_data = get_surface_data(img, ensure_finite=True)
+        img_data = get_surface_data(img, ensure_finite=True, copy_data=copy)
 
     img_data_for_cutoff = img_data
 
@@ -1138,19 +1138,18 @@ def threshold_img(
     else:
         img_data = _apply_threhold(img, two_sided, cutoff_threshold)
 
+    # Perform cluster thresholding, if requested
+
     # Expand to 4D to support both 3D and 4D
     expand = isinstance(img, NiimgLike) and img_data.ndim == 3
     if expand:
         img_data = img_data[:, :, :, None]
-
-    # Perform cluster thresholding, if requested
     if cluster_threshold > 0:
         for i_vol in range(img_data.shape[3]):
             img_data[..., i_vol] = _apply_cluster_size_threshold(
                 img_data[..., i_vol],
                 cluster_threshold,
             )
-
     if expand:
         # Reduce back to 3D
         img_data = img_data[:, :, :, 0]
@@ -1159,11 +1158,7 @@ def threshold_img(
     if isinstance(img, NiimgLike):
         return new_img_like(img, img_data, affine, copy_header=copy_header)
 
-    if copy:
-        return new_surface_img_like(img, img_data.data)
-    else:
-        img.data = img_data.data
-        return img
+    return new_surface_img_like(img, img_data.data)
 
 
 def _apply_threhold(img_data, two_sided, cutoff_threshold):

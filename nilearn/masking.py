@@ -13,7 +13,6 @@ from nilearn._utils.cache_mixin import cache
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.typing import NiimgLike
 from nilearn.datasets import (
     load_mni152_gm_template,
     load_mni152_template,
@@ -22,6 +21,7 @@ from nilearn.datasets import (
 from nilearn.image import get_data, new_img_like, resampling
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.typing import NiimgLike
 
 from . import _utils
 
