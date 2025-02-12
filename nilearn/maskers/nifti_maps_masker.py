@@ -672,7 +672,7 @@ class NiftiMapsMasker(BaseMasker):
             # kwargs
             verbose=self.verbose,
         )
-        self.labels_ = labels_
+        # self.labels_ = labels_
         return region_signals
 
     def inverse_transform(self, region_signals):
