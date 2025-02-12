@@ -32,15 +32,19 @@ the fMRI image in a different way:
 
 For the first two methods, there are two ways to input the fMRI image:
 using the file paths and using the pre-loaded in-memory objects. These two
-input methods can also affect the memory usage of the task. This is because
-when in-memory objects are loaded in a way that allows numpy memory mapping,
-only the segments of data that are accessed are loaded into memory. Joblib
-can handle this efficiently across multiple processes and this results in
-lower memory usage. However, when using file paths, the entire image is loaded
-into memory for each process, which can lead to higher memory usage.
+input methods can also affect the memory usage of the task, so we will
+also compare these variants of the first two methods.
 
-Therefore, we will also compare these two input methods for the first two
-methods.
+When using file paths, the entire image is loaded into memory for each process,
+and that is exactly the problem we described earlier.
+
+However, when fMRI images are loaded in a way that allows
+`numpy memory mapping <https://numpy.org/doc/stable/reference/generated/numpy.memmap.html>`_
+only the segments of data that are needed are read from the disk. Joblib
+can handle this efficiently across multiple processes and this results in
+lower memory usage. We will see that this can already be a significant
+improvement over the naive usage of :class:`~nilearn.maskers.NiftiMasker` with
+file paths.
 """
 
 # %%
