@@ -355,7 +355,7 @@ def report_nifti_maps_masker(build_type):
     masker = NiftiMapsMasker(
         maps_img=atlas_filename,
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
         cmap="gray",
         memory_level=1,
@@ -474,7 +474,7 @@ def report_multi_nifti_labels_masker(build_type):
     masker = MultiNiftiLabelsMasker(
         labels_img=yeo["maps"],
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
         n_jobs=2,
         memory_level=1,
@@ -510,7 +510,7 @@ def report_multi_nifti_maps_masker(build_type):
     masker = MultiNiftiMapsMasker(
         maps_img=difumo.maps,
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
         memory_level=1,
         n_jobs=2,
