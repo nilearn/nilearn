@@ -6,9 +6,6 @@ Here, we will go through a full step-by-step example of fitting a GLM
 to experimental data and visualizing the results.
 This is done on two runs of one subject of the FIAC dataset.
 
-For more details on the data,
-please see experiment 2 in :footcite:t:`Dehaene2006`.
-
 Here are the steps we will go through:
 
 1. Set up the GLM
@@ -20,6 +17,11 @@ Technically, this example shows how to handle two runs
 that contain the same experimental conditions.
 The model directly returns a fixed effect
 of the statistics across the two runs.
+
+.. seealso::
+
+    See the :ref:`dataset description <fiac_dataset>`
+    for more information on the data used in this example.
 """
 
 # %%
@@ -36,9 +38,9 @@ print(f"Output will be saved to: {output_dir}")
 # --------------
 # Inspecting 'data', we note that there are two runs.
 # We will retain those two runs in a list of 4D img objects.
-from nilearn.datasets import func
+from nilearn.datasets.func import fetch_fiac_first_level
 
-data = func.fetch_fiac_first_level()
+data = fetch_fiac_first_level()
 fmri_imgs = [data["func1"], data["func2"]]
 
 # %%
@@ -51,10 +53,8 @@ mean_img_ = mean_img(fmri_imgs[0], copy_header=True)
 # The design matrices were pre-computed,
 # we simply put them in a list of DataFrames.
 import numpy as np
-import pandas as pd
 
-design_files = [data["design_matrix1"], data["design_matrix2"]]
-design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
+design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 
 
 # %%
@@ -77,15 +77,15 @@ fmri_glm = FirstLevelModel(
 # We can then compare run-specific and fixed effects.
 # Here, we compare the activation produced from each run separately
 # and then the fixed effects version.
-cut_coords = [-129, -126, 49]
 contrast_id = "DSt_minus_SSt"
 
 # %%
 # Compute the statistics for the first run.
-from nilearn import plotting
-
+#
 # Here, we define the contrast of interest for the first run.
 # This may differ across runs depending on if the design matrices vary.
+from nilearn.plotting import plot_stat_map, show
+
 contrast_val = [[-1, -1, 1, 1]]
 
 fmri_glm_run_1 = fmri_glm.fit(fmri_imgs[0], design_matrices=design_matrices[0])
@@ -93,13 +93,22 @@ summary_statistics_run_1 = fmri_glm_run_1.compute_contrast(
     contrast_val,
     output_type="all",
 )
-plotting.plot_stat_map(
+
+# Let's use the same plotting range and slices for all plots.
+threshold = 3
+vmax = 6.0
+cut_coords = [-129, -126, 49]
+
+plot_stat_map(
     summary_statistics_run_1["z_score"],
     bg_img=mean_img_,
-    threshold=3.0,
+    threshold=threshold,
     cut_coords=cut_coords,
     title=f"{contrast_id}, first run",
+    vmax=vmax,
 )
+
+show()
 
 # %%
 # Compute the statistics for the second run.
@@ -111,13 +120,16 @@ summary_statistics_run_2 = fmri_glm_run_2.compute_contrast(
     contrast_val,
     output_type="all",
 )
-plotting.plot_stat_map(
+plot_stat_map(
     summary_statistics_run_2["z_score"],
     bg_img=mean_img_,
-    threshold=3.0,
+    threshold=threshold,
     cut_coords=cut_coords,
     title=f"{contrast_id}, second run",
+    vmax=vmax,
 )
+
+show()
 
 # %%
 # Compute the fixed effects statistics
@@ -142,13 +154,17 @@ fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
     variance_imgs,
     data["mask"],
 )
-plotting.plot_stat_map(
+plot_stat_map(
     fixed_fx_stat,
     bg_img=mean_img_,
-    threshold=3.0,
+    threshold=threshold,
     cut_coords=cut_coords,
     title=f"{contrast_id}, fixed effects",
+    vmax=vmax,
 )
+
+show()
+
 
 # %%
 # Not unexpectedly, the fixed effects version displays higher peaks
@@ -169,6 +185,7 @@ plotting.plot_stat_map(
 # we can again reuse the first run's contrast vector.
 fmri_glm_multirun = fmri_glm.fit(fmri_imgs, design_matrices=design_matrices)
 
+# %%
 # We can just define the contrast array for one run and assume
 # that the design matrix is the same for the other.
 # However, if we want to be safe, we should define each contrast separately,
@@ -182,15 +199,16 @@ z_map = fmri_glm_multirun.compute_contrast(
     contrast_val,
     output_type="z_score",
 )
-plotting.plot_stat_map(
+plot_stat_map(
     z_map,
     bg_img=mean_img_,
-    threshold=3.0,
+    threshold=threshold,
     cut_coords=cut_coords,
     title=f"{contrast_id}, fixed effects",
+    vmax=vmax,
 )
 
-plotting.show()
+show()
 
 # %%
 # You may note that the results are the same as the first fixed effects
@@ -245,14 +263,11 @@ report = fmri_glm_multirun.generate_report(
 # %%
 # We have several ways to access the report:
 
-# report  # This report can be viewed in a notebook
+# This report can be viewed in a notebook
+report
+
+# Or in a separate browser window
 # report.open_in_browser()
 
 # or we can save as an html file
-# report.save_as_html(output_dir / 'report.html')
-
-# %%
-# References
-# ----------
-#
-# .. footbibliography::
+report.save_as_html(output_dir / "report.html")
