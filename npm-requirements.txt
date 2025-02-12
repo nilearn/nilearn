@@ -1,1 +1,1 @@
-@niivue/niivue@0.39.0
+@niivue/niivue@0.38.0
