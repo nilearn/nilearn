@@ -53,6 +53,7 @@ mean_data = masked_data.mean(axis=0)
 mean_img = masker.inverse_transform(mean_data)
 print(f"Image mean: {mean_img}")
 
+# %%
 # let's create a figure with all the views for both hemispheres
 views = [
     "lateral",
@@ -64,6 +65,7 @@ views = [
 ]
 hemispheres = ["left", "right", "both"]
 
+# %%
 # for our plots we will be using the fsaverage sulcal data as background map
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 
@@ -77,6 +79,7 @@ axes = np.atleast_2d(axes)
 
 mean_img = threshold_img(mean_img, threshold=1e-08, copy=False, two_sided=True)
 
+# %%
 # Let's ensure that we have the same range
 # centered on 0 for all subplots.
 vmax = max(np.absolute(hemi).max() for hemi in mean_img.data.parts.values())
@@ -126,6 +129,7 @@ from nilearn.surface import SurfaceImage
 fsaverage = load_fsaverage("fsaverage5")
 destrieux = fetch_atlas_surf_destrieux()
 
+# %%
 # Let's create a surface image
 # for this atlas.
 labels_img = SurfaceImage(
@@ -153,6 +157,7 @@ connectome = connectome_measure.fit([masked_data])
 vmax = np.absolute(connectome.mean_).max()
 vmin = -vmax
 
+# %%
 # We only print every 3rd label
 # for a more legible figure.
 labels = []

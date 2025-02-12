@@ -18,9 +18,11 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from nilearn import image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     check_surface_plotting_inputs,
     sanitize_hemi_for_surface_image,
+    save_figure_if_needed,
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
@@ -760,10 +762,8 @@ def _plot_surf_matplotlib(
 
     if title is not None:
         axes.set_title(title)
-    if output_file is None:
-        return figure
-    figure.savefig(output_file)
-    plt.close()
+
+    return save_figure_if_needed(figure, output_file)
 
 
 @fill_doc
@@ -984,6 +984,7 @@ def plot_surf(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
+    check_params(locals())
     if view is None:
         view = "dorsal" if hemi == "both" else "lateral"
 
@@ -1303,10 +1304,8 @@ def plot_surf_contours(
         title = figure._suptitle._text
     if title:
         axes.set_title(title)
-    if output_file is None:
-        return figure
-    figure.savefig(output_file)
-    plt.close(figure)
+
+    return save_figure_if_needed(figure, output_file)
 
 
 def _check_figure_axes_inputs_plot_surf_contours(figure, axes):
@@ -1516,6 +1515,7 @@ def plot_surf_stat_map(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
     # set default view to dorsal if hemi is both and view is not set
+    check_params(locals())
     if view is None:
         view = "dorsal" if hemi == "both" else "lateral"
 
@@ -1793,6 +1793,7 @@ def plot_img_on_surf(
         accepted by plot_img_on_surf.
 
     """
+    check_params(locals())
     if hemispheres in (None, "both"):
         hemispheres = ["left", "right"]
     if views is None:
@@ -2101,6 +2102,7 @@ def plot_surf_roi(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
     # set default view to dorsal if hemi is both and view is not set
+    check_params(locals())
     if view is None:
         view = "dorsal" if hemi == "both" else "lateral"
 
@@ -2119,9 +2121,9 @@ def plot_surf_roi(
 
     idx_not_na = ~np.isnan(roi)
     if vmin is None:
-        vmin = np.nanmin(roi)
+        vmin = float(np.nanmin(roi))
     if vmax is None:
-        vmax = 1 + np.nanmax(roi)
+        vmax = float(1 + np.nanmax(roi))
 
     mesh = load_surf_mesh(surf_mesh)
 

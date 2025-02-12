@@ -1,3 +1,5 @@
+"""Test related to importing nilearn optional dependencies are missing."""
+
 import sys
 
 import pytest

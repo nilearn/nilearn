@@ -12,9 +12,10 @@ from matplotlib.transforms import Bbox
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
+from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
-from nilearn.plotting._utils import _check_threshold
+from nilearn.plotting._utils import check_threshold_not_negative
 from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._axes import coords_3d_to_2d
 from nilearn.plotting.edge_detect import edge_map
@@ -144,7 +145,8 @@ class BaseSlicer:
         ValueError
             if the specified threshold is a negative number
         """
-        _check_threshold(threshold)
+        check_params(locals())
+        check_threshold_not_negative(threshold)
 
         # deal with "fake" 4D images
         if img is not None and img is not False:
@@ -313,7 +315,7 @@ class BaseSlicer:
         ValueError
             if the specified threshold is a negative number
         """
-        _check_threshold(threshold)
+        check_threshold_not_negative(threshold)
 
         if colorbar and self._colorbar:
             raise ValueError(
@@ -384,7 +386,7 @@ class BaseSlicer:
         if not filled:
             threshold = None
         else:
-            _check_threshold(threshold)
+            check_threshold_not_negative(threshold)
 
         self._map_show(img, type="contour", threshold=threshold, **kwargs)
         if filled:
@@ -487,8 +489,8 @@ class BaseSlicer:
                 data_2d = self._threshold(
                     data_2d,
                     threshold,
-                    vmin=kwargs.get("vmin"),
-                    vmax=kwargs.get("vmax"),
+                    vmin=float(kwargs.get("vmin")),
+                    vmax=float(kwargs.get("vmax")),
                 )
 
                 im = display_ax.draw_2d(
@@ -517,7 +519,8 @@ class BaseSlicer:
         ValueError
             if the specified threshold is a negative number
         """
-        _check_threshold(threshold)
+        check_params(locals())
+        check_threshold_not_negative(threshold)
 
         if threshold is not None:
             data = np.ma.masked_where(

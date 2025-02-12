@@ -485,14 +485,20 @@ def test_4d_reports(mask, affine_eye):
     _check_html(html)
 
 
-def test_overlaid_report(img_3d_mni):
-    pytest.importorskip("matplotlib")
+def test_overlaid_report(img_fmri):
+    """Check empty report generated before fit and with image after."""
+    masker = NiftiMasker(
+        mask_strategy="whole-brain-template",
+        mask_args={"threshold": 0.0},
+        target_affine=np.eye(3) * 3,
+    )
+    html = masker.generate_report()
 
-    masker = NiftiMasker(target_affine=np.eye(3) * 8)
-    html = masker.generate_report()
     assert "Make sure to run `fit`" in str(html)
-    masker.fit(img_3d_mni)
+
+    masker.fit(img_fmri)
     html = masker.generate_report()
+
     assert '<div class="overlay">' in str(html)
 
 

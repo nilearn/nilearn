@@ -11,6 +11,7 @@ from joblib import Memory
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
 from nilearn.maskers._utils import (
     compute_middle_image,
@@ -415,13 +416,8 @@ class NiftiMasker(BaseMasker):
 
         return [init_display, final_display]
 
-    def _check_fitted(self):
-        if not hasattr(self, "mask_img_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been "
-                "fitted. "
-                "You must call fit() before calling transform()."
-            )
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "mask_img_")
 
     def fit(
         self,
@@ -442,6 +438,8 @@ class NiftiMasker(BaseMasker):
             compatibility.
 
         """
+        check_params(self.__dict__)
+
         self._report_content = {
             "description": (
                 "This report shows the input Nifti image overlaid "
@@ -479,9 +477,9 @@ class NiftiMasker(BaseMasker):
                     "if no mask is passed to mask_img."
                 )
             mask_args = self.mask_args if self.mask_args is not None else {}
-            compute_mask = _get_mask_strategy(self.mask_strategy)
 
             logger.log("Computing the mask", verbose=self.verbose)
+            compute_mask = _get_mask_strategy(self.mask_strategy)
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
             )
@@ -526,7 +524,7 @@ class NiftiMasker(BaseMasker):
             self.affine_ = self.mask_img_.affine
 
         # Load data in memory, while also checking that mask is binary/valid
-        data, _ = load_mask_img(self.mask_img_, allow_empty=True)
+        data, _ = load_mask_img(self.mask_img_, allow_empty=False)
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())

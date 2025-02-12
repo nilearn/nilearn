@@ -251,13 +251,13 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 25
+max-complexity = 22
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
-"**/{tests}/**/test_*" = ["D100", "E402"]
 "__init__.py" = ["D104", "E402"]
+"nilearn/**/tests/test_*" = ["D100"]
 "nilearn/_utils/*" = ["B028"]  # 7 errors to fix
 "nilearn/connectome/*" = ["B028"]  # 5 errors to fix
 "nilearn/connectome/**/{tests}/*" = ["D103"]  # 35 errors to fix
@@ -278,7 +278,6 @@ max-complexity = 25
 "nilearn/reporting/**/{tests}/*" = ["D103"]  # 27 errors to fix
 "nilearn/signal.py" = ["B028"]  # 11 errors to fix
 "nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
-"nilearn/tests/*" = ["D103"]  # 31 errors to fix
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -287,8 +286,8 @@ convention = "numpy"
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 26
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
-max-branches = 27
+max-branches = 24
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 108
+max-statements = 93
