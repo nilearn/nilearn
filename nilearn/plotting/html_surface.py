@@ -7,7 +7,6 @@ from warnings import warn
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import colormaps
 
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
@@ -156,7 +155,7 @@ def _matplotlib_cm_to_niivue_cm(cmap):
 
     Parameters
     ----------
-    cmap_name : str
+    cmap_name : str or Colormap
         Name of the colormap to convert.
 
     Returns
@@ -176,14 +175,8 @@ def _matplotlib_cm_to_niivue_cm(cmap):
     reverse = False
 
     if isinstance(cmap, str):
-        if cmap not in list(colormaps) and cmap not in cm._cmap_d:
-            warn(f"Colormap not available: {cmap}", stacklevel=4)
-            return None
-
         name = cmap
-
         spec = plt.get_cmap(name)
-
     else:
         spec = cmap
         name = cmap.name
