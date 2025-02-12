@@ -88,4 +88,6 @@ else:
         # estimator that are maskers
         # TODO: implement a masker_tags attribute
         masker: bool = False
+        maps_masker: bool = False
+        labels_masker: bool = False
         multi_masker: bool = False
