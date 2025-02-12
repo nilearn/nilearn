@@ -278,8 +278,6 @@ max-complexity = 22
 "nilearn/reporting/**/{tests}/*" = ["D103"]  # 27 errors to fix
 "nilearn/signal.py" = ["B028"]  # 11 errors to fix
 "nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
-"nilearn/tests/test_package_import.py" = ["D103"]
-"nilearn/tests/test_signal.py" = ["D103"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
