@@ -429,6 +429,7 @@ sphinx_gallery_conf = {
         "use_jupyter_lab": True,
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
+    "within_subsection_order": "ExampleTitleSortKey",
 }
 
 mermaid_version = "11.4.0"
