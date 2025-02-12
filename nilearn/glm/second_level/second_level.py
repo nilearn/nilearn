@@ -17,7 +17,8 @@ from nibabel.funcs import four_to_three
 from sklearn.base import clone
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
@@ -567,11 +568,7 @@ class SecondLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
 
-        if self.memory is None:
-            self.memory = Memory(None)
-        self.memory = stringify_path(self.memory)
-        if isinstance(self.memory, str):
-            self.memory = Memory(self.memory)
+        self.memory = check_memory(self.memory)
 
         # check second_level_input
         _check_second_level_input(
