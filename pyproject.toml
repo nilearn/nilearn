@@ -275,7 +275,6 @@ max-complexity = 22
 "nilearn/plotting/*" = ["B028"]  # 18 errors to fix
 "nilearn/plotting/**/{tests}/*" = ["D103"]  # 123 errors to fix
 "nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
-"nilearn/reporting/**/{tests}/*" = ["D103"]  # 27 errors to fix
 "nilearn/signal.py" = ["B028"]  # 11 errors to fix
 "nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
 "nilearn/tests/test_package_import.py" = ["D103"]

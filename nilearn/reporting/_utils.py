@@ -1,6 +1,5 @@
 """Utility functions that do not require matplotlib."""
 
-import os
 import warnings
 from collections import OrderedDict
 from collections.abc import Iterable
@@ -81,6 +80,7 @@ def clustering_params_to_dataframe(
     """
     table_details = OrderedDict()
     threshold = np.around(threshold, 3)
+
     if height_control:
         table_details.update({"Height control": height_control})
         # HTMLDocument.get_iframe() invoked in Python2 Jupyter Notebooks
@@ -90,14 +90,12 @@ def clustering_params_to_dataframe(
         # especially given limited Python2 use at time of release.
         if alpha < 0.001:
             alpha = f"{Decimal(alpha):.2E}"
-        if os.sys.version_info.major == 2:
-            table_details.update({"alpha": alpha})
-        else:
-            table_details.update({"\u03b1": alpha})
+        table_details.update({"\u03b1": alpha})
         table_details.update({"Threshold (computed)": threshold})
     else:
         table_details.update({"Height control": "None"})
         table_details.update({"Threshold Z": threshold})
+
     table_details.update(
         {"Cluster size threshold (voxels)": cluster_threshold}
     )
