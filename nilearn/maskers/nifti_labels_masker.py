@@ -3,7 +3,6 @@
 import warnings
 
 import numpy as np
-from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -541,9 +540,6 @@ class NiftiLabelsMasker(BaseMasker):
                 "invalid value for 'resampling_target' "
                 f"parameter: {self.resampling_target}"
             )
-
-        if self.memory is None:
-            self.memory = Memory(location=None, verbose=0)
 
         self = sanitize_cleaning_parameters(self)
 

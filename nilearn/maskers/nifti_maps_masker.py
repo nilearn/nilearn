@@ -3,7 +3,6 @@
 import warnings
 
 import numpy as np
-from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
@@ -407,9 +406,6 @@ class NiftiMapsMasker(BaseMasker):
                 "has been provided.\n"
                 "Set resampling_target to something else or provide a mask."
             )
-
-        if self.memory is None:
-            self.memory = Memory(location=None, verbose=0)
 
         self = sanitize_cleaning_parameters(self)
 
