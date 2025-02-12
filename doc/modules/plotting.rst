@@ -50,8 +50,8 @@ Functions
    view_img
 
 
-:mod:`nilearn.plotting`: Comparing images
-=========================================
+:mod:`nilearn.plotting.img_comparison`: Comparing images
+========================================================
 
 .. automodule:: nilearn.plotting.img_comparison
    :no-members:
