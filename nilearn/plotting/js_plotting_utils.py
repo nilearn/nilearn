@@ -94,10 +94,8 @@ def colorscale_niivue(values, vmax, threshold=None):
 
     if vmax is None:
         vmax = abs_values.max()
-    # cast to float to avoid TypeError if vmax is a numpy boolean
-    vmax = float(vmax)
 
-    return vmax, threshold
+    return float(vmax), float(threshold)
 
 
 def colorscale(
