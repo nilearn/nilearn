@@ -19,7 +19,7 @@ about the plotting data and associated meta-data.
 
 # %%
 # Load the data
-# ------------------
+# -------------
 #
 # We will use a motor activation :term:`contrast` map distributed with Nilearn.
 from nilearn import datasets
@@ -157,12 +157,12 @@ plot_glass_brain(
 
 # %%
 # If you are only interested in single projections, you can set
-# ``display_mode`` to 'x' (returns a
-# :class:`~nilearn.plotting.displays.XProjector`), 'y' (returns a
-# :class:`~nilearn.plotting.displays.YProjector`), 'z' (returns a
-# :class:`~nilearn.plotting.displays.ZProjector`), 'l' (returns a
-# :class:`~nilearn.plotting.displays.LProjector`), or 'r' (returns a
-# :class:`~nilearn.plotting.displays.RProjector`).
+# ``display_mode`` to
+# 'x' (returns a :class:`~nilearn.plotting.displays.XProjector`),
+# 'y' (returns a :class:`~nilearn.plotting.displays.YProjector`),
+# 'z' (returns a :class:`~nilearn.plotting.displays.ZProjector`),
+# 'l' (returns a :class:`~nilearn.plotting.displays.LProjector`), or
+# 'r' (returns a :class:`~nilearn.plotting.displays.RProjector`).
 
 plot_glass_brain(
     stat_img,
@@ -175,8 +175,8 @@ plot_glass_brain(
 
 
 # %%
-# Demo glass brain plotting with contours and with fillings
-# ---------------------------------------------------------
+# Contours and with fillings
+# --------------------------
 #
 # The display objects returned by :func:`~nilearn.plotting.plot_glass_brain`
 # all inherit from the :class:`~nilearn.plotting.displays.OrthoProjector`
@@ -250,8 +250,8 @@ display.title("Glass brain with black background and filled in contours")
 
 
 # %%
-# Display contour projections in both hemispheres
-# -----------------------------------------------
+# Contour projections in both hemispheres
+# ---------------------------------------
 #
 # The key argument to vary here is ``display_mode`` for hemispheric plotting.
 # Here, we set ``display_mode='lr'`` for both hemispheric plots. Note that a

@@ -1,10 +1,49 @@
+from pathlib import Path
 from warnings import warn
+
+import matplotlib.pyplot as plt
 
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
 )
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
+
+
+def save_figure_if_needed(fig, output_file):
+    """Save figure if an output file value is given.
+
+    Create output path if required.
+
+    Parameters
+    ----------
+    fig: figure, axes, or display instance
+
+    output_file: str, Path or None
+
+    Returns
+    -------
+    None if ``output_file`` is None, ``fig`` otherwise.
+    """
+    # avoid circular import
+    from nilearn.plotting.displays import BaseSlicer
+
+    if output_file is None:
+        return fig
+
+    output_file = Path(output_file)
+    output_file.parent.mkdir(exist_ok=True, parents=True)
+
+    if not isinstance(fig, (plt.Figure, BaseSlicer)):
+        fig = fig.figure
+
+    fig.savefig(output_file)
+    if isinstance(fig, plt.Figure):
+        plt.close(fig)
+    else:
+        fig.close()
+
+    return None
 
 
 def sanitize_hemi_for_surface_image(hemi, map, mesh):
@@ -141,6 +180,7 @@ def _get_hemi(mesh, hemi):
         raise ValueError("hemi must be one of left, right or both.")
 
 
-def _check_threshold(threshold):
+def check_threshold_not_negative(threshold):
+    """Make sure threshold is non negative number."""
     if isinstance(threshold, (int, float)) and threshold < 0:
         raise ValueError("Threshold should be a non-negative number!")

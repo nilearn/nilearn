@@ -186,7 +186,7 @@ docdict["classifier_options"] = f"""
 
 """
 
-# cmap
+# clean_args
 docdict["clean_args"] = """
 clean_args : :obj:`dict` or None, default=None
     Keyword arguments to be passed
@@ -673,7 +673,7 @@ opening : :obj:`bool` or :obj:`int`, optional
 
 # output_file
 docdict["output_file"] = """
-output_file : :obj:`str`, or None, optional
+output_file : :obj:`str` or :obj:`pathlib.Path` or None, optional
     The name of an image file to export the plot to.
     Valid extensions are .png, .pdf, .svg.
     If `output_file` is not `None`, the plot is saved to a file,

@@ -1,6 +1,5 @@
 """Generate HTML reports."""
 
-import copy
 import html
 import uuid
 import warnings
@@ -12,14 +11,16 @@ from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.plotting.html_document import HTMLDocument
+from nilearn.reporting._utils import (
+    dataframe_to_html,
+    model_attributes_to_dataframe,
+)
 from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_PARTIALS_PATH,
     HTML_TEMPLATE_PATH,
     JS_PATH,
-    dataframe_to_html,
     figure_to_svg_base64,
-    model_attributes_to_dataframe,
 )
 
 ESTIMATOR_TEMPLATES = {
@@ -104,22 +105,6 @@ def embed_img(display):
     if isinstance(display, str):
         return display
     return figure_to_svg_base64(display.frame_axes.figure)
-
-
-def _str_params(params):
-    """Convert NoneType values to the string 'None' for display.
-
-    Parameters
-    ----------
-    params : dict
-        A dictionary of input values to a function.
-
-    """
-    params_str = copy.deepcopy(params)
-    for k, v in params_str.items():
-        if v is None:
-            params_str[k] = "None"
-    return params_str
 
 
 def _update_template(
@@ -353,13 +338,6 @@ def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
         displayed_maps=displayed_maps,
         unique_id=unique_id,
     )
-
-
-def _render_parameters_partial(parameters):
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(HTML_PARTIALS_PATH / "parameters.html"), encoding="utf-8"
-    )
-    return tpl.substitute(parameters=parameters)
 
 
 def _render_warnings_partial(warning_messages):

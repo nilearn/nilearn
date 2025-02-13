@@ -215,6 +215,16 @@ show()
 # %%
 # We can get a latex table from a Pandas Dataframe for display and publication
 # purposes
+#
+# .. seealso::
+#
+#     This function does not report any named anatomical location
+#     for the clusters.
+#     To get the names of the location of the clusters
+#     according to one or several atlases,
+#     we recommend using
+#     the `atlasreader package <https://github.com/miykael/atlasreader>`_.
+#
 from nilearn.reporting import get_clusters_table
 
 table = get_clusters_table(z_map, norm.isf(0.001), 10)
