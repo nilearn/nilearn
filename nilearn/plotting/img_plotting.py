@@ -1744,7 +1744,8 @@ def plot_glass_brain(
         cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
         radiological=radiological,
-        transparency=transparency**kwargs,
+        transparency=transparency,
+        **kwargs,
     )
 
     if stat_map_img is None and "l" in display.axes:
