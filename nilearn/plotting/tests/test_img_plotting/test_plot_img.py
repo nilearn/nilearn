@@ -114,6 +114,7 @@ def test_display_methods_with_display_mode_tiled(
     )
 
 
-def test_plot_img_transparency(matplotlib_pyplot, img_3d_mni):
+def test_plot_img_transparency(matplotlib_pyplot, img_3d_ones_mni, img_3d_mni):
     """Smoke tests for transparency parameter to determine alpha layer."""
-    plot_img(img_3d_mni, transparency=0.5)
+    plot_img(img_3d_ones_mni, transparency=0.5)
+    plot_img(img_3d_ones_mni, transparency=img_3d_mni)

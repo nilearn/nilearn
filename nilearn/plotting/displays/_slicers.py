@@ -2,6 +2,7 @@ import collections
 import contextlib
 import numbers
 import warnings
+from pathlib import Path
 from typing import ClassVar
 
 import matplotlib.pyplot as plt
@@ -9,6 +10,7 @@ import numpy as np
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
+from nibabel import Nifti1Image
 
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.docs import fill_doc
@@ -328,28 +330,6 @@ class BaseSlicer:
                 "This figure already has an overlay with a colorbar."
             )
 
-        if transparency is None:
-            transparency = 1.0
-        if isinstance(transparency, (float, int)):
-            if transparency > 1:
-                warnings.warn(
-                    "'transparency' must be <= 1. Setting it to 1.0."
-                )
-                transparency = 1.0
-            if transparency < 0:
-                warnings.warn("'transparency' must be > 0. Setting it to 0.0.")
-                transparency = 0.0
-
-        if "alpha" in kwargs:
-            warnings.warn(
-                f"{kwargs["alpha"]=} detected in parameters.\n"
-                f"Overriding with {transparency=}.\n"
-                "To suppress this warning pass "
-                "your 'alpha' value "
-                "via the 'transparency' parameter."
-            )
-        kwargs["alpha"] = transparency
-
         self._colorbar = colorbar
         self._cbar_tick_format = cbar_tick_format
 
@@ -358,7 +338,13 @@ class BaseSlicer:
         # Make sure that add_overlay shows consistent default behavior
         # with plot_stat_map
         kwargs.setdefault("interpolation", "nearest")
-        ims = self._map_show(img, type="imshow", threshold=threshold, **kwargs)
+        ims = self._map_show(
+            img,
+            type="imshow",
+            threshold=threshold,
+            transparency=transparency,
+            **kwargs,
+        )
 
         # `ims` can be empty in some corner cases,
         # look at test_img_plotting.test_outlier_cut_coords.
@@ -436,6 +422,7 @@ class BaseSlicer:
         type="imshow",
         resampling_interpolation="continuous",
         threshold=None,
+        transparency=None,
         **kwargs,
     ):
         # In the special case where the affine of img is not diagonal,
@@ -445,22 +432,54 @@ class BaseSlicer:
         # case where this image is binary, such as when this function
         # is called from `add_contours`, continuous interpolation
         # does not make sense and we turn to nearest interpolation instead.
+        if transparency is None:
+            transparency = 1.0
+        if isinstance(transparency, (float, int)):
+            if transparency > 1:
+                warnings.warn(
+                    "'transparency' must be <= 1. Setting it to 1.0."
+                )
+                transparency = 1.0
+            if transparency < 0:
+                warnings.warn("'transparency' must be > 0. Setting it to 0.0.")
+                transparency = 0.0
+
         if is_binary_niimg(img):
             img = reorder_img(img, resample="nearest", copy_header=True)
+            if isinstance(transparency, (str, Path, Nifti1Image)):
+                transparency = check_niimg_3d(transparency)
+                transparency = reorder_img(
+                    transparency, resample="nearest", copy_header=True
+                )
         else:
             img = reorder_img(
                 img, resample=resampling_interpolation, copy_header=True
             )
+            if isinstance(transparency, (str, Path, Nifti1Image)):
+                transparency = check_niimg_3d(transparency)
+                transparency = reorder_img(
+                    transparency,
+                    resample=resampling_interpolation,
+                    copy_header=True,
+                )
+                #  TODO resample to input image
+
         affine = img.affine
+
         if threshold is not None:
             threshold = float(threshold)
             data = safe_get_data(img, ensure_finite=True)
             data = self._threshold(data, threshold, None, None)
             img = new_img_like(img, data, affine)
+            # TODO : apply threshold to transparency ???
 
         data = safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
+
+        if isinstance(transparency, (str, Path, Nifti1Image)):
+            transparency = safe_get_data(transparency, ensure_finite=True)
+        assert isinstance(transparency, (int, float, np.ndarray))
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = (
             xmin,
@@ -490,14 +509,22 @@ class BaseSlicer:
             )
 
         data_2d_list = []
+        transparency_list = []
         for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
+                if isinstance(transparency, (np.ndarray)):
+                    transparency_2d = display_ax.transform_to_2d(
+                        transparency, affine
+                    )
+                else:
+                    transparency_2d = transparency
             except IndexError:
                 # We are cutting outside the indices of the data
                 data_2d = None
 
             data_2d_list.append(data_2d)
+            transparency_list.append(transparency_2d)
 
         if kwargs.get("vmin") is None:
             kwargs["vmin"] = np.ma.min(
@@ -510,8 +537,10 @@ class BaseSlicer:
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
         ims = []
-        to_iterate_over = zip(self.axes.values(), data_2d_list)
-        for display_ax, data_2d in to_iterate_over:
+        to_iterate_over = zip(
+            self.axes.values(), data_2d_list, transparency_list
+        )
+        for display_ax, data_2d, transparency_2d in to_iterate_over:
             # If data_2d is completely masked, then there is nothing to
             # plot. Hence, no point to do imshow().
             if data_2d is not None:
@@ -523,7 +552,12 @@ class BaseSlicer:
                 )
 
                 im = display_ax.draw_2d(
-                    data_2d, data_bounds, bounding_box, type=type, **kwargs
+                    data_2d,
+                    data_bounds,
+                    bounding_box,
+                    type=type,
+                    transparency=transparency_2d,
+                    **kwargs,
                 )
                 ims.append(im)
         return ims

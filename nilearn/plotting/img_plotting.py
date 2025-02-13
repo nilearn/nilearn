@@ -179,6 +179,7 @@ def _plot_img_with_bg(
     brain_color=(0.5, 0.5, 0.5),
     decimals=False,
     radiological=False,
+    transparency=None,
     **kwargs,
 ):
     """Refer to the docstring of plot_img for parameters not listed below.
@@ -242,6 +243,10 @@ def _plot_img_with_bg(
         the slice position is integer without decimal point.
 
     %(radiological)s
+
+    transparency : :obj:`float` between 0 and 1, or None, default = None
+        Value to be passed as alpha to :func:`~matplotlib.pyplot.imshow`.
+        if ``None`` is passed, it will be set to 1.
 
     kwargs :  extra keyword arguments, optional
         Extra keyword arguments passed
@@ -338,6 +343,7 @@ def _plot_img_with_bg(
             cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax,
             cbar_tick_format=cbar_tick_format,
+            transparency=transparency,
             **kwargs,
         )
     if radiological:
@@ -409,6 +415,7 @@ def plot_img(
     radiological=False,
     decimals=False,
     cmap="gray",
+    transparency=None,
     **kwargs,
 ):
     """Plot cuts of a given image.
@@ -468,6 +475,10 @@ def plot_img(
     %(cmap)s
         default="gray"
 
+    transparency : :obj:`float` between 0 and 1, or None, default = None
+        Value to be passed as alpha to :func:`~matplotlib.pyplot.imshow`.
+        if ``None`` is passed, it will be set to 1.
+
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
@@ -526,6 +537,7 @@ def plot_img(
         radiological=radiological,
         decimals=decimals,
         cmap=cmap,
+        transparency=transparency,
         **kwargs,
     )
 
