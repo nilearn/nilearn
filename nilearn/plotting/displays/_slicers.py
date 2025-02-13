@@ -1,6 +1,7 @@
 import collections
 import contextlib
 import numbers
+import warnings
 from typing import ClassVar
 
 import matplotlib.pyplot as plt
@@ -274,6 +275,7 @@ class BaseSlicer:
         cbar_tick_format="%.2g",
         cbar_vmin=None,
         cbar_vmax=None,
+        transparency=None,
         **kwargs,
     ):
         """Plot a 3D map in all the views.
@@ -298,10 +300,6 @@ class BaseSlicer:
         colorbar : :obj:`bool`, default=False
             If ``True``, display a colorbar on the right of the plots.
 
-        kwargs : :obj:`dict`
-            Extra keyword arguments are passed to function
-            :func:`~matplotlib.pyplot.imshow`.
-
         cbar_vmin : :obj:`float`, optional
             Minimal value for the colorbar. If None, the minimal value
             is computed based on the data.
@@ -309,6 +307,14 @@ class BaseSlicer:
         cbar_vmax : :obj:`float`, optional
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
+
+        transparency : :obj:`float` between 0 and 1, or None, default = None
+            Value to be passed as alpha to :func:`~matplotlib.pyplot.imshow`.
+            if ``None`` is passed, it will be set to 1.
+
+        kwargs : :obj:`dict`
+            Extra keyword arguments are passed to function
+            :func:`~matplotlib.pyplot.imshow`.
 
         Raises
         ------
@@ -321,6 +327,29 @@ class BaseSlicer:
             raise ValueError(
                 "This figure already has an overlay with a colorbar."
             )
+
+        if transparency is None:
+            transparency = 1.0
+        if isinstance(transparency, (float, int)):
+            if transparency > 1:
+                warnings.warn(
+                    "'transparency' must be <= 1. Setting it to 1.0."
+                )
+                transparency = 1.0
+            if transparency < 0:
+                warnings.warn("'transparency' must be > 0. Setting it to 0.0.")
+                transparency = 0.0
+
+        if "alpha" in kwargs:
+            warnings.warn(
+                f"{kwargs["alpha"]=} detected in parameters.\n"
+                f"Overriding with {transparency=}.\n"
+                "To suppress this warning pass "
+                "your 'alpha' value "
+                "via the 'transparency' parameter."
+            )
+        kwargs["alpha"] = transparency
+
         self._colorbar = colorbar
         self._cbar_tick_format = cbar_tick_format
 

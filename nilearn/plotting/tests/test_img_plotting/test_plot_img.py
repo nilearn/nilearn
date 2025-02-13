@@ -112,3 +112,8 @@ def test_display_methods_with_display_mode_tiled(
     display.add_contours(
         img_3d_mni, contours=2, linewidth=4, colors=["limegreen", "yellow"]
     )
+
+
+def test_plot_img_transparency(matplotlib_pyplot, img_3d_mni):
+    """Smoke tests for transparency parameter to determine alpha layer."""
+    plot_img(img_3d_mni, transparency=0.5)
