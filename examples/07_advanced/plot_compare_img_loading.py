@@ -178,37 +178,47 @@ def plot_memory_usage(
     for peak in peak_usage:
         if isinstance(peak_usage[peak], dict):
             for sub_peak in peak_usage[peak]:
-                if sub_peak == "single":
-                    continue
-                for sub_sub_peak in peak_usage[peak][sub_peak]:
-                    peak_time = (
-                        peak_usage[peak][sub_peak][sub_sub_peak][1] - zero_time
-                    )
-                    peak_mem = peak_usage[peak][sub_peak][sub_sub_peak][0]
+                peak_time = peak_usage[peak][sub_peak][1] - zero_time
+                peak_mem = peak_usage[peak][sub_peak][0]
+                ax.annotate(
+                    f"{peak_mem:.2f} MiB",
+                    xy=(peak_time, peak_mem),
+                    xytext=(peak_time - xoffset, peak_mem + yoffset),
+                    color=line_color,
+                )
+                # only annotate with the masking method for the last peak
+                if order[f"{method}_{memmap}"] == 4:
+                    yoffset *= 1.5
                     ax.annotate(
-                        f"{peak_mem:.2f}"
-                        f" MiB\n{peak},\n{sub_peak},\n{sub_sub_peak}",
+                        f"\n{peak},\n{sub_peak}",
                         xy=(peak_time, peak_mem),
                         xytext=(peak_time - xoffset, peak_mem + yoffset),
-                        color=line_color,
                     )
         else:
             peak_time = peak_usage[peak][1] - zero_time
             peak_mem = peak_usage[peak][0]
-
             ax.annotate(
-                f"{peak_mem:.2f} MiB\nnumpy_masker,\nparallel,\nshared",
+                f"{peak_mem:.2f} MiB",
                 xy=(peak_time, peak_mem),
                 xytext=(
                     peak_time - xoffset,
                     peak_mem + yoffset,
                 ),
+                color=line_color,
             )
+            # only annotate with the masking method for the last peak
+            if order[f"{method}_{memmap}"] == 4:
+                yoffset *= 1.5
+                ax.annotate(
+                    "\nnumpy_masker,\nshared",
+                    xy=(peak_time, peak_mem),
+                    xytext=(peak_time - xoffset, peak_mem + yoffset),
+                )
 
     # increase the y-axis limit by 20% to make the plot more readable
     ax.set_ylim(ax.get_ylim()[0], ax.get_ylim()[1] * 1.2)
 
-    return fig, ax
+    return fig, ax, peak_time, peak_mem, xoffset, yoffset
 
 
 # %%
@@ -235,12 +245,8 @@ def main(
     2. convert these regions to binary masks and resample them to the
     fMRI data.
     3. run the following methods in sequence:
-        - NiftiMasker with single nifti file path
-        - NiftiMasker with single in-memory nifti image
         - NiftiMasker with parallel nifti file paths
         - NiftiMasker with parallel in-memory nifti images
-        - numpy masking with single nifti file path
-        - numpy masking with single in-memory nifti image
         - numpy masking with parallel nifti file paths
         - numpy masking with parallel in-memory nifti images
         - numpy masking with nifti image in-memory shared by parallel
@@ -273,38 +279,16 @@ def main(
     )
 
     peak_usage = {
-        "nifti_masker": {
-            "single": {"path": [], "in_memory": []},
-            "parallel": {"path": [], "in_memory": []},
-        },
-        "numpy_masker": {
-            "single": {"path": [], "in_memory": []},
-            "parallel": {"path": [], "in_memory": []},
-        },
+        "nifti_masker": {"path": [], "in_memory": []},
+        "numpy_masker": {"path": [], "in_memory": []},
         "numpy_masker_shared": [],
     }
 
     time.sleep(wait_time)
 
-    print(f"Loading via {load} with {memmap=}")
+    print(f"\nLoading via {load} with {memmap=}\n")
 
-    peak_usage["nifti_masker"]["single"]["path"] = memory_usage(
-        (nifti_masker_single, (fmri_path, mask_paths[0])),
-        max_usage=True,
-        timestamps=True,
-    )
-
-    time.sleep(wait_time)
-
-    peak_usage["nifti_masker"]["single"]["in_memory"] = memory_usage(
-        (nifti_masker_single, (fmri_img, mask_imgs[0])),
-        max_usage=True,
-        timestamps=True,
-    )
-
-    time.sleep(wait_time)
-
-    peak_usage["nifti_masker"]["parallel"]["path"] = memory_usage(
+    peak_usage["nifti_masker"]["path"] = memory_usage(
         (nifti_masker_parallel, (fmri_path, mask_paths, n_regions, memmap)),
         max_usage=True,
         timestamps=True,
@@ -314,34 +298,18 @@ def main(
 
     time.sleep(wait_time)
 
-    peak_usage["nifti_masker"]["parallel"]["in_memory"] = memory_usage(
+    peak_usage["nifti_masker"]["in_memory"] = memory_usage(
         (nifti_masker_parallel, (fmri_img, mask_imgs, n_regions, memmap)),
         max_usage=True,
         timestamps=True,
         include_children=True,
         multiprocess=True,
     )
-    print(f"{peak_usage['nifti_masker']=}")
+    print(f"{peak_usage['nifti_masker']=}\n")
 
     time.sleep(wait_time)
 
-    peak_usage["numpy_masker"]["single"]["path"] = memory_usage(
-        (numpy_masker_single_path, (fmri_path, mask_paths[0])),
-        max_usage=True,
-        timestamps=True,
-    )
-
-    time.sleep(wait_time)
-
-    peak_usage["numpy_masker"]["single"]["in_memory"] = memory_usage(
-        (numpy_masker_single_inmemory, (fmri_img, mask_imgs[0])),
-        max_usage=True,
-        timestamps=True,
-    )
-
-    time.sleep(wait_time)
-
-    peak_usage["numpy_masker"]["parallel"]["path"] = memory_usage(
+    peak_usage["numpy_masker"]["path"] = memory_usage(
         (
             numpy_masker_parallel_path,
             (fmri_path, mask_paths, n_regions, memmap),
@@ -354,7 +322,7 @@ def main(
 
     time.sleep(wait_time)
 
-    peak_usage["numpy_masker"]["parallel"]["in_memory"] = memory_usage(
+    peak_usage["numpy_masker"]["in_memory"] = memory_usage(
         (
             numpy_masker_parallel_inmemory,
             (fmri_img, mask_imgs, n_regions, memmap),
@@ -364,7 +332,7 @@ def main(
         include_children=True,
         multiprocess=True,
     )
-    print(f"{peak_usage['numpy_masker']=}")
+    print(f"{peak_usage['numpy_masker']=}\n")
 
     time.sleep(wait_time)
 
@@ -388,7 +356,7 @@ def main(
         include_children=True,
         multiprocess=True,
     )
-    print(f"{peak_usage['numpy_masker_shared']=}")
+    print(f"{peak_usage['numpy_masker_shared']=}\n")
 
     shm.close()
     shm.unlink()
