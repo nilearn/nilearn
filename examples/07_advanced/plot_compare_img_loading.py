@@ -349,7 +349,7 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat"):
 # Run the main function and plot memory usage
 # -------------------------------------------
 if __name__ == "__main__":
-    N_SUBJECTS = 1
+    N_SUBJECTS = 6
     N_REGIONS = 6
     WAIT_TIME = 30
 
