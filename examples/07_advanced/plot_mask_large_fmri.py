@@ -38,8 +38,8 @@ also compare these variants of the first two methods.
 When using file paths, the entire image is loaded into memory for each process,
 and that is exactly the problem we described earlier.
 
-However, when fMRI images are loaded in a way that allows
-`numpy memory mapping <https://numpy.org/doc/stable/reference/generated/numpy.memmap.html>`_
+However, when the fMRI image is loaded in a way that allows
+`numpy memory mapping <https://numpy.org/doc/stable/reference/generated/numpy.memmap.html>`_,
 only the segments of data that are needed are read from the disk. Joblib
 can handle this efficiently across multiple processes and this results in
 lower memory usage. We will see that this can already be a significant
