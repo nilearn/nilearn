@@ -66,7 +66,7 @@ class BaseAxes:
 
         if "alpha" in kwargs:
             warnings.warn(
-                f"{kwargs["alpha"]=} detected in parameters.\n"
+                f"{kwargs['alpha']=} detected in parameters.\n"
                 f"Overriding with {transparency=}.\n"
                 "To suppress this warning pass "
                 "your 'alpha' value "
