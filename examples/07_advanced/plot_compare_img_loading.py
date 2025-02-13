@@ -178,8 +178,14 @@ def plot_memory_usage(
     for peak in peak_usage:
         if isinstance(peak_usage[peak], dict):
             for sub_peak in peak_usage[peak]:
-                peak_time = peak_usage[peak][sub_peak][1] - zero_time
-                peak_mem = peak_usage[peak][sub_peak][0]
+                # get only the memory usage
+                mems = np.array([mem for mem, _ in peak_usage[peak][sub_peak]])
+                # get max memory usage
+                peak_mem = mems.max()
+                # get corresponding time
+                peak_time = (
+                    peak_usage[peak][sub_peak][mems.argmax()][1] - zero_time
+                )
                 ax.annotate(
                     f"{peak_mem:.2f} MiB",
                     xy=(peak_time, peak_mem),
@@ -195,8 +201,10 @@ def plot_memory_usage(
                         xytext=(peak_time - xoffset, peak_mem + yoffset),
                     )
         else:
-            peak_time = peak_usage[peak][1] - zero_time
-            peak_mem = peak_usage[peak][0]
+            # get only the memory usage
+            mems = np.array([mem for mem, _ in peak_usage[peak]])
+            peak_time = peak_usage[peak][mems.argmax()][1] - zero_time
+            peak_mem = mems.max()
             ax.annotate(
                 f"{peak_mem:.2f} MiB",
                 xy=(peak_time, peak_mem),
@@ -290,7 +298,6 @@ def main(
 
     peak_usage["nifti_masker"]["path"] = memory_usage(
         (nifti_masker_parallel, (fmri_path, mask_paths, n_regions, memmap)),
-        max_usage=True,
         timestamps=True,
         include_children=True,
         multiprocess=True,
@@ -300,7 +307,6 @@ def main(
 
     peak_usage["nifti_masker"]["in_memory"] = memory_usage(
         (nifti_masker_parallel, (fmri_img, mask_imgs, n_regions, memmap)),
-        max_usage=True,
         timestamps=True,
         include_children=True,
         multiprocess=True,
@@ -314,7 +320,6 @@ def main(
             numpy_masker_parallel_path,
             (fmri_path, mask_paths, n_regions, memmap),
         ),
-        max_usage=True,
         timestamps=True,
         include_children=True,
         multiprocess=True,
@@ -327,7 +332,6 @@ def main(
             numpy_masker_parallel_inmemory,
             (fmri_img, mask_imgs, n_regions, memmap),
         ),
-        max_usage=True,
         timestamps=True,
         include_children=True,
         multiprocess=True,
@@ -351,7 +355,6 @@ def main(
             numpy_masker_shared_parallel,
             (shared_data, mask_imgs, n_regions, memmap),
         ),
-        max_usage=True,
         timestamps=True,
         include_children=True,
         multiprocess=True,
