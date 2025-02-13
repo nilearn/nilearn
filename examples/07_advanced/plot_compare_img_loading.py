@@ -240,6 +240,13 @@ def plot_scatter_memvcomputation_time(
     # get zero time
     zero_time = usage[0][1]
 
+    markers = {
+        "nifti_masker": "o",
+        "numpy_masker": "x",
+        "numpy_masker_shared": "s",
+    }
+    sizes = [400, 200, 100]
+
     peak_mems = []
     computation_times = []
 
@@ -266,13 +273,25 @@ def plot_scatter_memvcomputation_time(
             computation_times.append(computation_time)
             peak_mems.append(peak_mem)
 
-    markers = ["o", "o", "x", "x", "s"]
-    sizes = [400, 400, 100, 100, 100]
     plt.scatter(
-        computation_times,
-        peak_mems,
+        computation_times[:2],
+        peak_mems[:2],
         label=f"{method}, {memmap = }",
-        marker=markers,
+        marker=markers["nifti_masker"],
+        s=sizes,
+    )
+    plt.scatter(
+        computation_times[2:4],
+        peak_mems[:2],
+        label=f"{method}, {memmap = }",
+        marker=markers["numpy_masker"],
+        s=sizes,
+    )
+    plt.scatter(
+        computation_times[4:],
+        peak_mems[2],
+        label=f"{method}, {memmap = }",
+        marker=markers["numpy_masker_shared"],
         s=sizes,
     )
 
