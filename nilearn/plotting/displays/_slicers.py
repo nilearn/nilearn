@@ -433,28 +433,18 @@ class BaseSlicer:
         # case where this image is binary, such as when this function
         # is called from `add_contours`, continuous interpolation
         # does not make sense and we turn to nearest interpolation instead.
-        if transparency is None:
-            transparency = 1.0
+        transparency, transparency_affine = self._sanitize_transparency(
+            img, transparency, transparency_range, resampling_interpolation
+        )
 
         if is_binary_niimg(img):
             img = reorder_img(img, resample="nearest", copy_header=True)
-            if isinstance(transparency, (str, Path, Nifti1Image)):
-                transparency = check_niimg_3d(transparency)
-                # transparency = reorder_img(
-                #     transparency, resample="nearest", copy_header=True
-                # )
         else:
             img = reorder_img(
                 img, resample=resampling_interpolation, copy_header=True
             )
-            if isinstance(transparency, (str, Path, Nifti1Image)):
-                transparency = check_niimg_3d(transparency)
-                # transparency = reorder_img(
-                #     transparency,
-                #     resample=resampling_interpolation,
-                #     copy_header=True,
-                # )
-                #  TODO resample to input image
+
+        #  TODO resample transparency to input image ???
 
         affine = img.affine
 
@@ -463,48 +453,10 @@ class BaseSlicer:
             data = safe_get_data(img, ensure_finite=True)
             data = self._threshold(data, threshold, None, None)
             img = new_img_like(img, data, affine)
-            # TODO : apply threshold to transparency ???
 
         data = safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
-
-        if isinstance(transparency, (str, Path, Nifti1Image)):
-            transparency_affine = transparency.affine
-            transparency = safe_get_data(transparency, ensure_finite=True)
-
-        assert isinstance(transparency, (int, float, np.ndarray))
-
-        if isinstance(transparency, (float, int)):
-            if transparency > 1:
-                warnings.warn(
-                    "'transparency' must be <= 1. Setting it to 1.0."
-                )
-                transparency = 1.0
-            if transparency < 0:
-                warnings.warn("'transparency' must be > 0. Setting it to 0.0.")
-                transparency = 0.0
-
-        else:
-            transparency = np.abs(transparency)
-
-            if transparency_range is None:
-                transparency_range = [0, np.max(transparency)]
-            transparency_range[1] = min(
-                transparency_range[1], np.max(transparency)
-            )
-            transparency_range[0] = max(
-                transparency_range[0], np.min(transparency)
-            )
-
-            # make sure that 0 <= transparency <= 1
-            # taking into account the requested transparency_range
-            transparency = np.clip(
-                transparency, transparency_range[0], transparency_range[1]
-            )
-            transparency = (transparency - transparency_range[0]) / (
-                transparency_range[1] - transparency_range[0]
-            )
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = (
             xmin,
@@ -536,18 +488,18 @@ class BaseSlicer:
         data_2d_list = []
         transparency_list = []
         for display_ax in self.axes.values():
+            if transparency is None or isinstance(transparency, (float, int)):
+                transparency_2d = transparency
+
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
+                if isinstance(transparency, np.ndarray):
+                    transparency_2d = display_ax.transform_to_2d(
+                        transparency, transparency_affine
+                    )
             except IndexError:
                 # We are cutting outside the indices of the data
                 data_2d = None
-
-            if isinstance(transparency, (np.ndarray)):
-                transparency_2d = display_ax.transform_to_2d(
-                    transparency, transparency_affine
-                )
-            else:
-                transparency_2d = transparency
 
             data_2d_list.append(data_2d)
             transparency_list.append(transparency_2d)
@@ -566,6 +518,7 @@ class BaseSlicer:
         to_iterate_over = zip(
             self.axes.values(), data_2d_list, transparency_list
         )
+        threshold = float(threshold) if threshold else None
         for display_ax, data_2d, transparency_2d in to_iterate_over:
             # If data_2d is completely masked, then there is nothing to
             # plot. Hence, no point to do imshow().
@@ -587,6 +540,87 @@ class BaseSlicer:
                 )
                 ims.append(im)
         return ims
+
+    @classmethod
+    def _sanitize_transparency(
+        cls, img, transparency, transparency_range, resampling_interpolation
+    ):
+        """Return transparency as None, float or an array.
+
+        Return
+        ------
+        transparency: None, float or np.ndarray
+
+        transparency_affine: None or np.ndarray
+        """
+        transparency_affine = None
+        if isinstance(transparency, (str, Path, Nifti1Image)):
+            transparency = check_niimg_3d(transparency)
+            if is_binary_niimg(img):
+                transparency = reorder_img(
+                    transparency, resample="nearest", copy_header=True
+                )
+            else:
+                transparency = reorder_img(
+                    transparency,
+                    resample=resampling_interpolation,
+                    copy_header=True,
+                )
+
+            transparency_affine = transparency.affine
+            transparency = safe_get_data(transparency, ensure_finite=True)
+
+        assert transparency is None or isinstance(
+            transparency, (int, float, np.ndarray)
+        )
+
+        if isinstance(transparency, (float, int)):
+            transparency = float(transparency)
+            if transparency > 1.0:
+                warnings.warn(
+                    "'transparency' must be <= 1. Setting it to 1.0."
+                )
+                transparency = 1.0
+            if transparency < 0:
+                warnings.warn("'transparency' must be > 0. Setting it to 0.0.")
+                transparency = 0.0
+
+        elif isinstance(transparency, np.ndarray):
+            transparency = np.abs(transparency)
+
+            if transparency_range is None:
+                transparency_range = [0.0, np.max(transparency)]
+            transparency_range[1] = min(
+                transparency_range[1], np.max(transparency)
+            )
+            transparency_range[0] = max(
+                transparency_range[0], np.min(transparency)
+            )
+            if transparency_range[0] < 0:
+                warnings.warn(
+                    "'transparency_range[0]' must be > 0. Setting it to 0.0."
+                )
+                transparency_range[0]
+            if (
+                len(transparency_range) != 2
+                or transparency_range[0] >= transparency_range[1]
+            ):
+                raise ValueError(
+                    "'transparency_range' must be "
+                    "a list or tuple of 2 positive numbers "
+                    "with 'first item < second item'."
+                )
+
+            # make sure that 0 <= transparency <= 1
+            # taking into account the requested transparency_range
+            transparency = np.clip(
+                transparency, transparency_range[0], transparency_range[1]
+            )
+            transparency = (transparency - transparency_range[0]) / (
+                transparency_range[1] - transparency_range[0]
+            )
+
+        return transparency, transparency_affine
 
     @classmethod
     def _threshold(cls, data, threshold=None, vmin=None, vmax=None):
@@ -617,10 +651,12 @@ class BaseSlicer:
                 data,
                 copy=False,
             )
+            data[np.abs(data) <= threshold] = 0
             if (vmin is not None) and (vmin >= -threshold):
                 data = np.ma.masked_where(data < vmin, data, copy=False)
             if (vmax is not None) and (vmax <= threshold):
                 data = np.ma.masked_where(data > vmax, data, copy=False)
+
         return data
 
     @fill_doc

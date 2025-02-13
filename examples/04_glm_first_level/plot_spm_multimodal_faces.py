@@ -4,9 +4,8 @@ Single-subject data (two runs) in native space
 
 The example shows the analysis of an :term:`SPM` dataset
 studying face perception.
-The analysis is performed in native space.
-Realignment parameters are provided with the input images,
-but those have not been resampled to a common space.
+The analysis is performed in native space
+and have not been resampled to a common space.
 
 The experimental paradigm is simple, with two conditions;
 viewing a face image or a scrambled face image,
@@ -127,11 +126,8 @@ basic_contrasts = {
 # We define the two opposite versions to run one-tailed t-tests.
 #
 
+contrasts = ["faces-scrambled", "scrambled-faces"]
 
-contrasts = {
-    "faces-scrambled": "faces-scrambled",
-    "scrambled-faces": "scrambled-faces",
-}
 
 # %%
 # Let's store common parameters for all plots
@@ -152,10 +148,10 @@ plot_param = {
 }
 
 # Iterate on contrasts to compute an plot them.
-for contrast_id, contrast_val in contrasts.items():
+for contrast_id in contrasts:
     print(f"\tcontrast id: {contrast_id}")
 
-    results = fmri_glm.compute_contrast(contrast_val, output_type="all")
+    results = fmri_glm.compute_contrast(contrast_id, output_type="all")
 
     plot_stat_map(
         results["stat"],
@@ -164,8 +160,6 @@ for contrast_id, contrast_val in contrasts.items():
         vmax=6,
         **plot_param,
     )
-
-    results["stat"].to_filename(f"{contrast_id}.nii.gz")
 
 # %%
 # We also define the effects of interest contrast,
@@ -180,14 +174,15 @@ contrasts = {
 
 for contrast_id, contrast_val in contrasts.items():
     print(f"\tcontrast id: {contrast_id}")
+
     results = fmri_glm.compute_contrast(contrast_val, output_type="all")
+
     plot_stat_map(
         results["stat"],
         title=contrast_id,
         transparency=results["z_score"],
         **plot_param,
     )
-    results["stat"].to_filename(f"{contrast_id}.nii.gz")
 
 show()
 
