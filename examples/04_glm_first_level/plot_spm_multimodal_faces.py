@@ -137,7 +137,7 @@ contrasts = ["faces-scrambled", "scrambled-faces"]
 # with any voxel with | Z-score | > 3 being fully opaque
 # and any voxel with | Z-score | < 1.96 being fully transparent.
 plot_param = {
-    "threshold": 0,
+    "threshold": 1.96,
     "vmin": 0,
     "display_mode": "z",
     "cut_coords": [-40, -25, -6],
