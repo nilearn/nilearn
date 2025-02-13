@@ -91,27 +91,50 @@ def numpy_masker_shared_single(img, mask):
     return img[np.asarray(mask.dataobj).astype(bool)]
 
 
-def nifti_masker_parallel(fmri_path, mask_paths, n_regions=6):
+def nifti_masker_parallel(fmri_path, mask_paths, n_regions=6, memmap=False):
+    if memmap:
+        return Parallel(n_jobs=n_regions)(
+            delayed(nifti_masker_single)(fmri_path, mask)
+            for mask in mask_paths
+        )
     return Parallel(n_jobs=n_regions, mmap_mode=None, max_nbytes=None)(
         delayed(nifti_masker_single)(fmri_path, mask) for mask in mask_paths
     )
 
 
-def numpy_masker_parallel_path(fmri_path, mask_paths, n_regions=6):
-    return Parallel(n_jobs=n_regions)(
+def numpy_masker_parallel_path(
+    fmri_path, mask_paths, n_regions=6, memmap=False
+):
+    if memmap:
+        return Parallel(n_jobs=n_regions)(
+            delayed(numpy_masker_single_path)(fmri_path, mask)
+            for mask in mask_paths
+        )
+    return Parallel(n_jobs=n_regions, mmap_mode=None, max_nbytes=None)(
         delayed(numpy_masker_single_path)(fmri_path, mask)
         for mask in mask_paths
     )
 
 
-def numpy_masker_parallel_inmemory(fmri_img, mask_imgs, n_regions=6):
+def numpy_masker_parallel_inmemory(
+    fmri_img, mask_imgs, n_regions=6, memmap=False
+):
+    if memmap:
+        return Parallel(n_jobs=n_regions)(
+            delayed(numpy_masker_single_inmemory)(fmri_img, mask)
+            for mask in mask_imgs
+        )
     return Parallel(n_jobs=n_regions, mmap_mode=None, max_nbytes=None)(
         delayed(numpy_masker_single_inmemory)(fmri_img, mask)
         for mask in mask_imgs
     )
 
 
-def numpy_masker_shared_parallel(img, masks, n_regions=6):
+def numpy_masker_shared_parallel(img, masks, n_regions=6, memmap=False):
+    if memmap:
+        return Parallel(n_jobs=n_regions)(
+            delayed(numpy_masker_shared_single)(img, mask) for mask in masks
+        )
     return Parallel(n_jobs=n_regions, mmap_mode=None, max_nbytes=None)(
         delayed(numpy_masker_shared_single)(img, mask) for mask in masks
     )
@@ -121,6 +144,7 @@ def plot_memory_usage(
     fig,
     ax,
     method,
+    memmap,
     usage,
     peak_usage,
 ):
@@ -130,11 +154,22 @@ def plot_memory_usage(
     usage = {time - zero_time: mem for mem, time in usage}
 
     # plot memory usage over time
-    ax.plot(usage.keys(), usage.values(), label=method)
+    ax.plot(usage.keys(), usage.values(), label=f"{method}, memmap={memmap}")
+
+    order = {
+        "load_img_True": 1,
+        "load_img_False": 2,
+        "concat_imgs_True": 3,
+        "concat_imgs_False": 4,
+    }
 
     # use order of max usage and time to calculate offset for annotations
     xoffset = np.array(list(usage.keys())).max() * 0.001
-    yoffset = np.array(list(usage.values())).max() * 0.01
+    yoffset = (
+        np.array(list(usage.values())).max()
+        * 0.01
+        * order[f"{method}_{memmap}"]
+    )
 
     # add annotations on each peak
     for peak in peak_usage:
@@ -175,7 +210,7 @@ def plot_memory_usage(
 # %%
 # Main function that runs each method one by one
 # ----------------------------------------------
-def main(n_images=1, n_regions=6, wait_time=30, load="concat"):
+def main(n_images=1, n_regions=6, wait_time=30, load="concat", memmap=False):
     """
     Compare the performance of NiftiMasker vs. numpy masking vs.
     numpy masking + shared memory both with single and
@@ -263,7 +298,7 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat"):
     time.sleep(wait_time)
 
     peak_usage["nifti_masker"]["parallel"]["path"] = memory_usage(
-        (nifti_masker_parallel, (fmri_path, mask_paths, n_regions)),
+        (nifti_masker_parallel, (fmri_path, mask_paths, n_regions, memmap)),
         max_usage=True,
         timestamps=True,
         include_children=True,
@@ -273,7 +308,7 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat"):
     time.sleep(wait_time)
 
     peak_usage["nifti_masker"]["parallel"]["in_memory"] = memory_usage(
-        (nifti_masker_parallel, (fmri_img, mask_imgs, n_regions)),
+        (nifti_masker_parallel, (fmri_img, mask_imgs, n_regions, memmap)),
         max_usage=True,
         timestamps=True,
         include_children=True,
@@ -300,7 +335,10 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat"):
     time.sleep(wait_time)
 
     peak_usage["numpy_masker"]["parallel"]["path"] = memory_usage(
-        (numpy_masker_parallel_path, (fmri_path, mask_paths, n_regions)),
+        (
+            numpy_masker_parallel_path,
+            (fmri_path, mask_paths, n_regions, memmap),
+        ),
         max_usage=True,
         timestamps=True,
         include_children=True,
@@ -310,7 +348,10 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat"):
     time.sleep(wait_time)
 
     peak_usage["numpy_masker"]["parallel"]["in_memory"] = memory_usage(
-        (numpy_masker_parallel_inmemory, (fmri_img, mask_imgs, n_regions)),
+        (
+            numpy_masker_parallel_inmemory,
+            (fmri_img, mask_imgs, n_regions, memmap),
+        ),
         max_usage=True,
         timestamps=True,
         include_children=True,
@@ -331,7 +372,10 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat"):
     time.sleep(wait_time)
 
     peak_usage["numpy_masker_shared"] = memory_usage(
-        (numpy_masker_shared_parallel, (shared_data, mask_imgs, n_regions)),
+        (
+            numpy_masker_shared_parallel,
+            (shared_data, mask_imgs, n_regions, memmap),
+        ),
         max_usage=True,
         timestamps=True,
         include_children=True,
@@ -362,18 +406,26 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(figsize=(10, 6))
 
     for loading_method in ["load_img", "concat_imgs"]:
-        usage, peak_usage = memory_usage(
-            (main, (N_SUBJECTS, N_REGIONS, WAIT_TIME)),
-            include_children=True,
-            multiprocess=True,
-            timestamps=True,
-            retval=True,
-        )
-        usages.append(usage)
-        peak_usages.append(peak_usage)
+        for memmap in [False, True]:
+            usage, peak_usage = memory_usage(
+                (main, (N_SUBJECTS, N_REGIONS, WAIT_TIME)),
+                include_children=True,
+                multiprocess=True,
+                timestamps=True,
+                retval=True,
+            )
+            usages.append(usage)
+            peak_usages.append(peak_usage)
 
-        # plot memory usage over time
-        fig, ax = plot_memory_usage(fig, ax, loading_method, usage, peak_usage)
+            # plot memory usage over time
+            fig, ax = plot_memory_usage(
+                fig,
+                ax,
+                loading_method,
+                memmap,
+                usage,
+                peak_usage,
+            )
 
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("Memory (MiB)")
