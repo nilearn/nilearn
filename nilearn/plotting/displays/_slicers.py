@@ -310,9 +310,7 @@ class BaseSlicer:
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
 
-        transparency : :obj:`float` between 0 and 1, or None, default = None
-            Value to be passed as alpha to :func:`~matplotlib.pyplot.imshow`.
-            if ``None`` is passed, it will be set to 1.
+        %(transparency)s
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function

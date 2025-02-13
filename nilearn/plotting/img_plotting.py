@@ -244,9 +244,7 @@ def _plot_img_with_bg(
 
     %(radiological)s
 
-    transparency : :obj:`float` between 0 and 1, or None, default = None
-        Value to be passed as alpha to :func:`~matplotlib.pyplot.imshow`.
-        if ``None`` is passed, it will be set to 1.
+    %(transparency)s
 
     kwargs :  extra keyword arguments, optional
         Extra keyword arguments passed
@@ -475,9 +473,7 @@ def plot_img(
     %(cmap)s
         default="gray"
 
-    transparency : :obj:`float` between 0 and 1, or None, default = None
-        Value to be passed as alpha to :func:`~matplotlib.pyplot.imshow`.
-        if ``None`` is passed, it will be set to 1.
+    %(transparency)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1421,6 +1417,7 @@ def plot_stat_map(
     vmax=None,
     radiological=False,
     resampling_interpolation="continuous",
+    transparency=None,
     **kwargs,
 ):
     """Plot cuts of an ROI/mask image.
@@ -1484,6 +1481,8 @@ def plot_stat_map(
         Default='continuous'.
 
     %(radiological)s
+
+    %(transparency)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1555,6 +1554,7 @@ def plot_stat_map(
         cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
         radiological=radiological,
+        transparency=transparency,
         **kwargs,
     )
 
@@ -1582,6 +1582,7 @@ def plot_glass_brain(
     symmetric_cbar="auto",
     resampling_interpolation="continuous",
     radiological=False,
+    transparency=None,
     **kwargs,
 ):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
@@ -1657,6 +1658,8 @@ def plot_glass_brain(
         Default='continuous'.
 
     %(radiological)s
+
+    %(transparency)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1741,7 +1744,7 @@ def plot_glass_brain(
         cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
         radiological=radiological,
-        **kwargs,
+        transparency=transparency**kwargs,
     )
 
     if stat_map_img is None and "l" in display.axes:
