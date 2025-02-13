@@ -154,7 +154,10 @@ def plot_memory_usage(
     usage = {time - zero_time: mem for mem, time in usage}
 
     # plot memory usage over time
-    ax.plot(usage.keys(), usage.values(), label=f"{method}, memmap={memmap}")
+    (line,) = ax.plot(
+        usage.keys(), usage.values(), label=f"{method}, memmap={memmap}"
+    )
+    line_color = line.get_color()
 
     order = {
         "load_img_True": 1,
@@ -187,6 +190,7 @@ def plot_memory_usage(
                         f" MiB\n{peak},\n{sub_peak},\n{sub_sub_peak}",
                         xy=(peak_time, peak_mem),
                         xytext=(peak_time - xoffset, peak_mem + yoffset),
+                        color=line_color,
                     )
         else:
             peak_time = peak_usage[peak][1] - zero_time
@@ -210,7 +214,9 @@ def plot_memory_usage(
 # %%
 # Main function that runs each method one by one
 # ----------------------------------------------
-def main(n_images=1, n_regions=6, wait_time=30, load="concat", memmap=False):
+def main(
+    n_images=1, n_regions=6, wait_time=30, load="concat_imgs", memmap=False
+):
     """
     Compare the performance of NiftiMasker vs. numpy masking vs.
     numpy masking + shared memory both with single and
@@ -257,7 +263,6 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat", memmap=False):
         Time to wait between each method to see the memory usage of each
         method separately in the plot.
     """
-    print("Loading images via ", load)
     fmri_img, fmri_path = get_fmri_path(n_subjects=n_images)
     if load == "load_img":
         del fmri_img
@@ -280,6 +285,8 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat", memmap=False):
     }
 
     time.sleep(wait_time)
+
+    print(f"Loading via {load} with {memmap=}")
 
     peak_usage["nifti_masker"]["single"]["path"] = memory_usage(
         (nifti_masker_single, (fmri_path, mask_paths[0])),
@@ -314,7 +321,7 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat", memmap=False):
         include_children=True,
         multiprocess=True,
     )
-    print(peak_usage["nifti_masker"])
+    print(f"{peak_usage['nifti_masker']=}")
 
     time.sleep(wait_time)
 
@@ -357,7 +364,7 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat", memmap=False):
         include_children=True,
         multiprocess=True,
     )
-    print(peak_usage["numpy_masker"])
+    print(f"{peak_usage['numpy_masker']=}")
 
     time.sleep(wait_time)
 
@@ -381,7 +388,7 @@ def main(n_images=1, n_regions=6, wait_time=30, load="concat", memmap=False):
         include_children=True,
         multiprocess=True,
     )
-    print(peak_usage["numpy_masker_shared"])
+    print(f"{peak_usage['numpy_masker_shared']=}")
 
     shm.close()
     shm.unlink()
@@ -408,7 +415,10 @@ if __name__ == "__main__":
     for loading_method in ["load_img", "concat_imgs"]:
         for memmap in [False, True]:
             usage, peak_usage = memory_usage(
-                (main, (N_SUBJECTS, N_REGIONS, WAIT_TIME)),
+                (
+                    main,
+                    (N_SUBJECTS, N_REGIONS, WAIT_TIME, loading_method, memmap),
+                ),
                 include_children=True,
                 multiprocess=True,
                 timestamps=True,
