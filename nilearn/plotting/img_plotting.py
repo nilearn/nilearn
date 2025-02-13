@@ -179,6 +179,8 @@ def _plot_img_with_bg(
     brain_color=(0.5, 0.5, 0.5),
     decimals=False,
     radiological=False,
+    transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Refer to the docstring of plot_img for parameters not listed below.
@@ -242,6 +244,8 @@ def _plot_img_with_bg(
         the slice position is integer without decimal point.
 
     %(radiological)s
+
+    %(transparency)s
 
     kwargs :  extra keyword arguments, optional
         Extra keyword arguments passed
@@ -338,6 +342,8 @@ def _plot_img_with_bg(
             cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax,
             cbar_tick_format=cbar_tick_format,
+            transparency=transparency,
+            transparency_range=transparency_range,
             **kwargs,
         )
     if radiological:
@@ -409,6 +415,8 @@ def plot_img(
     radiological=False,
     decimals=False,
     cmap="gray",
+    transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Plot cuts of a given image.
@@ -468,6 +476,8 @@ def plot_img(
     %(cmap)s
         default="gray"
 
+    %(transparency)s
+
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
@@ -526,6 +536,8 @@ def plot_img(
         radiological=radiological,
         decimals=decimals,
         cmap=cmap,
+        transparency=transparency,
+        transparency_range=transparency_range,
         **kwargs,
     )
 
@@ -1409,6 +1421,8 @@ def plot_stat_map(
     vmax=None,
     radiological=False,
     resampling_interpolation="continuous",
+    transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Plot cuts of an ROI/mask image.
@@ -1472,6 +1486,8 @@ def plot_stat_map(
         Default='continuous'.
 
     %(radiological)s
+
+    %(transparency)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1543,6 +1559,8 @@ def plot_stat_map(
         cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
         radiological=radiological,
+        transparency=transparency,
+        transparency_range=transparency_range,
         **kwargs,
     )
 
@@ -1570,6 +1588,7 @@ def plot_glass_brain(
     symmetric_cbar="auto",
     resampling_interpolation="continuous",
     radiological=False,
+    transparency=None,
     **kwargs,
 ):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
@@ -1645,6 +1664,8 @@ def plot_glass_brain(
         Default='continuous'.
 
     %(radiological)s
+
+    %(transparency)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1729,6 +1750,7 @@ def plot_glass_brain(
         cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
         radiological=radiological,
+        transparency=transparency,
         **kwargs,
     )
 

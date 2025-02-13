@@ -1003,6 +1003,17 @@ title : :obj:`str`, or None, default=None
     The title displayed on the figure.
 """
 
+# transparency
+docdict["transparency"] = """
+    transparency : :obj:`float` between 0 and 1, \
+                    or a Niimg-Like object, \
+                    or None, \
+                    default = None
+        Value to be passed as alpha to :func:`~matplotlib.pyplot.imshow`.
+        if ``None`` is passed, it will be set to 1.
+        If an image is passed, voxel-wise transparency will be applied.
+"""
+
 # upper_cutoff
 docdict["upper_cutoff"] = """
 upper_cutoff : :obj:`float`, optional

@@ -4,13 +4,13 @@ Single-subject data (two runs) in native space
 
 The example shows the analysis of an :term:`SPM` dataset
 studying face perception.
-The analysis is performed in native space.
-Realignment parameters are provided with the input images,
-but those have not been resampled to a common space.
+The analysis is performed in native space
+and have not been resampled to a common space.
 
-The experimental paradigm is simple, with two conditions; viewing a face image
-or a scrambled face image, supposedly with the same low-level statistical
-properties, to find face-specific responses.
+The experimental paradigm is simple, with two conditions;
+viewing a face image or a scrambled face image,
+supposedly with the same low-level statistical properties,
+to find face-specific responses.
 
 For details on the data, please see :footcite:t:`Henson2003`.
 
@@ -80,7 +80,7 @@ for idx, img in enumerate(fmri_img, start=1):
     events = pd.read_table(subject_data[f"events{idx}"])
     # Define the sampling times for the design matrix
     frame_times = np.arange(n_scans) * t_r
-    # Build design matrix with the reviously defined parameters
+    # Build design matrix with the previously defined parameters
     design_matrix = make_first_level_design_matrix(
         frame_times,
         events,
@@ -93,8 +93,24 @@ for idx, img in enumerate(fmri_img, start=1):
     design_matrices.append(design_matrix)
 
 # %%
-# We can specify basic contrasts (to get :term:`beta<Parameter Estimate>`
-# maps).
+# Fit the :term:`GLM` for the 2 runs
+# by specifying a FirstLevelModel and then fitting it.
+from nilearn.glm.first_level import FirstLevelModel
+
+print("Fitting a GLM")
+fmri_glm = FirstLevelModel(smoothing_fwhm=6)
+fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
+
+# %%
+# Now we can compute contrast-related statistical maps (in z-scale),
+# and plot them.
+from nilearn.plotting import plot_stat_map, show
+
+print("Computing contrasts")
+
+# %%
+# We can specify basic contrasts
+# (to get :term:`beta<Parameter Estimate>` maps).
 # We start by specifying canonical :term:`contrast`
 # that isolate design matrix columns.
 contrast_matrix = np.eye(design_matrix.shape[1])
@@ -104,63 +120,82 @@ basic_contrasts = {
 }
 
 # %%
-# We actually want more interesting contrasts. The simplest contrast
-# just makes the difference between the two main conditions.  We
-# define the two opposite versions to run one-tailed t-tests.  We also
-# define the effects of interest contrast, a 2-dimensional contrasts
-# spanning the two conditions.
+# We actually want more interesting contrasts.
+# The simplest contrast just makes the difference
+# between the two main conditions.
+# We define the two opposite versions to run one-tailed t-tests.
+#
+
+contrasts = ["faces-scrambled", "scrambled-faces"]
+
+
+# %%
+# Let's store common parameters for all plots
+#
+# We plot the contrasts values overlaid on the mean fMRI image
+# and we will use the z-score values as transparency,
+# with any voxel with | Z-score | > 3 being fully opaque
+# and any voxel with | Z-score | < 1.96 being fully transparent.
+plot_param = {
+    "threshold": 1.96,
+    "vmin": 0,
+    "display_mode": "z",
+    "cut_coords": [-40, -25, -6],
+    "black_bg": True,
+    "bg_img": mean_image,
+    "cmap": "inferno",
+    "transparency_range": [1.96, 3],
+}
+
+# Iterate on contrasts to compute an plot them.
+for contrast_id in contrasts:
+    print(f"\tcontrast id: {contrast_id}")
+
+    results = fmri_glm.compute_contrast(contrast_id, output_type="all")
+
+    plot_stat_map(
+        results["stat"],
+        title=contrast_id,
+        transparency=results["z_score"],
+        vmax=6,
+        **plot_param,
+    )
+
+# %%
+# We also define the effects of interest contrast,
+# a 2-dimensional contrasts spanning the two conditions.
+#
 
 contrasts = {
-    "faces-scrambled": basic_contrasts["faces"] - basic_contrasts["scrambled"],
-    "scrambled-faces": -basic_contrasts["faces"]
-    + basic_contrasts["scrambled"],
     "effects_of_interest": np.vstack(
         (basic_contrasts["faces"], basic_contrasts["scrambled"])
     ),
 }
 
-# %%
-# Fit the :term:`GLM` for the 2 runs
-# by specifying a FirstLevelModel and then fitting it.
-from nilearn.glm.first_level import FirstLevelModel
-
-print("Fitting a GLM")
-fmri_glm = FirstLevelModel()
-fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
-
-# %%
-# Now we can compute contrast-related statistical maps (in z-scale), and plot
-# them.
-from nilearn import plotting
-
-print("Computing contrasts")
-
-# Iterate on contrasts
 for contrast_id, contrast_val in contrasts.items():
     print(f"\tcontrast id: {contrast_id}")
-    # compute the contrasts
-    z_map = fmri_glm.compute_contrast(contrast_val, output_type="z_score")
-    # plot the contrasts as soon as they're generated
-    # the display is overlaid on the mean fMRI image
-    # a threshold of 3.0 is used, more sophisticated choices are possible
-    plotting.plot_stat_map(
-        z_map,
-        bg_img=mean_image,
-        threshold=3.0,
-        display_mode="z",
-        cut_coords=3,
-        black_bg=True,
+
+    results = fmri_glm.compute_contrast(contrast_val, output_type="all")
+
+    plot_stat_map(
+        results["stat"],
         title=contrast_id,
+        transparency=results["z_score"],
+        **plot_param,
     )
-    plotting.show()
+
+show()
 
 # %%
-# Based on the resulting maps we observe that the analysis results in
-# wide activity for the 'effects of interest' contrast, showing the
-# implications of large portions of the visual cortex in the
-# conditions. By contrast, the differential effect between "faces" and
-# "scrambled" involves sparser, more anterior and lateral regions. It
-# also displays some responses in the frontal lobe.
+# Based on the resulting maps we observe
+# that the analysis results in wide activity
+# for the 'effects of interest' contrast,
+# showing the implications of large portions of the visual cortex
+# in the conditions.
+# By contrast,
+# the differential effect between "faces" and "scrambled" involves sparser,
+# more anterior and lateral regions.
+# It also displays some responses in the frontal lobe.
 
 # %%
 # References
