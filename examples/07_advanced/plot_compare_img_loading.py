@@ -240,18 +240,8 @@ def plot_scatter_memvcomputation_time(
     # get zero time
     zero_time = usage[0][1]
 
-    markers = {
-        "nifti_masker_path": "o",
-        "nifti_masker_in_memory": "x",
-        "numpy_masker_path": "o",
-        "numpy_masker_in_memory": "x",
-        "numpy_masker_shared": "s",
-    }
-    sizes = {
-        "nifti_masker": 400,
-        "numpy_masker": 100,
-        "numpy_masker_shared": 100,
-    }
+    peak_mems = []
+    computation_times = []
 
     for peak in peak_usage:
         if isinstance(peak_usage[peak], dict):
@@ -264,13 +254,8 @@ def plot_scatter_memvcomputation_time(
                 start_time = peak_usage[peak][sub_peak][0][1] - zero_time
                 end_time = peak_usage[peak][sub_peak][-1][1] - zero_time
                 computation_time = end_time - start_time
-                plt.scatter(
-                    computation_time,
-                    peak_mem,
-                    label=f"{method}, {memmap = }",
-                    marker=markers[f"{peak}_{sub_peak}"],
-                    s=sizes[peak],
-                )
+                computation_times.append(computation_time)
+                peak_mems.append(peak_mem)
         else:
             # get max memory usage
             peak_mem = np.array([mem for mem, _ in peak_usage[peak]]).max()
@@ -278,13 +263,18 @@ def plot_scatter_memvcomputation_time(
             start_time = peak_usage[peak][0][1] - zero_time
             end_time = peak_usage[peak][-1][1] - zero_time
             computation_time = end_time - start_time
-            plt.scatter(
-                computation_time,
-                peak_mem,
-                label=f"{method}, {memmap = }",
-                marker=markers[f"{peak}"],
-                s=sizes[peak],
-            )
+            computation_times.append(computation_time)
+            peak_mems.append(peak_mem)
+
+    markers = ["o", "o", "x", "x", "s"]
+    sizes = [400, 400, 100, 100, 100]
+    plt.scatter(
+        computation_times,
+        peak_mems,
+        label=f"{method}, {memmap = }",
+        marker=markers,
+        s=sizes,
+    )
 
     return fig, ax
 
