@@ -229,6 +229,66 @@ def plot_memory_usage(
     return fig, ax
 
 
+def plot_scatter_memvcomputation_time(
+    fig,
+    ax,
+    method,
+    memmap,
+    usage,
+    peak_usage,
+):
+    # get zero time
+    zero_time = usage[0][1]
+
+    markers = {
+        "nifti_masker_path": "o",
+        "nifti_masker_in_memory": "x",
+        "numpy_masker_path": "o",
+        "numpy_masker_in_memory": "x",
+        "numpy_masker_shared": "s",
+    }
+    sizes = {
+        "nifti_masker": 200,
+        "numpy_masker": 100,
+        "numpy_masker_shared": 100,
+    }
+
+    for peak in peak_usage:
+        if isinstance(peak_usage[peak], dict):
+            for sub_peak in peak_usage[peak]:
+                # get max memory usage
+                peak_mem = np.array(
+                    [mem for mem, _ in peak_usage[peak][sub_peak]]
+                ).max()
+                # get total computation time
+                start_time = peak_usage[peak][sub_peak][0][1] - zero_time
+                end_time = peak_usage[peak][sub_peak][-1][1] - zero_time
+                computation_time = end_time - start_time
+                plt.scatter(
+                    computation_time,
+                    peak_mem,
+                    label=f"{method}, {memmap = }",
+                    marker=markers[f"{peak}_{sub_peak}"],
+                    s=sizes[peak],
+                )
+        else:
+            # get max memory usage
+            peak_mem = np.array([mem for mem, _ in peak_usage[peak]]).max()
+            # get total computation time
+            start_time = peak_usage[peak][0][1] - zero_time
+            end_time = peak_usage[peak][-1][1] - zero_time
+            computation_time = end_time - start_time
+            plt.scatter(
+                computation_time,
+                peak_mem,
+                label=f"{method}, {memmap = }",
+                marker=markers[f"{peak}"],
+                s=sizes[peak],
+            )
+
+    return fig, ax
+
+
 # %%
 # Main function that runs each method one by one
 # ----------------------------------------------
@@ -398,8 +458,8 @@ if __name__ == "__main__":
             usages.append(usage)
             peak_usages.append(peak_usage)
 
-            # plot memory usage over time
-            fig, ax = plot_memory_usage(
+            # plot memory usage vs. computation time
+            fig, ax = plot_scatter_memvcomputation_time(
                 fig,
                 ax,
                 loading_method,
@@ -408,12 +468,34 @@ if __name__ == "__main__":
                 peak_usage,
             )
 
-    ax.set_xlabel("Time (s)")
+    ax.set_xlabel("Computation time (s)")
     ax.set_ylabel("Memory (MiB)")
     ax.set_title(
-        f"Memory usage over time with N_SUBJECTS={N_SUBJECTS},"
+        f"Memory usage vs. computation time with N_SUBJECTS={N_SUBJECTS},"
         f" N_REGIONS={N_REGIONS}"
     )
     ax.legend()
-    plt.savefig(plot_path / f"memory_usage_n{N_SUBJECTS}_j{N_REGIONS}.png")
+    plt.savefig(
+        plot_path / f"memvcomputation_time_n{N_SUBJECTS}_j{N_REGIONS}.png"
+    )
     plt.show()
+
+    # plot memory usage over time
+    #         fig, ax = plot_memory_usage(
+    #             fig,
+    #             ax,
+    #             loading_method,
+    #             memmap,
+    #             usage,
+    #             peak_usage,
+    #         )
+
+    # ax.set_xlabel("Time (s)")
+    # ax.set_ylabel("Memory (MiB)")
+    # ax.set_title(
+    #     f"Memory usage over time with N_SUBJECTS={N_SUBJECTS},"
+    #     f" N_REGIONS={N_REGIONS}"
+    # )
+    # ax.legend()
+    # plt.savefig(plot_path / f"memory_usage_n{N_SUBJECTS}_j{N_REGIONS}.png")
+    # plt.show()
