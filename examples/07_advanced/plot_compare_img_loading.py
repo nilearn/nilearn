@@ -236,19 +236,14 @@ def plot_scatter_memvcomputation_time(
     memmap,
     usage,
     peak_usage,
+    color,
 ):
     # get zero time
     zero_time = usage[0][1]
 
-    markers = {
-        "nifti_masker": "o",
-        "numpy_masker": "x",
-        "numpy_masker_shared": "s",
-    }
-    sizes = [400, 200, 100]
-
     peak_mems = []
     computation_times = []
+    names = []
 
     for peak in peak_usage:
         if isinstance(peak_usage[peak], dict):
@@ -263,6 +258,7 @@ def plot_scatter_memvcomputation_time(
                 computation_time = end_time - start_time
                 computation_times.append(computation_time)
                 peak_mems.append(peak_mem)
+                names.append(f"{peak}, {sub_peak}")
         else:
             # get max memory usage
             peak_mem = np.array([mem for mem, _ in peak_usage[peak]]).max()
@@ -272,28 +268,31 @@ def plot_scatter_memvcomputation_time(
             computation_time = end_time - start_time
             computation_times.append(computation_time)
             peak_mems.append(peak_mem)
+            names.append("shared")
 
     plt.scatter(
-        computation_times[:2],
-        peak_mems[:2],
+        computation_times,
+        peak_mems,
         label=f"{method}, {memmap = }",
-        marker=markers["nifti_masker"],
-        s=sizes,
+        c=color,
     )
-    plt.scatter(
-        computation_times[2:4],
-        peak_mems[:2],
-        label=f"{method}, {memmap = }",
-        marker=markers["numpy_masker"],
-        s=sizes,
-    )
-    plt.scatter(
-        computation_times[4:],
-        peak_mems[2],
-        label=f"{method}, {memmap = }",
-        marker=markers["numpy_masker_shared"],
-        s=sizes,
-    )
+
+    ann_colors = {
+        "nifti_masker": "tab:pink",
+        "numpy_masker": "tab:olive",
+        "shared": "tab:cyan",
+    }
+
+    # add annotations indicating the method
+    for peak_mem, computation_time, name in zip(
+        peak_mems, computation_times, names
+    ):
+        ax.annotate(
+            name,
+            xy=(computation_time, peak_mem),
+            xytext=(computation_time + 0.01, peak_mem),
+            color=ann_colors[name.split(",")[0]],
+        )
 
     return fig, ax
 
@@ -468,11 +467,12 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # plot memory usage vs. computation time
-    for usage, peak_usage, loading_method, memmap in zip(
+    for usage, peak_usage, loading_method, memmap, color in zip(
         usages,
         peak_usages,
         ["load_img", "load_img", "concat_imgs", "concat_imgs"],
         [False, True, False, True],
+        ["tab:blue", "tab:orange", "tab:green", "tab:red"],
     ):
         fig, ax = plot_scatter_memvcomputation_time(
             fig,
@@ -481,6 +481,7 @@ if __name__ == "__main__":
             memmap,
             usage,
             peak_usage,
+            color,
         )
 
     ax.set_xlabel("Computation time (s)")
