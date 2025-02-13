@@ -218,7 +218,7 @@ def plot_memory_usage(
     # increase the y-axis limit by 20% to make the plot more readable
     ax.set_ylim(ax.get_ylim()[0], ax.get_ylim()[1] * 1.2)
 
-    return fig, ax, peak_time, peak_mem, xoffset, yoffset
+    return fig, ax
 
 
 # %%
