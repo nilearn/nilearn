@@ -278,6 +278,7 @@ class BaseSlicer:
         cbar_vmin=None,
         cbar_vmax=None,
         transparency=None,
+        transparency_range=None,
         **kwargs,
     ):
         """Plot a 3D map in all the views.
@@ -341,6 +342,7 @@ class BaseSlicer:
             type="imshow",
             threshold=threshold,
             transparency=transparency,
+            transparency_range=transparency_range,
             **kwargs,
         )
 
@@ -421,6 +423,7 @@ class BaseSlicer:
         resampling_interpolation="continuous",
         threshold=None,
         transparency=None,
+        transparency_range=None,
         **kwargs,
     ):
         # In the special case where the affine of img is not diagonal,
@@ -432,34 +435,25 @@ class BaseSlicer:
         # does not make sense and we turn to nearest interpolation instead.
         if transparency is None:
             transparency = 1.0
-        if isinstance(transparency, (float, int)):
-            if transparency > 1:
-                warnings.warn(
-                    "'transparency' must be <= 1. Setting it to 1.0."
-                )
-                transparency = 1.0
-            if transparency < 0:
-                warnings.warn("'transparency' must be > 0. Setting it to 0.0.")
-                transparency = 0.0
 
         if is_binary_niimg(img):
             img = reorder_img(img, resample="nearest", copy_header=True)
             if isinstance(transparency, (str, Path, Nifti1Image)):
                 transparency = check_niimg_3d(transparency)
-                transparency = reorder_img(
-                    transparency, resample="nearest", copy_header=True
-                )
+                # transparency = reorder_img(
+                #     transparency, resample="nearest", copy_header=True
+                # )
         else:
             img = reorder_img(
                 img, resample=resampling_interpolation, copy_header=True
             )
             if isinstance(transparency, (str, Path, Nifti1Image)):
                 transparency = check_niimg_3d(transparency)
-                transparency = reorder_img(
-                    transparency,
-                    resample=resampling_interpolation,
-                    copy_header=True,
-                )
+                # transparency = reorder_img(
+                #     transparency,
+                #     resample=resampling_interpolation,
+                #     copy_header=True,
+                # )
                 #  TODO resample to input image
 
         affine = img.affine
@@ -476,8 +470,41 @@ class BaseSlicer:
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
 
         if isinstance(transparency, (str, Path, Nifti1Image)):
+            transparency_affine = transparency.affine
             transparency = safe_get_data(transparency, ensure_finite=True)
+
         assert isinstance(transparency, (int, float, np.ndarray))
+
+        if isinstance(transparency, (float, int)):
+            if transparency > 1:
+                warnings.warn(
+                    "'transparency' must be <= 1. Setting it to 1.0."
+                )
+                transparency = 1.0
+            if transparency < 0:
+                warnings.warn("'transparency' must be > 0. Setting it to 0.0.")
+                transparency = 0.0
+
+        else:
+            transparency = np.abs(transparency)
+
+            if transparency_range is None:
+                transparency_range = [0, np.max(transparency)]
+            transparency_range[1] = min(
+                transparency_range[1], np.max(transparency)
+            )
+            transparency_range[0] = max(
+                transparency_range[0], np.min(transparency)
+            )
+
+            # make sure that 0 <= transparency <= 1
+            # taking into account the requested transparency_range
+            transparency = np.clip(
+                transparency, transparency_range[0], transparency_range[1]
+            )
+            transparency = (transparency - transparency_range[0]) / (
+                transparency_range[1] - transparency_range[0]
+            )
 
         xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = (
             xmin,
@@ -511,15 +538,16 @@ class BaseSlicer:
         for display_ax in self.axes.values():
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
-                if isinstance(transparency, (np.ndarray)):
-                    transparency_2d = display_ax.transform_to_2d(
-                        transparency, affine
-                    )
-                else:
-                    transparency_2d = transparency
             except IndexError:
                 # We are cutting outside the indices of the data
                 data_2d = None
+
+            if isinstance(transparency, (np.ndarray)):
+                transparency_2d = display_ax.transform_to_2d(
+                    transparency, transparency_affine
+                )
+            else:
+                transparency_2d = transparency
 
             data_2d_list.append(data_2d)
             transparency_list.append(transparency_2d)

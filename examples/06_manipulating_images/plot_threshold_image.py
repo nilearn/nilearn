@@ -11,6 +11,9 @@ The ``threshold`` parameter can take both positive and negative values.
 ``two_sided`` parameter is complementary to ``threshold`` effecting its
 behavior.
 
+This example also introduces to manipulating the transparency layer
+when plotting activations.
+
 """
 
 # %%
@@ -21,16 +24,15 @@ behavior.
 
 from nilearn import datasets, plotting
 
-cut_coords = [-26, -33, 59]
-
 image = datasets.load_sample_motor_activation_image()
 
-plotting.plot_stat_map(
-    image,
-    colorbar=True,
-    title="image without threshold",
-    cut_coords=cut_coords,
-)
+plot_param = {
+    # "display_mode" : "y",
+    # "cut_coords" : [-33],
+    "draw_cross": False
+}
+
+plotting.plot_stat_map(image, title="image without threshold", **plot_param)
 
 # %%
 # Image thresholded at 2 when two_sided=True
@@ -52,29 +54,26 @@ thresholded_img = threshold_img(
     cluster_threshold=0,
     two_sided=True,
     copy=True,
+    copy_header=True,
 )
 
+figure_width = 8
 
 fig, axes = plt.subplots(
     2,
     1,
-    figsize=(8, 8),
+    figsize=(figure_width, 8),
 )
 
 plotting.plot_stat_map(
-    image,
-    colorbar=True,
-    title="image without threshold",
-    axes=axes[0],
-    cut_coords=cut_coords,
+    image, title="image without threshold", axes=axes[0], **plot_param
 )
 
 plotting.plot_stat_map(
     thresholded_img,
-    colorbar=True,
     title="image thresholded at 2 with two_sided=True",
-    cut_coords=cut_coords,
     axes=axes[1],
+    **plot_param,
 )
 
 # %%
@@ -96,31 +95,27 @@ thresholded_img = threshold_img(
     cluster_threshold=0,
     two_sided=False,
     copy=True,
+    copy_header=True,
 )
 
 
 fig, axes = plt.subplots(
     2,
     1,
-    figsize=(8, 8),
+    figsize=(figure_width, 8),
 )
 
 
 plotting.plot_stat_map(
-    image,
-    colorbar=True,
-    title="image without threshold",
-    axes=axes[0],
-    cut_coords=cut_coords,
+    image, title="image without threshold", axes=axes[0], **plot_param
 )
 
 plotting.plot_stat_map(
     thresholded_img,
-    colorbar=True,
     cmap="Reds",
     title="image thresholded at 2 with two_sided=False",
-    cut_coords=cut_coords,
     axes=axes[1],
+    **plot_param,
 )
 
 # %%
@@ -140,31 +135,79 @@ thresholded_img = threshold_img(
     cluster_threshold=0,
     two_sided=False,
     copy=True,
+    copy_header=True,
 )
 
 
 fig, axes = plt.subplots(
     2,
     1,
-    figsize=(8, 8),
+    figsize=(figure_width, 8),
 )
 
 plotting.plot_stat_map(
-    image,
-    colorbar=True,
-    title="image without threshold",
-    axes=axes[0],
-    cut_coords=cut_coords,
+    image, title="image without threshold", axes=axes[0], **plot_param
 )
 
 plotting.plot_stat_map(
     thresholded_img,
-    colorbar=True,
     cmap="Blues_r",
     title="image thresholded at -2 with two_sided=False",
-    cut_coords=cut_coords,
     axes=axes[1],
+    **plot_param,
 )
-# -
+
 
 # %%
+# Plotting with transparency
+# --------------------------
+#
+
+thresholded_img = threshold_img(
+    image,
+    threshold=2,
+    cluster_threshold=0,
+    two_sided=True,
+    copy=True,
+    copy_header=True,
+)
+
+plot_param["cmap"] = "cold_hot"
+plot_param["vmax"] = 8
+plot_param["black_bg"] = True
+
+fig, axes = plt.subplots(
+    4,
+    1,
+    figsize=(figure_width, 12),
+)
+
+plotting.plot_stat_map(
+    image, title="image without threshold", axes=axes[0], **plot_param
+)
+
+plotting.plot_stat_map(
+    image,
+    title="image with transparency",
+    transparency=image,
+    transparency_range=[1, 4],
+    axes=axes[1],
+    **plot_param,
+)
+
+plotting.plot_stat_map(
+    thresholded_img,
+    title="image thresholded before plotting",
+    axes=axes[2],
+    **plot_param,
+)
+
+plotting.plot_stat_map(
+    image,
+    title="image thresholded during plotting",
+    threshold=2,
+    axes=axes[3],
+    **plot_param,
+)
+
+plotting.show()

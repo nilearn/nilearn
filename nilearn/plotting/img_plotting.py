@@ -180,6 +180,7 @@ def _plot_img_with_bg(
     decimals=False,
     radiological=False,
     transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Refer to the docstring of plot_img for parameters not listed below.
@@ -342,6 +343,7 @@ def _plot_img_with_bg(
             cbar_vmax=cbar_vmax,
             cbar_tick_format=cbar_tick_format,
             transparency=transparency,
+            transparency_range=transparency_range,
             **kwargs,
         )
     if radiological:
@@ -414,6 +416,7 @@ def plot_img(
     decimals=False,
     cmap="gray",
     transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Plot cuts of a given image.
@@ -534,6 +537,7 @@ def plot_img(
         decimals=decimals,
         cmap=cmap,
         transparency=transparency,
+        transparency_range=transparency_range,
         **kwargs,
     )
 
@@ -1418,6 +1422,7 @@ def plot_stat_map(
     radiological=False,
     resampling_interpolation="continuous",
     transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Plot cuts of an ROI/mask image.
@@ -1555,6 +1560,7 @@ def plot_stat_map(
         resampling_interpolation=resampling_interpolation,
         radiological=radiological,
         transparency=transparency,
+        transparency_range=transparency_range,
         **kwargs,
     )
 

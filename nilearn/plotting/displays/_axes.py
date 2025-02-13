@@ -73,6 +73,8 @@ class BaseAxes:
                 "via the 'transparency' parameter."
             )
         kwargs["alpha"] = transparency
+        if isinstance(transparency, np.ndarray):
+            kwargs["alpha"] = transparency.copy()
 
         if self.direction == "y":
             (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
