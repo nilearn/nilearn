@@ -98,7 +98,7 @@ Script
 
 
     def get_atlas_path():
-        atlas_path = fetch_atlas_basc_multiscale_2015(dimension=64).maps
+        atlas_path = fetch_atlas_basc_multiscale_2015(resolution=64).maps
         return atlas_path
 
 
