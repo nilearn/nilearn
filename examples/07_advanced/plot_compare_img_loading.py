@@ -248,7 +248,7 @@ def plot_scatter_memvcomputation_time(
         "numpy_masker_shared": "s",
     }
     sizes = {
-        "nifti_masker": 200,
+        "nifti_masker": 400,
         "numpy_masker": 100,
         "numpy_masker_shared": 100,
     }
@@ -459,17 +459,20 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # plot memory usage vs. computation time
-    for loading_method in ["load_img", "concat_imgs"]:
-        for memmap in [False, True]:
-            for usage, peak_usage in zip(usages, peak_usages):
-                fig, ax = plot_scatter_memvcomputation_time(
-                    fig,
-                    ax,
-                    loading_method,
-                    memmap,
-                    usage,
-                    peak_usage,
-                )
+    for usage, peak_usage, loading_method, memmap in zip(
+        usages,
+        peak_usages,
+        ["load_img", "load_img", "concat_imgs", "concat_imgs"],
+        [False, True, False, True],
+    ):
+        fig, ax = plot_scatter_memvcomputation_time(
+            fig,
+            ax,
+            loading_method,
+            memmap,
+            usage,
+            peak_usage,
+        )
 
     ax.set_xlabel("Computation time (s)")
     ax.set_ylabel("Memory (MiB)")
@@ -486,18 +489,21 @@ if __name__ == "__main__":
     fig, ax = plt.subplots(figsize=(10, 6))
 
     # plot memory usage vs. computation time
-    for loading_method in ["load_img", "concat_imgs"]:
-        for memmap in [False, True]:
-            for usage, peak_usage in zip(usages, peak_usages):
-                # plot memory usage over time
-                fig, ax = plot_memory_usage(
-                    fig,
-                    ax,
-                    loading_method,
-                    memmap,
-                    usage,
-                    peak_usage,
-                )
+    for usage, peak_usage, loading_method, memmap in zip(
+        usages,
+        peak_usages,
+        ["load_img", "load_img", "concat_imgs", "concat_imgs"],
+        [False, True, False, True],
+    ):
+        # plot memory usage over time
+        fig, ax = plot_memory_usage(
+            fig,
+            ax,
+            loading_method,
+            memmap,
+            usage,
+            peak_usage,
+        )
 
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("Memory (MiB)")
