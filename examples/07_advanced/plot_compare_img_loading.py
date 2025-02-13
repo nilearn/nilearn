@@ -438,11 +438,6 @@ if __name__ == "__main__":
     usages = []
     peak_usages = []
 
-    plot_path = Path.cwd() / "results" / "plot_compare_img_loading"
-    plot_path.mkdir(parents=True, exist_ok=True)
-
-    fig, ax = plt.subplots(figsize=(10, 6))
-
     for loading_method in ["load_img", "concat_imgs"]:
         for memmap in [False, True]:
             usage, peak_usage = memory_usage(
@@ -458,15 +453,23 @@ if __name__ == "__main__":
             usages.append(usage)
             peak_usages.append(peak_usage)
 
-            # plot memory usage vs. computation time
-            fig, ax = plot_scatter_memvcomputation_time(
-                fig,
-                ax,
-                loading_method,
-                memmap,
-                usage,
-                peak_usage,
-            )
+    plot_path = Path.cwd() / "results" / "plot_compare_img_loading"
+    plot_path.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+
+    # plot memory usage vs. computation time
+    for loading_method in ["load_img", "concat_imgs"]:
+        for memmap in [False, True]:
+            for usage, peak_usage in zip(usages, peak_usages):
+                fig, ax = plot_scatter_memvcomputation_time(
+                    fig,
+                    ax,
+                    loading_method,
+                    memmap,
+                    usage,
+                    peak_usage,
+                )
 
     ax.set_xlabel("Computation time (s)")
     ax.set_ylabel("Memory (MiB)")
@@ -480,22 +483,28 @@ if __name__ == "__main__":
     )
     plt.show()
 
-    # plot memory usage over time
-    #         fig, ax = plot_memory_usage(
-    #             fig,
-    #             ax,
-    #             loading_method,
-    #             memmap,
-    #             usage,
-    #             peak_usage,
-    #         )
+    fig, ax = plt.subplots(figsize=(10, 6))
 
-    # ax.set_xlabel("Time (s)")
-    # ax.set_ylabel("Memory (MiB)")
-    # ax.set_title(
-    #     f"Memory usage over time with N_SUBJECTS={N_SUBJECTS},"
-    #     f" N_REGIONS={N_REGIONS}"
-    # )
-    # ax.legend()
-    # plt.savefig(plot_path / f"memory_usage_n{N_SUBJECTS}_j{N_REGIONS}.png")
-    # plt.show()
+    # plot memory usage vs. computation time
+    for loading_method in ["load_img", "concat_imgs"]:
+        for memmap in [False, True]:
+            for usage, peak_usage in zip(usages, peak_usages):
+                # plot memory usage over time
+                fig, ax = plot_memory_usage(
+                    fig,
+                    ax,
+                    loading_method,
+                    memmap,
+                    usage,
+                    peak_usage,
+                )
+
+    ax.set_xlabel("Time (s)")
+    ax.set_ylabel("Memory (MiB)")
+    ax.set_title(
+        f"Memory usage over time with N_SUBJECTS={N_SUBJECTS},"
+        f" N_REGIONS={N_REGIONS}"
+    )
+    ax.legend()
+    plt.savefig(plot_path / f"memory_usage_n{N_SUBJECTS}_j{N_REGIONS}.png")
+    plt.show()
