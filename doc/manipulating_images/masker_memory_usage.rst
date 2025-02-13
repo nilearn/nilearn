@@ -81,6 +81,7 @@ Script
         iter_img,
         load_img,
         resample_to_img,
+        new_img_like,
     )
     from nilearn.maskers import NiftiMasker
     from memory_profiler import memory_usage
