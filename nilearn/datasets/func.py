@@ -3005,7 +3005,7 @@ def fetch_spm_multimodal_fmri(
     """Fetcher for Multi-modal Face Dataset.
 
     For more information,
-    see the :ref:`dataset description <spm_multimodal_datasets>`.
+    see the :ref:`dataset description <spm_multimodal_dataset>`.
 
     Parameters
     ----------

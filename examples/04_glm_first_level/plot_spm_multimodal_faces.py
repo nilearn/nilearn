@@ -11,7 +11,7 @@ sampled in different positions (encoded by different affine functions).
 .. seealso::
 
     For more information
-    see the :ref:`dataset description <spm_multimodal_datasets>`.
+    see the :ref:`dataset description <spm_multimodal_dataset>`.
 """
 
 # %%
