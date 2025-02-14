@@ -310,6 +310,9 @@ def main(
     if load == "load_img":
         del fmri_img
         fmri_img = load_img(fmri_path)
+    elif load == "nibabel_load":
+        del fmri_img
+        fmri_img = nib.load(fmri_path)
     atlas_path = get_atlas_path()
     mask_imgs, mask_paths = atlas_to_masks(
         atlas_path, fmri_path, n_regions=n_regions
@@ -386,7 +389,7 @@ if __name__ == "__main__":
     usages = []
     peak_usages = []
 
-    for loading_method in ["load_img", "concat_imgs"]:
+    for loading_method in ["load_img", "concat_imgs", "nibabel_load"]:
         for memmap in [False, True]:
             usage, peak_usage = memory_usage(
                 (
@@ -410,9 +413,23 @@ if __name__ == "__main__":
     for usage, peak_usage, loading_method, memmap, color in zip(
         usages,
         peak_usages,
-        ["load_img", "load_img", "concat_imgs", "concat_imgs"],
-        [False, True, False, True],
-        ["tab:blue", "tab:orange", "tab:green", "tab:red"],
+        [
+            "load_img",
+            "load_img",
+            "concat_imgs",
+            "concat_imgs",
+            "nibabel_load",
+            "nibabel_load",
+        ],
+        [False, True, False, True, False, True],
+        [
+            "tab:blue",
+            "tab:orange",
+            "tab:green",
+            "tab:red",
+            "tab:purple",
+            "tab:brown",
+        ],
     ):
         fig, ax = plot_scatter_memvcomputation_time(
             fig,
@@ -442,8 +459,23 @@ if __name__ == "__main__":
     for usage, peak_usage, loading_method, memmap in zip(
         usages,
         peak_usages,
-        ["load_img", "load_img", "concat_imgs", "concat_imgs"],
-        [False, True, False, True],
+        [
+            "load_img",
+            "load_img",
+            "concat_imgs",
+            "concat_imgs",
+            "nibabel_load",
+            "nibabel_load",
+        ],
+        [False, True, False, True, False, True],
+        [
+            "tab:blue",
+            "tab:orange",
+            "tab:green",
+            "tab:red",
+            "tab:purple",
+            "tab:brown",
+        ],
     ):
         # plot memory usage over time
         fig, ax = plot_memory_usage(
