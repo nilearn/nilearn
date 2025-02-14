@@ -8,7 +8,8 @@ However, "transparent thresholding" allows
 for the same suprathreshold results to be observed,
 while also showing subthreshold information
 with an opacity that fades with magnitude
-(Allen et al., 2012; Taylor et al., 2023).
+(:footcite:t:`Allen2012`, :footcite:t:`Chen2022`,
+:footcite:t:`Taylor2023`, :footcite:t:`Sundermann2024`).
 
 This makes use of the "alpha" value that overlays can have
 when using some plotting functions (like :func:`matplotlib.pyplot.imshow`).
@@ -42,12 +43,7 @@ merging :math:`RGB_{olay}` and :math:`RGB_{ulay}` as:
 In the end, this is just a small tweak for the case of subthreshold data.
 In that case, alpha is nonzero (rather than simply 0).
 
-This has been implemented in AFNI, SUMA, NiiVue,
-the Trends-Matlab distribution, BrainVoyager,
-and is currently being added to other projects.
-
-Additionally, most software implementations with this also allow
-for an outline to be placed around the suprathreshold regions,
+Additionally, a contour can be placed around the suprathreshold regions,
 to further highlight them.
 
 So, the differences between standard, opaque thresholding
@@ -62,32 +58,8 @@ is shown in the rest of this example.
     enables more accurate interpretations,
     reduces biases in results and hypersensitive
     to non-physiological differences,
-    facilitates quality control checks,
+    facilitates quality control
     and improves reproducibility checks.
-
-These benefits have been described in:
-
-Sundermann B, Pfleiderer B, McLeod A, Mathys C (2024). Seeing more
-than the Tip of the Iceberg: Approaches to Subthreshold Effects in
-Functional Magnetic Resonance Imaging of the Brain. Clin Neuroradiol
-34(3):531-539. doi: 10.1007/s00062-024-01422-2.
-
-Taylor PA, Reynolds RC, Calhoun V, Gonzalez-Castillo J, Handwerker
-DA, Bandettini PA, Mejia AF, Chen G (2023).
-Highlight Results, Don't Hide Them: Enhance interpretation, reduce
-biases and improve reproducibility. Neuroimage 274:120138.
-https://pubmed.ncbi.nlm.nih.gov/37116766/
-
-Chen G, Taylor PA, Stoddard J, Cox RW, Bandettini PA, Pessoa L (2022).
-Sources of information waste in neuroimaging: mishandling
-structures, thinking dichotomously, and over-reducing
-data. Aperture Neuro. 2.
-https://doi.org/10.52294/ApertureNeuro.2022.2.ZRJI8542
-
-Allen EA, Erhardt EB, Calhoun VD (2012).
-Data Visualization in the Neurosciences: overcoming the Curse of
-Dimensionality. Neuron 74:603-608.
-https://pubmed.ncbi.nlm.nih.gov/22632718/
 
 """
 
@@ -204,7 +176,8 @@ show()
 #     For more information
 #     see the :ref:`dataset description <spm_auditory_dataset>`.
 #
-# In the following section we:
+# In the following section we :
+#
 # - download the data,
 # - fit the GLM with some smoothing of the data,
 # - compute the contrast for the only condition present in this dataset,
@@ -251,12 +224,14 @@ plotting_config = {
 
 # %%
 # Here we will:
+#
 # - have a look at the statistical value for our contrast,
 # - have a look at their Z score with opaque contrast,
 # - use the Z score as transparency value,
 # - finally we will thresholf the Z-score to identify the significant clusters
 #   (fdr=0.05, 500 voxels)
 #   and plot those as contours.
+#
 fig, axes = plt.subplots(
     4,
     1,
@@ -300,3 +275,13 @@ clean_map, threshold = threshold_stats_img(
 display.add_contours(clean_map, filled=False, levels=[threshold], colors=["k"])
 
 show()
+
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::
+#
+
+# sphinx_gallery_dummy_images=2
