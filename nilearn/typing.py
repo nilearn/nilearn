@@ -76,6 +76,7 @@ if sys.version_info[1] < 10:
         Nifti1Image,
         Path,
     )
+    TransparencyRange = (list, tuple)
     Url = str
     UpperCutoff = (float, np.floating)
     Verbose = (int, np.integer)
@@ -130,6 +131,7 @@ else:
         | Path
         | None
     )
+    TransparencyRange: TypeAlias = list | tuple | None
     Url: TypeAlias = str | None
     UpperCutoff: TypeAlias = float | np.floating
     Verbose: TypeAlias = int | np.integer

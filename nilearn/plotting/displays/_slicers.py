@@ -291,10 +291,10 @@ class BaseSlicer:
         threshold : :obj:`int` or :obj:`float` or ``None``, default=1e-6
             Threshold to apply:
 
-                - If ``None`` is given, the maps are not thresholded.
-                - If number is given, it must be non-negative. The specified
-                  value is used to threshold the image: values below the
-                  threshold (in absolute value) are plotted as transparent.
+            - If ``None`` is given, the maps are not thresholded.
+            - If number is given, it must be non-negative. The specified
+                value is used to threshold the image: values below the
+                threshold (in absolute value) are plotted as transparent.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
@@ -312,6 +312,8 @@ class BaseSlicer:
             is computed based on the data.
 
         %(transparency)s
+
+        %(transparency_range)s
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -904,16 +906,16 @@ class BaseSlicer:
             The positioning for the scalebar.
             Valid location codes are:
 
-                - 1: "upper right"
-                - 2: "upper left"
-                - 3: "lower left"
-                - 4: "lower right"
-                - 5: "right"
-                - 6: "center left"
-                - 7: "center right"
-                - 8: "lower center"
-                - 9: "upper center"
-                - 10: "center"
+            - 1: "upper right"
+            - 2: "upper left"
+            - 3: "lower left"
+            - 4: "lower right"
+            - 5: "right"
+            - 6: "center left"
+            - 7: "center right"
+            - 8: "lower center"
+            - 9: "upper center"
+            - 10: "center"
 
         decimals : :obj:`int`, default=0
             Number of decimal places on slice position annotation. If zero,
@@ -2295,16 +2297,15 @@ def get_slicer(display_mode):
         The desired display mode.
         Possible options are:
 
-            - "ortho": Three cuts are performed in orthogonal directions.
-            - "tiled": Three cuts are performed and arranged in a 2x2 grid.
-            - "mosaic": Three cuts are performed along multiple rows and
-              columns.
-            - "x": Sagittal
-            - "y": Coronal
-            - "z": Axial
-            - "xz": Sagittal + Axial
-            - "yz": Coronal + Axial
-            - "yx": Coronal + Sagittal
+        - "ortho": Three cuts are performed in orthogonal directions.
+        - "tiled": Three cuts are performed and arranged in a 2x2 grid.
+        - "mosaic": Three cuts are performed along multiple rows and columns.
+        - "x": Sagittal
+        - "y": Coronal
+        - "z": Axial
+        - "xz": Sagittal + Axial
+        - "yz": Coronal + Axial
+        - "yx": Coronal + Sagittal
 
     Returns
     -------
@@ -2313,24 +2314,24 @@ def get_slicer(display_mode):
 
         The slicer corresponding to the requested display mode:
 
-            - "ortho": Returns an
-              :class:`~nilearn.plotting.displays.OrthoSlicer`.
-            - "tiled": Returns a
-              :class:`~nilearn.plotting.displays.TiledSlicer`.
-            - "mosaic": Returns a
-              :class:`~nilearn.plotting.displays.MosaicSlicer`.
-            - "xz": Returns a
-              :class:`~nilearn.plotting.displays.XZSlicer`.
-            - "yz": Returns a
-              :class:`~nilearn.plotting.displays.YZSlicer`.
-            - "yx": Returns a
-              :class:`~nilearn.plotting.displays.YZSlicer`.
-            - "x": Returns a
-              :class:`~nilearn.plotting.displays.XSlicer`.
-            - "y": Returns a
-              :class:`~nilearn.plotting.displays.YSlicer`.
-            - "z": Returns a
-              :class:`~nilearn.plotting.displays.ZSlicer`.
+        - "ortho": Returns an
+            :class:`~nilearn.plotting.displays.OrthoSlicer`.
+        - "tiled": Returns a
+            :class:`~nilearn.plotting.displays.TiledSlicer`.
+        - "mosaic": Returns a
+            :class:`~nilearn.plotting.displays.MosaicSlicer`.
+        - "xz": Returns a
+            :class:`~nilearn.plotting.displays.XZSlicer`.
+        - "yz": Returns a
+            :class:`~nilearn.plotting.displays.YZSlicer`.
+        - "yx": Returns a
+            :class:`~nilearn.plotting.displays.YZSlicer`.
+        - "x": Returns a
+            :class:`~nilearn.plotting.displays.XSlicer`.
+        - "y": Returns a
+            :class:`~nilearn.plotting.displays.YSlicer`.
+        - "z": Returns a
+            :class:`~nilearn.plotting.displays.ZSlicer`.
 
     """
     return get_create_display_fun(display_mode, SLICERS)

@@ -247,6 +247,8 @@ def _plot_img_with_bg(
 
     %(transparency)s
 
+    %(transparency_range)s
+
     kwargs :  extra keyword arguments, optional
         Extra keyword arguments passed
         to the display.add_overlay method (see below).
@@ -477,6 +479,8 @@ def plot_img(
         default="gray"
 
     %(transparency)s
+
+    %(transparency_range)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1489,6 +1493,8 @@ def plot_stat_map(
 
     %(transparency)s
 
+    %(transparency_range)s
+
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
@@ -1666,6 +1672,8 @@ def plot_glass_brain(
     %(radiological)s
 
     %(transparency)s
+
+    %(transparency_range)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
