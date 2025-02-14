@@ -342,15 +342,25 @@ plt.show()
 # %%
 # Conclusion
 # ----------
-# So using numpy indexing with shared memory is the most efficient way to mask
-# large fMRI images in parallel. However, it is important to note that this
-# method is only useful when we only need to mask the fMRI image with binary
-# masks and don't need to standardize, smooth, etc. the image. Otherwise,
-# using :class:`~nilearn.maskers.NiftiMasker` is still the most appropriate
-# way to extract data from an fMRI image.
+# So overall we can see that there are much more memory-efficient ways to
+# extract ROIs in parallel from large fMRI images than simply
+# using :class:`~nilearn.maskers.NiftiMasker` with file paths.
 #
-# Furthermore, the differences in memory usage between the methods can be more
-# significant when working with much larger images and/or more jobs/regions
-# in parallel. You can try increasing the ``N_SUBJECTS`` and ``N_REGIONS``
-# variables at the beginning of this script to see how the memory usage changes
-# for each method.
+# The two methods that standout both use numpy indexing and involve
+# loading the fMRI image prior to masking. In fact, loading the fMRI image
+# prior is generally better than using file paths even with
+# :class:`~nilearn.maskers.NiftiMasker`.
+#
+# So if your goal is to simply extract data from an fMRI image, numpy indexing
+# is much more memory-efficient than using
+# :class:`~nilearn.maskers.NiftiMasker`.
+#
+# However, if you also need to standardize, smooth, detrend, etc. the data,
+# then using :class:`~nilearn.maskers.NiftiMasker` with in-memory images is
+# the most recommended way to go.
+#
+# Finally, it should be noted that the differences in memory usage between
+# the methods can be more significant when working with even larger images
+# and/or more jobs/regions in parallel. You can try increasing the
+# ``N_SUBJECTS`` and ``N_REGIONS`` variables at the beginning of this example
+# to see how the memory usage changes for each method.
