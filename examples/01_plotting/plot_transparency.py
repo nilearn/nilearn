@@ -72,6 +72,7 @@ from nilearn.plotting import plot_stat_map, show
 # Load the image we will use to demonstrate.
 image = datasets.load_sample_motor_activation_image()
 
+# %%
 # Let's use some sligbtly different plotting parameters
 # that should work better with transparency plotting.
 # For example, let's pick a diverging colormap
@@ -79,7 +80,7 @@ image = datasets.load_sample_motor_activation_image()
 # as the default colormap does.
 #
 # .. TODO switch to ``berlin`` color map when bumping matplotlib
-#    as it is not a cyclic color map like cold_hot.
+#    as it is not a cyclic color map like ``cold_hot``.
 #
 vmin = 0.5
 threshold = 3
@@ -209,10 +210,10 @@ results = fmri_glm.compute_contrast("listening", output_type="all")
 mean_img = mean_img(subject_data.func[0], copy_header=True)
 
 # %%
-# Let's set some common configuration for our plots
+# Let's set some common configuration for our plots.
 #
 # We will look at activations only
-# so we set vmin to 0 and use a sequential colormap (inferno).
+# so we set ``vmin`` to 0 and use a sequential colormap (``inferno``).
 plotting_config = {
     "bg_img": mean_img,
     "display_mode": "z",
