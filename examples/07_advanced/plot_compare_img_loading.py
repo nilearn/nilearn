@@ -468,14 +468,6 @@ if __name__ == "__main__":
             "nibabel_load",
         ],
         [False, True, False, True, False, True],
-        [
-            "tab:blue",
-            "tab:orange",
-            "tab:green",
-            "tab:red",
-            "tab:purple",
-            "tab:brown",
-        ],
     ):
         # plot memory usage over time
         fig, ax = plot_memory_usage(
