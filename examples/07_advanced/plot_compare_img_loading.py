@@ -176,52 +176,27 @@ def plot_memory_usage(
 
     # add annotations on each peak
     for peak in peak_usage:
-        if isinstance(peak_usage[peak], dict):
-            for sub_peak in peak_usage[peak]:
-                # get only the memory usage
-                mems = np.array([mem for mem, _ in peak_usage[peak][sub_peak]])
-                # get max memory usage
-                peak_mem = mems.max()
-                # get corresponding time
-                peak_time = (
-                    peak_usage[peak][sub_peak][mems.argmax()][1] - zero_time
-                )
-                ax.annotate(
-                    f"{peak_mem:.2f} MiB",
-                    xy=(peak_time, peak_mem),
-                    xytext=(peak_time - xoffset, peak_mem + yoffset),
-                    color=line_color,
-                )
-                # only annotate with the masking method for the last peak
-                if order[f"{method}_{memmap}"] == 4:
-                    yoffset *= 1.5
-                    ax.annotate(
-                        f"\n{peak},\n{sub_peak}",
-                        xy=(peak_time, peak_mem),
-                        xytext=(peak_time - xoffset, peak_mem + yoffset),
-                    )
-        else:
-            # get only the memory usage
-            mems = np.array([mem for mem, _ in peak_usage[peak]])
-            peak_time = peak_usage[peak][mems.argmax()][1] - zero_time
-            peak_mem = mems.max()
+        # get only the memory usage
+        mems = np.array([mem for mem, _ in peak_usage[peak]])
+        peak_time = peak_usage[peak][mems.argmax()][1] - zero_time
+        peak_mem = mems.max()
+        ax.annotate(
+            f"{peak_mem:.2f} MiB",
+            xy=(peak_time, peak_mem),
+            xytext=(
+                peak_time - xoffset,
+                peak_mem + yoffset,
+            ),
+            color=line_color,
+        )
+        # only annotate with the masking method for the last peak
+        if order[f"{method}_{memmap}"] == 4:
+            yoffset *= 1.5
             ax.annotate(
-                f"{peak_mem:.2f} MiB",
+                peak,
                 xy=(peak_time, peak_mem),
-                xytext=(
-                    peak_time - xoffset,
-                    peak_mem + yoffset,
-                ),
-                color=line_color,
+                xytext=(peak_time - xoffset, peak_mem + yoffset),
             )
-            # only annotate with the masking method for the last peak
-            if order[f"{method}_{memmap}"] == 4:
-                yoffset *= 1.5
-                ax.annotate(
-                    "\nnumpy_masker,\nshared",
-                    xy=(peak_time, peak_mem),
-                    xytext=(peak_time - xoffset, peak_mem + yoffset),
-                )
 
     # increase the y-axis limit by 20% to make the plot more readable
     ax.set_ylim(ax.get_ylim()[0], ax.get_ylim()[1] * 1.2)
@@ -246,29 +221,15 @@ def plot_scatter_memvcomputation_time(
     names = []
 
     for peak in peak_usage:
-        if isinstance(peak_usage[peak], dict):
-            for sub_peak in peak_usage[peak]:
-                # get max memory usage
-                peak_mem = np.array(
-                    [mem for mem, _ in peak_usage[peak][sub_peak]]
-                ).max()
-                # get total computation time
-                start_time = peak_usage[peak][sub_peak][0][1] - zero_time
-                end_time = peak_usage[peak][sub_peak][-1][1] - zero_time
-                computation_time = end_time - start_time
-                computation_times.append(computation_time)
-                peak_mems.append(peak_mem)
-                names.append(f"{peak}, {sub_peak}")
-        else:
-            # get max memory usage
-            peak_mem = np.array([mem for mem, _ in peak_usage[peak]]).max()
-            # get total computation time
-            start_time = peak_usage[peak][0][1] - zero_time
-            end_time = peak_usage[peak][-1][1] - zero_time
-            computation_time = end_time - start_time
-            computation_times.append(computation_time)
-            peak_mems.append(peak_mem)
-            names.append("shared")
+        # get max memory usage
+        peak_mem = np.array([mem for mem, _ in peak_usage[peak]]).max()
+        # get total computation time
+        start_time = peak_usage[peak][0][1] - zero_time
+        end_time = peak_usage[peak][-1][1] - zero_time
+        computation_time = end_time - start_time
+        computation_times.append(computation_time)
+        peak_mems.append(peak_mem)
+        names.append(peak)
 
     plt.scatter(
         computation_times,
@@ -280,7 +241,7 @@ def plot_scatter_memvcomputation_time(
     ann_colors = {
         "nifti_masker": "tab:pink",
         "numpy_masker": "tab:olive",
-        "shared": "tab:cyan",
+        "numpy_masker_shared": "tab:cyan",
     }
 
     # add annotations indicating the method
@@ -291,7 +252,7 @@ def plot_scatter_memvcomputation_time(
             name,
             xy=(computation_time, peak_mem),
             xytext=(computation_time + 0.01, peak_mem),
-            color=ann_colors[name.split(",")[0]],
+            color=ann_colors[name],
         )
 
     return fig, ax
@@ -355,23 +316,14 @@ def main(
     )
 
     peak_usage = {
-        "nifti_masker": {"path": [], "in_memory": []},
-        "numpy_masker": {"path": [], "in_memory": []},
+        "nifti_masker": [],
+        "numpy_masker": [],
         "numpy_masker_shared": [],
     }
 
     time.sleep(wait_time)
 
     print(f"\nLoading via {load} with {memmap=}\n")
-
-    peak_usage["nifti_masker"]["path"] = memory_usage(
-        (nifti_masker_parallel, (fmri_path, mask_paths, n_regions, memmap)),
-        timestamps=True,
-        include_children=True,
-        multiprocess=True,
-    )
-
-    time.sleep(wait_time)
 
     peak_usage["nifti_masker"]["in_memory"] = memory_usage(
         (nifti_masker_parallel, (fmri_img, mask_imgs, n_regions, memmap)),
@@ -380,18 +332,6 @@ def main(
         multiprocess=True,
     )
     print(f"{peak_usage['nifti_masker']=}\n")
-
-    time.sleep(wait_time)
-
-    peak_usage["numpy_masker"]["path"] = memory_usage(
-        (
-            numpy_masker_parallel_path,
-            (fmri_path, mask_paths, n_regions, memmap),
-        ),
-        timestamps=True,
-        include_children=True,
-        multiprocess=True,
-    )
 
     time.sleep(wait_time)
 
