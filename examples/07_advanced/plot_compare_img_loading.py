@@ -164,6 +164,8 @@ def plot_memory_usage(
         "load_img_False": 2,
         "concat_imgs_True": 3,
         "concat_imgs_False": 4,
+        "nibabel_load_True": 5,
+        "nibabel_load_False": 6,
     }
 
     # use order of max usage and time to calculate offset for annotations
@@ -190,7 +192,7 @@ def plot_memory_usage(
             color=line_color,
         )
         # only annotate with the masking method for the last peak
-        if order[f"{method}_{memmap}"] == 4:
+        if order[f"{method}_{memmap}"] == 6:
             yoffset *= 1.5
             ax.annotate(
                 peak,
