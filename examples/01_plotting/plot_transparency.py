@@ -100,15 +100,15 @@ plotting_config = {
 #
 # Here we use the motor activation image itself to give us the values
 # to use for transparency.
-# We set ``transparency_range`` to ``[0.5, 3]``
+# We can set ``transparency_range`` to ``[0.5, 3]``
 # to range of values where transparency will be 'enabled'.
 # Values below 0.5 will be fully transparent
 # while values above 3 will be fully opaque.
 #
 fig, axes = plt.subplots(
-    3,
+    4,
     1,
-    figsize=(figure_width, 13),
+    figsize=(figure_width, 17),
 )
 
 plot_stat_map(
@@ -128,8 +128,15 @@ plot_stat_map(
     image,
     title="transparent thresholding",
     transparency=image,
-    transparency_range=[vmin, threshold],
     axes=axes[2],
+    **plotting_config,
+)
+plot_stat_map(
+    image,
+    title="transparent thresholding with range",
+    transparency=image,
+    transparency_range=[vmin, threshold],
+    axes=axes[3],
     **plotting_config,
 )
 
