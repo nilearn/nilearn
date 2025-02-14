@@ -1518,9 +1518,7 @@ def load_img(img, wildcards=True, dtype=None):
         nilearn.image.get_data returns its data.
 
     """
-    img = check_niimg(img, wildcards=wildcards, dtype=dtype)
-    data = _get_data(img)
-    return new_img_like(img, data, copy_header=True)
+    return check_niimg(img, wildcards=wildcards, dtype=dtype)
 
 
 @fill_doc
