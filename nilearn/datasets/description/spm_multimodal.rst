@@ -17,6 +17,8 @@ viewing a face image or a scrambled face image,
 supposedly with the same low-level statistical properties,
 to find face-specific responses.
 
+Images were acquired with a repetition time of 2 seconds.
+
 See :footcite:t:`spm_multiface`.
 
 Content

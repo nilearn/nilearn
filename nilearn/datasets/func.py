@@ -3004,7 +3004,8 @@ def fetch_spm_multimodal_fmri(
 ):
     """Fetcher for Multi-modal Face Dataset.
 
-    See :footcite:t:`spm_multiface`.
+    For more information,
+    see the :ref:`dataset description <spm_multimodal_datasets>`.
 
     Parameters
     ----------
@@ -3022,14 +3023,12 @@ def fetch_spm_multimodal_fmri(
         Dictionary-like object, the interest attributes are:
         - 'func1': string list. Paths to functional images for run 1
         - 'func2': string list. Paths to functional images for run 2
-        - 'trials_ses1': string list. Path to onsets file for run 1
-        - 'trials_ses2': string list. Path to onsets file for run 2
+        - 'events1': Path to onsets TSV file for run 1
+        - 'events2': Path to onsets TSV file for run 2
+        - 'trials_ses1': Path to .mat file containing onsets for run 1
+        - 'trials_ses1': Path to .mat file containing onsets for run 2
         - 'anat': string. Path to anat file
         - 'description': :obj:`str`. Description of the data
-
-    References
-    ----------
-    .. footbibliography::
 
     """
     check_params(locals())
