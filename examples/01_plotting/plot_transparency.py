@@ -7,7 +7,7 @@ is completely hidden from view.
 However, "transparent thresholding" allows
 for the same suprathreshold results to be observed,
 while also showing subthreshold information
-with an opacity that fades with magnitude
+with an opacity that fades with decreasing magnitude
 (:footcite:t:`Allen2012`, :footcite:t:`Chen2022`,
 :footcite:t:`Taylor2023`, :footcite:t:`Sundermann2024`).
 
@@ -20,14 +20,14 @@ and overlay color :math:`RGB_{olay}`,
 where a threshold value T is applied
 and we consider how an element (voxel, node...) with value M is shown.
 
-"opaque" thresholding
+"Opaque" thresholding
 ---------------------
 
 if :math:`\lvert M \lvert >= T : alpha=1`,
 meaning the overlay is shown as: :math:`RGB_{olay}`
 else : :math:`alpha=0`, meaning the underlay is shown as: :math:`RGB_{ulay}`
 
-"transparent" thresholding
+"Transparent" thresholding
 --------------------------
 
 The steepness of fading can be linear or quadratic. Linear is shown below.
@@ -73,7 +73,7 @@ from nilearn.plotting import plot_stat_map, show
 image = datasets.load_sample_motor_activation_image()
 
 # %%
-# Let's use some sligbtly different plotting parameters
+# Let's use some slightly different plotting parameters
 # that should work better with transparency plotting.
 # For example, let's pick a diverging colormap
 # that diverges from black and not from white
@@ -236,7 +236,7 @@ plotting_config = {
 # - have a look at the statistical value for our contrast,
 # - have a look at their Z score with opaque contrast,
 # - use the Z score as transparency value,
-# - finally we will thresholf the Z-score to identify the significant clusters
+# - finally we will threshold the Z-score to identify the significant clusters
 #   (fdr=0.05, 500 voxels)
 #   and plot those as contours.
 #
