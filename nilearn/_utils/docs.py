@@ -1013,6 +1013,8 @@ transparency : :obj:`float` between 0 and 1, \
     if ``None`` is passed, it will be set to 1.
     If an image is passed, voxel-wise alpha blending will be applied,
     by reying on the absolute value of ``transparency`` at each voxel.
+
+    .. versionadded:: 0.11.2
 """
 
 # transparency
@@ -1025,6 +1027,8 @@ transparency_range : :obj:`tuple` or :obj:`list` of 2 real numbers, \
     The first number must be greater than 0 and less than the second one.
     if ``None`` is passed,
     this will be set to ``[0, max(abs(transparency))]``.
+
+    .. versionadded:: 0.11.2
 """
 
 # upper_cutoff
