@@ -167,7 +167,7 @@ show()
 # -------------------------------------
 #
 # If you want to visualize the limit where the transparency starts,
-# you can add contours at the right thresold
+# you can add contours at the right threshold
 # by using
 # the :meth:`~nilearn.plotting.displays.BaseSlicer.add_contours` method.
 #
