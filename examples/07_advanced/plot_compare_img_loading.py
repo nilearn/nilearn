@@ -325,7 +325,7 @@ def main(
 
     print(f"\nLoading via {load} with {memmap=}\n")
 
-    peak_usage["nifti_masker"]["in_memory"] = memory_usage(
+    peak_usage["nifti_masker"] = memory_usage(
         (nifti_masker_parallel, (fmri_img, mask_imgs, n_regions, memmap)),
         timestamps=True,
         include_children=True,
@@ -335,7 +335,7 @@ def main(
 
     time.sleep(wait_time)
 
-    peak_usage["numpy_masker"]["in_memory"] = memory_usage(
+    peak_usage["numpy_masker"] = memory_usage(
         (
             numpy_masker_parallel_inmemory,
             (fmri_img, mask_imgs, n_regions, memmap),
