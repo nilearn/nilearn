@@ -380,19 +380,13 @@ if __name__ == "__main__":
         peak_usages,
         [
             "load_img",
-            "load_img",
             "concat_imgs",
-            "concat_imgs",
-            "nibabel_load",
             "nibabel_load",
         ],
         [
             "tab:blue",
             "tab:orange",
             "tab:green",
-            "tab:red",
-            "tab:purple",
-            "tab:brown",
         ],
     ):
         fig, ax = plot_scatter_memvcomputation_time(
@@ -424,10 +418,7 @@ if __name__ == "__main__":
         peak_usages,
         [
             "load_img",
-            "load_img",
             "concat_imgs",
-            "concat_imgs",
-            "nibabel_load",
             "nibabel_load",
         ],
     ):
