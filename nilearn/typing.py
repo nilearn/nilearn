@@ -20,10 +20,12 @@ from __future__ import annotations
 
 import pathlib
 import sys
+from pathlib import Path
 from typing import Callable
 
 import numpy as np
 from joblib.memory import Memory
+from nibabel import Nifti1Image
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
@@ -64,6 +66,17 @@ if sys.version_info[1] < 10:
     Threshold = (float, int, str, np.floating, np.integer)
     Title = str
     Tr = (float, int)
+    Transparency = (
+        float,
+        int,
+        np.floating,
+        np.integer,
+        str,
+        Path,
+        Nifti1Image,
+        Path,
+    )
+    TransparencyRange = (list, tuple)
     Url = str
     UpperCutoff = (float, np.floating)
     Verbose = (int, np.integer)
@@ -107,6 +120,18 @@ else:
 
     Title: TypeAlias = str | None
     Tr: TypeAlias = float | int | np.floating | np.integer | None
+    Transparency: TypeAlias = (
+        float
+        | int
+        | np.floating
+        | np.integer
+        | str
+        | Path
+        | Nifti1Image
+        | Path
+        | None
+    )
+    TransparencyRange: TypeAlias = list | tuple | None
     Url: TypeAlias = str | None
     UpperCutoff: TypeAlias = float | np.floating
     Verbose: TypeAlias = int | np.integer

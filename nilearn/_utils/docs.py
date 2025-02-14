@@ -1003,6 +1003,34 @@ title : :obj:`str`, or None, default=None
     The title displayed on the figure.
 """
 
+# transparency
+docdict["transparency"] = """
+transparency : :obj:`float` between 0 and 1, \
+                or a Niimg-Like object, \
+                or None, \
+                default = None
+    Value to be passed as alpha value to :func:`~matplotlib.pyplot.imshow`.
+    if ``None`` is passed, it will be set to 1.
+    If an image is passed, voxel-wise alpha blending will be applied,
+    by reying on the absolute value of ``transparency`` at each voxel.
+
+    .. versionadded:: 0.11.2
+"""
+
+# transparency
+docdict["transparency_range"] = """
+transparency_range : :obj:`tuple` or :obj:`list` of 2 real numbers, \
+                or None, \
+                default = None
+    This parameter will be ignored
+    unless an image is passed as ``transparency``.
+    The first number must be greater than 0 and less than the second one.
+    if ``None`` is passed,
+    this will be set to ``[0, max(abs(transparency))]``.
+
+    .. versionadded:: 0.11.2
+"""
+
 # upper_cutoff
 docdict["upper_cutoff"] = """
 upper_cutoff : :obj:`float`, optional
