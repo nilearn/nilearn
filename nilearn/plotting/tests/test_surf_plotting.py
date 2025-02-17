@@ -1099,9 +1099,7 @@ def test_plot_surf_stat_map_with_threshold(
     )
 
 
-def test_plot_surf_stat_map_colorbar_tick(
-    plotly, engine, in_memory_mesh, bg_map
-):
+def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
     """Change colorbar tick format."""
     plot_surf_stat_map(
         in_memory_mesh,
