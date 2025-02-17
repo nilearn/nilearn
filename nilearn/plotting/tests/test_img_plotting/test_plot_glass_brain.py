@@ -12,14 +12,11 @@ from nilearn.plotting import plot_glass_brain
 
 
 def test_plot_glass_brain(matplotlib_pyplot, img_3d_mni):
-    """Smoke tests for plot_glass_brain with colorbar and negative values."""
-    plot_glass_brain(
-        img_3d_mni, colorbar=True, resampling_interpolation="nearest"
-    )
+    """Smoke tests for plot_glass_brain with negative values."""
+    plot_glass_brain(img_3d_mni, resampling_interpolation="nearest")
     # test plot_glass_brain with negative values
     plot_glass_brain(
         img_3d_mni,
-        colorbar=True,
         plot_abs=False,
         resampling_interpolation="nearest",
     )

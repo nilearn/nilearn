@@ -70,6 +70,26 @@ def test_plot_functions_annotate(plot_func, img_3d_mni, annotate):
 
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+@pytest.mark.parametrize(
+    "display_mode", ["x", "y", "z", "yx", "xz", "yz", "ortho"]
+)
+def test_plot_functions_display_mode(plot_func, display_mode):
+    """Test parameter for title."""
+    return plot_func(
+        load_sample_motor_activation_image(), display_mode=display_mode
+    )
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_plot_functions_colorbar(plot_func, colorbar):
+    """Test parameter for title."""
+    return plot_func(load_sample_motor_activation_image(), colorbar=colorbar)
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("vmin", [None, -1, 1])
 @pytest.mark.parametrize("vmax", [None, 2, 3])
 def test_plot_functions_3d_default_params(plot_func, vmin, vmax):
@@ -116,7 +136,6 @@ def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
 
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])
-@pytest.mark.parametrize("display_mode", ["z", "ortho"])
-def test_plot_anat_mni(anat_img, display_mode):
+def test_plot_anat_mni(anat_img):
     """Tests for plot_anat with MNI template."""
-    return plot_anat(anat_img=anat_img, display_mode=display_mode)
+    return plot_anat(anat_img=anat_img)
