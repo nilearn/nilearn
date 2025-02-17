@@ -31,8 +31,10 @@ the fMRI image in a different way:
 3. Using :class:`multiprocessing.shared_memory.SharedMemory`.
 
 For the first two methods, there are two ways to input the fMRI image:
-using the file paths and using the pre-loaded in-memory objects. These two
-input methods can also affect the memory usage of the task, so we will
+1.  passing the file path (i.e., the string to the location of the large fMRI image on-disk)
+1.  loading the large fMRI image in-memory using `nibabel`, and then passing this in-memory object.
+
+These two input methods can impact the memory usage of the task, so we will
 also compare these variants of the first two methods.
 
 When using file paths, the entire image is loaded into memory for each process,
