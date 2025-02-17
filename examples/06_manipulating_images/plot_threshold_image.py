@@ -77,7 +77,7 @@ plot_stat_map(
 
 plot_stat_map(
     thresholded_img,
-    title="image thresholded before plotting at 2 with two_sided=True",
+    title="image thresholded at 2 before plotting with two_sided=True",
     axes=axes[1],
     **plot_param,
 )
