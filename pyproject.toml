@@ -269,7 +269,6 @@ max-complexity = 22
 "nilearn/glm/*" = ["B028"]  # 19 errors to fix
 "nilearn/glm/**/{tests}/*" = ["D103"]  # 154 errors to fix
 "nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
-"nilearn/interfaces/**/{tests}/*" = ["D103"]  # 75 errors to fix
 "nilearn/maskers/*" = ["B028"]  # 17 errors to fix
 "nilearn/mass_univariate/*" = ["B028"]  # 4 errors to fix
 "nilearn/plotting/*" = ["B028"]  # 18 errors to fix
