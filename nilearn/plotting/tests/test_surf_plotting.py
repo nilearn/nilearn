@@ -272,13 +272,6 @@ def test_check_surface_plotting_inputs_many_time_points(
         )
 
 
-def test_plot_surf_surface_image(matplotlib_pyplot, surf_img_1d):
-    """Smoke test some surface plotting functions accept a SurfaceImage."""
-    plot_surf(surf_map=surf_img_1d)
-    plot_surf_stat_map(stat_map=surf_img_1d)
-    plot_surf_roi(roi_map=surf_img_1d)
-
-
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
 def test_check_surface_plotting_inputs_extract_mesh_from_polymesh(
     surf_img_1d, surf_mesh, bg_map
@@ -814,7 +807,7 @@ def test_plot_surf_engine_error(in_memory_mesh):
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf(
-    matplotlib_pyplot, engine, tmp_path, rng, in_memory_mesh, bg_map
+    matplotlib_pyplot, engine, tmp_path, in_memory_mesh, bg_map
 ):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
@@ -855,22 +848,18 @@ def test_plot_surf(
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 @pytest.mark.parametrize("view", ["anterior", "posterior"])
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
-def test_plot_surf_hemi_views(
-    matplotlib_pyplot, engine, rng, in_memory_mesh, hemi, view, bg_map
+def test_plot_surf_hemi_views_plotly(
+    matplotlib_pyplot, plotly, in_memory_mesh, hemi, view, bg_map
 ):
     """Check plotting view and hemispheres."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf(
-        in_memory_mesh, bg_map=bg_map, hemi=hemi, view=view, engine=engine
+        in_memory_mesh, bg_map=bg_map, hemi=hemi, view=view, engine="plotly"
     )
 
 
-def test_plot_surf_with_title(matplotlib_pyplot, rng, in_memory_mesh, bg_map):
+def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     """Check title in figure."""
     display = plot_surf(
         in_memory_mesh, bg_map=bg_map, title="Test title", engine="matplotlib"
@@ -880,7 +869,7 @@ def test_plot_surf_with_title(matplotlib_pyplot, rng, in_memory_mesh, bg_map):
     assert display.axes[0].title._text == "Test title"
 
 
-def test_plot_surf_avg_method(matplotlib_pyplot, rng, in_memory_mesh, bg_map):
+def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
     # Plot with avg_method
     # Test all built-in methods and check
     faces = in_memory_mesh.faces
@@ -964,10 +953,8 @@ def test_plot_surf_error(engine, rng, in_memory_mesh):
 
 @pytest.mark.parametrize("kwargs", [{"avg_method": "mean"}, {"alpha": "auto"}])
 def test_plot_surf_warnings_not_implemented_in_plotly(
-    rng, kwargs, in_memory_mesh, bg_map
+    plotly, kwargs, in_memory_mesh, bg_map
 ):
-    if not is_plotly_installed():
-        pytest.skip("Plotly is not installed; required for this test.")
     with pytest.warns(
         UserWarning, match="is not implemented for the plotly engine"
     ):
@@ -1112,19 +1099,15 @@ def test_plot_surf_stat_map_with_threshold(
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_stat_map_colorbar_tick(
-    matplotlib_pyplot, engine, in_memory_mesh, bg_map
+    plotly, engine, in_memory_mesh, bg_map
 ):
     """Change colorbar tick format."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf_stat_map(
         in_memory_mesh,
         stat_map=bg_map,
         cbar_tick_format="%.2g",
-        engine=engine,
+        engine="plotly",
     )
 
 
@@ -1224,35 +1207,18 @@ def test_plot_surf_stat_map_error(in_memory_mesh, bg_map):
         )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-@pytest.mark.parametrize("colorbar", [True, False])
-def test_plot_surf_roi(matplotlib_pyplot, engine, surface_image_roi, colorbar):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-    plot_surf_roi(
-        surface_image_roi.mesh,
-        roi_map=surface_image_roi,
-        colorbar=colorbar,
-        engine=engine,
-    )
-
-
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
-def test_plot_surf_parcellation(
-    matplotlib_pyplot,
-    engine,
+def test_plot_surf_parcellation_plotly(
+    plotly,
     colorbar,
     surface_image_parcellation,
     cbar_tick_format,
 ):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
     plot_surf_roi(
         surface_image_parcellation.mesh,
         roi_map=surface_image_parcellation,
-        engine=engine,
+        engine="plotly",
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
     )

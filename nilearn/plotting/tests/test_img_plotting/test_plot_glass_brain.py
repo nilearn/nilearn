@@ -11,22 +11,12 @@ from nilearn.image import get_data
 from nilearn.plotting import plot_glass_brain
 
 
-def test_plot_glass_brain(matplotlib_pyplot, img_3d_mni):
-    """Smoke tests for plot_glass_brain with negative values."""
-    plot_glass_brain(img_3d_mni, resampling_interpolation="nearest")
-    # test plot_glass_brain with negative values
-    plot_glass_brain(
-        img_3d_mni,
-        plot_abs=False,
-        resampling_interpolation="nearest",
-    )
-
-
 @pytest.mark.parametrize("plot_abs", [True, False])
-def test_plot_glass_brain_background_absolute(
-    matplotlib_pyplot, img_3d_mni, plot_abs
+@pytest.mark.parametrize("resampling_interpolation", ["nearest", "continuous"])
+def test_plot_glass_brain_absolute(
+    matplotlib_pyplot, img_3d_mni, plot_abs, resampling_interpolation
 ):
-    """Somke test for absolute value plotting and background."""
+    """Somke test resampling_interpolation and for absolute value plotting."""
     plot_glass_brain(img_3d_mni, plot_abs=plot_abs)
 
 
@@ -47,7 +37,7 @@ def test_plot_noncurrent_axes(matplotlib_pyplot, rng):
     fh2 = plt.figure()
     ax1 = fh1.add_subplot(1, 1, 1)
 
-    assert plt.gcf() == fh2, "fh2  was the last plot created."
+    assert plt.gcf() == fh2, "fh2 was the last plot created."
 
     # Since we gave ax1, the figure should be plotted in fh1.
     # Before #451, it was plotted in fh2.
