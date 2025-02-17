@@ -63,7 +63,9 @@ def nifti_masker_concat_img(img, mask_img):
 
 def nifti_masker_load_img(img, mask_img):
     img = load_img(img)
+    img.uncache()
     mask_img = load_img(mask_img)
+    mask_img.uncache()
     NiftiMasker(mask_img=mask_img).fit_transform(img)
 
 
@@ -130,7 +132,7 @@ def plot_memory_usage(fig, ax, usages):
 
 # %%
 if __name__ == "__main__":
-    N_SUBJECTS = 40
+    N_SUBJECTS = 20
     img_path = get_fmri_path(N_SUBJECTS)
     mask_path = get_mask_path(img_path)
 
