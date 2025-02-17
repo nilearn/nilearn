@@ -23,7 +23,10 @@ Set a new baseline by running:
 
 import pytest
 
-from nilearn.datasets import load_sample_motor_activation_image
+from nilearn.datasets import (
+    load_fsaverage_data,
+    load_sample_motor_activation_image,
+)
 from nilearn.plotting import (
     plot_anat,
     plot_carpet,
@@ -159,14 +162,16 @@ def test_plot_anat_mni(anat_img):
     ],
 )
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
-def test_plot_surf_surface(plot_func, surf_img_1d, view, hemi):
+def test_plot_surf_surface(plot_func, view, hemi):
     """Test surface plotting functions with views and hemispheres."""
+    surf_img = load_fsaverage_data()
     return plot_func(
-        surf_img_1d.mesh,
-        surf_img_1d,
+        surf_img.mesh,
+        surf_img,
         engine="matplotlib",
         view=view,
         hemi=hemi,
+        title=f"{view=}, {hemi=}",
     )
 
 
@@ -174,13 +179,12 @@ def test_plot_surf_surface(plot_func, surf_img_1d, view, hemi):
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
-def test_plot_surf_surface_colorbar(
-    plot_func, surf_img_1d, colorbar, cbar_tick_format
-):
+def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
     """Test surface plotting functions with colorbars."""
+    surf_img = load_fsaverage_data()
     return plot_func(
-        surf_img_1d.mesh,
-        surf_img_1d,
+        surf_img.mesh,
+        surf_img,
         engine="matplotlib",
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
