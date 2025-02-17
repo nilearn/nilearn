@@ -360,7 +360,7 @@ plt.show()
 #
 # However, if you also need to standardize, smooth, detrend, etc. the data,
 # then using :class:`~nilearn.maskers.NiftiMasker` with in-memory images is
-# the most recommended way to go.
+# the most user-friendly way to run all the operations in all these operations in the appropriate order.
 #
 # Finally, it should be noted that the differences in memory usage between
 # the methods can be more significant when working with even larger images
