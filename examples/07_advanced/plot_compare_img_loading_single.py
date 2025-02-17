@@ -212,6 +212,9 @@ if __name__ == "__main__":
     )
     plt.show()
 
+    usages = {}
+    call_times = {}
+
     # run all the numpy masker functions
     for func in funcs[3:]:
         print(f"Running {func.__name__}")
