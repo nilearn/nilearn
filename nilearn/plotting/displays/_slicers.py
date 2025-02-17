@@ -835,7 +835,7 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename, dpi=None):
+    def savefig(self, filename, dpi=None, **kwargs):
         """Save the figure to a file.
 
         Parameters
@@ -850,7 +850,11 @@ class BaseSlicer:
         """
         facecolor = edgecolor = "k" if self._black_bg else "w"
         self.frame_axes.figure.savefig(
-            filename, dpi=dpi, facecolor=facecolor, edgecolor=edgecolor
+            filename,
+            dpi=dpi,
+            facecolor=facecolor,
+            edgecolor=edgecolor,
+            **kwargs,
         )
 
 

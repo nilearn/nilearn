@@ -19,6 +19,7 @@ pytest nilearn/plotting/tests/test_img_plotting/test_baseline_comparisons.py \
 
 import pytest
 
+from nilearn.datasets import load_sample_motor_activation_image
 from nilearn.plotting import (
     plot_anat,
     plot_carpet,
@@ -44,6 +45,20 @@ PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 
 
 @pytest.mark.mpl_image_compare
+@pytest.mark.parametrize(
+    "plot_func",
+    {
+        plot_img,
+        plot_stat_map,
+        plot_glass_brain,
+    },
+)
+def test_plot_functions_stat_map(plot_func):
+    """Smoke tests for 3D plotting functions with default parameters."""
+    return plot_func(load_sample_motor_activation_image())
+
+
+@pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_3d_default_params(plot_func, img_3d_mni):
     """Smoke tests for 3D plotting functions with default parameters."""
@@ -65,6 +80,6 @@ def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])
 @pytest.mark.parametrize("display_mode", ["z", "ortho"])
-def test_plot_anat_MNI(anat_img, display_mode, tmp_path):
+def test_plot_anat_mni(anat_img, display_mode):
     """Tests for plot_anat with MNI template."""
     return plot_anat(anat_img=anat_img, display_mode=display_mode)
