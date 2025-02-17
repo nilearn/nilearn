@@ -31,10 +31,9 @@ the fMRI image in a different way:
 3. Using :class:`multiprocessing.shared_memory.SharedMemory`.
 
 For the first two methods, there are two ways to input the fMRI image:
-1.  passing the file path (i.e., the string to the location of the large fMRI
-image on-disk)
-2.  loading the large fMRI image in-memory using `nibabel`, and then passing
-this in-memory object.
+
+1. passing the file path (i.e., the location of the large fMRI image on-disk).
+2. loading image using :mod:`nibabel` and passing this in-memory object.
 
 These two input methods can impact the memory usage of the task, so we will
 also compare these variants of the first two methods.
@@ -44,7 +43,7 @@ and that is exactly the problem we described earlier.
 
 However, when the fMRI image is loaded in a way that allows
 `numpy memory mapping <https://numpy.org/doc/stable/reference/generated/numpy.memmap.html>`_,
-as with :class:`nibabel.arrayproxy`,
+as with :class:`nibabel.arrayproxy.ArrayProxy`,
 only the segments of data that are needed are read from the disk. Joblib
 can handle this efficiently across multiple processes and this results in
 lower memory usage. We will see that this can already be a significant
@@ -362,7 +361,7 @@ plt.show()
 #
 # However, if you also need to standardize, smooth, detrend, etc. the data,
 # then using :class:`~nilearn.maskers.NiftiMasker` with in-memory images is
-# the most user-friendly way to run all the operations in the appropriate
+# the most user-friendly way to run all these operations in the appropriate
 # order.
 #
 # Finally, it should be noted that the differences in memory usage between
