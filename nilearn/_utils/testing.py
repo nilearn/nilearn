@@ -1,6 +1,6 @@
 """Utilities for testing nilearn."""
+
 # Author: Alexandre Abraham, Philippe Gervais
-import functools
 import gc
 import os
 import sys
@@ -9,6 +9,16 @@ import warnings
 from pathlib import Path
 
 import pytest
+from numpy import __version__ as np_version
+
+from nilearn._utils import compare_version
+from nilearn._utils.helpers import OPTIONAL_MATPLOTLIB_MIN_VERSION
+
+try:
+    from matplotlib import __version__ as mpl_version
+except ImportError:
+    mpl_version = OPTIONAL_MATPLOTLIB_MIN_VERSION
+
 
 # we use memory_profiler library for memory consumption checks
 try:
@@ -31,7 +41,7 @@ try:
 
 except ImportError:
 
-    def with_memory_profiler(func):
+    def with_memory_profiler(func):  # noqa: ARG001
         """Use as a decorator to skip tests requiring memory_profiler."""
 
         def dummy_func():
@@ -39,24 +49,12 @@ except ImportError:
 
         return dummy_func
 
-    memory_usage = memory_used = None
+    memory_usage = memory_used = None  # type: ignore[assignment]
 
 
 def is_64bit() -> bool:
     """Return True if python is run on 64bits."""
     return sys.maxsize > 2**32
-
-
-def check_deprecation(func, match=None):
-    """Check if a function raises a deprecation warning."""
-
-    @functools.wraps(func)
-    def wrapped(*args, **kwargs):
-        with pytest.warns(DeprecationWarning, match=match):
-            result = func(*args, **kwargs)
-        return result
-
-    return wrapped
 
 
 def assert_memory_less_than(
@@ -112,7 +110,9 @@ def serialize_niimg(img, gzipped=True):
             return f.read()
 
 
-def write_imgs_to_path(*imgs, file_path=None, **kwargs):
+def write_imgs_to_path(
+    *imgs, file_path=None, create_files=True, use_wildcards=False
+):
     """Write Nifti images on disk.
 
     Write nifti images in a specified location.
@@ -122,6 +122,9 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
     imgs : Nifti1Image
         Several Nifti images. Every format understood by nibabel.save is
         accepted.
+
+    file_path: pathlib.Path
+        Output directory
 
     create_files : bool
         If True, imgs are written on disk and filenames are returned. If
@@ -144,22 +147,11 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
     if file_path is None:
         file_path = Path.cwd()
 
-    valid_keys = {"create_files", "use_wildcards"}
-    input_keys = set(kwargs.keys())
-    invalid_keys = input_keys - valid_keys
-    if len(invalid_keys) > 0:
-        raise TypeError(
-            "%s: unexpected keyword argument(s): %s"
-            % (sys._getframe().f_code.co_name, " ".join(invalid_keys))
-        )
-    create_files = kwargs.get("create_files", True)
-    use_wildcards = kwargs.get("use_wildcards", False)
-
-    prefix = "nilearn_"
-    suffix = ".nii"
-
     if create_files:
         filenames = []
+        prefix = "nilearn_"
+        suffix = ".nii"
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", RuntimeWarning)
             for i, img in enumerate(imgs):
@@ -170,10 +162,9 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
 
             if use_wildcards:
                 return str(file_path / f"{prefix}*{suffix}")
-            else:
-                if len(filenames) == 1:
-                    return filenames[0]
-                return filenames
+            if len(filenames) == 1:
+                return filenames[0]
+            return filenames
 
     else:  # No-op
         if len(imgs) == 1:
@@ -183,7 +174,8 @@ def write_imgs_to_path(*imgs, file_path=None, **kwargs):
 
 def are_tests_running():
     """Return whether we are running the pytest test loader."""
-    return "PYTEST_CURRENT_TEST" in os.environ
+    # https://docs.pytest.org/en/stable/example/simple.html#detect-if-running-from-within-a-pytest-run
+    return os.environ.get("PYTEST_VERSION") is not None
 
 
 def skip_if_running_tests(msg=""):
@@ -196,4 +188,12 @@ def skip_if_running_tests(msg=""):
 
     """
     if are_tests_running():
-        pytest.skip(msg)
+        pytest.skip(msg, allow_module_level=True)
+
+
+def on_windows_with_old_mpl_and_new_numpy():
+    return (
+        compare_version(np_version, ">", "1.26.4")
+        and compare_version(mpl_version, "<", "3.8.0")
+        and os.name == "nt"
+    )

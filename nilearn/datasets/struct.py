@@ -1,7 +1,6 @@
 """Downloading NeuroImaging datasets: structural datasets."""
 
 import functools
-import os
 import warnings
 from pathlib import Path
 
@@ -10,33 +9,39 @@ import pandas as pd
 from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
-from .._utils import check_niimg, fill_doc
-from ..image import get_data, new_img_like, resampling
-from ._utils import fetch_files, get_dataset_descr, get_dataset_dir
+from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils.param_validation import check_params
+from nilearn.datasets._utils import (
+    ALLOWED_DATA_TYPES,
+    ALLOWED_MESH_TYPES,
+    PACKAGE_DIRECTORY,
+    fetch_files,
+    get_dataset_descr,
+    get_dataset_dir,
+)
+from nilearn.image import get_data, new_img_like, resampling
+from nilearn.surface import (
+    FileMesh,
+    PolyMesh,
+    SurfaceImage,
+)
 
-_package_directory = os.path.dirname(os.path.abspath(__file__))
-MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz",
+MNI152_FILE_PATH = (
+    PACKAGE_DIRECTORY
+    / "data"
+    / "mni_icbm152_t1_tal_nlin_sym_09a_converted.nii.gz"
 )
-GM_MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_gm_tal_nlin_sym_09a_converted.nii.gz",
+GM_MNI152_FILE_PATH = (
+    PACKAGE_DIRECTORY
+    / "data"
+    / "mni_icbm152_gm_tal_nlin_sym_09a_converted.nii.gz"
 )
-WM_MNI152_FILE_PATH = os.path.join(
-    _package_directory,
-    "data",
-    "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz",
+WM_MNI152_FILE_PATH = (
+    PACKAGE_DIRECTORY
+    / "data"
+    / "mni_icbm152_wm_tal_nlin_sym_09a_converted.nii.gz"
 )
-FSAVERAGE5_PATH = os.path.join(_package_directory, "data", "fsaverage5")
-
-_LEGACY_FORMAT_MSG = (
-    "`legacy_format` will default to `False` in release 0.11. "
-    "Dataset fetchers will then return pandas dataframes by default "
-    "instead of recarrays."
-)
+FSAVERAGE5_PATH = PACKAGE_DIRECTORY / "data" / "fsaverage5"
 
 
 @fill_doc
@@ -44,9 +49,6 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
     %(templateflow)s
-
-    For more information, see :footcite:`Fonov2011`,
-    :footcite:`Fonov2009`, and :footcite:`Collins1999`.
 
     Parameters
     ----------
@@ -57,7 +59,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, interest keys are:
 
         - "t1": str,
@@ -69,7 +71,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         - "pd": str,
           Path to the proton density weighted anatomical image
         - "gm": str,
-          Path to grey matter segmented image
+          Path to gray matter segmented image
         - "wm": str,
           Path to white matter segmented image
         - "csf": str,
@@ -85,7 +87,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     --------
     nilearn.datasets.load_mni152_template: to load MNI152 T1 template.
 
-    nilearn.datasets.load_mni152_gm_template: to load MNI152 grey matter
+    nilearn.datasets.load_mni152_gm_template: to load MNI152 gray matter
         template.
 
     nilearn.datasets.load_mni152_wm_template: to load MNI152 white matter
@@ -93,33 +95,21 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     nilearn.datasets.load_mni152_brain_mask: to load MNI152 whole brain mask.
 
-    nilearn.datasets.load_mni152_gm_mask: to load MNI152 grey matter mask.
+    nilearn.datasets.load_mni152_gm_mask: to load MNI152 gray matter mask.
 
     nilearn.datasets.load_mni152_wm_mask: to load MNI152 white matter mask.
 
-    nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM grey
+    nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM gray
         matter mask.
-
-    References
-    ----------
-    .. footbibliography::
 
     Notes
     -----
-    For more information about this dataset's structure:
-    https://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
-
-    The original download URL is
-    https://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
-
-    TemplateFlow repository for ICBM152 2009
-
-    Symmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSym
-
-    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSAsym
-
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     if url is None:
         # The URL can be retrieved from the nilearn account on OSF (Open
         # Science Framework), https://osf.io/4r3jt/quickfiles/
@@ -140,7 +130,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
         "mask",
     )
     filenames = [
-        (os.path.join("mni_icbm152_nlin_sym_09a", name), url, opts)
+        (Path("mni_icbm152_nlin_sym_09a", name), url, opts)
         for name in (
             "mni_icbm152_csf_tal_nlin_sym_09a.nii.gz",
             "mni_icbm152_gm_tal_nlin_sym_09a.nii.gz",
@@ -165,11 +155,12 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr)] + list(zip(keys, sub_files)))
+    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
     return Bunch(**params)
 
 
 @functools.lru_cache(maxsize=3)
+@fill_doc
 def load_mni152_template(resolution=None):
     """Load the MNI152 skullstripped T1 template.
 
@@ -177,14 +168,11 @@ def load_mni152_template(resolution=None):
     re-scaled 1mm-resolution version of the :term:`MNI` ICBM152 T1 template
     and re-samples it using a different resolution, if specified.
 
-    For more information, see :footcite:`Fonov2011`,
-    and :footcite:`Fonov2009`.
+    %(templateflow)s
 
     Parameters
     ----------
-    resolution: int, default=1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    %(resolution)s
 
         .. versionadded:: 0.8.1
 
@@ -204,9 +192,10 @@ def load_mni152_template(resolution=None):
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
 
-    References
-    ----------
-    .. footbibliography::
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -223,13 +212,19 @@ def load_mni152_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
+        # TODO switch to force_resample=True
+        # when bumping to version > 0.13
         new_brain_template = resampling.resample_img(
-            new_brain_template, np.eye(3) * resolution
+            new_brain_template,
+            np.eye(3) * resolution,
+            copy_header=True,
+            force_resample=False,
         )
 
     return new_brain_template
 
 
+@fill_doc
 def load_mni152_gm_template(resolution=None):
     """Load the MNI152 grey-matter template.
 
@@ -237,13 +232,13 @@ def load_mni152_gm_template(resolution=None):
     MNI ICBM152 template and re-samples it using a different resolution,
     if specified.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
     ----------
-    resolution: int, default=1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    %(resolution)s
 
     Returns
     -------
@@ -257,6 +252,11 @@ def load_mni152_gm_template(resolution=None):
 
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -273,13 +273,19 @@ def load_mni152_gm_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
+        # TODO switch to force_resample=True
+        # when bumping to version > 0.13
         new_gm_template = resampling.resample_img(
-            new_gm_template, np.eye(3) * resolution
+            new_gm_template,
+            np.eye(3) * resolution,
+            copy_header=True,
+            force_resample=False,
         )
 
     return new_gm_template
 
 
+@fill_doc
 def load_mni152_wm_template(resolution=None):
     """Load the MNI152 white-matter template.
 
@@ -288,13 +294,13 @@ def load_mni152_wm_template(resolution=None):
     and re-samples it using a different
     resolution, if specified.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
     ----------
-    resolution: int, default=1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    %(resolution)s
 
     Returns
     -------
@@ -308,6 +314,11 @@ def load_mni152_wm_template(resolution=None):
 
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -324,45 +335,51 @@ def load_mni152_wm_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
+        # TODO switch to force_resample=True
+        # when bumping to version > 0.13
         new_wm_template = resampling.resample_img(
-            new_wm_template, np.eye(3) * resolution
+            new_wm_template,
+            np.eye(3) * resolution,
+            copy_header=True,
+            force_resample=False,
         )
 
     return new_wm_template
 
 
+@fill_doc
 def load_mni152_brain_mask(resolution=None, threshold=0.2):
     """Load the MNI152 whole-brain mask.
 
     This function takes the whole-brain MNI152 T1 template and threshold it,
     in order to obtain the corresponding whole-brain mask.
 
+    %(templateflow)s
+
     .. versionadded:: 0.2.5
 
     Parameters
     ----------
-    resolution: int, default=1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
+    %(resolution)s
 
         .. versionadded:: 0.8.1
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the MNI152 T1 template above this threshold will be included.
 
     Returns
     -------
     mask_img : Nifti1Image, image corresponding to the whole-brain mask.
 
-    Notes
-    -----
-    Refer to load_mni152_template function for more information about the
-    MNI152 T1 template.
-
     See Also
     --------
     nilearn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template and related.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -375,25 +392,26 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     return mask_img
 
 
+@fill_doc
 def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     """Load the MNI152 grey-matter mask.
 
     This function takes the grey-matter MNI152 template and threshold it, in
     order to obtain the corresponding grey-matter mask.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
     ----------
-    resolution: int, default=1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
+    %(resolution)s
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the grey-matter MNI152 template above this threshold will be
         included.
 
-    n_iter: int, default=2
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -402,15 +420,15 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     -------
     gm_mask_img : Nifti1Image, image corresponding to the grey-matter mask.
 
-    Notes
-    -----
-    Refer to load_mni152_gm_template function for more information about the
-    MNI152 grey-matter template.
-
     See Also
     --------
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template and related.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -428,25 +446,26 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     return gm_mask_img
 
 
+@fill_doc
 def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     """Load the MNI152 white-matter mask.
 
     This function takes the white-matter MNI152 template and threshold it, in
     order to obtain the corresponding white-matter mask.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
     ----------
-    resolution: int, default=1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
+    %(resolution)s
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the white-matter MNI152 template above this threshold will be
         included.
 
-    n_iter: int, default=2
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -455,15 +474,15 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     -------
     wm_mask_img : Nifti1Image, image corresponding to the white-matter mask.
 
-    Notes
-    -----
-    Refer to load_mni152_gm_template function for more information about the
-    MNI152 white-matter template.
-
     See Also
     --------
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template and related.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -494,12 +513,14 @@ def fetch_icbm152_brain_gm_mask(
     Parameters
     ----------
     %(data_dir)s
-    threshold : float, default=0.2
+
+    threshold : :obj:`float`, default=0.2
         Values of the ICBM152 grey-matter template above this threshold will be
         included.
 
     %(resume)s
-    n_iter: int, default=2
+
+    n_iter : :obj:`int`, default=2
         Number of repetitions of :term:`dilation<Dilation>`
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
@@ -510,18 +531,8 @@ def fetch_icbm152_brain_gm_mask(
 
     Returns
     -------
-    gm_mask_img : Nifti1Image, image corresponding to the brain grey matter
+    gm_mask_img : Nifti1Image, image corresponding to the brain gray matter
         from ICBM152 template.
-
-    Notes
-    -----
-    This function relies on ICBM152 templates where we particularly pick
-    grey matter template and threshold the template at .2 to take one fifth
-    of the values. Then, do a bit post processing such as binary closing
-    operation to more compact mask image.
-
-    .. note::
-        It is advised to check the mask image with your own data processing.
 
     See Also
     --------
@@ -531,8 +542,23 @@ def fetch_icbm152_brain_gm_mask(
     nilearn.datasets.load_mni152_template: for details about version of MNI152
         template and related.
 
+    Notes
+    -----
+    This function relies on ICBM152 templates where we particularly pick
+    gray matter template and threshold the template at .2 to take one fifth
+    of the values. Then, do a bit post processing such as binary closing
+    operation to more compact mask image.
+
+    .. note::
+        It is advised to check the mask image with your own data processing.
+
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
+
     """
-    # Fetching ICBM152 grey matter mask image
+    check_params(locals())
+
+    # Fetching ICBM152 gray matter mask image
     icbm = fetch_icbm152_2009(
         data_dir=data_dir, resume=resume, verbose=verbose
     )
@@ -604,27 +630,29 @@ def fetch_oasis_vbm(
     url=None,
     resume=True,
     verbose=1,
-    legacy_format=True,
 ):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
-    For more information, see :footcite:`OASISbrain`,
-    and :footcite:`Marcus2007`.
+    ..  admonition:: Data Usage Agreement
+        :class: attention
+
+        Using data available through the OASIS project requires agreeing with
+        the Data Usage Agreement that can be found at
+        https://sites.wustl.edu/oasisbrains/
 
     Parameters
     ----------
-    n_subjects : int, optional
+    n_subjects : :obj:`int`, default=None
         The number of subjects to load. If None is given, all the
         subjects are used.
 
-    dartel_version : boolean, default=True
+    dartel_version : :obj:`bool`, default=True
         Whether or not to use data normalized with DARTEL instead of standard
         SPM8 normalization.
     %(data_dir)s
     %(url)s
     %(resume)s
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -635,54 +663,19 @@ def fetch_oasis_vbm(
           Paths to nifti gray matter density probability maps
         - 'white_matter_maps' string list
           Paths to nifti white matter density probability maps
-        - 'ext_vars': np.recarray
+        - 'ext_vars': pandas.DataFrame
           Data from the .csv file with information about selected subjects
         - 'data_usage_agreement': string
           Path to the .txt file containing the data usage agreement.
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
-    In the DARTEL version, original Oasis data have been preprocessed
-    with the following steps:
-
-      1. Dimension swapping (technically required for subsequent steps)
-      2. Brain Extraction
-      3. Segmentation with SPM8
-      4. Normalization using DARTEL algorithm
-      5. Modulation
-      6. Replacement of NaN values with 0 in gray/white matter density maps.
-      7. Resampling to reduce shape and make it correspond to the shape of
-         the non-DARTEL data (fetched with dartel_version=False).
-      8. Replacement of values < 1e-4 with zeros to reduce the file size.
-
-    In the non-DARTEL version, the following steps have been performed instead:
-
-      1. Dimension swapping (technically required for subsequent steps)
-      2. Brain Extraction
-      3. Segmentation and normalization to a template with SPM8
-      4. Modulation
-      5. Replacement of NaN values with 0 in gray/white matter density maps.
-
-    An archive containing the gray and white matter density probability maps
-    for the 416 available subjects is provided. Gross outliers are removed and
-    filtered by this data fetcher (DARTEL: 13 outliers; non-DARTEL: 1 outlier)
-    Externals variates (age, gender, estimated intracranial volume,
-    years of education, socioeconomic status, dementia score) are provided
-    in a CSV file that is a copy of the original Oasis CSV file. The current
-    downloader loads the CSV file and keeps only the lines corresponding to
-    the subjects that are actually demanded.
-
-    The Open Access Structural Imaging Series (OASIS) is a project
-    dedicated to making brain imaging data openly available to the public.
-    Using data available through the OASIS project requires agreeing with
-    the Data Usage Agreement that can be found at
-    https://www.oasis-brains.org/#access
+    For more information
+    see the :ref:`dataset description <oasis_maps>`.
 
     """
+    check_params(locals())
+
     # check number of subjects
     if n_subjects is None:
         n_subjects = 403 if dartel_version else 415
@@ -691,21 +684,18 @@ def fetch_oasis_vbm(
             warnings.warn(
                 "Only 403 subjects are available in the "
                 "DARTEL-normalized version of the dataset. "
-                "All of them will be used instead of the wanted %d"
-                % n_subjects
+                f"All of them will be used instead of the wanted {n_subjects}"
             )
             n_subjects = 403
-    else:  # all subjects except one are available with non-DARTEL version
-        if n_subjects > 415:
-            warnings.warn(
-                "Only 415 subjects are available in the "
-                "non-DARTEL-normalized version of the dataset. "
-                "All of them will be used instead of the wanted %d"
-                % n_subjects
-            )
-            n_subjects = 415
+    elif n_subjects > 415:
+        warnings.warn(
+            "Only 415 subjects are available in the "
+            "non-DARTEL-normalized version of the dataset. "
+            f"All of them will be used instead of the wanted {n_subjects}"
+        )
+        n_subjects = 415
     if n_subjects < 1:
-        raise ValueError(f"Incorrect number of subjects ({int(n_subjects)})")
+        raise ValueError(f"Incorrect number of subjects ({n_subjects})")
 
     # pick the archive corresponding to preprocessings type
     if url is None:
@@ -760,11 +750,10 @@ def fetch_oasis_vbm(
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwrc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwrc1OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -773,11 +762,10 @@ def fetch_oasis_vbm(
         ][:n_subjects]
         file_names_wm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwrc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwrc2OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -790,11 +778,10 @@ def fetch_oasis_vbm(
         missing_subjects = sorted(missing_subjects + removed_outliers)
         file_names_gm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwc1OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwc1OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -803,11 +790,10 @@ def fetch_oasis_vbm(
         ][:n_subjects]
         file_names_wm = [
             (
-                os.path.join(
-                    "OAS1_%04d_MR1",
-                    "mwc2OAS1_%04d_MR1_mpr_anon_fslswapdim_bet.nii.gz",
-                )
-                % (s, s),
+                Path(
+                    f"OAS1_{s:04d}_MR1",
+                    f"mwc2OAS1_{s:04d}_MR1_mpr_anon_fslswapdim_bet.nii.gz",
+                ),
                 url_images,
                 opts,
             )
@@ -839,8 +825,7 @@ def fetch_oasis_vbm(
     csv_data = pd.read_csv(ext_vars_file)
     # Comparisons to recfromcsv data must be bytes.
     actual_subjects_ids = [
-        ("OAS1" + str.split(os.path.basename(x), "OAS1")[1][:9])
-        for x in gm_maps
+        ("OAS1" + str.split(Path(x).name, "OAS1")[1][:9]) for x in gm_maps
     ]
     subject_mask = np.asarray(
         [subject_id in actual_subjects_ids for subject_id in csv_data["ID"]]
@@ -850,10 +835,6 @@ def fetch_oasis_vbm(
         columns={c: c.lower().replace("/", "") for c in csv_data.columns}
     )
     fdescr = get_dataset_descr(dataset_name)
-
-    if legacy_format:
-        warnings.warn(_LEGACY_FORMAT_MSG, DeprecationWarning)
-        csv_data = csv_data.to_records(index=False)
 
     return Bunch(
         gray_matter_maps=gm_maps,
@@ -870,19 +851,24 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
 
     File names are subject to change and only attribute names
     are guaranteed to be stable across nilearn versions.
-    See :footcite:`Fischl1999`.
+    See :footcite:t:`Fischl1999`.
+
+    See :func:`~nilearn.datasets.load_fsaverage` and
+    :func:`~nilearn.datasets.load_fsaverage_data`
+    to access fsaverage data as :obj:`~nilearn.surface.SurfaceImage`.
 
     Parameters
     ----------
-    mesh : str, default='fsaverage5'
+    mesh : :obj:`str`, default='fsaverage5'
         Which :term:`mesh` to fetch.
         Should be one of the following values:
         %(fsaverage_options)s
+
     %(data_dir)s
 
     Returns
     -------
-    data : sklearn.datasets.base.Bunch
+    data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
          - 'area_left': Gifti file, left hemisphere area data
          - 'area_right': Gifti file, right hemisphere area data
@@ -895,7 +881,7 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
          - 'infl_left': Gifti file, left hemisphere inflated pial surface
            :term:`mesh`
          - 'infl_right': Gifti file, right hemisphere inflated pial
-                         surface :term:`mesh`
+           surface :term:`mesh`
          - 'sphere_left': Gifti file, left hemisphere sphere surface
            :term:`mesh`
          - 'sphere_right': Gifti file, right hemisphere sphere surface
@@ -914,6 +900,8 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
     .. footbibliography::
 
     """
+    check_params(locals())
+
     available_meshes = (
         "fsaverage3",
         "fsaverage4",
@@ -922,6 +910,12 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
         "fsaverage7",
         "fsaverage",
     )
+
+    if mesh not in available_meshes:
+        raise ValueError(
+            f"'mesh' should be one of {available_meshes}; "
+            f"{mesh!r} was provided"
+        )
 
     # Call a dataset loader depending on the value of mesh
     if mesh in (
@@ -935,15 +929,11 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
         # regardless of whether mesh equals "fsaverage" or "fsaverage7"
         if mesh == "fsaverage7":
             mesh = "fsaverage"
-
-        return _fetch_surf_fsaverage(mesh, data_dir=data_dir)
+        bunch = _fetch_surf_fsaverage(mesh, data_dir=data_dir)
     elif mesh == "fsaverage5":
-        return _fetch_surf_fsaverage5()
-    else:
-        raise ValueError(
-            f"'mesh' should be one of {available_meshes}; "
-            f"{mesh!r} was provided"
-        )
+        bunch = _fetch_surf_fsaverage5()
+
+    return bunch
 
 
 def _fetch_surf_fsaverage5():
@@ -1022,9 +1012,120 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     )
 
     result = {
-        attribute: os.path.join(dataset_dir, f"{attribute}.gii.gz")
+        attribute: dataset_dir / f"{attribute}.gii.gz"
         for attribute in dataset_attributes
     }
     result["description"] = str(get_dataset_descr(dataset_name))
 
     return Bunch(**result)
+
+
+@fill_doc
+def load_fsaverage(mesh="fsaverage5", data_dir=None):
+    """Load fsaverage for both hemispheres as PolyMesh objects.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
+
+    %(data_dir)s
+
+    Returns
+    -------
+    data : :obj:`sklearn.utils.Bunch`
+        Dictionary-like object, the interest attributes are :
+         - ``'description'``: description of the dataset
+         - ``'pial'``: Polymesh for pial surface for left and right hemispheres
+         - ``'white_matter'``: Polymesh for white matter surface
+                               for left and right hemispheres
+         - ``'inflated'``: Polymesh for inglated surface
+                           for left and right hemispheres
+         - ``'sphere'``: Polymesh for spherical surface
+                         for left and right hemispheres
+         - ``'flat'``: Polymesh for flattened surface
+                       for left and right hemispheres
+    """
+    check_params(locals())
+
+    fsaverage = fetch_surf_fsaverage(mesh, data_dir=data_dir)
+    renaming = {
+        "pial": "pial",
+        "white": "white_matter",
+        "infl": "inflated",
+        "sphere": "sphere",
+        "flat": "flat",
+    }
+    meshes = {"description": fsaverage.description}
+    for key, value in renaming.items():
+        left = FileMesh(fsaverage[f"{key}_left"])
+        right = FileMesh(fsaverage[f"{key}_right"])
+        meshes[value] = PolyMesh(left=left, right=right)
+    return Bunch(**meshes)
+
+
+@fill_doc
+def load_fsaverage_data(
+    mesh="fsaverage5", mesh_type="pial", data_type="sulcal", data_dir=None
+):
+    """Return freesurfer data on an fsaverage mesh as a SurfaceImage.
+
+    .. versionadded:: 0.11.0
+
+    Parameters
+    ----------
+    mesh : :obj:`str`, default='fsaverage5'
+        Which :term:`mesh` to fetch.
+        Should be one of the following values:
+        %(fsaverage_options)s
+
+    mesh_type : :obj:`str`, default='pial'
+        Must be one of:
+         - ``"pial"``
+         - ``"white_matter"``
+         - ``"inflated"``
+         - ``"sphere"``
+         - ``"flat"``
+
+    data_type : :obj:`str`, default='sulcal'
+        Must be one of:
+            - ``"curvature"``,
+            - ``"sulcal"``,
+            - ``"thickness"``,
+
+    %(data_dir)s
+
+    Returns
+    -------
+    img : :obj:`~nilearn.surface.SurfaceImage`
+        SurfaceImage with the freesurfer mesh and data.
+    """
+    check_params(locals())
+
+    if mesh_type not in ALLOWED_MESH_TYPES:
+        raise ValueError(
+            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
+            f"Got: {mesh_type=}."
+        )
+    if data_type not in ALLOWED_DATA_TYPES:
+        raise ValueError(
+            f"'data_type' must be one of {ALLOWED_DATA_TYPES}.\n"
+            f"Got: {data_type=}."
+        )
+
+    fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
+    fsaverage_data = fetch_surf_fsaverage(mesh=mesh, data_dir=data_dir)
+    renaming = {"curvature": "curv", "sulcal": "sulc", "thickness": "thick"}
+    img = SurfaceImage(
+        mesh=fsaverage[mesh_type],
+        data={
+            "left": fsaverage_data[f"{renaming[data_type]}_left"],
+            "right": fsaverage_data[f"{renaming[data_type]}_right"],
+        },
+    )
+
+    return img

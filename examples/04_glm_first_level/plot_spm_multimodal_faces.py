@@ -1,6 +1,6 @@
 """
-Single-subject data (two sessions) in native space
-==================================================
+Single-subject data (two runs) in native space
+==============================================
 
 The example shows the analysis of an :term:`SPM` dataset
 studying face perception.
@@ -12,19 +12,11 @@ The experimental paradigm is simple, with two conditions; viewing a face image
 or a scrambled face image, supposedly with the same low-level statistical
 properties, to find face-specific responses.
 
-For details on the data, please see:
-Henson, R.N., Goshen-Gottstein, Y., Ganel, T., Otten, L.J., Quayle, A.,
-Rugg, M.D. Electrophysiological and haemodynamic correlates of face
-perception, recognition and priming. Cereb Cortex. 2003 Jul;13(7):793-805.
-https://doi.org/10.1093/cercor/13.7.793
+For details on the data, please see :footcite:t:`Henson2003`.
 
 This example takes a lot of time because the input are lists of 3D images
 sampled in different positions (encoded by different affine functions).
-
 """
-# %%
-print(__doc__)
-
 
 # %%
 # Fetch the :term:`SPM` multimodal_faces data.
@@ -36,7 +28,7 @@ subject_data = fetch_spm_multimodal_fmri()
 # Specify timing and design matrix parameters.
 
 # repetition time, in seconds
-tr = 2.0
+t_r = 2.0
 # Sample at the beginning of each acquisition.
 slice_time_ref = 0.0
 # We use a discrete cosine transform to model signal drifts.
@@ -63,11 +55,13 @@ with warnings.catch_warnings():
     ]
 affine, shape = fmri_img[0].affine, fmri_img[0].shape
 print("Resampling the second image (this takes time)...")
-fmri_img[1] = resample_img(fmri_img[1], affine, shape[:3])
+fmri_img[1] = resample_img(
+    fmri_img[1], affine, shape[:3], copy_header=True, force_resample=True
+)
 
 # %%
 # Let's create mean image for display purposes.
-mean_image = mean_img(fmri_img)
+mean_image = mean_img(fmri_img, copy_header=True)
 
 # %%
 # Make the design matrices.
@@ -79,13 +73,13 @@ from nilearn.glm.first_level import make_first_level_design_matrix
 design_matrices = []
 
 # %%
-# Loop over the two sessions.
+# Loop over the two runs.
 for idx, img in enumerate(fmri_img, start=1):
     # Build experimental paradigm
     n_scans = img.shape[-1]
     events = pd.read_table(subject_data[f"events{idx}"])
     # Define the sampling times for the design matrix
-    frame_times = np.arange(n_scans) * tr
+    frame_times = np.arange(n_scans) * t_r
     # Build design matrix with the reviously defined parameters
     design_matrix = make_first_level_design_matrix(
         frame_times,
@@ -126,7 +120,7 @@ contrasts = {
 }
 
 # %%
-# Fit the :term:`GLM` for the 2 sessions
+# Fit the :term:`GLM` for the 2 runs
 # by specifying a FirstLevelModel and then fitting it.
 from nilearn.glm.first_level import FirstLevelModel
 
@@ -167,5 +161,12 @@ for contrast_id, contrast_val in contrasts.items():
 # conditions. By contrast, the differential effect between "faces" and
 # "scrambled" involves sparser, more anterior and lateral regions. It
 # also displays some responses in the frontal lobe.
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::
+
 
 # sphinx_gallery_dummy_images=3

@@ -26,28 +26,22 @@ HIGHLIGHTS
  | - Pandas -- v1.0
  | - Joblib -- v0.15
 
-
-- :bdg-info:`Plotting` Surface plotting functions can now produce interactive plots with ``Plotly``. This can be selected with the ``engine`` parameter (set it to ``matplotlib`` or ``plotly``) (:gh:`2902` by `Nicolas Gensollen`_).
-
 - :bdg-success:`API` New module :mod:`nilearn.interfaces` to implement loading and saving utilities with various interfaces (:term:`fMRIPrep`, :term:`BIDS`...) (:gh:`3061` by `Nicolas Gensollen`_).
 
 - :bdg-success:`API` New functions :func:`~interfaces.fmriprep.load_confounds` and :func:`~interfaces.fmriprep.load_confounds_strategy` to load confound variables easily from :term:`fMRIPrep` outputs (:gh:`2946` and :gh:`3016` by `Hao-Ting Wang`_).
 
 - :bdg-success:`API` New class :class:`~regions.HierarchicalKMeans` which yields more balanced clusters than :class:`~sklearn.cluster.KMeans`. It is also callable through :class:`~regions.Parcellations` using ``method=hierarchical_kmeans`` (:gh:`2282` by `Thomas Bazeille`_).
 
-- :bdg-danger:`Deprecation` Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`nilearn.maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
-
 - :bdg-success:`API` Class :class:`~maskers.NiftiMapsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker` and :class:`~maskers.NiftiLabelsMasker` (:gh:`2880` by `Nicolas Gensollen`_).
+
+- :bdg-danger:`Deprecation` Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`nilearn.maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
 
 - :bdg-primary:`Doc` The :doc:`contributing documentation</development>` and :doc:`maintenance</maintenance>` pages were improved (:gh:`3010` by `Nicolas Gensollen`_).
 
+- :bdg-info:`Plotting` Surface plotting functions can now produce interactive plots with ``Plotly``. This can be selected with the ``engine`` parameter (set it to ``matplotlib`` or ``plotly``) (:gh:`2902` by `Nicolas Gensollen`_).
 
 NEW
 ---
-
-- :bdg-danger:`Deprecation` **Support for Python 3.6 is deprecated and will be removed in release 0.10.** Users with a Python 3.6 environment will be warned at their first Nilearn import and encouraged to update to more recent versions of Python (:gh:`3026` by `Nicolas Gensollen`_).
-
-- :bdg-danger:`Deprecation` Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`nilearn.maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
 
 - :bdg-success:`API` New module :mod:`nilearn.interfaces` to implement loading and saving utilities with various interfaces (:term:`fMRIPrep`, :term:`BIDS`...) (:gh:`3061` by `Nicolas Gensollen`_).
 
@@ -67,27 +61,26 @@ NEW
 
 - :bdg-success:`API` New function :func:`~interfaces.fsl.get_design_from_fslmat` to load design matrices from FSL files (:gh:`3126` by `Taylor Salo`_).
 
-- :bdg-info:`Plotting` Surface plotting functions like :func:`~plotting.plot_surf_stat_map` now have an ``engine`` parameter, defaulting to ``matplotlib``, but which can be set to ``plotly``. If ``plotly`` and ``kaleido`` are installed, this will generate an interactive plot of the surface map using ``plotly`` instead of ``matplotlib``. Note that this functionality is still experimental, and that some capabilities supported by our ``matplotlib`` engine are not yet supported by the ``plotly`` engine (:gh:`2902` by `Nicolas Gensollen`_).
-
-- :bdg-info:`Plotting` When using the ``plotly`` engine, surface plotting functions derived from :func:`~plotting.plot_surf` return a new display object, a :class:`~plotting.displays.PlotlySurfaceFigure`, which provides a similar interface to the :class:`~matplotlib.figure.Figure` returned with the ``matplotlib`` engine (:gh:`3036` by `Nicolas Gensollen`_).
-
 - :bdg-success:`API` Class :class:`~maskers.NiftiMapsMasker` can now generate HTML reports in the same way as :class:`~maskers.NiftiMasker` and :class:`~maskers.NiftiLabelsMasker`. The report enables the users to browse through the spatial maps with a previous and next button. The users can filter the maps they wish to display by passing an integer, or a list of integers to :meth:`~maskers.NiftiMapsMasker.generate_report` (:gh:`2880` by `Nicolas Gensollen`_).
 
 - :bdg-success:`API` New class :class:`~regions.HierarchicalKMeans` which yields more balanced clusters than :class:`~sklearn.cluster.KMeans`. It is also callable through :class:`~regions.Parcellations` using ``method=hierarchical_kmeans`` (:gh:`2282` by `Thomas Bazeille`_).
 
+- :bdg-danger:`Deprecation` **Support for Python 3.6 is deprecated and will be removed in release 0.10.** Users with a Python 3.6 environment will be warned at their first Nilearn import and encouraged to update to more recent versions of Python (:gh:`3026` by `Nicolas Gensollen`_).
+
+- :bdg-danger:`Deprecation` Masker objects like :class:`~maskers.NiftiMasker` now belong to the new module :mod:`nilearn.maskers`. The old import style, through the module ``input_data``, still works but has been deprecated (:gh:`3065` by `Nicolas Gensollen`_).
+
+- :bdg-info:`Plotting` When using the ``plotly`` engine, surface plotting functions derived from :func:`~plotting.plot_surf` return a new display object, a :class:`~plotting.displays.PlotlySurfaceFigure`, which provides a similar interface to the :class:`~matplotlib.figure.Figure` returned with the ``matplotlib`` engine (:gh:`3036` by `Nicolas Gensollen`_).
+
+- :bdg-info:`Plotting` Surface plotting functions like :func:`~plotting.plot_surf_stat_map` now have an ``engine`` parameter, defaulting to ``matplotlib``, but which can be set to ``plotly``. If ``plotly`` and ``kaleido`` are installed, this will generate an interactive plot of the surface map using ``plotly`` instead of ``matplotlib``. Note that this functionality is still experimental, and that some capabilities supported by our ``matplotlib`` engine are not yet supported by the ``plotly`` engine (:gh:`2902` by `Nicolas Gensollen`_).
 
 Fixes
 -----
 
 - :bdg-dark:`Code` When a label image with non integer values was provided to the :class:`~maskers.NiftiLabelsMasker`, its :meth:`~maskers.NiftiLabelsMasker.generate_report` method was raising an ``IndexError`` (:gh:`3009` by `Nicolas Gensollen`_).
 
-- :bdg-info:`Plotting` Function :func:`~plotting.plot_markers` did not work when the ``display_mode`` parameter included ``l`` and ``r`` and the parameter ``node_size`` was provided as an array (:gh:`3013` by `Leonard Sasse`_).
-
 - :bdg-dark:`Code` Method :meth:`~glm.first_level.FirstLevelModel.generate_report` threw a ``TypeError`` when :class:`~glm.first_level.FirstLevelModel` was instantiated with ``mask_img`` being a :class:`~maskers.NiftiMasker`. Function :func:`~reporting.make_glm_report` was fixed accordingly (:gh:`3035` by `Alexis Thual`_).
 
 - :bdg-dark:`Code` Function :func:`~plotting.find_parcellation_cut_coords` now returns coordinates and labels having the same order as the one of the input labels index (:gh:`3078` by `Myeong Seop Song`_).
-
-- :bdg-primary:`Doc` Convert references in ``nilearn/regions/region_extractor.py`` to use footcite / footbibliography (:gh:`3111` by `Neelay Shah`_).
 
 - :bdg-dark:`Code` Fixed Hommel value computation in ``nilearn/glm/thresholding.py`` used in the ``cluster_level_inference`` function (:gh:`3109` by `Bertrand Thirion`_).
 
@@ -95,6 +88,9 @@ Fixes
 
 - :bdg-danger:`Deprecation` Attribute ``scaling_axis`` of :class:`~.glm.first_level.FirstLevelModel` has been deprecated and will be removed in ``0.11.0``. When scaling is performed, the attribute ``signal_scaling`` is used to define the axis instead (:gh:`3135` by `Nicolas Gensollen`_).
 
+- :bdg-primary:`Doc` Convert references in ``nilearn/regions/region_extractor.py`` to use footcite / footbibliography (:gh:`3111` by `Neelay Shah`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_markers` did not work when the ``display_mode`` parameter included ``l`` and ``r`` and the parameter ``node_size`` was provided as an array (:gh:`3013` by `Leonard Sasse`_).
 
 Enhancements
 ------------
@@ -107,13 +103,13 @@ Enhancements
 
 - :bdg-success:`API` It is now possible to provide custom :term:`HRF` models to :class:`~glm.first_level.FirstLevelModel`. The custom model should be defined as a function, or a list of functions, implementing the same API as Nilearn's usual models (see :func:`~glm.first_level.spm_hrf` for example). The example :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_hrf.py` was also modified to demo how to define custom :term:`HRF` models (:gh:`2942` by `Nicolas Gensollen`_).
 
-- :bdg-dark:`Code` Class :class:`~maskers.NiftiLabelsMasker` now gives a warning when some labels are removed from the label image at transform time due to resampling of the label image to the data image (:gh:`3008` by `Nicolas Gensollen`_).
-
 - :bdg-success:`API` Function :func:`~glm.second_level.non_parametric_inference` now accepts :class:`~pandas.DataFrame` as possible values for its ``second_level_input`` parameter. Note that a new parameter ``first_level_contrast`` has been added to this function to enable this feature (:gh:`3042` by `Nicolas Gensollen`_).
 
-- :bdg-secondary:`Maint` Tests from ``nilearn/plotting/tests/test_img_plotting.py`` have been refactored and reorganized in separate files in new folder ``nilearn/plotting/tests/test_img_plotting/`` (:gh:`3015` by `Nicolas Gensollen`_).
-
 - :bdg-success:`API` Once a :class:`~glm.second_level.SecondLevelModel` has been fitted and contrasts have been computed, it is now possible to access the ``residuals``, ``predicted``, and ``r_square`` model attributes like it was already possible for :class:`~glm.first_level.FirstLevelModel` (:gh:`3033` by `Nicolas Gensollen`_).
+
+- :bdg-dark:`Code` Class :class:`~maskers.NiftiLabelsMasker` now gives a warning when some labels are removed from the label image at transform time due to resampling of the label image to the data image (:gh:`3008` by `Nicolas Gensollen`_).
+
+- :bdg-secondary:`Maint` Tests from ``nilearn/plotting/tests/test_img_plotting.py`` have been refactored and reorganized in separate files in new folder ``nilearn/plotting/tests/test_img_plotting/`` (:gh:`3015` by `Nicolas Gensollen`_).
 
 - :bdg-info:`Plotting` Importing :mod:`nilearn.plotting` will now raise a warning if the ``matplotlib`` backend has been changed from its original value, instead of silently modifying it (:gh:`3077` by `Raphael Meudec`_).
 

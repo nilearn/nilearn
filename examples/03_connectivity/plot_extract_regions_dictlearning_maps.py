@@ -2,24 +2,24 @@
 Regions extraction using dictionary learning and functional connectomes
 =======================================================================
 
-This example shows how to use :class:`nilearn.regions.RegionExtractor`
+This example shows how to use :class:`~nilearn.regions.RegionExtractor`
 to extract spatially constrained brain regions from whole brain maps decomposed
 using :term:`Dictionary learning` and use them to build
 a :term:`functional connectome`.
 
 We used 20 movie-watching functional datasets from
-:func:`nilearn.datasets.fetch_development_fmri` and
-:class:`nilearn.decomposition.DictLearning` for set of brain atlas maps.
+:func:`~nilearn.datasets.fetch_development_fmri` and
+:class:`~nilearn.decomposition.DictLearning` for set of brain atlas maps.
 
 This example can also be inspired to apply the same steps
 to even regions extraction
 using :term:`ICA` maps.
 In that case, idea would be to replace
 :term:`Dictionary learning` to canonical :term:`ICA` decomposition
-using :class:`nilearn.decomposition.CanICA`
+using :class:`~nilearn.decomposition.CanICA`
 
 Please see the related documentation
-of :class:`nilearn.regions.RegionExtractor` for more details.
+of :class:`~nilearn.regions.RegionExtractor` for more details.
 
 """
 
@@ -28,9 +28,9 @@ of :class:`nilearn.regions.RegionExtractor` for more details.
 # -------------------------------------------
 #
 # We use nilearn's datasets downloading utilities
-from nilearn import datasets
+from nilearn.datasets import fetch_development_fmri
 
-rest_dataset = datasets.fetch_development_fmri(n_subjects=20)
+rest_dataset = fetch_development_fmri(n_subjects=20)
 func_filenames = rest_dataset.func
 confounds = rest_dataset.confounds
 
@@ -52,6 +52,7 @@ dict_learn = DictLearning(
     memory_level=2,
     random_state=0,
     standardize="zscore_sample",
+    verbose=1,
 )
 # Fit to the data
 dict_learn.fit(func_filenames)
@@ -60,13 +61,15 @@ components_img = dict_learn.components_img_
 
 # Visualization of functional networks
 # Show networks using plotting utilities
-from nilearn import plotting
+from nilearn.plotting import plot_prob_atlas, show
 
-plotting.plot_prob_atlas(
+plot_prob_atlas(
     components_img,
     view_type="filled_contours",
     title="Dictionary Learning maps",
 )
+
+show()
 
 # %%
 # Extract regions from networks
@@ -85,8 +88,9 @@ extractor = RegionExtractor(
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     min_region_size=1350,
+    verbose=1,
 )
 # Just call fit() to process for regions extraction
 extractor.fit()
@@ -99,13 +103,14 @@ n_regions_extracted = regions_extracted_img.shape[-1]
 
 # Visualization of region extraction results
 title = (
-    "%d regions are extracted from %d components."
-    "\nEach separate color of region indicates extracted region"
-    % (n_regions_extracted, 8)
+    f"{n_regions_extracted} regions are extracted from 8 components.\n"
+    "Each separate color of region indicates extracted region"
 )
-plotting.plot_prob_atlas(
+plot_prob_atlas(
     regions_extracted_img, view_type="filled_contours", title=title
 )
+
+show()
 
 # %%
 # Compute correlation coefficients
@@ -149,20 +154,27 @@ mean_correlations = np.mean(correlations, axis=0).reshape(
 # :func:`~nilearn.plotting.plot_connectome` to plot the
 # connectome relations.
 
+from nilearn.plotting import (
+    find_probabilistic_atlas_cut_coords,
+    find_xyz_cut_coords,
+    plot_connectome,
+    plot_matrix,
+)
+
 title = f"Correlation between {int(n_regions_extracted)} regions"
 
 # First plot the matrix
-display = plotting.plot_matrix(
-    mean_correlations, vmax=1, vmin=-1, colorbar=True, title=title
-)
+plot_matrix(mean_correlations, vmax=1, vmin=-1, colorbar=True, title=title)
 
 # Then find the center of the regions and plot a connectome
 regions_img = regions_extracted_img
-coords_connectome = plotting.find_probabilistic_atlas_cut_coords(regions_img)
+coords_connectome = find_probabilistic_atlas_cut_coords(regions_img)
 
-plotting.plot_connectome(
+plot_connectome(
     mean_correlations, coords_connectome, edge_threshold="90%", title=title
 )
+
+show()
 
 # %%
 # Plot regions extracted for only one specific network
@@ -171,15 +183,18 @@ plotting.plot_connectome(
 # First, we plot a network of ``index=4``
 # without region extraction (left plot).
 from nilearn import image
+from nilearn.plotting import plot_stat_map
 
 img = image.index_img(components_img, 4)
-coords = plotting.find_xyz_cut_coords(img)
-display = plotting.plot_stat_map(
+coords = find_xyz_cut_coords(img)
+plot_stat_map(
     img,
     cut_coords=coords,
-    colorbar=False,
+    colorbar=True,
     title="Showing one specific network",
 )
+
+show()
 
 # %%
 # Now, we plot (right side) same network after region extraction to show that
@@ -188,20 +203,21 @@ display = plotting.plot_stat_map(
 #
 # For this, we take the indices of the all regions extracted
 # related to original network given as 4.
+
+from nilearn.plotting import cm, plot_anat
+
 regions_indices_of_map3 = np.where(np.array(regions_index) == 4)
 
-display = plotting.plot_anat(
-    cut_coords=coords, title="Regions from this network"
-)
+display = plot_anat(cut_coords=coords, title="Regions from this network")
 
 # Add as an overlay all the regions of index 4
 colors = "rgbcmyk"
 for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
     display.add_overlay(
         image.index_img(regions_extracted_img, each_index_of_map3),
-        cmap=plotting.cm.alpha_cmap(color),
+        cmap=cm.alpha_cmap(color),
     )
 
-plotting.show()
+show()
 
 # sphinx_gallery_dummy_images=6

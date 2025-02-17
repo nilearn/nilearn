@@ -2,9 +2,9 @@
 Technical point: Illustration of the volume to surface sampling schemes
 =======================================================================
 
-In nilearn, :func:`nilearn.surface.vol_to_surf` allows us to measure values of
+In nilearn, :func:`~nilearn.surface.vol_to_surf` allows us to measure values of
 a 3d volume at the nodes of a cortical mesh, transforming it into surface data.
-This data can then be plotted with :func:`nilearn.plotting.plot_surf_stat_map`
+This data can then be plotted with :func:`~nilearn.plotting.plot_surf_stat_map`
 for example.
 
 This script shows, on a toy example, where samples are drawn around each mesh
@@ -22,12 +22,15 @@ passing both to `vol_to_surf`.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
 # %%
-import matplotlib
 import numpy as np
 from matplotlib import pyplot as plt
+from matplotlib import tri
 
-from nilearn.plotting import show
 from nilearn.surface import surface
 
 # %%
@@ -37,13 +40,13 @@ from nilearn.surface import surface
 N_Z = 5
 N_T = 10
 u, v = np.mgrid[:N_T, :N_Z]
-triangulation = matplotlib.tri.Triangulation(u.flatten(), v.flatten())
+triangulation = tri.Triangulation(u.flatten(), v.flatten())
 angles = u.flatten() * 2 * np.pi / N_T
 x, y = np.cos(angles), np.sin(angles)
 z = v.flatten() * 2 / N_Z
 
 mesh = [np.asarray([x, y, z]).T, triangulation.triangles]
-inner_mesh = [[.7, .7, 1.] * mesh[0], triangulation.triangles]
+inner_mesh = [[0.7, 0.7, 1.0] * mesh[0], triangulation.triangles]
 
 
 # %%
@@ -51,13 +54,16 @@ inner_mesh = [[.7, .7, 1.] * mesh[0], triangulation.triangles]
 # ---------------------------------------------------------------
 
 nested_sample_points = surface._sample_locations_between_surfaces(
-    mesh, inner_mesh, np.eye(4))
+    mesh, inner_mesh, np.eye(4)
+)
 
 line_sample_points = surface._line_sample_locations(
-    mesh, np.eye(4), segment_half_width=.2, n_points=6)
+    mesh, np.eye(4), segment_half_width=0.2, n_points=6
+)
 
 ball_sample_points = surface._ball_sample_locations(
-    mesh, np.eye(4), ball_radius=.15, n_points=20)
+    mesh, np.eye(4), ball_radius=0.15, n_points=20
+)
 
 
 # %%
@@ -65,18 +71,18 @@ ball_sample_points = surface._ball_sample_locations(
 # --------------------------------------
 
 fig = plt.figure()
-ax = plt.subplot(projection='3d')
+ax = plt.subplot(projection="3d")
 ax.view_init(67, -42)
-ax.plot_trisurf(x, y, z, triangles=triangulation.triangles, alpha=.6)
+ax.plot_trisurf(x, y, z, triangles=triangulation.triangles, alpha=0.6)
 ax.plot_trisurf(*inner_mesh[0].T, triangles=triangulation.triangles)
-ax.scatter(*nested_sample_points.T, color='r')
+ax.scatter(*nested_sample_points.T, color="r")
 
 for sample_points in [line_sample_points, ball_sample_points]:
     fig = plt.figure()
-    ax = plt.subplot(projection='3d')
+    ax = plt.subplot(projection="3d")
     ax.view_init(67, -42)
     ax.plot_trisurf(x, y, z, triangles=triangulation.triangles)
-    ax.scatter(*sample_points.T, color='r')
+    ax.scatter(*sample_points.T, color="r")
 
 # %%
 # Adjust the sample locations
@@ -85,12 +91,13 @@ for sample_points in [line_sample_points, ball_sample_points]:
 # position of samples along the line
 
 nested_sample_points = surface._sample_locations_between_surfaces(
-    mesh, inner_mesh, np.eye(4), depth=[-.5, 0., .8, 1., 1.2])
+    mesh, inner_mesh, np.eye(4), depth=[-0.5, 0.0, 0.8, 1.0, 1.2]
+)
 fig = plt.figure()
-ax = plt.subplot(projection='3d')
+ax = plt.subplot(projection="3d")
 ax.view_init(67, -42)
-ax.plot_trisurf(x, y, z, triangles=triangulation.triangles, alpha=.6)
+ax.plot_trisurf(x, y, z, triangles=triangulation.triangles, alpha=0.6)
 ax.plot_trisurf(*inner_mesh[0].T, triangles=triangulation.triangles)
-ax.scatter(*nested_sample_points.T, color='r')
+ax.scatter(*nested_sample_points.T, color="r")
 
-show()
+plt.show()

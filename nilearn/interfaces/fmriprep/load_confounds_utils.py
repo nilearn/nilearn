@@ -1,8 +1,9 @@
 """Helper functions for the manipulation of fmriprep output confounds."""
+
 import itertools
 import json
-import os
 import re
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -31,7 +32,7 @@ img_file_error = {
 }
 
 
-def check_params(confounds_raw, params):
+def check_params_confounds(confounds_raw, params):
     """Check that specified parameters can be found in the confounds.
 
     Used for motion, wm_csf, global_signal, and compcor regressors.
@@ -41,12 +42,12 @@ def check_params(confounds_raw, params):
     confounds_raw : pandas.DataFrame
         Raw confounds loaded from the confounds file.
 
-    params : list of str
+    params : :obj:`list` of :obj:`str`
         List of parameters constructed based on users choices.
 
     Returns
     -------
-    bool or list of str
+    bool or :obj:`list` of :obj:`str`
         True if all parameters are found in the confounds.
         False if none of the parameters are found in the confounds.
         List of parameters that are not found in the confounds
@@ -73,12 +74,12 @@ def find_confounds(confounds_raw, keywords):
     confounds_raw : pandas.DataFrame
         Raw confounds loaded from the confounds file.
 
-    keywords : list of str
+    keywords : :obj:`list` of :obj:`str`
         List of keywords to search for in the confounds.
 
     Returns
     -------
-    list of str
+    list of :obj:`str`
         List of confounds that contain the keywords.
     """
     list_confounds = []
@@ -94,15 +95,15 @@ def sanitize_confounds(img_files):
 
     Parameters
     ----------
-    img_files : str or list of str
+    img_files : :obj:`str` or :obj:`list` of :obj:`str`
         Path to the functional image file(s).
 
     Returns
     -------
-    img_files : list of str
+    img_files : :obj:`list` of :obj:`str`
         List of functional image file(s).
     flag_single : bool
-        True if the input is a single file, False if it is a list of
+        True if the input is a single file, False if it is a :obj:`list` of
         files.
     """
     # we want to support loading a single set of confounds, instead of a list
@@ -126,15 +127,15 @@ def add_suffix(params, model):
 
     Parameters
     ----------
-    params : list of str
+    params : :obj:`list` of :obj:`str`
         List of parameters to add suffixes to.
-    model : str
+    model : :obj:`str`
         Model to use. Options are "basic", "derivatives", "power2", or
         "full".
 
     Returns
     -------
-    params_full : list of str
+    params_full : :obj:`list` of :obj:`str`
         List of parameters with suffixes added.
     """
     params_full = params.copy()
@@ -173,11 +174,10 @@ def _generate_confounds_file_candidates(nii_file):
     if "desc" not in file_fields:
         file_fields.append("desc")
 
-    all_subsets = []
-    for n_entities in range(1, len(file_fields) + 1):
-        all_subsets.append(
-            list(itertools.combinations(file_fields, n_entities))
-        )
+    all_subsets = [
+        list(itertools.combinations(file_fields, n_entities))
+        for n_entities in range(1, len(file_fields) + 1)
+    ]
 
     # Flatten the list of lists
     all_subsets = [list(item) for sublist in all_subsets for item in sublist]
@@ -210,13 +210,13 @@ def _get_file_name(nii_file):
     if isinstance(nii_file, list):  # catch gifti
         nii_file = nii_file[0]
 
-    base_dir = os.path.dirname(nii_file)
+    base_dir = Path(nii_file).parent
 
     filenames = _generate_confounds_file_candidates(nii_file)
 
     # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
     # respect to BEP 012.
-    # cf. https://neurostars.org/t/naming-change-confounds-regressors-to-confounds-timeseries/17637 # noqa
+    # cf. https://neurostars.org/t/naming-change-confounds-regressors-to-confounds-timeseries/17637 # noqa: E501
     # Check file with new naming scheme exists or replace,
     # for backward compatibility.
     suffixes = ["_timeseries.tsv", "_regressors.tsv"]
@@ -230,9 +230,9 @@ def _get_file_name(nii_file):
     # https://www.geeksforgeeks.org/python-sort-list-of-lists-by-the-size-of-sublists/
     confound_file_candidates = sorted(confound_file_candidates, key=len)[::-1]
     confound_file_candidates = [
-        os.path.join(base_dir, crc) for crc in confound_file_candidates
+        base_dir / crc for crc in confound_file_candidates
     ]
-    found_files = [cr for cr in confound_file_candidates if os.path.isfile(cr)]
+    found_files = [str(cr) for cr in confound_file_candidates if cr.is_file()]
 
     if not found_files:
         raise ValueError(
@@ -252,15 +252,15 @@ def get_confounds_file(image_file, flag_full_aroma):
 
     Parameters
     ----------
-    image_file : str
+    image_file : :obj:`str`
         Path to the functional image file.
 
-    flag_full_aroma : bool
+    flag_full_aroma : :obj:`bool`
         True if the input is a full ICA-AROMA output, False otherwise.
 
     Returns
     -------
-    confounds_raw_path : str
+    confounds_raw_path : :obj:`str`
         Path to the associated confounds file.
     """
     _check_images(image_file, flag_full_aroma)
@@ -271,7 +271,7 @@ def get_confounds_file(image_file, flag_full_aroma):
 def get_json(confounds_raw_path):
     """Return json data companion file to the confounds tsv file."""
     # Load JSON file
-    return confounds_raw_path.replace("tsv", "json")
+    return str(confounds_raw_path).replace("tsv", "json")
 
 
 def load_confounds_json(confounds_json, flag_acompcor):
@@ -279,10 +279,10 @@ def load_confounds_json(confounds_json, flag_acompcor):
 
     Parameters
     ----------
-    confounds_json : str
+    confounds_json : :obj:`str`
         Path to the json file.
 
-    flag_acompcor : bool
+    flag_acompcor : :obj:`bool`
         True if user selected anatomical compcor for denoising strategy,
         False otherwise.
 
@@ -298,7 +298,7 @@ def load_confounds_json(confounds_json, flag_acompcor):
         fMRIprep >= 1.4.0.
     """
     try:
-        with open(confounds_json, "rb") as f:
+        with Path(confounds_json).open("rb") as f:
             confounds_json = json.load(f)
     except OSError:
         if flag_acompcor:
@@ -318,7 +318,7 @@ def load_confounds_file_as_dataframe(confounds_raw_path):
 
     Parameters
     ----------
-    confounds_raw_path : str
+    confounds_raw_path : :obj:`str`
         Path to the confounds file.
 
     Returns
@@ -423,7 +423,7 @@ def prepare_output(confounds, demean):
     confounds : pandas.DataFrame
         Confound regressors loaded based on user's choice.
 
-    demean : bool
+    demean : :obj:`bool`
         True if the confounds should be demeaned, False otherwise.
 
     Returns
@@ -443,7 +443,7 @@ def prepare_output(confounds, demean):
         # Derivatives have NaN on the first row
         # Replace them by estimates at second time point,
         # otherwise nilearn will crash.
-        mask_nan = np.isnan(confounds.values[0, :])
+        mask_nan = np.isnan(confounds.to_numpy()[0, :])
         confounds.iloc[0, mask_nan] = confounds.iloc[1, mask_nan]
         if demean:
             confounds = _demean_confounds(confounds, sample_mask)
@@ -481,14 +481,15 @@ def _demean_confounds(confounds, sample_mask):
     return pd.DataFrame(confounds, columns=confound_cols)
 
 
-class MissingConfound(Exception):
+class MissingConfoundError(Exception):
     """
     Exception raised when failing to find params in the confounds.
 
     Parameters
     ----------
-    params : list of missing params, default=[]
-    keywords: list of missing keywords, default=[]
+    params : :obj:`list` of missing params, default=[]
+
+    keywords : :obj:`list` of missing keywords, default=[]
     """
 
     def __init__(self, params=None, keywords=None):

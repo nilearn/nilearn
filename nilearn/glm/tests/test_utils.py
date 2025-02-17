@@ -1,20 +1,21 @@
 #!/usr/bin/env python
 import numpy as np
-import pandas as pd
 import pytest
 import scipy.linalg as spl
 import scipy.stats as sps
-from numpy.testing import assert_almost_equal, assert_array_almost_equal
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_almost_equal,
+    assert_array_equal,
+)
 from scipy.stats import norm
 
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.glm._utils import (
-    _check_and_load_tables,
-    _check_list_length_match,
-    _check_run_tables,
     full_rank,
     multiple_fast_inverse,
     multiple_mahalanobis,
+    pad_contrast,
     positive_reciprocal,
     z_score,
 )
@@ -40,7 +41,7 @@ def test_full_rank(rng):
 
 
 def test_z_score_t_values(rng):
-    # Randomly draw samples from the standard Student’s t distribution
+    # Randomly draw samples from the standard Student's t distribution
     t_val = rng.standard_t(10, size=10)
     # Estimate the p-values using the Survival Function (SF)
     p_val = sps.t.sf(t_val, 1e10)
@@ -230,13 +231,13 @@ def test_pos_recipr():
     eX = np.array([0.5, 1, 0, 0])
     Y = positive_reciprocal(X)
 
-    assert_array_almost_equal, Y, eX
+    assert_array_almost_equal(Y, eX)
     assert Y.dtype.type == np.float64
 
     X2 = X.reshape((2, 2))
     Y2 = positive_reciprocal(X2)
 
-    assert_array_almost_equal, Y2, eX.reshape((2, 2))
+    assert_array_almost_equal(Y2, eX.reshape((2, 2)))
 
     # check that lists have arrived
     XL = [0, 1, -1]
@@ -248,29 +249,20 @@ def test_pos_recipr():
     assert positive_reciprocal(2) == 0.5
 
 
-def test_img_table_checks():
-    # check matching lengths
-    with pytest.raises(ValueError, match="len.* does not match len.*"):
-        _check_list_length_match([""] * 2, [""], "", "")
+@pytest.mark.parametrize("val", [[1], [1, 0]])
+@pytest.mark.parametrize("stat_type", ["t", "F"])
+def test_pad_contrast(rng, val, stat_type):
+    """Check padding of vector contrasts."""
+    theta = rng.random((4, 1))
+    con_val = np.array([val])
+    padded_contrast = pad_contrast(con_val, theta, stat_type=stat_type)
+    assert_array_equal(padded_contrast, [[1, 0, 0, 0]])
 
-    # check tables type and that can be loaded
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_and_load_tables([".csv", ".csv"], "")
-    with pytest.raises(
-        TypeError, match="can only be a pandas DataFrames or a string"
-    ):
-        _check_and_load_tables([[], pd.DataFrame()], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_and_load_tables([".csv", pd.DataFrame()], "")
 
-    # check high level wrapper keeps behavior
-    with pytest.raises(ValueError, match="len.* does not match len.*"):
-        _check_run_tables([""] * 2, [""], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_run_tables([""] * 2, [".csv", ".csv"], "")
-    with pytest.raises(
-        TypeError, match="can only be a pandas DataFrames or a string"
-    ):
-        _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
-    with pytest.raises(ValueError, match="table path .* could not be loaded"):
-        _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
+@pytest.mark.parametrize("val", [[[1, 0], [0, 1]], [[1, 0, 0], [0, 1, 0]]])
+def test_pad_f_contrast(rng, val):
+    """Check padding of matrix contrasts."""
+    theta = rng.random((4, 1))
+    con_val = np.array(val)
+    padded_contrast = pad_contrast(con_val, theta, stat_type="F")
+    assert_array_equal(padded_contrast, [[1, 0, 0, 0], [0, 1, 0, 0]])

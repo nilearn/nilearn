@@ -1,4 +1,4 @@
-"""Utilities for testing the dataset fetchers
+"""Utilities for testing the dataset fetchers.
 
 Unit tests should not depend on an internet connection nor on external
 resources such as the servers from which we download datasets. Otherwise, tests
@@ -27,9 +27,11 @@ outside of temporary directories, this module also adds fixtures to patch the
 home directory and other default nilearn data directories.
 
 """
+
 import fnmatch
 import json
 import os
+import pathlib
 import pickle
 import re
 import shutil
@@ -38,10 +40,14 @@ from collections import OrderedDict
 from pathlib import Path
 from unittest.mock import MagicMock
 
+import pandas as pd
 import pytest
+from nibabel import Nifti1Image
 from requests.exceptions import HTTPError
+from sklearn.utils import Bunch
 
 from nilearn._utils.testing import serialize_niimg
+from nilearn.surface.surface import PolyMesh, SurfaceImage
 
 
 @pytest.fixture(autouse=True)
@@ -106,6 +112,7 @@ class Response:
         self.url = url
         self.status_code = status_code
         self.headers = {"Content-Length": len(self.content)}
+        self.iter_start = 0
 
     def __enter__(self):
         return self
@@ -114,7 +121,7 @@ class Response:
         pass
 
     def iter_content(self, chunk_size=8):
-        for i in range(0, len(self.content), chunk_size):
+        for i in range(self.iter_start, len(self.content), chunk_size):
             yield self.content[i : i + chunk_size]
 
     @property
@@ -191,8 +198,8 @@ class Sender:
     the response will be a tar gzipped archive with this structure:
         .
         ├── data
-        │   ├── img.nii.gz
-        │   └── labels.csv
+        │   ├── img.nii.gz
+        │   └── labels.csv
         └── README.txt
 
     Moreover, if the first line starts with 'format:' it is used to determine
@@ -261,7 +268,12 @@ class Sender:
     def url_count(self):
         return len(self.visited_urls)
 
-    def __call__(self, request, *args, **kwargs):
+    def __call__(
+        self,
+        request,
+        *args,  # noqa: ARG002
+        **kwargs,  # noqa: ARG002
+    ):
         if isinstance(request, str):
             request = Request(request)
         self.sent_requests.append(request)
@@ -289,7 +301,7 @@ class Sender:
             return None
 
     def get_response(self, response, match, request):
-        if hasattr(response, "__call__"):
+        if callable(response):
             response = response(match, request)
 
         if isinstance(response, Response):
@@ -389,7 +401,7 @@ def dict_to_archive(data, archive_format="gztar"):
           - a `str` or `bytes`: the contents of the file
           - anything else is pickled.
 
-    archive_format : str, optional (default="gztar")
+    archive_format : str, default="gztar"
         The archive format. See `shutil` documentation for available formats.
 
     Returns
@@ -403,7 +415,7 @@ def dict_to_archive(data, archive_format="gztar"):
     the resulting archive has this structure:
         .
         ├── Data
-        │   └── labels.csv
+        │   └── labels.csv
         └── README.txt
 
     where labels.csv and README.txt contain the corresponding values in `data`
@@ -418,7 +430,7 @@ def dict_to_archive(data, archive_format="gztar"):
         archive_path = shutil.make_archive(
             str(root_tmp_dir / "archive"), archive_format, str(tmp_dir)
         )
-        with open(archive_path, "rb") as f:
+        with Path(archive_path).open("rb") as f:
             return f.read()
 
 
@@ -433,12 +445,51 @@ def list_to_archive(sequence, archive_format="gztar", content=""):
     the resulting archive has this structure:
         .
         ├── Data
-        │   └── labels.csv
+        │   └── labels.csv
         └── README.txt
 
     and "labels.csv" and "README.txt" contain the value of `content`.
 
     """
     return dict_to_archive(
-        {item: content for item in sequence}, archive_format=archive_format
+        dict.fromkeys(sequence, content), archive_format=archive_format
     )
+
+
+def check_type_fetcher(data):
+    """Check type content of datasets.
+
+    Recursively checks the content returned by fetchers
+    to make sure they do not contain only some allowed type of objects.
+
+    If the data is a Bunch and contains a dataset description,
+    ensures the description is not empty.
+    """
+    if isinstance(
+        data,
+        (
+            str,
+            int,
+            float,
+            Nifti1Image,
+            SurfaceImage,
+            pd.DataFrame,
+            PolyMesh,
+            pathlib.Path,
+        ),
+    ):
+        pass
+    elif isinstance(data, (Bunch, dict)):
+        for k, v in data.items():
+            if k == "description":
+                assert isinstance(v, str)
+                assert v != ""
+            if not check_type_fetcher(v):
+                raise TypeError(f"Found {k} : {type(v)}")
+    elif isinstance(data, (set, list, tuple)):
+        for v in data:
+            if not check_type_fetcher(v):
+                raise TypeError(f"{type(v)}")
+    else:
+        return False
+    return True

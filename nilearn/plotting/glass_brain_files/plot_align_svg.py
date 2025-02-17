@@ -11,7 +11,7 @@ from nilearn.plotting import glass_brain, img_plotting, show
 
 if __name__ == "__main__":
     # plotting anat for coarse alignment
-    bg_img, _, _, _ = img_plotting._load_anat()
+    bg_img, _, _, _ = img_plotting.load_anat()
     img_plotting.plot_glass_brain(
         bg_img, threshold=0, black_bg=True, title="anat", alpha=1
     )

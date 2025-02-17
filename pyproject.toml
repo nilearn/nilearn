@@ -16,21 +16,21 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
-    "Programming Language :: Python :: 3.12"
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13"
 ]
 dependencies = [
-    "joblib>=1.0.0",
+    "joblib>=1.2.0",
     "lxml",
-    "nibabel>=3.2.0",
-    "numpy>=1.19.0",
-    "pandas>=1.1.5",
+    "nibabel>=5.2.0",
+    "numpy>=1.22.4",
+    "pandas>=2.2.0",
     "requests>=2.25.0",
-    "scikit-learn>=1.0.0",
-    "scipy>=1.6.0",
+    "scikit-learn>=1.4.0",
+    "scipy>=1.8.0",
     "packaging"
 ]
 description = "Statistical learning for neuroimaging in Python"
@@ -40,30 +40,28 @@ license = {text = "new BSD"}
 maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
 dev = [
-    "nilearn[plotting,doc,style,test]",
-    'pre-commit',
-    'tox'
+    "nilearn[plotting,doc,style,test]"
 ]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
-    "furo",
-    "memory_profiler",  # measuring memory during docs building
-    "myst-parser",
-    "numpydoc",
-    "ruamel.yaml",
-    "sphinx",
-    "sphinx-copybutton",
-    "sphinx-design",
-    "sphinx-gallery",
-    "sphinxcontrib-bibtex",
-    "sphinxext-opengraph",
-    "ruamel.yaml"
+    "furo>=2024.8.6",
+    "memory_profiler>=0.61.0",  # measuring memory during docs building
+    "myst-parser>=3.0.1",
+    "numpydoc>=1.8.0",
+    "ruamel.yaml>=0.18.6",
+    "sphinx>=7.4.7",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-design>=0.6.1",
+    "sphinx-gallery>=0.18.0",
+    "sphinxcontrib-bibtex>=2.6.3",
+    "sphinxext-opengraph>=0.9.1",
+    "sphinxcontrib-mermaid>=1.0.0"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
@@ -77,22 +75,16 @@ plotting = [
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
 ]
 style = [
-    "black",
-    "blacken-docs",
-    'codespell',
-    "isort",
-    "flake8",
-    "flake8-docstrings",
-    "flake8-use-fstring",
-    "flake8-functions",
-    "flynt",
-    'tomli'
+    'tox'
 ]
 # For running unit and docstring tests
 test = [
     "coverage",
     "pytest>=6.0.0",
-    "pytest-cov"
+    "pytest-cov",
+    "pytest-randomly",
+    "pytest-reporter-html1>=0.9.2",
+    "pytest-xdist[psutil]"
 ]
 
 [project.urls]
@@ -101,37 +93,23 @@ Development = "https://github.com/nilearn/nilearn"
 Discussions = "https://neurostars.org/tag/nilearn"
 Homepage = "https://nilearn.github.io"
 
-[tool.black]
-# 'extend-exclude' excludes files or directories in addition to the defaults
-extend-exclude = """
-(
-  nilearn/externals
-  | nilearn/_utils/helpers.py
-  | examples/01_plotting/plot_3d_map_to_surface_projection.py
-  | examples/01_plotting/plot_surf_atlas.py
-  | examples/01_plotting/plot_surf_stat_map.py
-  | examples/01_plotting/plot_surface_projection_strategies.py
-  | examples/04_glm_first_level/plot_fiac_analysis.py
-  | examples/04_glm_first_level/plot_fixed_effects.py
-  | examples/04_glm_first_level/plot_localizer_surface_analysis.py
-  | examples/07_advanced/plot_surface_bids_analysis.py
-  | nilearn/plotting/html_surface.py
-  | nilearn/plotting/js_plotting_utils.py
-  | nilearn/plotting/surf_plotting.py
-  | nilearn/plotting/tests/test_html_surface.py
-  | nilearn/plotting/tests/test_surf_plotting.py
-  | nilearn/surface/surface.py
-  | nilearn/surface/tests/test_surface.py
-)
-"""
-line-length = 79
-
 [tool.codespell]
+builtin = "clear,rare,en-GB_to_en-US"
 ignore-words = ".github/codespell_ignore_words.txt"
-skip = "./.git,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,*/tmp,./doc/modules/generated/*,./doc/_build"
+skip = "./.git,*.cff,*.bib,*/tmp,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
 
-[tool.flynt]
-exclude = "tempita"
+[tool.doc8]
+allow-long-titles = true
+ignore-path = [
+    "*/changes/*.rst",
+    "*/modules/generated/*",
+    "*/modules/generated_reports/*",
+    "*/templates/*.rst",
+    "doc/includes/*",
+    "doc/authors.rst",
+    "AUTHORS.rst"
+]
+max-line-length = 120
 
 [tool.hatch.build.hooks.vcs]
 version-file = "nilearn/_version.py"
@@ -142,24 +120,176 @@ packages = ["nilearn"]
 [tool.hatch.version]
 source = "vcs"
 
-[tool.isort]
-combine_as_imports = true
-line_length = 79
-profile = "black"
-skip_gitignore = true
-skip_glob = [
-    "nilearn/externals/*",
-    "doc/auto_examples/*"
+[tool.mypy]
+allow_redefinition = false
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+exclude = [
+    '.*/tests/test_.*',
+    'doc/.*',
+    'examples/.*',
+    'maint_tools/.*',
+    'nilearn_cache/.*',
+    'nilearn/_version.py'
 ]
-src_paths = [
-    'maint_tools',
-    'nilearn',
-    'doc'
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = [
+    "nilearn.externals.*",
+    "nilearn._version"
+]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = [
+    "IPython.*",
+    "joblib.*",
+    "kaleido",
+    "matplotlib.*",
+    "memory_profiler.*",
+    "mpl_toolkits.*",
+    "nibabel.*",
+    "nilearn._version",
+    "packaging.*",
+    "plotly.*",
+    "pytest.*",
+    "rich.*",
+    "scipy.*",
+    "sklearn.*",
+    "statsmodels.*",
+    "svg.*"
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
+log_cli_level = "INFO"
 minversion = "6.0"
 xfail_strict = true
+
+[tool.ruff]
+extend-exclude = [
+    "nilearn/externals/*",
+    "doc/auto_examples/*"
+]
+include = ["pyproject.toml", "nilearn/**/*.py", "examples/**/*.py", "maint_tools/**/*.py", "doc/**/*.py"]
+indent-width = 4
+line-length = 79
+
+[tool.ruff.format]
+docstring-code-format = true
+docstring-code-line-length = "dynamic"
+indent-style = "space"
+line-ending = "auto"
+quote-style = "double"
+skip-magic-trailing-comma = false
+
+[tool.ruff.lint]
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+fixable = ["ALL"]
+ignore = [
+    "ARG005",
+    "B904",
+    "D105",
+    "D205",
+    "D208",
+    "D301",
+    "E741",
+    "ERA001",
+    "FURB105",
+    "N803",
+    "N806",
+    "PERF203",
+    "PIE790",
+    "PLR2004",
+    "PTH207",
+    "UP038",  # https://github.com/astral-sh/ruff/issues/7871
+    # Avoid linter rules conflicting with the formatter
+    # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
+    "COM812",
+    "COM819",
+    "D206",
+    "D300",
+    "E111",
+    "E114",
+    "E117",
+    "Q000",
+    "Q001",
+    "Q002",
+    "Q003",
+    "W191"
+]
+# List of all the ruff rules (includes why the rule matters)
+# https://docs.astral.sh/ruff/rules/
+select = [
+    "ARG",
+    "B",
+    "C4",
+    "C90",
+    "D",
+    "E",
+    "ERA",
+    "F",
+    "FLY",
+    "FURB",
+    "I",
+    "N",
+    "NPY",
+    "PERF",
+    "PIE",
+    "PTH",
+    "PD",
+    "PGH",
+    "PLR",
+    "RUF",
+    "SIM",
+    "UP",
+    "W"
+]
+unfixable = []
+
+[tool.ruff.lint.mccabe]
+max-complexity = 22
+
+[tool.ruff.lint.per-file-ignores]
+"**/{doc}/*" = ["D103"]
+"**/{examples}/*" = ["B018", "D103", "D400", "E402"]
+"__init__.py" = ["D104", "E402"]
+"nilearn/**/tests/test_*" = ["D100"]
+"nilearn/_utils/*" = ["B028"]  # 7 errors to fix
+"nilearn/connectome/*" = ["B028"]  # 5 errors to fix
+"nilearn/connectome/**/{tests}/*" = ["D103"]  # 35 errors to fix
+"nilearn/datasets/*" = ["B028"]  # 23 errors to fix
+"nilearn/datasets/**/{tests}/*" = ["D103"]  # 138 errors to fix
+"nilearn/decoding/*" = ["B028"]  # 5 errors to fix
+"nilearn/decoding/**/{tests}/*" = ["D103"]  # 81 errors to fix
+"nilearn/decomposition/**/{tests}/*" = ["D103"]  # 32 errors to fix
+"nilearn/glm/*" = ["B028"]  # 19 errors to fix
+"nilearn/glm/**/{tests}/*" = ["D103"]  # 154 errors to fix
+"nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
+"nilearn/interfaces/**/{tests}/*" = ["D103"]  # 75 errors to fix
+"nilearn/maskers/*" = ["B028"]  # 17 errors to fix
+"nilearn/mass_univariate/*" = ["B028"]  # 4 errors to fix
+"nilearn/plotting/*" = ["B028"]  # 18 errors to fix
+"nilearn/plotting/**/{tests}/*" = ["D103"]  # 123 errors to fix
+"nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
+"nilearn/reporting/tests/test_glm_reporter.py" = ["D103"]
+"nilearn/reporting/tests/test_html_report.py" = ["D103"]
+"nilearn/reporting/tests/test_reporting.py" = ["D103"]
+"nilearn/signal.py" = ["B028"]  # 11 errors to fix
+"nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.pylint]
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
+max-args = 26
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
+max-branches = 24
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
+max-returns = 7
+# https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
+max-statements = 93

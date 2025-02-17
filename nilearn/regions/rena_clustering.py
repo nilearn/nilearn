@@ -2,8 +2,9 @@
 
 Fastclustering for approximation of structured signals
 """
-# Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
 
+# Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
+import itertools
 import warnings
 
 import numpy as np
@@ -14,9 +15,13 @@ from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from nilearn._utils import fill_doc
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.param_validation import check_params
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data
+from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
+from nilearn.surface import SurfaceImage
 
 
 def _compute_weights(X, mask_img):
@@ -150,6 +155,157 @@ def _make_edges_and_weights(X, mask_img):
     return edges, weights
 
 
+def _compute_weights_surface(X, mask, edges):
+    """Compute the weights for each edge using squared Euclidean distance.
+
+    Parameters
+    ----------
+    X : ndarray, shape = [n_samples, n_features]
+        Masked training data, where some vertices were removed during masking.
+        So n_features is only the number of vertices that were kept after
+        masking.
+
+    mask : boolean ndarray, shape = [1, n_vertices]
+        Initial mask used for getting the X. So n_vertices is the total number
+        of vertices in the mesh.
+
+    edges : ndarray, shape = [2, n_edges]
+        Edges between the all the vertices in the mesh before masking.
+
+    Returns
+    -------
+    weights : ndarray
+        Weights corresponding to all edges.
+        shape: (n_edges,).
+
+    """
+    n_samples, _ = X.shape
+    shape = mask.shape
+
+    data = np.empty((shape[0], n_samples))
+    # Unmasking the X
+    # this will give us the back the transpose of original data
+    # with the masked vertices set to 0
+    # data will be of shape (n_vertices, n_samples)
+    for sample in range(n_samples):
+        data[:, sample] = unmask_from_to_3d_array(X[sample].copy(), mask)
+
+    data_i = data[edges[0]]
+    data_j = data[edges[1]]
+    weights = np.sum((data_i - data_j) ** 2, axis=-1).ravel()
+
+    return weights
+
+
+def _circular_pairwise(iterable):
+    """Pairwise iterator with the first element reused as the last one.
+
+    Return successive overlapping pairs taken from the input `iterable`.
+    The number of 2-tuples in the `output` iterator will be the number of
+    inputs.
+
+    Parameters
+    ----------
+    iterable : iterable
+
+    Returns
+    -------
+    output : iterable
+
+    """
+    a, b = itertools.tee(iterable)
+    return itertools.zip_longest(a, b, fillvalue=next(b, None))
+
+
+def make_edges_surface(faces, mask):
+    """Create the edges set: Returns a list of edges for a surface mesh.
+
+    Parameters
+    ----------
+    faces : ndarray
+        The vertex indices corresponding the mesh triangles.
+
+    mask : boolean
+        True if the edge is contained in the mask, False otherwise.
+
+    Returns
+    -------
+    edges : ndarray
+        Edges corresponding to the image with shape: (2, n_edges).
+
+    edges_masked : ndarray
+        Edges corresponding to the mask with shape: (1, n_edges).
+
+    """
+    mesh_edges = {
+        tuple(sorted(pair))
+        for face in faces
+        for pair in _circular_pairwise(face)
+    }
+    edges = np.array(list(mesh_edges))
+    false_indices = np.where(~mask)[0]
+    edges_masked = ~np.isin(edges, false_indices).any(axis=1)
+
+    return edges.T, edges_masked
+
+
+def _make_edges_and_weights_surface(X, mask_img):
+    """Compute the weights to all edges in the mask.
+
+    Parameters
+    ----------
+    X : ndarray, shape = [n_samples, n_features]
+        Training data.
+
+    mask_img : :obj:`~nilearn.surface.SurfaceImage` object
+        Object used for masking the data.
+
+    Returns
+    -------
+    edges : dict[str, np.array]
+        Array containing edges of mesh
+
+    weights : dict[str, np.array]
+        Weights corresponding to all edges in the mask.
+        shape: (n_edges,).
+
+    """
+    weights = {}
+    edges = {}
+    len_previous_mask = 0
+    for part in mask_img.mesh.parts:
+        face_part = mask_img.mesh.parts[part].faces
+
+        if len(mask_img.shape) == 1:
+            mask_part = mask_img.data.parts[part]
+        else:
+            mask_part = mask_img.data.parts[part][:, 0]
+
+        edges_unmasked, edges_mask = make_edges_surface(face_part, mask_part)
+
+        idxs = np.array(range(mask_part.sum())) + len_previous_mask
+        weights_unmasked = _compute_weights_surface(
+            X[:, idxs], mask_part.astype("bool"), edges_unmasked
+        )
+        # Apply mask to edges and weights
+        weights[part] = np.copy(weights_unmasked[edges_mask])
+        edges_ = np.copy(edges_unmasked[:, edges_mask])
+
+        # Reorder the indices of the graph
+        max_index = edges_.max()
+        order = np.searchsorted(
+            np.unique(edges_.ravel()), np.arange(max_index + 1)
+        )
+        # increasing the order by the number of vertices in the previous mask
+        # to avoid overlapping indices
+        order += len_previous_mask
+        edges[part] = order[edges_]
+
+        len_previous_mask += mask_part.sum()
+
+    return edges, weights
+
+
 def _weighted_connectivity_graph(X, mask_img):
     """Create a symmetric weighted graph.
 
@@ -160,7 +316,7 @@ def _weighted_connectivity_graph(X, mask_img):
     X : :class:`numpy.ndarray`
         Training data. shape = [n_samples, n_features]
 
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` object
         Object used for masking the data.
 
     Returns
@@ -171,15 +327,23 @@ def _weighted_connectivity_graph(X, mask_img):
     """
     n_features = X.shape[1]
 
-    edges, weight = _make_edges_and_weights(X, mask_img)
+    if isinstance(mask_img, SurfaceImage):
+        edges, weight = _make_edges_and_weights_surface(X, mask_img)
+        connectivity = coo_matrix((n_features, n_features))
+        for part in mask_img.mesh.parts:
+            conn_temp = coo_matrix(
+                (weight[part], edges[part]), (n_features, n_features)
+            ).tocsr()
+            connectivity += conn_temp
+    else:
+        edges, weight = _make_edges_and_weights(X, mask_img)
 
-    connectivity = coo_matrix(
-        (weight, edges), (n_features, n_features)
-    ).tocsr()
+        connectivity = coo_matrix(
+            (weight, edges), (n_features, n_features)
+        ).tocsr()
 
     # Making it symmetrical
     connectivity = (connectivity + connectivity.T) / 2
-
     return connectivity
 
 
@@ -359,20 +523,21 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
     return reduced_connectivity, reduced_X, labels
 
 
+@fill_doc
 def recursive_neighbor_agglomeration(
     X, mask_img, n_clusters, n_iter=10, threshold=1e-7, verbose=0
 ):
     """Recursive neighbor agglomeration (:term:`ReNA`).
 
     It performs iteratively the nearest neighbor grouping.
-    See :footcite:`Hoyos2019`.
+    See :footcite:t:`Hoyos2019`.
 
     Parameters
     ----------
     X : :class:`numpy.ndarray`
         Training data. shape = [n_samples, n_features]
 
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` object
         Object used for masking the data.
 
     n_clusters : :obj:`int`
@@ -381,11 +546,10 @@ def recursive_neighbor_agglomeration(
     n_iter : :obj:`int`, default=10
         Number of iterations.
 
-    threshold : :obj:`float` in the close interval [0, 1], default=1e-7
+    threshold : :obj:`float` in the close interval [0, 1], default=1e-07
         The threshold is set to handle eccentricities.
 
-    verbose : :obj:`int`, default=0
-        Verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -414,11 +578,11 @@ def recursive_neighbor_agglomeration(
         labels = reduced_labels[labels]
         n_components = connectivity.shape[0]
 
-        if verbose > 0:
-            print(
-                f"After iteration number {i + 1}, features are "
-                f" grouped into {n_components} clusters"
-            )
+        logger.log(
+            f"After iteration number {i + 1}, features are "
+            f" grouped into {n_components} clusters",
+            verbose,
+        )
 
         if n_components <= n_clusters:
             break
@@ -427,16 +591,18 @@ def recursive_neighbor_agglomeration(
 
 
 @fill_doc
-class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
+class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
     """Recursive Neighbor Agglomeration (:term:`ReNA`).
 
     Recursively merges the pair of clusters according to 1-nearest neighbors
     criterion.
-    See :footcite:`Hoyos2019`.
+    See :footcite:t:`Hoyos2019`.
 
     Parameters
     ----------
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+                or :obj:`~nilearn.maskers.SurfaceMasker` object \
+                or None, default=None
         Object used for masking the data.
 
     n_clusters : :obj:`int`, default=2
@@ -474,7 +640,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
     def __init__(
         self,
-        mask_img,
+        mask_img=None,
         n_clusters=2,
         scaling=False,
         n_iter=10,
@@ -493,9 +659,37 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         self.verbose = verbose
 
     def _more_tags(self):
-        return BaseEstimator._more_tags()
+        """Return estimator tags.
 
-    def fit(self, X, y=None):
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags()
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags()
+        return tags
+
+    def fit(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Compute clustering of the data.
 
         Parameters
@@ -510,16 +704,24 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
         self : `ReNA` object
 
         """
+        check_params(self.__dict__)
         X = check_array(
             X, ensure_min_features=2, ensure_min_samples=2, estimator=self
         )
         n_features = X.shape[1]
 
-        if not isinstance(self.mask_img, (str, Nifti1Image)):
-            raise ValueError(
-                "The mask image should be a Niimg-like"
-                f"object. Instead a {type(self.mask_img)} object was provided."
+        if not isinstance(
+            self.mask_img, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
+        ):
+            raise TypeError(
+                "The mask image should be a Niimg-like object, "
+                "a SurfaceImage object or a SurfaceMasker."
+                f"Instead a {type(self.mask_img)} object was provided."
             )
+
+        # If mask_img is a SurfaceMasker, we need to extract the mask_img
+        if isinstance(self.mask_img, SurfaceMasker):
+            self.mask_img = self.mask_img.mask_img_
 
         if self.memory is None or isinstance(self.memory, str):
             self.memory_ = Memory(
@@ -544,7 +746,8 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
             self.n_clusters = n_features
             warnings.warn(
                 "n_clusters should be at most the number of features. "
-                f"Taking n_clusters = {n_features} instead."
+                f"Taking n_clusters = {n_features} instead.",
+                stacklevel=2,
             )
 
         n_components, labels = self.memory_.cache(
@@ -567,7 +770,14 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         return self
 
-    def transform(self, X, y=None):
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "labels_")
+
+    def transform(
+        self,
+        X,
+        y=None,  # noqa: ARG002
+    ):
         """Apply clustering, reduce the dimensionality of the data.
 
         Parameters
@@ -581,7 +791,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
             Data reduced with agglomerated signal for each cluster.
 
         """
-        check_is_fitted(self, "labels_")
+        check_is_fitted(self)
 
         unique_labels = np.unique(self.labels_)
 
@@ -611,7 +821,7 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
             Data reduced expanded to the original feature space.
 
         """
-        check_is_fitted(self, "labels_")
+        check_is_fitted(self)
 
         _, inverse = np.unique(self.labels_, return_inverse=True)
 

@@ -1,4 +1,5 @@
 """Utilities to compute and operate on brain masks."""
+
 # Authors: Gael Varoquaux, Alexandre Abraham, Philippe Gervais, Ana Luisa Pinho
 import numbers
 import warnings
@@ -7,17 +8,19 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy.ndimage import binary_dilation, binary_erosion
 
-from . import _utils
-from ._utils import fill_doc
-from ._utils.cache_mixin import cache
-from ._utils.ndimage import get_border_data, largest_connected_component
-from ._utils.niimg import safe_get_data
-from .datasets import (
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import cache
+from nilearn._utils.ndimage import get_border_data, largest_connected_component
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.param_validation import check_params
+from nilearn.datasets import (
     load_mni152_gm_template,
     load_mni152_template,
     load_mni152_wm_template,
 )
-from .image import get_data, new_img_like, resampling
+from nilearn.image import get_data, new_img_like, resampling
+
+from . import _utils
 
 __all__ = [
     "apply_mask",
@@ -40,7 +43,9 @@ warnings.simplefilter("always", _MaskWarning)
 
 
 def load_mask_img(mask_img, allow_empty=False):
-    """Check that a mask is valid, ie with two values including 0 and load it.
+    """Check that a mask is valid.
+
+    This checks if it contains two values including 0 and load it.
 
     Parameters
     ----------
@@ -56,7 +61,7 @@ def load_mask_img(mask_img, allow_empty=False):
     mask : :class:`numpy.ndarray`
         Boolean version of the mask.
 
-    mask_affine: None or (4,4) array-like
+    mask_affine : None or (4,4) array-like
         Affine of the mask.
     """
     mask_img = _utils.check_niimg_3d(mask_img)
@@ -156,6 +161,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     grp_mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         Intersection of all masks.
     """
+    check_params(locals())
     if len(mask_imgs) == 0:
         raise ValueError("No mask provided for intersection")
     grp_mask = None
@@ -283,6 +289,7 @@ def compute_epi_mask(
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(memory)s
+
     %(verbose0)s
 
     Returns
@@ -290,13 +297,13 @@ def compute_epi_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
     """
-    if verbose > 0:
-        print("EPI mask computation")
+    check_params(locals())
+    logger.log("EPI mask computation", verbose)
 
     # Delayed import to avoid circular imports
-    from .image.image import _compute_mean
+    from .image.image import compute_mean
 
-    mean_epi, affine = cache(_compute_mean, memory)(
+    mean_epi, affine = cache(compute_mean, memory)(
         epi_img,
         target_affine=target_affine,
         target_shape=target_shape,
@@ -353,10 +360,9 @@ def compute_multi_epi_mask(
     memory=None,
     verbose=0,
 ):
-    """Compute a common mask for several sessions or \
-    subjects of :term:`fMRI` data.
+    """Compute a common mask for several runs or subjects of :term:`fMRI` data.
 
-    Uses the mask-finding algorithms to extract masks for each session
+    Uses the mask-finding algorithms to extract masks for each run
     or subject, and then keep only the main connected component of the
     a given fraction of the intersection of all the masks.
 
@@ -364,20 +370,21 @@ def compute_multi_epi_mask(
     ----------
     epi_imgs : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
-        A list of arrays, each item being a subject or a session.
+        A list of arrays, each item being a subject or a run.
         3D and 4D images are accepted.
 
         .. note::
 
             If 3D images are given, we suggest to use the mean image
-            of each session.
+            of each run.
 
-    threshold : :obj:`float`, optional
-        The inter-session threshold: the fraction of the
-        total number of sessions in for which a :term:`voxel` must be
+    threshold : :obj:`float`, default=0.5
+        The inter-run threshold: the fraction of the
+        total number of runs in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
+
     %(lower_cutoff)s
         Default=0.2.
     %(upper_cutoff)s
@@ -401,13 +408,17 @@ def compute_multi_epi_mask(
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(memory)s
+
     %(n_jobs)s
+
+    %(verbose0)s
 
     Returns
     -------
     mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         The brain mask.
     """
+    check_params(locals())
     if len(epi_imgs) == 0:
         raise TypeError(
             f"An empty object - {epi_imgs:r} - was passed instead of an "
@@ -480,15 +491,15 @@ def compute_background_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
     """
-    if verbose > 0:
-        print("Background mask computation")
+    check_params(locals())
+    logger.log("Background mask computation", verbose)
 
     data_imgs = _utils.check_niimg(data_imgs)
 
     # Delayed import to avoid circular imports
-    from .image.image import _compute_mean
+    from .image.image import compute_mean
 
-    data, affine = cache(_compute_mean, memory)(
+    data, affine = cache(compute_mean, memory)(
         data_imgs,
         target_affine=target_affine,
         target_shape=target_shape,
@@ -518,20 +529,18 @@ def compute_background_mask(
 def compute_multi_background_mask(
     data_imgs,
     border_size=2,
-    upper_cutoff=0.85,
     connected=True,
     opening=2,
     threshold=0.5,
     target_affine=None,
     target_shape=None,
-    exclude_zeros=False,
     n_jobs=1,
     memory=None,
     verbose=0,
 ):
-    """Compute a common mask for several sessions or subjects of data.
+    """Compute a common mask for several runs or subjects of data.
 
-    Uses the mask-finding algorithms to extract masks for each session
+    Uses the mask-finding algorithms to extract masks for each run
     or subject, and then keep only the main connected component of the
     a given fraction of the intersection of all the masks.
 
@@ -539,23 +548,28 @@ def compute_multi_background_mask(
     ----------
     data_imgs : :obj:`list` of Niimg-like objects
         See :ref:`extracting_data`.
-        A list of arrays, each item being a subject or a session.
+        A list of arrays, each item being a subject or a run.
         3D and 4D images are accepted.
 
         .. note::
             If 3D images are given, we suggest to use the mean image
-            of each session.
+            of each run.
 
-    threshold : :obj:`float`, optional
-        The inter-session threshold: the fraction of the
-        total number of session in for which a :term:`voxel` must be
+    threshold : :obj:`float`, default=0.5
+        The inter-run threshold: the fraction of the
+        total number of run in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
+
     %(border_size)s
         Default=2.
+
     %(connected)s
         Default=True.
+
+    %(opening)s
+
     %(target_affine)s
 
         .. note::
@@ -567,13 +581,17 @@ def compute_multi_background_mask(
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(memory)s
+
     %(n_jobs)s
+
+    %(verbose0)s
 
     Returns
     -------
     mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         The brain mask.
     """
+    check_params(locals())
     if len(data_imgs) == 0:
         raise TypeError(
             f"An empty object - {data_imgs:r} - was passed instead of an "
@@ -635,8 +653,8 @@ def compute_brain_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The whole-brain mask (3D image).
     """
-    if verbose > 0:
-        print("Template", mask_type, "mask computation")
+    check_params(locals())
+    logger.log(f"Template {mask_type} mask computation", verbose)
 
     target_img = _utils.check_niimg(target_img)
 
@@ -653,7 +671,10 @@ def compute_brain_mask(
         )
 
     resampled_template = cache(resampling.resample_to_img, memory)(
-        template, target_img
+        template,
+        target_img,
+        copy_header=True,
+        force_resample=False,  # TODO set to True in 0.13.0
     )
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
@@ -681,7 +702,6 @@ def compute_multi_brain_mask(
     opening=2,
     memory=None,
     verbose=0,
-    n_jobs=1,
     mask_type="whole-brain",
     **kwargs,
 ):
@@ -707,17 +727,21 @@ def compute_multi_brain_mask(
 
     threshold : :obj:`float`, default=0.5
         The value under which the :term:`MNI` template is cut off.
+
     %(connected)s
         Default=True.
+
     %(opening)s
         Default=2.
-    %(mask_type)s
-    %(memory)s
-    %(verbose0)s
-    %(n_jobs)s
 
-        .. note::
-            Argument not used but kept to fit the API
+    %(mask_type)s
+
+    %(memory)s
+
+    %(verbose0)s
+
+    .. note::
+        Argument not used but kept to fit the API
 
     **kwargs : optional arguments
         Arguments such as 'target_affine' are used in the call of other
@@ -733,6 +757,7 @@ def compute_multi_brain_mask(
     --------
     nilearn.masking.compute_brain_mask
     """
+    check_params(locals())
     if len(target_imgs) == 0:
         raise TypeError(
             f"An empty object - {target_imgs:r} - was passed instead of an "
@@ -740,9 +765,7 @@ def compute_multi_brain_mask(
         )
 
     # Check images in the list have the same FOV without loading them in memory
-    imgs_generator = _utils.check_niimg(target_imgs, return_iterator=True)
-    for _ in imgs_generator:
-        pass
+    _ = list(_utils.check_niimg(target_imgs, return_iterator=True))
 
     mask = compute_brain_mask(
         target_imgs[0],
@@ -779,10 +802,11 @@ def apply_mask(
         See :ref:`extracting_data`.
         3D mask array: True where a :term:`voxel` should be used.
 
-    dtype: numpy dtype or 'f'
+    dtype : numpy dtype or 'f', default="f"
         The dtype of the output, if 'f', any float output is acceptable
         and if the data is stored on the disk as floats the data type
         will not be changed.
+
     %(smoothing_fwhm)s
 
         .. note::
@@ -795,7 +819,7 @@ def apply_mask(
 
     Returns
     -------
-    session_series : :class:`numpy.ndarray`
+    run_series : :class:`numpy.ndarray`
         2D array of series with shape (image number, :term:`voxel` number)
 
     Notes
@@ -837,14 +861,14 @@ def apply_mask_fmri(
 
     if not np.allclose(mask_affine, imgs_img.affine):
         raise ValueError(
-            f"Mask affine: \n{mask_affine}\n is different from img affine:"
+            f"Mask affine:\n{mask_affine}\n is different from img affine:"
             "\n{imgs_img.affine}"
         )
 
     if mask_data.shape != imgs_img.shape[:3]:
         raise ValueError(
-            f"Mask shape: {str(mask_data.shape)} is different "
-            f"from img shape:{str(imgs_img.shape[:3])}"
+            f"Mask shape: {mask_data.shape!s} is different "
+            f"from img shape:{imgs_img.shape[:3]!s}"
         )
 
     # All the following has been optimized for C order.
@@ -925,7 +949,7 @@ def _unmask_4d(X, mask, order="C"):
     if X.shape[1] != n_features:
         raise TypeError(f"X must be of shape (samples, {n_features}).")
 
-    data = np.zeros(mask.shape + (X.shape[0],), dtype=X.dtype, order=order)
+    data = np.zeros((*mask.shape, X.shape[0]), dtype=X.dtype, order=order)
     data[mask, :] = X.T
     return data
 
@@ -944,6 +968,10 @@ def unmask(X, mask_img, order="F"):
     mask_img : Niimg-like object
         See :ref:`extracting_data`.
         Must be 3-dimensional.
+
+    order : "F" or "C", default='F'
+        Data ordering in output array. This function is slightly faster with
+        Fortran ordering.
 
     Returns
     -------
@@ -974,7 +1002,7 @@ def unmask(X, mask_img, order="F"):
         unmasked = _unmask_3d(X, mask, order=order)
     else:
         raise TypeError(
-            f"Masked data X must be 2D or 1D array; got shape: {str(X.shape)}"
+            f"Masked data X must be 2D or 1D array; got shape: {X.shape!s}"
         )
 
     return new_img_like(mask_img, unmasked, affine)
@@ -992,7 +1020,7 @@ def unmask_from_to_3d_array(w, mask):
     w : :class:`numpy.ndarray`, shape (n_features,)
       The image to be unmasked.
 
-    mask : :class:`numpy.ndarray`, shape (nx, ny, nz)
+    mask : :class:`numpy.ndarray`
       The mask used in the unmasking operation. It is required that
       ``mask.sum() == n_features``.
 

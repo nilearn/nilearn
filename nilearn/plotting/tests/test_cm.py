@@ -1,11 +1,12 @@
 # emacs: -*- mode: python; py-indent-offset: 4; indent-tabs-mode: nil -*-
 # vi: set ft=python sts=4 ts=4 sw=4 et:
 """Smoke testing the cm module."""
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 
-from nilearn.plotting.cm import _mix_colormaps, dim_cmap, replace_inside
+from nilearn.plotting.cm import dim_cmap, mix_colormaps, replace_inside
 
 
 def test_dim_cmap():
@@ -33,7 +34,7 @@ def test_mix_colormaps(rng):
     # the foreground and background maps
     foreground_map = rng.random((n, 4))
     background_map = rng.random((n, 4))
-    mix_map = _mix_colormaps(foreground_map, background_map)
+    mix_map = mix_colormaps(foreground_map, background_map)
     assert mix_map.shape == (n, 4)
     # Transparency of mixin map should be higher
     # than that of both the background and the foreground maps
@@ -43,15 +44,15 @@ def test_mix_colormaps(rng):
     # If foreground and background maps' shapes are different,
     # an Exception should be raised
     background_map = rng.random((n - 1, 4))
-    with pytest.raises(Exception):
-        _mix_colormaps(foreground_map, background_map)
+    with pytest.raises(ValueError):
+        mix_colormaps(foreground_map, background_map)
 
     # If foreground map is transparent,
     # mixin should be equal to background map
     foreground_map = rng.random((n, 4))
     background_map = rng.random((n, 4))
     foreground_map[:, 3] = 0
-    mix_map = _mix_colormaps(foreground_map, background_map)
+    mix_map = mix_colormaps(foreground_map, background_map)
     assert np.allclose(mix_map, background_map)
 
     # If background map is transparent,
@@ -59,7 +60,7 @@ def test_mix_colormaps(rng):
     foreground_map = rng.random((n, 4))
     background_map = rng.random((n, 4))
     background_map[:, 3] = 0
-    mix_map = _mix_colormaps(foreground_map, background_map)
+    mix_map = mix_colormaps(foreground_map, background_map)
     assert np.allclose(mix_map, foreground_map)
 
     # If foreground and background maps are equal,
@@ -67,5 +68,5 @@ def test_mix_colormaps(rng):
     # to that of the foreground and background maps
     foreground_map = rng.random((n, 4))
     background_map = foreground_map
-    mix_map = _mix_colormaps(foreground_map, background_map)
+    mix_map = mix_colormaps(foreground_map, background_map)
     assert np.allclose(mix_map[:, :3], foreground_map[:, :3])

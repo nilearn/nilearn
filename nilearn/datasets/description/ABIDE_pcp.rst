@@ -1,5 +1,11 @@
-ABIDE
+.. _abide_dataset:
 
+ABIDE PCP dataset
+=================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_abide_pcp`.
 
 Notes
 -----
@@ -14,22 +20,24 @@ phenotypic information common across nearly all sites (see below).
 Note that this is the preprocessed version of ABIDE provided by the
 preprocess connectome projects (PCP).
 
+See :footcite:t:`Nielsen2013`.
 
 Content
 -------
     :'phenotypic': Behavioral information.
 
-
 References
 ----------
 
+.. footbibliography::
+
 For more information about this dataset's structure:
-http://preprocessed-connectomes-project.github.io
-http://www.childmind.org/en/healthy-brain-network/abide/
 
-Nielsen, Jared A., et al. "Multisite functional connectivity MRI
-classification of autism: ABIDE results." Frontiers in human neuroscience
-7 (2013).
+http://preprocessed-connectomes-project.org/
 
-Licence: Consistent with the policies of the 1000 Functional Connectomes
+https://childmind.org/science/global-open-science/healthy-brain-network/
+
+License
+-------
+Consistent with the policies of the 1000 Functional Connectomes
 Project, data usage is unrestricted for non-commercial research purposes.

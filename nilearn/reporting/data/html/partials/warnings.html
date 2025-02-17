@@ -1,0 +1,12 @@
+{{if warning_messages}}
+<section>
+  <div class="warning my-2 border border-1 rounded-2">
+    <h2 class="m-0 p-3 fw-bold rounded-top-2">WARNING</h2>
+    <ul>
+      {{for message in warning_messages}}
+      <li class="fw-bold p-1">{{message}}</li>
+      {{endfor}}
+    </ul>
+  </div>
+</section>
+{{endif}}

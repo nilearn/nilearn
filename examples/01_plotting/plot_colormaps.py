@@ -9,20 +9,19 @@ See :ref:`surface-plotting` for surface plotting details.
 """
 
 # %%
-import matplotlib.pyplot as plt
+# Plot color maps
+# ---------------
 import numpy as np
 
 from nilearn.plotting import show
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 
-# %%
-# Plot color maps
-# ---------------
-
 nmaps = len(nilearn_cmaps)
 a = np.outer(np.arange(0, 1, 0.01), np.ones(10))
 
 # Initialize the figure
+import matplotlib.pyplot as plt
+
 plt.figure(figsize=(10, 4.2))
 plt.subplots_adjust(top=0.4, bottom=0.05, left=0.01, right=0.99)
 

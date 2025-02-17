@@ -1,11 +1,24 @@
-MegaTrawls Network Matrices HCP
+.. _megatrawls_maps:
 
+MegaTrawls Network Matrices HCP
+===============================
+
+Access
+------
+See :func:`nilearn.datasets.fetch_megatrawls_netmats`.
+
+Content
+-------
+:'dimensions': contains given input in dimensions used in fetching data.
+:'timeseries': contains given specific timeseries method used in fetching data.
+:'matrices': contains given specific type of matrices name.
+:'correlation_matrices': contains correlation network matrices data.
 
 Notes
 -----
 Contains network matrices data of two types, full correlation and partial
 correlation which were estimated using each subject specific timeseries
-signals extracted from group of ICA nodes or parcellations. In total,
+signals extracted from group of :term:`ICA` nodes or parcellations. In total,
 461 functional connectivity datasets were used to obtain these matrices
 and is part of HCP Megatrawls release.
 
@@ -14,31 +27,34 @@ with combination of two variants of timeseries extraction methods,
 multiple spatial regression (ts2) and eigen regression (ts3).
 
 These matrices can be used to predict the relationships between subjects
-functional connectivity datasets and their behavioural measures. Both can be
+functional connectivity datasets and their behavioral measures. Both can be
 downloaded from HCP connectome website under conditions. See disclaimer below.
 
-
-Content
--------
-    :'dimensions': contains given input in dimensions used in fetching data.
-    :'timeseries': contains given specific timeseries method used in fetching data.
-    :'matrices': contains given specific type of matrices name.
-    :'correlation_matrices': contains correlation network matrices data.
-
+More information available in :footcite:t:`Smith2015b`,
+:footcite:t:`Smith2015a`, :footcite:t:`Filippini2009`,
+:footcite:t:`Smith2014`, and :footcite:t:`Reilly2009`.
 
 References
 ----------
-For more technical details about predicting the measures, refer to:
-Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
-April 2015 "HCP500-MegaTrawl" release.
-https://db.humanconnectome.org/megatrawl/
+.. footbibliography::
 
+.. admonition:: Technical details
+   :class: important
+
+   For more technical details about predicting the measures, refer to:
+   Stephen Smith et al, HCP beta-release of the Functional Connectivity MegaTrawl.
+   April 2015 "HCP500-MegaTrawl" release.
+   https://db.humanconnectome.org/megatrawl/
 
 Disclaimer
 ----------
-IMPORTANT: This is open access data. You must agree to Terms and conditions
-of using this data before using it, available at:
-http://humanconnectome.org/data/data-use-terms/open-access.html
+
+.. admonition:: Terms and conditions
+   :class: attention
+
+   This is open access data. You must agree to Terms and conditions
+   of using this data before using it, available at:
+   http://humanconnectome.org/data/data-use-terms/open-access.html
 
 Open Access Data (all imaging data and most of the behavioral data)
 is available to those who register an account at ConnectomeDB and agree to

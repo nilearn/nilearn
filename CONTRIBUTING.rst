@@ -9,31 +9,44 @@ By participating in Nilearn, you agree to abide by the :nipy:`NIPY Code of Condu
 How to get help?
 ================
 
-If you have issues when using Nilearn, or if you have questions on how to use it, please don't hesitate to reach out!
+If you have issues when using Nilearn, or if you have questions on how to use it,
+please don't hesitate to reach out!
 
-There are currently three ways to interact with the Nilearn team: through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues, and through our weekly :nilearn-gh:`drop-in hours <issues/2882>`, usually **every Wednesday from 4pm to 5pm UTC**.
+There are currently three ways to interact with the Nilearn team:
+through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues,
+and through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
+usually **every Wednesday from 4pm to 5pm UTC**.
+We post on our `X account <https://x.com/nilearn>`_ in advance to let you know
+if the drop-in hours are happening that week.
 
-If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn, we would appreciate it if you either ask it during the drop-in hours or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
-Asking questions or reporting issues is always valuable because it will help other users having the same problem. So, please don't hold onto a burning question!
+If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn,
+we would appreciate it if you either ask it during the drop-in hours
+or create a topic on :neurostars:`neurostars <>` with the "nilearn" tag.
+Asking questions or reporting issues is always valuable
+because it will help other users having the same problem.
+So, please don't hold onto a burning question!
 
-We ask that you *don't* open an issue on :nilearn-gh:`GitHub <>` for usage questions. We use our :nilearn-gh:`GitHub <>` issue board for bug reports, feature requests, and documentation changes only.
+We ask that you *don't* open an issue on :nilearn-gh:`GitHub <>` for usage questions.
+We use our :nilearn-gh:`GitHub <>` issue board for bug reports, feature requests, and documentation changes only.
 
 How to help the project?
 ========================
 
-If you are interested in contributing to the Nilearn project, we thank you very much. Note that there are multiple ways to help us, and not all of them require writing code.
+If you are interested in contributing to the Nilearn project, we thank you very much.
+Note that there are multiple ways to help us, and not all of them require writing code.
 
 Report bugs or discuss enhancement ideas
 ----------------------------------------
 
-We welcome open discussion around improvements---both to the documentation as well as to the code base---through our GitHub issue board!
+We welcome open discussion around improvements ---both to the documentation as well as to the code base---
+through our GitHub issue board!
 
 * If you think you have discovered a bug,
   please start by searching through the existing :nilearn-gh:`issues <issues>`
   to make sure it has not already been reported. If the bug has not been reported yet,
   create an :nilearn-gh:`new issue <issues/new/choose>`
   including a `minimal runnable example <https://stackoverflow.com/help/minimal-reproducible-example>`_
-  to showcase it (using Nilearn data) as well as your OS and Nilearn version.
+  to showcase it (using :ref:`nilearn.datasets <datasets_ref>`) as well as your OS and Nilearn version.
 
 * If you have an idea for a new feature, check if it is in the :ref:`nilearn_scope`
   and feel free to open a :nilearn-gh:`new issue <issues/new/choose>` to discuss it.
@@ -45,19 +58,22 @@ We welcome open discussion around improvements---both to the documentation as we
 Answer questions
 ----------------
 
-Another way to help the project is to answer questions on :neurostars:`neurostars <>`, or comment on github :nilearn-gh:`issues <issues>`.
-Some :nilearn-gh:`issues <issues>` are used to gather user opinions on various questions, and any input from the community is valuable to us.
+Another way to help the project is to answer questions on :neurostars:`neurostars <>`,
+or comment on github :nilearn-gh:`issues <issues>`.
+Some :nilearn-gh:`issues <issues>` are used to gather user opinions on various questions,
+and any input from the community is valuable to us.
 
 Review Pull Requests
 --------------------
 
-Any addition to the Nilearn's code base has to be reviewed and approved by several people including at least two :ref:`core_devs`.
+Any addition to the Nilearn's code base has to be reviewed and approved
+by several people including at least two :ref:`core_devs`.
 This can put a heavy burden on :ref:`core_devs` when a lot of
 :nilearn-gh:`pull requests <pulls>` are opened at the same time.
 We welcome help in reviewing :nilearn-gh:`pull requests <pulls>` from any
 community member.
-We do not expect community members to be experts in all changes included in
-:nilearn-gh:`pull requests <pulls>`, and we encourage you to concentrate on those code changes that you feel comfortable with.
+We do not expect community members to be experts in all changes included in :nilearn-gh:`pull requests <pulls>`,
+and we encourage you to concentrate on those code changes that you feel comfortable with.
 As always, more eyes on a code change means that the code is more likely to work in a wide variety of contexts!
 
 Contribute code
@@ -79,7 +95,8 @@ instructions for  `Setting up your environment`_ and a description of the `Contr
 How do we decide what code goes in?
 ====================================
 
-The following sections explain the :ref:`nilearn_scope` and :ref:`nilearn_governance`, which jointly determine whether potential contributions will be accepted into the project.
+The following sections explain the :ref:`nilearn_scope` and :ref:`nilearn_governance`,
+which jointly determine whether potential contributions will be accepted into the project.
 
 .. _nilearn_scope:
 
@@ -89,7 +106,7 @@ Scope of the project
 Nilearn is an Open-source Python package for visualizing and analyzing human
 brain MRI data.
 It provides statistical and machine-learning tools for brain mapping,
-connectivity estimation and predictive modelling.
+connectivity estimation and predictive modeling.
 It brings visualization tools with instructive documentation & open community.
 
 Nilearn targets ease of use, but as Python code.
@@ -216,8 +233,7 @@ with the tools we use for development and deployment.
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Variables, functions, arguments have clear names  |
 |                    |               | - Easy to read, PEP8_ compliant                     |
-|                    |               | - Code formatted with black_                        |
-|                    |               | - Imports sorted with isort_                        |
+|                    |               | - Code formatted with ruff_                         |
 |                    |               | - Public functions have docstring (numpydoc_ format)|
 |                    |               | - Low redundancy                                    |
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
@@ -245,10 +261,9 @@ with the tools we use for development and deployment.
 |                    |               | - Doesn't include code                              |
 +--------------------+---------------+-----------------------------------------------------+
 
-.. _PEP8: https://www.python.org/dev/peps/pep-0008/
+.. _PEP8: https://peps.python.org/pep-0008/
 .. _numpydoc: https://numpydoc.readthedocs.io/en/latest/format.html
-.. _black: https://black.readthedocs.io/en/stable/getting_started.html#basic-usage
-.. _isort: https://pycqa.github.io/isort/index.html#using-isort
+.. _ruff: https://docs.astral.sh/ruff/
 
 PR Structure
 ------------
@@ -331,12 +346,10 @@ The main conventions we enforce are :
 - 2 empty lines between functions or classes
 
 You can check that any code you may have edited follows these conventions
-by running `flake8 <https://flake8.pycqa.org/en/latest/user/invocation.html#invoking-flake8>`__.
+by running `ruff <https://docs.astral.sh/ruff/>`__.
 
-Additionally, we use:
-
-- black_ to format our code,
-- isort_  to organize the import statements.
+Documentation style
+^^^^^^^^^^^^^^^^^^^
 
 Each function and class must come with a “docstring” at the top of the function code,
 using numpydoc_ formatting.
@@ -387,6 +400,21 @@ This is also useful for writing unit tests.
 
 Writing small functions is not always possible, and we do not recommend trying to reorganize larger,
 but well-tested, older functions in the codebase, unless there is a strong reason to do so (e.g., when adding a new feature).
+
+APIs of nilearn objects
+^^^^^^^^^^^^^^^^^^^^^^^
+
+Estimated Attributes
+""""""""""""""""""""
+
+Attributes that have been estimated from the data
+should always have a name ending with trailing underscore.
+For example the coefficients of some regression estimator
+would be stored in a ``coef_`` attribute after ``fit`` has been called.
+
+The estimated attributes are expected to be overridden when you call ``fit`` a second time.
+
+This follows the :sklearn:`scikit-learn convention <developers/develop.html#estimated-attributes>`.
 
 .. _private_functions:
 
@@ -469,6 +497,18 @@ Code inside ``maskers._validation.py``:
 
 ..
       Source: Jerome Dockes https://github.com/nilearn/nilearn/issues/3628#issuecomment-1515211711
+
+Guidelines for HTML and CSS
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+
+This is implemented via a pre-commit hook (see below)
+that can be run with
+
+.. code-block:: bash
+
+      pre-commit run --all-files prettier
 
 Pre-commit
 ----------
@@ -595,6 +635,12 @@ learn how to use those tools to build documentation.
 
 .. _git_repo:
 
+
+Continuous integration
+----------------------
+
+See the :ref:`continuous integration` page.
+
 Setting up your environment
 ===========================
 
@@ -623,7 +669,7 @@ or:
 
 .. code-block:: bash
 
-      conda create -n nilearn
+      conda create -n nilearn pip
       conda activate nilearn
 
 3. install the forked version of ``nilearn``
@@ -701,23 +747,21 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 .. admonition:: Recommendation
 
     To lint your code and verify PEP8 compliance, you can run
-    `flake8 <https://flake8.pycqa.org/en/latest/>`__ locally on the
+    `ruff <https://docs.astral.sh/ruff/>`_ locally on the
     changes you have made.
 
     .. code-block:: bash
 
-        flake8 <path_to_edited_file>
+        ruff check --fix <path_to_edited_file>
 
-    To automatically format your code, you can run
-    `Black <https://black.readthedocs.io/en/stable/getting_started.html#basic-usage>`_
-    locally on the changes you have made.
+    To format your code, you can also use ruff and run:
 
     .. code-block:: bash
 
-        black <path_to_edited_file>
+        ruff format <path_to_edited_file>
 
     Note that if you installed pre-commit and the pre-commit hooks,
-    those 2 commands will be run automatically before each commit.
+    those commands will be run automatically before each commit.
 
 4. commit your changes on this branch (don't forget to write tests!)
 
@@ -739,8 +783,11 @@ Here are the key steps you need to go through to contribute code to ``nilearn``:
 
 8. check that all continuous integration tests pass
 
-For more details about the Fork Clone Push workflows, read `here <https://guides.github.com/activities/forking/>`_.
+For more details about the Fork Clone Push workflows,
+read `here <https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project#about-forking>`_.
 
+
+.. _building documentation:
 
 Building documentation
 ----------------------
@@ -755,7 +802,7 @@ If you wish to build documentation:
       pip install '.[doc]'
 
 2. Then go to ``nilearn/examples`` or ``nilearn/doc`` and make needed changes
-   using `reStructuredText files <https://www.sphinx-doc.org/en/2.0/usage/restructuredtext/basics.html>`_
+   using `reStructuredText files <https://www.sphinx-doc.org/en/master/usage/restructuredtext/basics.html>`_
 
 3. You can now go to ``nilearn/doc`` and build the examples locally:
 
@@ -769,7 +816,8 @@ or, if you do not have make install (for instance under Windows):
 
       python3 -m sphinx -b html -d _build/doctrees . _build/html
 
-if you don't need the plots, a quicker option is:
+The full build can take a very long time.
+So if you don't need the plots, a quicker option is:
 
 .. code-block:: bash
 
@@ -787,13 +835,14 @@ if you don't need the plots, a quicker option is:
       git commit --allow-empty -m "[full doc] request full build"
 
 .. tip::
-    When generating documentation locally, you can build only specific files
-    to reduce building time. To do so, use the ``filename_pattern``:
 
-.. code-block:: bash
+      When generating documentation locally, you can build only specific files
+      to reduce building time. To do so, use the ``filename_pattern``:
 
-      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
-      plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+      .. code-block:: bash
+
+            python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
+            plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
 
 Additional cases
@@ -802,23 +851,40 @@ Additional cases
 How to contribute an atlas
 --------------------------
 
-We want atlases in nilearn to be internally consistent. Specifically,
-your atlas object should have three attributes (as with the existing
-atlases):
+We want atlases in Nilearn to be internally consistent.
+Specifically, your atlas object:
 
-- ``description`` (bytes): A text description of the atlas. This should be
-  brief but thorough, describing the source (paper), relevant information
-  related to its construction (modality, dataset, method), and, if there is
-  more than one map, a description of each map.
-- ``labels`` (list): a list of string labels corresponding to each atlas
-  label, in the same (numerical) order as the atlas labels
-- ``maps`` (list or string): the path to the nifti image, or a list of paths
+- should be a Scikit-learn ``Bunch``
 
-In addition, the atlas will need to be called by a fetcher. For example, see :nilearn-gh:`here <blob/main/nilearn/datasets/atlas.py>`.
+- MUST have at least the following 4 attributes (as with the existing atlases):
+
+  - ``description`` (str): A text description of the atlas.
+    This should be brief but thorough,
+    describing the source (paper),
+    relevant information related to its construction (modality, dataset, method),
+    and, if there is more than one map, a description of each map.
+  - ``maps`` (list or string): the path to the nifti image, or a list of paths
+  - ``atlas_type``: must be either ``deterministic`` or ``probabilistic``
+  - ``labels`` (list): a list of string labels corresponding to each atlas label,
+    in the same (numerical) order as the atlas labels
+
+Deterministic atlases must also include:
+
+- a look up table (``lut``) attribute:
+
+  - providing the mapping between the values in the atlas image
+    and the name to the region of interest they define.
+  - that complies with the
+    `dseg.tsv format from BIDS
+    <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
+  - can be validated by the function ``nilearn._utils.helpers.check_look_up_table``
+    in strict mode.
+
+In addition, the atlas will need to be called by a fetcher.
+For example, see :nilearn-gh:`here <blob/main/nilearn/datasets/atlas.py>`.
 
 Finally, as with other features, please provide a test for your atlas.
 Examples can be found :nilearn-gh:`here <blob/main/nilearn/datasets/tests/test_atlas.py>`.
-
 
 How to contribute a dataset fetcher
 -----------------------------------

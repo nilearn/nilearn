@@ -7,7 +7,8 @@
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+Classes
+-------
 
 .. currentmodule:: nilearn.reporting
 
@@ -17,7 +18,8 @@
 
    HTMLReport
 
-**Functions**:
+Functions
+---------
 
 .. currentmodule:: nilearn.reporting
 
@@ -27,3 +29,8 @@
 
    get_clusters_table
    make_glm_report
+
+
+.. toctree::
+
+   generated_reports/glm_reports_examples.rst

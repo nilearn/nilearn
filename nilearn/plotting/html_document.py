@@ -1,15 +1,20 @@
 """Handle HTML plotting."""
 
-import os
-import subprocess
-import sys
-import tempfile
 import warnings
 import weakref
 import webbrowser
 from html import escape
+from http import HTTPStatus
+from http.server import BaseHTTPRequestHandler
+from pathlib import Path
+from queue import Empty, Queue
+from socketserver import TCPServer
+from threading import Thread
+
+from nilearn._utils import remove_parameters
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
+BROWSER_TIMEOUT_SECONDS = 3.0
 
 
 def set_max_img_views_before_warning(new_value):
@@ -21,12 +26,45 @@ def set_max_img_views_before_warning(new_value):
     MAX_IMG_VIEWS_BEFORE_WARNING = new_value
 
 
-def _remove_after_n_seconds(file_name, n_seconds):
-    script = os.path.join(os.path.dirname(__file__), "rm_file.py")
-    proc = subprocess.Popen(
-        [sys.executable, script, file_name, str(n_seconds)]
-    )
-    return proc
+def _open_in_browser(content):
+    """Open a page in the user's web browser.
+
+    This function starts a local server in a separate thread, opens the page
+    with webbrowser, and shuts down the server once it has served one request.
+    """
+    queue = Queue()
+
+    class Handler(BaseHTTPRequestHandler):
+        def log_message(self, *args):
+            del args
+
+        def do_GET(self):  # noqa: N802
+            if not self.path.endswith("index.html"):
+                self.send_error(HTTPStatus.NOT_FOUND, "File not found")
+                return
+            self.send_response(HTTPStatus.OK)
+            self.send_header("Content-type", "text/html")
+            self.send_header("Content-Length", str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
+            queue.put("done")
+
+    server = TCPServer(("", 0), Handler)
+    _, port = server.server_address
+
+    server_thread = Thread(target=server.serve_forever, daemon=True)
+    server_thread.start()
+
+    url = f"http://localhost:{port}/index.html"
+    webbrowser.open(url)
+    try:
+        queue.get(timeout=BROWSER_TIMEOUT_SECONDS)
+    except Empty:
+        raise RuntimeError(
+            "Failed to open nilearn plot or report in a web browser."
+        )
+    server.shutdown()
+    server_thread.join()
 
 
 class HTMLDocument:
@@ -42,7 +80,7 @@ class HTMLDocument:
 
     """
 
-    _all_open_html_repr = weakref.WeakSet()
+    _all_open_html_repr: weakref.WeakSet = weakref.WeakSet()
 
     def __init__(self, html, width=600, height=400):
         self.html = html
@@ -127,8 +165,24 @@ class HTMLDocument:
         Used by the Jupyter notebook.
 
         Users normally won't call this method explicitly.
+
+        See the jupyter documentation:
+        https://ipython.readthedocs.io/en/stable/config/integrating.html
         """
         return self.get_iframe()
+
+    def _repr_mimebundle_(self, include=None, exclude=None):
+        """Return html representation of the plot.
+
+        Used by the Jupyter notebook.
+
+        Users normally won't call this method explicitly.
+
+        See the jupyter documentation:
+        https://ipython.readthedocs.io/en/stable/config/integrating.html
+        """
+        del include, exclude
+        return {"text/html": self.get_iframe()}
 
     def __str__(self):
         return self.html
@@ -143,10 +197,22 @@ class HTMLDocument:
             Path to the HTML file used for saving.
 
         """
-        with open(file_name, "wb") as f:
+        with Path(file_name).open("wb") as f:
             f.write(self.get_standalone().encode("utf-8"))
 
-    def open_in_browser(self, file_name=None, temp_file_lifetime=30):
+    @remove_parameters(
+        removed_params=["temp_file_lifetime"],
+        reason=(
+            "this function does not use a temporary file anymore "
+            "and 'temp_file_lifetime' has no effect."
+        ),
+        end_version="0.13.0",
+    )
+    def open_in_browser(
+        self,
+        file_name=None,
+        temp_file_lifetime="deprecated",  # noqa: ARG002
+    ):
         """Save the plot to a temporary HTML file and open it in a browser.
 
         Parameters
@@ -155,41 +221,14 @@ class HTMLDocument:
             HTML file to use as a temporary file.
 
         temp_file_lifetime : :obj:`float`, default=30
-            Time, in seconds, after which the temporary file is removed.
-            If None, it is never removed.
 
+            .. deprecated:: 0.10.3
 
+                The parameter is kept for backward compatibility and will be
+                removed in a future version. It has no effect.
         """
         if file_name is None:
-            fd, file_name = tempfile.mkstemp(".html", "nilearn_plot_")
-            os.close(fd)
-            named_file = False
+            _open_in_browser(self.get_standalone().encode("utf-8"))
         else:
-            named_file = True
-        self.save_as_html(file_name)
-        self._temp_file = file_name
-        file_size = os.path.getsize(file_name) / 1e6
-        if temp_file_lifetime is None:
-            if not named_file:
-                warnings.warn(
-                    f"Saved HTML in temporary file: {file_name}\n"
-                    f"file size is {file_size:.1f}M, "
-                    "delete it when you're done, "
-                    "for example by calling this.remove_temp_file"
-                )
-        else:
-            self._temp_file_removing_proc = _remove_after_n_seconds(
-                self._temp_file, temp_file_lifetime
-            )
-        webbrowser.open(f"file://{file_name}")
-
-    def remove_temp_file(self):
-        """Remove the temporary file created by \
-        ``open_in_browser``, if necessary."""
-        if self._temp_file is None:
-            return
-        if not os.path.isfile(self._temp_file):
-            return
-        os.remove(self._temp_file)
-        print(f"removed {self._temp_file}")
-        self._temp_file = None
+            self.save_as_html(file_name)
+            webbrowser.open(f"file://{file_name}")

@@ -1,7 +1,5 @@
 """Tests for :func:`nilearn.plotting.plot_connectome`."""
 
-import os
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -39,8 +37,8 @@ def non_symmetric_matrix():
 
 @pytest.fixture
 def base_params():
-    """Basic set of parameters for testing."""
-    return dict(edge_threshold=0.38, title="threshold=0.38", node_size=10)
+    """Return basic set of parameters for testing."""
+    return {"edge_threshold": 0.38, "title": "threshold=0.38", "node_size": 10}
 
 
 @pytest.fixture
@@ -90,8 +88,8 @@ def test_plot_connectome_node_colors(
 def test_plot_connectome_display_mode(
     display_mode, node_coords, adjacency, base_params
 ):
-    """Smoke test for plot_connectome with different values
-    for display_mode.
+    """Smoke test for plot_connectome with different values \
+       for display_mode.
     """
     plot_connectome(
         adjacency, node_coords, display_mode=display_mode, **base_params
@@ -102,8 +100,8 @@ def test_plot_connectome_display_mode(
 def test_plot_connectome_masked_array_sparse_matrix(
     node_coords, adjacency, base_params
 ):
-    """Smoke tests for plot_connectome with masked arrays and sparse
-    matrices as inputs.
+    """Smoke tests for plot_connectome with masked arrays \
+       and sparse matrices as inputs.
     """
     masked_adjacency_matrix = np.ma.masked_array(
         adjacency, np.abs(adjacency) < 0.5
@@ -126,8 +124,8 @@ def test_plot_connectome_with_nans(adjacency, node_coords, base_params):
 def test_plot_connectome_tuple_node_coords(
     adjacency, node_coords, base_params
 ):
-    """Smoke test for plot_connectome where node_coords is not provided
-    as an array but as a list of tuples.
+    """Smoke test for plot_connectome where node_coords is not provided \
+       as an array but as a list of tuples.
     """
     plot_connectome(
         adjacency,
@@ -140,8 +138,8 @@ def test_plot_connectome_tuple_node_coords(
 
 @pytest.mark.parametrize("colorbar", [True, False])
 def test_plot_connectome_colorbar(colorbar, adjacency, node_coords):
-    """Smoke test for plot_connectome with default parameters and
-    with and without the colorbar.
+    """Smoke test for plot_connectome with default parameters \
+       and with and without the colorbar.
     """
     plot_connectome(adjacency, node_coords, colorbar=colorbar)
     plt.close()
@@ -164,14 +162,15 @@ def test_plot_connectome_to_file(
         adjacency, node_coords, output_file=filename, **base_params
     )
     assert display is None
-    assert os.path.isfile(filename)
-    assert os.path.getsize(filename) > 0
+    assert filename.is_file()
+    assert filename.stat().st_size > 0
+
     plt.close()
 
 
 def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
-    """Smoke test for plot_connectome with node_kwargs, edge_kwargs,
-    and edge_cmap arguments.
+    """Smoke test for plot_connectome with node_kwargs, edge_kwargs, \
+       and edge_cmap arguments.
     """
     plot_connectome(
         adjacency,
@@ -188,8 +187,8 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 
 
 def test_plot_connectome_with_too_high_edge_threshold(adjacency, node_coords):
-    """Smoke-test where there is no edge to draw, e.g. when
-    edge_threshold is too high.
+    """Smoke-test where there is no edge to draw, \
+       e.g. when edge_threshold is too high.
     """
     plot_connectome(adjacency, node_coords, edge_threshold=1e12)
     plt.close()
@@ -219,16 +218,11 @@ def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
         non_symmetric_matrix, node_coords, display_mode="lzry"
     )
     # No edge in direction 'l' because of node coords
-    assert (
-        len(
-            [
-                patch
-                for patch in ax.axes["l"].ax.patches
-                if isinstance(patch, FancyArrow)
-            ]
-        )
-        == 0
-    )
+    assert not [
+        patch
+        for patch in ax.axes["l"].ax.patches
+        if isinstance(patch, FancyArrow)
+    ]
     for direction in ["z", "r", "y"]:
         assert (
             len(
@@ -242,8 +236,8 @@ def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
         )
 
 
-def plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
-    """Tests for plot_connectome with edge thresholding."""
+def test_plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
+    """Test for plot_connectome with edge thresholding."""
     # Case 1: Threshold is a number
     thresh = 1.1
     ax = plot_connectome(
@@ -286,8 +280,8 @@ def plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
     ],
 )
 def test_plot_connectome_exceptions_non_symmetric_adjacency(matrix):
-    """Tests that warning messages are given when the adjacency matrix ends
-    up being non symmetric.
+    """Tests that warning messages are given when the adjacency matrix \
+       ends up being non symmetric.
     """
     node_coords = np.arange(2 * 3).reshape((2, 3))
     with pytest.warns(UserWarning, match="A directed graph will be plotted."):
@@ -306,8 +300,8 @@ def test_plot_connectome_exceptions_non_symmetric_adjacency(matrix):
 def test_plot_connectome_exceptions_wrong_number_node_colors(
     node_color, adjacency, node_coords
 ):
-    """Tests that a wrong number of node colors raises a
-    ValueError in plot_connectome.
+    """Tests that a wrong number of node colors raises \
+       a ValueError in plot_connectome.
     """
     with pytest.raises(
         ValueError, match="Mismatch between the number of nodes"
@@ -320,8 +314,8 @@ def test_plot_connectome_exceptions_wrong_number_node_colors(
 def test_plot_connectome_exception_wrong_edge_threshold(
     adjacency, node_coords
 ):
-    """Tests that a TypeError is raised in plot_connectome when edge
-    threshold is neither a number nor a string.
+    """Tests that a TypeError is raised in plot_connectome \
+       when edge threshold is neither a number nor a string.
     """
     with pytest.raises(
         TypeError, match="should be either a number or a string"
@@ -335,8 +329,8 @@ def test_plot_connectome_exception_wrong_edge_threshold(
 def test_plot_connectome_exception_wrong_edge_threshold_format(
     threshold, adjacency, node_coords
 ):
-    """Tests that a ValueError is raised when edge_threshold is an incorrectly
-    formatted string.
+    """Tests that a ValueError is raised when edge_threshold is \
+       an incorrectly formatted string.
     """
     with pytest.raises(
         ValueError,
@@ -348,8 +342,8 @@ def test_plot_connectome_exception_wrong_edge_threshold_format(
 
 
 def test_plot_connectome_wrong_shapes():
-    """Tests that ValueErrors are raised when wrong shapes for node_coords
-    or adjacency_matrix are given.
+    """Tests that ValueErrors are raised when wrong shapes for node_coords \
+       or adjacency_matrix are given.
     """
     kwargs = {"display_mode": "x"}
     node_coords = np.arange(2 * 3).reshape((2, 3))
@@ -382,8 +376,8 @@ def expected_error_node_kwargs(node_kwargs):
 def test_plot_connectome_exceptions_providing_node_info_with_kwargs(
     node_kwargs, adjacency, node_coords, expected_error_node_kwargs
 ):
-    """Tests that an error is raised when specifying node parameters
-    via node_kwargs in plot_connectome.
+    """Tests that an error is raised when specifying node parameters \
+       via node_kwargs in plot_connectome.
     """
     with pytest.raises(ValueError, match=expected_error_node_kwargs):
         plot_connectome(

@@ -4,18 +4,29 @@
 
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+from sklearn.utils import Bunch
 
 from nilearn.datasets import struct
-from nilearn.datasets.tests._testing import dict_to_archive, list_to_archive
+from nilearn.datasets.struct import (
+    fetch_surf_fsaverage,
+    load_fsaverage,
+    load_fsaverage_data,
+)
+from nilearn.datasets.tests._testing import (
+    check_type_fetcher,
+    dict_to_archive,
+    list_to_archive,
+)
+from nilearn.surface import PolyMesh, SurfaceImage
 
 
 def test_fetch_icbm152_2009(tmp_path, request_mocker):
     dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
 
+    check_type_fetcher(dataset)
     assert isinstance(dataset.csf, str)
     assert isinstance(dataset.eye_mask, str)
     assert isinstance(dataset.face_mask, str)
@@ -27,7 +38,6 @@ def test_fetch_icbm152_2009(tmp_path, request_mocker):
     assert isinstance(dataset.t2_relax, str)
     assert isinstance(dataset.wm, str)
     assert request_mocker.url_count == 1
-    assert dataset.description != ""
 
 
 def _make_oasis_data(dartel=True):
@@ -49,44 +59,33 @@ def _make_oasis_data(dartel=True):
     return dict_to_archive(data)
 
 
-@pytest.mark.parametrize("legacy_format", [True, False])
-def test_fetch_oasis_vbm(tmp_path, request_mocker, legacy_format):
+def test_fetch_oasis_vbm(tmp_path, request_mocker):
     request_mocker.url_mapping["*archive_dartel.tgz*"] = _make_oasis_data()
     request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)
 
-    dataset = struct.fetch_oasis_vbm(
-        data_dir=str(tmp_path), verbose=0, legacy_format=legacy_format
-    )
+    dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path), verbose=0)
 
+    check_type_fetcher(dataset)
     assert len(dataset.gray_matter_maps) == 403
     assert len(dataset.white_matter_maps) == 403
     assert isinstance(dataset.gray_matter_maps[0], str)
     assert isinstance(dataset.white_matter_maps[0], str)
-    if legacy_format:
-        assert isinstance(dataset.ext_vars, np.recarray)
-    else:
-        assert isinstance(dataset.ext_vars, pd.DataFrame)
+    assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
 
     dataset = struct.fetch_oasis_vbm(
-        data_dir=str(tmp_path),
-        dartel_version=False,
-        verbose=0,
-        legacy_format=legacy_format,
+        data_dir=str(tmp_path), dartel_version=False, verbose=0
     )
 
+    check_type_fetcher(dataset)
     assert len(dataset.gray_matter_maps) == 415
     assert len(dataset.white_matter_maps) == 415
     assert isinstance(dataset.gray_matter_maps[0], str)
     assert isinstance(dataset.white_matter_maps[0], str)
-    if legacy_format:
-        assert isinstance(dataset.ext_vars, np.recarray)
-    else:
-        assert isinstance(dataset.ext_vars, pd.DataFrame)
+    assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 2
-    assert dataset.description != ""
 
 
 @pytest.mark.parametrize(
@@ -106,6 +105,8 @@ def test_load_mni152(func, resolution):
 
     assert isinstance(img, Nifti1Image)
 
+    check_type_fetcher(img)
+
     if resolution is None:
         expected_shape = (197, 233, 189)
         expected_zooms = (1.0, 1.0, 1.0)
@@ -124,6 +125,7 @@ def test_fetch_icbm152_brain_gm_mask(tmp_path):
         data_dir=str(tmp_path), verbose=0
     )
 
+    check_type_fetcher(grey_matter_img)
     assert isinstance(grey_matter_img, Nifti1Image)
 
 
@@ -170,7 +172,31 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
             [f"{name}.gii.gz" for name in mesh_attributes]
         )
 
-    dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
+    dataset = fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))
+
+    check_type_fetcher(dataset)
 
     assert mesh_attributes.issubset(set(dataset.keys()))
-    assert dataset.description != ""
+
+
+def test_fetch_load_fsaverage():
+    """Check that PolyMesh are returned."""
+    result = load_fsaverage()
+    check_type_fetcher(result)
+    assert isinstance(result, Bunch)
+    assert isinstance(result.pial, PolyMesh)
+    nb_vertices_fsaverage5 = 10242
+    assert result["pial"].parts["left"].n_vertices == nb_vertices_fsaverage5
+    assert result.pial.parts["left"].n_vertices == nb_vertices_fsaverage5
+
+
+def test_load_fsaverage_data_smoke():
+    assert isinstance(load_fsaverage_data(), SurfaceImage)
+
+
+def test_load_fsaverage_data_errors():
+    """Give incorrect value argument."""
+    with pytest.raises(ValueError, match="'mesh_type' must be one of"):
+        load_fsaverage_data(mesh_type="foo")
+    with pytest.raises(ValueError, match="'data_type' must be one of"):
+        load_fsaverage_data(data_type="foo")

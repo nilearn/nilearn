@@ -2,13 +2,7 @@
 Reconstruction of visual stimuli from Miyawaki et al. 2008
 ==========================================================
 
-This example reproduces the experiment presented in
-    `Visual image reconstruction from human brain activity
-    using a combination of multiscale local image decoders
-    <https://doi.org/10.1016/j.neuron.2008.11.004>`_,
-    Miyawaki, Y., Uchida, H., Yamashita, O., Sato, M. A.,
-    Morito, Y., Tanabe, H. C., ... & Kamitani, Y. (2008).
-    Neuron, 60(5), 915-929.
+This example reproduces the experiment presented in :footcite:t:`Miyawaki2008`.
 
 It reconstructs 10x10 binary images from functional MRI data. Random images
 are used as training set and structured images are used for reconstruction.
@@ -16,8 +10,10 @@ are used as training set and structured images are used for reconstruction.
 The code is a bit elaborate as the example uses, as the original article,
 a multiscale prediction on the images seen by the subject.
 
-For an encoding approach for the same dataset, see also
-:ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
+.. seealso::
+
+    For an encoding approach for the same dataset, see
+    :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
 
 .. include:: ../../../examples/masker_note.rst
 
@@ -31,6 +27,7 @@ import time
 # First we load the Miyawaki dataset
 # ----------------------------------
 from nilearn import datasets
+from nilearn.plotting import show
 
 sys.stderr.write("Fetching dataset...")
 t0 = time.time()
@@ -71,13 +68,13 @@ X_test = masker.transform(X_figure_filenames)
 
 y_train = [
     np.reshape(
-        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
+        np.loadtxt(y, dtype=int, delimiter=","), (-1, *y_shape), order="F"
     )
     for y in y_random_filenames
 ]
 y_test = [
     np.reshape(
-        np.loadtxt(y, dtype=int, delimiter=","), (-1,) + y_shape, order="F"
+        np.loadtxt(y, dtype=int, delimiter=","), (-1, *y_shape), order="F"
     )
     for y in y_figure_filenames
 ]
@@ -146,11 +143,11 @@ sys.stderr.write("Training classifiers... \r")
 t0 = time.time()
 
 from sklearn.feature_selection import SelectKBest, f_classif
-from sklearn.linear_model import OrthogonalMatchingPursuit as OMP
+from sklearn.linear_model import OrthogonalMatchingPursuit
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
-# Create as many OMP as voxels to predict
+# Create as many OrthogonalMatchingPursuit as voxels to predict
 clfs = []
 n_clfs = y_train.shape[1]
 for i in range(y_train.shape[1]):
@@ -162,7 +159,7 @@ for i in range(y_train.shape[1]):
         [
             ("selection", SelectKBest(f_classif, k=500)),
             ("scl", StandardScaler()),
-            ("clf", OMP(n_nonzero_coefs=10)),
+            ("clf", OrthogonalMatchingPursuit(n_nonzero_coefs=10)),
         ]
     )
     clf.fit(X_train, y_train[:, i])
@@ -266,40 +263,41 @@ from sklearn.metrics import (
 
 print("Scores")
 print("------")
-print(
-    "  - Accuracy (percent): %f"
-    % np.mean(
-        [accuracy_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
-    )
+accuracy_to_print = np.mean(
+    [accuracy_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
-print(
-    "  - Precision: %f"
-    % np.mean(
-        [precision_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
-    )
+print(f"  - Accuracy (percent): {accuracy_to_print:f}")
+
+precision_to_print = np.mean(
+    [precision_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
-print(
-    "  - Recall: %f"
-    % np.mean(
-        [
-            recall_score(y_test[:, i], y_pred[:, i] > 0.5, zero_division=0)
-            for i in range(100)
-        ]
-    )
+print(f"  - Precision: {precision_to_print:f}")
+
+recall_to_print = np.mean(
+    [
+        recall_score(y_test[:, i], y_pred[:, i] > 0.5, zero_division=0)
+        for i in range(100)
+    ]
 )
-print(
-    "  - F1-score: %f"
-    % np.mean([f1_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)])
+print(f"  - Recall: {recall_to_print:f}")
+
+f1_score_to_print = np.mean(
+    [f1_score(y_test[:, i], y_pred[:, i] > 0.5) for i in range(100)]
 )
+print(f"  - F1-score: {f1_score_to_print:f}")
 
 
 # %%
 # And finally, we plot six reconstructed images, to compare with
 # ground truth
 
+from pathlib import Path
+
 from matplotlib import pyplot as plt
 
-from nilearn.plotting import show
+output_dir = Path.cwd() / "results" / "plot_miyawaki_reconstruction"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
 
 for i in range(6):
     j = 10 * i
@@ -317,17 +315,23 @@ for i in range(6):
         np.reshape(y_test[j], (10, 10)),
         cmap=plt.cm.gray,
         interpolation="nearest",
-    ),
+    )
     sp2.imshow(
         np.reshape(y_pred[j], (10, 10)),
         cmap=plt.cm.gray,
         interpolation="nearest",
-    ),
+    )
     sp3.imshow(
         np.reshape(y_pred[j] > 0.5, (10, 10)),
         cmap=plt.cm.gray,
         interpolation="nearest",
     )
-    plt.savefig(f"miyawaki2008_reconstruction_{int(i)}")
+    plt.savefig(output_dir / f"miyawaki2008_reconstruction_{int(i)}.png")
 
 show()
+
+# %%
+# References
+# ----------
+#
+# .. footbibliography::

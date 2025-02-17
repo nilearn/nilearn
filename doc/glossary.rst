@@ -191,7 +191,7 @@ If you wish to add a missing term, please
         that have been matched to the MNI305 using a 9 parameter affine transform.
 
     MVPA
-        Mutli-Voxel Pattern Analysis. This is the way :term:`supervised learning`
+        Multi-Voxel Pattern Analysis. This is the way :term:`supervised learning`
         methods are called in the field of brain imaging.
 
     Neurovault
@@ -220,8 +220,8 @@ If you wish to add a missing term, please
         parcels with no overlap between individual regions or "soft" probabilistic
         parcels with a non-zero probability of overlap.
 
-    predictive modelling
-        `Predictive modelling`_ uses statistics to predict outcomes.
+    predictive modeling
+        `Predictive modeling`_ uses statistics to predict outcomes.
 
     Probabilistic atlas
         Probabilistic atlases define soft parcellations of the brain in which
@@ -300,9 +300,8 @@ If you wish to add a missing term, please
         magnitude and cluster extent to enhance the importance of clusters that are large,
         have high magnitude, or both.
 
-        For more information about TFCE, see
-        `Smith and Nichols (2009) <https://doi.org/10.1016/j.neuroimage.2008.03.061>`_ or
-        `Benedikt Ehinger's tutorial <https://benediktehinger.de/blog/science/threshold-free-cluster-enhancement-explained/>`_.
+        For more information about TFCE, see :footcite:t:`Smith2009a` or
+        `Jeanette Mumford's video <https://www.youtube.com/watch?v=q7cWw8WC0Ws>`_ about it.
 
     TR
         Repetition time. This is the time in seconds between the beginning of an
@@ -333,8 +332,13 @@ If you wish to add a missing term, please
         A voxel represents a value on a regular grid in 3D space.
 
     Ward clustering
-        Ward’s algorithm is a hierarchical clustering algorithm: it recursively merges voxels,
+        Ward's algorithm is a hierarchical clustering algorithm: it recursively merges voxels,
         then clusters that have similar signal (parameters, measurements or time courses).
+
+References
+----------
+
+.. footbibliography::
 
 
 .. LINKS
@@ -376,7 +380,7 @@ If you wish to add a missing term, please
     https://fmriprep.org/en/stable/
 
 .. _`FREM`:
-    https://www.sciencedirect.com/science/article/abs/pii/S1053811917308182
+    https://doi.org/10.1016/j.neuroimage.2017.10.005
 
 .. _`FWHM`:
     https://en.wikipedia.org/wiki/Full_width_at_half_maximum
@@ -396,11 +400,11 @@ If you wish to add a missing term, please
 .. _`Opening`:
     https://en.wikipedia.org/wiki/Opening_(morphology)
 
-.. _`Predictive modelling`:
+.. _`Predictive modeling`:
     https://en.wikipedia.org/wiki/Predictive_modelling
 
 .. _`Recursive nearest agglomeration`:
-    https://hal.archives-ouvertes.fr/hal-01366651/
+    https://hal.science/hal-01366651/
 
 .. _`receiver operating characteristic curve`:
     https://en.wikipedia.org/wiki/Receiver_operating_characteristic

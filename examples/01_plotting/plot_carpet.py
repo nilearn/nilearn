@@ -5,16 +5,17 @@ Visualizing global patterns with a carpet plot
 A common quality control step for functional MRI data is to visualize the data
 over time in a carpet plot (also known as a Power plot or a grayplot).
 
-The :func:`nilearn.plotting.plot_carpet()` function generates a carpet plot
+The :func:`~nilearn.plotting.plot_carpet()` function generates a carpet plot
 from a 4D functional image.
 """
 
 # %%
 # Fetching data from ADHD dataset
 # -------------------------------
-from nilearn import datasets
+from nilearn.datasets import fetch_adhd
+from nilearn.plotting import plot_carpet
 
-adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+adhd_dataset = fetch_adhd(n_subjects=1)
 
 # plot_carpet can infer TR from the image header,
 # but preprocessing can often overwrite that particular header field,
@@ -39,13 +40,12 @@ mask_img = masking.compute_epi_mask(adhd_dataset.func[0])
 # -------------------------------------
 import matplotlib.pyplot as plt
 
-from nilearn.plotting import plot_carpet
-
 display = plot_carpet(
     adhd_dataset.func[0],
     mask_img,
     t_r=t_r,
     standardize="zscore_sample",
+    title="global patterns over time",
 )
 
 display.show()
@@ -58,8 +58,9 @@ display.show()
 import numpy as np
 
 from nilearn import image
+from nilearn.datasets import fetch_icbm152_2009
 
-atlas = datasets.fetch_icbm152_2009()
+atlas = fetch_icbm152_2009()
 atlas_img = image.concat_imgs((atlas["gm"], atlas["wm"], atlas["csf"]))
 map_labels = {"Gray Matter": 1, "White Matter": 2, "Cerebrospinal Fluid": 3}
 
@@ -72,8 +73,6 @@ discrete_atlas_img = image.new_img_like(atlas_img, discrete_version)
 # %%
 # Visualizing global patterns, separated by tissue type
 # -----------------------------------------------------
-from nilearn.plotting import plot_carpet
-
 fig, ax = plt.subplots(figsize=(10, 10))
 
 display = plot_carpet(
@@ -82,10 +81,10 @@ display = plot_carpet(
     t_r=t_r,
     mask_labels=map_labels,
     axes=ax,
-    cmap="gray",
     standardize="zscore_sample",
+    title="global patterns over time separated by tissue type",
 )
 
-fig.show()
+plt.show()
 
 # sphinx_gallery_dummy_images=1

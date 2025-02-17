@@ -5,12 +5,13 @@ Introduction
 What is ``nilearn``?
 ====================
 
-``nilearn`` is a package that makes it easy to use advanced machine learning techniques to analyze data acquired with MRI machines.
+``nilearn`` is a package that makes it easy to use advanced machine learning techniques
+to analyze data acquired with MRI machines.
 In particular, underlying machine learning problems include
 :ref:`decoding brain data <decoding>`,
 computing :ref:`brain parcellations <parcellating_brain>`,
 analyzing :ref:`functional connectivity <functional_connectomes>` and :ref:`connectomes <functional_connectomes>`,
-doing multi-voxel pattern analysis (MVPA) or :ref:`predictive modelling <decoding>`.
+doing multi-voxel pattern analysis (MVPA) or :ref:`predictive modeling <decoding>`.
 
 ``nilearn`` can readily be used on :ref:`task fMRI <decoding_intro>`,
 :ref:`resting-state <functional_connectomes>`, or
@@ -42,14 +43,14 @@ First steps with nilearn
 At this stage, you should have :ref:`installed <quickstart>` ``nilearn`` and opened a Jupyter notebook
 or an IPython / Python session.  First, load ``nilearn`` with
 
-.. code-block:: default
+.. code-block:: python
 
     import nilearn
 
 ``nilearn`` comes in with some data that are commonly used in neuroimaging.
 For instance, it comes with volumic template images of brains such as MNI:
 
-.. code-block:: default
+.. code-block:: python
 
     print(nilearn.datasets.MNI152_FILE_PATH)
 
@@ -62,7 +63,7 @@ Output:
 
 Let's have a look at this image:
 
-.. code-block:: default
+.. code-block:: python
 
     nilearn.plotting.plot_img(nilearn.datasets.MNI152_FILE_PATH)
 
@@ -170,13 +171,13 @@ For new-comers, we recommend going through the following examples in the suggest
 .. only:: html
 
   .. image:: /auto_examples/00_tutorials/images/thumb/sphx_glr_plot_single_subject_single_run_thumb.png
-    :alt: Intro to GLM Analysis: a single-session, single-subject fMRI dataset
+    :alt: Intro to GLM Analysis: a single-run, single-subject fMRI dataset
 
   :ref:`sphx_glr_auto_examples_00_tutorials_plot_single_subject_single_run.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Intro to GLM Analysis: a single-session, single-subject fMRI dataset</div>
+      <div class="sphx-glr-thumbnail-title">Intro to GLM Analysis: a single-run, single-subject fMRI dataset</div>
     </div>
 
 
@@ -221,13 +222,13 @@ For new-comers, we recommend going through the following examples in the suggest
 .. only:: html
 
   .. image:: /auto_examples/04_glm_first_level/images/thumb/sphx_glr_plot_fiac_analysis_thumb.png
-    :alt: Simple example of two-session fMRI model fitting
+    :alt: Simple example of two-runs fMRI model fitting
 
-  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_fiac_analysis.py`
+  :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_two_runs_model.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Simple example of two-session fMRI model fitting</div>
+      <div class="sphx-glr-thumbnail-title">Simple example of two-runs fMRI model fitting</div>
     </div>
 
 
@@ -259,17 +260,17 @@ Finding help
 On top of this guide, there is a lot of content available outside of ``nilearn``
 that could be of interest to new-comers:
 
-1. `An introduction to fMRI <https://www.cs.mtsu.edu/~xyang/fMRIHandBook.pdf>`_ by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
+1.  `Handbook of Functional MRI Data Analysis <https://www.cambridge.org/be/universitypress/subjects/statistics-probability/statistics-life-sciences-medicine-and-health/handbook-functional-mri-data-analysis>`_
+    by Russel Poldrack, Jeanette Mumford and Thomas Nichols.
 
-2. (For French readers) `An introduction to cognitive neuroscience <https://psy3018.github.io/intro.html>`_ given at the University of Montréal.
+2.  The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.
+    While not specific to neuroimaging, it is often a recommended read.
 
-3. The documentation of ``scikit-learn`` explains each method with tips on practical use and examples: :sklearn:`\ `.  While not specific to neuroimaging, it is often a recommended read.
-
-4. (For Python beginners) A quick and gentle introduction to scientific computing with Python with the `scientififc Python lectures <https://lectures.scientific-python.org/>`_.
-Moreover, you can use ``nilearn`` with `Jupyter <https://jupyter.org/>`_ notebooks or
-`IPython <https://ipython.org/>`_ sessions. They provide an interactive
-environment that greatly facilitates debugging and visualisation.
-
+3.  (For Python beginners) A quick and gentle introduction to scientific computing
+    with Python with the `scientififc Python lectures <https://lectures.scientific-python.org/>`_.
+    Moreover, you can use ``nilearn`` with `Jupyter <https://jupyter.org/>`_ notebooks or
+    `IPython <https://ipython.org/>`_ sessions. They provide an interactive
+    environment that greatly facilitates debugging and visualization.
 
 Besides, you can find help on :neurostars:`neurostars <>` for questions
 related to ``nilearn`` and to computational neuroscience in general.
@@ -290,15 +291,13 @@ We give a non-exhaustive list of such important applications.
 
 Predicting a clinical score or even treatment response
 from brain imaging with :ref:`supervised
-learning <decoding>` e.g. `[Mourao-Miranda 2012]
-<https://doi.org/10.1371/journal.pone.0029482>`_
+learning <decoding>` e.g. :footcite:t:`Mourao-miranda2012`.
 
 **Information mapping**
 
 Using the prediction accuracy of a classifier
 to characterize relationships between brain images and stimuli. (e.g.
-:ref:`searchlight <searchlight>`) `[Kriegeskorte 2006]
-<https://doi.org/10.1073/pnas.0600244103>`_
+:ref:`searchlight <searchlight>` and :footcite:t:`Kriegeskorte2006`)
 
 **Transfer learning**
 
@@ -306,8 +305,7 @@ Measuring how much an estimator trained on one
 specific psychological process/task can predict the neural activity
 underlying another specific psychological process/task
 (e.g. discriminating left from
-right eye movements also discriminates additions from subtractions
-`[Knops 2009] <https://doi.org/10.1126/science.1171599>`_)
+right eye movements also discriminates additions from subtractions :footcite:p:`Knops2009`)
 
 **High-dimensional multivariate statistics**
 
@@ -315,9 +313,8 @@ From a statistical point of view, machine learning implements
 statistical estimation of models with a large number of parameters.
 Tricks pulled in machine learning (e.g. regularization) can
 make this estimation possible despite the usually
-small number of observations in the neuroimaging domain
-`[Varoquaux 2012] <https://icml.cc/2012/papers/688.pdf>`_. This
-usage of machine learning requires some understanding of the models.
+small number of observations in the neuroimaging domain :footcite:p:`Varoquaux2012`.
+This usage of machine learning requires some understanding of the models.
 
 **Data mining / exploration**
 
@@ -327,3 +324,8 @@ or movie-watching data as well as the discovery of connectionally coherent
 functional modules ("connectivity-based parcellation").
 For example,
 :ref:`extracting_rsn` or :ref:`parcellating_brain` with clustering.
+
+References
+----------
+
+.. footbibliography::

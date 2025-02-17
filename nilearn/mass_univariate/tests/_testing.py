@@ -1,24 +1,25 @@
 """Utility functions for the mass_univariate module's test suite."""
+
 import numpy as np
 
 
 def get_tvalue_with_alternative_library(tested_vars, target_vars, covars=None):
-    """Utility function to compute tvalues with linalg or statsmodels
+    """Compute t values with linalg or statsmodels.
 
     Massively univariate linear model (= each target is considered
     independently).
 
     Parameters
     ----------
-    tested_vars: array-like, shape=(n_samples, n_regressors)
+    tested_vars : array-like, shape=(n_samples, n_regressors)
       Tested variates, the associated coefficient of which are to be tested
       independently with a t-test, resulting in as many t-values.
 
-    target_vars: array-like, shape=(n_samples, n_descriptors)
+    target_vars : array-like, shape=(n_samples, n_descriptors)
       Target variates, to be approximated with a linear combination of
       the tested variates and the confounding variates.
 
-    covars: array-like, shape=(n_samples, n_confounds)
+    covars : array-like, shape=(n_samples, n_confounds)
       Confounding variates, to be fitted but not to be tested
 
     Returns

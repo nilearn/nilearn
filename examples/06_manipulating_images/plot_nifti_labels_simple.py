@@ -12,13 +12,20 @@ operation in just a few lines of code.
 
 """
 
+from nilearn._utils.helpers import check_matplotlib
+
+check_matplotlib()
+
+import matplotlib.pyplot as plt
+
+from nilearn import datasets
+
 # %%
 # Retrieve the brain development functional dataset
 #
 # We start by fetching the brain development functional dataset
 # and we restrict the example to one subject only.
 
-from nilearn import datasets
 
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
@@ -79,8 +86,6 @@ signals.shape
 
 # %%
 # Plot the signals
-import matplotlib.pyplot as plt
-
 fig = plt.figure(figsize=(15, 5))
 ax = fig.add_subplot(111)
 for label_idx in range(3):

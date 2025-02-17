@@ -45,7 +45,7 @@ def _make_data(rng=None, masked=False, dim=(2, 2, 2)):
     w = np.zeros(dim)
     w[dim[0] // 2 :, dim[1] // 2 :, : dim[2] // 2] = 1
     n = 5
-    X = np.ones([n] + list(dim))
+    X = np.ones([n, *dim])
     X += rng.standard_normal(X.shape)
     y = np.dot([x[mask] for x in X], w[mask])
     if masked:
@@ -140,7 +140,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
         mask=mask,
         loss="mse",
         max_iter=max_iter,
-        verbose=0,
+        verbose=1,
     )[0]
     b = graph_net_squared_loss(
         unmasked_X,
@@ -156,7 +156,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
 
 
 @pytest.mark.parametrize("standardize", [True, False])
-def test_graph_net_and_tvl1_same_for_pure_l1_BaseSpaceNet(
+def test_graph_net_and_tvl1_same_for_pure_l1_base_space_net(
     affine_eye,
     standardize,
     max_iter=100,
@@ -202,7 +202,8 @@ def test_graph_net_and_tvl1_same_for_pure_l1_BaseSpaceNet(
 
 def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
     """Check graph_net_solver and tvl1_solver should give same results \
-    when l1_ratio = 1."""
+    when l1_ratio = 1.
+    """
     iris = load_iris()
     X, y = iris.data, iris.target
     y = y > 0.0
@@ -221,7 +222,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
         loss="logistic",
         mask=mask,
         max_iter=max_iter,
-        verbose=0,
+        verbose=1,
     )[0]
 
     assert_array_almost_equal(a, b, decimal=decimal)
@@ -232,7 +233,8 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
     standardize, max_iter=20, decimal=2
 ):
     """Check graph_net_solver and tvl1_solver should give same results \
-    when l1_ratio = 1."""
+    when l1_ratio = 1.
+    """
     iris = load_iris()
     X, y = iris.data, iris.target
     y = y > 0.0
@@ -266,7 +268,8 @@ def test_graph_net_and_tv_same_for_pure_l1_another_test(
     standardize, decimal=1
 ):
     """Check that graph_net_solver and tvl1_solver give same results \
-    when l1_ratio = 1."""
+    when l1_ratio = 1.
+    """
     dim = (3, 3, 3)
     X, y, _, mask = _make_data(masked=True, dim=dim)
     X, mask = to_niimgs(X, dim)

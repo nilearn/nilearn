@@ -2,45 +2,52 @@
 
 # Author: Alexandre Abraham
 
-import contextlib
 import gzip
 import os
+import re
 import shutil
 import tarfile
 import urllib
-import zipfile
-from tempfile import mkdtemp, mkstemp
+from pathlib import Path
 from unittest.mock import MagicMock
+from zipfile import ZipFile
 
 import numpy as np
 import pytest
 import requests
 
-from nilearn.datasets import _utils
+from nilearn.datasets import _utils, utils
+from nilearn.datasets.tests._testing import Response
 
-currdir = os.path.dirname(os.path.abspath(__file__))
-datadir = os.path.join(currdir, "data")
+datadir = _utils.PACKAGE_DIRECTORY / "data"
 
 DATASET_NAMES = {
-    "aal_SPM12",
+    "aal",
     "ABIDE_pcp",
     "adhd",
     "allen_rsn_2011",
     "basc_multiscale_2015",
+    "bids_langloc",
     "brainomics_localizer",
     "craddock_2012",
     "destrieux_surface",
     "development_fmri",
     "difumo_atlases",
     "dosenbach_2010",
+    "fiac",
     "fsaverage3",
     "fsaverage4",
     "fsaverage5",
     "fsaverage6",
     "fsaverage",
+    "harvard_oxford",
     "haxby2001",
     "icbm152_2009",
+    "language_localizer_demo",
+    "localizer_first_level",
+    "juelich",
     "Megatrawls",
+    "mixed_gambles",
     "miyawaki2008",
     "msdl_atlas",
     "neurovault",
@@ -48,6 +55,8 @@ DATASET_NAMES = {
     "oasis1",
     "pauli_2017",
     "power_2011",
+    "spm_auditory",
+    "spm_multimodal",
     "schaefer_2018",
     "smith_2009",
     "talairach_atlas",
@@ -56,8 +65,8 @@ DATASET_NAMES = {
 
 
 def test_get_dataset_descr_warning():
-    """Tests that function ``get_dataset_descr()`` gives a warning
-    when no description is available.
+    """Tests that function ``get_dataset_descr()`` gives a warning \
+       when no description is available.
     """
     with pytest.warns(
         UserWarning, match="Could not find dataset description."
@@ -82,36 +91,35 @@ def test_get_dataset_dir(tmp_path):
     os.environ.pop("NILEARN_DATA", None)
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
-    expected_base_dir = os.path.expanduser("~/nilearn_data")
+    expected_base_dir = Path("~/nilearn_data").expanduser()
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
+    assert data_dir == expected_base_dir / "test"
+    assert data_dir.exists()
 
     shutil.rmtree(data_dir)
 
-    expected_base_dir = str(tmp_path / "test_nilearn_data")
-    os.environ["NILEARN_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "test_nilearn_data"
+    os.environ["NILEARN_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
+    assert data_dir == expected_base_dir / "test"
+    assert data_dir.exists()
 
     shutil.rmtree(data_dir)
 
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "nilearn_shared_data"
+    os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir("test", verbose=0)
 
-    assert data_dir == os.path.join(expected_base_dir, "test")
-    assert os.path.exists(data_dir)
+    assert data_dir == expected_base_dir / "test"
+    assert data_dir.exists()
 
     shutil.rmtree(data_dir)
 
     # Verify exception for a path which exists and is a file
-    test_file = str(tmp_path / "some_file")
-    with open(test_file, "w") as out:
-        out.write("abcfeg")
+    test_file = tmp_path / "some_file"
+    test_file.write_text("abcfeg")
 
     with pytest.raises(
         OSError,
@@ -127,18 +135,15 @@ def test_add_readme_to_default_data_locations(tmp_path):
     assert (tmp_path / "README.md").exists()
 
 
-@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
-def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
+def test_get_dataset_dir_path_as_str(tmp_path):
     expected_base_dir = tmp_path / "env_data"
     expected_dataset_dir = expected_base_dir / "test"
-    if should_cast_path_to_string:
-        expected_dataset_dir = str(expected_dataset_dir)
     data_dir = _utils.get_dataset_dir(
         "test", default_paths=[expected_dataset_dir], verbose=0
     )
 
-    assert data_dir == str(expected_dataset_dir)
-    assert os.path.exists(data_dir)
+    assert data_dir == expected_dataset_dir
+    assert data_dir.exists()
 
     shutil.rmtree(data_dir)
 
@@ -146,44 +151,57 @@ def test_get_dataset_dir_path_as_str(should_cast_path_to_string, tmp_path):
 def test_get_dataset_dir_write_access(tmp_path):
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
-    no_write = str(tmp_path / "no_write")
-    os.makedirs(no_write)
-    os.chmod(no_write, 0o400)
+    no_write = tmp_path / "no_write"
+    no_write.mkdir(parents=True)
+    no_write.chmod(0o400)
 
-    expected_base_dir = str(tmp_path / "nilearn_shared_data")
-    os.environ["NILEARN_SHARED_DATA"] = expected_base_dir
+    expected_base_dir = tmp_path / "nilearn_shared_data"
+    os.environ["NILEARN_SHARED_DATA"] = str(expected_base_dir)
     data_dir = _utils.get_dataset_dir(
         "test", default_paths=[no_write], verbose=0
     )
 
-    # Non writeable dir is returned because dataset may be in there.
+    # Non writable dir is returned because dataset may be in there.
     assert data_dir == no_write
-    assert os.path.exists(data_dir)
+    assert data_dir.exists()
 
-    os.chmod(no_write, 0o600)
+    no_write.chmod(0o600)
     shutil.rmtree(data_dir)
 
 
-def test_md5_sum_file():
+def test_get_dataset_dir_symlink(tmp_path):
+    expected_linked_dir = tmp_path / "linked"
+    expected_linked_dir.mkdir(parents=True)
+    expected_base_dir = tmp_path / "env_data"
+    expected_base_dir.mkdir()
+    symlink_dir = expected_base_dir / "test"
+    symlink_dir.symlink_to(expected_linked_dir)
+
+    assert symlink_dir.exists()
+
+    data_dir = _utils.get_dataset_dir(
+        "test", default_paths=[symlink_dir], verbose=0
+    )
+
+    assert data_dir == expected_linked_dir
+    assert data_dir.exists()
+
+
+def test_md5_sum_file(tmp_path):
     # Create dummy temporary file
-    out, f = mkstemp()
-    os.write(out, b"abcfeg")
-    os.close(out)
+    f = tmp_path / "test"
+    f.write_bytes(b"abcfeg")
 
     assert _utils._md5_sum_file(f) == "18f32295c556b2a1a3a8e68fe1ad40f7"
 
-    os.remove(f)
 
-
-def test_read_md5_sum_file():
+def test_read_md5_sum_file(tmp_path):
     # Create dummy temporary file
-    out, f = mkstemp()
-    os.write(
-        out,
+    f = tmp_path / "test"
+    f.write_bytes(
         b"20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n"
         b"70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii",
     )
-    os.close(out)
     h = _utils.read_md5_sum_file(f)
 
     assert "/tmp/test" in h
@@ -191,87 +209,97 @@ def test_read_md5_sum_file():
     assert h["test/some_image.nii"] == "70886dcabe7bf5c5a1c24ca24e4cbd94"
     assert h["/tmp/test"] == "20861c8c3fe177da19a7e9539a5dbac"
 
-    os.remove(f)
 
+def test_tree(tmp_path):
+    dir1 = tmp_path / "dir1"
+    dir11 = dir1 / "dir11"
+    dir12 = dir1 / "dir12"
+    dir2 = tmp_path / "dir2"
 
-def test_tree():
-    # Create a dummy directory tree
-    parent = mkdtemp()
+    dir1.mkdir()
+    dir11.mkdir()
+    dir12.mkdir()
+    dir2.mkdir()
 
-    open(os.path.join(parent, "file1"), "w").close()
-    open(os.path.join(parent, "file2"), "w").close()
-    dir1 = os.path.join(parent, "dir1")
-    dir11 = os.path.join(dir1, "dir11")
-    dir12 = os.path.join(dir1, "dir12")
-    dir2 = os.path.join(parent, "dir2")
-    os.mkdir(dir1)
-    os.mkdir(dir11)
-    os.mkdir(dir12)
-    os.mkdir(dir2)
-    open(os.path.join(dir1, "file11"), "w").close()
-    open(os.path.join(dir1, "file12"), "w").close()
-    open(os.path.join(dir11, "file111"), "w").close()
-    open(os.path.join(dir2, "file21"), "w").close()
+    (tmp_path / "file1").touch()
+    (tmp_path / "file2").touch()
+    (dir1 / "file11").touch()
+    (dir1 / "file12").touch()
+    (dir11 / "file111").touch()
+    (dir2 / "file21").touch()
 
-    tree_ = _utils.tree(parent)
+    # test for list return value
+    tree_ = _utils.tree(tmp_path)
 
     # Check the tree
-    # assert_equal(tree_[0]['dir1'][0]['dir11'][0], 'file111')
-    # assert_equal(len(tree_[0]['dir1'][1]['dir12']), 0)
-    # assert_equal(tree_[0]['dir1'][2], 'file11')
-    # assert_equal(tree_[0]['dir1'][3], 'file12')
-    # assert_equal(tree_[1]['dir2'][0], 'file21')
-    # assert_equal(tree_[2], 'file1')
-    # assert_equal(tree_[3], 'file2')
-    assert tree_[0][1][0][1][0] == os.path.join(dir11, "file111")
+    assert type(tree_[0]) is tuple
+    assert type(tree_[0][1]) is list
+    assert type(tree_[0][1][0]) is tuple
+    assert type(tree_[1]) is tuple
+    assert type(tree_[1][1]) is list
+    assert tree_[0][1][0][1][0] == str(dir11 / "file111")
     assert len(tree_[0][1][1][1]) == 0
-    assert tree_[0][1][2] == os.path.join(dir1, "file11")
-    assert tree_[0][1][3] == os.path.join(dir1, "file12")
-    assert tree_[1][1][0] == os.path.join(dir2, "file21")
-    assert tree_[2] == os.path.join(parent, "file1")
-    assert tree_[3] == os.path.join(parent, "file2")
+    assert tree_[0][1][2] == str(dir1 / "file11")
+    assert tree_[0][1][3] == str(dir1 / "file12")
+    assert tree_[1][1][0] == str(dir2 / "file21")
+    assert tree_[2] == str(tmp_path / "file1")
+    assert tree_[3] == str(tmp_path / "file2")
 
-    # Clean
-    shutil.rmtree(parent)
+    # test for dictionary return value
+    tree_ = _utils.tree(tmp_path, dictionary=True)
+
+    # Check the tree
+    assert type(tree_[dir1.name]) is dict
+    assert type(tree_[dir1.name][dir11.name]) is list
+    assert len(tree_[dir1.name][dir12.name]) == 0
+    assert type(tree_[dir2.name]) is list
+    assert type(tree_["."]) is list
+    assert tree_[dir1.name][dir11.name][0] == str(dir11 / "file111")
+    assert tree_[dir1.name]["."][0] == str(dir1 / "file11")
+    assert tree_[dir1.name]["."][1] == str(dir1 / "file12")
+    assert tree_[dir2.name][0] == str(dir2 / "file21")
+    assert tree_["."] == [str(tmp_path / "file1"), str(tmp_path / "file2")]
 
 
-def test_movetree():
-    # Create a dummy directory tree
-    parent = mkdtemp()
+def test_movetree(tmp_path):
+    """Tests nilearn.dataset._utils.movetree."""
+    dir1 = tmp_path / "dir1"
+    dir111 = dir1 / "dir11"
+    dir112 = dir1 / "dir12"
+    dir2 = tmp_path / "dir2"
+    dir212 = dir2 / "dir12"
 
-    dir1 = os.path.join(parent, "dir1")
-    dir11 = os.path.join(dir1, "dir11")
-    dir12 = os.path.join(dir1, "dir12")
-    dir2 = os.path.join(parent, "dir2")
-    os.mkdir(dir1)
-    os.mkdir(dir11)
-    os.mkdir(dir12)
-    os.mkdir(dir2)
-    os.mkdir(os.path.join(dir2, "dir12"))
-    open(os.path.join(dir1, "file11"), "w").close()
-    open(os.path.join(dir1, "file12"), "w").close()
-    open(os.path.join(dir11, "file111"), "w").close()
-    open(os.path.join(dir12, "file121"), "w").close()
-    open(os.path.join(dir2, "file21"), "w").close()
+    dir1.mkdir()
+    dir111.mkdir()
+    dir112.mkdir()
+    dir2.mkdir()
+    dir212.mkdir()
+
+    (dir1 / "file11").touch()
+    (dir1 / "file12").touch()
+    (dir111 / "file1111").touch()
+    (dir112 / "file1121").touch()
+    (dir2 / "file21").touch()
 
     _utils.movetree(dir1, dir2)
 
-    assert not os.path.exists(dir11)
-    assert not os.path.exists(dir12)
-    assert not os.path.exists(os.path.join(dir1, "file11"))
-    assert not os.path.exists(os.path.join(dir1, "file12"))
-    assert not os.path.exists(os.path.join(dir11, "file111"))
-    assert not os.path.exists(os.path.join(dir12, "file121"))
+    assert not dir111.exists()
+    assert not dir112.exists()
+    assert not (dir1 / "file11").exists()
+    assert not (dir1 / "file12").exists()
+    assert not (dir111 / "file1111").exists()
+    assert not (dir112 / "file1121").exists()
 
-    dir11 = os.path.join(dir2, "dir11")
-    dir12 = os.path.join(dir2, "dir12")
+    dir211 = dir2 / "dir11"
+    dir212 = dir2 / "dir12"
 
-    assert os.path.exists(dir11)
-    assert os.path.exists(dir12)
-    assert os.path.exists(os.path.join(dir2, "file11"))
-    assert os.path.exists(os.path.join(dir2, "file12"))
-    assert os.path.exists(os.path.join(dir11, "file111"))
-    assert os.path.exists(os.path.join(dir12, "file121"))
+    assert dir211.exists()
+    assert dir212.exists()
+    assert (dir2 / "file21").exists()
+    assert (dir2 / "file11").exists()
+    assert (dir2 / "file12").exists()
+    assert (dir211 / "file1111").exists()
+    assert (dir212 / "file1121").exists()
 
 
 def test_filter_columns():
@@ -321,63 +349,68 @@ def test_filter_columns():
     assert np.sum(f) == 333
 
 
-def test_uncompress():
+@pytest.mark.parametrize(
+    "ext, mode", [("tar", "w"), ("tar.gz", "w:gz"), ("tgz", "w:gz")]
+)
+def test_uncompress_tar(tmp_path, ext, mode):
+    """Tests nilearn.dataset._utils.uncompress_file for tar files."""
     # for each kind of compression, we create:
-    # - a temporary directory (dtemp)
     # - a compressed object (ztemp)
     # - a temporary file-like object to compress into ztemp
     # we then uncompress the ztemp object into dtemp under the name ftemp
     # and check if ftemp exists
-    dtemp = mkdtemp()
-    ztemp = os.path.join(dtemp, "test.zip")
+    ztemp = tmp_path / f"test.{ext}"
     ftemp = "test"
-    try:
-        with contextlib.closing(zipfile.ZipFile(ztemp, "w")) as testzip:
-            testzip.writestr(ftemp, " ")
-        _utils.uncompress_file(ztemp, verbose=0)
+    with tarfile.open(ztemp, mode) as testtar:
+        temp = tmp_path / ftemp
+        temp.write_text(ftemp)
+        testtar.add(temp)
 
-        assert os.path.exists(os.path.join(dtemp, ftemp))
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert (tmp_path / ftemp).exists()
 
-        shutil.rmtree(dtemp)
 
-        dtemp = mkdtemp()
-        ztemp = os.path.join(dtemp, "test.tar")
+def test_uncompress_zip(tmp_path):
+    """Tests nilearn.dataset._utils.uncompress_file for zip files."""
+    # for each kind of compression, we create:
+    # - a compressed object (ztemp)
+    # - a temporary file-like object to compress into ztemp
+    # we then uncompress the ztemp object into dtemp under the name ftemp
+    # and check if ftemp exists
+    ztemp = tmp_path / "test.zip"
+    ftemp = "test"
+    with ZipFile(ztemp, "w") as testzip:
+        testzip.writestr(ftemp, " ")
 
-        # Create dummy file in the dtemp folder, so that the finally statement
-        # can easily remove it
-        fd, temp = mkstemp(dir=dtemp)
-        os.close(fd)
-        with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
-            tar.add(temp, arcname=ftemp)
-        _utils.uncompress_file(ztemp, verbose=0)
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert (tmp_path / ftemp).exists()
 
-        assert os.path.exists(os.path.join(dtemp, ftemp))
 
-        shutil.rmtree(dtemp)
+@pytest.mark.parametrize("ext", [".gz", ""])
+def test_uncompress_gzip(tmp_path, ext):
+    """Tests nilearn.dataset._utils.uncompress_file for gzip files."""
+    # for each kind of compression, we create:
+    # - a compressed object (ztemp)
+    # - a temporary file-like object to compress into ztemp
+    # we then uncompress the ztemp object into dtemp under the name ftemp
+    # and check if ftemp exists
+    ztemp = tmp_path / f"test{ext}"
+    ftemp = "test"
 
-        dtemp = mkdtemp()
-        ztemp = os.path.join(dtemp, "test.gz")
-        gzip.open(ztemp, "wb").close()
-        _utils.uncompress_file(ztemp, verbose=0)
+    with gzip.open(ztemp, "wt") as testgzip:
+        testgzip.write(ftemp)
 
-        # test.gz gets uncompressed into test
-        assert os.path.exists(os.path.join(dtemp, "test"))
-
-        shutil.rmtree(dtemp)
-
-    finally:
-        # all temp files are created into dtemp except temp
-        if os.path.exists(dtemp):
-            shutil.rmtree(dtemp)
+    _utils.uncompress_file(ztemp, verbose=0)
+    assert (tmp_path / ftemp).exists()
 
 
 def test_safe_extract(tmp_path):
     # Test vulnerability patch by mimicking path traversal
-    ztemp = os.path.join(tmp_path, "test.tar")
+    ztemp = tmp_path / "test.tar"
     in_archive_file = tmp_path / "something.txt"
     in_archive_file.write_text("hello")
-    with contextlib.closing(tarfile.open(ztemp, "w")) as tar:
-        arcname = os.path.normpath("../test.tar")
+    with tarfile.open(ztemp, "w") as tar:
+        arcname = "../test.tar"
         tar.add(in_archive_file, arcname=arcname)
 
     with pytest.raises(
@@ -386,51 +419,110 @@ def test_safe_extract(tmp_path):
         _utils.uncompress_file(ztemp, verbose=0)
 
 
-@pytest.mark.parametrize("should_cast_path_to_string", [False, True])
-def test_fetch_file_overwrite(
-    should_cast_path_to_string, tmp_path, request_mocker
-):
-    if should_cast_path_to_string:
-        tmp_path = str(tmp_path)
+def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
+    def get_response(match, request):
+        """Create mock Response object with correct content range header."""
+        req_range = request.headers.get("Range")
+        resp = Response(b"dummy content", match)
 
+        # set up Response object to return partial content
+        # and update header accordingly
+        if req_range is not None:
+            resp.iter_start = int(
+                re.match(r"bytes=(\d+)-", req_range).group(1)
+            )
+            resp.headers["Content-Range"] = (
+                f"bytes {resp.iter_start}-{len(resp.content) - 1}"
+                f"/{len(resp.content)}"
+            )
+
+        return resp
+
+    url = "http://foo/temp.txt"
+    file_full = tmp_path / "temp.txt"
+    file_part = tmp_path / "temp.txt.part"
+    file_part.write_text("D")  # should not be overwritten
+
+    request_mocker.url_mapping[url] = get_response
+
+    _utils.fetch_single_file(
+        url=url, data_dir=tmp_path, verbose=1, resume=True
+    )
+
+    assert file_full.exists()
+    assert file_full.read_text() == "Dummy content"  # not overwritten
+    assert "Resuming failed" not in capsys.readouterr().out
+
+    file_full.unlink()
+    assert not file_full.exists()
+    assert not file_part.exists()
+
+    # test for overwrite
+    file_part.write_text("D")  # should be overwritten
+
+    _utils.fetch_single_file(
+        url=url, data_dir=tmp_path, resume=True, overwrite=True
+    )
+
+    assert file_full.exists()
+    assert file_full.read_text() == "dummy content"  # overwritten
+
+
+def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
+    url = "http://foo/temp.txt"
+    file_part = tmp_path / "temp.txt.part"
+    file_part.touch()  # should not be overwritten
+
+    # the default Response from the mocker does not handle Range requests
+    request_mocker.url_mapping[url] = "dummy content"
+
+    _utils.fetch_single_file(
+        url=url, data_dir=tmp_path, verbose=1, resume=True
+    )
+
+    assert (
+        "Resuming failed, try to download the whole file."
+        in capsys.readouterr().out
+    )
+
+
+def test_fetch_single_file_overwrite(tmp_path, request_mocker):
     # overwrite non-exiting file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
+        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=True
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil)
-    with open(fil) as fp:
-        assert fp.read() == ""
+    assert fil.exists()
+    assert fil.read_text() == ""
 
     # Modify content
-    with open(fil, "w") as fp:
-        fp.write("some content")
+    fil.write_text("some content")
 
     # Don't overwrite existing file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=False
+        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=False
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil)
-    with open(fil) as fp:
-        assert fp.read() == "some content"
+    assert fil.exists()
+    assert fil.read_text() == "some content"
 
     # Overwrite existing file.
     fil = _utils.fetch_single_file(
-        url="http://foo/", data_dir=str(tmp_path), verbose=0, overwrite=True
+        url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=True
     )
 
     assert request_mocker.url_count == 2
-    assert os.path.exists(fil)
-    with open(fil) as fp:
-        assert fp.read() == ""
+    assert fil.exists()
+    assert fil.read_text() == ""
 
 
 @pytest.mark.parametrize("should_cast_path_to_string", [False, True])
 def test_fetch_files_use_session(
-    should_cast_path_to_string, tmp_path, request_mocker
+    should_cast_path_to_string,
+    tmp_path,
+    request_mocker,  # noqa: ARG001
 ):
     if should_cast_path_to_string:
         tmp_path = str(tmp_path)
@@ -442,7 +534,7 @@ def test_fetch_files_use_session(
             ("example1", "https://example.org/example1", {"overwrite": True}),
             ("example2", "https://example.org/example2", {"overwrite": True}),
         ],
-        data_dir=str(tmp_path),
+        data_dir=tmp_path,
         session=session,
     )
 
@@ -458,44 +550,46 @@ def test_fetch_files_overwrite(
 
     # overwrite non-exiting file.
     files = ("1.txt", "http://foo/1.txt")
-    fil = _utils.fetch_files(
-        data_dir=str(tmp_path),
-        verbose=0,
-        files=[files + (dict(overwrite=True),)],
+    fil = Path(
+        _utils.fetch_files(
+            data_dir=tmp_path,
+            verbose=0,
+            files=[(*files, {"overwrite": True})],
+        )[0]
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil[0])
-    with open(fil[0]) as fp:
-        assert fp.read() == ""
+    assert fil.exists()
+    assert not fil.read_text()
 
     # Modify content
-    with open(fil[0], "w") as fp:
-        fp.write("some content")
+    fil.write_text("some content")
 
     # Don't overwrite existing file.
-    fil = _utils.fetch_files(
-        data_dir=str(tmp_path),
-        verbose=0,
-        files=[files + (dict(overwrite=False),)],
+    fil = Path(
+        _utils.fetch_files(
+            data_dir=tmp_path,
+            verbose=0,
+            files=[(*files, {"overwrite": False})],
+        )[0]
     )
 
     assert request_mocker.url_count == 1
-    assert os.path.exists(fil[0])
-    with open(fil[0]) as fp:
-        assert fp.read() == "some content"
+    assert fil.exists()
+    assert fil.read_text() == "some content"
 
     # Overwrite existing file.
-    fil = _utils.fetch_files(
-        data_dir=str(tmp_path),
-        verbose=0,
-        files=[files + (dict(overwrite=True),)],
+    fil = Path(
+        _utils.fetch_files(
+            data_dir=tmp_path,
+            verbose=0,
+            files=[(*files, {"overwrite": True})],
+        )[0]
     )
 
     assert request_mocker.url_count == 2
-    assert os.path.exists(fil[0])
-    with open(fil[0]) as fp:
-        assert fp.read() == ""
+    assert fil.exists()
+    assert not fil.read_text()
 
 
 def test_naive_ftp_adapter():
@@ -510,10 +604,6 @@ def test_naive_ftp_adapter():
         resp = sender.send(
             requests.Request("GET", "ftp://example.com").prepare()
         )
-
-
-# TODO remove for release 0.13.0
-from nilearn.datasets import utils
 
 
 def test_load_sample_motor_activation_image():

@@ -11,8 +11,10 @@ This example is an advanced one that requires manipulating the data with numpy.
 Note the difference between images, that lie in brain space, and the
 numpy array, corresponding to the data inside the mask.
 
-See also :ref:`for a similar example using cortical surface input data
-<sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
+.. seealso::
+
+    :ref:`for a similar example using cortical surface input data
+    <sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py>`.
 
 Author: Franz Liem
 
@@ -28,7 +30,7 @@ Author: Franz Liem
 # of the brain development :term:`fMRI` data set.
 # dataset.func is a list of filenames. We select the 1st (0-based)
 # subject by indexing with [0]).
-from nilearn import datasets
+from nilearn import datasets, plotting
 
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
@@ -54,7 +56,7 @@ print(confound_filename)
 pcc_coords = [(0, -52, 18)]
 
 # %%
-# We use :class:`nilearn.maskers.NiftiSpheresMasker` to extract the
+# We use :class:`~nilearn.maskers.NiftiSpheresMasker` to extract the
 # **time series from the functional imaging within the sphere**. The
 # sphere is centered at pcc_coords and will have the radius we pass the
 # NiftiSpheresMasker function (here 8 mm).
@@ -68,7 +70,7 @@ seed_masker = NiftiSpheresMasker(
     radius=8,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
@@ -87,7 +89,7 @@ seed_time_series = seed_masker.fit_transform(
 
 # %%
 # Next, we can proceed similarly for the **brain-wide voxel-wise time
-# series**, using :class:`nilearn.maskers.NiftiMasker` with the same input
+# series**, using :class:`~nilearn.maskers.NiftiMasker` with the same input
 # arguments as in the seed_masker in addition to smoothing with a 6 mm kernel
 from nilearn.maskers import NiftiMasker
 
@@ -95,7 +97,7 @@ brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
@@ -121,24 +123,24 @@ print(f"Brain time series shape: ({brain_time_series.shape})")
 
 # %%
 # We can plot the **seed time series**.
-
 import matplotlib.pyplot as plt
+
+plt.figure(constrained_layout=True)
 
 plt.plot(seed_time_series)
 plt.title("Seed time series (Posterior cingulate cortex)")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
-plt.tight_layout()
 
 # %%
 # Exemplarily, we can also select 5 random voxels from the **brain-wide
 # data** and plot the time series from.
+plt.figure(constrained_layout=True)
 
 plt.plot(brain_time_series[:, [10, 45, 100, 5000, 10000]])
 plt.title("Time series from 5 random voxels")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
-plt.tight_layout()
 
 # %%
 # Performing the seed-to-voxel correlation analysis
@@ -163,12 +165,14 @@ seed_to_voxel_correlations = (
 # voxel's signal**, and will be of shape (n_voxels, 1). The correlation
 # values can potentially range between -1 and 1.
 print(
-    "Seed-to-voxel correlation shape: (%s, %s)"
-    % seed_to_voxel_correlations.shape
+    "Seed-to-voxel correlation shape: ({}, {})".format(
+        *seed_to_voxel_correlations.shape
+    )
 )
 print(
-    "Seed-to-voxel correlation: min = %.3f; max = %.3f"
-    % (seed_to_voxel_correlations.min(), seed_to_voxel_correlations.max())
+    f"Seed-to-voxel correlation: "
+    f"min = {seed_to_voxel_correlations.min():.3f}; "
+    f"max = {seed_to_voxel_correlations.max():.3f}"
 )
 
 # %%
@@ -179,8 +183,6 @@ print(
 # we need to create an in memory Nifti image object.
 # Furthermore, we can display the location of the seed with a sphere and
 # set the cross to the center of the seed region of interest.
-from nilearn import plotting
-
 seed_to_voxel_correlations_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations.T
 )
@@ -195,7 +197,13 @@ display.add_markers(
     marker_coords=pcc_coords, marker_color="g", marker_size=300
 )
 # At last, we save the plot as pdf.
-display.savefig("pcc_seed_correlation.pdf")
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_seed_to_voxel_correlation"
+output_dir.mkdir(exist_ok=True, parents=True)
+print(f"Output will be saved to: {output_dir}")
+
+display.savefig(output_dir / "pcc_seed_correlation.pdf")
 
 # %%
 # Fisher-z transformation and save nifti
@@ -216,5 +224,5 @@ seed_to_voxel_correlations_fisher_z_img = brain_masker.inverse_transform(
     seed_to_voxel_correlations_fisher_z.T
 )
 seed_to_voxel_correlations_fisher_z_img.to_filename(
-    "pcc_seed_correlation_z.nii.gz"
+    output_dir / "pcc_seed_correlation_z.nii.gz"
 )

@@ -5,7 +5,27 @@
    :no-members:
    :no-inherited-members:
 
-**Functions**:
+Classes
+-------
+
+.. currentmodule:: nilearn.regions
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   RegionExtractor
+   Parcellations
+   ReNA
+   HierarchicalKMeans
+
+.. autoclasstree:: nilearn.regions
+   :full:
+
+
+
+Functions
+---------
 
 .. currentmodule:: nilearn.regions
 
@@ -20,16 +40,3 @@
    img_to_signals_maps
    signals_to_img_maps
    recursive_neighbor_agglomeration
-
-**Classes**:
-
-.. currentmodule:: nilearn.regions
-
-.. autosummary::
-   :toctree: generated/
-   :template: class.rst
-
-   RegionExtractor
-   Parcellations
-   ReNA
-   HierarchicalKMeans

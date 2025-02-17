@@ -12,6 +12,9 @@ a very robust decoder at a lower computational cost than other spatially
 regularized methods.
 
 To have more details, see: :ref:`frem`.
+
+See the :ref:`dataset description <mixed_gamble_maps>`
+for more information on the data used in this example.
 """
 
 # %%
@@ -22,7 +25,7 @@ from nilearn.datasets import fetch_mixed_gambles
 data = fetch_mixed_gambles(n_subjects=16)
 
 zmap_filenames = data.zmaps
-behavioral_target = data.gain
+behavioral_target = data.gain.to_numpy().ravel()
 mask_filename = data.mask_img
 
 # %%
@@ -36,10 +39,11 @@ frem = FREMRegressor("svr", cv=10, standardize="zscore_sample")
 
 frem.fit(zmap_filenames, behavioral_target)
 
+# %%
 # Visualize FREM weights
 # ----------------------
 
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 plot_stat_map(
     frem.coef_img_["beta"],
@@ -49,14 +53,20 @@ plot_stat_map(
     threshold=0.2,
 )
 
+show()
+
 # %%
 # We can observe that the coefficients map learnt
 # by :term:`FREM` is structured,
 # due to the spatial regularity imposed by working on clusters and model
 # ensembling. Although these maps have been thresholded for display, they are
-# not sparse (i.e. almost all voxels have non-zero coefficients). See also this
-# :ref:`other example <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`
-# using FREM, and related :ref:`section of user guide <frem>`.
+# not sparse (i.e. almost all voxels have non-zero coefficients).
+#
+# .. seealso::
+#
+#   :ref:`other example
+#   <sphx_glr_auto_examples_02_decoding_plot_haxby_frem.py>`
+#   using FREM, and related :ref:`section of user guide <frem>`.
 #
 
 # %%

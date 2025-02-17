@@ -19,7 +19,7 @@ from nilearn import datasets
 
 n_samples = 20
 localizer_dataset = datasets.fetch_localizer_calculation_task(
-    n_subjects=n_samples, legacy_format=False
+    n_subjects=n_samples,
 )
 
 # %%
@@ -59,6 +59,7 @@ threshold_img(
     threshold=3.29,
     cluster_threshold=10,
     two_sided=True,
+    copy_header=True,
 )
 
 # %%

@@ -12,12 +12,7 @@ into homogeneous regions from functional imaging data.
 .. topic:: **Reference**
 
    A big-picture reference on the use of clustering for brain
-   parcellations.
-
-    Thirion, et al. `"Which fMRI clustering gives good brain
-    parcellations?."
-    <https://www.frontiersin.org/articles/10.3389/fnins.2014.00167/full>`_
-    Frontiers in neuroscience 8.167 (2014): 13.
+   parcellations can be found in :footcite:t:`Thirion2014`.
 
 Data loading: movie-watching data
 =================================
@@ -39,9 +34,7 @@ Applying clustering
     The question of which clustering method to use is in itself subject
     to debate. There are many clustering methods; their computational
     cost will vary, as well as their results. A `well-cited empirical
-    comparison paper, Thirion et al. 2014
-    <https://www.frontiersin.org/articles/10.3389/fnins.2014.00167/full>`_
-    suggests that:
+    comparison paper` (:footcite:t:`Thirion2014`) suggests that:
 
     * For a large number of clusters, it is preferable to use Ward
       agglomerative clustering with spatial constraints
@@ -60,15 +53,16 @@ Applying clustering
       spatial smoothing, that will be better balanced than with Kmeans.
 
     All these algorithms are showcased in a full code example :
-    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`. Below, we focus on explaining the principle of Ward.
+    :ref:`here<sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`.
+    Below, we focus on explaining the principle of Ward.
 
 |
 
 **Compute a connectivity matrix**
 Before applying Ward's method, we compute a spatial neighborhood matrix,
 aka connectivity matrix. This is useful to constrain clusters to form
-contiguous parcels (see `the scikit-learn documentation
-<https://scikit-learn.org/stable/modules/clustering.html#adding-connectivity-constraints>`_)
+contiguous parcels
+(see :sklearn:`the scikit-learn documentation <modules/clustering.html#adding-connectivity-constraints>`)
 
 This is done from the mask computed by the masker: a niimg from which we
 extract a numpy array and then the connectivity matrix.
@@ -160,3 +154,8 @@ approximated.
    All the steps discussed in this section can be seen implemented in
    :ref:`a full code example
    <sphx_glr_auto_examples_03_connectivity_plot_data_driven_parcellations.py>`.
+
+References
+----------
+
+.. footbibliography::

@@ -7,7 +7,8 @@
    :no-members:
    :no-inherited-members:
 
-**Classes**:
+Classes
+-------
 
 .. currentmodule:: nilearn.decoding
 
@@ -22,3 +23,6 @@
    SpaceNetClassifier
    SpaceNetRegressor
    SearchLight
+
+.. autoclasstree:: nilearn.decoding
+   :full:

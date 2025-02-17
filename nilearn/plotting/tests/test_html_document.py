@@ -1,10 +1,9 @@
-import os
-import tempfile
 import time
-import warnings
 import webbrowser
+from unittest.mock import Mock
 
 import pytest
+import requests
 from numpy.testing import assert_no_warnings
 
 from nilearn.plotting import html_document
@@ -14,49 +13,63 @@ from nilearn.plotting import html_document
 # warnings
 
 
-def _open_mock(f):
-    print(f"opened {f}")
+class Get:
+    """Dummy class to implement GET requests."""
+
+    def __init__(self, delay=0.0):
+        self.delay = delay
+
+    def __call__(self, url):
+        """Get implementation."""
+        time.sleep(self.delay)
+        self.url = url
+        requests.get(url.replace("index.html", "favicon.ico"))
+        self.content = requests.get(url).content
 
 
-def test_temp_file_removing():
-    html = html_document.HTMLDocument("hello")
-    wb_open = webbrowser.open
-    webbrowser.open = _open_mock
-    fd, tmpfile = tempfile.mkstemp()
-    try:
-        os.close(fd)
-        with warnings.catch_warnings(record=True) as record:
-            html.open_in_browser(file_name=tmpfile, temp_file_lifetime=None)
-        for warning in record:
-            assert "Saved HTML in temporary file" not in str(warning.message)
-        html.open_in_browser(temp_file_lifetime=0.5)
-        assert os.path.isfile(html._temp_file)
-        html._temp_file_removing_proc.wait()
-        assert not os.path.isfile(html._temp_file)
-        with pytest.warns(UserWarning, match="Saved HTML in temporary file"):
-            html.open_in_browser(temp_file_lifetime=None)
-        html.open_in_browser(temp_file_lifetime=None)
-        assert os.path.isfile(html._temp_file)
-        time.sleep(1.5)
-        assert os.path.isfile(html._temp_file)
-    finally:
-        webbrowser.open = wb_open
-        try:
-            os.remove(html._temp_file)
-        except Exception:
-            pass
-        try:
-            os.remove(tmpfile)
-        except Exception:
-            pass
+# disable request mocking for this test -- note we are accessing localhost only
+@pytest.mark.parametrize("request_mocker", [None])
+def test_open_in_browser(monkeypatch):
+    opener = Get()
+    monkeypatch.setattr(webbrowser, "open", opener)
+    doc = html_document.HTMLDocument("hello")
+    doc.open_in_browser()
+    assert opener.content == b"hello"
+
+
+def test_open_in_browser_timeout(monkeypatch):
+    opener = Get(delay=1.0)
+    monkeypatch.setattr(webbrowser, "open", opener)
+    monkeypatch.setattr(html_document, "BROWSER_TIMEOUT_SECONDS", 0.01)
+    doc = html_document.HTMLDocument("hello")
+    with pytest.raises(RuntimeError, match="Failed to open"):
+        doc.open_in_browser()
+
+
+@pytest.mark.parametrize("request_mocker", [None])
+def test_open_in_browser_deprecation_warning(monkeypatch):
+    monkeypatch.setattr(webbrowser, "open", Get())
+    doc = html_document.HTMLDocument("hello")
+    with pytest.deprecated_call(match="temp_file_lifetime"):
+        doc.open_in_browser(temp_file_lifetime=30.0)
+
+
+def test_open_in_browser_file(tmp_path, monkeypatch):
+    opener = Mock()
+    monkeypatch.setattr(webbrowser, "open", opener)
+    file_path = tmp_path / "doc.html"
+    doc = html_document.HTMLDocument("hello")
+    doc.open_in_browser(file_name=str(file_path))
+    assert file_path.read_text("utf-8") == "hello"
+    opener.assert_called_once_with(f"file://{file_path}")
 
 
 def _open_views():
-    return [html_document.HTMLDocument("") for i in range(12)]
+    return [html_document.HTMLDocument("") for _ in range(12)]
 
 
 def _open_one_view():
-    for i in range(12):
+    for _ in range(12):
         v = html_document.HTMLDocument("")
     return v
 
@@ -74,3 +87,9 @@ def test_open_view_warning():
     assert_no_warnings(_open_views)
     html_document.set_max_img_views_before_warning(6)
     pytest.warns(UserWarning, _open_views)
+
+
+def test_repr():
+    doc = html_document.HTMLDocument("hello")
+    assert "hello" in doc._repr_html_()
+    assert "hello" in doc._repr_mimebundle_()["text/html"]

@@ -17,15 +17,14 @@ nilearn_data
 
 pip-log.txt
 
-.pytest_cache
-
 .tox
 
 .ropeproject/
 
-tags
-
 tmp
+
+#  prettier and other JS
+node_modules
 
 # Mac OS X
 .DS_Store
@@ -40,9 +39,20 @@ build
 dist/
 nilearn/_version.py
 
+# notebooks
+.ipynb_checkpoints
+
 # virtual environment
 env/
 venv/
+
+# testing
+.pytest_cache
+report.html
+report_doc.html
+
+# CI benchmark
+maint_tools/*_runs_timing.*
 
 # coverage
 .coverage
@@ -51,22 +61,26 @@ coverage.xml
 nosetests_coverage/
 
 # documentation
-doc/.nojekyll
 doc/_build/
 doc/auto_examples/
 doc/building_blocks/generated/
-doc/datasets/generated/
+doc/ci.rst
 doc/generated/
 doc/modules/generated/
-doc/themes/nilearn/static/jquery.js
+doc/modules/generated_reports/*.html
+doc/modules/description
 doc/sg_execution_times.rst
+doc/themes/nilearn/static/jquery.js
+log.txt
+build.txt
+pattern.txt
+examples.txt
+gitlog.txt
+merge.txt
 
 # examples
-examples/**/*.pdf
-examples/**/results/
-examples/results/
 results/
-examples/*.nii
-examples/*.nii.gz
-examples/*.png
-examples/04_glm_first_level/derivatives
+
+# node
+package.json
+package-lock.json

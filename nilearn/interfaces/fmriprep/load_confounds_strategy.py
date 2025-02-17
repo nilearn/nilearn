@@ -2,6 +2,7 @@
 
 Authors: Hao-Ting Wang, Pierre Bellec
 """
+
 import warnings
 
 from . import load_confounds
@@ -27,8 +28,8 @@ preset_strategies = {
         "motion": "full",
         "wm_csf": "full",
         "scrub": 5,
-        "fd_threshold": 0.2,
-        "std_dvars_threshold": 3,
+        "fd_threshold": 0.2,  # updated here and doc to 0.5 in v0.13
+        "std_dvars_threshold": 3,  # updated here and doc to 1.5 in v0.13
         "global_signal": None,
         "demean": True,
     },
@@ -37,6 +38,7 @@ preset_strategies = {
         "motion": "full",
         "n_compcor": "all",
         "compcor": "anat_combined",
+        "global_signal": None,
         "demean": True,
     },
     "ica_aroma": {
@@ -54,7 +56,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     Use preset strategy to load confounds from :term:`fMRIPrep`.
 
     `load_confounds_strategy` provides an interface to select confounds
-    based on past literature with limited parameters for user customisation.
+    based on past literature with limited parameters for user customization.
 
     .. versionadded:: 0.9.0
 
@@ -80,18 +82,18 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
 
         - 'simple': Load confounds for a simple denoising strategy commonly
           used in resting state functional connectivity, described in
-          :footcite:`Fox2005`. With the global signal regression, this approach
-          can remove confounds without compromising the temporal degrees of
-          freedom.
-        - 'srubbing': Load confounds for scrubbing described in
-          :footcite:`Power2012`. This approach can reliably remove the
+          :footcite:t:`Fox2005`. With the global signal regression,
+          this approach can remove confounds
+          without compromising the temporal degrees of freedom.
+        - 'scrubbing': Load confounds for scrubbing described in
+          :footcite:t:`Power2012`. This approach can reliably remove the
           impact of high motion volumes in functional connectome, however, it
           might not be suitable with subjects with high motion (more than 50%
           timeseries flagged as high motion). One should adjust the threshold
           based on the characteristics of the dataset, or remove high motion
           subjects from the dataset.
         - 'compcor': Load confounds using the CompCor strategy from
-          :footcite:`Behzadi2007`. CompCor estimates noise through principal
+          :footcite:t:`Behzadi2007`. CompCor estimates noise through principal
           component analysis on regions that are unlikely to contain signal.
           Thus it might not be a suitable approach for researchers who want
           explicit description of the source of noise. Empirically, Compcor
@@ -101,12 +103,16 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           variance as the noise component estimation as the number of compcor
           component can be really high. Please refer to :term:`fMRIPrep`
           documentation for more details.
+
+          .. versionadded:: 0.10.3
+            `golobal_signal` is now a tunable parameter for compcor.
+
         - 'ica_aroma': Load confounds for non-aggresive ICA-AROMA strategy
-          described in :footcite:`Pruim2015`. The strategy requires
+          described in :footcite:t:`Pruim2015`. The strategy requires
           :term:`fMRIPrep` outputs generated with `--use-aroma` suffixed with
           `desc-smoothAROMAnonaggr_bold`. ICA-AROMA increases the run time of
           :term:`fMRIPrep`, however, the strategy performs well in various
-          benchmarks (:footcite:`Ciric2017`, :footcite:`Parker2018`).
+          benchmarks (:footcite:t:`Ciric2017`, :footcite:t:`Parker2018`).
           See Notes for more details about this option.
 
     Other keyword arguments:
@@ -139,49 +145,49 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     Notes
     -----
     1. The following table details the default options of each preset
-       strategies. Parameters with `*` denote customisable parameters. Please
+       strategies. Parameters with `*` denote customizable parameters. Please
        see :func:`nilearn.interfaces.fmriprep.load_confounds`.
 
-        ========= ========= ====== ====== ============= ===== ============ \
-        =================== ============== ========= ========= ======
-        strategy  high_pass motion wm_csf global_signal scrub fd_threshold \
-        std_dvars_threshold compcor        n_compcor ica_aroma demean
-        ========= ========= ====== ====== ============= ===== ============ \
-        =================== ============== ========= ========= ======
-        simple    True      full*  basic* None*         N/A   N/A          \
-        N/A                 N/A            N/A       N/A       True*
-        scrubbing True      full*  full   None*         5*    0.2*         \
-        3*                  N/A            N/A       N/A       True*
-        compcor   True      full*  N/A    N/A           N/A   N/A          \
-        N/A                 anat_combined* all*      N/A       True*
-        ica_aroma True      N/A    basic* None*         N/A   N/A          \
-        N/A                 N/A            N/A       full      True*
-        ========= ========= ====== ====== ============= ===== ============ \
-        =================== ============== ========= ========= ======
+       ========= ========= ====== ====== ============= ===== ============ \
+       =================== ============== ========= ========= ======
+       strategy  high_pass motion wm_csf global_signal scrub fd_threshold \
+       std_dvars_threshold compcor        n_compcor ica_aroma demean
+       ========= ========= ====== ====== ============= ===== ============ \
+       =================== ============== ========= ========= ======
+       simple    True      full*  basic* None*         N/A   N/A          \
+       N/A                 N/A            N/A       N/A       True*
+       scrubbing True      full*  full   None*         5*    0.2*         \
+       3*                  N/A            N/A       N/A       True*
+       compcor   True      full*  N/A    None*         N/A   N/A          \
+       N/A                 anat_combined* all*      N/A       True*
+       ica_aroma True      N/A    basic* None*         N/A   N/A          \
+       N/A                 N/A            N/A       full      True*
+       ========= ========= ====== ====== ============= ===== ============ \
+       =================== ============== ========= ========= ======
 
-    2. ICA-AROMA is implemented in two steps in :footcite:`Pruim2015`:
+    2. ICA-AROMA is implemented in two steps in :footcite:t:`Pruim2015`:
 
-        i. A non-aggressive denoising immediately after :term:`ICA`
-        classification.
-        A linear regression estimates signals with all independent
-        components as predictors. A partial regression is then applied to
-        remove variance associated with noise independent components.
-        :term:`fMRIPrep` performs this step and generates files in
-        `MNI152NLin6Asym` template, suffixed with
-        `desc-smoothAROMAnonaggr_bold`.
+       i. A non-aggressive denoising immediately after :term:`ICA`
+       classification.
+       A linear regression estimates signals with all independent
+       components as predictors. A partial regression is then applied to
+       remove variance associated with noise independent components.
+       :term:`fMRIPrep` performs this step and generates files in
+       `MNI152NLin6Asym` template, suffixed with
+       `desc-smoothAROMAnonaggr_bold`.
 
-        One can produce `desc-smoothAROMAnonaggr_bold` in other spatial
-        templates, please refer to :term:`fMRIPrep` documentation on ICA-AROMA
-        `<https://fmriprep.org/en/latest/workflows.html#ica-aroma>`_
+       One can produce `desc-smoothAROMAnonaggr_bold` in other spatial
+       templates, please refer to :term:`fMRIPrep` documentation on ICA-AROMA
+       `<https://fmriprep.org/en/latest/usage.html#fmriprep.cli.parser-_build_parser-[deprecated]-options-for-running-ica_aroma>`_
 
-        ii. Confound regression step (mean signals from WM and CSF).
-        Confound regressors generated by this function with
-        `denoise_strategy="ica_aroma"`.
+       ii. Confound regression step (mean signals from WM and CSF).
+       Confound regressors generated by this function with
+       `denoise_strategy="ica_aroma"`.
 
-        For more discussion regarding choosing the nuisance regressors before
-        or after denoising with ICA-AROMA has a detriment on outcome measures,
-        please see notebook 5.
-        `<https://github.com/nipreps/fmriprep-notebooks/>`_
+       For more discussion regarding choosing the nuisance regressors before
+       or after denoising with ICA-AROMA has a detriment on outcome measures,
+       please see notebook 5.
+       `<https://github.com/nipreps/fmriprep-notebooks/>`_
 
     See Also
     --------
@@ -216,7 +222,8 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
         warnings.warn(
             "The following parameters are not needed for the "
             f"selected strategy '{denoise_strategy}': {not_needed}; "
-            f"parameters accepted: {check_parameters}"
+            f"parameters accepted: {check_parameters}",
+            stacklevel=2,
         )
     return load_confounds(img_files, **user_parameters)
 
@@ -255,7 +262,7 @@ def _update_user_inputs(kwargs, default_parameters, check_parameters):
         # global_signal parameter is not in default strategy, but
         # applicable to every strategy other than compcor
         # global signal strategy will only be added if user has passed a
-        # recognisable value to the global_signal parameter
+        # recognizable value to the global_signal parameter
         if key == "global_signal":
             if isinstance(value, str):
                 parameters["strategy"] += ("global_signal",)

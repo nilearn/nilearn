@@ -49,30 +49,20 @@ NEW
 Fixes
 -----
 
-- :bdg-secondary:`Maint` Convert references in ``signal.py``, ``atlas.py``, ``func.py``, ``neurovault.py``, and ``struct.py`` to use footcite / footbibliography (:gh:`2806` by `Jeremy Lefort-Besnard`_).
+- :bdg-success:`API` Fix number of attributes returned by the ``nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute`` method in the :class:`~glm.first_level.FirstLevelModel`. It used to return only the first attribute, and now returns as many attributes as design matrices (:gh:`2792` by `Raphael Meudec`_).
+
+- :bdg-dark:`Code` Fix inconsistency in prediction values of :class:`sklearn.dummy.DummyClassifier` for :class:`~decoding.Decoder` (see :gh:`2767`) (:gh:`2826` by `Binh Nguyen`_).
 
 - :bdg-dark:`Code` Fix detrending and temporal filtering order for confounders in function :func:`~signal.clean`, so that these operations are applied in the same order as for the signals, i.e., first detrending and then temporal filtering (see :gh:`2730`) (:gh:`2732` by `Javier Rasero`_).
 
-- :bdg-success:`API` Fix number of attributes returned by the ``nilearn.glm.first_level.FirstLevelModel._get_voxelwise_model_attribute`` method in the :class:`~glm.first_level.FirstLevelModel`. It used to return only the first attribute, and now returns as many attributes as design matrices (:gh:`2792` by `Raphael Meudec`_).
+- :bdg-secondary:`Maint` Convert references in ``signal.py``, ``atlas.py``, ``func.py``, ``neurovault.py``, and ``struct.py`` to use footcite / footbibliography (:gh:`2806` by `Jeremy Lefort-Besnard`_).
 
 - :bdg-info:`Plotting` Plotting functions that show a stack of slices from a 3D image (e.g. :func:`~plotting.plot_stat_map`) will now plot the slices in the user specified order, rather than automatically sorting into ascending order (see :gh:`1155`) (:gh:`2831` by `Evan Edmond`_).
 
 - :bdg-info:`Plotting` Fix the axes zoom in function :func:`~plotting.plot_img_on_surf` so brain would not be cutoff, and edited function so less white space surrounds brain views and smaller colorbar using gridspec (:gh:`2798` by `Tom Vanasse`_).
 
-- :bdg-dark:`Code` Fix inconsistency in prediction values of :class:`sklearn.dummy.DummyClassifier` for :class:`~decoding.Decoder` (see :gh:`2767`) (:gh:`2826` by `Binh Nguyen`_).
-
 Enhancements
 ------------
-
-- :bdg-info:`Plotting` Function :func:`~plotting.view_markers` now accepts an optional argument ``marker_labels`` to provide labels to each marker (:gh:`2745` by `Greydon Gilmore`_).
-
-- :bdg-info:`Plotting` Function :func:`~plotting.plot_surf` now accepts new values for ``avg_method`` argument, such as ``min``, ``max``, or even a custom python function to compute the value displayed for each face of the plotted mesh (:gh:`2790` by `Alexis Thual`_).
-
-- :bdg-info:`Plotting` Function :func:`~plotting.view_img_on_surf` can now optionally pass through parameters to function :func:`~surface.vol_to_surf` using the ``vol_to_surf_kwargs`` argument. One application is better HTML visualization of atlases (https://nilearn.github.io/auto_examples/01_plotting/plot_3d_map_to_surface_projection.html) (:gh:`2805` by `Evan Edmond`_).
-
-- :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` now accepts an optional argument ``node_color`` to provide a single color for all nodes, or one color per node. It defaults to ``auto`` which colors markers according to the viridis colormap (:gh:`2810` by `Raphael Meudec`_).
-
-- :bdg-secondary:`Maint` Function :func:`~signal.clean` has been refactored to clarify the data flow (:gh:`2821` by `Hao-Ting Wang`_).
 
 - :bdg-success:`API` Parameter ``sessions`` has been replaced with ``runs`` in :func:`~signal.clean` to match BIDS semantics. ``sessions`` has been deprecated and will be removed in ``0.9.0`` (:gh:`2821` by `Hao-Ting Wang`_).
 
@@ -82,11 +72,21 @@ Enhancements
 
 - :bdg-success:`API` Function :func:`~glm.first_level.run_glm` now allows auto regressive noise models of order greater than one (:gh:`2532` by `Robert Luke`_).
 
-- :bdg-secondary:`Maint` Moves parameter ``sample_mask`` from :class:`~maskers.NiftiMasker` to method ``transform`` in base class :class:`nilearn.maskers.BaseMasker` (:gh:`2858` by `Hao-Ting Wang`_).
-
 - :bdg-success:`API` Function :func:`~datasets.fetch_surf_fsaverage` now accepts ``fsaverage3``, ``fsaverage4`` and ``fsaverage6`` as values for parameter ``mesh``, so that all resolutions of fsaverage from 3 to 7 are now available (:gh:`2815` by `Alexis Thual`_).
 
 - :bdg-success:`API` Function :func:`~datasets.fetch_surf_fsaverage` now provides attributes ``{area, curv, sphere, thick}_{left, right}`` for all fsaverage resolutions (:gh:`2815` by `Alexis Thual`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.view_markers` now accepts an optional argument ``marker_labels`` to provide labels to each marker (:gh:`2745` by `Greydon Gilmore`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.plot_surf` now accepts new values for ``avg_method`` argument, such as ``min``, ``max``, or even a custom python function to compute the value displayed for each face of the plotted mesh (:gh:`2790` by `Alexis Thual`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.view_img_on_surf` can now optionally pass through parameters to function :func:`~surface.vol_to_surf` using the ``vol_to_surf_kwargs`` argument. One application is better HTML visualization of atlases :ref:`sphx_glr_auto_examples_01_plotting_plot_3d_map_to_surface_projection.py` (:gh:`2805` by `Evan Edmond`_).
+
+- :bdg-info:`Plotting` Function :func:`~plotting.view_connectome` now accepts an optional argument ``node_color`` to provide a single color for all nodes, or one color per node. It defaults to ``auto`` which colors markers according to the viridis colormap (:gh:`2810` by `Raphael Meudec`_).
+
+- :bdg-secondary:`Maint` Function :func:`~signal.clean` has been refactored to clarify the data flow (:gh:`2821` by `Hao-Ting Wang`_).
+
+- :bdg-secondary:`Maint` Moves parameter ``sample_mask`` from :class:`~maskers.NiftiMasker` to method ``transform`` in base class :class:`nilearn.maskers.BaseMasker` (:gh:`2858` by `Hao-Ting Wang`_).
 
 Changes
 -------

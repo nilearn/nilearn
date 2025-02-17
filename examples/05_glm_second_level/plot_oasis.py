@@ -5,7 +5,7 @@ Voxel-Based Morphometry on OASIS dataset
 This example uses voxel-based morphometry (:term:`VBM`) to study the
 relationship between aging, sex, and gray matter density.
 
-The data come from the `OASIS <https://www.oasis-brains.org/>`_ project.
+The data come from the `OASIS <https://sites.wustl.edu/oasisbrains/>`_ project.
 If you use it, you need to agree with the data usage agreement available
 on the website.
 
@@ -23,6 +23,10 @@ We use only 100 subjects from the OASIS dataset to limit the memory usage.
 
 Note that more power would be obtained from using a larger sample of subjects.
 
+.. seealso::
+
+    For more information
+    see the :ref:`dataset description <oasis_maps>`.
 ..
     Original authors:
 
@@ -36,13 +40,12 @@ Note that more power would be obtained from using a larger sample of subjects.
 # %%
 # Load Oasis dataset
 # ------------------
-from nilearn import datasets
+from nilearn import datasets, plotting
 
 n_subjects = 100  # more subjects requires more memory
 
 oasis_dataset = datasets.fetch_oasis_vbm(
     n_subjects=n_subjects,
-    legacy_format=False,
 )
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
 age = oasis_dataset.ext_vars["age"].astype(float)
@@ -74,10 +77,12 @@ mask_img = resample_to_img(
     gm_mask,
     gray_matter_map_filenames[0],
     interpolation="nearest",
+    copy_header=True,
+    force_resample=True,
 )
 
 # %%
-# Analyse data
+# Analyze data
 # ------------
 # First, we create an adequate design matrix with three columns: 'age', 'sex',
 # and 'intercept'.
@@ -90,13 +95,14 @@ design_matrix = pd.DataFrame(
     columns=["age", "sex", "intercept"],
 )
 
+from matplotlib import pyplot as plt
+
 # %%
 # Let's plot the design matrix.
-from nilearn import plotting
-
-ax = plotting.plot_design_matrix(design_matrix)
-ax.set_title("Second level design matrix", fontsize=12)
+fig, ax1 = plt.subplots(1, 1, figsize=(4, 8))
+ax = plotting.plot_design_matrix(design_matrix, axes=ax1)
 ax.set_ylabel("maps")
+fig.suptitle("Second level design matrix")
 
 # %%
 # Next, we specify and fit the second-level model when loading the data and
@@ -104,7 +110,7 @@ ax.set_ylabel("maps")
 from nilearn.glm.second_level import SecondLevelModel
 
 second_level_model = SecondLevelModel(
-    smoothing_fwhm=2.0, mask_img=mask_img, n_jobs=2
+    smoothing_fwhm=2.0, mask_img=mask_img, n_jobs=2, minimize_memory=False
 )
 second_level_model.fit(
     gray_matter_map_filenames,
@@ -127,14 +133,16 @@ from nilearn.glm import threshold_stats_img
 _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 print(f"The FDR=.05-corrected threshold is: {threshold:03g}")
 
+fig = plt.figure(figsize=(5, 3))
 display = plotting.plot_stat_map(
     z_map,
     threshold=threshold,
     colorbar=True,
     display_mode="z",
     cut_coords=[-4, 26],
-    title="age effect on gray matter density (FDR = .05)",
+    figure=fig,
 )
+fig.suptitle("age effect on gray matter density (FDR = .05)")
 plotting.show()
 
 # %%
@@ -172,9 +180,36 @@ report = make_glm_report(
     bg_img=icbm152_2009["t1"],
 )
 
+
 # %%
 # We have several ways to access the report:
-
 # report  # This report can be viewed in a notebook
-# report.save_as_html('report.html')
 # report.open_in_browser()
+
+# or we can save as an html file
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_oasis"
+output_dir.mkdir(exist_ok=True, parents=True)
+report.save_as_html(output_dir / "report.html")
+
+
+# %%
+# Saving model outputs to disk
+# ----------------------------
+
+# We can also save the model outputs to disk
+from nilearn.interfaces.bids import save_glm_to_bids
+
+save_glm_to_bids(
+    second_level_model,
+    contrasts=["age", "sex"],
+    out_dir=output_dir / "derivatives" / "nilearn_glm",
+    prefix="ageEffectOnGM",
+    bg_img=icbm152_2009["t1"],
+)
+
+# %%
+# View the generated files
+files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
+print("\n".join([str(x.relative_to(output_dir)) for x in files]))

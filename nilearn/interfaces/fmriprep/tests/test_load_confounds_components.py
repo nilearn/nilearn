@@ -31,9 +31,8 @@ def expected_parameters(strategy_keywords):
 def test_missing_keywords(
     tmp_path, strategy_keywords, expected_parameters, fmriprep_version
 ):
-    """
-    Check the strategy keywords are raising errors correctly in low and
-    high level functions with the exception of `high_pass`.
+    """Check the strategy keywords are raising errors correctly in low \
+       and high level functions with the exception of `high_pass`.
     """
     img, bad_conf = create_tmp_filepath(
         tmp_path,

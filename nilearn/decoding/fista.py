@@ -4,6 +4,7 @@ For problems on which the prox of the nonsmooth term \
 cannot be computed closed-form (e.g TV-L1), \
 we approximate the prox using an inner FISTA loop.
 """
+
 # Author: DOHMATOB Elvis Dopgima,
 #         PIZARRO Gaspar,
 #         VAROQUAUX Gael,
@@ -14,6 +15,8 @@ from math import sqrt
 
 import numpy as np
 from scipy import linalg
+
+from nilearn._utils import logger
 
 
 def _check_lipschitz_continuous(
@@ -45,8 +48,8 @@ def _check_lipschitz_continuous(
       function `f`. The more tests, the more confident we are in the
       Lipschitz continuity of `f` if the test passes.
 
-    random_state : int, optional (default 42)
-        Random state for initializing local rng.
+    %(random_state)s
+        default 42
 
     Raises
     ------
@@ -94,30 +97,30 @@ def mfista(
     total_energy : callable(w) -> float
         total energy (i.e smooth (f1) + nonsmooth (f2) parts)
 
-    lipschitz_constant : float
+    lipschitz_constant : :obj:`float`
         Lipschitz constant of gradient of f1_grad.
 
-    check_lipschitz : boolean, default=False
+    check_lipschitz : :obj:`bool`, default=False
         If True, check Lipschitz continuity of gradient of smooth part.
 
-    w_size : int
+    w_size : :obj:`int`
         Size of the solution. f1, f2, f1_grad, f2_prox (fixed l, tol) must
         accept a w such that w.shape = (w_size,).
 
-    tol : float, default=1e-4
+    tol : :obj:`float`, default=1e-4
         Tolerance on the (primal) cost function.
 
-    dgap_tol : float, optional
+    dgap_tol : :obj:`float`, default=None
         If None, the nonsmooth_prox argument returns a float, with the value,
         if not 0, the nonsmooth_prox accepts a third parameter tol, which is
         the tolerance on the computation of the proximal operator and returns a
         float, and a dict with the key "converged", that says if the method to
         compute f2_prox converged or not.
 
-    dgap_factor : float, optional
+    dgap_factor : :obj:`float`, default=None
         Dual gap factor. Used for debugging purpose (control the convergence).
 
-    init : dict-like, optional
+    init : dict-like, default=None
         Dictionary of initialization parameters. Possible keys are 'w',
         'stepsize', 'z', 't', 'dgap_factor', etc.
 
@@ -125,10 +128,10 @@ def mfista(
         Function called on every iteration. If it returns True, then the loop
         breaks.
 
-    max_iter : integer, default=1000
+    max_iter : :obj:`int`, default=1000
         Maximum number of iterations for the solver.
 
-    verbose : integer, default=2
+    verbose : :obj:`int`, default=2
         Indicate the level of verbosity.
 
     Returns
@@ -177,7 +180,7 @@ def mfista(
     ista_step = False
     best_z = z.copy()
     best_t = t
-    prox_info = dict(converged=True)
+    prox_info = {"converged": True}
     stepsize = 1.0 / lipschitz_constant
     history = []
     w_old = w.copy()
@@ -188,16 +191,15 @@ def mfista(
         w_old[:] = w
 
         # invoke callback
-        if verbose:
-            print(
-                f"mFISTA: Iteration {i + 1: 2}/{max_iter:2}: "
-                f"E = {old_energy:7.4e}, dE {energy_delta: 4.4e}"
-            )
+        logger.log(
+            f"mFISTA: Iteration {i + 1: 2}/{max_iter:2}: "
+            f"E = {old_energy:7.4e}, dE {energy_delta: 4.4e}",
+            verbose,
+        )
         if callback and callback(locals()):
             break
         if np.abs(energy_delta) < tol:
-            if verbose:
-                print(f"\tConverged (|dE| < {tol:g})")
+            logger.log(f"\tConverged (|dE| < {tol:g})", verbose)
             break
 
         # forward (gradient) step
@@ -225,8 +227,7 @@ def mfista(
             # tolerance.
             dgap_factor *= 0.2
 
-            if verbose:
-                print("decreased dgap_tol")
+            logger.log("decreased dgap_tol", verbose)
         # energy house-keeping
         energy_delta = old_energy - energy
         old_energy = energy
@@ -237,8 +238,7 @@ def mfista(
             z[:] = w_old
             w[:] = w_old
             ista_step = True
-            if verbose:
-                print("Monotonous FISTA: Switching to ISTA")
+            logger.log("Monotonous FISTA: Switching to ISTA", verbose)
         else:
             if ista_step:
                 z = w
@@ -270,11 +270,11 @@ def mfista(
             best_t = t
             best_dgap_tol = dgap_tol
 
-    init = dict(
-        w=best_w.copy(),
-        z=best_z,
-        t=best_t,
-        dgap_tol=best_dgap_tol,
-        stepsize=stepsize,
-    )
+    init = {
+        "w": best_w.copy(),
+        "z": best_z,
+        "t": best_t,
+        "dgap_tol": best_dgap_tol,
+        "stepsize": stepsize,
+    }
     return best_w, history, init

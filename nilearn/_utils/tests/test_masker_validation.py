@@ -1,12 +1,11 @@
-import nibabel
 import numpy as np
 import pytest
 from joblib import Memory
+from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn.experimental.surface import SurfaceMasker
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 
 
 class OwningClass(BaseEstimator):
@@ -23,12 +22,14 @@ class OwningClass(BaseEstimator):
         target_shape=None,
         mask_strategy="background",
         mask_args=None,
-        memory=Memory(location=None),
+        memory=None,
         memory_level=0,
         n_jobs=1,
         verbose=0,
         dummy=None,
     ):
+        if memory is None:
+            memory = Memory(location=None)
         self.mask = mask
 
         self.smoothing_fwhm = smoothing_fwhm
@@ -53,7 +54,7 @@ class DummyEstimator:
         for k, v in kwargs.items():
             setattr(self, k, v)
 
-    def fit(self, *args, **kwargs):
+    def fit(self, *args, **kwargs):  # noqa: ARG002
         self.masker = check_embedded_masker(self)
 
 
@@ -103,7 +104,7 @@ def test_check_embedded_masker():
     # Check use of mask as mask_img
     shape = (6, 8, 10, 5)
     affine = np.eye(4)
-    mask = nibabel.Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
+    mask = Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
     owner = OwningClass(mask=mask)
     masker = check_embedded_masker(owner)
     assert masker.mask_img is mask
@@ -111,7 +112,7 @@ def test_check_embedded_masker():
     # Check attribute forwarding
     data = np.zeros((9, 9, 9))
     data[2:-2, 2:-2, 2:-2] = 10
-    imgs = nibabel.Nifti1Image(data, np.eye(4))
+    imgs = Nifti1Image(data, np.eye(4))
     mask = MultiNiftiMasker()
     mask.fit([[imgs]])
     owner = OwningClass(mask=mask)

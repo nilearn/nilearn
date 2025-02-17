@@ -66,16 +66,6 @@ class OLSModel:
     """
 
     def __init__(self, design):
-        """Construct instance.
-
-        Parameters
-        ----------
-        design : array-like
-            This is your design matrix.
-            Data are assumed to be column ordered with
-            observations in rows.
-
-        """
         super().__init__()
         self.initialize(design)
 
@@ -95,13 +85,13 @@ class OLSModel:
         self.df_model = matrix_rank(self.design, eps)
         self.df_residuals = self.df_total - self.df_model
 
-    def logL(self, beta, Y, nuisance=None):
+    def logL(self, beta, Y, nuisance=None):  # noqa: N802
         r"""Return the value of the loglikelihood function at beta.
 
         Given the whitened design matrix, the loglikelihood is evaluated
         at the parameter vector, :term:`beta<Beta>`,
         for the dependent variable, Y
-        and the nuisance parameter, sigma :footcite:`Greene2003`.
+        and the nuisance parameter, sigma :footcite:t:`Greene2003`.
 
         Parameters
         ----------
@@ -111,7 +101,7 @@ class OLSModel:
         Y : ndarray
             The dependent variable
 
-        nuisance : dict, optional
+        nuisance : :obj:`dict`, default=None
             A dict with key 'sigma', which is an optional estimate of sigma.
             If None, defaults to its maximum likelihood estimate
             (with beta fixed) as
@@ -226,22 +216,19 @@ class ARModel(OLSModel):
     and sigma, a scalar nuisance parameter that
     shows up as multiplier in front of the AR(p) covariance.
 
+    Parameters
+    ----------
+    design : ndarray
+        2D array with design matrix.
+
+    rho : :obj:`int` or array-like
+        If int, gives order of model, and initializes rho to zeros.  If
+        ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
+        1) != ARModel(X, 1.0)``.
+
     """
 
     def __init__(self, design, rho):
-        """Initialize AR model instance.
-
-        Parameters
-        ----------
-        design : ndarray
-            2D array with design matrix.
-
-        rho : int or array-like
-            If int, gives order of model, and initializes rho to zeros.  If
-            ndarray, gives initial estimate of rho. Be careful as ``ARModel(X,
-            1) != ARModel(X, 1.0)``.
-
-        """
         if isinstance(rho, int):
             self.order = rho
             self.rho = np.zeros(self.order, np.float64)
@@ -319,7 +306,7 @@ class RegressionResults(LikelihoodModelResults):
     def normalized_residuals(self):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
+        See :footcite:t:`Montgomery2006` and :footcite:t:`Davidson2004`.
 
         Notes
         -----
@@ -347,7 +334,7 @@ class RegressionResults(LikelihoodModelResults):
         return np.dot(X, beta)
 
     @auto_attr
-    def SSE(self):
+    def SSE(self):  # noqa: N802
         """Error sum of squares.
 
         If not from an OLS model this is "pseudo"-SSE.
@@ -363,7 +350,7 @@ class RegressionResults(LikelihoodModelResults):
         return np.var(self.predicted, 0) / np.var(self.whitened_Y, 0)
 
     @auto_attr
-    def MSE(self):
+    def MSE(self):  # noqa: N802
         """Return Mean square (error)."""
         return self.SSE / self.df_residuals
 
@@ -392,7 +379,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
         # put this as a parameter of LikelihoodModel
         self.df_residuals = self.df_total - self.df_model
 
-    def logL(self):
+    def logL(self):  # noqa: N802
         """Return the maximized log-likelihood."""
         raise NotImplementedError(
             "logL not implemented for "
@@ -407,7 +394,7 @@ class SimpleRegressionResults(LikelihoodModelResults):
     def normalized_residuals(self, Y, X):
         """Residuals, normalized to have unit length.
 
-        See :footcite:`Montgomery2006` and :footcite:`Davidson2004`.
+        See :footcite:t:`Montgomery2006` and :footcite:t:`Davidson2004`.
 
         Notes
         -----

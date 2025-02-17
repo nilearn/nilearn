@@ -1,5 +1,7 @@
 """Tests common to multiple image plotting functions."""
 
+from __future__ import annotations
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pytest
@@ -38,8 +40,10 @@ PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 PLOTTING_FUNCS_3D = ALL_PLOTTING_FUNCS.difference(PLOTTING_FUNCS_4D)
 
 
-def _add_nans_to_img(img, affine_mni=_affine_mni()):
+def _add_nans_to_img(img, affine_mni=None):
     """Add nans in test image data."""
+    if affine_mni is None:
+        affine_mni = _affine_mni()
     data = get_data(img)
     data[6, 5, 1] = np.nan
     data[1, 5, 2] = np.nan
@@ -50,7 +54,9 @@ def _add_nans_to_img(img, affine_mni=_affine_mni()):
 
 def test_mni152template_is_reordered():
     """See issue #2550."""
-    reordered_mni = reorder_img(load_mni152_template(resolution=2))
+    reordered_mni = reorder_img(
+        load_mni152_template(resolution=2), copy_header=True
+    )
     assert np.allclose(get_data(reordered_mni), get_data(MNI152TEMPLATE))
     assert np.allclose(reordered_mni.affine, MNI152TEMPLATE.affine)
     assert np.allclose(reordered_mni.shape, MNI152TEMPLATE.shape)
@@ -61,6 +67,29 @@ def test_plot_functions_3d_default_params(plot_func, img_3d_mni, tmp_path):
     """Smoke tests for 3D plotting functions with default parameters."""
     filename = tmp_path / "temp.png"
     plot_func(img_3d_mni, output_file=filename)
+    plt.close()
+
+
+@pytest.mark.parametrize(
+    "plot_func",
+    {
+        plot_img,
+        plot_anat,
+        plot_stat_map,
+        plot_roi,
+        plot_glass_brain,
+        plot_prob_atlas,
+    },
+)
+def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
+    """Test plot functions for negative threshold value."""
+    filename = tmp_path / "temp.png"
+
+    """Tests plot_img for negative threshold."""
+    with pytest.raises(
+        ValueError, match="Threshold should be a non-negative number!"
+    ):
+        plot_func(img_3d_mni, output_file=filename, threshold=-1)
     plt.close()
 
 
@@ -111,26 +140,27 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_mni):
 
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
 def test_plot_threshold_for_uint8(affine_eye, plot_func):
-    """Mask was applied in [-threshold, threshold] which is problematic
-    for uint8 data. See https://github.com/nilearn/nilearn/issues/611
-    for more details.
+    """Mask was applied in [-threshold, threshold] which is problematic \
+       for uint8 data.
+
+    See https://github.com/nilearn/nilearn/issues/611 for more details.
     """
     data = 10 * np.ones((10, 10, 10), dtype="uint8")
     # Having a zero minimum value is important to reproduce
     # https://github.com/nilearn/nilearn/issues/762
-    if plot_func == plot_stat_map:
+    if plot_func is plot_stat_map:
         data[0, 0, 0] = 0
     else:
         data[0, 0] = 0
     img = Nifti1Image(data, affine_eye)
-    threshold = np.array(5, dtype="uint8")
+    threshold = 5
     kwargs = {"threshold": threshold, "display_mode": "z"}
-    if plot_func == plot_stat_map:
+    if plot_func is plot_stat_map:
         kwargs["bg_img"] = None
         kwargs["cut_coords"] = [0]
     display = plot_func(img, colorbar=True, **kwargs)
     # Next two lines retrieve the numpy array from the plot
-    ax = list(display.axes.values())[0].ax
+    ax = next(iter(display.axes.values())).ax
     plotted_array = ax.images[0].get_array()
     # Make sure that there is one value masked
     assert plotted_array.mask.sum() == 1
@@ -143,8 +173,8 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
 
 @pytest.fixture
 def expected_error_message(display_mode, cut_coords):
-    """Return the expected error message depending on display_mode and
-    cut_coords. Used in test_invalid_cut_coords_with_display_mode.
+    """Return the expected error message depending on display_mode \
+       and cut_coords. Used in test_invalid_cut_coords_with_display_mode.
     """
     if display_mode == "ortho" or (
         display_mode == "tiled" and cut_coords == 2
@@ -169,7 +199,7 @@ def test_invalid_cut_coords_with_display_mode(
     expected_error_message,
 ):
     """Tests for invalid combinations of cut_coords and display_mode."""
-    if plot_func == plot_glass_brain and display_mode != "ortho":
+    if plot_func is plot_glass_brain and display_mode != "ortho":
         return
     with pytest.raises(ValueError, match=expected_error_message):
         plot_func(
@@ -199,7 +229,7 @@ def test_plotting_functions_with_cmaps(plot_func, cmap):
 def test_plotting_functions_with_nans_in_bg_img(plot_func, img_3d_mni):
     """Smoke test for plotting functions with nans in background image."""
     bg_img = _add_nans_to_img(img_3d_mni)
-    if plot_func == plot_anat:
+    if plot_func is plot_anat:
         plot_func(bg_img)
     else:
         plot_func(img_3d_mni, bg_img=bg_img)
@@ -209,7 +239,7 @@ def test_plotting_functions_with_nans_in_bg_img(plot_func, img_3d_mni):
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_anat, plot_img])
 def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
     """Smoke test for plotting functions with tiled display mode."""
-    if plot_func == plot_anat:
+    if plot_func is plot_anat:
         plot_func(display_mode="tiled")
     else:
         plot_func(img_3d_mni, display_mode="tiled")
@@ -262,7 +292,9 @@ def test_plot_symmetric_colorbar_threshold(
 
 
 functions = [plot_stat_map]
-EXPECTED2 = [(0, ["0", "2.5", "5", "7.5", "10"])]
+EXPECTED2: list[tuple[float | int, list[str]]] = [
+    (0, ["0", "2.5", "5", "7.5", "10"])
+]
 EXPECTED2 += [(i, [f"{i}", "2.5", "5", "7.5", "10"]) for i in [0.1, 0.3, 1.2]]
 EXPECTED2 += [
     (i, ["0", f"{i}", "5", "7.5", "10"]) for i in [1.3, 1.9, 2.5, 3, 3.7]
@@ -289,3 +321,16 @@ def test_plot_asymmetric_colorbar_threshold(
         tick.get_text() for tick in display._cbar.ax.get_yticklabels()
     ] == expected_ticks
     plt.close()
+
+
+@pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
+@pytest.mark.parametrize("vmax", [None, 0])
+def test_img_plotting_vmax_equal_to_zero(plot_func, vmax):
+    """Make sure image plotting works if the maximum value is zero.
+
+    Regression test for: https://github.com/nilearn/nilearn/issues/4203
+    """
+    img_data = np.zeros((10, 10, 10))
+    img_data[4:6, 2:4, 4:6] = -5
+    img = Nifti1Image(img_data, affine=np.eye(4))
+    plot_func(img, colorbar=True, vmax=vmax)

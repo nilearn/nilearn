@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import glob
 import json
-import os
 from pathlib import Path
 from warnings import warn
+
+from nilearn._utils import fill_doc
 
 
 def _get_metadata_from_bids(
@@ -40,20 +41,21 @@ def _get_metadata_from_bids(
         assert isinstance(json_files, list) and isinstance(
             json_files[0], (Path, str)
         )
-        with open(json_files[0]) as f:
+        with Path(json_files[0]).open() as f:
             specs = json.load(f)
         value = specs.get(field)
         if value is not None:
             return value
         else:
-            warn(f"'{field}' not found in file {json_files[0]}.")
+            warn(f"'{field}' not found in file {json_files[0]}.", stacklevel=4)
     else:
-        msg_suffix = f" in {bids_path}" if bids_path else ""
-        warn(f"No bold.json found in BIDS folder{msg_suffix}.")
+        msg_suffix = f" in:\n {bids_path}" if bids_path else ""
+        warn(f"\nNo bold.json found in BIDS folder{msg_suffix}.", stacklevel=3)
 
     return None
 
 
+@fill_doc
 def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     """Return the StartTime metadata field from a BIDS derivatives dataset.
 
@@ -73,9 +75,7 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
-    verbose : :obj:`int`, optional
-        Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints warnings.
+    %(verbose0)s
 
     Returns
     -------
@@ -92,8 +92,11 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     )
     if not img_specs:
         if verbose:
-            msg_suffix = f" in {bids_path}"
-            warn(f"No bold.json found in BIDS folder{msg_suffix}.")
+            msg_suffix = f" in:\n {bids_path}"
+            warn(
+                f"\nNo bold.json found in BIDS folder{msg_suffix}.",
+                stacklevel=3,
+            )
         return None
 
     return _get_metadata_from_bids(
@@ -103,6 +106,7 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
     )
 
 
+@fill_doc
 def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
     """Return the RepetitionTime metadata field from a BIDS dataset.
 
@@ -117,9 +121,7 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
         ('task', 'localizer').
 
-    verbose : :obj:`int`, optional
-        Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints warnings.
+    %(verbose0)s
 
     Returns
     -------
@@ -137,8 +139,11 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
 
     if not img_specs:
         if verbose:
-            msg_suffix = f" in {bids_path}"
-            warn(f"No bold.json found in BIDS folder{msg_suffix}.")
+            msg_suffix = f" in:\n {bids_path}"
+            warn(
+                f"\nNo bold.json found in BIDS folder{msg_suffix}.",
+                stacklevel=3,
+            )
         return None
 
     return _get_metadata_from_bids(
@@ -176,7 +181,7 @@ def get_bids_files(
 
     Parameters
     ----------
-    main_path : :obj:`str`
+    main_path : :obj:`str` or :obj:`pathlib.Path`
         Directory of the :term:`BIDS` dataset.
 
     file_tag : :obj:`str` accepted by glob, default='*'
@@ -200,7 +205,8 @@ def get_bids_files(
         folders. If given as the empty string '', files will be searched
         inside the sub-label/ses-label directories.
 
-    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), optional
+    filters : :obj:`list` of :obj:`tuple` (:obj:`str`, :obj:`str`), \
+              default=None
         Filters are of the form (field, label). Only one filter per field
         allowed. A file that does not match a filter will be discarded.
         Filter examples would be ('ses', '01'), ('dir', 'ap') and
@@ -219,24 +225,25 @@ def get_bids_files(
         List of file paths found.
 
     """
+    main_path = Path(main_path)
     if sub_folder:
         ses_level = ""
-        files = os.path.join(main_path, "sub-*", "ses-*")
-        session_folder_exists = glob.glob(files)
+        files = main_path / "sub-*" / "ses-*"
+        session_folder_exists = glob.glob(str(files))
         if session_folder_exists:
             ses_level = "ses-*"
 
-        files = os.path.join(
-            main_path,
-            f"sub-{sub_label}",
-            ses_level,
-            modality_folder,
-            f"sub-{sub_label}*_{file_tag}.{file_type}",
+        files = (
+            main_path
+            / f"sub-{sub_label}"
+            / ses_level
+            / modality_folder
+            / f"sub-{sub_label}*_{file_tag}.{file_type}"
         )
     else:
-        files = os.path.join(main_path, f"*{file_tag}.{file_type}")
+        files = main_path / f"*{file_tag}.{file_type}"
 
-    files = glob.glob(files)
+    files = glob.glob(str(files))
     files.sort()
 
     filters = filters or []
@@ -246,7 +253,8 @@ def get_bids_files(
             files = [
                 file_
                 for file_ in files
-                if (key in file_ and file_[key] == value)
+                if (key not in file_ and value == "")
+                or (key in file_ and file_[key] == value)
             ]
         return [ref_file["file_path"] for ref_file in files]
 
@@ -280,7 +288,7 @@ def parse_bids_filename(img_path):
     """
     reference = {
         "file_path": img_path,
-        "file_basename": os.path.basename(img_path),
+        "file_basename": Path(img_path).name,
     }
     parts = reference["file_basename"].split("_")
     tag, type_ = parts[-1].split(".", 1)

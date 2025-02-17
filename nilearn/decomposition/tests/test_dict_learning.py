@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye
 from nilearn.decomposition.dict_learning import DictLearning
@@ -28,6 +29,37 @@ def mask_img():
 def canica_data():
     """Create a canonical ICA data for testing purposes."""
     return _make_canica_test_data()[0]
+
+
+extra_valid_checks = [
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_no_attributes_set_in_init",
+]
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DictLearning()], extra_valid_checks=extra_valid_checks
+    ),
+)
+def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.xfail(reason="invalid checks should fail")
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    check_estimator(
+        estimator=[DictLearning()],
+        valid=False,
+        extra_valid_checks=extra_valid_checks,
+    ),
+)
+def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
@@ -143,18 +175,6 @@ def test_masker_attributes_with_fit(canica_data, mask_img):
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
 
 
-def test_transform_before_fit_error(canica_data, mask_img):
-    dict_learning = DictLearning(mask=mask_img, n_components=3)
-
-    with pytest.raises(
-        ValueError,
-        match="Object has no components_ attribute. "
-        "This is probably because "
-        "fit has not been called",
-    ):
-        dict_learning.transform(canica_data)
-
-
 def test_empty_data_to_fit_error(mask_img):
     """Test if raises an error when empty list of provided."""
     dict_learning = DictLearning(mask=mask_img, n_components=3)
@@ -231,7 +251,7 @@ def test_dictlearning_score(canica_data, mask_img):
     scores = dict_learning.score(canica_data, per_component=False)
 
     assert scores <= 1
-    assert 0 <= scores
+    assert scores >= 0
 
     # Per component score
     scores = dict_learning.score(canica_data, per_component=True)
@@ -239,16 +259,3 @@ def test_dictlearning_score(canica_data, mask_img):
     assert scores.shape, (n_components,)
     assert np.all(scores <= 1)
     assert np.all(scores >= 0)
-
-
-def test_dictlearning_score_before_object_fit_error(canica_data, mask_img):
-    dict_learning = DictLearning(
-        n_components=10, mask=mask_img, random_state=0
-    )
-
-    with pytest.raises(
-        ValueError,
-        match="Object has no components_ attribute. "
-        "This is probably because fit has not been called",
-    ):
-        dict_learning.score(canica_data, per_component=False)

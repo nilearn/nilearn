@@ -18,11 +18,10 @@ More specifically:
    with derivatives from openneuro.
 2. Extract first level model objects automatically
    from the :term:`BIDS` dataset.
-3. Demonstrate Quality assurance of Nistats estimation against available FSL.
+3. Demonstrate Quality assurance of Nilearn estimation against available FSL.
    estimation in the openneuro dataset.
 4. Display contrast plot and uncorrected first level statistics table report.
 """
-
 
 # %%
 # Fetch openneuro :term:`BIDS` dataset
@@ -105,12 +104,17 @@ model, imgs, events, confounds = (
 subject = f"sub-{model.subject_label}"
 model.minimize_memory = False  # override default
 
-import os
+from pathlib import Path
 
 from nilearn.interfaces.fsl import get_design_from_fslmat
 
-fsl_design_matrix_path = os.path.join(
-    data_dir, "derivatives", "task", subject, "stopsignal.feat", "design.mat"
+fsl_design_matrix_path = (
+    Path(data_dir)
+    / "derivatives"
+    / "task"
+    / subject
+    / "stopsignal.feat"
+    / "design.mat"
 )
 design_matrix = get_design_from_fslmat(
     fsl_design_matrix_path, column_names=None
@@ -139,28 +143,27 @@ model.fit(imgs, design_matrices=[design_matrix])
 z_map = model.compute_contrast("StopSuccess - Go")
 
 # %%
-# We show the agreement between the Nilearn estimation and the FSL estimation
-# available in the dataset.
-import nibabel as nib
-
-fsl_z_map = nib.load(
-    os.path.join(
-        data_dir,
-        "derivatives",
-        "task",
-        subject,
-        "stopsignal.feat",
-        "stats",
-        "zstat12.nii.gz",
-    )
-)
-
+# Visualize results
+# -----------------
+# Let's have a look at the Nilearn estimation
+# and the FSL estimation available in the dataset.
 import matplotlib.pyplot as plt
+import nibabel as nib
 from scipy.stats import norm
 
-from nilearn import plotting
+from nilearn.plotting import plot_glass_brain, show
 
-plotting.plot_glass_brain(
+fsl_z_map = nib.load(
+    Path(data_dir)
+    / "derivatives"
+    / "task"
+    / subject
+    / "stopsignal.feat"
+    / "stats"
+    / "zstat12.nii.gz"
+)
+
+plot_glass_brain(
     z_map,
     colorbar=True,
     threshold=norm.isf(0.001),
@@ -168,7 +171,7 @@ plotting.plot_glass_brain(
     plot_abs=False,
     display_mode="ortho",
 )
-plotting.plot_glass_brain(
+plot_glass_brain(
     fsl_z_map,
     colorbar=True,
     threshold=norm.isf(0.001),
@@ -176,14 +179,21 @@ plotting.plot_glass_brain(
     plot_abs=False,
     display_mode="ortho",
 )
-plt.show()
 
-from nilearn.plotting import plot_img_comparison
+# %%
+# We show the agreement between the 2 estimations.
+
+from nilearn.plotting import plot_bland_altman, plot_img_comparison
 
 plot_img_comparison(
     [z_map], [fsl_z_map], model.masker_, ref_label="Nilearn", src_label="FSL"
 )
-plt.show()
+
+plot_bland_altman(
+    z_map, fsl_z_map, model.masker_, ref_label="Nilearn", src_label="FSL"
+)
+
+show()
 
 # %%
 # Simple statistical report of thresholded contrast
@@ -192,7 +202,7 @@ plt.show()
 from nilearn.plotting import plot_contrast_matrix
 
 plot_contrast_matrix("StopSuccess - Go", design_matrix)
-plotting.plot_glass_brain(
+plot_glass_brain(
     z_map,
     colorbar=True,
     threshold=norm.isf(0.001),
@@ -200,21 +210,57 @@ plotting.plot_glass_brain(
     display_mode="z",
     figure=plt.figure(figsize=(4, 4)),
 )
-plt.show()
+show()
 
 # %%
 # We can get a latex table from a Pandas Dataframe for display and publication
 # purposes
+#
+# .. seealso::
+#
+#     This function does not report any named anatomical location
+#     for the clusters.
+#     To get the names of the location of the clusters
+#     according to one or several atlases,
+#     we recommend using
+#     the `atlasreader package <https://github.com/miykael/atlasreader>`_.
+#
 from nilearn.reporting import get_clusters_table
 
 table = get_clusters_table(z_map, norm.isf(0.001), 10)
 print(table.to_latex())
 
 # %%
-# Generating a report
-# -------------------
+# Saving model outputs to disk
+# ----------------------------
+#
+# We can now easily save the main results,
+# the model metadata and an HTML report to the disk.
+#
+output_dir = Path.cwd() / "results" / "plot_bids_features"
+output_dir.mkdir(exist_ok=True, parents=True)
+
+from nilearn.interfaces.bids import save_glm_to_bids
+
+save_glm_to_bids(
+    model,
+    contrasts="StopSuccess - Go",
+    contrast_types={"StopSuccess - Go": "t"},
+    out_dir=output_dir / "derivatives" / "nilearn_glm",
+    prefix=f"{subject}_task-stopsignal",
+)
+
+# %%
+# View the generated files
+files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
+print("\n".join([str(x.relative_to(output_dir)) for x in files]))
+
+# %%
+# Only generating the HTML report
+# -------------------------------
+#
 # Using the computed FirstLevelModel and :term:`contrast` information,
-# we can quickly create a summary report.
+# we can quickly also also only create a summary report.
 from nilearn.reporting import make_glm_report
 
 report = make_glm_report(
@@ -226,24 +272,7 @@ report = make_glm_report(
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
-# report.save_as_html('report.html')
 # report.open_in_browser()
 
-# %%
-# Saving model outputs to disk
-# ----------------------------
-from nilearn.interfaces.bids import save_glm_to_bids
-
-save_glm_to_bids(
-    model,
-    contrasts="StopSuccess - Go",
-    contrast_types={"StopSuccess - Go": "t"},
-    out_dir="derivatives/nilearn_glm/",
-    prefix=f"{subject}_task-stopsignal",
-)
-
-# %%
-# View the generated files
-from glob import glob
-
-print("\n".join(sorted(glob("derivatives/nilearn_glm/*"))))
+# or we can save as an html file
+# report.save_as_html(output_dir / 'report.html')

@@ -1,6 +1,6 @@
 """Tests for :func:`nilearn.plotting.plot_markers`."""
 
-import os
+# ruff: noqa: ARG001
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,25 +28,25 @@ def coords():
         (1, 1, 1, 1),
     ],
 )
-def test_plot_markers_node_values(node_values, coords):
+def test_plot_markers_node_values(matplotlib_pyplot, node_values, coords):
     """Smoke test for plot_markers with different node values."""
     plot_markers(node_values, coords, display_mode="x")
-    plt.close()
 
 
 @pytest.mark.parametrize(
     "node_size", [10, [10, 20, 30, 40], np.array([10, 20, 30, 40])]
 )
-def test_plot_markers_node_sizes(node_size, coords):
+def test_plot_markers_node_sizes(matplotlib_pyplot, node_size, coords):
     """Smoke test for plot_markers with different node sizes."""
     plot_markers([1, 2, 3, 4], coords, node_size=node_size, display_mode="x")
-    plt.close()
 
 
 @pytest.mark.parametrize(
     "node_size", [[10] * 4, [10, 20, 30, 40], np.array([10, 20, 30, 40])]
 )
-def test_plot_markers_node_sizes_lyrz_display(node_size, coords):
+def test_plot_markers_node_sizes_lyrz_display(
+    matplotlib_pyplot, node_size, coords
+):
     """Tests for plot_markers and 'lyrz' display mode.
 
     Tests that markers are plotted with the requested size
@@ -64,7 +64,6 @@ def test_plot_markers_node_sizes_lyrz_display(node_size, coords):
         else:
             expected_sizes = node_size
         assert np.all(display_sizes == expected_sizes)
-    plt.close()
 
 
 @pytest.mark.parametrize(
@@ -75,7 +74,7 @@ def test_plot_markers_node_sizes_lyrz_display(node_size, coords):
         (plt.cm.viridis_r, 2, 3),
     ],
 )
-def test_plot_markers_cmap(cmap, vmin, vmax, coords):
+def test_plot_markers_cmap(matplotlib_pyplot, cmap, vmin, vmax, coords):
     """Smoke test for plot_markers with different cmaps."""
     plot_markers(
         [1, 2, 3, 4],
@@ -85,44 +84,41 @@ def test_plot_markers_cmap(cmap, vmin, vmax, coords):
         node_vmax=vmax,
         display_mode="x",
     )
-    plt.close()
 
 
 @pytest.mark.parametrize("threshold", [-100, 2.5])
-def test_plot_markers_threshold(threshold, coords):
+def test_plot_markers_threshold(matplotlib_pyplot, threshold, coords):
     """Smoke test for plot_markers with different threshold values."""
     plot_markers(
         [1, 2, 3, 4], coords, node_threshold=threshold, display_mode="x"
     )
-    plt.close()
 
 
-def test_plot_markers_tuple_node_coords(coords):
-    """Smoke test for plot_markers with node coordinates passed as a list
-    of tuples.
+def test_plot_markers_tuple_node_coords(matplotlib_pyplot, coords):
+    """Smoke test for plot_markers with node coordinates passed \
+       as a list of tuples.
     """
     plot_markers(
         [1, 2, 3, 4], [tuple(coord) for coord in coords], display_mode="x"
     )
-    plt.close()
 
 
-def test_plot_markers_saving_to_file(coords, tmp_path):
+def test_plot_markers_saving_to_file(matplotlib_pyplot, coords, tmp_path):
     """Smoke test for plot_markers and file saving."""
     filename = tmp_path / "test.png"
     display = plot_markers(
         [1, 2, 3, 4], coords, output_file=filename, display_mode="x"
     )
+
     assert display is None
-    assert os.path.isfile(filename) and os.path.getsize(filename) > 0
-    plt.close()
+    assert filename.is_file() and filename.stat().st_size > 0
 
 
-def test_plot_markers_node_kwargs(coords):
-    """Smoke test for plot_markers testing that node_kwargs is working
-    and does not interfere with alpha.
+def test_plot_markers_node_kwargs(matplotlib_pyplot, coords):
+    """Smoke test for plot_markers testing that node_kwargs is working \
+       and does not interfere with alpha.
     """
-    node_kwargs = dict(marker="s")
+    node_kwargs = {"marker": "s"}
     plot_markers(
         [1, 2, 3, 4],
         coords,
@@ -130,7 +126,6 @@ def test_plot_markers_node_kwargs(coords):
         node_kwargs=node_kwargs,
         display_mode="x",
     )
-    plt.close()
 
 
 @pytest.mark.parametrize(
@@ -141,18 +136,18 @@ def test_plot_markers_node_kwargs(coords):
         _rng().random((4, 4)),
     ],
 )
-def test_plot_markers_dimension_mismatch(matrix, coords):
-    """Tests that an error is raised in plot_markers when the length of
-    node_values mismatches with node_coords.
+def test_plot_markers_dimension_mismatch(matplotlib_pyplot, matrix, coords):
+    """Tests that an error is raised in plot_markers \
+       when the length of node_values mismatches with node_coords.
     """
     with pytest.raises(ValueError, match="Dimension mismatch"):
         plot_markers(matrix, coords, display_mode="x")
 
 
 @pytest.mark.parametrize("vmin,vmax", [(5, None), (None, 0)])
-def test_plot_markers_bound_error(vmin, vmax, coords):
-    """Tests that a ValueError is raised when vmin and vmax
-    have inconsistent values.
+def test_plot_markers_bound_error(matplotlib_pyplot, vmin, vmax, coords):
+    """Tests that a ValueError is raised when vmin and vmax \
+       have inconsistent values.
     """
     with pytest.raises(ValueError):
         plot_markers(
@@ -164,28 +159,26 @@ def test_plot_markers_bound_error(vmin, vmax, coords):
         )
 
 
-def test_plot_markers_node_values_errors(coords):
+def test_plot_markers_node_values_errors(matplotlib_pyplot, coords):
     """Tests that a TypeError is raised when node_values is wrong type."""
     with pytest.raises(TypeError):
         plot_markers(["1", "2", "3", "4"], coords, display_mode="x")
 
 
-def test_plot_markers_threshold_errors(coords):
-    """Tests that a ValueError is raised when node_threshold is
-    higher than the max node_value.
+def test_plot_markers_threshold_errors(matplotlib_pyplot, coords):
+    """Tests that a ValueError is raised when node_threshold is \
+       higher than the max node_value.
     """
     with pytest.raises(ValueError, match="Provided 'node_threshold' value"):
         plot_markers([1, 2, 2, 4], coords, node_threshold=5, display_mode="x")
 
 
-def test_plot_markers_single_node_value():
+def test_plot_markers_single_node_value(matplotlib_pyplot):
     """Regression test for Issue #3253."""
     plot_markers([1], [[1, 1, 1]])
-    plt.close()
 
 
-def test_plot_markers_radiological_view():
+def test_plot_markers_radiological_view(matplotlib_pyplot):
     """Smoke test for radiological view."""
     result = plot_markers([1], [[1, 1, 1]], radiological=True)
     assert result.axes.get("y").radiological is True
-    plt.close()

@@ -1,6 +1,7 @@
 """Tests for the nilearn.interfaces.bids submodule."""
+
 import json
-import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -11,6 +12,7 @@ from nilearn._utils.data_gen import (
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
 )
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.interfaces.bids import (
@@ -35,14 +37,14 @@ def test_get_metadata_from_bids(tmp_path):
     json_file = tmp_path / "sub-01_task-main_bold.json"
     json_files = [json_file]
 
-    with open(json_file, "w") as f:
+    with json_file.open("w") as f:
         json.dump({"RepetitionTime": 2.0}, f)
     value = _get_metadata_from_bids(
         field="RepetitionTime", json_files=json_files
     )
     assert value == 2.0
 
-    with open(json_file, "w") as f:
+    with json_file.open("w") as f:
         json.dump({"foo": 2.0}, f)
     with pytest.warns(UserWarning, match="'RepetitionTime' not found"):
         value = _get_metadata_from_bids(
@@ -126,7 +128,8 @@ def test_infer_slice_timing_start_time_from_dataset(tmp_path):
 
 def _rm_all_json_files_from_bids_dataset(bids_path):
     """Remove all json and make sure that get_bids_files does not find any."""
-    [x.unlink() for x in bids_path.glob("**/*.json")]
+    for x in bids_path.glob("**/*.json"):
+        x.unlink()
     selection = get_bids_files(bids_path, file_type="json", sub_folder=True)
     assert selection == []
     selection = get_bids_files(bids_path, file_type="json", sub_folder=False)
@@ -136,7 +139,7 @@ def _rm_all_json_files_from_bids_dataset(bids_path):
 def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
     """Check if json files are found if in root folder of a dataset.
 
-    see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle  # noqa: E501
+    see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle
     """
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
@@ -191,7 +194,7 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
 def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
     """Check if json files are found if in subject or session folder.
 
-    see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle  # noqa: E501
+    see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle
     """
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path, n_sub=1, n_ses=1, tasks=["main"], n_runs=[1]
@@ -204,7 +207,6 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
         metadata={"RepetitionTime": 1.5},
         json_file=json_file,
     )
-    print(new_json_file)
     assert new_json_file.exists()
 
     # make sure that get_bids_files finds the json file
@@ -229,69 +231,122 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
 
 
 def test_get_bids_files(tmp_path):
+    """Check proper number of files is returned.
+
+    For each possible option of file selection
+    we check that we recover the appropriate amount of files,
+    as included in the fake bids dataset.
+    """
+    n_sub = 2
+
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
-        n_sub=10,
+        n_sub=n_sub,
         n_ses=2,
         tasks=["localizer", "main"],
-        n_runs=[1, 3],
+        n_runs=[1, 2],
     )
-    # For each possible option of file selection we check that we
-    # recover the appropriate amount of files, as included in the
-    # fake bids dataset.
 
-    # 250 files in total related to subject images. Top level files like
-    # README not included
+    # files in total related to subject images.
+    # Top level files like README not included
     selection = get_bids_files(bids_path)
-    assert len(selection) == 250
-    # 160 bold files expected. .nii and .json files
+    assert len(selection) == 19 * n_sub
+    # bold files expected. .nii and .json files
     selection = get_bids_files(bids_path, file_tag="bold")
-    assert len(selection) == 160
-    # Only 90 files are nii.gz. Bold and T1w files.
+    assert len(selection) == 12 * n_sub
+    # files are nii.gz. Bold and T1w files.
     selection = get_bids_files(bids_path, file_type="nii.gz")
-    assert len(selection) == 90
-    # Only 25 files correspond to subject 01
+    assert len(selection) == 7 * n_sub
+    # files correspond to subject 01
     selection = get_bids_files(bids_path, sub_label="01")
-    assert len(selection) == 25
-    # There are only 10 files in anat folders. One T1w per subject.
+    assert len(selection) == 19
+    # There are only n_sub files in anat folders. One T1w per subject.
     selection = get_bids_files(bids_path, modality_folder="anat")
-    assert len(selection) == 10
-    # 20 files corresponding to run 1 of session 2 of main task.
-    # 10 bold.nii.gz and 10 bold.json files. (10 subjects)
+    assert len(selection) == n_sub
+    # files corresponding to run 1 of session 2 of main task.
+    # n_sub bold.nii.gz and n_sub bold.json files.
     filters = [("task", "main"), ("run", "01"), ("ses", "02")]
     selection = get_bids_files(bids_path, file_tag="bold", filters=filters)
-    assert len(selection) == 20
+    assert len(selection) == 2 * n_sub
     # Get Top level folder files. Only 1 in this case, the README file.
     selection = get_bids_files(bids_path, sub_folder=False)
     assert len(selection) == 1
-    # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
+    # counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
     selection = get_bids_files(
-        os.path.join(bids_path, "derivatives"),
+        bids_path / "derivatives",
         file_tag="desc-confounds_timeseries",
     )
-    assert len(selection) == 160
+    assert len(selection) == 12 * n_sub
 
     bids_path = create_fake_bids_dataset(
         base_dir=tmp_path,
-        n_sub=10,
+        n_sub=n_sub,
         n_ses=2,
         tasks=["localizer", "main"],
-        n_runs=[1, 3],
+        n_runs=[1, 2],
         confounds_tag="desc-confounds_regressors",
     )
-    # 80 counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
+    # counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
     selection = get_bids_files(
-        os.path.join(bids_path, "derivatives"),
+        bids_path / "derivatives",
         file_tag="desc-confounds_regressors",
     )
-    assert len(selection) == 160
+    assert len(selection) == 12 * n_sub
+
+
+def test_get_bids_files_no_space_entity(tmp_path):
+    """Pass empty string for a label ignores files containing that label.
+
+    - remove space entity only from subject 01
+    - check that only files from the appropriate subject are returned
+      when passing ("space", "T1w") or ("space", "")
+    """
+    n_sub = 2
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=2,
+        tasks=["main"],
+        n_runs=[2],
+    )
+
+    for file in (bids_path / "derivatives" / "sub-01").glob(
+        "**/*_space-*.nii.gz"
+    ):
+        stem = [
+            entity
+            for entity in file.stem.split("_")
+            if not entity.startswith("space")
+        ]
+        file.replace(file.with_stem("_".join(stem)))
+
+    selection = get_bids_files(
+        bids_path / "derivatives",
+        file_tag="bold",
+        file_type="nii.gz",
+        filters=[("space", "T1w")],
+    )
+
+    assert selection
+    assert all("sub-01" not in file for file in selection)
+
+    selection = get_bids_files(
+        bids_path / "derivatives",
+        file_tag="bold",
+        file_type="nii.gz",
+        filters=[("space", "")],
+    )
+
+    assert selection
+    assert all("sub-02" not in file for file in selection)
 
 
 def test_parse_bids_filename():
     fields = ["sub", "ses", "task", "lolo"]
     labels = ["01", "01", "langloc", "lala"]
     file_name = "sub-01_ses-01_task-langloc_lolo-lala_bold.nii.gz"
-    file_path = os.path.join("dataset", "sub-01", "ses-01", "func", file_name)
+    file_path = Path("dataset", "sub-01", "ses-01", "func", file_name)
     file_dict = parse_bids_filename(file_path)
     for fidx, field in enumerate(fields):
         assert file_dict[field] == labels[fidx]
@@ -302,7 +357,14 @@ def test_parse_bids_filename():
     assert file_dict["file_fields"] == fields
 
 
-def test_save_glm_to_bids(tmp_path_factory):
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
+@pytest.mark.parametrize(
+    "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback", "task-nback"]
+)
+def test_save_glm_to_bids(tmp_path_factory, prefix):
     """Test that save_glm_to_bids saves the appropriate files.
 
     This test reuses code from
@@ -311,46 +373,28 @@ def test_save_glm_to_bids(tmp_path_factory):
     tmpdir = tmp_path_factory.mktemp("test_save_glm_results")
 
     EXPECTED_FILENAMES = [
-        "dataset_description.json",
-        "sub-01_ses-01_task-nback_contrast-effectsOfInterest_design.svg",
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-F_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-effect_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-p_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-variance_statmap.nii.gz"
-        ),
-        (
-            "sub-01_ses-01_task-nback_contrast-effectsOfInterest_"
-            "stat-z_statmap.nii.gz"
-        ),
-        "sub-01_ses-01_task-nback_design.svg",
-        "sub-01_ses-01_task-nback_design.tsv",
-        "sub-01_ses-01_task-nback_stat-errorts_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_stat-rSquare_statmap.nii.gz",
-        "sub-01_ses-01_task-nback_statmap.json",
+        "contrast-effectsOfInterest_design.svg",
+        "contrast-effectsOfInterest_stat-F_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-effect_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-p_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
+        "design.svg",
+        "design.tsv",
+        "design.json",
+        "stat-errorts_statmap.nii.gz",
+        "stat-rsquared_statmap.nii.gz",
+        "statmap.json",
+        "report.html",
     ]
 
     shapes, rk = [(7, 8, 9, 15)], 3
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
         rk,
     )
 
-    masker = NiftiMasker(mask)
-    masker.fit()
-
-    # Call with verbose (improve coverage)
-    single_session_model = FirstLevelModel(
+    single_run_model = FirstLevelModel(
         mask_img=None,
         minimize_memory=False,
     ).fit(
@@ -365,27 +409,68 @@ def test_save_glm_to_bids(tmp_path_factory):
         "effects of interest": "F",
     }
     save_glm_to_bids(
-        model=single_session_model,
+        model=single_run_model,
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmpdir,
+        prefix=prefix,
+    )
+
+    assert (tmpdir / "dataset_description.json").exists()
+
+    sub_prefix = prefix.split("_")[0] if prefix.startswith("sub-") else ""
+
+    for fname in EXPECTED_FILENAMES:
+        assert (tmpdir / sub_prefix / f"{prefix}_{fname}").exists()
+
+
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
+def test_save_glm_to_bids_serialize_affine(tmp_path):
+    """Test that affines are turned into a serializable type.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/4324.
+    """
+    shapes, rk = [(7, 8, 9, 15)], 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes,
+        rk,
+    )
+
+    target_affine = mask.affine
+
+    single_run_model = FirstLevelModel(
+        target_affine=target_affine,
+        minimize_memory=False,
+    ).fit(
+        fmri_data[0],
+        design_matrices=design_matrices[0],
+    )
+
+    save_glm_to_bids(
+        model=single_run_model,
+        contrasts={
+            "effects of interest": np.eye(rk),
+        },
+        contrast_types={
+            "effects of interest": "F",
+        },
+        out_dir=tmp_path,
         prefix="sub-01_ses-01_task-nback",
     )
 
-    for fname in EXPECTED_FILENAMES:
-        full_filename = os.path.join(tmpdir, fname)
-        assert os.path.isfile(full_filename)
-
 
 @pytest.fixture
-def nb_cols_design_matrix():
+def n_cols_design_matrix():
     return 3
 
 
 @pytest.fixture
-def two_runs_model(nb_cols_design_matrix):
+def two_runs_model(n_cols_design_matrix):
     # Create two runs of data
-    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], nb_cols_design_matrix
+    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], n_cols_design_matrix
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
         rk,
@@ -414,14 +499,18 @@ def two_runs_model(nb_cols_design_matrix):
     )
 
 
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
 def test_save_glm_to_bids_errors(
-    tmp_path_factory, two_runs_model, nb_cols_design_matrix
+    tmp_path_factory, two_runs_model, n_cols_design_matrix
 ):
     """Test errors of save_glm_to_bids."""
     tmpdir = tmp_path_factory.mktemp("test_save_glm_to_bids_errors")
 
     # Contrast names must be strings
-    contrasts = {5: np.eye(nb_cols_design_matrix)}
+    contrasts = {5: np.eye(n_cols_design_matrix)}
     contrast_types = {5: "F"}
 
     with pytest.raises(ValueError):
@@ -446,7 +535,22 @@ def test_save_glm_to_bids_errors(
             prefix="sub-01_ses-01_task-nback",
         )
 
+    with pytest.raises(
+        ValueError, match="Extra key-word arguments must be one of"
+    ):
+        save_glm_to_bids(
+            model=two_runs_model,
+            contrasts=["AAA - BBB"],
+            out_dir=tmpdir,
+            prefix="sub-01_ses-01_task-nback",
+            foo="bar",
+        )
 
+
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
 )
@@ -454,8 +558,8 @@ def test_save_glm_to_bids_errors(
 def test_save_glm_to_bids_contrast_definitions(
     tmp_path_factory, two_runs_model, contrasts, prefix
 ):
-    """Test that save_glm_to_bids operates on different contrast definitions as
-    expected.
+    """Test that save_glm_to_bids operates on different contrast definitions \
+       as expected.
 
     - Test string-based contrasts and undefined contrast types
 
@@ -467,21 +571,25 @@ def test_save_glm_to_bids_contrast_definitions(
     )
 
     EXPECTED_FILENAME_ENDINGS = [
-        "dataset_description.json",
-        ("contrast-aaaMinusBbb_stat-effect_statmap.nii.gz"),
+        "contrast-aaaMinusBbb_stat-effect_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-p_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-t_statmap.nii.gz",
-        ("contrast-aaaMinusBbb_stat-variance_statmap.nii.gz"),
+        "contrast-aaaMinusBbb_stat-variance_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-z_statmap.nii.gz",
         "run-1_contrast-aaaMinusBbb_design.svg",
         "run-1_design.svg",
         "run-1_design.tsv",
+        "run-1_design.json",
+        "run-1_stat-errorts_statmap.nii.gz",
+        "run-1_stat-rsquared_statmap.nii.gz",
         "run-2_contrast-aaaMinusBbb_design.svg",
         "run-2_design.svg",
         "run-2_design.tsv",
-        "stat-errorts_statmap.nii.gz",
-        "stat-rSquare_statmap.nii.gz",
+        "run-2_design.json",
+        "run-2_stat-errorts_statmap.nii.gz",
+        "run-2_stat-rsquared_statmap.nii.gz",
         "statmap.json",
+        "report.html",
     ]
 
     save_glm_to_bids(
@@ -492,16 +600,26 @@ def test_save_glm_to_bids_contrast_definitions(
         prefix=prefix,
     )
 
+    assert (tmpdir / "dataset_description.json").exists()
+
+    if not isinstance(prefix, str):
+        prefix = ""
+
+    if prefix and not prefix.endswith("_"):
+        prefix = f"{prefix}_"
+
+    sub_prefix = prefix.split("_")[0] if prefix.startswith("sub-") else ""
+
     for fname in EXPECTED_FILENAME_ENDINGS:
-        if fname != "dataset_description.json" and isinstance(prefix, str):
-            fname = (
-                prefix + fname if prefix.endswith("_") else f"{prefix}_{fname}"
-            )
-        full_filename = os.path.join(tmpdir, fname)
-        assert os.path.isfile(full_filename)
+        assert (tmpdir / sub_prefix / f"{prefix}{fname}").exists()
 
 
-def test_save_glm_to_bids_second_level(tmp_path_factory):
+@pytest.mark.skipif(
+    not is_matplotlib_installed(),
+    reason="This test requires matplotlib to be installed.",
+)
+@pytest.mark.parametrize("prefix", ["task-nback"])
+def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
     """Test save_glm_to_bids on a SecondLevelModel.
 
     This test reuses code from
@@ -510,21 +628,21 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
     tmpdir = tmp_path_factory.mktemp("test_save_glm_to_bids_second_level")
 
     EXPECTED_FILENAMES = [
-        "dataset_description.json",
-        "task-nback_contrast-effectsOfInterest_design.svg",
-        "task-nback_contrast-effectsOfInterest_stat-F_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-effect_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-p_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
-        "task-nback_contrast-effectsOfInterest_stat-z_statmap.nii.gz",
-        "task-nback_design.svg",
-        "task-nback_design.tsv",
-        "task-nback_stat-errorts_statmap.nii.gz",
-        "task-nback_stat-rSquare_statmap.nii.gz",
-        "task-nback_statmap.json",
+        "contrast-effectsOfInterest_design.svg",
+        "contrast-effectsOfInterest_stat-F_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-effect_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-p_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
+        "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
+        "design.svg",
+        "design.tsv",
+        "stat-errorts_statmap.nii.gz",
+        "stat-rsquared_statmap.nii.gz",
+        "statmap.json",
+        "report.html",
     ]
 
-    shapes = ((7, 8, 9, 1),)
+    shapes = ((3, 3, 3, 1),)
     rk = 3
     mask, func_img, _ = generate_fake_fmri_data_and_design(
         shapes,
@@ -536,8 +654,8 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
 
     # fit model
-    Y = [func_img] * 4
-    X = pd.DataFrame([[1]] * 4, columns=["intercept"])
+    Y = [func_img] * 2
+    X = pd.DataFrame([[1]] * 2, columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
 
     contrasts = {
@@ -550,9 +668,10 @@ def test_save_glm_to_bids_second_level(tmp_path_factory):
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmpdir,
-        prefix="task-nback",
+        prefix=prefix,
     )
 
+    assert (tmpdir / "dataset_description.json").exists()
+
     for fname in EXPECTED_FILENAMES:
-        full_filename = os.path.join(tmpdir, fname)
-        assert os.path.isfile(full_filename)
+        assert (tmpdir / "group" / f"{prefix}_{fname}").exists()

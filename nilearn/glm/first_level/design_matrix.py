@@ -32,21 +32,23 @@ Design matrices contain three different types of regressors:
 Author: Bertrand Thirion, 2009-2015
 
 """
-import sys
+
 from warnings import warn
 
 import numpy as np
 import pandas as pd
 
 from nilearn._utils import fill_doc
+from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.param_validation import check_params
 from nilearn.glm._utils import full_rank
 from nilearn.glm.first_level.experimental_paradigm import (
     check_events,
     handle_modulation_of_duplicate_events,
 )
 from nilearn.glm.first_level.hemodynamic_models import (
-    _orthogonalize,
     compute_regressor,
+    orthogonalize,
 )
 
 ######################################################################
@@ -59,7 +61,7 @@ def _poly_drift(order, frame_times):
 
     Parameters
     ----------
-    order : int,
+    order : :obj:`int`,
         Number of polynomials in the drift model.
 
     frame_times : array of shape(n_scans),
@@ -76,17 +78,17 @@ def _poly_drift(order, frame_times):
     tmax = float(frame_times.max())
     for k in range(order + 1):
         pol[:, k] = (frame_times / tmax) ** k
-    pol = _orthogonalize(pol)
+    pol = orthogonalize(pol)
     pol = np.hstack((pol[:, 1:], pol[:, :1]))
     return pol
 
 
-def _cosine_drift(high_pass, frame_times):
+def create_cosine_drift(high_pass, frame_times):
     """Create a cosine drift matrix with frequencies or equal to high_pass.
 
     Parameters
     ----------
-    high_pass : float
+    high_pass : :obj:`float`
         Cut frequency of the high-pass filter in Hz
 
     frame_times : array of shape (n_scans,)
@@ -149,10 +151,10 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     frame_times : array of shape(n_scans),
         list of values representing the desired TRs
 
-    order : int, optional,
+    order : :obj:`int`, optional,
         order of the drift model (in case it is polynomial)
 
-    high_pass : float, optional,
+    high_pass : :obj:`float`, optional,
         high-pass frequency in case of a cosine model (in Hz)
 
     Returns
@@ -160,7 +162,7 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     drift : array of shape(n_scans, n_drifts),
         the drift matrix
 
-    names : list of length(n_drifts),
+    names : :obj:`list` of length(n_drifts),
         the associated names
 
     """
@@ -169,7 +171,7 @@ def _make_drift(drift_model, frame_times, order, high_pass):
     if drift_model == "polynomial":
         drift = _poly_drift(order, frame_times)
     elif drift_model == "cosine":
-        drift = _cosine_drift(high_pass, frame_times)
+        drift = create_cosine_drift(high_pass, frame_times)
     elif drift_model is None:
         drift = _none_drift(frame_times)
     else:
@@ -183,7 +185,7 @@ def _convolve_regressors(
     events,
     hrf_model,
     frame_times,
-    fir_delays=[0],
+    fir_delays=None,
     min_onset=-24,
     oversampling=50,
 ):
@@ -197,23 +199,21 @@ def _convolve_regressors(
         see nilearn.glm.first_level.experimental_paradigm to check the
         specification for these to be valid paradigm descriptors
 
-    hrf_model : {'spm', 'spm + derivative', 'spm + derivative + dispersion',
-        'glover', 'glover + derivative', 'glover + derivative + dispersion',
-        'fir', None}
-        String that specifies the hemodynamic response function
+    %(hrf_model)s
 
     frame_times : array of shape (n_scans,)
         The targeted timing for the design matrix.
 
-    fir_delays : array-like of shape (n_onsets,), default=[0]
+    fir_delays : array-like of shape (n_onsets,), default=None
         In case of FIR design, yields the array of delays
         used in the FIR model (in scans).
+        Will default to ``[0]`` if ``None`` is passed.
 
-    min_onset : float, default=-24
+    min_onset : :obj:`float`, default=-24
         Minimal onset relative to frame_times[0] (in seconds) events
         that start before frame_times[0] + min_onset are not considered.
 
-    oversampling : int, default=50
+    oversampling : :obj:`int`, default=50
         Oversampling factor used in temporal convolutions.
 
     Returns
@@ -222,7 +222,7 @@ def _convolve_regressors(
         Contains the convolved regressors associated with the
         experimental conditions.
 
-    regressor_names : list of strings,
+    regressor_names : :obj:`list` of strings,
         The regressor names, that depend on the hrf model used
         if 'glover' or 'spm' then this is identical to the input names
         if 'glover + derivative' or 'spm + derivative', a second name is output
@@ -233,16 +233,19 @@ def _convolve_regressors(
         if 'fir', the regressos are numbered according to '#name_#delay'
 
     """
+    check_params(locals())
+    if fir_delays is None:
+        fir_delays = [0]
     regressor_names = []
     regressor_matrix = None
 
     events_copy = check_events(events)
     cleaned_events = handle_modulation_of_duplicate_events(events_copy)
 
-    trial_type = cleaned_events["trial_type"].values
-    onset = cleaned_events["onset"].values
-    duration = cleaned_events["duration"].values
-    modulation = cleaned_events["modulation"].values
+    trial_type = cleaned_events["trial_type"].to_numpy()
+    onset = cleaned_events["onset"].to_numpy()
+    duration = cleaned_events["duration"].to_numpy()
+    modulation = cleaned_events["modulation"].to_numpy()
 
     for condition in np.unique(trial_type):
         condition_mask = trial_type == condition
@@ -282,7 +285,7 @@ def make_first_level_design_matrix(
     drift_model="cosine",
     high_pass=0.01,
     drift_order=1,
-    fir_delays=[0],
+    fir_delays=None,
     add_regs=None,
     add_reg_names=None,
     min_onset=-24,
@@ -295,58 +298,74 @@ def make_first_level_design_matrix(
     frame_times : array of shape (n_frames,)
         The timing of acquisition of the scans in seconds.
 
-    events : DataFrame instance, optional
+    events : :obj:`pandas.DataFrame` instance, \
+             or :obj:`str` or :obj:`pathlib.Path` to a CSV or TSV file, \
+             or None, default=None
         Events data that describes the experimental paradigm.
-         The DataFrame instance might have these keys:
-            'onset': column to specify the start time of each events in
-                     seconds. An error is raised if this key is missing.
-            'trial_type': column to specify per-event experimental conditions
-                          identifier. If missing each event are labelled
-                          'dummy' and considered to form a unique condition.
-            'duration': column to specify the duration of each events in
-                        seconds. If missing the duration of each events is set
-                        to zero.
-            'modulation': column to specify the amplitude of each
-                          events. If missing the default is set to
-                          ones(n_events).
+        The resulting DataFrame instance must/may have these keys:
 
-        An experimental paradigm is valid if it has an 'onset' key
-        and a 'duration' key.
+        - ``'onset'``: REQUIRED
+            Column to specify the start time of each events in seconds.
+            An error is raised if this key is missing.
+
+        - ``'duration'``: REQUIRED
+            Column to specify the duration of each events in seconds.
+
+            .. warning::
+
+                Events with a duration of 0 seconds will be modeled
+                using a 'delta function'.
+
+        - ``'trial_type'``: OPTIONAL
+            Column to specify per-event experimental conditions identifier.
+            If missing each event are labeled 'dummy'
+            and considered to form a unique condition.
+
+        - ``'modulation'``: OPTIONAL
+            Column to specify the amplitude of each events.
+            If missing the default is set to ones(n_events).
+
+        An experimental paradigm is valid if it has an ``'onset'`` key
+        and a ``'duration'`` key.
         If these keys are missing an error will be raised.
         For the others keys a warning will be displayed.
-        Particular attention should be given to the 'trial_type' key
+        Particular attention should be given to the ``'trial_type'`` key
         which defines the different conditions in the experimental paradigm.
+
     %(hrf_model)s
+
     drift_model : {'cosine', 'polynomial', None}, default='cosine'
         Specifies the desired drift model.
 
-    high_pass : float, default=0.01
+    high_pass : :obj:`float`, default=0.01
         High-pass frequency in case of a cosine model (in Hz).
 
-    drift_order : int, default=1
+    drift_order : :obj:`int`, default=1
         Order of the drift model (in case it is polynomial).
 
-    fir_delays : array of shape(n_onsets) or list, default=[0]
+    fir_delays : array of shape(n_onsets), :obj:`list` or None, default=None
+        Will be set to ``[0]`` if ``None`` is passed.
         In case of :term:`FIR` design,
         yields the array of delays used in the :term:`FIR`
         model (in scans).
 
     add_regs : array of shape(n_frames, n_add_reg) or \
-            pandas DataFrame, optional
+            pandas DataFrame or None, default=None
         additional user-supplied regressors, e.g. data driven noise regressors
         or seed based regressors.
 
-    add_reg_names : list of (n_add_reg,) strings, optional
+    add_reg_names : :obj:`list` of (n_add_reg,) :obj:`str`, or \
+        None, default=None
         If None, while add_regs was provided, these will be termed
         'reg_i', i = 0..n_add_reg - 1
         If add_regs is a DataFrame, the corresponding column names are used
         and add_reg_names is ignored.
 
-    min_onset : float, default=-24
+    min_onset : :obj:`float`, default=-24
         Minimal onset relative to frame_times[0] (in seconds)
         events that start before frame_times[0] + min_onset are not considered.
 
-    oversampling : int, default=50
+    oversampling : :obj:`int`, default=50
         Oversampling factor used in temporal convolutions.
 
     Returns
@@ -356,17 +375,20 @@ def make_first_level_design_matrix(
         and each column a regressor.
 
     """
+    check_params(locals())
+    if fir_delays is None:
+        fir_delays = [0]
     # check arguments
     # check that additional regressor specification is correct
     n_add_regs = 0
     if add_regs is not None:
         if isinstance(add_regs, pd.DataFrame):
-            add_regs_ = add_regs.values
+            add_regs_ = add_regs.to_numpy()
             add_reg_names = add_regs.columns.tolist()
         else:
             add_regs_ = np.atleast_2d(add_regs)
         n_add_regs = add_regs_.shape[1]
-        assert add_regs_.shape[0] == np.size(frame_times), ValueError(
+        assert add_regs_.shape[0] == np.size(frame_times), (
             "Incorrect specification of additional regressors: "
             f"length of regressors provided: {add_regs_.shape[0]}, number of "
             f"time-frames: {np.size(frame_times)}."
@@ -387,6 +409,7 @@ def make_first_level_design_matrix(
 
     # step 1: events-related regressors
     if events is not None:
+        events = check_and_load_tables(events, "events")[0]
         # create the condition-related regressors
         if isinstance(hrf_model, str):
             hrf_model = hrf_model.lower()
@@ -427,7 +450,7 @@ def check_design_matrix(design_matrix):
 
     Parameters
     ----------
-    design matrix : pandas DataFrame,
+    design matrix : :obj:`pandas.DataFrame`
         Describes a design matrix.
 
     Returns
@@ -442,9 +465,11 @@ def check_design_matrix(design_matrix):
         Per-event onset time (in seconds)
 
     """
+    if len(design_matrix.columns) == 0:
+        raise ValueError("The design_matrix dataframe cannot be empty.")
     names = list(design_matrix.keys())
     frame_times = design_matrix.index
-    matrix = design_matrix.values
+    matrix = design_matrix.to_numpy()
     return frame_times, matrix, names
 
 
@@ -476,16 +501,16 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
         confounds_name = confounds.columns.tolist()
         confounds_name.remove("subject_label")
 
-    design_columns = confounds_name + ["intercept"]
+    design_columns = [*confounds_name, "intercept"]
     # check column names are unique
     if len(np.unique(design_columns)) != len(design_columns):
         raise ValueError("Design matrix columns do not have unique names")
 
     # float dtype necessary for linalg
-    design_matrix = pd.DataFrame(columns=design_columns, dtype=float)
+    design_matrix = pd.DataFrame(columns=design_columns, dtype="float64")
     for ridx, subject_label in enumerate(subjects_label):
-        design_matrix.loc[ridx] = [0] * len(design_columns)
-        design_matrix.loc[ridx, "intercept"] = 1
+        design_matrix.loc[ridx] = [0.0] * len(design_columns)
+        design_matrix.loc[ridx, "intercept"] = 1.0
         if confounds is not None:
             conrow = confounds["subject_label"] == subject_label
             if np.sum(conrow) > 1:
@@ -498,11 +523,10 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
                     f"confounds not specified for subject {subject_label}"
                 )
             for conf_name in confounds_name:
-                confounds_value = confounds[conrow][conf_name].values[0]
+                confounds_value = confounds[conrow][conf_name].to_numpy()[0]
                 design_matrix.loc[ridx, conf_name] = confounds_value
 
     # check design matrix is not singular
-    sys.float_info.epsilon
     if np.linalg.cond(design_matrix.values) > design_matrix.size:
         warn(
             "Attention: Design matrix is singular. Aberrant estimates "

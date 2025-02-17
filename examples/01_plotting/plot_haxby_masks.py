@@ -8,8 +8,8 @@ Small script to plot the masks of the Haxby dataset.
 # %%
 # Load Haxby dataset
 # ------------------
-
 from nilearn import datasets
+from nilearn.plotting import plot_anat, show
 
 haxby_dataset = datasets.fetch_haxby()
 
@@ -25,17 +25,14 @@ print(
 from nilearn import image
 
 func_filename = haxby_dataset.func[0]
-mean_img = image.mean_img(func_filename)
+mean_img = image.mean_img(func_filename, copy_header=True)
 
 z_slice = -14
 
 # %%
 # Plot the masks
 # --------------
-
 import matplotlib.pyplot as plt
-
-from nilearn.plotting import plot_anat, show
 
 fig = plt.figure(figsize=(4, 5.4), facecolor="k")
 

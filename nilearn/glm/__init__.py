@@ -1,4 +1,5 @@
-"""Analysing fMRI data using GLMs."""
+"""Analyzing fMRI data using GLMs."""
+
 from nilearn.glm import first_level, second_level
 from nilearn.glm.contrasts import (
     Contrast,
@@ -29,9 +30,9 @@ __all__ = [
     "FContrastResults",
     "LikelihoodModelResults",
     "OLSModel",
-    "TContrastResults",
     "RegressionResults",
     "SimpleRegressionResults",
+    "TContrastResults",
     "cluster_level_inference",
     "compute_contrast",
     "compute_fixed_effects",

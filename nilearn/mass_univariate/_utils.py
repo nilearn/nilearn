@@ -1,4 +1,5 @@
 """Utility functions for the permuted least squares method."""
+
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
@@ -58,7 +59,7 @@ def calculate_tfce(
     ----------
     .. [1] Smith, S. M., & Nichols, T. E. (2009).
        Threshold-free cluster enhancement: addressing problems of smoothing,
-       threshold dependence and localisation in cluster inference.
+       threshold dependence and localization in cluster inference.
        Neuroimage, 44(1), 83-98.
     """
     tfce_4d = np.zeros_like(arr4d)
@@ -83,7 +84,7 @@ def calculate_tfce(
         # If we apply the sign first...
         for sign in signs:
             # Init a temp copy of arr3d with the current sign applied,
-            # which can then be re-used by incrementally setting more
+            # which can then be reused by incrementally setting more
             # voxel's to background, by taking advantage that each score_thresh
             # is incrementally larger
             temp_arr3d = arr3d * sign
@@ -93,7 +94,7 @@ def calculate_tfce(
                 temp_arr3d[temp_arr3d < score_thresh] = 0
 
                 # Label into clusters - importantly (for the next step)
-                # this returns clusters labelled ordinally
+                # this returns clusters labeled ordinally
                 # from 1 to n_clusters+1,
                 # which allows us to use bincount to count
                 # frequencies directly.
@@ -120,9 +121,7 @@ def calculate_tfce(
                 # (via the current score_thresh)
                 # NOTE: We do not multiply by dh, based on fslmaths'
                 # implementation. This differs from the original paper.
-                cluster_tfces = (
-                    sign * (cluster_counts**E) * (score_thresh**H)
-                )
+                cluster_tfces = sign * (cluster_counts**E) * (score_thresh**H)
 
                 # Before we can add these values to tfce_4d, we need to
                 # map cluster-wise tfce values back to a voxel-wise array,
@@ -296,7 +295,7 @@ def normalize_matrix_on_axis(m, axis=0):
     m : numpy 2D array,
         The matrix to normalize.
 
-    axis : integer in {0, 1}, default=0
+    axis : :obj`int` in {0, 1}, default=0
         A valid axis to normalize across.
 
     Returns
@@ -308,7 +307,8 @@ def normalize_matrix_on_axis(m, axis=0):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     normalize_matrix_on_axis)
+    ...     normalize_matrix_on_axis,
+    ... )
     >>> X = np.array([[0, 4], [1, 0]])
     >>> normalize_matrix_on_axis(X)
     array([[0., 1.],
@@ -357,7 +357,8 @@ def orthonormalize_matrix(m, tol=1.0e-12):
     --------
     >>> import numpy as np
     >>> from nilearn.mass_univariate.permuted_least_squares import (
-    ...     orthonormalize_matrix)
+    ...     orthonormalize_matrix,
+    ... )
     >>> X = np.array([[1, 2], [0, 1], [1, 1]])
     >>> orthonormalize_matrix(X)
     array([[-0.81049889, -0.0987837 ],

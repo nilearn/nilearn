@@ -9,7 +9,7 @@ parcellations, and atlases of the human brain. You can read about it
 and browse the images it contains at https://www.neurovault.org. You
 can download maps from Neurovault with Nilearn.
 
-Neurovault was introduced in [1]_.
+Neurovault was introduced in :footcite:t:`Gorgolewski2015`.
 
 Neurovault contains collections of images. We can get information
 about each collection - such as who uploaded it, a link to a paper, a
@@ -30,7 +30,7 @@ collection's webpage, you can click 'Details' to see its id
 (and more). You can then download it using
 :func:`nilearn.datasets.fetch_neurovault_ids` :
 
-.. code-block:: default
+.. code-block:: python
 
   from nilearn.datasets import fetch_neurovault_ids
   brainpedia = fetch_neurovault_ids(collection_ids=[1952])
@@ -38,7 +38,7 @@ collection's webpage, you can click 'Details' to see its id
 Or if you want some images in particular, rather than whole
 collections :
 
-.. code-block:: default
+.. code-block:: python
 
   brainpedia_subset = fetch_neurovault_ids(image_ids=[32015, 32016])
 
@@ -64,7 +64,7 @@ For example, many images on Neurovault have a "modality" field in their
 metadata.  :term:`BOLD` images should have it set to "fMRI-BOLD".
 We can ask for :term:`BOLD` images only :
 
-.. code-block:: default
+.. code-block:: python
 
   bold = fetch_neurovault(image_terms={'modality': 'fMRI-BOLD'}, max_images=7)
 
@@ -77,17 +77,17 @@ The default values for the ``collection_terms`` and ``image_terms`` parameters
 filter out empty collections, and exclude an image if one of the following is
 true:
 
-   - it is not in :term:`MNI` space.
-   - its metadata field "is_valid" is cleared.
-   - it is thresholded.
-   - its map type is one of "ROI/mask", "anatomical", or "parcellation".
-   - its image type is "atlas"
+- it is not in :term:`MNI` space.
+- its metadata field "is_valid" is cleared.
+- it is thresholded.
+- its map type is one of "ROI/mask", "anatomical", or "parcellation".
+- its image type is "atlas"
 
 Extra keyword arguments are treated as additional image filters, so if we want
 to keep the default filters, and add the requirement that the modality should
 be "fMRI-BOLD", we can write:
 
-.. code-block:: default
+.. code-block:: python
 
   bold = fetch_neurovault(modality='fMRI-BOLD', max_images=7)
 
@@ -96,7 +96,7 @@ comparison to a single value. For example, we may also be interested
 in CBF and CBV images. In ``nilearn``, the ``dataset.neurovault`` module
 provides ``IsIn`` which makes this easy :
 
-.. code-block:: default
+.. code-block:: python
 
   from nilearn.datasets import neurovault
   fmri = fetch_neurovault(modality=neurovault.IsIn('fMRI-BOLD', 'fMRI-CBF', 'fMRI-CBV'),
@@ -104,13 +104,13 @@ provides ``IsIn`` which makes this easy :
 
 We could also have used ``Contains`` :
 
-.. code-block:: default
+.. code-block:: python
 
   fmri = fetch_neurovault(modality=neurovault.Contains('fMRI'), max_images=7)
 
 If we need regular expressions, we can also use ``Pattern`` :
 
-.. code-block:: default
+.. code-block:: python
 
   fmri = fetch_neurovault(
     modality=neurovault.Pattern('fmri(-.*)?', neurovault.re.IGNORECASE),
@@ -136,7 +136,7 @@ job for images. The default values for these parameters don't filter out
 anything.
 Using a filter rather than a dictionary, the first example becomes:
 
-.. code-block:: default
+.. code-block:: python
 
   bold = fetch_neurovault(image_filter=lambda meta: meta.get('modality') == 'fMRI-BOLD',
                           image_terms={}, max_images=7)
@@ -157,7 +157,7 @@ many metadata fields - say, an image should only be kept if its metadata has
 less than 50 fields.  This cannot be done by simply comparing each key in a
 metadata dictionary to a required value, so we need to write our own filter:
 
-.. code-block:: default
+.. code-block:: python
 
   small_meta_images = fetch_neurovault(image_filter=lambda meta: len(meta) < 50,
                                        max_images=7)
@@ -171,11 +171,10 @@ attributes.
 
 It contains:
 
-  - ``images``, the paths to downloaded files.
-  - ``images_meta``, the metadata for the images in a list of
-    dictionaries.
-  - ``collections_meta``, the metadata for the collections.
-  - ``description``, a short description of the Neurovault dataset.
+- ``images``, the paths to downloaded files.
+- ``images_meta``, the metadata for the images in a list of dictionaries.
+- ``collections_meta``, the metadata for the collections.
+- ``description``, a short description of the Neurovault dataset.
 
 Note to ``pandas`` users: passing ``images_meta`` or ``collections_meta``
 to the ``DataFrame`` constructor yields the expected result, with
@@ -189,7 +188,7 @@ Neurovault. Neurosynth is a platform for large-scale, automated
 synthesis of :term:`fMRI` data. It can be used to perform decoding.  You can
 learn more about Neurosynth at https://www.neurosynth.org.
 
-Neurosynth was introduced in [2]_.
+Neurosynth was introduced in :footcite:`Yarkoni2011`.
 
 If you set the parameter ``fetch_neurosynth_words`` when calling
 ``fetch_neurovault`` or ``fetch_neurovault_ids``, we will also
@@ -197,34 +196,22 @@ download the annotations for the resulting images. They will be stored
 as json files on your disk. The result will also contain (unless you
 clear the ``vectorize_words`` parameter to save computation time):
 
-   - ``vocabulary``, a list of words
-   - ``word_frequencies``, the weight of the words returned by
-     neurosynth.org for each image, such that the weight of word
-     ``vocabulary[j]`` for the image found in ``images[i]`` is
-     ``word_frequencies[i, j]``
+- ``vocabulary``, a list of words
+- ``word_frequencies``, the weight of the words returned by
+  neurosynth.org for each image, such that the weight of word
+  ``vocabulary[j]`` for the image found in ``images[i]`` is
+  ``word_frequencies[i, j]``
 
 Examples using Neurovault
 -------------------------
 
-    - :ref:`sphx_glr_auto_examples_07_advanced_plot_ica_neurovault.py`
-          Download images from Neurovault and extract some networks
-          using ICA.
+- :ref:`sphx_glr_auto_examples_07_advanced_plot_ica_neurovault.py`
+      Download images from Neurovault and extract some networks using ICA.
 
-    - :ref:`sphx_glr_auto_examples_07_advanced_plot_neurovault_meta_analysis.py`
-        Meta-analysis of "Stop minus go" studies available on
-        Neurovault.
+- :ref:`sphx_glr_auto_examples_07_advanced_plot_neurovault_meta_analysis.py`
+    Meta-analysis of "Stop minus go" studies available on Neurovault.
 
 References
 ----------
 
-.. [1] Gorgolewski KJ, Varoquaux G, Rivera G, Schwartz Y, Ghosh SS,
-   Maumet C, Sochat VV, Nichols TE, Poldrack RA, Poline J-B,
-   Yarkoni T and Margulies DS (2015) NeuroVault.org: a web-based
-   repository for collecting and sharing unthresholded
-   statistical maps of the human brain. Front. Neuroinform. 9:8.
-   doi: 10.3389/fninf.2015.00008
-
-.. [2] Yarkoni, Tal, Russell A. Poldrack, Thomas E. Nichols, David
-   C. Van Essen, and Tor D. Wager. "Large-scale automated synthesis
-   of human functional neuroimaging data." Nature methods 8, no. 8
-   (2011): 665-670.
+.. footbibliography::

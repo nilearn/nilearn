@@ -11,19 +11,20 @@
 NEW
 ---
 
+- :bdg-success:`API` New function :func:`~datasets.fetch_atlas_schaefer_2018`.
+
+- :bdg-success:`API` New function :func:`~datasets.fetch_coords_seitzman_2018`.
+
+- :bdg-dark:`Code` Calculate image data ``dtype`` from header information.
+
+- :bdg-dark:`Code` Class :class:`~maskers.NiftiLabelsMasker` now consumes less memory when extracting the signal from a 3D/4D image. This is especially noteworthy when extracting signals from large 4D images.
+
 - :bdg-danger:`Deprecation` **Support for Python2 & Python3.4 will be removed in the next release.**
   We recommend Python 3.6 and up.
   Users with a Python2 or Python3.4 environment will be warned at their first Nilearn import.
 
-- :bdg-dark:`Code` Calculate image data ``dtype`` from header information.
-
 - :bdg-info:`Plotting` New display mode ``tiled`` which allows 2x2 plot arrangement when plotting three cuts (see :ref:`plotting`).
 
-- :bdg-dark:`Code` Class :class:`~maskers.NiftiLabelsMasker` now consumes less memory when extracting the signal from a 3D/4D image. This is especially noteworthy when extracting signals from large 4D images.
-
-- :bdg-success:`API` New function :func:`~datasets.fetch_atlas_schaefer_2018`.
-
-- :bdg-success:`API` New function :func:`~datasets.fetch_coords_seitzman_2018`.
 
 Changes
 -------
@@ -77,13 +78,13 @@ Contributors
 
 The following people contributed to this release:
 
-    * `Bertrand Thirion`_ (2)
-    * `Kshitij Chawla`_ (90)
-    * `Franz Liem`_ (22)
-    * `Jerome Dockes`_ (16)
-    * `Gael Varoquaux`_ (11)
-    * `Salma Bougacha`_ (8)
-    * himanshupathak21061998 (7)
-    * `Elizabeth DuPre`_ (2)
-    * `Eric Larson`_ (1)
-    * `Pierre Bellec`_ (1)
+* `Bertrand Thirion`_ (2)
+* `Kshitij Chawla`_ (90)
+* `Franz Liem`_ (22)
+* `Jerome Dockes`_ (16)
+* `Gael Varoquaux`_ (11)
+* `Salma Bougacha`_ (8)
+* himanshupathak21061998 (7)
+* `Elizabeth DuPre`_ (2)
+* `Eric Larson`_ (1)
+* `Pierre Bellec`_ (1)
