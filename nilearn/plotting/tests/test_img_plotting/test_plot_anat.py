@@ -19,7 +19,6 @@ def test_plot_anat_mni(anat_img, display_mode, tmp_path):
 
 @pytest.mark.parametrize("anat_img", [False, MNI152TEMPLATE])
 @pytest.mark.parametrize("display_mode", ["z", "ortho"])
-@pytest.mark.parametrize("cbar_tick_format", ["%.2g", "%i"])
 def test_plot_anat_colorbar(
     anat_img, display_mode, cbar_tick_format, tmp_path
 ):

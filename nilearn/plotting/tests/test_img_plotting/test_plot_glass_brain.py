@@ -23,23 +23,14 @@ def test_plot_glass_brain(matplotlib_pyplot, img_3d_mni):
         plot_abs=False,
         resampling_interpolation="nearest",
     )
-    # test plot_glass_brain with vmin/vmax defined
-    plot_glass_brain(
-        img_3d_mni,
-        colorbar=True,
-        plot_abs=False,
-        vmin=-2,
-        vmax=5,
-    )
 
 
-@pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("plot_abs", [True, False])
 def test_plot_glass_brain_background_absolute(
-    matplotlib_pyplot, img_3d_mni, plot_abs, black_bg
+    matplotlib_pyplot, img_3d_mni, plot_abs
 ):
     """Somke test for absolute value plotting and background."""
-    plot_glass_brain(img_3d_mni, black_bg=black_bg, plot_abs=plot_abs)
+    plot_glass_brain(img_3d_mni, plot_abs=plot_abs)
 
 
 def test_plot_glass_brain_file_output(matplotlib_pyplot, img_3d_mni, tmp_path):
@@ -143,11 +134,6 @@ def test_plot_glass_brain_with_completely_masked_img(
 ):
     """Smoke test for PR #1888 with display modes having 'l'."""
     plot_glass_brain(img_3d_mni, display_mode=display_mode)
-
-
-def test_plot_glass_brain_vmin_vmax(matplotlib_pyplot, img_3d_mni):
-    """Smoke tests for plot_glass_brain being passed vmin and vmax."""
-    plot_glass_brain(img_3d_mni, vmin=-2, vmax=2)
 
 
 def test_plot_glass_brain_negative_vmin_with_plot_abs(

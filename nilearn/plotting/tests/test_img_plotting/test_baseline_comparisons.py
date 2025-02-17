@@ -45,24 +45,61 @@ PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
 
 
 @pytest.mark.mpl_image_compare
-@pytest.mark.parametrize(
-    "plot_func",
-    {
-        plot_img,
-        plot_stat_map,
-        plot_glass_brain,
-    },
-)
-def test_plot_functions_stat_map(plot_func):
-    """Smoke tests for 3D plotting functions with default parameters."""
-    return plot_func(load_sample_motor_activation_image())
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+@pytest.mark.parametrize("black_bg", [True, False])
+def test_plot_functions_black_bg(plot_func, img_3d_mni, black_bg):
+    """Test parameter for black background."""
+    return plot_func(img_3d_mni, black_bg=black_bg)
 
 
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-def test_plot_functions_3d_default_params(plot_func, img_3d_mni):
+@pytest.mark.parametrize("title", [None, "foo"])
+def test_plot_functions_title(plot_func, img_3d_mni, title):
+    """Test parameter for title."""
+    return plot_func(img_3d_mni, title=title)
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+@pytest.mark.parametrize("annotate", [True, False])
+def test_plot_functions_annotate(plot_func, img_3d_mni, annotate):
+    """Test parameter for title."""
+    return plot_func(img_3d_mni, annotate=annotate)
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+@pytest.mark.parametrize("vmin", [None, -1, 1])
+@pytest.mark.parametrize("vmax", [None, 2, 3])
+def test_plot_functions_3d_default_params(plot_func, vmin, vmax):
     """Smoke tests for 3D plotting functions with default parameters."""
-    return plot_func(img_3d_mni)
+    return plot_func(
+        load_sample_motor_activation_image(), vmin=vmin, vmax=vmax
+    )
+
+
+@pytest.mark.parametrize("plotting_func", PLOTTING_FUNCS_3D)
+@pytest.mark.parametrize("radiological", [True, False])
+def test_plotting_functions_radiological_view(
+    img_3d_mni, plotting_func, radiological
+):
+    """Smoke test for radiological view."""
+    result = plotting_func(img_3d_mni, radiological=radiological)
+    assert result.axes.get("y").radiological is radiological
+    return result
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+@pytest.mark.parametrize("cbar_tick_format", ["%f", "%i"])
+def test_cbar_tick_format(plot_func, img_3d_mni, cbar_tick_format):
+    """Test different colorbar tick format with 3D plotting functions."""
+    return plot_func(
+        img_3d_mni,
+        colorbar=True,
+        cbar_tick_format=cbar_tick_format,
+    )
 
 
 @pytest.mark.mpl_image_compare

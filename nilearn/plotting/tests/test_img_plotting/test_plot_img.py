@@ -83,7 +83,7 @@ def test_plot_img_with_auto_cut_coords(
     data = np.zeros((20, 20, 20))
     data[3:-3, 3:-3, 3:-3] = 1
     img = Nifti1Image(data, affine_eye)
-    plot_img(img, cut_coords=None, display_mode=display_mode, black_bg=True)
+    plot_img(img, cut_coords=None, display_mode=display_mode)
 
 
 @pytest.mark.parametrize("binary_img", [True, False])
