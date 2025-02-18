@@ -1,11 +1,11 @@
 """
-Matplotlib colormaps in Nilearn
-===============================
+Colormaps in Nilearn
+====================
 
-Visualize HCP connectome workbench color maps shipped with Nilearn
-which can be used for plotting brain images on surface.
+Here we show some of the colormaps that ship with Nilearn
+(some adapted from the HCP connectome workbench color maps).
 
-See :ref:`surface-plotting` for surface plotting details.
+This example show also some of the pros and cons of some of those maps.
 """
 
 import matplotlib.pyplot as plt
@@ -30,7 +30,7 @@ def plot_color_gradients(color_maps):
 
     nrows = len(color_map_names)
     figh = 0.35 + 0.15 + (nrows + (nrows - 1) * 0.1) * 0.22
-    fig, axs = plt.subplots(nrows=nrows + 1, figsize=(6.4, figh))
+    fig, axs = plt.subplots(nrows=nrows + 1, figsize=(13, figh))
     fig.subplots_adjust(
         top=1 - 0.35 / figh, bottom=0.15 / figh, left=0.2, right=0.99
     )
@@ -69,6 +69,29 @@ m_cmaps = [
 ]
 
 plot_color_gradients(m_cmaps)
+
+# show()
+
+# %%
+# Choosing colormaps
+# ------------------
+# Some of the `cyclic colormaps <https://matplotlib.org/stable/users/explain/colors/colormaps.html#cyclic>`_
+# shipped with nilearn (like ``"cold_hot"``) will have the same values
+# for very large and very small values,
+# making it hard to distinguish 'actrivations' from 'deactivations'.
+#
+# In this case, you may want to use
+# a proper `diverging colormaps <https://matplotlib.org/stable/users/explain/colors/colormaps.html#diverging>`_
+# (like ``"RdBu_r"`` that is the default for many Nilearn plotting functions).
+#
+
+from nilearn.datasets import load_sample_motor_activation_image
+from nilearn.plotting import plot_stat_map
+
+stat_map = load_sample_motor_activation_image()
+
+plot_stat_map(stat_map, cmap="RdBu_r", threshold=6, title="diverging colormap")
+plot_stat_map(stat_map, cmap="cold_hot", threshold=6, title="cyclic colormap")
 
 show()
 
