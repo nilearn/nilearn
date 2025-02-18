@@ -502,6 +502,7 @@ class BaseSlicer:
             except IndexError:
                 # We are cutting outside the indices of the data
                 data_2d = None
+                transparency_2d = None
 
             data_2d_list.append(data_2d)
             transparency_list.append(transparency_2d)
@@ -578,13 +579,14 @@ class BaseSlicer:
 
         if isinstance(transparency, (float, int)):
             transparency = float(transparency)
+            base_warning_message = (
+                "'transparency' must be in the interval [0, 1]. "
+            )
             if transparency > 1.0:
-                warnings.warn(
-                    "'transparency' must be <= 1. Setting it to 1.0."
-                )
+                warnings.warn(f"{base_warning_message} Setting it to 1.0.")
                 transparency = 1.0
             if transparency < 0:
-                warnings.warn("'transparency' must be > 0. Setting it to 0.0.")
+                warnings.warn(f"{base_warning_message} Setting it to 0.0.")
                 transparency = 0.0
 
         elif isinstance(transparency, np.ndarray):
@@ -610,7 +612,7 @@ class BaseSlicer:
                 raise ValueError(
                     "'transparency_range' must be "
                     "a list or tuple of 2 positive numbers "
-                    "with 'first item < second item'."
+                    "with 'first value < second value'."
                 )
 
             # make sure that 0 <= transparency <= 1
