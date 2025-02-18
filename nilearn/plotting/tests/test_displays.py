@@ -433,7 +433,7 @@ def test_display_slicers_transparency(
 
 @pytest.mark.parametrize("transparency", [-2, 10])
 @pytest.mark.parametrize("display,name", zip(SLICERS, SLICER_KEYS))
-def test_display_slicers_transparentcy_warning(
+def test_display_slicers_transparency_warning(
     display, img, name, cut_coords, transparency
 ):
     """Test several invalid transparency values throw warnings."""
@@ -462,7 +462,7 @@ def test_display_projectors_transparency(
 
 @pytest.mark.parametrize("transparency", [-2, 10])
 @pytest.mark.parametrize("display,name", zip(PROJECTORS, PROJECTOR_KEYS))
-def test_display_projectors_transparentcy_warning(
+def test_display_projectors_transparency_warning(
     display, img, name, cut_coords, transparency
 ):
     """Test several invalid transparency values throw warnings."""
