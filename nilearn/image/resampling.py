@@ -3,7 +3,6 @@
 See http://nilearn.github.io/stable/manipulating_images/input_output.html
 """
 
-# Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 import numbers
 import warnings
 

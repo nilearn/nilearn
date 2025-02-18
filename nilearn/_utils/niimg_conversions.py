@@ -2,8 +2,6 @@
 
 import glob
 import itertools
-
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 import warnings
 from pathlib import Path
 

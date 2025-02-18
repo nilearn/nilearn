@@ -2,8 +2,6 @@
 
 Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
 This module closely follows SPM implementation
-
-Author: Bertrand Thirion, 2011--2018
 """
 
 import warnings

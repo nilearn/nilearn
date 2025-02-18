@@ -1,7 +1,5 @@
 """Neuroimaging file input and output."""
 
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-
 import collections.abc
 import copy
 import gc
