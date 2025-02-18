@@ -16,7 +16,7 @@ from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 
 
 # %%
-# Create a function to help us plot all the colormaps with their names.
+# Let's create a function to help us plot all the colormaps with their names.
 #
 def plot_color_gradients(color_maps):
     """Create figure and adjust figure height to number of colormaps.
@@ -29,10 +29,10 @@ def plot_color_gradients(color_maps):
     color_map_names = sorted(color_maps)
 
     nrows = len(color_map_names)
-    figh = 0.35 + 0.15 + (nrows + (nrows - 1) * 0.1) * 0.22
-    fig, axs = plt.subplots(nrows=nrows + 1, figsize=(13, figh))
+    figh = 0.3 + 0.2 + (nrows + (nrows - 1) * 0.1) * 0.22
+    fig, axs = plt.subplots(nrows=nrows + 1, figsize=(15, figh))
     fig.subplots_adjust(
-        top=1 - 0.35 / figh, bottom=0.15 / figh, left=0.2, right=0.99
+        top=1 - 0.3 / figh, bottom=0.2 / figh, left=0.22, right=0.99
     )
 
     for ax, name in zip(axs, color_map_names):
@@ -43,7 +43,7 @@ def plot_color_gradients(color_maps):
             name,
             va="center",
             ha="right",
-            fontsize=10,
+            fontsize=12,
             transform=ax.transAxes,
         )
 
@@ -70,7 +70,7 @@ m_cmaps = [
 
 plot_color_gradients(m_cmaps)
 
-# show()
+show()
 
 # %%
 # Choosing colormaps
@@ -78,11 +78,11 @@ plot_color_gradients(m_cmaps)
 # Some of the `cyclic colormaps <https://matplotlib.org/stable/users/explain/colors/colormaps.html#cyclic>`_
 # shipped with nilearn (like ``"cold_hot"``) will have the same values
 # for very large and very small values,
-# making it hard to distinguish 'actrivations' from 'deactivations'.
+# making it hard to distinguish 'activations' from 'deactivations'.
 #
 # In this case, you may want to use
 # a proper `diverging colormaps <https://matplotlib.org/stable/users/explain/colors/colormaps.html#diverging>`_
-# (like ``"RdBu_r"`` that is the default for many Nilearn plotting functions).
+# (like ``"RdBu_r"``, the default for many Nilearn plotting functions).
 #
 
 from nilearn.datasets import load_sample_motor_activation_image
