@@ -75,6 +75,7 @@ plotting.plot_stat_map(
     cut_coords=(36, -27, 66),
     threshold=3,
     title="t-map in original resolution",
+    vmax=8,
 )
 plotting.plot_stat_map(
     resampled_stat_img,
@@ -82,6 +83,7 @@ plotting.plot_stat_map(
     cut_coords=(36, -27, 66),
     threshold=3,
     title="Resampled t-map",
+    vmax=8,
 )
 plotting.show()
 
