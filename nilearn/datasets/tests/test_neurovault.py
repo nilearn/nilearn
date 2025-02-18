@@ -17,7 +17,7 @@ import requests
 
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.conftest import _rng
-from nilearn.datasets import neurovault
+from nilearn.datasets import fetch_neurovault_ids, neurovault
 from nilearn.image import load_img
 
 
@@ -36,19 +36,25 @@ def _get_neurovault_data():
     """
     if getattr(_get_neurovault_data, "data", None) is not None:
         return _get_neurovault_data.data
+
     rng = _rng()
-    n_collections, n_images = 73, 546
+
+    n_collections = 73
     collection_ids = rng.choice(
         np.arange(1000), size=n_collections, replace=False
     )
     collections = pd.DataFrame({"id": collection_ids})
+
+    n_images = 546
     image_ids = rng.choice(np.arange(10000), size=n_images, replace=False)
     images = pd.DataFrame({"id": image_ids})
     not_empty = rng.binomial(1, 0.9, n_collections).astype(bool)
     images["collection_id"] = rng.choice(
         collection_ids[not_empty], size=n_images
     )
+
     collection_sizes = images.groupby("collection_id").count()
+
     collections["true_number_of_images"] = collection_sizes.reindex(
         index=collections["id"].to_numpy(), fill_value=0
     ).to_numpy()
@@ -57,6 +63,7 @@ def _get_neurovault_data():
     ] + rng.binomial(1, 0.1, n_collections) * rng.integers(
         0, 100, n_collections
     )
+
     images["not_mni"] = rng.binomial(1, 0.1, size=n_images).astype(bool)
     images["is_valid"] = rng.binomial(1, 0.1, size=n_images).astype(bool)
     images["is_thresholded"] = rng.binomial(1, 0.1, size=n_images).astype(bool)
@@ -87,9 +94,11 @@ def _get_neurovault_data():
         url.format(col_id, img_name)
         for (col_id, img_name) in zip(images["collection_id"], image_names)
     ]
+
     collections = collections.set_index("id", drop=False)
     images = images.set_index("id", drop=False)
     _get_neurovault_data.data = collections, images
+
     return collections, images
 
 
@@ -803,9 +812,9 @@ def test_fetch_neurovault_ids(tmp_path):
     ].to_numpy()
 
     with pytest.raises(ValueError):
-        neurovault.fetch_neurovault_ids(mode="bad")
+        fetch_neurovault_ids(mode="bad")
 
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=img_ids, collection_ids=col_ids, data_dir=tmp_path
     )
 
@@ -825,7 +834,7 @@ def test_fetch_neurovault_ids(tmp_path):
             assert not isinstance(value, Path)
 
     # check image can be loaded again from disk
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
     )
 
@@ -851,20 +860,20 @@ def test_fetch_neurovault_ids(tmp_path):
         meta_f.write(json.dumps(modified_meta).encode("UTF-8"))
 
     # fresh download
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="download_new"
     )
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
     )
 
     # should not have changed
     assert data["images_meta"][0]["some_key"] == "some_other_value"
 
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="overwrite"
     )
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
     )
 
@@ -881,7 +890,7 @@ def test_should_download_resampled_images_only_if_no_previous_download(
     sample_collection_id = sample_collection["id"]
     expected_number_of_images = sample_collection["true_number_of_images"]
 
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
         resample=True,
@@ -906,7 +915,7 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     sample_collection_id = sample_collection["id"]
 
     # Fetch non-resampled images
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
         resample=True,
@@ -922,7 +931,7 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     )
 
     # Download original data
-    data_orig = neurovault.fetch_neurovault_ids(
+    data_orig = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
         resample=False,
@@ -954,7 +963,7 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     sample_collection_id = sample_collection["id"]
 
     # Fetch non-resampled images
-    data_orig = neurovault.fetch_neurovault_ids(
+    data_orig = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
         resample=False,
@@ -972,7 +981,7 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     )
 
     # Ask for resampled data, which should only trigger resample
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
         resample=True,
