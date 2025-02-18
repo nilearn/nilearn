@@ -416,7 +416,7 @@ def test_threshold(threshold, vmin, vmax, expected_results):
 
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
 @pytest.mark.parametrize("display,name", zip(SLICERS, SLICER_KEYS))
-def test_display_slicers_transparentcy(
+def test_display_slicers_transparency(
     display, img, name, cut_coords, transparency
 ):
     """Test several valid transparency values.
