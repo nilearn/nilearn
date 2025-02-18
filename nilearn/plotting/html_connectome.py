@@ -135,7 +135,7 @@ def _prepare_lines_metadata(
         given percentile will be shown.
 
     %(cmap)s
-        default=cm.bwr
+        default="bwr"
 
     symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
@@ -250,7 +250,7 @@ def view_connectome(
     adjacency_matrix,
     node_coords,
     edge_threshold=None,
-    edge_cmap=cm.bwr,
+    edge_cmap="bwr",
     symmetric_cmap=True,
     linewidth=6.0,
     node_color="auto",
@@ -282,7 +282,7 @@ def view_connectome(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    edge_cmap : :obj:`str` or matplotlib colormap, default=cm.bwr
+    edge_cmap : :obj:`str` or matplotlib colormap, default="bwr"
         Colormap to use.
 
     symmetric_cmap : :obj:`bool`, default=True
