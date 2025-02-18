@@ -12,12 +12,13 @@ Failures are expected at times when the output is changed intentionally
 In such cases, the output needs to be manually/visually checked
 as part of the PR review process and then a new baseline set for comparison.
 
-Set a new baseline by running:
+Set a new baseline by running the following
+with the oldest supported python:
 
 .. code-block:: bash
 
-    pytest nilearn/plotting/tests/test_baseline_comparisons.py \
-           --mpl-generate-path=nilearn/plotting/tests/baseline
+    pip install tox
+    tox run -e pytest_mpl_generate
 
 """
 
