@@ -93,7 +93,7 @@ def numpy_masker_concat_img(fmri_path, mask_path):
         np.asarray(concat_imgs(mask_path).dataobj).astype(bool)
     )
     t0_mask = time.time()
-    np.asarray(img)[mask_img]
+    img[mask_img]
     tend_mask = time.time()
     return t_load, t0_mask, tend_mask
 
@@ -101,9 +101,9 @@ def numpy_masker_concat_img(fmri_path, mask_path):
 def numpy_masker_load_img(fmri_path, mask_path):
     t_load = time.time()
     img = np.asarray(load_img(fmri_path).dataobj)
-    mask_img = np.squeeze(np.asarray(load_img(mask_path).dataobj).astype(bool))
+    mask_img = np.asarray(load_img(mask_path).dataobj).astype(bool)
     t0_mask = time.time()
-    np.asarray(img)[mask_img]
+    img[mask_img]
     tend_mask = time.time()
     return t_load, t0_mask, tend_mask
 
@@ -111,9 +111,9 @@ def numpy_masker_load_img(fmri_path, mask_path):
 def numpy_masker_nibabel_load(fmri_path, mask_path):
     t_load = time.time()
     img = np.asarray(load(fmri_path).dataobj)
-    mask_img = np.squeeze(np.asarray(load(mask_path).dataobj).astype(bool))
+    mask_img = np.asarray(load(mask_path).dataobj).astype(bool)
     t0_mask = time.time()
-    np.asarray(img)[mask_img]
+    img[mask_img]
     tend_mask = time.time()
     return t_load, t0_mask, tend_mask
 
@@ -200,7 +200,7 @@ if __name__ == "__main__":
 
     plot_path = Path.cwd() / "results" / "plot_compare_img_loading_single"
     plot_path.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(15, 6))
     fig, ax = plot_memory_usage(fig, ax, usages, call_times)
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("Memory (MiB)")
@@ -223,7 +223,7 @@ if __name__ == "__main__":
         )
         usages[func.__name__] = mem_usage
         call_times[func.__name__] = call_time
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(15, 6))
     fig, ax = plot_memory_usage(fig, ax, usages, call_times)
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("Memory (MiB)")
