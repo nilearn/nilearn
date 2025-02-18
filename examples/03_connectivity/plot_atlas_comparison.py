@@ -22,10 +22,7 @@ correlation matrices for each atlas across all subjects.
 
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
-# author: Amadeus Kanaan
-
 .. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%

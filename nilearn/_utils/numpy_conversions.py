@@ -1,7 +1,5 @@
 """Validation and conversion utilities for numpy."""
 
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-
 import csv
 from pathlib import Path
 

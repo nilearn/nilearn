@@ -5,8 +5,6 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 Only matplotlib is required.
 """
 
-# Author: Gael Varoquaux, Chris Filo Gorgolewski
-
 import collections.abc
 import functools
 import numbers

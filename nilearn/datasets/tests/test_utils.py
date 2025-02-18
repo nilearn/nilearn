@@ -1,7 +1,5 @@
 """Test the datasets module."""
 
-# Author: Alexandre Abraham
-
 import gzip
 import os
 import re

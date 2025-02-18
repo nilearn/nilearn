@@ -1,7 +1,5 @@
 """Test the mask-extracting utilities."""
 
-# Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
-
 import warnings
 
 import numpy as np

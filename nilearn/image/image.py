@@ -4,8 +4,6 @@ Preprocessing functions for images.
 See also nilearn.signal.
 """
 
-# Authors: Philippe Gervais, Alexandre Abraham
-
 import collections.abc
 import copy
 import itertools
