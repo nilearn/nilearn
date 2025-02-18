@@ -13,14 +13,10 @@ from nilearn.plotting.find_cuts import (
     find_probabilistic_atlas_cut_coords,
     find_xyz_cut_coords,
 )
-from nilearn.plotting.html_connectome import view_connectome, view_markers
-from nilearn.plotting.html_stat_map import view_img
-from nilearn.plotting.html_surface import view_img_on_surf, view_surf
-from nilearn.plotting.img_comparison import (
-    plot_bland_altman,
-    plot_img_comparison,
-)
-from nilearn.plotting.img_plotting import (
+from nilearn.plotting.html.html_connectome import view_connectome, view_markers
+from nilearn.plotting.html.html_stat_map import view_img
+from nilearn.plotting.html.html_surface import view_img_on_surf, view_surf
+from nilearn.plotting.image.img_plotting import (
     plot_anat,
     plot_carpet,
     plot_connectome,
@@ -33,14 +29,18 @@ from nilearn.plotting.img_plotting import (
     plot_stat_map,
     show,
 )
-from nilearn.plotting.matrix_plotting import (
+from nilearn.plotting.img_comparison import (
+    plot_bland_altman,
+    plot_img_comparison,
+)
+from nilearn.plotting.matrix import (
     plot_contrast_matrix,
     plot_design_matrix,
     plot_design_matrix_correlation,
     plot_event,
     plot_matrix,
 )
-from nilearn.plotting.surf_plotting import (
+from nilearn.plotting.surface import (
     plot_img_on_surf,
     plot_surf,
     plot_surf_contours,
