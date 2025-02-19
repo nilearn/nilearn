@@ -811,9 +811,6 @@ def test_fetch_neurovault_ids(tmp_path):
         "id"
     ].to_numpy()
 
-    with pytest.raises(ValueError):
-        fetch_neurovault_ids(mode="bad")
-
     data = fetch_neurovault_ids(
         image_ids=img_ids, collection_ids=col_ids, data_dir=tmp_path
     )
@@ -833,14 +830,55 @@ def test_fetch_neurovault_ids(tmp_path):
         for value in meta.values():
             assert not isinstance(value, Path)
 
-    # check image can be loaded again from disk
+
+def test_fetch_neurovault_ids_error():
+    with pytest.raises(
+        ValueError,
+        match="Supported download modes are: overwrite, download_new, offline",
+    ):
+        fetch_neurovault_ids(mode="bad")
+
+
+def test_fetch_neurovault_ids_offline(tmp_path):
+    """Check image can be loaded again from disk."""
+    collections, images = _get_neurovault_data()
+    collections = collections.sort_values(
+        by="true_number_of_images", ascending=False
+    )
+    other_col_id, *col_ids = collections["id"].to_numpy()[:3]
+    img_ids = images[images["collection_id"] == other_col_id]["id"].to_numpy()[
+        :3
+    ]
+
+    data = fetch_neurovault_ids(
+        image_ids=img_ids, collection_ids=col_ids, data_dir=tmp_path
+    )
+
     data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
     )
 
     assert len(data.images) == 1
 
-    # check that download_new mode forces overwrite
+
+def test_fetch_neurovault_ids_overwrite(tmp_path):
+    """Check that download_new mode forces overwrite."""
+    collections, images = _get_neurovault_data()
+    collections = collections.sort_values(
+        by="true_number_of_images", ascending=False
+    )
+    other_col_id, *col_ids = collections["id"].to_numpy()[:3]
+    img_ids = images[images["collection_id"] == other_col_id]["id"].to_numpy()[
+        :3
+    ]
+    data = fetch_neurovault_ids(
+        image_ids=img_ids, collection_ids=col_ids, data_dir=tmp_path
+    )
+
+    data = fetch_neurovault_ids(
+        image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
+    )
+
     modified_meta = data["images_meta"][0]
 
     assert modified_meta["some_key"] == "some_value"
