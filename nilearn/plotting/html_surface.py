@@ -9,6 +9,7 @@ import numpy as np
 
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
 from nilearn.plotting._utils import (
     check_surface_plotting_inputs,
@@ -523,13 +524,7 @@ def view_surf(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray`, default=None
-        Background image to be plotted on the :term:`mesh` underneath
-        the surf_data in grayscale, most likely a sulcal depth map for
-        realistic shading.
-        If the map contains values outside [0, 1],
-        it will be rescaled such that all values are in [0, 1].
-        Otherwise, it will not be modified.
+    %(bg_map)s
 
     hemi : {"left", "right", "both", None}, default=None
         Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
@@ -604,6 +599,7 @@ def view_surf(
     --------
     nilearn.plotting.view_img_on_surf: Surface plot from a 3D statistical map.
     """
+    check_params(locals())
     hemi = sanitize_hemi_for_surface_image(hemi, surf_map, surf_mesh)
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
