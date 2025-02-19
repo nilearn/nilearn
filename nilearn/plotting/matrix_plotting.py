@@ -561,7 +561,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     # input validation
     if cmap is None:
-        cmap = plt.cm.tab20
+        cmap = "tab20"
     elif isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
 

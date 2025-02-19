@@ -1644,7 +1644,7 @@ def _check_views(views) -> list:
 
 
 def _colorbar_from_array(
-    array, vmin, vmax, threshold, symmetric_cbar=True, cmap="cold_hot"
+    array, vmin, vmax, threshold, symmetric_cbar=True, cmap="RdBu_r"
 ):
     """Generate a custom colorbar for an array.
 

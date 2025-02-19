@@ -84,6 +84,12 @@ show()
 # a proper `diverging colormaps <https://matplotlib.org/stable/users/explain/colors/colormaps.html#diverging>`_
 # (like ``"RdBu_r"``, the default for many Nilearn plotting functions).
 #
+# Whatever colormap you choose,
+# we recommend you check that it is perceptually uniform
+# (equal steps in data are perceived as equal steps in the color space)
+# (see `the matplotlib documentation <https://matplotlib.org/stable/users/explain/colors/colormaps.html#lightness-of-matplotlib-colormaps>`
+# for more information).
+#
 
 from nilearn.datasets import load_sample_motor_activation_image
 from nilearn.plotting import plot_stat_map

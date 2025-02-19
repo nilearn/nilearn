@@ -9,7 +9,6 @@ from scipy import sparse
 from nilearn.plotting.html_document import HTMLDocument
 
 from .. import datasets
-from . import cm
 from .js_plotting_utils import (
     add_js_lib,
     colorscale,
@@ -135,7 +134,6 @@ def _prepare_lines_metadata(
         given percentile will be shown.
 
     %(cmap)s
-        default="bwr"
 
     symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
@@ -202,7 +200,7 @@ def _get_connectome(
     threshold=None,
     marker_size=None,
     marker_color="auto",
-    cmap=cm.cold_hot,
+    cmap="RdBu_r",
     symmetric_cmap=True,
 ):
     lines_metadata = _prepare_lines_metadata(
@@ -250,7 +248,7 @@ def view_connectome(
     adjacency_matrix,
     node_coords,
     edge_threshold=None,
-    edge_cmap="bwr",
+    edge_cmap="RdBu_r",
     symmetric_cmap=True,
     linewidth=6.0,
     node_color="auto",
@@ -282,7 +280,7 @@ def view_connectome(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    edge_cmap : :obj:`str` or matplotlib colormap, default="bwr"
+    edge_cmap : :obj:`str` or matplotlib colormap, default="RdBu_r"
         Colormap to use.
 
     symmetric_cmap : :obj:`bool`, default=True

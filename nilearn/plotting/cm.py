@@ -1,7 +1,5 @@
 """Matplotlib colormaps useful for neuroimaging."""
 
-import contextlib
-
 import matplotlib
 import numpy as _np
 from matplotlib import cm as _cm
@@ -292,9 +290,7 @@ for k, v in _cmap_d.items():
     else:
         _register_cmap = _cm.register_cmap
 
-    # "bwr" is already registered in latest matplotlib
-    with contextlib.suppress(ValueError):
-        _register_cmap(name=k, cmap=v)
+    _register_cmap(name=k, cmap=v)
 
 
 ###############################################################################
