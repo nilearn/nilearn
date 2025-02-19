@@ -5,48 +5,9 @@ import numpy as np
 import pytest
 
 from nilearn._utils.class_inspect import check_estimator
-from nilearn.conftest import _make_mesh, _rng
+from nilearn.conftest import _surf_maps_img
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
-
-
-def _surf_maps_img():
-    """Return a sample surface map image using the sample mesh.
-    Has 6 regions in total: 3 in both, 1 only in left and 2 only in right.
-    Later we multiply the data with random "probability" values to make it
-    more realistic.
-    """
-    data = {
-        "left": np.asarray(
-            [
-                [1, 1, 0, 1, 0, 0],
-                [0, 1, 1, 1, 0, 0],
-                [1, 0, 1, 1, 0, 0],
-                [1, 1, 1, 0, 0, 0],
-            ]
-        ),
-        "right": np.asarray(
-            [
-                [1, 0, 0, 0, 1, 1],
-                [1, 1, 0, 0, 1, 1],
-                [0, 1, 1, 0, 1, 1],
-                [1, 1, 1, 0, 0, 1],
-                [0, 0, 1, 0, 0, 1],
-            ]
-        ),
-    }
-    # multiply with random "probability" values
-    data = {
-        part: data[part] * _rng().random(data[part].shape) for part in data
-    }
-    return SurfaceImage(_make_mesh(), data)
-
-
-@pytest.fixture
-def surf_maps_img():
-    """Return a sample surface map as fixture."""
-    return _surf_maps_img()
-
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
