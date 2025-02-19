@@ -368,7 +368,6 @@ def _cast_to_int32(sample_mask):
 # dictionary that matches a given parameter / attribute name to a type
 TYPE_MAPS = {
     "annotate": nilearn_typing.Annotate,
-    "bg_map": nilearn_typing.BgMap,
     "border_size": nilearn_typing.BorderSize,
     "bg_on_data": nilearn_typing.BgOnData,
     "colorbar": nilearn_typing.ColorBar,

@@ -27,8 +27,6 @@ from joblib.memory import Memory
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
-from nilearn.surface import SurfaceImage
-
 Annotate = bool
 BgOnData = bool
 ColorBar = bool
@@ -46,7 +44,6 @@ TwoSidedTest = bool
 
 # TODO update when dropping python 3.9
 if sys.version_info[1] < 10:
-    BgMap = (str, pathlib.Path, np.ndarray, SurfaceImage)
     BorderSize = (int, np.integer)
     DataDir = (str, pathlib.Path)
     DType = DTypeLike
@@ -77,7 +74,6 @@ if sys.version_info[1] < 10:
 else:
     from typing import TypeAlias
 
-    BgMap = str | pathlib.Path | np.ndarray | SurfaceImage | None
     BorderSize: TypeAlias = int | np.integer
     DataDir: TypeAlias = str | pathlib.Path | None
     DType: TypeAlias = DTypeLike | None
