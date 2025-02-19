@@ -183,7 +183,7 @@ if __name__ == "__main__":
     N_SUBJECTS = 6
     N_REGIONS = 6
     img_path = get_fmri_path(N_SUBJECTS)
-    mask_path = get_mask_path(img_path)
+    mask_path = get_mask_path(img_path, N_REGIONS)
     plot_path = Path.cwd() / "results" / "plot_compare_img_loading_parallel"
     plot_path.mkdir(parents=True, exist_ok=True)
 
@@ -198,9 +198,11 @@ if __name__ == "__main__":
     for method in loading_methods:
         print(f"Running {nifti_masker_parallel.__name__}, {method=}")
         usage, call_time = memory_usage(
-            (nifti_masker_parallel, (img_path, mask_path, N_REGIONS)),
+            (nifti_masker_parallel, (img_path, mask_path, N_REGIONS, method)),
             timestamps=True,
             retval=True,
+            include_children=True,
+            multiprocess=True,
         )
         usages[f"nifti_{method}"] = usage
         call_times[f"nifti_{method}"] = call_time
@@ -226,6 +228,8 @@ if __name__ == "__main__":
             (numpy_masker_parallel, (img_path, mask_path, N_REGIONS, method)),
             timestamps=True,
             retval=True,
+            include_children=True,
+            multiprocess=True,
         )
         usages[f"numpy_{method}"] = usage
         call_times[f"numpy_{method}"] = call_time
