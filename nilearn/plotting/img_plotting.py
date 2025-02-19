@@ -1670,11 +1670,11 @@ def plot_glass_brain(
     check_threshold_not_negative(threshold)
 
     if cmap is None:
-        cmap = "cold_white_hot"
+        cmap = cm.cold_white_hot
         if black_bg:
-            cmap = "cold_hot"
+            cmap = cm.cold_hot
         if not plot_abs:
-            cmap = "RdBu_r"
+            cmap = plt.cm.RdBu_r
         # use only positive half of colormap if plotting absolute values
         if plot_abs:
             cmap = LinearSegmentedColormap.from_list(
