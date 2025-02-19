@@ -1012,7 +1012,7 @@ transparency : :obj:`float` between 0 and 1, \
     Value to be passed as alpha value to :func:`~matplotlib.pyplot.imshow`.
     if ``None`` is passed, it will be set to 1.
     If an image is passed, voxel-wise alpha blending will be applied,
-    by reying on the absolute value of ``transparency`` at each voxel.
+    by relying on the absolute value of ``transparency`` at each voxel.
 
     .. versionadded:: 0.11.2
 """
