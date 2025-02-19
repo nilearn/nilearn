@@ -264,16 +264,6 @@ def test_nifti_labels_masker_report_incorrect_label_error(labels, img_labels):
         masker.generate_report()
 
 
-def test_nifti_labels_masker_report_warning_no_img_fit(labels, img_labels):
-    """Check warning thrown when no image was provided to fit."""
-    masker = NiftiLabelsMasker(img_labels, labels=labels)
-    masker.fit()
-    with pytest.warns(
-        UserWarning, match="No image provided to fit in NiftiLabelsMasker"
-    ):
-        masker.generate_report()
-
-
 def test_nifti_labels_masker_report_no_image_for_fit(
     data_img_3d, n_regions, labels, img_labels
 ):
@@ -449,41 +439,6 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
         target_shape=shape_3d_default,
     )
     masker.fit([img_fmri, img_fmri]).generate_report()
-
-
-def test_multi_nifti_masker_generate_report_warning(
-    shape_3d_default, affine_eye, img_fmri
-):
-    """Test calling generate report on multiple subjects raises warning."""
-    mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
-    masker = MultiNiftiMasker(
-        mask_img=mask,
-    )
-
-    with pytest.warns(
-        UserWarning, match="A list of 4D subject images were provided to fit. "
-    ):
-        masker.fit([img_fmri, img_fmri]).generate_report()
-
-
-def test_multi_nifti_labels_masker_report_warning(img_labels, img_fmri):
-    """Test calling generate report on multiple subjects raises warning."""
-    masker = MultiNiftiLabelsMasker(img_labels)
-
-    with pytest.warns(
-        UserWarning, match="A list of 4D subject images were provided to fit. "
-    ):
-        masker.fit([img_fmri, img_fmri]).generate_report()
-
-
-def test_multi_nifti_maps_masker_report_warning(img_maps, img_fmri):
-    """Test calling generate report on multiple subjects raises warning."""
-    masker = MultiNiftiMapsMasker(img_maps)
-
-    with pytest.warns(
-        UserWarning, match="A list of 4D subject images were provided to fit. "
-    ):
-        masker.fit([img_fmri, img_fmri]).generate_report()
 
 
 def test_mask_img_generate_report(surf_img_1d, surf_mask_1d):

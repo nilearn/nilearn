@@ -230,7 +230,7 @@ class NiftiMapsMasker(BaseMasker):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(masker=True, maps_masker=True)
+        tags.input_tags = InputTags(masker=True)
         return tags
 
     def generate_report(self, displayed_maps=10):

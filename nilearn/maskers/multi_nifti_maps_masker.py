@@ -183,9 +183,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(
-            masker=True, multi_masker=True, maps_masker=True
-        )
+        tags.input_tags = InputTags(masker=True, multi_masker=True)
         return tags
 
     @fill_doc

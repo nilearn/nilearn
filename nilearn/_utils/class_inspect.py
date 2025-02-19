@@ -240,6 +240,12 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_fit_returns_self)
             yield (clone(estimator), check_nifti_masker_fit_transform_5d)
 
+            if is_multimasker(estimator):
+                yield (
+                    clone(estimator),
+                    check_multi_nifti_masker_generate_report_4d_fit,
+                )
+
         if surf_img_input:
             yield (clone(estimator), check_surface_masker_fit_returns_self)
             yield (clone(estimator), check_surface_masker_smooth)
@@ -893,6 +899,21 @@ def check_masker_generate_report_false(estimator):
     _check_html(report, reports_requested=False)
 
     assert "Empty Report" in str(report)
+
+
+def check_multi_nifti_masker_generate_report_4d_fit(estimator):
+    """Test calling generate report on multiple subjects raises warning."""
+    import pytest
+
+    from nilearn.conftest import _img_3d_ones, _img_4d_rand_eye_medium
+
+    estimator.maps_img = _img_3d_ones()
+    with pytest.warns(
+        UserWarning, match="A list of 4D subject images were provided to fit. "
+    ):
+        estimator.fit(
+            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+        ).generate_report()
 
 
 def get_params(cls, instance, ignore=None):
