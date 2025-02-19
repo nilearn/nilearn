@@ -115,6 +115,7 @@ max-line-length = 120
 version-file = "nilearn/_version.py"
 
 [tool.hatch.build.targets.wheel]
+exclude = ["nilearn/plotting/tests/baseline"]
 packages = ["nilearn"]
 
 [tool.hatch.version]
