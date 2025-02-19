@@ -3,13 +3,6 @@
 For example: TV-L1, Graph-Net, etc
 """
 
-# Author: DOHMATOB Elvis Dopgima,
-#         PIZARRO Gaspar,
-#         VAROQUAUX Gael,
-#         GRAMFORT Alexandre,
-#         EICKENBERG Michael,
-#         THIRION Bertrand
-
 import collections
 import time
 import warnings

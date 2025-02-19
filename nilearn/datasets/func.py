@@ -3065,14 +3065,19 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
 
-        - 'design_matrix1': :obj:`str`.
-          Path to design matrix .npz file of run 1
+        - 'design_matrix1': :obj:`pandas.DataFrame`.
+          Design matrix for run 1
         - 'func1': :obj:`str`. Path to Nifti file of run 1
-        - 'design_matrix2': :obj:`str`.
-          Path to design matrix .npz file of run 2
+        - 'design_matrix2': :obj:`pandas.DataFrame`.
+          Design matrix for run 2
         - 'func2': :obj:`str`. Path to Nifti file of run 2
         - 'mask': :obj:`str`. Path to mask file
         - 'description': :obj:`str`. Data description
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <fiac_dataset>`.
 
     """
     check_params(locals())
@@ -3100,7 +3105,12 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
                 logger.log(f"Missing run file: {sess_dmtx}")
                 return None
 
-            _subject_data[f"design_matrix{int(run)}"] = str(sess_dmtx)
+            design_matrix_data = np.load(str(sess_dmtx))
+            columns = [x.decode() for x in design_matrix_data["conditions"]]
+
+            _subject_data[f"design_matrix{int(run)}"] = pd.DataFrame(
+                design_matrix_data["X"], columns=columns
+            )
 
         # glob for mask data
         mask = subject_dir / "mask.nii.gz"

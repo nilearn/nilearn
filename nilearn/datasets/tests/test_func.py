@@ -1,7 +1,5 @@
 """Test the datasets module."""
 
-# Author: Alexandre Abraham
-
 import json
 import re
 import shutil
@@ -1055,7 +1053,13 @@ def test_fiac(tmp_path):
     for run in [1, 2]:
         # glob func data for run + 1
         (fiac0_dir / f"run{int(run)}.nii.gz").touch()
-        (fiac0_dir / f"run{int(run)}_design.npz").touch()
+
+        X = np.ones((2, 2))
+        conditions = [b"cdt_1", b"cdt_2"]
+        np.savez(
+            fiac0_dir / f"run{int(run)}_design.npz", X=X, conditions=conditions
+        )
+
     (fiac0_dir / "mask.nii.gz").touch()
 
     dataset = func.fetch_fiac_first_level(data_dir=tmp_path)
@@ -1064,8 +1068,8 @@ def test_fiac(tmp_path):
     check_type_fetcher(dataset)
     assert isinstance(dataset.func1, str)
     assert isinstance(dataset.func2, str)
-    assert isinstance(dataset.design_matrix1, str)
-    assert isinstance(dataset.design_matrix2, str)
+    assert isinstance(dataset.design_matrix1, pd.DataFrame)
+    assert isinstance(dataset.design_matrix2, pd.DataFrame)
     assert isinstance(dataset.mask, str)
 
 

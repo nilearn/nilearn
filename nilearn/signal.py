@@ -5,8 +5,6 @@ All functions in this module should take X matrices with samples x
 features
 """
 
-# Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
-
 import warnings
 from pathlib import Path
 
@@ -645,9 +643,9 @@ def clean(
     filter : {'butterworth', 'cosine', False}, default='butterworth'
         Filtering methods:
 
-            - 'butterworth': perform butterworth filtering.
-            - 'cosine': generate discrete cosine transformation drift terms.
-            - False: Do not perform filtering.
+        - 'butterworth': perform butterworth filtering.
+        - 'cosine': generate discrete cosine transformation drift terms.
+        - False: Do not perform filtering.
 
     %(low_pass)s
 
@@ -660,16 +658,21 @@ def clean(
                   default="zscore"
         Strategy to standardize the signal:
 
-            - 'zscore_sample': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance. Uses sample std.
-            - 'zscore': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance. Uses population std
-              by calling :obj:`numpy.std` with N - ``ddof=0``.
-            - 'psc':  Timeseries are shifted to zero mean value and scaled
-              to percent signal change (as compared to original mean signal).
-            - True: The signal is z-scored (same as option `zscore`).
-              Timeseries are shifted to zero mean and scaled to unit variance.
-            - False: Do not standardize the data.
+        - 'zscore_sample':
+          The signal is z-scored.
+          Timeseries are shifted to zero mean and scaled to unit variance.
+          Uses sample std.
+        - 'zscore':
+          The signal is z-scored.
+          Timeseries are shifted to zero mean and scaled to unit variance.
+          Uses population std by calling :obj:`numpy.std` with N - ``ddof=0``.
+        - 'psc':
+          Timeseries are shifted to zero mean value and scaled
+          to percent signal change (as compared to original mean signal).
+        - True:
+          The signal is z-scored (same as option `zscore`).
+          Timeseries are shifted to zero mean and scaled to unit variance.
+        - False: Do not standardize the data.
 
     %(standardize_confounds)s
 

@@ -22,10 +22,7 @@ correlation matrices for each atlas across all subjects.
 
 Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
-# author: Amadeus Kanaan
-
 .. include:: ../../../examples/masker_note.rst
-
 """
 
 # %%
@@ -73,7 +70,7 @@ connectome_measure = ConnectivityMeasure(
 masker = MultiNiftiLabelsMasker(
     labels_img=yeo["maps"],  # Both hemispheres
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     memory="nilearn_cache",
     n_jobs=2,
 )
@@ -151,7 +148,7 @@ for hemi, img in zip(["right", "left"], [label_image_right, label_image_left]):
     masker = MultiNiftiLabelsMasker(
         labels_img=img,
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
     )
 
     time_series = masker.fit_transform(data.func, confounds=data.confounds)
@@ -230,7 +227,7 @@ from nilearn.maskers import MultiNiftiMapsMasker
 masker = MultiNiftiMapsMasker(
     maps_img=difumo.maps,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,
     n_jobs=2,

@@ -22,6 +22,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     check_surface_plotting_inputs,
     sanitize_hemi_for_surface_image,
+    save_figure_if_needed,
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
@@ -761,10 +762,8 @@ def _plot_surf_matplotlib(
 
     if title is not None:
         axes.set_title(title)
-    if output_file is None:
-        return figure
-    figure.savefig(output_file)
-    plt.close()
+
+    return save_figure_if_needed(figure, output_file)
 
 
 @fill_doc
@@ -1305,10 +1304,8 @@ def plot_surf_contours(
         title = figure._suptitle._text
     if title:
         axes.set_title(title)
-    if output_file is None:
-        return figure
-    figure.savefig(output_file)
-    plt.close(figure)
+
+    return save_figure_if_needed(figure, output_file)
 
 
 def _check_figure_axes_inputs_plot_surf_contours(figure, axes):

@@ -455,10 +455,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             at the object level.
 
         """
-        check_params(self.__dict__)
         # Base fit for decomposition estimators : compute the embedded masker
-        if self.memory is None:
-            self.memory = Memory(location=None)
+        check_params(self.__dict__)
 
         if (
             isinstance(imgs, str)

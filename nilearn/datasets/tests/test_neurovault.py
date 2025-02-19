@@ -1,7 +1,5 @@
 """Test the neurovault module."""
 
-# Author: Jerome Dockes
-
 import hashlib
 import json
 import os

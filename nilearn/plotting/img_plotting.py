@@ -5,8 +5,6 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 Only matplotlib is required.
 """
 
-# Author: Gael Varoquaux, Chris Filo Gorgolewski
-
 import collections.abc
 import functools
 import numbers
@@ -44,7 +42,10 @@ from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
-from nilearn.plotting._utils import _check_threshold
+from nilearn.plotting._utils import (
+    check_threshold_not_negative,
+    save_figure_if_needed,
+)
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.signal import clean
@@ -260,7 +261,7 @@ def _plot_img_with_bg(
         if the specified threshold is a negative number
     """
     check_params(locals())
-    _check_threshold(threshold)
+    check_threshold_not_negative(threshold)
 
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
@@ -352,11 +353,8 @@ def _plot_img_with_bg(
             cbar.vmin, cbar.vmax, threshold, n_ticks=len(cbar.locator.locs)
         )
         cbar.set_ticks(new_tick_locs)
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
-    return display
+
+    return save_figure_if_needed(display, output_file)
 
 
 def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
@@ -503,7 +501,7 @@ def plot_img(
             See API reference for other options
     """
     check_params(locals())
-    _check_threshold(threshold)
+    check_threshold_not_negative(threshold)
 
     display = _plot_img_with_bg(
         img,
@@ -761,7 +759,7 @@ def plot_anat(
 
     """
     check_params(locals())
-    _check_threshold(threshold)
+    check_threshold_not_negative(threshold)
 
     anat_img, black_bg, anat_vmin, anat_vmax = load_anat(
         anat_img, dim=dim, black_bg=black_bg
@@ -1080,7 +1078,7 @@ def plot_roi(
         (4D images)
     """
     check_params(locals())
-    _check_threshold(threshold)
+    check_threshold_not_negative(threshold)
 
     valid_view_types = ["continuous", "contours"]
     if view_type not in valid_view_types:
@@ -1264,7 +1262,7 @@ def plot_prob_atlas(
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
     """
     check_params(locals())
-    _check_threshold(threshold)
+    check_threshold_not_negative(threshold)
 
     display = plot_anat(
         bg_img,
@@ -1382,12 +1380,8 @@ def plot_prob_atlas(
             va="bottom",
             xycoords="axes fraction",
         )
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
 
-    return display
+    return save_figure_if_needed(display, output_file)
 
 
 @fill_doc
@@ -1507,7 +1501,7 @@ def plot_stat_map(
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
     """
     check_params(locals())
-    _check_threshold(threshold)
+    check_threshold_not_negative(threshold)
 
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
@@ -1671,7 +1665,7 @@ def plot_glass_brain(
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
     check_params(locals())
-    _check_threshold(threshold)
+    check_threshold_not_negative(threshold)
 
     if cmap is None:
         cmap = cm.cold_white_hot
@@ -1873,12 +1867,7 @@ def plot_connectome(
         colorbar=colorbar,
     )
 
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
-
-    return display
+    return save_figure_if_needed(display, output_file)
 
 
 @fill_doc
@@ -2039,12 +2028,7 @@ def plot_markers(
         display._colorbar = True
         display._show_colorbar(cmap=node_cmap, norm=norm)
 
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
-
-    return display
+    return save_figure_if_needed(display, output_file)
 
 
 @fill_doc
@@ -2304,12 +2288,7 @@ def plot_carpet(
         axes.spines["left"].set_position(("outward", buffer))
         axes.set_ylabel("voxels")
 
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-        figure = None
-
-    return figure
+    return save_figure_if_needed(figure, output_file)
 
 
 def plot_img_comparison(

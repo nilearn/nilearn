@@ -7,7 +7,6 @@ import contextlib
 import warnings
 
 import numpy as np
-from joblib import Memory
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -539,9 +538,6 @@ class NiftiSpheresMasker(BaseMasker):
             ),
             "warning_message": None,
         }
-
-        if self.memory is None:
-            self.memory = Memory(location=None, verbose=0)
 
         self = sanitize_cleaning_parameters(self)
 

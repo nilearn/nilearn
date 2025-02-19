@@ -5,7 +5,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from joblib import Memory
 from scipy import ndimage
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -439,9 +438,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if self.clean_args is None:
             self.clean_args = {}
         parameters["clean_args"] = self.clean_args
-
-        if self.memory is None:
-            self.memory = Memory(location=None)
 
         target_datatype = (
             np.float32 if img_data.dtype == np.float32 else np.float64

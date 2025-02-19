@@ -5,7 +5,6 @@ brain regions.
 import warnings
 
 import numpy as np
-from joblib import Memory
 from scipy import linalg
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -329,9 +328,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if self.clean_args is None:
             self.clean_args = {}
         parameters["clean_args"] = self.clean_args
-
-        if self.memory is None:
-            self.memory = Memory(location=None)
 
         # apply mask if provided
         # and then extract signal via least square regression

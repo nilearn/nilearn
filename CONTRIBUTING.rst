@@ -16,7 +16,7 @@ There are currently three ways to interact with the Nilearn team:
 through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues,
 and through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
 usually **every Wednesday from 4pm to 5pm UTC**.
-We post on our `X account <https://x.com/nilearn>`_ in advance to let you know
+We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance to let you know
 if the drop-in hours are happening that week.
 
 If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn,
