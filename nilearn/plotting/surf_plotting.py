@@ -833,15 +833,7 @@ def plot_surf(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` \
-             or :obj:`~nilearn.surface.SurfaceImage` or None,\
-             default=None
-        Background image to be plotted on the :term:`mesh`
-        underneath the surf_data in grayscale,
-        most likely a sulcal depth map for realistic shading.
-        If the map contains values outside [0, 1],
-        it will be rescaled such that all values are in [0, 1].
-        Otherwise, it will not be modified.
+    %(bg_map)s
 
     %(hemi)s
 
@@ -1383,15 +1375,7 @@ def plot_surf_stat_map(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or \
-             :obj:`~nilearn.surface.SurfaceImage` or None,\
-             default=None
-        Background image to be plotted on the :term:`mesh` underneath
-        the stat_map in grayscale, most likely a sulcal depth map
-        for realistic shading.
-        If the map contains values outside [0, 1], it will be
-        rescaled such that all values are in [0, 1]. Otherwise,
-        it will not be modified.
+    %(bg_map)s
 
     %(hemi)s
 
@@ -1984,15 +1968,7 @@ def plot_surf_roi(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or \
-             :obj:`~nilearn.surface.SurfaceImage` or None,\
-             default=None
-        Background image to be plotted on the :term:`mesh` underneath
-        the stat_map in grayscale, most likely a sulcal depth map for
-        realistic shading.
-        If the map contains values outside [0, 1], it will be
-        rescaled such that all values are in [0, 1]. Otherwise,
-        it will not be modified.
+    %(bg_map)s
 
     %(hemi)s
 
