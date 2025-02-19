@@ -149,32 +149,6 @@ def test_mask_img_transform_shape_mismatch(
     masker.transform(surf_img_1d)
 
 
-def test_mask_img_generate_report(surf_img_1d, surf_mask_1d):
-    """Smoke test generate report."""
-    masker = SurfaceMasker(surf_mask_1d, reports=True).fit()
-
-    assert masker._reporting_data is not None
-    assert masker._reporting_data["images"] is None
-
-    masker.transform(surf_img_1d)
-
-    assert isinstance(masker._reporting_data["images"], SurfaceImage)
-
-    masker.generate_report()
-
-
-def test_mask_img_generate_no_report(surf_img_2d, surf_mask_1d):
-    """Smoke test generate report."""
-    masker = SurfaceMasker(surf_mask_1d, reports=False).fit()
-
-    assert masker._reporting_data is None
-
-    img = surf_img_2d(5)
-    masker.transform(img)
-
-    masker.generate_report()
-
-
 def test_mask_img_transform_keys_mismatch(
     surf_mask_1d, surf_img_1d, drop_surf_img_part
 ):
