@@ -1087,6 +1087,8 @@ def threshold_img(
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
         affine = img.affine
     else:
+        if copy:
+            img = deepcopy(img)
         img_data = get_surface_data(img, ensure_finite=True)
 
     img_data_for_cutoff = img_data
@@ -1135,13 +1137,13 @@ def threshold_img(
 
     # Apply threshold
     if isinstance(img, NiimgLike):
-        img_data = _apply_threhold(img_data, two_sided, cutoff_threshold)
+        img_data = _apply_threshold(img_data, two_sided, cutoff_threshold)
     else:
-        img_data = _apply_threhold(img, two_sided, cutoff_threshold)
+        img_data = _apply_threshold(img, two_sided, cutoff_threshold)
 
     # Perform cluster thresholding, if requested
 
-    # Expand to 4D to support both 3D and 4D
+    # Expand to 4D to support both 3D and 4D nifti
     expand = isinstance(img, NiimgLike) and img_data.ndim == 3
     if expand:
         img_data = img_data[:, :, :, None]
@@ -1162,14 +1164,14 @@ def threshold_img(
     return new_surface_img_like(img, img_data.data)
 
 
-def _apply_threhold(img_data, two_sided, cutoff_threshold, copy=False):
+def _apply_threshold(img_data, two_sided, cutoff_threshold):
     """Apply a given threshold to an 'image'.
 
     If the image is a Surface applies to each part.
 
     Parameters
     ----------
-    img: np.ndarray or SurfaceImage
+    img_data: np.ndarray or SurfaceImage
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
@@ -1184,9 +1186,7 @@ def _apply_threhold(img_data, two_sided, cutoff_threshold, copy=False):
     """
     if isinstance(img_data, SurfaceImage):
         for hemi, value in img_data.data.parts.items():
-            if copy:
-                value = deepcopy(value)
-            img_data.data.parts[hemi] = _apply_threhold(
+            img_data.data.parts[hemi] = _apply_threshold(
                 value, two_sided, cutoff_threshold
             )
         return img_data

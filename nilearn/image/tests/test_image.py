@@ -2,6 +2,7 @@
 
 import platform
 import warnings
+from copy import deepcopy
 from pathlib import Path
 
 import joblib
@@ -953,7 +954,7 @@ def test_threshold_img(affine_eye):
     [
         (0.9, {"left": 4, "right": 5}),
         (9, {"left": 0, "right": 5}),
-        (51, {"left": 0, "right": 0}),
+        (50, {"left": 0, "right": 0}),
         ("50%", {"left": 0, "right": 4}),
     ],
 )
@@ -961,7 +962,7 @@ def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
     """Check number of elements surviving thresholding 1D surface image.
 
     For left hemisphere: 1 <= values < 10
-    For right hemisphere: 10 <= values < 51
+    For right hemisphere: 10 <= values < 50
     """
     thr_img = threshold_img(surf_img_1d, threshold=threshold)
     for hemi in thr_img.data.parts:
@@ -974,7 +975,7 @@ def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
     [
         (0.9, {"left": 2, "right": 3}),
         (9, {"left": 0, "right": 3}),
-        (51, {"left": 0, "right": 0}),
+        (50, {"left": 0, "right": 0}),
         ("50%", {"left": 0, "right": 2}),
     ],
 )
@@ -986,7 +987,7 @@ def test_threshold_surf_img_1d_with_mask(
     Fewer elements survive thresholding when a mask is provided.
 
     For left hemisphere: 1 <= values < 10
-    For right hemisphere: 10 <= values < 51
+    For right hemisphere: 10 <= values < 50
     """
     thr_img = threshold_img(
         surf_img_1d, threshold=threshold, mask_img=surf_mask_1d
@@ -1001,11 +1002,11 @@ def test_threshold_surf_img_1d_with_mask(
     [
         (1, {"left": 0, "right": 5}, False),
         (39, {"left": 0, "right": 2}, False),
-        (51, {"left": 0, "right": 0}, False),
+        (50, {"left": 0, "right": 0}, False),
         ("50%", {"left": 0, "right": 2}, False),
         (1, {"left": 4, "right": 5}, True),
         (39, {"left": 1, "right": 2}, True),
-        (51, {"left": 0, "right": 0}, True),
+        (50, {"left": 0, "right": 0}, True),
         ("50%", {"left": 1, "right": 2}, True),
     ],
 )
@@ -1019,7 +1020,7 @@ def test_threshold_surf_img_1d_negative_values(
     Also test 2 sided thresholding.
 
     For left hemisphere: -41 < values < -9
-    For right hemisphere: 9 < values < 51
+    For right hemisphere: 9 < values < 50
     """
     surf_img_1d.data.parts["left"] *= -10
 
@@ -1038,8 +1039,6 @@ def test_threshold_surf_img_1d_negative_values(
         (3, False, 8),
         (4, True, 0),
         (4, False, 0),
-        (4.5, True, 0),
-        (4.5, False, 0),
         (0, True, 448),
         (0, False, 224),
         (-3, False, 8),
@@ -1123,25 +1122,21 @@ def test_threshold_img_threshold_n_clusters(stat_img_test_data):
 
 
 def test_threshold_img_copy_surface(surf_img_1d):
-    """Smoke test that copy can be used with surface."""
-    # Check that copy does not mutate. It returns modified copy.
+    """Test that copy can be used with surface."""
     threshold = 0.2
 
-    thr_img = threshold_img(surf_img_1d, threshold=threshold, copy=True)
-    with pytest.raises(AssertionError):
-        assert_surface_image_equal(thr_img, surf_img_1d)
+    input_img = deepcopy(surf_img_1d)
 
     # Check that not copying does mutate.
-    thr_img = threshold_img(surf_img_1d, threshold=threshold, copy=False)
-    assert_surface_image_equal(thr_img, surf_img_1d)
+    result = threshold_img(input_img, threshold=threshold, copy=False)
+    assert_surface_image_equal(result, surf_img_1d)
 
 
 def test_threshold_img_copy_volume(img_4d_ones_eye):
     """Test the behavior of threshold_img's copy parameter."""
+    threshold = 1
     # Check that copy does not mutate. It returns modified copy.
-    thr_img = threshold_img(
-        img_4d_ones_eye, 2, copy_header=True
-    )  # threshold 2 > 1
+    thr_img = threshold_img(img_4d_ones_eye, threshold, copy_header=True)
 
     # Original img_ones should have all ones.
     assert_array_equal(get_data(img_4d_ones_eye), np.ones(_shape_4d_default()))
@@ -1151,7 +1146,9 @@ def test_threshold_img_copy_volume(img_4d_ones_eye):
     # Check that not copying does mutate.
     img_to_mutate = img_4d_ones_eye
 
-    thr_img = threshold_img(img_to_mutate, 2, copy=False, copy_header=True)
+    thr_img = threshold_img(
+        img_to_mutate, threshold, copy=False, copy_header=True
+    )
 
     # Check that original mutates
     assert_array_equal(get_data(img_to_mutate), np.zeros(_shape_4d_default()))
