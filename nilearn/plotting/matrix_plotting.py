@@ -562,7 +562,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     # input validation
     if cmap is None:
         cmap = "tab20"
-    elif isinstance(cmap, str):
+    if isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
 
     event_labels = pd.concat(event["trial_type"] for event in model_event)
