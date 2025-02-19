@@ -845,6 +845,9 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     assert estimator._report_content["warning_message"] is None
 
+    if not is_matplotlib_installed():
+        return
+
     with pytest.warns(UserWarning, match="No image provided to fit."):
         report = estimator.generate_report()
     _check_html(report)
