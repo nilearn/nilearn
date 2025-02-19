@@ -1,7 +1,7 @@
 """
 Test if public plotting functions' output has changed.
 
-Sometimes, the output of a plotting function may unintentionanly change
+Sometimes, the output of a plotting function may unintentionally change
 as a side effect of changing another function or piece of code
 that it depends on.
 These tests ensure that the outputs are not accidentally changed.

@@ -16,7 +16,7 @@ from nilearn.plotting import plot_glass_brain
 def test_plot_glass_brain_absolute(
     matplotlib_pyplot, img_3d_mni, plot_abs, resampling_interpolation
 ):
-    """Somke test resampling_interpolation and for absolute value plotting."""
+    """Smoke test resampling_interpolation and for absolute value plotting."""
     plot_glass_brain(img_3d_mni, plot_abs=plot_abs)
 
 
