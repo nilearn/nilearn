@@ -241,10 +241,10 @@ def test_validity_of_ncuts_error_in_find_cut_slices(n_cuts, img_3d_rand_eye):
     direction = "z"
 
     message = (
-        f"Image has {img_3d_rand_eye.shape[0]} "
+        f"Image has {img_3d_rand_eye.shape[2]} "
         f"slices in direction {direction}. "
         "Therefore, the number of cuts "
-        f"must be between 1 and {img_3d_rand_eye.shape[0]}. "
+        f"must be between 1 and {img_3d_rand_eye.shape[2]}. "
         f"You provided n_cuts={n_cuts}."
     )
     with pytest.raises(ValueError, match=message):
