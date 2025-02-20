@@ -62,7 +62,7 @@ show()
 # as a pandas dataframe to the ``cmap`` argument
 # to use its colormap.
 #
-# .. admonition:: Control via commit message
+# .. admonition:: Look-up table format
 #    :class: tip
 #
 #    The look-up table must be formatted according to the BIDS standard.
@@ -75,16 +75,18 @@ show()
 
 # %%
 # Here we are using the Yeo atlas
-# that comes with a predefined color
+# that comes with a predefined colormap.
 dataset_yeo = datasets.fetch_atlas_yeo_2011(n_networks=17)
 
+print(dataset_yeo.lut)
+
+# %%
+# Let's compare the atlas with the default colormap and its own colormap.
 plot_roi(
     dataset_yeo.maps,
     title="Yeo atlas",
     colorbar=True,
 )
-
-print(dataset_yeo.lut)
 
 plot_roi(
     dataset_yeo.maps,
