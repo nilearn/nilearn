@@ -207,6 +207,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             "n_vertices": {},
             "number_of_regions": self.n_elements_,
             "summary": {},
+            "warning_message": None,
         }
 
         for part in self.maps_img.data.parts:
@@ -510,7 +511,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                self._report_content["engine"] = None
                 return [None]
 
         if engine not in ["plotly", "matplotlib"]:
