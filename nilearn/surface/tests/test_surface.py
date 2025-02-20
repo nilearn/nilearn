@@ -620,15 +620,18 @@ def test_vol_to_surf(kind, n_scans, use_mask):
 
 
 def test_vol_to_surf_labels(img_labels, single_mesh):
-    """Test nearest interpolation does no 'averaging'."""
+    """Test a special use case of nearest interpolation in vol_to_surf when
+    converting deterministic atlases with integer labels."""
     img_labels_data = img_labels.get_fdata()
     uniques_vol = np.unique(img_labels_data)
 
-    mesh_labels = vol_to_surf(img_labels, single_mesh, interpolation="nearest")
+    mesh_labels = vol_to_surf(
+        img_labels, single_mesh, interpolation="nearest", n_samples=1
+    )
 
     uniques_surf = np.unique(mesh_labels)
 
-    assert uniques_vol == uniques_surf
+    assert set(uniques_surf) <= set(uniques_vol)
 
 
 def test_masked_indices():

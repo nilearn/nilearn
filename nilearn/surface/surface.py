@@ -495,7 +495,8 @@ def _nearest_voxel_sampling(
     # if all samples around a mesh vertex are outside the image,
     # there is no reasonable value to assign to this vertex.
     # in this case we return NaN for this vertex.
-    texture[np.asarray(proj.sum(axis=1) == 0).ravel()] = np.nan
+    if n_points > 1:
+        texture[np.asarray(proj.sum(axis=1) == 0).ravel()] = np.nan
     return texture.T
 
 
