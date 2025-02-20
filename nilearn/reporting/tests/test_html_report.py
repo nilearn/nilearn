@@ -380,10 +380,18 @@ def test_nifti_labels_masker_report_no_image_for_fit(
         assert len(display[0].axes[d].ax.collections) <= n_regions
 
 
+EXPECTED_COLUMNS = [
+    "label value",
+    "region name",
+    "size (in mm^3)",
+    "relative size (in %)",
+]
+
+
 def test_nifti_labels_masker_report(
     data_img_3d, mask, affine_eye, n_regions, labels, labels_img
 ):
-    """Check warning thrown when no image was provided to fit."""
+    """Check content nifti label masker."""
     masker = NiftiLabelsMasker(labels_img, labels=labels, mask_img=mask)
     masker.fit(data_img_3d)
     report = masker.generate_report()
@@ -400,12 +408,6 @@ def test_nifti_labels_masker_report(
     assert masker._report_content["number_of_regions"] == n_regions
 
     # Check that all expected columns are present with the right size
-    EXPECTED_COLUMNS = [
-        "label value",
-        "region name",
-        "size (in mm^3)",
-        "relative size (in %)",
-    ]
     for col in EXPECTED_COLUMNS:
         assert col in masker._report_content["summary"]
         assert len(masker._report_content["summary"][col]) == n_regions
@@ -433,11 +435,14 @@ def test_nifti_labels_masker_report(
             * np.abs(np.linalg.det(affine_eye[:3, :3])),
         )
 
-    # Check that region labels are no displayed in the report
-    # when they were not provided by the user.
+
+def test_nifti_labels_masker_report_not_displayed(n_regions, labels_img):
+    """Check that region labels are no displayed in the report \
+       when they were not provided by the user.
+    """
     masker = NiftiLabelsMasker(labels_img)
     masker.fit()
-    report = masker.generate_report()
+    masker.generate_report()
 
     for col in EXPECTED_COLUMNS:
         if col == "region name":
