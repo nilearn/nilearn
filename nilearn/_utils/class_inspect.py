@@ -770,10 +770,17 @@ def _generate_report_with_no_warning(estimator):
 
         # TODO
         # RegionExtractor, SurfaceMapsMasker still throws too many warnings
+        warnings_to_ignore = [
+            # only thrown with older dependencies
+            "No contour levels were found within the data range.",
+        ]
+        unknown_warnings = [
+            str(x.message)
+            for x in warning_list
+            if str(x.message) not in warnings_to_ignore
+        ]
         if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
-            assert len(warning_list) == 0, [
-                str(warning.message) for warning in warning_list
-            ]
+            assert len(unknown_warnings) == 0, unknown_warnings
 
     _check_html(report)
 
