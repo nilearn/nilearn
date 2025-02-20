@@ -162,8 +162,8 @@ def plot_img_comparison(
                 extent=lims,
             )
             x = np.linspace(*lims[0:2], num=gridsize)
-            ax1.plot(x, x, linestyle="--", c="greys")
-            ax1.set_title(f"Pearson R: {corr:.2f}")
+            ax1.plot(x, x, linestyle="--", c="grey")
+            ax1.set_title(f"Pearson's R: {corr:.2f}")
             ax1.grid("on")
             ax1.set_xlabel(ref_label)
             ax1.set_ylabel(src_label)
