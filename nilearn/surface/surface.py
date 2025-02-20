@@ -20,8 +20,6 @@ from nilearn import _utils
 from nilearn._utils import stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.image import get_data as get_vol_data
-from nilearn.image import load_img, resampling
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -110,6 +108,9 @@ def _vertex_outer_normals(mesh):
 def _sample_locations_between_surfaces(
     mesh, inner_mesh, affine, n_points=10, depth=None
 ):
+    #  Avoid circular import
+    from nilearn.image.resampling import coord_transform
+
     outer_vertices = load_surf_mesh(mesh).coordinates
     inner_vertices = load_surf_mesh(inner_mesh).coordinates
 
@@ -124,7 +125,7 @@ def _sample_locations_between_surfaces(
     sample_locations = np.rollaxis(sample_locations, 1)
 
     sample_locations_voxel_space = np.asarray(
-        resampling.coord_transform(
+        coord_transform(
             *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
         )
     ).T.reshape(sample_locations.shape)
@@ -172,6 +173,9 @@ def _ball_sample_locations(
         z in voxel space.
 
     """
+    #  Avoid circular import
+    from nilearn.image.resampling import coord_transform
+
     if depth is not None:
         raise ValueError(
             "The 'ball' sampling strategy does not support "
@@ -183,12 +187,12 @@ def _ball_sample_locations(
         _load_uniform_ball_cloud(n_points=n_points) * ball_radius
     )
     mesh_voxel_space = np.asarray(
-        resampling.coord_transform(*vertices.T, affine=np.linalg.inv(affine))
+        coord_transform(*vertices.T, affine=np.linalg.inv(affine))
     ).T
     linear_map = np.eye(affine.shape[0])
     linear_map[:-1, :-1] = affine[:-1, :-1]
     offsets_voxel_space = np.asarray(
-        resampling.coord_transform(
+        coord_transform(
             *offsets_world_space.T, affine=np.linalg.inv(linear_map)
         )
     ).T
@@ -240,6 +244,9 @@ def _line_sample_locations(
         z in voxel space.
 
     """
+    #  Avoid circular import
+    from nilearn.image.resampling import coord_transform
+
     vertices = load_surf_mesh(mesh).coordinates
     normals = _vertex_outer_normals(mesh)
     if depth is None:
@@ -254,7 +261,7 @@ def _line_sample_locations(
     )
     sample_locations = np.rollaxis(sample_locations, 1)
     sample_locations_voxel_space = np.asarray(
-        resampling.coord_transform(
+        coord_transform(
             *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
         )
     ).T.reshape(sample_locations.shape)
@@ -718,6 +725,11 @@ def vol_to_surf(
      ... )
 
     """
+    # avoid circular import
+    from nilearn.image import get_data as get_vol_data
+    from nilearn.image import load_img
+    from nilearn.image.resampling import resample_to_img
+
     sampling_schemes = {
         "linear": _interpolation_sampling,
         "nearest": _nearest_voxel_sampling,
@@ -731,7 +743,7 @@ def vol_to_surf(
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
         mask = get_vol_data(
-            resampling.resample_to_img(
+            resample_to_img(
                 mask_img,
                 img,
                 interpolation="nearest",
@@ -834,6 +846,9 @@ def load_surf_data(surf_data):
         An array containing surface data
 
     """
+    # avoid circular import
+    from nilearn.image import get_data as get_vol_data
+
     # if the input is a filename, load it
     surf_data = stringify_path(surf_data)
 
@@ -1342,7 +1357,7 @@ class PolyData:
         dimension.
         """
         if not all(x.ndim == dim for x in self.parts.values()):
-            msg = [f"{v}D for {k}" for k, v in self.parts.items()]
+            msg = [f"{v.ndim}D for {k}" for k, v in self.parts.items()]
             raise ValueError(
                 f"Data for each part of {var_name} should be {dim}D. "
                 f"Found: {', '.join(msg)}."
@@ -1894,7 +1909,7 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
-def get_data(img):
+def get_data(img, ensure_finite=False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
 
@@ -1903,6 +1918,10 @@ def get_data(img):
     img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
         SurfaceImage whose data to concatenate and extract.
 
+    ensure_finite : bool
+        If True, non-finite values such as (NaNs and infs) found in the
+        image will be replaced by zeros.
+
     Returns
     -------
     :obj:`~numpy.ndarray`
@@ -1910,7 +1929,22 @@ def get_data(img):
     """
     if isinstance(img, SurfaceImage):
         data = img.data
-    return np.concatenate(list(data.parts.values()), axis=0)
+    elif isinstance(img, PolyData):
+        data = img
+
+    data = np.concatenate(list(data.parts.values()), axis=0)
+
+    if ensure_finite:
+        non_finite_mask = np.logical_not(np.isfinite(data))
+        if non_finite_mask.any():  # any non_finite_mask values?
+            warnings.warn(
+                "Non-finite values detected. "
+                "These values will be replaced with zeros.",
+                stacklevel=3,
+            )
+            data[non_finite_mask] = 0
+
+    return data
 
 
 def concat_imgs(imgs):

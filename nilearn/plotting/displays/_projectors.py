@@ -8,7 +8,6 @@ from scipy.sparse import issparse
 from scipy.stats import scoreatpercentile
 
 from nilearn._utils.param_validation import check_threshold
-from nilearn.plotting import cm
 from nilearn.plotting.displays._axes import GlassBrainAxes
 from nilearn.plotting.displays._slicers import (
     OrthoSlicer,
@@ -134,7 +133,7 @@ class OrthoProjector(OrthoSlicer):
         node_coords,
         node_color="auto",
         node_size=50,
-        edge_cmap=cm.bwr,
+        edge_cmap="RdBu_r",
         edge_vmin=None,
         edge_vmax=None,
         edge_threshold=None,
@@ -161,9 +160,8 @@ class OrthoProjector(OrthoSlicer):
         node_size : scalar or array_like, default=50
             Size(s) of the nodes in points^2.
 
-        edge_cmap : :class:`~matplotlib.colors.Colormap`, default=cm.bwr
+        edge_cmap : :class:`~matplotlib.colors.Colormap`, default="RdBu_r"
             Colormap used for representing the strength of the edges.
-
 
         edge_vmin, edge_vmax : :obj:`float`, optional
             - If not ``None``, either or both of these values will be used

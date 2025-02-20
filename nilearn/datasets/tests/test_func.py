@@ -15,7 +15,7 @@ from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
 from nilearn._utils.data_gen import create_fake_bids_dataset
-from nilearn.datasets import func
+from nilearn.datasets import fetch_development_fmri, func
 from nilearn.datasets._utils import PACKAGE_DIRECTORY, get_dataset_dir
 from nilearn.datasets.tests._testing import (
     check_type_fetcher,
@@ -664,6 +664,7 @@ def test_fetch_development_fmri_functional(tmp_path):
 
 
 def test_fetch_development_fmri(tmp_path, request_mocker):
+    """Test for fetch_development_fmri."""
     mock_participants = _mock_participants_data()
     request_mocker.url_mapping["*"] = _mock_development_confounds().to_csv(
         index=False, sep="\t"
@@ -672,9 +673,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
         mock_participants.to_csv(index=False, sep="\t")
     )
 
-    data = func.fetch_development_fmri(
-        n_subjects=2, data_dir=tmp_path, verbose=1
-    )
+    data = fetch_development_fmri(n_subjects=2, data_dir=tmp_path, verbose=1)
 
     assert isinstance(data, Bunch)
     check_type_fetcher(data)
@@ -683,48 +682,64 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     assert isinstance(data.phenotypic, pd.DataFrame)
     assert data.phenotypic.shape == (2, 6)
 
+
+def test_fetch_development_fmri_n_confounds(request_mocker):
+    """Check number of confounds returned by fetch_development_fmri."""
+    mock_participants = _mock_participants_data()
+    request_mocker.url_mapping["*"] = _mock_development_confounds().to_csv(
+        index=False, sep="\t"
+    )
+    request_mocker.url_mapping["https://osf.io/yr3av/download"] = (
+        mock_participants.to_csv(index=False, sep="\t")
+    )
+
+    data = fetch_development_fmri(n_subjects=2, verbose=1)
+
     # check reduced confounds
     confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 15
 
     # check full confounds
-    data = func.fetch_development_fmri(
+    data = fetch_development_fmri(
         n_subjects=2, reduce_confounds=False, verbose=1
     )
     confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 28
 
-    # check first subject is an adult
-    data = func.fetch_development_fmri(
-        n_subjects=1, reduce_confounds=False, verbose=1
+
+def test_fetch_development_fmri_phenotype(request_mocker):
+    """Check phenotype returned by fetch_development_fmri."""
+    mock_participants = _mock_participants_data()
+    request_mocker.url_mapping["*"] = _mock_development_confounds().to_csv(
+        index=False, sep="\t"
     )
+    request_mocker.url_mapping["https://osf.io/yr3av/download"] = (
+        mock_participants.to_csv(index=False, sep="\t")
+    )
+
+    # check first subject is an adult
+    data = fetch_development_fmri(n_subjects=1, verbose=1)
     age_group = data.phenotypic["Child_Adult"].to_list()[0]
 
     assert age_group == "adult"
 
-    # check first subject is an child if requested with age_group
-    data = func.fetch_development_fmri(
-        n_subjects=1, reduce_confounds=False, verbose=1, age_group="child"
-    )
-    age_group = data.phenotypic["Child_Adult"][0]
-
-    assert age_group == "child"
-
     # check one of each age group returned if n_subject == 2
     # and age_group == 'both
-    data = func.fetch_development_fmri(
-        n_subjects=2, reduce_confounds=False, verbose=1, age_group="both"
-    )
+    data = fetch_development_fmri(n_subjects=2, verbose=1, age_group="both")
     age_group = data.phenotypic["Child_Adult"]
 
     assert all(age_group == ["adult", "child"])
 
+    # check first subject is an child if requested with age_group
+    data = fetch_development_fmri(n_subjects=1, verbose=1, age_group="child")
+    age_group = data.phenotypic["Child_Adult"][0]
+
+    assert age_group == "child"
+
     # check age_group
-    data = func.fetch_development_fmri(
-        n_subjects=2, reduce_confounds=False, verbose=1, age_group="child"
-    )
+    data = fetch_development_fmri(n_subjects=2, verbose=1, age_group="child")
 
     assert all(x == "child" for x in data.phenotypic["Child_Adult"])
 
