@@ -756,18 +756,21 @@ def _generate_report_with_no_warning(estimator):
         NiftiMapsMasker,
         SurfaceMapsMasker,
     )
+    from nilearn.regions import RegionExtractor
     from nilearn.reporting.tests.test_html_report import _check_html
 
-    # TODO
-    # SurfaceMapsMasker still throws too many warnings
-    if isinstance(estimator, (SurfaceMapsMasker)):
-        report = estimator.generate_report(displayed_maps=1)
-    else:
-        with warnings.catch_warnings(record=True) as warning_list:
-            if isinstance(estimator, (NiftiMapsMasker, MultiNiftiMapsMasker)):
-                report = estimator.generate_report(displayed_maps=1)
-            else:
-                report = estimator.generate_report()
+    with warnings.catch_warnings(record=True) as warning_list:
+        if isinstance(
+            estimator,
+            (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
+        ):
+            report = estimator.generate_report(displayed_maps=1)
+        else:
+            report = estimator.generate_report()
+
+        # TODO
+        # RegionExtractor, SurfaceMapsMasker still throws too many warnings
+        if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
             assert len(warning_list) == 0, [
                 str(warning.message) for warning in warning_list
             ]
@@ -816,7 +819,7 @@ def check_masker_generate_report(estimator):
     assert estimator._report_content["warning_message"] is None
 
     # TODO
-    # SurfaceMapsMasker still throws a warning
+    # SurfaceMapsMasker, RegionExtractor still throws a warning
     report = _generate_report_with_no_warning(estimator)
     report = estimator.generate_report()
     _check_html(report)

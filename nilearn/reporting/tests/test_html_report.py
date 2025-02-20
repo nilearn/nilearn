@@ -341,11 +341,11 @@ def test_nifti_labels_masker_report(
         )
 
 
-def test_nifti_labels_masker_report_not_displayed(n_regions, labels_img):
+def test_nifti_labels_masker_report_not_displayed(n_regions, img_labels):
     """Check that region labels are no displayed in the report \
        when they were not provided by the user.
     """
-    masker = NiftiLabelsMasker(labels_img)
+    masker = NiftiLabelsMasker(img_labels)
     masker.fit()
     masker.generate_report()
 
