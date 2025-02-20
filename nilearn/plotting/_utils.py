@@ -203,7 +203,8 @@ def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
     if "color" not in cmap.columns:
         warn(
             "No 'color' column found in the look-up table. "
-            "Will use the default colormap instead."
+            "Will use the default colormap instead.",
+            stacklevel=3,
         )
         return default_cmap
 

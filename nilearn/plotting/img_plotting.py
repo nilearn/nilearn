@@ -1020,7 +1020,7 @@ def plot_roi(
         Alpha sets the transparency of the color inside the filled
         contours.
 
-    %(cmap)s
+    %(cmap_lut)s
         Default=`plt.cm.gist_ncar`.
 
     %(dim)s

@@ -205,6 +205,20 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
     or a matplotlib colormap object.
 """
 
+# cmap or lut
+docdict["cmap_lut"] = """
+cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
+       or :class:`pandas.DataFrale`, optional
+    The colormap to use.
+    Either a string which is a name of a matplotlib colormap,
+    or a matplotlib colormap object,
+    or a BIDS compliant
+    `look-up table <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
+    passed a pandas dataframe.
+    If the look up table does not contain a ``color`` column,
+    then the default colormap of this function will be used.
+"""
+
 # colorbar
 docdict["colorbar"] = """
 colorbar : :obj:`bool`, optional

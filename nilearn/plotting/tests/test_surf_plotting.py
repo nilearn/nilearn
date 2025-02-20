@@ -9,6 +9,7 @@ from unittest import mock
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import pytest
 from matplotlib.figure import Figure
 from numpy.testing import assert_array_equal
@@ -1235,6 +1236,22 @@ def test_plot_surf_roi(matplotlib_pyplot, engine, surface_image_roi, colorbar):
         colorbar=colorbar,
         engine=engine,
     )
+
+
+def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
+    """Test colormap passed as BIDS lookup table."""
+    lut = pd.DataFrame(
+        {"index": [0, 1], "name": ["foo", "bar"], "color": ["#000", "#fff"]}
+    )
+    plot_surf_roi(surface_image_roi.mesh, roi_map=surface_image_roi, cmap=lut)
+
+    lut = pd.DataFrame({"index": [0, 1], "name": ["foo", "bar"]})
+    with pytest.warns(
+        UserWarning, match="No 'color' column found in the look-up table."
+    ):
+        plot_surf_roi(
+            surface_image_roi.mesh, roi_map=surface_image_roi, cmap=lut
+        )
 
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])

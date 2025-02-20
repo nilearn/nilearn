@@ -2032,7 +2032,7 @@ def plot_surf_roi(
         Threshold regions that are labeled 0.
         If you want to use 0 as a label, set threshold to None.
 
-    %(cmap)s
+    %(cmap_lut)s
         Default='gist_ncar'.
 
     %(cbar_tick_format)s
