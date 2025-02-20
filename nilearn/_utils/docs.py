@@ -229,7 +229,7 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
 # cmap or lut
 docdict["cmap_lut"] = """
 cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
-       or :class:`pandas.DataFrale`, optional
+       or :class:`pandas.DataFrame`, optional
     The colormap to use.
     Either a string which is a name of a matplotlib colormap,
     or a matplotlib colormap object,
