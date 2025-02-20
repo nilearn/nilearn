@@ -605,7 +605,7 @@ class BaseSlicer:
                 warnings.warn(
                     "'transparency_range[0]' must be >= 0. Setting it to 0.0."
                 )
-                transparency_range[0]
+                transparency_range[0] = 0
             if (
                 len(transparency_range) != 2
                 or transparency_range[0] >= transparency_range[1]
