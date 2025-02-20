@@ -1675,8 +1675,9 @@ def check_same_n_vertices(mesh_1, mesh_2):
             )
 
 
-def _mesh_to_gifti(coordinates, faces, gifti_file):
-    """Write surface mesh to gifti file on disk.
+def _mesh_to_gifti(coordinates, faces, gifti_file=None):
+    """Convert surface mesh to gifti file and if requested (meaning if
+    gifti_file is a valid path), save it to disk.
 
     Parameters
     ----------
@@ -1686,10 +1687,9 @@ def _mesh_to_gifti(coordinates, faces, gifti_file):
     faces : :obj:`numpy.ndarray`
         a Numpy array containing the indices (into coords) of the mesh faces.
 
-    gifti_file : :obj:`str` or :obj:`pathlib.Path`
+    gifti_file : :obj:`str` or :obj:`pathlib.Path`, default=None
         name for the output gifti file.
     """
-    gifti_file = Path(gifti_file)
     gifti_img = gifti.GiftiImage()
     coords_array = gifti.GiftiDataArray(
         coordinates, intent="NIFTI_INTENT_POINTSET", datatype="float32"
@@ -1699,11 +1699,17 @@ def _mesh_to_gifti(coordinates, faces, gifti_file):
     )
     gifti_img.add_gifti_data_array(coords_array)
     gifti_img.add_gifti_data_array(faces_array)
-    gifti_img.to_filename(gifti_file)
+
+    if gifti_file is not None:
+        gifti_img.to_filename(Path(gifti_file))
+
+    return gifti_img
 
 
-def _data_to_gifti(data, gifti_file):
-    """Save data from Polydata to a gifti file.
+def _data_to_gifti(data, gifti_file=None):
+    """Convert array to a gifti.
+
+    Can also save it to file.
 
     Parameters
     ----------
@@ -1736,7 +1742,11 @@ def _data_to_gifti(data, gifti_file):
     darray = gifti.GiftiDataArray(data=data, datatype=datatype)
 
     gii = gifti.GiftiImage(darrays=[darray])
-    gii.to_filename(Path(gifti_file))
+
+    if gifti_file is not None:
+        gii.to_filename(Path(gifti_file))
+
+    return gii
 
 
 def _sanitize_filename(filename):

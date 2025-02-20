@@ -1,5 +1,6 @@
 """Handle plotting of surfaces for html rendering."""
 
+import base64
 import json
 from warnings import warn
 
@@ -19,26 +20,37 @@ from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
     colorscale,
+    colorscale_niivue,
     get_html_template,
     mesh_to_plotly,
     to_color_strings,
 )
-from nilearn.surface import (
+from nilearn.surface.surface import (
     PolyMesh,
     SurfaceImage,
-    load_surf_data,
-    load_surf_mesh,
-)
-from nilearn.surface.surface import (
+    _data_to_gifti,
+    _mesh_to_gifti,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     combine_hemispheres_meshes,
     get_data,
+    load_surf_data,
+    load_surf_mesh,
 )
 
 
 class SurfaceView(HTMLDocument):  # noqa: D101
     pass
+
+
+def _check_engine(engine):
+    """Check engine is valid."""
+    valid_engines = ["plotly", "niivue"]
+    if engine not in valid_engines:
+        raise ValueError(
+            f"Invalid engine {engine}. Valid engines are {valid_engines}."
+        )
+    return engine
 
 
 def get_vertexcolor(
@@ -136,6 +148,100 @@ def _one_mesh_info(
     info["black_bg"] = black_bg
     info["full_brain_mesh"] = False
     info["colorscale"] = colors["colors"]
+    return info
+
+
+def _matplotlib_cm_to_niivue_cm(cmap):
+    """Convert matplotlib colormap to niivue colormap.
+
+    Parameters
+    ----------
+    cmap_name : str or Colormap
+        Name of the colormap to convert.
+
+    Returns
+    -------
+    cmap : dict of list
+        Converted colormap, with keys "R", "G", "B", "A", "I".
+    """
+    if not isinstance(cmap, (mpl.colors.Colormap, str)):
+        warn(
+            f"'cmap' must be a str or a Colormap. Got {type(cmap)}",
+            stacklevel=4,
+        )
+        return None
+
+    name = None
+    spec = None
+    reverse = False
+
+    if isinstance(cmap, str):
+        name = cmap
+        spec = plt.get_cmap(name)
+    else:
+        spec = cmap
+        name = cmap.name
+
+    if name.endswith("_r"):
+        name = name[:-2]
+        reverse = True
+
+    n_nodes = 255
+    colors = spec(np.linspace(0, 1, 255))
+
+    js = {"R": [], "G": [], "B": [], "A": [], "I": []}
+    js["R"] = (255 * colors[..., 0]).astype(int).tolist()
+    js["G"] = (255 * colors[..., 1]).astype(int).tolist()
+    js["B"] = (255 * colors[..., 2]).astype(int).tolist()
+    js["A"] = [64 for _ in range(n_nodes)]
+    js["I"] = list(range(n_nodes))
+
+    if reverse:
+        for k in js:
+            js[k] = js[k][::-1]
+
+    return js
+
+
+def _one_mesh_info_niivue(
+    surf_map,
+    surf_mesh,
+    vmax=None,
+    threshold=None,
+    bg_map=None,
+    cmap=None,
+    colorbar=None,
+    black_bg=False,
+):
+    """Build dict for plotting one surface map on a single mesh."""
+    info = {}
+
+    # Handle mesh
+    surf_mesh_gifti = _mesh_to_gifti(surf_mesh.coordinates, surf_mesh.faces)
+    info["surf_mesh"] = base64.b64encode(surf_mesh_gifti.to_bytes()).decode(
+        "UTF-8"
+    )
+
+    # Handle surface data
+    gii = _data_to_gifti(surf_map)
+    info["surf_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
+
+    info["cmap"] = _matplotlib_cm_to_niivue_cm(cmap)
+
+    if isinstance(colorbar, bool):
+        info["colorbar"] = str(colorbar).lower()
+
+    vmax, threshold = colorscale_niivue(surf_map, vmax, threshold)
+    info["threshold"] = threshold
+    info["vmax"] = vmax
+
+    # Handle background map
+    if bg_map is not None:
+        gii = _data_to_gifti(bg_map)
+        info["bg_map"] = base64.b64encode(gii.to_bytes()).decode("UTF-8")
+
+    info["back_color"] = [0, 0, 0, 1] if black_bg else [250, 250, 250, 1]
+
     return info
 
 
@@ -333,7 +439,29 @@ def _fill_html_template(info, embed_js=True):
             "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
         }
     )
-    as_html = add_js_lib(as_html, embed_js=embed_js)
+    as_html = add_js_lib(
+        as_html, libraries=["plotly", "jquery"], embed_js=embed_js
+    )
+    return SurfaceView(as_html)
+
+
+def _fill_html_template_niivue(info, embed_js=True):
+    as_html = get_html_template(
+        "surface_plot_template_niivue.html"
+    ).safe_substitute(
+        {
+            "INSERT_SURF_MAP_BASE64_HERE": info["surf_map"],
+            "INSERT_SURF_COLORMAP_HERE": info["cmap"],
+            "INSERT_MESH_BASE64_HERE": info["surf_mesh"],
+            "INSERT_BG_MAP_BASE64_HERE": info["bg_map"],
+            "INSERT_COLORBAR_HERE": info["colorbar"],
+            "INSERT_THRESHOLD_HERE": json.dumps(info["threshold"]),
+            "INSERT_VMAX_HERE": json.dumps(info["vmax"]),
+            "INSERT_PAGE_TITLE_HERE": info["title"] or "Surface plot",
+            "BACK_COLOR": info["back_color"],
+        }
+    )
+    as_html = add_js_lib(as_html, libraries=["niivue"], embed_js=embed_js)
     return SurfaceView(as_html)
 
 
@@ -488,6 +616,7 @@ def view_surf(
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
+    engine="plotly",
 ):
     """Insert a surface plot of a surface map into an HTML page.
 
@@ -585,6 +714,9 @@ def view_surf(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    engine : {'plotly', 'niivue'}, optional
+        Engine to use for plotting. Default='plotly'.
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -612,22 +744,39 @@ def view_surf(
         surf_mesh, surf_map = check_mesh_and_data(surf_mesh, surf_map)
     if bg_map is not None:
         _, bg_map = check_mesh_and_data(surf_mesh, bg_map)
-    info = _one_mesh_info(
-        surf_map=surf_map,
-        surf_mesh=surf_mesh,
-        threshold=threshold,
-        cmap=cmap,
-        black_bg=black_bg,
-        bg_map=bg_map,
-        bg_on_data=bg_on_data,
-        darkness=darkness,
-        symmetric_cmap=symmetric_cmap,
-        vmax=vmax,
-        vmin=vmin,
-    )
-    info["colorbar"] = colorbar
-    info["cbar_height"] = colorbar_height
-    info["cbar_fontsize"] = colorbar_fontsize
-    info["title"] = title
-    info["title_fontsize"] = title_fontsize
-    return _fill_html_template(info, embed_js=True)
+
+    _check_engine(engine)
+
+    if engine == "plotly":
+        info = _one_mesh_info(
+            surf_map=surf_map,
+            surf_mesh=surf_mesh,
+            threshold=threshold,
+            cmap=cmap,
+            black_bg=black_bg,
+            bg_map=bg_map,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+            symmetric_cmap=symmetric_cmap,
+            vmax=vmax,
+            vmin=vmin,
+        )
+        info["colorbar"] = colorbar
+        info["cbar_height"] = colorbar_height
+        info["cbar_fontsize"] = colorbar_fontsize
+        info["title"] = title
+        info["title_fontsize"] = title_fontsize
+        return _fill_html_template(info, embed_js=True)
+
+    elif engine == "niivue":
+        info = _one_mesh_info_niivue(
+            surf_map=surf_map,
+            surf_mesh=surf_mesh,
+            bg_map=bg_map,
+            cmap=cmap,
+            colorbar=colorbar,
+            threshold=threshold,
+            vmax=vmax,
+        )
+        info["title"] = title
+        return _fill_html_template_niivue(info, embed_js=True)
