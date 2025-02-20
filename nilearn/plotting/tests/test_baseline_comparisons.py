@@ -2,7 +2,7 @@
 Test if public plotting functions' output has changed.
 
 See the  maintenance page of our documentation for more information
-https://nilearn.github.io/dev/maintenance.html
+https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-for-plotting-tests
 """
 
 import pytest
