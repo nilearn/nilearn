@@ -5,7 +5,6 @@ not the underlying functions used (e.g. clean()). See test_masking.py and
 test_signal.py for this.
 """
 
-# Author: Gael Varoquaux, Philippe Gervais
 import shutil
 import warnings
 from pathlib import Path

@@ -2,8 +2,6 @@
 on Neurovault (https://neurovault.org).
 """
 
-# Author: Jerome Dockes
-
 import json
 import os
 import re

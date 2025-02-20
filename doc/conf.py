@@ -260,12 +260,6 @@ html_theme_options = {
             "class": "fa-brands fa-solid fa-github fa-2x",
         },
         {
-            "name": "Twitter",
-            "url": "https://x.com/nilearn",
-            "html": "",
-            "class": "fa-brands fa-solid fa-twitter fa-2x",
-        },
-        {
             "name": "Bluesky",
             "url": "https://bsky.app/profile/nilearn.bsky.social",
             "html": "",

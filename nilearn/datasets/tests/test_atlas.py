@@ -1,7 +1,5 @@
 """Test the datasets module."""
 
-# Author: Alexandre Abraham
-
 import itertools
 import re
 import xml.etree.ElementTree as ET
@@ -442,10 +440,10 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     assert request_mocker.url_count == 1
 
 
-def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
-    """Check fetcher for the yeo atlas.
+def _generate_yeo_data(tmp_path):
+    """Generate files for a dummy Yeo atlas.
 
-    Mocks data for each deterministic atlas and their look up tables.
+    So far it only generates 7 networks data.
     """
     dataset_name = "yeo_2011"
     yeo_archive_root = "Yeo_JNeurophysiol11_MNI152"
@@ -487,7 +485,15 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
         mock_lut.to_csv(mock_file, sep=" ", header=False)
         to_archive[Path(yeo_archive_root) / basename] = mock_file
 
-    yeo_data = dict_to_archive(to_archive, archive_format="zip")
+    return dict_to_archive(to_archive, archive_format="zip")
+
+
+def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
+    """Check fetcher for the Yeo atlas.
+
+    Mocks data for each deterministic atlas and their look up tables.
+    """
+    yeo_data = _generate_yeo_data(tmp_path)
 
     request_mocker.url_mapping["*Yeo_JNeurophysiol11_MNI152*"] = yeo_data
 

@@ -1,13 +1,5 @@
 """Regression with spatial priors like TV-L1 and Graph-Net."""
 
-# Author: DOHMATOB Elvis Dopgima,
-#         Gael Varoquaux,
-#         Alexandre Gramfort,
-#         Gaspar Pizarro,
-#         Virgile Fritsch,
-#         Bertrand Thirion,
-#         and others.
-
 from math import sqrt
 
 import numpy as np
