@@ -190,6 +190,22 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         check_params(self.__dict__)
         del y
+
+        if self.smoothing_fwhm is not None:
+            warnings.warn(
+                "Parameter smoothing_fwhm "
+                "is not yet supported for surface data",
+                UserWarning,
+                stacklevel=2,
+            )
+            self.smoothing_fwhm = None
+
+        if self.memory is None:
+            self.memory = Memory(location=None)
+
+        if self.clean_args is None:
+            self.clean_args = {}
+
         self._fit_mask_img(img)
         assert self.mask_img_ is not None
 
@@ -249,15 +265,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                UserWarning,
-                stacklevel=2,
-            )
-            self.smoothing_fwhm = None
-
         parameters = get_params(
             self.__class__,
             self,
@@ -265,8 +272,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 "mask_img",
             ],
         )
-        if self.clean_args is None:
-            self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
         if not isinstance(img, list):

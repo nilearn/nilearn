@@ -33,6 +33,7 @@ VALID_CHECKS = [
     "check_set_params",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
+    "check_dict_unchanged",
 ]
 
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -48,7 +49,6 @@ else:
 CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_complex_data",
     "check_dtype_object",
-    "check_dict_unchanged",
     "check_dont_overwrite_parameters",
     "check_estimator_sparse_array",
     "check_estimator_sparse_data",
@@ -59,9 +59,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_estimators_nan_inf",
     "check_estimators_overwrite_params",
     "check_estimators_pickle",
-    "check_estimators_fit_returns_self",
     "check_f_contiguous_array_estimator",
-    "check_fit_check_is_fitted",
     "check_fit1d",
     "check_fit2d_1feature",
     "check_fit2d_1sample",
@@ -78,6 +76,10 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_transformer_data_not_an_array",
     "check_transformer_general",
     "check_transformer_preserve_dtypes",
+    # following have a nilearn equivalent implemented
+    "check_dict_unchanged",
+    "check_estimators_fit_returns_self",
+    "check_fit_check_is_fitted",
 }
 
 # TODO
@@ -209,6 +211,7 @@ def nilearn_check_estimator(estimator):
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_clean_kwargs)
+        yield (clone(estimator), check_masker_dict_unchanged)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -265,6 +268,17 @@ def _not_fitted_error_message(estimator):
     )
 
 
+def _fit_masker(estimator):
+    """Fit masker by providing the proper input."""
+    from nilearn.conftest import _img_3d_rand, _make_surface_img
+
+    if accept_niimg_input(estimator):
+        estimator.fit(_img_3d_rand())
+    else:
+        estimator.fit(_make_surface_img(10))
+    return estimator
+
+
 def check_estimator_has_sklearn_is_fitted(estimator):
     """Check appropriate response to check_fitted from sklearn before fitting.
 
@@ -304,7 +318,7 @@ def check_masker_fitted(estimator):
     """
     import pytest
 
-    from nilearn.conftest import _img_3d_rand, _make_surface_img
+    from nilearn.conftest import _img_3d_rand
 
     # Failure should happen before the input type is determined
     # so we can pass nifti image to surface maskers.
@@ -317,11 +331,8 @@ def check_masker_fitted(estimator):
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         estimator.inverse_transform(signals)
 
-    # NiftiMasker and SurfaceMasker cannot accept None on fit
-    if accept_niimg_input(estimator):
-        estimator.fit(_img_3d_rand())
-    else:
-        estimator.fit(_make_surface_img(10))
+    # Note that NiftiMasker and SurfaceMasker cannot accept None on fit
+    estimator = _fit_masker(estimator)
 
     assert estimator.__sklearn_is_fitted__()
 
@@ -344,6 +355,24 @@ def check_surface_masker_fit_returns_self(estimator):
     from nilearn.conftest import _make_surface_img
 
     assert estimator.fit(_make_surface_img(10)) is estimator
+
+
+def check_masker_dict_unchanged(estimator):
+    """Replace check_dict_unchanged from sklearn."""
+    from nilearn.conftest import _img_3d_rand, _make_surface_img
+
+    estimator = _fit_masker(estimator)
+
+    dict_before = estimator.__dict__.copy()
+
+    if accept_niimg_input(estimator):
+        estimator.transform(_img_3d_rand())
+    else:
+        estimator.transform(_make_surface_img(10))
+
+    assert estimator.__dict__ == dict_before, (
+        "Estimator changes '__dict__' during transform."
+    )
 
 
 def check_nifti_masker_fit_transform(estimator):
@@ -588,10 +617,10 @@ def check_surface_masker_smooth(estimator):
     assert signal.shape[0] == n_sample
 
     estimator.smoothing_fwhm = 3
-    estimator.fit(input_img)
-
     with pytest.warns(UserWarning, match="not yet supported"):
-        smoothed_signal = estimator.transform(input_img)
+        estimator.fit(input_img)
+
+    smoothed_signal = estimator.transform(input_img)
 
     assert estimator.smoothing_fwhm is None
 

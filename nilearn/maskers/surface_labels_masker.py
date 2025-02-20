@@ -269,6 +269,21 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         self._shelving = False
 
+        if self.memory is None:
+            self.memory = Memory(location=None)
+
+        if self.smoothing_fwhm is not None:
+            warnings.warn(
+                "Parameter smoothing_fwhm "
+                "is not yet supported for surface data",
+                UserWarning,
+                stacklevel=2,
+            )
+            self.smoothing_fwhm = None
+
+        if self.clean_args is None:
+            self.clean_args = {}
+
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)
         self._labels_ = list(all_labels)
@@ -415,15 +430,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 self.background_label,
             )
 
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                UserWarning,
-                stacklevel=2,
-            )
-            self.smoothing_fwhm = None
-
         if self.reports:
             self._reporting_data["images"] = img
 
@@ -434,8 +440,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "mask_img",
             ],
         )
-        if self.clean_args is None:
-            self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
         target_datatype = (
