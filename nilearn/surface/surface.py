@@ -739,7 +739,9 @@ def vol_to_surf(
             "'interpolation' should be one of "
             f"{tuple(sampling_schemes.keys())}"
         )
+
     img = load_img(img)
+
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
         mask = get_vol_data(
@@ -754,13 +756,20 @@ def vol_to_surf(
         )
     else:
         mask = None
+
     original_dimension = len(img.shape)
+
     img = _utils.check_niimg(img, atleast_4d=True)
+
     frames = np.rollaxis(get_vol_data(img), -1)
+
     mesh = load_surf_mesh(surf_mesh)
+
     if inner_mesh is not None:
         inner_mesh = load_surf_mesh(inner_mesh)
+
     sampling = sampling_schemes[interpolation]
+
     texture = sampling(
         frames,
         mesh,
@@ -772,6 +781,7 @@ def vol_to_surf(
         inner_mesh=inner_mesh,
         depth=depth,
     )
+
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
