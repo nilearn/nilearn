@@ -183,7 +183,7 @@ as a side effect of changing another function or piece of code
 that it depends on.
 These tests ensure that the outputs are not accidentally changed.
 
-Tor those tests and for each figure to test,
+For each figure to test,
 an image is generated and then subtracted from an existing reference image.
 If the root mean square of the residual is larger than a user-specified tolerance,
 the test will fail.
