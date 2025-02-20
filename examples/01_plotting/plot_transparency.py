@@ -103,6 +103,14 @@ plotting_config = {
 # Values below 0.5 will be fully transparent
 # while values above 3 will be fully opaque.
 #
+plotting_config = {
+    "display_mode": "ortho",
+    "cut_coords": [5, -26, 21],
+    "draw_cross": False,
+    "vmax": 8,
+    "cmap": "cold_hot",
+}
+
 fig, axes = plt.subplots(
     4,
     1,
@@ -165,6 +173,62 @@ display.add_contours(
 )
 
 show()
+
+
+# %%
+# Tansparent thresholding with other functions
+# --------------------------------------------
+#
+# Several plotting functions support transparency including
+# :func:`~nilearn.plotting.plot_glass_brain`,
+# :func:`~nilearn.plotting.plot_stat_map` and
+# :func:`~nilearn.plotting.plot_img`.
+#
+# See below an example with ``plot_glass_brain``.
+#
+from nilearn.plotting import plot_glass_brain
+
+plotting_config = {
+    "colorbar": True,
+    "cmap": "inferno",
+}
+
+fig, axes = plt.subplots(
+    4,
+    1,
+    figsize=(figure_width, 17),
+)
+plot_glass_brain(
+    image,
+    title="image without threshold",
+    axes=axes[0],
+    **plotting_config,
+)
+plot_glass_brain(
+    image,
+    title="opaque thresholding",
+    threshold=threshold,
+    axes=axes[1],
+    **plotting_config,
+)
+plot_glass_brain(
+    image,
+    title="transparent thresholding",
+    transparency=image,
+    axes=axes[2],
+    **plotting_config,
+)
+plot_glass_brain(
+    image,
+    title="transparent thresholding with range",
+    transparency=image,
+    transparency_range=[vmin, threshold],
+    axes=axes[3],
+    **plotting_config,
+)
+
+show()
+
 
 # %%
 # Transparent thresholding on GLM results
@@ -278,7 +342,7 @@ clean_map, threshold = threshold_stats_img(
     cluster_threshold=500,
     two_sided=False,
 )
-display.add_contours(clean_map, filled=False, levels=[threshold], colors=["k"])
+display.add_contours(clean_map, filled=False, levels=[threshold], colors=["w"])
 
 show()
 
