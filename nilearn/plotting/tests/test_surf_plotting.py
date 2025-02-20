@@ -1049,11 +1049,7 @@ def test_plot_surf_stat_map(matplotlib_pyplot, engine, in_memory_mesh, bg_map):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
 
-    # to avoid extra warnings
-    alpha = None
-    if engine == "matplotlib":
-        alpha = 1
-
+    alpha = 1 if engine == "matplotlib" else None
     # Plot mesh with stat map
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, engine=engine)
     plot_surf_stat_map(
