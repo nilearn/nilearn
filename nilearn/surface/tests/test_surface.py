@@ -621,7 +621,8 @@ def test_vol_to_surf(kind, n_scans, use_mask):
 
 def test_vol_to_surf_labels(img_labels, single_mesh):
     """Test a special use case of nearest interpolation in vol_to_surf when
-    converting deterministic atlases with integer labels."""
+    converting deterministic atlases with integer labels.
+    """
     img_labels_data = img_labels.get_fdata()
     uniques_vol = np.unique(img_labels_data)
 
