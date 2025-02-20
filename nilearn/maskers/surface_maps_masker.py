@@ -511,7 +511,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                self._report_content["engine"] = None
                 return [None]
 
         if engine not in ["plotly", "matplotlib"]:

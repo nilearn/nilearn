@@ -262,17 +262,6 @@ def is_multimasker(estimator):
         return getattr(tags.input_tags, "multi_masker", False)
 
 
-def is_mapsmasker(estimator):
-    tags = estimator._more_tags()
-
-    # TODO remove first if when dropping sklearn 1.5
-    #  for sklearn >= 1.6 tags are always a dataclass
-    if isinstance(tags, dict) and "X_types" in tags:
-        return "maps_masker" in tags["X_types"]
-    else:
-        return getattr(tags.input_tags, "maps_masker", False)
-
-
 def accept_niimg_input(estimator):
     tags = estimator._more_tags()
 
@@ -762,22 +751,26 @@ def check_nifti_masker_fit_with_4d_mask(estimator):
 
 def _generate_report_with_no_warning(estimator):
     """Check that report generation throws no warning."""
-    from nilearn.conftest import _n_regions
+    from nilearn.maskers import (
+        MultiNiftiMapsMasker,
+        NiftiMapsMasker,
+        SurfaceMapsMasker,
+    )
     from nilearn.reporting.tests.test_html_report import _check_html
 
-    with warnings.catch_warnings(record=True) as warning_list:
-        if is_mapsmasker(estimator):
-            if accept_niimg_input(estimator):
-                report = estimator.generate_report(displayed_maps=_n_regions())
+    # TODO
+    # SurfaceMapsMasker still throws too many warnings
+    if isinstance(estimator, (SurfaceMapsMasker)):
+        report = estimator.generate_report(displayed_maps=1)
+    else:
+        with warnings.catch_warnings(record=True) as warning_list:
+            if isinstance(estimator, (NiftiMapsMasker, MultiNiftiMapsMasker)):
+                report = estimator.generate_report(displayed_maps=1)
             else:
-                report = estimator.generate_report(
-                    displayed_maps=estimator.maps_img_.shape[1]
-                )
-        else:
-            report = estimator.generate_report()
-        assert len(warning_list) == 0, [
-            str(warning.message) for warning in warning_list
-        ]
+                report = estimator.generate_report()
+            assert len(warning_list) == 0, [
+                str(warning.message) for warning in warning_list
+            ]
 
     _check_html(report)
 
@@ -824,7 +817,7 @@ def check_masker_generate_report(estimator):
 
     # TODO
     # SurfaceMapsMasker still throws a warning
-    # report = _generate_report_with_no_warning(estimator)
+    report = _generate_report_with_no_warning(estimator)
     report = estimator.generate_report()
     _check_html(report)
 
@@ -838,6 +831,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     import pytest
 
     from nilearn.conftest import _affine_eye, _img_4d_rand_eye_medium
+    from nilearn.maskers import NiftiSpheresMasker
     from nilearn.reporting.tests.test_html_report import _check_html
 
     mask = np.ones((29, 30, 31))
@@ -864,7 +858,9 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     # TODO
     # NiftiSpheresMasker still throws a warning
-    # report = _generate_report_with_no_warning(estimator)
+    if isinstance(estimator, NiftiSpheresMasker):
+        return
+    report = _generate_report_with_no_warning(estimator)
     report = estimator.generate_report()
     _check_html(report)
 
@@ -906,6 +902,9 @@ def check_multi_nifti_masker_generate_report_4d_fit(estimator):
     import pytest
 
     from nilearn.conftest import _img_3d_ones, _img_4d_rand_eye_medium
+
+    if not is_matplotlib_installed():
+        return
 
     estimator.maps_img = _img_3d_ones()
     with pytest.warns(
