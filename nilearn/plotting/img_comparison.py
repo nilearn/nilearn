@@ -112,7 +112,7 @@ def plot_img_comparison(
         types_src_imgs = {type(x) for x in src_imgs}
         raise TypeError(
             "'ref_imgs' and 'src_imgs' "
-            "must both be list of 3D Niimg-like or SurfaceImage.\n"
+            "must both be list of only 3D Niimg-like or SurfaceImage.\n"
             f"Got {types_ref_imgs=} and {types_src_imgs=}."
         )
 
@@ -144,30 +144,37 @@ def plot_img_comparison(
         # when plot_hist is False creates two empty axes
         # and doesn't plot anything
         if plot_hist:
-            # ax1.scatter(
-            #     ref_data,
-            #     src_data,
-            #     label=f"Pearsonr: {corr:.2f}",
-            #     c="g",
-            #     alpha=0.6,
-            # )
+            gridsize = 100
+
+            lims = [
+                np.min(ref_data),
+                np.max(ref_data),
+                np.min(src_data),
+                np.max(src_data),
+            ]
+
             ax1.hexbin(
                 ref_data,
                 src_data,
                 bins="log",
-                # cmap=cmap,
-                # gridsize=gridsize,
-                # extent=lims,
+                cmap="inferno",
+                gridsize=gridsize,
+                extent=lims,
             )
-            x = np.linspace(*ax1.get_xlim(), num=100)
-            ax1.plot(x, x, linestyle="--", c="k")
+            x = np.linspace(*lims[0:2], num=gridsize)
+            ax1.plot(x, x, linestyle="--", c="greys")
+            ax1.set_title(f"Pearson R: {corr:.2f}")
             ax1.grid("on")
             ax1.set_xlabel(ref_label)
             ax1.set_ylabel(src_label)
-            ax1.legend(loc="best")
+            ax1.axis(lims)
 
-            ax2.hist(ref_data, alpha=0.6, bins=128, log=log, label=ref_label)
-            ax2.hist(src_data, alpha=0.6, bins=128, log=log, label=src_label)
+            ax2.hist(
+                ref_data, alpha=0.6, bins=gridsize, log=log, label=ref_label
+            )
+            ax2.hist(
+                src_data, alpha=0.6, bins=gridsize, log=log, label=src_label
+            )
             ax2.set_title("Histogram of imgs values")
             ax2.grid("on")
             ax2.legend(loc="best")
@@ -319,7 +326,7 @@ def plot_bland_altman(
     gs0 = gridspec.GridSpec(1, 1)
 
     gs = gridspec.GridSpecFromSubplotSpec(
-        5, 6, subplot_spec=gs0[0], hspace=0.5, wspace=0.5
+        5, 6, subplot_spec=gs0[0], hspace=0.5, wspace=0.8
     )
 
     ax1 = figure.add_subplot(gs[:-1, 1:5])

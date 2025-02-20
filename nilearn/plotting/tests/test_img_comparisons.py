@@ -61,8 +61,17 @@ def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
     ],
 )
 def test_plot_img_comparison_surface(matplotlib_pyplot, surf_img_1d, masker):
-    """Test Bland-Altman plot with 2 surface images."""
+    """Test plot_img_comparison with 2 surface images."""
     plot_img_comparison(surf_img_1d, [surf_img_1d, surf_img_1d], masker=masker)
+
+
+def test_plot_img_comparison_error(surf_img_1d, img_3d_mni):
+    """Err if something else than image or list of image is passed."""
+    with pytest.raises(TypeError, match="must both be list of 3D"):
+        plot_img_comparison(surf_img_1d, {surf_img_1d})
+
+    with pytest.raises(TypeError, match="must both be list of only"):
+        plot_img_comparison(surf_img_1d, img_3d_mni)
 
 
 def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
