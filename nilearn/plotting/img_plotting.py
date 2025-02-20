@@ -5,8 +5,6 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 Only matplotlib is required.
 """
 
-# Author: Gael Varoquaux, Chris Filo Gorgolewski
-
 import collections.abc
 import functools
 import numbers
@@ -325,7 +323,7 @@ def _plot_img_with_bg(
             bg_img,
             vmin=bg_vmin,
             vmax=bg_vmax,
-            cmap=plt.cm.gray,
+            cmap="gray",
             interpolation=interpolation,
         )
 
@@ -679,7 +677,7 @@ def plot_anat(
     draw_cross=True,
     black_bg="auto",
     dim="auto",
-    cmap=plt.cm.gray,
+    cmap="gray",
     colorbar=False,
     cbar_tick_format="%.2g",
     radiological=False,
@@ -723,7 +721,7 @@ def plot_anat(
         Default='auto'.
 
     %(cmap)s
-        Default=`plt.cm.gray`.
+        Default=`gray`.
 
     colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
@@ -811,7 +809,7 @@ def plot_epi(
     black_bg=True,
     colorbar=False,
     cbar_tick_format="%.2g",
-    cmap=plt.cm.gray,
+    cmap="gray",
     vmin=None,
     vmax=None,
     radiological=False,
@@ -853,7 +851,7 @@ def plot_epi(
         Ex: use "%%i" to display as integers.
 
     %(cmap)s
-        Default=`plt.cm.gray`.
+        Default=`gray`.
 
     %(vmin)s
 
@@ -966,7 +964,7 @@ def plot_roi(
     black_bg="auto",
     threshold=0.5,
     alpha=0.7,
-    cmap=plt.cm.gist_ncar,
+    cmap="gist_ncar",
     dim="auto",
     colorbar=False,
     cbar_tick_format="%i",
@@ -1021,7 +1019,7 @@ def plot_roi(
         contours.
 
     %(cmap_lut)s
-        Default=`plt.cm.gist_ncar`.
+        Default=`gist_ncar`.
 
     %(dim)s
         Default='auto'.
@@ -1153,7 +1151,7 @@ def plot_prob_atlas(
     black_bg="auto",
     dim="auto",
     colorbar=False,
-    cmap=plt.cm.gist_rainbow,
+    cmap="gist_rainbow",
     vmin=None,
     vmax=None,
     alpha=0.7,
@@ -1235,7 +1233,7 @@ def plot_prob_atlas(
         Default='auto'.
 
     %(cmap)s
-        Default=`plt.cm.gist_rainbow`.
+        Default=`gist_rainbow`.
 
     %(colorbar)s
         Default=False.
@@ -1749,7 +1747,7 @@ def plot_connectome(
     node_coords,
     node_color="auto",
     node_size=50,
-    edge_cmap=cm.bwr,
+    edge_cmap="RdBu_r",
     edge_vmin=None,
     edge_vmax=None,
     edge_threshold=None,
@@ -1791,7 +1789,7 @@ def plot_connectome(
     node_size : scalar or array_like, default=50
         Size(s) of the nodes in points^2.
 
-    edge_cmap : colormap, default=cm.bwr
+    edge_cmap : colormap, default="RdBu_r"
         Colormap used for representing the strength of the edges.
 
     edge_vmin, edge_vmax : :obj:`float` or None, default=None
@@ -1882,7 +1880,7 @@ def plot_markers(
     node_values,
     node_coords,
     node_size="auto",
-    node_cmap=plt.cm.gray,
+    node_cmap="gray",
     node_vmin=None,
     node_vmax=None,
     node_threshold=None,
@@ -1916,7 +1914,7 @@ def plot_markers(
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely proportional to the number of nodes.
 
-    node_cmap : :obj:`str` or colormap, default=plt.cm.gray.
+    node_cmap : :obj:`str` or colormap, default="gray".
         Colormap used to represent the node measure.
 
     node_vmin : :obj:`float` or None, default=None
@@ -2052,7 +2050,7 @@ def plot_carpet(
     vmax=None,
     title=None,
     cmap="gray",
-    cmap_labels=plt.cm.gist_ncar,
+    cmap_labels="gist_ncar",
     standardize=True,
 ):
     """Plot an image representation of :term:`voxel` intensities across time.
@@ -2098,7 +2096,7 @@ def plot_carpet(
         Default=`gray`.
 
     cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
-                  default=`plt.cm.gist_ncar`
+                  default=`gist_ncar`
         If ``mask_img`` corresponds to an atlas, then cmap_labels
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.

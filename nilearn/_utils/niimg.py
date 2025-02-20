@@ -1,7 +1,5 @@
 """Neuroimaging file input and output."""
 
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-
 import collections.abc
 import copy
 import gc
@@ -27,7 +25,7 @@ def _get_data(img):
     return data
 
 
-def safe_get_data(img, ensure_finite=False, copy_data=False):
+def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     """Get the data in the image without having a side effect \
     on the Nifti1Image object.
 
