@@ -53,13 +53,11 @@ is shown in the rest of this example.
 ..  admonition:: Benefits
     :class: important
 
-    Implementing transparent thresholding enables
-    more informative results reporting,
-    enables more accurate interpretations,
-    reduces biases in results and hypersensitive
-    to non-physiological differences,
-    facilitates quality control
-    and improves reproducibility checks.
+    Implementing transparent thresholding can help provide
+    more informative results reporting and
+    more accurate interpretations,
+    can facilitate quality control
+    and improve reproducibility checks.
 
 """
 

@@ -595,26 +595,30 @@ class BaseSlicer:
 
             if transparency_range is None:
                 transparency_range = [0.0, np.max(transparency)]
+
+            error_msg = (
+                "'transparency_range' must be "
+                "a list or tuple of 2 positive numbers "
+                "with 'first value < second value'."
+            )
+
+            if len(transparency_range) != 2:
+                raise ValueError(error_msg)
+
             transparency_range[1] = min(
                 transparency_range[1], np.max(transparency)
             )
             transparency_range[0] = max(
                 transparency_range[0], np.min(transparency)
             )
+
             if transparency_range[0] < 0:
                 warnings.warn(
                     "'transparency_range[0]' must be >= 0. Setting it to 0.0."
                 )
                 transparency_range[0] = 0
-            if (
-                len(transparency_range) != 2
-                or transparency_range[0] >= transparency_range[1]
-            ):
-                raise ValueError(
-                    "'transparency_range' must be "
-                    "a list or tuple of 2 positive numbers "
-                    "with 'first value < second value'."
-                )
+            if transparency_range[0] >= transparency_range[1]:
+                raise ValueError(error_msg)
 
             # make sure that 0 <= transparency <= 1
             # taking into account the requested transparency_range
