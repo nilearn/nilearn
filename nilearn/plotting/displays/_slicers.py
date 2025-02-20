@@ -1,5 +1,6 @@
 import collections
 import contextlib
+import copy
 import numbers
 import warnings
 from pathlib import Path
@@ -15,9 +16,10 @@ from nibabel import Nifti1Image
 from nilearn._utils import check_niimg_3d
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
+from nilearn._utils.niimg_conversions import _check_fov
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
-from nilearn.image.resampling import get_bounds, get_mask_bounds
+from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
 from nilearn.plotting._utils import check_threshold_not_negative
 from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._axes import coords_3d_to_2d
@@ -435,9 +437,8 @@ class BaseSlicer:
         # case where this image is binary, such as when this function
         # is called from `add_contours`, continuous interpolation
         # does not make sense and we turn to nearest interpolation instead.
-        transparency, transparency_affine = self._sanitize_transparency(
-            img, transparency, transparency_range, resampling_interpolation
-        )
+
+        original_img = copy.deepcopy(img)
 
         if is_binary_niimg(img):
             img = reorder_img(img, resample="nearest", copy_header=True)
@@ -445,6 +446,14 @@ class BaseSlicer:
             img = reorder_img(
                 img, resample=resampling_interpolation, copy_header=True
             )
+
+        transparency, transparency_affine = self._sanitize_transparency(
+            original_img,
+            transparency,
+            transparency_range,
+            resampling_interpolation,
+        )
+        del original_img
 
         #  TODO resample transparency to input image ???
 
@@ -559,8 +568,8 @@ class BaseSlicer:
         """
         transparency_affine = None
         if isinstance(transparency, (str, Path, Nifti1Image)):
-            transparency = check_niimg_3d(transparency)
-            if is_binary_niimg(img):
+            transparency = check_niimg_3d(transparency, dtype="auto")
+            if is_binary_niimg(transparency):
                 transparency = reorder_img(
                     transparency, resample="nearest", copy_header=True
                 )
@@ -568,6 +577,18 @@ class BaseSlicer:
                 transparency = reorder_img(
                     transparency,
                     resample=resampling_interpolation,
+                    copy_header=True,
+                )
+            if not _check_fov(transparency, img.affine, img.shape[:3]):
+                warnings.warn(
+                    "resampling transparency image to data image...",
+                    stacklevel=4,
+                )
+                transparency = resample_img(
+                    transparency,
+                    img.affine,
+                    img.shape,
+                    force_resample=True,
                     copy_header=True,
                 )
 
@@ -603,7 +624,7 @@ class BaseSlicer:
             )
 
             if len(transparency_range) != 2:
-                raise ValueError(error_msg)
+                raise ValueError(f"{error_msg} Got '{transparency_range}'.")
 
             transparency_range[1] = min(
                 transparency_range[1], np.max(transparency)
@@ -618,7 +639,7 @@ class BaseSlicer:
                 )
                 transparency_range[0] = 0
             if transparency_range[0] >= transparency_range[1]:
-                raise ValueError(error_msg)
+                raise ValueError(f"{error_msg} Got '{transparency_range}'.")
 
             # make sure that 0 <= transparency <= 1
             # taking into account the requested transparency_range

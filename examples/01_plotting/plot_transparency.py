@@ -68,6 +68,8 @@ from nilearn.plotting import plot_stat_map, show
 
 # %%
 # Load the image we will use to demonstrate.
+#
+
 image = datasets.load_sample_motor_activation_image()
 
 # %%
@@ -80,6 +82,7 @@ image = datasets.load_sample_motor_activation_image()
 # .. TODO switch to ``berlin`` color map when bumping matplotlib
 #    as it is not a cyclic color map like ``cold_hot``.
 #
+
 vmin = 0.5
 threshold = 3
 figure_width = 8
@@ -103,6 +106,7 @@ plotting_config = {
 # Values below 0.5 will be fully transparent
 # while values above 3 will be fully opaque.
 #
+
 plotting_config = {
     "display_mode": "ortho",
     "cut_coords": [5, -26, 21],
@@ -174,6 +178,87 @@ display.add_contours(
 
 show()
 
+# %%
+# Transpoarent masking of part of the data
+# ----------------------------------------
+#
+# You may want to use transparent masking to highlight
+# specific parts of the brain while leaving other parts partly visible.
+#
+# For example, you could highlight the gray matter
+# and leave values in the rest of the brain partly transparent.
+#
+
+# %%
+# Let's fetch a beta image of auditory localizer from a single subject.
+#
+
+from nilearn.datasets import fetch_localizer_contrasts
+
+auditory_image = fetch_localizer_contrasts(
+    contrasts=["left auditory click"], verbose=0, n_subjects=1
+)
+auditory_image = auditory_image.cmaps[0]
+
+# %%
+# The let's create our transparency image
+# to leave gray matter opaque and make the white matter
+# partly transparent.
+#
+import numpy as np
+from nibabel import Nifti1Image
+
+from nilearn.datasets import load_mni152_gm_mask, load_mni152_wm_mask
+
+white_matter_image = load_mni152_wm_mask(threshold=0.35)
+white_matter_mask = white_matter_image.get_fdata() > 0
+
+grey_matter_image = load_mni152_gm_mask(threshold=0.6)
+grey_matter_mask = grey_matter_image.get_fdata() > 0
+
+transparency_data = np.zeros(grey_matter_image.shape)
+transparency_data[white_matter_mask] = 0.6
+transparency_data[grey_matter_mask] = 1
+transparency_image = Nifti1Image(transparency_data, grey_matter_image.affine)
+
+# %%
+# Create the plot.
+#
+
+fig, axes = plt.subplots(
+    2,
+    1,
+    figsize=(figure_width, 8),
+)
+
+plotting_config = {
+    "display_mode": "ortho",
+    "cut_coords": [5, -26, 21],
+    "draw_cross": False,
+    "cmap": "cold_hot",
+}
+
+display = plot_stat_map(
+    auditory_image,
+    title="auditory localizer - no thresholding",
+    axes=axes[0],
+    **plotting_config,
+)
+
+display = plot_stat_map(
+    auditory_image,
+    title="auditory localizer  - highlight gray matter",
+    transparency=transparency_image,
+    axes=axes[1],
+    **plotting_config,
+)
+
+show()
+
+# %%
+# Note that the transparency image was automatically
+# resampled to the underlying data.
+#
 
 # %%
 # Tansparent thresholding with other functions
@@ -186,6 +271,7 @@ show()
 #
 # See below an example with ``plot_glass_brain``.
 #
+
 from nilearn.plotting import plot_glass_brain
 
 plotting_config = {
@@ -260,7 +346,7 @@ from nilearn.glm.first_level import FirstLevelModel
 from nilearn.image import mean_img
 from nilearn.plotting import plot_stat_map, show
 
-subject_data = fetch_spm_auditory()
+subject_data = fetch_spm_auditory(verbose=0)
 
 fmri_glm = FirstLevelModel(
     t_r=7,
@@ -345,7 +431,6 @@ clean_map, threshold = threshold_stats_img(
 display.add_contours(clean_map, filled=False, levels=[threshold], colors=["w"])
 
 show()
-
 
 # %%
 # References
