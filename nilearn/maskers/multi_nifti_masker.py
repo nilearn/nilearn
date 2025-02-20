@@ -2,8 +2,6 @@
 on multi subject MRI data.
 """
 
-# Author: Gael Varoquaux, Alexandre Abraham
-
 import collections.abc
 import itertools
 import warnings

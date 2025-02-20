@@ -251,7 +251,7 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 22
+max-complexity = 21
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
@@ -275,7 +275,6 @@ max-complexity = 22
 "nilearn/glm/*" = ["B028"]  # 19 errors to fix
 "nilearn/glm/**/{tests}/*" = ["D103"]  # 154 errors to fix
 "nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
-"nilearn/interfaces/**/{tests}/*" = ["D103"]  # 75 errors to fix
 "nilearn/maskers/*" = ["B028"]  # 17 errors to fix
 "nilearn/mass_univariate/*" = ["B028"]  # 4 errors to fix
 "nilearn/plotting/*" = ["B028"]  # 18 errors to fix
@@ -294,7 +293,7 @@ convention = "numpy"
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 26
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
-max-branches = 24
+max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements

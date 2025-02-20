@@ -12,11 +12,6 @@ Order of tests from top to bottom:
 
 # ruff: noqa: ARG001
 
-# Author: Andres Hoyos-Idrobo
-#         Binh Nguyen
-#         Thomas Bazeiile
-#
-
 import collections
 import numbers
 import warnings

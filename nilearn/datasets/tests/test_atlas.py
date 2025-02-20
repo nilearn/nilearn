@@ -1,7 +1,5 @@
 """Test the datasets module."""
 
-# Author: Alexandre Abraham
-
 import itertools
 import re
 import xml.etree.ElementTree as ET

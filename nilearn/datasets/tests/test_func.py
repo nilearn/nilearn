@@ -1,7 +1,5 @@
 """Test the datasets module."""
 
-# Author: Alexandre Abraham
-
 import json
 import re
 import shutil

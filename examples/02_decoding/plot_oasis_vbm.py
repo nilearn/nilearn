@@ -47,15 +47,6 @@ much clearer view of the important regions.
 ____
 
 .. include:: ../../../examples/masker_note.rst
-
-..
-    Original authors:
-
-    - Elvis Dhomatob, Apr. 2014
-    - Virgile Fritsch, Apr 2014
-    - Gael Varoquaux, Apr 2014
-    - Andres Hoyos-Idrobo, Apr 2017
-
 """
 
 # %%

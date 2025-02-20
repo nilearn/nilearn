@@ -1,7 +1,5 @@
 """Tools to find activations and cut on maps."""
 
-# Author: Gael Varoquaux
-
 import numbers
 import warnings
 

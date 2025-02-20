@@ -1,7 +1,5 @@
 """Tests for the permuted_ols function."""
 
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
