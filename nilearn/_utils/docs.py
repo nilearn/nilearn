@@ -1047,12 +1047,14 @@ transparency_range : :obj:`tuple` or :obj:`list` of 2 real numbers, \
     this determines the range of values in the image
     to use for transparency (alpha blending).
     For example with ``transparency_range = [1.96, 3]``,
-    any voxel / vertex (v_i):
+    any voxel / vertex (:math:`v_i`):
+
     - with a value less than 1.96 would be fully transparent (alpha = 0),
     - with a value greater then 3 than would be fully opaque (alpha = 1),
     - with a value in the interval ``[1.96, 3.0]`` would have an alpha_i value
-      scaled linearly between 0 and 1:
-      ``alpha_i = (v_i - 1.96) / (3.0 - 1.96)``.
+      scaled linearly between 0 and 1 :
+      :math:`alpha_i = (v_i - 1.96) / (3.0 - 1.96)`.
+
     This parameter will be ignored
     unless an image is passed as ``transparency``.
     The first number must be greater than 0 and less than the second one.
