@@ -14,6 +14,7 @@ from nilearn.plotting.find_cuts import (
 
 
 def test_find_cut_coords(affine_eye):
+    """Test find_xyz_cut_coords."""
     data = np.zeros((100, 100, 100))
     x_map, y_map, z_map = 50, 10, 40
     data[
@@ -152,6 +153,17 @@ def test_empty_image_ac_pc_line(img_3d_zeros_eye):
 
 @pytest.mark.parametrize("direction", ["x", "z"])
 def test_find_cut_slices(affine_eye, direction):
+    """Test find_cut_slices.
+
+    Test that
+
+    - we are indeed getting the right number of cuts
+
+    - we are not getting cuts that are separated by
+    less than the minimum spacing that we asked for
+
+    - the cuts indeed go through the 'activated' part of the data
+    """
     data = np.zeros((50, 50, 50))
     x_map, y_map, z_map = 25, 5, 20
     data[
@@ -164,13 +176,8 @@ def test_find_cut_slices(affine_eye, direction):
             img, direction=direction, n_cuts=n_cuts, spacing=2
         )
 
-        # Test that we are indeed getting the right number of cuts
         assert len(cuts) == n_cuts
-        # Test that we are not getting cuts that are separated by
-        # less than the minimum spacing that we asked for
         assert np.diff(cuts).min() == 2
-        # Test that the cuts indeed go through the 'activated' part
-        # of the data
         for cut in cuts:
             if direction == "x":
                 cut_value = data[int(cut)]
@@ -185,6 +192,13 @@ def test_find_cut_slices(affine_eye, direction):
 
 
 def test_find_cut_slices_directrion_z():
+    """Test find_cut_slices in the z direction.
+
+    Test that we are not getting cuts that are separated by
+    less than the minimum spacing that we asked for.
+
+    Done with several affines, voxel size...
+    """
     data = np.zeros((50, 50, 50))
     x_map, y_map, z_map = 25, 5, 20
     data[
