@@ -1230,9 +1230,6 @@ def plot_surf_contours(
 
     _check_figure_axes_inputs_plot_surf_contours(figure, axes)
 
-    if isinstance(cmap, pd.DataFrame):
-        cmap = create_colormap_from_lut(cmap)
-
     if figure is None and axes is None:
         figure = plot_surf(surf_mesh, **kwargs)
         axes = figure.axes[0]
