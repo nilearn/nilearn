@@ -1,7 +1,5 @@
 """Test the signals module."""
 
-# Author: Gael Varoquaux, Alexandre Abraham
-
 from pathlib import Path
 
 import numpy as np

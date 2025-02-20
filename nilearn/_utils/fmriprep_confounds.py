@@ -1,7 +1,4 @@
-"""Misc utilities for function nilearn.interfaces.fmriprep.load_confounds.
-
-Author: Hao-Ting Wang
-"""
+"""Misc utilities for function nilearn.interfaces.fmriprep.load_confounds."""
 
 
 def flag_single_gifti(img_files):

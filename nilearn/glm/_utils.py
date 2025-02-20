@@ -1,7 +1,4 @@
-"""Misc utilities for the library.
-
-Authors: Bertrand Thirion, Matthew Brett, Ana Luisa Pinho, 2020
-"""
+"""Misc utilities for the library."""
 
 from warnings import warn
 

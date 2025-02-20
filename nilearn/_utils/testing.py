@@ -1,6 +1,5 @@
 """Utilities for testing nilearn."""
 
-# Author: Alexandre Abraham, Philippe Gervais
 import gc
 import os
 import sys

@@ -37,12 +37,14 @@ Detrend = bool
 DrawCross = bool
 KeepMaskedLabels = bool
 KeepMaskedMaps = bool
+NiimgLike = (Nifti1Image, str, Path)
 Radiological = bool
 Resume = bool
 Standardize = bool
 StandardizeConfounds = bool
 Tfce = bool
 TwoSidedTest = bool
+
 
 # TODO update when dropping python 3.9
 if sys.version_info[1] < 10:

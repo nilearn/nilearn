@@ -1,7 +1,5 @@
 """Logging facility for nilearn."""
 
-# Author: Philippe Gervais
-
 import inspect
 import traceback
 

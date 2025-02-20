@@ -74,6 +74,27 @@ of :obj:`float`: (xmin, ymin, width, height), default=None
 """
 
 # bg_img
+docdict["bg_map"] = """
+bg_map : :obj:`str` or :obj:`pathlib.Path` or \
+         :class:`numpy.ndarray` \
+         or :obj:`~nilearn.surface.SurfaceImage` or None,\
+         default=None
+    Background image to be plotted on the :term:`mesh`
+    underneath the surf_data in grayscale,
+    most likely a sulcal depth map for realistic shading.
+    If the map contains values outside [0, 1],
+    it will be rescaled such that all values are in [0, 1].
+    Otherwise, it will not be modified.
+    If a :obj:`str` or :obj:`pathlib.Path` is passed,
+    it should be loadable to a :class:`numpy.ndarray`
+    by :func:`~nilearn.surface.load_surf_data`.
+    If a :class:`numpy.ndarray` is passed,
+    if should have a shape `(n_vertices, )`,
+    with ``n_vertices`` matching that of the underlying mesh
+    used for plotting.
+"""
+
+# bg_img
 docdict["bg_img"] = """
 bg_img : Niimg-like object, optional
     See :ref:`extracting_data`.

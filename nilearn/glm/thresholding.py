@@ -1,9 +1,6 @@
 """Utilities for probabilistic error control at voxel- and \
 cluster-level in brain imaging: cluster-level thresholding, false \
 discovery rate control, false discovery proportion in clusters.
-
-Author: Bertrand Thirion, 2015 -- 2019
-
 """
 
 import warnings

@@ -6,6 +6,7 @@ import requests
 
 
 def test_request_mocking_autoused_requests():
+    """Check the request mocker is autoused."""
     assert requests.sessions.Session.send.__class__.__name__ == "Sender"
     assert requests.sessions.Session.send.is_mock
 
@@ -26,6 +27,7 @@ def test_request_mocking_autoused_requests():
 
 
 def test_request_mocking_autoused_urllib():
+    """Check the request mocker is autoused and works for a given URL."""
     resp = request.urlopen("https://example.com")
 
     assert resp.__class__.__name__ == "MagicMock"
@@ -38,6 +40,9 @@ def test_request_mocking_autoused_urllib():
 
 
 def test_temp_nilearn_home_autoused():
+    """Check that '~', NILEARN_DATA, NILEARN_SHARED_DATA \
+       are properly expanded.
+    """
     home_dir = Path("~").expanduser()
 
     assert home_dir.name.startswith("temp_nilearn_home")

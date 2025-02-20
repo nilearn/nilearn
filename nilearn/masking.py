@@ -1,6 +1,5 @@
 """Utilities to compute and operate on brain masks."""
 
-# Authors: Gael Varoquaux, Alexandre Abraham, Philippe Gervais, Ana Luisa Pinho
 import numbers
 import warnings
 
@@ -19,6 +18,9 @@ from nilearn.datasets import (
     load_mni152_wm_template,
 )
 from nilearn.image import get_data, new_img_like, resampling
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.typing import NiimgLike
 
 from . import _utils
 
@@ -49,7 +51,7 @@ def load_mask_img(mask_img, allow_empty=False):
 
     Parameters
     ----------
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or a :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         The mask to check.
 
@@ -58,14 +60,30 @@ def load_mask_img(mask_img, allow_empty=False):
 
     Returns
     -------
-    mask : :class:`numpy.ndarray`
-        Boolean version of the mask.
+    mask : :class:`numpy.ndarray` or :obj:`~nilearn.surface.SurfaceImage`
+        Boolean version of the input.
+        Returns a :class:`numpy.ndarray` if Niimg-like object
+        was passed as input
+        or :obj:`~nilearn.surface.SurfaceImage`
+        if :obj:`~nilearn.surface.SurfaceImage` was passed as input
 
     mask_affine : None or (4,4) array-like
-        Affine of the mask.
+        Affine of the mask if Niimg-like object was passed as input,
+        None otherwise.
     """
-    mask_img = _utils.check_niimg_3d(mask_img)
-    mask = safe_get_data(mask_img, ensure_finite=True)
+    if not isinstance(mask_img, (*NiimgLike, SurfaceImage)):
+        raise TypeError(
+            "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
+            f"Got {type(mask_img)=}."
+        )
+
+    if isinstance(mask_img, NiimgLike):
+        mask_img = _utils.check_niimg_3d(mask_img)
+        mask = safe_get_data(mask_img, ensure_finite=True)
+    else:
+        mask_img.data._check_ndims(1)
+        mask = get_surface_data(mask_img, ensure_finite=True)
+
     values = np.unique(mask)
 
     if len(values) == 1:
@@ -89,7 +107,16 @@ def load_mask_img(mask_img, allow_empty=False):
         )
 
     mask = _utils.as_ndarray(mask, dtype=bool)
-    return mask, mask_img.affine
+
+    if isinstance(mask_img, NiimgLike):
+        return mask, mask_img.affine
+
+    for hemi in mask_img.data.parts:
+        mask_img.data.parts[hemi] = _utils.as_ndarray(
+            mask_img.data.parts[hemi], dtype=bool
+        )
+
+    return mask_img, None
 
 
 def extrapolate_out_mask(data, mask, iterations=1):

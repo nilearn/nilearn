@@ -27,14 +27,6 @@ Note that more power would be obtained from using a larger sample of subjects.
 
     For more information
     see the :ref:`dataset description <oasis_maps>`.
-..
-    Original authors:
-
-    - Bertrand Thirion, <bertrand.thirion@inria.fr>, July 2018
-    - Elvis Dhomatob, Apr. 2014
-    - Virgile Fritsch, Apr 2014
-    - Gael Varoquaux, Apr 2014
-
 """
 
 # %%

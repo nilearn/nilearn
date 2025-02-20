@@ -1,7 +1,5 @@
 """Transformer used to apply basic transformations on :term:`fMRI` data."""
 
-# Author: Gael Varoquaux, Alexandre Abraham
-
 import abc
 import contextlib
 import warnings

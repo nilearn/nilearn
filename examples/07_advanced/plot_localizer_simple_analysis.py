@@ -12,12 +12,6 @@ variates.  The user can refer to the
 `plot_localizer_mass_univariate_methods.py` example to see how to use these.
 
 .. include:: ../../../examples/masker_note.rst
-
-..
-    Original authors:
-
-    - Virgile Fritsch, May. 2014
-
 """
 
 from nilearn._utils.helpers import check_matplotlib

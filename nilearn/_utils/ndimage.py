@@ -1,7 +1,5 @@
 """N-dimensional image manipulation."""
 
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-
 import numpy as np
 from scipy.ndimage import label, maximum_filter
 

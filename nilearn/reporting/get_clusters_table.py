@@ -1,7 +1,4 @@
-"""Implement plotting functions useful to report analysis results.
-
-Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
-"""
+"""Implement plotting functions useful to report analysis results."""
 
 import warnings
 from string import ascii_lowercase

@@ -1,9 +1,5 @@
 """Implementation of multiple proximal operators for TV-L1, Graph-Net, etc."""
 
-# Author: DOHMATOB Elvis Dopgima,
-#         VAROQUAUX Gael,
-#         GRAMFORT Alexandre,
-
 from math import sqrt
 
 import numpy as np

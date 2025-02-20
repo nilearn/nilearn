@@ -28,9 +28,6 @@ Design matrices contain three different types of regressors:
 3. Drift regressors, that represent low_frequency phenomena of no
    interest in the data; they need to be included to reduce variance
    estimates.
-
-Author: Bertrand Thirion, 2009-2015
-
 """
 
 from warnings import warn

@@ -1,7 +1,5 @@
 """Matplotlib colormaps useful for neuroimaging."""
 
-import contextlib
-
 import matplotlib
 import numpy as _np
 from matplotlib import cm as _cm
@@ -184,13 +182,6 @@ _cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
 _cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
 
 
-# Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
-_bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
-_cmaps_data["bwr"] = _colors.LinearSegmentedColormap.from_list(
-    "bwr", _bwr_data
-)._segmentdata.copy()
-
-
 ###############################################################################
 # Build colormaps and their reverse.
 
@@ -299,9 +290,7 @@ for k, v in _cmap_d.items():
     else:
         _register_cmap = _cm.register_cmap
 
-    # "bwr" is already registered in latest matplotlib
-    with contextlib.suppress(ValueError):
-        _register_cmap(name=k, cmap=v)
+    _register_cmap(name=k, cmap=v)
 
 
 ###############################################################################

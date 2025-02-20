@@ -71,7 +71,7 @@ def test_plot_markers_node_sizes_lyrz_display(
     [
         ("RdBu", 0, None),
         (plt.get_cmap("jet"), None, 5),
-        (plt.cm.viridis_r, 2, 3),
+        ("viridis_r", 2, 3),
     ],
 )
 def test_plot_markers_cmap(matplotlib_pyplot, cmap, vmin, vmax, coords):

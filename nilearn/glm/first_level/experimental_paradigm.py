@@ -8,9 +8,6 @@ It can also contain:
     * a 'duration' field that yields event duration (for so-called block
         paradigms).
     * a 'modulation' field that associated a scalar value to each event.
-
-Author: Bertrand Thirion, 2015
-
 """
 
 import warnings

@@ -3,7 +3,6 @@
 Fastclustering for approximation of structured signals
 """
 
-# Author: Andres Hoyos idrobo, Gael Varoquaux, Jonas Kahn and  Bertrand Thirion
 import itertools
 import warnings
 

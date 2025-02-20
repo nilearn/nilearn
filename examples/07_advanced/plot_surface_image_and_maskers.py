@@ -38,6 +38,7 @@ from nilearn.datasets import (
     load_fsaverage_data,
     load_nki,
 )
+from nilearn.image import threshold_img
 from nilearn.maskers import SurfaceMasker
 from nilearn.plotting import plot_matrix, plot_surf, show
 
@@ -75,6 +76,8 @@ fig, axes = plt.subplots(
     figsize=(4 * len(hemispheres), 4),
 )
 axes = np.atleast_2d(axes)
+
+mean_img = threshold_img(mean_img, threshold=1e-08, copy=False, two_sided=True)
 
 # %%
 # Let's ensure that we have the same range

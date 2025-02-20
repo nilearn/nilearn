@@ -11,8 +11,6 @@ from scipy.ndimage import (
 
 from .._utils.extmath import fast_abs_percentile
 
-# Author: Gael Varoquaux
-
 ###############################################################################
 # Edge detection
 

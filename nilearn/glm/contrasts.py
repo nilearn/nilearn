@@ -1,7 +1,5 @@
 """Contrast computation and operation on contrast to \
 obtain fixed effect results.
-
-Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 """
 
 from warnings import warn

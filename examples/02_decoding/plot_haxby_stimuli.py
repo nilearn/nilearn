@@ -30,7 +30,7 @@ for stim_type in stimulus_information:
         fig.suptitle(stim_type)
 
         for img_path, ax in zip(file_names, axes.ravel()):
-            ax.imshow(plt.imread(img_path), cmap=plt.cm.gray)
+            ax.imshow(plt.imread(img_path), cmap="gray")
 
         for ax in axes.ravel():
             ax.axis("off")

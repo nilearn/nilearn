@@ -1,7 +1,5 @@
 """Test the searchlight module."""
 
-# Author: Alexandre Abraham
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image

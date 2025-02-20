@@ -4,12 +4,11 @@ Preprocessing functions for images.
 See also nilearn.signal.
 """
 
-# Authors: Philippe Gervais, Alexandre Abraham
-
 import collections.abc
 import copy
 import itertools
 import warnings
+from copy import deepcopy
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -40,6 +39,10 @@ from nilearn._utils.niimg_conversions import (
 )
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
+from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.surface.surface import new_img_like as new_surface_img_like
+from nilearn.typing import NiimgLike
 
 
 def get_data(img):
@@ -964,14 +967,17 @@ def threshold_img(
 
         The score is calculated only on the non-negative values of data.
 
+    .. versionadded:: 0.2
+
     .. versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
-    .. versionadded:: 0.2
+    .. versionchanged:: 0.11.2dev
+        Add support for SurfaceImage.
 
     Parameters
     ----------
-    img : a 3D/4D Niimg-like object
+    img : a 3D/4D Niimg-like object or a :obj:`~nilearn.surface.SurfaceImage`
         Image containing statistical or atlas maps which should be thresholded.
 
     threshold : :obj:`float` or :obj:`str`
@@ -987,6 +993,8 @@ def threshold_img(
         sets of connected voxels (``clusters``) with size smaller than this
         number will be removed.
 
+        Not implemented for SurfaceImage.
+
         .. versionadded:: 0.9.0
 
     two_sided : :obj:`bool`, default=True
@@ -995,7 +1003,8 @@ def threshold_img(
 
         .. versionadded:: 0.9.0
 
-    mask_img : Niimg-like object, default=None
+    mask_img : Niimg-like object or a :obj:`~nilearn.surface.SurfaceImage` \
+        or None, default=None
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
@@ -1006,13 +1015,16 @@ def threshold_img(
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
+        Not applicable for SurfaceImage.
+
         .. versionadded:: 0.11.0
 
         This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
+    :obj:`~nibabel.nifti1.Nifti1Image` \
+        or a :obj:`~nilearn.surface.SurfaceImage`
         Thresholded image of the given input image.
 
     Raises
@@ -1032,39 +1044,86 @@ def threshold_img(
         false positive control.
 
     """
-    from .. import masking
-    from . import resampling
+    from nilearn.image.resampling import resample_img
+    from nilearn.masking import load_mask_img
 
-    # TODO: remove this warning in 0.13.0
-    check_copy_header(copy_header)
+    if not isinstance(img, (*NiimgLike, SurfaceImage)):
+        raise TypeError(
+            "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
+            f"Got {type(img)=}."
+        )
 
-    img = check_niimg(img)
-    img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
-    affine = img.affine
+    if mask_img is not None and (
+        (isinstance(img, NiimgLike) and not isinstance(mask_img, NiimgLike))
+        or (
+            isinstance(img, SurfaceImage)
+            and not isinstance(mask_img, SurfaceImage)
+        )
+    ):
+        raise TypeError(
+            "'img' and 'mask_img' should both be "
+            "3D/4D Niimg-like object or a SurfaceImage. "
+            f"Got {type(img)=} and {type(mask_img)=}."
+        )
+
+    if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
+        check_same_n_vertices(mask_img.mesh, img.mesh)
+
+    if isinstance(img, SurfaceImage) and cluster_threshold > 0:
+        warnings.warn(
+            "Cluster thresholding not implemented for SurfaceImage. "
+            "Setting 'cluster_threshold' to 0.",
+            stacklevel=2,
+        )
+        cluster_threshold = 0
+
+    if isinstance(img, NiimgLike):
+        # TODO: remove this warning in 0.13.0
+        check_copy_header(copy_header)
+
+        img = check_niimg(img)
+        img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
+        affine = img.affine
+    else:
+        if copy:
+            img = deepcopy(img)
+        img_data = get_surface_data(img, ensure_finite=True)
 
     img_data_for_cutoff = img_data
 
     if mask_img is not None:
-        mask_img = check_niimg_3d(mask_img)
-        if not check_same_fov(img, mask_img):
-            # TODO switch to force_resample=True
-            # when bumping to version > 0.13
-            mask_img = resampling.resample_img(
-                mask_img,
-                target_affine=affine,
-                target_shape=img.shape[:3],
-                interpolation="nearest",
-                copy_header=True,
-                force_resample=False,
-            )
-
-        mask_data, _ = masking.load_mask_img(mask_img)
-
-        # Take only points that are within the mask to check for threshold
-        img_data_for_cutoff = img_data_for_cutoff[mask_data != 0.0]
-
         # Set as 0 for the values which are outside of the mask
-        img_data[mask_data == 0.0] = 0.0
+        if isinstance(mask_img, NiimgLike):
+            mask_img = check_niimg_3d(mask_img)
+            if not check_same_fov(img, mask_img):
+                # TODO switch to force_resample=True
+                # when bumping to version > 0.13
+                mask_img = resample_img(
+                    mask_img,
+                    target_affine=affine,
+                    target_shape=img.shape[:3],
+                    interpolation="nearest",
+                    copy_header=True,
+                    force_resample=False,
+                )
+            mask_data, _ = load_mask_img(mask_img)
+
+            # Take only points that are within the mask to check for threshold
+            img_data_for_cutoff = img_data_for_cutoff[mask_data != 0.0]
+
+            img_data[mask_data == 0.0] = 0.0
+
+        else:
+            mask_img, _ = load_mask_img(mask_img)
+
+            mask_data = get_surface_data(mask_img)
+
+            # Take only points that are within the mask to check for threshold
+            img_data_for_cutoff = img_data_for_cutoff[mask_data != 0.0]
+
+            for hemi in mask_img.data.parts:
+                mask = mask_img.data.parts[hemi]
+                img.data.parts[hemi][mask == 0.0] = 0.0
 
     cutoff_threshold = check_threshold(
         threshold,
@@ -1075,38 +1134,71 @@ def threshold_img(
     )
 
     # Apply threshold
-    if two_sided:
-        img_data[
-            (-cutoff_threshold <= img_data) & (img_data <= cutoff_threshold)
-        ] = 0.0
-    elif cutoff_threshold >= 0:
-        img_data[img_data <= cutoff_threshold] = 0.0
+    if isinstance(img, NiimgLike):
+        img_data = _apply_threshold(img_data, two_sided, cutoff_threshold)
     else:
-        img_data[img_data >= cutoff_threshold] = 0.0
-
-    # Expand to 4D to support both 3D and 4D
-    expand_to_4d = img_data.ndim == 3
-    if expand_to_4d:
-        img_data = img_data[:, :, :, None]
+        img_data = _apply_threshold(img, two_sided, cutoff_threshold)
 
     # Perform cluster thresholding, if requested
+
+    # Expand to 4D to support both 3D and 4D nifti
+    expand = isinstance(img, NiimgLike) and img_data.ndim == 3
+    if expand:
+        img_data = img_data[:, :, :, None]
     if cluster_threshold > 0:
         for i_vol in range(img_data.shape[3]):
             img_data[..., i_vol] = _apply_cluster_size_threshold(
                 img_data[..., i_vol],
                 cluster_threshold,
             )
-
-    if expand_to_4d:
+    if expand:
         # Reduce back to 3D
         img_data = img_data[:, :, :, 0]
 
     # Reconstitute img object
-    thresholded_img = new_img_like(
-        img, img_data, affine, copy_header=copy_header
-    )
+    if isinstance(img, NiimgLike):
+        return new_img_like(img, img_data, affine, copy_header=copy_header)
 
-    return thresholded_img
+    return new_surface_img_like(img, img_data.data)
+
+
+def _apply_threshold(img_data, two_sided, cutoff_threshold):
+    """Apply a given threshold to an 'image'.
+
+    If the image is a Surface applies to each part.
+
+    Parameters
+    ----------
+    img_data: np.ndarray or SurfaceImage
+
+    two_sided : :obj:`bool`, default=True
+        Whether the thresholding should yield both positive and negative
+        part of the maps.
+
+    cutoff_threshold: :obj:`int`
+        Effective threshold returned by check_threshold.
+
+    Returns
+    -------
+    np.ndarray or SurfaceImage
+    """
+    if isinstance(img_data, SurfaceImage):
+        for hemi, value in img_data.data.parts.items():
+            img_data.data.parts[hemi] = _apply_threshold(
+                value, two_sided, cutoff_threshold
+            )
+        return img_data
+
+    if two_sided:
+        mask = (-cutoff_threshold <= img_data) & (img_data <= cutoff_threshold)
+    elif cutoff_threshold >= 0:
+        mask = img_data <= cutoff_threshold
+    else:
+        mask = img_data >= cutoff_threshold
+
+    img_data[mask] = 0.0
+
+    return img_data
 
 
 def math_img(formula, copy_header_from=None, **imgs):

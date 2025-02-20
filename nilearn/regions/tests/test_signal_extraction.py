@@ -1,7 +1,5 @@
 """Test for "region" module."""
 
-# Author: Ph. Gervais
-
 import warnings
 
 import numpy as np

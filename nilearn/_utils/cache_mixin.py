@@ -1,7 +1,5 @@
 """Mixin for cache with joblib."""
 
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-
 import os
 import warnings
 from pathlib import Path

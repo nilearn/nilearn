@@ -3,7 +3,6 @@
 See http://nilearn.github.io/stable/manipulating_images/input_output.html
 """
 
-# Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
 import numbers
 import warnings
 
@@ -475,10 +474,7 @@ def resample_img(
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
     img = stringify_path(img)
-    input_img_is_string = isinstance(img, str)
     img = _utils.check_niimg(img)
-    shape = img.shape
-    affine = img.affine
 
     # If later on we want to impute sform using qform add this condition
     # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771  # noqa: E501
@@ -493,30 +489,18 @@ def resample_img(
             )
 
     # noop cases
-    if target_affine is None and target_shape is None:
+    input_img_is_string = isinstance(img, str)
+    if _resampling_not_needed(img, target_affine, target_shape):
         if copy and not input_img_is_string:
             img = copy_img(img)
-        return img
-    if (
-        np.shape(target_affine) == np.shape(affine)
-        and np.allclose(target_affine, affine)
-        and np.array_equal(target_shape, shape)
-    ):
         return img
 
     if target_affine is not None:
         target_affine = np.asarray(target_affine)
 
-    if np.all(np.array(target_shape) == shape[:3]) and np.allclose(
-        target_affine, affine
-    ):
-        if copy and not input_img_is_string:
-            img = copy_img(img)
-        return img
-
     # We now know that some resampling must be done.
-    # The value of "copy" is of no importance: output is always a separate
-    # array.
+    # The value of "copy" is of no importance:
+    # output is always a separate array.
     data = _get_data(img)
 
     # Get a bounding box for the transformed data
@@ -529,6 +513,8 @@ def resample_img(
     else:
         missing_offset = False
         target_affine = target_affine.copy()
+
+    affine = img.affine
     transform_affine = np.linalg.inv(target_affine).dot(affine)
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
         data.shape[:3], transform_affine
@@ -665,6 +651,26 @@ def resample_img(
 
     return new_img_like(
         img, resampled_data, target_affine, copy_header=copy_header
+    )
+
+
+def _resampling_not_needed(img, target_affine, target_shape):
+    """Check if resampling needed based on input image and requested FOV."""
+    shape = img.shape
+    affine = img.affine
+
+    if (target_affine is None and target_shape is None) or (
+        np.shape(target_affine) == np.shape(affine)
+        and np.allclose(target_affine, affine)
+        and np.array_equal(target_shape, shape)
+    ):
+        return True
+
+    if target_affine is not None:
+        target_affine = np.asarray(target_affine)
+
+    return np.all(np.array(target_shape) == shape[:3]) and np.allclose(
+        target_affine, affine
     )
 
 

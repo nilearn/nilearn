@@ -2,7 +2,6 @@
 graphical models.
 """
 
-# Authors: Philippe Gervais
 import collections.abc
 import itertools
 import operator

@@ -313,17 +313,17 @@ for i in range(6):
     plt.title("Binarized")
     sp1.imshow(
         np.reshape(y_test[j], (10, 10)),
-        cmap=plt.cm.gray,
+        cmap="gray",
         interpolation="nearest",
     )
     sp2.imshow(
         np.reshape(y_pred[j], (10, 10)),
-        cmap=plt.cm.gray,
+        cmap="gray",
         interpolation="nearest",
     )
     sp3.imshow(
         np.reshape(y_pred[j] > 0.5, (10, 10)),
-        cmap=plt.cm.gray,
+        cmap="gray",
         interpolation="nearest",
     )
     plt.savefig(output_dir / f"miyawaki2008_reconstruction_{int(i)}.png")
