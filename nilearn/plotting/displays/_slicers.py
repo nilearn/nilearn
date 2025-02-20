@@ -1,6 +1,5 @@
 import collections
 import contextlib
-import copy
 import numbers
 import warnings
 from pathlib import Path
@@ -438,7 +437,12 @@ class BaseSlicer:
         # is called from `add_contours`, continuous interpolation
         # does not make sense and we turn to nearest interpolation instead.
 
-        original_img = copy.deepcopy(img)
+        transparency, transparency_affine = self._sanitize_transparency(
+            img,
+            transparency,
+            transparency_range,
+            resampling_interpolation,
+        )
 
         if is_binary_niimg(img):
             img = reorder_img(img, resample="nearest", copy_header=True)
@@ -446,16 +450,6 @@ class BaseSlicer:
             img = reorder_img(
                 img, resample=resampling_interpolation, copy_header=True
             )
-
-        transparency, transparency_affine = self._sanitize_transparency(
-            original_img,
-            transparency,
-            transparency_range,
-            resampling_interpolation,
-        )
-        del original_img
-
-        #  TODO resample transparency to input image ???
 
         affine = img.affine
 
@@ -554,9 +548,8 @@ class BaseSlicer:
                 ims.append(im)
         return ims
 
-    @classmethod
     def _sanitize_transparency(
-        cls, img, transparency, transparency_range, resampling_interpolation
+        self, img, transparency, transparency_range, resampling_interpolation
     ):
         """Return transparency as None, float or an array.
 
@@ -570,15 +563,12 @@ class BaseSlicer:
         if isinstance(transparency, (str, Path, Nifti1Image)):
             transparency = check_niimg_3d(transparency, dtype="auto")
             if is_binary_niimg(transparency):
-                transparency = reorder_img(
-                    transparency, resample="nearest", copy_header=True
-                )
-            else:
-                transparency = reorder_img(
-                    transparency,
-                    resample=resampling_interpolation,
-                    copy_header=True,
-                )
+                resampling_interpolation = "nearest"
+            transparency = reorder_img(
+                transparency,
+                resample=resampling_interpolation,
+                copy_header=True,
+            )
             if not _check_fov(transparency, img.affine, img.shape[:3]):
                 warnings.warn(
                     "resampling transparency image to data image...",
@@ -590,6 +580,7 @@ class BaseSlicer:
                     img.shape,
                     force_resample=True,
                     copy_header=True,
+                    interpolation=resampling_interpolation,
                 )
 
             transparency_affine = transparency.affine
