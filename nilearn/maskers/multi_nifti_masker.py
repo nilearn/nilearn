@@ -426,6 +426,7 @@ class MultiNiftiMasker(NiftiMasker):
                 "fitted. "
                 "You must call fit() before calling transform()."
             )
+        # Force resampling on first image
         target_fov = "first" if self.target_affine is None else None
         niimg_iter = iter_check_niimg(
             imgs_list,
