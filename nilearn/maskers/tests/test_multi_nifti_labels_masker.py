@@ -5,11 +5,11 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
 
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
 )
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker

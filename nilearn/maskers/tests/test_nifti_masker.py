@@ -16,7 +16,8 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
 from nilearn._utils import data_gen, exceptions, testing
-from nilearn._utils.class_inspect import check_estimator, get_params
+from nilearn._utils.class_inspect import get_params
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask

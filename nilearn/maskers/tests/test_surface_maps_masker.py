@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _surf_maps_img
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage

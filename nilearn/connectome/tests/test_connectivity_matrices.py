@@ -12,7 +12,7 @@ from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,

@@ -47,7 +47,7 @@ from sklearn.model_selection import (
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.param_validation import (
     _get_mask_extent,
     check_feature_screening,

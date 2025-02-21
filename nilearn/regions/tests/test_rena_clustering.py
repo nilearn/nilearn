@@ -5,8 +5,8 @@ from numpy.testing import assert_array_equal
 from sklearn import __version__ as sklearn_version
 
 from nilearn._utils import compare_version
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _img_3d_mni, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMasker, SurfaceMasker

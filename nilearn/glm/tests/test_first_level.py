@@ -18,7 +18,6 @@ from numpy.testing import (
 )
 from sklearn.cluster import KMeans
 
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
     basic_paradigm,
@@ -26,6 +25,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,

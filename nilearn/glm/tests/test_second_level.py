@@ -14,12 +14,12 @@ from numpy.testing import (
 from scipy import stats
 
 from nilearn._utils import testing
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _shape_3d_default
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference

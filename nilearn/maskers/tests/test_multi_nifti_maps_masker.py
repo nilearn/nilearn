@@ -4,8 +4,8 @@ import numpy as np
 import pytest
 from numpy.testing import assert_almost_equal, assert_array_equal
 
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps
