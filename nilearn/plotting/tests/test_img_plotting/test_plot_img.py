@@ -101,3 +101,43 @@ def test_display_methods_with_display_mode_tiled(
     display.add_contours(
         img_3d_mni, contours=2, linewidth=4, colors=["limegreen", "yellow"]
     )
+
+
+@pytest.mark.parametrize("transparency_range", [None, [0, 2], [-100, 200]])
+def test_plot_img_transparency(
+    matplotlib_pyplot, img_3d_ones_mni, transparency_image, transparency_range
+):
+    """Smoke tests for transparency parameter to determine alpha layer."""
+    plot_img(img_3d_ones_mni, transparency=0.5)
+
+    plot_img(
+        img_3d_ones_mni,
+        transparency=transparency_image,
+        transparency_range=transparency_range,
+    )
+
+
+@pytest.mark.parametrize("transparency", [-1, 10])
+def test_plot_img_transparency_warning(
+    matplotlib_pyplot, img_3d_ones_mni, transparency
+):
+    """Test transparency is reset to proper values."""
+    with pytest.warns(
+        UserWarning, match="'transparency' must be in the interval"
+    ):
+        plot_img(img_3d_ones_mni, transparency=transparency)
+
+
+@pytest.mark.parametrize("transparency_range", [[10, -1], [5]])
+def test_plot_img_transparency_range_error(
+    matplotlib_pyplot, img_3d_ones_mni, transparency_range, transparency_image
+):
+    """Test transparency_range invalid values."""
+    with pytest.raises(
+        ValueError, match="list or tuple of 2 positive numbers"
+    ):
+        plot_img(
+            img_3d_ones_mni,
+            transparency=transparency_image,
+            transparency_range=transparency_range,
+        )
