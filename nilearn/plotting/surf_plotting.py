@@ -1934,6 +1934,7 @@ def plot_surf_roi(
     output_file=None,
     axes=None,
     figure=None,
+    colorbar=True,
     **kwargs,
 ):
     """Plot ROI on a surface :term:`mesh` with optional background.
@@ -2169,6 +2170,7 @@ def plot_surf_roi(
         output_file=output_file,
         axes=axes,
         figure=figure,
+        colorbar=colorbar,
         **kwargs,
     )
 
