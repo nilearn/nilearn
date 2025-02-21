@@ -339,7 +339,7 @@ def plot_matrix(
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_contrast_matrix(
-    contrast_def, design_matrix, colorbar=False, axes=None, output_file=None
+    contrast_def, design_matrix, colorbar=True, axes=None, output_file=None
 ):
     """Create plot for :term:`contrast` definition.
 
@@ -454,7 +454,10 @@ def pad_contrast_matrix(contrast_def, design_matrix):
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_design_matrix(
-    design_matrix, rescale=True, axes=None, output_file=None
+    design_matrix,
+    rescale=True,
+    axes=None,
+    output_file=None,
 ):
     """Plot a design matrix.
 
@@ -574,7 +577,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         plt.close(fig=figure)
         raise ValueError(
             "The number of event types is greater than "
-            f" colors in colormap ({len(event_labels)} > {cmap.N}). "
+            f"colors in colormap ({len(event_labels)} > {cmap.N}). "
             "Use a different colormap."
         )
 
@@ -632,6 +635,7 @@ def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
     cmap="RdBu_r",
+    colorbar=True,
     output_file=None,
     **kwargs,
 ):
@@ -715,6 +719,7 @@ def plot_design_matrix_correlation(
         vmax=vmax,
         vmin=vmax * -1,
         labels=col_labels.to_list(),
+        colorbar=colorbar,
         **kwargs,
     )
 
