@@ -179,9 +179,7 @@ class BaseSlicer:
             )
 
         if axes is None:
-            axes = [0.0, 0.0, 1.0, 1.0]
-            if leave_space:
-                axes = [0.3, 0, 0.7, 1.0]
+            axes = [0.3, 0, 0.7, 1.0] if leave_space else [0.0, 0.0, 1.0, 1.0]
         if isinstance(axes, collections.abc.Sequence):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and

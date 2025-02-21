@@ -273,11 +273,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
-        if self.mask_img is not None:
-            mask_data = get_data(self.mask_img)
-        else:
-            mask_data = None
-
+        mask_data = (
+            get_data(self.mask_img) if self.mask_img is not None else None
+        )
         if self.smoothing_fwhm is not None:
             warnings.warn(
                 "Parameter smoothing_fwhm "
@@ -403,11 +401,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
-        if self.mask_img is not None:
-            mask_data = get_data(self.mask_img)
-        else:
-            mask_data = None
-
+        mask_data = (
+            get_data(self.mask_img) if self.mask_img is not None else None
+        )
         if region_signals.shape[1] != self.n_elements_:
             raise ValueError(
                 f"Expected {self.n_elements_} regions, "

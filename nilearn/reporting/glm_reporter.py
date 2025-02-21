@@ -755,10 +755,7 @@ def _stat_map_to_svg(
             "Acceptable options are 'slice' or 'glass'."
         )
 
-    x_label_color = "black"
-    if plot_type == "slice":
-        x_label_color = "white"
-
+    x_label_color = "white" if plot_type == "slice" else "black"
     if hasattr(stat_map_plot, "_cbar"):
         cbar_ax = stat_map_plot._cbar.ax
         cbar_ax.set_xlabel(
@@ -952,10 +949,7 @@ def _make_surface_glm_report(
             for contrast_name, contrast_val in contrasts.items()
         }
 
-        surf_mesh = None
-        if bg_img:
-            surf_mesh = bg_img.mesh
-
+        surf_mesh = bg_img.mesh if bg_img else None
         for contrast_name, contrast_val in contrasts.items():
             contrast_map = model.compute_contrast(
                 contrast_val, output_type="z_score"

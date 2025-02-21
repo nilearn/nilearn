@@ -194,17 +194,18 @@ def test_surface_maps_masker_confounds_to_fit_transform(
 ):
     """Test fit_transform with confounds."""
     masker = SurfaceMapsMasker(surf_maps_img)
-    if isinstance(confounds, str) and confounds == "Path":
-        nilearn_dir = Path(__file__).parent.parent.parent
-        confounds = nilearn_dir / "tests" / "data" / "spm_confounds.txt"
-    elif isinstance(confounds, str) and confounds == "str":
-        # we need confound to be a string so using os.path.join
-        confounds = join(  # noqa: PTH118
-            Path(__file__).parent.parent.parent,
-            "tests",
-            "data",
-            "spm_confounds.txt",
-        )
+    if isinstance(confounds, str):
+        if confounds == "Path":
+            nilearn_dir = Path(__file__).parent.parent.parent
+            confounds = nilearn_dir / "tests" / "data" / "spm_confounds.txt"
+        elif confounds == "str":
+            # we need confound to be a string so using os.path.join
+            confounds = join(  # noqa: PTH118
+                Path(__file__).parent.parent.parent,
+                "tests",
+                "data",
+                "spm_confounds.txt",
+            )
     signals = masker.fit_transform(surf_img_2d(20), confounds=confounds)
     assert signals.shape == (20, masker.n_elements_)
 

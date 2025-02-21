@@ -755,5 +755,4 @@ def plotly():
     plotly : module
         The ``plotly`` module.
     """
-    plotly = pytest.importorskip("plotly")
-    yield plotly
+    yield pytest.importorskip("plotly")
