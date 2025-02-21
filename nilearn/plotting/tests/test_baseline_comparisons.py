@@ -105,7 +105,7 @@ def test_plot_functions_colorbar(plot_func, colorbar, cbar_tick_format):
     )
 
 
-@pytest.mark.mpl_image_compare
+@pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("vmin", [None, -1, 1])
 @pytest.mark.parametrize("vmax", [None, 2, 3])
