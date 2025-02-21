@@ -27,6 +27,27 @@ from nilearn.surface import SurfaceImage
 doc_dir = Path(__file__).parent
 output_dir = Path(__file__).parent / "images"
 
+
+def update_dict(dict_for_df, name, data, doc_dir):
+    dict_for_df["name"].append(name)
+    dict_for_df["template"].append(data.template)
+    dict_for_df["description"].append(
+        "{ref}`description " + f"<{name}_atlas>" + "`"
+    )
+    dict_for_df["image"].append(
+        f"![name](../{output_file.relative_to(doc_dir)!s})"
+    )
+    return dict_for_df
+
+
+plot_config = {
+    "draw_cross": False,
+    "colorbar": False,
+    "display_mode": "ortho",
+    "cut_coords": [0, 0, 0],
+    "figure": plt.figure(figsize=[8, 3]),
+}
+
 """
 VOLUME DETERMINISTIC ATLASES
 """
@@ -76,14 +97,7 @@ for details in deterministic_atlases.values():
     title = f"{fn.__name__}({', '.join(extra_title)})"
 
     fig = plot_roi(
-        data.maps,
-        title=title,
-        draw_cross=False,
-        colorbar=False,
-        display_mode="ortho",
-        cut_coords=[0, 0, 0],
-        cmap=data.lut,
-        figure=plt.figure(figsize=[8, 3]),
+        data.maps, title=title, cmap=data.lut, colorbar=False, **plot_config
     )
 
     details = ""
@@ -92,14 +106,7 @@ for details in deterministic_atlases.values():
     output_file = output_dir / f"deterministic_atlas_{name}{details}.png"
     fig.savefig(output_file)
 
-    dict_for_df["name"].append(name)
-    dict_for_df["template"].append(data.template)
-    dict_for_df["description"].append(
-        "{ref}`description " + f"<{name}_atlas>" + "`"
-    )
-    dict_for_df["image"].append(
-        f"![name](../{output_file.relative_to(doc_dir)!s})"
-    )
+    dict_for_df = update_dict(dict_for_df, name, data, doc_dir)
 
 show()
 
@@ -134,12 +141,7 @@ fig = plot_surf_roi(
 output_file = output_dir / f"deterministic_atlas_{name}.png"
 fig.savefig(output_file)
 
-dict_for_df["name"].append(name)
-dict_for_df["template"].append(data.template)
-dict_for_df["description"].append("{ref}`description <destrieux_2009_atlas>`")
-dict_for_df["image"].append(
-    f"![name](../{output_file.relative_to(doc_dir)!s})"
-)
+dict_for_df = update_dict(dict_for_df, "destrieux_2009", data, doc_dir)
 
 show()
 
@@ -191,15 +193,7 @@ for details in probablistic_atlases.values():
 
     image = data[details.get("key", "maps")]
 
-    fig = plot_prob_atlas(
-        data.maps,
-        title=title,
-        draw_cross=False,
-        colorbar=True,
-        display_mode="ortho",
-        cut_coords=[0, 0, 0],
-        figure=plt.figure(figsize=[8, 3]),
-    )
+    fig = plot_prob_atlas(data.maps, title=title, colorbar=True, **plot_config)
 
     details = ""
     for k, v in params.items():
@@ -207,14 +201,7 @@ for details in probablistic_atlases.values():
     output_file = output_dir / f"probablistic_atlas_{name}{details}.png"
     fig.savefig(output_file)
 
-    dict_for_df["name"].append(name)
-    dict_for_df["template"].append(data.template)
-    dict_for_df["description"].append(
-        "{ref}`description " + f"<{name}_atlas>" + "`"
-    )
-    dict_for_df["image"].append(
-        f"![name](../{output_file.relative_to(doc_dir)!s})"
-    )
+    dict_for_df = update_dict(dict_for_df, name, data, doc_dir)
 
 show()
 
