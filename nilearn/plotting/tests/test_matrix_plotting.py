@@ -13,6 +13,10 @@ from nilearn.glm.first_level.design_matrix import (
 )
 from nilearn.glm.tests._testing import block_paradigm, modulated_event_paradigm
 from nilearn.plotting.matrix_plotting import (
+    _sanitize_figure_and_axes,
+    _sanitize_labels,
+    _sanitize_reorder,
+    _sanitize_tri,
     pad_contrast_matrix,
     plot_contrast_matrix,
     plot_design_matrix,
@@ -29,8 +33,6 @@ from nilearn.plotting.matrix_plotting import (
     "fig,axes", [("foo", "bar"), (1, 2), plt.subplots(1, 1, figsize=(7, 5))]
 )
 def test_sanitize_figure_and_axes_error(fig, axes):
-    from ..matrix_plotting import _sanitize_figure_and_axes
-
     with pytest.raises(
         ValueError,
         match=("Parameters figure and axes cannot be specified together."),
@@ -48,8 +50,6 @@ def test_sanitize_figure_and_axes_error(fig, axes):
     ],
 )
 def test_sanitize_figure_and_axes(fig, axes, expected):
-    from ..matrix_plotting import _sanitize_figure_and_axes
-
     fig2, axes2, own_fig = _sanitize_figure_and_axes(fig, axes)
     assert isinstance(fig2, plt.Figure)
     assert isinstance(axes2, plt.Axes)
@@ -57,8 +57,6 @@ def test_sanitize_figure_and_axes(fig, axes, expected):
 
 
 def test_sanitize_labels():
-    from ..matrix_plotting import _sanitize_labels
-
     labs = ["foo", "bar"]
     with pytest.raises(
         ValueError,
@@ -76,15 +74,11 @@ VALID_TRI_VALUES = ("full", "lower", "diag")
 
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
 def test_sanitize_tri(tri):
-    from ..matrix_plotting import _sanitize_tri
-
     _sanitize_tri(tri)
 
 
 @pytest.mark.parametrize("tri", [None, "foo", 2])
 def test_sanitize_tri_error(tri):
-    from ..matrix_plotting import _sanitize_tri
-
     with pytest.raises(
         ValueError,
         match=(
@@ -99,8 +93,6 @@ VALID_REORDER_VALUES = (True, False, "single", "complete", "average")
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
 def test_sanitize_reorder(reorder):
-    from ..matrix_plotting import _sanitize_reorder
-
     if reorder is not True:
         assert _sanitize_reorder(reorder) == reorder
     else:
@@ -109,8 +101,6 @@ def test_sanitize_reorder(reorder):
 
 @pytest.mark.parametrize("reorder", [None, "foo", 2])
 def test_sanitize_reorder_error(reorder):
-    from ..matrix_plotting import _sanitize_reorder
-
     with pytest.raises(
         ValueError, match=("Parameter reorder needs to be one of")
     ):
@@ -128,22 +118,24 @@ def labels():
 
 
 @pytest.mark.parametrize(
-    "matrix,lab,reorder",
+    "matrix, labels, reorder",
     [
         (np.zeros((10, 10)), [0, 1, 2], False),
         (np.zeros((10, 10)), None, True),
         (np.zeros((10, 10)), [str(i) for i in range(10)], " "),
     ],
 )
-def test_matrix_plotting_errors(matrix, lab, reorder):
+def test_matrix_plotting_errors(matrix, labels, reorder):
+    """Test invalid input values for plot_matrix."""
     with pytest.raises(ValueError):
-        plot_matrix(matrix, labels=lab, reorder=reorder)
-        plt.close()
+        plot_matrix(matrix, labels=labels, reorder=reorder)
 
 
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
 def test_matrix_plotting_with_labels_and_different_tri(mat, labels, tri):
+    """Test plot_matrix with labels on only part of the matrix."""
     ax = plot_matrix(mat, labels=labels, tri=tri)
+
     assert isinstance(ax, mpl.image.AxesImage)
     ax.axes.set_title("Title")
     assert ax._axes.get_title() == "Title"
@@ -151,30 +143,18 @@ def test_matrix_plotting_with_labels_and_different_tri(mat, labels, tri):
         assert len(axis.majorTicks) == len(labels)
         for tick, label in zip(axis.majorTicks, labels):
             assert tick.label1.get_text() == label
-    plt.close()
-
-
-@pytest.mark.parametrize(
-    "lab", [[], np.array([str(i) for i in range(10)]), None]
-)
-def test_matrix_plotting_labels(mat, lab):
-    plot_matrix(mat, labels=lab)
-    plt.close()
 
 
 @pytest.mark.parametrize("title", ["foo", "foo bar", " ", None])
 def test_matrix_plotting_set_title(mat, labels, title):
+    """Test setting title with plot_matrix."""
     ax = plot_matrix(mat, labels=labels, title=title)
+
     n_txt = 0 if title is None else len(title)
+
     assert len(ax._axes.title.get_text()) == n_txt
     if title is not None:
         assert ax._axes.title.get_text() == title
-    plt.close()
-
-
-@pytest.mark.parametrize("tri", VALID_TRI_VALUES)
-def test_matrix_plotting_grid(mat, labels, tri):
-    plot_matrix(mat, labels=labels, grid=True, tri=tri)
 
 
 def test_matrix_plotting_reorder(mat, labels):
@@ -185,7 +165,9 @@ def test_matrix_plotting_reorder(mat, labels):
     # make symmetric matrix of similarities so we can get a block
     for perm in permutations(idx, 2):
         mat[perm] = 1
+
     ax = plot_matrix(mat, labels=labels, reorder=True)
+
     assert len(labels) == len(ax.axes.get_xticklabels())
     reordered_labels = [
         int(lbl.get_text()) for lbl in ax.axes.get_xticklabels()
@@ -194,31 +176,33 @@ def test_matrix_plotting_reorder(mat, labels):
     assert reordered_labels[:3] == idx or reordered_labels[-3:] == idx, (
         "Clustering does not find block structure."
     )
+
     plt.close()
+
     # test if reordering with specific linkage works
     ax = plot_matrix(mat, labels=labels, reorder="complete")
-    plt.close()
 
 
 def test_show_design_matrix(tmp_path):
-    # test that the show code indeed (formally) runs
+    """Test plot_design_matrix saving to file."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, drift_model="polynomial", drift_order=3
     )
-    ax = plot_design_matrix(dmtx)
-    assert ax is not None
 
     ax = plot_design_matrix(dmtx, output_file=tmp_path / "dmtx.png")
+
     assert (tmp_path / "dmtx.png").exists()
     assert ax is None
+
     plot_design_matrix(dmtx, output_file=tmp_path / "dmtx.pdf")
+
     assert (tmp_path / "dmtx.pdf").exists()
 
 
 @pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
 def test_plot_design_matrix_path_str(tmp_path, suffix, sep):
-    # test that the show code indeed (formally) runs
+    """Test plot_design_matrix directly from file."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, drift_model="polynomial", drift_order=3
@@ -236,7 +220,51 @@ def test_plot_design_matrix_path_str(tmp_path, suffix, sep):
 
 
 def test_show_event_plot(tmp_path):
-    # test that the show code indeed (formally) runs
+    """Test plot_event."""
+    onset = np.linspace(0, 19.0, 20)
+    duration = np.full(20, 0.5)
+    trial_idx = np.arange(20)
+
+    trial_idx[10:] -= 10
+    condition_ids = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]
+
+    # add some modulation
+    modulation = np.full(20, 1)
+    modulation[[1, 5, 15]] = 0.5
+
+    trial_type = np.array([condition_ids[i] for i in trial_idx])
+
+    model_event = pd.DataFrame(
+        {
+            "onset": onset,
+            "duration": duration,
+            "trial_type": trial_type,
+            "modulation": modulation,
+        }
+    )
+    # Test Dataframe
+    fig = plot_event(model_event)
+
+    assert fig is not None
+
+    # Test List
+    fig = plot_event([model_event, model_event])
+
+    assert fig is not None
+
+    # Test save
+    fig = plot_event(model_event, output_file=tmp_path / "event.png")
+
+    assert (tmp_path / "event.png").exists()
+    assert fig is None
+
+    plot_event(model_event, output_file=tmp_path / "event.pdf")
+
+    assert (tmp_path / "event.pdf").exists()
+
+
+def test_plot_event_error():
+    """Test plot_event error with cmap."""
     onset = np.linspace(0, 19.0, 20)
     duration = np.full(20, 0.5)
     trial_idx = np.arange(20)
@@ -258,24 +286,12 @@ def test_show_event_plot(tmp_path):
             "modulation": modulation,
         }
     )
-    # Test Dataframe
-    fig = plot_event(model_event)
-    assert fig is not None
 
-    # Test List
-    fig = plot_event([model_event, model_event])
-    assert fig is not None
-
-    # Test error
-    with pytest.raises(ValueError):
-        fig = plot_event(model_event, cmap="tab10")
-
-    # Test save
-    fig = plot_event(model_event, output_file=tmp_path / "event.png")
-    assert (tmp_path / "event.png").exists()
-    assert fig is None
-    plot_event(model_event, output_file=tmp_path / "event.pdf")
-    assert (tmp_path / "event.pdf").exists()
+    with pytest.raises(
+        ValueError,
+        match="The number of event types is greater than colors in colormap",
+    ):
+        plot_event(model_event, cmap="tab10")
 
 
 @pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
@@ -290,32 +306,34 @@ def test_plot_event_path_tsv_csv(tmp_path, suffix, sep):
 
 
 def test_show_contrast_matrix(tmp_path):
-    # test that the show code indeed (formally) runs
+    """Test that the show code indeed (formally) runs."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, drift_model="polynomial", drift_order=3
     )
     contrast = np.ones(4)
-    ax = plot_contrast_matrix(contrast, dmtx)
-    assert ax is not None
 
     ax = plot_contrast_matrix(
         contrast, dmtx, output_file=tmp_path / "contrast.png"
     )
     assert (tmp_path / "contrast.png").exists()
+
     assert ax is None
 
     plot_contrast_matrix(contrast, dmtx, output_file=tmp_path / "contrast.pdf")
+
     assert (tmp_path / "contrast.pdf").exists()
 
 
 def test_show_contrast_matrix_axes():
+    """Test poassing axes to plot_contrast_matrix."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, drift_model="polynomial", drift_order=3
     )
     contrast = np.ones(4)
     fig, ax = plt.subplots(**constrained_layout_kwargs())
+
     plot_contrast_matrix(contrast, dmtx, axes=ax)
 
     # to actually check we need get_layout_engine, but even without it the
@@ -351,21 +369,16 @@ def test_pad_contrast_matrix():
     )
 
 
-def test_show_event_plot_duration_0():
-    plot_event(modulated_event_paradigm())
-
-
-@pytest.mark.parametrize("tri", ["full", "diag"])
 @pytest.mark.parametrize("cmap", ["RdBu_r", "bwr", "seismic_r"])
-def test_plot_design_matrix_correlation(tri, cmap, tmp_path):
-    """Smoke test for the 'happy path'."""
+def test_plot_design_matrix_correlation(cmap, tmp_path):
+    """Smoke test for valid cmaps and output file."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, events=modulated_event_paradigm()
     )
 
     plot_design_matrix_correlation(
-        dmtx, tri=tri, cmap=cmap, output_file=tmp_path / "corr_mat.png"
+        dmtx, cmap=cmap, output_file=tmp_path / "corr_mat.png"
     )
 
     assert (tmp_path / "corr_mat.png").exists()
@@ -385,6 +398,7 @@ def test_plot_design_matrix_correlation_smoke_path(tmp_path):
 
 
 def test_plot_design_matrix_correlation_errors(mat):
+    """Test plot_design_matrix_correlation errors."""
     with pytest.raises(
         ValueError, match="Tables to load can only be TSV or CSV."
     ):

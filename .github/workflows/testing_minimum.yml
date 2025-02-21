@@ -67,6 +67,8 @@ jobs:
                 python -m pip install --upgrade pip setuptools
                 pip install ${{ matrix.min_dep }}
         -   name: Install nilearn
-            run: pip install .[plotting,plotly,test]
+            run: |
+                pip install .[plotting,plotly,test]
+                pip install pytest-mpl
         -   name: Run tests
             run: pytest --pyargs nilearn --cov=nilearn

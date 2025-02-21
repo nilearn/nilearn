@@ -252,7 +252,6 @@ plotting.plot_matrix(
     matrix,
     vmin=-1.0,
     vmax=1.0,
-    colorbar=True,
     title="Power correlation matrix",
 )
 
@@ -263,7 +262,6 @@ plotting.plot_connectome(
     title="Power correlation graph",
     edge_threshold="99.8%",
     node_size=20,
-    colorbar=True,
 )
 
 # %%
@@ -362,7 +360,6 @@ plotting.plot_matrix(
     matrix,
     vmin=-1.0,
     vmax=1.0,
-    colorbar=True,
     title="Dosenbach correlation matrix",
 )
 
@@ -372,7 +369,6 @@ plotting.plot_connectome(
     title="Dosenbach correlation graph",
     edge_threshold="99.7%",
     node_size=20,
-    colorbar=True,
 )
 
 
