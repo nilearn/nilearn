@@ -193,12 +193,12 @@ def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
 
     Parameters
     ----------
-        cmap : pd.DataFrame
-            DataFrame with columns 'index', 'name', and 'color' (hex values)
+    cmap : pd.DataFrame
+        DataFrame with columns 'index', 'name', and 'color' (hex values)
 
     Returns
     -------
-        colormap (LinearSegmentedColormap): A Matplotlib colormap
+    colormap (LinearSegmentedColormap): A Matplotlib colormap
     """
     if "color" not in cmap.columns:
         warn(
