@@ -189,7 +189,6 @@ for hemi in ["left", "right"]:
         stat_map=results,
         hemi=hemi,
         title=f"(language-string), {hemi} hemisphere\nabs(t) >= 1.96",
-        colorbar=True,
         threshold=1.96,
         bg_map=fsaverage_data,
     )

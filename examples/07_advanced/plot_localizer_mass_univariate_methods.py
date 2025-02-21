@@ -136,7 +136,6 @@ for i_col, (title, img) in enumerate(images_to_plot.items()):
 
     plotting.plot_glass_brain(
         img,
-        colorbar=True,
         vmax=vmax,
         display_mode="z",
         threshold=threshold,

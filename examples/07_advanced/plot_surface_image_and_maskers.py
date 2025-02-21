@@ -217,7 +217,6 @@ plot_surf(
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    colorbar=True,
     cmap="inferno",
     vmin=0,
 )
@@ -250,6 +249,5 @@ plot_surf(
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    colorbar=True,
 )
 show()
