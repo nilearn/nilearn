@@ -82,7 +82,7 @@ class HTMLDocument:
 
     _all_open_html_repr: weakref.WeakSet = weakref.WeakSet()
 
-    def __init__(self, html, width=600, height=400):
+    def __init__(self, html, width=900, height=800):
         self.html = html
         self.width = width
         self.height = height
@@ -148,6 +148,8 @@ class HTMLDocument:
         if height is None:
             height = self.height
         escaped = escape(self.html, quote=True)
+        if getattr(self, "body", None):
+            escaped = escape(self.body, quote=True)
         wrapped = (
             f'<iframe srcdoc="{escaped}" '
             f'width="{width}" height="{height}" '
@@ -169,7 +171,7 @@ class HTMLDocument:
         See the jupyter documentation:
         https://ipython.readthedocs.io/en/stable/config/integrating.html
         """
-        return self.get_iframe()
+        return {"text/html": self.get_iframe()}
 
     def _repr_mimebundle_(self, include=None, exclude=None):
         """Return html representation of the plot.
