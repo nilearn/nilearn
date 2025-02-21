@@ -24,7 +24,7 @@ class SVGToJSONConverter:
     def _get_style_attr(self, style, attr):
         pat = f"{attr}:([^;]+)"
         match = re.search(pat, style)
-        return match.group(1) if match is not None else None
+        return match[1] if match is not None else None
 
     def _type_and_pts(self, obj):
         if isinstance(obj, svg.Bezier):

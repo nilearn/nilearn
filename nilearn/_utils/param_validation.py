@@ -142,16 +142,15 @@ def _get_mask_extent(mask_img):
         number of vertices (if mask_img is a SurfaceImage).
 
     """
-    if hasattr(mask_img, "affine"):
-        affine = mask_img.affine
-        prod_vox_dims = 1.0 * np.abs(np.linalg.det(affine[:3, :3]))
-        return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
-    else:
+    if not hasattr(mask_img, "affine"):
         # sum number of True values in both hemispheres
         return (
             mask_img.data.parts["left"].sum()
             + mask_img.data.parts["right"].sum()
         )
+    affine = mask_img.affine
+    prod_vox_dims = 1.0 * np.abs(np.linalg.det(affine[:3, :3]))
+    return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
 
 
 def adjust_screening_percentile(

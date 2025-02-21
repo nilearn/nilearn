@@ -177,9 +177,11 @@ def _test_atlas_instance_should_match_data(atlas, is_symm):
 
 @pytest.fixture
 def fsl_fetcher(name):
-    if name == "Juelich":
-        return fetch_atlas_juelich
-    return fetch_atlas_harvard_oxford
+    return (
+        fetch_atlas_juelich
+        if name == "Juelich"
+        else fetch_atlas_harvard_oxford
+    )
 
 
 @pytest.mark.parametrize(

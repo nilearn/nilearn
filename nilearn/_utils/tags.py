@@ -37,9 +37,7 @@ if SKLEARN_LT_1_6:
 
         TODO remove when dropping sklearn 1.5
         """
-        X_types = []
-        if "X_types" in kwargs:
-            X_types = kwargs["X_types"]
+        X_types = kwargs.get("X_types", [])
         X_types.append("2darray")
         if niimg_like:
             X_types.append("niimg_like")

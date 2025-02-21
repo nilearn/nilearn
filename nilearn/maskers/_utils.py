@@ -47,6 +47,6 @@ def _check_dims(imgs):
 def compute_middle_image(img):
     """Compute middle image of timeseries (4D data)."""
     img, dim = _check_dims(img)
-    if len(dim) == 4 or len(dim) == 5:
+    if len(dim) in {4, 5}:
         img = image.index_img(img, dim[-1] // 2)
     return img, len(dim)

@@ -892,11 +892,11 @@ def fetch_localizer_contrasts(
     csv_data2 = pd.read_csv(behavioural_file, delimiter="\t")
     csv_data = csv_data.merge(csv_data2)
     subject_names = csv_data["participant_id"].tolist()
-    subjects_indices = []
-    for name in subject_ids:
-        if name not in subject_names:
-            continue
-        subjects_indices.append(subject_names.index(name))
+    subjects_indices = [
+        subject_names.index(name)
+        for name in subject_ids
+        if name in subject_names
+    ]
     csv_data = csv_data.iloc[subjects_indices]
 
     return Bunch(ext_vars=csv_data, description=fdescr, **files)

@@ -298,12 +298,12 @@ def plot_bland_altman(
     ax3.hist(
         mean,
         bins=gridsize[1],
-        range=lims[0:2],
+        range=lims[:2],
         histtype="stepfilled",
         orientation="vertical",
         color="gray",
     )
-    ax3.set_xlim(lims[0:2])
+    ax3.set_xlim(lims[:2])
     ax3.invert_yaxis()
     ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label}")
 

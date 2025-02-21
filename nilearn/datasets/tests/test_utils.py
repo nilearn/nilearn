@@ -440,9 +440,7 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
         # set up Response object to return partial content
         # and update header accordingly
         if req_range is not None:
-            resp.iter_start = int(
-                re.match(r"bytes=(\d+)-", req_range).group(1)
-            )
+            resp.iter_start = int(re.match(r"bytes=(\d+)-", req_range)[1])
             resp.headers["Content-Range"] = (
                 f"bytes {resp.iter_start}-{len(resp.content) - 1}"
                 f"/{len(resp.content)}"

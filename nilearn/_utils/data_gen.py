@@ -392,9 +392,9 @@ def generate_fake_fmri(
             f"{length} is too small "
             f"to put {n_blocks} blocks of size {block_size}"
         )
-    t_start = 0
-    if rest_max_size > 0:
-        t_start = rand_gen.integers(0, rest_max_size, 1)[0]
+    t_start = (
+        rand_gen.integers(0, rest_max_size, 1)[0] if rest_max_size > 0 else 0
+    )
     for block in range(n_blocks):
         if block_type == "classification":
             # Select a random voxel and add some signal to the background

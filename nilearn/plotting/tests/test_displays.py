@@ -151,9 +151,7 @@ def cut_coords(name):
         return (0,) * 2
     if name in ["lyrz", "lyr", "lzr"]:
         return (0,)
-    if name in ["lr", "l"]:
-        return (0,) * 4
-    return (0,) * 3
+    return (0,) * 4 if name in ["lr", "l"] else (0,) * 3
 
 
 @pytest.mark.parametrize("display,name", zip(SLICERS, SLICER_KEYS))

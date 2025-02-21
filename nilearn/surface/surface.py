@@ -1198,8 +1198,7 @@ def load_surf_mesh(surf_mesh):
         try:
             coords, faces = surf_mesh
             mesh = InMemoryMesh(coordinates=coords, faces=faces)
-        except Exception as e:
-            print(str(e))
+        except Exception:
             raise ValueError(
                 "\nIf a list or tuple is given as input, "
                 "it must have two elements,\n"
@@ -1356,7 +1355,7 @@ class PolyData:
         raise ValueError if the data of the SurfaceImage is not of the given
         dimension.
         """
-        if not all(x.ndim == dim for x in self.parts.values()):
+        if any(x.ndim != dim for x in self.parts.values()):
             msg = [f"{v.ndim}D for {k}" for k, v in self.parts.items()]
             raise ValueError(
                 f"Data for each part of {var_name} should be {dim}D. "

@@ -1,5 +1,6 @@
 """Small utilities to inspect classes."""
 
+import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -15,6 +16,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import compare_version
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.helpers import is_matplotlib_installed
 
 # List of sklearn estimators checks that are valid
 # for all nilearn estimators.
@@ -209,6 +211,8 @@ def nilearn_check_estimator(estimator):
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_clean_kwargs)
+        yield (clone(estimator), check_masker_generate_report)
+        yield (clone(estimator), check_masker_generate_report_false)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -220,6 +224,11 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)
+            yield (clone(estimator), check_nifti_masker_fit_with_only_mask)
+            yield (
+                clone(estimator),
+                check_nifti_masker_generate_report_after_fit_with_only_mask,
+            )
             yield (
                 clone(estimator),
                 check_nifti_masker_fit_with_non_finite_in_mask,
@@ -230,6 +239,12 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_smooth)
             yield (clone(estimator), check_nifti_masker_fit_returns_self)
             yield (clone(estimator), check_nifti_masker_fit_transform_5d)
+
+            if is_multimasker(estimator):
+                yield (
+                    clone(estimator),
+                    check_multi_nifti_masker_generate_report_4d_fit,
+                )
 
         if surf_img_input:
             yield (clone(estimator), check_surface_masker_fit_returns_self)
@@ -664,6 +679,24 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
     assert hasattr(estimator, "mask_img_")
 
 
+def check_nifti_masker_fit_with_only_mask(estimator):
+    """Check 3D mask is enough to run with nifti maskers."""
+    from nilearn.conftest import _affine_eye
+
+    mask = np.ones((29, 30, 31))
+    mask_img = Nifti1Image(mask, affine=_affine_eye())
+
+    estimator.mask_img = mask_img
+
+    assert not hasattr(estimator, "mask_img_")
+
+    estimator.fit()
+
+    assert hasattr(estimator, "mask_img_")
+
+    assert estimator.mask_img_ is mask_img
+
+
 def check_nifti_masker_fit_with_non_finite_in_mask(estimator):
     """Check 3D mask with non finite values can be used with nifti maskers.
 
@@ -714,6 +747,182 @@ def check_nifti_masker_fit_with_4d_mask(estimator):
     with pytest.raises(DimensionError, match="Expected dimension is 3D"):
         estimator.mask_img = _img_4d_zeros()
         estimator.fit([_img_3d_rand()])
+
+
+def _generate_report_with_no_warning(estimator):
+    """Check that report generation throws no warning."""
+    from nilearn.maskers import (
+        MultiNiftiMapsMasker,
+        NiftiMapsMasker,
+        SurfaceMapsMasker,
+    )
+    from nilearn.regions import RegionExtractor
+    from nilearn.reporting.tests.test_html_report import _check_html
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        if isinstance(
+            estimator,
+            (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
+        ):
+            report = estimator.generate_report(displayed_maps=1)
+        else:
+            report = estimator.generate_report()
+
+        # TODO
+        # RegionExtractor, SurfaceMapsMasker still throws too many warnings
+        warnings_to_ignore = [
+            # only thrown with older dependencies
+            "No contour levels were found within the data range.",
+        ]
+        unknown_warnings = [
+            str(x.message)
+            for x in warning_list
+            if str(x.message) not in warnings_to_ignore
+        ]
+        if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
+            assert len(unknown_warnings) == 0, unknown_warnings
+
+    _check_html(report)
+
+    return report
+
+
+def check_masker_generate_report(estimator):
+    """Check that maskers can generate report.
+
+    - check that we get a warning:
+      - when matplotlib is not installed
+      - when generating reports before fit
+    - check content of report before fit and after fit
+
+    """
+    from nilearn.conftest import _img_3d_rand, _make_surface_img
+    from nilearn.reporting.tests.test_html_report import _check_html
+
+    if not is_matplotlib_installed():
+        with warnings.catch_warnings(record=True) as warning_list:
+            result = estimator.generate_report()
+
+        assert len(warning_list) == 1
+        assert issubclass(warning_list[0].category, ImportWarning)
+        assert result == [None]
+
+        return
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        report = estimator.generate_report()
+        assert len(warning_list) == 1
+
+    _check_html(report, is_fit=False)
+    assert "Make sure to run `fit`" in str(report)
+
+    if accept_niimg_input(estimator):
+        input_img = _img_3d_rand()
+    else:
+        input_img = _make_surface_img(2)
+
+    estimator.fit(input_img)
+
+    assert estimator._report_content["warning_message"] is None
+
+    # TODO
+    # SurfaceMapsMasker, RegionExtractor still throws a warning
+    report = _generate_report_with_no_warning(estimator)
+    report = estimator.generate_report()
+    _check_html(report)
+
+    with TemporaryDirectory() as tmp_dir:
+        report.save_as_html(Path(tmp_dir) / "report.html")
+        assert (Path(tmp_dir) / "report.html").is_file()
+
+
+def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
+    """Check 3D mask is enough to run with fit and generate report."""
+    import pytest
+
+    from nilearn.conftest import _affine_eye, _img_4d_rand_eye_medium
+    from nilearn.maskers import NiftiSpheresMasker
+    from nilearn.reporting.tests.test_html_report import _check_html
+
+    mask = np.ones((29, 30, 31))
+    mask_img = Nifti1Image(mask, affine=_affine_eye())
+
+    estimator.mask_img = mask_img
+
+    assert not hasattr(estimator, "mask_img_")
+
+    estimator.fit()
+
+    assert estimator._report_content["warning_message"] is None
+
+    if not is_matplotlib_installed():
+        return
+
+    with pytest.warns(UserWarning, match="No image provided to fit."):
+        report = estimator.generate_report()
+    _check_html(report)
+
+    input_img = _img_4d_rand_eye_medium()
+
+    estimator.fit(input_img)
+
+    # TODO
+    # NiftiSpheresMasker still throws a warning
+    if isinstance(estimator, NiftiSpheresMasker):
+        return
+    report = _generate_report_with_no_warning(estimator)
+    report = estimator.generate_report()
+    _check_html(report)
+
+
+def check_masker_generate_report_false(estimator):
+    """Test with reports set to False."""
+    import pytest
+
+    from nilearn.conftest import _img_4d_rand_eye_medium, _make_surface_img
+    from nilearn.reporting.tests.test_html_report import _check_html
+
+    if not is_matplotlib_installed():
+        return
+
+    estimator.reports = False
+
+    if accept_niimg_input(estimator):
+        input_img = _img_4d_rand_eye_medium()
+    else:
+        input_img = _make_surface_img(2)
+
+    estimator.fit(input_img)
+
+    assert estimator._reporting_data is None
+    assert estimator._reporting() == [None]
+    with pytest.warns(
+        UserWarning,
+        match=("No visual outputs created."),
+    ):
+        report = estimator.generate_report()
+
+    _check_html(report, reports_requested=False)
+
+    assert "Empty Report" in str(report)
+
+
+def check_multi_nifti_masker_generate_report_4d_fit(estimator):
+    """Test calling generate report on multiple subjects raises warning."""
+    import pytest
+
+    from nilearn.conftest import _img_3d_ones, _img_4d_rand_eye_medium
+
+    if not is_matplotlib_installed():
+        return
+
+    estimator.maps_img = _img_3d_ones()
+    with pytest.warns(
+        UserWarning, match="A list of 4D subject images were provided to fit. "
+    ):
+        estimator.fit(
+            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+        ).generate_report()
 
 
 def get_params(cls, instance, ignore=None):

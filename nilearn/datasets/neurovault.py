@@ -2071,8 +2071,7 @@ def _scroll_explicit(download_params):
         download_params["wanted_image_ids"]
     ).difference(download_params["visited_images"])
 
-    for image, collection in _scroll_image_ids(download_params):
-        yield image, collection
+    yield from _scroll_image_ids(download_params)
 
 
 def _print_progress(found, download_params, level=_INFO):

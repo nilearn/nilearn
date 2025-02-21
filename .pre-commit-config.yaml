@@ -83,6 +83,7 @@ repos:
         args: [--fix, --show-fixes]
     # Run the formatter.
     -   id: ruff-format
+        # args: [--diff]
 
 
 -   repo: https://github.com/PyCQA/doc8

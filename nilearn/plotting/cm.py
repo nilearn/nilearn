@@ -374,11 +374,11 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
             (vmax, inner_cmap(vmax)[c_index], outer_cmap(vmax)[c_index])
         )
 
-        for value, c1, c2 in outer_cdict[color]:
-            if value <= vmax:
-                continue
-            color_lst.append((value, c1, c2))
-
+        color_lst.extend(
+            (value, c1, c2)
+            for value, c1, c2 in outer_cdict[color]
+            if value > vmax
+        )
         cdict[color] = color_lst
 
     return _colors.LinearSegmentedColormap(

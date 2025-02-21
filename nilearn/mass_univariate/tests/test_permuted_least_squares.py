@@ -801,8 +801,8 @@ def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
             n_jobs=1,
             masker=masker,
         )
-    assert not any(
-        "perform more permutations" in str(x.message) for x in record
+    assert all(
+        "perform more permutations" not in str(x.message) for x in record
     )
 
     # n_perm <= n_job  and n_job > 0 -->  warning
