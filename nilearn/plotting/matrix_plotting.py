@@ -353,13 +353,17 @@ def plot_contrast_matrix(
         as they appear in the design matrix of the fitted model
         combined with operators +-
         and combined with numbers with operators +-`*`/.
+
     design_matrix : :class:`pandas.DataFrame`
         Design matrix to use.
+
     %(colorbar)s
-        Default=False.
+        Default=True.
+
     axes : :class:`matplotlib.axes.Axes` or None, default=None
         Axis on which to plot the figure.
         If None, a new figure will be created.
+
     %(output_file)s
 
     Returns

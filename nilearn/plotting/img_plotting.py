@@ -197,7 +197,7 @@ def _plot_img_with_bg(
     %(display_mode)s
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     %(figure)s
 
@@ -439,7 +439,7 @@ def plot_img(
         Default=False.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -1231,7 +1231,7 @@ def plot_prob_atlas(
         Default=`gist_rainbow`.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     %(vmin)s
 
@@ -1598,7 +1598,7 @@ def plot_glass_brain(
         'lzry', 'lyrz'.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -1823,8 +1823,10 @@ def plot_connectome(
     node_kwargs : :obj:`dict` or None, default=None
         Will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go.
+
     %(colorbar)s
-        Default=False.
+        Default=True.
+
     %(radiological)s
 
     Returns
