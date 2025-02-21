@@ -15,6 +15,7 @@ from nilearn._utils import (
     fill_doc,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.plotting._utils import save_figure_if_needed
 from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
 
 
@@ -119,9 +120,10 @@ def plot_img_comparison(
     masker = _sanitize_masker(masker, image_type, ref_imgs[0])
 
     corrs = []
+
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
         if axes is None:
-            _, (ax1, ax2) = plt.subplots(
+            fig, (ax1, ax2) = plt.subplots(
                 1,
                 2,
                 figsize=(12, 5),
@@ -179,10 +181,10 @@ def plot_img_comparison(
             ax2.grid("on")
             ax2.legend(loc="best")
 
-            if output_dir is not None:
-                output_dir = Path(output_dir)
-                output_dir.mkdir(exist_ok=True, parents=True)
-                plt.savefig(output_dir / f"{int(i):04}.png")
+            output_file = (
+                output_dir / f"{int(i):04}.png" if output_dir else None
+            )
+            save_figure_if_needed(ax1, output_file)
 
     return corrs
 
@@ -361,12 +363,12 @@ def plot_bland_altman(
     ax3.hist(
         mean,
         bins=gridsize[1],
-        range=lims[0:2],
+        range=lims[:2],
         histtype="stepfilled",
         orientation="vertical",
         color="gray",
     )
-    ax3.set_xlim(lims[0:2])
+    ax3.set_xlim(lims[:2])
     ax3.invert_yaxis()
     ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label})")
 
@@ -379,12 +381,7 @@ def plot_bland_altman(
         cb = figure.colorbar(hb, cax=ax4)
         cb.set_label("log10(N)")
 
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-        figure = None
-
-    return figure
+    return save_figure_if_needed(figure, output_file)
 
 
 def _extract_data_2_images(ref_img, src_img, masker=None):

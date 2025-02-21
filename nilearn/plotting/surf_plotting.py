@@ -22,6 +22,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     check_surface_plotting_inputs,
     sanitize_hemi_for_surface_image,
+    save_figure_if_needed,
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._figures import PlotlySurfaceFigure
@@ -761,10 +762,8 @@ def _plot_surf_matplotlib(
 
     if title is not None:
         axes.set_title(title)
-    if output_file is None:
-        return figure
-    figure.savefig(output_file)
-    plt.close()
+
+    return save_figure_if_needed(figure, output_file)
 
 
 @fill_doc
@@ -834,15 +833,7 @@ def plot_surf(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` \
-             or :obj:`~nilearn.surface.SurfaceImage` or None,\
-             default=None
-        Background image to be plotted on the :term:`mesh`
-        underneath the surf_data in grayscale,
-        most likely a sulcal depth map for realistic shading.
-        If the map contains values outside [0, 1],
-        it will be rescaled such that all values are in [0, 1].
-        Otherwise, it will not be modified.
+    %(bg_map)s
 
     %(hemi)s
 
@@ -1305,10 +1296,8 @@ def plot_surf_contours(
         title = figure._suptitle._text
     if title:
         axes.set_title(title)
-    if output_file is None:
-        return figure
-    figure.savefig(output_file)
-    plt.close(figure)
+
+    return save_figure_if_needed(figure, output_file)
 
 
 def _check_figure_axes_inputs_plot_surf_contours(figure, axes):
@@ -1386,15 +1375,7 @@ def plot_surf_stat_map(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or \
-             :obj:`~nilearn.surface.SurfaceImage` or None,\
-             default=None
-        Background image to be plotted on the :term:`mesh` underneath
-        the stat_map in grayscale, most likely a sulcal depth map
-        for realistic shading.
-        If the map contains values outside [0, 1], it will be
-        rescaled such that all values are in [0, 1]. Otherwise,
-        it will not be modified.
+    %(bg_map)s
 
     %(hemi)s
 
@@ -1647,7 +1628,7 @@ def _check_views(views) -> list:
 
 
 def _colorbar_from_array(
-    array, vmin, vmax, threshold, symmetric_cbar=True, cmap="cold_hot"
+    array, vmin, vmax, threshold, symmetric_cbar=True, cmap="RdBu_r"
 ):
     """Generate a custom colorbar for an array.
 
@@ -1987,15 +1968,7 @@ def plot_surf_roi(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or \
-             :obj:`~nilearn.surface.SurfaceImage` or None,\
-             default=None
-        Background image to be plotted on the :term:`mesh` underneath
-        the stat_map in grayscale, most likely a sulcal depth map for
-        realistic shading.
-        If the map contains values outside [0, 1], it will be
-        rescaled such that all values are in [0, 1]. Otherwise,
-        it will not be modified.
+    %(bg_map)s
 
     %(hemi)s
 

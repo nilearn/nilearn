@@ -45,12 +45,14 @@ stat_img = datasets.load_sample_motor_activation_image()
 
 from nilearn import plotting
 
+# %%
 # Visualizing t-map image on EPI template with manual
 # positioning of coordinates using cut_coords given as a list
 plotting.plot_stat_map(
     stat_img, threshold=3, title="plot_stat_map", cut_coords=[36, -27, 66]
 )
 
+# %%
 # It's also possible to visualize volumes in a LR-flipped "radiological" view
 # Just set radiological=True
 plotting.plot_stat_map(
@@ -126,8 +128,6 @@ plotting.plot_epi(mean_haxby_img, title="plot_epi")
 # in script mode (ie outside IPython)
 plotting.show()
 
-# sphinx_gallery_dummy_images=5
-
 # %%
 # Thresholding plots
 # ------------------
@@ -160,13 +160,11 @@ plotting.plot_stat_map(
     title="plotting threshold=1",
 )
 
-
 # %%
 # Plotting threshold set to 1 with ``vmin=0``
 # ```````````````````````````````````````````
 #
 # Setting ``vmin=0``, it is possible to plot only positive image values.
-
 
 plotting.plot_stat_map(
     stat_img,
@@ -183,7 +181,6 @@ plotting.plot_stat_map(
 # ```````````````````````````````````````````
 #
 # Setting ``vmax=0``, it is possible to plot only negative image values.
-
 
 plotting.plot_stat_map(
     stat_img,
@@ -209,3 +206,5 @@ plotting.plot_stat_map(
     colorbar=False,
     title="no colorbar",
 )
+
+# sphinx_gallery_dummy_images=5

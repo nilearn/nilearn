@@ -238,8 +238,7 @@ def report_flm_fiac(build_type):
 
     mean_img_ = mean_img(fmri_img[0], copy_header=True)
 
-    design_files = [data["design_matrix1"], data["design_matrix2"]]
-    design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
+    design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 
     fmri_glm = FirstLevelModel(mask_img=data["mask"], minimize_memory=True)
     fmri_glm = fmri_glm.fit(fmri_img, design_matrices=design_matrices)
@@ -356,7 +355,7 @@ def report_nifti_maps_masker(build_type):
     masker = NiftiMapsMasker(
         maps_img=atlas_filename,
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
         cmap="gray",
         memory_level=1,
@@ -475,7 +474,7 @@ def report_multi_nifti_labels_masker(build_type):
     masker = MultiNiftiLabelsMasker(
         labels_img=yeo["maps"],
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
         n_jobs=2,
         memory_level=1,
@@ -511,7 +510,7 @@ def report_multi_nifti_maps_masker(build_type):
     masker = MultiNiftiMapsMasker(
         maps_img=difumo.maps,
         standardize="zscore_sample",
-        standardize_confounds="zscore_sample",
+        standardize_confounds=True,
         memory="nilearn_cache",
         memory_level=1,
         n_jobs=2,

@@ -5,7 +5,6 @@ from __future__ import annotations
 import warnings
 
 import numpy as np
-from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import signal
@@ -122,6 +121,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             # unused but required in HTML template
             "number_of_regions": None,
             "summary": None,
+            "warning_message": None,
         }
         # data necessary to construct figure for the report
         self._reporting_data = None
@@ -285,9 +285,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = img.data.parts[part_name][mask].T
-
-        if self.memory is None:
-            self.memory = Memory(location=None)
 
         # signal cleaning here
         output = cache(

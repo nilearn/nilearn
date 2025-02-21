@@ -18,11 +18,6 @@ Bonferroni correction is a bit conservative, as revealed by the presence of
 a few false negative.
 
 .. include:: ../../../examples/masker_note.rst
-
-..
-    Original authors:
-
-    - Virgile Fritsch, Feb. 2014
 """
 
 # %%

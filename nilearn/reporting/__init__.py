@@ -3,8 +3,6 @@
 This module implements plotting functions useful to report analysis results.
 """
 
-# Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
-
 from nilearn._utils.helpers import set_mpl_backend
 from nilearn.reporting.get_clusters_table import get_clusters_table
 

@@ -173,6 +173,34 @@ You can also run any arbitrary command in a given environment with ``tox exec``:
 
     tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
 
+Generating new baseline figures for plotting tests
+==================================================
+
+We use the ``pytest-mpl`` pytest plugin to run several regression tests on our Matplotlib figures.
+
+Sometimes, the output of a plotting function may unintentionally change
+as a side effect of changing another function or piece of code
+that it depends on.
+These tests ensure that the outputs are not accidentally changed.
+
+For each figure to test,
+an image is generated and then subtracted from an existing reference image.
+If the root mean square of the residual is larger than a user-specified tolerance,
+the test will fail.
+
+Failures are expected at times when the output is changed intentionally
+(for example when fixing a bug,  adding features, bumping the python or Matplotlib version...)
+for a particular function.
+In such cases, the output needs to be manually updated and visually checked
+as part of the PR review process and to set a new baseline for comparison.
+
+You can set a new 'baseline' (set of reference images) by running the following
+with the oldest supported Python and Matplotlib:
+
+.. code-block:: bash
+
+    pip install tox
+    tox run -e pytest_mpl_generate
 
 How to make a release?
 ======================

@@ -5,8 +5,6 @@ which we historically used,
 ignores modules whose name starts with an underscore.
 """
 
-# Author: Gael Varoquaux, Alexandre Abraham
-
 import os
 import re
 from pathlib import Path

@@ -27,10 +27,11 @@ from nilearn.decoding.space_net_solvers import (
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
 from nilearn.image import get_data
 
+from .test_same_api import to_niimgs
+
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
 
-from .test_same_api import to_niimgs
 
 IS_CLASSIF = [True, False]
 

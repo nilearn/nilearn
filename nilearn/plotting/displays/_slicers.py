@@ -15,7 +15,7 @@ from nilearn._utils.niimg import is_binary_niimg, safe_get_data
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
-from nilearn.plotting._utils import _check_threshold
+from nilearn.plotting._utils import check_threshold_not_negative
 from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._axes import coords_3d_to_2d
 from nilearn.plotting.edge_detect import edge_map
@@ -146,7 +146,7 @@ class BaseSlicer:
             if the specified threshold is a negative number
         """
         check_params(locals())
-        _check_threshold(threshold)
+        check_threshold_not_negative(threshold)
 
         # deal with "fake" 4D images
         if img is not None and img is not False:
@@ -179,9 +179,7 @@ class BaseSlicer:
             )
 
         if axes is None:
-            axes = [0.0, 0.0, 1.0, 1.0]
-            if leave_space:
-                axes = [0.3, 0, 0.7, 1.0]
+            axes = [0.3, 0, 0.7, 1.0] if leave_space else [0.0, 0.0, 1.0, 1.0]
         if isinstance(axes, collections.abc.Sequence):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and
@@ -315,7 +313,7 @@ class BaseSlicer:
         ValueError
             if the specified threshold is a negative number
         """
-        _check_threshold(threshold)
+        check_threshold_not_negative(threshold)
 
         if colorbar and self._colorbar:
             raise ValueError(
@@ -386,7 +384,7 @@ class BaseSlicer:
         if not filled:
             threshold = None
         else:
-            _check_threshold(threshold)
+            check_threshold_not_negative(threshold)
 
         self._map_show(img, type="contour", threshold=threshold, **kwargs)
         if filled:
@@ -520,7 +518,7 @@ class BaseSlicer:
             if the specified threshold is a negative number
         """
         check_params(locals())
-        _check_threshold(threshold)
+        check_threshold_not_negative(threshold)
 
         if threshold is not None:
             data = np.ma.masked_where(
@@ -835,7 +833,7 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename, dpi=None):
+    def savefig(self, filename, dpi=None, **kwargs):
         """Save the figure to a file.
 
         Parameters
@@ -850,7 +848,11 @@ class BaseSlicer:
         """
         facecolor = edgecolor = "k" if self._black_bg else "w"
         self.frame_axes.figure.savefig(
-            filename, dpi=dpi, facecolor=facecolor, edgecolor=edgecolor
+            filename,
+            dpi=dpi,
+            facecolor=facecolor,
+            edgecolor=edgecolor,
+            **kwargs,
         )
 
 
