@@ -197,7 +197,7 @@ def _plot_img_with_bg(
     %(display_mode)s
 
     %(colorbar)s
-        Default=True.
+        Default=False.
 
     %(figure)s
 
