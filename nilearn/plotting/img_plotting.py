@@ -13,6 +13,7 @@ import warnings
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
@@ -44,6 +45,7 @@ from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
+    create_colormap_from_lut,
     save_figure_if_needed,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
@@ -1016,7 +1018,7 @@ def plot_roi(
         Alpha sets the transparency of the color inside the filled
         contours.
 
-    %(cmap)s
+    %(cmap_lut)s
         Default=`gist_ncar`.
 
     %(dim)s
@@ -1093,6 +1095,9 @@ def plot_roi(
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
     )
+
+    if isinstance(cmap, pd.DataFrame):
+        cmap = create_colormap_from_lut(cmap)
 
     display = _plot_img_with_bg(
         img=roi_img,
