@@ -49,6 +49,10 @@ Templates descriptions
 Atlases
 -------
 
+.. toctree::
+
+   tables.md
+
 Deterministic atlases
 ^^^^^^^^^^^^^^^^^^^^^
 
