@@ -49,10 +49,6 @@ Templates descriptions
 Atlases
 -------
 
-.. toctree::
-
-   tables.md
-
 Deterministic atlases
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -75,6 +71,9 @@ Deterministic atlases
    fetch_coords_dosenbach_2010
    fetch_coords_power_2011
    fetch_coords_seitzman_2018
+
+.. include:: deterministic_atlases.md
+   :parser: myst_parser.sphinx_
 
 Probabilistic atlases
 ^^^^^^^^^^^^^^^^^^^^^
@@ -100,20 +99,12 @@ Atlases descriptions
 .. toctree::
     :titlesonly:
 
-    description/aal.rst
     description/allen_rsn_2011.rst
-    description/basc_multiscale_2015.rst
     description/craddock_2012.rst
     description/destrieux_surface.rst
     description/difumo_atlases.rst
-    description/harvard_oxford.rst
-    description/juelich.rst
     description/msdl_atlas.rst
-    description/pauli_2017.rst
-    description/schaefer_2018.rst
     description/smith_2009.rst
-    description/talairach_atlas.rst
-    description/yeo_2011.rst
     description/dosenbach_2010.rst
     description/power_2011.rst
     description/seitzman_2018.rst

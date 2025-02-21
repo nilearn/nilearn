@@ -50,6 +50,7 @@ dev = [
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
+    "docutils>=0.17",
     "furo>=2024.8.6",
     "memory_profiler>=0.61.0",  # measuring memory during docs building
     "myst-parser>=3.0.1",
@@ -107,7 +108,8 @@ ignore-path = [
     "*/templates/*.rst",
     "doc/includes/*",
     "doc/authors.rst",
-    "AUTHORS.rst"
+    "AUTHORS.rst",
+    "doc/modules/datasets.rst"
 ]
 max-line-length = 120
 

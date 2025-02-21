@@ -52,7 +52,7 @@ deterministic_atlases = {
     },
 }
 
-dict_for_df = {"name": [], "template": [], "image": []}
+dict_for_df = {"name": [], "template": [], "description": [], "image": []}
 
 for details in deterministic_atlases.values():
     fn = details["fn"]
@@ -64,6 +64,9 @@ for details in deterministic_atlases.values():
 
     dict_for_df["name"].append(name)
     dict_for_df["template"].append(data.template)
+    dict_for_df["description"].append(
+        "{ref}`description " + f"<{name}_atlas>" + "`"
+    )
 
     extra_title = [f"{k}={v}" for k, v in params.items()]
     title = f"{fn.__name__}({', '.join(extra_title)})"
@@ -90,7 +93,7 @@ show()
 
 deterministic_atlases_df = pd.DataFrame(dict_for_df)
 deterministic_atlases_df.to_markdown(
-    Path(__file__).parent / "modules" / "tables.md", index=False
+    Path(__file__).parent / "modules" / "deterministic_atlases.md", index=False
 )
 
 #    fetch_atlas_surf_destrieux : {},
