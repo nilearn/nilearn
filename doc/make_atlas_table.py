@@ -13,10 +13,14 @@ from nilearn.datasets import (
     fetch_atlas_juelich,
     fetch_atlas_pauli_2017,
     fetch_atlas_schaefer_2018,
+    fetch_atlas_surf_destrieux,
     fetch_atlas_talairach,
     fetch_atlas_yeo_2011,
+    load_fsaverage,
+    load_fsaverage_data,
 )
-from nilearn.plotting import plot_roi, show
+from nilearn.plotting import plot_roi, plot_surf_roi, show
+from nilearn.surface import SurfaceImage
 
 doc_dir = Path(__file__).parent
 output_dir = Path(__file__).parent / "images"
@@ -74,15 +78,17 @@ for details in deterministic_atlases.values():
         data.maps,
         title=title,
         draw_cross=False,
+        colorbar=False,
         display_mode="ortho",
         cut_coords=[0, 0, 0],
+        cmap=data.lut,
         figure=plt.figure(figsize=[8, 3]),
     )
 
     details = ""
     for k, v in params.items():
         details += f"_{k}-{v}"
-    output_file = output_dir / f"{name}{details}.png"
+    output_file = output_dir / f"deterministic_atlas_{name}{details}.png"
     fig.savefig(output_file)
 
     dict_for_df["image"].append(
@@ -91,9 +97,45 @@ for details in deterministic_atlases.values():
 
 show()
 
+
+fsaverage = load_fsaverage("fsaverage5")
+fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+destrieux = fetch_atlas_surf_destrieux()
+destrieux_atlas = SurfaceImage(
+    mesh=fsaverage["inflated"],
+    data={
+        "left": destrieux["map_left"],
+        "right": destrieux["map_right"],
+    },
+)
+
+name = fetch_atlas_surf_destrieux.__name__.replace("fetch_atlas_", "")
+
+dict_for_df["name"].append(name)
+dict_for_df["template"].append(data.template)
+dict_for_df["description"].append("{ref}`description <destrieux_2009_atlas>`")
+
+fig = plot_surf_roi(
+    roi_map=destrieux_atlas,
+    hemi="left",
+    view="lateral",
+    bg_map=fsaverage_sulcal,
+    bg_on_data=True,
+    title=name,
+    colorbar=False,
+    figure=plt.figure(figsize=[8, 3]),
+)
+
+output_file = output_dir / f"deterministic_atlas_{name}.png"
+fig.savefig(output_file)
+
+dict_for_df["image"].append(
+    f"![name](../{output_file.relative_to(doc_dir)!s})"
+)
+
+show()
+
 deterministic_atlases_df = pd.DataFrame(dict_for_df)
 deterministic_atlases_df.to_markdown(
     Path(__file__).parent / "modules" / "deterministic_atlases.md", index=False
 )
-
-#    fetch_atlas_surf_destrieux : {},
