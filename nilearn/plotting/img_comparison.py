@@ -22,7 +22,7 @@ from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
 def plot_img_comparison(
     ref_imgs,
     src_imgs,
-    masker,
+    masker=None,
     plot_hist=True,
     log=True,
     ref_label="image set 1",
@@ -37,14 +37,29 @@ def plot_img_comparison(
 
     Parameters
     ----------
-    ref_imgs : nifti_like
-        Reference images.
+    ref_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+              or a :obj:`list` of \
+              3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Reference image.
 
-    src_imgs : nifti_like
-        Source images.
+    src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage` \
+              or a :obj:`list` of \
+              3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+        Source image.
+        Its type must match that of the ``ref_img``.
+        If the source image is Niimg-Like,
+        it will be resampled to match that or the source image.
 
-    masker : NiftiMasker object
+    masker : 3D Niimg-like binary mask or \
+            :obj:`~nilearn.maskers.NiftiMasker` or \
+            binary :obj:`~nilearn.surface.SurfaceImage` or \
+            or :obj:`~nilearn.maskers.SurfaceMasker` or \
+            None
         Mask to be used on data.
+        Its type must be compatible with that of the ``ref_img``.
+        If ``None`` is passed,
+        an appropriate masker will be fitted
+        on the first reference image.
 
     plot_hist : :obj:`bool`, default=True
         If True then histograms of each img in ref_imgs will be plotted
@@ -72,8 +87,38 @@ def plot_img_comparison(
         Pearson correlation between the images.
 
     """
-    # note: doesn't work with 4d images;
-    # when plot_hist is False creates two empty axes and doesn't plot anything
+    # Cast to list
+    if isinstance(ref_imgs, (str, Path, Nifti1Image, SurfaceImage)):
+        ref_imgs = [ref_imgs]
+    if isinstance(src_imgs, (str, Path, Nifti1Image, SurfaceImage)):
+        src_imgs = [src_imgs]
+    if not isinstance(ref_imgs, list) or not isinstance(src_imgs, list):
+        raise TypeError(
+            "'ref_imgs' and 'src_imgs' "
+            "must both be list of 3D Niimg-like or SurfaceImage.\n"
+            f"Got {type(ref_imgs)=} and {type(src_imgs)=}."
+        )
+
+    if all(isinstance(x, (str, Path, Nifti1Image)) for x in ref_imgs) and all(
+        isinstance(x, (str, Path, Nifti1Image)) for x in src_imgs
+    ):
+        image_type = "volume"
+
+    elif all(isinstance(x, SurfaceImage) for x in ref_imgs) and all(
+        isinstance(x, SurfaceImage) for x in src_imgs
+    ):
+        image_type = "surface"
+    else:
+        types_ref_imgs = {type(x) for x in ref_imgs}
+        types_src_imgs = {type(x) for x in src_imgs}
+        raise TypeError(
+            "'ref_imgs' and 'src_imgs' "
+            "must both be list of only 3D Niimg-like or SurfaceImage.\n"
+            f"Got {types_ref_imgs=} and {types_src_imgs=}."
+        )
+
+    masker = _sanitize_masker(masker, image_type, ref_imgs[0])
+
     corrs = []
 
     for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
@@ -86,8 +131,11 @@ def plot_img_comparison(
             )
         else:
             (ax1, ax2) = axes
-        ref_data = masker.transform(ref_img).ravel()
-        src_data = masker.transform(src_img).ravel()
+
+        ref_data, src_data = _extract_data_2_images(
+            ref_img, src_img, masker=masker
+        )
+
         if ref_data.shape != src_data.shape:
             warnings.warn("Images are not shape-compatible")
             return
@@ -95,23 +143,40 @@ def plot_img_comparison(
         corr = stats.pearsonr(ref_data, src_data)[0]
         corrs.append(corr)
 
+        # when plot_hist is False creates two empty axes
+        # and doesn't plot anything
         if plot_hist:
-            ax1.scatter(
+            gridsize = 100
+
+            lims = [
+                np.min(ref_data),
+                np.max(ref_data),
+                np.min(src_data),
+                np.max(src_data),
+            ]
+
+            ax1.hexbin(
                 ref_data,
                 src_data,
-                label=f"Pearsonr: {corr:.2f}",
-                c="g",
-                alpha=0.6,
+                bins="log",
+                cmap="inferno",
+                gridsize=gridsize,
+                extent=lims,
             )
-            x = np.linspace(*ax1.get_xlim(), num=100)
-            ax1.plot(x, x, linestyle="--", c="k")
+            x = np.linspace(*lims[0:2], num=gridsize)
+            ax1.plot(x, x, linestyle="--", c="grey")
+            ax1.set_title(f"Pearson's R: {corr:.2f}")
             ax1.grid("on")
             ax1.set_xlabel(ref_label)
             ax1.set_ylabel(src_label)
-            ax1.legend(loc="best")
+            ax1.axis(lims)
 
-            ax2.hist(ref_data, alpha=0.6, bins=128, log=log, label=ref_label)
-            ax2.hist(src_data, alpha=0.6, bins=128, log=log, label=src_label)
+            ax2.hist(
+                ref_data, alpha=0.6, bins=gridsize, log=log, label=ref_label
+            )
+            ax2.hist(
+                src_data, alpha=0.6, bins=gridsize, log=log, label=src_label
+            )
             ax2.set_title("Histogram of imgs values")
             ax2.grid("on")
             ax2.legend(loc="best")
@@ -169,7 +234,8 @@ def plot_bland_altman(
         Reference image.
 
     src_img : 3D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-        Source image. Its type must match that of the ``ref_img``.
+        Source image.
+        Its type must match that of the ``ref_img``.
         If the source image is Niimg-Like,
         it will be resampled to match that or the source image.
 
@@ -226,7 +292,6 @@ def plot_bland_altman(
 
     .. footbibliography::
 
-
     """
     data_ref, data_src = _extract_data_2_images(
         ref_img, src_img, masker=masker
@@ -263,7 +328,7 @@ def plot_bland_altman(
     gs0 = gridspec.GridSpec(1, 1)
 
     gs = gridspec.GridSpecFromSubplotSpec(
-        5, 6, subplot_spec=gs0[0], hspace=0.5, wspace=0.5
+        5, 6, subplot_spec=gs0[0], hspace=0.5, wspace=0.8
     )
 
     ax1 = figure.add_subplot(gs[:-1, 1:5])
@@ -292,7 +357,7 @@ def plot_bland_altman(
         color="gray",
     )
     ax2.invert_xaxis()
-    ax2.set_ylabel(f"Difference : {ref_label} - {src_label}")
+    ax2.set_ylabel(f"Difference : ({ref_label} - {src_label})")
 
     ax3 = figure.add_subplot(gs[-1, 1:5], yticklabels=[], sharex=ax1)
     ax3.hist(
@@ -305,7 +370,7 @@ def plot_bland_altman(
     )
     ax3.set_xlim(lims[:2])
     ax3.invert_yaxis()
-    ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label}")
+    ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label})")
 
     ax4 = figure.add_subplot(gs[:-1, 5])
     ax4.set_aspect(20)
@@ -365,6 +430,23 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
             f"Got {type(src_img)=} and {type(ref_img)=}."
         )
 
+    masker = _sanitize_masker(masker, image_type, ref_img)
+
+    data_ref = masker.transform(ref_img)
+    data_src = masker.transform(src_img)
+
+    data_ref = data_ref.ravel()
+    data_src = data_src.ravel()
+
+    return data_ref, data_src
+
+
+def _sanitize_masker(masker, image_type, ref_img):
+    """Return an appropriate fiited masker.
+
+    Raise exception
+    if there is type mismatch between the masker and ref_img.
+    """
     if masker is None:
         if image_type == "volume":
             masker = NiftiMasker(
@@ -401,14 +483,7 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
                 mask_img=masker,
             )
 
-    # TODO replace with proper method
-    if not hasattr(masker, "mask_img_"):
+    if not masker.__sklearn_is_fitted__():
         masker.fit(ref_img)
 
-    data_ref = masker.transform(ref_img)
-    data_src = masker.transform(src_img)
-
-    data_ref = data_ref.ravel()
-    data_src = data_src.ravel()
-
-    return data_ref, data_src
+    return masker
