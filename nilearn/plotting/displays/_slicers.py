@@ -179,9 +179,7 @@ class BaseSlicer:
             )
 
         if axes is None:
-            axes = [0.0, 0.0, 1.0, 1.0]
-            if leave_space:
-                axes = [0.3, 0, 0.7, 1.0]
+            axes = [0.3, 0, 0.7, 1.0] if leave_space else [0.0, 0.0, 1.0, 1.0]
         if isinstance(axes, collections.abc.Sequence):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and
@@ -835,7 +833,7 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename, dpi=None):
+    def savefig(self, filename, dpi=None, **kwargs):
         """Save the figure to a file.
 
         Parameters
@@ -850,7 +848,11 @@ class BaseSlicer:
         """
         facecolor = edgecolor = "k" if self._black_bg else "w"
         self.frame_axes.figure.savefig(
-            filename, dpi=dpi, facecolor=facecolor, edgecolor=edgecolor
+            filename,
+            dpi=dpi,
+            facecolor=facecolor,
+            edgecolor=edgecolor,
+            **kwargs,
         )
 
 

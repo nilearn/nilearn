@@ -396,8 +396,8 @@ def plot_contrast_matrix(
     axes.xaxis.set(ticks=np.arange(n_columns_design_matrix))
     axes.set_xticklabels(design_column_names, rotation=50, ha="left")
 
-    fig = axes.figure
     if colorbar:
+        fig = axes.figure
         fig.colorbar(mat, fraction=0.025, pad=0.04)
 
     return save_figure_if_needed(axes, output_file)
