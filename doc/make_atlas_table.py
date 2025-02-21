@@ -7,23 +7,29 @@ import pandas as pd
 
 from nilearn.datasets import (
     fetch_atlas_aal,
+    fetch_atlas_allen_2011,
     fetch_atlas_basc_multiscale_2015,
     fetch_atlas_destrieux_2009,
     fetch_atlas_harvard_oxford,
     fetch_atlas_juelich,
     fetch_atlas_pauli_2017,
     fetch_atlas_schaefer_2018,
+    fetch_atlas_smith_2009,
     fetch_atlas_surf_destrieux,
     fetch_atlas_talairach,
     fetch_atlas_yeo_2011,
     load_fsaverage,
     load_fsaverage_data,
 )
-from nilearn.plotting import plot_roi, plot_surf_roi, show
+from nilearn.plotting import plot_prob_atlas, plot_roi, plot_surf_roi, show
 from nilearn.surface import SurfaceImage
 
 doc_dir = Path(__file__).parent
 output_dir = Path(__file__).parent / "images"
+
+"""
+VOLUME DETERMINISTIC ATLASES
+"""
 
 deterministic_atlases = {
     "aal": {"fn": fetch_atlas_aal, "params": {}},
@@ -66,14 +72,9 @@ for details in deterministic_atlases.values():
 
     name = fn.__name__.replace("fetch_atlas_", "")
 
-    dict_for_df["name"].append(name)
-    dict_for_df["template"].append(data.template)
-    dict_for_df["description"].append(
-        "{ref}`description " + f"<{name}_atlas>" + "`"
-    )
-
     extra_title = [f"{k}={v}" for k, v in params.items()]
     title = f"{fn.__name__}({', '.join(extra_title)})"
+
     fig = plot_roi(
         data.maps,
         title=title,
@@ -91,12 +92,20 @@ for details in deterministic_atlases.values():
     output_file = output_dir / f"deterministic_atlas_{name}{details}.png"
     fig.savefig(output_file)
 
+    dict_for_df["name"].append(name)
+    dict_for_df["template"].append(data.template)
+    dict_for_df["description"].append(
+        "{ref}`description " + f"<{name}_atlas>" + "`"
+    )
     dict_for_df["image"].append(
         f"![name](../{output_file.relative_to(doc_dir)!s})"
     )
 
 show()
 
+"""
+SURFACE DETERMINISTIC ATLASES
+"""
 
 fsaverage = load_fsaverage("fsaverage5")
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
@@ -110,10 +119,6 @@ destrieux_atlas = SurfaceImage(
 )
 
 name = fetch_atlas_surf_destrieux.__name__.replace("fetch_atlas_", "")
-
-dict_for_df["name"].append(name)
-dict_for_df["template"].append(data.template)
-dict_for_df["description"].append("{ref}`description <destrieux_2009_atlas>`")
 
 fig = plot_surf_roi(
     roi_map=destrieux_atlas,
@@ -129,6 +134,9 @@ fig = plot_surf_roi(
 output_file = output_dir / f"deterministic_atlas_{name}.png"
 fig.savefig(output_file)
 
+dict_for_df["name"].append(name)
+dict_for_df["template"].append(data.template)
+dict_for_df["description"].append("{ref}`description <destrieux_2009_atlas>`")
 dict_for_df["image"].append(
     f"![name](../{output_file.relative_to(doc_dir)!s})"
 )
@@ -138,4 +146,80 @@ show()
 deterministic_atlases_df = pd.DataFrame(dict_for_df)
 deterministic_atlases_df.to_markdown(
     Path(__file__).parent / "modules" / "deterministic_atlases.md", index=False
+)
+
+"""
+PROBABILISTIC ATLASES
+"""
+
+#    fetch_atlas_craddock_2012
+#    fetch_atlas_difumo
+#    fetch_atlas_msdl
+
+probablistic_atlases = {
+    "allen_2011": {"fn": fetch_atlas_allen_2011, "params": {}, "key": "rsn28"},
+    "harvard_oxford": {
+        "fn": fetch_atlas_harvard_oxford,
+        "params": {"atlas_name": "cort-prob-1mm"},
+    },
+    "harvard_oxford_2": {
+        "fn": fetch_atlas_harvard_oxford,
+        "params": {"atlas_name": "sub-prob-1mm"},
+    },
+    "juelich": {
+        "fn": fetch_atlas_juelich,
+        "params": {"atlas_name": "prob-1mm"},
+    },
+    "smith_2009": {
+        "fn": fetch_atlas_smith_2009,
+        "params": {"resting": False, "dimension": 20},
+    },
+}
+
+dict_for_df = {"name": [], "template": [], "description": [], "image": []}
+
+for details in probablistic_atlases.values():
+    fn = details["fn"]
+    params = details["params"]
+
+    data = fn(**params)
+
+    name = fn.__name__.replace("fetch_atlas_", "")
+
+    extra_title = [f"{k}={v}" for k, v in params.items()]
+    title = f"{fn.__name__}({', '.join(extra_title)})"
+
+    image = data[details.get("key", "maps")]
+
+    fig = plot_prob_atlas(
+        data.maps,
+        title=title,
+        draw_cross=False,
+        colorbar=True,
+        display_mode="ortho",
+        cut_coords=[0, 0, 0],
+        figure=plt.figure(figsize=[8, 3]),
+    )
+
+    details = ""
+    for k, v in params.items():
+        details += f"_{k}-{v}"
+    output_file = output_dir / f"probablistic_atlas_{name}{details}.png"
+    fig.savefig(output_file)
+
+    dict_for_df["name"].append(name)
+    dict_for_df["template"].append(data.template)
+    dict_for_df["description"].append(
+        "{ref}`description " + f"<{name}_atlas>" + "`"
+    )
+    dict_for_df["image"].append(
+        f"![name](../{output_file.relative_to(doc_dir)!s})"
+    )
+
+show()
+
+
+probablistic_atlases_df = pd.DataFrame(dict_for_df)
+probablistic_atlases_df.to_markdown(
+    Path(__file__).parent / "modules" / "probablistic_atlases.md", index=False
 )

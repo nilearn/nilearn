@@ -93,18 +93,18 @@ Probabilistic atlases
    fetch_atlas_pauli_2017
    fetch_atlas_smith_2009
 
+.. include:: probabilistic_atlases.md
+   :parser: myst_parser.sphinx_
+
 Atlases descriptions
 ^^^^^^^^^^^^^^^^^^^^
 
 .. toctree::
     :titlesonly:
 
-    description/allen_rsn_2011.rst
     description/craddock_2012.rst
-    description/destrieux_surface.rst
     description/difumo_atlases.rst
     description/msdl_atlas.rst
-    description/smith_2009.rst
     description/dosenbach_2010.rst
     description/power_2011.rst
     description/seitzman_2018.rst
