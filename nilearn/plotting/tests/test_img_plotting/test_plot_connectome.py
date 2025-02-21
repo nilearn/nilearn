@@ -117,7 +117,7 @@ def test_plot_connectome_with_nans(adjacency, node_coords, base_params):
     adjacency[0, 1] = np.nan
     adjacency[1, 0] = np.nan
     base_params["node_color"] = np.array(["green", "blue", "k", "yellow"])
-    plot_connectome(adjacency, node_coords, **base_params)
+    plot_connectome(adjacency, node_coords, colorbar=False, **base_params)
     plt.close()
 
 
@@ -190,8 +190,9 @@ def test_plot_connectome_with_too_high_edge_threshold(adjacency, node_coords):
     """Smoke-test where there is no edge to draw, \
        e.g. when edge_threshold is too high.
     """
-    plot_connectome(adjacency, node_coords, edge_threshold=1e12)
-    plt.close()
+    plot_connectome(
+        adjacency, node_coords, edge_threshold=1e12, colorbar=False
+    )
 
 
 def test_plot_connectome_non_symmetric(node_coords, non_symmetric_matrix):
