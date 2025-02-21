@@ -776,7 +776,7 @@ def plot_surf(
     engine="matplotlib",
     cmap=None,
     symmetric_cmap=False,
-    colorbar=False,
+    colorbar=True,
     avg_method=None,
     threshold=None,
     alpha=None,
