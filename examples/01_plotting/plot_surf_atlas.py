@@ -151,7 +151,6 @@ view = view_surf(
     surf_map=destrieux_atlas,
     cmap="gist_ncar",
     symmetric_cmap=False,
-    colorbar=False,
 )
 # In a Jupyter notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
@@ -167,7 +166,6 @@ view = view_connectome(
     corr,
     coordinates,
     edge_threshold="90%",
-    colorbar=False,
 )
 
 # uncomment this to open the plot in a web browser:

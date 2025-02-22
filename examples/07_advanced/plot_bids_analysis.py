@@ -132,7 +132,6 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     zmap = model.compute_contrast("language-string")
     plotting.plot_glass_brain(
         zmap,
-        colorbar=True,
         threshold=p001_unc,
         title=f"sub-{model.subject_label}",
         axes=axes[int(midx / ncols), int(midx % ncols)],
@@ -174,7 +173,6 @@ zmap = second_level_model.compute_contrast(
 # language network.
 plotting.plot_glass_brain(
     zmap,
-    colorbar=True,
     threshold=p001_unc,
     title="Group language network (unc p<0.001)",
     plot_abs=False,

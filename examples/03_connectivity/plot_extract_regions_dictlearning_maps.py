@@ -164,7 +164,7 @@ from nilearn.plotting import (
 title = f"Correlation between {int(n_regions_extracted)} regions"
 
 # First plot the matrix
-plot_matrix(mean_correlations, vmax=1, vmin=-1, colorbar=True, title=title)
+plot_matrix(mean_correlations, vmax=1, vmin=-1, title=title)
 
 # Then find the center of the regions and plot a connectome
 regions_img = regions_extracted_img
@@ -190,7 +190,6 @@ coords = find_xyz_cut_coords(img)
 plot_stat_map(
     img,
     cut_coords=coords,
-    colorbar=True,
     title="Showing one specific network",
 )
 

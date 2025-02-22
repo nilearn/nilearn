@@ -778,7 +778,7 @@ def plot_surf(
     engine="matplotlib",
     cmap=None,
     symmetric_cmap=False,
-    colorbar=False,
+    colorbar=True,
     avg_method=None,
     threshold=None,
     alpha=None,
@@ -874,7 +874,7 @@ def plot_surf(
         .. versionadded:: 0.9.0
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     %(avg_method)s
 
@@ -1750,21 +1750,31 @@ def plot_img_on_surf(
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
         Will default to ``['lateral', 'medial']`` if ``None`` is passed.
+
     %(output_file)s
+
     %(title)s
+
     %(colorbar)s
 
         .. note::
             This function uses a symmetric colorbar for the statistical map.
 
         Default=True.
+
     %(vmin)s
+
     %(vmax)s
+
     %(threshold)s
+
     %(symmetric_cbar)s
+
     %(cmap)s
         Default="RdBu_r".
+
     %(cbar_tick_format)s
+
     kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.
 
@@ -1926,6 +1936,7 @@ def plot_surf_roi(
     output_file=None,
     axes=None,
     figure=None,
+    colorbar=True,
     **kwargs,
 ):
     """Plot ROI on a surface :term:`mesh` with optional background.
@@ -2164,6 +2175,7 @@ def plot_surf_roi(
         output_file=output_file,
         axes=axes,
         figure=figure,
+        colorbar=colorbar,
         **kwargs,
     )
 
