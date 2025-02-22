@@ -93,7 +93,7 @@ Probabilistic atlases
    fetch_atlas_pauli_2017
    fetch_atlas_smith_2009
 
-.. include:: probailistic_atlases.md
+.. include:: probabilistic_atlases.md
    :parser: myst_parser.sphinx_
 
 Atlases descriptions

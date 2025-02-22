@@ -208,5 +208,5 @@ show()
 
 probablistic_atlases_df = pd.DataFrame(dict_for_df)
 probablistic_atlases_df.to_markdown(
-    Path(__file__).parent / "modules" / "probailistic_atlases.md", index=False
+    Path(__file__).parent / "modules" / "probabilistic_atlases.md", index=False
 )
