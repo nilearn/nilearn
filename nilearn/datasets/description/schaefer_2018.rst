@@ -1,4 +1,4 @@
-.. _schaefer_atlas:
+.. _schaefer_2018_atlas:
 
 Schaefer 2018 atlas
 ===================

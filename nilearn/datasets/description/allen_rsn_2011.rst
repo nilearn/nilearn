@@ -1,4 +1,4 @@
-.. _allen_atlas:
+.. _allen_2011_atlas:
 
 Allen 2011 atlas
 ================

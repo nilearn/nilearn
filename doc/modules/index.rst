@@ -8,7 +8,7 @@ This is the class and function reference of nilearn. Please refer to
 the :ref:`user guide <user_guide>` for more information and usage examples.
 
 .. toctree::
-   :hidden:
+   :maxdepth: 1
 
    connectome.rst
    datasets.rst
