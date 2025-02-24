@@ -1151,7 +1151,8 @@ def test_inmemorymesh_index_error(in_memory_mesh):
 
 
 def test_smooth_img(surf_img_1d):
-    smooth_img(surf_img_1d, iterations=1)
+    smoothed_imgs = smooth_img(surf_img_1d, iterations=1)
+    assert isinstance(smoothed_imgs, SurfaceImage)
 
 
 def test_mean_img(surf_img_1d, surf_img_2d):

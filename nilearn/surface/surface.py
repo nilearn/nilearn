@@ -2226,7 +2226,7 @@ def smooth_img(
     --------
     >>> from nilearn import datasets, surface
     >>> curv = datasets.load_fsaverage_data(data_type="curvature")
-    >>> curv_smooth, _ = surface.smooth_img(curv, iterations=50)
+    >>> curv_smooth = surface.smooth_img(curv, iterations=50)
 
     """
     # First, calculate the center and surround weights for the
@@ -2241,21 +2241,14 @@ def smooth_img(
     # by inverse distance or not weighting (ones)
     values = "invlen" if distance_weights else "ones"
 
-    new_data = {}
-    weights = {}
+    _ = _sanitize_weights(imgs, vertex_weights=vertex_weights)
 
+    new_data = {}
     for hemi in imgs.mesh.parts:
         mesh = imgs.mesh.parts[hemi]
         data = imgs.data.parts[hemi]
 
         matrix = _compute_adjacency_matrix(mesh, values=values)
-
-        # If there are vertex weights, get them ready.
-        if vertex_weights:
-            w = np.array(vertex_weights)
-            w /= np.sum(w)
-        else:
-            w = np.ones(matrix.shape[0])
 
         # We need to normalize the matrix columns, and we can do this now by
         # normalizing everything but the diagonal to the surround weight, then
@@ -2274,9 +2267,39 @@ def smooth_img(
         # Convert back into numpy array.
         new_data[hemi] = np.reshape(np.asarray(tmp), np.shape(data))
 
+    smoothed_imgs = new_img_like(imgs, new_data)
+
+    return smoothed_imgs
+
+
+def _sanitize_weights(
+    imgs,
+    vertex_weights=None,
+):
+    """Check passed weights or set them all to 1 if None is passed.
+
+    Parameters
+    ----------
+    imgs : SurfaceImage
+        The surface whose is to be smoothed.
+        In the case of 2D data, each sample is smoothed independently.
+
+    vertex_weights : SurfaceImage or None, default = None
+        A SurfaceImage whose data are vector of weights, one per vertex.
+    """
+    weights = {}
+
+    if vertex_weights is not None:
+        if not isinstance(vertex_weights, SurfaceImage):
+            raise TypeError("'vertex_weights' must be None or a SurfaceImage.")
+        check_same_n_vertices(imgs.mesh, vertex_weights.mesh)
+
+    for hemi in imgs.mesh.parts:
+        w = np.ones(imgs.mesh.parts[hemi].n_vertices)
+        if vertex_weights:
+            w = vertex_weights.data.parts[hemi]
+
         w /= np.sum(w)
         weights[hemi] = w
 
-    smoothed_imgs = new_img_like(imgs, new_data)
-
-    return smoothed_imgs, weights
+    return new_img_like(imgs, weights)
