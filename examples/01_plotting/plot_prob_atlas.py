@@ -51,7 +51,7 @@ plotting.plot_prob_atlas(
 # "filled_contours" example.
 plotting.plot_prob_atlas(
     smith_bm20,
-    title="Smith2009 20 Brainmap (with colorbar)",
+    title="Smith2009 20 Brainmap",
 )
 
 plotting.show()

@@ -17,11 +17,6 @@ More specifically:
 3. Fit a second level model on the fitted first level models.
    Notice that in this case the preprocessed :term:`bold<BOLD>`
    images were already normalized to the same :term:`MNI` space.
-
-.. note::
-
-      We are only using a subset of participants from the dataset
-      to lower the run time of the example.
 """
 
 from nilearn import plotting
@@ -69,7 +64,6 @@ task_label = "languagelocalizer"
     img_filters=[("desc", "preproc")],
     n_jobs=2,
     space_label="",
-    sub_labels=["01", "02", "05", "08"],  # comment to run all subjects
     smoothing_fwhm=8,
 )
 

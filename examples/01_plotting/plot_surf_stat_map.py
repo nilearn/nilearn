@@ -123,6 +123,7 @@ plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="PCC Seed",
+    colorbar=False,
 )
 
 show()
@@ -151,6 +152,7 @@ plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="PCC Seed on flat map",
+    colorbar=False,
 )
 
 show()

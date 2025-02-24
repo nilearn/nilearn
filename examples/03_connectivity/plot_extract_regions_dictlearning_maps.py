@@ -67,6 +67,7 @@ plot_prob_atlas(
     components_img,
     view_type="filled_contours",
     title="Dictionary Learning maps",
+    draw_cross=False,
 )
 
 show()
@@ -107,7 +108,10 @@ title = (
     "Each separate color of region indicates extracted region"
 )
 plot_prob_atlas(
-    regions_extracted_img, view_type="filled_contours", title=title
+    regions_extracted_img,
+    view_type="filled_contours",
+    title=title,
+    draw_cross=False,
 )
 
 show()
@@ -207,7 +211,9 @@ from nilearn.plotting import cm, plot_anat
 
 regions_indices_of_map3 = np.where(np.array(regions_index) == 4)
 
-display = plot_anat(cut_coords=coords, title="Regions from this network")
+display = plot_anat(
+    cut_coords=coords, title="Regions from this network", colorbar=False
+)
 
 # Add as an overlay all the regions of index 4
 colors = "rgbcmyk"

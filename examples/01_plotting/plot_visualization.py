@@ -45,7 +45,7 @@ mask_img = compute_epi_mask(func_filename)
 # Visualize it as an ROI
 from nilearn.plotting import plot_roi
 
-plot_roi(mask_img, mean_haxby)
+plot_roi(mask_img, mean_haxby, colorbar=False)
 
 # %%
 # Applying the mask to extract the corresponding time series
