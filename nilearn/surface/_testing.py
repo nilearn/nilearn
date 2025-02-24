@@ -1,13 +1,13 @@
 """Utilities to test surface mesh, data, images."""
 
-import numpy as np
+from numpy.testing import assert_array_equal
 
 
 def assert_polydata_equal(data_1, data_2):
     """Check that 2 SurfaceImages data are equal."""
     assert set(data_1.parts.keys()) == set(data_2.parts.keys())
     for key in data_1.parts:
-        assert np.array_equal(data_1.parts[key], data_2.parts[key])
+        assert_array_equal(data_1.parts[key], data_2.parts[key])
 
 
 def assert_polymesh_equal(mesh_1, mesh_2):
@@ -19,8 +19,8 @@ def assert_polymesh_equal(mesh_1, mesh_2):
 
 def assert_surface_mesh_equal(mesh_1, mesh_2):
     """Check that 2 SurfaceMeshes are equal."""
-    assert np.array_equal(mesh_1.coordinates, mesh_2.coordinates)
-    assert np.array_equal(mesh_1.faces, mesh_2.faces)
+    assert_array_equal(mesh_1.coordinates, mesh_2.coordinates)
+    assert_array_equal(mesh_1.faces, mesh_2.faces)
 
 
 def assert_surface_image_equal(img_1, img_2):

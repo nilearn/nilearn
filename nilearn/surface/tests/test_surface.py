@@ -1151,8 +1151,35 @@ def test_inmemorymesh_index_error(in_memory_mesh):
 
 
 def test_smooth_img(surf_img_1d):
+    """Check smoothing change data."""
     smoothed_imgs = smooth_img(surf_img_1d, iterations=1)
+
     assert isinstance(smoothed_imgs, SurfaceImage)
+    for part in surf_img_1d.data.parts:
+        assert not np.array_equal(
+            surf_img_1d.data.parts[part], smoothed_imgs.data.parts[part]
+        )
+
+    more_smoothed_imgs = smooth_img(surf_img_1d, iterations=2)
+    for part in surf_img_1d.data.parts:
+        assert not np.array_equal(
+            more_smoothed_imgs.data.parts[part], smoothed_imgs.data.parts[part]
+        )
+
+
+def test_smooth_img_center_surround_knob_minus_inf(surf_img_1d):
+    """Set center_surround_knob to -inf leads to no smoothing."""
+    smoothed_imgs = smooth_img(surf_img_1d, center_surround_knob=-np.inf)
+
+    assert_surface_image_equal(smoothed_imgs, surf_img_1d)
+
+
+def test_smooth_img_errors(surf_img_1d):
+    with pytest.raises(TypeError, match=""):
+        smooth_img(
+            surf_img_1d,
+            vertex_weights="'vertex_weights' must be None or a SurfaceImage.",
+        )
 
 
 def test_mean_img(surf_img_1d, surf_img_2d):
