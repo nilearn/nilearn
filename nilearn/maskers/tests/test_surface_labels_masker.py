@@ -1,4 +1,3 @@
-import warnings
 from os.path import join
 from pathlib import Path
 
@@ -7,20 +6,19 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.class_inspect import check_estimator
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.surface import SurfaceImage
 
 
 def _sklearn_surf_label_img():
-    """Create a sample surface label image using the sample mesh, just to use
-    for scikit-learn checks.
+    """Create a sample surface label image using the sample mesh,
+    just to use for scikit-learn checks.
     """
     labels = {
-        "left": np.asarray([1, 2, 3, 5]),
-        "right": np.asarray([4, 5, 6, 7, 9]),
+        "left": np.asarray([1, 1, 2, 2]),
+        "right": np.asarray([1, 1, 2, 2, 2]),
     }
     return SurfaceImage(_make_mesh(), labels)
 
@@ -562,19 +560,6 @@ def test_surface_label_masker_labels_img_none():
         match="provide a labels_img to the masker",
     ):
         SurfaceLabelsMasker(labels_img=None).fit()
-
-
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
-def test_masker_reporting_mpl_warning(surf_label_img):
-    """Raise warning after exception if matplotlib is not installed."""
-    with warnings.catch_warnings(record=True) as warning_list:
-        SurfaceLabelsMasker(surf_label_img).fit().generate_report()
-
-    assert len(warning_list) == 1
-    assert issubclass(warning_list[0].category, ImportWarning)
 
 
 def test_error_wrong_strategy(surf_label_img):

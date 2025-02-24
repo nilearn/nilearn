@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye
 from nilearn.decomposition.dict_learning import DictLearning
