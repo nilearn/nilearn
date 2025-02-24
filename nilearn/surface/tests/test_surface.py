@@ -626,9 +626,7 @@ def test_vol_to_surf_labels(img_labels, single_mesh):
     img_labels_data = img_labels.get_fdata()
     uniques_vol = np.unique(img_labels_data)
 
-    mesh_labels = vol_to_surf(
-        img_labels, single_mesh, interpolation="nearest", n_samples=3
-    )
+    mesh_labels = vol_to_surf(img_labels, single_mesh, interpolation="nearest")
 
     uniques_surf = np.unique(mesh_labels)
 

@@ -340,6 +340,18 @@ def _masked_indices(sample_locations, img_shape, mask=None):
     return ~kept
 
 
+def _mask_sample_locations(sample_locations, mesh, masks):
+    n_vertices = mesh.n_vertices
+    masks = np.split(masks, n_vertices)
+    sample_locations = np.moveaxis(sample_locations, 0, -1)
+    # mask sample locations and make a list of masked indices because
+    # masked locations are not contiguous
+    masked_sample_locations = [
+        sample_locations[idx][~mask] for idx, mask in enumerate(masks)
+    ]
+    return masked_sample_locations
+
+
 def _projection_matrix(
     mesh,
     affine,
@@ -451,13 +463,15 @@ def _projection_matrix(
     row_indices = row_indices.ravel()
     row_indices = row_indices[~masked]
     sample_indices = sample_indices[~masked]
+    # also mask sample_locations to use later
+    sample_locations = _mask_sample_locations(sample_locations, mesh, masked)
     weights = np.ones(len(row_indices))
     proj = sparse.csr_matrix(
         (weights, (row_indices, sample_indices.ravel())),
         shape=(n_vertices, np.prod(img_shape)),
     )
     proj = sklearn.preprocessing.normalize(proj, axis=1, norm="l1")
-    return proj
+    return proj, sample_locations
 
 
 def _nearest_voxel_sampling(
@@ -479,7 +493,7 @@ def _nearest_voxel_sampling(
     See documentation of vol_to_surf for details.
 
     """
-    proj = _projection_matrix(
+    proj, sample_locations = _projection_matrix(
         mesh,
         affine,
         images[0].shape,
@@ -491,11 +505,25 @@ def _nearest_voxel_sampling(
         depth=depth,
     )
     data = np.asarray(images).reshape(len(images), -1).T
-    texture = proj.dot(data)
-    # if all samples around a mesh vertex are outside the image,
-    # there is no reasonable value to assign to this vertex.
-    # in this case we return NaN for this vertex.
-    texture[np.asarray(proj.sum(axis=1) == 0).ravel()] = np.nan
+
+    # if the data is all integers we know it's an atlas, so the texture
+    # value for each vertex would be the most frequent voxel value in the
+    # neighborhood
+    if np.issubdtype(data.dtype, np.integer):
+        data = np.squeeze(np.asarray(images))
+        texture = np.zeros((mesh.n_vertices, images.shape[0]))
+        for i in range(len(sample_locations)):
+            possible_values = [
+                data[locs[0], locs[1], locs[2]] for locs in sample_locations[i]
+            ]
+            unique, counts = np.unique(possible_values, return_counts=True)
+            texture[i] = unique[np.argmax(counts)]
+    else:
+        texture = proj.dot(data)
+        # if all samples around a mesh vertex are outside the image,
+        # there is no reasonable value to assign to this vertex.
+        # in this case we return NaN for this vertex.
+        texture[np.asarray(proj.sum(axis=1) == 0).ravel()] = np.nan
     return texture.T
 
 
