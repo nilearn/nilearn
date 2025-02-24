@@ -119,14 +119,14 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     if param_grid is None:
         param_grid = _default_param_grid(estimator, X, y)
 
-    elif isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
+    elif isinstance(estimator, (RidgeCV, RidgeClassifierCV)) or (
+        not isinstance(estimator, LogisticRegressionCV)
+        and isinstance(estimator, LassoCV)
+    ):
         param_grid = _wrap_param_grid(param_grid, "alphas")
     elif isinstance(estimator, LogisticRegressionCV):
         param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
         param_grid = _wrap_param_grid(param_grid, "Cs")
-    elif isinstance(estimator, LassoCV):
-        param_grid = _wrap_param_grid(param_grid, "alphas")
-
     return param_grid
 
 

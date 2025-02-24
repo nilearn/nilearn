@@ -148,9 +148,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
                     "or an img when calling fit()."
                 )
 
-            if self.mask_img is not None:
-                self.mask_img_ = self.mask_img
-                return
+            self.mask_img_ = self.mask_img
+            return
 
         if not isinstance(img, list):
             img = [img]
