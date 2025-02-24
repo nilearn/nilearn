@@ -2100,15 +2100,13 @@ def _compute_adjacency_matrix(mesh, values="ones", dtype=None):
     ----------
     mesh : InMemoryMesh
 
-    values : { 'len' | 'invlen' | 'ones'}, optional
+    values : {'invlen', 'ones'}, default="ones"
         If `values` is `'ones'` (the default), then the returned matrix
         contains uniform values in the cells representing edges.
-        If the value is `'len'` then the cells contain
-        the edge length of the represented edge.
         If the value is `'invlen'`, then the the inverse of the distances
         are returned.
 
-    dtype : numpy dtype-like or None, optional
+    dtype : numpy dtype-like or None, default=None
         The dtype that should be used for the returned sparse matrix.
 
     Returns
@@ -2117,10 +2115,6 @@ def _compute_adjacency_matrix(mesh, values="ones", dtype=None):
         A sparse matrix representing the edge relationships in `surface`.
 
     """
-    # This is a bit of a hack to quickly find a unique set of all edges.
-    if values not in {"len", "invlen", "ones"}:
-        raise ValueError(f"unrecognized values argument: {values}")
-
     n = mesh.coordinates.shape[0]
 
     edges = np.vstack(
@@ -2146,20 +2140,18 @@ def _compute_adjacency_matrix(mesh, values="ones", dtype=None):
     # Calculate distances between pairs.
     # We use this as a weighting to make sure that
     # smoothing takes into account the distance between each vertex neighbor
-    if values in ("len", "invlen"):
+    if values == "invlen":
         coords = mesh.coordinates
         edge_lens = np.sqrt(np.sum((coords[u, :] - coords[v, :]) ** 2, axis=1))
         if dtype is None:
             dtype = edge_lens.dtype
         else:
             edge_lens = edge_lens.astype(dtype)
-        if values == "invlen":
-            edge_lens = 1 / edge_lens
-    elif values == "ones":
-        if dtype is None:
-            edge_lens = np.ones_like(edges)
-        else:
-            edge_lens = np.ones(edges.shape, dtype=dtype)
+        edge_lens = 1 / edge_lens
+    elif dtype is None:
+        edge_lens = np.ones_like(edges)
+    else:
+        edge_lens = np.ones(edges.shape, dtype=dtype)
 
     # We can now make a sparse matrix.
     ee = np.concatenate([edge_lens, edge_lens])
