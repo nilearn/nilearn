@@ -3,11 +3,12 @@
 import warnings
 
 import numpy as np
-from joblib import Memory
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import (
     compute_middle_image,
@@ -279,7 +280,7 @@ class NiftiMapsMasker(BaseMasker):
                 f"{type(displayed_maps)}"
             )
         self.displayed_maps = displayed_maps
-        self.report_id += 1
+
         return generate_report(self)
 
     def _reporting(self):
@@ -310,7 +311,7 @@ class NiftiMapsMasker(BaseMasker):
                 msg = (
                     "`generate_report()` received "
                     f"{self.displayed_maps} to be displayed. "
-                    f"But masker only has {n_maps} maps."
+                    f"But masker only has {n_maps} maps. "
                     f"Setting number of displayed maps to {n_maps}."
                 )
                 warnings.warn(category=UserWarning, message=msg)
@@ -326,7 +327,6 @@ class NiftiMapsMasker(BaseMasker):
                 )
             maps_to_be_displayed = self.displayed_maps
 
-        self._report_content["report_id"] = self.report_id
         self._report_content["number_of_maps"] = n_maps
         self._report_content["displayed_maps"] = list(maps_to_be_displayed)
 
@@ -392,6 +392,7 @@ class NiftiMapsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        check_params(self.__dict__)
         if self.resampling_target not in ("mask", "maps", "data", None):
             raise ValueError(
                 "invalid value for 'resampling_target' "
@@ -405,12 +406,8 @@ class NiftiMapsMasker(BaseMasker):
                 "Set resampling_target to something else or provide a mask."
             )
 
-        if self.memory is None:
-            self.memory = Memory(location=None, verbose=0)
-
         self = sanitize_cleaning_parameters(self)
 
-        self.report_id = -1
         self._report_content = {
             "description": (
                 "This reports shows the spatial maps provided to the mask."
@@ -503,13 +500,8 @@ class NiftiMapsMasker(BaseMasker):
 
         return self
 
-    def _check_fitted(self):
-        if not hasattr(self, "maps_img_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been "
-                "fitted. "
-                "You must call fit() before calling transform()."
-            )
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction."""
@@ -704,7 +696,7 @@ class NiftiMapsMasker(BaseMasker):
         """
         from ..regions import signal_extraction
 
-        self._check_fitted()
+        check_is_fitted(self)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_maps(

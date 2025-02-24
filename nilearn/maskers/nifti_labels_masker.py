@@ -3,12 +3,16 @@
 import warnings
 
 import numpy as np
-from joblib import Memory
 from nibabel import Nifti1Image
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.param_validation import (
+    check_params,
+    check_reduction_strategy,
+)
 from nilearn.image import get_data, load_img, resample_img
 from nilearn.maskers._utils import (
     compute_middle_image,
@@ -125,10 +129,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     %(verbose0)s
 
-    strategy : :obj:`str`, default='mean'
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
+    %(strategy)s
 
     %(keep_masked_labels)s
 
@@ -531,29 +532,14 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
-        available_reduction_strategies = {
-            "mean",
-            "median",
-            "sum",
-            "minimum",
-            "maximum",
-            "standard_deviation",
-            "variance",
-        }
-        if self.strategy not in available_reduction_strategies:
-            raise ValueError(
-                f"Invalid strategy '{self.strategy}'. "
-                f"Valid strategies are {available_reduction_strategies}."
-            )
+        check_params(self.__dict__)
+        check_reduction_strategy(self.strategy)
 
         if self.resampling_target not in ("labels", "data", None):
             raise ValueError(
                 "invalid value for 'resampling_target' "
                 f"parameter: {self.resampling_target}"
             )
-
-        if self.memory is None:
-            self.memory = Memory(location=None, verbose=0)
 
         self = sanitize_cleaning_parameters(self)
 
@@ -738,13 +724,8 @@ class NiftiLabelsMasker(BaseMasker):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
-    def _check_fitted(self):
-        if not hasattr(self, "labels_img_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been "
-                "fitted. "
-                "You must call fit() before calling transform()."
-            )
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "labels_img_") and hasattr(self, "n_elements_")
 
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.
@@ -953,7 +934,7 @@ class NiftiLabelsMasker(BaseMasker):
         """
         from ..regions import signal_extraction
 
-        self._check_fitted()
+        check_is_fitted(self)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(

@@ -42,6 +42,7 @@ from nilearn.surface.surface import (
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     concat_imgs,
+    get_data,
     index_img,
     iter_img,
     load_surf_data,
@@ -741,7 +742,7 @@ def test_choose_kind():
         kind = _choose_kind("depth", None)
 
 
-def test__validate_mesh(rng):
+def test_validate_mesh(rng):
     """Ensures that invalid meshes cannot be instantiated."""
     # valid mesh is fine
     coords = rng.random((20, 3))
@@ -1252,3 +1253,27 @@ def test_index_img_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         index_img(1, index=1)
+
+
+def test_get_data(surf_img_1d):
+    """Check that getting data from image or polydata gives same result."""
+    data_from_image = get_data(surf_img_1d)
+    data_from_polydata = get_data(surf_img_1d.data)
+    assert_array_equal(data_from_image, data_from_polydata)
+
+
+@pytest.mark.parametrize("ensure_finite", [True, False])
+def test_get_data_ensure_finite(surf_img_1d, ensure_finite):
+    """Check get data can deal with non finite values."""
+    surf_img_1d.data.parts["left"][0] = np.nan
+    surf_img_1d.data.parts["left"][1] = np.inf
+
+    if ensure_finite is True:
+        with pytest.warns(UserWarning, match="Non-finite values detected."):
+            data_from_image = get_data(
+                surf_img_1d, ensure_finite=ensure_finite
+            )
+        assert np.all(np.isfinite(data_from_image))
+    else:
+        data_from_image = get_data(surf_img_1d, ensure_finite=ensure_finite)
+        assert np.logical_not(np.all(np.isfinite(data_from_image)))

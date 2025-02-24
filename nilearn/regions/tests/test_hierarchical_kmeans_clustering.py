@@ -4,8 +4,8 @@ from numpy.testing import assert_array_almost_equal
 from sklearn import __version__ as sklearn_version
 
 from nilearn._utils import compare_version
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
@@ -24,7 +24,6 @@ extra_valid_checks = [
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
     "check_estimators_empty_data_messages",
-    "check_estimators_unfitted",
     "check_f_contiguous_array_estimator",
     "check_fit2d_1sample",
     "check_fit2d_1feature",

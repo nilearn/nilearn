@@ -36,7 +36,7 @@ def test_cropping_code_paths(rng):
         "high_pass": None,
         "low_pass": None,
         "t_r": None,
-        "detrend": None,
+        "detrend": False,
         "standardize": "zscore",
         "standardize_confounds": True,
         "clean_kwargs": {},

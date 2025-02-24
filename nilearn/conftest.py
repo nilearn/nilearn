@@ -9,7 +9,11 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn import image
-from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
+from nilearn._utils.data_gen import (
+    generate_fake_fmri,
+    generate_labeled_regions,
+    generate_maps,
+)
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
@@ -318,6 +322,19 @@ def img_3d_ones_mni():
     return _img_3d_ones(shape=_shape_3d_default(), affine=_affine_mni())
 
 
+def _img_mask_mni():
+    """Return a 3D nifti mask in MNI space with some 1s in the center."""
+    mask = np.zeros(_shape_3d_default(), dtype="int32")
+    mask[3:6, 3:6, 3:6] = 1
+    return Nifti1Image(mask, _affine_mni())
+
+
+@pytest.fixture
+def img_mask_mni():
+    """Return a 3D nifti mask in MNI space with some 1s in the center."""
+    return _img_mask_mni()
+
+
 # ------------------------ 4D IMAGES ------------------------#
 
 
@@ -389,6 +406,9 @@ def img_4d_long_mni(rng, shape_4d_long, affine_mni):
     return Nifti1Image(rng.uniform(size=shape_4d_long), affine=affine_mni)
 
 
+# ------------------------ ATLAS, LABELS, MAPS ------------------------#
+
+
 @pytest.fixture()
 def img_atlas(shape_3d_default, affine_mni):
     """Return an atlas and its labels."""
@@ -427,6 +447,21 @@ def _img_maps():
 def img_maps():
     """Generate fixture for default map image."""
     return _img_maps()
+
+
+def _img_labels():
+    """Generate fixture for default label image."""
+    return generate_labeled_regions(
+        shape=(7, 8, 9),
+        affine=np.eye(4),
+        n_regions=9,
+    )
+
+
+@pytest.fixture
+def img_labels():
+    """Generate fixture for default label image."""
+    return _img_labels()
 
 
 @pytest.fixture
@@ -598,6 +633,44 @@ def surf_three_labels_img(surf_mesh):
     return SurfaceImage(surf_mesh, data)
 
 
+def _surf_maps_img():
+    """Return a sample surface map image using the sample mesh.
+    Has 6 regions in total: 3 in both, 1 only in left and 2 only in right.
+    Later we multiply the data with random "probability" values to make it
+    more realistic.
+    """
+    data = {
+        "left": np.asarray(
+            [
+                [1, 1, 0, 1, 0, 0],
+                [0, 1, 1, 1, 0, 0],
+                [1, 0, 1, 1, 0, 0],
+                [1, 1, 1, 0, 0, 0],
+            ]
+        ),
+        "right": np.asarray(
+            [
+                [1, 0, 0, 0, 1, 1],
+                [1, 1, 0, 0, 1, 1],
+                [0, 1, 1, 0, 1, 1],
+                [1, 1, 1, 0, 0, 1],
+                [0, 0, 1, 0, 0, 1],
+            ]
+        ),
+    }
+    # multiply with random "probability" values
+    data = {
+        part: data[part] * _rng().random(data[part].shape) for part in data
+    }
+    return SurfaceImage(_make_mesh(), data)
+
+
+@pytest.fixture
+def surf_maps_img():
+    """Return a sample surface map as fixture."""
+    return _surf_maps_img()
+
+
 @pytest.fixture
 def flip_surf_img_parts():
     """Flip hemispheres of a surface image data or mesh."""
@@ -682,5 +755,4 @@ def plotly():
     plotly : module
         The ``plotly`` module.
     """
-    plotly = pytest.importorskip("plotly")
-    yield plotly
+    yield pytest.importorskip("plotly")

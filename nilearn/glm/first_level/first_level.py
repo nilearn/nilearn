@@ -18,14 +18,19 @@ from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn.base import clone
 from sklearn.cluster import KMeans
+from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn._utils.param_validation import (
+    check_params,
+    check_run_sample_masks,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
@@ -690,10 +695,6 @@ class FirstLevelModel(BaseGLM):
             and self.results_ is not None
         )
 
-    def _check_fitted(self):
-        if not self.__sklearn_is_fitted__():
-            raise ValueError("The model has not been fit yet.")
-
     def _more_tags(self):
         """Return estimator tags.
 
@@ -812,6 +813,7 @@ class FirstLevelModel(BaseGLM):
             will be clustered via K-means with `bins` number of clusters.
 
         """
+        check_params(self.__dict__)
         #  check attributes passed at construction
         if self.t_r is not None:
             _check_repetition_time(self.t_r)
@@ -822,11 +824,7 @@ class FirstLevelModel(BaseGLM):
         if self.fir_delays is None:
             self.fir_delays = [0]
 
-        self.memory = stringify_path(self.memory)
-        if self.memory is None:
-            self.memory = Memory(None)
-        if isinstance(self.memory, str):
-            self.memory = Memory(self.memory)
+        self.memory = check_memory(self.memory)
 
         if self.signal_scaling not in {False, 1, (0, 1)}:
             raise ValueError(
@@ -936,7 +934,7 @@ class FirstLevelModel(BaseGLM):
             keyed by the type of image.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -1028,6 +1026,8 @@ class FirstLevelModel(BaseGLM):
 
         """
         # check if valid attribute is being accessed.
+        check_is_fitted(self)
+
         all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
@@ -1045,8 +1045,6 @@ class FirstLevelModel(BaseGLM):
                 "To do so, set `minimize_memory` to `False` "
                 "when initializing the `FirstLevelModel`-object."
             )
-
-        self._check_fitted()
 
         output = []
 
@@ -1137,7 +1135,7 @@ class FirstLevelModel(BaseGLM):
 
         else:
             # Make sure masker has been fitted otherwise no attribute mask_img_
-            self.mask_img._check_fitted()
+            check_is_fitted(self.mask_img)
             if self.mask_img.mask_img_ is None and self.masker_ is None:
                 self.masker_ = clone(self.mask_img)
                 for param_name in [

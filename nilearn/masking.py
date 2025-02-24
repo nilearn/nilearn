@@ -1,6 +1,5 @@
 """Utilities to compute and operate on brain masks."""
 
-# Authors: Gael Varoquaux, Alexandre Abraham, Philippe Gervais, Ana Luisa Pinho
 import numbers
 import warnings
 
@@ -8,17 +7,22 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy.ndimage import binary_dilation, binary_erosion
 
-from . import _utils
-from ._utils import fill_doc, logger
-from ._utils.cache_mixin import cache
-from ._utils.ndimage import get_border_data, largest_connected_component
-from ._utils.niimg import safe_get_data
-from .datasets import (
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import cache
+from nilearn._utils.ndimage import get_border_data, largest_connected_component
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.param_validation import check_params
+from nilearn.datasets import (
     load_mni152_gm_template,
     load_mni152_template,
     load_mni152_wm_template,
 )
-from .image import get_data, new_img_like, resampling
+from nilearn.image import get_data, new_img_like, resampling
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.typing import NiimgLike
+
+from . import _utils
 
 __all__ = [
     "apply_mask",
@@ -47,7 +51,7 @@ def load_mask_img(mask_img, allow_empty=False):
 
     Parameters
     ----------
-    mask_img : Niimg-like object
+    mask_img : Niimg-like object or a :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         The mask to check.
 
@@ -56,14 +60,30 @@ def load_mask_img(mask_img, allow_empty=False):
 
     Returns
     -------
-    mask : :class:`numpy.ndarray`
-        Boolean version of the mask.
+    mask : :class:`numpy.ndarray` or :obj:`~nilearn.surface.SurfaceImage`
+        Boolean version of the input.
+        Returns a :class:`numpy.ndarray` if Niimg-like object
+        was passed as input
+        or :obj:`~nilearn.surface.SurfaceImage`
+        if :obj:`~nilearn.surface.SurfaceImage` was passed as input
 
     mask_affine : None or (4,4) array-like
-        Affine of the mask.
+        Affine of the mask if Niimg-like object was passed as input,
+        None otherwise.
     """
-    mask_img = _utils.check_niimg_3d(mask_img)
-    mask = safe_get_data(mask_img, ensure_finite=True)
+    if not isinstance(mask_img, (*NiimgLike, SurfaceImage)):
+        raise TypeError(
+            "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
+            f"Got {type(mask_img)=}."
+        )
+
+    if isinstance(mask_img, NiimgLike):
+        mask_img = _utils.check_niimg_3d(mask_img)
+        mask = safe_get_data(mask_img, ensure_finite=True)
+    else:
+        mask_img.data._check_ndims(1)
+        mask = get_surface_data(mask_img, ensure_finite=True)
+
     values = np.unique(mask)
 
     if len(values) == 1:
@@ -87,7 +107,16 @@ def load_mask_img(mask_img, allow_empty=False):
         )
 
     mask = _utils.as_ndarray(mask, dtype=bool)
-    return mask, mask_img.affine
+
+    if isinstance(mask_img, NiimgLike):
+        return mask, mask_img.affine
+
+    for hemi in mask_img.data.parts:
+        mask_img.data.parts[hemi] = _utils.as_ndarray(
+            mask_img.data.parts[hemi], dtype=bool
+        )
+
+    return mask_img, None
 
 
 def extrapolate_out_mask(data, mask, iterations=1):
@@ -159,6 +188,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     grp_mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         Intersection of all masks.
     """
+    check_params(locals())
     if len(mask_imgs) == 0:
         raise ValueError("No mask provided for intersection")
     grp_mask = None
@@ -294,6 +324,7 @@ def compute_epi_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
     """
+    check_params(locals())
     logger.log("EPI mask computation", verbose)
 
     # Delayed import to avoid circular imports
@@ -414,6 +445,7 @@ def compute_multi_epi_mask(
     mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         The brain mask.
     """
+    check_params(locals())
     if len(epi_imgs) == 0:
         raise TypeError(
             f"An empty object - {epi_imgs:r} - was passed instead of an "
@@ -486,6 +518,7 @@ def compute_background_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The brain mask (3D image).
     """
+    check_params(locals())
     logger.log("Background mask computation", verbose)
 
     data_imgs = _utils.check_niimg(data_imgs)
@@ -585,6 +618,7 @@ def compute_multi_background_mask(
     mask : 3D :class:`nibabel.nifti1.Nifti1Image`
         The brain mask.
     """
+    check_params(locals())
     if len(data_imgs) == 0:
         raise TypeError(
             f"An empty object - {data_imgs:r} - was passed instead of an "
@@ -646,6 +680,7 @@ def compute_brain_mask(
     mask : :class:`nibabel.nifti1.Nifti1Image`
         The whole-brain mask (3D image).
     """
+    check_params(locals())
     logger.log(f"Template {mask_type} mask computation", verbose)
 
     target_img = _utils.check_niimg(target_img)
@@ -695,7 +730,7 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-    **kwargs,  # noqa: ARG001
+    **kwargs,
 ):
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.
@@ -749,6 +784,7 @@ def compute_multi_brain_mask(
     --------
     nilearn.masking.compute_brain_mask
     """
+    check_params(locals())
     if len(target_imgs) == 0:
         raise TypeError(
             f"An empty object - {target_imgs:r} - was passed instead of an "

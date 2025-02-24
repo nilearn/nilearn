@@ -3,13 +3,6 @@
 For example: TV-L1, Graph-Net, etc
 """
 
-# Author: DOHMATOB Elvis Dopgima,
-#         PIZARRO Gaspar,
-#         VAROQUAUX Gael,
-#         GRAMFORT Alexandre,
-#         EICKENBERG Michael,
-#         THIRION Bertrand
-
 import collections
 import time
 import warnings
@@ -27,9 +20,11 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
+from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
 
 from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -770,10 +765,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.mask_args = mask_args
         self.positive = positive
 
-        # sanity check on params
-        self.check_params()
-
-    def check_params(self):
+    def _check_params(self):
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
             l1_ratios = self.l1_ratios
@@ -848,13 +840,16 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self : `SpaceNet` object
             Model selection is via cross-validation with bagging.
         """
+        check_params(self.__dict__)
+        # sanity check on params
+        self._check_params()
         if isinstance(X, SurfaceImage) or isinstance(self.mask, SurfaceMasker):
             raise NotImplementedError(
                 "Running space net on surface objects is not supported."
             )
 
         # misc
-        self.check_params()
+        self._check_params()
         if self.memory is None or isinstance(self.memory, str):
             self.memory_ = Memory(
                 self.memory, verbose=max(0, self.verbose - 1)
@@ -1021,6 +1016,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         return self
 
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "masker_")
+
     def decision_function(self, X):
         """Predict confidence scores for samples.
 
@@ -1073,10 +1071,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             Predicted class label per sample.
         """
         # cast X into usual 2D array
-        if not hasattr(self, "masker_"):
-            raise RuntimeError(
-                f"This {self.__class__.__name__} instance is not fitted yet!"
-            )
+        check_is_fitted(self)
+
         X = self.masker_.transform(X)
 
         # handle regression (least-squared loss)

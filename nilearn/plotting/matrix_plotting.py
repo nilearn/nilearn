@@ -15,6 +15,7 @@ from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
+from nilearn.plotting._utils import save_figure_if_needed
 
 VALID_TRI_VALUES = ("full", "lower", "diag")
 
@@ -299,7 +300,7 @@ def plot_matrix(
         Axes image.
 
     """
-    labels, reorder, fig, axes, own_fig = _sanitize_inputs_plot_matrix(
+    labels, reorder, fig, axes, _ = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
     if reorder:
@@ -395,16 +396,11 @@ def plot_contrast_matrix(
     axes.xaxis.set(ticks=np.arange(n_columns_design_matrix))
     axes.set_xticklabels(design_column_names, rotation=50, ha="left")
 
-    fig = axes.figure
     if colorbar:
+        fig = axes.figure
         fig.colorbar(mat, fraction=0.025, pad=0.04)
 
-    if output_file is not None:
-        fig.savefig(output_file)
-        plt.close(fig=fig)
-        axes = None
-
-    return axes
+    return save_figure_if_needed(axes, output_file)
 
 
 def pad_contrast_matrix(contrast_def, design_matrix):
@@ -510,12 +506,7 @@ def plot_design_matrix(
     # corresponding dataframe
     axes.xaxis.tick_top()
 
-    if output_file is not None:
-        fig = axes.figure
-        fig.savefig(output_file)
-        plt.close(fig=fig)
-        axes = None
-    return axes
+    return save_figure_if_needed(axes, output_file)
 
 
 @fill_doc
@@ -570,8 +561,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     # input validation
     if cmap is None:
-        cmap = plt.cm.tab20
-    elif isinstance(cmap, str):
+        cmap = "tab20"
+    if isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
 
     event_labels = pd.concat(event["trial_type"] for event in model_event)
@@ -633,12 +624,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     axes.set_yticks(np.arange(n_runs) + 0.5)
     axes.set_yticklabels(np.arange(n_runs) + 1)
 
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(fig=figure)
-        figure = None
-
-    return figure
+    return save_figure_if_needed(figure, output_file)
 
 
 @fill_doc
@@ -732,8 +718,4 @@ def plot_design_matrix_correlation(
         **kwargs,
     )
 
-    if output_file is not None:
-        plt.savefig(output_file)
-        plt.close()
-
-    return display
+    return save_figure_if_needed(display, output_file)

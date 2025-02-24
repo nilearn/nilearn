@@ -1,7 +1,5 @@
 """Tests for the permuted_ols function."""
 
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -803,8 +801,8 @@ def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
             n_jobs=1,
             masker=masker,
         )
-    assert not any(
-        "perform more permutations" in str(x.message) for x in record
+    assert all(
+        "perform more permutations" not in str(x.message) for x in record
     )
 
     # n_perm <= n_job  and n_job > 0 -->  warning
@@ -1002,7 +1000,7 @@ def test_permuted_ols_type_n_perm(dummy_design):
     """Checks type n_perm."""
     target_var, tested_var, *_ = dummy_design
 
-    with pytest.raises(TypeError, match="must be an int"):
+    with pytest.raises(TypeError, match="'n_perm' should be of type"):
         permuted_ols(tested_var, target_var, n_perm=0.1)
 
 

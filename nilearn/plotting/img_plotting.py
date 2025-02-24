@@ -5,28 +5,24 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 Only matplotlib is required.
 """
 
-# Author: Gael Varoquaux, Chris Filo Gorgolewski
-
 import collections.abc
 import functools
 import numbers
 import warnings
-from pathlib import Path
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
-from scipy import stats
 from scipy.ndimage import binary_fill_holes
 
 from nilearn._utils import (
     check_niimg_3d,
     check_niimg_4d,
     compare_version,
-    constrained_layout_kwargs,
     fill_doc,
     logger,
 )
@@ -34,7 +30,7 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_threshold
+from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn.image import (
     get_data,
@@ -47,7 +43,11 @@ from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
-from nilearn.plotting._utils import _check_threshold
+from nilearn.plotting._utils import (
+    check_threshold_not_negative,
+    create_colormap_from_lut,
+    save_figure_if_needed,
+)
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.signal import clean
@@ -149,7 +149,7 @@ def get_colorbar_and_data_ranges(
     if vmax is None:
         vmax = stat_map_max
 
-    return cbar_vmin, cbar_vmax, vmin, vmax
+    return cbar_vmin, cbar_vmax, float(vmin), float(vmax)
 
 
 @fill_doc
@@ -262,7 +262,8 @@ def _plot_img_with_bg(
     ValueError
         if the specified threshold is a negative number
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
@@ -301,7 +302,7 @@ def _plot_img_with_bg(
         if threshold == "auto":
             # Threshold epsilon below a percentile value, to be sure that some
             # voxels pass the threshold
-            threshold = fast_abs_percentile(data) - 1e-5
+            threshold = float(fast_abs_percentile(data)) - 1e-5
 
         img = new_img_like(img, as_ndarray(data), affine)
 
@@ -322,7 +323,7 @@ def _plot_img_with_bg(
             bg_img,
             vmin=bg_vmin,
             vmax=bg_vmax,
-            cmap=plt.cm.gray,
+            cmap="gray",
             interpolation=interpolation,
         )
 
@@ -354,11 +355,8 @@ def _plot_img_with_bg(
             cbar.vmin, cbar.vmax, threshold, n_ticks=len(cbar.locator.locs)
         )
         cbar.set_ticks(new_tick_locs)
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
-    return display
+
+    return save_figure_if_needed(display, output_file)
 
 
 def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
@@ -504,6 +502,9 @@ def plot_img(
         :mod:`nilearn.plotting`
             See API reference for other options
     """
+    check_params(locals())
+    check_threshold_not_negative(threshold)
+
     display = _plot_img_with_bg(
         img,
         cut_coords=cut_coords,
@@ -676,7 +677,7 @@ def plot_anat(
     draw_cross=True,
     black_bg="auto",
     dim="auto",
-    cmap=plt.cm.gray,
+    cmap="gray",
     colorbar=False,
     cbar_tick_format="%.2g",
     radiological=False,
@@ -720,7 +721,7 @@ def plot_anat(
         Default='auto'.
 
     %(cmap)s
-        Default=`plt.cm.gray`.
+        Default=`gray`.
 
     colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
@@ -759,7 +760,8 @@ def plot_anat(
     are set to zero.
 
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     anat_img, black_bg, anat_vmin, anat_vmax = load_anat(
         anat_img, dim=dim, black_bg=black_bg
@@ -807,7 +809,7 @@ def plot_epi(
     black_bg=True,
     colorbar=False,
     cbar_tick_format="%.2g",
-    cmap=plt.cm.gray,
+    cmap="gray",
     vmin=None,
     vmax=None,
     radiological=False,
@@ -849,7 +851,7 @@ def plot_epi(
         Ex: use "%%i" to display as integers.
 
     %(cmap)s
-        Default=`plt.cm.gray`.
+        Default=`gray`.
 
     %(vmin)s
 
@@ -872,6 +874,7 @@ def plot_epi(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
+    check_params(locals())
     display = plot_img(
         epi_img,
         cut_coords=cut_coords,
@@ -961,7 +964,7 @@ def plot_roi(
     black_bg="auto",
     threshold=0.5,
     alpha=0.7,
-    cmap=plt.cm.gist_ncar,
+    cmap="gist_ncar",
     dim="auto",
     colorbar=False,
     cbar_tick_format="%i",
@@ -1015,8 +1018,8 @@ def plot_roi(
         Alpha sets the transparency of the color inside the filled
         contours.
 
-    %(cmap)s
-        Default=`plt.cm.gist_ncar`.
+    %(cmap_lut)s
+        Default=`gist_ncar`.
 
     %(dim)s
         Default='auto'.
@@ -1076,7 +1079,8 @@ def plot_roi(
     nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
         (4D images)
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     valid_view_types = ["continuous", "contours"]
     if view_type not in valid_view_types:
@@ -1091,6 +1095,9 @@ def plot_roi(
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
     )
+
+    if isinstance(cmap, pd.DataFrame):
+        cmap = create_colormap_from_lut(cmap)
 
     display = _plot_img_with_bg(
         img=roi_img,
@@ -1144,7 +1151,7 @@ def plot_prob_atlas(
     black_bg="auto",
     dim="auto",
     colorbar=False,
-    cmap=plt.cm.gist_rainbow,
+    cmap="gist_rainbow",
     vmin=None,
     vmax=None,
     alpha=0.7,
@@ -1226,7 +1233,7 @@ def plot_prob_atlas(
         Default='auto'.
 
     %(cmap)s
-        Default=`plt.cm.gist_rainbow`.
+        Default=`gist_rainbow`.
 
     %(colorbar)s
         Default=False.
@@ -1259,7 +1266,8 @@ def plot_prob_atlas(
     --------
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     display = plot_anat(
         bg_img,
@@ -1377,12 +1385,8 @@ def plot_prob_atlas(
             va="bottom",
             xycoords="axes fraction",
         )
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
 
-    return display
+    return save_figure_if_needed(display, output_file)
 
 
 @fill_doc
@@ -1501,7 +1505,8 @@ def plot_stat_map(
     nilearn.plotting.plot_epi : To simply plot raw EPI images
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
@@ -1664,7 +1669,8 @@ def plot_glass_brain(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     if cmap is None:
         cmap = cm.cold_white_hot
@@ -1741,7 +1747,7 @@ def plot_connectome(
     node_coords,
     node_color="auto",
     node_size=50,
-    edge_cmap=cm.bwr,
+    edge_cmap="RdBu_r",
     edge_vmin=None,
     edge_vmax=None,
     edge_threshold=None,
@@ -1783,7 +1789,7 @@ def plot_connectome(
     node_size : scalar or array_like, default=50
         Size(s) of the nodes in points^2.
 
-    edge_cmap : colormap, default=cm.bwr
+    edge_cmap : colormap, default="RdBu_r"
         Colormap used for representing the strength of the edges.
 
     edge_vmin, edge_vmax : :obj:`float` or None, default=None
@@ -1866,12 +1872,7 @@ def plot_connectome(
         colorbar=colorbar,
     )
 
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
-
-    return display
+    return save_figure_if_needed(display, output_file)
 
 
 @fill_doc
@@ -1879,7 +1880,7 @@ def plot_markers(
     node_values,
     node_coords,
     node_size="auto",
-    node_cmap=plt.cm.gray,
+    node_cmap="gray",
     node_vmin=None,
     node_vmax=None,
     node_threshold=None,
@@ -1913,7 +1914,7 @@ def plot_markers(
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely proportional to the number of nodes.
 
-    node_cmap : :obj:`str` or colormap, default=plt.cm.gray.
+    node_cmap : :obj:`str` or colormap, default="gray".
         Colormap used to represent the node measure.
 
     node_vmin : :obj:`float` or None, default=None
@@ -2032,12 +2033,7 @@ def plot_markers(
         display._colorbar = True
         display._show_colorbar(cmap=node_cmap, norm=norm)
 
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
-
-    return display
+    return save_figure_if_needed(display, output_file)
 
 
 @fill_doc
@@ -2054,7 +2050,7 @@ def plot_carpet(
     vmax=None,
     title=None,
     cmap="gray",
-    cmap_labels=plt.cm.gist_ncar,
+    cmap_labels="gist_ncar",
     standardize=True,
 ):
     """Plot an image representation of :term:`voxel` intensities across time.
@@ -2100,7 +2096,7 @@ def plot_carpet(
         Default=`gray`.
 
     cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
-                  default=`plt.cm.gist_ncar`
+                  default=`gist_ncar`
         If ``mask_img`` corresponds to an atlas, then cmap_labels
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
@@ -2131,10 +2127,11 @@ def plot_carpet(
     .. footbibliography::
 
     """
+    check_params(locals())
     img = check_niimg_4d(img, dtype="auto")
 
     # Define TR and number of frames
-    t_r = t_r or img.header.get_zooms()[-1]
+    t_r = t_r or float(img.header.get_zooms()[-1])
     n_tsteps = img.shape[-1]
 
     if mask_img is None:
@@ -2296,12 +2293,7 @@ def plot_carpet(
         axes.spines["left"].set_position(("outward", buffer))
         axes.set_ylabel("voxels")
 
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-        figure = None
-
-    return figure
+    return save_figure_if_needed(figure, output_file)
 
 
 def plot_img_comparison(
@@ -2315,94 +2307,31 @@ def plot_img_comparison(
     output_dir=None,
     axes=None,
 ):
-    """Create plots to compare two lists of images and measure correlation.
+    """Redirect to plot_img_comparison."""
+    from nilearn.plotting.img_comparison import plot_img_comparison
 
-    The first plot displays linear correlation between :term:`voxel` values.
-    The second plot superimposes histograms to compare values distribution.
+    warnings.warn(
+        (
+            "The 'plot_img_comparison' has been moved to  "
+            "'nilearn.plotting.img_comparison'.\n"
+            "It will be removed from 'nilearn.plotting.img_plotting' "
+            "in version >= 0.13.1.\n"
+            "Import 'plot_img_comparison' "
+            "from 'nilearn.plotting.img_comparison' "
+            "to silence this warning."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
-    Parameters
-    ----------
-    ref_imgs : nifti_like
-        Reference images.
-
-    src_imgs : nifti_like
-        Source images.
-
-    masker : NiftiMasker object
-        Mask to be used on data.
-
-    plot_hist : :obj:`bool`, default=True
-        If True then histograms of each img in ref_imgs will be plotted
-        along-side the histogram of the corresponding image in src_imgs.
-
-    log : :obj:`bool`, default=True
-        Passed to plt.hist.
-
-    ref_label : :obj:`str`, default='image set 1'
-        Name of reference images.
-
-    src_label : :obj:`str`, default='image set 2'
-        Name of source images.
-
-    output_dir : :obj:`str` or None, default=None
-        Directory where plotted figures will be stored.
-
-    axes : :obj:`list` of two matplotlib Axes objects, or None, default=None
-        Can receive a list of the form [ax1, ax2] to render the plots.
-        By default new axes will be created.
-
-    Returns
-    -------
-    corrs : :class:`numpy.ndarray`
-        Pearson correlation between the images.
-
-    """
-    # note: doesn't work with 4d images;
-    # when plot_hist is False creates two empty axes and doesn't plot anything
-    corrs = []
-    for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
-        if axes is None:
-            _, (ax1, ax2) = plt.subplots(
-                1,
-                2,
-                figsize=(12, 5),
-                **constrained_layout_kwargs(),
-            )
-        else:
-            (ax1, ax2) = axes
-        ref_data = masker.transform(ref_img).ravel()
-        src_data = masker.transform(src_img).ravel()
-        if ref_data.shape != src_data.shape:
-            warnings.warn("Images are not shape-compatible")
-            return
-
-        corr = stats.pearsonr(ref_data, src_data)[0]
-        corrs.append(corr)
-
-        if plot_hist:
-            ax1.scatter(
-                ref_data,
-                src_data,
-                label=f"Pearsonr: {corr:.2f}",
-                c="g",
-                alpha=0.6,
-            )
-            x = np.linspace(*ax1.get_xlim(), num=100)
-            ax1.plot(x, x, linestyle="--", c="k")
-            ax1.grid("on")
-            ax1.set_xlabel(ref_label)
-            ax1.set_ylabel(src_label)
-            ax1.legend(loc="best")
-
-            ax2.hist(ref_data, alpha=0.6, bins=128, log=log, label=ref_label)
-            ax2.hist(src_data, alpha=0.6, bins=128, log=log, label=src_label)
-            ax2.set_title("Histogram of imgs values")
-            ax2.grid("on")
-            ax2.legend(loc="best")
-
-            if output_dir is not None:
-                output_dir = Path(output_dir)
-                output_dir.mkdir(exist_ok=True, parents=True)
-                plt.savefig(output_dir / f"{int(i):04}.png")
-
-    return corrs
+    plot_img_comparison(
+        ref_imgs,
+        src_imgs,
+        masker,
+        plot_hist=plot_hist,
+        log=log,
+        ref_label=ref_label,
+        src_label=src_label,
+        output_dir=output_dir,
+        axes=axes,
+    )

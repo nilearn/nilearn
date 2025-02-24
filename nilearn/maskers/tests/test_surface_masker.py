@@ -1,12 +1,8 @@
-import warnings
-
 import numpy as np
 import pytest
 
-from nilearn._utils.class_inspect import check_estimator
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.maskers import SurfaceMasker
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 from nilearn.surface import SurfaceImage
 from nilearn.surface._testing import (
     assert_polydata_equal,
@@ -16,7 +12,6 @@ from nilearn.surface._testing import (
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_no_attributes_set_in_init",
-    *check_valid_for_all_maskers(),
 ]
 
 
@@ -154,32 +149,6 @@ def test_mask_img_transform_shape_mismatch(
     masker.transform(surf_img_1d)
 
 
-def test_mask_img_generate_report(surf_img_1d, surf_mask_1d):
-    """Smoke test generate report."""
-    masker = SurfaceMasker(surf_mask_1d, reports=True).fit()
-
-    assert masker._reporting_data is not None
-    assert masker._reporting_data["images"] is None
-
-    masker.transform(surf_img_1d)
-
-    assert isinstance(masker._reporting_data["images"], SurfaceImage)
-
-    masker.generate_report()
-
-
-def test_mask_img_generate_no_report(surf_img_2d, surf_mask_1d):
-    """Smoke test generate report."""
-    masker = SurfaceMasker(surf_mask_1d, reports=False).fit()
-
-    assert masker._reporting_data is None
-
-    img = surf_img_2d(5)
-    masker.transform(img)
-
-    masker.generate_report()
-
-
 def test_mask_img_transform_keys_mismatch(
     surf_mask_1d, surf_img_1d, drop_surf_img_part
 ):
@@ -267,16 +236,3 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
         v[0] = 0.0
     expected_img = SurfaceImage(img.mesh, expected_data)
     assert_surface_image_equal(unmasked_img, expected_img)
-
-
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
-def test_masker_reporting_mpl_warning(surf_mask_1d):
-    """Raise warning after exception if matplotlib is not installed."""
-    with warnings.catch_warnings(record=True) as warning_list:
-        SurfaceMasker(surf_mask_1d, cmap="gray").fit().generate_report()
-
-    assert len(warning_list) == 1
-    assert issubclass(warning_list[0].category, ImportWarning)

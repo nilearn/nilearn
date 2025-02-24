@@ -23,8 +23,6 @@ More specifically:
 4. Display contrast plot and uncorrected first level statistics table report.
 """
 
-from nilearn import plotting
-
 # %%
 # Fetch openneuro :term:`BIDS` dataset
 # ------------------------------------
@@ -145,9 +143,15 @@ model.fit(imgs, design_matrices=[design_matrix])
 z_map = model.compute_contrast("StopSuccess - Go")
 
 # %%
-# We show the agreement between the Nilearn estimation and the FSL estimation
-# available in the dataset.
+# Visualize results
+# -----------------
+# Let's have a look at the Nilearn estimation
+# and the FSL estimation available in the dataset.
+import matplotlib.pyplot as plt
 import nibabel as nib
+from scipy.stats import norm
+
+from nilearn.plotting import plot_glass_brain, show
 
 fsl_z_map = nib.load(
     Path(data_dir)
@@ -159,10 +163,7 @@ fsl_z_map = nib.load(
     / "zstat12.nii.gz"
 )
 
-import matplotlib.pyplot as plt
-from scipy.stats import norm
-
-plotting.plot_glass_brain(
+plot_glass_brain(
     z_map,
     colorbar=True,
     threshold=norm.isf(0.001),
@@ -170,7 +171,7 @@ plotting.plot_glass_brain(
     plot_abs=False,
     display_mode="ortho",
 )
-plotting.plot_glass_brain(
+plot_glass_brain(
     fsl_z_map,
     colorbar=True,
     threshold=norm.isf(0.001),
@@ -178,14 +179,21 @@ plotting.plot_glass_brain(
     plot_abs=False,
     display_mode="ortho",
 )
-plt.show()
 
-from nilearn.plotting import plot_img_comparison
+# %%
+# We show the agreement between the 2 estimations.
+
+from nilearn.plotting import plot_bland_altman, plot_img_comparison
 
 plot_img_comparison(
-    [z_map], [fsl_z_map], model.masker_, ref_label="Nilearn", src_label="FSL"
+    z_map, fsl_z_map, model.masker_, ref_label="Nilearn", src_label="FSL"
 )
-plt.show()
+
+plot_bland_altman(
+    z_map, fsl_z_map, model.masker_, ref_label="Nilearn", src_label="FSL"
+)
+
+show()
 
 # %%
 # Simple statistical report of thresholded contrast
@@ -194,7 +202,7 @@ plt.show()
 from nilearn.plotting import plot_contrast_matrix
 
 plot_contrast_matrix("StopSuccess - Go", design_matrix)
-plotting.plot_glass_brain(
+plot_glass_brain(
     z_map,
     colorbar=True,
     threshold=norm.isf(0.001),
@@ -202,11 +210,21 @@ plotting.plot_glass_brain(
     display_mode="z",
     figure=plt.figure(figsize=(4, 4)),
 )
-plt.show()
+show()
 
 # %%
 # We can get a latex table from a Pandas Dataframe for display and publication
 # purposes
+#
+# .. seealso::
+#
+#     This function does not report any named anatomical location
+#     for the clusters.
+#     To get the names of the location of the clusters
+#     according to one or several atlases,
+#     we recommend using
+#     the `atlasreader package <https://github.com/miykael/atlasreader>`_.
+#
 from nilearn.reporting import get_clusters_table
 
 table = get_clusters_table(z_map, norm.isf(0.001), 10)

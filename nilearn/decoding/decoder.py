@@ -10,12 +10,6 @@ Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 
-# Authors: Yannick Schwartz
-#          Andres Hoyos-Idrobo
-#          Binh Nguyen <tuan-binh.nguyen@inria.fr>
-#          Thomas Bazeille
-#
-
 import itertools
 import warnings
 from collections.abc import Iterable
@@ -55,7 +49,10 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
 )
-from nilearn._utils.param_validation import check_feature_screening
+from nilearn._utils.param_validation import (
+    check_feature_screening,
+    check_params,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
@@ -637,6 +634,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         %(base_decoder_fit_attributes)s
 
         """
+        check_params(self.__dict__)
         self.estimator = _check_estimator(self.estimator)
         self.memory_ = check_memory(self.memory, self.verbose)
 
@@ -777,6 +775,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             if self.is_classification and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "coef_") and hasattr(self, "masker_")
+
     def score(self, X, y, *args):
         """Compute the prediction score using the scoring \
         metric defined by the scoring attribute.
@@ -800,8 +801,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Prediction score.
 
         """
-        check_is_fitted(self, "coef_")
-        check_is_fitted(self, "masker_")
+        check_is_fitted(self)
         return self.scorer_(self, X, y, *args)
 
     def decision_function(self, X):
@@ -820,6 +820,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         y_pred : :class:`numpy.ndarray`, shape (n_samples,)
             Predicted class label per sample.
         """
+        check_is_fitted(self)
         # for backwards compatibility - apply masker transform if X is
         # niimg-like or a list of strings
         if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
@@ -855,8 +856,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             case, confidence score for self.classes_[1] where >0 means this
             class would be predicted.
         """
-        check_is_fitted(self, "coef_")
-        check_is_fitted(self, "masker_")
+        check_is_fitted(self)
 
         n_samples = np.shape(X)[-1]
 
@@ -1443,6 +1443,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         %(base_decoder_fit_attributes)s
 
         """
+        check_params(self.__dict__)
         self.classes_ = ["beta"]
         super().fit(X, y, groups=groups)
 
@@ -1621,6 +1622,7 @@ class FREMRegressor(_BaseDecoder):
         %(base_decoder_fit_attributes)s
 
         """
+        check_params(self.__dict__)
         self.classes_ = ["beta"]
         if isinstance(self.cv, int):
             self.cv = ShuffleSplit(self.cv, random_state=0)
@@ -1803,6 +1805,7 @@ class FREMClassifier(_BaseDecoder):
         %(base_decoder_fit_attributes)s
 
         """
+        check_params(self.__dict__)
         if isinstance(self.cv, int):
             self.cv = StratifiedShuffleSplit(self.cv, random_state=0)
         super().fit(X, y, groups=groups)

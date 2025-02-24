@@ -12,11 +12,6 @@ Order of tests from top to bottom:
 
 # ruff: noqa: ARG001
 
-# Author: Andres Hoyos-Idrobo
-#         Binh Nguyen
-#         Thomas Bazeiile
-#
-
 import collections
 import numbers
 import warnings
@@ -29,7 +24,7 @@ from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import ConvergenceWarning, NotFittedError
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -52,7 +47,7 @@ from sklearn.model_selection import (
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.param_validation import (
     _get_mask_extent,
     check_feature_screening,
@@ -762,17 +757,6 @@ def test_decoder_dummy_classifier_with_callable(binary_classification_data):
 
     assert model.scoring == accuracy_scorer
     assert model.score(X, y) == accuracy_score(y, y_pred)
-
-
-def test_decoder_error_model_not_fitted(tiny_binary_classification_data):
-    X, y, mask = tiny_binary_classification_data
-
-    model = Decoder(estimator="dummy_classifier", mask=mask)
-
-    with pytest.raises(
-        NotFittedError, match="This Decoder instance is not fitted yet."
-    ):
-        model.score(X, y)
 
 
 def test_decoder_dummy_classifier_strategy_prior():
@@ -1495,24 +1479,13 @@ def test_decoder_vs_sklearn(
                 y_binary[test_idx, klass],
             )
             # set best hyperparameters for each fold
-            if classifier_penalty in ["svc_l1", "svc_l2"]:
-                # LinearSVC does not have a CV variant, so we use exactly the
-                # parameter selected by nilearn
-                sklearn_classifier = clone(sklearn_classifier).set_params(
-                    C=nilearn_decoder.cv_params_[klass]["C"][count]
-                )
-            elif classifier_penalty in ["logistic_l1", "logistic_l2"]:
-                # this sets the list of Cs as coded within nilearn and
-                # LogisticRegressionCV will select the best one using
-                # cross-validation
-                sklearn_classifier = clone(sklearn_classifier).set_params(
-                    Cs=nilearn_decoder.cv_params_[klass]["Cs"][count],
-                )
-            elif classifier_penalty in ["ridge_classifier"]:
-                # same as logistic regression
-                sklearn_classifier = clone(sklearn_classifier).set_params(
-                    alphas=nilearn_decoder.cv_params_[klass]["alphas"][count]
-                )
+            sklearn_classifier = _set_best_hyperparameters(
+                klass,
+                sklearn_classifier,
+                nilearn_decoder,
+                classifier_penalty,
+                count,
+            )
             sklearn_classifier.fit(X_train, y_train)
             score = scorer(sklearn_classifier, X_test, y_test)
             scores_sklearn[klass].append(score)
@@ -1525,6 +1498,30 @@ def test_decoder_vs_sklearn(
     assert np.isclose(
         np.mean(flat_sklearn_scores), np.mean(flat_nilearn_scores), atol=0.02
     )
+
+
+def _set_best_hyperparameters(
+    klass, sklearn_classifier, nilearn_decoder, classifier_penalty, count
+):
+    if classifier_penalty in ["svc_l1", "svc_l2"]:
+        # LinearSVC does not have a CV variant, so we use exactly the
+        # parameter selected by nilearn
+        sklearn_classifier = clone(sklearn_classifier).set_params(
+            C=nilearn_decoder.cv_params_[klass]["C"][count]
+        )
+    elif classifier_penalty in ["logistic_l1", "logistic_l2"]:
+        # this sets the list of Cs as coded within nilearn and
+        # LogisticRegressionCV will select the best one using
+        # cross-validation
+        sklearn_classifier = clone(sklearn_classifier).set_params(
+            Cs=nilearn_decoder.cv_params_[klass]["Cs"][count],
+        )
+    elif classifier_penalty in ["ridge_classifier"]:
+        # same as logistic regression
+        sklearn_classifier = clone(sklearn_classifier).set_params(
+            alphas=nilearn_decoder.cv_params_[klass]["alphas"][count]
+        )
+    return sklearn_classifier
 
 
 @pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])

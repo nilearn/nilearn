@@ -1,7 +1,5 @@
 """Neuroimaging file input and output."""
 
-# Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
-
 import collections.abc
 import copy
 import gc
@@ -27,7 +25,7 @@ def _get_data(img):
     return data
 
 
-def safe_get_data(img, ensure_finite=False, copy_data=False):
+def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     """Get the data in the image without having a side effect \
     on the Nifti1Image object.
 
@@ -92,9 +90,7 @@ def _get_target_dtype(dtype, target_dtype):
         return None
     if target_dtype == "auto":
         target_dtype = np.int32 if dtype.kind == "i" else np.float32
-    if target_dtype == dtype:
-        return None
-    return target_dtype
+    return None if target_dtype == dtype else target_dtype
 
 
 def load_niimg(niimg, dtype=None):
@@ -164,9 +160,9 @@ def is_binary_niimg(niimg):
     niimg = load_niimg(niimg)
     data = safe_get_data(niimg, ensure_finite=True)
     unique_values = np.unique(data)
-    if len(unique_values) != 2:
-        return False
-    return sorted(unique_values) == [0, 1]
+    return (
+        False if len(unique_values) != 2 else sorted(unique_values) == [0, 1]
+    )
 
 
 def repr_niimgs(niimgs, shorten=True):
@@ -269,7 +265,6 @@ def img_data_dtype(niimg):
         return np.float64
 
     # ArrayProxy gained the dtype attribute in nibabel 2.2
-    if hasattr(dataobj, "dtype"):
-        return dataobj.dtype
-
-    return niimg.get_data_dtype()
+    return (
+        dataobj.dtype if hasattr(dataobj, "dtype") else niimg.get_data_dtype()
+    )

@@ -4,11 +4,6 @@ in which multivariate statistical relationships are iteratively tested \
 in the neighborhood of each location of a domain.
 """
 
-# Authors : Vincent Michel (vm.michel@gmail.com)
-#           Alexandre Gramfort (alexandre.gramfort@inria.fr)
-#           Philippe Gervais (philippe.gervais@inria.fr)
-#
-
 import time
 import warnings
 
@@ -18,8 +13,10 @@ from sklearn import svm
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc, logger
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import new_img_like
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
@@ -124,6 +121,7 @@ class GroupIterator:
         if n_jobs == -1:
             n_jobs = cpu_count()
         self.n_jobs = n_jobs
+        check_params(self.__dict__)
 
     def __iter__(self):
         yield from np.array_split(np.arange(self.n_features), self.n_jobs)
@@ -376,6 +374,8 @@ class SearchLight(TransformerMixin, BaseEstimator):
             group label for each sample for cross validation. Must have
             exactly as many elements as 3D images in img.
         """
+        check_params(self.__dict__)
+
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
 
@@ -437,19 +437,15 @@ class SearchLight(TransformerMixin, BaseEstimator):
             and self.process_mask_ is not None
         )
 
-    def _check_fitted(self):
-        if not self.__sklearn_is_fitted__():
-            raise ValueError("The model has not been fitted yet.")
-
     @property
     def scores_img_(self):
         """Convert the 3D scores array into a NIfTI image."""
-        self._check_fitted()
+        check_is_fitted(self)
         return new_img_like(self.mask_img, self.scores_)
 
     def transform(self, imgs):
         """Apply the fitted searchlight on new images."""
-        self._check_fitted()
+        check_is_fitted(self)
 
         imgs = check_niimg_4d(imgs)
 

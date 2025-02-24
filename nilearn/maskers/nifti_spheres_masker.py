@@ -7,9 +7,9 @@ import contextlib
 import warnings
 
 import numpy as np
-from joblib import Memory
 from scipy import sparse
 from sklearn import neighbors
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.class_inspect import get_params
@@ -414,7 +414,7 @@ class NiftiSpheresMasker(BaseMasker):
                 f"{type(displayed_spheres)}"
             )
         self.displayed_spheres = displayed_spheres
-        self.report_id += 1
+
         return generate_report(self)
 
     def _reporting(self):
@@ -452,7 +452,7 @@ class NiftiSpheresMasker(BaseMasker):
                 ).astype(int)
                 for seed in seeds
             ]
-        self._report_content["report_id"] = self.report_id
+
         self._report_content["number_of_seeds"] = len(seeds)
         spheres_to_be_displayed = range(len(seeds))
         if isinstance(self.displayed_spheres, int):
@@ -531,7 +531,6 @@ class NiftiSpheresMasker(BaseMasker):
         if hasattr(self, "seeds_"):
             return self
 
-        self.report_id = -1
         self._report_content = {
             "description": (
                 "This reports shows the regions defined "
@@ -539,9 +538,6 @@ class NiftiSpheresMasker(BaseMasker):
             ),
             "warning_message": None,
         }
-
-        if self.memory is None:
-            self.memory = Memory(location=None, verbose=0)
 
         self = sanitize_cleaning_parameters(self)
 
@@ -653,13 +649,8 @@ class NiftiSpheresMasker(BaseMasker):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
-    def _check_fitted(self):
-        if not hasattr(self, "seeds_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} "
-                "has not been fitted. "
-                "You must call fit() before calling transform()."
-            )
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.
@@ -702,7 +693,7 @@ class NiftiSpheresMasker(BaseMasker):
             inputs.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         params = get_params(NiftiSpheresMasker, self)
         params["clean_kwargs"] = self.clean_args
@@ -757,7 +748,7 @@ class NiftiSpheresMasker(BaseMasker):
             shape: (mask_img, number of scans).
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         logger.log("computing image from signals", verbose=self.verbose)
 

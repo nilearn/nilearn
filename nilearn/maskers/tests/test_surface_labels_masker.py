@@ -1,4 +1,3 @@
-import warnings
 from os.path import join
 from pathlib import Path
 
@@ -7,33 +6,29 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.class_inspect import check_estimator
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
 from nilearn.surface import SurfaceImage
 
 
 def _sklearn_surf_label_img():
-    """Create a sample surface label image using the sample mesh, just to use
-    for scikit-learn checks.
+    """Create a sample surface label image using the sample mesh,
+    just to use for scikit-learn checks.
     """
     labels = {
-        "left": np.asarray([1, 2, 3, 5]),
-        "right": np.asarray([4, 5, 6, 7, 9]),
+        "left": np.asarray([1, 1, 2, 2]),
+        "right": np.asarray([1, 1, 2, 2, 2]),
     }
     return SurfaceImage(_make_mesh(), labels)
 
 
 extra_valid_checks = [
-    *check_valid_for_all_maskers(),
     "check_no_attributes_set_in_init",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_dont_overwrite_parameters",
     "check_estimators_fit_returns_self",
     "check_estimators_overwrite_params",
-    "check_fit_check_is_fitted",
     "check_positive_only_tag_during_fit",
     "check_readonly_memmap_input",
 ]
@@ -155,11 +150,26 @@ def test_surface_label_masker_fit_no_report(surf_label_img):
     assert masker._reporting_data is None
 
 
+@pytest.mark.parametrize(
+    "strategy",
+    (
+        "variance",
+        "minimum",
+        "mean",
+        "standard_deviation",
+        "sum",
+        "median",
+        "maximum",
+    ),
+)
 def test_surface_label_masker_transform(
-    surf_label_img, surf_img_1d, surf_img_2d
+    surf_label_img, surf_img_1d, surf_img_2d, strategy
 ):
-    """Test transform extract signals."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
+    """Test transform extract signals.
+
+    Also a smoke test for different strategies.
+    """
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy=strategy)
     masker = masker.fit()
 
     # only one 'timepoint'
@@ -208,7 +218,102 @@ def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
     assert signal.shape == (n_timepoints, 2)
 
 
-def test_surface_label_masker_check_output_1d(surf_mesh, rng):
+@pytest.fixture
+def polydata_labels():
+    """Return polydata with 4 regions."""
+    return {
+        "left": np.asarray([2, 0, 10, 1]),
+        "right": np.asarray([10, 1, 20, 20, 0]),
+    }
+
+
+@pytest.fixture
+def expected_mean_value():
+    """Return expected values for some specific labels."""
+    return {
+        "1": 5,
+        "2": 6,
+        "10": 50,
+        "20": 60,
+    }
+
+
+@pytest.fixture
+def data_left_1d_with_expected_mean(rng, expected_mean_value):
+    """Generate left data with given expected value for one sample."""
+    return np.asarray(
+        [
+            expected_mean_value["2"],
+            rng.random(),
+            expected_mean_value["10"],
+            expected_mean_value["1"],
+        ]
+    )
+
+
+@pytest.fixture
+def data_right_1d_with_expected_mean(rng, expected_mean_value):
+    """Generate right data with given expected value for one sample."""
+    return np.asarray(
+        [
+            expected_mean_value["10"],
+            expected_mean_value["1"],
+            expected_mean_value["20"],
+            expected_mean_value["20"],
+            rng.random(),
+        ]
+    )
+
+
+@pytest.fixture
+def expected_signal(expected_mean_value):
+    """Return signal extract from data with expected mean."""
+    return np.asarray(
+        [
+            expected_mean_value["1"],
+            expected_mean_value["2"],
+            expected_mean_value["10"],
+            expected_mean_value["20"],
+        ]
+    )
+
+
+@pytest.fixture
+def inverse_data_left_1d_with_expected_mean(expected_mean_value):
+    """Return inversed left data with given expected value for one sample."""
+    return np.asarray(
+        [
+            expected_mean_value["2"],
+            0.0,
+            expected_mean_value["10"],
+            expected_mean_value["1"],
+        ]
+    )
+
+
+@pytest.fixture
+def inverse_data_right_1d_with_expected_mean(expected_mean_value):
+    """Return inversed right data with given expected value for one sample."""
+    return np.asarray(
+        [
+            expected_mean_value["10"],
+            expected_mean_value["1"],
+            expected_mean_value["20"],
+            expected_mean_value["20"],
+            0.0,
+        ]
+    )
+
+
+def test_surface_label_masker_check_output_1d(
+    surf_mesh,
+    polydata_labels,
+    expected_signal,
+    data_left_1d_with_expected_mean,
+    data_right_1d_with_expected_mean,
+    inverse_data_left_1d_with_expected_mean,
+    inverse_data_right_1d_with_expected_mean,
+):
     """Check actual content of the transform and inverse_transform.
 
     - Use a label mask with more than one label.
@@ -217,57 +322,20 @@ def test_surface_label_masker_check_output_1d(surf_mesh, rng):
     - Check that output data is properly averaged,
       even when labels are spread across hemispheres.
     """
-    labels = {
-        "left": np.asarray([2, 0, 10, 1]),
-        "right": np.asarray([10, 1, 20, 20, 0]),
-    }
-    surf_label_img = SurfaceImage(surf_mesh, labels)
+    surf_label_img = SurfaceImage(surf_mesh, polydata_labels)
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
     masker = masker.fit()
 
-    expected_mean_value = {
-        "1": 5,
-        "2": 6,
-        "10": 50,
-        "20": 60,
-    }
-
     data = {
-        "left": np.asarray(
-            [
-                expected_mean_value["2"],
-                rng.random(),
-                expected_mean_value["10"],
-                expected_mean_value["1"],
-            ]
-        ),
-        "right": np.asarray(
-            [
-                expected_mean_value["10"],
-                expected_mean_value["1"],
-                expected_mean_value["20"],
-                expected_mean_value["20"],
-                rng.random(),
-            ]
-        ),
+        "left": data_left_1d_with_expected_mean,
+        "right": data_right_1d_with_expected_mean,
     }
     surf_img_1d = SurfaceImage(surf_mesh, data)
     signal = masker.transform(surf_img_1d)
 
     assert signal.shape == (1, masker.n_elements_)
 
-    expected_signal = np.asarray(
-        [
-            [
-                expected_mean_value["1"],
-                expected_mean_value["2"],
-                expected_mean_value["10"],
-                expected_mean_value["20"],
-            ]
-        ]
-    )
-
-    assert_array_equal(signal, expected_signal)
+    assert_array_equal(signal, np.asarray([expected_signal]))
 
     # also check the output of inverse_transform
     img = masker.inverse_transform(signal)
@@ -275,34 +343,22 @@ def test_surface_label_masker_check_output_1d(surf_mesh, rng):
     # expected inverse data is the same as the input data
     # but with the random value replaced by zeros
     expected_inverse_data = {
-        "left": np.asarray(
-            [
-                [
-                    expected_mean_value["2"],
-                    0.0,
-                    expected_mean_value["10"],
-                    expected_mean_value["1"],
-                ]
-            ]
-        ).T,
-        "right": np.asarray(
-            [
-                [
-                    expected_mean_value["10"],
-                    expected_mean_value["1"],
-                    expected_mean_value["20"],
-                    expected_mean_value["20"],
-                    0.0,
-                ]
-            ]
-        ).T,
+        "left": np.asarray([inverse_data_left_1d_with_expected_mean]).T,
+        "right": np.asarray([inverse_data_right_1d_with_expected_mean]).T,
     }
 
     assert_array_equal(img.data.parts["left"], expected_inverse_data["left"])
     assert_array_equal(img.data.parts["right"], expected_inverse_data["right"])
 
 
-def test_surface_label_masker_check_output_2d(surf_mesh, rng):
+def test_surface_label_masker_check_output_2d(
+    surf_mesh,
+    polydata_labels,
+    expected_mean_value,
+    expected_signal,
+    data_left_1d_with_expected_mean,
+    data_right_1d_with_expected_mean,
+):
     """Check actual content of the transform and inverse_transform when
     we have multiple timepoints.
 
@@ -312,55 +368,22 @@ def test_surface_label_masker_check_output_2d(surf_mesh, rng):
     - Check that output data is properly averaged,
       even when labels are spread across hemispheres.
     """
-    labels = {
-        "left": np.asarray([2, 0, 10, 1]),
-        "right": np.asarray([10, 1, 20, 20, 0]),
-    }
-    surf_label_img = SurfaceImage(surf_mesh, labels)
+    surf_label_img = SurfaceImage(surf_mesh, polydata_labels)
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
     masker = masker.fit()
-
-    expected_mean_value = {
-        "1": 5,
-        "2": 6,
-        "10": 50,
-        "20": 60,
-    }
 
     # Now with 2 'time points'
     data = {
         "left": np.asarray(
             [
-                [
-                    expected_mean_value["2"] - 1,
-                    rng.random(),
-                    expected_mean_value["10"] - 1,
-                    expected_mean_value["1"] - 1,
-                ],
-                [
-                    expected_mean_value["2"] + 1,
-                    rng.random(),
-                    expected_mean_value["10"] + 1,
-                    expected_mean_value["1"] + 1,
-                ],
+                data_left_1d_with_expected_mean - 1,
+                data_left_1d_with_expected_mean + 1,
             ]
         ).T,
         "right": np.asarray(
             [
-                [
-                    expected_mean_value["10"] - 1,
-                    expected_mean_value["1"] - 1,
-                    expected_mean_value["20"] - 1,
-                    expected_mean_value["20"] - 1,
-                    rng.random(),
-                ],
-                [
-                    expected_mean_value["10"] + 1,
-                    expected_mean_value["1"] + 1,
-                    expected_mean_value["20"] + 1,
-                    expected_mean_value["20"] + 1,
-                    rng.random(),
-                ],
+                data_right_1d_with_expected_mean - 1,
+                data_right_1d_with_expected_mean + 1,
             ]
         ).T,
     }
@@ -370,26 +393,12 @@ def test_surface_label_masker_check_output_2d(surf_mesh, rng):
 
     assert signal.shape == (surf_img_2d.shape[1], masker.n_elements_)
 
-    expected_signal = np.asarray(
-        [
-            [
-                expected_mean_value["1"] - 1,
-                expected_mean_value["2"] - 1,
-                expected_mean_value["10"] - 1,
-                expected_mean_value["20"] - 1,
-            ],
-            [
-                expected_mean_value["1"] + 1,
-                expected_mean_value["2"] + 1,
-                expected_mean_value["10"] + 1,
-                expected_mean_value["20"] + 1,
-            ],
-        ]
-    )
+    expected_signal = np.asarray([expected_signal - 1, expected_signal + 1])
     assert_array_equal(signal, expected_signal)
 
     # also check the output of inverse_transform
     img = masker.inverse_transform(signal)
+
     assert img.shape[0] == surf_img_2d.shape[0]
     # expected inverse data is the same as the input data
     # but with the random values replaced by zeros
@@ -440,13 +449,6 @@ def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):
     assert signal.shape == (1, masker.n_elements_)
 
 
-def test_error_transform_before_fit(surf_label_img, surf_img_1d):
-    """Transform requires masker to be fitted."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
-    with pytest.raises(ValueError, match="has not been fitted"):
-        masker.transform(surf_img_1d)
-
-
 def test_surface_label_masker_inverse_transform(surf_label_img, surf_img_1d):
     """Test transform extract signals."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
@@ -494,13 +496,6 @@ def test_surface_label_masker_inverse_transform_with_mask(
         assert np.all(img_inverted.data.parts["right"][2:, :] == 0)
 
 
-def test_surface_label_masker_inverse_transform_before_fit(surf_label_img):
-    """Test inverse_transform requires masker to be fitted."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
-    with pytest.raises(ValueError, match="has not been fitted"):
-        masker.inverse_transform(np.zeros((1, 1)))
-
-
 def test_surface_label_masker_transform_list_surf_images(
     surf_label_img, surf_img_1d, surf_img_2d
 ):
@@ -528,17 +523,18 @@ def test_surface_labels_masker_confounds_to_fit_transform(
 ):
     """Test fit_transform with confounds."""
     masker = SurfaceLabelsMasker(surf_label_img)
-    if isinstance(confounds, str) and confounds == "Path":
-        nilearn_dir = Path(__file__).parent.parent.parent
-        confounds = nilearn_dir / "tests" / "data" / "spm_confounds.txt"
-    elif isinstance(confounds, str) and confounds == "str":
-        # we need confound to be a string so using os.path.join
-        confounds = join(  # noqa: PTH118
-            Path(__file__).parent.parent.parent,
-            "tests",
-            "data",
-            "spm_confounds.txt",
-        )
+    if isinstance(confounds, str):
+        if confounds == "Path":
+            nilearn_dir = Path(__file__).parent.parent.parent
+            confounds = nilearn_dir / "tests" / "data" / "spm_confounds.txt"
+        elif confounds == "str":
+            # we need confound to be a string so using os.path.join
+            confounds = join(  # noqa: PTH118
+                Path(__file__).parent.parent.parent,
+                "tests",
+                "data",
+                "spm_confounds.txt",
+            )
     signals = masker.fit_transform(surf_img_2d(20), confounds=confounds)
     assert signals.shape == (20, masker.n_elements_)
 
@@ -566,14 +562,8 @@ def test_surface_label_masker_labels_img_none():
         SurfaceLabelsMasker(labels_img=None).fit()
 
 
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
-def test_masker_reporting_mpl_warning(surf_label_img):
-    """Raise warning after exception if matplotlib is not installed."""
-    with warnings.catch_warnings(record=True) as warning_list:
-        SurfaceLabelsMasker(surf_label_img).fit().generate_report()
-
-    assert len(warning_list) == 1
-    assert issubclass(warning_list[0].category, ImportWarning)
+def test_error_wrong_strategy(surf_label_img):
+    """Throw error for unsupported strategies."""
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy="foo")
+    with pytest.raises(ValueError, match="Invalid strategy 'foo'."):
+        masker.fit()

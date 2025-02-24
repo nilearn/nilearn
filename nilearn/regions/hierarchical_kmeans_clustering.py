@@ -312,6 +312,9 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         self.n_clusters = len(sizes)
         return self
 
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "labels_")
+
     def transform(
         self,
         X,
@@ -329,7 +332,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         X_red : ndarray, shape = [n_samples, n_clusters]
             Data reduced with agglomerated signal for each cluster
         """
-        check_is_fitted(self, "labels_")
+        check_is_fitted(self)
 
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm
@@ -366,7 +369,8 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         X_inv : ndarray, shape = [n_samples, n_features]
             Data reduced expanded to the original feature space
         """
-        check_is_fitted(self, "labels_")
+        check_is_fitted(self)
+
         X_red = X_red.T
         inverse = self.labels_
         if self.scaling:

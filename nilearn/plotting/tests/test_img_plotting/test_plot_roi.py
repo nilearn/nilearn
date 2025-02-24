@@ -4,6 +4,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
@@ -30,7 +31,6 @@ def demo_plot_roi(**kwargs):
 
 
 @pytest.mark.parametrize("view_type", ["contours", "continuous"])
-@pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("threshold", [0.5, 0.2])
 @pytest.mark.parametrize("alpha", [0.7, 0.1])
 @pytest.mark.parametrize(
@@ -39,7 +39,6 @@ def demo_plot_roi(**kwargs):
 def test_plot_roi_view_types(
     matplotlib_pyplot,
     view_type,
-    black_bg,
     threshold,
     alpha,
     display_mode,
@@ -47,7 +46,7 @@ def test_plot_roi_view_types(
 ):
     """Smoke-test for plot_roi.
 
-    Tests different combinations of parameters `view_type`, `black_bg`,
+    Tests different combinations of parameters `view_type`,
     `threshold`, and `alpha`.
     """
     kwargs = {}
@@ -55,7 +54,6 @@ def test_plot_roi_view_types(
         kwargs["linewidth"] = 2.0
     demo_plot_roi(
         view_type=view_type,
-        black_bg=black_bg,
         threshold=threshold,
         alpha=alpha,
         display_mode=display_mode,
@@ -82,8 +80,7 @@ def test_plot_roi_view_type_error(matplotlib_pyplot):
 def test_demo_plot_roi_output_file(matplotlib_pyplot, tmp_path):
     """Tests plot_roi file saving capabilities."""
     filename = tmp_path / "test.png"
-    with filename.open("wb") as fp:
-        out = demo_plot_roi(output_file=fp)
+    out = demo_plot_roi(output_file=filename)
     assert out is None
 
 
@@ -103,3 +100,17 @@ def test_cmap_with_one_level(matplotlib_pyplot, shape_3d_default, affine_eye):
     cmap = plt.get_cmap("tab20", len(clust_ids))
 
     plot_roi(img, alpha=0.8, colorbar=True, cmap=cmap)
+
+
+def test_cmap_as_lookup_table(img_labels):
+    """Test colormap passed as BIDS lookup table."""
+    lut = pd.DataFrame(
+        {"index": [0, 1], "name": ["foo", "bar"], "color": ["#000", "#fff"]}
+    )
+    plot_roi(img_labels, cmap=lut)
+
+    lut = pd.DataFrame({"index": [0, 1], "name": ["foo", "bar"]})
+    with pytest.warns(
+        UserWarning, match="No 'color' column found in the look-up table."
+    ):
+        plot_roi(img_labels, cmap=lut)

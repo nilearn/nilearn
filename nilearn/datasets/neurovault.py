@@ -2,8 +2,6 @@
 on Neurovault (https://neurovault.org).
 """
 
-# Author: Jerome Dockes
-
 import json
 import os
 import re
@@ -23,6 +21,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from nilearn._utils import fill_doc
+from nilearn._utils.param_validation import check_params
 from nilearn.image import resample_img
 
 from ._utils import (
@@ -2072,8 +2071,7 @@ def _scroll_explicit(download_params):
         download_params["wanted_image_ids"]
     ).difference(download_params["visited_images"])
 
-    for image, collection in _scroll_image_ids(download_params):
-        yield image, collection
+    yield from _scroll_image_ids(download_params)
 
 
 def _print_progress(found, download_params, level=_INFO):
@@ -2678,6 +2676,8 @@ def fetch_neurovault(
         )
 
     """
+    check_params(locals())
+
     if collection_terms is None:
         collection_terms = basic_collection_terms()
     if image_terms is None:
@@ -2832,6 +2832,8 @@ def fetch_neurovault_ids(
     .. footbibliography::
 
     """
+    check_params(locals())
+
     return _fetch_neurovault_implementation(
         mode=mode,
         collection_ids=collection_ids,
@@ -2879,6 +2881,8 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     nilearn.datasets.fetch_neurovault_auditory_computation_task
 
     """
+    check_params(locals())
+
     data = fetch_neurovault_ids(
         image_ids=[10426], data_dir=data_dir, verbose=verbose
     )
@@ -2920,6 +2924,8 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     nilearn.datasets.fetch_neurovault_motor_task
 
     """
+    check_params(locals())
+
     data = fetch_neurovault_ids(
         image_ids=[32980], data_dir=data_dir, verbose=verbose
     )
