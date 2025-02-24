@@ -29,6 +29,7 @@ def plot_img_comparison(
     src_label="image set 2",
     output_dir=None,
     axes=None,
+    colorbar=True,
 ):
     """Create plots to compare two lists of images and measure correlation.
 
@@ -65,6 +66,9 @@ def plot_img_comparison(
     axes : :obj:`list` of two matplotlib Axes objects, or None, default=None
         Can receive a list of the form [ax1, ax2] to render the plots.
         By default new axes will be created.
+
+    %(colorbar)s
+        default=True
 
     Returns
     -------
@@ -109,6 +113,8 @@ def plot_img_comparison(
             ax1.set_xlabel(ref_label)
             ax1.set_ylabel(src_label)
             ax1.legend(loc="best")
+
+            print(colorbar)
 
             ax2.hist(ref_data, alpha=0.6, bins=128, log=log, label=ref_label)
             ax2.hist(src_data, alpha=0.6, bins=128, log=log, label=src_label)

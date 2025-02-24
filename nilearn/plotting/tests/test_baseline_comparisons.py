@@ -29,6 +29,10 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
+from nilearn.plotting.img_comparison import (
+    plot_bland_altman,
+    plot_img_comparison,
+)
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
@@ -307,3 +311,28 @@ def test_plot_contrast_matrix_colorbar(colorbar):
     ax = plot_contrast_matrix(contrast, dmtx, colorbar=colorbar)
 
     return ax.get_figure()
+
+
+IMG_COMPARISON_FUNCS = {plot_img_comparison, plot_bland_altman}
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
+def test_img_comparison_default(
+    plot_func,
+    img_3d_mni,
+):
+    """Test img comparing plotting functions with defaults."""
+    plot_func(img_3d_mni, img_3d_mni)
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_img_comparison_colorbar(
+    plot_func,
+    colorbar,
+    img_3d_mni,
+):
+    """Test img comparing plotting functions with colorbar."""
+    plot_func(img_3d_mni, img_3d_mni, colorbar=colorbar)
