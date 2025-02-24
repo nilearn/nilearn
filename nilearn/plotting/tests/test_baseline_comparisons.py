@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 
 from nilearn.datasets import (
     load_fsaverage_data,
+    load_mni152_template,
     load_sample_motor_activation_image,
 )
 from nilearn.glm.first_level.design_matrix import (
@@ -407,10 +408,9 @@ IMG_COMPARISON_FUNCS = {plot_img_comparison, plot_bland_altman}
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 def test_img_comparison_default(
     plot_func,
-    img_3d_mni,
 ):
     """Test img comparing plotting functions with defaults."""
-    plot_func(img_3d_mni, img_3d_mni)
+    plot_func(load_mni152_template(), load_sample_motor_activation_image())
     # need to use gcf as plot_img_comparison does not return a figure
     return plt.gcf()
 
@@ -421,9 +421,12 @@ def test_img_comparison_default(
 def test_img_comparison_colorbar(
     plot_func,
     colorbar,
-    img_3d_mni,
 ):
     """Test img comparing plotting functions with colorbar."""
-    plot_func(img_3d_mni, img_3d_mni, colorbar=colorbar)
+    plot_func(
+        load_mni152_template(),
+        load_sample_motor_activation_image(),
+        colorbar=colorbar,
+    )
     # need to use gcf as plot_img_comparison does not return a figure
     return plt.gcf()

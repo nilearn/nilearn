@@ -168,7 +168,7 @@ def plot_img_comparison(
                 extent=lims,
             )
             if colorbar:
-                cb = fig.colorbar(hb, cax=ax1)
+                cb = fig.colorbar(hb, ax=ax1)
                 cb.set_label("log10(N)")
             x = np.linspace(*lims[0:2], num=gridsize)
             ax1.plot(x, x, linestyle="--", c="grey")
@@ -380,12 +380,12 @@ def plot_bland_altman(
     ax3.invert_yaxis()
     ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label})")
 
-    ax4 = figure.add_subplot(gs[:-1, 5])
-    ax4.set_aspect(20)
-    pos1 = ax4.get_position()
-    ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
-
     if colorbar:
+        ax4 = figure.add_subplot(gs[:-1, 5])
+        ax4.set_aspect(20)
+        pos1 = ax4.get_position()
+        ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
+
         cb = figure.colorbar(hb, cax=ax4)
         cb.set_label("log10(N)")
 
