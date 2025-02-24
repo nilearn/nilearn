@@ -21,7 +21,7 @@ which is already defined.
 
 See :ref:`plotting` for more information to know how to tune the parameters.
 
-Check the :ref:`listing of probabilistic atlases`
+Check the :ref:`list of atlases <listing_probabilistic_atlases>`
 to know the ones that are shipped with Nilearn.
 """
 

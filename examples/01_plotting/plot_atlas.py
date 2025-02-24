@@ -4,7 +4,7 @@ Basic Atlas plotting
 
 Plot the regions of reference atlases.
 
-Check the :ref:`listing of deterministic atlases`
+Check the :ref:`list of atlases <listing_deterministic_atlases>`
 to know which ones are shipped with Nilearn.
 """
 

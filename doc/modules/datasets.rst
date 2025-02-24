@@ -52,6 +52,11 @@ Atlases
 Deterministic atlases
 ^^^^^^^^^^^^^^^^^^^^^
 
+.. _listing_deterministic_atlases:
+
+.. include:: deterministic_atlases.md
+   :parser: myst_parser.sphinx_
+
 .. currentmodule:: nilearn.datasets
 
 .. autosummary::
@@ -72,13 +77,13 @@ Deterministic atlases
    fetch_coords_power_2011
    fetch_coords_seitzman_2018
 
-.. _listing of deterministic atlases:
-
-.. include:: deterministic_atlases.md
-   :parser: myst_parser.sphinx_
-
 Probabilistic atlases
 ^^^^^^^^^^^^^^^^^^^^^
+
+.. _listing_probabilistic_atlases:
+
+.. include:: probabilistic_atlases.md
+   :parser: myst_parser.sphinx_
 
 .. currentmodule:: nilearn.datasets
 
@@ -94,11 +99,6 @@ Probabilistic atlases
    fetch_atlas_msdl
    fetch_atlas_pauli_2017
    fetch_atlas_smith_2009
-
-.. _listing of probabilistic atlases:
-
-.. include:: probabilistic_atlases.md
-   :parser: myst_parser.sphinx_
 
 .. the following is here to avoid warning during the doc build
 .. toctree::
