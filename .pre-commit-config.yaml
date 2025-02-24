@@ -65,7 +65,7 @@ repos:
     # Check formatting of CSS and HTML
     # prettier: https://prettier.io/
 -   repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.5.1
+    rev: v3.5.2
     hooks:
     -   id: prettier
         types_or: [css, html]
@@ -75,7 +75,7 @@ repos:
             )$
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.6
+    rev: v0.9.7
     hooks:
     # Run the linter.
     -   id: ruff
