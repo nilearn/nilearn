@@ -72,6 +72,8 @@ Deterministic atlases
    fetch_coords_power_2011
    fetch_coords_seitzman_2018
 
+.. _listing of deterministic atlases:
+
 .. include:: deterministic_atlases.md
    :parser: myst_parser.sphinx_
 
@@ -93,12 +95,12 @@ Probabilistic atlases
    fetch_atlas_pauli_2017
    fetch_atlas_smith_2009
 
+.. _listing of probabilistic atlases:
+
 .. include:: probabilistic_atlases.md
    :parser: myst_parser.sphinx_
 
-Atlases descriptions
-^^^^^^^^^^^^^^^^^^^^
-
+.. the following is here to avoid warning during the doc build
 .. toctree::
     :hidden:
 

@@ -192,6 +192,7 @@ def fetch_atlas_difumo(
         labels=labels,
         description=get_dataset_descr(dataset_name),
         atlas_type=atlas_type,
+        template="MNI152NLin6Asym",
     )
 
 
@@ -616,6 +617,7 @@ def fetch_atlas_harvard_oxford(
                 "fetch_atlas_harvard_oxford", name=names
             ),
             filename=atlas_filename,
+            template="MNI152NLin6Asym",
         )
 
     new_atlas_data, new_names = _compute_symmetric_split(
@@ -634,6 +636,7 @@ def fetch_atlas_harvard_oxford(
             "fetch_atlas_harvard_oxford", name=new_names
         ),
         filename=atlas_filename,
+        template="MNI152NLin6Asym",
     )
 
 
@@ -1675,6 +1678,7 @@ def fetch_atlas_aal(
             name=labels,
         ),
         atlas_type=atlas_type,
+        template="MNI",
         indices=indices,
     )
 
@@ -1830,6 +1834,7 @@ def fetch_atlas_basc_multiscale_2015(
                 "fetch_atlas_basc_multiscale_2015", name=labels
             ),
             atlas_type=atlas_type,
+            template=f"MNI152{version}",
         )
 
     warnings.warn(
@@ -2114,7 +2119,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         ("atlas_type", atlas_type),
         ("rsn_indices", labels),
         ("networks", networks),
-        ("template", "volume"),
+        ("template", "MNI152"),
         *list(zip(keys, sub_files)),
     ]
     return Bunch(**dict(params))
@@ -2622,6 +2627,7 @@ def fetch_atlas_schaefer_2018(
         description=get_dataset_descr(dataset_name),
         lut=lut,
         atlas_type=atlas_type,
+        template="MNI152NLin6Asym",
     )
 
 
@@ -2662,7 +2668,7 @@ class Atlas(Bunch):
 
         # TODO: improve
         if template is None:
-            template = "volume"
+            template = "MNI?"
 
         if atlas_type == "probabilistic":
             if labels is None:
