@@ -1,25 +1,11 @@
 """Tests for :func:`nilearn.plotting.plot_connectome`."""
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from matplotlib.patches import FancyArrow
 from scipy import sparse
 
 from nilearn.plotting import plot_connectome
-
-
-@pytest.fixture
-def adjacency():
-    """Adjacency matrix symmetric up to 1e-3 relative tolerance."""
-    return np.array(
-        [
-            [1.0, -2.0, 0.3, 0.0],
-            [-2.002, 1, 0.0, 0.0],
-            [0.3, 0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ]
-    )
 
 
 @pytest.fixture
@@ -35,70 +21,8 @@ def non_symmetric_matrix():
     )
 
 
-@pytest.fixture
-def base_params():
-    """Return basic set of parameters for testing."""
-    return {"edge_threshold": 0.38, "title": "threshold=0.38", "node_size": 10}
-
-
-@pytest.fixture
-def node_coords():
-    """Array of node coordinates for testing."""
-    return np.arange(3 * 4).reshape(4, 3)
-
-
-@pytest.mark.parametrize(
-    "node_color",
-    [["green", "blue", "k", "cyan"], np.array(["red"]), ["red"], "green"],
-)
-@pytest.mark.parametrize("display_mode", ["ortho", "lzry"])
-def test_plot_connectome_node_colors(
-    node_color, display_mode, node_coords, adjacency, base_params
-):
-    """Smoke test for plot_connectome with different values for node_color."""
-    plot_connectome(
-        adjacency,
-        node_coords,
-        node_color=node_color,
-        display_mode=display_mode,
-        **base_params,
-    )
-    plt.close()
-
-
-@pytest.mark.parametrize(
-    "display_mode",
-    [
-        "ortho",
-        "x",
-        "y",
-        "z",
-        "xz",
-        "yx",
-        "yz",
-        "l",
-        "r",
-        "lr",
-        "lzr",
-        "lyr",
-        "lzry",
-        "lyrz",
-    ],
-)
-def test_plot_connectome_display_mode(
-    display_mode, node_coords, adjacency, base_params
-):
-    """Smoke test for plot_connectome with different values \
-       for display_mode.
-    """
-    plot_connectome(
-        adjacency, node_coords, display_mode=display_mode, **base_params
-    )
-    plt.close()
-
-
 def test_plot_connectome_masked_array_sparse_matrix(
-    node_coords, adjacency, base_params
+    node_coords, adjacency, params_plot_connectome
 ):
     """Smoke tests for plot_connectome with masked arrays \
        and sparse matrices as inputs.
@@ -106,23 +30,31 @@ def test_plot_connectome_masked_array_sparse_matrix(
     masked_adjacency_matrix = np.ma.masked_array(
         adjacency, np.abs(adjacency) < 0.5
     )
-    plot_connectome(masked_adjacency_matrix, node_coords, **base_params)
+    plot_connectome(
+        masked_adjacency_matrix, node_coords, **params_plot_connectome
+    )
     sparse_adjacency_matrix = sparse.coo_matrix(adjacency)
-    plot_connectome(sparse_adjacency_matrix, node_coords, **base_params)
-    plt.close()
+    plot_connectome(
+        sparse_adjacency_matrix, node_coords, **params_plot_connectome
+    )
 
 
-def test_plot_connectome_with_nans(adjacency, node_coords, base_params):
+def test_plot_connectome_with_nans(
+    adjacency, node_coords, params_plot_connectome
+):
     """Smoke test for plot_connectome with nans in the adjacency matrix."""
     adjacency[0, 1] = np.nan
     adjacency[1, 0] = np.nan
-    base_params["node_color"] = np.array(["green", "blue", "k", "yellow"])
-    plot_connectome(adjacency, node_coords, colorbar=False, **base_params)
-    plt.close()
+    params_plot_connectome["node_color"] = np.array(
+        ["green", "blue", "k", "yellow"]
+    )
+    plot_connectome(
+        adjacency, node_coords, colorbar=False, **params_plot_connectome
+    )
 
 
 def test_plot_connectome_tuple_node_coords(
-    adjacency, node_coords, base_params
+    adjacency, node_coords, params_plot_connectome
 ):
     """Smoke test for plot_connectome where node_coords is not provided \
        as an array but as a list of tuples.
@@ -131,59 +63,22 @@ def test_plot_connectome_tuple_node_coords(
         adjacency,
         [tuple(each) for each in node_coords],
         display_mode="x",
-        **base_params,
+        **params_plot_connectome,
     )
-    plt.close()
-
-
-@pytest.mark.parametrize("colorbar", [True, False])
-def test_plot_connectome_colorbar(colorbar, adjacency, node_coords):
-    """Smoke test for plot_connectome with default parameters \
-       and with and without the colorbar.
-    """
-    plot_connectome(adjacency, node_coords, colorbar=colorbar)
-    plt.close()
-
-
-@pytest.mark.parametrize("alpha", [0.0, 0.3, 0.7, 1.0])
-def test_plot_connectome_alpha(alpha, adjacency, node_coords):
-    """Smoke test for plot_connectome with various alpha values."""
-    plot_connectome(adjacency, node_coords, alpha=alpha)
-    plt.close()
 
 
 def test_plot_connectome_to_file(
-    adjacency, node_coords, base_params, tmp_path
+    adjacency, node_coords, params_plot_connectome, tmp_path
 ):
     """Smoke test for plot_connectome and saving to file."""
-    base_params["display_mode"] = "x"
+    params_plot_connectome["display_mode"] = "x"
     filename = tmp_path / "temp.png"
     display = plot_connectome(
-        adjacency, node_coords, output_file=filename, **base_params
+        adjacency, node_coords, output_file=filename, **params_plot_connectome
     )
     assert display is None
     assert filename.is_file()
     assert filename.stat().st_size > 0
-
-    plt.close()
-
-
-def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
-    """Smoke test for plot_connectome with node_kwargs, edge_kwargs, \
-       and edge_cmap arguments.
-    """
-    plot_connectome(
-        adjacency,
-        node_coords,
-        edge_threshold="70%",
-        node_size=[10, 20, 30, 40],
-        node_color=np.zeros((4, 3)),
-        edge_cmap="RdBu",
-        colorbar=True,
-        node_kwargs={"marker": "v"},
-        edge_kwargs={"linewidth": 4},
-    )
-    plt.close()
 
 
 def test_plot_connectome_with_too_high_edge_threshold(adjacency, node_coords):
@@ -268,7 +163,6 @@ def test_plot_connectome_edge_thresholding(node_coords, non_symmetric_matrix):
             np.abs(non_symmetric_matrix)
             >= np.percentile(np.abs(non_symmetric_matrix.ravel()), thresh)
         )
-    plt.close()
 
 
 @pytest.mark.parametrize(
@@ -287,7 +181,6 @@ def test_plot_connectome_exceptions_non_symmetric_adjacency(matrix):
     node_coords = np.arange(2 * 3).reshape((2, 3))
     with pytest.warns(UserWarning, match="A directed graph will be plotted."):
         plot_connectome(matrix, node_coords, display_mode="x")
-    plt.close()
 
 
 @pytest.mark.parametrize(

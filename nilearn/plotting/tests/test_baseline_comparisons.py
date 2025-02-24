@@ -7,6 +7,7 @@ https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-f
 
 import numpy as np
 import pytest
+from matplotlib import pyplot as plt
 
 from nilearn.datasets import (
     load_fsaverage_data,
@@ -19,6 +20,7 @@ from nilearn.glm.tests._testing import modulated_event_paradigm
 from nilearn.plotting import (
     plot_anat,
     plot_carpet,
+    plot_connectome,
     plot_epi,
     plot_glass_brain,
     plot_img,
@@ -148,6 +150,91 @@ def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
 def test_plot_anat_mni(anat_img):
     """Tests for plot_anat with MNI template."""
     return plot_anat(anat_img=anat_img)
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_plot_connectome_colorbar(colorbar, adjacency, node_coords):
+    """Smoke test for plot_connectome with default parameters \
+       and with and without the colorbar.
+    """
+    return plot_connectome(adjacency, node_coords, colorbar=colorbar)
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize(
+    "node_color",
+    [["green", "blue", "k", "cyan"], np.array(["red"]), ["red"], "green"],
+)
+def test_plot_connectome_node_colors(
+    node_color, node_coords, adjacency, params_plot_connectome
+):
+    """Smoke test for plot_connectome with different values for node_color."""
+    return plot_connectome(
+        adjacency,
+        node_coords,
+        node_color=node_color,
+        **params_plot_connectome,
+    )
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("alpha", [0.0, 0.3, 0.7, 1.0])
+def test_plot_connectome_alpha(alpha, adjacency, node_coords):
+    """Smoke test for plot_connectome with various alpha values."""
+    return plot_connectome(adjacency, node_coords, alpha=alpha)
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize(
+    "display_mode",
+    [
+        "ortho",
+        "x",
+        "y",
+        "z",
+        "xz",
+        "yx",
+        "yz",
+        "l",
+        "r",
+        "lr",
+        "lzr",
+        "lyr",
+        "lzry",
+        "lyrz",
+    ],
+)
+def test_plot_connectome_display_mode(
+    display_mode, node_coords, adjacency, params_plot_connectome
+):
+    """Smoke test for plot_connectome with different values \
+       for display_mode.
+    """
+    return plot_connectome(
+        adjacency,
+        node_coords,
+        display_mode=display_mode,
+        **params_plot_connectome,
+    )
+
+
+@pytest.mark.mpl_image_compare
+def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
+    """Smoke test for plot_connectome with node_kwargs, edge_kwargs, \
+       and edge_cmap arguments.
+    """
+    return plot_connectome(
+        adjacency,
+        node_coords,
+        edge_threshold="70%",
+        node_size=[10, 20, 30, 40],
+        node_color=np.zeros((4, 3)),
+        edge_cmap="RdBu",
+        colorbar=True,
+        node_kwargs={"marker": "v"},
+        edge_kwargs={"linewidth": 4},
+    )
 
 
 # ---------------------- surface plotting -------------------------------
@@ -324,6 +411,8 @@ def test_img_comparison_default(
 ):
     """Test img comparing plotting functions with defaults."""
     plot_func(img_3d_mni, img_3d_mni)
+    # need to use gcf as plot_img_comparison does not return a figure
+    return plt.gcf()
 
 
 @pytest.mark.mpl_image_compare
@@ -336,3 +425,5 @@ def test_img_comparison_colorbar(
 ):
     """Test img comparing plotting functions with colorbar."""
     plot_func(img_3d_mni, img_3d_mni, colorbar=colorbar)
+    # need to use gcf as plot_img_comparison does not return a figure
+    return plt.gcf()
