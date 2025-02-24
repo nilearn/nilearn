@@ -445,6 +445,7 @@ def fetch_atlas_destrieux_2009(
         description=Path(files_[2]).read_text(),
         atlas_type=atlas_type,
         lut=pd.read_csv(files_[0]),
+        template="fsaverage",
     )
 
 

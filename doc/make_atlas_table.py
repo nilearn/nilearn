@@ -31,15 +31,12 @@ from nilearn.surface import SurfaceImage
 def _update_dict(dict_for_df, name, data, doc_dir, output_file, extra=None):
     """Update dictionary to use to create dataframe of atlases."""
     if extra is None:
-        extra = []
-    if isinstance(extra, str):
-        extra = [extra]
-    dict_for_df["name"].append(name + "<br>".join(extra))
-
-    dict_for_df["template"].append(data.template)
-
-    dict_for_df["description"].append(
-        "{ref}`description " + f"<{name}_atlas>" + "`"
+        extra = ""
+    dict_for_df["name"].append(
+        f"**{name.replace('_', ' ')}** {extra}<br><br>"
+        + f"*template*: {data.template}<br>"
+        + "{ref}`description "
+        + f"<{name}_atlas>`<br>"
     )
 
     dict_for_df["image"].append(
@@ -52,7 +49,7 @@ def _update_dict(dict_for_df, name, data, doc_dir, output_file, extra=None):
 def _generate_markdown_file(filename, dict_for_df):
     """Generate a markdown file with a table of atlases."""
     atlas_table = pd.DataFrame(dict_for_df)
-    atlas_table.sort_values(by=["name"])
+    atlas_table = atlas_table.sort_values(by=["name"])
 
     markdown_file = doc_dir / "modules" / filename
     with markdown_file.open("w") as f:
@@ -64,8 +61,33 @@ To modify the content of this file do it via the script:
 {Path(__file__).name}
 -->
 """)
+
+        f.write("""
+<!-- myst admonition https://mystmd.org/guide/admonitions -->
+
+:::{warning}
+The atlases shipped with Nilearn
+do not necessarily use the same MNI template
+as the default MNI template used by Nilearn for plotting.
+
+This may lead to atlas being poorly coregistered
+to the underlay image used as underlay:
+the atlas can appear smaller or bigger than the brain.
+
+This can seen clearly on some of the images below.
+
+You also should not use maskers with an atlas
+that is not coregistered properly coregistered
+with the images you want to extract data from
+as this may lead to invalid results.
+:::
+
+""")
         atlas_table.to_markdown(buf=f, index=False)
 
+
+DEBUG = False
+GENERATE_FIG = False
 
 doc_dir = Path(__file__).parent
 output_dir = doc_dir / "images"
@@ -91,7 +113,10 @@ deterministic_atlases = {
         "fn": fetch_atlas_basc_multiscale_2015,
         "params": {"resolution": 20, "version": "sym"},
     },
-    "destrieux_2009": {"fn": fetch_atlas_destrieux_2009},
+    "destrieux_2009": {
+        "fn": fetch_atlas_destrieux_2009,
+        "extra": "(volume)",
+    },
     "harvard_oxford": {
         "fn": fetch_atlas_harvard_oxford,
         "params": {
@@ -125,7 +150,7 @@ deterministic_atlases = {
     },
 }
 
-dict_for_df = {"name": [], "template": [], "description": [], "image": []}
+dict_for_df = {"name": [], "image": []}
 
 for details in deterministic_atlases.values():
     fn = details["fn"]
@@ -143,14 +168,15 @@ for details in deterministic_atlases.values():
         params_str += f"_{k}-{v}"
     output_file = output_dir / f"deterministic_atlas_{name}{params_str}.png"
 
-    plot_roi(
-        data.maps,
-        title=title,
-        cmap=data.lut,
-        output_file=output_file,
-        figure=plt.figure(figsize=[11, 4]),
-        **plot_config,
-    )
+    if GENERATE_FIG:
+        plot_roi(
+            data.maps,
+            title=title,
+            cmap=data.lut,
+            output_file=output_file,
+            figure=plt.figure(figsize=[11, 4]),
+            **plot_config,
+        )
     plt.close("all")
 
     dict_for_df = _update_dict(
@@ -181,34 +207,43 @@ destrieux_atlas = SurfaceImage(
 
 name = fetch_atlas_surf_destrieux.__name__.replace("fetch_atlas_", "")
 
-fig, ax = plt.subplots(1, 2, figsize=[6, 3], subplot_kw={"projection": "3d"})
-
-plot_surf_roi(
-    roi_map=destrieux_atlas,
-    hemi="left",
-    view="lateral",
-    bg_map=fsaverage_sulcal,
-    bg_on_data=True,
-    colorbar=True,
-    axes=ax[0],
-)
-plot_surf_roi(
-    roi_map=destrieux_atlas,
-    hemi="right",
-    view="lateral",
-    bg_map=fsaverage_sulcal,
-    bg_on_data=True,
-    colorbar=True,
-    axes=ax[1],
-)
-
-fig.suptitle("surf_destrieux", fontsize=16)
-
 output_file = output_dir / f"deterministic_atlas_{name}.png"
-fig.savefig(output_file)
+
+if GENERATE_FIG:
+    fig, ax = plt.subplots(
+        1, 2, figsize=[6, 3], subplot_kw={"projection": "3d"}
+    )
+
+    plot_surf_roi(
+        roi_map=destrieux_atlas,
+        hemi="left",
+        view="lateral",
+        bg_map=fsaverage_sulcal,
+        bg_on_data=True,
+        colorbar=True,
+        axes=ax[0],
+    )
+    plot_surf_roi(
+        roi_map=destrieux_atlas,
+        hemi="right",
+        view="lateral",
+        bg_map=fsaverage_sulcal,
+        bg_on_data=True,
+        colorbar=True,
+        axes=ax[1],
+    )
+
+    fig.suptitle("surf_destrieux", fontsize=16)
+
+    fig.savefig(output_file)
 
 dict_for_df = _update_dict(
-    dict_for_df, "destrieux_2009", data, doc_dir, output_file=output_file
+    dict_for_df,
+    "destrieux_2009",
+    data,
+    doc_dir,
+    output_file=output_file,
+    extra="(surface)",
 )
 
 _generate_markdown_file("deterministic_atlases.md", dict_for_df)
@@ -234,6 +269,7 @@ probablistic_atlases = {
     },
     "harvard_oxford_2": {
         "fn": fetch_atlas_harvard_oxford,
+        "extra": "(subcortical)",
         "params": {"atlas_name": "sub-prob-1mm", "symmetric_split": False},
     },
     "juelich": {
@@ -247,7 +283,7 @@ probablistic_atlases = {
     },
 }
 
-dict_for_df = {"name": [], "template": [], "description": [], "image": []}
+dict_for_df = {"name": [], "image": []}
 
 for details in probablistic_atlases.values():
     fn = details["fn"]
@@ -264,17 +300,24 @@ for details in probablistic_atlases.values():
     for k, v in params.items():
         params_str += f"_{k}-{v}"
     output_file = output_dir / f"probablistic_atlas_{name}{params_str}.png"
-    plot_prob_atlas(
-        data.maps,
-        title=title,
-        output_file=output_file,
-        view_type="contours",
-        figure=plt.figure(figsize=[11, 4]),
-        **plot_config,
-    )
+
+    if GENERATE_FIG:
+        plot_prob_atlas(
+            data.maps,
+            title=title,
+            output_file=output_file,
+            view_type="contours",
+            figure=plt.figure(figsize=[11, 4]),
+            **plot_config,
+        )
 
     dict_for_df = _update_dict(
         dict_for_df, name, data, doc_dir, output_file=output_file
     )
+
+    if DEBUG:
+        # probabilistic atlases take a long time to plot
+        # so only do one in debubg mode
+        break
 
 _generate_markdown_file("probabilistic_atlases.md", dict_for_df)
