@@ -148,7 +148,7 @@ for details in deterministic_atlases.values():
         title=title,
         cmap=data.lut,
         output_file=output_file,
-        figure=plt.figure(figsize=[8, 3]),
+        figure=plt.figure(figsize=[11, 4]),
         **plot_config,
     )
     plt.close("all")
@@ -269,6 +269,7 @@ for details in probablistic_atlases.values():
         title=title,
         output_file=output_file,
         view_type="contours",
+        figure=plt.figure(figsize=[11, 4]),
         **plot_config,
     )
 
