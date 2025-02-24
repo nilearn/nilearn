@@ -184,7 +184,7 @@ plot_glass_brain(
 from nilearn.plotting import plot_bland_altman, plot_img_comparison
 
 plot_img_comparison(
-    [z_map], [fsl_z_map], model.masker_, ref_label="Nilearn", src_label="FSL"
+    z_map, fsl_z_map, model.masker_, ref_label="Nilearn", src_label="FSL"
 )
 
 plot_bland_altman(

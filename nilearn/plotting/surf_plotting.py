@@ -8,6 +8,7 @@ from warnings import warn
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib import gridspec
 from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import make_axes
@@ -21,6 +22,7 @@ from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     check_surface_plotting_inputs,
+    create_colormap_from_lut,
     sanitize_hemi_for_surface_image,
     save_figure_if_needed,
 )
@@ -2017,7 +2019,7 @@ def plot_surf_roi(
         Threshold regions that are labeled 0.
         If you want to use 0 as a label, set threshold to None.
 
-    %(cmap)s
+    %(cmap_lut)s
         Default='gist_ncar'.
 
     %(cbar_tick_format)s
@@ -2148,6 +2150,9 @@ def plot_surf_roi(
 
     if cbar_tick_format == "auto":
         cbar_tick_format = "." if engine == "plotly" else "%i"
+
+    if isinstance(cmap, pd.DataFrame):
+        cmap = create_colormap_from_lut(cmap)
 
     display = plot_surf(
         mesh,

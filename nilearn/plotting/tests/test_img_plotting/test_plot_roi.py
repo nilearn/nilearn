@@ -4,6 +4,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
@@ -99,3 +100,17 @@ def test_cmap_with_one_level(matplotlib_pyplot, shape_3d_default, affine_eye):
     cmap = plt.get_cmap("tab20", len(clust_ids))
 
     plot_roi(img, alpha=0.8, colorbar=True, cmap=cmap)
+
+
+def test_cmap_as_lookup_table(img_labels):
+    """Test colormap passed as BIDS lookup table."""
+    lut = pd.DataFrame(
+        {"index": [0, 1], "name": ["foo", "bar"], "color": ["#000", "#fff"]}
+    )
+    plot_roi(img_labels, cmap=lut)
+
+    lut = pd.DataFrame({"index": [0, 1], "name": ["foo", "bar"]})
+    with pytest.warns(
+        UserWarning, match="No 'color' column found in the look-up table."
+    ):
+        plot_roi(img_labels, cmap=lut)

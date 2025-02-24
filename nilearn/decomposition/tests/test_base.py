@@ -4,7 +4,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 from scipy import linalg
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _affine_eye, _img_3d_ones, _rng
 from nilearn.decomposition._base import (
     _BaseDecomposition,
