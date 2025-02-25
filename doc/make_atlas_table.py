@@ -28,15 +28,15 @@ from nilearn.plotting import plot_prob_atlas, plot_roi, plot_surf_roi
 from nilearn.surface import SurfaceImage
 
 
-def _update_dict(dict_for_df, name, data, doc_dir, output_file, extra=None):
+def _update_dict(dict_for_df, name, fn, data, doc_dir, output_file):
     """Update dictionary to use to create dataframe of atlases."""
-    if extra is None:
-        extra = ""
+    fn_name = fn.__name__.replace("fetch_atlas_", "")
+
     dict_for_df["name"].append(
-        f"**{name.replace('_', ' ')}** {extra}<br><br>"
+        f"**{name.replace('_', ' ')}**<br>"
         + f"*template*: {data.template}<br>"
         + "{ref}`description "
-        + f"<{name}_atlas>`<br>"
+        + f"<{fn_name}_atlas>`<br>"
     )
 
     dict_for_df["image"].append(
@@ -63,9 +63,7 @@ To modify the content of this file do it via the script:
 """)
 
         f.write("""
-<!-- myst admonition https://mystmd.org/guide/admonitions -->
-
-:::{warning}
+```{warning}
 The atlases shipped with Nilearn
 do not necessarily use the same MNI template
 as the default MNI template used by Nilearn for plotting.
@@ -80,7 +78,7 @@ You also should not use maskers with an atlas
 that is not coregistered properly coregistered
 with the images you want to extract data from
 as this may lead to invalid results.
-:::
+```
 
 """)
         atlas_table.to_markdown(buf=f, index=False)
@@ -106,45 +104,39 @@ VOLUME DETERMINISTIC ATLASES
 
 # dict to define fetching options for each atlas
 deterministic_atlases = {
-    "aal": {
-        "fn": fetch_atlas_aal,
-    },
-    "basc_multiscale_2015": {
+    "AAL": {"fn": fetch_atlas_aal},
+    "BASC multiscale (2015)": {
         "fn": fetch_atlas_basc_multiscale_2015,
         "params": {"resolution": 20, "version": "sym"},
     },
-    "destrieux_2009": {
-        "fn": fetch_atlas_destrieux_2009,
-        "extra": "(volume)",
-    },
-    "harvard_oxford": {
+    "Destrieux (2009; volume)": {"fn": fetch_atlas_destrieux_2009},
+    "Harvard-Oxford": {
         "fn": fetch_atlas_harvard_oxford,
         "params": {
             "atlas_name": "cort-maxprob-thr0-1mm",
             "symmetric_split": False,
         },
     },
-    "harvard_oxford_2": {
+    "Harvard-Oxford (subcortical)": {
         "fn": fetch_atlas_harvard_oxford,
-        "extra": "(subcortical)",
         "params": {
             "atlas_name": "sub-maxprob-thr0-1mm",
             "symmetric_split": False,
         },
     },
-    "juelich": {
+    "Juelich": {
         "fn": fetch_atlas_juelich,
         "params": {"atlas_name": "maxprob-thr0-1mm"},
     },
-    "pauli_2017": {
+    "Pauli (2017)": {
         "fn": fetch_atlas_pauli_2017,
         "params": {"atlas_type": "deterministic"},
     },
-    "schaefer_2018": {
+    "Schaefer (2018)": {
         "fn": fetch_atlas_schaefer_2018,
     },
-    "talairach": {"fn": fetch_atlas_talairach, "params": {"level_name": "ba"}},
-    "yeo_2011": {
+    "Talairach": {"fn": fetch_atlas_talairach, "params": {"level_name": "ba"}},
+    "Yeo (2011)": {
         "fn": fetch_atlas_yeo_2011,
         "params": {"n_networks": 17, "thickness": "thick"},
     },
@@ -152,7 +144,7 @@ deterministic_atlases = {
 
 dict_for_df = {"name": [], "image": []}
 
-for details in deterministic_atlases.values():
+for display_name, details in deterministic_atlases.items():
     fn = details["fn"]
     params = details.get("params", {})
 
@@ -181,11 +173,11 @@ for details in deterministic_atlases.values():
 
     dict_for_df = _update_dict(
         dict_for_df,
-        name,
+        display_name,
+        fn,
         data,
         doc_dir,
         output_file=output_file,
-        extra=details.get("extra", None),
     )
 
 """
@@ -239,11 +231,11 @@ if GENERATE_FIG:
 
 dict_for_df = _update_dict(
     dict_for_df,
-    "destrieux_2009",
+    "Destrieux (2009; surface)",
+    fetch_atlas_destrieux_2009,
     data,
     doc_dir,
     output_file=output_file,
-    extra="(surface)",
 )
 
 _generate_markdown_file("deterministic_atlases.md", dict_for_df)
@@ -254,30 +246,29 @@ PROBABILISTIC ATLASES
 
 # dict to define fetching options for each atlas
 probablistic_atlases = {
-    "allen_2011": {"fn": fetch_atlas_allen_2011},
-    "craddock_2012": {
+    "Allen (2011)": {"fn": fetch_atlas_allen_2011},
+    "Craddock (2012)": {
         "fn": fetch_atlas_craddock_2012,
         "params": {"homogeneity": "spatial", "grp_mean": True},
     },
-    "difumo": {
+    "Difumo": {
         "fn": fetch_atlas_difumo,
         "params": {"dimension": 64, "resolution_mm": 2},
     },
-    "harvard_oxford": {
+    "Harvard-Oxford": {
         "fn": fetch_atlas_harvard_oxford,
         "params": {"atlas_name": "cort-prob-1mm"},
     },
-    "harvard_oxford_2": {
+    "Harvard-Oxford (subcortical)": {
         "fn": fetch_atlas_harvard_oxford,
-        "extra": "(subcortical)",
         "params": {"atlas_name": "sub-prob-1mm", "symmetric_split": False},
     },
-    "juelich": {
+    "Juelich": {
         "fn": fetch_atlas_juelich,
         "params": {"atlas_name": "prob-1mm"},
     },
-    "msdl": {"fn": fetch_atlas_msdl},
-    "smith_2009": {
+    "MSDL": {"fn": fetch_atlas_msdl},
+    "Smith (2009)": {
         "fn": fetch_atlas_smith_2009,
         "params": {"resting": False, "dimension": 20},
     },
@@ -285,7 +276,7 @@ probablistic_atlases = {
 
 dict_for_df = {"name": [], "image": []}
 
-for details in probablistic_atlases.values():
+for display_name, details in probablistic_atlases.items():
     fn = details["fn"]
     params = details.get("params", {})
 
@@ -312,7 +303,7 @@ for details in probablistic_atlases.values():
         )
 
     dict_for_df = _update_dict(
-        dict_for_df, name, data, doc_dir, output_file=output_file
+        dict_for_df, display_name, fn, data, doc_dir, output_file=output_file
     )
 
     if DEBUG:
