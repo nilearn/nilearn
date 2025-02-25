@@ -521,7 +521,7 @@ def _nearest_voxel_sampling(
     # otherwise it's a statistical map, so we take the mean of n_points
     # samples around each vertex
     else:
-        proj, sample_locations = _projection_matrix(
+        proj = _projection_matrix(
             mesh,
             affine,
             images[0].shape,
