@@ -76,10 +76,9 @@ def calculate_tfce(
             signs = [1]
             max_score = np.max(arr3d)
 
-        step = max_score / 100 if dh == "auto" else dh
-
         # Set based on determined step size
-        score_threshs = np.arange(step, max_score + step, step)
+        number_steps = 100 if dh == "auto" else max(1, round(max_score / dh))
+        score_threshs = np.linspace(0, max_score, number_steps + 1)[1:]
 
         # If we apply the sign first...
         for sign in signs:
