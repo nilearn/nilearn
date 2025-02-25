@@ -116,7 +116,7 @@ import numpy as np
 ncols = 2
 nrows = ceil(len(models) / ncols)
 
-fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(8, 4.5))
+fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(10, 12))
 axes = np.atleast_2d(axes)
 model_and_args = zip(models, models_run_imgs, models_events, models_confounds)
 for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
@@ -130,6 +130,7 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
         title=f"sub-{model.subject_label}",
         axes=axes[int(midx / ncols), int(midx % ncols)],
         plot_abs=False,
+        colorbar=True,
         display_mode="x",
         vmin=-12,
         vmax=12,
