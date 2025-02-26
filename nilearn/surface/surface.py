@@ -756,7 +756,7 @@ def vol_to_surf(
     If `img` is an atlas (meaning that its values are all integers) and the
     `interpolation` parameter is set to 'nearest', each vertex will be assigned
     the most frequent value in the neighborhood (out of the `n_samples`
-     samples) instead of the mean value.
+    samples) instead of the mean value.
 
     Examples
     --------
