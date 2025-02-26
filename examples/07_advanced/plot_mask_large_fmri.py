@@ -33,7 +33,7 @@ the fMRI image in a different way:
 For the first method, there are two ways to input the fMRI image:
 
 1. passing the file path (i.e., the location of the large fMRI image on-disk).
-2. loading image first via :func: and passing this in-memory object.
+2. loading image first and passing this in-memory object to joblib.
 
 When using file paths, the entire image is loaded into memory for each process,
 and that is exactly the problem we described earlier.
