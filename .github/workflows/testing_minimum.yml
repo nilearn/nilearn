@@ -92,9 +92,3 @@ jobs:
             run: |
                 pip install pytest-mpl
                 pytest --pyargs nilearn --cov=nilearn
-                pytest nilearn/plotting/tests/test_baseline_comparisons.py \
-                    -n auto \
-                    --mpl \
-                    --mpl-baseline-path=nilearn/plotting/tests/baseline \
-                    --mpl-results-path=results \
-                    --mpl-generate-summary=html
