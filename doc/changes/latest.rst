@@ -23,6 +23,8 @@ Fixes
 
 - :bdg-dark:`Code` Do not set score to zero if all coefficients are zero in :class:`nilearn.decoding.Decoder` and ensure average scores are comparable to a pure scikit-learn implementation (:gh:`5097` by `Himanshu Aggarwal`_).
 
+- :bdg-dark:`Code` Assign most frequent value in the neighborhood for each vertex when projecting volume atlases to surface via :func:`~nilearn.surface.vol_to_surf` with ``method='nearest'`` (:gh:`5169` by `Himanshu Aggarwal`_).
+
 Enhancements
 ------------
 
