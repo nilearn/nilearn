@@ -84,9 +84,6 @@ jobs:
                 pip install .[plotting,plotly,test]
 
         -   name: Run tests
-            run: pytest --pyargs nilearn --cov=nilearn
-
-        -   name: Run tests figure comparison
             # there are some numpy 2.0 related issues when using pytest-mpl
             # with matplotlib 3.3.0 on windows:
             # seems some transitive dependencies do not play nice with numpy 2.0.
@@ -94,6 +91,7 @@ jobs:
             if: ${{ matrix.os != 'windows-latest' }} || ${{ matrix.min_dep != 'matplotlib==3.3.0' }}
             run: |
                 pip install pytest-mpl
+                pytest --pyargs nilearn --cov=nilearn
                 pytest nilearn/plotting/tests/test_baseline_comparisons.py \
                     -n auto \
                     --mpl \
