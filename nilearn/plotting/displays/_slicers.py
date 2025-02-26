@@ -412,14 +412,6 @@ class BaseSlicer:
         and it will display something that doesn't make sense.
 
         """
-        if colorbar and self._colorbar:
-            raise ValueError(
-                "This figure already has an overlay with a colorbar."
-            )
-        else:
-            self._colorbar = colorbar
-            self._cbar_tick_format = cbar_tick_format
-
         if not filled:
             threshold = None
         else:
@@ -442,14 +434,21 @@ class BaseSlicer:
             )
 
         if colorbar and ims:
-            if "levels" in kwargs or "colors" in kwargs:
-                raise ValueError(
-                    "no point in printing a colorbar with levels or colors."
-                )
-            else:
-                self._show_colorbar(
-                    ims[0].cmap, ims[0].norm, cbar_vmin, cbar_vmax, threshold
-                )
+            if self._colorbar:
+                print("This figure already has an overlay with a colorbar.")
+            # else:
+            self._colorbar = colorbar
+            self._cbar_tick_format = cbar_tick_format
+
+            if kwargs.get("levels") is not None or "colors" in kwargs:
+                # raise ValueError(
+                #     "no point in printing a colorbar with levels or colors."
+                # )
+                print("no point in printing a colorbar with levels or colors.")
+
+            self._show_colorbar(
+                ims[0].cmap, ims[0].norm, cbar_vmin, cbar_vmax, threshold
+            )
 
         plt.draw_if_interactive()
 

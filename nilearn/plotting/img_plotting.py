@@ -894,7 +894,7 @@ def plot_epi(
     return display
 
 
-def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths, colorbar):
+def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     """Help for plotting regions of interest ROIs in contours.
 
     Parameters
@@ -943,7 +943,6 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths, colorbar):
             alpha=alpha,
             linewidths=linewidths,
             linestyles="solid",
-            colorbar=colorbar,
         )
     return display
 
@@ -1130,7 +1129,6 @@ def plot_roi(
             cmap=cmap,
             alpha=alpha,
             linewidths=linewidths,
-            colorbar=colorbar,
         )
 
     return display

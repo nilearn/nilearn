@@ -134,12 +134,20 @@ def test_plotting_functions_radiological_view(
     return result
 
 
-def test_plot_roi_contour_colorbar(img_labels):
+@pytest.mark.mpl_image_compare
+def test_plot_roi_contour_default(img_labels):
     """Test plot_roi with contours.
 
     Should have a colorbar by default.
     """
     return plot_roi(img_labels, view_type="contours")
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_plot_roi_contour_colorbar(img_labels, colorbar):
+    """Test plot_roi with contours and colorbar."""
+    return plot_roi(img_labels, view_type="contours", colorbar=colorbar)
 
 
 @pytest.mark.mpl_image_compare
