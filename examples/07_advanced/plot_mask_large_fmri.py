@@ -30,23 +30,17 @@ the fMRI image in a different way:
 2. Masking the fMRI image's data array using numpy indexing.
 3. Using :class:`multiprocessing.shared_memory.SharedMemory`.
 
-For the first two methods, there are two ways to input the fMRI image:
+For the first method, there are two ways to input the fMRI image:
 
 1. passing the file path (i.e., the location of the large fMRI image on-disk).
-2. loading image using :mod:`nibabel` and passing this in-memory object.
-
-These two input methods can impact the memory usage of the task, so we will
-also compare these variants of the first two methods.
+2. loading image first via :func: and passing this in-memory object.
 
 When using file paths, the entire image is loaded into memory for each process,
 and that is exactly the problem we described earlier.
 
-However, when the fMRI image is loaded in a way that allows
-`numpy memory mapping <https://numpy.org/doc/stable/reference/generated/numpy.memmap.html>`_,
-as with :class:`nibabel.arrayproxy.ArrayProxy`,
-only the segments of data that are needed are read from the disk. Joblib
-can handle this efficiently across multiple processes and this results in
-lower memory usage. We will see that this can already be a significant
+However, when the fMRI image is loaded once and then passed to
+:class:`joblib.Parallel` as an in-memory object, the image is not loaded
+multiple times. We will see that this can already be a significant
 improvement over the naive usage of :class:`~nilearn.maskers.NiftiMasker` with
 file paths.
 """
@@ -68,6 +62,7 @@ N_REGIONS = 6
 
 fmri_data = fetch_adhd(n_subjects=N_SUBJECTS)
 fmri_img = concat_imgs(fmri_data.func)
+n_timepoints = fmri_img.shape[-1]
 
 output_dir = Path.cwd() / "results" / "plot_mask_large_fmri"
 output_dir.mkdir(parents=True, exist_ok=True)
@@ -106,7 +101,6 @@ resampled_atlas = resample_to_img(
     force_resample=True,
 )
 
-mask_imgs = []
 mask_paths = []
 for idx in range(1, N_REGIONS + 1):
     mask = resampled_atlas.get_fdata() == idx
@@ -116,26 +110,30 @@ for idx in range(1, N_REGIONS + 1):
         affine=resampled_atlas.affine,
         copy_header=True,
     )
-
-    mask_imgs.append(mask)
     path = output_dir / f"mask_{idx}.nii.gz"
     mask.to_filename(path)
     mask_paths.append(path)
 
+# remove images from memory
+del atlas_img, resampled_atlas, mask, fmri_img
+
 # %%
 # Mask the fMRI image using NiftiMasker
 # -------------------------------------
-# Let's first see how we would typically mask the fMRI image using
-# :class:`~nilearn.maskers.NiftiMasker`. This is the most common way to extract
-# data from an fMRI image as it makes it easy to standardize, smooth, detrend,
-# etc. the data.
+# Let's first mask the fMRI image using :class:`~nilearn.maskers.NiftiMasker`.
+# This is the most user-friendly way to extract data from an fMRI image as it
+# makes it easy to standardize, smooth, detrend, etc. the data.
 #
 # We will first wrap the :func:`nilearn.maskers.NiftiMasker.fit_transform`
 # within a function so that it is more readable and easier to use.
 # We will then define another function that would mask the fMRI image using
-# multiple masks in parallel using the :mod:`joblib` package.
+# multiple masks in parallel using the :mod:`joblib` package. As mentioned
+# earlier, this could further be done in two ways: directly using file paths
+# as input or first loading the images in-memory and passing them as input.
 #
-# We can then use this function to measure the memory usage using the
+# So we will define two functions for each case.
+#
+# We can then track the memory usage of these functions via the
 # ``memory_profiler`` package.
 
 from joblib import Parallel, delayed
@@ -143,34 +141,42 @@ from joblib import Parallel, delayed
 from nilearn.maskers import NiftiMasker
 
 
-def nifti_masker_single(fmri_path, mask_path):
-    return NiftiMasker(mask_img=mask_path).fit_transform(fmri_path)
+def nifti_masker_single(fmri, mask):
+    return NiftiMasker(mask_img=mask).fit_transform(fmri)
 
 
-def nifti_masker_parallel(fmri_path, mask_paths):
-    return Parallel(n_jobs=N_REGIONS)(
-        delayed(nifti_masker_single)(fmri_path, mask) for mask in mask_paths
+def nifti_masker_parallel_path(fmri_path, mask_paths):
+    Parallel(n_jobs=N_REGIONS)(
+        delayed(nifti_masker_single)(fmri_path, mask_path)
+        for mask_path in mask_paths
     )
+    return 1
+
+
+def nifti_masker_parallel_inmemory(fmri_path, mask_paths):
+    fmri_img = load_img(fmri_path)
+    mask_imgs = [load_img(mask) for mask in mask_paths]
+    Parallel(n_jobs=N_REGIONS)(
+        delayed(nifti_masker_single)(fmri_img, mask) for mask in mask_imgs
+    )
+    return 1
 
 
 # %%
-# As mentioned previously, we will also compare two ways to input the fMRI
-# image: using the file paths and using the in-memory objects.
-#
-# So let's first create a dictionary to store the memory usage for each method.
+# Let's also create a dictionary to store the memory usage for each method.
 
 from memory_profiler import memory_usage
 
 nifti_masker = {"path": [], "in_memory": []}
 
 nifti_masker["path"] = memory_usage(
-    (nifti_masker_parallel, (fmri_path, mask_paths)),
+    (nifti_masker_parallel_path, (fmri_path, mask_paths)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
 )
 nifti_masker["in_memory"] = memory_usage(
-    (nifti_masker_parallel, (fmri_img, mask_imgs)),
+    (nifti_masker_parallel_inmemory, (fmri_path, mask_paths)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
@@ -191,70 +197,40 @@ print(
 # the fMRI image with binary masks and don't need to standardize, smooth, etc.
 # the image.
 #
-# In addition, we will use :func:`nibabel.loadsave.load` function to load the
-# fMRI image as a proxy object. This will allow us to load the data directly
-# from the file as a numpy array without loading the entire image into memory.
-# You can find more information about this in the :mod:`nibabel` documentation,
-# here: https://nipy.org/nibabel/images_and_memory.html
-#
-# As before we will do this by loading the data from the file paths and from
-# the in-memory objects. This time, the logic between masking the data using
-# the file paths and the in-memory objects is different, so we will define
-# separate functions for each case.
+# As before we will first define a function that would mask the data array
+# of the fMRI image using a single mask. We will then define another function
+# that would iterate over multiple masks in parallel and mask the data array
+# of the fMRI image using each mask.
 
-import nibabel as nib
 import numpy as np
 
 
-def numpy_masker_single_path(fmri_path, mask_path):
-    return np.asarray(nib.load(fmri_path).dataobj)[
-        np.asarray(nib.load(mask_path).dataobj).astype(bool)
-    ]
+def numpy_masker_single(fmri, mask):
+    return fmri[mask]
 
 
-def numpy_masker_single_inmemory(fmri_img, mask_img):
-    return np.asarray(fmri_img.dataobj)[
-        np.asarray(mask_img.dataobj).astype(bool)
-    ]
-
-
-def numpy_masker_parallel_path(fmri_path, mask_paths):
-    return Parallel(n_jobs=N_REGIONS)(
-        delayed(numpy_masker_single_path)(fmri_path, mask)
-        for mask in mask_paths
+def numpy_masker_parallel(fmri_path, mask_paths):
+    fmri_data = load_img(fmri_path).get_fdata()
+    masks = [load_img(mask).get_fdata().astype(bool) for mask in mask_paths]
+    Parallel(n_jobs=N_REGIONS)(
+        delayed(numpy_masker_single)(fmri_data, mask) for mask in masks
     )
-
-
-def numpy_masker_parallel_inmemory(fmri_img, mask_imgs):
-    return Parallel(n_jobs=N_REGIONS)(
-        delayed(numpy_masker_single_inmemory)(fmri_img, mask)
-        for mask in mask_imgs
-    )
+    return 1
 
 
 # %%
-# Let's measure the memory usage for each method and store the results in a
-# dictionary.
+# Let's measure the memory usage
 
-numpy_masker = {"path": [], "in_memory": []}
-
-numpy_masker["path"] = memory_usage(
-    (numpy_masker_parallel_path, (fmri_path, mask_paths)),
+numpy_masker = memory_usage(
+    (numpy_masker_parallel, (fmri_path, mask_paths)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
 )
 
-numpy_masker["in_memory"] = memory_usage(
-    (numpy_masker_parallel_inmemory, (fmri_img, mask_imgs)),
-    max_usage=True,
-    include_children=True,
-    multiprocess=True,
-)
 print(
     f"Peak memory usage with numpy indexing, {N_REGIONS} jobs in parallel:\n"
-    f"- with file paths: {numpy_masker['path']} MiB\n"
-    f"- with in-memory images: {numpy_masker['in_memory']} MiB"
+    f"{numpy_masker} MiB"
 )
 
 # %%
@@ -271,31 +247,27 @@ print(
 
 from multiprocessing.shared_memory import SharedMemory
 
-fmri_array = np.asarray(fmri_img.dataobj)
-shm = SharedMemory(create=True, size=fmri_array.nbytes)
-shared_array = np.ndarray(
-    fmri_array.shape, dtype=fmri_array.dtype, buffer=shm.buf
-)
-np.copyto(shared_array, fmri_array)
-del fmri_array
 
-# %%
-# Here, the image is already in-memory, so there is no need to examine the
-# the two cases as we did before.
-
-
-def numpy_masker_shared_single(img, mask):
-    return img[np.asarray(mask.dataobj).astype(bool)]
-
-
-def numpy_masker_shared_parallel(img, masks):
-    return Parallel(n_jobs=N_REGIONS)(
-        delayed(numpy_masker_shared_single)(img, mask) for mask in masks
+def numpy_masker_shared_parallel(fmri_path, mask_paths):
+    fmri_array = load_img(fmri_path).get_fdata()
+    shm = SharedMemory(create=True, size=fmri_array.nbytes)
+    shared_array = np.ndarray(
+        fmri_array.shape, dtype=fmri_array.dtype, buffer=shm.buf
     )
+    np.copyto(shared_array, fmri_array)
+    del fmri_array
+    masks = [load_img(mask).get_fdata().astype(bool) for mask in mask_paths]
+    Parallel(n_jobs=N_REGIONS)(
+        delayed(numpy_masker_single)(shared_array, mask) for mask in masks
+    )
+    # cleanup
+    shm.close()
+    shm.unlink()
+    return 1
 
 
 numpy_masker_shared = memory_usage(
-    (numpy_masker_shared_parallel, (shared_array, mask_imgs)),
+    (numpy_masker_shared_parallel, (fmri_path, mask_paths)),
     max_usage=True,
     include_children=True,
     multiprocess=True,
@@ -306,9 +278,6 @@ print(
     f"{numpy_masker_shared} MiB"
 )
 
-# cleanup
-shm.close()
-shm.unlink()
 
 # %%
 # Let's plot the memory usage for each method to compare them.
@@ -320,27 +289,27 @@ plt.bar(
     [
         "NiftiMasker,\nwith path",
         "NiftiMasker,\nwith in-memory\nimage",
-        "Numpy indexing,\nwith path",
-        "Numpy indexing,\nwith in-memory\nimage",
+        "Numpy indexing",
         "Numpy indexing,\nwith shared\nmemory",
     ],
     [
         nifti_masker["path"],
         nifti_masker["in_memory"],
-        numpy_masker["path"],
-        numpy_masker["in_memory"],
+        numpy_masker,
         numpy_masker_shared,
     ],
     color=[
         (0.12156862745098039, 0.4666666666666667, 0.7058823529411765),
         (0.6823529411764706, 0.7803921568627451, 0.9098039215686274),
         (1.0, 0.4980392156862745, 0.054901960784313725),
-        (1.0, 0.7333333333333333, 0.47058823529411764),
         (0.17254901960784313, 0.6274509803921569, 0.17254901960784313),
     ],
 )
 plt.ylabel("Peak memory usage (MiB)")
-plt.title(f"Memory usage comparison with {N_REGIONS} jobs in parallel")
+plt.title(
+    f"Memory usage comparison for masking a 4D fMRI image with \n"
+    f"{n_timepoints} volumes across {N_REGIONS} jobs in parallel"
+)
 plt.show()
 
 # %%
@@ -362,7 +331,7 @@ plt.show()
 # However, if you also need to standardize, smooth, detrend, etc. the data,
 # then using :class:`~nilearn.maskers.NiftiMasker` with in-memory images is
 # the most user-friendly way to run all these operations in the appropriate
-# order.
+# order while still being relatively memory-efficient.
 #
 # Finally, it should be noted that the differences in memory usage between
 # the methods can be more significant when working with even larger images
