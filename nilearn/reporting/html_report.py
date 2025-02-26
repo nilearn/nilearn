@@ -79,10 +79,14 @@ def _get_js_template(estimator_name):
         Name of the template file to use.
 
     """
-    for key in JS_TEMPLATE:
-        if key in estimator_name:
-            return JS_PATH / JS_TEMPLATE[key]
-    return None
+    return next(
+        (
+            JS_PATH / JS_TEMPLATE[key]
+            for key in JS_TEMPLATE
+            if key in estimator_name
+        ),
+        None,
+    )
 
 
 def embed_img(display):

@@ -188,7 +188,6 @@ for contrast_id, contrast_val in contrasts.items():
             stat_map=z_score,
             hemi=hemi,
             title=contrast_id,
-            colorbar=True,
             threshold=3.0,
             bg_map=fsaverage_data,
         )

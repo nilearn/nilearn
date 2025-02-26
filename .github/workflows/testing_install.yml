@@ -46,6 +46,7 @@ jobs:
             run: |
                 set -e
                 python -m build
+                ls -lrth dist
         -   name: Install Nilearn from wheel & check installation
             shell: bash {0}
             run: |

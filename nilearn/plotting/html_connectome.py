@@ -40,15 +40,12 @@ def _encode_coordinates(coords, prefix):
     coordinates : :obj:`dict`
         Dictionary containing base64 values for each axis
     """
-    coordinates = {}
-
     coords = np.asarray(coords, dtype="<f4")
     marker_x, marker_y, marker_z = coords.T
-    for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
-        coordinates[f"{prefix}{cname}"] = encode(
-            np.asarray(coord, dtype="<f4")
-        )
-
+    coordinates = {
+        f"{prefix}{cname}": encode(np.asarray(coord, dtype="<f4"))
+        for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]
+    }
     return coordinates
 
 

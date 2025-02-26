@@ -165,7 +165,6 @@ fsl_z_map = nib.load(
 
 plot_glass_brain(
     z_map,
-    colorbar=True,
     threshold=norm.isf(0.001),
     title='Nilearn Z map of "StopSuccess - Go" (unc p<0.001)',
     plot_abs=False,
@@ -173,7 +172,6 @@ plot_glass_brain(
 )
 plot_glass_brain(
     fsl_z_map,
-    colorbar=True,
     threshold=norm.isf(0.001),
     title='FSL Z map of "StopSuccess - Go" (unc p<0.001)',
     plot_abs=False,
@@ -186,7 +184,7 @@ plot_glass_brain(
 from nilearn.plotting import plot_bland_altman, plot_img_comparison
 
 plot_img_comparison(
-    [z_map], [fsl_z_map], model.masker_, ref_label="Nilearn", src_label="FSL"
+    z_map, fsl_z_map, model.masker_, ref_label="Nilearn", src_label="FSL"
 )
 
 plot_bland_altman(
@@ -204,7 +202,6 @@ from nilearn.plotting import plot_contrast_matrix
 plot_contrast_matrix("StopSuccess - Go", design_matrix)
 plot_glass_brain(
     z_map,
-    colorbar=True,
     threshold=norm.isf(0.001),
     plot_abs=False,
     display_mode="z",

@@ -101,7 +101,7 @@ def generate_atlas_look_up_table(
                 ),
                 stacklevel=3,
             )
-            name = name[0 : len(index)]
+            name = name[: len(index)]
 
     # convert to dataframe and do some cleaning where required
     lut = pd.DataFrame({"index": index, "name": name})
