@@ -134,6 +134,14 @@ def test_plotting_functions_radiological_view(
     return result
 
 
+def test_plot_roi_contour_colorbar(img_labels):
+    """Test plot_roi with contours.
+
+    Should have a colorbar by default.
+    """
+    return plot_roi(img_labels, view_type="contours")
+
+
 @pytest.mark.mpl_image_compare
 def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni):
     """Smoke-test for 4D plot_carpet with default arguments."""
