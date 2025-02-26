@@ -18,14 +18,19 @@ from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn.base import clone
 from sklearn.cluster import KMeans
+from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn._utils.param_validation import (
+    check_params,
+    check_run_sample_masks,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
@@ -128,6 +133,7 @@ def _yule_walker(x, order):
     return rho
 
 
+@fill_doc
 def run_glm(
     Y, X, noise_model="ar1", bins=100, n_jobs=1, verbose=0, random_state=None
 ):
@@ -157,8 +163,7 @@ def run_glm(
         The number of CPUs to use to do the computation. -1 means
         'all CPUs'.
 
-    verbose : :obj:`int`, default=0
-        The verbosity level.
+    %(verbose0)s
 
     random_state : :obj:`int` or numpy.random.RandomState, default=None
         Random state seed to sklearn.cluster.KMeans for autoregressive models
@@ -337,25 +342,21 @@ class FirstLevelModel(BaseGLM):
         In the case of surface analysis, passing None or False will lead to
         no masking.
 
-    target_affine : 3x3 or 4x4 matrix, or None, default=None
-        This parameter is passed to nilearn.image.resample_img.
-        Please see the related documentation for details.
+    %(target_affine)s
 
-    target_shape : 3-tuple of :obj:`int`, or None, default=None
-        This parameter is passed to nilearn.image.resample_img.
-        Please see the related documentation for details.
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_shape)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
     %(smoothing_fwhm)s
-    memory : :obj:`str` or pathlib.Path, default=None
-        Path to the directory used to cache the masking process
-        and the glm fit.
-        By default, no caching is done.
-        Creates instance of joblib.Memory.
-        If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : :obj:`int` or None, default=None
-        Rough estimator of the amount of memory used by caching.
-        Higher value means more memory for caching.
+    %(memory)s
 
+    %(memory_level)s
 
     standardize : :obj:`bool`, default=False
         If standardize is True, the time-series are centered and normed:
@@ -375,15 +376,12 @@ class FirstLevelModel(BaseGLM):
     noise_model : {'ar1', 'ols'}, default='ar1'
         The temporal variance model.
 
-    verbose : :obj:`int`, default=0
-        Indicate the level of verbosity. By default, nothing is printed.
-        If 0 prints nothing. If 1 prints progress by computation of
+    %(verbose)s
+        If 1 prints progress by computation of
         each run. If 2 prints timing details of masker and GLM. If 3
         prints masker computation details.
 
-    n_jobs : :obj:`int`, default=1
-        The number of CPUs to use to do the computation. -1 means
-        'all CPUs', -2 'all CPUs but one', and so on.
+    %(n_jobs)s
 
     minimize_memory : :obj:`bool`, default=True
         Gets rid of some variables on the model fit results that are not
@@ -560,8 +558,7 @@ class FirstLevelModel(BaseGLM):
             remaining = f"{int(remaining)} seconds remaining"
 
         return (
-            f"Computing run {run_idx + 1} "
-            f"out of {n_runs} runs ({remaining})."
+            f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."
         )
 
     def _fit_single_run(self, sample_masks, bins, run_img, run_idx):
@@ -698,10 +695,6 @@ class FirstLevelModel(BaseGLM):
             and self.results_ is not None
         )
 
-    def _check_fitted(self):
-        if not self.__sklearn_is_fitted__():
-            raise ValueError("The model has not been fit yet.")
-
     def _more_tags(self):
         """Return estimator tags.
 
@@ -820,6 +813,7 @@ class FirstLevelModel(BaseGLM):
             will be clustered via K-means with `bins` number of clusters.
 
         """
+        check_params(self.__dict__)
         #  check attributes passed at construction
         if self.t_r is not None:
             _check_repetition_time(self.t_r)
@@ -830,11 +824,7 @@ class FirstLevelModel(BaseGLM):
         if self.fir_delays is None:
             self.fir_delays = [0]
 
-        self.memory = stringify_path(self.memory)
-        if self.memory is None:
-            self.memory = Memory(None)
-        if isinstance(self.memory, str):
-            self.memory = Memory(self.memory)
+        self.memory = check_memory(self.memory)
 
         if self.signal_scaling not in {False, 1, (0, 1)}:
             raise ValueError(
@@ -912,8 +902,9 @@ class FirstLevelModel(BaseGLM):
 
         Parameters
         ----------
-        contrast_def : str or array of shape (n_col) or list of (string or\
-                       array of shape (n_col))
+        contrast_def : :obj:`str` \
+                       or array of shape (n_col) or \
+                       :obj:`list` of (:obj:`str` or array of shape (n_col))
 
             where ``n_col`` is the number of columns of the design matrix,
             (one array per run). If only one array is provided when there
@@ -925,7 +916,7 @@ class FirstLevelModel(BaseGLM):
             this case, the string defining the contrasts must be a valid
             expression for compatibility with :meth:`pandas.DataFrame.eval`.
 
-        stat_type : {'t', 'F'}, optional
+        stat_type : {'t', 'F'}, default=None
             Type of the contrast.
 
         output_type : :obj:`str`, default='z_score'
@@ -943,7 +934,7 @@ class FirstLevelModel(BaseGLM):
             keyed by the type of image.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -1035,6 +1026,8 @@ class FirstLevelModel(BaseGLM):
 
         """
         # check if valid attribute is being accessed.
+        check_is_fitted(self)
+
         all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
@@ -1052,8 +1045,6 @@ class FirstLevelModel(BaseGLM):
                 "To do so, set `minimize_memory` to `False` "
                 "when initializing the `FirstLevelModel`-object."
             )
-
-        self._check_fitted()
 
         output = []
 
@@ -1144,7 +1135,7 @@ class FirstLevelModel(BaseGLM):
 
         else:
             # Make sure masker has been fitted otherwise no attribute mask_img_
-            self.mask_img._check_fitted()
+            check_is_fitted(self.mask_img)
             if self.mask_img.mask_img_ is None and self.masker_ is None:
                 self.masker_ = clone(self.mask_img)
                 for param_name in [
@@ -2153,8 +2144,7 @@ def _check_args_first_level_from_bids(
 
     if not isinstance(img_filters, list):
         raise TypeError(
-            f"'img_filters' must be a list. "
-            f"Got {type(img_filters)} instead."
+            f"'img_filters' must be a list. Got {type(img_filters)} instead."
         )
     supported_filters = [
         *bids_entities()["raw"],
@@ -2230,8 +2220,7 @@ def _make_bids_files_filter(
         Filters are of the form (field, label).
         Only one filter per field allowed.
 
-    verbose : :obj:`integer`
-        Indicate the level of verbosity.
+    %(verbose0)s
 
     Returns
     -------
@@ -2304,7 +2293,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
         "space_label or img_filters"
     )
 
-    run_check_list: list = []
+    run_check_list = []
 
     for img_ in imgs:
         parsed_filename = parse_bids_filename(img_)
@@ -2425,8 +2414,7 @@ def _check_bids_events_list(
             )
         if len(this_event) > 1:
             raise ValueError(
-                f"More than 1 events.tsv files "
-                f"corresponding to {msg_suffix}"
+                f"More than 1 events.tsv files corresponding to {msg_suffix}"
             )
         if this_event[0] not in events:
             raise ValueError(

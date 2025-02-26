@@ -29,7 +29,6 @@ def plot_matrices(cov, prec, title, labels):
     # Display covariance matrix
     plotting.plot_matrix(
         cov,
-        cmap=plotting.cm.bwr,
         vmin=-1,
         vmax=1,
         title=f"{title} / covariance",
@@ -38,7 +37,6 @@ def plot_matrices(cov, prec, title, labels):
     # Display precision matrix
     plotting.plot_matrix(
         prec,
-        cmap=plotting.cm.bwr,
         vmin=-span,
         vmax=span,
         title=f"{title} / precision",
@@ -74,7 +72,7 @@ masker = NiftiMapsMasker(
     high_pass=0.01,
     t_r=2,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,
     verbose=2,

@@ -109,7 +109,7 @@ def plot_slices(data, title=None):
             vmin=-vmax,
             vmax=vmax,
             interpolation="nearest",
-            cmap=plt.cm.RdBu_r,
+            cmap="RdBu_r",
         )
         plt.xticks(())
         plt.yticks(())
@@ -258,4 +258,4 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

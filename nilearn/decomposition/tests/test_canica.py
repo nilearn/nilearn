@@ -5,7 +5,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition.canica import CanICA
@@ -112,12 +112,7 @@ def canica_data():
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
-    "check_get_params_invariance",
     "check_no_attributes_set_in_init",
-    "check_transformers_unfitted",
-    "check_transformer_n_iter",
-    "check_parameters_default_constructible",
 ]
 
 
@@ -155,15 +150,8 @@ def test_threshold_bound_error(canica_data):
         canica.fit(canica_data)
 
 
-def test_transform_and_fit_errors(canica_data, mask_img):
+def test_transform_and_fit_errors(mask_img):
     canica = CanICA(mask=mask_img, n_components=3)
-
-    with pytest.raises(
-        ValueError,
-        match="Object has no components_ attribute. "
-        "This is probably because fit has not been called.",
-    ):
-        canica.transform(canica_data)
 
     # error when empty list of provided.
     with pytest.raises(
@@ -371,3 +359,16 @@ def test_canica_score(canica_data, mask_img):
     assert scores.shape, (n_components,)
     assert np.all(scores <= 1)
     assert np.all(scores >= 0)
+
+
+def test_nifti_maps_masker_(canica_data, mask_img):
+    """Check depreacation of nifti_maps_masker_."""
+    n_components = 10
+
+    canica = CanICA(n_components=n_components, mask=mask_img, random_state=0)
+    canica.fit(canica_data)
+
+    with pytest.deprecated_call(
+        match="The 'nifti_maps_masker_' attribute is deprecated"
+    ):
+        canica.nifti_maps_masker_  # noqa: B018

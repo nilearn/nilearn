@@ -49,7 +49,7 @@ from nilearn.maskers import NiftiMapsMasker
 masker = NiftiMapsMasker(
     maps_img=atlas_filename,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     memory="nilearn_cache",
     verbose=5,
 )
@@ -88,9 +88,7 @@ from nilearn import plotting
 
 # Mask out the major diagonal
 np.fill_diagonal(correlation_matrix, 0)
-plotting.plot_matrix(
-    correlation_matrix, labels=labels, colorbar=True, vmax=0.8, vmin=-0.8
-)
+plotting.plot_matrix(correlation_matrix, labels=labels, vmax=0.8, vmin=-0.8)
 # %%
 # And now display the corresponding graph
 # ---------------------------------------
@@ -98,9 +96,7 @@ coords = atlas.region_coords
 
 # We threshold to keep only the 20% of edges with the highest value
 # because the graph is very dense
-plotting.plot_connectome(
-    correlation_matrix, coords, edge_threshold="80%", colorbar=True
-)
+plotting.plot_connectome(correlation_matrix, coords, edge_threshold="80%")
 
 plotting.show()
 

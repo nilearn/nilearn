@@ -271,8 +271,7 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
     if not multichannel:
         if data.ndim < 2 or data.ndim > 3:
             raise ValueError(
-                "For non-multichannel input, data must be of "
-                "dimension 2 or 3."
+                "For non-multichannel input, data must be of dimension 2 or 3."
             )
         dims = data.shape  # To reshape final labeled result
         data = np.atleast_3d(as_float_array(data))[..., np.newaxis]

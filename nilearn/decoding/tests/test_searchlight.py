@@ -1,28 +1,18 @@
 """Test the searchlight module."""
 
-# Author: Alexandre Abraham
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from sklearn import __version__ as sklearn_version
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 
-from nilearn._utils import compare_version
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _img_3d_ones, _rng
 from nilearn.decoding import searchlight
 
 extra_valid_checks = [
-    "check_estimators_unfitted",
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_get_params_invariance",
     "check_no_attributes_set_in_init",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
 ]
-if compare_version(sklearn_version, ">", "1.5.2"):
-    extra_valid_checks.append("check_parameters_default_constructible")
 
 
 @pytest.mark.parametrize(
@@ -70,6 +60,22 @@ def define_cross_validation():
     cv = KFold(n_splits=4)
     n_jobs = 1
     return cv, n_jobs
+
+
+def test_searchlight_no_mask():
+    """Check validation type mask."""
+    sl = searchlight.SearchLight(mask_img=1)
+
+    frames = 30
+    data_img, cond, _ = _make_searchlight_test_data(frames)
+    with pytest.raises(
+        TypeError,
+        match=(
+            "Data given cannot be loaded "
+            "because it is not compatible with nibabel format"
+        ),
+    ):
+        sl.fit(data_img, y=cond)
 
 
 def test_searchlight_small_radius():
@@ -215,37 +221,6 @@ def test_searchlight_group_cross_validation_with_extra_group_variable(
     sl.fit(imgs, y)
 
 
-def test_searchlight_attributes_exist_after_fit():
-    """Test if attributes `process_mask_` and `masked_scores_`
-    exist after fitting using mock data.
-    """
-    # Use the existing helper function to generate data
-    frames = 20
-    data_img, cond, mask_img = _make_searchlight_test_data(frames)
-
-    # Instantiate and fit the SearchLight with mock data
-    sl = searchlight.SearchLight(mask_img, radius=1.0)
-    sl.fit(data_img, y=cond)
-
-    # Check if attributes exist after fitting
-    assert hasattr(sl, "process_mask_")
-    assert hasattr(sl, "masked_scores_")
-
-
-def test_searchlight_scores_img_error_before_fit():
-    """Test if accessing `scores_img_` raises an error before fitting."""
-    # Create mock mask
-    frames = 20
-    data_img, cond, mask_img = _make_searchlight_test_data(frames)
-
-    # Instantiate SearchLight without fitting
-    sl = searchlight.SearchLight(mask_img, radius=5.0)
-
-    # Check if accessing `scores_img_` raises a ValueError
-    with pytest.raises(ValueError, match="The model has not been fitted yet."):
-        sl.scores_img_()
-
-
 def test_mask_img_dimension_mismatch():
     """Test if SearchLight handles mismatched mask and
     image dimensions gracefully.
@@ -266,16 +241,6 @@ def test_mask_img_dimension_mismatch():
     # Ensure scores_ exists and is the correct shape
     assert sl.scores_ is not None
     assert sl.scores_.shape == invalid_mask_img.shape
-
-
-def test_transform_without_fit():
-    """Test if calling `transform()` raises ValueError before fitting."""
-    frames = 20
-    data_img, cond, mask_img = _make_searchlight_test_data(frames)
-    sl = searchlight.SearchLight(mask_img, radius=1.0)
-
-    with pytest.raises(ValueError, match="The model has not been fitted yet."):
-        sl.transform(data_img)
 
 
 def test_transform_applies_mask_correctly():

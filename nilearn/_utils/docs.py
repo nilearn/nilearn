@@ -14,12 +14,19 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 import sys
 
 ##############################################################################
-
+#
+# Parameters definitions
+#
 # Standard documentation entries
 #
 # Entries are listed in alphabetical order.
 #
 docdict = {}
+
+##############################################################################
+#
+# Parameters definitions
+#
 
 # annotate
 docdict["annotate"] = """
@@ -64,6 +71,27 @@ of :obj:`float`: (xmin, ymin, width, height), default=None
     The axes, or the coordinates, in matplotlib figure space,
     of the axes used to display the plot.
     If `None`, the complete figure is used.
+"""
+
+# bg_img
+docdict["bg_map"] = """
+bg_map : :obj:`str` or :obj:`pathlib.Path` or \
+         :class:`numpy.ndarray` \
+         or :obj:`~nilearn.surface.SurfaceImage` or None,\
+         default=None
+    Background image to be plotted on the :term:`mesh`
+    underneath the surf_data in grayscale,
+    most likely a sulcal depth map for realistic shading.
+    If the map contains values outside [0, 1],
+    it will be rescaled such that all values are in [0, 1].
+    Otherwise, it will not be modified.
+    If a :obj:`str` or :obj:`pathlib.Path` is passed,
+    it should be loadable to a :class:`numpy.ndarray`
+    by :func:`~nilearn.surface.load_surf_data`.
+    If a :class:`numpy.ndarray` is passed,
+    if should have a shape `(n_vertices, )`,
+    with ``n_vertices`` matching that of the underlying mesh
+    used for plotting.
 """
 
 # bg_img
@@ -179,12 +207,37 @@ docdict["classifier_options"] = f"""
 
 """
 
+# clean_args
+docdict["clean_args"] = """
+clean_args : :obj:`dict` or None, default=None
+    Keyword arguments to be passed
+    to :func:`~nilearn.signal.clean`
+    called within the masker.
+    Within :func:`~nilearn.signal.clean`,
+    kwargs prefixed with ``'butterworth__'``
+    will be passed to the Butterworth filter.
+"""
+
 # cmap
 docdict["cmap"] = """
 cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
     The colormap to use.
     Either a string which is a name of a matplotlib colormap,
     or a matplotlib colormap object.
+"""
+
+# cmap or lut
+docdict["cmap_lut"] = """
+cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
+       or :class:`pandas.DataFrame`, optional
+    The colormap to use.
+    Either a string which is a name of a matplotlib colormap,
+    or a matplotlib colormap object,
+    or a BIDS compliant
+    `look-up table <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
+    passed as a pandas dataframe.
+    If the look up table does not contain a ``color`` column,
+    then the default colormap of this function will be used.
 """
 
 # colorbar
@@ -248,7 +301,7 @@ darkness : :obj:`float` between 0 and 1, optional
 
 # data_dir
 docdict["data_dir"] = """
-data_dir : :obj:`pathlib.Path` or :obj:`str`, optional
+data_dir : :obj:`pathlib.Path` or :obj:`str` or None, optional
     Path where data should be downloaded.
     By default, files are downloaded in a ``nilearn_data`` folder
     in the home directory of the user.
@@ -296,6 +349,14 @@ draw_cross : :obj:`bool`, default=True
     to indicate the cut position.
 """
 
+# dtype
+docdict["dtype"] = """
+dtype : dtype like, "auto" or None, default=None
+    Data type toward which the data should be converted.
+    If "auto", the data will be converted to int32
+    if dtype is discrete and float32 if it is continuous.
+"""
+
 # extractor / extract_type
 docdict["extractor"] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
@@ -320,23 +381,6 @@ docdict["figure"] = """
 figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     Matplotlib figure used or its number.
     If `None` is given, a new figure is created.
-"""
-
-# fsaverage options
-docdict["fsaverage_options"] = """
-
-    - ``"fsaverage3"``: the low-resolution fsaverage3 mesh (642 nodes)
-    - ``"fsaverage4"``: the low-resolution fsaverage4 mesh (2562 nodes)
-    - ``"fsaverage5"``: the low-resolution fsaverage5 mesh (10242 nodes)
-    - ``"fsaverage6"``: the medium-resolution fsaverage6 mesh (40962 nodes)
-    - ``"fsaverage7"``: same as `"fsaverage"`
-    - ``"fsaverage"``: the high-resolution fsaverage mesh (163842 nodes)
-
-    .. note::
-
-        The high-resolution fsaverage will result in more computation
-        time and memory usage
-
 """
 
 # fwhm
@@ -367,15 +411,30 @@ or 'fast' or None, optional
 
 """
 
+# groups
+docdict["groups"] = """
+groups : None, default=None
+    Group labels for the samples used
+    while splitting the dataset into train/test set.
+
+    Note that this parameter must be specified in some scikit-learn
+    cross-validation generators to calculate the number of splits,
+    for example sklearn.model_selection.LeaveOneGroupOut or
+    sklearn.model_selection.LeavePGroupsOut.
+
+    For more details see
+    https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+"""
+
 # hemi
 docdict["hemi"] = """
-hemi : {"left", "right"}, default="left"
+hemi : {"left", "right", "both"}, default="left"
     Hemisphere to display.
 """
 
 # high_pass
 docdict["high_pass"] = """
-high_pass : :obj:`float`, default=None
+high_pass : :obj:`float` or :obj:`int` or None, default=None
     High cutoff frequency in Hertz.
     If specified, signals below this frequency will be filtered out.
 """
@@ -457,11 +516,40 @@ imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
 """
 
-# legacy_format
-docdict["legacy_format"] = """
-legacy_format : :obj:`bool`, default=True
-    If set to `True`, the fetcher will return recarrays.
-    Otherwise, it will return pandas dataframes.
+# keep_masked_labels
+docdict["keep_masked_labels"] = """
+keep_masked_labels : :obj:`bool`, default=True
+    When a mask is supplied through the "mask_img" parameter, some
+    atlas regions may lie entirely outside of the brain mask, resulting
+    in empty time series for those regions.
+    If True, the masked atlas with these empty labels will be retained
+    in the output, resulting in corresponding time series containing
+    zeros only. If False, the empty labels will be removed from the
+    output, ensuring no empty time series are present.
+
+    .. deprecated:: 0.10.2
+
+        The 'True' option for ``keep_masked_labels`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_labels`` parameter will be removed in 0.15.
+
+"""
+
+# keep_masked_maps
+docdict["keep_masked_maps"] = """
+keep_masked_maps : :obj:`bool`, optional
+    If True, masked atlas with invalid maps (maps that contain only
+    zeros after applying the mask) will be retained in the output, resulting
+    in corresponding time series containing zeros only. If False, the
+    invalid maps will be removed from the trimmed atlas, resulting in
+    no empty time series in the output.
+
+    .. deprecated:: 0.10.2
+
+        The 'True' option for ``keep_masked_maps`` is deprecated.
+        The default value will change to 'False' in 0.13,
+        and the ``keep_masked_maps`` parameter will be removed in 0.15.
+
 """
 
 # linewidth
@@ -473,7 +561,7 @@ linewidths : :obj:`float`, optional
 
 # low_pass
 docdict["low_pass"] = """
-low_pass : :obj:`float` or None, default=None
+low_pass : :obj:`float` or :obj:`int` or None, default=None
     Low cutoff frequency in Hertz.
     If specified, signals above this frequency will be filtered out.
     If `None`, no low-pass filtering will be performed.
@@ -484,6 +572,7 @@ docdict["lower_cutoff"] = """
 lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
+
 
 # mask_strategy
 docdict["mask_strategy"] = """
@@ -530,42 +619,6 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
 
 """
 
-# keep_masked_labels
-docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=True
-    When a mask is supplied through the "mask_img" parameter, some
-    atlas regions may lie entirely outside of the brain mask, resulting
-    in empty time series for those regions.
-    If True, the masked atlas with these empty labels will be retained
-    in the output, resulting in corresponding time series containing
-    zeros only. If False, the empty labels will be removed from the
-    output, ensuring no empty time series are present.
-
-    .. deprecated:: 0.10.2
-
-        The 'True' option for ``keep_masked_labels`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_labels`` parameter will be removed in 0.15.
-
-"""
-
-# keep_masked_maps
-docdict["keep_masked_maps"] = """
-keep_masked_maps : :obj:`bool`, optional
-    If True, masked atlas with invalid maps (maps that contain only
-    zeros after applying the mask) will be retained in the output, resulting
-    in corresponding time series containing zeros only. If False, the
-    invalid maps will be removed from the trimmed atlas, resulting in
-    no empty time series in the output.
-
-    .. deprecated:: 0.10.2
-
-        The 'True' option for ``keep_masked_maps`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_maps`` parameter will be removed in 0.15.
-
-"""
-
 # kwargs for Maskers
 docdict["masker_kwargs"] = """
 kwargs : dict
@@ -575,6 +628,17 @@ kwargs : dict
     Within :func:`~nilearn.signal.clean`, kwargs prefixed with
     `'butterworth__'` will be passed to the Butterworth filter
     (i.e., `clean__butterworth__`).
+
+    .. deprecated:: 0.11.2dev
+
+    .. admonition:: Use ``clean_args`` instead!
+       :class: important
+
+       It is recommended to pass parameters to use for data cleaning
+       via :obj:`dict` to the ``clean_args`` parameter.
+
+       Passing parameters via "kwargs" is mutually exclusive
+       with passing cleaning parameters via ``clean_args``.
 """
 
 # memory
@@ -604,6 +668,14 @@ n_jobs : :obj:`int`, default={}
 """
 docdict["n_jobs"] = n_jobs.format("1")
 docdict["n_jobs_all"] = n_jobs.format("-1")
+
+# n_jobs
+docdict["n_perm"] = """
+n_perm : :obj:`int`, default=10000
+    Number of permutations to perform.
+    Permutations are costly but the more are performed, the more precision
+    one gets in the p-values estimation.
+"""
 
 # opening
 docdict["opening"] = """
@@ -636,7 +708,7 @@ opening : :obj:`bool` or :obj:`int`, optional
 
 # output_file
 docdict["output_file"] = """
-output_file : :obj:`str`, or None, optional
+output_file : :obj:`str` or :obj:`pathlib.Path` or None, optional
     The name of an image file to export the plot to.
     Valid extensions are .png, .pdf, .svg.
     If `output_file` is not `None`, the plot is saved to a file,
@@ -653,7 +725,7 @@ radiological : :obj:`bool`, default=False
 
 # random_state
 docdict["random_state"] = """
-random_state : :obj:`int` or RandomState, optional
+random_state : :obj:`int` or np.random.RandomState, optional
     Pseudo-random number generator state used for random sampling.
 """
 
@@ -718,6 +790,15 @@ resampling_interpolation : :obj:`str`, optional
 
 """
 
+# resolution template
+docdict["resolution"] = """
+resolution : :obj:`int` or None, default=None
+        Resolution in millimeters.
+        If resolution is different from 1,
+        the template is re-sampled with the specified resolution.
+        Default to ``1`` if None is passed.
+"""
+
 # resume
 docdict["resume"] = """
 resume : :obj:`bool`, default=True
@@ -745,6 +826,31 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
     The default `None` is accepted if the design matrix has a single column,
     in which case the only possible contrast array((1)) is applied;
     when the design matrix has multiple columns, an error is raised.
+"""
+
+# second_level_confounds
+docdict["second_level_confounds"] = """
+confounds : :obj:`pandas.DataFrame` or None, default=None
+    Must contain a ``subject_label`` column.
+    All other columns are considered as confounds and included in the model.
+    If ``design_matrix`` is provided then this argument is ignored.
+    The resulting second level design matrix uses the same column names
+    as in the given :class:`~pandas.DataFrame` for confounds.
+    At least two columns are expected, ``subject_label``
+    and at least one confound.
+"""
+
+# second_level_confounds
+docdict["second_level_design_matrix"] = """
+design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
+                or :obj:`pathlib.Path` to a CSV or TSV file, \
+                or None, default=None
+    Design matrix to fit the :term:`GLM`.
+    The number of rows in the design matrix
+    must agree with the number of maps
+    derived from ``second_level_input``.
+    Ensure that the order of maps given by a ``second_level_input``
+    list of Niimgs matches the order of the rows in the design matrix.
 """
 
 # second_level_input
@@ -782,9 +888,31 @@ second_level_input : :obj:`list` of \
 
 """
 
+# second_level_mask_img
+docdict["second_level_mask_img"] = """
+mask_img : Niimg-like, :obj:`~nilearn.maskers.NiftiMasker` or\
+            :obj:`~nilearn.maskers.MultiNiftiMasker` or\
+            :obj:`~nilearn.maskers.SurfaceMasker` object or None,\
+            default=None
+    Mask to be used on data.
+    If an instance of masker is passed,
+    then its mask will be used.
+    If no mask is given,
+    it will be computed automatically
+    by a :class:`~nilearn.maskers.NiftiMasker`,
+    or a :obj:`~nilearn.maskers.SurfaceMasker`
+    (depending on the type passed at fit time)
+    with default parameters.
+    Automatic mask computation assumes first level imgs
+    have already been masked.
+"""
+docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
+    "mask_img :", "mask :"
+)
+
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
-smoothing_fwhm : :obj:`float`, optional.
+smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
     If `smoothing_fwhm` is not `None`,
     it gives the :term:`full-width at half maximum<FWHM>` in millimeters
     of the spatial smoothing to apply to the signal.
@@ -829,6 +957,14 @@ standardize_confounds : :obj:`bool`, default=True
     their mean is put to 0 and their variance to 1 in the time dimension.
 """
 
+# standardize_confounds
+docdict["strategy"] = """
+strategy : :obj:`str`, default="mean"
+    The name of a valid function to reduce the region with.
+    Must be one of: sum, mean, median, minimum, maximum, variance,
+    standard_deviation.
+"""
+
 # symmetric_cbar
 docdict["symmetric_cbar"] = """
 symmetric_cbar : :obj:`bool`, or "auto", default="auto"
@@ -842,21 +978,21 @@ symmetric_cbar : :obj:`bool`, or "auto", default="auto"
 
 # t_r
 docdict["t_r"] = """
-t_r : :obj:`float` or None, default=None
+t_r : :obj:`float` or :obj:`int` or None, default=None
     :term:`Repetition time<TR>`, in seconds (sampling period).
     Set to `None` if not provided.
 """
 
 # target_affine
 docdict["target_affine"] = """
-target_affine : :class:`numpy.ndarray`, default=None
+target_affine : :class:`numpy.ndarray` or None, default=None
     If specified, the image is resampled corresponding to this new affine.
     `target_affine` can be a 3x3 or a 4x4 matrix.
 """
 
 # target_shape
 docdict["target_shape"] = """
-target_shape : :obj:`tuple` or :obj:`list`, default=None
+target_shape : :obj:`tuple` or :obj:`list` or None, default=None
     If specified, the image will be resized to match this new shape.
     `len(target_shape)` must be equal to 3.
 
@@ -867,23 +1003,33 @@ target_shape : :obj:`tuple` or :obj:`list`, default=None
 
 """
 
-# templateflow
-docdict["templateflow"] = """
-    The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
-    release c (MNI152NLin2009cSAsym).
-    The NiLearn template is asymmetrical ICBM152 2009, release a.
-    If you wish to use the exact same release as :term:`fMRIPrep`,
-    please refer to TemplateFlow (https://www.templateflow.org/).
+# threshold
+docdict["tfce"] = """
+tfce : :obj:`bool`, default=False
+    Whether to calculate :term:`TFCE`
+    as part of the permutation procedure or not.
+    The TFCE calculation is implemented
+    as described in :footcite:t:`Smith2009a`.
+
+    .. warning::
+
+        Performing TFCE-based inference
+        will increase the computation time
+        of the permutation procedure considerably.
+        The permutations may take multiple hours,
+        depending on how many permutations
+        are requested and how many jobs are performed in parallel.
 """
 
 # threshold
 docdict["threshold"] = """
-threshold : a number, None, or 'auto', optional
+threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
     If `None` is given, the image is not thresholded.
-    If a number is given, it is used to threshold the image:
-    values below the threshold (in absolute value) are plotted as transparent.
-    If "auto" is given, the threshold is determined magically
-    by analysis of the image.
+    If number is given, it must be non-negative. The specified value is used to
+    threshold the image: values below the threshold (in absolute value) are
+    plotted as transparent.
+    If "auto" is given, the threshold is determined based on the score obtained
+    using percentile value "80%" on the absolute value of the image data.
 """
 
 # title
@@ -898,9 +1044,20 @@ upper_cutoff : :obj:`float`, optional
     Upper fraction of the histogram to be discarded.
 """
 
+# two_sided_test
+docdict["two_sided_test"] = """
+two_sided_test : :obj:`bool`, default=False
+
+    - If ``True``, performs an unsigned t-test.
+        Both positive and negative effects are considered; the null
+        hypothesis is that the effect is zero.
+    - If ``False``, only positive effects are considered as relevant.
+        The null hypothesis is that the effect is zero or negative.
+"""
+
 # url
 docdict["url"] = """
-url : :obj:`str`, default=None
+url : :obj:`str` or None, default=None
     URL of file to download.
     Override download URL.
     Used for test only (or if you setup a mirror of the data).
@@ -916,9 +1073,12 @@ docdict["verbose0"] = verbose.format(0)
 
 # view
 docdict["view"] = """
-view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"
-    If a string, must be in
+view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"\
+    if `hemi` is "left" or "right", if `hemi` is "both" "dorsal"
+    If a string, and `hemi` is "left" or "right" must be in
     {"lateral", "medial", "dorsal", "ventral", "anterior", "posterior"}.
+    If `hemi` is "both", must be in {"left", "right", "dorsal", "ventral",
+    "anterior", "posterior"}.
     If a sequence, must be a pair (elev, azim) of :obj:`float` or :obj:`int`
     angles in degrees that will manually set a custom view.
     E.g., view=[270.0, 90] or view=(0, -180.0).
@@ -927,23 +1087,181 @@ view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"
 
 # vmax
 docdict["vmax"] = """
-vmax : :obj:`float`, optional
-    Upper bound of the colormap.
+vmax : :obj:`float` or obj:`int` or None, optional
+    Upper bound of the colormap. The values above vmax are masked.
     If `None`, the max of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
 # vmin
 docdict["vmin"] = """
-vmin : :obj:`float`, optional
-    Lower bound of the colormap.
+vmin : :obj:`float`  or obj:`int` or None, optional
+    Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
+
+##############################################################################
+#
+# Other values definitions
+#
+
+# atlas_type
+docdict["atlas_type"] = """'atlas_type' : :obj:`str`
+        Type of atlas.
+        See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
+
+docdict["base_decoder_fit_attributes"] = """
+        Attributes
+        ----------
+        masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
+            The masker used to mask the data.
+
+        mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
+            Mask computed by the masker object.
+
+        classes_ : numpy.ndarray
+            Classes to predict. For classification only.
+
+        screening_percentile_ : :obj:`float`
+            Screening percentile corrected according to volume of mask,
+            relative to the volume of standard brain.
+
+        coef_ : numpy.ndarray, shape=(n_classes, n_features)
+            Contains the mean of the models weight vector across
+            fold for each class. Returns None for Dummy estimators.
+
+        coef_img_ : :obj:`dict` of Nifti1Image
+            Dictionary containing ``coef_`` with class names as keys,
+            and ``coef_`` transformed in Nifti1Images as values.
+            In the case of a regression,
+            it contains a single Nifti1Image at the key 'beta'.
+            Ignored if Dummy estimators are provided.
+
+        intercept_ : ndarray, shape (nclasses,)
+            Intercept (also known as bias) added to the decision function.
+            Ignored if Dummy estimators are provided.
+
+        cv_ : :obj:`list` of pairs of lists
+            List of the (n_folds,) folds.
+            For the corresponding fold,
+            each pair is composed of two lists of indices,
+            one for the train samples and one for the test samples.
+
+        std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
+            Contains the standard deviation of the models weight vector across
+            fold for each class.
+            Note that folds are not independent,
+            see
+            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+            Ignored if Dummy estimators are provided.
+
+        std_coef_img_ : :obj:`dict` of Nifti1Image
+            Dictionary containing `std_coef_` with class names as keys,
+            and `coef_` transformed in Nifti1Image as values.
+            In the case of a regression,
+            it contains a single Nifti1Image at the key 'beta'.
+            Ignored if Dummy estimators are provided.
+
+        cv_params_ : :obj:`dict` of :obj:`list`
+            Best point in the parameter grid for each tested fold
+            in the inner cross validation loop.
+            The grid is empty
+            when Dummy estimators are provided.
+
+            .. note::
+
+                If the estimator used its built-in cross-validation,
+                this will include an additional key
+                for the single best value estimated
+                by the built-in cross-validation
+                ('best_C' for LogisticRegressionCV
+                and 'best_alpha' for RidgeCV/RidgeClassifierCV/LassoCV),
+                in addition to the input list of values.
+
+        scorer_ : function
+            Scorer function used on the held out data to choose the best
+            parameters for the model.
+
+        cv_scores_ : :obj:`dict`, (classes, n_folds)
+            Scores (misclassification) for each parameter, and on each fold
+
+        n_outputs_ : :obj:`int`
+            Number of outputs (column-wise)
+
+        dummy_output_ : ndarray, shape=(n_classes, 2) \
+                       or shape=(1, 1) for regression
+            Contains dummy estimator attributes after class predictions
+            using strategies of :class:`sklearn.dummy.DummyClassifier`
+            (class_prior)
+            and  :class:`sklearn.dummy.DummyRegressor` (constant)
+            from scikit-learn.
+            This attribute is necessary for estimating class predictions
+            after fit.
+            Returns None if non-dummy estimators are provided.
+"""
+
+# dataset description
+docdict["description"] = """'description' : :obj:`str`
+        Description of the dataset."""
+
+# fsaverage options
+docdict["fsaverage_options"] = """
+
+    - ``"fsaverage3"``: the low-resolution fsaverage3 mesh (642 nodes)
+    - ``"fsaverage4"``: the low-resolution fsaverage4 mesh (2562 nodes)
+    - ``"fsaverage5"``: the low-resolution fsaverage5 mesh (10242 nodes)
+    - ``"fsaverage6"``: the medium-resolution fsaverage6 mesh (40962 nodes)
+    - ``"fsaverage7"``: same as `"fsaverage"`
+    - ``"fsaverage"``: the high-resolution fsaverage mesh (163842 nodes)
+
+    .. note::
+
+        The high-resolution fsaverage will result in more computation
+        time and memory usage
+
+"""
+
+# atlas labels
+docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
+        List of the names of the regions."""
+
+# look up table
+docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
+# template
+docdict["template"] = """'template' : :obj:`str`
+        The standardized space of analysis
+        in which the atlas results are provided.
+        When known it should be a valid template name
+        taken from the spaces described in
+        `the BIDS specification <https://bids-specification.readthedocs.io/en/latest/appendices/coordinate-systems.html#image-based-coordinate-systems>`_."""
+
+
+# templateflow
+docdict["templateflow"] = """
+
+.. admonition:: Nilearn MNI template
+   :class: important
+
+   The Nilearn template is asymmetrical ICBM152 2009, release a.
+
+   The default template of :term:`fMRIPrep` is the asymmetrical ICBM152 2009,
+   release c (MNI152NLin2009cSAsym).
+
+   If you wish to use the exact same release as :term:`fMRIPrep`,
+   please refer to `TemplateFlow <https://www.templateflow.org>`_.
+
+"""
+
 ##############################################################################
 
-docdict_indented = {}
+docdict_indented: dict[int, dict[str, str]] = {}
 
 
 def _indentcount_lines(lines):

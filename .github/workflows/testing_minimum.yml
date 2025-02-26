@@ -1,11 +1,16 @@
 ---
+# This workflow is triggered when a new commit is pushed to the main branch (or when a pull request is merged) and is also automatically run once a month.
+#
+# Checks that installing the minimum version of a given dependency of Nilearn
+# along with the latest version of all the other dependencies leads to a successful run of all the tests.
+#
+# .. seealso::
+#
+#   https://github.com/nilearn/nilearn/issues/4069
+#
+###
 name: test minimal version of each dependency
 
-# Test that if the minimal version of each dependency is installed
-# along with the latest version of all the other dependencies
-# then there is no problem installing
-#
-# see https://github.com/nilearn/nilearn/issues/4069
 
 on:
     push:
@@ -62,6 +67,8 @@ jobs:
                 python -m pip install --upgrade pip setuptools
                 pip install ${{ matrix.min_dep }}
         -   name: Install nilearn
-            run: pip install .[plotting,plotly,test]
+            run: |
+                pip install .[plotting,plotly,test]
+                pip install pytest-mpl
         -   name: Run tests
             run: pytest --pyargs nilearn --cov=nilearn

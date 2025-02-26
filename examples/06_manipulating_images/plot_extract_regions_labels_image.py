@@ -23,21 +23,23 @@ We use the Yeo atlas as an example for labeling regions,
 # -----------------------
 
 # First we fetch the Yeo atlas
-from nilearn import datasets
 
-atlas_yeo_2011 = datasets.fetch_atlas_yeo_2011()
-atlas_yeo = atlas_yeo_2011.thick_7
+from nilearn.datasets import fetch_atlas_yeo_2011
+from nilearn.plotting import plot_roi, show
+
+atlas_yeo_2011 = fetch_atlas_yeo_2011(thickness="thick", n_networks=7)
+
+atlas_yeo = atlas_yeo_2011.maps
 
 # Let's now plot it
-from nilearn import plotting
-
-plotting.plot_roi(
+plot_roi(
     atlas_yeo,
     title="Original Yeo atlas",
     cut_coords=(8, -4, 9),
-    colorbar=True,
     cmap="Paired",
 )
+
+show()
 
 # %%
 # The original Yeo atlas has 7 labels, that is indicated in the colorbar.
@@ -58,13 +60,14 @@ region_labels = connected_label_regions(atlas_yeo)
 
 # %%
 # Plotting the new regions
-plotting.plot_roi(
+plot_roi(
     region_labels,
     title="Relabeled Yeo atlas",
     cut_coords=(8, -4, 9),
-    colorbar=True,
     cmap="Paired",
 )
+
+show()
 
 # %%
 # Note that the same cluster in original and labeled atlas could have
@@ -98,13 +101,14 @@ region_labels.to_filename(output_dir / "relabeled_yeo_atlas.nii.gz")
 
 region_labels_not_diag = connected_label_regions(atlas_yeo, connect_diag=False)
 
-plotting.plot_roi(
+plot_roi(
     region_labels_not_diag,
     title="Relabeling and connect_diag=False",
     cut_coords=(8, -4, 9),
-    colorbar=True,
     cmap="Paired",
 )
+
+show()
 
 
 # %%
@@ -124,12 +128,11 @@ region_labels_min_size = connected_label_regions(
     atlas_yeo, min_size=100, connect_diag=False
 )
 
-plotting.plot_roi(
+plot_roi(
     region_labels_min_size,
     title="Relabeling and min_size",
     cut_coords=(8, -4, 9),
-    colorbar=True,
     cmap="Paired",
 )
 
-plotting.show()
+show()

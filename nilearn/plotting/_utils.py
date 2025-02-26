@@ -1,4 +1,75 @@
-from nilearn.surface import PolyMesh, SurfaceImage
+from pathlib import Path
+from warnings import warn
+
+import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
+
+from nilearn.surface import (
+    PolyMesh,
+    SurfaceImage,
+)
+from nilearn.surface.surface import combine_hemispheres_meshes, get_data
+
+
+def save_figure_if_needed(fig, output_file):
+    """Save figure if an output file value is given.
+
+    Create output path if required.
+
+    Parameters
+    ----------
+    fig: figure, axes, or display instance
+
+    output_file: str, Path or None
+
+    Returns
+    -------
+    None if ``output_file`` is None, ``fig`` otherwise.
+    """
+    # avoid circular import
+    from nilearn.plotting.displays import BaseSlicer
+
+    if output_file is None:
+        return fig
+
+    output_file = Path(output_file)
+    output_file.parent.mkdir(exist_ok=True, parents=True)
+
+    if not isinstance(fig, (plt.Figure, BaseSlicer)):
+        fig = fig.figure
+
+    fig.savefig(output_file)
+    if isinstance(fig, plt.Figure):
+        plt.close(fig)
+    else:
+        fig.close()
+
+    return None
+
+
+def sanitize_hemi_for_surface_image(hemi, map, mesh):
+    if hemi is None and (
+        isinstance(map, SurfaceImage) or isinstance(mesh, PolyMesh)
+    ):
+        return "left"
+
+    if (
+        hemi is not None
+        and not isinstance(map, SurfaceImage)
+        and not isinstance(mesh, PolyMesh)
+    ):
+        warn(
+            category=UserWarning,
+            message=(
+                f"{hemi=} was passed "
+                f"with {type(map)=} and {type(mesh)=}.\n"
+                "This value will be ignored as it is only used when "
+                "'roi_map' is a SurfaceImage instance "
+                "and  / or 'surf_mesh' is a PolyMesh instance."
+            ),
+            stacklevel=3,
+        )
+    return hemi
 
 
 def check_surface_plotting_inputs(
@@ -38,8 +109,7 @@ def check_surface_plotting_inputs(
         )
 
     if isinstance(surf_mesh, PolyMesh):
-        _check_hemi_present(surf_mesh, hemi)
-        surf_mesh = surf_mesh.parts[hemi]
+        surf_mesh = _get_hemi(surf_mesh, hemi)
 
     if isinstance(surf_mesh, SurfaceImage):
         raise TypeError(
@@ -50,7 +120,7 @@ def check_surface_plotting_inputs(
 
     if isinstance(surf_map, SurfaceImage):
         if surf_mesh is None:
-            surf_mesh = surf_map.mesh.parts[hemi]
+            surf_mesh = _get_hemi(surf_map.mesh, hemi)
         if len(surf_map.shape) > 1 and surf_map.shape[1] > 1:
             raise TypeError(
                 "Input data has incompatible dimensionality. "
@@ -58,7 +128,11 @@ def check_surface_plotting_inputs(
                 f"or ({surf_map.shape[0]}, 1) "
                 f"and you provided a {surf_map.shape} surface image."
             )
-        surf_map = surf_map.data.parts[hemi].T
+        # concatenate the left and right data if hemi is "both"
+        if hemi == "both":
+            surf_map = get_data(surf_map).T
+        else:
+            surf_map = surf_map.data.parts[hemi].T
 
     bg_map = _check_bg_map(bg_map, hemi)
 
@@ -66,7 +140,9 @@ def check_surface_plotting_inputs(
 
 
 def _check_bg_map(bg_map, hemi):
-    """Get the requested hemisphere if bg_map is a SurfaceImage.
+    """Get the requested hemisphere if bg_map is a SurfaceImage. If the
+    hemisphere is not present, raise an error. If the hemisphere is "both",
+    concatenate the left and right hemispheres.
 
     bg_map : Any
 
@@ -77,7 +153,6 @@ def _check_bg_map(bg_map, hemi):
     bg_map : str | pathlib.Path | numpy.ndarray | None
     """
     if isinstance(bg_map, SurfaceImage):
-        assert bg_map.data.parts[hemi] is not None
         if len(bg_map.shape) > 1 and bg_map.shape[1] > 1:
             raise TypeError(
                 "Input data has incompatible dimensionality. "
@@ -85,11 +160,58 @@ def _check_bg_map(bg_map, hemi):
                 f"or ({bg_map.shape[0]}, 1) "
                 f"and you provided a {bg_map.shape} surface image."
             )
-        bg_map = bg_map.data.parts[hemi]
+        if hemi == "both":
+            bg_map = get_data(bg_map)
+        else:
+            assert bg_map.data.parts[hemi] is not None
+            bg_map = bg_map.data.parts[hemi]
     return bg_map
 
 
-def _check_hemi_present(mesh, hemi):
-    """Check that a given hemisphere exists in a PolyMesh."""
-    if hemi not in mesh.parts:
-        raise ValueError(f"{hemi} must be present in mesh")
+def _get_hemi(mesh, hemi):
+    """Check that a given hemisphere exists in a PolyMesh and return the
+    corresponding mesh. If "both" is requested, combine the left and right
+    hemispheres.
+    """
+    if hemi == "both":
+        return combine_hemispheres_meshes(mesh)
+    elif hemi in mesh.parts:
+        return mesh.parts[hemi]
+    else:
+        raise ValueError("hemi must be one of left, right or both.")
+
+
+def check_threshold_not_negative(threshold):
+    """Make sure threshold is non negative number."""
+    if isinstance(threshold, (int, float)) and threshold < 0:
+        raise ValueError("Threshold should be a non-negative number!")
+
+
+def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
+    """
+    Create a Matplotlib colormap from a DataFrame containing color mappings.
+
+    Parameters
+    ----------
+    cmap : pd.DataFrame
+        DataFrame with columns 'index', 'name', and 'color' (hex values)
+
+    Returns
+    -------
+    colormap (LinearSegmentedColormap): A Matplotlib colormap
+    """
+    if "color" not in cmap.columns:
+        warn(
+            "No 'color' column found in the look-up table. "
+            "Will use the default colormap instead.",
+            stacklevel=3,
+        )
+        return default_cmap
+
+    # Ensure colors are properly extracted from DataFrame
+    colors = cmap.sort_values(by="index")["color"].tolist()
+
+    # Create a colormap from the list of colors
+    return LinearSegmentedColormap.from_list(
+        "custom_colormap", colors, N=len(colors)
+    )

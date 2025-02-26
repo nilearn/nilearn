@@ -18,9 +18,7 @@ def main(args=sys.argv) -> None:
 
     datasets.fetch_icbm152_2009()
 
-    datasets.fetch_atlas_difumo(
-        dimension=64, resolution_mm=2, legacy_format=False
-    )
+    datasets.fetch_atlas_difumo(dimension=64, resolution_mm=2)
     datasets.fetch_atlas_msdl()
     datasets.fetch_atlas_schaefer_2018()
     datasets.fetch_atlas_yeo_2011()
@@ -67,7 +65,6 @@ def main(args=sys.argv) -> None:
         datasets.fetch_atlas_juelich("maxprob-thr0-1mm")
         for dimension in [10, 20]:
             datasets.fetch_atlas_smith_2009(resting=False, dimension=dimension)
-        datasets.fetch_atlas_yeo_2011()
 
         datasets.fetch_surf_fsaverage()
         datasets.fetch_surf_fsaverage("fsaverage")

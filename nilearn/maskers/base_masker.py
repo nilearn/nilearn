@@ -1,7 +1,5 @@
 """Transformer used to apply basic transformations on :term:`fMRI` data."""
 
-# Author: Gael Varoquaux, Alexandre Abraham
-
 import abc
 import contextlib
 import warnings
@@ -9,6 +7,7 @@ import warnings
 import numpy as np
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
@@ -18,7 +17,7 @@ from .._utils import logger, stringify_path
 from .._utils.cache_mixin import CacheMixin, cache
 
 
-def _filter_and_extract(
+def filter_and_extract(
     imgs,
     extraction_function,
     parameters,
@@ -173,12 +172,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like, optional
+        confounds : CSV file or array-like, default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
@@ -186,7 +186,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
                 .. versionadded:: 0.8.0
 
-        copy : Boolean, default=True
+        copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
 
         Returns
@@ -225,12 +225,12 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags()
+            return tags(masker=True)
 
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(masker=True)
         return tags
 
     def fit(self, imgs=None, y=None):
@@ -248,12 +248,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like, optional
+        confounds : CSV file or array-like, default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
@@ -276,7 +277,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             inputs.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         if confounds is None and not self.high_variance_confounds:
             return self.transform_single_imgs(
@@ -308,14 +309,14 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         X : Niimg-like object
             See :ref:`extracting_data`.
 
-        y : numpy array of shape [n_samples], optional
+        y : numpy array of shape [n_samples], default=None
             Target values.
 
-        confounds : list of confounds, optional
+        confounds : :obj:`list` of confounds, default=None
             List of confounds (2D arrays or filenames pointing to CSV
             files). Must be of same length than imgs_list.
 
-        sample_mask : list of sample_mask, optional
+        sample_mask : :obj:`list` of sample_mask, default=None
             List of sample_mask (1D arrays) if scrubbing motion outliers.
             Must be of same length than imgs_list.
 
@@ -380,7 +381,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         img : Transformed image in brain space.
 
         """
-        self._check_fitted()
+        check_is_fitted(self)
 
         img = self._cache(masking.unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
@@ -388,14 +389,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
-
-    def _check_fitted(self):
-        if not hasattr(self, "mask_img_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} "
-                "has not been fitted. "
-                "You must call fit() before calling transform()."
-            )
 
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
@@ -419,10 +412,12 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags(surf_img=True, niimg_like=False)
+            return tags(surf_img=True, niimg_like=False, masker=True)
 
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
+        tags.input_tags = InputTags(
+            surf_img=True, niimg_like=False, masker=True
+        )
         return tags

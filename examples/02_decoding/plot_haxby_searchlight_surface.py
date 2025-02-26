@@ -127,7 +127,6 @@ for hemi in hemispheres_to_analyze:
         stat_map=score_img,
         view="ventral",
         hemi=hemi,
-        colorbar=True,
         threshold=0.1,
         bg_map=fsaverage_data,
         title=f"Accuracy map, {hemi} hemisphere",
@@ -139,4 +138,4 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

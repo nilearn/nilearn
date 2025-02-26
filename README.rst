@@ -6,9 +6,13 @@
     :target: https://pypi.org/project/nilearn/
     :alt: PyPI - Python Version
 
-.. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=main&event=push
-    :target: https://github.com/nilearn/nilearn/actions
-    :alt: Github Actions Build Status
+.. image:: https://github.com/nilearn/nilearn/actions/workflows/build-docs.yml/badge.svg
+    :target: https://github.com/nilearn/nilearn/actions/workflows/build-docs.yml
+    :alt: Github Actions Doc Build Status
+
+.. image:: https://github.com/nilearn/nilearn/actions/workflows/test_with_tox.yml/badge.svg?branch=main&event=push
+    :target: https://github.com/nilearn/nilearn/actions/workflows/test_with_tox.yml
+    :alt: Github Actions Test Status
 
 .. image:: https://codecov.io/gh/nilearn/nilearn/graph/badge.svg?token=KpYArSdyXv
     :target: https://app.codecov.io/gh/nilearn/nilearn
@@ -24,10 +28,6 @@
 .. image:: https://img.shields.io/youtube/channel/subscribers/UCU6BMAi2zOhNFnDkbdevmPw
     :target: https://www.youtube.com/@nilearnevents5116
     :alt: YouTube Channel Subscribers
-
-.. image:: https://img.shields.io/twitter/follow/nilearn.svg
-    :target: https://x.com/nilearn
-    :alt: Twitter
 
 .. image:: https://img.shields.io/mastodon/follow/109669703955432270?domain=https%3A%2F%2Ffosstodon.org%2F
     :target: https://fosstodon.org/@nilearn

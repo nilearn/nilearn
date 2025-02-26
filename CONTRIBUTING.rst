@@ -16,7 +16,7 @@ There are currently three ways to interact with the Nilearn team:
 through the :neurostars:`neurostars <>` forum, our :nilearn-gh:`github <>` issues,
 and through our weekly `drop-in hours <https://arewemeetingyet.com/UTC/2023-01-18/16:00/w/Nilearn%20Drop-in%20Hours>`_,
 usually **every Wednesday from 4pm to 5pm UTC**.
-We post on our `X account <https://x.com/nilearn>`_ in advance to let you know
+We post on our `Bluesky account <https://bsky.app/profile/nilearn.bsky.social>`_ in advance to let you know
 if the drop-in hours are happening that week.
 
 If you have a *usage question*, that is if you need help troubleshooting scripts using Nilearn,
@@ -639,19 +639,7 @@ learn how to use those tools to build documentation.
 Continuous integration
 ----------------------
 
-Please note that if one of the following markers appear in the latest commit message, the following actions are taken.
-
-============================ ===================
-Commit Message Marker        Action Taken by CI
-============================ ===================
-[skip ci]                    Gtihub CI is skipped completely. Several other options are also possible, see `github documentation <https://docs.github.com/en/actions/managing-workflow-runs-and-deployments/managing-workflow-runs/skipping-workflow-runs>`_).
-[skip test]                  Skip running the tests.
-[skip doc]                   Skip building the doc.
-[test nightly]               Run tests on the nightly build of Nilearn's dependencies.
-[full doc]                   Run a full build of the documentation (meaning that all examples will be run).
-[example] name_of_example.py Run partial documentation build but will run the requested example.
-[force download]             Force a download of all the dataset required for the build of the documentation.
-============================ ===================
+See the :ref:`continuous integration` page.
 
 Setting up your environment
 ===========================
@@ -799,6 +787,8 @@ For more details about the Fork Clone Push workflows,
 read `here <https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project#about-forking>`_.
 
 
+.. _building documentation:
+
 Building documentation
 ----------------------
 
@@ -845,13 +835,14 @@ So if you don't need the plots, a quicker option is:
       git commit --allow-empty -m "[full doc] request full build"
 
 .. tip::
-    When generating documentation locally, you can build only specific files
-    to reduce building time. To do so, use the ``filename_pattern``:
 
-.. code-block:: bash
+      When generating documentation locally, you can build only specific files
+      to reduce building time. To do so, use the ``filename_pattern``:
 
-      python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
-      plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+      .. code-block:: bash
+
+            python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
+            plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
 
 
 Additional cases
@@ -860,24 +851,40 @@ Additional cases
 How to contribute an atlas
 --------------------------
 
-We want atlases in nilearn to be internally consistent. Specifically,
-your atlas object should have three attributes (as with the existing
-atlases):
+We want atlases in Nilearn to be internally consistent.
+Specifically, your atlas object:
 
-- ``description`` (bytes): A text description of the atlas. This should be
-  brief but thorough, describing the source (paper), relevant information
-  related to its construction (modality, dataset, method), and, if there is
-  more than one map, a description of each map.
-- ``labels`` (list): a list of string labels corresponding to each atlas
-  label, in the same (numerical) order as the atlas labels
-- ``maps`` (list or string): the path to the nifti image, or a list of paths
+- should be a Scikit-learn ``Bunch``
+
+- MUST have at least the following 4 attributes (as with the existing atlases):
+
+  - ``description`` (str): A text description of the atlas.
+    This should be brief but thorough,
+    describing the source (paper),
+    relevant information related to its construction (modality, dataset, method),
+    and, if there is more than one map, a description of each map.
+  - ``maps`` (list or string): the path to the nifti image, or a list of paths
+  - ``atlas_type``: must be either ``deterministic`` or ``probabilistic``
+  - ``labels`` (list): a list of string labels corresponding to each atlas label,
+    in the same (numerical) order as the atlas labels
+
+Deterministic atlases must also include:
+
+- a look up table (``lut``) attribute:
+
+  - providing the mapping between the values in the atlas image
+    and the name to the region of interest they define.
+  - that complies with the
+    `dseg.tsv format from BIDS
+    <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
+  - can be validated by the function ``nilearn._utils.helpers.check_look_up_table``
+    in strict mode.
 
 In addition, the atlas will need to be called by a fetcher.
 For example, see :nilearn-gh:`here <blob/main/nilearn/datasets/atlas.py>`.
 
 Finally, as with other features, please provide a test for your atlas.
 Examples can be found :nilearn-gh:`here <blob/main/nilearn/datasets/tests/test_atlas.py>`.
-
 
 How to contribute a dataset fetcher
 -----------------------------------

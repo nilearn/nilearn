@@ -10,8 +10,10 @@ are used as training set and structured images are used for reconstruction.
 The code is a bit elaborate as the example uses, as the original article,
 a multiscale prediction on the images seen by the subject.
 
-For an encoding approach for the same dataset, see also
-:ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
+.. seealso::
+
+    For an encoding approach for the same dataset, see
+    :ref:`sphx_glr_auto_examples_02_decoding_plot_miyawaki_encoding.py`
 
 .. include:: ../../../examples/masker_note.rst
 
@@ -311,17 +313,17 @@ for i in range(6):
     plt.title("Binarized")
     sp1.imshow(
         np.reshape(y_test[j], (10, 10)),
-        cmap=plt.cm.gray,
+        cmap="gray",
         interpolation="nearest",
     )
     sp2.imshow(
         np.reshape(y_pred[j], (10, 10)),
-        cmap=plt.cm.gray,
+        cmap="gray",
         interpolation="nearest",
     )
     sp3.imshow(
         np.reshape(y_pred[j] > 0.5, (10, 10)),
-        cmap=plt.cm.gray,
+        cmap="gray",
         interpolation="nearest",
     )
     plt.savefig(output_dir / f"miyawaki2008_reconstruction_{int(i)}.png")
@@ -332,4 +334,4 @@ show()
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::

@@ -15,10 +15,10 @@ def optimize_scrub(motion_outliers_index, n_scans, scrub):
         Index array of shape (n_motion_outliers) indicating the volumes
         that are motion outliers.
 
-    n_scans : int
+    n_scans : :obj:`int`
         Number of volumes in the functional image.
 
-    scrub : int, default=5
+    scrub : :obj:`int`, default=5
         Minimal segment length.
 
     Returns

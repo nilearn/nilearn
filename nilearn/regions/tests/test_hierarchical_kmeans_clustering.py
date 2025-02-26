@@ -4,8 +4,8 @@ from numpy.testing import assert_array_almost_equal
 from sklearn import __version__ as sklearn_version
 
 from nilearn._utils import compare_version
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import generate_fake_fmri
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
@@ -24,21 +24,14 @@ extra_valid_checks = [
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
     "check_estimators_empty_data_messages",
-    "check_estimators_unfitted",
     "check_f_contiguous_array_estimator",
     "check_fit2d_1sample",
     "check_fit2d_1feature",
     "check_fit1d",
     "check_no_attributes_set_in_init",
-    "check_transformers_unfitted",
-    "check_transformer_n_iter",
     "check_methods_subset_invariance",
     "check_methods_sample_order_invariance",
 ]
-
-
-if compare_version(sklearn_version, ">", "1.5.2"):
-    extra_valid_checks.append("check_parameters_default_constructible")
 
 # TODO remove when dropping support for sklearn_version < 1.5.0
 if compare_version(sklearn_version, "<", "1.5.0"):
@@ -136,7 +129,7 @@ def test_hierarchical_k_means_clustering_inverse_transform():
     assert X_inv.shape == X.shape
 
 
-@pytest.mark.parametrize("n_clusters", [-2, 0])
+@pytest.mark.parametrize("n_clusters", [None, -2, 0, "2"])
 def test_hierarchical_k_means_clustering_error_n_clusters(n_clusters):
     n_samples = 15
     data_img, mask_img = generate_fake_fmri(

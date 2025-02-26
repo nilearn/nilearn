@@ -151,22 +151,34 @@ def cut_coords(name):
         return (0,) * 2
     if name in ["lyrz", "lyr", "lzr"]:
         return (0,)
-    if name in ["lr", "l"]:
-        return (0,) * 4
-    return (0,) * 3
+    return (0,) * 4 if name in ["lr", "l"] else (0,) * 3
 
 
-@pytest.mark.parametrize(
-    "display,name", zip(SLICERS + PROJECTORS, SLICER_KEYS + PROJECTOR_KEYS)
-)
-def test_display_basics(display, name, img, cut_coords):
-    """Basic smoke tests for all displays (slicers + projectors).
+@pytest.mark.parametrize("display,name", zip(SLICERS, SLICER_KEYS))
+def test_display_basics_slicers(display, name, img, cut_coords):
+    """Basic smoke tests for all displays (slicers).
 
     Each object is instantiated, ``add_overlay``, ``title``,
     and ``close`` are then called.
     """
     display = display(cut_coords=cut_coords)
-    display.add_overlay(img, cmap=plt.cm.gray)
+    display.add_overlay(img, cmap="gray")
+    display.title(f"display mode is {name}")
+    if name != "mosaic":
+        assert display.cut_coords == cut_coords
+    assert isinstance(display.frame_axes, matplotlib.axes.Axes)
+    display.close()
+
+
+@pytest.mark.parametrize("display,name", zip(PROJECTORS, PROJECTOR_KEYS))
+def test_display_basics_projectors(display, name, img, cut_coords):
+    """Basic smoke tests for all displays (projectors).
+
+    Each object is instantiated, ``add_overlay``, ``title``,
+    and ``close`` are then called.
+    """
+    display = display(cut_coords=cut_coords)
+    display.add_overlay(img, cmap="gray")
     display.title(f"display mode is {name}")
     if name != "mosaic":
         assert display.cut_coords == cut_coords
@@ -181,7 +193,7 @@ def test_stacked_slicer(slicer, img, tmp_path):
     """Tests for saving to file with stacked slicers."""
     cut_coords = 3 if slicer in [XSlicer, YSlicer, ZSlicer] else (3, 3)
     slicer = slicer.init_with_figure(img=img, cut_coords=cut_coords)
-    slicer.add_overlay(img, cmap=plt.cm.gray)
+    slicer.add_overlay(img, cmap="gray")
     # Forcing a layout here, to test the locator code
     slicer.savefig(tmp_path / "out.png")
     slicer.close()
@@ -194,7 +206,7 @@ def test_slicer_save_to_file(slicer, img, tmp_path):
     slicer = slicer.init_with_figure(
         img=img, cut_coords=cut_coords, colorbar=True
     )
-    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    slicer.add_overlay(img, cmap="gray", colorbar=True)
     assert slicer.brain_color == (0.5, 0.5, 0.5)
     assert not slicer.black_bg
     # Forcing a layout here, to test the locator code
@@ -206,7 +218,7 @@ def test_slicer_save_to_file(slicer, img, tmp_path):
 def test_mosaic_slicer_integer_cut_coords(cut_coords, img):
     """Tests for MosaicSlicer with cut_coords provided as an integer."""
     slicer = MosaicSlicer.init_with_figure(img=img, cut_coords=cut_coords)
-    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    slicer.add_overlay(img, cmap="gray", colorbar=True)
     slicer.title("mosaic mode")
     for d in ["x", "y", "z"]:
         assert d in slicer.cut_coords
@@ -218,7 +230,7 @@ def test_mosaic_slicer_integer_cut_coords(cut_coords, img):
 def test_mosaic_slicer_tuple_cut_coords(cut_coords, img):
     """Tests for MosaicSlicer with cut_coords provided as a tuple."""
     slicer = MosaicSlicer.init_with_figure(img=img, cut_coords=cut_coords)
-    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    slicer.add_overlay(img, cmap="gray", colorbar=True)
     slicer.title("Showing mosaic mode")
     for i, d in enumerate(["x", "y", "z"]):
         assert len(slicer.cut_coords[d]) == cut_coords[i]
@@ -231,7 +243,7 @@ def test_mosaic_slicer_img_none_false(cut_coords, img):
        while initializing the figure.
     """
     slicer = MosaicSlicer.init_with_figure(img=None, cut_coords=cut_coords)
-    slicer.add_overlay(img, cmap=plt.cm.gray, colorbar=True)
+    slicer.add_overlay(img, cmap="gray", colorbar=True)
     slicer.close()
 
 
@@ -270,7 +282,7 @@ def expected_cuts(cut_coords):
 def test_demo_mosaic_slicer(cut_coords, img, expected_cuts):
     """Tests for MosaicSlicer with different cut_coords in constructor."""
     slicer = MosaicSlicer(cut_coords=cut_coords)
-    slicer.add_overlay(img, cmap=plt.cm.gray)
+    slicer.add_overlay(img, cmap="gray")
     assert slicer.cut_coords == expected_cuts
     slicer.close()
 
@@ -279,7 +291,7 @@ def test_demo_mosaic_slicer(cut_coords, img, expected_cuts):
 def test_projectors_basic(projector, img, tmp_path):
     """Basic tests for projectors."""
     projector = projector.init_with_figure(img=img)
-    projector.add_overlay(img, cmap=plt.cm.gray)
+    projector.add_overlay(img, cmap="gray")
     projector.savefig(tmp_path / "out.png")
     projector.close()
 

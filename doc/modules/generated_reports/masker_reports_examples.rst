@@ -80,3 +80,9 @@ Surface maskers
 
 .. raw:: html
    :file: surface_label_masker.html
+
+.. raw:: html
+   :file: surface_maps_masker_plotly.html
+
+.. raw:: html
+   :file: surface_maps_masker_matplotlib.html

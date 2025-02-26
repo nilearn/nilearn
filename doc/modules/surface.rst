@@ -23,6 +23,9 @@ Classes
     SurfaceImage
     SurfaceMesh
 
+.. autoclasstree:: nilearn.surface
+   :full:
+
 Functions
 ---------
 

@@ -312,9 +312,11 @@ Featured examples
    :caption: Development
 
    development.rst
+   ci.rst
    maintenance.rst
    changes/whats_new.rst
    authors.rst
+   Versions <versions.rst>
    GitHub Repository <https://github.com/nilearn/nilearn>
 
 

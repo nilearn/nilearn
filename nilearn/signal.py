@@ -5,8 +5,6 @@ All functions in this module should take X matrices with samples x
 features
 """
 
-# Authors: Alexandre Abraham, Gael Varoquaux, Philippe Gervais
-
 import warnings
 from pathlib import Path
 
@@ -20,7 +18,10 @@ from sklearn.utils import as_float_array, gen_even_slices
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
-from nilearn._utils.param_validation import check_run_sample_masks
+from nilearn._utils.param_validation import (
+    check_params,
+    check_run_sample_masks,
+)
 
 __all__ = [
     "butterworth",
@@ -358,16 +359,16 @@ def butterworth(
         Increasing the order sharpens this decay. Be aware that very high
         orders can lead to numerical instability.
 
-    padtype : {"odd", "even", "constant", None}, optional
+    padtype : {"odd", "even", "constant", None}, default="odd"
         Type of padding to use for the Butterworth filter.
         For more information about this, see :func:`scipy.signal.filtfilt`.
 
-    padlen : :obj:`int` or None, optional
+    padlen : :obj:`int` or None, default=None
         The size of the padding to add to the beginning and end of ``signals``.
         If None, the default value from :func:`scipy.signal.filtfilt` will be
         used.
 
-    copy : :obj:`bool`, optional
+    copy : :obj:`bool`, default=False
         If False, `signals` is modified inplace, and memory consumption is
         lower than for ``copy=True``, though computation time is higher.
 
@@ -376,6 +377,7 @@ def butterworth(
     filtered_signals : :class:`numpy.ndarray`
         Signals filtered according to the given parameters.
     """
+    check_params(locals())
     if low_pass is None and high_pass is None:
         return signals.copy() if copy else signals
 
@@ -512,6 +514,7 @@ def high_variance_confounds(
     --------
     nilearn.image.high_variance_confounds
     """
+    check_params(locals())
     if detrend:
         series = _detrend(series)  # copy
 
@@ -640,9 +643,9 @@ def clean(
     filter : {'butterworth', 'cosine', False}, default='butterworth'
         Filtering methods:
 
-            - 'butterworth': perform butterworth filtering.
-            - 'cosine': generate discrete cosine transformation drift terms.
-            - False: Do not perform filtering.
+        - 'butterworth': perform butterworth filtering.
+        - 'cosine': generate discrete cosine transformation drift terms.
+        - False: Do not perform filtering.
 
     %(low_pass)s
 
@@ -655,16 +658,21 @@ def clean(
                   default="zscore"
         Strategy to standardize the signal:
 
-            - 'zscore_sample': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance. Uses sample std.
-            - 'zscore': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance. Uses population std
-              by calling :obj:`numpy.std` with N - ``ddof=0``.
-            - 'psc':  Timeseries are shifted to zero mean value and scaled
-              to percent signal change (as compared to original mean signal).
-            - True: The signal is z-scored (same as option `zscore`).
-              Timeseries are shifted to zero mean and scaled to unit variance.
-            - False: Do not standardize the data.
+        - 'zscore_sample':
+          The signal is z-scored.
+          Timeseries are shifted to zero mean and scaled to unit variance.
+          Uses sample std.
+        - 'zscore':
+          The signal is z-scored.
+          Timeseries are shifted to zero mean and scaled to unit variance.
+          Uses population std by calling :obj:`numpy.std` with N - ``ddof=0``.
+        - 'psc':
+          Timeseries are shifted to zero mean value and scaled
+          to percent signal change (as compared to original mean signal).
+        - True:
+          The signal is z-scored (same as option `zscore`).
+          Timeseries are shifted to zero mean and scaled to unit variance.
+        - False: Do not standardize the data.
 
     %(standardize_confounds)s
 
@@ -677,7 +685,7 @@ def clean(
         the signal data will be interpolated before filtering. Otherwise, they
         will be discarded from the band-pass filtering process.
 
-    kwargs : dict
+    kwargs : :obj:`dict`
         Keyword arguments to be passed to functions called within ``clean``.
         Kwargs prefixed with ``'butterworth__'`` will be passed to
         :func:`~nilearn.signal.butterworth`.
@@ -705,6 +713,7 @@ def clean(
     --------
     nilearn.image.clean_img
     """
+    check_params(locals())
     # Raise warning for some parameter combinations when confounds present
     confounds = stringify_path(confounds)
     if confounds is not None:

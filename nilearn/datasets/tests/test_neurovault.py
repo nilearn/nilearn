@@ -1,7 +1,5 @@
 """Test the neurovault module."""
 
-# Author: Jerome Dockes
-
 import hashlib
 import json
 import os
@@ -17,7 +15,7 @@ import requests
 
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.conftest import _rng
-from nilearn.datasets import neurovault
+from nilearn.datasets import fetch_neurovault_ids, neurovault
 from nilearn.image import load_img
 
 
@@ -36,19 +34,25 @@ def _get_neurovault_data():
     """
     if getattr(_get_neurovault_data, "data", None) is not None:
         return _get_neurovault_data.data
+
     rng = _rng()
-    n_collections, n_images = 73, 546
+
+    n_collections = 73
     collection_ids = rng.choice(
         np.arange(1000), size=n_collections, replace=False
     )
     collections = pd.DataFrame({"id": collection_ids})
+
+    n_images = 546
     image_ids = rng.choice(np.arange(10000), size=n_images, replace=False)
     images = pd.DataFrame({"id": image_ids})
     not_empty = rng.binomial(1, 0.9, n_collections).astype(bool)
     images["collection_id"] = rng.choice(
         collection_ids[not_empty], size=n_images
     )
+
     collection_sizes = images.groupby("collection_id").count()
+
     collections["true_number_of_images"] = collection_sizes.reindex(
         index=collections["id"].to_numpy(), fill_value=0
     ).to_numpy()
@@ -57,6 +61,7 @@ def _get_neurovault_data():
     ] + rng.binomial(1, 0.1, n_collections) * rng.integers(
         0, 100, n_collections
     )
+
     images["not_mni"] = rng.binomial(1, 0.1, size=n_images).astype(bool)
     images["is_valid"] = rng.binomial(1, 0.1, size=n_images).astype(bool)
     images["is_thresholded"] = rng.binomial(1, 0.1, size=n_images).astype(bool)
@@ -87,9 +92,11 @@ def _get_neurovault_data():
         url.format(col_id, img_name)
         for (col_id, img_name) in zip(images["collection_id"], image_names)
     ]
+
     collections = collections.set_index("id", drop=False)
     images = images.set_index("id", drop=False)
     _get_neurovault_data.data = collections, images
+
     return collections, images
 
 
@@ -267,6 +274,7 @@ def test_remove_none_strings():
 
 
 def test_append_filters_to_query():
+    "Test _append_filters_to_query."
     query = neurovault._append_filters_to_query(
         neurovault._NEUROVAULT_COLLECTIONS_URL, {"DOI": 17}
     )
@@ -280,12 +288,14 @@ def test_append_filters_to_query():
 
 
 def test_get_batch():
+    "Test _get_batch."
     batch = neurovault._get_batch(neurovault._NEUROVAULT_COLLECTIONS_URL)
     assert "results" in batch
     assert "count" in batch
 
 
 def test_get_batch_error(tmp_path):
+    "Test _get_batch errors."
     with pytest.raises(requests.RequestException):
         neurovault._get_batch("http://")
     with pytest.raises(ValueError):
@@ -303,6 +313,7 @@ def test_get_batch_error(tmp_path):
 
 
 def test_scroll_server_results():
+    "Test _scroll_server_results."
     result = list(
         neurovault._scroll_server_results(
             neurovault._NEUROVAULT_COLLECTIONS_URL, max_results=6, batch_size=3
@@ -327,6 +338,7 @@ def test_scroll_server_results():
 
 
 def test_is_null():
+    "Test IsNull."
     is_null = neurovault.IsNull()
 
     assert is_null != "a"
@@ -335,6 +347,7 @@ def test_is_null():
 
 
 def test_not_null():
+    "Test NotNull."
     not_null = neurovault.NotNull()
 
     assert not_null == "a"
@@ -343,6 +356,7 @@ def test_not_null():
 
 
 def test_not_equal():
+    "Test NotEqual."
     not_equal = neurovault.NotEqual("a")
 
     assert not_equal == "b"
@@ -353,6 +367,7 @@ def test_not_equal():
 
 
 def test_order_comp():
+    "Test lt, gt, goe, loe."
     geq = neurovault.GreaterOrEqual("2016-07-12T11:29:12.263046Z")
 
     assert geq == "2016-08-12T11:29:12.263046Z"
@@ -362,7 +377,7 @@ def test_order_comp():
     gt = neurovault.GreaterThan("abc")
 
     assert gt != "abc"
-    assert gt == "abd"
+    assert gt == "abd"  # codespell:ignore abd
     assert str(gt) == "GreaterThan('abc')"
 
     lt = neurovault.LessThan(7)
@@ -380,6 +395,7 @@ def test_order_comp():
 
 
 def test_is_in():
+    "Test IsIn."
     is_in = neurovault.IsIn(0, 1)
 
     assert is_in == 0
@@ -393,6 +409,7 @@ def test_is_in():
 
 
 def test_not_in():
+    "Test NotIn."
     not_in = neurovault.NotIn(0, 1)
 
     assert not_in != 0
@@ -401,6 +418,7 @@ def test_not_in():
 
 
 def test_contains():
+    "Test Contains."
     contains = neurovault.Contains("a", 0)
 
     assert contains != 10
@@ -416,6 +434,7 @@ def test_contains():
 
 
 def test_not_contains():
+    "Test NotContains."
     not_contains = neurovault.NotContains("ab")
 
     assert not_contains is not None
@@ -427,6 +446,7 @@ def test_not_contains():
 
 
 def test_pattern():
+    "Test Pattern."
     # Python std lib doc poker hand example
     pattern_0 = neurovault.Pattern(r"[0-9akqj]{5}$")
 
@@ -443,6 +463,7 @@ def test_pattern():
 
 
 def test_result_filter():
+    "Test ResultFilter IsIn NotIn."
     filter_0 = neurovault.ResultFilter(
         query_terms={"a": 0}, callable_filter=lambda d: len(d) < 5, b=1
     )
@@ -481,6 +502,7 @@ def test_result_filter():
 
 
 def test_result_filter_combinations():
+    "Test ResultFilter AND OR XOR NOT."
     filter_0 = neurovault.ResultFilter(a=0, b=1)
     filter_1 = neurovault.ResultFilter(c=2, d=3)
 
@@ -526,6 +548,7 @@ def test_result_filter_combinations():
 
 
 def test_simple_download(tmp_path):
+    "Test _simple_download."
     downloaded_file = neurovault._simple_download(
         "https://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz",
         tmp_path / "image_35.nii.gz",
@@ -535,6 +558,7 @@ def test_simple_download(tmp_path):
 
 
 def test_simple_download_error(tmp_path, request_mocker):
+    "Test _simple_download error."
     request_mocker.url_mapping["*"] = requests.RequestException()
 
     with pytest.raises(requests.RequestException):
@@ -546,6 +570,7 @@ def test_simple_download_error(tmp_path, request_mocker):
 
 
 def test_neurosynth_words_vectorized(tmp_path):
+    "Test neurosynth_words_vectorized."
     n_im = 5
     words_files = [tmp_path / f"words_for_image_{i}.json" for i in range(n_im)]
     words = [str(i) for i in range(n_im)]
@@ -555,6 +580,7 @@ def test_neurosynth_words_vectorized(tmp_path):
         words_dict = {"data": {"values": dict(zip(words, word_weights))}}
         with file_name.open("wb") as words_file:
             words_file.write(json.dumps(words_dict).encode("utf-8"))
+
     freq, _ = neurovault.neurosynth_words_vectorized(words_files)
 
     assert freq.shape == (n_im, n_im)
@@ -562,6 +588,7 @@ def test_neurosynth_words_vectorized(tmp_path):
 
 
 def test_neurosynth_words_vectorized_warning(tmp_path):
+    "Test neurosynth_words_vectorized warning."
     with pytest.warns(UserWarning):
         neurovault.neurosynth_words_vectorized(
             ((tmp_path, "no_words_here.json"),)
@@ -569,6 +596,7 @@ def test_neurosynth_words_vectorized_warning(tmp_path):
 
 
 def test_write_read_metadata(tmp_path):
+    "Test _write_metadata and _add_absolute_paths."
     metadata = {
         "relative_path": "collection_1",
         "absolute_path": Path("tmp", "collection_1"),
@@ -590,10 +618,12 @@ def test_write_read_metadata(tmp_path):
 
 
 def test_add_absolute_paths():
+    "Test _add_absolute_paths."
     meta = {
         "col_relative_path": "collection_1",
         "col_absolute_path": Path("dir_0", "neurovault", "collection_1"),
     }
+
     meta = neurovault._add_absolute_paths(
         Path("dir_1", "neurovault"), meta, force=False
     )
@@ -611,6 +641,7 @@ def test_add_absolute_paths():
     )
 
     meta = {"id": 0}
+
     meta_transformed = neurovault._add_absolute_paths(
         Path("dir_1", "neurovault"), meta, force=True
     )
@@ -619,11 +650,13 @@ def test_add_absolute_paths():
 
 
 def test_json_add_collection_dir(tmp_path):
+    "Test _json_add_collection_dir."
     coll_dir = tmp_path / "collection_1"
     coll_dir.mkdir()
     coll_file_name = coll_dir / "collection_1.json"
     with coll_file_name.open("wb") as coll_file:
         coll_file.write(json.dumps({"id": 1}).encode("utf-8"))
+
     loaded = neurovault._json_add_collection_dir(coll_file_name)
 
     assert loaded["absolute_path"] == coll_dir.absolute()
@@ -631,11 +664,13 @@ def test_json_add_collection_dir(tmp_path):
 
 
 def test_json_add_im_files_paths(tmp_path):
+    "Test _json_add_im_files_paths."
     coll_dir = tmp_path / "collection_1"
     coll_dir.mkdir()
     im_file_name = coll_dir / "image_1.json"
     with im_file_name.open("wb") as im_file:
         im_file.write(json.dumps({"id": 1}).encode("utf-8"))
+
     loaded = neurovault._json_add_im_files_paths(im_file_name)
 
     assert loaded["relative_path"] == coll_dir / "image_1.nii.gz"
@@ -643,6 +678,7 @@ def test_json_add_im_files_paths(tmp_path):
 
 
 def test_split_terms():
+    "Test _split_terms."
     terms, server_terms = neurovault._split_terms(
         {
             "DOI": neurovault.NotNull(),
@@ -657,6 +693,7 @@ def test_split_terms():
 
 
 def test_move_unknown_terms_to_local_filter():
+    "Test _move_unknown_terms_to_local_filter."
     terms, new_filter = neurovault._move_unknown_terms_to_local_filter(
         {"a": 0, "b": 1}, neurovault.ResultFilter(), ("a",)
     )
@@ -667,6 +704,7 @@ def test_move_unknown_terms_to_local_filter():
 
 
 def test_move_col_id():
+    "Test _move_col_id."
     im_terms, col_terms = neurovault._move_col_id(
         {"collection_id": 1, "not_mni": False}, {}
     )
@@ -681,6 +719,7 @@ def test_move_col_id():
 
 
 def test_download_image_terms(tmp_path, request_mocker):
+    """Test _download_image_terms."""
     image_info = {"id": "a"}
     collection = {
         "relative_path": "collection",
@@ -693,10 +732,12 @@ def test_download_image_terms(tmp_path, request_mocker):
         "fetch_neurosynth_words": True,
     }
     request_mocker.url_mapping["*"] = requests.RequestException()
+
     neurovault._download_image_terms(image_info, collection, download_params)
 
 
 def test_download_image_terms_error(tmp_path, request_mocker):
+    """Test _download_image_terms errors."""
     image_info = {"id": "a"}
     collection = {
         "relative_path": "collection",
@@ -717,21 +758,24 @@ def test_download_image_terms_error(tmp_path, request_mocker):
             collection,
             download_params,
         )
+
     # no fail if file already exists
     with Path(
         collection["absolute_path"], "neurosynth_words_for_image_a.json"
     ).open("w"):
         pass
+
     neurovault._download_image_terms(image_info, collection, download_params)
 
 
 def test_download_image():
+    """Test _download_image."""
     image = neurovault._download_image(None, {})
     assert image is None
 
 
 def test_fetch_neurovault(tmp_path):
-    # check that nothing is downloaded in offline mode
+    """Run several several checks on fetch_neurovault."""
     data = neurovault.fetch_neurovault(mode="offline", data_dir=tmp_path)
 
     assert len(data.images) == 0
@@ -790,6 +834,7 @@ def test_fetch_neurovault_errors(capsys, request_mocker):
 
 
 def test_fetch_neurovault_ids(tmp_path):
+    """Test fetch_neurovault_ids."""
     collections, images = _get_neurovault_data()
     collections = collections.sort_values(
         by="true_number_of_images", ascending=False
@@ -802,10 +847,7 @@ def test_fetch_neurovault_ids(tmp_path):
         "id"
     ].to_numpy()
 
-    with pytest.raises(ValueError):
-        neurovault.fetch_neurovault_ids(mode="bad")
-
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=img_ids, collection_ids=col_ids, data_dir=tmp_path
     )
 
@@ -824,14 +866,56 @@ def test_fetch_neurovault_ids(tmp_path):
         for value in meta.values():
             assert not isinstance(value, Path)
 
-    # check image can be loaded again from disk
-    data = neurovault.fetch_neurovault_ids(
+
+def test_fetch_neurovault_ids_error():
+    """Test fetch_neurovault_ids errors."""
+    with pytest.raises(
+        ValueError,
+        match="Supported download modes are: overwrite, download_new, offline",
+    ):
+        fetch_neurovault_ids(mode="bad")
+
+
+def test_fetch_neurovault_ids_offline(tmp_path):
+    """Check image can be loaded again from disk."""
+    collections, images = _get_neurovault_data()
+    collections = collections.sort_values(
+        by="true_number_of_images", ascending=False
+    )
+    other_col_id, *col_ids = collections["id"].to_numpy()[:3]
+    img_ids = images[images["collection_id"] == other_col_id]["id"].to_numpy()[
+        :3
+    ]
+
+    data = fetch_neurovault_ids(
+        image_ids=img_ids, collection_ids=col_ids, data_dir=tmp_path
+    )
+
+    data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
     )
 
     assert len(data.images) == 1
 
-    # check that download_new mode forces overwrite
+
+def test_fetch_neurovault_ids_overwrite(tmp_path):
+    """Check that download_new mode forces overwrite."""
+    collections, images = _get_neurovault_data()
+    collections = collections.sort_values(
+        by="true_number_of_images", ascending=False
+    )
+    other_col_id, *col_ids = collections["id"].to_numpy()[:3]
+    img_ids = images[images["collection_id"] == other_col_id]["id"].to_numpy()[
+        :3
+    ]
+    data = fetch_neurovault_ids(
+        image_ids=img_ids, collection_ids=col_ids, data_dir=tmp_path
+    )
+
+    data = fetch_neurovault_ids(
+        image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
+    )
+
     modified_meta = data["images_meta"][0]
 
     assert modified_meta["some_key"] == "some_value"
@@ -851,20 +935,20 @@ def test_fetch_neurovault_ids(tmp_path):
         meta_f.write(json.dumps(modified_meta).encode("UTF-8"))
 
     # fresh download
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="download_new"
     )
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
     )
 
     # should not have changed
     assert data["images_meta"][0]["some_key"] == "some_other_value"
 
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="overwrite"
     )
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         image_ids=[img_ids[0]], data_dir=tmp_path, mode="offline"
     )
 
@@ -881,7 +965,7 @@ def test_should_download_resampled_images_only_if_no_previous_download(
     sample_collection_id = sample_collection["id"]
     expected_number_of_images = sample_collection["true_number_of_images"]
 
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
         resample=True,
@@ -906,7 +990,7 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     sample_collection_id = sample_collection["id"]
 
     # Fetch non-resampled images
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
         resample=True,
@@ -922,7 +1006,7 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
     )
 
     # Download original data
-    data_orig = neurovault.fetch_neurovault_ids(
+    data_orig = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
         resample=False,
@@ -954,7 +1038,7 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     sample_collection_id = sample_collection["id"]
 
     # Fetch non-resampled images
-    data_orig = neurovault.fetch_neurovault_ids(
+    data_orig = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
         resample=False,
@@ -972,7 +1056,7 @@ def test_download_resamp_images_along_original_images_if_previously_downloaded(
     )
 
     # Ask for resampled data, which should only trigger resample
-    data = neurovault.fetch_neurovault_ids(
+    data = fetch_neurovault_ids(
         collection_ids=[sample_collection_id],
         data_dir=tmp_path,
         resample=True,

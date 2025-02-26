@@ -10,6 +10,7 @@ from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     ALLOWED_DATA_TYPES,
     ALLOWED_MESH_TYPES,
@@ -48,9 +49,6 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ICBM152 template (dated 2009).
 
     %(templateflow)s
-
-    For more information, see :footcite:t:`Fonov2011`,
-    :footcite:t:`Fonov2009`, and :footcite:t:`Collins1999`.
 
     Parameters
     ----------
@@ -104,26 +102,14 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     nilearn.datasets.fetch_icbm152_brain_gm_mask: to fetch only ICBM gray
         matter mask.
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
-    For more information about this dataset's structure:
-    https://www.bic.mni.mcgill.ca/ServicesAtlases/ICBM152NLin2009
-
-    The original download URL is
-    https://www.bic.mni.mcgill.ca/~vfonov/icbm/2009/mni_icbm152_nlin_sym_09a_nifti.zip
-
-    TemplateFlow repository for ICBM152 2009
-
-    Symmetric: https://github.com/templateflow/tpl-MNI152NLin2009cSym
-
-    Asymmetric: https://github.com/templateflow/tpl-MNI152NLin2009cAsym
-
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     if url is None:
         # The URL can be retrieved from the nilearn account on OSF (Open
         # Science Framework), https://osf.io/4r3jt/quickfiles/
@@ -174,6 +160,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
 
 @functools.lru_cache(maxsize=3)
+@fill_doc
 def load_mni152_template(resolution=None):
     """Load the MNI152 skullstripped T1 template.
 
@@ -181,14 +168,11 @@ def load_mni152_template(resolution=None):
     re-scaled 1mm-resolution version of the :term:`MNI` ICBM152 T1 template
     and re-samples it using a different resolution, if specified.
 
-    For more information, see :footcite:t:`Fonov2011`,
-    and :footcite:t:`Fonov2009`.
+    %(templateflow)s
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    %(resolution)s
 
         .. versionadded:: 0.8.1
 
@@ -208,9 +192,10 @@ def load_mni152_template(resolution=None):
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
 
-    References
-    ----------
-    .. footbibliography::
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -239,6 +224,7 @@ def load_mni152_template(resolution=None):
     return new_brain_template
 
 
+@fill_doc
 def load_mni152_gm_template(resolution=None):
     """Load the MNI152 grey-matter template.
 
@@ -246,13 +232,13 @@ def load_mni152_gm_template(resolution=None):
     MNI ICBM152 template and re-samples it using a different resolution,
     if specified.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    %(resolution)s
 
     Returns
     -------
@@ -266,6 +252,11 @@ def load_mni152_gm_template(resolution=None):
 
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -294,6 +285,7 @@ def load_mni152_gm_template(resolution=None):
     return new_gm_template
 
 
+@fill_doc
 def load_mni152_wm_template(resolution=None):
     """Load the MNI152 white-matter template.
 
@@ -302,13 +294,13 @@ def load_mni152_wm_template(resolution=None):
     and re-samples it using a different
     resolution, if specified.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template is re-sampled with the
-        specified resolution.
+    %(resolution)s
 
     Returns
     -------
@@ -322,6 +314,11 @@ def load_mni152_wm_template(resolution=None):
 
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -350,38 +347,39 @@ def load_mni152_wm_template(resolution=None):
     return new_wm_template
 
 
+@fill_doc
 def load_mni152_brain_mask(resolution=None, threshold=0.2):
     """Load the MNI152 whole-brain mask.
 
     This function takes the whole-brain MNI152 T1 template and threshold it,
     in order to obtain the corresponding whole-brain mask.
 
+    %(templateflow)s
+
     .. versionadded:: 0.2.5
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
+    %(resolution)s
 
         .. versionadded:: 0.8.1
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the MNI152 T1 template above this threshold will be included.
 
     Returns
     -------
     mask_img : Nifti1Image, image corresponding to the whole-brain mask.
 
-    Notes
-    -----
-    Refer to load_mni152_template function for more information about the
-    MNI152 T1 template.
-
     See Also
     --------
     nilearn.datasets.load_mni152_template : for details about version of the
         MNI152 T1 template and related.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -394,21 +392,22 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     return mask_img
 
 
+@fill_doc
 def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     """Load the MNI152 grey-matter mask.
 
     This function takes the grey-matter MNI152 template and threshold it, in
     order to obtain the corresponding grey-matter mask.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
+    %(resolution)s
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the grey-matter MNI152 template above this threshold will be
         included.
 
@@ -421,15 +420,15 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     -------
     gm_mask_img : Nifti1Image, image corresponding to the grey-matter mask.
 
-    Notes
-    -----
-    Refer to load_mni152_gm_template function for more information about the
-    MNI152 grey-matter template.
-
     See Also
     --------
     nilearn.datasets.load_mni152_gm_template : for details about version of the
         MNI152 grey-matter template and related.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -447,21 +446,22 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     return gm_mask_img
 
 
+@fill_doc
 def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     """Load the MNI152 white-matter mask.
 
     This function takes the white-matter MNI152 template and threshold it, in
     order to obtain the corresponding white-matter mask.
 
+    %(templateflow)s
+
     .. versionadded:: 0.8.1
 
     Parameters
     ----------
-    resolution : :obj:`int`, default=1
-        If resolution is different from 1, the template loaded is first
-        re-sampled with the specified resolution.
+    %(resolution)s
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the white-matter MNI152 template above this threshold will be
         included.
 
@@ -474,15 +474,15 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     -------
     wm_mask_img : Nifti1Image, image corresponding to the white-matter mask.
 
-    Notes
-    -----
-    Refer to load_mni152_gm_template function for more information about the
-    MNI152 white-matter template.
-
     See Also
     --------
     nilearn.datasets.load_mni152_wm_template : for details about version of the
         MNI152 white-matter template and related.
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
     resolution = resolution or 1
@@ -514,7 +514,7 @@ def fetch_icbm152_brain_gm_mask(
     ----------
     %(data_dir)s
 
-    threshold : float, default=0.2
+    threshold : :obj:`float`, default=0.2
         Values of the ICBM152 grey-matter template above this threshold will be
         included.
 
@@ -534,6 +534,14 @@ def fetch_icbm152_brain_gm_mask(
     gm_mask_img : Nifti1Image, image corresponding to the brain gray matter
         from ICBM152 template.
 
+    See Also
+    --------
+    nilearn.datasets.fetch_icbm152_2009: for details regarding the ICBM152
+        template.
+
+    nilearn.datasets.load_mni152_template: for details about version of MNI152
+        template and related.
+
     Notes
     -----
     This function relies on ICBM152 templates where we particularly pick
@@ -544,15 +552,12 @@ def fetch_icbm152_brain_gm_mask(
     .. note::
         It is advised to check the mask image with your own data processing.
 
-    See Also
-    --------
-    nilearn.datasets.fetch_icbm152_2009: for details regarding the ICBM152
-        template.
-
-    nilearn.datasets.load_mni152_template: for details about version of MNI152
-        template and related.
+    For more information
+    see the :ref:`dataset description <icbm_152_template>`.
 
     """
+    check_params(locals())
+
     # Fetching ICBM152 gray matter mask image
     icbm = fetch_icbm152_2009(
         data_dir=data_dir, resume=resume, verbose=verbose
@@ -625,27 +630,29 @@ def fetch_oasis_vbm(
     url=None,
     resume=True,
     verbose=1,
-    legacy_format=False,
 ):
     """Download and load Oasis "cross-sectional MRI" dataset (416 subjects).
 
-    For more information, see :footcite:t:`OASISbrain`,
-    and :footcite:t:`Marcus2007`.
+    ..  admonition:: Data Usage Agreement
+        :class: attention
+
+        Using data available through the OASIS project requires agreeing with
+        the Data Usage Agreement that can be found at
+        https://sites.wustl.edu/oasisbrains/
 
     Parameters
     ----------
-    n_subjects : int, optional
+    n_subjects : :obj:`int`, default=None
         The number of subjects to load. If None is given, all the
         subjects are used.
 
-    dartel_version : boolean, default=True
+    dartel_version : :obj:`bool`, default=True
         Whether or not to use data normalized with DARTEL instead of standard
         SPM8 normalization.
     %(data_dir)s
     %(url)s
     %(resume)s
     %(verbose)s
-    %(legacy_format)s
 
     Returns
     -------
@@ -656,54 +663,19 @@ def fetch_oasis_vbm(
           Paths to nifti gray matter density probability maps
         - 'white_matter_maps' string list
           Paths to nifti white matter density probability maps
-        - 'ext_vars': np.recarray
+        - 'ext_vars': pandas.DataFrame
           Data from the .csv file with information about selected subjects
         - 'data_usage_agreement': string
           Path to the .txt file containing the data usage agreement.
 
-    References
-    ----------
-    .. footbibliography::
-
     Notes
     -----
-    In the DARTEL version, original Oasis data have been preprocessed
-    with the following steps:
-
-      1. Dimension swapping (technically required for subsequent steps)
-      2. Brain Extraction
-      3. Segmentation with SPM8
-      4. Normalization using DARTEL algorithm
-      5. Modulation
-      6. Replacement of NaN values with 0 in gray/white matter density maps.
-      7. Resampling to reduce shape and make it correspond to the shape of
-         the non-DARTEL data (fetched with dartel_version=False).
-      8. Replacement of values < 1e-4 with zeros to reduce the file size.
-
-    In the non-DARTEL version, the following steps have been performed instead:
-
-      1. Dimension swapping (technically required for subsequent steps)
-      2. Brain Extraction
-      3. Segmentation and normalization to a template with SPM8
-      4. Modulation
-      5. Replacement of NaN values with 0 in gray/white matter density maps.
-
-    An archive containing the gray and white matter density probability maps
-    for the 416 available subjects is provided. Gross outliers are removed and
-    filtered by this data fetcher (DARTEL: 13 outliers; non-DARTEL: 1 outlier)
-    Externals variates (age, gender, estimated intracranial volume,
-    years of education, socioeconomic status, dementia score) are provided
-    in a CSV file that is a copy of the original Oasis CSV file. The current
-    downloader loads the CSV file and keeps only the lines corresponding to
-    the subjects that are actually demanded.
-
-    The Open Access Structural Imaging Series (OASIS) is a project
-    dedicated to making brain imaging data openly available to the public.
-    Using data available through the OASIS project requires agreeing with
-    the Data Usage Agreement that can be found at
-    https://sites.wustl.edu/oasisbrains/
+    For more information
+    see the :ref:`dataset description <oasis_maps>`.
 
     """
+    check_params(locals())
+
     # check number of subjects
     if n_subjects is None:
         n_subjects = 403 if dartel_version else 415
@@ -864,9 +836,6 @@ def fetch_oasis_vbm(
     )
     fdescr = get_dataset_descr(dataset_name)
 
-    if legacy_format:
-        csv_data = csv_data.to_records(index=False)
-
     return Bunch(
         gray_matter_maps=gm_maps,
         white_matter_maps=wm_maps,
@@ -883,6 +852,10 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
     File names are subject to change and only attribute names
     are guaranteed to be stable across nilearn versions.
     See :footcite:t:`Fischl1999`.
+
+    See :func:`~nilearn.datasets.load_fsaverage` and
+    :func:`~nilearn.datasets.load_fsaverage_data`
+    to access fsaverage data as :obj:`~nilearn.surface.SurfaceImage`.
 
     Parameters
     ----------
@@ -908,7 +881,7 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
          - 'infl_left': Gifti file, left hemisphere inflated pial surface
            :term:`mesh`
          - 'infl_right': Gifti file, right hemisphere inflated pial
-                         surface :term:`mesh`
+           surface :term:`mesh`
          - 'sphere_left': Gifti file, left hemisphere sphere surface
            :term:`mesh`
          - 'sphere_right': Gifti file, right hemisphere sphere surface
@@ -922,15 +895,13 @@ def fetch_surf_fsaverage(mesh="fsaverage5", data_dir=None):
          - 'white_right': Gifti file, right hemisphere*
            white surface :term:`mesh`
 
-         See load_fsaverage and load_fsaverage_data
-         to access fsaverage data as SurfaceImages.
-
-
     References
     ----------
     .. footbibliography::
 
     """
+    check_params(locals())
+
     available_meshes = (
         "fsaverage3",
         "fsaverage4",
@@ -1079,6 +1050,8 @@ def load_fsaverage(mesh="fsaverage5", data_dir=None):
          - ``'flat'``: Polymesh for flattened surface
                        for left and right hemispheres
     """
+    check_params(locals())
+
     fsaverage = fetch_surf_fsaverage(mesh, data_dir=data_dir)
     renaming = {
         "pial": "pial",
@@ -1131,6 +1104,8 @@ def load_fsaverage_data(
     img : :obj:`~nilearn.surface.SurfaceImage`
         SurfaceImage with the freesurfer mesh and data.
     """
+    check_params(locals())
+
     if mesh_type not in ALLOWED_MESH_TYPES:
         raise ValueError(
             f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"

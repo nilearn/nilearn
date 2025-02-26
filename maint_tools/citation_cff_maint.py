@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 import ruamel.yaml
+from utils import root_dir
 
 yaml = ruamel.yaml.YAML()
 yaml.indent(mapping=2, sequence=4, offset=2)
@@ -23,11 +24,6 @@ CORE_DEVS = [
     "Rémi Gau",
     "Taylor Salo",
 ]
-
-
-def root_dir() -> Path:
-    """Return path to root directory."""
-    return Path(__file__).parent.parent
 
 
 def names_rst() -> Path:
@@ -75,8 +71,8 @@ def write_names_rst(citation: list[dict[str, str]]) -> None:
         for i, author in enumerate(citation["authors"]):
             if "website" in author:
                 line = (
-                    f'.. _{author["given-names"]} {author["family-names"]}: '
-                    f'{author["website"]}'
+                    f".. _{author['given-names']} {author['family-names']}: "
+                    f"{author['website']}"
                 )
                 print(line, file=f)
             if i < len(citation["authors"]) - 1:

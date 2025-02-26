@@ -3,13 +3,19 @@
 import warnings
 
 import numpy as np
-from joblib import Memory
+from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import _utils, image
+from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, _filter_and_extract
+from nilearn._utils.param_validation import check_params
+from nilearn.image import clean_img, get_data, index_img, resample_img
+from nilearn.maskers._utils import (
+    compute_middle_image,
+    sanitize_cleaning_parameters,
+)
+from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.masking import load_mask_img
 
 
 class _ExtractionFunctor:
@@ -54,7 +60,7 @@ class NiftiMapsMasker(BaseMasker):
 
     Parameters
     ----------
-    maps_img : 4D niimg-like object
+    maps_img : 4D niimg-like object or None, default=None
         See :ref:`extracting_data`.
         Set of continuous maps. One representative time course per map is
         extracted using least square regression.
@@ -66,21 +72,27 @@ class NiftiMapsMasker(BaseMasker):
     allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
+
     %(smoothing_fwhm)s
+
     %(standardize_maskers)s
+
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
+
     %(detrend)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+
+    %(dtype)s.
 
     resampling_target : {"data", "mask", "maps", None}, default="data"
         Gives which image gives the final shape/size. For example, if
@@ -88,13 +100,24 @@ class NiftiMapsMasker(BaseMasker):
         fit() are resampled to the shape and affine of mask_img. "None" means
         no resampling: if shapes and affines do not match, a ValueError is
         raised.
+
     %(memory)s
+
     %(memory_level)s
+
     %(verbose0)s
+
     %(keep_masked_maps)s
 
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
+
+    %(clean_args)s
+        .. versionadded:: 0.11.2dev
 
     %(masker_kwargs)s
 
@@ -126,7 +149,7 @@ class NiftiMapsMasker(BaseMasker):
 
     def __init__(
         self,
-        maps_img,
+        maps_img=None,
         mask_img=None,
         allow_overlap=True,
         smoothing_fwhm=None,
@@ -144,10 +167,10 @@ class NiftiMapsMasker(BaseMasker):
         memory_level=0,
         verbose=0,
         reports=True,
+        cmap="CMRmap_r",
+        clean_args=None,
         **kwargs,
     ):
-        if memory is None:
-            memory = Memory(location=None, verbose=0)
         self.maps_img = maps_img
         self.mask_img = mask_img
 
@@ -166,9 +189,8 @@ class NiftiMapsMasker(BaseMasker):
         self.high_pass = high_pass
         self.t_r = t_r
         self.dtype = dtype
-        self.clean_kwargs = {
-            k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-        }
+        self.clean_args = clean_args
+        self.clean_kwargs = kwargs
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -179,30 +201,9 @@ class NiftiMapsMasker(BaseMasker):
         self.verbose = verbose
 
         self.reports = reports
-        self.report_id = -1
-        self._report_content = {
-            "description": (
-                "This reports shows the spatial maps provided to the mask."
-            ),
-            "warning_message": None,
-        }
-
-        if resampling_target not in ("mask", "maps", "data", None):
-            raise ValueError(
-                "invalid value for 'resampling_target' "
-                f"parameter: {resampling_target}"
-            )
-
-        if self.mask_img is None and resampling_target == "mask":
-            raise ValueError(
-                "resampling_target has been set to 'mask' but no mask "
-                "has been provided.\n"
-                "Set resampling_target to something else or provide a mask."
-            )
+        self.cmap = cmap
 
         self.keep_masked_maps = keep_masked_maps
-
-        self.cmap = kwargs.get("cmap", "CMRmap_r")
 
     def generate_report(self, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
@@ -253,8 +254,7 @@ class NiftiMapsMasker(BaseMasker):
         if not is_matplotlib_installed():
             with warnings.catch_warnings():
                 mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
+                    "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
@@ -280,7 +280,7 @@ class NiftiMapsMasker(BaseMasker):
                 f"{type(displayed_maps)}"
             )
         self.displayed_maps = displayed_maps
-        self.report_id += 1
+
         return generate_report(self)
 
     def _reporting(self):
@@ -293,7 +293,7 @@ class NiftiMapsMasker(BaseMasker):
 
         """
         from nilearn import plotting
-        from nilearn.reporting.html_report import _embed_img
+        from nilearn.reporting.html_report import embed_img
 
         if self._reporting_data is not None:
             maps_image = self._reporting_data["maps_image"]
@@ -303,7 +303,7 @@ class NiftiMapsMasker(BaseMasker):
         if maps_image is None:
             return [None]
 
-        n_maps = image.get_data(maps_image).shape[-1]
+        n_maps = get_data(maps_image).shape[-1]
 
         maps_to_be_displayed = range(n_maps)
         if isinstance(self.displayed_maps, int):
@@ -311,7 +311,7 @@ class NiftiMapsMasker(BaseMasker):
                 msg = (
                     "`generate_report()` received "
                     f"{self.displayed_maps} to be displayed. "
-                    f"But masker only has {n_maps} maps."
+                    f"But masker only has {n_maps} maps. "
                     f"Setting number of displayed maps to {n_maps}."
                 )
                 warnings.warn(category=UserWarning, message=msg)
@@ -327,7 +327,6 @@ class NiftiMapsMasker(BaseMasker):
                 )
             maps_to_be_displayed = self.displayed_maps
 
-        self._report_content["report_id"] = self.report_id
         self._report_content["number_of_maps"] = n_maps
         self._report_content["displayed_maps"] = list(maps_to_be_displayed)
 
@@ -343,9 +342,9 @@ class NiftiMapsMasker(BaseMasker):
             self._report_content["warning_message"] = msg
             for component in maps_to_be_displayed:
                 display = plotting.plot_stat_map(
-                    image.index_img(maps_image, component)
+                    index_img(maps_image, component)
                 )
-                embeded_images.append(_embed_img(display))
+                embeded_images.append(embed_img(display))
                 display.close()
             return embeded_images
 
@@ -360,7 +359,7 @@ class NiftiMapsMasker(BaseMasker):
         for component in maps_to_be_displayed:
             # Find the cut coordinates
             cut_coords = plotting.find_xyz_cut_coords(
-                image.index_img(maps_image, component)
+                index_img(maps_image, component)
             )
             display = plotting.plot_img(
                 img,
@@ -369,10 +368,10 @@ class NiftiMapsMasker(BaseMasker):
                 cmap=self.cmap,
             )
             display.add_overlay(
-                image.index_img(maps_image, component),
+                index_img(maps_image, component),
                 cmap=plotting.cm.black_blue,
             )
-            embeded_images.append(_embed_img(display))
+            embeded_images.append(embed_img(display))
             display.close()
         return embeded_images
 
@@ -385,7 +384,7 @@ class NiftiMapsMasker(BaseMasker):
 
         Parameters
         ----------
-        imgs : :obj:`list` of Niimg-like objects
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
             See :ref:`extracting_data`.
             Image data passed to the reporter.
 
@@ -393,6 +392,29 @@ class NiftiMapsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        check_params(self.__dict__)
+        if self.resampling_target not in ("mask", "maps", "data", None):
+            raise ValueError(
+                "invalid value for 'resampling_target' "
+                f"parameter: {self.resampling_target}"
+            )
+
+        if self.mask_img is None and self.resampling_target == "mask":
+            raise ValueError(
+                "resampling_target has been set to 'mask' but no mask "
+                "has been provided.\n"
+                "Set resampling_target to something else or provide a mask."
+            )
+
+        self = sanitize_cleaning_parameters(self)
+
+        self._report_content = {
+            "description": (
+                "This reports shows the spatial maps provided to the mask."
+            ),
+            "warning_message": None,
+        }
+
         # Load images
         repr = _utils.repr_niimgs(self.mask_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
@@ -400,7 +422,7 @@ class NiftiMapsMasker(BaseMasker):
         self.maps_img_ = _utils.check_niimg(
             self.maps_img, dtype=self.dtype, atleast_4d=True
         )
-        self.maps_img_ = image.clean_img(
+        self.maps_img_ = clean_img(
             self.maps_img_,
             detrend=False,
             standardize=False,
@@ -414,6 +436,10 @@ class NiftiMapsMasker(BaseMasker):
             msg = f"loading mask from {repr}"
             logger.log(msg=msg, verbose=self.verbose)
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
+
+            # Just check that the mask is valid
+            load_mask_img(self.mask_img_)
+
         else:
             self.mask_img_ = None
 
@@ -430,7 +456,7 @@ class NiftiMapsMasker(BaseMasker):
 
             # TODO switch to force_resample=True
             # when bumping to version > 0.13
-            self.maps_img_ = image.resample_img(
+            self.maps_img_ = resample_img(
                 self.maps_img_,
                 target_affine=self.mask_img_.affine,
                 target_shape=self.mask_img_.shape,
@@ -445,7 +471,7 @@ class NiftiMapsMasker(BaseMasker):
 
             # TODO switch to force_resample=True
             # when bumping to version > 0.13
-            self.mask_img_ = image.resample_img(
+            self.mask_img_ = resample_img(
                 self.mask_img_,
                 target_affine=self.maps_img_.affine,
                 target_shape=self.maps_img_.shape[:3],
@@ -474,13 +500,8 @@ class NiftiMapsMasker(BaseMasker):
 
         return self
 
-    def _check_fitted(self):
-        if not hasattr(self, "maps_img_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been "
-                "fitted. "
-                "You must call fit() before calling transform()."
-            )
+    def __sklearn_is_fitted__(self):
+        return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction."""
@@ -499,12 +520,13 @@ class NiftiMapsMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like, optional
+        confounds : CSV file or array-like, default=None
             This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, optional
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
@@ -563,7 +585,7 @@ class NiftiMapsMasker(BaseMasker):
                 logger.log("Resampling maps", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
-                self._resampled_maps_img_ = self._cache(image.resample_img)(
+                self._resampled_maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
                     interpolation="continuous",
                     target_shape=ref_img.shape[:3],
@@ -582,7 +604,7 @@ class NiftiMapsMasker(BaseMasker):
                 logger.log("Resampling mask", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
-                self._resampled_mask_img_ = self._cache(image.resample_img)(
+                self._resampled_mask_img_ = self._cache(resample_img)(
                     self.mask_img_,
                     interpolation="nearest",
                     target_shape=ref_img.shape[:3],
@@ -595,7 +617,7 @@ class NiftiMapsMasker(BaseMasker):
             # Check if there is an overlap.
 
             # If float, we set low values to 0
-            data = image.get_data(self._resampled_maps_img_)
+            data = get_data(self._resampled_maps_img_)
             dtype = data.dtype
             if dtype.kind == "f":
                 data[data < np.finfo(dtype).eps] = 0.0
@@ -621,10 +643,13 @@ class NiftiMapsMasker(BaseMasker):
         )
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
-        params["clean_kwargs"] = self.clean_kwargs
+        params["clean_kwargs"] = self.clean_args
+        # TODO remove in 0.13.2
+        if self.clean_kwargs:
+            params["clean_kwargs"] = self.clean_kwargs
 
         region_signals, labels_ = self._cache(
-            _filter_and_extract,
+            filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
         )(
             # Images
@@ -671,7 +696,7 @@ class NiftiMapsMasker(BaseMasker):
         """
         from ..regions import signal_extraction
 
-        self._check_fitted()
+        check_is_fitted(self)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_maps(

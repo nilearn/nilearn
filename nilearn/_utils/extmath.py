@@ -1,7 +1,5 @@
 """Extended math utilities."""
 
-# Author: Gael Varoquaux
-
 import numpy as np
 
 from nilearn._utils import logger
@@ -54,8 +52,7 @@ def is_spd(M, decimal=15, verbose=1):
     decimal : int, default=15
         Decimal.
 
-    verbose : int, default=1
-        Verbosity level (0 means no message).
+    %(verbose)s
 
     Returns
     -------

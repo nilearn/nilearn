@@ -11,7 +11,6 @@ and add contours of regions of interest using
 :func:`~nilearn.plotting.plot_surf_contours`.
 """
 
-
 # %%
 # Sample the 3D data around each node of the mesh
 # -----------------------------------------------
@@ -62,15 +61,15 @@ for hemi, data in curv_sign.data.parts.items():
 # as the default plotting engine.
 from nilearn.plotting import plot_surf_stat_map
 
-# In this example we will only plot the right hemisphere
-hemi = "right"
+# In this example we will plot both hemispheres, but you can choose one of
+# "left", "right" or "both".
+hemi = "both"
 
 fig = plot_surf_stat_map(
     stat_map=surface_image,
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
     title="Surface with matplotlib",
-    colorbar=True,
     threshold=1.0,
     bg_map=curv_sign,
 )
@@ -82,10 +81,13 @@ fig.show()
 # you can easily configure :func:`~nilearn.plotting.plot_surf_stat_map`
 # to use ``plotly`` instead of ``matplotlib``:
 
-# If plotly is not installed, use matplotlib
-from nilearn._utils.helpers import is_plotly_installed
+engine = "matplotlib"
 
-engine = "plotly" if is_plotly_installed() else "matplotlib"
+# uncomment the following line if you use plotly
+# in the rest of this example
+
+# engine = "plotly"
+
 print(f"Using plotting engine {engine}.")
 
 figure = plot_surf_stat_map(
@@ -93,7 +95,6 @@ figure = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
     title=f"Surface with {engine}",
-    colorbar=True,
     threshold=1.0,
     bg_map=curv_sign,
     bg_on_data=True,
@@ -102,7 +103,7 @@ figure = plot_surf_stat_map(
 
 # Uncomment the line below
 # to view the figure in browser.
-# figure.show()
+figure.show()
 
 # %%
 # When using ``matplolib`` as the plotting engine, a standard
@@ -116,7 +117,7 @@ figure = plot_surf_stat_map(
 
 # Save the figure as we would do with a matplotlib figure.
 # Uncomment the following line to save the previous figure to file
-# fig.savefig("right_hemisphere.png")
+# fig.savefig("both_hemisphere.png")
 
 # %%
 # Plot 3D image for comparison
@@ -154,10 +155,6 @@ destrieux_atlas = SurfaceImage(
     },
 )
 
-# The labels are stored as bytes for the Destrieux atlas.
-# For convenience we decode them to string.
-label_names = [x.decode("utf-8") for x in destrieux.labels]
-
 # these are the regions we want to outline
 regions_dict = {
     "G_postcentral": "Postcentral gyrus",
@@ -166,7 +163,8 @@ regions_dict = {
 
 # get indices in atlas for these labels
 regions_indices = [
-    np.where(np.array(label_names) == region)[0][0] for region in regions_dict
+    np.where(np.array(destrieux.labels) == region)[0][0]
+    for region in regions_dict
 ]
 
 labels = list(regions_dict.values())
@@ -183,7 +181,6 @@ figure = plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"],
     hemi=hemi,
     title="ROI outlines on surface",
-    colorbar=True,
     threshold=1.0,
     bg_map=fsaverage_sulcal,
     engine=engine,
@@ -205,10 +202,9 @@ elif engine == "plotly":
         levels=regions_indices,
         labels=labels,
         lines=[{"width": 5}],
-        hemi=hemi,
     )
     # view the contours in a browser
-    # figure.show()
+    figure.show()
 
 # %%
 # Plot with higher-resolution mesh
@@ -241,7 +237,6 @@ plot_surf_stat_map(
     stat_map=big_img,
     surf_mesh=big_fsaverage_meshes["inflated"],
     hemi=hemi,
-    colorbar=True,
     title="Surface fine mesh",
     threshold=1.0,
     bg_map=big_fsaverage_sulcal,
@@ -265,7 +260,6 @@ plot_img_on_surf(
     stat_map=stat_img,
     views=["lateral", "medial"],
     hemispheres=["left", "right"],
-    colorbar=True,
     title="multiple views of the 3D volume",
     bg_on_data=True,
 )
@@ -286,7 +280,7 @@ view = view_surf(
     surf_map=surface_image,
     threshold="90%",
     bg_map=fsaverage_sulcal,
-    hemi="right",
+    hemi=hemi,
     title="3D visualization in a web browser",
 )
 
@@ -316,7 +310,7 @@ view
 # Using nearest-neighbor interpolation with zero radius will achieve this.
 from nilearn.datasets import fetch_atlas_destrieux_2009
 
-destrieux = fetch_atlas_destrieux_2009(legacy_format=False)
+destrieux = fetch_atlas_destrieux_2009()
 
 view = view_img_on_surf(
     stat_map_img=destrieux.maps,

@@ -5,8 +5,6 @@ which we historically used,
 ignores modules whose name starts with an underscore.
 """
 
-# Author: Gael Varoquaux, Alexandre Abraham
-
 import os
 import re
 from pathlib import Path
@@ -480,9 +478,7 @@ def test_repr_niimgs():
     ]
     # Explicit shortening, all 3 names are displayed, but shortened
     shortened_rep_list_of_size_3 = (
-        "[this-is-a-very-lon...,"
-        " this-is-another-ve...,"
-        " this-is-again-anot...]"
+        "[this-is-a-very-lon..., this-is-another-ve..., this-is-again-anot...]"
     )
 
     assert (

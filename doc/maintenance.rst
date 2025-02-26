@@ -165,14 +165,42 @@ Some environments allow passing extra argument:
     tox run -e lint -- ruff
 
     # only run some tests
-    tox -e test_plotting -- nilearn/glm/tests/test_contrasts.py
+    tox -e plotting -- nilearn/glm/tests/test_contrasts.py
 
 You can also run any arbitrary command in a given environment with ``tox exec``:
 
 .. code-block:: bash
 
-    tox exec -e test_latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
+    tox exec -e latest -- python -m pytest nilearn/_utils/tests/test_data_gen.py
 
+Generating new baseline figures for plotting tests
+==================================================
+
+We use the ``pytest-mpl`` pytest plugin to run several regression tests on our Matplotlib figures.
+
+Sometimes, the output of a plotting function may unintentionally change
+as a side effect of changing another function or piece of code
+that it depends on.
+These tests ensure that the outputs are not accidentally changed.
+
+For each figure to test,
+an image is generated and then subtracted from an existing reference image.
+If the root mean square of the residual is larger than a user-specified tolerance,
+the test will fail.
+
+Failures are expected at times when the output is changed intentionally
+(for example when fixing a bug,  adding features, bumping the python or Matplotlib version...)
+for a particular function.
+In such cases, the output needs to be manually updated and visually checked
+as part of the PR review process and to set a new baseline for comparison.
+
+You can set a new 'baseline' (set of reference images) by running the following
+with the oldest supported Python and Matplotlib:
+
+.. code-block:: bash
+
+    pip install tox
+    tox run -e pytest_mpl_generate
 
 How to make a release?
 ======================
@@ -459,9 +487,11 @@ We let tox handle creating virtual env and install dependencies.
 
 .. code-block:: bash
 
-    export VERSIONTAG=$(git describe --tags --abbrev=0)
     pip install tox
-    tox run --colored yes --list-dependencies -e doc -- install
+    tox run --colored yes --list-dependencies -e doc -- html
+    export DEPLOY_TYPE="stable"
+    export COMMIT_SHA=$(git rev-parse HEAD)
+    bash ./build_tools/github/deploy_doc.sh
 
 
 This will build the documentation (beware, this is time consuming...)

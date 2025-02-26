@@ -1,7 +1,5 @@
 """Matplotlib colormaps useful for neuroimaging."""
 
-import contextlib
-
 import matplotlib
 import numpy as _np
 from matplotlib import cm as _cm
@@ -12,6 +10,10 @@ from nilearn._utils.helpers import compare_version
 
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
+
+# mypy: disable_error_code="attr-defined"
+
+__all__ = ["_cmap_d"]
 
 
 def mix_colormaps(fg, bg):
@@ -119,17 +121,17 @@ def alpha_cmap(color, name="", alpha_min=0.5, alpha_max=1.0):
 
     Parameters
     ----------
-    color : (r, g, b), or a string
+    color : (r, g, b), or a :obj:`str`
         A triplet of floats ranging from 0 to 1, or a matplotlib
         color string.
 
-    name : string, default=''
+    name : :obj:`str` , default=''
         Name of the colormap.
 
-    alpha_min : Float, default=0.5
+    alpha_min : :obj:`float`, default=0.5
         Minimum value for alpha.
 
-    alpha_max : Float, default=1.0
+    alpha_max : :obj:`float`, default=1.0
         Maximum value for alpha.
 
     """
@@ -176,13 +178,8 @@ _cmaps_data = {
 
 _cmaps_data["ocean_hot"] = _concat_cmap(_cm.ocean, _cm.hot_r)
 _cmaps_data["hot_white_bone"] = _concat_cmap(_cm.afmhot, _cm.bone_r)
-_cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
 
-# Copied from matplotlib 1.2.0 for matplotlib 0.99 compatibility.
-_bwr_data = ((0.0, 0.0, 1.0), (1.0, 1.0, 1.0), (1.0, 0.0, 0.0))
-_cmaps_data["bwr"] = _colors.LinearSegmentedColormap.from_list(
-    "bwr", _bwr_data
-)._segmentdata.copy()
+_cmaps_data["hot_black_bone"] = _concat_cmap(_cm.afmhot_r, _cm.bone)
 
 
 ###############################################################################
@@ -293,9 +290,7 @@ for k, v in _cmap_d.items():
     else:
         _register_cmap = _cm.register_cmap
 
-    # "bwr" is already registered in latest matplotlib
-    with contextlib.suppress(ValueError):
-        _register_cmap(name=k, cmap=v)
+    _register_cmap(name=k, cmap=v)
 
 
 ###############################################################################
@@ -332,9 +327,9 @@ def dim_cmap(cmap, factor=0.3, to_white=True):
 
 def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
     """Replace a colormap by another inside a pair of values."""
-    assert (
-        vmin < vmax
-    ), f"'vmin' must be smaller than 'vmax'. Got {vmin=} and {vmax=}."
+    assert vmin < vmax, (
+        f"'vmin' must be smaller than 'vmax'. Got {vmin=} and {vmax=}."
+    )
     assert vmin >= 0, f"'vmin' must be larger than 0, {vmin=} was passed."
     assert vmax <= 1, f"'vmax' must be smaller than 1, {vmax=} was passed."
     outer_cdict = outer_cmap._segmentdata.copy()
@@ -379,11 +374,11 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
             (vmax, inner_cmap(vmax)[c_index], outer_cmap(vmax)[c_index])
         )
 
-        for value, c1, c2 in outer_cdict[color]:
-            if value <= vmax:
-                continue
-            color_lst.append((value, c1, c2))
-
+        color_lst.extend(
+            (value, c1, c2)
+            for value, c1, c2 in outer_cdict[color]
+            if value > vmax
+        )
         cdict[color] = color_lst
 
     return _colors.LinearSegmentedColormap(

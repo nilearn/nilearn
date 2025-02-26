@@ -6,12 +6,6 @@ This example shows how to download statistical maps from :term:`Neurovault`.
 
 See :func:`~nilearn.datasets.fetch_neurovault_ids`
 documentation for more details.
-
-..
-    Original authors:
-
-    - Ben Cipollini
-
 """
 
 # %%
@@ -55,6 +49,9 @@ for im in images_meta:
     plotting.plot_glass_brain(
         im["absolute_path"],
         title=f"image {im['id']}: {im['contrast_definition']}",
+        plot_abs=False,
+        vmin=-12,
+        vmax=12,
     )
 
 # %%
@@ -110,6 +107,7 @@ plotting.plot_stat_map(
     threshold=6,
     cut_coords=cut_coords,
     vmax=12,
+    vmin=-12,
 )
 
 plotting.show()

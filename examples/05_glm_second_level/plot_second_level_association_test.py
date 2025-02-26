@@ -8,13 +8,6 @@ We use the [left button press (auditory cue)] task from the Localizer
 dataset and seek association between the contrast values and a variate
 that measures the speed of pseudo-word reading. No confounding variate
 is included in the model.
-
-..
-    Original authors:
-
-    - Virgile Fritsch, Bertrand Thirion, 2014 -- 2018
-    - Jerome-Alexis Chevalier, 2019
-
 """
 
 # %%
@@ -25,7 +18,6 @@ n_samples = 94
 localizer_dataset = fetch_localizer_contrasts(
     ["left button press (auditory cue)"],
     n_subjects=n_samples,
-    legacy_format=False,
 )
 
 # %%
@@ -86,12 +78,15 @@ _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 # Let us plot the second level :term:`contrast` at the computed thresholds.
 from nilearn.plotting import plot_stat_map, show
 
+cut_coords = [10, -5, 10]
+
 plot_stat_map(
     z_map,
     threshold=threshold,
-    colorbar=True,
     title="Group-level association between motor activity \n"
     "and reading fluency (fdr=0.05)",
+    cut_coords=cut_coords,
+    draw_cross=False,
 )
 
 show()
@@ -110,7 +105,7 @@ neg_log_pval = math_img(
 
 # %%
 # Let us plot the (corrected) negative log  p-values for the parametric test
-cut_coords = [38, -17, -3]
+
 # Since we are plotting negative log p-values and using a threshold equal to 1,
 # it corresponds to corrected p-values lower than 10%, meaning that there
 # is less than 10% probability to make a single false discovery
@@ -123,10 +118,12 @@ title = (
 )
 plot_stat_map(
     neg_log_pval,
-    colorbar=True,
     cut_coords=cut_coords,
     threshold=threshold,
     title=title,
+    vmin=threshold,
+    cmap="inferno",
+    draw_cross=False,
 )
 show()
 
@@ -154,10 +151,12 @@ title = (
 )
 plot_stat_map(
     neg_log_pvals_permuted_ols_unmasked,
-    colorbar=True,
     cut_coords=cut_coords,
     threshold=threshold,
     title=title,
+    vmin=threshold,
+    cmap="inferno",
+    draw_cross=False,
 )
 show()
 

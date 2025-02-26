@@ -60,14 +60,16 @@ masker = NiftiSpheresMasker(
     radius=8,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
     memory="nilearn_cache",
     memory_level=1,
     verbose=2,
-    clean__butterworth__padtype="even",  # kwarg to modify Butterworth filter
+    clean_args={
+        "butterworth__padtype": "even"
+    },  # kwarg to modify Butterworth filter
 )
 
 # Additionally, we pass confound information to ensure our extracted
@@ -175,7 +177,7 @@ view
 #
 # First we fetch the coordinates of the Power atlas
 
-power = datasets.fetch_coords_power_2011(legacy_format=False)
+power = datasets.fetch_coords_power_2011()
 print(f"Power atlas comes with {power.keys()}.")
 
 # %%
@@ -205,7 +207,7 @@ spheres_masker = NiftiSpheresMasker(
     radius=5.0,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
@@ -250,7 +252,6 @@ plotting.plot_matrix(
     matrix,
     vmin=-1.0,
     vmax=1.0,
-    colorbar=True,
     title="Power correlation matrix",
 )
 
@@ -261,7 +262,6 @@ plotting.plot_connectome(
     title="Power correlation graph",
     edge_threshold="99.8%",
     node_size=20,
-    colorbar=True,
 )
 
 # %%
@@ -326,7 +326,7 @@ plotting.plot_markers(
 # -------------------------------------------
 #
 # We repeat the same steps for Dosenbach's atlas.
-dosenbach = datasets.fetch_coords_dosenbach_2010(legacy_format=False)
+dosenbach = datasets.fetch_coords_dosenbach_2010()
 
 coords = np.vstack(
     (
@@ -342,7 +342,7 @@ spheres_masker = NiftiSpheresMasker(
     radius=4.5,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
@@ -360,7 +360,6 @@ plotting.plot_matrix(
     matrix,
     vmin=-1.0,
     vmax=1.0,
-    colorbar=True,
     title="Dosenbach correlation matrix",
 )
 
@@ -370,7 +369,6 @@ plotting.plot_connectome(
     title="Dosenbach correlation graph",
     edge_threshold="99.7%",
     node_size=20,
-    colorbar=True,
 )
 
 
@@ -422,8 +420,7 @@ plotting.show()
 #
 # .. footbibliography::
 #
-# See also
-# --------
+# .. seealso::
 #
 #   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 #

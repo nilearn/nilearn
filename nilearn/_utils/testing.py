@@ -1,6 +1,5 @@
 """Utilities for testing nilearn."""
 
-# Author: Alexandre Abraham, Philippe Gervais
 import gc
 import os
 import sys
@@ -9,6 +8,16 @@ import warnings
 from pathlib import Path
 
 import pytest
+from numpy import __version__ as np_version
+
+from nilearn._utils import compare_version
+from nilearn._utils.helpers import OPTIONAL_MATPLOTLIB_MIN_VERSION
+
+try:
+    from matplotlib import __version__ as mpl_version
+except ImportError:
+    mpl_version = OPTIONAL_MATPLOTLIB_MIN_VERSION
+
 
 # we use memory_profiler library for memory consumption checks
 try:
@@ -39,7 +48,7 @@ except ImportError:
 
         return dummy_func
 
-    memory_usage = memory_used = None
+    memory_usage = memory_used = None  # type: ignore[assignment]
 
 
 def is_64bit() -> bool:
@@ -179,3 +188,11 @@ def skip_if_running_tests(msg=""):
     """
     if are_tests_running():
         pytest.skip(msg, allow_module_level=True)
+
+
+def on_windows_with_old_mpl_and_new_numpy():
+    return (
+        compare_version(np_version, ">", "1.26.4")
+        and compare_version(mpl_version, "<", "3.8.0")
+        and os.name == "nt"
+    )

@@ -18,10 +18,15 @@ is used to select a seed region in the posterior cingulate cortex.
 The :func:`~nilearn.plotting.plot_surf_stat_map` function is used
 to plot the resulting statistical map on the pial surface.
 
-See also :ref:`for a similar example but using volumetric input data
-<sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py>`.
+.. seealso::
 
-See :ref:`plotting` for more details on plotting tools.
+    :ref:`for a similar example but using volumetric input data
+    <sphx_glr_auto_examples_03_connectivity_plot_seed_to_voxel_correlation.py>`.
+
+    See :ref:`plotting` for more details on plotting tools.
+
+See the :ref:`dataset description <nki_dataset>`
+for more information on the data used in this example.
 """
 
 # %%
@@ -59,9 +64,6 @@ destrieux_atlas = SurfaceImage(
         "right": destrieux.map_right,
     },
 )
-# The labels are stored as bytes for the Destrieux atlas.
-# For convenience we decode them to string.
-labels = [x.decode("utf-8") for x in destrieux.labels]
 
 # The fsaverage meshes contains FileMesh objects:
 print(f"{fsaverage_meshes['pial'].parts['left']=}")
@@ -83,7 +85,7 @@ from nilearn.maskers import SurfaceLabelsMasker
 
 # Extract seed region via label
 name_seed_region = "G_cingul-Post-dorsal"
-label_seed_region = labels.index(name_seed_region)
+label_seed_region = destrieux.labels.index(name_seed_region)
 
 # Here we create a surface mask image
 # that has False for all vertices
@@ -121,6 +123,7 @@ plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="PCC Seed",
+    colorbar=False,
 )
 
 show()
@@ -149,6 +152,7 @@ plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="PCC Seed on flat map",
+    colorbar=False,
 )
 
 show()
@@ -161,6 +165,7 @@ show()
 # and timeseries of all cortical nodes.
 from scipy.stats import pearsonr
 
+# %%
 # Let's in initialize the data
 # we will use to create our results image.
 results = {}
@@ -168,12 +173,13 @@ for hemi, mesh in surf_img_nki.mesh.parts.items():
     n_vertices = mesh.n_vertices
     results[hemi] = np.zeros(n_vertices)
 
+# %%
 # Let's avoid computing results
 # in unknown regions
 # and on the medial wall.
 excluded_labels = [
-    labels.index("Unknown"),
-    labels.index("Medial_wall"),
+    destrieux.labels.index("Unknown"),
+    destrieux.labels.index("Medial_wall"),
 ]
 is_excluded = np.isin(
     destrieux_atlas.data.parts[hemisphere],
@@ -201,7 +207,6 @@ plot_surf_stat_map(
     stat_map=stat_map_surf,
     hemi=hemisphere,
     view="medial",
-    colorbar=True,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     darkness=0.3,
@@ -218,7 +223,6 @@ plot_surf_stat_map(
     stat_map=stat_map_surf,
     hemi=hemisphere,
     view="medial",
-    colorbar=True,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     cmap="bwr",
@@ -238,7 +242,6 @@ plot_surf_stat_map(
     stat_map=stat_map_surf,
     hemi=hemisphere,
     view="lateral",
-    colorbar=True,
     cmap="bwr",
     threshold=0.5,
     title="Plotting without background",
@@ -262,7 +265,6 @@ plot_surf_stat_map(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     threshold=0.5,
-    colorbar=True,
     output_file=output_dir / "plot_surf_stat_map.png",
     cmap="bwr",
 )
@@ -271,7 +273,7 @@ plot_surf_stat_map(
 # References
 # ----------
 #
-#  .. footbibliography::
+# .. footbibliography::
 
 
 # sphinx_gallery_thumbnail_number = 2

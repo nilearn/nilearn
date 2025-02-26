@@ -9,7 +9,6 @@ from scipy import sparse
 from nilearn.plotting.html_document import HTMLDocument
 
 from .. import datasets
-from . import cm
 from .js_plotting_utils import (
     add_js_lib,
     colorscale,
@@ -41,15 +40,12 @@ def _encode_coordinates(coords, prefix):
     coordinates : :obj:`dict`
         Dictionary containing base64 values for each axis
     """
-    coordinates = {}
-
     coords = np.asarray(coords, dtype="<f4")
     marker_x, marker_y, marker_z = coords.T
-    for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]:
-        coordinates[f"{prefix}{cname}"] = encode(
-            np.asarray(coord, dtype="<f4")
-        )
-
+    coordinates = {
+        f"{prefix}{cname}": encode(np.asarray(coord, dtype="<f4"))
+        for coord, cname in [(marker_x, "x"), (marker_y, "y"), (marker_z, "z")]
+    }
     return coordinates
 
 
@@ -134,8 +130,7 @@ def _prepare_lines_metadata(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    cmap : :obj:`str` or matplotlib colormap, default=cm.bwr
-        Colormap to use.
+    %(cmap)s
 
     symmetric_cmap : :obj:`bool`, default=True
         Make colormap symmetric (ranging from -vmax to vmax).
@@ -202,7 +197,7 @@ def _get_connectome(
     threshold=None,
     marker_size=None,
     marker_color="auto",
-    cmap=cm.cold_hot,
+    cmap="RdBu_r",
     symmetric_cmap=True,
 ):
     lines_metadata = _prepare_lines_metadata(
@@ -250,7 +245,7 @@ def view_connectome(
     adjacency_matrix,
     node_coords,
     edge_threshold=None,
-    edge_cmap=cm.bwr,
+    edge_cmap="RdBu_r",
     symmetric_cmap=True,
     linewidth=6.0,
     node_color="auto",
@@ -282,7 +277,7 @@ def view_connectome(
         e.g. "25.3%", and only connections of amplitude above the
         given percentile will be shown.
 
-    edge_cmap : :obj:`str` or matplotlib colormap, default=cm.bwr
+    edge_cmap : :obj:`str` or matplotlib colormap, default="RdBu_r"
         Colormap to use.
 
     symmetric_cmap : :obj:`bool`, default=True

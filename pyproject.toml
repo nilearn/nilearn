@@ -60,7 +60,8 @@ doc = [
     "sphinx-design>=0.6.1",
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
-    "sphinxext-opengraph>=0.9.1"
+    "sphinxext-opengraph>=0.9.1",
+    "sphinxcontrib-mermaid>=1.0.0"
 ]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
@@ -83,8 +84,7 @@ test = [
     "pytest-cov",
     "pytest-randomly",
     "pytest-reporter-html1>=0.9.2",
-    "pytest-xdist[psutil]",
-    "tox"
+    "pytest-xdist[psutil]"
 ]
 
 [project.urls]
@@ -115,10 +115,52 @@ max-line-length = 120
 version-file = "nilearn/_version.py"
 
 [tool.hatch.build.targets.wheel]
+exclude = ["nilearn/plotting/tests/baseline"]
 packages = ["nilearn"]
 
 [tool.hatch.version]
 source = "vcs"
+
+[tool.mypy]
+allow_redefinition = false
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+exclude = [
+    '.*/tests/test_.*',
+    'doc/.*',
+    'examples/.*',
+    'maint_tools/.*',
+    'nilearn_cache/.*',
+    'nilearn/_version.py'
+]
+warn_unreachable = true
+
+[[tool.mypy.overrides]]
+ignore_errors = true
+module = [
+    "nilearn.externals.*",
+    "nilearn._version"
+]
+
+[[tool.mypy.overrides]]
+ignore_missing_imports = true
+module = [
+    "IPython.*",
+    "joblib.*",
+    "kaleido",
+    "matplotlib.*",
+    "memory_profiler.*",
+    "mpl_toolkits.*",
+    "nibabel.*",
+    "nilearn._version",
+    "packaging.*",
+    "plotly.*",
+    "pytest.*",
+    "rich.*",
+    "scipy.*",
+    "sklearn.*",
+    "statsmodels.*",
+    "svg.*"
+]
 
 [tool.pytest.ini_options]
 addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
@@ -174,8 +216,6 @@ ignore = [
     "E111",
     "E114",
     "E117",
-    "ISC001",
-    "ISC002",
     "Q000",
     "Q001",
     "Q002",
@@ -212,23 +252,40 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 25
+max-complexity = 21
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
-"**/{tests}/*" = ["D100", "D101", "D102", "D103", "E402"]
 "__init__.py" = ["D104", "E402"]
-"nilearn/signal.py" = ["B028"]
-"nilearn/{_utils}/*" = ["B028"]
-"nilearn/{connectome}/*" = ["B028"]
-"nilearn/{datasets}/*" = ["B028"]
-"nilearn/{decoding}/*" = ["B028"]
-"nilearn/{glm}/*" = ["B028"]
-"nilearn/{image}/*" = ["B028"]
-"nilearn/{maskers}/*" = ["B028"]
-"nilearn/{mass_univariate}/*" = ["B028"]
-"nilearn/{plotting}/*" = ["B028"]
+"nilearn/**/tests/test_*" = ["D100"]
+"nilearn/_utils/*" = ["B028"]  # 7 errors to fix
+"nilearn/connectome/*" = ["B028"]  # 5 errors to fix
+"nilearn/connectome/**/{tests}/*" = ["D103"]  # 35 errors to fix
+"nilearn/datasets/*" = ["B028"]  # 23 errors to fix
+"nilearn/datasets/tests/test_atlas.py" = ["D103"]
+"nilearn/datasets/tests/test_func.py" = ["D103"]
+"nilearn/datasets/tests/test_mocking_autoused.py" = ["D103"]
+"nilearn/datasets/tests/test_neurovault.py" = ["D103"]
+"nilearn/datasets/tests/test_struct.py" = ["D103"]
+"nilearn/datasets/tests/test_testing.py" = ["D103"]
+"nilearn/datasets/tests/test_utils.py" = ["D103"]
+"nilearn/decoding/*" = ["B028"]  # 5 errors to fix
+"nilearn/decoding/**/{tests}/*" = ["D103"]  # 81 errors to fix
+"nilearn/decomposition/**/{tests}/*" = ["D103"]  # 32 errors to fix
+"nilearn/glm/*" = ["B028"]  # 19 errors to fix
+"nilearn/glm/**/{tests}/*" = ["D103"]  # 154 errors to fix
+"nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
+"nilearn/maskers/*" = ["B028"]  # 17 errors to fix
+"nilearn/mass_univariate/*" = ["B028"]  # 4 errors to fix
+"nilearn/plotting/*" = ["B028"]  # 18 errors to fix
+"nilearn/plotting/**/{tests}/*" = ["D103"]  # 123 errors to fix
+"nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
+"nilearn/reporting/tests/test_glm_reporter.py" = ["D103"]
+"nilearn/reporting/tests/test_html_report.py" = ["D103"]
+"nilearn/reporting/tests/test_reporting.py" = ["D103"]
+"nilearn/signal.py" = ["B028"]  # 11 errors to fix
+"nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
@@ -237,8 +294,8 @@ convention = "numpy"
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 26
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
-max-branches = 27
+max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 108
+max-statements = 93

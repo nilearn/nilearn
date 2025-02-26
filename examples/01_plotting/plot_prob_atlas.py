@@ -48,11 +48,10 @@ plotting.plot_prob_atlas(
     (icbm["wm"], icbm["gm"], icbm["csf"]), title="ICBM tissues"
 )
 
-# "filled_contours" example. An optional colorbar can be set.
+# "filled_contours" example.
 plotting.plot_prob_atlas(
     smith_bm20,
-    title="Smith2009 20 Brainmap (with colorbar)",
-    colorbar=True,
+    title="Smith2009 20 Brainmap",
 )
 
 plotting.show()
@@ -97,7 +96,7 @@ plotting.show()
 #     dim = 64
 #     res = 2
 #     difumo = datasets.fetch_atlas_difumo(
-#         dimension=dim, resolution_mm=res, legacy_format=False
+#         dimension=dim, resolution_mm=res,
 #     )
 #
 #     # Visualization

@@ -13,8 +13,11 @@ from nilearn.glm.first_level.design_matrix import (
 )
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
+from nilearn.reporting import HTMLReport, make_glm_report
 from nilearn.reporting import glm_reporter as glmr
-from nilearn.reporting import make_glm_report
+from nilearn.reporting.glm_reporter import (
+    _make_surface_glm_report,
+)
 
 
 @pytest.fixture()
@@ -90,121 +93,6 @@ def test_slm_reporting(slm):
     """Smoke test for the second level model generate method."""
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
     slm.generate_report(c1, threshold=2, alpha=0.01)
-
-
-def test_check_report_dims():
-    test_input = (1200, "a")
-    expected_output = (1600, 800)
-    expected_warning_text = (
-        "Report size has invalid values. Using default 1600x800"
-    )
-    with pytest.warns(UserWarning, match=expected_warning_text):
-        actual_output = glmr._check_report_dims(test_input)
-    assert actual_output == expected_output
-
-
-def test_coerce_to_dict_with_string():
-    test_input = "StopSuccess - Go"
-    expected_output = {"StopSuccess - Go": "StopSuccess - Go"}
-    actual_output = glmr._coerce_to_dict(test_input)
-    assert actual_output == expected_output
-
-
-def test_coerce_to_dict_with_list_of_strings():
-    test_input = ["contrast_name_0", "contrast_name_1"]
-    expected_output = {
-        "contrast_name_0": "contrast_name_0",
-        "contrast_name_1": "contrast_name_1",
-    }
-    actual_output = glmr._coerce_to_dict(test_input)
-    assert actual_output == expected_output
-
-
-def test_coerce_to_dict_with_dict():
-    test_input = {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]}
-    expected_output = {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]}
-    actual_output = glmr._coerce_to_dict(test_input)
-    assert actual_output == expected_output
-
-
-def test_coerce_to_dict_with_list_of_lists():
-    test_input = [[0, 0, 1], [0, 1, 0]]
-    expected_output = {"[0, 0, 1]": [0, 0, 1], "[0, 1, 0]": [0, 1, 0]}
-    actual_output = glmr._coerce_to_dict(test_input)
-    assert actual_output == expected_output
-
-
-def test_coerce_to_dict_with_list_of_arrays():
-    test_input = [np.array([0, 0, 1]), np.array([0, 1, 0])]
-    expected_output = {
-        "[0 0 1]": np.array([0, 0, 1]),
-        "[0 1 0]": np.array([0, 1, 0]),
-    }
-    actual_output = glmr._coerce_to_dict(test_input)
-    assert actual_output.keys() == expected_output.keys()
-    for key in actual_output:
-        assert np.array_equal(actual_output[key], expected_output[key])
-
-
-def test_coerce_to_dict_with_list_of_ints():
-    test_input = [1, 0, 1]
-    expected_output = {"[1, 0, 1]": [1, 0, 1]}
-    actual_output = glmr._coerce_to_dict(test_input)
-    assert np.array_equal(
-        actual_output["[1, 0, 1]"], expected_output["[1, 0, 1]"]
-    )
-
-
-def test_coerce_to_dict_with_array_of_ints():
-    test_input = np.array([1, 0, 1])
-    expected_output = {"[1 0 1]": np.array([1, 0, 1])}
-    actual_output = glmr._coerce_to_dict(test_input)
-    assert expected_output.keys() == actual_output.keys()
-    assert np.array_equal(actual_output["[1 0 1]"], expected_output["[1 0 1]"])
-
-
-def test_make_headings_with_contrasts_title_none():
-    model = SecondLevelModel()
-    test_input = (
-        {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]},
-        None,
-        model,
-    )
-    expected_output = (
-        "Report: Second Level Model for contrast_0, contrast_1",
-        "Statistical Report for contrast_0, contrast_1",
-        "Second Level Model",
-    )
-    actual_output = glmr._make_headings(*test_input)
-    assert actual_output == expected_output
-
-
-def test_make_headings_with_contrasts_title_custom():
-    model = SecondLevelModel()
-    test_input = (
-        {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]},
-        "Custom Title for report",
-        model,
-    )
-    expected_output = (
-        "Custom Title for report",
-        "Custom Title for report",
-        "Second Level Model",
-    )
-    actual_output = glmr._make_headings(*test_input)
-    assert actual_output == expected_output
-
-
-def test_make_headings_with_contrasts_none_title_custom():
-    model = FirstLevelModel()
-    test_input = (None, "Custom Title for report", model)
-    expected_output = (
-        "Custom Title for report",
-        "Custom Title for report",
-        "First Level Model",
-    )
-    actual_output = glmr._make_headings(*test_input)
-    assert actual_output == expected_output
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
@@ -299,19 +187,79 @@ def test_masking_first_level_model(tmp_path):
     report_flm.get_iframe()
 
 
+def test_fir_delays_in_params(tmp_path):
+    """Check that fir_delays is in the report when hrf_model is fir."""
+    shapes, rk = ((7, 7, 7, 5),), 3
+    _, fmri_data, design_matrices = write_fake_fmri_data_and_design(
+        shapes, rk, file_path=tmp_path
+    )
+    contrast = np.eye(3)[1]
+    model = FirstLevelModel(hrf_model="fir", fir_delays=[1, 2, 3])
+    model.fit(fmri_data, design_matrices=design_matrices)
+    report = model.generate_report(contrast)
+    assert "fir_delays" in report.__str__()
+
+    # also check that it's not in the report when not set
+    model = FirstLevelModel()
+    model.fit(fmri_data, design_matrices=design_matrices)
+    report = model.generate_report(contrast)
+    assert "fir_delays" not in report.__str__()
+
+
+def test_drift_order_in_params(tmp_path):
+    """Check that drift_order is in the report when parameter is drift_model is
+    polynomial.
+    """
+    shapes, rk = ((7, 7, 7, 5),), 3
+    _, fmri_data, design_matrices = write_fake_fmri_data_and_design(
+        shapes, rk, file_path=tmp_path
+    )
+    contrast = np.eye(3)[1]
+    model = FirstLevelModel(drift_model="polynomial", drift_order=3)
+    model.fit(fmri_data, design_matrices=design_matrices)
+    report = model.generate_report(contrast)
+    assert "drift_order" in report.__str__()
+
+    # also check that it's not in the report when not set
+    model = FirstLevelModel()
+    model.fit(fmri_data, design_matrices=design_matrices)
+    report = model.generate_report(contrast)
+    assert "drift_order" not in report.__str__()
+
+
 # -----------------------surface tests--------------------------------------- #
 
 
 def test_flm_generate_report_error_with_surface_data(
     surf_mask_1d, surf_img_2d
 ):
-    """Raise NotImplementedError when generate report is called on surface."""
+    """Generate report from flm fitted surface."""
     model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0)
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
+    report = model.generate_report("c0")
 
-    with pytest.raises(NotImplementedError):
-        model.generate_report("c0")
+    assert isinstance(report, HTMLReport)
 
-    with pytest.raises(NotImplementedError):
-        make_glm_report(model, "c0")
+    report = make_glm_report(model, "c0")
+
+    assert isinstance(report, HTMLReport)
+
+
+@pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
+def test_empty_surface_reports(tmp_path, model, surf_img_1d):
+    """Test that empty surface reports on unfitted model can be generated."""
+    report = _make_surface_glm_report(model(), bg_img=surf_img_1d)
+
+    assert isinstance(report, HTMLReport)
+
+    report.save_as_html(tmp_path / "tmp.html")
+    assert (tmp_path / "tmp.html").exists()
+
+
+def test_empty_surface_reports_errors():
+    """Test errors surface reports."""
+    with pytest.raises(TypeError, match="must a SurfaceImage instance"):
+        _make_surface_glm_report(
+            FirstLevelModel(), bg_img="not a surface image"
+        )

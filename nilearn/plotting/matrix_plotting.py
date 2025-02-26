@@ -9,12 +9,13 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
-from nilearn._utils import _constrained_layout_kwargs, fill_doc
+from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
+from nilearn.plotting._utils import save_figure_if_needed
 
 VALID_TRI_VALUES = ("full", "lower", "diag")
 
@@ -77,7 +78,7 @@ def _sanitize_figure_and_axes(figure, axes):
             if hasattr(fig, "set_layout_engine"):  # can be removed w/mpl 3.5
                 fig.set_layout_engine("constrained")
         else:
-            fig = plt.figure(figsize=figure, **_constrained_layout_kwargs())
+            fig = plt.figure(figsize=figure, **constrained_layout_kwargs())
         axes = plt.gca()
         own_fig = True
     elif axes is None:
@@ -85,7 +86,7 @@ def _sanitize_figure_and_axes(figure, axes):
             1,
             1,
             figsize=(7, 5),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
         own_fig = True
     else:
@@ -100,7 +101,10 @@ def _sanitize_labels(mat_shape, labels):
     if isinstance(labels, np.ndarray):
         labels = labels.tolist()
     if labels and len(labels) != mat_shape[0]:
-        raise ValueError("Length of labels unequal to length of matrix.")
+        raise ValueError(
+            f"Length of labels ({len(labels)}) "
+            f"unequal to length of matrix ({mat_shape[0]})."
+        )
     return labels
 
 
@@ -110,8 +114,7 @@ def _sanitize_tri(tri, allowed_values=None):
         allowed_values = VALID_TRI_VALUES
     if tri not in allowed_values:
         raise ValueError(
-            "Parameter tri needs to be one of: "
-            f"{', '.join(allowed_values)}."
+            f"Parameter tri needs to be one of: {', '.join(allowed_values)}."
         )
 
 
@@ -218,7 +221,7 @@ def plot_matrix(
     figure=None,
     axes=None,
     colorbar=True,
-    cmap=plt.cm.RdBu_r,
+    cmap="RdBu_r",
     tri="full",
     auto_fit=True,
     grid=False,
@@ -257,8 +260,10 @@ def plot_matrix(
 
     %(colorbar)s
         Default=True.
+
     %(cmap)s
-        Default=`plt.cm.RdBu_r`.
+        default="RdBu_r"
+
     tri : {'full', 'lower', 'diag'}, default='full'
         Which triangular part of the matrix to plot:
 
@@ -295,7 +300,7 @@ def plot_matrix(
         Axes image.
 
     """
-    labels, reorder, fig, axes, own_fig = _sanitize_inputs_plot_matrix(
+    labels, reorder, fig, axes, _ = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
     if reorder:
@@ -334,7 +339,7 @@ def plot_matrix(
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_contrast_matrix(
-    contrast_def, design_matrix, colorbar=False, axes=None, output_file=None
+    contrast_def, design_matrix, colorbar=True, axes=None, output_file=None
 ):
     """Create plot for :term:`contrast` definition.
 
@@ -348,13 +353,17 @@ def plot_contrast_matrix(
         as they appear in the design matrix of the fitted model
         combined with operators +-
         and combined with numbers with operators +-`*`/.
+
     design_matrix : :class:`pandas.DataFrame`
         Design matrix to use.
+
     %(colorbar)s
-        Default=False.
+        Default=True.
+
     axes : :class:`matplotlib.axes.Axes` or None, default=None
         Axis on which to plot the figure.
         If None, a new figure will be created.
+
     %(output_file)s
 
     Returns
@@ -376,7 +385,7 @@ def plot_contrast_matrix(
                 0.4 * n_columns_design_matrix,
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
             ),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
 
     maxval = np.max(np.abs(contrast_def))
@@ -391,16 +400,11 @@ def plot_contrast_matrix(
     axes.xaxis.set(ticks=np.arange(n_columns_design_matrix))
     axes.set_xticklabels(design_column_names, rotation=50, ha="left")
 
-    fig = axes.figure
     if colorbar:
+        fig = axes.figure
         fig.colorbar(mat, fraction=0.025, pad=0.04)
 
-    if output_file is not None:
-        fig.savefig(output_file)
-        plt.close(fig=fig)
-        axes = None
-
-    return axes
+    return save_figure_if_needed(axes, output_file)
 
 
 def pad_contrast_matrix(contrast_def, design_matrix):
@@ -454,7 +458,10 @@ def pad_contrast_matrix(contrast_def, design_matrix):
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_design_matrix(
-    design_matrix, rescale=True, axes=None, output_file=None
+    design_matrix,
+    rescale=True,
+    axes=None,
+    output_file=None,
 ):
     """Plot a design matrix.
 
@@ -493,7 +500,7 @@ def plot_design_matrix(
             fig_height = 10
         _, axes = plt.subplots(
             figsize=(1 + 0.23 * len(names), fig_height),
-            **_constrained_layout_kwargs(),
+            **constrained_layout_kwargs(),
         )
 
     axes.imshow(X, interpolation="nearest", aspect="auto")
@@ -506,12 +513,7 @@ def plot_design_matrix(
     # corresponding dataframe
     axes.xaxis.tick_top()
 
-    if output_file is not None:
-        fig = axes.figure
-        fig.savefig(output_file)
-        plt.close(fig=fig)
-        axes = None
-    return axes
+    return save_figure_if_needed(axes, output_file)
 
 
 @fill_doc
@@ -561,13 +563,13 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     n_runs = len(model_event)
     if "layout" not in fig_kwargs and "constrained_layout" not in fig_kwargs:
-        fig_kwargs.update(**_constrained_layout_kwargs())
+        fig_kwargs.update(**constrained_layout_kwargs())
     figure, axes = plt.subplots(1, 1, **fig_kwargs)
 
     # input validation
     if cmap is None:
-        cmap = plt.cm.tab20
-    elif isinstance(cmap, str):
+        cmap = "tab20"
+    if isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
 
     event_labels = pd.concat(event["trial_type"] for event in model_event)
@@ -579,7 +581,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         plt.close(fig=figure)
         raise ValueError(
             "The number of event types is greater than "
-            f" colors in colormap ({len(event_labels)} > {cmap.N}). "
+            f"colors in colormap ({len(event_labels)} > {cmap.N}). "
             "Use a different colormap."
         )
 
@@ -629,19 +631,15 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     axes.set_yticks(np.arange(n_runs) + 0.5)
     axes.set_yticklabels(np.arange(n_runs) + 1)
 
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(fig=figure)
-        figure = None
-
-    return figure
+    return save_figure_if_needed(figure, output_file)
 
 
 @fill_doc
 def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
-    cmap="bwr",
+    cmap="RdBu_r",
+    colorbar=True,
     output_file=None,
     **kwargs,
 ):
@@ -664,7 +662,7 @@ def plot_design_matrix_correlation(
         - ``"full"``: Plot the full matrix
 
     %(cmap)s
-        Default="bwr".
+        default="RdBu_r"
 
         This must be a diverging colormap as the correlation matrix
         will be centered on 0.
@@ -690,7 +688,8 @@ def plot_design_matrix_correlation(
     check_design_matrix(design_matrix)
 
     ALLOWED_CMAP = ["RdBu_r", "bwr", "seismic_r"]
-    if cmap not in ALLOWED_CMAP:
+    cmap_name = cmap if isinstance(cmap, str) else cmap.name
+    if cmap_name not in ALLOWED_CMAP:
         raise ValueError(f"cmap must be one of {ALLOWED_CMAP}")
 
     columns_to_drop = ["intercept", "constant"]
@@ -724,11 +723,8 @@ def plot_design_matrix_correlation(
         vmax=vmax,
         vmin=vmax * -1,
         labels=col_labels.to_list(),
+        colorbar=colorbar,
         **kwargs,
     )
 
-    if output_file is not None:
-        plt.savefig(output_file)
-        plt.close()
-
-    return display
+    return save_figure_if_needed(display, output_file)

@@ -1,7 +1,4 @@
-"""Implement plotting functions useful to report analysis results.
-
-Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
-"""
+"""Implement plotting functions useful to report analysis results."""
 
 import warnings
 from string import ascii_lowercase
@@ -237,6 +234,16 @@ def get_clusters_table(
             In this case, the cluster voxel nearest to the center of mass is
             reported.
 
+    .. seealso::
+
+        This function does not report any named anatomical location
+        for the clusters.
+        To get the names of the location of the clusters
+        according to one or several atlases,
+        we recommend using
+        the `atlasreader package <https://github.com/miykael/atlasreader>`_.
+
+
     Parameters
     ----------
     stat_img : Niimg-like object
@@ -254,7 +261,7 @@ def get_clusters_table(
         Whether to employ two-sided thresholding or to evaluate positive values
         only.
 
-    min_distance : :obj:`float`, default=8
+    min_distance : :obj:`float`, default=8.0
         Minimum distance between subpeaks, in millimeters.
 
         .. note::
@@ -318,7 +325,7 @@ def get_clusters_table(
     stat_map = safe_get_data(
         stat_img,
         ensure_finite=True,
-        copy_data=(cluster_threshold is not None),
+        copy_data=(cluster_threshold != 0),
     )
 
     # Define array for 6-connectivity, aka NN1 or "faces"
@@ -342,7 +349,7 @@ def get_clusters_table(
         if np.sum(binarized) == 0:
             warnings.warn(
                 "Attention: No clusters "
-                f'with stat {"higher" if sign == 1 else "lower"} '
+                f"with stat {'higher' if sign == 1 else 'lower'} "
                 f"than {stat_threshold * sign}",
                 category=UserWarning,
                 stacklevel=2,

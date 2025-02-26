@@ -18,7 +18,6 @@ from numpy.testing import (
 )
 from sklearn.cluster import KMeans
 
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
     basic_paradigm,
@@ -26,6 +25,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -56,12 +56,8 @@ FUNCFILE = BASEDIR / "functional.nii.gz"
 
 
 extra_valid_checks = [
-    "check_transformers_unfitted",
-    "check_transformer_n_iter",
-    "check_estimators_unfitted",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_no_attributes_set_in_init",
-    "check_parameters_default_constructible",
 ]
 
 
@@ -100,7 +96,7 @@ def test_high_level_glm_one_run(shape_4d_default):
     # Give an unfitted NiftiMasker as mask_img and check that we get an error
     masker = NiftiMasker(mask)
     with pytest.raises(
-        ValueError, match="It seems that NiftiMasker has not been fitted."
+        ValueError, match="NiftiMasker instance is not fitted yet."
     ):
         FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0]
@@ -752,8 +748,7 @@ def test_fmri_inputs_errors(tmp_path, shape_4d_default):
     # If paradigms are given
     # then both t_r and slice time ref are required
     match = (
-        "t_r not given to FirstLevelModel object "
-        "to compute design from events"
+        "t_r not given to FirstLevelModel object to compute design from events"
     )
     with pytest.raises(ValueError, match=match):
         FirstLevelModel(mask_img=None).fit(func_img, des)
@@ -796,8 +791,7 @@ def test_fmri_inputs_errors_confounds(tmp_path, shape_4d_default):
     with pytest.raises(
         ValueError,
         match=(
-            "Rows in confounds does not match "
-            "n_scans in run_img at index 0."
+            "Rows in confounds does not match n_scans in run_img at index 0."
         ),
     ):
         FirstLevelModel(mask_img=None, t_r=2.0).fit(func_img, des, conf)
@@ -1140,7 +1134,7 @@ def test_first_level_contrast_computation_errors(tmp_path, shape_4d_default):
     c1, cnull = np.eye(7)[0], np.zeros(7)
 
     # asking for contrast before model fit gives error
-    with pytest.raises(ValueError, match="The model has not been fit yet"):
+    with pytest.raises(ValueError, match="not fitted yet"):
         model.compute_contrast(c1)
 
     # fit model
@@ -1296,9 +1290,6 @@ def test_first_level_residuals_errors(shape_4d_default):
     model = FirstLevelModel(
         mask_img=mask, minimize_memory=False, noise_model="ols"
     )
-
-    with pytest.raises(ValueError, match="The model has not been fit yet"):
-        model.residuals[0]
 
     model.fit(fmri_data, design_matrices=design_matrices)
 
@@ -2343,7 +2334,6 @@ def test_flm_with_surface_data_no_design_matrix(surface_glm_data):
     """Smoke test FirstLevelModel with surface data and no design matrix."""
     img, _ = surface_glm_data(5)
     masker = SurfaceMasker().fit(img)
-    # breakpoint()
     model = FirstLevelModel(mask_img=masker, t_r=2.0)
     model.fit(img, events=basic_paradigm())
 

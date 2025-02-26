@@ -14,19 +14,19 @@ from sklearn.exceptions import EfficiencyWarning
 from nilearn import datasets, image
 from nilearn._utils import data_gen
 from nilearn.image import resampling
-from nilearn.surface import (
+from nilearn.surface._testing import (
+    assert_polymesh_equal,
+    assert_surface_image_equal,
+)
+from nilearn.surface.surface import (
     FileMesh,
     InMemoryMesh,
     PolyData,
     PolyMesh,
     SurfaceImage,
-    load_surf_data,
-    load_surf_mesh,
-    vol_to_surf,
-)
-from nilearn.surface.surface import (
     _choose_kind,
     _data_to_gifti,
+    _extract_data,
     _gifti_img_to_mesh,
     _interpolation_sampling,
     _load_surf_files_gifti_gzip,
@@ -41,6 +41,15 @@ from nilearn.surface.surface import (
     _vertex_outer_normals,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
+    concat_imgs,
+    get_data,
+    index_img,
+    iter_img,
+    load_surf_data,
+    load_surf_mesh,
+    mean_img,
+    new_img_like,
+    vol_to_surf,
 )
 
 datadir = Path(__file__).resolve().parent / "data"
@@ -85,7 +94,6 @@ def test_check_mesh_and_data(rng, in_memory_mesh):
     # Generate faces such that max index is larger than
     # the length of coordinates array.
     wrong_faces = rng.integers(in_memory_mesh.n_vertices + 1, size=(30, 3))
-    wrong_mesh = InMemoryMesh(in_memory_mesh.coordinates, wrong_faces)
 
     # Check that check_mesh_and_data raises an error
     # with the resulting wrong mesh
@@ -93,7 +101,7 @@ def test_check_mesh_and_data(rng, in_memory_mesh):
         ValueError,
         match="Mismatch between .* indices of faces .* number of nodes.",
     ):
-        check_mesh_and_data(wrong_mesh, data)
+        InMemoryMesh(in_memory_mesh.coordinates, wrong_faces)
 
     # Alter the data and check that an error is raised
     data = in_memory_mesh.coordinates[::2, 0]
@@ -648,12 +656,14 @@ def test_projection_matrix(affine_eye):
         )
 
 
-def test_sampling_affine(affine_eye):
+def test_sampling_affine(affine_eye, rng):
     # check sampled (projected) values on a toy image
     img = np.ones((4, 4, 4))
     img[1, :, :] = 2
-    nodes = [[1, 1, 2], [10, 10, 20], [30, 30, 30]]
-    mesh = [np.asarray(nodes), None]
+
+    coords = np.asarray([[1, 1, 2], [10, 10, 20], [30, 30, 30]])
+    mesh = [coords, rng.integers(coords.shape[0], size=(30, 3))]
+
     affine = 10 * affine_eye
     affine[-1, -1] = 1
     texture = _nearest_voxel_sampling(
@@ -729,6 +739,58 @@ def test_choose_kind():
     assert kind == "depth"
     with pytest.raises(TypeError, match=".*sampling strategy"):
         kind = _choose_kind("depth", None)
+
+
+def test_validate_mesh(rng):
+    """Ensures that invalid meshes cannot be instantiated."""
+    # valid mesh is fine
+    coords = rng.random((20, 3))
+    faces = rng.integers(coords.shape[0], size=(30, 3))
+    InMemoryMesh(coordinates=coords, faces=faces)
+
+    # Face is None
+    coords = rng.random((20, 3))
+    coords[0] = np.array([np.nan, np.nan, np.nan])
+    faces = None
+
+    with pytest.raises(TypeError, match="must be numpy arrays."):
+        InMemoryMesh(coordinates=coords, faces=faces)
+
+    # coordinates is None
+    faces = rng.integers(20, size=(30, 3))
+    coords = None
+
+    with pytest.raises(TypeError, match="must be numpy arrays."):
+        InMemoryMesh(coordinates=coords, faces=faces)
+
+    # coordinates with non finite values
+    coords = rng.random((20, 3))
+    coords[0] = np.array([np.nan, np.nan, np.nan])
+    faces = rng.integers(coords.shape[0], size=(30, 3))
+
+    with pytest.raises(ValueError, match="Mesh coordinates must be finite."):
+        InMemoryMesh(coordinates=coords, faces=faces)
+
+    # faces with indices that do not correspond to any coordinate
+    coords = rng.random((20, 3))
+
+    # values too high
+    faces = rng.integers(low=30, high=50, size=(30, 3))
+
+    with pytest.raises(
+        ValueError,
+        match="Mismatch between the indices of faces and the number of nodes.",
+    ):
+        InMemoryMesh(coordinates=coords, faces=faces)
+
+    # negative values
+    faces = rng.integers(low=-50, high=-30, size=(30, 3))
+
+    with pytest.raises(
+        ValueError,
+        match="Mismatch between the indices of faces and the number of nodes.",
+    ):
+        InMemoryMesh(coordinates=coords, faces=faces)
 
 
 @pytest.mark.parametrize(
@@ -812,8 +874,7 @@ def test_mesh_to_gifti(single_mesh, tmp_path):
 
 
 def test_compare_file_and_inmemory_mesh(surf_mesh, tmp_path):
-    mesh = surf_mesh()
-    left = mesh.parts["left"]
+    left = surf_mesh.parts["left"]
     gifti_file = tmp_path / "left.gii"
     left.to_gifti(gifti_file)
 
@@ -986,7 +1047,7 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
     """Load and save 1D gifti leaves them unchanged."""
     data = {}
     for hemi in ["left", "right"]:
-        size = (surf_mesh().parts[hemi].n_vertices,)
+        size = (surf_mesh.parts[hemi].n_vertices,)
         data[hemi] = rng.random(size=size).astype(np.uint8)
         darray = gifti.GiftiDataArray(
             data=data[hemi], datatype="NIFTI_TYPE_UINT8"
@@ -995,7 +1056,7 @@ def test_load_save_data_1d(rng, tmp_path, surf_mesh):
         gii.to_filename(tmp_path / f"original_{hemi}.gii")
 
     img = SurfaceImage(
-        mesh=surf_mesh(),
+        mesh=surf_mesh,
         data={
             "left": tmp_path / "original_left.gii",
             "right": tmp_path / "original_right.gii",
@@ -1038,27 +1099,26 @@ def test_save_dtype(surf_img_1d, tmp_path, dtype):
 
 def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
-    mesh = surf_mesh()
-    SurfaceImage.from_volume(mesh=mesh, volume_img=img_3d_mni)
+    SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_3d_mni)
 
     img_3d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
-        mesh=mesh,
+        mesh=surf_mesh,
         volume_img=tmp_path / "tmp.nii.gz",
     )
 
 
 def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
-    img = SurfaceImage.from_volume(mesh=surf_mesh(), volume_img=img_4d_mni)
+    img = SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_4d_mni)
     # check that we have the correct number of time points
     assert img.shape[1] == img_4d_mni.shape[3]
 
     img_4d_mni.to_filename(tmp_path / "tmp.nii.gz")
 
     SurfaceImage.from_volume(
-        mesh=surf_mesh(),
+        mesh=surf_mesh,
         volume_img=tmp_path / "tmp.nii.gz",
     )
 
@@ -1087,3 +1147,128 @@ def test_inmemorymesh_index_error(in_memory_mesh):
         IndexError, match="Use 0 for coordinates and 1 for faces"
     ):
         in_memory_mesh[2]
+
+
+def test_mean_img(surf_img_1d, surf_img_2d):
+    """Check that mean is properly computed over 'time points'."""
+    # one 'time point' image returns same
+    img = mean_img(surf_img_1d)
+
+    assert_surface_image_equal(img, surf_img_1d)
+
+    # image with left hemisphere
+    # where timepoint 1 has all values == 0
+    # and timepoint 2 == 1
+    two_time_points_img = surf_img_2d(2)
+    two_time_points_img.data.parts["left"][:, 0] = np.zeros(shape=4)
+    two_time_points_img.data.parts["left"][:, 1] = np.ones(shape=4)
+
+    img = mean_img(two_time_points_img)
+
+    assert_array_equal(img.data.parts["left"], np.ones(shape=(4,)) * 0.5)
+    assert img.shape == (img.mesh.n_vertices,)
+
+
+def test_get_min_max(surf_img_2d):
+    """Make sure we get the min and max across hemispheres."""
+    img = surf_img_2d()
+    img.data.parts["left"][:, 0] = np.zeros(shape=(4))
+    img.data.parts["left"][0][0] = 10
+    img.data.parts["right"][:, 0] = np.zeros(shape=(5))
+    img.data.parts["right"][0][0] = -3.5
+
+    vmin, vmax = img.data._get_min_max()
+
+    assert vmin == -3.5
+    assert vmax == 10
+
+
+def test_concat_imgs(surf_img_2d):
+    """Check concat_imgs returns a single SurfaceImage.
+
+    Output must have as many samples as the sum of samples in the input.
+    """
+    img = concat_imgs([surf_img_2d(3), surf_img_2d(5)])
+    assert img.shape == (9, 8)
+    for value in img.data.parts.values():
+        assert value.ndim == 2
+
+
+def test_iter_img(surf_img_2d):
+    """Check iter_img returns list of SurfaceImage.
+
+    Each SurfaceImage must have same mesh as input
+    and data from one of the sample of the input SurfaceImage.
+    """
+    input = surf_img_2d(5)
+    output = iter_img(input, return_iterator=False)
+
+    assert isinstance(output, list)
+    assert len(output) == input.shape[1]
+    assert all(isinstance(x, SurfaceImage) for x in output)
+    for i in range(input.shape[1]):
+        assert_polymesh_equal(output[i].mesh, input.mesh)
+        assert_array_equal(
+            np.squeeze(output[i].data.parts["left"]),
+            input.data.parts["left"][..., i],
+        )
+
+
+def test_iter_img_2d(surf_img_1d, surf_img_2d):
+    """Return as is if surface image is 2D."""
+    input = surf_img_2d(1)
+    output = iter_img(input, return_iterator=False)
+
+    assert_surface_image_equal(output[0], input)
+
+    output = iter_img(surf_img_1d, return_iterator=False)
+
+    assert_surface_image_equal(output[0], surf_img_1d)
+
+
+def test_iter_img_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
+    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+        iter_img(1)
+
+
+def test_new_img_like_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
+    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+        new_img_like(1, data=np.ones(2))
+
+
+def test_extract_data_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
+    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+        _extract_data(1, index=1)
+
+
+def test_index_img_wrong_input():
+    """Check that only SurfaceImage is accepted as input."""
+    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+        index_img(1, index=1)
+
+
+def test_get_data(surf_img_1d):
+    """Check that getting data from image or polydata gives same result."""
+    data_from_image = get_data(surf_img_1d)
+    data_from_polydata = get_data(surf_img_1d.data)
+    assert_array_equal(data_from_image, data_from_polydata)
+
+
+@pytest.mark.parametrize("ensure_finite", [True, False])
+def test_get_data_ensure_finite(surf_img_1d, ensure_finite):
+    """Check get data can deal with non finite values."""
+    surf_img_1d.data.parts["left"][0] = np.nan
+    surf_img_1d.data.parts["left"][1] = np.inf
+
+    if ensure_finite is True:
+        with pytest.warns(UserWarning, match="Non-finite values detected."):
+            data_from_image = get_data(
+                surf_img_1d, ensure_finite=ensure_finite
+            )
+        assert np.all(np.isfinite(data_from_image))
+    else:
+        data_from_image = get_data(surf_img_1d, ensure_finite=ensure_finite)
+        assert np.logical_not(np.all(np.isfinite(data_from_image)))
