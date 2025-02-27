@@ -87,13 +87,21 @@ jobs:
         -   name: Show tox config
             run: tox c
         -   name: Run test suite
-            run: tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
+            run: |
+                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
+                tox run -e plot_test_timing
         -   name: Upload test report
             if: success() || failure()
             uses: actions/upload-artifact@v4
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
                 path: report.html
+        -   name: Upload test timings
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: pytest_output
+                path: results/pytest_output
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v5
             with:

@@ -1,10 +1,16 @@
 """Get output from pytest run and plot duration with different grouping."""
 
+from pathlib import Path
+
 import pandas as pd
 import plotly.express as px
-from utils import root_dir
 
-input_file = root_dir() / "results" / "pytest_output.csv"
+input_file = (
+    Path(__file__).parents[1]
+    / "results"
+    / "pytest_output"
+    / "pytest_output.csv"
+)
 
 tests_data = pd.read_csv(input_file)
 
@@ -23,8 +29,8 @@ for column, title in zip(
     ["subpackage", "module", "id_no_param", "id"],
     ["Subpackage", "Module", "Test", "Parametrization"],
 ):
-    durations = tests_data.groupby("subpackage")[column].sum().reset_index()
-    durations = durations.sort_values(by=column, ascending=True)
+    durations = tests_data.groupby(column)["duration"].sum().reset_index()
+    durations = durations.sort_values(by="duration", ascending=True)
     fig = px.bar(
         durations,
         x="duration",
@@ -33,4 +39,8 @@ for column, title in zip(
         title=f"{title} duration",
         labels={"duration": "Total Duration (s)", column: title},
     )
-    fig.show()
+    output_file = (
+        input_file.parent / f"{input_file.stem}_{title.lower()}"
+    ).with_suffix(".html")
+    fig.write_html(output_file)
+    print(f"File saved at: {output_file}")
