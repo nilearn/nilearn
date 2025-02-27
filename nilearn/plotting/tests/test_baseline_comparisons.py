@@ -65,71 +65,97 @@ SURFACE_FUNCS = {
 
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("black_bg", [True, False])
-def test_plot_functions_black_bg(plot_func, img_3d_mni, black_bg):
-    """Test parameter for black background."""
-    return plot_func(img_3d_mni, black_bg=black_bg)
+def test_plot_functions_black_bg(plot_func, img_3d_mni):
+    """Test parameter for black background.
+
+    black_bg=False being the default it should be covered by other tests.
+    """
+    return plot_func(img_3d_mni, black_bg=True)
 
 
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("title", [None, "foo"])
-def test_plot_functions_title(plot_func, img_3d_mni, title):
-    """Test parameter for title."""
-    return plot_func(img_3d_mni, title=title)
+def test_plot_functions_title(plot_func, img_3d_mni):
+    """Test parameter for title.
+
+    title=None being the default it should be covered by other tests.
+    """
+    return plot_func(img_3d_mni, title="foo")
 
 
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("annotate", [True, False])
-def test_plot_functions_annotate(plot_func, img_3d_mni, annotate):
-    """Test parameter for annotate."""
-    return plot_func(img_3d_mni, annotate=annotate)
+def test_plot_functions_annotate(plot_func, img_3d_mni):
+    """Test parameter for annotate=False.
+
+    annotate=True being the default it should be covered by other tests.
+    """
+    return plot_func(img_3d_mni, annotate=False)
 
 
 @pytest.mark.mpl_image_compare
-@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize(
     "display_mode", ["x", "y", "z", "yx", "xz", "yz", "ortho"]
 )
-def test_plot_functions_display_mode(plot_func, display_mode):
-    """Test parameter for display_mode."""
-    return plot_func(
+def test_plot_stat_map_display_mode(display_mode):
+    """Test parameter for display_mode.
+
+    Only test one function to speed up testing.
+    """
+    return plot_stat_map(
         load_sample_motor_activation_image(), display_mode=display_mode
     )
 
 
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("colorbar", [True, False])
-@pytest.mark.parametrize("cbar_tick_format", ["%f", "%i"])
-def test_plot_functions_colorbar(plot_func, colorbar, cbar_tick_format):
+def test_plot_functions_no_colorbar(plot_func, img_3d_mni):
+    """Test no colorbar.
+
+    colorbar=True being the default it should be covered by other tests.
+    """
+    return plot_func(
+        img_3d_mni,
+        colorbar=False,
+    )
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     """Test parameter for colorbar."""
     return plot_func(
-        load_sample_motor_activation_image(),
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
+        img_3d_mni,
+        cbar_tick_format="%f",
     )
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("vmin", [None, -1, 1])
-@pytest.mark.parametrize("vmax", [None, 2, 3])
-def test_plot_functions_3d_default_params(plot_func, vmin, vmax):
-    """Test 3D plotting functions with vmin, vmax."""
-    return plot_func(
-        load_sample_motor_activation_image(), vmin=vmin, vmax=vmax
-    )
+@pytest.mark.parametrize("vmin", [-1, 1])
+def test_plot_functions_vmin(plot_func, vmin):
+    """Test 3D plotting functions with vmin."""
+    return plot_func(load_sample_motor_activation_image(), vmin=vmin)
+
+
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
+@pytest.mark.parametrize("vmax", [2, 3])
+def test_plot_functions_vmax(plot_func, vmax):
+    """Test 3D plotting functions with vmax."""
+    return plot_func(load_sample_motor_activation_image(), vmax=vmax)
 
 
 @pytest.mark.parametrize("plotting_func", PLOTTING_FUNCS_3D)
-@pytest.mark.parametrize("radiological", [True, False])
-def test_plotting_functions_radiological_view(
-    img_3d_mni, plotting_func, radiological
-):
-    """Test for radiological view."""
-    result = plotting_func(img_3d_mni, radiological=radiological)
+def test_plotting_functions_radiological_view(plotting_func):
+    """Test for radiological view.
+
+    radiological=False being the default it should be covered by other tests.
+    """
+    radiological = True
+    result = plotting_func(
+        load_sample_motor_activation_image(), radiological=radiological
+    )
     assert result.axes.get("y").radiological is radiological
     return result
 
@@ -180,7 +206,7 @@ def test_plot_connectome_node_colors(
 
 
 @pytest.mark.mpl_image_compare
-@pytest.mark.parametrize("alpha", [0.0, 0.3, 0.7, 1.0])
+@pytest.mark.parametrize("alpha", [0.0, 0.7, 1.0])
 def test_plot_connectome_alpha(alpha, adjacency, node_coords):
     """Smoke test for plot_connectome with various alpha values."""
     return plot_connectome(adjacency, node_coords, alpha=alpha)

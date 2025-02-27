@@ -100,7 +100,7 @@ jobs:
             if: success() || failure()
             uses: actions/upload-artifact@v4
             with:
-                name: pytest_output
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v5
