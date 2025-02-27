@@ -1488,7 +1488,7 @@ def fetch_atlas_yeo_2011(
             maps=maps,
             labels=lut.name.to_list(),
             description=fdescr,
-            template="fsaverage",
+            template="MNI152NLin6Asym",
             lut=lut,
             atlas_type=atlas_type,
             anat=params["anat"],

@@ -24,17 +24,23 @@ from nilearn.datasets import (
     load_fsaverage,
     load_fsaverage_data,
 )
+from nilearn.maskers import (
+    NiftiLabelsMasker,
+    NiftiMapsMasker,
+    SurfaceLabelsMasker,
+)
 from nilearn.plotting import plot_prob_atlas, plot_roi, plot_surf_roi
 from nilearn.surface import SurfaceImage
 
 
-def _update_dict(dict_for_df, name, fn, data, doc_dir, output_file):
+def _update_dict(dict_for_df, name, fn, data, doc_dir, output_file, n_rois=1):
     """Update dictionary to use to create dataframe of atlases."""
     fn_name = fn.__name__.replace("fetch_atlas_", "")
 
     dict_for_df["name"].append(
         f"**{name.replace('_', ' ')}**<br>"
         + f"*template*: {data.template}<br>"
+        + f"*number of regions*: {n_rois}<br>"
         + "{ref}`description "
         + f"<{fn_name}_atlas>`<br>"
     )
@@ -85,7 +91,7 @@ as this may lead to invalid results.
 
 
 DEBUG = False
-GENERATE_FIG = False
+GENERATE_FIG = True
 
 doc_dir = Path(__file__).parent
 output_dir = doc_dir / "images"
@@ -104,10 +110,11 @@ VOLUME DETERMINISTIC ATLASES
 
 # dict to define fetching options for each atlas
 deterministic_atlases = {
-    "AAL": {"fn": fetch_atlas_aal},
+    "AAL": {"fn": fetch_atlas_aal, "n_rois": [117, 167]},
     "BASC multiscale (2015)": {
         "fn": fetch_atlas_basc_multiscale_2015,
         "params": {"resolution": 20, "version": "sym"},
+        "n_rois": [7, 12, 20, 36, 64, 122, 197, 325, 444],
     },
     "Destrieux (2009; volume)": {"fn": fetch_atlas_destrieux_2009},
     "Harvard-Oxford": {
@@ -134,11 +141,23 @@ deterministic_atlases = {
     },
     "Schaefer (2018)": {
         "fn": fetch_atlas_schaefer_2018,
+        "n_rois": [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000],
     },
-    "Talairach": {"fn": fetch_atlas_talairach, "params": {"level_name": "ba"}},
+    "Talairach": {
+        "fn": fetch_atlas_talairach,
+        "params": {"level_name": "ba"},
+        "n_rois": [
+            3,
+            7,
+            12,
+            55,
+            71,
+        ],
+    },
     "Yeo (2011)": {
         "fn": fetch_atlas_yeo_2011,
         "params": {"n_networks": 17, "thickness": "thick"},
+        "n_rois": [7, 17],
     },
 }
 
@@ -171,6 +190,11 @@ for display_name, details in deterministic_atlases.items():
         )
     plt.close("all")
 
+    n_rois = details.get("n_rois")
+    if n_rois is None:
+        masker = NiftiLabelsMasker(labels_img=data.maps).fit()
+        n_rois = masker.n_elements_
+
     dict_for_df = _update_dict(
         dict_for_df,
         display_name,
@@ -178,6 +202,7 @@ for display_name, details in deterministic_atlases.items():
         data,
         doc_dir,
         output_file=output_file,
+        n_rois=n_rois,
     )
 
 """
@@ -229,6 +254,9 @@ if GENERATE_FIG:
 
     fig.savefig(output_file)
 
+masker = SurfaceLabelsMasker(labels_img=destrieux_atlas).fit()
+n_rois = masker.n_elements_
+
 dict_for_df = _update_dict(
     dict_for_df,
     "Destrieux (2009; surface)",
@@ -236,6 +264,7 @@ dict_for_df = _update_dict(
     data,
     doc_dir,
     output_file=output_file,
+    n_rois=n_rois,
 )
 
 _generate_markdown_file("deterministic_atlases.md", dict_for_df)
@@ -254,6 +283,7 @@ probablistic_atlases = {
     "Difumo": {
         "fn": fetch_atlas_difumo,
         "params": {"dimension": 64, "resolution_mm": 2},
+        "n_rois": [64, 128, 256, 512, 1024],
     },
     "Harvard-Oxford": {
         "fn": fetch_atlas_harvard_oxford,
@@ -270,7 +300,8 @@ probablistic_atlases = {
     "MSDL": {"fn": fetch_atlas_msdl},
     "Smith (2009)": {
         "fn": fetch_atlas_smith_2009,
-        "params": {"resting": False, "dimension": 20},
+        "params": {"resting": False, "dimension": 10},
+        "n_rois": [10, 20, 70],
     },
 }
 
@@ -302,8 +333,19 @@ for display_name, details in probablistic_atlases.items():
             **plot_config,
         )
 
+    n_rois = details.get("n_rois")
+    if n_rois is None:
+        masker = NiftiMapsMasker(data.maps).fit()
+        n_rois = masker.n_elements_
+
     dict_for_df = _update_dict(
-        dict_for_df, display_name, fn, data, doc_dir, output_file=output_file
+        dict_for_df,
+        display_name,
+        fn,
+        data,
+        doc_dir,
+        output_file=output_file,
+        n_rois=n_rois,
     )
 
     if DEBUG:
