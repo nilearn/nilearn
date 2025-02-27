@@ -30,8 +30,27 @@ from nilearn.surface import (
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
 
+# Plotting tests are skipped if matplotlib is missing.
+# If the version is greater than the minimum one we support
+# We skip the tests where the generated figures are compared to a baseline.
+
 if is_matplotlib_installed():
     import matplotlib
+
+    from nilearn._utils.helpers import (
+        OPTIONAL_MATPLOTLIB_MIN_VERSION,
+        compare_version,
+    )
+
+    if compare_version(
+        matplotlib.__version__, ">", OPTIONAL_MATPLOTLIB_MIN_VERSION
+    ):
+        collect_ignore.extend(
+            [
+                "plotting/tests/test_baseline_comparisons.py",
+            ]
+        )
+
 else:
     collect_ignore.extend(
         [
