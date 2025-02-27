@@ -84,7 +84,8 @@ test = [
     "pytest-cov",
     "pytest-randomly",
     "pytest-reporter-html1>=0.9.2",
-    "pytest-xdist[psutil]"
+    "pytest-xdist[psutil]",
+    "pytest-csv"
 ]
 
 [project.urls]
@@ -163,7 +164,7 @@ module = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html --csv results/pytest_output.csv --csv-delimiter ','"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
