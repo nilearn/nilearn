@@ -80,7 +80,7 @@ jobs:
                 pip install pytest-mpl
 
         -   name: Run tests
-            run: pytest --pyargs nilearn --cov=nilearn
+            run: pytest --pyargs nilearn --cov=nilearn --csv results/pytest_output.csv
 
         -   name: Generate plots tests timing
             run: |
