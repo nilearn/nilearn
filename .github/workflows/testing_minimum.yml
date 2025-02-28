@@ -46,6 +46,7 @@ env:
 
 jobs:
     test_min_install:
+
         if: github.repository == 'nilearn/nilearn'
 
         runs-on: ${{ matrix.os }}
@@ -75,12 +76,17 @@ jobs:
                 pip install ${{ matrix.min_dep }}
 
         -   name: Install nilearn
-            run: |
-                pip install .[plotting,plotly,test]
-                pip install pytest-mpl
+            run: pip install .[plotting,plotly,test]
 
         -   name: Run tests
-            run: pytest --pyargs nilearn --cov=nilearn --csv results/pytest_output.csv
+            # there are some numpy 2.0 related issues when using pytest-mpl
+            # with matplotlib 3.3.0 on windows:
+            # seems some transitive dependencies do not play nice with numpy 2.0.
+            # So skipping for now.
+            if: ${{ !(contains(matrix.min_dep, 'matplotlib==3.3.0') && matrix.os == 'windows-latest') }}
+            run: |
+                pip install pytest-mpl
+                pytest --pyargs nilearn --cov=nilearn --csv results/pytest_output.csv
 
         -   name: Generate plots tests timing
             run: |
