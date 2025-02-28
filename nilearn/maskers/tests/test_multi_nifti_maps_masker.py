@@ -17,7 +17,6 @@ from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
     check_estimator(
         estimator=[
             MultiNiftiMapsMasker(_img_maps()),
-            NiftiMapsMasker(_img_maps()),
         ],
     ),
 )
@@ -32,7 +31,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[
             MultiNiftiMapsMasker(_img_maps()),
-            NiftiMapsMasker(_img_maps()),
         ],
         valid=False,
     ),
