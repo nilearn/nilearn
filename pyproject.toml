@@ -85,7 +85,8 @@ test = [
     "pytest-randomly",
     "pytest-reporter-html1>=0.9.2",
     "pytest-xdist[psutil]",
-    "pytest-csv"
+    "pytest-csv",
+    "pytest-timeout"
 ]
 
 [project.urls]
@@ -164,11 +165,12 @@ module = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --template=maint_tools/templates/index.html --timeout=45"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
 minversion = "6.0"
+timeout = 3600  # test session should not last more than 1 hour
 xfail_strict = true
 
 [tool.ruff]
