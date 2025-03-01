@@ -730,19 +730,11 @@ def check_nifti_masker_fit_with_4d_mask(estimator):
 def _generate_report_with_no_warning(estimator):
     """Check that report generation throws no warning."""
     from nilearn.maskers import (
-        MultiNiftiMapsMasker,
-        NiftiMapsMasker,
         SurfaceMapsMasker,
     )
 
     with warnings.catch_warnings(record=True) as warning_list:
-        if isinstance(
-            estimator,
-            (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
-        ):
-            report = estimator.generate_report(displayed_maps=1)
-        else:
-            report = estimator.generate_report()
+        report = _generate_report(estimator)
 
         # TODO
         # RegionExtractor, SurfaceMapsMasker still throws too many warnings
@@ -763,6 +755,30 @@ def _generate_report_with_no_warning(estimator):
     return report
 
 
+def _generate_report(estimator):
+    """Adapt the call to generate_report to limit warnings.
+
+    For example by only passing the number of displayed maps
+    that a map masker contains.
+    """
+    from nilearn.maskers import (
+        MultiNiftiMapsMasker,
+        NiftiMapsMasker,
+        SurfaceMapsMasker,
+    )
+
+    if isinstance(
+        estimator,
+        (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
+    ) and hasattr(estimator, "n_elements_"):
+        report = estimator.generate_report(
+            displayed_maps=estimator.n_elements_
+        )
+    else:
+        report = estimator.generate_report()
+    return report
+
+
 def check_masker_generate_report(estimator):
     """Check that maskers can generate report.
 
@@ -774,16 +790,16 @@ def check_masker_generate_report(estimator):
     """
     if not is_matplotlib_installed():
         with warnings.catch_warnings(record=True) as warning_list:
-            result = estimator.generate_report()
+            report = _generate_report(estimator)
 
         assert len(warning_list) == 1
         assert issubclass(warning_list[0].category, ImportWarning)
-        assert result == [None]
+        assert report == [None]
 
         return
 
     with warnings.catch_warnings(record=True) as warning_list:
-        report = estimator.generate_report()
+        report = _generate_report(estimator)
         assert len(warning_list) == 1
 
     _check_html(report, is_fit=False)
@@ -801,7 +817,7 @@ def check_masker_generate_report(estimator):
     # TODO
     # SurfaceMapsMasker, RegionExtractor still throws a warning
     report = _generate_report_with_no_warning(estimator)
-    report = estimator.generate_report()
+    report = _generate_report(estimator)
     _check_html(report)
 
     with TemporaryDirectory() as tmp_dir:
@@ -826,7 +842,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
         return
 
     with pytest.warns(UserWarning, match="No image provided to fit."):
-        report = estimator.generate_report()
+        report = _generate_report(estimator)
     _check_html(report)
 
     input_img = _img_4d_rand_eye_medium()
@@ -838,7 +854,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     if isinstance(estimator, NiftiSpheresMasker):
         return
     report = _generate_report_with_no_warning(estimator)
-    report = estimator.generate_report()
+    report = _generate_report(estimator)
     _check_html(report)
 
 
@@ -862,7 +878,7 @@ def check_masker_generate_report_false(estimator):
         UserWarning,
         match=("No visual outputs created."),
     ):
-        report = estimator.generate_report()
+        report = _generate_report(estimator)
 
     _check_html(report, reports_requested=False)
 
@@ -875,9 +891,8 @@ def check_multi_nifti_masker_generate_report_4d_fit(estimator):
         return
 
     estimator.maps_img = _img_3d_ones()
+    estimator.fit([_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()])
     with pytest.warns(
         UserWarning, match="A list of 4D subject images were provided to fit. "
     ):
-        estimator.fit(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
-        ).generate_report()
+        _generate_report(estimator)

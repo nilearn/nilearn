@@ -455,10 +455,12 @@ def n_regions():
     return _n_regions()
 
 
-def _img_maps():
+def _img_maps(n_regions=None):
     """Generate a default map image."""
+    if n_regions is None:
+        n_regions = _n_regions()
     return generate_maps(
-        shape=_shape_3d_default(), n_regions=_n_regions(), affine=_affine_eye()
+        shape=_shape_3d_default(), n_regions=n_regions, affine=_affine_eye()
     )[0]
 
 

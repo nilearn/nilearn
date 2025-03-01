@@ -16,7 +16,9 @@ from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
     "estimator, check, name",
     check_estimator(
         estimator=[
-            MultiNiftiMapsMasker(_img_maps()),
+            # pass less than the default number of regions
+            # to speed up the tests
+            MultiNiftiMapsMasker(_img_maps(n_regions=3)),
         ],
     ),
 )
@@ -30,7 +32,9 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[
-            MultiNiftiMapsMasker(_img_maps()),
+            # pass less than the default number of regions
+            # to speed up the tests
+            MultiNiftiMapsMasker(_img_maps(n_regions=3)),
         ],
         valid=False,
     ),
