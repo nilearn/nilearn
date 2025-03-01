@@ -465,11 +465,14 @@ def img_maps():
 
 
 def _img_labels():
-    """Generate fixture for default label image."""
+    """Generate fixture for default label image.
+
+    DO NOT CHANGE n_regions (some tests expect this value).
+    """
     return generate_labeled_regions(
-        shape=(7, 8, 9),
-        affine=np.eye(4),
-        n_regions=9,
+        shape=_shape_3d_default(),
+        affine=_affine_eye(),
+        n_regions=_n_regions(),
     )
 
 
