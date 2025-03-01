@@ -41,22 +41,6 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
 
 
 @pytest.fixture
-def data_img_3d(shape_3d_default, affine_eye):
-    """Return Dummy 3D data for testing."""
-    data = np.zeros(shape_3d_default)
-    data[3:-3, 3:-3, 3:-3] = 10
-    return Nifti1Image(data, affine_eye)
-
-
-@pytest.fixture
-def mask(shape_3d_default, affine_eye):
-    """Return Dummy mask for testing."""
-    data = np.zeros(shape_3d_default, dtype="uint8")
-    data[3:7, 3:7, 3:7] = 1
-    return Nifti1Image(data, affine_eye)
-
-
-@pytest.fixture
 def niftimapsmasker_inputs(img_maps):
     return {"maps_img": img_maps}
 
@@ -67,9 +51,9 @@ def labels(n_regions):
 
 
 @pytest.fixture
-def input_parameters(masker_class, mask, labels, img_labels, img_maps):
+def input_parameters(masker_class, img_mask_eye, labels, img_labels, img_maps):
     if masker_class in (NiftiMasker, MultiNiftiMasker):
-        return {"mask_img": mask}
+        return {"mask_img": img_mask_eye}
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
         return {"labels_img": img_labels, "labels": labels}
     if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
@@ -265,7 +249,7 @@ def test_nifti_labels_masker_report_incorrect_label_error(labels, img_labels):
 
 
 def test_nifti_labels_masker_report_no_image_for_fit(
-    data_img_3d, n_regions, labels, img_labels
+    img_3d_rand_eye, n_regions, labels, img_labels
 ):
     """Check no contour in image when no image was provided to fit."""
     masker = NiftiLabelsMasker(img_labels, labels=labels)
@@ -277,7 +261,7 @@ def test_nifti_labels_masker_report_no_image_for_fit(
     for d in ["x", "y", "z"]:
         assert len(display[0].axes[d].ax.collections) == 0
 
-    masker.fit(data_img_3d)
+    masker.fit(img_3d_rand_eye)
 
     display = masker._reporting()
     for d in ["x", "y", "z"]:
@@ -294,11 +278,13 @@ EXPECTED_COLUMNS = [
 
 
 def test_nifti_labels_masker_report(
-    data_img_3d, mask, affine_eye, n_regions, labels, img_labels
+    img_3d_rand_eye, img_mask_eye, affine_eye, n_regions, labels, img_labels
 ):
     """Check content nifti label masker."""
-    masker = NiftiLabelsMasker(img_labels, labels=labels, mask_img=mask)
-    masker.fit(data_img_3d)
+    masker = NiftiLabelsMasker(
+        img_labels, labels=labels, mask_img=img_mask_eye
+    )
+    masker.fit(img_3d_rand_eye)
     report = masker.generate_report()
 
     assert masker._reporting_data is not None
@@ -359,7 +345,7 @@ def test_nifti_labels_masker_report_not_displayed(n_regions, img_labels):
 
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
 def test_nifti_labels_masker_report_cut_coords(
-    masker_class, input_parameters, data_img_3d
+    masker_class, input_parameters, img_3d_rand_eye
 ):
     """Test cut coordinate are equal with and without passing data to fit."""
     masker = masker_class(**input_parameters, reports=True)
@@ -367,12 +353,12 @@ def test_nifti_labels_masker_report_cut_coords(
     masker.fit()
     display = masker._reporting()
     # Get display with data
-    masker.fit(data_img_3d)
+    masker.fit(img_3d_rand_eye)
     display_data = masker._reporting()
     assert display[0].cut_coords == display_data[0].cut_coords
 
 
-def test_4d_reports(mask, affine_eye):
+def test_4d_reports(img_mask_eye, affine_eye):
     # Dummy 4D data
     data = np.zeros((10, 10, 10, 3), dtype="int32")
     data[..., 0] = 1
@@ -388,7 +374,7 @@ def test_4d_reports(mask, affine_eye):
     _check_html(html)
 
     # test .fit_transform method
-    masker = NiftiMasker(mask_img=mask, standardize=True)
+    masker = NiftiMasker(mask_img=img_mask_eye, standardize=True)
     masker.fit_transform(data_img_4d)
 
     html = masker.generate_report()

@@ -322,17 +322,32 @@ def img_3d_ones_mni():
     return _img_3d_ones(shape=_shape_3d_default(), affine=_affine_mni())
 
 
+def _mask_data():
+    mask_data = np.zeros(_shape_3d_default(), dtype="int32")
+    mask_data[3:6, 3:6, 3:6] = 1
+    return mask_data
+
+
 def _img_mask_mni():
     """Return a 3D nifti mask in MNI space with some 1s in the center."""
-    mask = np.zeros(_shape_3d_default(), dtype="int32")
-    mask[3:6, 3:6, 3:6] = 1
-    return Nifti1Image(mask, _affine_mni())
+    return Nifti1Image(_mask_data(), _affine_mni())
 
 
 @pytest.fixture
 def img_mask_mni():
     """Return a 3D nifti mask in MNI space with some 1s in the center."""
     return _img_mask_mni()
+
+
+def _img_mask_eye():
+    """Return a 3D nifti mask with identity affine with 1s in the center."""
+    return Nifti1Image(_mask_data(), _affine_eye())
+
+
+@pytest.fixture
+def img_mask_eye():
+    """Return a 3D nifti mask with identity affine with 1s in the center."""
+    return _img_mask_eye()
 
 
 # ------------------------ 4D IMAGES ------------------------#
