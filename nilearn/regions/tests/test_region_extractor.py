@@ -86,7 +86,7 @@ extra_valid_checks = [
         estimator=[
             RegionExtractor(
                 maps_img=generate_maps(
-                    shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+                    shape=MAP_SHAPE, n_regions=2, random_state=42
                 )[0]
             )
         ],
@@ -105,7 +105,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
         estimator=[
             RegionExtractor(
                 maps_img=generate_maps(
-                    shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+                    shape=MAP_SHAPE, n_regions=2, random_state=42
                 )[0]
             )
         ],
