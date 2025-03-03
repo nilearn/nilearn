@@ -13,6 +13,7 @@ name: test minimal version of each dependency
 
 
 on:
+    pull_request:
     push:
         branches:
         -   main
@@ -86,7 +87,7 @@ jobs:
             if: ${{ !(contains(matrix.min_dep, 'matplotlib==3.3.0') && matrix.os == 'windows-latest') }}
             run: |
                 pip install pytest-mpl
-                pytest --pyargs nilearn --cov=nilearn --csv results/pytest_output.csv
+                pytest --pyargs nilearn --cov=nilearn --csv results/pytest_output/pytest_output.csv
 
         -   name: Generate plots tests timing
             run: |
