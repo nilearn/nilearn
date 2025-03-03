@@ -61,6 +61,7 @@ jobs:
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
 
         steps:
+
         -   name: Checkout nilearn
             uses: actions/checkout@v4
 
@@ -75,8 +76,7 @@ jobs:
                 pip install ${{ matrix.min_dep }}
 
         -   name: Install nilearn
-            run: |
-                pip install .[plotting,plotly,test]
+            run: pip install .[plotting,plotly,test]
 
         -   name: Run tests
             # there are some numpy 2.0 related issues when using pytest-mpl
@@ -86,4 +86,23 @@ jobs:
             if: ${{ !(contains(matrix.min_dep, 'matplotlib==3.3.0') && matrix.os == 'windows-latest') }}
             run: |
                 pip install pytest-mpl
-                pytest --pyargs nilearn --cov=nilearn
+                pytest --pyargs nilearn --cov=nilearn --csv results/pytest_output.csv
+
+        -   name: Generate plots tests timing
+            run: |
+                pip install tox
+                tox run -e plot_test_timing
+
+        -   name: Upload test report
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: ${{ matrix.os }}_${{ matrix.min_dep }}_report.html
+                path: report.html
+
+        -   name: Upload test timings
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: ${{ matrix.os }}_${{ matrix.min_dep }}_pytest_output
+                path: results/pytest_output

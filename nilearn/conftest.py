@@ -30,8 +30,27 @@ from nilearn.surface import (
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
 
+# Plotting tests are skipped if matplotlib is missing.
+# If the version is greater than the minimum one we support
+# We skip the tests where the generated figures are compared to a baseline.
+
 if is_matplotlib_installed():
     import matplotlib
+
+    from nilearn._utils.helpers import (
+        OPTIONAL_MATPLOTLIB_MIN_VERSION,
+        compare_version,
+    )
+
+    if compare_version(
+        matplotlib.__version__, ">", OPTIONAL_MATPLOTLIB_MIN_VERSION
+    ):
+        collect_ignore.extend(
+            [
+                "plotting/tests/test_baseline_comparisons.py",
+            ]
+        )
+
 else:
     collect_ignore.extend(
         [
@@ -436,10 +455,12 @@ def n_regions():
     return _n_regions()
 
 
-def _img_maps():
+def _img_maps(n_regions=None):
     """Generate a default map image."""
+    if n_regions is None:
+        n_regions = _n_regions()
     return generate_maps(
-        shape=_shape_3d_default(), n_regions=_n_regions(), affine=_affine_eye()
+        shape=_shape_3d_default(), n_regions=n_regions, affine=_affine_eye()
     )[0]
 
 

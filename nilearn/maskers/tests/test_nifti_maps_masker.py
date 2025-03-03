@@ -28,7 +28,9 @@ from nilearn.maskers import NiftiMapsMasker
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiMapsMasker(maps_img=_img_maps())],
+        # pass less than the default number of regions
+        # to speed up the tests
+        estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=3))],
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -40,7 +42,9 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiMapsMasker(maps_img=_img_maps())],
+        # pass less than the default number of regions
+        # to speed up the tests
+        estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=3))],
         valid=False,
     ),
 )
