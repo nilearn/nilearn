@@ -1,11 +1,10 @@
 import numpy as np
 import pandas as pd
 import pytest
-from nibabel import load
 
 from nilearn._utils.data_gen import (
     basic_paradigm,
-    write_fake_fmri_data_and_design,
+    generate_fake_fmri_data_and_design,
 )
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level.design_matrix import (
@@ -21,12 +20,13 @@ from nilearn.reporting.glm_reporter import (
 
 
 @pytest.fixture()
-def flm(tmp_path):
+def flm():
     """Generate first level model."""
     shapes, rk = ((7, 7, 7, 5),), 3
-    mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
-        shapes, rk, file_path=tmp_path
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
     )
+    # generate_fake_fmri_data_and_design
     return FirstLevelModel(mask_img=mask).fit(
         fmri_data, design_matrices=design_matrices
     )
@@ -64,16 +64,12 @@ def test_flm_reporting_method(flm):
 
 
 @pytest.fixture()
-def slm(tmp_path):
+def slm():
     """Generate a fitted second level model."""
     shapes = ((7, 7, 7, 1),)
-    _, FUNCFILE, _ = write_fake_fmri_data_and_design(
-        shapes, file_path=tmp_path
-    )
-    FUNCFILE = FUNCFILE[0]
-    func_img = load(FUNCFILE)
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
     model = SecondLevelModel()
-    Y = [func_img] * 2
+    Y = [fmri_data[0]] * 2
     X = pd.DataFrame([[1]] * 2, columns=["intercept"])
     return model.fit(Y, design_matrix=X)
 
@@ -160,13 +156,14 @@ def test_plot_contrasts():
     )
 
 
-def test_masking_first_level_model(tmp_path):
+def test_masking_first_level_model():
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
     """
     shapes, rk = ((7, 7, 7, 5),), 3
-    mask, fmri_data, design_matrices = write_fake_fmri_data_and_design(
-        shapes, rk, file_path=tmp_path
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes,
+        rk,
     )
     masker = NiftiMasker(mask_img=mask)
     masker.fit(fmri_data)
@@ -187,11 +184,11 @@ def test_masking_first_level_model(tmp_path):
     report_flm.get_iframe()
 
 
-def test_fir_delays_in_params(tmp_path):
+def test_fir_delays_in_params():
     """Check that fir_delays is in the report when hrf_model is fir."""
     shapes, rk = ((7, 7, 7, 5),), 3
-    _, fmri_data, design_matrices = write_fake_fmri_data_and_design(
-        shapes, rk, file_path=tmp_path
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
     )
     contrast = np.eye(3)[1]
     model = FirstLevelModel(hrf_model="fir", fir_delays=[1, 2, 3])
@@ -206,13 +203,13 @@ def test_fir_delays_in_params(tmp_path):
     assert "fir_delays" not in report.__str__()
 
 
-def test_drift_order_in_params(tmp_path):
+def test_drift_order_in_params():
     """Check that drift_order is in the report when parameter is drift_model is
     polynomial.
     """
     shapes, rk = ((7, 7, 7, 5),), 3
-    _, fmri_data, design_matrices = write_fake_fmri_data_and_design(
-        shapes, rk, file_path=tmp_path
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
     )
     contrast = np.eye(3)[1]
     model = FirstLevelModel(drift_model="polynomial", drift_order=3)
