@@ -490,7 +490,7 @@ def n_cols_design_matrix():
 @pytest.fixture
 def two_runs_model(n_cols_design_matrix):
     """Create two runs of data."""
-    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], n_cols_design_matrix
+    shapes, rk = [(7, 8, 9, 10), (7, 8, 9, 10)], n_cols_design_matrix
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
         rk,

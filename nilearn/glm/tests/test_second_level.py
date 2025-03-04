@@ -1132,7 +1132,17 @@ def test_second_level_contrast_computation_smoke():
     model.compute_contrast()
 
 
-def test_second_level_contrast_computation_all():
+@pytest.mark.parametrize(
+    "output_type",
+    [
+        "z_score",
+        "stat",
+        "p_value",
+        "effect_size",
+        "effect_variance",
+    ],
+)
+def test_second_level_contrast_computation_all(output_type):
     """Test output_type='all', and verify images are equivalent."""
     func_img, mask = fake_fmri_data()
 
@@ -1148,21 +1158,14 @@ def test_second_level_contrast_computation_all():
         second_level_contrast=c1, output_type="all"
     )
 
-    for key in [
-        "z_score",
-        "stat",
-        "p_value",
-        "effect_size",
-        "effect_variance",
-    ]:
-        assert_array_equal(
-            get_data(all_images[key]),
-            get_data(
-                model.compute_contrast(
-                    second_level_contrast=c1, output_type=key
-                )
-            ),
-        )
+    assert_array_equal(
+        get_data(all_images[output_type]),
+        get_data(
+            model.compute_contrast(
+                second_level_contrast=c1, output_type=output_type
+            )
+        ),
+    )
 
 
 def test_second_level_contrast_computation_errors(rng):
