@@ -3,6 +3,7 @@ functional datasets (task + resting-state).
 """
 
 import fnmatch
+import functools
 import itertools
 import json
 import numbers
@@ -3148,6 +3149,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     return data
 
 
+@functools.lru_cache
 def load_sample_motor_activation_image():
     """Load a single functional image showing motor activations.
 

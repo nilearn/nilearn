@@ -123,6 +123,7 @@ plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="PCC Seed",
+    colorbar=False,
 )
 
 show()
@@ -151,6 +152,7 @@ plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="PCC Seed on flat map",
+    colorbar=False,
 )
 
 show()
@@ -205,7 +207,6 @@ plot_surf_stat_map(
     stat_map=stat_map_surf,
     hemi=hemisphere,
     view="medial",
-    colorbar=True,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     darkness=0.3,
@@ -222,7 +223,6 @@ plot_surf_stat_map(
     stat_map=stat_map_surf,
     hemi=hemisphere,
     view="medial",
-    colorbar=True,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     cmap="bwr",
@@ -242,7 +242,6 @@ plot_surf_stat_map(
     stat_map=stat_map_surf,
     hemi=hemisphere,
     view="lateral",
-    colorbar=True,
     cmap="bwr",
     threshold=0.5,
     title="Plotting without background",
@@ -266,7 +265,6 @@ plot_surf_stat_map(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     threshold=0.5,
-    colorbar=True,
     output_file=output_dir / "plot_surf_stat_map.png",
     cmap="bwr",
 )

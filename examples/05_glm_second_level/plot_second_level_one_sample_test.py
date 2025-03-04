@@ -105,7 +105,6 @@ p001_unc = norm.isf(p_val)
 display = plotting.plot_glass_brain(
     z_map,
     threshold=p001_unc,
-    colorbar=True,
     display_mode="z",
     plot_abs=False,
     title="group left-right button press (unc p<0.001)",
@@ -212,7 +211,6 @@ for img_counter, (i_row, j_col) in enumerate(
     ax = axes[i_row, j_col]
     plotting.plot_glass_brain(
         IMAGES[img_counter],
-        colorbar=True,
         vmax=vmax,
         vmin=threshold,
         display_mode="z",
