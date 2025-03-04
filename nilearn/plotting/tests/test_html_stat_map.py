@@ -359,42 +359,102 @@ def test_get_cut_slices(affine_eye):
     assert (cut_slices == [4, 4, 4]).all()
 
 
-def test_view_img():
+@pytest.mark.parametrize(
+    "params, warning_msg",
+    [
+        (
+            {"threshold": 2.0, "vmax": 4.0},
+            "The given float value must not exceed .*",
+        ),
+        (
+            {"symmetric_cmap": False},
+            "'partition' will ignore the 'mask' of the MaskedArray *",
+        ),
+    ],
+)
+def test_view_img_3d_warnings(params, warning_msg):
+    """Test warning when viewing 3D images."""
     mni = datasets.load_mni152_template(resolution=2)
+
+    # Create a fake functional image by resample the template
+    img = image.resample_img(
+        mni,
+        target_affine=3 * np.eye(3),
+        copy_header=True,
+        force_resample=True,
+    )
+
+    # Should not raise warnings
     with warnings.catch_warnings(record=True) as w:
-        # Create a fake functional image by resample the template
-        img = image.resample_img(
-            mni,
-            target_affine=3 * np.eye(3),
-            copy_header=True,
-            force_resample=True,
-        )
+        html_view = html_stat_map.view_img(img, bg_img=None)
+    assert len(w) == 0
+
+    with pytest.warns(UserWarning, match=warning_msg):
+        html_view = html_stat_map.view_img(img, **params)
+
+    _check_html(html_view)
+
+
+def test_view_img_3d_warnings_more():
+    """Test warning when viewing 3D images.
+
+    Has more precise checks on the output.
+    """
+    mni = datasets.load_mni152_template(resolution=2)
+
+    # Create a fake functional image by resample the template
+    img = image.resample_img(
+        mni,
+        target_affine=3 * np.eye(3),
+        copy_header=True,
+        force_resample=True,
+    )
+
+    with pytest.warns(
+        UserWarning,
+        match="'partition' will ignore the 'mask' of the MaskedArray",
+    ):
         html_view = html_stat_map.view_img(img)
-        _check_html(html_view, title="Slice viewer")
+
+    _check_html(html_view, title="Slice viewer")
+
+    with pytest.warns(
+        UserWarning,
+        match="'partition' will ignore the 'mask' of the MaskedArray",
+    ):
         html_view = html_stat_map.view_img(
             img, threshold="95%", title="SOME_TITLE"
         )
-        _check_html(html_view, title="SOME_TITLE")
-        html_view = html_stat_map.view_img(img, bg_img=mni)
-        _check_html(html_view)
-        html_view = html_stat_map.view_img(img, bg_img=None)
-        _check_html(html_view)
-        html_view = html_stat_map.view_img(img, threshold=2.0, vmax=4.0)
-        _check_html(html_view)
-        html_view = html_stat_map.view_img(img, symmetric_cmap=False)
-        img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
-        assert len(img_4d.shape) == 4
-        html_view = html_stat_map.view_img(img_4d, threshold=2.0, vmax=4.0)
-        _check_html(html_view)
-        html_view = html_stat_map.view_img(img_4d, threshold=1e6)
-        _check_html(html_view)
-        html_view = html_stat_map.view_img(img_4d, width_view=1000)
-        _check_html(html_view)
 
-    # Check that all warnings were expected
-    warnings_set = {warning_.category for warning_ in w}
-    expected_set = {FutureWarning, UserWarning, DeprecationWarning}
-    assert warnings_set.issubset(expected_set), (
-        "the following warnings were not expected: "
-        f"{warnings_set.difference(expected_set)}"
+    _check_html(html_view, title="SOME_TITLE")
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"threshold": 2.0, "vmax": 4.0},
+        {"threshold": 1e6},
+        {"width_view": 1000},
+    ],
+)
+def test_view_img_4d_warnings(params):
+    """Test warning when viewing 4D images."""
+    mni = datasets.load_mni152_template(resolution=2)
+
+    # Create a fake functional image by resample the template
+    img = image.resample_img(
+        mni,
+        target_affine=3 * np.eye(3),
+        copy_header=True,
+        force_resample=True,
     )
+    img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
+    assert len(img_4d.shape) == 4
+
+    with pytest.warns(
+        UserWarning,
+        match="'partition' will ignore the 'mask' of the MaskedArray",
+    ):
+        html_view = html_stat_map.view_img(img_4d, **params)
+
+    _check_html(html_view)

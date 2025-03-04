@@ -73,13 +73,13 @@ def labels(n_regions):
 
 
 @pytest.fixture
-def input_parameters(masker_class, mask, labels, img_labels, img_maps):
+def input_parameters(masker_class, mask, labels, img_labels):
     if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": mask}
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
         return {"labels_img": img_labels, "labels": labels}
     if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
-        return {"maps_img": img_maps}
+        return {"maps_img": _img_maps(n_regions=2)}
     if masker_class is NiftiSpheresMasker:
         return {"seeds": [(1, 1, 1)]}
 

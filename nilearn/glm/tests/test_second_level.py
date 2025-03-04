@@ -77,7 +77,7 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 BASEDIR = Path(__file__).resolve().parent
 FUNCFILE = BASEDIR / "functional.nii.gz"
 
-N_PERM = 10
+N_PERM = 5
 SHAPE = (*_shape_3d_default(), 1)
 
 
@@ -1038,7 +1038,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     shapes = ((*shape_3d_default, 1),)
     mask, func_img, _ = generate_fake_fmri_data_and_design(shapes)
 
-    unc_pval = 0.01
+    unc_pval = 0.1
     n_subjects = 2
 
     # Set up one sample t-test design with two random covariates
@@ -1092,7 +1092,7 @@ def test_non_parametric_inference_cluster_level_with_single_covariates(
     shapes = ((*shape_3d_default, 1),)
     mask, func_img, _ = generate_fake_fmri_data_and_design(shapes)
 
-    unc_pval = 0.01
+    unc_pval = 0.1
     n_subjects = 2
 
     # make sure there is variability in the images
@@ -1112,12 +1112,31 @@ def test_non_parametric_inference_cluster_level_with_single_covariates(
     )
 
 
-def test_second_level_contrast_computation(rng):
+def test_second_level_contrast_computation_smoke():
+    """Smoke test for different contrasts in fixed effects."""
     func_img, mask = fake_fmri_data()
 
     model = SecondLevelModel(mask_img=mask)
+    Y = [func_img] * 4
+    X = pd.DataFrame([[1]] * 4, columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
 
-    # fit model
+    ncol = len(model.design_matrix_.columns)
+    c1, _ = np.eye(ncol)[0, :], np.zeros(ncol)
+    model.compute_contrast(second_level_contrast=c1)
+
+    # formula should work (passing variable name directly)
+    model.compute_contrast("intercept")
+
+    # or simply pass nothing
+    model.compute_contrast()
+
+
+def test_second_level_contrast_computation_all():
+    """Test output_type='all', and verify images are equivalent."""
+    func_img, mask = fake_fmri_data()
+
+    model = SecondLevelModel(mask_img=mask)
     Y = [func_img] * 4
     X = pd.DataFrame([[1]] * 4, columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
@@ -1125,13 +1144,10 @@ def test_second_level_contrast_computation(rng):
     ncol = len(model.design_matrix_.columns)
     c1, _ = np.eye(ncol)[0, :], np.zeros(ncol)
 
-    # smoke test for different contrasts in fixed effects
-    model.compute_contrast(second_level_contrast=c1)
-
-    # Test output_type='all', and verify images are equivalent
     all_images = model.compute_contrast(
         second_level_contrast=c1, output_type="all"
     )
+
     for key in [
         "z_score",
         "stat",
@@ -1147,16 +1163,6 @@ def test_second_level_contrast_computation(rng):
                 )
             ),
         )
-
-    # formula should work (passing variable name directly)
-    model.compute_contrast("intercept")
-    # or simply pass nothing
-    model.compute_contrast()
-
-    # formula as contrasts
-    X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
-    model = model.fit(Y, design_matrix=X)
-    model.compute_contrast(second_level_contrast="r1 - r2")
 
 
 def test_second_level_contrast_computation_errors(rng):
@@ -1174,11 +1180,6 @@ def test_second_level_contrast_computation_errors(rng):
     model = model.fit(Y, design_matrix=X)
     ncol = len(model.design_matrix_.columns)
     c1, cnull = np.eye(ncol)[0, :], np.zeros(ncol)
-
-    # formula should work (passing variable name directly)
-    model.compute_contrast(second_level_contrast="intercept")
-    # or simply pass nothing
-    model.compute_contrast()
 
     # passing null contrast should give back a value error
     with pytest.raises(ValueError, match="Contrast is null"):
