@@ -184,7 +184,7 @@ def test_masking_first_level_model():
     report_flm.get_iframe()
 
 
-@pytest.fixture("hrf_model", ["glover", "fir"])
+@pytest.mark.parametrize("hrf_model", ["glover", "fir"])
 def test_fir_delays_in_params(hrf_model):
     """Check that fir_delays is in the report when hrf_model is fir.
 
@@ -206,7 +206,7 @@ def test_fir_delays_in_params(hrf_model):
         assert "fir_delays" not in report.__str__()
 
 
-@pytest.fixture("drift_model", ["cosine", "polynomial"])
+@pytest.mark.parametrize("drift_model", ["cosine", "polynomial"])
 def test_drift_order_in_params(drift_model):
     """Check that drift_order is in the report when parameter is drift_model is
     polynomial.
