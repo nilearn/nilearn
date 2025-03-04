@@ -184,44 +184,49 @@ def test_masking_first_level_model():
     report_flm.get_iframe()
 
 
-def test_fir_delays_in_params():
-    """Check that fir_delays is in the report when hrf_model is fir."""
-    shapes, rk = ((7, 7, 7, 5),), 3
-    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes, rk
-    )
-    contrast = np.eye(3)[1]
-    model = FirstLevelModel(hrf_model="fir", fir_delays=[1, 2, 3])
-    model.fit(fmri_data, design_matrices=design_matrices)
-    report = model.generate_report(contrast)
-    assert "fir_delays" in report.__str__()
+@pytest.fixture("hrf_model", ["glover", "fir"])
+def test_fir_delays_in_params(hrf_model):
+    """Check that fir_delays is in the report when hrf_model is fir.
 
-    # also check that it's not in the report when not set
-    model = FirstLevelModel()
-    model.fit(fmri_data, design_matrices=design_matrices)
-    report = model.generate_report(contrast)
-    assert "fir_delays" not in report.__str__()
-
-
-def test_drift_order_in_params():
-    """Check that drift_order is in the report when parameter is drift_model is
-    polynomial.
+    Also check that it's not in the report when using the default 'glover'.
     """
     shapes, rk = ((7, 7, 7, 5),), 3
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
-    contrast = np.eye(3)[1]
-    model = FirstLevelModel(drift_model="polynomial", drift_order=3)
+    model = FirstLevelModel(hrf_model=hrf_model, fir_delays=[1, 2, 3])
     model.fit(fmri_data, design_matrices=design_matrices)
-    report = model.generate_report(contrast)
-    assert "drift_order" in report.__str__()
 
-    # also check that it's not in the report when not set
-    model = FirstLevelModel()
-    model.fit(fmri_data, design_matrices=design_matrices)
+    contrast = np.eye(3)[1]
     report = model.generate_report(contrast)
-    assert "drift_order" not in report.__str__()
+
+    if hrf_model == "fir":
+        assert "fir_delays" in report.__str__()
+    else:
+        assert "fir_delays" not in report.__str__()
+
+
+@pytest.fixture("drift_model", ["cosine", "polynomial"])
+def test_drift_order_in_params(drift_model):
+    """Check that drift_order is in the report when parameter is drift_model is
+    polynomial.
+
+    Also check that it's not in the report when using the default 'cosine'.
+    """
+    shapes, rk = ((7, 7, 7, 5),), 3
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk
+    )
+    model = FirstLevelModel(drift_model=drift_model, drift_order=3)
+    model.fit(fmri_data, design_matrices=design_matrices)
+
+    contrast = np.eye(3)[1]
+    report = model.generate_report(contrast)
+
+    if drift_model == "polynomial":
+        assert "drift_order" in report.__str__()
+    else:
+        assert "drift_order" not in report.__str__()
 
 
 # -----------------------surface tests--------------------------------------- #
