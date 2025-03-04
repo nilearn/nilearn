@@ -341,17 +341,32 @@ def img_3d_ones_mni():
     return _img_3d_ones(shape=_shape_3d_default(), affine=_affine_mni())
 
 
+def _mask_data():
+    mask_data = np.zeros(_shape_3d_default(), dtype="int32")
+    mask_data[3:6, 3:6, 3:6] = 1
+    return mask_data
+
+
 def _img_mask_mni():
     """Return a 3D nifti mask in MNI space with some 1s in the center."""
-    mask = np.zeros(_shape_3d_default(), dtype="int32")
-    mask[3:6, 3:6, 3:6] = 1
-    return Nifti1Image(mask, _affine_mni())
+    return Nifti1Image(_mask_data(), _affine_mni())
 
 
 @pytest.fixture
 def img_mask_mni():
     """Return a 3D nifti mask in MNI space with some 1s in the center."""
     return _img_mask_mni()
+
+
+def _img_mask_eye():
+    """Return a 3D nifti mask with identity affine with 1s in the center."""
+    return Nifti1Image(_mask_data(), _affine_eye())
+
+
+@pytest.fixture
+def img_mask_eye():
+    """Return a 3D nifti mask with identity affine with 1s in the center."""
+    return _img_mask_eye()
 
 
 # ------------------------ 4D IMAGES ------------------------#
@@ -471,11 +486,14 @@ def img_maps():
 
 
 def _img_labels():
-    """Generate fixture for default label image."""
+    """Generate fixture for default label image.
+
+    DO NOT CHANGE n_regions (some tests expect this value).
+    """
     return generate_labeled_regions(
-        shape=(7, 8, 9),
-        affine=np.eye(4),
-        n_regions=9,
+        shape=_shape_3d_default(),
+        affine=_affine_eye(),
+        n_regions=_n_regions(),
     )
 
 
