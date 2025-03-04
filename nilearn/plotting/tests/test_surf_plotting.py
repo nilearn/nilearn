@@ -9,6 +9,7 @@ from unittest import mock
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import pytest
 from matplotlib.figure import Figure
 from numpy.testing import assert_array_equal
@@ -270,13 +271,6 @@ def test_check_surface_plotting_inputs_many_time_points(
             hemi="left",
             bg_map=surf_img_2d(10),
         )
-
-
-def test_plot_surf_surface_image(matplotlib_pyplot, surf_img_1d):
-    """Smoke test some surface plotting functions accept a SurfaceImage."""
-    plot_surf(surf_map=surf_img_1d)
-    plot_surf_stat_map(stat_map=surf_img_1d)
-    plot_surf_roi(roi_map=surf_img_1d)
 
 
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
@@ -641,10 +635,10 @@ def test_add_contours(plotly, surface_image_roi):
     """Test that add_contours updates data in PlotlySurfaceFigure."""
     figure = plot_surf(surface_image_roi.mesh, engine="plotly")
     figure.add_contours(surface_image_roi)
-    assert len(figure.figure.to_dict().get("data")) == 3
+    assert len(figure.figure.to_dict().get("data")) == 4
 
     figure.add_contours(surface_image_roi, levels=[1])
-    assert len(figure.figure.to_dict().get("data")) == 4
+    assert len(figure.figure.to_dict().get("data")) == 5
 
 
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
@@ -688,7 +682,7 @@ def test_add_contours_has_name(plotly, surface_image_roi):
     """Test that contours added to a PlotlySurfaceFigure can be named."""
     figure = plot_surf(surface_image_roi.mesh, engine="plotly")
     figure.add_contours(surface_image_roi, levels=[1], labels=["x"])
-    assert figure.figure.to_dict().get("data")[1].get("name") == "x"
+    assert figure.figure.to_dict().get("data")[2].get("name") == "x"
 
 
 def test_add_contours_lines_duplicated(plotly, surface_image_roi):
@@ -697,7 +691,7 @@ def test_add_contours_lines_duplicated(plotly, surface_image_roi):
     """
     figure = plot_surf(surface_image_roi.mesh, engine="plotly")
     figure.add_contours(surface_image_roi, lines=[{"width": 10}])
-    newlines = figure.figure.to_dict().get("data")[1:]
+    newlines = figure.figure.to_dict().get("data")[2:]
     assert all(x.get("line").__contains__("width") for x in newlines)
 
 
@@ -714,7 +708,7 @@ def test_add_contours_line_properties(plotly, key, value, surface_image_roi):
     """
     figure = plot_surf(surface_image_roi.mesh, engine="plotly")
     figure.add_contours(surface_image_roi, levels=[1], lines=[{key: value}])
-    newline = figure.figure.to_dict().get("data")[1].get("line")
+    newline = figure.figure.to_dict().get("data")[2].get("line")
     assert newline.get(key) == value
 
 
@@ -814,7 +808,7 @@ def test_plot_surf_engine_error(in_memory_mesh):
 
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf(
-    matplotlib_pyplot, engine, tmp_path, rng, in_memory_mesh, bg_map
+    matplotlib_pyplot, engine, tmp_path, in_memory_mesh, bg_map
 ):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
@@ -855,22 +849,18 @@ def test_plot_surf(
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 @pytest.mark.parametrize("view", ["anterior", "posterior"])
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
-def test_plot_surf_hemi_views(
-    matplotlib_pyplot, engine, rng, in_memory_mesh, hemi, view, bg_map
+def test_plot_surf_hemi_views_plotly(
+    matplotlib_pyplot, plotly, in_memory_mesh, hemi, view, bg_map
 ):
     """Check plotting view and hemispheres."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf(
-        in_memory_mesh, bg_map=bg_map, hemi=hemi, view=view, engine=engine
+        in_memory_mesh, bg_map=bg_map, hemi=hemi, view=view, engine="plotly"
     )
 
 
-def test_plot_surf_with_title(matplotlib_pyplot, rng, in_memory_mesh, bg_map):
+def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
     """Check title in figure."""
     display = plot_surf(
         in_memory_mesh, bg_map=bg_map, title="Test title", engine="matplotlib"
@@ -880,7 +870,7 @@ def test_plot_surf_with_title(matplotlib_pyplot, rng, in_memory_mesh, bg_map):
     assert display.axes[0].title._text == "Test title"
 
 
-def test_plot_surf_avg_method(matplotlib_pyplot, rng, in_memory_mesh, bg_map):
+def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
     # Plot with avg_method
     # Test all built-in methods and check
     faces = in_memory_mesh.faces
@@ -964,10 +954,8 @@ def test_plot_surf_error(engine, rng, in_memory_mesh):
 
 @pytest.mark.parametrize("kwargs", [{"avg_method": "mean"}, {"alpha": "auto"}])
 def test_plot_surf_warnings_not_implemented_in_plotly(
-    rng, kwargs, in_memory_mesh, bg_map
+    plotly, kwargs, in_memory_mesh, bg_map
 ):
-    if not is_plotly_installed():
-        pytest.skip("Plotly is not installed; required for this test.")
     with pytest.warns(
         UserWarning, match="is not implemented for the plotly engine"
     ):
@@ -1049,11 +1037,7 @@ def test_plot_surf_stat_map(matplotlib_pyplot, engine, in_memory_mesh, bg_map):
     if not is_plotly_installed() and engine == "plotly":
         pytest.skip("Plotly is not installed; required for this test.")
 
-    # to avoid extra warnings
-    alpha = None
-    if engine == "matplotlib":
-        alpha = 1
-
+    alpha = 1 if engine == "matplotlib" else None
     # Plot mesh with stat map
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, engine=engine)
     plot_surf_stat_map(
@@ -1112,19 +1096,13 @@ def test_plot_surf_stat_map_with_threshold(
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_stat_map_colorbar_tick(
-    matplotlib_pyplot, engine, in_memory_mesh, bg_map
-):
+def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
     """Change colorbar tick format."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf_stat_map(
         in_memory_mesh,
         stat_map=bg_map,
         cbar_tick_format="%.2g",
-        engine=engine,
+        engine="plotly",
     )
 
 
@@ -1237,22 +1215,34 @@ def test_plot_surf_roi(matplotlib_pyplot, engine, surface_image_roi, colorbar):
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
+def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
+    """Test colormap passed as BIDS lookup table."""
+    lut = pd.DataFrame(
+        {"index": [0, 1], "name": ["foo", "bar"], "color": ["#000", "#fff"]}
+    )
+    plot_surf_roi(surface_image_roi.mesh, roi_map=surface_image_roi, cmap=lut)
+
+    lut = pd.DataFrame({"index": [0, 1], "name": ["foo", "bar"]})
+    with pytest.warns(
+        UserWarning, match="No 'color' column found in the look-up table."
+    ):
+        plot_surf_roi(
+            surface_image_roi.mesh, roi_map=surface_image_roi, cmap=lut
+        )
+
+
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
-def test_plot_surf_parcellation(
-    matplotlib_pyplot,
-    engine,
+def test_plot_surf_parcellation_plotly(
+    plotly,
     colorbar,
     surface_image_parcellation,
     cbar_tick_format,
 ):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
     plot_surf_roi(
         surface_image_parcellation.mesh,
         roi_map=surface_image_parcellation,
-        engine=engine,
+        engine="plotly",
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
     )
@@ -1766,6 +1756,7 @@ def test_compute_facecolors_matplotlib():
     bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert bg_min < 0 or bg_max > 1
+
     facecolors_auto_normalized = _compute_facecolors_matplotlib(
         bg_map,
         mesh.faces,
@@ -1773,11 +1764,13 @@ def test_compute_facecolors_matplotlib():
         None,
         alpha,
     )
+
     assert len(facecolors_auto_normalized) == len(mesh.faces)
 
     # Manually set values of background map between 0 and 1
     bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
     assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
+
     facecolors_manually_normalized = _compute_facecolors_matplotlib(
         bg_map_normalized,
         mesh.faces,
@@ -1785,6 +1778,7 @@ def test_compute_facecolors_matplotlib():
         None,
         alpha,
     )
+
     assert len(facecolors_manually_normalized) == len(mesh.faces)
     assert np.allclose(
         facecolors_manually_normalized, facecolors_auto_normalized
@@ -1793,6 +1787,7 @@ def test_compute_facecolors_matplotlib():
     # Scale background map between 0.25 and 0.75
     bg_map_scaled = bg_map_normalized / 2 + 0.25
     assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
+
     facecolors_manually_rescaled = _compute_facecolors_matplotlib(
         bg_map_scaled,
         mesh.faces,
@@ -1800,11 +1795,25 @@ def test_compute_facecolors_matplotlib():
         None,
         alpha,
     )
+
     assert len(facecolors_manually_rescaled) == len(mesh.faces)
     assert not np.allclose(
         facecolors_manually_rescaled, facecolors_auto_normalized
     )
 
+
+def test_compute_facecolors_matplotlib_deprecation():
+    """Test warning deprecation."""
+    fsaverage = fetch_surf_fsaverage()
+    mesh = load_surf_mesh(fsaverage["pial_left"])
+    alpha = "auto"
+    # Surface map whose value in each vertex is
+    # 1 if this vertex's curv > 0
+    # 0 if this vertex's curv is 0
+    # -1 if this vertex's curv < 0
+    bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
+    bg_min, bg_max = np.min(bg_map), np.max(bg_map)
+    assert bg_min < 0 or bg_max > 1
     with pytest.warns(
         DeprecationWarning,
         match=(
@@ -1812,8 +1821,8 @@ def test_compute_facecolors_matplotlib():
             "We recommend setting `darkness` to None"
         ),
     ):
-        facecolors_manually_rescaled = _compute_facecolors_matplotlib(
-            bg_map_scaled,
+        _compute_facecolors_matplotlib(
+            bg_map,
             mesh.faces,
             len(mesh.coordinates),
             0.5,

@@ -27,14 +27,6 @@ Note that more power would be obtained from using a larger sample of subjects.
 
     For more information
     see the :ref:`dataset description <oasis_maps>`.
-..
-    Original authors:
-
-    - Bertrand Thirion, <bertrand.thirion@inria.fr>, July 2018
-    - Elvis Dhomatob, Apr. 2014
-    - Virgile Fritsch, Apr 2014
-    - Gael Varoquaux, Apr 2014
-
 """
 
 # %%
@@ -137,7 +129,6 @@ fig = plt.figure(figsize=(5, 3))
 display = plotting.plot_stat_map(
     z_map,
     threshold=threshold,
-    colorbar=True,
     display_mode="z",
     cut_coords=[-4, 26],
     figure=fig,
@@ -156,7 +147,6 @@ _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 plotting.plot_stat_map(
     z_map,
     threshold=threshold,
-    colorbar=True,
     title="sex effect on gray matter density (FDR = .05)",
 )
 

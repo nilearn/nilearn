@@ -34,5 +34,5 @@ partial_correlation = netmats.correlation_matrices.to_numpy()
 from nilearn.plotting import plot_matrix, show
 
 title = "Partial correlation matrices\n for d=300"
-display = plot_matrix(partial_correlation, colorbar=True, title=title)
+display = plot_matrix(partial_correlation, title=title)
 show()

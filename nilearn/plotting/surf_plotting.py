@@ -8,6 +8,7 @@ from warnings import warn
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib import gridspec
 from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import make_axes
@@ -21,6 +22,7 @@ from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     check_surface_plotting_inputs,
+    create_colormap_from_lut,
     sanitize_hemi_for_surface_image,
     save_figure_if_needed,
 )
@@ -776,7 +778,7 @@ def plot_surf(
     engine="matplotlib",
     cmap=None,
     symmetric_cmap=False,
-    colorbar=False,
+    colorbar=True,
     avg_method=None,
     threshold=None,
     alpha=None,
@@ -833,15 +835,7 @@ def plot_surf(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` \
-             or :obj:`~nilearn.surface.SurfaceImage` or None,\
-             default=None
-        Background image to be plotted on the :term:`mesh`
-        underneath the surf_data in grayscale,
-        most likely a sulcal depth map for realistic shading.
-        If the map contains values outside [0, 1],
-        it will be rescaled such that all values are in [0, 1].
-        Otherwise, it will not be modified.
+    %(bg_map)s
 
     %(hemi)s
 
@@ -880,7 +874,7 @@ def plot_surf(
         .. versionadded:: 0.9.0
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     %(avg_method)s
 
@@ -1383,15 +1377,7 @@ def plot_surf_stat_map(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or \
-             :obj:`~nilearn.surface.SurfaceImage` or None,\
-             default=None
-        Background image to be plotted on the :term:`mesh` underneath
-        the stat_map in grayscale, most likely a sulcal depth map
-        for realistic shading.
-        If the map contains values outside [0, 1], it will be
-        rescaled such that all values are in [0, 1]. Otherwise,
-        it will not be modified.
+    %(bg_map)s
 
     %(hemi)s
 
@@ -1644,7 +1630,7 @@ def _check_views(views) -> list:
 
 
 def _colorbar_from_array(
-    array, vmin, vmax, threshold, symmetric_cbar=True, cmap="cold_hot"
+    array, vmin, vmax, threshold, symmetric_cbar=True, cmap="RdBu_r"
 ):
     """Generate a custom colorbar for an array.
 
@@ -1764,21 +1750,31 @@ def plot_img_on_surf(
         display mode. Order is preserved, and left and right hemispheres
         are shown on the left and right sides of the figure.
         Will default to ``['lateral', 'medial']`` if ``None`` is passed.
+
     %(output_file)s
+
     %(title)s
+
     %(colorbar)s
 
         .. note::
             This function uses a symmetric colorbar for the statistical map.
 
         Default=True.
+
     %(vmin)s
+
     %(vmax)s
+
     %(threshold)s
+
     %(symmetric_cbar)s
+
     %(cmap)s
         Default="RdBu_r".
+
     %(cbar_tick_format)s
+
     kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.
 
@@ -1940,6 +1936,7 @@ def plot_surf_roi(
     output_file=None,
     axes=None,
     figure=None,
+    colorbar=True,
     **kwargs,
 ):
     """Plot ROI on a surface :term:`mesh` with optional background.
@@ -1984,15 +1981,7 @@ def plot_surf_roi(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
-    bg_map : :obj:`str` or :class:`numpy.ndarray` or \
-             :obj:`~nilearn.surface.SurfaceImage` or None,\
-             default=None
-        Background image to be plotted on the :term:`mesh` underneath
-        the stat_map in grayscale, most likely a sulcal depth map for
-        realistic shading.
-        If the map contains values outside [0, 1], it will be
-        rescaled such that all values are in [0, 1]. Otherwise,
-        it will not be modified.
+    %(bg_map)s
 
     %(hemi)s
 
@@ -2030,7 +2019,7 @@ def plot_surf_roi(
         Threshold regions that are labeled 0.
         If you want to use 0 as a label, set threshold to None.
 
-    %(cmap)s
+    %(cmap_lut)s
         Default='gist_ncar'.
 
     %(cbar_tick_format)s
@@ -2162,6 +2151,9 @@ def plot_surf_roi(
     if cbar_tick_format == "auto":
         cbar_tick_format = "." if engine == "plotly" else "%i"
 
+    if isinstance(cmap, pd.DataFrame):
+        cmap = create_colormap_from_lut(cmap)
+
     display = plot_surf(
         mesh,
         surf_map=roi,
@@ -2183,6 +2175,7 @@ def plot_surf_roi(
         output_file=output_file,
         axes=axes,
         figure=figure,
+        colorbar=colorbar,
         **kwargs,
     )
 

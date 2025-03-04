@@ -1,55 +1,103 @@
 """
-Matplotlib colormaps in Nilearn
-===============================
+Colormaps in Nilearn
+====================
 
-Visualize HCP connectome workbench color maps shipped with Nilearn
-which can be used for plotting brain images on surface.
+Here we show some of the colormaps that ship with Nilearn
+(some adapted from the HCP connectome workbench color maps).
 
-See :ref:`surface-plotting` for surface plotting details.
+This example show also some of the pros and cons of some of those maps.
 """
 
-# %%
-# Plot color maps
-# ---------------
+import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn.plotting import show
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 
-nmaps = len(nilearn_cmaps)
-a = np.outer(np.arange(0, 1, 0.01), np.ones(10))
 
-# Initialize the figure
-import matplotlib.pyplot as plt
+# %%
+# Let's create a function to help us plot all the colormaps with their names.
+#
+def plot_color_gradients(color_maps):
+    """Create figure and adjust figure height to number of colormaps.
 
-plt.figure(figsize=(10, 4.2))
-plt.subplots_adjust(top=0.4, bottom=0.05, left=0.01, right=0.99)
+    Adapted from the matplolib documentation.
+    """
+    gradient = np.linspace(0, 1, 256)
+    gradient = np.vstack((gradient, gradient))
 
-for index, cmap in enumerate(nilearn_cmaps):
-    plt.subplot(1, nmaps + 1, index + 1)
-    plt.imshow(a, cmap=nilearn_cmaps[cmap])
-    plt.axis("off")
-    plt.title(cmap, fontsize=10, va="bottom", rotation=90)
+    color_map_names = sorted(color_maps)
+
+    nrows = len(color_map_names)
+    figh = 0.3 + 0.2 + (nrows + (nrows - 1) * 0.1) * 0.22
+    fig, axs = plt.subplots(nrows=nrows + 1, figsize=(15, figh))
+    fig.subplots_adjust(
+        top=1 - 0.3 / figh, bottom=0.2 / figh, left=0.22, right=0.99
+    )
+
+    for ax, name in zip(axs, color_map_names):
+        ax.imshow(gradient, aspect="auto", cmap=name)
+        ax.text(
+            -0.01,
+            0.5,
+            name,
+            va="center",
+            ha="right",
+            fontsize=12,
+            transform=ax.transAxes,
+        )
+
+    # Turn off *all* ticks & spines, not just the ones with colormaps.
+    for ax in axs:
+        ax.set_axis_off()
+
+
+# %%
+# Plot matplotlib color maps
+# --------------------------
+plot_color_gradients(nilearn_cmaps)
 
 # %%
 # Plot matplotlib color maps
 # --------------------------
 
-plt.figure(figsize=(10, 5))
-plt.subplots_adjust(top=0.8, bottom=0.05, left=0.01, right=0.99)
 deprecated_cmaps = ["Vega10", "Vega20", "Vega20b", "Vega20c", "spectral"]
 m_cmaps = [
     m
     for m in plt.cm.datad
     if not m.endswith("_r") and m not in deprecated_cmaps
 ]
-m_cmaps.sort()
 
-for index, cmap in enumerate(m_cmaps):
-    plt.subplot(1, len(m_cmaps) + 1, index + 1)
-    plt.imshow(a, cmap=plt.get_cmap(cmap), aspect="auto")
-    plt.axis("off")
-    plt.title(cmap, fontsize=10, va="bottom", rotation=90)
+plot_color_gradients(m_cmaps)
+
+show()
+
+# %%
+# Choosing colormaps
+# ------------------
+# Some of the `cyclic colormaps <https://matplotlib.org/stable/users/explain/colors/colormaps.html#cyclic>`_
+# shipped with nilearn (like ``"cold_hot"``) will have the same values
+# for very large and very small values,
+# making it hard to distinguish 'activations' from 'deactivations'.
+#
+# In this case, you may want to use
+# a proper `diverging colormaps <https://matplotlib.org/stable/users/explain/colors/colormaps.html#diverging>`_
+# (like ``"RdBu_r"``, the default for many Nilearn plotting functions).
+#
+# Whatever colormap you choose,
+# we recommend you check that it is perceptually uniform
+# (equal steps in data are perceived as equal steps in the color space)
+# (see `the matplotlib documentation <https://matplotlib.org/stable/users/explain/colors/colormaps.html#lightness-of-matplotlib-colormaps>`
+# for more information).
+#
+
+from nilearn.datasets import load_sample_motor_activation_image
+from nilearn.plotting import plot_stat_map
+
+stat_map = load_sample_motor_activation_image()
+
+plot_stat_map(stat_map, cmap="RdBu_r", threshold=6, title="diverging colormap")
+plot_stat_map(stat_map, cmap="cold_hot", threshold=6, title="cyclic colormap")
 
 show()
 

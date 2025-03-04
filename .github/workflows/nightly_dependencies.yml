@@ -89,7 +89,9 @@ jobs:
             if: steps.check-commit-msg.outputs.skip == 'false'
             id: nightly
             continue-on-error: true
-            run: tox run --list-dependencies -e nightly -- nilearn
+            run: |
+                tox run --list-dependencies -e nightly -- nilearn
+                tox run -e plot_test_timing
 
         -   name: Upload test report
             if: success() || failure()
@@ -97,6 +99,13 @@ jobs:
             with:
                 name: nightly_report.html
                 path: report.html
+
+        -   name: Upload test timings
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: pytest_output
+                path: results/pytest_output
 
         -   name: Create issue
             # Do not open issues when on a PR

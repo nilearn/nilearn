@@ -20,10 +20,12 @@ from __future__ import annotations
 
 import pathlib
 import sys
+from pathlib import Path
 from typing import Callable
 
 import numpy as np
 from joblib.memory import Memory
+from nibabel import Nifti1Image
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
@@ -35,12 +37,14 @@ Detrend = bool
 DrawCross = bool
 KeepMaskedLabels = bool
 KeepMaskedMaps = bool
+NiimgLike = (Nifti1Image, str, Path)
 Radiological = bool
 Resume = bool
 Standardize = bool
 StandardizeConfounds = bool
 Tfce = bool
 TwoSidedTest = bool
+
 
 # TODO update when dropping python 3.9
 if sys.version_info[1] < 10:

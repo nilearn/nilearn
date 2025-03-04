@@ -5,8 +5,6 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 Only matplotlib is required.
 """
 
-# Author: Gael Varoquaux, Chris Filo Gorgolewski
-
 import collections.abc
 import functools
 import numbers
@@ -15,6 +13,7 @@ import warnings
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
@@ -46,6 +45,7 @@ from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
+    create_colormap_from_lut,
     save_figure_if_needed,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
@@ -323,7 +323,7 @@ def _plot_img_with_bg(
             bg_img,
             vmin=bg_vmin,
             vmax=bg_vmax,
-            cmap=plt.cm.gray,
+            cmap="gray",
             interpolation=interpolation,
         )
 
@@ -400,7 +400,7 @@ def plot_img(
     annotate=True,
     draw_cross=True,
     black_bg=False,
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%.2g",
     resampling_interpolation="continuous",
     bg_img=None,
@@ -441,7 +441,7 @@ def plot_img(
         Default=False.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -677,8 +677,8 @@ def plot_anat(
     draw_cross=True,
     black_bg="auto",
     dim="auto",
-    cmap=plt.cm.gray,
-    colorbar=False,
+    cmap="gray",
+    colorbar=True,
     cbar_tick_format="%.2g",
     radiological=False,
     vmin=None,
@@ -721,7 +721,7 @@ def plot_anat(
         Default='auto'.
 
     %(cmap)s
-        Default=`plt.cm.gray`.
+        Default=`gray`.
 
     colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
@@ -807,9 +807,9 @@ def plot_epi(
     annotate=True,
     draw_cross=True,
     black_bg=True,
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%.2g",
-    cmap=plt.cm.gray,
+    cmap="gray",
     vmin=None,
     vmax=None,
     radiological=False,
@@ -851,7 +851,7 @@ def plot_epi(
         Ex: use "%%i" to display as integers.
 
     %(cmap)s
-        Default=`plt.cm.gray`.
+        Default=`gray`.
 
     %(vmin)s
 
@@ -964,9 +964,9 @@ def plot_roi(
     black_bg="auto",
     threshold=0.5,
     alpha=0.7,
-    cmap=plt.cm.gist_ncar,
+    cmap="gist_ncar",
     dim="auto",
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%i",
     vmin=None,
     vmax=None,
@@ -1018,8 +1018,8 @@ def plot_roi(
         Alpha sets the transparency of the color inside the filled
         contours.
 
-    %(cmap)s
-        Default=`plt.cm.gist_ncar`.
+    %(cmap_lut)s
+        Default=`gist_ncar`.
 
     %(dim)s
         Default='auto'.
@@ -1096,6 +1096,9 @@ def plot_roi(
         bg_img, dim=dim, black_bg=black_bg
     )
 
+    if isinstance(cmap, pd.DataFrame):
+        cmap = create_colormap_from_lut(cmap)
+
     display = _plot_img_with_bg(
         img=roi_img,
         bg_img=bg_img,
@@ -1147,8 +1150,8 @@ def plot_prob_atlas(
     draw_cross=True,
     black_bg="auto",
     dim="auto",
-    colorbar=False,
-    cmap=plt.cm.gist_rainbow,
+    colorbar=True,
+    cmap="gist_rainbow",
     vmin=None,
     vmax=None,
     alpha=0.7,
@@ -1230,10 +1233,10 @@ def plot_prob_atlas(
         Default='auto'.
 
     %(cmap)s
-        Default=`plt.cm.gist_rainbow`.
+        Default=`gist_rainbow`.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     %(vmin)s
 
@@ -1554,7 +1557,7 @@ def plot_glass_brain(
     stat_map_img,
     output_file=None,
     display_mode="ortho",
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%.2g",
     figure=None,
     axes=None,
@@ -1600,7 +1603,7 @@ def plot_glass_brain(
         'lzry', 'lyrz'.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -1744,7 +1747,7 @@ def plot_connectome(
     node_coords,
     node_color="auto",
     node_size=50,
-    edge_cmap=cm.bwr,
+    edge_cmap="RdBu_r",
     edge_vmin=None,
     edge_vmax=None,
     edge_threshold=None,
@@ -1758,7 +1761,7 @@ def plot_connectome(
     alpha=0.7,
     edge_kwargs=None,
     node_kwargs=None,
-    colorbar=False,
+    colorbar=True,
     radiological=False,
 ):
     """Plot connectome on top of the brain glass schematics.
@@ -1786,7 +1789,7 @@ def plot_connectome(
     node_size : scalar or array_like, default=50
         Size(s) of the nodes in points^2.
 
-    edge_cmap : colormap, default=cm.bwr
+    edge_cmap : colormap, default="RdBu_r"
         Colormap used for representing the strength of the edges.
 
     edge_vmin, edge_vmax : :obj:`float` or None, default=None
@@ -1825,8 +1828,10 @@ def plot_connectome(
     node_kwargs : :obj:`dict` or None, default=None
         Will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go.
+
     %(colorbar)s
-        Default=False.
+        Default=True.
+
     %(radiological)s
 
     Returns
@@ -1877,7 +1882,7 @@ def plot_markers(
     node_values,
     node_coords,
     node_size="auto",
-    node_cmap=plt.cm.gray,
+    node_cmap="gray",
     node_vmin=None,
     node_vmax=None,
     node_threshold=None,
@@ -1911,7 +1916,7 @@ def plot_markers(
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely proportional to the number of nodes.
 
-    node_cmap : :obj:`str` or colormap, default=plt.cm.gray.
+    node_cmap : :obj:`str` or colormap, default="gray".
         Colormap used to represent the node measure.
 
     node_vmin : :obj:`float` or None, default=None
@@ -2047,7 +2052,7 @@ def plot_carpet(
     vmax=None,
     title=None,
     cmap="gray",
-    cmap_labels=plt.cm.gist_ncar,
+    cmap_labels="gist_ncar",
     standardize=True,
 ):
     """Plot an image representation of :term:`voxel` intensities across time.
@@ -2093,7 +2098,7 @@ def plot_carpet(
         Default=`gray`.
 
     cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
-                  default=`plt.cm.gist_ncar`
+                  default=`gist_ncar`
         If ``mask_img`` corresponds to an atlas, then cmap_labels
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
@@ -2296,7 +2301,7 @@ def plot_carpet(
 def plot_img_comparison(
     ref_imgs,
     src_imgs,
-    masker,
+    masker=None,
     plot_hist=True,
     log=True,
     ref_label="image set 1",

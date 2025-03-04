@@ -1,7 +1,4 @@
-"""Predefined denoising strategies.
-
-Authors: Hao-Ting Wang, Pierre Bellec
-"""
+"""Predefined denoising strategies."""
 
 import warnings
 

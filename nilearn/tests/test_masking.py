@@ -1,7 +1,5 @@
 """Test the mask-extracting utilities."""
 
-# Authors: Ana Luisa Pinho, Jerome Dockes, NicolasGensollen
-
 import warnings
 
 import numpy as np
@@ -28,9 +26,11 @@ from nilearn.masking import (
     compute_multi_epi_mask,
     extrapolate_out_mask,
     intersect_masks,
+    load_mask_img,
     unmask,
     unmask_from_to_3d_array,
 )
+from nilearn.surface.surface import SurfaceImage
 
 np_version = (
     np.version.full_version
@@ -62,6 +62,35 @@ def _cov_conf(tseries, conf):
     _ = StandardScaler().fit_transform(tseries)
     cov_mat = np.dot(tseries.T, conf_n)
     return cov_mat
+
+
+def test_load_mask_img_error_inputs(surf_img_2d, img_4d_ones_eye):
+    """Check input validation of load_mask_img."""
+    with pytest.raises(
+        TypeError, match="a 3D/4D Niimg-like object or a SurfaceImage"
+    ):
+        load_mask_img(1)
+
+    with pytest.raises(
+        TypeError,
+        match="Expected dimension is 3D and you provided a 4D image.",
+    ):
+        load_mask_img(img_4d_ones_eye)
+
+    with pytest.raises(
+        ValueError, match="Data for each part of .* should be 1D."
+    ):
+        load_mask_img(surf_img_2d())
+
+
+def test_load_mask_img_surface(surf_mask_1d):
+    """Check load_mask_img returns a boolean surface image \
+    when SurfaceImage is used as input.
+    """
+    mask, _ = load_mask_img(surf_mask_1d)
+    assert isinstance(mask, SurfaceImage)
+    for hemi in mask.data.parts.values():
+        assert hemi.dtype == "bool"
 
 
 def test_high_variance_confounds():

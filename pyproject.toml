@@ -84,7 +84,9 @@ test = [
     "pytest-cov",
     "pytest-randomly",
     "pytest-reporter-html1>=0.9.2",
-    "pytest-xdist[psutil]"
+    "pytest-xdist[psutil]",
+    "pytest-csv",
+    "pytest-timeout"
 ]
 
 [project.urls]
@@ -115,6 +117,7 @@ max-line-length = 120
 version-file = "nilearn/_version.py"
 
 [tool.hatch.build.targets.wheel]
+exclude = ["nilearn/plotting/tests/baseline"]
 packages = ["nilearn"]
 
 [tool.hatch.version]
@@ -162,11 +165,12 @@ module = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --durations=0 --template=maint_tools/templates/index.html"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --template=maint_tools/templates/index.html --timeout=45"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
 minversion = "6.0"
+timeout = 3600  # test session should not last more than 1 hour
 xfail_strict = true
 
 [tool.ruff]
@@ -251,7 +255,7 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 22
+max-complexity = 21
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
@@ -262,14 +266,19 @@ max-complexity = 22
 "nilearn/connectome/*" = ["B028"]  # 5 errors to fix
 "nilearn/connectome/**/{tests}/*" = ["D103"]  # 35 errors to fix
 "nilearn/datasets/*" = ["B028"]  # 23 errors to fix
-"nilearn/datasets/**/{tests}/*" = ["D103"]  # 138 errors to fix
+"nilearn/datasets/tests/test_atlas.py" = ["D103"]
+"nilearn/datasets/tests/test_func.py" = ["D103"]
+"nilearn/datasets/tests/test_mocking_autoused.py" = ["D103"]
+"nilearn/datasets/tests/test_neurovault.py" = ["D103"]
+"nilearn/datasets/tests/test_struct.py" = ["D103"]
+"nilearn/datasets/tests/test_testing.py" = ["D103"]
+"nilearn/datasets/tests/test_utils.py" = ["D103"]
 "nilearn/decoding/*" = ["B028"]  # 5 errors to fix
 "nilearn/decoding/**/{tests}/*" = ["D103"]  # 81 errors to fix
 "nilearn/decomposition/**/{tests}/*" = ["D103"]  # 32 errors to fix
 "nilearn/glm/*" = ["B028"]  # 19 errors to fix
 "nilearn/glm/**/{tests}/*" = ["D103"]  # 154 errors to fix
 "nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
-"nilearn/interfaces/**/{tests}/*" = ["D103"]  # 75 errors to fix
 "nilearn/maskers/*" = ["B028"]  # 17 errors to fix
 "nilearn/mass_univariate/*" = ["B028"]  # 4 errors to fix
 "nilearn/plotting/*" = ["B028"]  # 18 errors to fix
@@ -288,7 +297,7 @@ convention = "numpy"
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 26
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
-max-branches = 24
+max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements

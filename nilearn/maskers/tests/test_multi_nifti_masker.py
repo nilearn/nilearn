@@ -1,6 +1,5 @@
 """Test the multi_nifti_masker module."""
 
-# Author: Gael Varoquaux, Ana Luisa Pinho
 import shutil
 from tempfile import mkdtemp
 
@@ -10,7 +9,7 @@ from joblib import Memory, hash
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
