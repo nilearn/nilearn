@@ -8,11 +8,8 @@ from scipy.sparse import issparse
 from scipy.stats import scoreatpercentile
 
 from nilearn._utils.param_validation import check_threshold
-from nilearn.plotting.displays._axes import GlassBrainAxes
-from nilearn.plotting.displays._slicers import (
-    OrthoSlicer,
-    get_create_display_fun,
-)
+from nilearn.plotting.displays._utils import get_create_display_fun
+from nilearn.plotting.displays import GlassBrainAxes, OrthoSlicer
 
 
 class OrthoProjector(OrthoSlicer):
