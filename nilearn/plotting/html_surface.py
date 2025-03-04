@@ -7,8 +7,7 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 
-from nilearn._utils import fill_doc
-from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
 from nilearn.plotting._utils import (

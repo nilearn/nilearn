@@ -20,6 +20,7 @@ from nibabel.spatialimages import SpatialImage
 from scipy.ndimage import binary_fill_holes
 
 from nilearn._utils import (
+    as_ndarray,
     check_niimg_3d,
     check_niimg_4d,
     compare_version,
@@ -29,7 +30,6 @@ from nilearn._utils import (
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn.image import (

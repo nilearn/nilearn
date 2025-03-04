@@ -17,8 +17,8 @@ from nilearn.plotting.html_document import (  # noqa: F401
 )
 from nilearn.surface import load_surf_mesh
 
-from .._utils.extmath import fast_abs_percentile
-from .._utils.param_validation import check_threshold
+from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.param_validation import check_threshold
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 

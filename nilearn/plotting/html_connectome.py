@@ -8,8 +8,8 @@ from scipy import sparse
 
 from nilearn.plotting.html_document import HTMLDocument
 
-from .. import datasets
-from .js_plotting_utils import (
+from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
     colorscale,
     encode,
@@ -223,7 +223,7 @@ def _get_connectome(
 
 def _make_connectome_html(connectome_info, embed_js=True):
     plot_info = {"connectome": connectome_info}
-    mesh = datasets.fetch_surf_fsaverage()
+    mesh = fetch_surf_fsaverage()
     for hemi in ["pial_left", "pial_right"]:
         plot_info[hemi] = mesh_to_plotly(mesh[hemi])
     as_json = json.dumps(plot_info)

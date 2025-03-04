@@ -20,7 +20,10 @@ from nilearn.surface.surface import (
     load_surf_mesh,
 )
 
-from .test_js_plotting_utils import check_colors, check_html
+from nilearn.plotting.tests.test_js_plotting_utils import (
+    check_colors,
+    check_html
+)
 
 
 @pytest.fixture(scope="session")
