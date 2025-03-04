@@ -14,15 +14,14 @@ from nilearn.plotting.html_surface import (
     view_img_on_surf,
 )
 from nilearn.plotting.js_plotting_utils import decode
+from nilearn.plotting.tests.test_js_plotting_utils import (
+    check_colors,
+    check_html,
+)
 from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     load_surf_data,
     load_surf_mesh,
-)
-
-from nilearn.plotting.tests.test_js_plotting_utils import (
-    check_colors,
-    check_html
 )
 
 

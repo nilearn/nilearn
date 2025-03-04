@@ -12,7 +12,7 @@ from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 from nilearn._utils import (
     constrained_layout_kwargs,
     fill_doc,
-    rename_parameters
+    rename_parameters,
 )
 from nilearn._utils.glm import check_and_load_tables
 from nilearn.glm.contrasts import expression_to_contrast_vector
