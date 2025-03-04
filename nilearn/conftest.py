@@ -807,4 +807,3 @@ def transparency_image(rng, affine_mni):
     data_rng = rng.random((7, 7, 3)) * 10 - 5
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
     return Nifti1Image(data_positive, affine_mni)
-

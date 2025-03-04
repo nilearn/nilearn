@@ -137,7 +137,6 @@ def plot_img_comparison(
             (ax1, ax2) = axes
             fig = ax1.get_figure()
 
-
         ref_data, src_data = _extract_data_2_images(
             ref_img, src_img, masker=masker
         )
