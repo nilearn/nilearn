@@ -5,8 +5,6 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 Only matplotlib is required.
 """
 
-# Author: Gael Varoquaux, Chris Filo Gorgolewski
-
 import collections.abc
 import functools
 import numbers
@@ -15,6 +13,7 @@ import warnings
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
@@ -46,6 +45,7 @@ from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
+    create_colormap_from_lut,
     save_figure_if_needed,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
@@ -179,6 +179,8 @@ def _plot_img_with_bg(
     brain_color=(0.5, 0.5, 0.5),
     decimals=False,
     radiological=False,
+    transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Refer to the docstring of plot_img for parameters not listed below.
@@ -242,6 +244,10 @@ def _plot_img_with_bg(
         the slice position is integer without decimal point.
 
     %(radiological)s
+
+    %(transparency)s
+
+    %(transparency_range)s
 
     kwargs :  extra keyword arguments, optional
         Extra keyword arguments passed
@@ -323,7 +329,7 @@ def _plot_img_with_bg(
             bg_img,
             vmin=bg_vmin,
             vmax=bg_vmax,
-            cmap=plt.cm.gray,
+            cmap="gray",
             interpolation=interpolation,
         )
 
@@ -338,6 +344,8 @@ def _plot_img_with_bg(
             cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax,
             cbar_tick_format=cbar_tick_format,
+            transparency=transparency,
+            transparency_range=transparency_range,
             **kwargs,
         )
     if radiological:
@@ -409,6 +417,8 @@ def plot_img(
     radiological=False,
     decimals=False,
     cmap="gray",
+    transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Plot cuts of a given image.
@@ -468,6 +478,10 @@ def plot_img(
     %(cmap)s
         default="gray"
 
+    %(transparency)s
+
+    %(transparency_range)s
+
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
@@ -526,6 +540,8 @@ def plot_img(
         radiological=radiological,
         decimals=decimals,
         cmap=cmap,
+        transparency=transparency,
+        transparency_range=transparency_range,
         **kwargs,
     )
 
@@ -677,7 +693,7 @@ def plot_anat(
     draw_cross=True,
     black_bg="auto",
     dim="auto",
-    cmap=plt.cm.gray,
+    cmap="gray",
     colorbar=False,
     cbar_tick_format="%.2g",
     radiological=False,
@@ -721,7 +737,7 @@ def plot_anat(
         Default='auto'.
 
     %(cmap)s
-        Default=`plt.cm.gray`.
+        Default=`gray`.
 
     colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
@@ -809,7 +825,7 @@ def plot_epi(
     black_bg=True,
     colorbar=False,
     cbar_tick_format="%.2g",
-    cmap=plt.cm.gray,
+    cmap="gray",
     vmin=None,
     vmax=None,
     radiological=False,
@@ -851,7 +867,7 @@ def plot_epi(
         Ex: use "%%i" to display as integers.
 
     %(cmap)s
-        Default=`plt.cm.gray`.
+        Default=`gray`.
 
     %(vmin)s
 
@@ -964,7 +980,7 @@ def plot_roi(
     black_bg="auto",
     threshold=0.5,
     alpha=0.7,
-    cmap=plt.cm.gist_ncar,
+    cmap="gist_ncar",
     dim="auto",
     colorbar=False,
     cbar_tick_format="%i",
@@ -1018,8 +1034,8 @@ def plot_roi(
         Alpha sets the transparency of the color inside the filled
         contours.
 
-    %(cmap)s
-        Default=`plt.cm.gist_ncar`.
+    %(cmap_lut)s
+        Default=`gist_ncar`.
 
     %(dim)s
         Default='auto'.
@@ -1096,6 +1112,9 @@ def plot_roi(
         bg_img, dim=dim, black_bg=black_bg
     )
 
+    if isinstance(cmap, pd.DataFrame):
+        cmap = create_colormap_from_lut(cmap)
+
     display = _plot_img_with_bg(
         img=roi_img,
         bg_img=bg_img,
@@ -1148,7 +1167,7 @@ def plot_prob_atlas(
     black_bg="auto",
     dim="auto",
     colorbar=False,
-    cmap=plt.cm.gist_rainbow,
+    cmap="gist_rainbow",
     vmin=None,
     vmax=None,
     alpha=0.7,
@@ -1230,7 +1249,7 @@ def plot_prob_atlas(
         Default='auto'.
 
     %(cmap)s
-        Default=`plt.cm.gist_rainbow`.
+        Default=`gist_rainbow`.
 
     %(colorbar)s
         Default=False.
@@ -1409,6 +1428,8 @@ def plot_stat_map(
     vmax=None,
     radiological=False,
     resampling_interpolation="continuous",
+    transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Plot cuts of an ROI/mask image.
@@ -1472,6 +1493,10 @@ def plot_stat_map(
         Default='continuous'.
 
     %(radiological)s
+
+    %(transparency)s
+
+    %(transparency_range)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1543,6 +1568,8 @@ def plot_stat_map(
         cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
         radiological=radiological,
+        transparency=transparency,
+        transparency_range=transparency_range,
         **kwargs,
     )
 
@@ -1570,6 +1597,7 @@ def plot_glass_brain(
     symmetric_cbar="auto",
     resampling_interpolation="continuous",
     radiological=False,
+    transparency=None,
     **kwargs,
 ):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
@@ -1645,6 +1673,10 @@ def plot_glass_brain(
         Default='continuous'.
 
     %(radiological)s
+
+    %(transparency)s
+
+    %(transparency_range)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1729,6 +1761,7 @@ def plot_glass_brain(
         cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
         radiological=radiological,
+        transparency=transparency,
         **kwargs,
     )
 
@@ -1744,7 +1777,7 @@ def plot_connectome(
     node_coords,
     node_color="auto",
     node_size=50,
-    edge_cmap=cm.bwr,
+    edge_cmap="RdBu_r",
     edge_vmin=None,
     edge_vmax=None,
     edge_threshold=None,
@@ -1786,7 +1819,7 @@ def plot_connectome(
     node_size : scalar or array_like, default=50
         Size(s) of the nodes in points^2.
 
-    edge_cmap : colormap, default=cm.bwr
+    edge_cmap : colormap, default="RdBu_r"
         Colormap used for representing the strength of the edges.
 
     edge_vmin, edge_vmax : :obj:`float` or None, default=None
@@ -1877,7 +1910,7 @@ def plot_markers(
     node_values,
     node_coords,
     node_size="auto",
-    node_cmap=plt.cm.gray,
+    node_cmap="gray",
     node_vmin=None,
     node_vmax=None,
     node_threshold=None,
@@ -1911,7 +1944,7 @@ def plot_markers(
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely proportional to the number of nodes.
 
-    node_cmap : :obj:`str` or colormap, default=plt.cm.gray.
+    node_cmap : :obj:`str` or colormap, default="gray".
         Colormap used to represent the node measure.
 
     node_vmin : :obj:`float` or None, default=None
@@ -2047,7 +2080,7 @@ def plot_carpet(
     vmax=None,
     title=None,
     cmap="gray",
-    cmap_labels=plt.cm.gist_ncar,
+    cmap_labels="gist_ncar",
     standardize=True,
 ):
     """Plot an image representation of :term:`voxel` intensities across time.
@@ -2093,7 +2126,7 @@ def plot_carpet(
         Default=`gray`.
 
     cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
-                  default=`plt.cm.gist_ncar`
+                  default=`gist_ncar`
         If ``mask_img`` corresponds to an atlas, then cmap_labels
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.

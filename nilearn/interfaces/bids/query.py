@@ -227,12 +227,9 @@ def get_bids_files(
     """
     main_path = Path(main_path)
     if sub_folder:
-        ses_level = ""
         files = main_path / "sub-*" / "ses-*"
         session_folder_exists = glob.glob(str(files))
-        if session_folder_exists:
-            ses_level = "ses-*"
-
+        ses_level = "ses-*" if session_folder_exists else ""
         files = (
             main_path
             / f"sub-{sub_label}"

@@ -8,7 +8,6 @@ from scipy.sparse import issparse
 from scipy.stats import scoreatpercentile
 
 from nilearn._utils.param_validation import check_threshold
-from nilearn.plotting import cm
 from nilearn.plotting.displays._axes import GlassBrainAxes
 from nilearn.plotting.displays._slicers import (
     OrthoSlicer,
@@ -24,14 +23,14 @@ class OrthoProjector(OrthoSlicer):
     :func:`~nilearn.plotting.plot_glass_brain`, by setting
     ``display_mode='ortho'``:
 
-      .. code-block:: python
+    .. code-block:: python
 
-          from nilearn.datasets import load_mni152_template
-          from nilearn.plotting import plot_glass_brain
+        from nilearn.datasets import load_mni152_template
+        from nilearn.plotting import plot_glass_brain
 
-          img = load_mni152_template()
-          # display is an instance of the OrthoProjector class
-          display = plot_glass_brain(img, display_mode="ortho")
+        img = load_mni152_template()
+        # display is an instance of the OrthoProjector class
+        display = plot_glass_brain(img, display_mode="ortho")
 
     Attributes
     ----------
@@ -134,7 +133,7 @@ class OrthoProjector(OrthoSlicer):
         node_coords,
         node_color="auto",
         node_size=50,
-        edge_cmap=cm.bwr,
+        edge_cmap="RdBu_r",
         edge_vmin=None,
         edge_vmax=None,
         edge_threshold=None,
@@ -161,9 +160,8 @@ class OrthoProjector(OrthoSlicer):
         node_size : scalar or array_like, default=50
             Size(s) of the nodes in points^2.
 
-        edge_cmap : :class:`~matplotlib.colors.Colormap`, default=cm.bwr
+        edge_cmap : :class:`~matplotlib.colors.Colormap`, default="RdBu_r"
             Colormap used for representing the strength of the edges.
-
 
         edge_vmin, edge_vmax : :obj:`float`, optional
             - If not ``None``, either or both of these values will be used
@@ -772,34 +770,34 @@ def get_projector(display_mode):
 
         The projector corresponding to the requested display mode:
 
-            - "ortho": Returns an
-              :class:`~nilearn.plotting.displays.OrthoProjector`.
-            - "xz": Returns a
-              :class:`~nilearn.plotting.displays.XZProjector`.
-            - "yz": Returns a
-              :class:`~nilearn.plotting.displays.YZProjector`.
-            - "yx": Returns a
-              :class:`~nilearn.plotting.displays.YXProjector`.
-            - "x": Returns a
-              :class:`~nilearn.plotting.displays.XProjector`.
-            - "y": Returns a
-              :class:`~nilearn.plotting.displays.YProjector`.
-            - "z": Returns a
-              :class:`~nilearn.plotting.displays.ZProjector`.
-            - "lzry": Returns a
-              :class:`~nilearn.plotting.displays.LZRYProjector`.
-            - "lyrz": Returns a
-              :class:`~nilearn.plotting.displays.LYRZProjector`.
-            - "lyr": Returns a
-              :class:`~nilearn.plotting.displays.LYRProjector`.
-            - "lzr": Returns a
-              :class:`~nilearn.plotting.displays.LZRProjector`.
-            - "lr": Returns a
-              :class:`~nilearn.plotting.displays.LRProjector`.
-            - "l": Returns a
-              :class:`~nilearn.plotting.displays.LProjector`.
-            - "z": Returns a
-              :class:`~nilearn.plotting.displays.RProjector`.
+        - "ortho": Returns an
+            :class:`~nilearn.plotting.displays.OrthoProjector`.
+        - "xz": Returns a
+            :class:`~nilearn.plotting.displays.XZProjector`.
+        - "yz": Returns a
+            :class:`~nilearn.plotting.displays.YZProjector`.
+        - "yx": Returns a
+            :class:`~nilearn.plotting.displays.YXProjector`.
+        - "x": Returns a
+            :class:`~nilearn.plotting.displays.XProjector`.
+        - "y": Returns a
+            :class:`~nilearn.plotting.displays.YProjector`.
+        - "z": Returns a
+            :class:`~nilearn.plotting.displays.ZProjector`.
+        - "lzry": Returns a
+            :class:`~nilearn.plotting.displays.LZRYProjector`.
+        - "lyrz": Returns a
+            :class:`~nilearn.plotting.displays.LYRZProjector`.
+        - "lyr": Returns a
+            :class:`~nilearn.plotting.displays.LYRProjector`.
+        - "lzr": Returns a
+            :class:`~nilearn.plotting.displays.LZRProjector`.
+        - "lr": Returns a
+            :class:`~nilearn.plotting.displays.LRProjector`.
+        - "l": Returns a
+            :class:`~nilearn.plotting.displays.LProjector`.
+        - "z": Returns a
+            :class:`~nilearn.plotting.displays.RProjector`.
 
     """
     return get_create_display_fun(display_mode, PROJECTORS)

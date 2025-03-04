@@ -11,35 +11,13 @@ from nilearn.image import get_data
 from nilearn.plotting import plot_glass_brain
 
 
-def test_plot_glass_brain(matplotlib_pyplot, img_3d_mni):
-    """Smoke tests for plot_glass_brain with colorbar and negative values."""
-    plot_glass_brain(
-        img_3d_mni, colorbar=True, resampling_interpolation="nearest"
-    )
-    # test plot_glass_brain with negative values
-    plot_glass_brain(
-        img_3d_mni,
-        colorbar=True,
-        plot_abs=False,
-        resampling_interpolation="nearest",
-    )
-    # test plot_glass_brain with vmin/vmax defined
-    plot_glass_brain(
-        img_3d_mni,
-        colorbar=True,
-        plot_abs=False,
-        vmin=-2,
-        vmax=5,
-    )
-
-
-@pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("plot_abs", [True, False])
-def test_plot_glass_brain_background_absolute(
-    matplotlib_pyplot, img_3d_mni, plot_abs, black_bg
+@pytest.mark.parametrize("resampling_interpolation", ["nearest", "continuous"])
+def test_plot_glass_brain_absolute(
+    matplotlib_pyplot, img_3d_mni, plot_abs, resampling_interpolation
 ):
-    """Somke test for absolute value plotting and background."""
-    plot_glass_brain(img_3d_mni, black_bg=black_bg, plot_abs=plot_abs)
+    """Smoke test resampling_interpolation and for absolute value plotting."""
+    plot_glass_brain(img_3d_mni, plot_abs=plot_abs)
 
 
 def test_plot_glass_brain_file_output(matplotlib_pyplot, img_3d_mni, tmp_path):
@@ -59,7 +37,7 @@ def test_plot_noncurrent_axes(matplotlib_pyplot, rng):
     fh2 = plt.figure()
     ax1 = fh1.add_subplot(1, 1, 1)
 
-    assert plt.gcf() == fh2, "fh2  was the last plot created."
+    assert plt.gcf() == fh2, "fh2 was the last plot created."
 
     # Since we gave ax1, the figure should be plotted in fh1.
     # Before #451, it was plotted in fh2.
@@ -145,11 +123,6 @@ def test_plot_glass_brain_with_completely_masked_img(
     plot_glass_brain(img_3d_mni, display_mode=display_mode)
 
 
-def test_plot_glass_brain_vmin_vmax(matplotlib_pyplot, img_3d_mni):
-    """Smoke tests for plot_glass_brain being passed vmin and vmax."""
-    plot_glass_brain(img_3d_mni, vmin=-2, vmax=2)
-
-
 def test_plot_glass_brain_negative_vmin_with_plot_abs(
     matplotlib_pyplot, img_3d_mni
 ):
@@ -157,3 +130,17 @@ def test_plot_glass_brain_negative_vmin_with_plot_abs(
     warning_message = "vmin is negative but plot_abs is True"
     with pytest.warns(UserWarning, match=warning_message):
         plot_glass_brain(img_3d_mni, vmin=-2, plot_abs=True)
+
+
+@pytest.mark.parametrize("transparency_range", [None, [0, 2], [-100, 200]])
+def test_plot_glass_brain_transparency(
+    matplotlib_pyplot, img_3d_ones_mni, transparency_image, transparency_range
+):
+    """Smoke tests for transparency parameter to determine alpha layer."""
+    plot_glass_brain(img_3d_ones_mni, transparency=0.5)
+
+    plot_glass_brain(
+        img_3d_ones_mni,
+        transparency=transparency_image,
+        transparency_range=transparency_range,
+    )

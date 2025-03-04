@@ -5,8 +5,6 @@ a temporal dense dictionary along with sparse spatial loadings, that
 constitutes output maps
 """
 
-# Author: Arthur Mensch
-
 import warnings
 
 import numpy as np

@@ -1,6 +1,5 @@
 """Plotting code for nilearn."""
 
-# Original Authors: Chris Filo Gorgolewski, Gael Varoquaux
 from nilearn._utils.helpers import set_mpl_backend
 
 set_mpl_backend()

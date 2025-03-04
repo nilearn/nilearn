@@ -128,7 +128,6 @@ def test_plot_stat_map_threshold_for_affine_with_rotation(
         {"symmetric_cbar": False},
         {"symmetric_cbar": False, "vmax": 10},
         {"symmetric_cbar": True, "vmax": 10},
-        {"colorbar": False},
     ],
 )
 def test_plot_stat_map_colorbar_variations(
@@ -193,3 +192,17 @@ def test_plotting_functions_with_dim_invalid_input(
     """Test whether error raises with bad error to input."""
     with pytest.raises(ValueError):
         plot_stat_map(img_3d_mni, dim="-10")
+
+
+@pytest.mark.parametrize("transparency_range", [None, [0, 2], [-100, 200]])
+def test_plot_stat_map_transparency(
+    matplotlib_pyplot, img_3d_ones_mni, transparency_image, transparency_range
+):
+    """Smoke tests for transparency parameter to determine alpha layer."""
+    plot_stat_map(img_3d_ones_mni, transparency=0.5)
+
+    plot_stat_map(
+        img_3d_ones_mni,
+        transparency=transparency_image,
+        transparency_range=transparency_range,
+    )

@@ -354,6 +354,7 @@ SUFFIXES = np.array(["", "_derivative1", "_power2", "_derivative1_power2"])
 
 @pytest.fixture
 def expected_suffixes(motion):
+    """Return expected suffix."""
     expectation = {
         "basic": slice(1),
         "derivatives": slice(2),
@@ -369,6 +370,7 @@ def expected_suffixes(motion):
     "param", ["trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z"]
 )
 def test_motion(tmp_path, motion, param, expected_suffixes, fmriprep_version):
+    """Check that the expected motion confounds are loaded."""
     img_nii, _ = create_tmp_filepath(
         tmp_path, copy_confounds=True, fmriprep_version=fmriprep_version
     )
@@ -396,6 +398,7 @@ def test_motion(tmp_path, motion, param, expected_suffixes, fmriprep_version):
 def test_n_compcor(
     tmp_path, compcor, n_compcor, test_keyword, test_n, fmriprep_version
 ):
+    """Check that the expected number of confounds are loaded."""
     img_nii, _ = create_tmp_filepath(
         tmp_path,
         copy_confounds=True,

@@ -5,7 +5,6 @@ not the underlying functions used (e.g. clean()). See test_masking.py and
 test_signal.py for this.
 """
 
-# Author: Gael Varoquaux, Philippe Gervais
 import shutil
 import warnings
 from pathlib import Path
@@ -18,7 +17,6 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils import data_gen, exceptions, testing
 from nilearn._utils.class_inspect import check_estimator, get_params
-from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
@@ -529,17 +527,3 @@ def test_nifti_masker_io_shapes(rng, shape_3d_default, affine_eye):
 
     with pytest.raises(TypeError):
         masker.inverse_transform(data_2d.T)
-
-
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
-def test_nifti_masker_reporting_mpl_warning():
-    """Raise warning after exception if matplotlib is not installed."""
-    with warnings.catch_warnings(record=True) as warning_list:
-        result = NiftiMasker().generate_report()
-
-    assert len(warning_list) == 1
-    assert issubclass(warning_list[0].category, ImportWarning)
-    assert result == [None]

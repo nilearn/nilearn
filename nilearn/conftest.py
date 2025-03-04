@@ -633,6 +633,44 @@ def surf_three_labels_img(surf_mesh):
     return SurfaceImage(surf_mesh, data)
 
 
+def _surf_maps_img():
+    """Return a sample surface map image using the sample mesh.
+    Has 6 regions in total: 3 in both, 1 only in left and 2 only in right.
+    Later we multiply the data with random "probability" values to make it
+    more realistic.
+    """
+    data = {
+        "left": np.asarray(
+            [
+                [1, 1, 0, 1, 0, 0],
+                [0, 1, 1, 1, 0, 0],
+                [1, 0, 1, 1, 0, 0],
+                [1, 1, 1, 0, 0, 0],
+            ]
+        ),
+        "right": np.asarray(
+            [
+                [1, 0, 0, 0, 1, 1],
+                [1, 1, 0, 0, 1, 1],
+                [0, 1, 1, 0, 1, 1],
+                [1, 1, 1, 0, 0, 1],
+                [0, 0, 1, 0, 0, 1],
+            ]
+        ),
+    }
+    # multiply with random "probability" values
+    data = {
+        part: data[part] * _rng().random(data[part].shape) for part in data
+    }
+    return SurfaceImage(_make_mesh(), data)
+
+
+@pytest.fixture
+def surf_maps_img():
+    """Return a sample surface map as fixture."""
+    return _surf_maps_img()
+
+
 @pytest.fixture
 def flip_surf_img_parts():
     """Flip hemispheres of a surface image data or mesh."""
@@ -717,5 +755,16 @@ def plotly():
     plotly : module
         The ``plotly`` module.
     """
-    plotly = pytest.importorskip("plotly")
-    yield plotly
+    yield pytest.importorskip("plotly")
+
+
+@pytest.fixture
+def transparency_image(rng, affine_mni):
+    """Return 3D image to use as transparency image.
+
+    Make sure that values are not just between 0 and 1.
+    """
+    data_positive = np.zeros((7, 7, 3))
+    data_rng = rng.random((7, 7, 3)) * 10 - 5
+    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
+    return Nifti1Image(data_positive, affine_mni)

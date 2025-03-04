@@ -74,6 +74,27 @@ of :obj:`float`: (xmin, ymin, width, height), default=None
 """
 
 # bg_img
+docdict["bg_map"] = """
+bg_map : :obj:`str` or :obj:`pathlib.Path` or \
+         :class:`numpy.ndarray` \
+         or :obj:`~nilearn.surface.SurfaceImage` or None,\
+         default=None
+    Background image to be plotted on the :term:`mesh`
+    underneath the surf_data in grayscale,
+    most likely a sulcal depth map for realistic shading.
+    If the map contains values outside [0, 1],
+    it will be rescaled such that all values are in [0, 1].
+    Otherwise, it will not be modified.
+    If a :obj:`str` or :obj:`pathlib.Path` is passed,
+    it should be loadable to a :class:`numpy.ndarray`
+    by :func:`~nilearn.surface.load_surf_data`.
+    If a :class:`numpy.ndarray` is passed,
+    if should have a shape `(n_vertices, )`,
+    with ``n_vertices`` matching that of the underlying mesh
+    used for plotting.
+"""
+
+# bg_img
 docdict["bg_img"] = """
 bg_img : Niimg-like object, optional
     See :ref:`extracting_data`.
@@ -203,6 +224,20 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
     The colormap to use.
     Either a string which is a name of a matplotlib colormap,
     or a matplotlib colormap object.
+"""
+
+# cmap or lut
+docdict["cmap_lut"] = """
+cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
+       or :class:`pandas.DataFrame`, optional
+    The colormap to use.
+    Either a string which is a name of a matplotlib colormap,
+    or a matplotlib colormap object,
+    or a BIDS compliant
+    `look-up table <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
+    passed as a pandas dataframe.
+    If the look up table does not contain a ``color`` column,
+    then the default colormap of this function will be used.
 """
 
 # colorbar
@@ -1001,6 +1036,46 @@ threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
 docdict["title"] = """
 title : :obj:`str`, or None, default=None
     The title displayed on the figure.
+"""
+
+# transparency
+docdict["transparency"] = """
+transparency : :obj:`float` between 0 and 1, \
+                or a Niimg-Like object, \
+                or None, \
+                default = None
+    Value to be passed as alpha value to :func:`~matplotlib.pyplot.imshow`.
+    if ``None`` is passed, it will be set to 1.
+    If an image is passed, voxel-wise alpha blending will be applied,
+    by relying on the absolute value of ``transparency`` at each voxel.
+
+    .. versionadded:: 0.11.2
+"""
+
+# transparency
+docdict["transparency_range"] = """
+transparency_range : :obj:`tuple` or :obj:`list` of 2 real numbers, \
+                or None, \
+                default = None
+    When an image is passed to ``transparency``,
+    this determines the range of values in the image
+    to use for transparency (alpha blending).
+    For example with ``transparency_range = [1.96, 3]``,
+    any voxel / vertex (:math:`v_i`):
+
+    - with a value less than 1.96 would be fully transparent (alpha = 0),
+    - with a value greater then 3 than would be fully opaque (alpha = 1),
+    - with a value in the interval ``[1.96, 3.0]`` would have an alpha_i value
+      scaled linearly between 0 and 1 :
+      :math:`alpha_i = (v_i - 1.96) / (3.0 - 1.96)`.
+
+    This parameter will be ignored
+    unless an image is passed as ``transparency``.
+    The first number must be greater than 0 and less than the second one.
+    if ``None`` is passed,
+    this will be set to ``[0, max(abs(transparency))]``.
+
+    .. versionadded:: 0.11.2
 """
 
 # upper_cutoff

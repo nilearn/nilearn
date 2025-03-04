@@ -75,17 +75,6 @@ def test_plot_empty_slice(matplotlib_pyplot, affine_mni):
     plot_img(img, display_mode="y", threshold=1)
 
 
-@pytest.mark.parametrize("display_mode", ["x", "y", "z"])
-def test_plot_img_with_auto_cut_coords(
-    matplotlib_pyplot, affine_eye, display_mode
-):
-    """Smoke test for plot_img with cut_coords set in auto mode."""
-    data = np.zeros((20, 20, 20))
-    data[3:-3, 3:-3, 3:-3] = 1
-    img = Nifti1Image(data, affine_eye)
-    plot_img(img, cut_coords=None, display_mode=display_mode, black_bg=True)
-
-
 @pytest.mark.parametrize("binary_img", [True, False])
 def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
     """Tests for plot_img with resampling of the data image."""
@@ -112,3 +101,43 @@ def test_display_methods_with_display_mode_tiled(
     display.add_contours(
         img_3d_mni, contours=2, linewidth=4, colors=["limegreen", "yellow"]
     )
+
+
+@pytest.mark.parametrize("transparency_range", [None, [0, 2], [-100, 200]])
+def test_plot_img_transparency(
+    matplotlib_pyplot, img_3d_ones_mni, transparency_image, transparency_range
+):
+    """Smoke tests for transparency parameter to determine alpha layer."""
+    plot_img(img_3d_ones_mni, transparency=0.5)
+
+    plot_img(
+        img_3d_ones_mni,
+        transparency=transparency_image,
+        transparency_range=transparency_range,
+    )
+
+
+@pytest.mark.parametrize("transparency", [-1, 10])
+def test_plot_img_transparency_warning(
+    matplotlib_pyplot, img_3d_ones_mni, transparency
+):
+    """Test transparency is reset to proper values."""
+    with pytest.warns(
+        UserWarning, match="'transparency' must be in the interval"
+    ):
+        plot_img(img_3d_ones_mni, transparency=transparency)
+
+
+@pytest.mark.parametrize("transparency_range", [[10, -1], [5]])
+def test_plot_img_transparency_range_error(
+    matplotlib_pyplot, img_3d_ones_mni, transparency_range, transparency_image
+):
+    """Test transparency_range invalid values."""
+    with pytest.raises(
+        ValueError, match="list or tuple of 2 positive numbers"
+    ):
+        plot_img(
+            img_3d_ones_mni,
+            transparency=transparency_image,
+            transparency_range=transparency_range,
+        )
