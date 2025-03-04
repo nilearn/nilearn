@@ -10,6 +10,7 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 from nilearn._utils.docs import fill_doc
 from nilearn.image import coord_transform
+from nilearn.plotting.displays._utils import coords_3d_to_2d
 from nilearn.plotting.glass_brain import plot_brain_schematics
 
 
@@ -343,31 +344,6 @@ class CutAxes(BaseAxes):
             },
             **kwargs,
         )
-
-
-def _get_index_from_direction(direction):
-    """Return numerical index from direction."""
-    directions = ["x", "y", "z"]
-    try:
-        # l and r are subcases of x
-        index = 0 if direction in "lr" else directions.index(direction)
-    except ValueError:
-        message = (
-            f"{direction} is not a valid direction. "
-            "Allowed values are 'l', 'r', 'x', 'y' and 'z'"
-        )
-        raise ValueError(message)
-    return index
-
-
-def coords_3d_to_2d(coords_3d, direction, return_direction=False):
-    """Project 3d coordinates into 2d ones given the direction of a cut."""
-    index = _get_index_from_direction(direction)
-    dimensions = [0, 1, 2]
-    dimensions.pop(index)
-    if return_direction:
-        return coords_3d[:, dimensions], coords_3d[:, index]
-    return coords_3d[:, dimensions]
 
 
 @fill_doc

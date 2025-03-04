@@ -16,9 +16,11 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
 from nilearn.plotting._utils import check_threshold_not_negative
+from nilearn.plotting.displays._utils import (
+    coords_3d_to_2d,
+    get_create_display_fun
+)
 from nilearn.plotting.displays import CutAxes
-from nilearn.plotting.displays._utils import get_create_display_fun
-from nilearn.plotting.displays._axes import coords_3d_to_2d
 from nilearn.plotting.edge_detect import edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
 
