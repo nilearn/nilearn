@@ -18,6 +18,7 @@ def main():
 
     if not input_file.exists():
         warn(f"{input_file} not found.", stacklevel=2)
+        return
 
     tests_data = pd.read_csv(input_file)
 
