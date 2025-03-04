@@ -6,7 +6,7 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.surface import SurfaceImage

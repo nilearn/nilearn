@@ -13,6 +13,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Ensure that all figures are generated with a color bar by default (:gh:`5172` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Fixes datasets that returned numpy arrays instead of pandas dataframes (:gh:`5109` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Ensure that image plotting threshold is non-negative as one-sided behavior in image thresholding can be obtained with vmin and vmax values in plotting threshold. (:gh:`5088` by `Hande Gözükan`_).

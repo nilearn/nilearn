@@ -13,12 +13,12 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
 
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_maps,
     generate_random_img,
 )
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
@@ -28,7 +28,9 @@ from nilearn.maskers import NiftiMapsMasker
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiMapsMasker(maps_img=_img_maps())],
+        # pass less than the default number of regions
+        # to speed up the tests
+        estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=3))],
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -40,7 +42,9 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiMapsMasker(maps_img=_img_maps())],
+        # pass less than the default number of regions
+        # to speed up the tests
+        estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=3))],
         valid=False,
     ),
 )
