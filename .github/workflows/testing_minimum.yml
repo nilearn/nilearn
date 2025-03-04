@@ -91,7 +91,7 @@ jobs:
                 pytest --pyargs nilearn --cov=nilearn --csv results/pytest_output/pytest_output.csv
 
         -   name: Generate plots tests timing
-            if: ( success() || failure() ) && ${{ !(contains(matrix.min_dep, 'matplotlib==3.3.0') && matrix.os == 'windows-latest') }}
+            if: success() || failure()
             run: |
                 pip install tox
                 tox run -e plot_test_timing
