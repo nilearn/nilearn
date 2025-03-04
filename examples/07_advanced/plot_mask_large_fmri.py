@@ -290,7 +290,7 @@ plt.bar(
         "NiftiMasker,\nwith path",
         "NiftiMasker,\nwith in-memory\nimage",
         "Numpy indexing",
-        "Numpy indexing,\nwith shared\nmemory",
+        "Numpy indexing,\nwith\nSharedMemory",
     ],
     [
         nifti_masker["path"],
