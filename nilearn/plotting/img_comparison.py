@@ -168,11 +168,9 @@ def plot_img_comparison(
                 gridsize=gridsize,
                 extent=lims,
             )
-
             if colorbar:
                 cb = fig.colorbar(hb, ax=ax1)
                 cb.set_label("log10(N)")
-
             x = np.linspace(*lims[0:2], num=gridsize)
             ax1.plot(x, x, linestyle="--", c="grey")
             ax1.set_title(f"Pearson's R: {corr:.2f}")
@@ -187,6 +185,7 @@ def plot_img_comparison(
             ax2.hist(
                 src_data, alpha=0.6, bins=gridsize, log=log, label=src_label
             )
+
             ax2.set_title("Histogram of imgs values")
             ax2.grid("on")
             ax2.legend(loc="best")
@@ -381,11 +380,6 @@ def plot_bland_altman(
     ax3.set_xlim(lims[:2])
     ax3.invert_yaxis()
     ax3.set_xlabel(f"Average :  mean({ref_label}, {src_label})")
-
-    ax4 = figure.add_subplot(gs[:-1, 5])
-    ax4.set_aspect(20)
-    pos1 = ax4.get_position()
-    ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
 
     if colorbar:
         ax4 = figure.add_subplot(gs[:-1, 5])
