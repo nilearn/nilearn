@@ -3,6 +3,7 @@
 import copy
 import math
 import os
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -1159,6 +1160,10 @@ def test_coord_transform_trivial(affine_eye, rng):
 @pytest.mark.skipif(
     os.environ.get("APPVEYOR") == "True",
     reason="This test too slow (7-8 minutes) on AppVeyor",
+)
+@pytest.mark.skipif(
+    sys.platform == "darwin",
+    reason="This test is too slow (sometimes up to 7-8 minutes) on macOS",
 )
 def test_resample_img_segmentation_fault(force_resample):
     # see https://github.com/nilearn/nilearn/issues/346

@@ -50,7 +50,6 @@ for im in images_meta:
         im["absolute_path"],
         title=f"image {im['id']}: {im['contrast_definition']}",
         plot_abs=False,
-        colorbar=True,
         vmin=-12,
         vmax=12,
     )

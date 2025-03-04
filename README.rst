@@ -29,10 +29,6 @@
     :target: https://www.youtube.com/@nilearnevents5116
     :alt: YouTube Channel Subscribers
 
-.. image:: https://img.shields.io/twitter/follow/nilearn.svg
-    :target: https://x.com/nilearn
-    :alt: Twitter
-
 .. image:: https://img.shields.io/mastodon/follow/109669703955432270?domain=https%3A%2F%2Ffosstodon.org%2F
     :target: https://fosstodon.org/@nilearn
     :alt: Mastodon

@@ -408,7 +408,7 @@ def plot_img(
     annotate=True,
     draw_cross=True,
     black_bg=False,
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%.2g",
     resampling_interpolation="continuous",
     bg_img=None,
@@ -451,7 +451,7 @@ def plot_img(
         Default=False.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -694,7 +694,7 @@ def plot_anat(
     black_bg="auto",
     dim="auto",
     cmap="gray",
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%.2g",
     radiological=False,
     vmin=None,
@@ -823,7 +823,7 @@ def plot_epi(
     annotate=True,
     draw_cross=True,
     black_bg=True,
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%.2g",
     cmap="gray",
     vmin=None,
@@ -982,7 +982,7 @@ def plot_roi(
     alpha=0.7,
     cmap="gist_ncar",
     dim="auto",
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%i",
     vmin=None,
     vmax=None,
@@ -1166,7 +1166,7 @@ def plot_prob_atlas(
     draw_cross=True,
     black_bg="auto",
     dim="auto",
-    colorbar=False,
+    colorbar=True,
     cmap="gist_rainbow",
     vmin=None,
     vmax=None,
@@ -1252,7 +1252,7 @@ def plot_prob_atlas(
         Default=`gist_rainbow`.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     %(vmin)s
 
@@ -1581,7 +1581,7 @@ def plot_glass_brain(
     stat_map_img,
     output_file=None,
     display_mode="ortho",
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%.2g",
     figure=None,
     axes=None,
@@ -1628,7 +1628,7 @@ def plot_glass_brain(
         'lzry', 'lyrz'.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -1791,7 +1791,7 @@ def plot_connectome(
     alpha=0.7,
     edge_kwargs=None,
     node_kwargs=None,
-    colorbar=False,
+    colorbar=True,
     radiological=False,
 ):
     """Plot connectome on top of the brain glass schematics.
@@ -1858,8 +1858,10 @@ def plot_connectome(
     node_kwargs : :obj:`dict` or None, default=None
         Will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go.
+
     %(colorbar)s
-        Default=False.
+        Default=True.
+
     %(radiological)s
 
     Returns
@@ -2329,7 +2331,7 @@ def plot_carpet(
 def plot_img_comparison(
     ref_imgs,
     src_imgs,
-    masker,
+    masker=None,
     plot_hist=True,
     log=True,
     ref_label="image set 1",

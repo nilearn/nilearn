@@ -635,10 +635,10 @@ def test_add_contours(plotly, surface_image_roi):
     """Test that add_contours updates data in PlotlySurfaceFigure."""
     figure = plot_surf(surface_image_roi.mesh, engine="plotly")
     figure.add_contours(surface_image_roi)
-    assert len(figure.figure.to_dict().get("data")) == 3
+    assert len(figure.figure.to_dict().get("data")) == 4
 
     figure.add_contours(surface_image_roi, levels=[1])
-    assert len(figure.figure.to_dict().get("data")) == 4
+    assert len(figure.figure.to_dict().get("data")) == 5
 
 
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
@@ -682,7 +682,7 @@ def test_add_contours_has_name(plotly, surface_image_roi):
     """Test that contours added to a PlotlySurfaceFigure can be named."""
     figure = plot_surf(surface_image_roi.mesh, engine="plotly")
     figure.add_contours(surface_image_roi, levels=[1], labels=["x"])
-    assert figure.figure.to_dict().get("data")[1].get("name") == "x"
+    assert figure.figure.to_dict().get("data")[2].get("name") == "x"
 
 
 def test_add_contours_lines_duplicated(plotly, surface_image_roi):
@@ -691,7 +691,7 @@ def test_add_contours_lines_duplicated(plotly, surface_image_roi):
     """
     figure = plot_surf(surface_image_roi.mesh, engine="plotly")
     figure.add_contours(surface_image_roi, lines=[{"width": 10}])
-    newlines = figure.figure.to_dict().get("data")[1:]
+    newlines = figure.figure.to_dict().get("data")[2:]
     assert all(x.get("line").__contains__("width") for x in newlines)
 
 
@@ -708,7 +708,7 @@ def test_add_contours_line_properties(plotly, key, value, surface_image_roi):
     """
     figure = plot_surf(surface_image_roi.mesh, engine="plotly")
     figure.add_contours(surface_image_roi, levels=[1], lines=[{key: value}])
-    newline = figure.figure.to_dict().get("data")[1].get("line")
+    newline = figure.figure.to_dict().get("data")[2].get("line")
     assert newline.get(key) == value
 
 
