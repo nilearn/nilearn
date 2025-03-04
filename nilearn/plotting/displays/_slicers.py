@@ -14,7 +14,10 @@ from nilearn._utils.niimg import is_binary_niimg, safe_get_data
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
-from nilearn.plotting._utils import check_threshold_not_negative
+from nilearn.plotting._utils import (
+    check_threshold_not_negative,
+    get_cbar_ticks
+)
 from nilearn.plotting.displays._axes import CutAxes
 from nilearn.plotting.displays._utils import (
     coords_3d_to_2d,
@@ -856,42 +859,6 @@ class BaseSlicer:
             edgecolor=edgecolor,
             **kwargs,
         )
-
-
-def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
-    """Help for BaseSlicer."""
-    # edge case where the data has a single value yields
-    # a cryptic matplotlib error message when trying to plot the color bar
-    if vmin == vmax:
-        return np.linspace(vmin, vmax, 1)
-
-    # edge case where the data has all negative values but vmax is exactly 0
-    if vmax == 0:
-        vmax += np.finfo(np.float32).eps
-
-    # If a threshold is specified, we want two of the tick
-    # to correspond to -thresold and +threshold on the colorbar.
-    # If the threshold is very small compared to vmax,
-    # we use a simple linspace as the result would be very difficult to see.
-    ticks = np.linspace(vmin, vmax, n_ticks)
-    if offset is not None and offset / vmax > 0.12:
-        diff = [abs(abs(tick) - offset) for tick in ticks]
-        # Edge case where the thresholds are exactly
-        # at the same distance to 4 ticks
-        if diff.count(min(diff)) == 4:
-            idx_closest = np.sort(np.argpartition(diff, 4)[:4])
-            idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
-        else:
-            # Find the closest 2 ticks
-            idx_closest = np.sort(np.argpartition(diff, 2)[:2])
-            if 0 in ticks[idx_closest]:
-                idx_closest = np.sort(np.argpartition(diff, 3)[:3])
-                idx_closest = idx_closest[[0, 2]]
-        ticks[idx_closest] = [-offset, offset]
-    if len(ticks) > 0 and ticks[0] < vmin:
-        ticks[0] = vmin
-
-    return ticks
 
 
 @fill_doc

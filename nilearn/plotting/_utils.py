@@ -1,6 +1,8 @@
 from pathlib import Path
 from warnings import warn
 
+import numpy as np
+
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -45,6 +47,42 @@ def save_figure_if_needed(fig, output_file):
         fig.close()
 
     return None
+
+
+def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
+    """Help for BaseSlicer."""
+    # edge case where the data has a single value yields
+    # a cryptic matplotlib error message when trying to plot the color bar
+    if vmin == vmax:
+        return np.linspace(vmin, vmax, 1)
+
+    # edge case where the data has all negative values but vmax is exactly 0
+    if vmax == 0:
+        vmax += np.finfo(np.float32).eps
+
+    # If a threshold is specified, we want two of the tick
+    # to correspond to -thresold and +threshold on the colorbar.
+    # If the threshold is very small compared to vmax,
+    # we use a simple linspace as the result would be very difficult to see.
+    ticks = np.linspace(vmin, vmax, n_ticks)
+    if offset is not None and offset / vmax > 0.12:
+        diff = [abs(abs(tick) - offset) for tick in ticks]
+        # Edge case where the thresholds are exactly
+        # at the same distance to 4 ticks
+        if diff.count(min(diff)) == 4:
+            idx_closest = np.sort(np.argpartition(diff, 4)[:4])
+            idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
+        else:
+            # Find the closest 2 ticks
+            idx_closest = np.sort(np.argpartition(diff, 2)[:2])
+            if 0 in ticks[idx_closest]:
+                idx_closest = np.sort(np.argpartition(diff, 3)[:3])
+                idx_closest = idx_closest[[0, 2]]
+        ticks[idx_closest] = [-offset, offset]
+    if len(ticks) > 0 and ticks[0] < vmin:
+        ticks[0] = vmin
+
+    return ticks
 
 
 def sanitize_hemi_for_surface_image(hemi, map, mesh):

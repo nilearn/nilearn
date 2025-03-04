@@ -46,10 +46,10 @@ from nilearn.plotting import cm
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
     create_colormap_from_lut,
+    get_cbar_ticks,
     save_figure_if_needed,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
-from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.signal import clean
 
 
