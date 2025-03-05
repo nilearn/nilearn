@@ -1244,36 +1244,21 @@ def test_second_level_f_contrast_length_errors():
         model.compute_contrast(second_level_contrast=np.eye(2))
 
 
-def test_non_parametric_inference_contrast_computation():
+@pytest.mark.parametrize("second_level_contrast", [None, "intercept", [1]])
+def test_non_parametric_inference_contrast_computation(second_level_contrast):
     func_img, mask = fake_fmri_data()
 
     # fit model
     Y = [func_img] * 4
     X = pd.DataFrame([[1]] * 4, columns=["intercept"])
-    # formula should work without second-level contrast
-    non_parametric_inference(
-        Y, design_matrix=X, model_intercept=False, mask=mask, n_perm=N_PERM
-    )
 
-    ncol = len(X.columns)
-    c1, _ = np.eye(ncol)[0, :], np.zeros(ncol)
-    # formula should work with second-level contrast
     non_parametric_inference(
         Y,
         design_matrix=X,
         model_intercept=False,
-        second_level_contrast=c1,
         mask=mask,
         n_perm=N_PERM,
-    )
-    # formula should work passing variable name directly
-    non_parametric_inference(
-        Y,
-        design_matrix=X,
-        second_level_contrast="intercept",
-        model_intercept=False,
-        mask=mask,
-        n_perm=N_PERM,
+        second_level_contrast=second_level_contrast,
     )
 
 
