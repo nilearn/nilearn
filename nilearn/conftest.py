@@ -30,8 +30,27 @@ from nilearn.surface import (
 collect_ignore = ["datasets/data/convert_templates.py"]
 collect_ignore_glob = ["reporting/_visual_testing/*"]
 
+# Plotting tests are skipped if matplotlib is missing.
+# If the version is greater than the minimum one we support
+# We skip the tests where the generated figures are compared to a baseline.
+
 if is_matplotlib_installed():
     import matplotlib
+
+    from nilearn._utils.helpers import (
+        OPTIONAL_MATPLOTLIB_MIN_VERSION,
+        compare_version,
+    )
+
+    if compare_version(
+        matplotlib.__version__, ">", OPTIONAL_MATPLOTLIB_MIN_VERSION
+    ):
+        collect_ignore.extend(
+            [
+                "plotting/tests/test_baseline_comparisons.py",
+            ]
+        )
+
 else:
     collect_ignore.extend(
         [
@@ -322,17 +341,32 @@ def img_3d_ones_mni():
     return _img_3d_ones(shape=_shape_3d_default(), affine=_affine_mni())
 
 
+def _mask_data():
+    mask_data = np.zeros(_shape_3d_default(), dtype="int32")
+    mask_data[3:6, 3:6, 3:6] = 1
+    return mask_data
+
+
 def _img_mask_mni():
     """Return a 3D nifti mask in MNI space with some 1s in the center."""
-    mask = np.zeros(_shape_3d_default(), dtype="int32")
-    mask[3:6, 3:6, 3:6] = 1
-    return Nifti1Image(mask, _affine_mni())
+    return Nifti1Image(_mask_data(), _affine_mni())
 
 
 @pytest.fixture
 def img_mask_mni():
     """Return a 3D nifti mask in MNI space with some 1s in the center."""
     return _img_mask_mni()
+
+
+def _img_mask_eye():
+    """Return a 3D nifti mask with identity affine with 1s in the center."""
+    return Nifti1Image(_mask_data(), _affine_eye())
+
+
+@pytest.fixture
+def img_mask_eye():
+    """Return a 3D nifti mask with identity affine with 1s in the center."""
+    return _img_mask_eye()
 
 
 # ------------------------ 4D IMAGES ------------------------#
@@ -436,10 +470,12 @@ def n_regions():
     return _n_regions()
 
 
-def _img_maps():
+def _img_maps(n_regions=None):
     """Generate a default map image."""
+    if n_regions is None:
+        n_regions = _n_regions()
     return generate_maps(
-        shape=_shape_3d_default(), n_regions=_n_regions(), affine=_affine_eye()
+        shape=_shape_3d_default(), n_regions=n_regions, affine=_affine_eye()
     )[0]
 
 
@@ -450,11 +486,14 @@ def img_maps():
 
 
 def _img_labels():
-    """Generate fixture for default label image."""
+    """Generate fixture for default label image.
+
+    DO NOT CHANGE n_regions (some tests expect this value).
+    """
     return generate_labeled_regions(
-        shape=(7, 8, 9),
-        affine=np.eye(4),
-        n_regions=9,
+        shape=_shape_3d_default(),
+        affine=_affine_eye(),
+        n_regions=_n_regions(),
     )
 
 
@@ -633,6 +672,44 @@ def surf_three_labels_img(surf_mesh):
     return SurfaceImage(surf_mesh, data)
 
 
+def _surf_maps_img():
+    """Return a sample surface map image using the sample mesh.
+    Has 6 regions in total: 3 in both, 1 only in left and 2 only in right.
+    Later we multiply the data with random "probability" values to make it
+    more realistic.
+    """
+    data = {
+        "left": np.asarray(
+            [
+                [1, 1, 0, 1, 0, 0],
+                [0, 1, 1, 1, 0, 0],
+                [1, 0, 1, 1, 0, 0],
+                [1, 1, 1, 0, 0, 0],
+            ]
+        ),
+        "right": np.asarray(
+            [
+                [1, 0, 0, 0, 1, 1],
+                [1, 1, 0, 0, 1, 1],
+                [0, 1, 1, 0, 1, 1],
+                [1, 1, 1, 0, 0, 1],
+                [0, 0, 1, 0, 0, 1],
+            ]
+        ),
+    }
+    # multiply with random "probability" values
+    data = {
+        part: data[part] * _rng().random(data[part].shape) for part in data
+    }
+    return SurfaceImage(_make_mesh(), data)
+
+
+@pytest.fixture
+def surf_maps_img():
+    """Return a sample surface map as fixture."""
+    return _surf_maps_img()
+
+
 @pytest.fixture
 def flip_surf_img_parts():
     """Flip hemispheres of a surface image data or mesh."""
@@ -717,5 +794,4 @@ def plotly():
     plotly : module
         The ``plotly`` module.
     """
-    plotly = pytest.importorskip("plotly")
-    yield plotly
+    yield pytest.importorskip("plotly")

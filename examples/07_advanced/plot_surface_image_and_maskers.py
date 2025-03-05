@@ -54,14 +54,10 @@ mean_img = masker.inverse_transform(mean_data)
 print(f"Image mean: {mean_img}")
 
 # %%
-# let's create a figure with all the views for both hemispheres
+# let's create a figure with several views for both hemispheres
 views = [
     "lateral",
-    "medial",
     "dorsal",
-    "ventral",
-    "anterior",
-    "posterior",
 ]
 hemispheres = ["left", "right", "both"]
 
@@ -97,7 +93,7 @@ for view, ax_row in zip(views, axes):
             view=view,
             figure=fig,
             axes=ax,
-            title=f"mean image - {hemi} - {view}",
+            title=f"{hemi} - {view}",
             colorbar=False,
             symmetric_cmap=True,
             bg_on_data=True,
@@ -217,7 +213,6 @@ plot_surf(
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    colorbar=True,
     cmap="inferno",
     vmin=0,
 )
@@ -250,6 +245,5 @@ plot_surf(
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    colorbar=True,
 )
 show()

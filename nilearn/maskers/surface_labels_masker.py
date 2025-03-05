@@ -317,6 +317,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             "n_vertices": {},
             "number_of_regions": self.n_elements_,
             "summary": {},
+            "warning_message": None,
         }
 
         for part in self.labels_img.data.parts:

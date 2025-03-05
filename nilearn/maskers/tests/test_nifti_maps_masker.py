@@ -13,13 +13,12 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
 
-from nilearn._utils.class_inspect import check_estimator
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_maps,
     generate_random_img,
 )
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
@@ -29,7 +28,9 @@ from nilearn.maskers import NiftiMapsMasker
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiMapsMasker(maps_img=_img_maps())],
+        # pass less than the default number of regions
+        # to speed up the tests
+        estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=3))],
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -41,7 +42,9 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiMapsMasker(maps_img=_img_maps())],
+        # pass less than the default number of regions
+        # to speed up the tests
+        estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=3))],
         valid=False,
     ),
 )
@@ -534,17 +537,3 @@ def test_3d_images(affine_eye, n_regions, shape_3d_default):
     epis = masker.fit_transform([epi_img1, epi_img2])
 
     assert epis.shape == (2, n_regions)
-
-
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
-def test_nifti_maps_masker_reporting_mpl_warning(img_maps):
-    """Raise warning after exception if matplotlib is not installed."""
-    with warnings.catch_warnings(record=True) as warning_list:
-        result = NiftiMapsMasker(img_maps).generate_report()
-
-    assert len(warning_list) == 1
-    assert issubclass(warning_list[0].category, ImportWarning)
-    assert result == [None]
