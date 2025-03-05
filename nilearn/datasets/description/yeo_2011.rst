@@ -38,4 +38,4 @@ References
 
 License
 -------
-unknown
+MIT
