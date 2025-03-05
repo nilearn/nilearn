@@ -38,4 +38,4 @@ References
 
 License
 -------
-MIT
+MIT; See https://github.com/ThomasYeoLab/CBIG/blob/master/LICENSE.md
