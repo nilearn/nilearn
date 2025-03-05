@@ -619,17 +619,17 @@ def test_vol_to_surf(kind, n_scans, use_mask):
     assert correlation > 0.99
 
 
-def test_vol_to_surf_labels(img_labels, single_mesh):
+def test_vol_to_surf_labels(img_labels):
     """Test a special use case of nearest interpolation in vol_to_surf when
     converting deterministic atlases with integer labels.
     """
     img_labels_data = img_labels.get_fdata()
     uniques_vol = np.unique(img_labels_data)
 
-    mesh_labels = vol_to_surf(img_labels, single_mesh, interpolation="nearest")
+    mesh = flat_mesh(5, 7)
+    mesh_labels = vol_to_surf(img_labels, mesh, interpolation="nearest")
 
     uniques_surf = np.unique(mesh_labels)
-
     assert set(uniques_surf) <= set(uniques_vol)
 
 
