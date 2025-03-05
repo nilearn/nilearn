@@ -88,7 +88,8 @@ def test_multi_pca_check_masker_attributes(multi_pca_data, mask_img):
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
 
-def test_multi_pca(multi_pca_data, mask_img):
+@pytest.mark.parametrize("length", [1, 2])
+def test_multi_pca(multi_pca_data, mask_img, length):
     """Components are the same if we put twice the same data, \
        and that fit output is deterministic.
     """
@@ -96,11 +97,9 @@ def test_multi_pca(multi_pca_data, mask_img):
     multi_pca.fit(multi_pca_data)
 
     components1 = multi_pca.components_
-    components2 = multi_pca.fit(multi_pca_data).components_
-    components3 = multi_pca.fit(2 * multi_pca_data).components_
+    components2 = multi_pca.fit(length * multi_pca_data).components_
 
     np.testing.assert_array_equal(components1, components2)
-    np.testing.assert_array_almost_equal(components1, components3)
 
 
 def test_multi_pca_with_confounds_smoke(multi_pca_data, mask_img):
