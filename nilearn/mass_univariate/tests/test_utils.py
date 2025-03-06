@@ -303,4 +303,4 @@ def test_return_score_threshs(arr3d, two_sided_test, dh):
     max_score = (
         np.nanmax(np.abs(arr3d)) if two_sided_test else np.nanmax(arr3d)
     )
-    assert np.sum(score_threshs > max_score) == 0
+    assert (score_threshs <= max_score).all()

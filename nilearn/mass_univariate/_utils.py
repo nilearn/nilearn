@@ -69,6 +69,7 @@ def calculate_tfce(
         arr3d = arr4d[..., i_regressor]
 
         signs = [-1, 1] if two_sided_test else [1]
+        score_threshs = _return_score_threshs(arr3d, dh, two_sided_test)
 
         # If we apply the sign first...
         for sign in signs:
@@ -78,7 +79,6 @@ def calculate_tfce(
             # is incrementally larger
             temp_arr3d = arr3d * sign
 
-            score_threshs = _return_score_threshs(arr3d, dh, two_sided_test)
             # Prep step
             for score_thresh in score_threshs:
                 temp_arr3d[temp_arr3d < score_thresh] = 0
@@ -135,7 +135,9 @@ def _return_score_threshs(arr3d, dh, two_sided_test):
     max_score = (
         np.nanmax(np.abs(arr3d)) if two_sided_test else np.nanmax(arr3d)
     )
-    number_steps = 100 if dh == "auto" else max(1, round(max_score / dh))
+    number_steps = (
+        100 if dh == "auto" else np.clip(round(max_score / dh), 10, 1000)
+    )
     return np.linspace(0, max_score, number_steps + 1)[1:]
 
 
