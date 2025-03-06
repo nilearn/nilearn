@@ -211,10 +211,13 @@ def make_glm_report(
         display_mode_selector = {"slice": "z", "glass": "lzry"}
         display_mode = display_mode_selector[plot_type]
 
-    try:
-        design_matrices = model.design_matrices_
-    except AttributeError:
-        design_matrices = [model.design_matrix_]
+    warning_messages = []
+
+    design_matrices = (
+        model.design_matrices_
+        if isinstance(model, FirstLevelModel)
+        else [model.design_matrix_]
+    )
 
     design_matrices_dict = _return_design_matrices_dict(design_matrices)
 
@@ -223,16 +226,15 @@ def make_glm_report(
     html_head_template_path = (
         HTML_TEMPLATE_ROOT_PATH / "report_head_template.html"
     )
-    html_body_template_path = (
-        HTML_TEMPLATE_ROOT_PATH / "report_body_template.html"
-    )
 
     with html_head_template_path.open() as html_head_file_obj:
         html_head_template_text = html_head_file_obj.read()
     report_head_template = string.Template(html_head_template_text)
 
+    body_template_path = HTML_TEMPLATE_PATH / "glm_report_vol.html"
+
     tpl = tempita.HTMLTemplate.from_filename(
-        str(html_body_template_path),
+        str(body_template_path),
         encoding="utf-8",
     )
 
@@ -286,7 +288,20 @@ def make_glm_report(
         "page_title": escape(page_title),
     }
 
+    css_file_path = CSS_PATH / "masker_report.css"
+    with css_file_path.open(encoding="utf-8") as css_file:
+        css = css_file.read()
+
+    title = f"<br>{title}" if title else ""
+
+    docstring = model.__doc__
+    snippet = docstring.partition("Parameters\n    ----------\n")[0]
+
     report_text_body = tpl.substitute(
+        css=css,
+        title=f"Statistical Report - {return_model_type(model)}{title}",
+        docstring=snippet,
+        warning_messages=_render_warnings_partial(warning_messages),
         page_heading_1=page_heading_1,
         page_heading_2=page_heading_2,
         parameters=model_attributes_html,
@@ -295,6 +310,7 @@ def make_glm_report(
         component=all_components_text,
         design_matrices_dict=design_matrices_dict,
         unique_id=unique_id,
+        date=datetime.datetime.now().replace(microsecond=0).isoformat(),
     )
     report_text = HTMLReport(
         body=report_text_body,
@@ -325,25 +341,6 @@ def _plot_to_svg(plot):
         return figure_to_svg_quoted(plot)
     except AttributeError:
         return figure_to_svg_quoted(plot.figure)
-
-
-def _plot_contrasts(contrasts, design_matrices):
-    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
-
-    contrast_template_path = HTML_TEMPLATE_ROOT_PATH / "contrast_template.html"
-
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(contrast_template_path),
-        encoding="utf-8",
-    )
-
-    unique_id = str(uuid.uuid4()).replace("-", "")
-
-    contrast_text_ = tpl.substitute(
-        contrasts_dict=contrasts_dict, unique_id=unique_id
-    )
-
-    return contrast_text_
 
 
 def _resize_plot_inches(plot, width_change=0, height_change=0):
@@ -513,7 +510,7 @@ def _make_stat_maps_contrast_clusters(
     """
     all_components = []
     components_template_path = (
-        HTML_TEMPLATE_ROOT_PATH / "stat_maps_contrast_clusters_template.html"
+        HTML_TEMPLATE_PATH / "stat_maps_contrast_clusters_template.html"
     )
 
     for contrast_name, stat_map_img in stat_img.items():
