@@ -9,9 +9,12 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
-from nilearn._utils import constrained_layout_kwargs, fill_doc
+from nilearn._utils import (
+    constrained_layout_kwargs,
+    fill_doc,
+    rename_parameters,
+)
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events

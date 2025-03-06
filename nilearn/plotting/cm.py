@@ -6,7 +6,7 @@ from matplotlib import cm as _cm
 from matplotlib import colors as _colors
 from matplotlib import rcParams as _rcParams
 
-from nilearn._utils.helpers import compare_version
+from nilearn._utils import compare_version
 
 ###############################################################################
 # Custom colormaps for two-tailed symmetric statistics
