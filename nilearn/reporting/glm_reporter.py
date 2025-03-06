@@ -348,12 +348,13 @@ def _plot_contrasts(contrasts, design_matrices):
     all_contrasts_plots = {}
     contrast_template_path = HTML_TEMPLATE_ROOT_PATH / "contrast_template.html"
 
-    with contrast_template_path.open() as html_template_obj:
-        contrast_template_text = html_template_obj.read()
-
     for design_matrix in design_matrices:
         for contrast_name, contrast_data in contrasts.items():
-            contrast_text_ = string.Template(contrast_template_text)
+            tpl = tempita.HTMLTemplate.from_filename(
+                str(contrast_template_path),
+                encoding="utf-8",
+            )
+
             contrast_plot = plot_contrast_matrix(
                 contrast_data, design_matrix, colorbar=True
             )
@@ -363,12 +364,10 @@ def _plot_contrasts(contrasts, design_matrices):
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
             plt.close()
-            contrasts_for_subsitution = {
-                "contrast_plot": url_contrast_plot_svg,
-                "contrast_name": contrast_name,
-            }
-            contrast_text_ = contrast_text_.safe_substitute(
-                contrasts_for_subsitution
+
+            contrast_text_ = tpl.substitute(
+                contrast_plot=url_contrast_plot_svg,
+                contrast_name=contrast_name,
             )
             all_contrasts_plots[contrast_name] = contrast_text_
     return all_contrasts_plots
