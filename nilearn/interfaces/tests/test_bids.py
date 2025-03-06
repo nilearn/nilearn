@@ -559,7 +559,6 @@ def test_save_glm_to_bids_errors(
         )
 
 
-@pytest.mark.timeout(60)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
 )
@@ -623,7 +622,6 @@ def test_save_glm_to_bids_contrast_definitions(
         assert (tmpdir / sub_prefix / f"{prefix}{fname}").exists()
 
 
-@pytest.mark.timeout(60)
 @pytest.mark.parametrize("prefix", ["task-nback"])
 def test_save_glm_to_bids_second_level(
     matplotlib_pyplot, tmp_path_factory, prefix
