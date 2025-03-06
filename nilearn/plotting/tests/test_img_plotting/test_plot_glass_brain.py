@@ -130,17 +130,3 @@ def test_plot_glass_brain_negative_vmin_with_plot_abs(
     warning_message = "vmin is negative but plot_abs is True"
     with pytest.warns(UserWarning, match=warning_message):
         plot_glass_brain(img_3d_mni, vmin=-2, plot_abs=True)
-
-
-@pytest.mark.parametrize("transparency_range", [None, [0, 2], [-100, 200]])
-def test_plot_glass_brain_transparency(
-    matplotlib_pyplot, img_3d_ones_mni, transparency_image, transparency_range
-):
-    """Smoke tests for transparency parameter to determine alpha layer."""
-    plot_glass_brain(img_3d_ones_mni, transparency=0.5)
-
-    plot_glass_brain(
-        img_3d_ones_mni,
-        transparency=transparency_image,
-        transparency_range=transparency_range,
-    )

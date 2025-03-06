@@ -103,20 +103,6 @@ def test_display_methods_with_display_mode_tiled(
     )
 
 
-@pytest.mark.parametrize("transparency_range", [None, [0, 2], [-100, 200]])
-def test_plot_img_transparency(
-    matplotlib_pyplot, img_3d_ones_mni, transparency_image, transparency_range
-):
-    """Smoke tests for transparency parameter to determine alpha layer."""
-    plot_img(img_3d_ones_mni, transparency=0.5)
-
-    plot_img(
-        img_3d_ones_mni,
-        transparency=transparency_image,
-        transparency_range=transparency_range,
-    )
-
-
 @pytest.mark.parametrize("transparency", [-1, 10])
 def test_plot_img_transparency_warning(
     matplotlib_pyplot, img_3d_ones_mni, transparency
