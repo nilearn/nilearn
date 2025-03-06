@@ -623,7 +623,7 @@ def confounds():
 
 
 def test_fmri_inputs(rng, confounds, shape_3d_default, shape_4d_default):
-    # Test processing of FMRI inputs
+    """Test processing of FMRI inputs."""
     # prepare fake data
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         [shape_4d_default], rk=1
@@ -845,13 +845,13 @@ def test_fmri_inputs_for_non_parametric_inference_errors(
 ):
     # Test processing of FMRI inputs
     # prepare fake data
-    _, fmri_data, des = generate_fake_fmri_data_and_design(
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         [shape_4d_default], rk=1
     )
 
     # prepare correct input first level models
     flm = FirstLevelModel(subject_label="01").fit(
-        fmri_data, design_matrices=des
+        fmri_data, design_matrices=design_matrices
     )
 
     # prepare correct input dataframe and lists
