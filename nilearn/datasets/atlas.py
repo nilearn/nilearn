@@ -1679,7 +1679,7 @@ def fetch_atlas_aal(
             name=labels,
         ),
         atlas_type=atlas_type,
-        template="MNI",
+        template="MNIColin27",
         indices=indices,
     )
 
