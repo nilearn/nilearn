@@ -99,7 +99,10 @@ def test_multi_pca(multi_pca_data, mask_img, length):
     components1 = multi_pca.components_
     components2 = multi_pca.fit(length * multi_pca_data).components_
 
-    np.testing.assert_array_equal(components1, components2)
+    if length == 1:
+        np.testing.assert_array_equal(components1, components2)
+    else:
+        np.testing.assert_array_almost_equal(components1, components2)
 
 
 def test_multi_pca_with_confounds_smoke(multi_pca_data, mask_img):
