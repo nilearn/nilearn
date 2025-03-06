@@ -75,7 +75,7 @@ do not necessarily use the same MNI template
 as the default MNI template used by Nilearn for plotting.
 
 This may lead to atlas being poorly coregistered
-to the underlay image used as underlay:
+to the underlay image:
 the atlas can appear smaller or bigger than the brain.
 
 This can seen clearly on some of the images below.
