@@ -216,6 +216,10 @@ def make_glm_report(
     except AttributeError:
         design_matrices = [model.design_matrix_]
 
+    design_matrices_dict = _return_design_matrices_dict(design_matrices)
+
+    unique_id = str(uuid.uuid4()).replace("-", "")
+
     html_head_template_path = (
         HTML_TEMPLATE_ROOT_PATH / "report_head_template.html"
     )
@@ -249,7 +253,6 @@ def make_glm_report(
             sparsify=False,
         )
     statistical_maps = make_stat_maps(model, contrasts)
-    html_design_matrices = _dmtx_to_svg_url(design_matrices)
 
     # Select mask_img to use for plotting
     if isinstance(model.mask_img, NiftiMasker):
@@ -286,11 +289,12 @@ def make_glm_report(
     report_text_body = tpl.substitute(
         page_heading_1=page_heading_1,
         page_heading_2=page_heading_2,
-        model_attributes=model_attributes_html,
+        parameters=model_attributes_html,
         all_contrasts_with_plots=contrast_plots,
-        design_matrices=html_design_matrices,
         mask_plot=mask_plot_html_code,
         component=all_components_text,
+        design_matrices_dict=design_matrices_dict,
+        unique_id=unique_id,
     )
     report_text = HTMLReport(
         body=report_text_body,
@@ -340,25 +344,6 @@ def _plot_contrasts(contrasts, design_matrices):
     )
 
     return contrast_text_
-
-
-def _dmtx_to_svg_url(design_matrices):
-    design_matrices_dict = _return_design_matrices_dict(design_matrices)
-
-    dmtx_template_path = (
-        HTML_TEMPLATE_ROOT_PATH / "design_matrix_template.html"
-    )
-
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(dmtx_template_path),
-        encoding="utf-8",
-    )
-
-    unique_id = str(uuid.uuid4()).replace("-", "")
-
-    return tpl.substitute(
-        design_matrices_dict=design_matrices_dict, unique_id=unique_id
-    )
 
 
 def _resize_plot_inches(plot, width_change=0, height_change=0):
