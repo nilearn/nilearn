@@ -532,10 +532,11 @@ def _make_stat_maps_contrast_clusters(
         HTML_TEMPLATE_ROOT_PATH / "stat_maps_contrast_clusters_template.html"
     )
 
-    with components_template_path.open() as html_template_obj:
-        components_template_text = html_template_obj.read()
     for contrast_name, stat_map_img in stat_img.items():
-        component_text_ = string.Template(components_template_text)
+        tpl = tempita.HTMLTemplate.from_filename(
+            str(components_template_path),
+            encoding="utf-8",
+        )
 
         # Only use threshold_stats_img to adjust the threshold
         # that we will pass to clustering_params_to_dataframe
@@ -588,14 +589,13 @@ def _make_stat_maps_contrast_clusters(
             header=False,
             classes="cluster-details-table",
         )
-        components_values = {
-            "contrast_name": escape(contrast_name),
-            "contrast_plot": "",
-            "stat_map_img": stat_map_svg,
-            "cluster_table_details": table_details_html,
-            "cluster_table": cluster_table_html,
-        }
-        component_text_ = component_text_.safe_substitute(**components_values)
+
+        component_text_ = tpl.substitute(
+            contrast_name=escape(contrast_name),
+            stat_map_img=stat_map_svg,
+            cluster_table_details=table_details_html,
+            cluster_table=cluster_table_html,
+        )
         all_components.append(component_text_)
     return all_components
 
