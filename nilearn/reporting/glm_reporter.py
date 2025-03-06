@@ -271,12 +271,12 @@ def make_glm_report(
                 f"'bg_img' must a SurfaceImage instance.Got {type(bg_img)=}"
             )
 
-        mask_plot = _mask_to_svg(model, bg_img, cut_coords, is_volume_glm)
+        mask_plot = _mask_to_plot(model, bg_img, cut_coords, is_volume_glm)
+
+        statistical_maps = make_stat_maps(model, contrasts)
 
         if not is_volume_glm:
             body = _make_surface_glm_body(
-                model,
-                contrasts,
                 title,
                 bg_img,
                 threshold,
@@ -289,6 +289,7 @@ def make_glm_report(
                 mask_plot,
                 design_matrices_dict,
                 contrasts_dict,
+                statistical_maps,
                 date,
             )
 
@@ -296,8 +297,6 @@ def make_glm_report(
             if not display_mode:
                 display_mode_selector = {"slice": "z", "glass": "lzry"}
                 display_mode = display_mode_selector[plot_type]
-
-            statistical_maps = make_stat_maps(model, contrasts)
 
             all_components = _make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
@@ -417,7 +416,7 @@ def _resize_plot_inches(plot, width_change=0, height_change=0):
     return plot
 
 
-def _mask_to_svg(model, bg_img, cut_coords, is_volume_glm):
+def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
     """Plot cuts of an mask image and creates SVG code of it.
 
     Parameters
@@ -793,8 +792,6 @@ def _add_params_to_plot(table_details, stat_map_plot):
 
 
 def _make_surface_glm_body(
-    model,
-    contrasts,
     title,
     bg_img,
     threshold,
@@ -807,6 +804,7 @@ def _make_surface_glm_body(
     mask_plot,
     design_matrices_dict,
     contrasts_dict,
+    statistical_maps,
     date,
 ):
     """Generate a GLM report when input data is surface image.
@@ -815,39 +813,24 @@ def _make_surface_glm_body(
     even before fit,
     to return early if the model is not fitted.
     """
-    statistical_maps = None
-    if contrasts_dict is not None:
-        statistical_maps = {}
-        statistical_maps = {
-            contrast_name: model.compute_contrast(
-                contrast_val, output_type="z_score"
-            )
-            for contrast_name, contrast_val in contrasts.items()
+    surf_mesh = bg_img.mesh if bg_img else None
+    for contrast_name, contrast_map in statistical_maps.items():
+        fig = plot_surf_stat_map(
+            stat_map=contrast_map,
+            hemi="left",
+            colorbar=True,
+            threshold=threshold,
+            bg_map=bg_img,
+            surf_mesh=surf_mesh,
+        )
+        statistical_maps[contrast_name] = {
+            "stat_map_img": figure_to_png_base64(fig),
         }
-
-        surf_mesh = bg_img.mesh if bg_img else None
-        for contrast_name, contrast_val in contrasts.items():
-            contrast_map = model.compute_contrast(
-                contrast_val, output_type="z_score"
-            )
-            fig = plot_surf_stat_map(
-                stat_map=contrast_map,
-                hemi="left",
-                colorbar=True,
-                threshold=threshold,
-                bg_map=bg_img,
-                surf_mesh=surf_mesh,
-            )
-            statistical_maps[contrast_name] = {
-                "stat_map_img": figure_to_png_base64(fig),
-            }
-            # prevents sphinx-gallery & jupyter from scraping & inserting plots
-            plt.close("all")
+        # prevents sphinx-gallery & jupyter from scraping & inserting plots
+        plt.close("all")
 
     # For now we do not have surface clusters,
     # so we do not display this in the report
-    cluster_table_html = None
-
     return tpl.substitute(
         css=css,
         title=title,
@@ -857,7 +840,7 @@ def _make_surface_glm_body(
         parameters=model_attributes_html,
         contrasts_dict=contrasts_dict,
         statistical_maps=statistical_maps,
-        cluster_table_details=cluster_table_html,
+        cluster_table_details=None,
         mask_plot=mask_plot,
         cluster_table=None,
         date=date,

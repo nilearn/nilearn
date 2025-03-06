@@ -199,7 +199,11 @@
         <summary class="pure-button button-small contrast-button">
           Cluster Table
         </summary>
-        {{if cluster_table_details}} {{ cluster_table_details|html }} {{else}}
+        {{if cluster_table_details}}
+        <!--  -->
+        {{ cluster_table_details|html }}
+        <!--  -->
+        {{else}}
         <p>No cluster table parameter provided</p>
         {{endif}}
         <!--  -->

@@ -5,12 +5,18 @@
     src="data:image/svg+xml,{{stat_map_img}}"
     alt="Stat map plot for the contrast: {{contrast_name}}"
   />
-  <br />
   <details>
-    <summary>Cluster Table</summary>
-    <br />
-    {{cluster_table_details}}
-    <br />
+    <summary class="pure-button button-small contrast-button">
+      Cluster Table
+    </summary>
+    {{if cluster_table_details}}
+    <!--  -->
+    {{ cluster_table_details|html }}
+    <!--  -->
+    {{else}}
+    <p>No cluster table parameter provided</p>
+    {{endif}}
+    <!--  -->
     {{cluster_table}}
   </details>
 </section>
