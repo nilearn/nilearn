@@ -78,7 +78,7 @@ This may lead to atlas being poorly coregistered
 to the underlay image:
 the atlas can appear smaller or bigger than the brain.
 
-This can seen clearly on some of the images below.
+This can be seen clearly in some of the images below.
 
 You also should not use maskers with an atlas
 that is not coregistered properly coregistered
