@@ -9,13 +9,30 @@ from nibabel import Nifti1Image
 
 from nilearn import datasets, image
 from nilearn.image import get_data, new_img_like
-from nilearn.plotting import html_stat_map
+from nilearn.plotting.html_stat_map import (
+    StatMapView,
+    _bytes_io_to_base64,
+    _data_to_sprite,
+    _get_bg_mask_and_cmap,
+    _get_cut_slices,
+    _json_view_data,
+    _json_view_params,
+    _json_view_size,
+    _json_view_to_html,
+    _load_bg_img,
+    _mask_stat_map,
+    _resample_stat_map,
+    _save_cm,
+    _save_sprite,
+    _threshold_data,
+    view_img,
+)
 from nilearn.plotting.js_plotting_utils import colorscale
 
 
 def _check_html(html_view, title=None):
     """Check the presence of some expected code in the html viewer."""
-    assert isinstance(html_view, html_stat_map.StatMapView)
+    assert isinstance(html_view, StatMapView)
     assert "var brain =" in str(html_view)
     assert "overlayImg" in str(html_view)
     if title is not None:
@@ -55,7 +72,7 @@ def test_data_to_sprite():
     # Simulate data and turn into sprite
     data = np.zeros([8, 8, 8])
     data[2:6, 2:6, 2:6] = 1
-    sprite = html_stat_map._data_to_sprite(data)
+    sprite = _data_to_sprite(data)
 
     # Generate ground truth for the sprite
     Z = np.zeros([8, 8])
@@ -79,32 +96,30 @@ def test_threshold_data():
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
-    data_t, mask, thresh = html_stat_map._threshold_data(
-        data, threshold="auto"
-    )
+    data_t, mask, thresh = _threshold_data(data, threshold="auto")
     gtruth_m = np.array([False, True, True, True, True, True, False])
     gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
     assert (mask == gtruth_m).all()
     assert (data_t == gtruth_d).all()
 
     # Check that threshold=None keeps everything
-    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=None)
+    data_t, mask, thresh = _threshold_data(data, threshold=None)
     assert np.all(np.logical_not(mask))
     assert np.all(data_t == data)
 
     # Check positive threshold works
-    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=1)
+    data_t, mask, thresh = _threshold_data(data, threshold=1)
     gtruth = np.array([False, False, True, True, True, False, False])
     assert (mask == gtruth).all()
 
     # Check 0 threshold works
-    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=0)
+    data_t, mask, thresh = _threshold_data(data, threshold=0)
     gtruth = np.array([False, False, False, True, False, False, False])
     assert (mask == gtruth).all()
 
     # Check that overly lenient threshold returns array
     data = np.arange(3, 10)
-    data_t, mask, thresh = html_stat_map._threshold_data(data, threshold=2)
+    data_t, mask, thresh = _threshold_data(data, threshold=2)
     gtruth = np.full(7, False)
     assert (mask == gtruth).all()
 
@@ -117,20 +132,18 @@ def test_save_sprite(rng):
     mask[1:-1, 1:-1, 1:-1] = 1
     # Save the sprite using BytesIO
     sprite_io = BytesIO()
-    html_stat_map._save_sprite(
-        data, sprite_io, vmin=0, vmax=1, mask=mask, format="png"
-    )
+    _save_sprite(data, sprite_io, vmin=0, vmax=1, mask=mask, format="png")
 
     # Load the sprite back in base64
-    sprite_base64 = html_stat_map._bytes_io_to_base64(sprite_io)
+    sprite_base64 = _bytes_io_to_base64(sprite_io)
 
     decoded_io = BytesIO()
     decoded_io.write(base64.b64decode(sprite_base64))
     decoded_io.seek(0)
     img = plt.imread(decoded_io, format="png")
     correct_img = np.ma.array(
-        html_stat_map._data_to_sprite(data),
-        mask=html_stat_map._data_to_sprite(mask),
+        _data_to_sprite(data),
+        mask=_data_to_sprite(mask),
     )
     correct_img = plt.Normalize(0, 1)(correct_img)
     cmapped = plt.get_cmap("Greys")(correct_img)
@@ -143,10 +156,10 @@ def test_save_cmap(cmap, n_colors):
     """Test covers _save_cmap as well as _bytes_io_to_base64."""
     # Save the cmap using BytesIO
     cmap_io = BytesIO()
-    html_stat_map._save_cm(cmap_io, cmap, format="png", n_colors=n_colors)
+    _save_cm(cmap_io, cmap, format="png", n_colors=n_colors)
 
     # Load the colormap back in base64
-    cmap_base64 = html_stat_map._bytes_io_to_base64(cmap_io)
+    cmap_base64 = _bytes_io_to_base64(cmap_io)
 
     decoded_io = BytesIO()
     decoded_io.write(base64.b64decode(cmap_base64))
@@ -161,15 +174,11 @@ def test_mask_stat_map():
     img, data = _simulate_img()
 
     # Try not to threshold anything
-    mask_img, img, data_t, thresh = html_stat_map._mask_stat_map(
-        img, threshold=None
-    )
+    mask_img, img, data_t, thresh = _mask_stat_map(img, threshold=None)
     assert np.max(get_data(mask_img)) == 0
 
     # Now threshold at zero
-    mask_img, img, data_t, thresh = html_stat_map._mask_stat_map(
-        img, threshold=0
-    )
+    mask_img, img, data_t, thresh = _mask_stat_map(img, threshold=0)
     assert np.min((data == 0) == get_data(mask_img))
 
 
@@ -181,12 +190,12 @@ def test_load_bg_img(affine_eye):
     img, _ = _simulate_img(affine)
 
     # use empty bg_img
-    bg_img, _, _, _ = html_stat_map._load_bg_img(img, bg_img=None)
+    bg_img, _, _, _ = _load_bg_img(img, bg_img=None)
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
 
     # Try to load the default background
-    bg_img, _, _, _ = html_stat_map._load_bg_img(img)
+    bg_img, _, _, _ = _load_bg_img(img)
 
     # Check positive isotropic, near-diagonal affine
     _check_affine(bg_img.affine)
@@ -196,7 +205,7 @@ def test_get_bg_mask_and_cmap():
     # non-regression test for issue #3120 (bg image was masked with mni
     # template mask)
     img, _ = _simulate_img()
-    mask, cmap = html_stat_map._get_bg_mask_and_cmap(img, False)
+    mask, cmap = _get_bg_mask_and_cmap(img, False)
     assert (mask == np.zeros(img.shape, dtype=bool)).all()
 
 
@@ -214,7 +223,7 @@ def test_resample_stat_map(affine_eye):
     mask_img = new_img_like(stat_map_img, data > 0, stat_map_img.affine)
 
     # Now run the resampling
-    stat_map_img, mask_img = html_stat_map._resample_stat_map(
+    stat_map_img, mask_img = _resample_stat_map(
         stat_map_img, bg_img, mask_img, resampling_interpolation="nearest"
     )
 
@@ -233,7 +242,7 @@ def test_resample_stat_map(affine_eye):
 
 def test_json_view_params(affine_eye):
     # Try to generate some sprite parameters
-    params = html_stat_map._json_view_params(
+    params = _json_view_params(
         shape=[4, 4, 4],
         affine=affine_eye,
         vmin=0,
@@ -256,7 +265,7 @@ def test_json_view_params(affine_eye):
 def test_json_view_size():
     # Build some minimal sprite Parameters
     sprite_params = {"nbSlice": {"X": 4, "Y": 4, "Z": 4}}
-    width, height = html_stat_map._json_view_size(sprite_params)
+    width, height = _json_view_size(sprite_params)
 
     # This is a simple case: height is 4 pixels, width 3 x 4 = 12 pixels
     # with an additional 120% height factor for annotations and margins
@@ -283,7 +292,7 @@ def _get_data_and_json_view(black_bg, cbar):
     )
 
     # Build a sprite
-    json_view = html_stat_map._json_view_data(
+    json_view = _json_view_data(
         bg_img,
         stat_map_img,
         mask_img,
@@ -311,7 +320,7 @@ def test_json_view_data(black_bg, cbar):
 @pytest.mark.parametrize("cbar", [True, False])
 def test_json_view_to_html(affine_eye, black_bg, cbar):
     data, json_view = _get_data_and_json_view(black_bg, cbar)
-    json_view["params"] = html_stat_map._json_view_params(
+    json_view["params"] = _json_view_params(
         data.shape,
         affine_eye,
         vmin=0,
@@ -326,7 +335,7 @@ def test_json_view_to_html(affine_eye, black_bg, cbar):
     )
 
     # Create a viewer
-    html_view = html_stat_map._json_view_to_html(json_view)
+    html_view = _json_view_to_html(json_view)
     _check_html(html_view)
 
 
@@ -335,27 +344,21 @@ def test_get_cut_slices(affine_eye):
     img, data = _simulate_img()
 
     # Use automatic selection of coordinates
-    cut_slices = html_stat_map._get_cut_slices(
-        img, cut_coords=None, threshold=None
-    )
+    cut_slices = _get_cut_slices(img, cut_coords=None, threshold=None)
     assert (cut_slices == [4, 4, 4]).all()
 
     # Check that using a single number for cut_coords raises an error
     with pytest.raises(ValueError):
-        html_stat_map._get_cut_slices(img, cut_coords=4, threshold=None)
+        _get_cut_slices(img, cut_coords=4, threshold=None)
 
     # Check that it is possible to manually specify coordinates
-    cut_slices = html_stat_map._get_cut_slices(
-        img, cut_coords=[2, 2, 2], threshold=None
-    )
+    cut_slices = _get_cut_slices(img, cut_coords=[2, 2, 2], threshold=None)
     assert (cut_slices == [2, 2, 2]).all()
 
     # Check that the affine does not change where the cut is done
     affine = 2 * affine_eye
     img = Nifti1Image(data, affine)
-    cut_slices = html_stat_map._get_cut_slices(
-        img, cut_coords=None, threshold=None
-    )
+    cut_slices = _get_cut_slices(img, cut_coords=None, threshold=None)
     assert (cut_slices == [4, 4, 4]).all()
 
 
@@ -386,11 +389,11 @@ def test_view_img_3d_warnings(params, warning_msg):
 
     # Should not raise warnings
     with warnings.catch_warnings(record=True) as w:
-        html_view = html_stat_map.view_img(img, bg_img=None)
+        html_view = view_img(img, bg_img=None)
     assert len(w) == 0
 
     with pytest.warns(UserWarning, match=warning_msg):
-        html_view = html_stat_map.view_img(img, **params)
+        html_view = view_img(img, **params)
 
     _check_html(html_view)
 
@@ -414,7 +417,7 @@ def test_view_img_3d_warnings_more():
         UserWarning,
         match="'partition' will ignore the 'mask' of the MaskedArray",
     ):
-        html_view = html_stat_map.view_img(img)
+        html_view = view_img(img)
 
     _check_html(html_view, title="Slice viewer")
 
@@ -422,9 +425,7 @@ def test_view_img_3d_warnings_more():
         UserWarning,
         match="'partition' will ignore the 'mask' of the MaskedArray",
     ):
-        html_view = html_stat_map.view_img(
-            img, threshold="95%", title="SOME_TITLE"
-        )
+        html_view = view_img(img, threshold="95%", title="SOME_TITLE")
 
     _check_html(html_view, title="SOME_TITLE")
 
@@ -455,6 +456,6 @@ def test_view_img_4d_warnings(params):
         UserWarning,
         match="'partition' will ignore the 'mask' of the MaskedArray",
     ):
-        html_view = html_stat_map.view_img(img_4d, **params)
+        html_view = view_img(img_4d, **params)
 
     _check_html(html_view)
