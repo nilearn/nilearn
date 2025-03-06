@@ -237,8 +237,8 @@ def make_glm_report(
     )
 
     contrasts = coerce_to_dict(contrasts)
+    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
-    contrast_plots = _plot_contrasts(contrasts, design_matrices)
     page_title, page_heading_1, page_heading_2 = make_headings(
         contrasts,
         title,
@@ -290,7 +290,7 @@ def make_glm_report(
         page_heading_1=page_heading_1,
         page_heading_2=page_heading_2,
         parameters=model_attributes_html,
-        all_contrasts_with_plots=contrast_plots,
+        contrasts_dict=contrasts_dict,
         mask_plot=mask_plot_html_code,
         component=all_components_text,
         design_matrices_dict=design_matrices_dict,

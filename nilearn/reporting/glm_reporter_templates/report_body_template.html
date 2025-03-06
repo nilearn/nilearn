@@ -92,7 +92,28 @@
     </div>
   </section>
 
-  {{all_contrasts_with_plots|html}}
+  <section id="contrasts-{{unique_id}}">
+    <h2>Contrasts</h2>
+    <div class="d-flex flex-wrap justify-content-evenly">
+      {{if contrasts_dict}}
+      <!--  -->
+      {{py: contrasts = contrasts_dict.items()}}
+      <!--  -->
+      {{for contrast_name, contrast_plot in contrasts}}
+      <div class="scroll-x" style="padding-top: 10px">
+        <img
+          class="pure-img"
+          src="data:image/svg+xml,{{contrast_plot}}"
+          alt="Plot of the contrast: {{contrast_name}}."
+        />
+      </div>
+      {{endfor}}
+      <!--  -->
+      {{else}}
+      <p>No contrast was provided.</p>
+      {{endif}}
+    </div>
+  </section>
 
   <section id="mask-{{unique_id}}">
     <h2>Mask</h2>
