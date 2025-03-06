@@ -9,7 +9,7 @@ from scipy.ndimage import (
     sobel,
 )
 
-from .._utils.extmath import fast_abs_percentile
+from nilearn._utils.extmath import fast_abs_percentile
 
 ###############################################################################
 # Edge detection

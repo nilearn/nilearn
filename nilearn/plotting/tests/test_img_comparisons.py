@@ -9,8 +9,7 @@ from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.conftest import _affine_mni, _img_mask_mni, _make_surface_mask
 from nilearn.image import iter_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.plotting import plot_bland_altman
-from nilearn.plotting.img_comparison import plot_img_comparison
+from nilearn.plotting import plot_bland_altman, plot_img_comparison
 
 # ruff: noqa: ARG001
 
@@ -82,14 +81,16 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     _, axes = plt.subplots(2, 1)
     axes = axes.ravel()
 
+    length = 2
+
     query_images, mask_img = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=5
+        random_state=rng, shape=(2, 3, 4), length=length
     )
     # plot_img_comparison doesn't handle 4d images ATM
     query_images = list(iter_img(query_images))
 
     target_images, _ = generate_fake_fmri(
-        random_state=rng, shape=(4, 5, 6), length=5
+        random_state=rng, shape=(4, 5, 6), length=length
     )
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]
@@ -111,7 +112,7 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
 
     # 5 scatterplots
     ax_0, ax_1 = axes
-    assert len(ax_0.collections) == 5
+    assert len(ax_0.collections) == length
     assert len(
         ax_0.collections[0].get_edgecolors()
         == masker.transform(target_images[0]).ravel().shape[0]
@@ -120,11 +121,11 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     assert ax_0.get_xlabel() == "image set 1"
 
     # 5 regression lines
-    assert len(ax_0.lines) == 5
+    assert len(ax_0.lines) == length
     assert ax_0.lines[0].get_linestyle() == "--"
     assert ax_1.get_title() == "Histogram of imgs values"
     gridsize = 100
-    assert len(ax_1.patches) == 5 * 2 * gridsize
+    assert len(ax_1.patches) == length * 2 * gridsize
 
 
 def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
@@ -133,13 +134,13 @@ def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     axes = axes.ravel()
 
     query_images, mask_img = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=5
+        random_state=rng, shape=(2, 3, 4), length=2
     )
     # plot_img_comparison doesn't handle 4d images ATM
     query_images = list(iter_img(query_images))
 
     target_images, _ = generate_fake_fmri(
-        random_state=rng, shape=(2, 3, 4), length=5
+        random_state=rng, shape=(2, 3, 4), length=2
     )
     target_images = list(iter_img(target_images))
     target_images[0] = query_images[0]

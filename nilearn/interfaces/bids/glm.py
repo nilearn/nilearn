@@ -234,7 +234,7 @@ def save_glm_to_bids(
 
     """
     # Import here to avoid circular imports
-    from nilearn.plotting.matrix_plotting import (
+    from nilearn.plotting import (
         plot_contrast_matrix,
         plot_design_matrix,
     )

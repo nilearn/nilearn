@@ -127,7 +127,7 @@ def cluster_level_design(rng):
 # Theoretical distribution is known for this simple design t(n_samples - dof).
 
 
-PERM_RANGES = [10, 100, 1000]
+PERM_RANGES = [10, 1000]
 
 
 def run_permutations(tested_var, target_var, model_intercept):

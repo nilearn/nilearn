@@ -16,6 +16,13 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.plotting import (
+    plot_img_on_surf,
+    plot_surf,
+    plot_surf_contours,
+    plot_surf_roi,
+    plot_surf_stat_map,
+)
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.plotting.surf_plotting import (
@@ -24,11 +31,6 @@ from nilearn.plotting.surf_plotting import (
     _get_ticks_matplotlib,
     _get_view_plot_surf_matplotlib,
     _get_view_plot_surf_plotly,
-    plot_img_on_surf,
-    plot_surf,
-    plot_surf_contours,
-    plot_surf_roi,
-    plot_surf_stat_map,
 )
 from nilearn.surface import (
     InMemoryMesh,
