@@ -25,7 +25,7 @@ from nilearn.plotting import (
 )
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
-from nilearn.plotting.surf_plotting import (
+from nilearn.plotting.surface.surf_plotting import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors_matplotlib,
     _get_ticks_matplotlib,
@@ -401,7 +401,7 @@ def test_plot_surf_contours_warning_hemi(in_memory_mesh):
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf_plotly(full_view):
-    from nilearn.plotting.surf_plotting import (
+    from nilearn.plotting.surface.surf_plotting import (
         _get_camera_view_from_elevation_and_azimut,
         _get_camera_view_from_string_view,
     )
@@ -728,7 +728,7 @@ def test_add_contours_line_properties(plotly, key, value, surface_image_roi):
     ],
 )
 def test_check_view_is_valid(view, is_valid):
-    from nilearn.plotting.surf_plotting import _check_view_is_valid
+    from nilearn.plotting.surface.surf_plotting import _check_view_is_valid
 
     assert _check_view_is_valid(view) is is_valid
 
@@ -743,7 +743,7 @@ def test_check_view_is_valid(view, is_valid):
     ],
 )
 def test_check_hemisphere_is_valid(hemi, is_valid):
-    from nilearn.plotting.surf_plotting import _check_hemisphere_is_valid
+    from nilearn.plotting.surface.surf_plotting import _check_hemisphere_is_valid
 
     assert _check_hemisphere_is_valid(hemi) is is_valid
 
@@ -773,7 +773,7 @@ def test_get_view_plot_surf_view_errors(hemi, view, f):
 
 
 def test_configure_title_plotly():
-    from nilearn.plotting.surf_plotting import _configure_title_plotly
+    from nilearn.plotting.surface.surf_plotting import _configure_title_plotly
 
     assert _configure_title_plotly(None, None) == {}
     assert _configure_title_plotly(None, 22) == {}
@@ -795,7 +795,7 @@ def test_configure_title_plotly():
     ],
 )
 def test_get_bounds(data, expected):
-    from nilearn.plotting.surf_plotting import _get_bounds
+    from nilearn.plotting.surface.surf_plotting import _get_bounds
 
     assert _get_bounds(data) == expected
     assert _get_bounds(data, vmin=0.2) == (0.2, expected[1])
