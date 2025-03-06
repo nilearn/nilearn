@@ -490,7 +490,7 @@ def n_cols_design_matrix():
 @pytest.fixture
 def two_runs_model(n_cols_design_matrix):
     """Create two runs of data."""
-    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], n_cols_design_matrix
+    shapes, rk = [(7, 8, 9, 10), (7, 8, 9, 10)], n_cols_design_matrix
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
         rk,
@@ -559,6 +559,7 @@ def test_save_glm_to_bids_errors(
         )
 
 
+@pytest.mark.timeout(60)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
 )
@@ -622,6 +623,7 @@ def test_save_glm_to_bids_contrast_definitions(
         assert (tmpdir / sub_prefix / f"{prefix}{fname}").exists()
 
 
+@pytest.mark.timeout(60)
 @pytest.mark.parametrize("prefix", ["task-nback"])
 def test_save_glm_to_bids_second_level(
     matplotlib_pyplot, tmp_path_factory, prefix
