@@ -143,7 +143,6 @@ def test_glm_fit_valid_mask_img(shape_4d_default):
     assert isinstance(z1, Nifti1Image)
 
 
-@pytest.mark.timeout(60)
 def test_explicit_fixed_effects(shape_3d_default):
     """Test the fixed effects performed manually/explicitly."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -205,7 +204,6 @@ def test_explicit_fixed_effects(shape_3d_default):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
 
-@pytest.mark.timeout(60)
 def test_explicit_fixed_effects_without_mask(shape_3d_default):
     """Test the fixed effects performed manually/explicitly with no mask."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3

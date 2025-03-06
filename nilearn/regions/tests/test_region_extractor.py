@@ -74,7 +74,8 @@ extra_valid_checks = [
 
 # Note: some report genetation tests take too long
 # Incresaing the timeout for this one
-@pytest.mark.timeout(60)
+
+
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
