@@ -619,7 +619,7 @@ def test_vol_to_surf(kind, n_scans, use_mask):
     assert correlation > 0.99
 
 
-def test_vol_to_surf_labels(img_labels):
+def test_vol_to_surf_nearest_most_frequent(img_labels):
     """Test nearest most frequent interpolation method in vol_to_surf when
     converting deterministic atlases with integer labels.
     """
