@@ -1,7 +1,4 @@
-"""Implement plotting functions useful to report analysis results.
-
-Author: Martin Perez-Guevara, Elvis Dohmatob, 2017
-"""
+"""Implement plotting functions useful to report analysis results."""
 
 import warnings
 from string import ascii_lowercase
@@ -236,6 +233,16 @@ def get_clusters_table(
         .. versionchanged:: 0.9.2
             In this case, the cluster voxel nearest to the center of mass is
             reported.
+
+    .. seealso::
+
+        This function does not report any named anatomical location
+        for the clusters.
+        To get the names of the location of the clusters
+        according to one or several atlases,
+        we recommend using
+        the `atlasreader package <https://github.com/miykael/atlasreader>`_.
+
 
     Parameters
     ----------

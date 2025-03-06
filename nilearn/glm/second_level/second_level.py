@@ -1,7 +1,5 @@
 """Provide facilities to realize a second level analysis on lists of \
 first level contrasts or directly on fitted first level models.
-
-Author: Martin Perez-Guevara, 2016
 """
 
 import operator
@@ -17,7 +15,8 @@ from nibabel.funcs import four_to_three
 from sklearn.base import clone
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
@@ -567,11 +566,7 @@ class SecondLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
 
-        if self.memory is None:
-            self.memory = Memory(None)
-        self.memory = stringify_path(self.memory)
-        if isinstance(self.memory, str):
-            self.memory = Memory(self.memory)
+        self.memory = check_memory(self.memory)
 
         # check second_level_input
         _check_second_level_input(
@@ -1069,29 +1064,28 @@ def non_parametric_inference(
     logger.log("Fitting second level model...", verbose=verbose)
 
     # Learn the mask. Assume the first level imgs have been masked.
-    if not isinstance(mask, (NiftiMasker, SurfaceMasker)):
-        if isinstance(sample_map, SurfaceImage):
-            masker = SurfaceMasker(
-                mask_img=mask,
-                smoothing_fwhm=smoothing_fwhm,
-                memory=Memory(None),
-                verbose=max(0, verbose - 1),
-                memory_level=1,
-            )
-        else:
-            masker = NiftiMasker(
-                mask_img=mask,
-                smoothing_fwhm=smoothing_fwhm,
-                memory=Memory(None),
-                verbose=max(0, verbose - 1),
-                memory_level=1,
-            )
-
-    else:
+    if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = clone(mask)
         if smoothing_fwhm is not None and masker.smoothing_fwhm is not None:
             warn("Parameter 'smoothing_fwhm' of the masker overridden.")
             masker.smoothing_fwhm = smoothing_fwhm
+
+    elif isinstance(sample_map, SurfaceImage):
+        masker = SurfaceMasker(
+            mask_img=mask,
+            smoothing_fwhm=smoothing_fwhm,
+            memory=Memory(None),
+            verbose=max(0, verbose - 1),
+            memory_level=1,
+        )
+    else:
+        masker = NiftiMasker(
+            mask_img=mask,
+            smoothing_fwhm=smoothing_fwhm,
+            memory=Memory(None),
+            verbose=max(0, verbose - 1),
+            memory_level=1,
+        )
 
     masker.fit(sample_map)
 

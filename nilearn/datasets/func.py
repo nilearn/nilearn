@@ -3,6 +3,7 @@ functional datasets (task + resting-state).
 """
 
 import fnmatch
+import functools
 import itertools
 import json
 import numbers
@@ -892,11 +893,11 @@ def fetch_localizer_contrasts(
     csv_data2 = pd.read_csv(behavioural_file, delimiter="\t")
     csv_data = csv_data.merge(csv_data2)
     subject_names = csv_data["participant_id"].tolist()
-    subjects_indices = []
-    for name in subject_ids:
-        if name not in subject_names:
-            continue
-        subjects_indices.append(subject_names.index(name))
+    subjects_indices = [
+        subject_names.index(name)
+        for name in subject_ids
+        if name in subject_names
+    ]
     csv_data = csv_data.iloc[subjects_indices]
 
     return Bunch(ext_vars=csv_data, description=fdescr, **files)
@@ -3065,14 +3066,19 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
 
-        - 'design_matrix1': :obj:`str`.
-          Path to design matrix .npz file of run 1
+        - 'design_matrix1': :obj:`pandas.DataFrame`.
+          Design matrix for run 1
         - 'func1': :obj:`str`. Path to Nifti file of run 1
-        - 'design_matrix2': :obj:`str`.
-          Path to design matrix .npz file of run 2
+        - 'design_matrix2': :obj:`pandas.DataFrame`.
+          Design matrix for run 2
         - 'func2': :obj:`str`. Path to Nifti file of run 2
         - 'mask': :obj:`str`. Path to mask file
         - 'description': :obj:`str`. Data description
+
+    Notes
+    -----
+    For more information
+    see the :ref:`dataset description <fiac_dataset>`.
 
     """
     check_params(locals())
@@ -3100,7 +3106,12 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
                 logger.log(f"Missing run file: {sess_dmtx}")
                 return None
 
-            _subject_data[f"design_matrix{int(run)}"] = str(sess_dmtx)
+            design_matrix_data = np.load(str(sess_dmtx))
+            columns = [x.decode() for x in design_matrix_data["conditions"]]
+
+            _subject_data[f"design_matrix{int(run)}"] = pd.DataFrame(
+                design_matrix_data["X"], columns=columns
+            )
 
         # glob for mask data
         mask = subject_dir / "mask.nii.gz"
@@ -3138,6 +3149,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     return data
 
 
+@functools.lru_cache
 def load_sample_motor_activation_image():
     """Load a single functional image showing motor activations.
 

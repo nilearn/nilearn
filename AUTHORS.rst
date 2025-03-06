@@ -120,6 +120,7 @@ Some other past or present contributors are:
 * `Jerome Dockes`_: Origami lab, McGill University, Montréal, Canada
 * `Jerome-Alexis Chevalier`_: Emerton Data
 * `Johannes Wiesner`_: Central Institute of Mental Health, Mannheim, Germany
+* `John T. Johnson`_: Neurogram, USA
 * `Jon Haitz Legarreta Gorrono`_: Brigham and Women's Hospital, Mass General Brigham/Harvard Medical School, Boston, Massachusetts, USA
 * `Jona Sassenhagen`_
 * `Jordi Huguet`_: BarcelonaBeta Brain Research Center

@@ -1,7 +1,4 @@
-"""Implement classes to handle statistical tests on likelihood models.
-
-Author: Bertrand Thirion, 2011--2015
-"""
+"""Implement classes to handle statistical tests on likelihood models."""
 
 import numpy as np
 from nibabel.onetime import auto_attr

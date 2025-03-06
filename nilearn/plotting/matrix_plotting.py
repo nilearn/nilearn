@@ -9,9 +9,12 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
-from nilearn._utils import constrained_layout_kwargs, fill_doc
+from nilearn._utils import (
+    constrained_layout_kwargs,
+    fill_doc,
+    rename_parameters,
+)
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
@@ -339,7 +342,7 @@ def plot_matrix(
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_contrast_matrix(
-    contrast_def, design_matrix, colorbar=False, axes=None, output_file=None
+    contrast_def, design_matrix, colorbar=True, axes=None, output_file=None
 ):
     """Create plot for :term:`contrast` definition.
 
@@ -353,13 +356,17 @@ def plot_contrast_matrix(
         as they appear in the design matrix of the fitted model
         combined with operators +-
         and combined with numbers with operators +-`*`/.
+
     design_matrix : :class:`pandas.DataFrame`
         Design matrix to use.
+
     %(colorbar)s
-        Default=False.
+        Default=True.
+
     axes : :class:`matplotlib.axes.Axes` or None, default=None
         Axis on which to plot the figure.
         If None, a new figure will be created.
+
     %(output_file)s
 
     Returns
@@ -396,8 +403,8 @@ def plot_contrast_matrix(
     axes.xaxis.set(ticks=np.arange(n_columns_design_matrix))
     axes.set_xticklabels(design_column_names, rotation=50, ha="left")
 
-    fig = axes.figure
     if colorbar:
+        fig = axes.figure
         fig.colorbar(mat, fraction=0.025, pad=0.04)
 
     return save_figure_if_needed(axes, output_file)
@@ -454,7 +461,10 @@ def pad_contrast_matrix(contrast_def, design_matrix):
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_design_matrix(
-    design_matrix, rescale=True, axes=None, output_file=None
+    design_matrix,
+    rescale=True,
+    axes=None,
+    output_file=None,
 ):
     """Plot a design matrix.
 
@@ -561,8 +571,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     # input validation
     if cmap is None:
-        cmap = plt.cm.tab20
-    elif isinstance(cmap, str):
+        cmap = "tab20"
+    if isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
 
     event_labels = pd.concat(event["trial_type"] for event in model_event)
@@ -574,7 +584,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         plt.close(fig=figure)
         raise ValueError(
             "The number of event types is greater than "
-            f" colors in colormap ({len(event_labels)} > {cmap.N}). "
+            f"colors in colormap ({len(event_labels)} > {cmap.N}). "
             "Use a different colormap."
         )
 
@@ -632,6 +642,7 @@ def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
     cmap="RdBu_r",
+    colorbar=True,
     output_file=None,
     **kwargs,
 ):
@@ -715,6 +726,7 @@ def plot_design_matrix_correlation(
         vmax=vmax,
         vmin=vmax * -1,
         labels=col_labels.to_list(),
+        colorbar=colorbar,
         **kwargs,
     )
 

@@ -8,15 +8,21 @@ from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.image import get_data
 from nilearn.plotting import html_surface
-from nilearn.plotting.html_surface import view_img_on_surf
+from nilearn.plotting.html_surface import (
+    colorscale,
+    get_vertexcolor,
+    view_img_on_surf,
+)
 from nilearn.plotting.js_plotting_utils import decode
+from nilearn.plotting.tests.test_js_plotting_utils import (
+    check_colors,
+    check_html,
+)
 from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     load_surf_data,
     load_surf_mesh,
 )
-
-from .test_js_plotting_utils import check_colors, check_html
 
 
 @pytest.fixture(scope="session")
@@ -25,25 +31,39 @@ def mni152_template_res_2():
 
 
 def test_get_vertexcolor():
+    """Test get_vertexcolor."""
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_left"])
     surf_map = np.arange(len(mesh.coordinates))
-    colors = html_surface.colorscale("jet", surf_map, 10)
-    vertexcolors = html_surface.get_vertexcolor(
+    colors = colorscale("jet", surf_map, 10)
+
+    vertexcolors = get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
         absolute_threshold=colors["abs_threshold"],
         bg_map=fsaverage["sulc_left"],
     )
+
     assert len(vertexcolors) == len(mesh.coordinates)
-    vertexcolors = html_surface.get_vertexcolor(
+
+    vertexcolors = get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
         absolute_threshold=colors["abs_threshold"],
     )
+
     assert len(vertexcolors) == len(mesh.coordinates)
+
+
+def test_get_vertexcolor_bg_map():
+    """Test get_vertexcolor with background map."""
+    fsaverage = fetch_surf_fsaverage()
+    mesh = load_surf_mesh(fsaverage["pial_left"])
+    surf_map = np.arange(len(mesh.coordinates))
+    colors = colorscale("jet", surf_map, 10)
+
     # Surface map whose value in each vertex is
     # 1 if this vertex's curv > 0
     # 0 if this vertex's curv is 0
@@ -51,38 +71,55 @@ def test_get_vertexcolor():
     bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert bg_min < 0 or bg_max > 1
-    vertexcolors_auto_normalized = html_surface.get_vertexcolor(
+
+    vertexcolors_auto_normalized = get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
         absolute_threshold=colors["abs_threshold"],
         bg_map=bg_map,
     )
+
     assert len(vertexcolors_auto_normalized) == len(mesh.coordinates)
+
     # Manually set values of background map between 0 and 1
     bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
     assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
-    vertexcolors_manually_normalized = html_surface.get_vertexcolor(
+
+    vertexcolors_manually_normalized = get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
         absolute_threshold=colors["abs_threshold"],
         bg_map=bg_map_normalized,
     )
+
     assert len(vertexcolors_manually_normalized) == len(mesh.coordinates)
     assert vertexcolors_manually_normalized == vertexcolors_auto_normalized
+
     # Scale background map between 0.25 and 0.75
     bg_map_scaled = bg_map_normalized / 2 + 0.25
     assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
-    vertexcolors_manually_rescaled = html_surface.get_vertexcolor(
+
+    vertexcolors_manually_rescaled = get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
         absolute_threshold=colors["abs_threshold"],
         bg_map=bg_map_scaled,
     )
+
     assert len(vertexcolors_manually_rescaled) == len(mesh.coordinates)
     assert vertexcolors_manually_rescaled != vertexcolors_auto_normalized
+
+
+def test_get_vertexcolor_deprecation():
+    """Check deprecation warning."""
+    fsaverage = fetch_surf_fsaverage()
+    mesh = load_surf_mesh(fsaverage["pial_left"])
+    surf_map = np.arange(len(mesh.coordinates))
+    colors = colorscale("jet", surf_map, 10)
+
     with pytest.warns(
         DeprecationWarning,
         match=(
@@ -90,12 +127,10 @@ def test_get_vertexcolor():
             "We recommend setting `darkness` to None"
         ),
     ):
-        vertexcolors = html_surface.get_vertexcolor(
+        get_vertexcolor(
             surf_map,
             colors["cmap"],
             colors["norm"],
-            absolute_threshold=colors["abs_threshold"],
-            bg_map=bg_map,
             darkness=0.5,
         )
 

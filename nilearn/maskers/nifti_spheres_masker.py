@@ -7,7 +7,6 @@ import contextlib
 import warnings
 
 import numpy as np
-from joblib import Memory
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -415,7 +414,7 @@ class NiftiSpheresMasker(BaseMasker):
                 f"{type(displayed_spheres)}"
             )
         self.displayed_spheres = displayed_spheres
-        self.report_id += 1
+
         return generate_report(self)
 
     def _reporting(self):
@@ -453,7 +452,7 @@ class NiftiSpheresMasker(BaseMasker):
                 ).astype(int)
                 for seed in seeds
             ]
-        self._report_content["report_id"] = self.report_id
+
         self._report_content["number_of_seeds"] = len(seeds)
         spheres_to_be_displayed = range(len(seeds))
         if isinstance(self.displayed_spheres, int):
@@ -532,7 +531,6 @@ class NiftiSpheresMasker(BaseMasker):
         if hasattr(self, "seeds_"):
             return self
 
-        self.report_id = -1
         self._report_content = {
             "description": (
                 "This reports shows the regions defined "
@@ -540,9 +538,6 @@ class NiftiSpheresMasker(BaseMasker):
             ),
             "warning_message": None,
         }
-
-        if self.memory is None:
-            self.memory = Memory(location=None, verbose=0)
 
         self = sanitize_cleaning_parameters(self)
 

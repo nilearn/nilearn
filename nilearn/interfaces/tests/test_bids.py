@@ -12,7 +12,6 @@ from nilearn._utils.data_gen import (
     create_fake_bids_dataset,
     generate_fake_fmri_data_and_design,
 )
-from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.interfaces.bids import (
@@ -26,6 +25,8 @@ from nilearn.interfaces.bids.query import (
     infer_slice_timing_start_time_from_dataset,
 )
 from nilearn.maskers import NiftiMasker
+
+# ruff: noqa: ARG001
 
 
 def test_get_metadata_from_bids(tmp_path):
@@ -131,8 +132,11 @@ def _rm_all_json_files_from_bids_dataset(bids_path):
     for x in bids_path.glob("**/*.json"):
         x.unlink()
     selection = get_bids_files(bids_path, file_type="json", sub_folder=True)
+
     assert selection == []
+
     selection = get_bids_files(bids_path, file_type="json", sub_folder=False)
+
     assert selection == []
 
 
@@ -166,6 +170,7 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
         sub_folder=True,
     )
     assert selection == []
+
     selection = get_bids_files(
         bids_path,
         file_tag="bold",
@@ -173,6 +178,7 @@ def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
         filters=[("task", "main")],
         sub_folder=False,
     )
+
     assert selection != []
     assert selection[0] == str(json_file)
 
@@ -230,7 +236,30 @@ def test_get_bids_files_inheritance_principle_sub_folder(tmp_path, json_file):
     assert selection[0] == str(new_json_file)
 
 
-def test_get_bids_files(tmp_path):
+@pytest.mark.parametrize(
+    "params, files_per_subject",
+    [
+        # files in total related to subject images.
+        # Top level files like README not included
+        ({}, 19),
+        # bold files expected. .nii and .json files
+        ({"file_tag": "bold"}, 12),
+        # files are nii.gz. Bold and T1w files.
+        ({"file_type": "nii.gz"}, 7),
+        # There are only n_sub files in anat folders. One T1w per subject.
+        ({"modality_folder": "anat"}, 1),
+        # files corresponding to run 1 of session 2 of main task.
+        # n_sub bold.nii.gz and n_sub bold.json files.
+        (
+            {
+                "file_tag": "bold",
+                "filters": [("task", "main"), ("run", "01"), ("ses", "02")],
+            },
+            2,
+        ),
+    ],
+)
+def test_get_bids_files(tmp_path, params, files_per_subject):
     """Check proper number of files is returned.
 
     For each possible option of file selection
@@ -247,30 +276,34 @@ def test_get_bids_files(tmp_path):
         n_runs=[1, 2],
     )
 
-    # files in total related to subject images.
-    # Top level files like README not included
-    selection = get_bids_files(bids_path)
-    assert len(selection) == 19 * n_sub
-    # bold files expected. .nii and .json files
-    selection = get_bids_files(bids_path, file_tag="bold")
-    assert len(selection) == 12 * n_sub
-    # files are nii.gz. Bold and T1w files.
-    selection = get_bids_files(bids_path, file_type="nii.gz")
-    assert len(selection) == 7 * n_sub
+    selection = get_bids_files(bids_path, **params)
+
+    assert len(selection) == files_per_subject * n_sub
+
     # files correspond to subject 01
     selection = get_bids_files(bids_path, sub_label="01")
+
     assert len(selection) == 19
-    # There are only n_sub files in anat folders. One T1w per subject.
-    selection = get_bids_files(bids_path, modality_folder="anat")
-    assert len(selection) == n_sub
-    # files corresponding to run 1 of session 2 of main task.
-    # n_sub bold.nii.gz and n_sub bold.json files.
-    filters = [("task", "main"), ("run", "01"), ("ses", "02")]
-    selection = get_bids_files(bids_path, file_tag="bold", filters=filters)
-    assert len(selection) == 2 * n_sub
+
     # Get Top level folder files. Only 1 in this case, the README file.
     selection = get_bids_files(bids_path, sub_folder=False)
+
     assert len(selection) == 1
+
+
+def test_get_bids_files_fmriprep(tmp_path):
+    """Check proper number of files is returned for fmriprep version."""
+    n_sub = 2
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=2,
+        tasks=["localizer", "main"],
+        n_runs=[1, 2],
+        confounds_tag="desc-confounds_timeseries",
+    )
+
     # counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
     selection = get_bids_files(
         bids_path / "derivatives",
@@ -286,11 +319,13 @@ def test_get_bids_files(tmp_path):
         n_runs=[1, 2],
         confounds_tag="desc-confounds_regressors",
     )
-    # counfonds (4 runs per ses & sub), testing `fmriprep` >= 20.2 path
+
+    # counfonds (4 runs per ses & sub), testing `fmriprep` < 20.2 path
     selection = get_bids_files(
         bids_path / "derivatives",
         file_tag="desc-confounds_regressors",
     )
+
     assert len(selection) == 12 * n_sub
 
 
@@ -343,11 +378,14 @@ def test_get_bids_files_no_space_entity(tmp_path):
 
 
 def test_parse_bids_filename():
+    """Check that a typical BIDS file is properly parsed."""
     fields = ["sub", "ses", "task", "lolo"]
     labels = ["01", "01", "langloc", "lala"]
     file_name = "sub-01_ses-01_task-langloc_lolo-lala_bold.nii.gz"
+
     file_path = Path("dataset", "sub-01", "ses-01", "func", file_name)
     file_dict = parse_bids_filename(file_path)
+
     for fidx, field in enumerate(fields):
         assert file_dict[field] == labels[fidx]
     assert file_dict["file_type"] == "nii.gz"
@@ -357,14 +395,10 @@ def test_parse_bids_filename():
     assert file_dict["file_fields"] == fields
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="This test requires matplotlib to be installed.",
-)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback", "task-nback"]
 )
-def test_save_glm_to_bids(tmp_path_factory, prefix):
+def test_save_glm_to_bids(matplotlib_pyplot, tmp_path_factory, prefix):
     """Test that save_glm_to_bids saves the appropriate files.
 
     This test reuses code from
@@ -397,17 +431,10 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
     single_run_model = FirstLevelModel(
         mask_img=None,
         minimize_memory=False,
-    ).fit(
-        fmri_data[0],
-        design_matrices=design_matrices[0],
-    )
+    ).fit(fmri_data[0], design_matrices=design_matrices[0])
 
-    contrasts = {
-        "effects of interest": np.eye(rk),
-    }
-    contrast_types = {
-        "effects of interest": "F",
-    }
+    contrasts = {"effects of interest": np.eye(rk)}
+    contrast_types = {"effects of interest": "F"}
     save_glm_to_bids(
         model=single_run_model,
         contrasts=contrasts,
@@ -424,11 +451,7 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
         assert (tmpdir / sub_prefix / f"{prefix}_{fname}").exists()
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="This test requires matplotlib to be installed.",
-)
-def test_save_glm_to_bids_serialize_affine(tmp_path):
+def test_save_glm_to_bids_serialize_affine(matplotlib_pyplot, tmp_path):
     """Test that affines are turned into a serializable type.
 
     Regression test for https://github.com/nilearn/nilearn/issues/4324.
@@ -451,12 +474,8 @@ def test_save_glm_to_bids_serialize_affine(tmp_path):
 
     save_glm_to_bids(
         model=single_run_model,
-        contrasts={
-            "effects of interest": np.eye(rk),
-        },
-        contrast_types={
-            "effects of interest": "F",
-        },
+        contrasts={"effects of interest": np.eye(rk)},
+        contrast_types={"effects of interest": "F"},
         out_dir=tmp_path,
         prefix="sub-01_ses-01_task-nback",
     )
@@ -464,13 +483,14 @@ def test_save_glm_to_bids_serialize_affine(tmp_path):
 
 @pytest.fixture
 def n_cols_design_matrix():
+    """Return expected number of column in design matrix."""
     return 3
 
 
 @pytest.fixture
 def two_runs_model(n_cols_design_matrix):
-    # Create two runs of data
-    shapes, rk = [(7, 8, 9, 15), (7, 8, 9, 15)], n_cols_design_matrix
+    """Create two runs of data."""
+    shapes, rk = [(7, 8, 9, 10), (7, 8, 9, 10)], n_cols_design_matrix
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
         rk,
@@ -490,21 +510,13 @@ def two_runs_model(n_cols_design_matrix):
     masker = NiftiMasker(mask)
     masker.fit()
 
-    return FirstLevelModel(
-        mask_img=None,
-        minimize_memory=False,
-    ).fit(
-        fmri_data,
-        design_matrices=design_matrices,
+    return FirstLevelModel(mask_img=None, minimize_memory=False).fit(
+        fmri_data, design_matrices=design_matrices
     )
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="This test requires matplotlib to be installed.",
-)
 def test_save_glm_to_bids_errors(
-    tmp_path_factory, two_runs_model, n_cols_design_matrix
+    matplotlib_pyplot, tmp_path_factory, two_runs_model, n_cols_design_matrix
 ):
     """Test errors of save_glm_to_bids."""
     tmpdir = tmp_path_factory.mktemp("test_save_glm_to_bids_errors")
@@ -547,16 +559,13 @@ def test_save_glm_to_bids_errors(
         )
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="This test requires matplotlib to be installed.",
-)
+@pytest.mark.timeout(60)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
 )
 @pytest.mark.parametrize("contrasts", [["AAA - BBB"], "AAA - BBB"])
 def test_save_glm_to_bids_contrast_definitions(
-    tmp_path_factory, two_runs_model, contrasts, prefix
+    matplotlib_pyplot, tmp_path_factory, two_runs_model, contrasts, prefix
 ):
     """Test that save_glm_to_bids operates on different contrast definitions \
        as expected.
@@ -614,12 +623,11 @@ def test_save_glm_to_bids_contrast_definitions(
         assert (tmpdir / sub_prefix / f"{prefix}{fname}").exists()
 
 
-@pytest.mark.skipif(
-    not is_matplotlib_installed(),
-    reason="This test requires matplotlib to be installed.",
-)
+@pytest.mark.timeout(60)
 @pytest.mark.parametrize("prefix", ["task-nback"])
-def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
+def test_save_glm_to_bids_second_level(
+    matplotlib_pyplot, tmp_path_factory, prefix
+):
     """Test save_glm_to_bids on a SecondLevelModel.
 
     This test reuses code from

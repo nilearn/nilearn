@@ -16,12 +16,6 @@ is included in the model.
    Data smoothed at 5 :term:`voxels<voxel>` :term:`FWHM` are used.
 
 .. include:: ../../../examples/masker_note.rst
-
-..
-    Original authors:
-
-    - Virgile Fritsch, May. 2014
-
 """
 
 from nilearn._utils.helpers import check_matplotlib
@@ -142,7 +136,6 @@ for i_col, (title, img) in enumerate(images_to_plot.items()):
 
     plotting.plot_glass_brain(
         img,
-        colorbar=True,
         vmax=vmax,
         display_mode="z",
         threshold=threshold,

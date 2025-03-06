@@ -60,7 +60,7 @@ masker = NiftiSpheresMasker(
     radius=8,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
@@ -207,7 +207,7 @@ spheres_masker = NiftiSpheresMasker(
     radius=5.0,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
@@ -252,7 +252,6 @@ plotting.plot_matrix(
     matrix,
     vmin=-1.0,
     vmax=1.0,
-    colorbar=True,
     title="Power correlation matrix",
 )
 
@@ -263,7 +262,6 @@ plotting.plot_connectome(
     title="Power correlation graph",
     edge_threshold="99.8%",
     node_size=20,
-    colorbar=True,
 )
 
 # %%
@@ -344,7 +342,7 @@ spheres_masker = NiftiSpheresMasker(
     radius=4.5,
     detrend=True,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
@@ -362,7 +360,6 @@ plotting.plot_matrix(
     matrix,
     vmin=-1.0,
     vmax=1.0,
-    colorbar=True,
     title="Dosenbach correlation matrix",
 )
 
@@ -372,7 +369,6 @@ plotting.plot_connectome(
     title="Dosenbach correlation graph",
     edge_threshold="99.7%",
     node_size=20,
-    colorbar=True,
 )
 
 
