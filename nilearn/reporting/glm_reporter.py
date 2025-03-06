@@ -232,6 +232,7 @@ def make_glm_report(
     report_body_template = string.Template(html_body_template_text)
 
     contrasts = coerce_to_dict(contrasts)
+
     contrast_plots = _plot_contrasts(contrasts, design_matrices)
     page_title, page_heading_1, page_heading_2 = make_headings(
         contrasts,
@@ -265,7 +266,6 @@ def make_glm_report(
     )
     all_components = _make_stat_maps_contrast_clusters(
         stat_img=statistical_maps,
-        contrasts_plots=contrast_plots,
         threshold=threshold,
         alpha=alpha,
         cluster_threshold=cluster_threshold,
@@ -285,7 +285,7 @@ def make_glm_report(
         "page_heading_1": page_heading_1,
         "page_heading_2": page_heading_2,
         "model_attributes": model_attributes_html,
-        "all_contrasts_with_plots": "".join(contrast_plots.values()),
+        "all_contrasts_with_plots": contrast_plots,
         "design_matrices": html_design_matrices,
         "mask_plot": mask_plot_html_code,
         "component": all_components_text,
@@ -325,52 +325,22 @@ def _plot_to_svg(plot):
 
 
 def _plot_contrasts(contrasts, design_matrices):
-    """Accept dict of contrasts and list of design matrices and generate \
-    a dict of contrast titles & HTML for SVG Image data url \
-    for corresponding contrast plot.
+    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
-    Parameters
-    ----------
-    contrasts : Dict[str, np.array or str]
-        Contrast information, as a dict
-          {'contrast_title_1, contrast_info_1/title_1, ...}
-
-    design_matrices : List[pd.Dataframe]
-        Design matrices computed in the model.
-
-    Returns
-    -------
-    contrast_plots : Dict[str, svg img]
-        Dict of contrast title and svg image data url
-        for corresponding contrast plot.
-
-    """
-    all_contrasts_plots = {}
     contrast_template_path = HTML_TEMPLATE_ROOT_PATH / "contrast_template.html"
 
-    for design_matrix in design_matrices:
-        for contrast_name, contrast_data in contrasts.items():
-            tpl = tempita.HTMLTemplate.from_filename(
-                str(contrast_template_path),
-                encoding="utf-8",
-            )
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(contrast_template_path),
+        encoding="utf-8",
+    )
 
-            contrast_plot = plot_contrast_matrix(
-                contrast_data, design_matrix, colorbar=True
-            )
-            contrast_plot.set_xlabel(contrast_name)
-            contrast_plot.figure.set_figheight(2)
-            url_contrast_plot_svg = _plot_to_svg(contrast_plot)
-            # prevents sphinx-gallery & jupyter
-            # from scraping & inserting plots
-            plt.close()
+    unique_id = str(uuid.uuid4()).replace("-", "")
 
-            contrast_text_ = tpl.substitute(
-                contrast_plot=url_contrast_plot_svg,
-                contrast_name=contrast_name,
-            )
-            all_contrasts_plots[contrast_name] = contrast_text_
-    return all_contrasts_plots
+    contrast_text_ = tpl.substitute(
+        contrasts_dict=contrasts_dict, unique_id=unique_id
+    )
+
+    return contrast_text_
 
 
 def _dmtx_to_svg_url(design_matrices):
@@ -471,7 +441,6 @@ def _mask_to_svg(mask_img, bg_img, cut_coords=None):
 @fill_doc
 def _make_stat_maps_contrast_clusters(
     stat_img,
-    contrasts_plots,
     threshold,
     alpha,
     cluster_threshold,
@@ -621,7 +590,7 @@ def _make_stat_maps_contrast_clusters(
         )
         components_values = {
             "contrast_name": escape(contrast_name),
-            "contrast_plot": contrasts_plots[contrast_name],
+            "contrast_plot": "",
             "stat_map_img": stat_map_svg,
             "cluster_table_details": table_details_html,
             "cluster_table": cluster_table_html,
@@ -937,7 +906,6 @@ def _make_surface_glm_report(
             )
             statistical_maps[contrast_name] = {
                 "stat_map_img": figure_to_png_base64(fig),
-                "contrast_img": contrasts_dict[contrast_name],
             }
             # prevents sphinx-gallery & jupyter from scraping & inserting plots
             plt.close("all")

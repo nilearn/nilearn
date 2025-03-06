@@ -70,11 +70,7 @@
     <!-- func:glm_reporter._model_attributes_to_dataframe() -->
   </div>
 
-  ${design_matrices}
-
-  <h3 id="all-contrasts">Contrasts</h3>
-  ${all_contrasts_with_plots}
-  <!-- func:glm_reporter._plot_contrasts() -->
+  ${design_matrices} ${all_contrasts_with_plots}
 
   <h3>Mask</h3>
   <!-- func:glm_reporter._mask_to_svg() -->
@@ -86,10 +82,4 @@
   <h3>Stat Maps with Cluster Tables</h3>
   ${component}
   <!-- func:glm_reporter._make_stat_maps_contrast_clusters() -->
-  <br />
-  <address>
-    Built using <a href="https://nilearn.github.io">Nilearn</a>. Source code on
-    <a href="https://github.com/nilearn/nilearn">GitHub</a>. File bugs & feature
-    requests <a href="https://github.com/nilearn/nilearn/issues">here</a>.
-  </address>
 </div>
