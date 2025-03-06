@@ -774,10 +774,10 @@ def vol_to_surf(
 
     .. important::
 
-    When using the 'nearest_most_frequent' interpolation, each vertex will be
-    assigned the most frequent value in the neighborhood (out of the
-    `n_samples` samples) instead of the mean value. This option works better
-    if `img` is a :term:`deterministic atlas<Deterministic atlas>`.
+        When using the 'nearest_most_frequent' interpolation, each vertex will
+        be assigned the most frequent value in the neighborhood (out of the
+        `n_samples` samples) instead of the mean value. This option works
+        better if `img` is a :term:`deterministic atlas<Deterministic atlas>`.
 
     Examples
     --------
