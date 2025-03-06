@@ -81,7 +81,7 @@ With ``conda``:
 
 .. code-block:: bash
 
-    conda create -n nilearn python=3.9
+    conda create -n nilearn python=3.10
     conda activate nilearn
 
 **2. Install nilearn with pip**

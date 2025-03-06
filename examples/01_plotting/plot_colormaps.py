@@ -35,7 +35,7 @@ def plot_color_gradients(color_maps):
         top=1 - 0.3 / figh, bottom=0.2 / figh, left=0.22, right=0.99
     )
 
-    for ax, name in zip(axs, color_map_names):
+    for ax, name in zip(axs, color_map_names, strict=False):
         ax.imshow(gradient, aspect="auto", cmap=name)
         ax.text(
             -0.01,

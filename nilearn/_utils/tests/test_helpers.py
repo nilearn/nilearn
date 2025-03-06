@@ -187,7 +187,7 @@ def test_rename_parameters():
     expected_warnings.sort()
     raised_warnings.sort(key=lambda mem: str(mem.message))
     for raised_warning_, expected_warning_ in zip(
-        raised_warnings, expected_warnings
+        raised_warnings, expected_warnings, strict=False
     ):
         assert raised_warning_.category is DeprecationWarning
         assert str(raised_warning_.message) == expected_warning_
@@ -236,7 +236,7 @@ def test_future_warn_deprecated_params():
     expected_warnings.sort()
     raised_warnings.sort(key=lambda mem: str(mem.message))
     for raised_warning_, expected_warning_ in zip(
-        raised_warnings, expected_warnings
+        raised_warnings, expected_warnings, strict=False
     ):
         assert raised_warning_.category is DeprecationWarning
         assert str(raised_warning_.message) == expected_warning_

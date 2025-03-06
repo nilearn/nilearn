@@ -13,6 +13,7 @@ name: test minimal version of each dependency
 
 
 on:
+    pull_request:
     push:
         branches:
         -   main
@@ -55,7 +56,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
-                python-version: ['3.9']
+                python-version: ['3.10']
                 min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.3.0]
 
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}

@@ -81,8 +81,8 @@ mean_img = threshold_img(mean_img, threshold=1e-08, copy=False, two_sided=True)
 vmax = max(np.absolute(hemi).max() for hemi in mean_img.data.parts.values())
 vmin = -vmax
 
-for view, ax_row in zip(views, axes):
-    for ax, hemi in zip(ax_row, hemispheres):
+for view, ax_row in zip(views, axes, strict=False):
+    for ax, hemi in zip(ax_row, hemispheres, strict=False):
         if hemi == "both" and view == "lateral":
             view = "left"
         elif hemi == "both" and view == "medial":

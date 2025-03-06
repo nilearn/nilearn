@@ -334,5 +334,5 @@ def test_multi_nifti_maps_masker_list_of_sample_mask(
         [img_fmri, img_fmri], sample_mask=[sample_mask1, sample_mask2]
     )
 
-    for ts, n_scrub in zip(ts_list, [n_scrub1, n_scrub2]):
+    for ts, n_scrub in zip(ts_list, [n_scrub1, n_scrub2], strict=False):
         assert ts.shape == (length - n_scrub, n_regions)
