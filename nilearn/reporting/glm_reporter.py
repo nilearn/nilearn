@@ -375,49 +375,22 @@ def _plot_contrasts(contrasts, design_matrices):
 
 
 def _dmtx_to_svg_url(design_matrices):
-    """Accept a FirstLevelModel or SecondLevelModel object \
-    with fitted design matrices & generate SVG Image URL, \
-    which can be inserted into an HTML template.
-
-    Parameters
-    ----------
-    design_matrices : List[pd.Dataframe]
-        Design matrices computed in the model.
-
-    Returns
-    -------
-    svg_url_design_matrices : String
-        SVG Image URL for the plotted design matrices.
-
-    """
-    html_design_matrices = []
+    design_matrices_dict = _return_design_matrices_dict(design_matrices)
 
     dmtx_template_path = (
         HTML_TEMPLATE_ROOT_PATH / "design_matrix_template.html"
     )
 
-    for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
-        tpl = tempita.HTMLTemplate.from_filename(
-            str(dmtx_template_path),
-            encoding="utf-8",
-        )
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(dmtx_template_path),
+        encoding="utf-8",
+    )
 
-        dmtx_plot = plot_design_matrix(design_matrix)
-        dmtx_title = f"Run {dmtx_count}"
-        if len(design_matrices) > 1:
-            plt.title(dmtx_title, y=1.025, x=-0.1)
-        dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
-        url_design_matrix_svg = _plot_to_svg(dmtx_plot)
-        # prevents sphinx-gallery & jupyter from scraping & inserting plots
-        plt.close()
+    unique_id = str(uuid.uuid4()).replace("-", "")
 
-        dmtx_text_ = tpl.substitute(
-            design_matrix=url_design_matrix_svg,
-            dmtx_title=dmtx_title,
-        )
-        html_design_matrices.append(dmtx_text_)
-    svg_url_design_matrices = "".join(html_design_matrices)
-    return svg_url_design_matrices
+    return tpl.substitute(
+        design_matrices_dict=design_matrices_dict, unique_id=unique_id
+    )
 
 
 def _resize_plot_inches(plot, width_change=0, height_change=0):

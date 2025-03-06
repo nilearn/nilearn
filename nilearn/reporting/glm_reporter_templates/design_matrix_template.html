@@ -1,4 +1,22 @@
-<img
-  src="data:image/svg+xml,{{design_matrix}}"
-  alt="Plot of Design Matrix used in {{dmtx_title}}."
-/>
+<section id="design-matrix-{{unique_id}}">
+  <h2>Design Matrix</h2>
+  <div class="d-flex flex-wrap justify-content-evenly">
+    {{if design_matrices_dict}}
+    <!--  -->
+    {{py: design_matrices = design_matrices_dict.items()}}
+    <!--  -->
+    {{for dmtx_title, dmtx in design_matrices}}
+    <div class="scroll-x">
+      <img
+        class="pure-img"
+        src="data:image/svg+xml,{{dmtx}}"
+        alt="Plot of Design Matrix used in {{dmtx_title}}."
+      />
+    </div>
+    {{endfor}}
+    <!--  -->
+    {{else}}
+    <p>No design matrix was provided.</p>
+    {{endif}}
+  </div>
+</section>
