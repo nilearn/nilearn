@@ -35,6 +35,7 @@ from nilearn.plotting import (
     plot_stat_map,
     plot_surf_stat_map,
 )
+from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.reporting._utils import (
@@ -719,7 +720,7 @@ def _stat_map_to_svg(
     stat_map_min = np.nanmin(data)
     stat_map_max = np.nanmax(data)
     symmetric_cbar = True
-    cmap = "RdBu_r"
+    cmap = DEFAULT_DIVERGING_CMAP
     if stat_map_min >= 0.0:
         symmetric_cbar = False
         cmap = "red_transparent_full_alpha_range"

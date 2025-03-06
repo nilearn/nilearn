@@ -14,6 +14,7 @@ from nilearn.plotting._utils import (
     check_surface_plotting_inputs,
     sanitize_hemi_for_surface_image,
 )
+from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP
 from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
@@ -142,7 +143,7 @@ def one_mesh_info(
     surf_map,
     surf_mesh,
     threshold=None,
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     black_bg=False,
     bg_map=None,
     symmetric_cmap=True,
@@ -192,7 +193,7 @@ def _full_brain_info(
     volume_img,
     mesh="fsaverage5",
     threshold=None,
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     black_bg=False,
     symmetric_cmap=True,
     bg_on_data=False,
@@ -292,7 +293,7 @@ def full_brain_info(
     volume_img,
     mesh="fsaverage5",
     threshold=None,
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     black_bg=False,
     symmetric_cmap=True,
     bg_on_data=False,
@@ -341,7 +342,7 @@ def view_img_on_surf(
     stat_map_img,
     surf_mesh="fsaverage5",
     threshold=None,
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     black_bg=False,
     vmax=None,
     vmin=None,
@@ -475,7 +476,7 @@ def view_surf(
     bg_map=None,
     hemi=None,
     threshold=None,
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     black_bg=False,
     vmax=None,
     vmin=None,

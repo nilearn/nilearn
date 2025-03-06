@@ -19,6 +19,7 @@ from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting._utils import save_figure_if_needed
+from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP
 
 VALID_TRI_VALUES = ("full", "lower", "diag")
 
@@ -224,7 +225,7 @@ def plot_matrix(
     figure=None,
     axes=None,
     colorbar=True,
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     tri="full",
     auto_fit=True,
     grid=False,
@@ -641,7 +642,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     colorbar=True,
     output_file=None,
     **kwargs,

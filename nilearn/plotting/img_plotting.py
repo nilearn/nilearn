@@ -50,6 +50,7 @@ from nilearn.plotting._utils import (
     get_colorbar_and_data_ranges,
     save_figure_if_needed,
 )
+from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.signal import clean
 
@@ -1323,7 +1324,7 @@ def plot_stat_map(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cbar="auto",
     dim="auto",
     vmin=None,
@@ -1665,7 +1666,7 @@ def plot_connectome(
     node_coords,
     node_color="auto",
     node_size=50,
-    edge_cmap="RdBu_r",
+    edge_cmap=DEFAULT_DIVERGING_CMAP,
     edge_vmin=None,
     edge_vmax=None,
     edge_threshold=None,

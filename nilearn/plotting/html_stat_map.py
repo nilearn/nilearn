@@ -18,6 +18,7 @@ from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data, new_img_like, reorder_img, resample_to_img
+from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.img_plotting import load_anat
@@ -512,7 +513,7 @@ def view_img(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cmap=True,
     dim="auto",
     vmax=None,

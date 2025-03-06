@@ -8,6 +8,7 @@ from scipy.sparse import issparse
 from scipy.stats import scoreatpercentile
 
 from nilearn._utils.param_validation import check_threshold
+from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP
 from nilearn.plotting.displays._axes import GlassBrainAxes
 from nilearn.plotting.displays._slicers import OrthoSlicer
 from nilearn.plotting.displays._utils import get_create_display_fun
@@ -131,7 +132,7 @@ class OrthoProjector(OrthoSlicer):
         node_coords,
         node_color="auto",
         node_size=50,
-        edge_cmap="RdBu_r",
+        edge_cmap=DEFAULT_DIVERGING_CMAP,
         edge_vmin=None,
         edge_vmax=None,
         edge_threshold=None,

@@ -28,7 +28,7 @@ from nilearn.plotting._utils import (
     sanitize_hemi_for_surface_image,
     save_figure_if_needed,
 )
-from nilearn.plotting.cm import mix_colormaps
+from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP, mix_colormaps
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.js_plotting_utils import colorscale
@@ -331,7 +331,7 @@ def _plot_surf_plotly(
     i, j, k = faces.T
 
     if cmap is None:
-        cmap = "RdBu_r"
+        cmap = DEFAULT_DIVERGING_CMAP
 
     bg_data = None
     if bg_map is not None:
@@ -1327,7 +1327,7 @@ def plot_surf_stat_map(
     alpha=None,
     vmin=None,
     vmax=None,
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     colorbar=True,
     symmetric_cbar="auto",
     cbar_tick_format="auto",
@@ -1630,7 +1630,12 @@ def _check_views(views) -> list:
 
 
 def _colorbar_from_array(
-    array, vmin, vmax, threshold, symmetric_cbar=True, cmap="RdBu_r"
+    array,
+    vmin,
+    vmax,
+    threshold,
+    symmetric_cbar=True,
+    cmap=DEFAULT_DIVERGING_CMAP,
 ):
     """Generate a custom colorbar for an array.
 
@@ -1701,7 +1706,7 @@ def plot_img_on_surf(
     vmax=None,
     threshold=None,
     symmetric_cbar="auto",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     cbar_tick_format="%i",
     **kwargs,
 ):
