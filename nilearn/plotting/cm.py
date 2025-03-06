@@ -15,8 +15,6 @@ from nilearn._utils import compare_version
 
 __all__ = ["_cmap_d"]
 
-DEFAULT_DIVERGING_CMAP = "RdBu_r"
-
 
 def mix_colormaps(fg, bg):
     """Mixes foreground and background arrays of RGBA colors.

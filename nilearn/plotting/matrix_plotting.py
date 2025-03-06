@@ -9,6 +9,7 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import (
     constrained_layout_kwargs,
     fill_doc,
@@ -19,7 +20,6 @@ from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting._utils import save_figure_if_needed
-from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP
 
 VALID_TRI_VALUES = ("full", "lower", "diag")
 

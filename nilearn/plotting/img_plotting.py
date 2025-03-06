@@ -19,6 +19,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
 from scipy.ndimage import binary_fill_holes
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import (
     as_ndarray,
     check_niimg_3d,
@@ -50,7 +51,6 @@ from nilearn.plotting._utils import (
     get_colorbar_and_data_ranges,
     save_figure_if_needed,
 )
-from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.signal import clean
 

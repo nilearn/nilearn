@@ -16,7 +16,7 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from nilearn import image, surface
+from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
@@ -28,7 +28,7 @@ from nilearn.plotting._utils import (
     sanitize_hemi_for_surface_image,
     save_figure_if_needed,
 )
-from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP, mix_colormaps
+from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.js_plotting_utils import colorscale

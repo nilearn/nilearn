@@ -7,8 +7,8 @@ from matplotlib import cm as mpl_cm
 from scipy.sparse import issparse
 from scipy.stats import scoreatpercentile
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.param_validation import check_threshold
-from nilearn.plotting.cm import DEFAULT_DIVERGING_CMAP
 from nilearn.plotting.displays._axes import GlassBrainAxes
 from nilearn.plotting.displays._slicers import OrthoSlicer
 from nilearn.plotting.displays._utils import get_create_display_fun
