@@ -187,6 +187,12 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    is_volume_glm = True
+    if isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or (
+        hasattr(model, "masker_") and isinstance(model.masker_, SurfaceMasker)
+    ):
+        is_volume_glm = False
+
     unique_id = str(uuid.uuid4()).replace("-", "")
 
     title = f"<br>{title}" if title else ""
@@ -195,15 +201,11 @@ def make_glm_report(
     docstring = model.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
+    date = datetime.datetime.now().replace(microsecond=0).isoformat()
+
     css_file_path = CSS_PATH / "masker_report.css"
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
-
-    is_volume_glm = True
-    if isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or (
-        hasattr(model, "masker_") and isinstance(model.masker_, SurfaceMasker)
-    ):
-        is_volume_glm = False
 
     model_attributes = model_attributes_to_dataframe(
         model, is_volume_glm=is_volume_glm
@@ -220,13 +222,10 @@ def make_glm_report(
         body_template_path = HTML_TEMPLATE_PATH / "glm_report_vol.html"
     else:
         body_template_path = HTML_TEMPLATE_PATH / "glm_report_surf.html"
-
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path),
         encoding="utf-8",
     )
-
-    print(title)
 
     warning_messages = []
     if not model.__sklearn_is_fitted__():
@@ -245,7 +244,7 @@ def make_glm_report(
             mask_plot=None,
             cluster_table=None,
             component=None,
-            date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+            date=date,
             unique_id=unique_id,
         )
 
@@ -261,45 +260,45 @@ def make_glm_report(
         contrasts = coerce_to_dict(contrasts)
         contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
+        if bg_img == "MNI152TEMPLATE":
+            bg_img = MNI152TEMPLATE if is_volume_glm else None
+        if (
+            not is_volume_glm
+            and bg_img
+            and not isinstance(bg_img, SurfaceImage)
+        ):
+            raise TypeError(
+                f"'bg_img' must a SurfaceImage instance.Got {type(bg_img)=}"
+            )
+
+        mask_plot = _mask_to_svg(model, bg_img, cut_coords, is_volume_glm)
+
         if not is_volume_glm:
             body = _make_surface_glm_body(
                 model,
+                contrasts,
+                title,
+                bg_img,
+                threshold,
                 tpl,
                 css,
-                title,
                 snippet,
                 warning_messages,
-                model_attributes_html,
                 unique_id,
-                contrasts,
-                contrasts_dict,
+                model_attributes_html,
+                mask_plot,
                 design_matrices_dict,
-                threshold,
-                bg_img,
+                contrasts_dict,
+                date,
             )
+
         else:
-            if bg_img == "MNI152TEMPLATE":
-                bg_img = MNI152TEMPLATE
             if not display_mode:
                 display_mode_selector = {"slice": "z", "glass": "lzry"}
                 display_mode = display_mode_selector[plot_type]
 
             statistical_maps = make_stat_maps(model, contrasts)
 
-            # Select mask_img to use for plotting
-            if isinstance(model.mask_img, NiftiMasker):
-                mask_img = model.masker_.mask_img_
-            else:
-                try:
-                    # check that mask_img is a niiimg-like object
-                    check_niimg(model.mask_img)
-                    mask_img = model.mask_img
-                except Exception:
-                    mask_img = model.masker_.mask_img_
-
-            mask_plot_html_code = _mask_to_svg(
-                mask_img=mask_img, bg_img=bg_img, cut_coords=cut_coords
-            )
             all_components = _make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
                 threshold=threshold,
@@ -322,13 +321,11 @@ def make_glm_report(
                 warning_messages=_render_warnings_partial(warning_messages),
                 parameters=model_attributes_html,
                 contrasts_dict=contrasts_dict,
-                mask_plot=mask_plot_html_code,
+                mask_plot=mask_plot,
                 component=all_components_text,
                 design_matrices_dict=design_matrices_dict,
                 unique_id=unique_id,
-                date=datetime.datetime.now()
-                .replace(microsecond=0)
-                .isoformat(),
+                date=date,
             )
 
     # revert HTML safe substitutions in CSS sections
@@ -420,41 +417,61 @@ def _resize_plot_inches(plot, width_change=0, height_change=0):
     return plot
 
 
-def _mask_to_svg(mask_img, bg_img, cut_coords=None):
+def _mask_to_svg(model, bg_img, cut_coords, is_volume_glm):
     """Plot cuts of an mask image and creates SVG code of it.
 
     Parameters
     ----------
-    mask_img : Niimg-like object
-        See :ref:`extracting_data`.
-        The mask image; it could be binary mask or an atlas or ROIs
-        with integer values.
+    model
 
     bg_img : Niimg-like object
         See :ref:`extracting_data`.
         The background image that the mask will be plotted on top of.
         To turn off background image, just pass "bg_img=None".
 
+    cut_coords
+
+    is_volume_glm : bool
+
     Returns
     -------
-    mask_plot_svg : str
+    mask_plot : str
         SVG Image Data URL for the mask plot.
 
     """
-    if mask_img:
-        plot_roi(
-            roi_img=mask_img,
-            bg_img=bg_img,
-            display_mode="z",
-            cmap="Set1",
-            cut_coords=cut_coords,
-        )
-        mask_plot_svg = _plot_to_svg(plt.gcf())
+    # Select mask_img to use for plotting
+    if not is_volume_glm:
+        fig = model.masker_._create_figure_for_report()
+        mask_plot = figure_to_png_base64(fig)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
+        return mask_plot
+
+    if isinstance(model.mask_img, NiftiMasker):
+        mask_img = model.masker_.mask_img_
     else:
-        mask_plot_svg = None  # HTML image tag's alt attribute is used.
-    return mask_plot_svg
+        try:
+            # check that mask_img is a niiimg-like object
+            check_niimg(model.mask_img)
+            mask_img = model.mask_img
+        except Exception:
+            mask_img = model.masker_.mask_img_
+
+    if not mask_img:
+        return None  # HTML image tag's alt attribute is used.
+
+    plot_roi(
+        roi_img=mask_img,
+        bg_img=bg_img,
+        display_mode="z",
+        cmap="Set1",
+        cut_coords=cut_coords,
+    )
+    mask_plot = _plot_to_svg(plt.gcf())
+    # prevents sphinx-gallery & jupyter from scraping & inserting plots
+    plt.close()
+
+    return mask_plot
 
 
 @fill_doc
@@ -777,18 +794,20 @@ def _add_params_to_plot(table_details, stat_map_plot):
 
 def _make_surface_glm_body(
     model,
+    contrasts,
+    title,
+    bg_img,
+    threshold,
     tpl,
     css,
-    title,
     snippet,
     warning_messages,
-    model_attributes_html,
     unique_id,
-    contrasts,
-    contrasts_dict,
+    model_attributes_html,
+    mask_plot,
     design_matrices_dict,
-    threshold,
-    bg_img,
+    contrasts_dict,
+    date,
 ):
     """Generate a GLM report when input data is surface image.
 
@@ -796,16 +815,6 @@ def _make_surface_glm_body(
     even before fit,
     to return early if the model is not fitted.
     """
-    if bg_img == "MNI152TEMPLATE":
-        bg_img = None
-    if bg_img and not isinstance(bg_img, SurfaceImage):
-        raise TypeError(
-            f"'bg_img' must a SurfaceImage instance.Got {type(bg_img)=}"
-        )
-
-    fig = model.masker_._create_figure_for_report()
-    mask_plot = figure_to_png_base64(fig)
-
     statistical_maps = None
     if contrasts_dict is not None:
         statistical_maps = {}
@@ -851,7 +860,7 @@ def _make_surface_glm_body(
         cluster_table_details=cluster_table_html,
         mask_plot=mask_plot,
         cluster_table=None,
-        date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+        date=date,
         unique_id=unique_id,
     )
 
