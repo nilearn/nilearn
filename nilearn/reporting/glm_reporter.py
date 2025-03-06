@@ -195,8 +195,18 @@ def make_glm_report(
     docstring = model.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
+    css_file_path = CSS_PATH / "masker_report.css"
+    with css_file_path.open(encoding="utf-8") as css_file:
+        css = css_file.read()
+
+    is_volume_glm = True
+    if isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or (
+        hasattr(model, "masker_") and isinstance(model.masker_, SurfaceMasker)
+    ):
+        is_volume_glm = False
+
     model_attributes = model_attributes_to_dataframe(
-        model, is_volume_glm=False
+        model, is_volume_glm=is_volume_glm
     )
     with pd.option_context("display.max_colwidth", 100):
         model_attributes_html = dataframe_to_html(
@@ -206,17 +216,7 @@ def make_glm_report(
             sparsify=False,
         )
 
-    css_file_path = CSS_PATH / "masker_report.css"
-    with css_file_path.open(encoding="utf-8") as css_file:
-        css = css_file.read()
-
-    volume_based = True
-    if isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or (
-        hasattr(model, "masker_") and isinstance(model.masker_, SurfaceMasker)
-    ):
-        volume_based = False
-
-    if volume_based:
+    if is_volume_glm:
         body_template_path = HTML_TEMPLATE_PATH / "glm_report_vol.html"
     else:
         body_template_path = HTML_TEMPLATE_PATH / "glm_report_surf.html"
@@ -225,6 +225,8 @@ def make_glm_report(
         str(body_template_path),
         encoding="utf-8",
     )
+
+    print(title)
 
     warning_messages = []
     if not model.__sklearn_is_fitted__():
@@ -259,7 +261,7 @@ def make_glm_report(
         contrasts = coerce_to_dict(contrasts)
         contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
-        if not volume_based:
+        if not is_volume_glm:
             body = _make_surface_glm_body(
                 model,
                 tpl,
@@ -348,9 +350,7 @@ def make_glm_report(
         head_values={
             "head_css": head_css,
             "version": __version__,
-            "page_title": (
-                f"Statistical Report - {return_model_type(model)}{title}"
-            ),
+            "page_title": title,
         },
     )
 
