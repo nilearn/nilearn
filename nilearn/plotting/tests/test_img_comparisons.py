@@ -9,8 +9,7 @@ from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn.conftest import _affine_mni, _img_mask_mni, _make_surface_mask
 from nilearn.image import iter_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.plotting import plot_bland_altman
-from nilearn.plotting.img_comparison import plot_img_comparison
+from nilearn.plotting import plot_bland_altman, plot_img_comparison
 
 # ruff: noqa: ARG001
 
