@@ -6,6 +6,7 @@ from nilearn._utils.data_gen import (
     basic_paradigm,
     generate_fake_fmri_data_and_design,
 )
+from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
@@ -14,9 +15,6 @@ from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport, make_glm_report
 from nilearn.reporting import glm_reporter as glmr
-from nilearn.reporting.glm_reporter import (
-    _make_surface_glm_report,
-)
 
 
 @pytest.fixture()
@@ -241,19 +239,12 @@ def test_flm_generate_report_error_with_surface_data(
 
 
 @pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
-def test_empty_surface_reports(tmp_path, model, surf_img_1d):
-    """Test that empty surface reports on unfitted model can be generated."""
-    report = _make_surface_glm_report(model(), bg_img=surf_img_1d)
+@pytest.mark.parametrize("bg_img", [_img_mask_mni(), _make_surface_mask()])
+def test_empty_surface_reports(tmp_path, model, bg_img):
+    """Test that empty reports on unfitted model can be generated."""
+    report = make_glm_report(model(), bg_img=bg_img)
 
     assert isinstance(report, HTMLReport)
 
     report.save_as_html(tmp_path / "tmp.html")
     assert (tmp_path / "tmp.html").exists()
-
-
-def test_empty_surface_reports_errors():
-    """Test errors surface reports."""
-    with pytest.raises(TypeError, match="must a SurfaceImage instance"):
-        _make_surface_glm_report(
-            FirstLevelModel(), bg_img="not a surface image"
-        )

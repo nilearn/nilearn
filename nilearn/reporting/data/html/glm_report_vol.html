@@ -173,7 +173,11 @@
 
   <section id="statistical-maps-{{unique_id}}">
     <h2>Statistical Maps</h2>
-    {{component|html}}
+    {{if component}} {{component|html}} {{else}}
+    <div class="d-flex flex-wrap justify-content-evenly">
+      <p>No statistical map was provided.</p>
+    </div>
+    {{endif}}
   </section>
 
   <section id="about-{{unique_id}}" style="text-align: left">

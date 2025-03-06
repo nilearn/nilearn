@@ -187,32 +187,10 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
-    if isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or isinstance(
-        model.masker_, SurfaceMasker
-    ):
-        report_text = _make_surface_glm_report(
-            model,
-            contrasts=contrasts,
-            title=title,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
-            height_control=height_control,
-            bg_img=bg_img,
-            report_dims=report_dims,
-        )
-        report_text.width, report_text.height = check_report_dims(report_dims)
-        return report_text
-
-    if bg_img == "MNI152TEMPLATE":
-        bg_img = MNI152TEMPLATE
-    if not display_mode:
-        display_mode_selector = {"slice": "z", "glass": "lzry"}
-        display_mode = display_mode_selector[plot_type]
-
     unique_id = str(uuid.uuid4()).replace("-", "")
 
     title = f"<br>{title}" if title else ""
+    title = f"Statistical Report - {return_model_type(model)}{title}"
 
     docstring = model.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
@@ -228,15 +206,131 @@ def make_glm_report(
             sparsify=False,
         )
 
-    body_template_path = HTML_TEMPLATE_PATH / "glm_report_vol.html"
+    css_file_path = CSS_PATH / "masker_report.css"
+    with css_file_path.open(encoding="utf-8") as css_file:
+        css = css_file.read()
+
+    volume_based = True
+    if isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or (
+        hasattr(model, "masker_") and isinstance(model.masker_, SurfaceMasker)
+    ):
+        volume_based = False
+
+    if volume_based:
+        body_template_path = HTML_TEMPLATE_PATH / "glm_report_vol.html"
+    else:
+        body_template_path = HTML_TEMPLATE_PATH / "glm_report_surf.html"
+
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path),
         encoding="utf-8",
     )
 
-    css_file_path = CSS_PATH / "masker_report.css"
-    with css_file_path.open(encoding="utf-8") as css_file:
-        css = css_file.read()
+    warning_messages = []
+    if not model.__sklearn_is_fitted__():
+        warning_messages.append("The model has not been fit yet.")
+
+        body = tpl.substitute(
+            css=css,
+            title=title,
+            docstring=snippet,
+            warning_messages=_render_warnings_partial(warning_messages),
+            design_matrices_dict=None,
+            parameters=model_attributes_html,
+            contrasts_dict=None,
+            statistical_maps=None,
+            cluster_table_details=None,
+            mask_plot=None,
+            cluster_table=None,
+            component=None,
+            date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+            unique_id=unique_id,
+        )
+
+    else:
+        design_matrices = (
+            model.design_matrices_
+            if isinstance(model, FirstLevelModel)
+            else [model.design_matrix_]
+        )
+
+        design_matrices_dict = _return_design_matrices_dict(design_matrices)
+
+        contrasts = coerce_to_dict(contrasts)
+        contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
+
+        if not volume_based:
+            body = _make_surface_glm_body(
+                model,
+                tpl,
+                css,
+                title,
+                snippet,
+                warning_messages,
+                model_attributes_html,
+                unique_id,
+                contrasts,
+                contrasts_dict,
+                design_matrices_dict,
+                threshold,
+                bg_img,
+            )
+        else:
+            if bg_img == "MNI152TEMPLATE":
+                bg_img = MNI152TEMPLATE
+            if not display_mode:
+                display_mode_selector = {"slice": "z", "glass": "lzry"}
+                display_mode = display_mode_selector[plot_type]
+
+            statistical_maps = make_stat_maps(model, contrasts)
+
+            # Select mask_img to use for plotting
+            if isinstance(model.mask_img, NiftiMasker):
+                mask_img = model.masker_.mask_img_
+            else:
+                try:
+                    # check that mask_img is a niiimg-like object
+                    check_niimg(model.mask_img)
+                    mask_img = model.mask_img
+                except Exception:
+                    mask_img = model.masker_.mask_img_
+
+            mask_plot_html_code = _mask_to_svg(
+                mask_img=mask_img, bg_img=bg_img, cut_coords=cut_coords
+            )
+            all_components = _make_stat_maps_contrast_clusters(
+                stat_img=statistical_maps,
+                threshold=threshold,
+                alpha=alpha,
+                cluster_threshold=cluster_threshold,
+                height_control=height_control,
+                two_sided=two_sided,
+                min_distance=min_distance,
+                bg_img=bg_img,
+                cut_coords=cut_coords,
+                display_mode=display_mode,
+                plot_type=plot_type,
+            )
+            all_components_text = "\n".join(all_components)
+
+            body = tpl.substitute(
+                css=css,
+                title=title,
+                docstring=snippet,
+                warning_messages=_render_warnings_partial(warning_messages),
+                parameters=model_attributes_html,
+                contrasts_dict=contrasts_dict,
+                mask_plot=mask_plot_html_code,
+                component=all_components_text,
+                design_matrices_dict=design_matrices_dict,
+                unique_id=unique_id,
+                date=datetime.datetime.now()
+                .replace(microsecond=0)
+                .isoformat(),
+            )
+
+    # revert HTML safe substitutions in CSS sections
+    body = body.replace(".pure-g &gt; div", ".pure-g > div")
 
     head_template_path = (
         TEMPLATE_ROOT_PATH / "html" / "report_head_template.html"
@@ -248,77 +342,6 @@ def make_glm_report(
     with head_css_file_path.open(encoding="utf-8") as head_css_file:
         head_css = head_css_file.read()
 
-    warning_messages = []
-    if not model.__sklearn_is_fitted__():
-        return _generate_empty_report(
-            model,
-            tpl,
-            css,
-            title,
-            snippet,
-            warning_messages,
-            model_attributes_html,
-            unique_id,
-            head_tpl,
-            head_css,
-            report_dims,
-        )
-
-    design_matrices = (
-        model.design_matrices_
-        if isinstance(model, FirstLevelModel)
-        else [model.design_matrix_]
-    )
-
-    design_matrices_dict = _return_design_matrices_dict(design_matrices)
-
-    contrasts = coerce_to_dict(contrasts)
-    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
-
-    statistical_maps = make_stat_maps(model, contrasts)
-
-    # Select mask_img to use for plotting
-    if isinstance(model.mask_img, NiftiMasker):
-        mask_img = model.masker_.mask_img_
-    else:
-        try:
-            # check that mask_img is a niiimg-like object
-            check_niimg(model.mask_img)
-            mask_img = model.mask_img
-        except Exception:
-            mask_img = model.masker_.mask_img_
-
-    mask_plot_html_code = _mask_to_svg(
-        mask_img=mask_img, bg_img=bg_img, cut_coords=cut_coords
-    )
-    all_components = _make_stat_maps_contrast_clusters(
-        stat_img=statistical_maps,
-        threshold=threshold,
-        alpha=alpha,
-        cluster_threshold=cluster_threshold,
-        height_control=height_control,
-        two_sided=two_sided,
-        min_distance=min_distance,
-        bg_img=bg_img,
-        cut_coords=cut_coords,
-        display_mode=display_mode,
-        plot_type=plot_type,
-    )
-    all_components_text = "\n".join(all_components)
-
-    body = tpl.substitute(
-        css=css,
-        title=f"Statistical Report - {return_model_type(model)}{title}",
-        docstring=snippet,
-        warning_messages=_render_warnings_partial(warning_messages),
-        parameters=model_attributes_html,
-        contrasts_dict=contrasts_dict,
-        mask_plot=mask_plot_html_code,
-        component=all_components_text,
-        design_matrices_dict=design_matrices_dict,
-        unique_id=unique_id,
-        date=datetime.datetime.now().replace(microsecond=0).isoformat(),
-    )
     report = HTMLReport(
         body=body,
         head_tpl=head_tpl,
@@ -330,8 +353,10 @@ def make_glm_report(
             ),
         },
     )
+
     # setting report size for better visual experience in Jupyter Notebooks.
     report.width, report.height = check_report_dims(report_dims)
+
     return report
 
 
@@ -750,16 +775,20 @@ def _add_params_to_plot(table_details, stat_map_plot):
     return stat_map_plot
 
 
-def _make_surface_glm_report(
+def _make_surface_glm_body(
     model,
-    contrasts=None,
-    title=None,
-    threshold=3.09,
-    alpha=0.001,
-    cluster_threshold=0,
-    height_control="fpr",
-    bg_img=None,
-    report_dims=(1600, 800),
+    tpl,
+    css,
+    title,
+    snippet,
+    warning_messages,
+    model_attributes_html,
+    unique_id,
+    contrasts,
+    contrasts_dict,
+    design_matrices_dict,
+    threshold,
+    bg_img,
 ):
     """Generate a GLM report when input data is surface image.
 
@@ -774,83 +803,8 @@ def _make_surface_glm_report(
             f"'bg_img' must a SurfaceImage instance.Got {type(bg_img)=}"
         )
 
-    unique_id = str(uuid.uuid4()).replace("-", "")
-    title = f"<br>{title}" if title else ""
-
-    docstring = model.__doc__
-    snippet = docstring.partition("Parameters\n    ----------\n")[0]
-
-    model_attributes = model_attributes_to_dataframe(
-        model, is_volume_glm=False
-    )
-    with pd.option_context("display.max_colwidth", 100):
-        model_attributes_html = dataframe_to_html(
-            model_attributes,
-            precision=2,
-            header=True,
-            sparsify=False,
-        )
-
-    body_template_path = HTML_TEMPLATE_PATH / "glm_report_surf.html"
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(body_template_path),
-        encoding="utf-8",
-    )
-
-    css_file_path = CSS_PATH / "masker_report.css"
-    with css_file_path.open(encoding="utf-8") as css_file:
-        css = css_file.read()
-
-    head_template_path = HTML_TEMPLATE_PATH / "glm_report_head_template.html"
-    with head_template_path.open() as head_file:
-        head_tpl = Template(head_file.read())
-
-    head_css_file_path = CSS_PATH / "head.css"
-    with head_css_file_path.open(encoding="utf-8") as head_css_file:
-        head_css = head_css_file.read()
-
-    warning_messages = []
-    if not model.__sklearn_is_fitted__():
-        return _generate_empty_report(
-            model,
-            tpl,
-            css,
-            title,
-            snippet,
-            warning_messages,
-            model_attributes_html,
-            unique_id,
-            head_tpl,
-            head_css,
-            report_dims,
-        )
-
     fig = model.masker_._create_figure_for_report()
     mask_plot = figure_to_png_base64(fig)
-
-    design_matrices = (
-        model.design_matrices_
-        if isinstance(model, FirstLevelModel)
-        else [model.design_matrix_]
-    )
-    design_matrices_dict = _return_design_matrices_dict(design_matrices)
-
-    contrasts = coerce_to_dict(contrasts)
-    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
-
-    cluster_table_details = clustering_params_to_dataframe(
-        threshold,
-        cluster_threshold,
-        None,
-        height_control,
-        alpha,
-    )
-    cluster_table_html = dataframe_to_html(
-        cluster_table_details,
-        precision=2,
-        header=True,
-        sparsify=False,
-    )
 
     statistical_maps = None
     if contrasts_dict is not None:
@@ -885,9 +839,9 @@ def _make_surface_glm_report(
     # so we do not display this in the report
     cluster_table_html = None
 
-    body = tpl.substitute(
+    return tpl.substitute(
         css=css,
-        title=f"Statistical Report - {return_model_type(model)}{title}",
+        title=title,
         docstring=snippet,
         warning_messages=_render_warnings_partial(warning_messages),
         design_matrices_dict=design_matrices_dict,
@@ -900,72 +854,6 @@ def _make_surface_glm_report(
         date=datetime.datetime.now().replace(microsecond=0).isoformat(),
         unique_id=unique_id,
     )
-
-    # revert HTML safe substitutions in CSS sections
-    body = body.replace(".pure-g &gt; div", ".pure-g > div")
-
-    report = HTMLReport(
-        body=body,
-        head_tpl=head_tpl,
-        head_values={
-            "head_css": head_css,
-            "version": __version__,
-            "page_title": (
-                f"Statistical Report - {return_model_type(model)}{title}"
-            ),
-        },
-    )
-    report.width, report.height = check_report_dims(report_dims)
-    return report
-
-
-def _generate_empty_report(
-    model,
-    tpl,
-    css,
-    title,
-    snippet,
-    warning_messages,
-    model_attributes_html,
-    unique_id,
-    head_tpl,
-    head_css,
-    report_dims,
-):
-    warning_messages.append("The model has not been fit yet.")
-
-    body = tpl.substitute(
-        css=css,
-        title=f"Statistical Report - {return_model_type(model)}{title}",
-        docstring=snippet,
-        warning_messages=_render_warnings_partial(warning_messages),
-        design_matrices_dict=None,
-        parameters=model_attributes_html,
-        contrasts_dict=None,
-        statistical_maps=None,
-        cluster_table_details=None,
-        mask_plot=None,
-        cluster_table=None,
-        date=datetime.datetime.now().replace(microsecond=0).isoformat(),
-        unique_id=unique_id,
-    )
-
-    # revert HTML safe substitutions in CSS sections
-    body = body.replace(".pure-g &gt; div", ".pure-g > div")
-
-    report = HTMLReport(
-        body=body,
-        head_tpl=head_tpl,
-        head_values={
-            "head_css": head_css,
-            "version": __version__,
-            "page_title": (
-                f"Statistical Report - {return_model_type(model)}{title}"
-            ),
-        },
-    )
-    report.width, report.height = check_report_dims(report_dims)
-    return report
 
 
 def _return_design_matrices_dict(design_matrices):
