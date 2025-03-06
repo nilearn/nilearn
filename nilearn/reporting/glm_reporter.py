@@ -227,9 +227,10 @@ def make_glm_report(
         html_head_template_text = html_head_file_obj.read()
     report_head_template = string.Template(html_head_template_text)
 
-    with html_body_template_path.open() as html_body_file_obj:
-        html_body_template_text = html_body_file_obj.read()
-    report_body_template = string.Template(html_body_template_text)
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(html_body_template_path),
+        encoding="utf-8",
+    )
 
     contrasts = coerce_to_dict(contrasts)
 
@@ -281,17 +282,15 @@ def make_glm_report(
     report_values_head = {
         "page_title": escape(page_title),
     }
-    report_values_body = {
-        "page_heading_1": page_heading_1,
-        "page_heading_2": page_heading_2,
-        "model_attributes": model_attributes_html,
-        "all_contrasts_with_plots": contrast_plots,
-        "design_matrices": html_design_matrices,
-        "mask_plot": mask_plot_html_code,
-        "component": all_components_text,
-    }
-    report_text_body = report_body_template.safe_substitute(
-        **report_values_body
+
+    report_text_body = tpl.substitute(
+        page_heading_1=page_heading_1,
+        page_heading_2=page_heading_2,
+        model_attributes=model_attributes_html,
+        all_contrasts_with_plots=contrast_plots,
+        design_matrices=html_design_matrices,
+        mask_plot=mask_plot_html_code,
+        component=all_components_text,
     )
     report_text = HTMLReport(
         body=report_text_body,

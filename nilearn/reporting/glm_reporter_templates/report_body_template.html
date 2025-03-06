@@ -59,27 +59,27 @@
 </style>
 
 <div class="report">
-  <h1>${page_heading_1}</h1>
+  <h1>{{page_heading_1}}</h1>
   <!-- func:reporting._utils.make_headings() -->
-  <h2>${page_heading_2}</h2>
+  <h2>{{page_heading_2}}</h2>
   <!-- func:reporting._utils.make_headings() -->
 
   <h3>Model details:</h3>
   <div class="model_details">
-    ${model_attributes}
+    {{model_attributes|html}}
     <!-- func:glm_reporter._model_attributes_to_dataframe() -->
   </div>
 
-  ${design_matrices} ${all_contrasts_with_plots}
+  {{design_matrices|html}} {{all_contrasts_with_plots|html}}
 
   <h3>Mask</h3>
   <!-- func:glm_reporter._mask_to_svg() -->
   <img
-    src="data:image/svg+xml,${mask_plot}"
+    src="data:image/svg+xml,{{mask_plot}}"
     alt="Model did not supply a mask image."
   />
 
   <h3>Stat Maps with Cluster Tables</h3>
-  ${component}
+  {{component|html}}
   <!-- func:glm_reporter._make_stat_maps_contrast_clusters() -->
 </div>
