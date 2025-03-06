@@ -81,7 +81,7 @@ the atlas can appear smaller or bigger than the brain.
 This can be seen clearly in some of the images below.
 
 You also should not use maskers with an atlas
-that is not coregistered properly coregistered
+that is not coregistered properly
 with the images you want to extract data from
 as this may lead to invalid results.
 ```
@@ -117,7 +117,7 @@ deterministic_atlases = {
         "n_rois": [7, 12, 20, 36, 64, 122, 197, 325, 444],
     },
     "Destrieux (2009; volume)": {"fn": fetch_atlas_destrieux_2009},
-    "Harvard-Oxford": {
+    "Harvard-Oxford (cortical)": {
         "fn": fetch_atlas_harvard_oxford,
         "params": {
             "atlas_name": "cort-maxprob-thr0-1mm",
@@ -285,7 +285,7 @@ probablistic_atlases = {
         "params": {"dimension": 64, "resolution_mm": 2},
         "n_rois": [64, 128, 256, 512, 1024],
     },
-    "Harvard-Oxford": {
+    "Harvard-Oxford (cortical)": {
         "fn": fetch_atlas_harvard_oxford,
         "params": {"atlas_name": "cort-prob-1mm"},
     },
@@ -350,7 +350,7 @@ for display_name, details in probablistic_atlases.items():
 
     if DEBUG:
         # probabilistic atlases take a long time to plot
-        # so only do one in debubg mode
+        # so only do one in debug mode
         break
 
 _generate_markdown_file("probabilistic_atlases.md", dict_for_df)
