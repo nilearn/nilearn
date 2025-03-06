@@ -958,7 +958,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
             img,
             levels=[0.5],
             colors=[color_list[idx - 1]],
-            alpha=alpha,
+            transparency=alpha,
             linewidths=linewidths,
             linestyles="solid",
         )
@@ -1115,6 +1115,8 @@ def plot_roi(
     if isinstance(cmap, pd.DataFrame):
         cmap = create_colormap_from_lut(cmap)
 
+    transparency = alpha
+
     display = _plot_img_with_bg(
         img=roi_img,
         bg_img=bg_img,
@@ -1133,7 +1135,7 @@ def plot_roi(
         resampling_interpolation=resampling_interpolation,
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
-        alpha=alpha,
+        transparency=transparency,
         cmap=cmap,
         vmin=vmin,
         vmax=vmax,
