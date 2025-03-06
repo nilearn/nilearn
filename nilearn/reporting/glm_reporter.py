@@ -801,7 +801,7 @@ def _make_surface_glm_report(
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
-    head_template_path = TEMPLATE_ROOT_PATH / "glm_report_head_template.html"
+    head_template_path = HTML_TEMPLATE_PATH / "glm_report_head_template.html"
     with head_template_path.open() as head_file:
         head_tpl = Template(head_file.read())
 

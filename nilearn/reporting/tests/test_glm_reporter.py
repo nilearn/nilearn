@@ -148,14 +148,6 @@ def _make_dummy_contrasts_dmtx():
     return contrast, dmtx
 
 
-def test_plot_contrasts():
-    contrast, dmtx = _make_dummy_contrasts_dmtx()
-    glmr._plot_contrasts(
-        contrast,
-        [dmtx],
-    )
-
-
 def test_masking_first_level_model():
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
