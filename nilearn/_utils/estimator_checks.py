@@ -854,7 +854,6 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     if isinstance(estimator, NiftiSpheresMasker):
         return
     report = _generate_report_with_no_warning(estimator)
-    report = _generate_report(estimator)
     _check_html(report)
 
 

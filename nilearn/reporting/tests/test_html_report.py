@@ -8,6 +8,7 @@ from numpy.testing import assert_almost_equal
 from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
+from nilearn.conftest import _img_maps
 from nilearn.image import get_data
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -41,8 +42,8 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
 
 
 @pytest.fixture
-def niftimapsmasker_inputs(img_maps):
-    return {"maps_img": img_maps}
+def niftimapsmasker_inputs():
+    return {"maps_img": _img_maps(n_regions=3)}
 
 
 @pytest.fixture
@@ -51,13 +52,13 @@ def labels(n_regions):
 
 
 @pytest.fixture
-def input_parameters(masker_class, img_mask_eye, labels, img_labels, img_maps):
+def input_parameters(masker_class, img_mask_eye, labels, img_labels):
     if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": img_mask_eye}
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
         return {"labels_img": img_labels, "labels": labels}
     if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
-        return {"maps_img": img_maps}
+        return {"maps_img": _img_maps(n_regions=2)}
     if masker_class is NiftiSpheresMasker:
         return {"seeds": [(1, 1, 1)]}
 
@@ -108,13 +109,15 @@ def test_nifti_maps_masker_report_maps_number_errors(
         masker.generate_report(displayed_maps)
 
 
-@pytest.mark.parametrize("displayed_maps", [[2, 5, 6], np.array([0, 3, 4, 5])])
+@pytest.mark.parametrize("displayed_maps", [[1, 2], np.array([0, 1, 2])])
 def test_nifti_maps_masker_report_list_and_arrays_maps_number(
-    niftimapsmasker_inputs, displayed_maps, n_regions
+    niftimapsmasker_inputs, displayed_maps
 ):
     """Tests report generation for NiftiMapsMasker with displayed_maps \
        passed as a list of a Numpy arrays.
     """
+    n_regions = niftimapsmasker_inputs["maps_img"].shape[-1]
+
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     html = masker.generate_report(displayed_maps)
@@ -129,13 +132,15 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     assert html.body.count("<img") == len(displayed_maps)
 
 
-@pytest.mark.parametrize("displayed_maps", [1, 6, 9, 12, "all"])
+@pytest.mark.parametrize("displayed_maps", [1, 3, 4, "all"])
 def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
-    niftimapsmasker_inputs, displayed_maps, n_regions
+    niftimapsmasker_inputs, displayed_maps
 ):
     """Tests NiftiMapsMasker reporting with no image provided to fit \
        and displayed_maps provided as an integer or as 'all'.
     """
+    n_regions = niftimapsmasker_inputs["maps_img"].shape[-1]
+
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     expected_n_maps = (
@@ -144,7 +149,7 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
         else min(n_regions, displayed_maps)
     )
     if displayed_maps != "all" and displayed_maps > n_regions:
-        with pytest.warns(UserWarning, match="masker only has 9 maps."):
+        with pytest.warns(UserWarning, match="masker only has .* maps."):
             html = masker.generate_report(displayed_maps)
     else:
         html = masker.generate_report(displayed_maps)
@@ -162,9 +167,11 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
 
 
 def test_nifti_maps_masker_report_image_in_fit(
-    niftimapsmasker_inputs, affine_eye, n_regions
+    niftimapsmasker_inputs, affine_eye
 ):
     """Tests NiftiMapsMasker reporting with image provided to fit."""
+    n_regions = niftimapsmasker_inputs["maps_img"].shape[-1]
+
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     image, _ = generate_random_img((13, 11, 12, 3), affine=affine_eye)
     masker.fit(image)
