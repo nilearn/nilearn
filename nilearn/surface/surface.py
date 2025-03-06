@@ -473,6 +473,47 @@ def _mask_sample_locations(sample_locations, img_shape, mesh_n_vertices, mask):
     return masked_sample_locations
 
 
+def _nearest_most_frequent(
+    images,
+    mesh,
+    affine,
+    kind="auto",
+    radius=3.0,
+    n_points=None,
+    mask=None,
+    inner_mesh=None,
+    depth=None,
+):
+    """Use the most frequent value of 'n_samples' nearest voxels instead of
+    taking the mean value (as in the _nearest_voxel_sampling function).
+
+    This is useful when the image is a deterministic atlas.
+    """
+    data = np.asarray(images)
+    sample_locations = _sample_locations(
+        mesh,
+        affine,
+        kind=kind,
+        radius=radius,
+        n_points=n_points,
+        inner_mesh=inner_mesh,
+        depth=depth,
+    )
+    sample_locations = _mask_sample_locations(
+        sample_locations, images[0].shape, mesh.n_vertices, mask
+    )
+    texture = np.zeros((mesh.n_vertices, images.shape[0]))
+    for img in range(images.shape[0]):
+        for loc in range(len(sample_locations)):
+            possible_values = [
+                data[img][coords[0], coords[1], coords[2]]
+                for coords in sample_locations[loc]
+            ]
+            unique, counts = np.unique(possible_values, return_counts=True)
+            texture[loc, img] = unique[np.argmax(counts)]
+    return texture.T
+
+
 def _nearest_voxel_sampling(
     images,
     mesh,
@@ -492,52 +533,23 @@ def _nearest_voxel_sampling(
     See documentation of vol_to_surf for details.
 
     """
-    data = np.asarray(images)
-    # if the data is all integers we know it's an atlas, so the texture
-    # value for each vertex would be the most frequent voxel value in the
-    # neighborhood (out of the n_points samples)
-    if np.issubdtype(data.dtype, np.integer):
-        sample_locations = _sample_locations(
-            mesh,
-            affine,
-            kind=kind,
-            radius=radius,
-            n_points=n_points,
-            inner_mesh=inner_mesh,
-            depth=depth,
-        )
-        sample_locations = _mask_sample_locations(
-            sample_locations, images[0].shape, mesh.n_vertices, mask
-        )
-        texture = np.zeros((mesh.n_vertices, images.shape[0]))
-        for img in range(images.shape[0]):
-            for loc in range(len(sample_locations)):
-                possible_values = [
-                    data[img][coords[0], coords[1], coords[2]]
-                    for coords in sample_locations[loc]
-                ]
-                unique, counts = np.unique(possible_values, return_counts=True)
-                texture[loc, img] = unique[np.argmax(counts)]
-    # otherwise it's a statistical map, so we take the mean of n_points
-    # samples around each vertex
-    else:
-        proj = _projection_matrix(
-            mesh,
-            affine,
-            images[0].shape,
-            kind=kind,
-            radius=radius,
-            n_points=n_points,
-            mask=mask,
-            inner_mesh=inner_mesh,
-            depth=depth,
-        )
-        data = data.reshape(len(images), -1).T
-        texture = proj.dot(data)
-        # if all samples around a mesh vertex are outside the image,
-        # there is no reasonable value to assign to this vertex.
-        # in this case we return NaN for this vertex.
-        texture[np.asarray(proj.sum(axis=1) == 0).ravel()] = np.nan
+    data = np.asarray(images).reshape(len(images), -1).T
+    proj = _projection_matrix(
+        mesh,
+        affine,
+        images[0].shape,
+        kind=kind,
+        radius=radius,
+        n_points=n_points,
+        mask=mask,
+        inner_mesh=inner_mesh,
+        depth=depth,
+    )
+    texture = proj.dot(data)
+    # if all samples around a mesh vertex are outside the image,
+    # there is no reasonable value to assign to this vertex.
+    # in this case we return NaN for this vertex.
+    texture[np.asarray(proj.sum(axis=1) == 0).ravel()] = np.nan
     return texture.T
 
 
@@ -624,13 +636,22 @@ def vol_to_surf(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is provided.
 
-    interpolation : {'linear', 'nearest'}, default='linear'
+    interpolation : {'linear', 'nearest', 'nearest_most_frequent'}, \
+                    default='linear'
         How the image intensity is measured at a sample point.
 
         - 'linear':
             Use a trilinear interpolation of neighboring voxels.
         - 'nearest':
             Use the intensity of the nearest voxel.
+
+        .. versionadded:: 0.11.2.dev
+
+        - 'nearest_most_frequent':
+            Use the most frequent value in the neighborhood (out of the
+            `n_samples` samples) instead of the mean value. This is useful
+            when the image is a
+            :term:`deterministic atlas<Deterministic atlas>`.
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20
@@ -751,12 +772,12 @@ def vol_to_surf(
     interpolated values are averaged to produce the value associated to this
     particular :term:`mesh` vertex.
 
-    .. versionadded:: 0.11.2.dev
+    .. important::
 
-    If `img` is an atlas (meaning that its values are all integers) and the
-    `interpolation` parameter is set to 'nearest', each vertex will be assigned
-    the most frequent value in the neighborhood (out of the `n_samples`
-    samples) instead of the mean value.
+    When using the 'nearest_most_frequent' interpolation, each vertex will be
+    assigned the most frequent value in the neighborhood (out of the
+    `n_samples` samples) instead of the mean value. This option works better
+    if `img` is a :term:`deterministic atlas<Deterministic atlas>`.
 
     Examples
     --------
@@ -782,6 +803,7 @@ def vol_to_surf(
     sampling_schemes = {
         "linear": _interpolation_sampling,
         "nearest": _nearest_voxel_sampling,
+        "nearest_most_frequent": _nearest_most_frequent,
     }
     if interpolation not in sampling_schemes:
         raise ValueError(
