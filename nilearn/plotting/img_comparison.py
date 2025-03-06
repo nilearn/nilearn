@@ -168,10 +168,13 @@ def plot_img_comparison(
                 gridsize=gridsize,
                 extent=lims,
             )
+
             if colorbar:
                 cb = fig.colorbar(hb, ax=ax1)
                 cb.set_label("log10(N)")
-            x = np.linspace(*lims[0:2], num=gridsize)
+
+            x = np.linspace(*lims[:2], num=gridsize)
+
             ax1.plot(x, x, linestyle="--", c="grey")
             ax1.set_title(f"Pearson's R: {corr:.2f}")
             ax1.grid("on")
