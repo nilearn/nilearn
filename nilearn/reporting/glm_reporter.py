@@ -391,15 +391,17 @@ def _dmtx_to_svg_url(design_matrices):
 
     """
     html_design_matrices = []
+
     dmtx_template_path = (
         HTML_TEMPLATE_ROOT_PATH / "design_matrix_template.html"
     )
 
-    with dmtx_template_path.open() as html_template_obj:
-        dmtx_template_text = html_template_obj.read()
-
     for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
-        dmtx_text_ = string.Template(dmtx_template_text)
+        tpl = tempita.HTMLTemplate.from_filename(
+            str(dmtx_template_path),
+            encoding="utf-8",
+        )
+
         dmtx_plot = plot_design_matrix(design_matrix)
         dmtx_title = f"Run {dmtx_count}"
         if len(design_matrices) > 1:
@@ -408,11 +410,10 @@ def _dmtx_to_svg_url(design_matrices):
         url_design_matrix_svg = _plot_to_svg(dmtx_plot)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
-        dmtx_text_ = dmtx_text_.safe_substitute(
-            {
-                "design_matrix": url_design_matrix_svg,
-                "dmtx_title": dmtx_title,
-            }
+
+        dmtx_text_ = tpl.substitute(
+            design_matrix=url_design_matrix_svg,
+            dmtx_title=dmtx_title,
         )
         html_design_matrices.append(dmtx_text_)
     svg_url_design_matrices = "".join(html_design_matrices)
