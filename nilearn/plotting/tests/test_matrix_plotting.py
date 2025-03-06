@@ -12,17 +12,19 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.tests._testing import block_paradigm, modulated_event_paradigm
+from nilearn.plotting import (
+    plot_contrast_matrix,
+    plot_design_matrix,
+    plot_design_matrix_correlation,
+    plot_event,
+    plot_matrix,
+)
 from nilearn.plotting.matrix_plotting import (
     _sanitize_figure_and_axes,
     _sanitize_labels,
     _sanitize_reorder,
     _sanitize_tri,
     pad_contrast_matrix,
-    plot_contrast_matrix,
-    plot_design_matrix,
-    plot_design_matrix_correlation,
-    plot_event,
-    plot_matrix,
 )
 
 ##############################################################################

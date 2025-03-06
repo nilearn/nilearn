@@ -20,11 +20,18 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.glm.tests._testing import modulated_event_paradigm
 from nilearn.plotting import (
     plot_anat,
+    plot_bland_altman,
     plot_carpet,
     plot_connectome,
+    plot_contrast_matrix,
+    plot_design_matrix,
+    plot_design_matrix_correlation,
     plot_epi,
+    plot_event,
     plot_glass_brain,
     plot_img,
+    plot_img_comparison,
+    plot_matrix,
     plot_prob_atlas,
     plot_roi,
     plot_stat_map,
@@ -32,18 +39,7 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting.img_comparison import (
-    plot_bland_altman,
-    plot_img_comparison,
-)
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
-from nilearn.plotting.matrix_plotting import (
-    plot_contrast_matrix,
-    plot_design_matrix,
-    plot_design_matrix_correlation,
-    plot_event,
-    plot_matrix,
-)
 
 PLOTTING_FUNCS_3D = {
     plot_img,

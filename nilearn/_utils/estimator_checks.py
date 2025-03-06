@@ -748,7 +748,7 @@ def _generate_report_with_no_warning(estimator):
             if str(x.message) not in warnings_to_ignore
         ]
         if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
-            assert len(unknown_warnings) == 0, unknown_warnings
+            assert not unknown_warnings, unknown_warnings
 
     _check_html(report)
 
@@ -854,7 +854,6 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     if isinstance(estimator, NiftiSpheresMasker):
         return
     report = _generate_report_with_no_warning(estimator)
-    report = _generate_report(estimator)
     _check_html(report)
 
 

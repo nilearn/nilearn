@@ -74,3 +74,5 @@ Changes
 - :bdg-info:`Plotting` Change the default map to be ``"RdBu_r"`` or ``"gray"`` for most plotting functions. In several examples, use the "inferno" colormap when a sequential colormap is preferable (:gh:`4807`, :gh:`4851` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Improve sulci and subcortical schema for glass brain sagittal plots (:gh:`4807` by `John T. Johnson`_).
+
+- :bdg-primary:`Doc` Add license information for Yeo 2011 atlas (:gh:`5195` by `Patrick Sadil`_).
