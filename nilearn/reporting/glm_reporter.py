@@ -10,7 +10,6 @@ make_glm_report(model, contrasts):
 """
 
 import datetime
-import string
 import uuid
 from html import escape
 from pathlib import Path
@@ -42,7 +41,6 @@ from nilearn.reporting._utils import (
     clustering_params_to_dataframe,
     coerce_to_dict,
     dataframe_to_html,
-    make_headings,
     make_stat_maps,
     model_attributes_to_dataframe,
     return_model_type,
@@ -201,6 +199,7 @@ def make_glm_report(
             cluster_threshold=cluster_threshold,
             height_control=height_control,
             bg_img=bg_img,
+            report_dims=report_dims,
         )
         report_text.width, report_text.height = check_report_dims(report_dims)
         return report_text
@@ -211,7 +210,59 @@ def make_glm_report(
         display_mode_selector = {"slice": "z", "glass": "lzry"}
         display_mode = display_mode_selector[plot_type]
 
+    unique_id = str(uuid.uuid4()).replace("-", "")
+
+    title = f"<br>{title}" if title else ""
+
+    docstring = model.__doc__
+    snippet = docstring.partition("Parameters\n    ----------\n")[0]
+
+    model_attributes = model_attributes_to_dataframe(
+        model, is_volume_glm=False
+    )
+    with pd.option_context("display.max_colwidth", 100):
+        model_attributes_html = dataframe_to_html(
+            model_attributes,
+            precision=2,
+            header=True,
+            sparsify=False,
+        )
+
+    body_template_path = HTML_TEMPLATE_PATH / "glm_report_vol.html"
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(body_template_path),
+        encoding="utf-8",
+    )
+
+    css_file_path = CSS_PATH / "masker_report.css"
+    with css_file_path.open(encoding="utf-8") as css_file:
+        css = css_file.read()
+
+    head_template_path = (
+        TEMPLATE_ROOT_PATH / "html" / "report_head_template.html"
+    )
+    with head_template_path.open() as head_file:
+        head_tpl = Template(head_file.read())
+
+    head_css_file_path = CSS_PATH / "head.css"
+    with head_css_file_path.open(encoding="utf-8") as head_css_file:
+        head_css = head_css_file.read()
+
     warning_messages = []
+    if not model.__sklearn_is_fitted__():
+        return _generate_empty_report(
+            model,
+            tpl,
+            css,
+            title,
+            snippet,
+            warning_messages,
+            model_attributes_html,
+            unique_id,
+            head_tpl,
+            head_css,
+            report_dims,
+        )
 
     design_matrices = (
         model.design_matrices_
@@ -221,39 +272,9 @@ def make_glm_report(
 
     design_matrices_dict = _return_design_matrices_dict(design_matrices)
 
-    unique_id = str(uuid.uuid4()).replace("-", "")
-
-    html_head_template_path = (
-        HTML_TEMPLATE_ROOT_PATH / "report_head_template.html"
-    )
-
-    with html_head_template_path.open() as html_head_file_obj:
-        html_head_template_text = html_head_file_obj.read()
-    report_head_template = string.Template(html_head_template_text)
-
-    body_template_path = HTML_TEMPLATE_PATH / "glm_report_vol.html"
-
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(body_template_path),
-        encoding="utf-8",
-    )
-
     contrasts = coerce_to_dict(contrasts)
     contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
-    page_title, page_heading_1, page_heading_2 = make_headings(
-        contrasts,
-        title,
-        model,
-    )
-    with pd.option_context("display.max_colwidth", 100):
-        model_attributes = model_attributes_to_dataframe(model)
-        model_attributes_html = dataframe_to_html(
-            model_attributes,
-            precision=2,
-            header=False,
-            sparsify=False,
-        )
     statistical_maps = make_stat_maps(model, contrasts)
 
     # Select mask_img to use for plotting
@@ -284,26 +305,12 @@ def make_glm_report(
         plot_type=plot_type,
     )
     all_components_text = "\n".join(all_components)
-    report_values_head = {
-        "page_title": escape(page_title),
-    }
 
-    css_file_path = CSS_PATH / "masker_report.css"
-    with css_file_path.open(encoding="utf-8") as css_file:
-        css = css_file.read()
-
-    title = f"<br>{title}" if title else ""
-
-    docstring = model.__doc__
-    snippet = docstring.partition("Parameters\n    ----------\n")[0]
-
-    report_text_body = tpl.substitute(
+    body = tpl.substitute(
         css=css,
         title=f"Statistical Report - {return_model_type(model)}{title}",
         docstring=snippet,
         warning_messages=_render_warnings_partial(warning_messages),
-        page_heading_1=page_heading_1,
-        page_heading_2=page_heading_2,
         parameters=model_attributes_html,
         contrasts_dict=contrasts_dict,
         mask_plot=mask_plot_html_code,
@@ -312,14 +319,20 @@ def make_glm_report(
         unique_id=unique_id,
         date=datetime.datetime.now().replace(microsecond=0).isoformat(),
     )
-    report_text = HTMLReport(
-        body=report_text_body,
-        head_tpl=report_head_template,
-        head_values=report_values_head,
+    report = HTMLReport(
+        body=body,
+        head_tpl=head_tpl,
+        head_values={
+            "head_css": head_css,
+            "version": __version__,
+            "page_title": (
+                f"Statistical Report - {return_model_type(model)}{title}"
+            ),
+        },
     )
     # setting report size for better visual experience in Jupyter Notebooks.
-    report_text.width, report_text.height = check_report_dims(report_dims)
-    return report_text
+    report.width, report.height = check_report_dims(report_dims)
+    return report
 
 
 def _plot_to_svg(plot):
@@ -746,6 +759,7 @@ def _make_surface_glm_report(
     cluster_threshold=0,
     height_control="fpr",
     bg_img=None,
+    report_dims=(1600, 800),
 ):
     """Generate a GLM report when input data is surface image.
 
@@ -777,7 +791,7 @@ def _make_surface_glm_report(
             sparsify=False,
         )
 
-    body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
+    body_template_path = HTML_TEMPLATE_PATH / "glm_report_surf.html"
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path),
         encoding="utf-8",
@@ -787,9 +801,7 @@ def _make_surface_glm_report(
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
-    head_template_path = (
-        TEMPLATE_ROOT_PATH / "html" / "report_head_template.html"
-    )
+    head_template_path = TEMPLATE_ROOT_PATH / "glm_report_head_template.html"
     with head_template_path.open() as head_file:
         head_tpl = Template(head_file.read())
 
@@ -799,41 +811,19 @@ def _make_surface_glm_report(
 
     warning_messages = []
     if not model.__sklearn_is_fitted__():
-        warning_messages.append("The model has not been fit yet.")
-
-        body = tpl.substitute(
-            css=css,
-            title=f"Statistical Report - {return_model_type(model)}{title}",
-            docstring=snippet,
-            warning_messages=_render_warnings_partial(warning_messages),
-            design_matrices_dict=None,
-            parameters=model_attributes_html,
-            contrasts_dict=None,
-            statistical_maps=None,
-            cluster_table_details=None,
-            mask_plot=None,
-            cluster_table=None,
-            date=datetime.datetime.now().replace(microsecond=0).isoformat(),
-            unique_id=unique_id,
+        return _generate_empty_report(
+            model,
+            tpl,
+            css,
+            title,
+            snippet,
+            warning_messages,
+            model_attributes_html,
+            unique_id,
+            head_tpl,
+            head_css,
+            report_dims,
         )
-
-        # revert HTML safe substitutions in CSS sections
-        body = body.replace(".pure-g &gt; div", ".pure-g > div")
-
-        report = HTMLReport(
-            body=body,
-            head_tpl=head_tpl,
-            head_values={
-                "head_css": head_css,
-                "version": __version__,
-                "page_title": (
-                    f"Statistical Report - {return_model_type(model)}{title}"
-                ),
-            },
-        )
-        report.height = 800
-        report.width = 1000
-        return report
 
     fig = model.masker_._create_figure_for_report()
     mask_plot = figure_to_png_base64(fig)
@@ -925,8 +915,56 @@ def _make_surface_glm_report(
             ),
         },
     )
-    report.height = 800
-    report.width = 1000
+    report.width, report.height = check_report_dims(report_dims)
+    return report
+
+
+def _generate_empty_report(
+    model,
+    tpl,
+    css,
+    title,
+    snippet,
+    warning_messages,
+    model_attributes_html,
+    unique_id,
+    head_tpl,
+    head_css,
+    report_dims,
+):
+    warning_messages.append("The model has not been fit yet.")
+
+    body = tpl.substitute(
+        css=css,
+        title=f"Statistical Report - {return_model_type(model)}{title}",
+        docstring=snippet,
+        warning_messages=_render_warnings_partial(warning_messages),
+        design_matrices_dict=None,
+        parameters=model_attributes_html,
+        contrasts_dict=None,
+        statistical_maps=None,
+        cluster_table_details=None,
+        mask_plot=None,
+        cluster_table=None,
+        date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+        unique_id=unique_id,
+    )
+
+    # revert HTML safe substitutions in CSS sections
+    body = body.replace(".pure-g &gt; div", ".pure-g > div")
+
+    report = HTMLReport(
+        body=body,
+        head_tpl=head_tpl,
+        head_values={
+            "head_css": head_css,
+            "version": __version__,
+            "page_title": (
+                f"Statistical Report - {return_model_type(model)}{title}"
+            ),
+        },
+    )
+    report.width, report.height = check_report_dims(report_dims)
     return report
 
 
