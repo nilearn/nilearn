@@ -1351,6 +1351,7 @@ def plot_prob_atlas(
         threshold = [threshold] * n_maps
 
     filled = view_type.startswith("filled")
+    transparency = alpha
     for map_img, color, thr in zip(iter_img(maps_img), color_list, threshold):
         data = get_data(map_img)
         # To threshold or choose the level of the contours
@@ -1362,7 +1363,10 @@ def plot_prob_atlas(
 
         if view_type == "continuous":
             display.add_overlay(
-                map_img, threshold=thr, cmap=cm.alpha_cmap(color), alpha=alpha
+                map_img,
+                threshold=thr,
+                cmap=cm.alpha_cmap(color),
+                transparency=transparency,
             )
         else:
             display.add_contours(
@@ -1371,7 +1375,7 @@ def plot_prob_atlas(
                 linewidths=linewidths,
                 colors=[color],
                 filled=filled,
-                alpha=alpha,
+                transparency=transparency,
                 linestyles="solid",
             )
     if colorbar:
