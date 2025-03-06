@@ -127,3 +127,22 @@ def test_plot_img_transparency_range_error(
             transparency=transparency_image,
             transparency_range=transparency_range,
         )
+
+
+def test_plot_img_transparency_binary_image(
+    matplotlib_pyplot,
+    shape_3d_default,
+    affine_mni,
+    rng,
+    img_3d_ones_mni,
+):
+    """Smoke test with transparency image as binary."""
+    transparency_data = rng.choice(
+        [0, 1], size=shape_3d_default, p=[0.5, 0.5]
+    ).astype("int8")
+    transparency_image = Nifti1Image(transparency_data, affine_mni)
+
+    plot_img(
+        img_3d_ones_mni,
+        transparency=transparency_image,
+    )

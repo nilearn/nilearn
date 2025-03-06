@@ -622,11 +622,6 @@ class BaseSlicer:
                 transparency_range[0], np.min(transparency)
             )
 
-            if transparency_range[0] < 0:
-                warnings.warn(
-                    "'transparency_range[0]' must be >= 0. Setting it to 0.0."
-                )
-                transparency_range[0] = 0
             if transparency_range[0] >= transparency_range[1]:
                 raise ValueError(f"{error_msg} Got '{transparency_range}'.")
 
