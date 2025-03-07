@@ -221,61 +221,20 @@ def make_glm_report(
             sparsify=False,
         )
 
-    drift_model_str = None
-    if isinstance(model, FirstLevelModel) and model.drift_model:
-        if model.drift_model == "cosine":
-            param_str = f"high pass filter={model.high_pass} Hz"
-        else:
-            param_str = f"order={model.drift_order}"
-        drift_model_str = (
-            f"and a {model.drift_model} drift model ({param_str})"
-        )
+    contrasts = coerce_to_dict(contrasts)
 
-    body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(body_template_path),
-        encoding="utf-8",
-    )
+    design_matrices = None
+    mask_plot = None
+    results = None
+    warning_messages = ["The model has not been fit yet."]
+    if model.__sklearn_is_fitted__():
+        warning_messages = []
 
-    css_file_path = CSS_PATH / "masker_report.css"
-    with css_file_path.open(encoding="utf-8") as css_file:
-        css = css_file.read()
-
-    warning_messages = []
-    if not model.__sklearn_is_fitted__():
-        warning_messages.append("The model has not been fit yet.")
-
-        body = tpl.substitute(
-            css=css,
-            title=title,
-            docstring=snippet,
-            warning_messages=_render_warnings_partial(warning_messages),
-            parameters=model_attributes_html,
-            contrasts_dict=None,
-            mask_plot=None,
-            results=None,
-            design_matrices_dict=None,
-            unique_id=unique_id,
-            date=date,
-            version=__version__,
-            model_type=model_type,
-            drift_model_str=drift_model_str,
-            noise_model=noise_model,
-            hrf_model=hrf_model,
-            smoothing_fwhm=smoothing_fwhm,
-        )
-
-    else:
         design_matrices = (
             model.design_matrices_
             if isinstance(model, FirstLevelModel)
             else [model.design_matrix_]
         )
-
-        design_matrices_dict = _return_design_matrices_dict(design_matrices)
-
-        contrasts = coerce_to_dict(contrasts)
-        contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
         if bg_img == "MNI152TEMPLATE":
             bg_img = MNI152TEMPLATE if is_volume_glm else None
@@ -306,25 +265,58 @@ def make_glm_report(
             plot_type=plot_type,
         )
 
-        body = tpl.substitute(
-            css=css,
-            title=title,
-            docstring=snippet,
-            warning_messages=_render_warnings_partial(warning_messages),
-            parameters=model_attributes_html,
-            contrasts_dict=contrasts_dict,
-            mask_plot=mask_plot,
-            results=results,
-            design_matrices_dict=design_matrices_dict,
-            unique_id=unique_id,
-            date=date,
-            version=__version__,
-            model_type=model_type,
-            drift_model_str=drift_model_str,
-            noise_model=noise_model,
-            hrf_model=hrf_model,
-            smoothing_fwhm=smoothing_fwhm,
+    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
+
+    drift_model_str = None
+    if isinstance(model, FirstLevelModel) and model.drift_model:
+        if model.drift_model == "cosine":
+            param_str = f"high pass filter={model.high_pass} Hz"
+        else:
+            param_str = f"order={model.drift_order}"
+        drift_model_str = (
+            f"and a {model.drift_model} drift model ({param_str})"
         )
+    method_section_template_path = HTML_TEMPLATE_PATH / "method_section.html"
+    method_tpl = tempita.HTMLTemplate.from_filename(
+        str(method_section_template_path),
+        encoding="utf-8",
+    )
+    method_section = method_tpl.substitute(
+        version=__version__,
+        model_type=model_type,
+        drift_model_str=drift_model_str,
+        noise_model=noise_model,
+        hrf_model=hrf_model,
+        smoothing_fwhm=smoothing_fwhm,
+        contrasts_dict=contrasts_dict,
+    )
+
+    design_matrices_dict = _return_design_matrices_dict(design_matrices)
+
+    body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(body_template_path),
+        encoding="utf-8",
+    )
+
+    css_file_path = CSS_PATH / "masker_report.css"
+    with css_file_path.open(encoding="utf-8") as css_file:
+        css = css_file.read()
+
+    body = tpl.substitute(
+        css=css,
+        title=title,
+        docstring=snippet,
+        warning_messages=_render_warnings_partial(warning_messages),
+        parameters=model_attributes_html,
+        contrasts_dict=contrasts_dict,
+        mask_plot=mask_plot,
+        results=results,
+        design_matrices_dict=design_matrices_dict,
+        unique_id=unique_id,
+        date=date,
+        method_section=method_section,
+    )
 
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
