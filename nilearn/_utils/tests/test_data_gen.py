@@ -243,7 +243,7 @@ def test_fake_bids_derivatives_with_session_and_runs(
     )
 
     # derivatives
-    for task, n_run in zip(tasks, n_runs):
+    for task, n_run in zip(tasks, n_runs, strict=False):
         _check_n_files_derivatives_for_task(
             bids_path=bids_path,
             n_sub=n_sub,
@@ -406,7 +406,7 @@ def test_fake_bids_extra_raw_entity(tmp_path):
 
     # derivatives
     for label in entities["acq"]:
-        for task, n_run in zip(tasks, n_runs):
+        for task, n_run in zip(tasks, n_runs, strict=False):
             _check_n_files_derivatives_for_task(
                 bids_path=bids_path,
                 n_sub=n_sub,
@@ -447,7 +447,7 @@ def test_fake_bids_extra_derivative_entity(tmp_path):
 
     # derivatives
     for label in entities["res"]:
-        for task, n_run in zip(tasks, n_runs):
+        for task, n_run in zip(tasks, n_runs, strict=False):
             _check_n_files_derivatives_for_task(
                 bids_path=bids_path,
                 n_sub=n_sub,
@@ -591,13 +591,13 @@ def test_fake_fmri_data_and_design_generate(shapes, rank, affine):
         shapes, rk=rank, affine=affine, random_state=42
     )
 
-    for fmri, shape in zip(fmri_data, shapes):
+    for fmri, shape in zip(fmri_data, shapes, strict=False):
         assert mask.shape == shape[:3]
         assert fmri.shape == shape
         if affine is not None:
             assert_almost_equal(fmri.affine, affine)
 
-    for design, shape in zip(design_matrices, shapes):
+    for design, shape in zip(design_matrices, shapes, strict=False):
         assert design.shape == (shape[3], rank)
 
 
@@ -618,12 +618,14 @@ def test_fake_fmri_data_and_design_write(tmp_path, shapes, rank, affine):
     assert_almost_equal(mask_img.get_fdata(), mask.get_fdata())
     assert_almost_equal(mask_img.affine, mask.affine)
 
-    for fmri_file, fmri in zip(fmri_files, fmri_data):
+    for fmri_file, fmri in zip(fmri_files, fmri_data, strict=False):
         fmri_img = load(fmri_file)
         assert_almost_equal(fmri_img.get_fdata(), fmri.get_fdata())
         assert_almost_equal(fmri_img.affine, fmri.affine)
 
-    for design_file, design in zip(design_files, design_matrices):
+    for design_file, design in zip(
+        design_files, design_matrices, strict=False
+    ):
         assert_frame_equal(
             pd.read_csv(design_file, sep="\t"), design, check_exact=False
         )

@@ -427,7 +427,7 @@ def crop_img(
         start = np.maximum(start - 1, 0)
         end = np.minimum(end + 1, data.shape[:3])
 
-    slices = [slice(s, e) for s, e in zip(start, end)][:3]
+    slices = [slice(s, e) for s, e in zip(start, end, strict=False)][:3]
     cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
 
@@ -472,11 +472,15 @@ def _pad_array(array, pad_sizes):
     padded = np.zeros(new_shape, dtype=array.dtype)
     source_slices = [
         slice(max(-lp, 0), min(s + up, s))
-        for lp, up, s in zip(lower_paddings, upper_paddings, array.shape)
+        for lp, up, s in zip(
+            lower_paddings, upper_paddings, array.shape, strict=False
+        )
     ]
     target_slices = [
         slice(max(lp, 0), min(s - up, s))
-        for lp, up, s in zip(lower_paddings, upper_paddings, new_shape)
+        for lp, up, s in zip(
+            lower_paddings, upper_paddings, new_shape, strict=False
+        )
     ]
 
     padded[tuple(target_slices)] = array[tuple(source_slices)].copy()
@@ -1727,6 +1731,7 @@ def concat_imgs(
                 memory=memory,
                 memory_level=memory_level,
             ),
+            strict=False,
         )
     ):
         nii_str = (

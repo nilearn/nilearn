@@ -717,7 +717,7 @@ def flip_surf_img_parts():
     def f(poly_obj):
         keys = list(poly_obj.parts.keys())
         keys = [keys[-1]] + keys[:-1]
-        return dict(zip(keys, poly_obj.parts.values()))
+        return dict(zip(keys, poly_obj.parts.values(), strict=False))
 
     return f
 
