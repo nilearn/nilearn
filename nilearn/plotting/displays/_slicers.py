@@ -294,24 +294,23 @@ class BaseSlicer:
                   value is used to threshold the image: values below the
                   threshold (in absolute value) are plotted as transparent.
 
-        cbar_tick_format : str, default="%%.2g" (scientific notation)
-            Controls how to format the tick labels of the colorbar.
-            Ex: use "%%i" to display as integers.
+        %(cbar_tick_format)s
+            default="%%.2g" (scientific notation)
 
-        colorbar : :obj:`bool`, default=False
-            If ``True``, display a colorbar on the right of the plots.
+        %(colorbar)s
+            default=False
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
             :func:`~matplotlib.pyplot.imshow`.
 
-        cbar_vmin : :obj:`float`, optional
-            Minimal value for the colorbar. If None, the minimal value
-            is computed based on the data.
+        cbar_vmin : :obj:`float` or None, default=None
+            Minimal value for the colorbar.
+            If None, the minimal value is computed based on the data.
 
-        cbar_vmax : :obj:`float`, optional
-            Maximal value for the colorbar. If None, the maximal value
-            is computed based on the data.
+        cbar_vmax : :obj:`float` or None, default=None
+            Maximal value for the colorbar.
+            If None, the maximal value is computed based on the data.
 
         Raises
         ------
@@ -344,7 +343,17 @@ class BaseSlicer:
         plt.draw_if_interactive()
 
     @fill_doc
-    def add_contours(self, img, threshold=1e-6, filled=False, **kwargs):
+    def add_contours(
+        self,
+        img,
+        threshold=1e-6,
+        filled=False,
+        colorbar=False,
+        cbar_tick_format="%.2g",
+        cbar_vmin=None,
+        cbar_vmax=None,
+        **kwargs,
+    ):
         """Contour a 3D map in all the views.
 
         Parameters
@@ -363,6 +372,18 @@ class BaseSlicer:
         filled : :obj:`bool`, default=False
             If ``filled=True``, contours are displayed with color fillings.
 
+        %(colorbar)s
+            default=False
+
+        %(cbar_tick_format)s
+
+        cbar_vmin : :obj:`float` or None, default=None
+            Minimal value for the colorbar.
+            If None, the minimal value is computed based on the data.
+
+        cbar_vmax : :obj:`float` or None, default=None
+            Maximal value for the colorbar.
+            If None, the maximal value is computed based on the data.
 
         kwargs : :obj:`dict`
             Extra keyword arguments are passed to function
@@ -385,13 +406,26 @@ class BaseSlicer:
         (from matplotlib) for contours and contour_fillings can be
         different.
 
+        There is not point at using the parameters colorbar
+        and levels at the same time.
+        Then, if one does so, it will raise an error.
+        It is possible to use add_contours
+        with parameter levels and without colorbar,
+        and then use it again
+        with parameter colorbar and without levels,
+        but it is not relevant
+        and it will display something that doesn't make sense.
+
         """
         if not filled:
             threshold = None
         else:
             check_threshold_not_negative(threshold)
 
-        self._map_show(img, type="contour", threshold=threshold, **kwargs)
+        ims = self._map_show(
+            img, type="contour", threshold=threshold, **kwargs
+        )
+
         if filled:
             if "levels" in kwargs:
                 levels = kwargs["levels"]
@@ -400,7 +434,26 @@ class BaseSlicer:
                     # should be given as (lower, upper).
                     levels.append(np.inf)
 
-            self._map_show(img, type="contourf", threshold=threshold, **kwargs)
+            ims = self._map_show(
+                img, type="contourf", threshold=threshold, **kwargs
+            )
+
+        if colorbar and ims:
+            if self._colorbar:
+                print("This figure already has an overlay with a colorbar.")
+            # else:
+            self._colorbar = colorbar
+            self._cbar_tick_format = cbar_tick_format
+
+            if kwargs.get("levels") is not None or "colors" in kwargs:
+                # raise ValueError(
+                #     "no point in printing a colorbar with levels or colors."
+                # )
+                print("no point in printing a colorbar with levels or colors.")
+
+            self._show_colorbar(
+                ims[0].cmap, ims[0].norm, cbar_vmin, cbar_vmax, threshold
+            )
 
         plt.draw_if_interactive()
 
@@ -550,16 +603,16 @@ class BaseSlicer:
             This object is typically found as the ``norm`` attribute of
             :class:`~matplotlib.image.AxesImage`.
 
-        threshold : :obj:`float` or ``None``, optional
-            The absolute value at which the colorbar is thresholded.
-
-        cbar_vmin : :obj:`float`, optional
+        cbar_vmin : :obj:`float` or None, default=None
             Minimal value for the colorbar. If None, the minimal value
             is computed based on the data.
 
-        cbar_vmax : :obj:`float`, optional
+        cbar_vmax : :obj:`float` or None, default=None
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
+
+        threshold : :obj:`float` or ``None``, default=None
+            The absolute value at which the colorbar is thresholded.
         """
         offset = 0 if threshold is None else threshold
         offset = min(offset, norm.vmax)

@@ -28,6 +28,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-info:`Plotting` Add possibility to add colorbar to contour overlays (:gh:`4883` by `quentden quentden`_).
+
 - :bdg-dark:`Code` Extend :func:`~nilearn.image.threshold_img` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`4999` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add different reduction strategies to :class:`nilearn.maskers.SurfaceLabelsMasker` (:gh:`4809` by `Rémi Gau`_).

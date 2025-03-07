@@ -130,7 +130,6 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
         title=f"sub-{model.subject_label}",
         axes=axes[int(midx / ncols), int(midx % ncols)],
         plot_abs=False,
-        colorbar=True,
         display_mode="x",
         vmin=-12,
         vmax=12,
