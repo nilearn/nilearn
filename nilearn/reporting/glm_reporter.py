@@ -218,10 +218,7 @@ def make_glm_report(
             sparsify=False,
         )
 
-    if is_volume_glm:
-        body_template_path = HTML_TEMPLATE_PATH / "glm_report_vol.html"
-    else:
-        body_template_path = HTML_TEMPLATE_PATH / "glm_report_surf.html"
+    body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path),
         encoding="utf-8",
@@ -275,52 +272,33 @@ def make_glm_report(
 
         statistical_maps = make_stat_maps(model, contrasts)
 
-        if not is_volume_glm:
-            body = _make_surface_glm_body(
-                title,
-                bg_img,
-                threshold,
-                tpl,
-                css,
-                snippet,
-                warning_messages,
-                unique_id,
-                model_attributes_html,
-                mask_plot,
-                design_matrices_dict,
-                contrasts_dict,
-                statistical_maps,
-                date,
-            )
+        results = _make_stat_maps_contrast_clusters(
+            stat_img=statistical_maps,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            bg_img=bg_img,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            plot_type=plot_type,
+        )
 
-        else:
-            results = _make_stat_maps_contrast_clusters(
-                stat_img=statistical_maps,
-                threshold=threshold,
-                alpha=alpha,
-                cluster_threshold=cluster_threshold,
-                height_control=height_control,
-                two_sided=two_sided,
-                min_distance=min_distance,
-                bg_img=bg_img,
-                cut_coords=cut_coords,
-                display_mode=display_mode,
-                plot_type=plot_type,
-            )
-
-            body = tpl.substitute(
-                css=css,
-                title=title,
-                docstring=snippet,
-                warning_messages=_render_warnings_partial(warning_messages),
-                parameters=model_attributes_html,
-                contrasts_dict=contrasts_dict,
-                mask_plot=mask_plot,
-                results=results,
-                design_matrices_dict=design_matrices_dict,
-                unique_id=unique_id,
-                date=date,
-            )
+        body = tpl.substitute(
+            css=css,
+            title=title,
+            docstring=snippet,
+            warning_messages=_render_warnings_partial(warning_messages),
+            parameters=model_attributes_html,
+            contrasts_dict=contrasts_dict,
+            mask_plot=mask_plot,
+            results=results,
+            design_matrices_dict=design_matrices_dict,
+            unique_id=unique_id,
+            date=date,
+        )
 
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
@@ -563,53 +541,72 @@ def _make_stat_maps_contrast_clusters(
 
     results = {}
     for contrast_name, stat_map_img in stat_img.items():
-        # Only use threshold_stats_img to adjust the threshold
-        # that we will pass to clustering_params_to_dataframe
-        # and _stat_map_to_svg
-        # Necessary to avoid :
-        # https://github.com/nilearn/nilearn/issues/4192
-        thresholded_img, threshold = threshold_stats_img(
-            stat_img=stat_map_img,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
-            height_control=height_control,
-        )
-        table_details = clustering_params_to_dataframe(
-            threshold,
-            cluster_threshold,
-            min_distance,
-            height_control,
-            alpha,
-        )
-        stat_map_svg = _stat_map_to_svg(
-            stat_img=thresholded_img,
-            threshold=threshold,
-            bg_img=bg_img,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            plot_type=plot_type,
-            table_details=table_details,
-        )
+        if isinstance(stat_map_img, SurfaceImage):
+            surf_mesh = bg_img.mesh if bg_img else None
+            fig = plot_surf_stat_map(
+                stat_map=stat_map_img,
+                hemi="left",
+                colorbar=True,
+                threshold=threshold,
+                bg_map=bg_img,
+                surf_mesh=surf_mesh,
+            )
+            stat_map_svg = figure_to_png_base64(fig)
 
-        cluster_table = get_clusters_table(
-            thresholded_img,
-            stat_threshold=threshold,
-            cluster_threshold=cluster_threshold,
-            min_distance=min_distance,
-            two_sided=two_sided,
-        )
-        cluster_table_html = dataframe_to_html(
-            cluster_table,
-            precision=2,
-            index=False,
-        )
+            # prevents sphinx-gallery & jupyter from scraping & inserting plots
+            plt.close("all")
 
-        table_details_html = dataframe_to_html(
-            table_details,
-            precision=3,
-            header=False,
-        )
+            table_details_html = None
+            cluster_table_html = None
+
+        else:
+            # Only use threshold_stats_img to adjust the threshold
+            # that we will pass to clustering_params_to_dataframe
+            # and _stat_map_to_svg
+            # Necessary to avoid :
+            # https://github.com/nilearn/nilearn/issues/4192
+            thresholded_img, threshold = threshold_stats_img(
+                stat_img=stat_map_img,
+                threshold=threshold,
+                alpha=alpha,
+                cluster_threshold=cluster_threshold,
+                height_control=height_control,
+            )
+            table_details = clustering_params_to_dataframe(
+                threshold,
+                cluster_threshold,
+                min_distance,
+                height_control,
+                alpha,
+            )
+            stat_map_svg = _stat_map_to_svg(
+                stat_img=thresholded_img,
+                threshold=threshold,
+                bg_img=bg_img,
+                cut_coords=cut_coords,
+                display_mode=display_mode,
+                plot_type=plot_type,
+                table_details=table_details,
+            )
+
+            cluster_table = get_clusters_table(
+                thresholded_img,
+                stat_threshold=threshold,
+                cluster_threshold=cluster_threshold,
+                min_distance=min_distance,
+                two_sided=two_sided,
+            )
+            cluster_table_html = dataframe_to_html(
+                cluster_table,
+                precision=2,
+                index=False,
+            )
+
+            table_details_html = dataframe_to_html(
+                table_details,
+                precision=3,
+                header=False,
+            )
 
         results[escape(contrast_name)] = tempita.bunch(
             stat_map_img=stat_map_svg,
@@ -774,63 +771,6 @@ def _add_params_to_plot(table_details, stat_map_plot):
     if stat_map_plot._black_bg:
         suptitle_text.set_color("w")
     return stat_map_plot
-
-
-def _make_surface_glm_body(
-    title,
-    bg_img,
-    threshold,
-    tpl,
-    css,
-    snippet,
-    warning_messages,
-    unique_id,
-    model_attributes_html,
-    mask_plot,
-    design_matrices_dict,
-    contrasts_dict,
-    statistical_maps,
-    date,
-):
-    """Generate a GLM report when input data is surface image.
-
-    Deal first with part of the report that are always there
-    even before fit,
-    to return early if the model is not fitted.
-    """
-    surf_mesh = bg_img.mesh if bg_img else None
-    for contrast_name, contrast_map in statistical_maps.items():
-        fig = plot_surf_stat_map(
-            stat_map=contrast_map,
-            hemi="left",
-            colorbar=True,
-            threshold=threshold,
-            bg_map=bg_img,
-            surf_mesh=surf_mesh,
-        )
-        statistical_maps[contrast_name] = {
-            "stat_map_img": figure_to_png_base64(fig),
-        }
-        # prevents sphinx-gallery & jupyter from scraping & inserting plots
-        plt.close("all")
-
-    # For now we do not have surface clusters,
-    # so we do not display this in the report
-    return tpl.substitute(
-        css=css,
-        title=title,
-        docstring=snippet,
-        warning_messages=_render_warnings_partial(warning_messages),
-        design_matrices_dict=design_matrices_dict,
-        parameters=model_attributes_html,
-        contrasts_dict=contrasts_dict,
-        statistical_maps=statistical_maps,
-        cluster_table_details=None,
-        mask_plot=mask_plot,
-        cluster_table=None,
-        date=date,
-        unique_id=unique_id,
-    )
 
 
 def _return_design_matrices_dict(design_matrices):
