@@ -173,37 +173,47 @@
 
   <section id="statistical-maps-{{unique_id}}">
     <h2>Statistical Maps</h2>
-    {{if results}} {{py: results = results.items()}} {{for contrast_name,
-    details in results}}
-
-    <h4>{{contrast_name}}</h4>
-
-    <img
-      src="data:image/svg+xml,{{ details.stat_map_img }}"
-      alt="Stat map plot for the contrast: {{contrast_name}}"
-    />
-
-    <details>
-      <summary class="pure-button button-small contrast-button">
-        Cluster Table
-      </summary>
-      {{if details.cluster_table_details }}
+    <div class="pure-g">
+      {{if results}}
       <!--  -->
-      {{ details.cluster_table_details|html }}
+      {{py: results = results.items()}}
       <!--  -->
-      {{else}}
-      <p>No cluster table parameter provided</p>
+      {{for contrast_name, details in results}}
+      <!--  -->
+
+      <div class="pure-u-1">
+        <h3>{{contrast_name}}</h3>
+
+        <div class="d-flex flex-column">
+          <img
+            class="pure-img"
+            src="data:image/svg+xml,{{ details.stat_map_img }}"
+            alt="Stat map plot for the contrast: {{contrast_name}}"
+          />
+
+          <details>
+            <summary class="pure-button button-small contrast-button">
+              Cluster Table
+            </summary>
+            {{if details.cluster_table_details }}
+            <!--  -->
+            {{ details.cluster_table_details|html }}
+            <!--  -->
+            {{else}}
+            <p>No cluster table parameter provided</p>
+            {{endif}}
+            <!--  -->
+            {{ details.cluster_table|html }}
+          </details>
+        </div>
+      </div>
+      {{endfor}} {{else}}
+      <div class="d-flex flex-wrap justify-content-evenly">
+        <p>No statistical map was provided.</p>
+      </div>
+
       {{endif}}
-      <!--  -->
-      {{ details.cluster_table|html }}
-    </details>
-
-    {{endfor}} {{else}}
-    <div class="d-flex flex-wrap justify-content-evenly">
-      <p>No statistical map was provided.</p>
     </div>
-
-    {{endif}}
   </section>
 
   <section id="about-{{unique_id}}" style="text-align: left">
