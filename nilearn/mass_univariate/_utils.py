@@ -68,18 +68,8 @@ def calculate_tfce(
     for i_regressor in range(arr4d.shape[3]):
         arr3d = arr4d[..., i_regressor]
 
-        # Get signs / threshs
-        if two_sided_test:
-            signs = [-1, 1]
-            max_score = np.max(np.abs(arr3d))
-        else:
-            signs = [1]
-            max_score = np.max(arr3d)
-
-        step = max_score / 100 if dh == "auto" else dh
-
-        # Set based on determined step size
-        score_threshs = np.arange(step, max_score + step, step)
+        signs = [-1, 1] if two_sided_test else [1]
+        score_threshs = _return_score_threshs(arr3d, dh, two_sided_test)
 
         # If we apply the sign first...
         for sign in signs:
@@ -138,6 +128,17 @@ def calculate_tfce(
                 )
 
     return tfce_4d
+
+
+def _return_score_threshs(arr3d, dh, two_sided_test):
+    """Compute list of score threshold to use for TFCE."""
+    max_score = (
+        np.nanmax(np.abs(arr3d)) if two_sided_test else np.nanmax(arr3d)
+    )
+    number_steps = (
+        100 if dh == "auto" else np.clip(round(max_score / dh), 10, 1000)
+    )
+    return np.linspace(0, max_score, number_steps + 1)[1:]
 
 
 def null_to_p(test_values, null_array, alternative="two-sided"):

@@ -772,3 +772,9 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
+  - given-names: Lee
+    family-names: Newberg
+    website: https://github.com/Leengit
+    affiliation: Kitware, Inc., USA
+    email: leengit@quantconsulting.com
+    orcid: https://orcid.org/0000-0003-4644-8874

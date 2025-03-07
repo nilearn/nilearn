@@ -13,6 +13,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Prevent range overrun in TFCE (:gh:`5179` by `Lee Newberg`_).
+
 - :bdg-dark:`Code` Ensure that all figures are generated with a color bar by default (:gh:`5172` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fixes datasets that returned numpy arrays instead of pandas dataframes (:gh:`5109` by `Rémi Gau`_).
