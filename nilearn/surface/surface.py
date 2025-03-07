@@ -466,7 +466,7 @@ def _mask_sample_locations(sample_locations, img_shape, mesh_n_vertices, mask):
     masks = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
     masks = np.split(masks, mesh_n_vertices)
     # mask sample locations and make a list of masked indices because
-    # masked locations are not contiguous
+    # masked locations are not necessarily of the same length
     masked_sample_locations = [
         sample_locations[idx][~mask] for idx, mask in enumerate(masks)
     ]
