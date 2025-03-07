@@ -294,11 +294,7 @@ def make_glm_report(
             )
 
         else:
-            if not display_mode:
-                display_mode_selector = {"slice": "z", "glass": "lzry"}
-                display_mode = display_mode_selector[plot_type]
-
-            all_components = _make_stat_maps_contrast_clusters(
+            results = _make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
                 threshold=threshold,
                 alpha=alpha,
@@ -311,7 +307,6 @@ def make_glm_report(
                 display_mode=display_mode,
                 plot_type=plot_type,
             )
-            all_components_text = "\n".join(all_components)
 
             body = tpl.substitute(
                 css=css,
@@ -321,7 +316,7 @@ def make_glm_report(
                 parameters=model_attributes_html,
                 contrasts_dict=contrasts_dict,
                 mask_plot=mask_plot,
-                component=all_components_text,
+                results=results,
                 design_matrices_dict=design_matrices_dict,
                 unique_id=unique_id,
                 date=date,
@@ -557,22 +552,17 @@ def _make_stat_maps_contrast_clusters(
 
     Returns
     -------
-    all_components : List[String]
-        Each element is a set of HTML code for
+    results : dict
+        Each key contains
         contrast name, contrast plot, statistical map, cluster table.
 
     """
-    all_components = []
-    components_template_path = (
-        HTML_TEMPLATE_PATH / "stat_maps_contrast_clusters_template.html"
-    )
+    if not display_mode:
+        display_mode_selector = {"slice": "z", "glass": "lzry"}
+        display_mode = display_mode_selector[plot_type]
 
+    results = {}
     for contrast_name, stat_map_img in stat_img.items():
-        tpl = tempita.HTMLTemplate.from_filename(
-            str(components_template_path),
-            encoding="utf-8",
-        )
-
         # Only use threshold_stats_img to adjust the threshold
         # that we will pass to clustering_params_to_dataframe
         # and _stat_map_to_svg
@@ -585,7 +575,6 @@ def _make_stat_maps_contrast_clusters(
             cluster_threshold=cluster_threshold,
             height_control=height_control,
         )
-
         table_details = clustering_params_to_dataframe(
             threshold,
             cluster_threshold,
@@ -593,7 +582,6 @@ def _make_stat_maps_contrast_clusters(
             height_control,
             alpha,
         )
-
         stat_map_svg = _stat_map_to_svg(
             stat_img=thresholded_img,
             threshold=threshold,
@@ -611,28 +599,25 @@ def _make_stat_maps_contrast_clusters(
             min_distance=min_distance,
             two_sided=two_sided,
         )
-
         cluster_table_html = dataframe_to_html(
             cluster_table,
             precision=2,
             index=False,
-            classes="cluster-table",
         )
+
         table_details_html = dataframe_to_html(
             table_details,
             precision=3,
             header=False,
-            classes="cluster-details-table",
         )
 
-        component_text_ = tpl.substitute(
-            contrast_name=escape(contrast_name),
+        results[escape(contrast_name)] = tempita.bunch(
             stat_map_img=stat_map_svg,
             cluster_table_details=table_details_html,
             cluster_table=cluster_table_html,
         )
-        all_components.append(component_text_)
-    return all_components
+
+    return results
 
 
 @fill_doc
