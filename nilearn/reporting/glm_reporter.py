@@ -203,10 +203,6 @@ def make_glm_report(
 
     date = datetime.datetime.now().replace(microsecond=0).isoformat()
 
-    css_file_path = CSS_PATH / "masker_report.css"
-    with css_file_path.open(encoding="utf-8") as css_file:
-        css = css_file.read()
-
     model_attributes = model_attributes_to_dataframe(
         model, is_volume_glm=is_volume_glm
     )
@@ -224,6 +220,10 @@ def make_glm_report(
         encoding="utf-8",
     )
 
+    css_file_path = CSS_PATH / "masker_report.css"
+    with css_file_path.open(encoding="utf-8") as css_file:
+        css = css_file.read()
+
     warning_messages = []
     if not model.__sklearn_is_fitted__():
         warning_messages.append("The model has not been fit yet.")
@@ -233,16 +233,13 @@ def make_glm_report(
             title=title,
             docstring=snippet,
             warning_messages=_render_warnings_partial(warning_messages),
-            design_matrices_dict=None,
             parameters=model_attributes_html,
             contrasts_dict=None,
-            statistical_maps=None,
-            cluster_table_details=None,
             mask_plot=None,
-            cluster_table=None,
-            component=None,
-            date=date,
+            results=None,
+            design_matrices_dict=None,
             unique_id=unique_id,
+            date=date,
         )
 
     else:
