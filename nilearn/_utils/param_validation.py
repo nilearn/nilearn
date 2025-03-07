@@ -398,6 +398,8 @@ TYPE_MAPS = {
     "two_sided_test": nilearn_typing.TwoSidedTest,
     "target_affine": nilearn_typing.TargetAffine,
     "target_shape": nilearn_typing.TargetShape,
+    "transparency": nilearn_typing.Transparency,
+    "transparency_range": nilearn_typing.TransparencyRange,
     "url": nilearn_typing.Url,
     "upper_cutoff": nilearn_typing.UpperCutoff,
     "verbose": nilearn_typing.Verbose,
