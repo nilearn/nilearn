@@ -196,13 +196,19 @@ def make_glm_report(
 
     unique_id = str(uuid.uuid4()).replace("-", "")
 
+    model_type = return_model_type(model)
+
     title = f"<br>{title}" if title else ""
-    title = f"Statistical Report - {return_model_type(model)}{title}"
+    title = f"Statistical Report - {model_type}{title}"
 
     docstring = model.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
     date = datetime.datetime.now().replace(microsecond=0).isoformat()
+
+    noise_model = getattr(model, "noise_model", None)
+    hrf_model = getattr(model, "hrf_model", None)
+    smoothing_fwhm = getattr(model, "smoothing_fwhm", 0)
 
     model_attributes = model_attributes_to_dataframe(
         model, is_volume_glm=is_volume_glm
@@ -213,6 +219,16 @@ def make_glm_report(
             precision=2,
             header=True,
             sparsify=False,
+        )
+
+    drift_model_str = None
+    if isinstance(model, FirstLevelModel) and model.drift_model:
+        if model.drift_model == "cosine":
+            param_str = f"high pass filter={model.high_pass} Hz"
+        else:
+            param_str = f"order={model.drift_order}"
+        drift_model_str = (
+            f"and a {model.drift_model} drift model ({param_str})"
         )
 
     body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
@@ -241,6 +257,12 @@ def make_glm_report(
             design_matrices_dict=None,
             unique_id=unique_id,
             date=date,
+            version=__version__,
+            model_type=model_type,
+            drift_model_str=drift_model_str,
+            noise_model=noise_model,
+            hrf_model=hrf_model,
+            smoothing_fwhm=smoothing_fwhm,
         )
 
     else:
@@ -296,6 +318,12 @@ def make_glm_report(
             design_matrices_dict=design_matrices_dict,
             unique_id=unique_id,
             date=date,
+            version=__version__,
+            model_type=model_type,
+            drift_model_str=drift_model_str,
+            noise_model=noise_model,
+            hrf_model=hrf_model,
+            smoothing_fwhm=smoothing_fwhm,
         )
 
     # revert HTML safe substitutions in CSS sections
@@ -785,13 +813,21 @@ def _return_design_matrices_dict(design_matrices):
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close("all")
 
-        dmtx_cor_plot = plot_design_matrix_correlation(
-            design_matrix, tri="diag"
-        )
-        dmtx_cor_plot = _resize_plot_inches(dmtx_cor_plot, height_change=0.3)
-        dmtx_cor_svg = _plot_to_svg(dmtx_cor_plot)
-        # prevents sphinx-gallery & jupyter from scraping & inserting plots
-        plt.close("all")
+        # in case of second level model with a single regressor
+        # (for example one-sample t-test)
+        # no point in plotting the correlation
+        if design_matrix.shape[1] == 1:
+            dmtx_cor_svg = None
+        else:
+            dmtx_cor_plot = plot_design_matrix_correlation(
+                design_matrix, tri="diag"
+            )
+            dmtx_cor_plot = _resize_plot_inches(
+                dmtx_cor_plot, height_change=0.3
+            )
+            dmtx_cor_svg = _plot_to_svg(dmtx_cor_plot)
+            # prevents sphinx-gallery & jupyter from scraping & inserting plots
+            plt.close("all")
 
         design_matrices_dict[dmtx_count] = tempita.bunch(
             design_matrix=dmtx_svg, correlation_matrix=dmtx_cor_svg

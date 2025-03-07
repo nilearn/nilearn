@@ -104,6 +104,34 @@
 {{def report}}
 
 <div class="report">
+  <section>
+    <h2>Description</h2>
+    <p>
+      Data were analyzed using <a href="https://nilearn.github.io">Nilearn</a>
+      (version= {{ version }}); RRID:SCR_001362).
+    </p>
+    {{if model_type == "First Level Model"}}
+    <p>
+      At the subject level, a mass univariate analysis was performed with a
+      linear regression at each voxel of the brain, using generalized least
+      squares with a global {{ noise_model }} noise model to account for
+      temporal auto-correlation {{ drift_model_str }}.
+    </p>
+    {{if smoothing_fwhm and smoothing_fwhm > 0 }}
+    <p>
+      Input images were smoothed with gaussian kernel (full-width at half
+      maximum={{ smoothing_fwhm }} mm).
+    </p>
+    {{endif}}
+    <p>
+      Regressors were entered into run-specific design matrices and onsets were
+      convolved with {{ hrf_model }} canonical hemodynamic response function.
+    </p>
+    {{if contrasts_dict }}
+    <p>Contrast were computed using a fixed-effect approach across runs.</p>
+    {{endif}} {{endif}}
+  </section>
+
   <section id="model-details-{{unique_id}}">
     <h2>Model details</h2>
     {{ parameters|html }}
@@ -119,7 +147,6 @@
     {{for dmtx_title, dmtx in design_matrices}}
     <div class="d-flex flex-column">
       <h3 style="letter-spacing: normal">run {{dmtx_title}}</h3>
-
       <div class="scroll-y">
         <img
           class="pure-img"
@@ -130,8 +157,8 @@
         />
       </div>
 
+      {{if correlation_matrix }}
       <h4 style="letter-spacing: normal">correlation matrix</h4>
-
       <div class="scroll-y">
         <img
           class="pure-img"
@@ -141,6 +168,7 @@
           style="min-width: 600px"
         />
       </div>
+      {{endif}}
     </div>
     {{endfor}}
     <!--  -->
