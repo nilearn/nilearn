@@ -808,7 +808,13 @@ def _return_design_matrices_dict(design_matrices):
         # in case of second level model with a single regressor
         # (for example one-sample t-test)
         # no point in plotting the correlation
-        if design_matrix.shape[1] == 1:
+        if (
+            isinstance(design_matrix, np.ndarray)
+            and design_matrix.shape[1] == 1
+        ) or (
+            isinstance(design_matrix, pd.DataFrame)
+            and len(design_matrix.columns) == 1
+        ):
             dmtx_cor_svg = None
         else:
             dmtx_cor_plot = plot_design_matrix_correlation(

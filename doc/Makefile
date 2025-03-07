@@ -46,13 +46,14 @@ help:
 	@echo "  doctest   to run all doctests embedded in the documentation (if enabled)"
 
 clean:
-	-rm -rf $(BUILDDIR)/*
-	-rm -rf auto_examples/
-	-rm -rf generated/*
-	-rm -rf modules/generated/*
-	-rm -rf ../examples/**/nilearn_cache
-	-rm -rf ../**/nilearn_cache
-	-rm -rf modules/description/
+	rm -rf $(BUILDDIR)/*
+	rm -rf auto_examples/
+	rm -rf generated/*
+	rm -rf modules/generated/*
+	rm -rf ../examples/**/nilearn_cache
+	rm -rf ../**/nilearn_cache
+	rm -rf modules/description/
+	rm -rf modules/generated_reports/*.html
 
 glm_reports:
 	python visual_testing/reporter_visual_inspection_suite.py partial
