@@ -681,7 +681,19 @@ def _plot_surf_matplotlib(
         figure = axes.get_figure()
     axes.set_xlim(*limits)
     axes.set_ylim(*limits)
-    axes.view_init(elev=elev, azim=azim)
+
+    try:
+        axes.view_init(elev=elev, azim=azim)
+    except AttributeError:
+        raise AttributeError(
+            "'Axes' object has no attribute 'view_init'.\n"
+            "Remember that the projection must be '3d'.\n"
+            "For example:\n"
+            "\t plt.subplots(subplot_kw={'projection': '3d'})"
+        )
+    except Exception as e:
+        raise e
+
     axes.set_axis_off()
 
     # plot mesh without data

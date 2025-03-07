@@ -59,6 +59,8 @@ If you wish to add a missing term, please
         In such atlases, and contrary to
         :term:`probabilistic atlases<Probabilistic atlas>`, a :term:`voxel`
         belongs to one, and only one, region.
+        Check the :ref:`list of atlases <listing_deterministic_atlases>`
+        to know the ones that are shipped with Nilearn.
 
     Dictionary learning
         `Dictionary learning`_ (or sparse coding) is a representation learning
@@ -232,6 +234,8 @@ If you wish to add a missing term, please
         stacked along one dimension (usually the 4th dimension). In each
         3D component, the value at a given :term:`voxel` indicates how
         strongly this :term:`voxel` is related to this component.
+        Check the :ref:`list of atlases <listing_probabilistic_atlases>`
+        to know the ones that are shipped with Nilearn.
 
     ReNA
         `Recursive nearest agglomeration`_.

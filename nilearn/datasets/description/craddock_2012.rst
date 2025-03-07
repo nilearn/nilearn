@@ -1,4 +1,4 @@
-.. _craddock_atlas:
+.. _craddock_2012_atlas:
 
 Craddock 2012 atlas
 ===================

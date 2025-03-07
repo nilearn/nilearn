@@ -50,6 +50,7 @@ dev = [
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
+    "docutils>=0.17",
     "furo>=2024.8.6",
     "memory_profiler>=0.61.0",  # measuring memory during docs building
     "myst-parser>=3.0.1",
@@ -107,8 +108,9 @@ ignore-path = [
     "*/modules/generated/*",
     "*/modules/generated_reports/*",
     "*/templates/*.rst",
-    "doc/includes/*",
     "doc/authors.rst",
+    "doc/includes/*",
+    "doc/modules/datasets.rst",  # to ignore mystparser error
     "AUTHORS.rst"
 ]
 max-line-length = 120
