@@ -61,7 +61,7 @@ REPO = "nilearn"
 # your github username
 USERNAME = "Remi-Gau"
 # file containing your github token
-TOKEN_FILE = Path("/home/remi-gau/Documents/tokens/gh_read_repo_for_orga.txt")
+TOKEN_FILE = Path("/home/remi/Documents/tokens/gh_read_repo_for_orga.txt")
 
 BRANCH = "main"
 
