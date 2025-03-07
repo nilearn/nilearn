@@ -268,8 +268,9 @@ report = make_glm_report(
 # %%
 # We have several ways to access the report:
 
-# report  # This report can be viewed in a notebook
+# This report can be viewed in a notebook
+report
 # report.open_in_browser()
 
 # or we can save as an html file
-# report.save_as_html(output_dir / 'report.html')
+report.save_as_html(output_dir / "report.html")
