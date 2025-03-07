@@ -55,7 +55,6 @@ from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_TEMPLATE_PATH,
     TEMPLATE_ROOT_PATH,
-    figure_to_png_base64,
     figure_to_svg_quoted,
 )
 from nilearn.surface import SurfaceImage
@@ -209,6 +208,8 @@ def make_glm_report(
     noise_model = getattr(model, "noise_model", None)
     hrf_model = getattr(model, "hrf_model", None)
     smoothing_fwhm = getattr(model, "smoothing_fwhm", 0)
+    if smoothing_fwhm == 0:
+        smoothing_fwhm = None
 
     model_attributes = model_attributes_to_dataframe(
         model, is_volume_glm=is_volume_glm
@@ -431,8 +432,9 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
     """
     # Select mask_img to use for plotting
     if not is_volume_glm:
-        fig = model.masker_._create_figure_for_report()
-        mask_plot = figure_to_png_base64(fig)
+        model.masker_._create_figure_for_report()
+        fig = plt.gcf()
+        mask_plot = _plot_to_svg(fig)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
         return mask_plot
@@ -563,15 +565,15 @@ def _make_stat_maps_contrast_clusters(
         # TODO refactor once threshold_stats_img can accept SurfaceImage
         if isinstance(stat_map_img, SurfaceImage):
             surf_mesh = bg_img.mesh if bg_img else None
-            fig = plot_surf_stat_map(
+            plot_surf_stat_map(
                 stat_map=stat_map_img,
                 hemi="left",
-                colorbar=True,
                 threshold=threshold,
                 bg_map=bg_img,
                 surf_mesh=surf_mesh,
             )
-            stat_map_svg = figure_to_png_base64(fig)
+            fig = plt.gcf()
+            stat_map_svg = _plot_to_svg(fig)
 
             # prevents sphinx-gallery & jupyter from scraping & inserting plots
             plt.close("all")

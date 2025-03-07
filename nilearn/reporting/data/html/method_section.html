@@ -1,6 +1,6 @@
 <p>
   Data were analyzed using <a href="https://nilearn.github.io">Nilearn</a>
-  (version= {{ version }}); RRID:SCR_001362).
+  (version= {{ version }}; RRID:SCR_001362).
 </p>
 {{if model_type == "First Level Model"}}
 <p>
@@ -9,10 +9,11 @@
   global {{ noise_model }} noise model to account for temporal auto-correlation
   {{ drift_model_str }}.
 </p>
-{{if smoothing_fwhm and smoothing_fwhm > 0 }}
+{{if smoothing_fwhm }}
 <p>
-  Input images were smoothed with gaussian kernel (full-width at half maximum={{
-  smoothing_fwhm }} mm).
+  Input images were smoothed with gaussian kernel
+  <!--  -->
+  (full-width at half maximum={{ smoothing_fwhm }} mm).
 </p>
 {{endif}}
 <p>

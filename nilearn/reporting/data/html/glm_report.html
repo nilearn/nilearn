@@ -123,7 +123,7 @@
     <!--  -->
     {{for dmtx_title, dmtx in design_matrices}}
     <div class="d-flex flex-column">
-      <h3 style="letter-spacing: normal">run {{dmtx_title}}</h3>
+      <h3>run {{dmtx_title}}</h3>
       <div class="scroll-y">
         <img
           class="pure-img"
@@ -135,7 +135,7 @@
       </div>
 
       {{if dmtx.correlation_matrix }}
-      <h4 style="letter-spacing: normal">correlation matrix</h4>
+      <h4>correlation matrix</h4>
       <div class="scroll-y">
         <img
           class="pure-img"
@@ -156,7 +156,7 @@
 
   <section id="contrasts-{{unique_id}}">
     <h2>Contrasts</h2>
-    <div class="d-flex flex-wrap justify-content-evenly">
+    <div class="d-flex flex-column">
       {{if contrasts_dict}}
       <!--  -->
       {{py: contrasts = contrasts_dict.items()}}
@@ -238,7 +238,7 @@
       </div>
       {{endfor}} {{else}}
       <div class="d-flex flex-wrap justify-content-evenly">
-        <p>No statistical map was provided.</p>
+        <p style="letter-spacing: normal">No statistical map was provided.</p>
       </div>
 
       {{endif}}

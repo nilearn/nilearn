@@ -140,12 +140,13 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
             threshold=1.96,
             alpha=0.001,
             bg_img=curvature,
+            title="surface based subject-level model",
         )
 
 # View the GLM report of the first subject
 report_flm
 
-report_flm.open_in_browser()
+# report_flm.open_in_browser()
 
 # %%
 # Group level model
@@ -167,13 +168,17 @@ design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
 second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
 
 report_slm = second_level_glm.generate_report(
-    contrasts=["intercept"], threshold=1.96, alpha=0.001, bg_img=curvature
+    contrasts=["intercept"],
+    threshold=1.96,
+    alpha=0.001,
+    bg_img=curvature,
+    title="surface based group-level model",
 )
 
 # View the GLM report at the group level
 report_slm
 
-report_slm.open_in_browser()
+# report_slm.open_in_browser()
 
 # %%
 # Visualization

@@ -193,3 +193,18 @@ for contrast_id, contrast_val in contrasts.items():
         )
 
 show()
+
+
+report = glm.generate_report(contrasts, threshold=3.0, bg_img=fsaverage_data)
+
+
+# This report can be viewed in a notebook
+report
+# report.open_in_browser()
+
+# or we can save as an html file
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
+output_dir.mkdir(exist_ok=True, parents=True)
+report.save_as_html(output_dir / "report.html")
