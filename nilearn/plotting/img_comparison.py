@@ -9,6 +9,7 @@ from matplotlib import gridspec
 from nibabel import Nifti1Image
 from scipy import stats
 
+from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils import (
     check_niimg_3d,
     constrained_layout_kwargs,
@@ -164,7 +165,7 @@ def plot_img_comparison(
                 ref_data,
                 src_data,
                 bins="log",
-                cmap="inferno",
+                cmap=DEFAULT_SEQUENTIAL_CMAP,
                 gridsize=gridsize,
                 extent=lims,
             )
@@ -210,7 +211,7 @@ def plot_bland_altman(
     src_label="source image",
     figure=None,
     title=None,
-    cmap="inferno",
+    cmap=DEFAULT_SEQUENTIAL_CMAP,
     colorbar=True,
     gridsize=100,
     lims=None,

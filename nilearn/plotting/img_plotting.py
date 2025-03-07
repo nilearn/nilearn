@@ -19,6 +19,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
 from scipy.ndimage import binary_fill_holes
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import (
     as_ndarray,
     check_niimg_3d,
@@ -1323,7 +1324,7 @@ def plot_stat_map(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cbar="auto",
     dim="auto",
     vmin=None,
@@ -1665,7 +1666,7 @@ def plot_connectome(
     node_coords,
     node_color="auto",
     node_size=50,
-    edge_cmap="RdBu_r",
+    edge_cmap=DEFAULT_DIVERGING_CMAP,
     edge_vmin=None,
     edge_vmax=None,
     edge_threshold=None,

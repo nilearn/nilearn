@@ -10,6 +10,7 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import (
     constrained_layout_kwargs,
     fill_doc,
@@ -225,7 +226,7 @@ def plot_matrix(
     figure=None,
     axes=None,
     colorbar=True,
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     tri="full",
     auto_fit=True,
     grid=False,
@@ -642,7 +643,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     colorbar=True,
     output_file=None,
     colorbar=True,
