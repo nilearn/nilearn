@@ -811,6 +811,18 @@ def vol_to_surf(
             f"{tuple(sampling_schemes.keys())}"
         )
 
+    # deprecate nearest interpolation in 0.13.0
+    if interpolation == "nearest":
+        warnings.warn(
+            "The 'nearest' interpolation method will be deprecated in 0.13.0. "
+            "To disable this warning, select either 'linear' or "
+            "'nearest_most_frequent'. If your image is a deterministic atlas "
+            "'nearest_most_frequent' is recommended. Otherwise, use 'linear'. "
+            "See the documentation for more information.",
+            FutureWarning,
+            stacklevel=2,
+        )
+
     img = load_img(img)
 
     if mask_img is not None:
