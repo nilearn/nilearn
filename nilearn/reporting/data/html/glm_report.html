@@ -111,25 +111,42 @@
 
   <section id="design-matrix-{{unique_id}}">
     <h2>Design Matrix</h2>
-    <div class="d-flex flex-wrap justify-content-evenly">
-      {{if design_matrices_dict}}
-      <!--  -->
-      {{py: design_matrices = design_matrices_dict.items()}}
-      <!--  -->
-      {{for dmtx_title, dmtx in design_matrices}}
-      <div class="scroll-x">
+
+    {{if design_matrices_dict}}
+    <!--  -->
+    {{py: design_matrices = design_matrices_dict.items()}}
+    <!--  -->
+    {{for dmtx_title, dmtx in design_matrices}}
+    <div class="d-flex flex-column">
+      <h3 style="letter-spacing: normal">run {{dmtx_title}}</h3>
+
+      <div class="scroll-y">
         <img
           class="pure-img"
-          src="data:image/svg+xml,{{dmtx}}"
-          alt="Plot of Design Matrix used in {{dmtx_title}}."
+          src="data:image/svg+xml,{{dmtx.design_matrix}}"
+          title="Plot of design matrix for {{dmtx_title}}."
+          alt="Plot of design matrix for {{dmtx_title}}."
+          style="min-width: 600px"
         />
       </div>
-      {{endfor}}
-      <!--  -->
-      {{else}}
-      <p>No design matrix was provided.</p>
-      {{endif}}
+
+      <h4 style="letter-spacing: normal">correlation matrix</h4>
+
+      <div class="scroll-y">
+        <img
+          class="pure-img"
+          src="data:image/svg+xml,{{dmtx.correlation_matrix}}"
+          title="Plot of correlation of design matrix for run {{dmtx_title}}."
+          alt="Plot of correlation of design matrix for run {{dmtx_title}}."
+          style="min-width: 600px"
+        />
+      </div>
     </div>
+    {{endfor}}
+    <!--  -->
+    {{else}}
+    <p>No design matrix was provided.</p>
+    {{endif}}
   </section>
 
   <section id="contrasts-{{unique_id}}">
@@ -140,11 +157,13 @@
       {{py: contrasts = contrasts_dict.items()}}
       <!--  -->
       {{for contrast_name, contrast_plot in contrasts}}
-      <div class="scroll-x" style="padding-top: 10px">
+      <div class="scroll-y">
         <img
           class="pure-img"
           src="data:image/svg+xml,{{contrast_plot}}"
+          title="Plot of the contrast: {{contrast_name}}."
           alt="Plot of the contrast: {{contrast_name}}."
+          style="min-width: 600px"
         />
       </div>
       {{endfor}}
@@ -157,18 +176,19 @@
 
   <section id="mask-{{unique_id}}">
     <h2>Mask</h2>
-    <div class="d-flex justify-content-evenly">
-      {{if mask_plot}}
+    {{if mask_plot}}
+    <div class="scroll-y">
       <img
         class="pure-img"
-        width="75%"
-        src="data:image/svg+xml;base64, {{mask_plot}}"
-        alt="Mask image."
+        src="data:image/svg+xml,{{mask_plot}}"
+        alt="Mask image"
+        title="Mask image"
+        style="min-width: 600px"
       />
-      {{else}}
-      <p>No mask was provided.</p>
-      {{endif}}
     </div>
+    {{else}}
+    <p>No mask was provided.</p>
+    {{endif}}
   </section>
 
   <section id="statistical-maps-{{unique_id}}">
@@ -185,11 +205,15 @@
         <h3>{{contrast_name}}</h3>
 
         <div class="d-flex flex-column">
-          <img
-            class="pure-img"
-            src="data:image/svg+xml,{{ details.stat_map_img }}"
-            alt="Stat map plot for the contrast: {{contrast_name}}"
-          />
+          <div class="scroll-y">
+            <img
+              class="pure-img"
+              src="data:image/svg+xml,{{ details.stat_map_img }}"
+              alt="Stat map plot for the contrast: {{contrast_name}}"
+              title="Stat map plot for the contrast: {{contrast_name}}"
+              style="min-width: 600px"
+            />
+          </div>
 
           <details>
             <summary class="pure-button button-small contrast-button">

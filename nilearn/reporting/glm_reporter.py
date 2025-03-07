@@ -29,6 +29,7 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
+    plot_design_matrix_correlation,
     plot_glass_brain,
     plot_roi,
     plot_stat_map,
@@ -387,7 +388,7 @@ def _resize_plot_inches(plot, width_change=0, height_change=0):
 
 
 def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
-    """Plot cuts of an mask image and creates SVG code of it.
+    """Plot a mask image and creates SVG code of it.
 
     Parameters
     ----------
@@ -435,6 +436,7 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
         display_mode="z",
         cmap="Set1",
         cut_coords=cut_coords,
+        colorbar=False,
     )
     mask_plot = _plot_to_svg(plt.gcf())
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -538,6 +540,7 @@ def _make_stat_maps_contrast_clusters(
 
     results = {}
     for contrast_name, stat_map_img in stat_img.items():
+        # TODO refactor once threshold_stats_img can accept SurfaceImage
         if isinstance(stat_map_img, SurfaceImage):
             surf_mesh = bg_img.mesh if bg_img else None
             fig = plot_surf_stat_map(
@@ -774,18 +777,25 @@ def _return_design_matrices_dict(design_matrices):
     if design_matrices is None:
         return None
 
-    design_matrices_dict = {}
+    design_matrices_dict = tempita.bunch()
     for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
         dmtx_plot = plot_design_matrix(design_matrix)
-        dmtx_title = f"Run {dmtx_count}"
-        if len(design_matrices) > 1:
-            plt.title(dmtx_title, y=1.025, x=-0.1)
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
-        url_design_matrix_svg = _plot_to_svg(dmtx_plot)
+        dmtx_svg = _plot_to_svg(dmtx_plot)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close("all")
 
-        design_matrices_dict[dmtx_title] = url_design_matrix_svg
+        dmtx_cor_plot = plot_design_matrix_correlation(
+            design_matrix, tri="diag"
+        )
+        dmtx_cor_plot = _resize_plot_inches(dmtx_cor_plot, height_change=0.3)
+        dmtx_cor_svg = _plot_to_svg(dmtx_cor_plot)
+        # prevents sphinx-gallery & jupyter from scraping & inserting plots
+        plt.close("all")
+
+        design_matrices_dict[dmtx_count] = tempita.bunch(
+            design_matrix=dmtx_svg, correlation_matrix=dmtx_cor_svg
+        )
 
     return design_matrices_dict
 
