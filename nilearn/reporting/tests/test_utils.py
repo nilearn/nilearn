@@ -3,12 +3,9 @@
 import numpy as np
 import pytest
 
-from nilearn.glm.first_level import FirstLevelModel
-from nilearn.glm.second_level import SecondLevelModel
 from nilearn.reporting._utils import (
     check_report_dims,
     coerce_to_dict,
-    make_headings,
 )
 
 
@@ -70,56 +67,6 @@ def test_coerce_to_dict_with_arrays(input, output):
     assert actual_output.keys() == output.keys()
     for key in actual_output:
         assert np.array_equal(actual_output[key], output[key])
-
-
-def test_make_headings_with_contrasts_title_none():
-    """Check SLM report with no title headings."""
-    model = SecondLevelModel()
-    test_input = (
-        {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]},
-        None,
-        model,
-    )
-    expected_output = (
-        "Report: Second Level Model for contrast_0, contrast_1",
-        "Statistical Report for contrast_0, contrast_1",
-        "Second Level Model",
-    )
-    actual_output = make_headings(*test_input)
-
-    assert actual_output == expected_output
-
-
-def test_make_headings_with_contrasts_title_custom():
-    """Check SLM report with custom title headings."""
-    model = SecondLevelModel()
-    test_input = (
-        {"contrast_0": [0, 0, 1], "contrast_1": [0, 1, 1]},
-        "Custom Title for report",
-        model,
-    )
-    expected_output = (
-        "Custom Title for report",
-        "Custom Title for report",
-        "Second Level Model",
-    )
-    actual_output = make_headings(*test_input)
-
-    assert actual_output == expected_output
-
-
-def test_make_headings_with_contrasts_none_title_custom():
-    """Check FLM report with custom title headings."""
-    model = FirstLevelModel()
-    test_input = (None, "Custom Title for report", model)
-    expected_output = (
-        "Custom Title for report",
-        "Custom Title for report",
-        "First Level Model",
-    )
-    actual_output = make_headings(*test_input)
-
-    assert actual_output == expected_output
 
 
 def test_check_report_dims():
