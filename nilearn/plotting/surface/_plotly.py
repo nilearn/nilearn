@@ -154,7 +154,7 @@ def _get_view_plot_surf_plotly(hemi, view):
     return _get_camera_view_from_elevation_and_azimut(view)
 
 
-def _configure_title_plotly(title, font_size, color="black"):
+def _configure_title(title, font_size, color="black"):
     """Help for plot_surf with plotly engine.
 
     This function configures the title if provided.
@@ -321,7 +321,7 @@ class PlotlyBackend(SurfaceBackend):
         fig = Figure(data=fig_data)
         fig.update_layout(
             scene_camera=camera_view,
-            title=_configure_title_plotly(title, title_font_size),
+            title=_configure_title(title, title_font_size),
             **LAYOUT,
         )
 

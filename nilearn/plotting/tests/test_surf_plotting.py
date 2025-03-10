@@ -775,12 +775,12 @@ def test_get_view_plot_surf_view_errors(hemi, view, f):
         f(hemi, view)
 
 
-def test_configure_title_plotly():
-    from nilearn.plotting.surface._plotly import _configure_title_plotly
+def test_configure_title():
+    from nilearn.plotting.surface._plotly import _configure_title
 
-    assert _configure_title_plotly(None, None) == {}
-    assert _configure_title_plotly(None, 22) == {}
-    config = _configure_title_plotly("Test Title", 22, color="green")
+    assert _configure_title(None, None) == {}
+    assert _configure_title(None, 22) == {}
+    config = _configure_title("Test Title", 22, color="green")
     assert config["text"] == "Test Title"
     assert config["x"] == 0.5
     assert config["y"] == 0.96
