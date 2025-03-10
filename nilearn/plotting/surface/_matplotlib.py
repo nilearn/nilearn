@@ -245,7 +245,8 @@ def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
 
 class MatplotlibBackend(SurfaceBackend):
 
-    def name():
+    @property
+    def name(self):
         return "matplotlib"
 
     def plot_surf(

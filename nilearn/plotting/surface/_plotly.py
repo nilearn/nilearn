@@ -211,7 +211,8 @@ def _get_cbar_plotly(
 
 class PlotlyBackend(SurfaceBackend):
 
-    def name():
+    @property
+    def name(self):
         return "plotly"
 
     def plot_surf(
