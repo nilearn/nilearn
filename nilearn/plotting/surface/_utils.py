@@ -91,25 +91,6 @@ def _check_views(views) -> list:
     return views
 
 
-def _check_surf_map(surf_map, n_vertices):
-    """Help for plot_surf.
-
-    This function checks the dimensions of provided surf_map.
-    """
-    surf_map_data = load_surf_data(surf_map)
-    if surf_map_data.ndim != 1:
-        raise ValueError(
-            "'surf_map' can only have one dimension "
-            f"but has '{surf_map_data.ndim}' dimensions"
-        )
-    if surf_map_data.shape[0] != n_vertices:
-        raise ValueError(
-            "The surf_map does not have the same number "
-            "of vertices as the mesh."
-        )
-    return surf_map_data
-
-
 class SurfaceBackend():
 
     def _check_params(self, params_not_implemented):
@@ -121,6 +102,24 @@ class SurfaceBackend():
                     f"Got '{parameter} = {value}'.\n"
                     f"Use '{parameter} = None' to silence this warning."
                 )
+
+    def _check_surf_map(self, surf_map, n_vertices):
+        """Help for plot_surf.
+
+        This function checks the dimensions of provided surf_map.
+        """
+        surf_map_data = load_surf_data(surf_map)
+        if surf_map_data.ndim != 1:
+            raise ValueError(
+                "'surf_map' can only have one dimension "
+                f"but has '{surf_map_data.ndim}' dimensions"
+            )
+        if surf_map_data.shape[0] != n_vertices:
+            raise ValueError(
+                "The surf_map does not have the same number "
+                "of vertices as the mesh."
+            )
+        return surf_map_data
 
 
 class SurfaceFigure:

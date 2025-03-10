@@ -14,7 +14,6 @@ from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.surface._utils import (
     SurfaceBackend,
     _check_hemispheres,
-    _check_surf_map,
     _check_views,
 )
 from nilearn.surface import load_surf_data
@@ -175,7 +174,7 @@ def _get_bounds(data, vmin=None, vmax=None):
 
 
 def _compute_surf_map_faces(
-    surf_map, faces, avg_method, n_vertices, face_colors_size
+    surf_map_data, faces, avg_method, face_colors_size
 ):
     """Help for plot_surf.
 
@@ -188,7 +187,6 @@ def _compute_surf_map_faces(
         vertex-colour maps.
 
     """
-    surf_map_data = _check_surf_map(surf_map, n_vertices)
 
     # create face values from vertex values by selected avg methods
     error_message = (
@@ -336,11 +334,11 @@ class MatplotlibBackend(SurfaceBackend):
             bg_map, faces, coords.shape[0], darkness, alpha
         )
         if surf_map is not None:
+            surf_map_data = self._check_surf_map(surf_map, coords.shape[0])
             surf_map_faces = _compute_surf_map_faces(
-                surf_map,
+                surf_map_data,
                 faces,
                 avg_method,
-                coords.shape[0],
                 bg_face_colors.shape[0],
             )
             surf_map_faces, kept_indices, vmin, vmax = _threshold_and_rescale(

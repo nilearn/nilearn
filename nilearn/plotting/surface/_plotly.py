@@ -1,6 +1,4 @@
 import math
-from warnings import warn
-
 import numpy as np
 from plotly.graph_objects import Figure, Mesh3d
 
@@ -13,7 +11,6 @@ from nilearn.plotting.surface._utils import (
     VALID_HEMISPHERES,
     SurfaceBackend,
     _check_hemispheres,
-    _check_surf_map,
     _check_views,
 )
 from nilearn.surface import load_surf_data
@@ -276,7 +273,7 @@ class PlotlyBackend(SurfaceBackend):
                 )
 
         if surf_map is not None:
-            _check_surf_map(surf_map, coords.shape[0])
+            self._check_surf_map(surf_map, coords.shape[0])
             colors = colorscale(
                 cmap,
                 surf_map,
