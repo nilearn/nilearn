@@ -733,22 +733,22 @@ def vol_to_surf(
 
     Three strategies are available to select these positions.
 
-        - with 'depth', data is sampled at various cortical depths between
-          corresponding nodes of `surface_mesh` and `inner_mesh` (which can be,
-          for example, a pial surface and a white matter surface). This is the
-          recommended strategy when both the pial and white matter surfaces are
-          available, which is the case for the fsaverage :term:`meshes<mesh>`.
-        - 'ball' uses points regularly spaced in a ball centered
-          at the :term:`mesh` vertex.
-          The radius of the ball is controlled by the parameter `radius`.
-        - 'line' starts by drawing the normal to the :term:`mesh`
-          passing through this vertex.
-          It then selects a segment of this normal,
-          centered at the vertex, of length 2 * `radius`.
-          Image intensities are measured at points regularly spaced
-          on this normal segment, or at positions determined by `depth`.
-        - ('auto' chooses 'depth' if `inner_mesh` is provided and 'line'
-          otherwise)
+    - with 'depth', data is sampled at various cortical depths between
+        corresponding nodes of `surface_mesh` and `inner_mesh` (which can be,
+        for example, a pial surface and a white matter surface). This is the
+        recommended strategy when both the pial and white matter surfaces are
+        available, which is the case for the fsaverage :term:`meshes<mesh>`.
+    - 'ball' uses points regularly spaced in a ball centered
+        at the :term:`mesh` vertex.
+        The radius of the ball is controlled by the parameter `radius`.
+    - 'line' starts by drawing the normal to the :term:`mesh`
+        passing through this vertex.
+        It then selects a segment of this normal,
+        centered at the vertex, of length 2 * `radius`.
+        Image intensities are measured at points regularly spaced
+        on this normal segment, or at positions determined by `depth`.
+    - ('auto' chooses 'depth' if `inner_mesh` is provided and 'line'
+        otherwise)
 
     You can control how many samples are drawn by setting `n_samples`, or their
     position by setting `depth`.
