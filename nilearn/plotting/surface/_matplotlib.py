@@ -273,6 +273,20 @@ class MatplotlibBackend(SurfaceBackend):
         axes=None,
         figure=None,
     ):
+        parameters_not_implemented = {
+            "symmetric_cmap": symmetric_cmap,
+            "title_font_size": title_font_size,
+        }
+
+        for parameter, value in parameters_not_implemented.items():
+            if value is not None:
+                warn(
+                    f"'{parameter}' is not implemented "
+                    "for the matplotlib engine.\n"
+                    f"Got '{parameter} = {value}'.\n"
+                    f"Use '{parameter} = None' to silence this warning."
+                )
+
         if avg_method is None:
             avg_method = "mean"
         if alpha is None:

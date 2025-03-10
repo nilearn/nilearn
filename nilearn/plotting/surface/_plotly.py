@@ -240,7 +240,7 @@ class PlotlyBackend(SurfaceBackend):
         axes=None,
         figure=None,
     ):
-        parameters_not_implemented_in_plotly = {
+        parameters_not_implemented = {
             "avg_method": avg_method,
             "alpha": alpha,
             "figure": figure,
@@ -249,7 +249,7 @@ class PlotlyBackend(SurfaceBackend):
             "cbar_vmax": cbar_vmax,
         }
 
-        for parameter, value in parameters_not_implemented_in_plotly.items():
+        for parameter, value in parameters_not_implemented.items():
             if value is not None:
                 warn(
                     f"'{parameter}' is not implemented "

@@ -48,18 +48,19 @@ def _get_surface_backend(engine=None):
 
             return MatplotlibBackend()
         else:
-            msg = "Using engine='matplotlib' requires that ``matplotlib`` is installed."
-            raise ImportError(msg)
+            raise ImportError(
+                "Using engine='matplotlib' requires that ``matplotlib`` is "
+                "installed."
+            )
     elif engine == "plotly":
         if is_plotly_installed():
             from nilearn.plotting.surface._plotly import PlotlyBackend
 
             return PlotlyBackend()
         else:
-            msg = (
+            raise ImportError(
                 "Using engine='plotly' requires that ``plotly`` is installed."
             )
-            raise ImportError(msg)
     else:
         raise ValueError(
             f"Unknown plotting engine {engine}. "
