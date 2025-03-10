@@ -17,17 +17,15 @@ computing a connectome from them.
 .. include:: ../../../examples/masker_note.rst
 """
 
-from nilearn import datasets, plotting
-
 # %%
 # Retrieve the brain development :term:`fMRI` dataset
 # ---------------------------------------------------
 #
 # We are going to use a subject from the development functional
 # connectivity dataset.
+from nilearn.datasets import fetch_development_fmri
 
-
-dataset = datasets.fetch_development_fmri(n_subjects=10)
+dataset = fetch_development_fmri(n_subjects=10)
 
 # print basic information on the dataset
 print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
@@ -129,7 +127,9 @@ partial_correlation_matrix = connectivity_measure.fit_transform([time_series])[
 #
 # We display the graph of connections with
 # `:func: nilearn.plotting.plot_connectome`.
-plotting.plot_connectome(
+from nilearn.plotting import plot_connectome, show
+
+plot_connectome(
     partial_correlation_matrix,
     dmn_coords,
     title="Default Mode Network Connectivity",
@@ -138,14 +138,14 @@ plotting.plot_connectome(
 # %%
 # Display connectome with hemispheric projections.
 # Notice (0, -52, 18) is included in both hemispheres since x == 0.
-plotting.plot_connectome(
+plot_connectome(
     partial_correlation_matrix,
     dmn_coords,
     title="Connectivity projected on hemispheres",
     display_mode="lyrz",
 )
 
-plotting.show()
+show()
 
 # %%
 # 3D visualization in a web browser
@@ -154,9 +154,9 @@ plotting.show()
 # :func:`~nilearn.plotting.view_connectome`, which gives more interactive
 # visualizations in a web browser. See :ref:`interactive-connectome-plotting`
 # for more details.
+from nilearn.plotting import view_connectome
 
-
-view = plotting.view_connectome(partial_correlation_matrix, dmn_coords)
+view = view_connectome(partial_correlation_matrix, dmn_coords)
 
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
@@ -176,8 +176,9 @@ view
 # This time, we'll use a different correlation measure.
 #
 # First we fetch the coordinates of the Power atlas
+from nilearn.datasets import fetch_coords_power_2011
 
-power = datasets.fetch_coords_power_2011()
+power = fetch_coords_power_2011()
 print(f"Power atlas comes with {power.keys()}.")
 
 # %%
@@ -248,7 +249,9 @@ print(f"Covariance matrix has shape {matrix.shape}.")
 # We use `:func: nilearn.plotting.plot_matrix`
 # to visualize our correlation matrix
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
-plotting.plot_matrix(
+from nilearn.plotting import plot_matrix
+
+plot_matrix(
     matrix,
     vmin=-1.0,
     vmax=1.0,
@@ -256,7 +259,7 @@ plotting.plot_matrix(
 )
 
 # Tweak edge_threshold to keep only the strongest connections.
-plotting.plot_connectome(
+plot_connectome(
     matrix,
     coords,
     title="Power correlation graph",
@@ -275,12 +278,13 @@ plotting.plot_connectome(
 # Sometimes, the information in the correlation matrix is overwhelming and
 # aggregating edge strength from the graph would help. Use the function
 # `nilearn.plotting.plot_markers` to visualize this information.
+from nilearn.plotting import plot_markers
 
 # calculate normalized, absolute strength for each node
 node_strength = np.sum(np.abs(matrix), axis=0)
 node_strength /= np.max(node_strength)
 
-plotting.plot_markers(
+plot_markers(
     node_strength,
     coords,
     title="Node strength for absolute value of edges for Power atlas",
@@ -306,7 +310,7 @@ node_strength_negative = np.sum(np.abs(negative_edges), axis=0)
 node_strength_negative /= np.max(node_strength_negative)
 
 # plot nodes' strength for positive edges
-plotting.plot_markers(
+plot_markers(
     node_strength_positive,
     coords,
     title="Node strength for the positive edges for Power atlas",
@@ -314,7 +318,7 @@ plotting.plot_markers(
 )
 
 # plot nodes' strength for negative edges
-plotting.plot_markers(
+plot_markers(
     node_strength_negative,
     coords,
     title="Node strength for the negative edges for Power atlas",
@@ -326,7 +330,9 @@ plotting.plot_markers(
 # -------------------------------------------
 #
 # We repeat the same steps for Dosenbach's atlas.
-dosenbach = datasets.fetch_coords_dosenbach_2010()
+from nilearn.datasets import fetch_coords_dosenbach_2010
+
+dosenbach = fetch_coords_dosenbach_2010()
 
 coords = np.vstack(
     (
@@ -356,14 +362,14 @@ covariance_estimator = GraphicalLassoCV()
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
-plotting.plot_matrix(
+plot_matrix(
     matrix,
     vmin=-1.0,
     vmax=1.0,
     title="Dosenbach correlation matrix",
 )
 
-plotting.plot_connectome(
+plot_connectome(
     matrix,
     coords,
     title="Dosenbach correlation graph",
@@ -376,7 +382,7 @@ plotting.plot_connectome(
 node_strength = np.sum(np.abs(matrix), axis=0)
 node_strength /= np.max(node_strength)
 
-plotting.plot_markers(
+plot_markers(
     node_strength,
     coords,
     title="Node strength for absolute value of edges for Dosenbach atlas",
@@ -393,7 +399,7 @@ node_strength_negative = np.sum(np.abs(negative_edges), axis=0)
 node_strength_negative /= np.max(node_strength_negative)
 
 # plot nodes' strength for positive edges
-plotting.plot_markers(
+plot_markers(
     node_strength_positive,
     coords,
     title="Node strength for the positive edges for Dosenbach atlas",
@@ -401,7 +407,7 @@ plotting.plot_markers(
 )
 
 # plot nodes' strength for negative edges
-plotting.plot_markers(
+plot_markers(
     node_strength_negative,
     coords,
     title="Node strength for the negative edges for Dosenbach atlas",
@@ -412,7 +418,7 @@ plotting.plot_markers(
 # We can easily identify the Dosenbach's networks from the matrix blocks.
 print(f"Dosenbach networks names are {np.unique(dosenbach.networks)}")
 
-plotting.show()
+show()
 
 # %%
 # References

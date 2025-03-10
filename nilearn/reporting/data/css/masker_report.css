@@ -85,6 +85,10 @@
   flex-wrap: wrap;
 }
 
+.align-items-stretch {
+  align-items: stretch;
+}
+
 .justify-content-center {
   justify-content: center;
 }

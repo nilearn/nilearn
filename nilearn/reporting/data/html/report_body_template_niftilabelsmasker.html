@@ -43,11 +43,11 @@
       {{if summary_html}}
       <details>
         <summary class="pure-button">Regions summary</summary>
-        {{summary_html|html}}
+        <div class="table-container">{{summary_html|html}}</div>
       </details>
       {{endif}}
       <!--  -->
-      {{ parameters|html }}
+      <div class="table-container">{{ parameters|html }}</div>
     </div>
   </div>
 </div>
