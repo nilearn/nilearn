@@ -25,12 +25,16 @@ from nilearn.plotting import (
 )
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
-from nilearn.plotting.surface.surf_plotting import (
-    MATPLOTLIB_VIEWS,
-    _compute_facecolors_matplotlib,
-    _get_ticks_matplotlib,
-    _get_view_plot_surf_matplotlib,
+from nilearn.plotting.surface._matplotlib import (
+    _compute_facecolors,
+    _get_view_plot_surf,
+    MATPLOTLIB_VIEWS
+)
+from nilearn.plotting.surface._plotly import (
     _get_view_plot_surf_plotly,
+)
+from nilearn.plotting.surface.surf_plotting import (
+    _get_ticks_matplotlib,
 )
 from nilearn.surface import (
     InMemoryMesh,
@@ -401,7 +405,7 @@ def test_plot_surf_contours_warning_hemi(in_memory_mesh):
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf_plotly(full_view):
-    from nilearn.plotting.surface.surf_plotting import (
+    from nilearn.plotting.surface._plotly import (
         _get_camera_view_from_elevation_and_azimut,
         _get_camera_view_from_string_view,
     )
@@ -435,7 +439,7 @@ def test_get_view_plot_surf_plotly(full_view):
 def test_get_view_plot_surf_matplotlib(hemi, views):
     for v in views:
         assert (
-            _get_view_plot_surf_matplotlib(hemi, v)
+            _get_view_plot_surf(hemi, v)
             == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
         )
 
@@ -728,7 +732,7 @@ def test_add_contours_line_properties(plotly, key, value, surface_image_roi):
     ],
 )
 def test_check_view_is_valid(view, is_valid):
-    from nilearn.plotting.surface.surf_plotting import _check_view_is_valid
+    from nilearn.plotting.surface._utils import _check_view_is_valid
 
     assert _check_view_is_valid(view) is is_valid
 
@@ -743,7 +747,7 @@ def test_check_view_is_valid(view, is_valid):
     ],
 )
 def test_check_hemisphere_is_valid(hemi, is_valid):
-    from nilearn.plotting.surface.surf_plotting import _check_hemisphere_is_valid
+    from nilearn.plotting.surface._utils import _check_hemisphere_is_valid
 
     assert _check_hemisphere_is_valid(hemi) is is_valid
 
@@ -751,7 +755,7 @@ def test_check_hemisphere_is_valid(hemi, is_valid):
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        _get_view_plot_surf_matplotlib(hemi, view)
+        _get_view_plot_surf(hemi, view)
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
         _get_view_plot_surf_plotly(hemi, view)
 
@@ -759,11 +763,11 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
 @pytest.mark.parametrize(
     "hemi,view,f",
     [
-        ("left", "foo", _get_view_plot_surf_matplotlib),
+        ("left", "foo", _get_view_plot_surf),
         ("right", "bar", _get_view_plot_surf_plotly),
-        ("both", "lateral", _get_view_plot_surf_matplotlib),
+        ("both", "lateral", _get_view_plot_surf),
         ("both", "medial", _get_view_plot_surf_plotly),
-        ("both", "foo", _get_view_plot_surf_matplotlib),
+        ("both", "foo", _get_view_plot_surf),
         ("both", "bar", _get_view_plot_surf_plotly),
     ],
 )
@@ -773,7 +777,7 @@ def test_get_view_plot_surf_view_errors(hemi, view, f):
 
 
 def test_configure_title_plotly():
-    from nilearn.plotting.surface.surf_plotting import _configure_title_plotly
+    from nilearn.plotting.surface._plotly import _configure_title_plotly
 
     assert _configure_title_plotly(None, None) == {}
     assert _configure_title_plotly(None, 22) == {}
@@ -795,7 +799,7 @@ def test_configure_title_plotly():
     ],
 )
 def test_get_bounds(data, expected):
-    from nilearn.plotting.surface.surf_plotting import _get_bounds
+    from nilearn.plotting.surface._matplotlib import _get_bounds
 
     assert _get_bounds(data) == expected
     assert _get_bounds(data, vmin=0.2) == (0.2, expected[1])
@@ -1759,7 +1763,7 @@ def test_compute_facecolors_matplotlib():
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert bg_min < 0 or bg_max > 1
 
-    facecolors_auto_normalized = _compute_facecolors_matplotlib(
+    facecolors_auto_normalized = _compute_facecolors(
         bg_map,
         mesh.faces,
         len(mesh.coordinates),
@@ -1773,7 +1777,7 @@ def test_compute_facecolors_matplotlib():
     bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
     assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
 
-    facecolors_manually_normalized = _compute_facecolors_matplotlib(
+    facecolors_manually_normalized = _compute_facecolors(
         bg_map_normalized,
         mesh.faces,
         len(mesh.coordinates),
@@ -1790,7 +1794,7 @@ def test_compute_facecolors_matplotlib():
     bg_map_scaled = bg_map_normalized / 2 + 0.25
     assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
 
-    facecolors_manually_rescaled = _compute_facecolors_matplotlib(
+    facecolors_manually_rescaled = _compute_facecolors(
         bg_map_scaled,
         mesh.faces,
         len(mesh.coordinates),
@@ -1823,7 +1827,7 @@ def test_compute_facecolors_matplotlib_deprecation():
             "We recommend setting `darkness` to None"
         ),
     ):
-        _compute_facecolors_matplotlib(
+        _compute_facecolors(
             bg_map,
             mesh.faces,
             len(mesh.coordinates),
