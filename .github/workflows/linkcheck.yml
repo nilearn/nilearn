@@ -30,6 +30,7 @@ jobs:
 
     # check the links in the doc
     linkcheck:
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
