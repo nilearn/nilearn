@@ -1011,6 +1011,13 @@ tfce : :obj:`bool`, default=False
     The TFCE calculation is implemented
     as described in :footcite:t:`Smith2009a`.
 
+    .. note::
+
+       The number of thresholds used in the TFCE procedure
+       will set between 10 and 1000.
+
+       .. versionadded:: 0.11.2dev
+
     .. warning::
 
         Performing TFCE-based inference
