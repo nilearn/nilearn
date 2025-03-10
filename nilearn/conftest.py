@@ -795,3 +795,15 @@ def plotly():
         The ``plotly`` module.
     """
     yield pytest.importorskip("plotly")
+
+
+@pytest.fixture
+def transparency_image(rng, affine_mni):
+    """Return 3D image to use as transparency image.
+
+    Make sure that values are not just between 0 and 1.
+    """
+    data_positive = np.zeros((7, 7, 3))
+    data_rng = rng.random((7, 7, 3)) * 10 - 5
+    data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
+    return Nifti1Image(data_positive, affine_mni)

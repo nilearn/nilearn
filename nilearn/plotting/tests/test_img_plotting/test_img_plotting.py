@@ -181,9 +181,9 @@ def test_plot_with_nans(plot_func, img_3d_mni):
     "plot_func", [plot_roi, plot_stat_map, plot_glass_brain]
 )
 @pytest.mark.parametrize("cmap", ["Paired", "Set1", "Set2", "Set3", "viridis"])
-def test_plotting_functions_with_cmaps(plot_func, cmap):
+def test_plotting_functions_with_cmaps(plot_func, cmap, img_3d_mni):
     """Some test for plotting functions with different cmaps."""
-    plot_func(load_mni152_template(resolution=2), cmap=cmap, colorbar=True)
+    plot_func(img_3d_mni, cmap=cmap, colorbar=True)
     plt.close()
 
 
