@@ -1,7 +1,5 @@
 """Tests for the permuted_ols function."""
 
-# Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -129,7 +127,7 @@ def cluster_level_design(rng):
 # Theoretical distribution is known for this simple design t(n_samples - dof).
 
 
-PERM_RANGES = [10, 100, 1000]
+PERM_RANGES = [10, 1000]
 
 
 def run_permutations(tested_var, target_var, model_intercept):
@@ -803,8 +801,8 @@ def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
             n_jobs=1,
             masker=masker,
         )
-    assert not any(
-        "perform more permutations" in str(x.message) for x in record
+    assert all(
+        "perform more permutations" not in str(x.message) for x in record
     )
 
     # n_perm <= n_job  and n_job > 0 -->  warning

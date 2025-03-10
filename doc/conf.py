@@ -97,7 +97,10 @@ bibtex_footbibliography_header = ""
 
 # General information about the project.
 project = "Nilearn"
-copyright = "The nilearn developers"
+
+copyright = """The nilearn developers
+- Code and documentation distributed under BSD license."""
+
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -258,12 +261,6 @@ html_theme_options = {
             "url": "https://github.com/nilearn/nilearn",
             "html": "",
             "class": "fa-brands fa-solid fa-github fa-2x",
-        },
-        {
-            "name": "Twitter",
-            "url": "https://x.com/nilearn",
-            "html": "",
-            "class": "fa-brands fa-solid fa-twitter fa-2x",
         },
         {
             "name": "Bluesky",

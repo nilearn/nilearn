@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg, fill_doc
 from nilearn._utils.niimg import safe_get_data
 from nilearn._version import __version__
@@ -719,7 +720,7 @@ def _stat_map_to_svg(
     stat_map_min = np.nanmin(data)
     stat_map_max = np.nanmax(data)
     symmetric_cbar = True
-    cmap = "RdBu_r"
+    cmap = DEFAULT_DIVERGING_CMAP
     if stat_map_min >= 0.0:
         symmetric_cbar = False
         cmap = "red_transparent_full_alpha_range"
@@ -755,10 +756,7 @@ def _stat_map_to_svg(
             "Acceptable options are 'slice' or 'glass'."
         )
 
-    x_label_color = "black"
-    if plot_type == "slice":
-        x_label_color = "white"
-
+    x_label_color = "white" if plot_type == "slice" else "black"
     if hasattr(stat_map_plot, "_cbar"):
         cbar_ax = stat_map_plot._cbar.ax
         cbar_ax.set_xlabel(
@@ -952,10 +950,7 @@ def _make_surface_glm_report(
             for contrast_name, contrast_val in contrasts.items()
         }
 
-        surf_mesh = None
-        if bg_img:
-            surf_mesh = bg_img.mesh
-
+        surf_mesh = bg_img.mesh if bg_img else None
         for contrast_name, contrast_val in contrasts.items():
             contrast_map = model.compute_contrast(
                 contrast_val, output_type="z_score"

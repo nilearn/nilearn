@@ -1,7 +1,5 @@
 """Contrast computation and operation on contrast to \
 obtain fixed effect results.
-
-Author: Bertrand Thirion, Martin Perez-Guevara, Ana Luisa Pinho 2020
 """
 
 from warnings import warn
@@ -543,15 +541,14 @@ def compute_fixed_effects(
         [masker.transform(ci).squeeze() for ci in contrast_imgs]
     )
 
-    if dofs is not None:
-        if len(dofs) != n_runs:
-            raise ValueError(
-                f"The number of degrees of freedom ({len(dofs)}) "
-                f"differs from the number of contrast images ({n_runs})."
-            )
-    else:
+    if dofs is None:
         dofs = [100] * n_runs
 
+    elif len(dofs) != n_runs:
+        raise ValueError(
+            f"The number of degrees of freedom ({len(dofs)}) "
+            f"differs from the number of contrast images ({n_runs})."
+        )
     (
         fixed_fx_contrast,
         fixed_fx_variance,

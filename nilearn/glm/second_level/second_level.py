@@ -1,7 +1,5 @@
 """Provide facilities to realize a second level analysis on lists of \
 first level contrasts or directly on fitted first level models.
-
-Author: Martin Perez-Guevara, 2016
 """
 
 import operator
@@ -1066,29 +1064,28 @@ def non_parametric_inference(
     logger.log("Fitting second level model...", verbose=verbose)
 
     # Learn the mask. Assume the first level imgs have been masked.
-    if not isinstance(mask, (NiftiMasker, SurfaceMasker)):
-        if isinstance(sample_map, SurfaceImage):
-            masker = SurfaceMasker(
-                mask_img=mask,
-                smoothing_fwhm=smoothing_fwhm,
-                memory=Memory(None),
-                verbose=max(0, verbose - 1),
-                memory_level=1,
-            )
-        else:
-            masker = NiftiMasker(
-                mask_img=mask,
-                smoothing_fwhm=smoothing_fwhm,
-                memory=Memory(None),
-                verbose=max(0, verbose - 1),
-                memory_level=1,
-            )
-
-    else:
+    if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = clone(mask)
         if smoothing_fwhm is not None and masker.smoothing_fwhm is not None:
             warn("Parameter 'smoothing_fwhm' of the masker overridden.")
             masker.smoothing_fwhm = smoothing_fwhm
+
+    elif isinstance(sample_map, SurfaceImage):
+        masker = SurfaceMasker(
+            mask_img=mask,
+            smoothing_fwhm=smoothing_fwhm,
+            memory=Memory(None),
+            verbose=max(0, verbose - 1),
+            memory_level=1,
+        )
+    else:
+        masker = NiftiMasker(
+            mask_img=mask,
+            smoothing_fwhm=smoothing_fwhm,
+            memory=Memory(None),
+            verbose=max(0, verbose - 1),
+            memory_level=1,
+        )
 
     masker.fit(sample_map)
 

@@ -8,13 +8,6 @@ We use the [left button press (auditory cue)] task from the Localizer
 dataset and seek association between the contrast values and a variate
 that measures the speed of pseudo-word reading. No confounding variate
 is included in the model.
-
-..
-    Original authors:
-
-    - Virgile Fritsch, Bertrand Thirion, 2014 -- 2018
-    - Jerome-Alexis Chevalier, 2019
-
 """
 
 # %%
@@ -90,7 +83,6 @@ cut_coords = [10, -5, 10]
 plot_stat_map(
     z_map,
     threshold=threshold,
-    colorbar=True,
     title="Group-level association between motor activity \n"
     "and reading fluency (fdr=0.05)",
     cut_coords=cut_coords,
@@ -126,7 +118,6 @@ title = (
 )
 plot_stat_map(
     neg_log_pval,
-    colorbar=True,
     cut_coords=cut_coords,
     threshold=threshold,
     title=title,
@@ -160,7 +151,6 @@ title = (
 )
 plot_stat_map(
     neg_log_pvals_permuted_ols_unmasked,
-    colorbar=True,
     cut_coords=cut_coords,
     threshold=threshold,
     title=title,

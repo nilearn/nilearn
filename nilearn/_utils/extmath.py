@@ -1,7 +1,5 @@
 """Extended math utilities."""
 
-# Author: Gael Varoquaux
-
 import numpy as np
 
 from nilearn._utils import logger

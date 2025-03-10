@@ -1,13 +1,11 @@
 """Test the searchlight module."""
 
-# Author: Alexandre Abraham
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from sklearn.model_selection import KFold, LeaveOneGroupOut
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _img_3d_ones, _rng
 from nilearn.decoding import searchlight
 

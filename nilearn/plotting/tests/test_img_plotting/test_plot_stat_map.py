@@ -128,7 +128,6 @@ def test_plot_stat_map_threshold_for_affine_with_rotation(
         {"symmetric_cbar": False},
         {"symmetric_cbar": False, "vmax": 10},
         {"symmetric_cbar": True, "vmax": 10},
-        {"colorbar": False},
     ],
 )
 def test_plot_stat_map_colorbar_variations(

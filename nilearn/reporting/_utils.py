@@ -281,22 +281,21 @@ def model_attributes_to_dataframe(model, is_volume_glm=True):
         return _glm_model_attributes_to_dataframe(
             model, is_volume_glm=is_volume_glm
         )
-    else:
-        attributes_df = OrderedDict(
+    attributes_df = OrderedDict(
+        (
+            attr_name,
             (
-                attr_name,
-                (
-                    str(getattr(model, attr_name))
-                    if isinstance(getattr(model, attr_name), dict)
-                    else getattr(model, attr_name)
-                ),
-            )
-            for attr_name in model.get_params()
+                str(getattr(model, attr_name))
+                if isinstance(getattr(model, attr_name), dict)
+                else getattr(model, attr_name)
+            ),
         )
-        attributes_df = pd.DataFrame.from_dict(attributes_df, orient="index")
-        attributes_df.index.names = ["Parameter"]
-        attributes_df.columns = ["Value"]
-        return attributes_df
+        for attr_name in model.get_params()
+    )
+    attributes_df = pd.DataFrame.from_dict(attributes_df, orient="index")
+    attributes_df.index.names = ["Parameter"]
+    attributes_df.columns = ["Value"]
+    return attributes_df
 
 
 def _glm_model_attributes_to_dataframe(model, is_volume_glm=True):
