@@ -246,6 +246,10 @@ def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
 
 
 class MatplotlibBackend(SurfaceBackend):
+
+    def name():
+        return "matplotlib"
+
     def plot_surf(
         self,
         coords,
@@ -278,14 +282,7 @@ class MatplotlibBackend(SurfaceBackend):
             "title_font_size": title_font_size,
         }
 
-        for parameter, value in parameters_not_implemented.items():
-            if value is not None:
-                warn(
-                    f"'{parameter}' is not implemented "
-                    "for the matplotlib engine.\n"
-                    f"Got '{parameter} = {value}'.\n"
-                    f"Use '{parameter} = None' to silence this warning."
-                )
+        self._check_params(parameters_not_implemented)
 
         if avg_method is None:
             avg_method = "mean"

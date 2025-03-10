@@ -213,6 +213,10 @@ def _get_cbar_plotly(
 
 
 class PlotlyBackend(SurfaceBackend):
+
+    def name():
+        return "plotly"
+
     def plot_surf(
         self,
         coords,
@@ -249,14 +253,8 @@ class PlotlyBackend(SurfaceBackend):
             "cbar_vmax": cbar_vmax,
         }
 
-        for parameter, value in parameters_not_implemented.items():
-            if value is not None:
-                warn(
-                    f"'{parameter}' is not implemented "
-                    "for the plotly engine.\n"
-                    f"Got '{parameter} = {value}'.\n"
-                    f"Use '{parameter} = None' to silence this warning."
-                )
+        self._check_params(parameters_not_implemented)
+
         if cbar_tick_format == "auto":
             cbar_tick_format = ".1f"
         if cmap is None:

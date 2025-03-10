@@ -1,4 +1,5 @@
 from collections.abc import Sequence
+from warnings import warn
 
 import numpy as np
 
@@ -109,8 +110,17 @@ def _check_surf_map(surf_map, n_vertices):
     return surf_map_data
 
 
-class SurfaceBackend:
-    pass
+class SurfaceBackend():
+
+    def _check_params(self, params_not_implemented):
+        for parameter, value in params_not_implemented.items():
+            if value is not None:
+                warn(
+                    f"'{parameter}' is not implemented "
+                    f"for the {self.name} engine.\n"
+                    f"Got '{parameter} = {value}'.\n"
+                    f"Use '{parameter} = None' to silence this warning."
+                )
 
 
 class SurfaceFigure:
