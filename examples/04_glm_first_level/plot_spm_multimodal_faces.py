@@ -66,8 +66,6 @@ mean_image = mean_img(fmri_img, copy_header=True)
 # %%
 # Specify timing and design matrix parameters.
 
-# repetition time, in seconds
-t_r = 2.0
 # Sample at the beginning of each acquisition.
 slice_time_ref = 0.0
 # We use a discrete cosine transform to model signal drifts.
@@ -82,7 +80,7 @@ from nilearn.glm.first_level import FirstLevelModel
 print("Fitting a GLM")
 fmri_glm = FirstLevelModel(
     smoothing_fwhm=6,
-    t_r=t_r,
+    t_r=subject_data.t_r,
     hrf_model=hrf_model,
     drift_model=drift_model,
     high_pass=high_pass,

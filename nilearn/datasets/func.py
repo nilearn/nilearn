@@ -3030,6 +3030,8 @@ def fetch_spm_multimodal_fmri(
         - 'trials_ses1': Path to .mat file containing onsets for run 2
         - 'anat': string. Path to anat file
         - 'description': :obj:`str`. Description of the data
+        - 't_r': :obj:`float`. Repetition time in seconds
+          of the functional images.
 
     """
     check_params(locals())
@@ -3043,11 +3045,13 @@ def fetch_spm_multimodal_fmri(
     data = _glob_spm_multimodal_fmri_data(subject_dir)
     if data is not None:
         data.description = description
+        data.t_r = 2
         return data
 
     # No. Download the data
     data = _download_data_spm_multimodal(data_dir, subject_dir, subject_id)
     data.description = description
+    data.t_r = 2
     return data
 
 

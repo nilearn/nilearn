@@ -19,6 +19,9 @@ to find face-specific responses.
 
 Images were acquired with a repetition time of 2 seconds.
 
+The full dataset as well as its fmriprep derivatives are available
+on `openneuro <https://openneuro.org/datasets/ds000117>`_.
+
 See :footcite:t:`spm_multiface`.
 
 Content
