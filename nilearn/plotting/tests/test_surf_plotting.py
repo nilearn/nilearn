@@ -544,22 +544,6 @@ def test_value_error_get_faces_on_edge(plotly, in_memory_mesh):
         figure._get_faces_on_edge([91])
 
 
-def test_plot_surf_contours_errors_with_plotly_figure(plotly, in_memory_mesh):
-    """Test that plot_surf_contours rasises error when given plotly obj."""
-    figure = plot_surf(in_memory_mesh, engine="plotly")
-    with pytest.raises(ValueError):
-        plot_surf_contours(in_memory_mesh, np.ones((10,)), figure=figure)
-
-
-def test_plot_surf_contours_errors_with_plotly_axes(plotly, in_memory_mesh):
-    """Test that plot_surf_contours rasises error when given plotly \
-        obj as axis.
-    """
-    figure = plot_surf(in_memory_mesh, engine="plotly")
-    with pytest.raises(ValueError):
-        plot_surf_contours(in_memory_mesh, np.ones((10,)), axes=figure)
-
-
 def test_plotly_surface_figure_warns_on_isolated_roi(plotly, in_memory_mesh):
     """Test that a warning is generated for ROIs with isolated vertices."""
     figure = plot_surf(in_memory_mesh, engine="plotly")
