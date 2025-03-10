@@ -691,7 +691,7 @@ def _plot_surf_matplotlib(
             "For example:\n"
             "\t plt.subplots(subplot_kw={'projection': '3d'})"
         )
-    except Exception as e:
+    except Exception as e:  # pragma: no cover
         raise e
 
     axes.set_axis_off()
