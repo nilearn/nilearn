@@ -1,4 +1,5 @@
 import math
+
 import numpy as np
 from plotly.graph_objects import Figure, Mesh3d
 
@@ -210,7 +211,6 @@ def _get_cbar_plotly(
 
 
 class PlotlyBackend(SurfaceBackend):
-
     @property
     def name(self):
         return "plotly"

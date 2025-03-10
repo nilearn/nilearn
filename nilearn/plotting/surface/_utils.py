@@ -91,8 +91,7 @@ def _check_views(views) -> list:
     return views
 
 
-class SurfaceBackend():
-
+class SurfaceBackend:
     def _check_params(self, params_not_implemented):
         for parameter, value in params_not_implemented.items():
             if value is not None:

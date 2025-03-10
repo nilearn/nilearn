@@ -187,7 +187,6 @@ def _compute_surf_map_faces(
         vertex-colour maps.
 
     """
-
     # create face values from vertex values by selected avg methods
     error_message = (
         "avg_method should be either "
@@ -244,7 +243,6 @@ def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
 
 
 class MatplotlibBackend(SurfaceBackend):
-
     @property
     def name(self):
         return "matplotlib"
