@@ -237,6 +237,10 @@ def plot_surf(
         Lower bound for the colorbar.
         If None, the value will be set from the data.
 
+        .. note::
+            This option is currently only implemented for the
+            ``matplotlib`` engine.
+
     cbar_vmax : :obj:`float` or None, default=None
         Upper bound for the colorbar.
         If None, the value will be set from the data.
@@ -256,7 +260,11 @@ def plot_surf(
     %(title)s
 
     title_font_size : :obj:`int`, default=18
-        Size of the title font (only implemented for the plotly engine).
+        Size of the title font.
+
+        .. note::
+            This option is currently only implemented for the
+            ``plotly`` engine.
 
         .. versionadded:: 0.9.0
 
