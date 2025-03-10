@@ -19,9 +19,9 @@ To expand the functionality of check_params you need to:
 from __future__ import annotations
 
 import pathlib
-import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
+from typing import TypeAlias
 
 import numpy as np
 from joblib.memory import Memory
@@ -46,73 +46,41 @@ Tfce = bool
 TwoSidedTest = bool
 
 
-# TODO update when dropping python 3.9
-if sys.version_info[1] < 10:
-    BorderSize = (int, np.integer)
-    DataDir = (str, pathlib.Path)
-    DType = DTypeLike
-    HighPass = (float, int, np.floating, np.integer)
-    HrfModel = (str, Callable, list)
-    LowPass = (float, int, np.floating, np.integer)
-    LowerCutoff = (float, np.floating)
-    MemoryLevel = (int, np.integer)
-    MemoryLike = (Memory, str, pathlib.Path)
-    NJobs = (int, np.integer)
-    NPerm = (int, np.integer)
-    Opening = (bool, int, np.integer)
-    RandomState = (int, np.integer, np.random.RandomState)
-    Resolution = (int, np.integer)
-    SmoothingFwhm = (float, int, np.floating, np.integer)
-    TargetAffine = ndarray
-    TargetShape = (tuple, list)
-    Threshold = (float, int, str, np.floating, np.integer)
-    Title = str
-    Tr = (float, int)
-    Url = str
-    UpperCutoff = (float, np.floating)
-    Verbose = (int, np.integer)
-    Vmin = (float, int, np.floating, np.integer)
-    Vmax = (float, int, np.floating, np.integer)
+BorderSize: TypeAlias = int | np.integer
+DataDir: TypeAlias = str | pathlib.Path | None
+DType: TypeAlias = DTypeLike | None
 
+# Note that for HrfModel
+# str is too generic here
+# and it should actually be Literal["spm", "glover", ...]
+# if we wanted to use proper type annotation
+HrfModel: TypeAlias = str | Callable | list | None
 
-else:
-    from typing import TypeAlias
+HighPass: TypeAlias = float | int | np.floating | np.integer | None
+LowerCutoff: TypeAlias = float | np.floating
+LowPass: TypeAlias = float | int | np.floating | np.integer | None
+MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
+MemoryLevel: TypeAlias = int | np.integer
+NJobs: TypeAlias = int | np.integer
+NPerm: TypeAlias = int | np.integer
+RandomState = int | np.floating | np.integer | np.random.RandomState | None
+Opening: TypeAlias = bool | int | np.integer
+Resolution: TypeAlias = int | np.integer | None
+SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
+TargetAffine: TypeAlias = ndarray | None
 
-    BorderSize: TypeAlias = int | np.integer
-    DataDir: TypeAlias = str | pathlib.Path | None
-    DType: TypeAlias = DTypeLike | None
+# Note that this is usable as for static type checking,
+# as type checkers will complain1
+# about using a generic and would prefer "list[int]" to "list".
+TargetShape: TypeAlias = tuple | list | None
 
-    # Note that for HrfModel
-    # str is too generic here
-    # and it should actually be Literal["spm", "glover", ...]
-    # if we wanted to use proper type annotation
-    HrfModel: TypeAlias = str | Callable | list | None
+# str is too generic: should be Literal["auto"]
+Threshold: TypeAlias = float | int | np.floating | np.integer | str | None
 
-    HighPass: TypeAlias = float | int | np.floating | np.integer | None
-    LowerCutoff: TypeAlias = float | np.floating
-    LowPass: TypeAlias = float | int | np.floating | np.integer | None
-    MemoryLike: TypeAlias = Memory | str | pathlib.Path | None
-    MemoryLevel: TypeAlias = int | np.integer
-    NJobs: TypeAlias = int | np.integer
-    NPerm: TypeAlias = int | np.integer
-    RandomState = int | np.floating | np.integer | np.random.RandomState | None
-    Opening: TypeAlias = bool | int | np.integer
-    Resolution: TypeAlias = int | np.integer | None
-    SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
-    TargetAffine: TypeAlias = ndarray | None
-
-    # Note that this is usable as for static type checking,
-    # as type checkers will complain1
-    # about using a generic and would prefer "list[int]" to "list".
-    TargetShape: TypeAlias = tuple | list | None
-
-    # str is too generic: should be Literal["auto"]
-    Threshold: TypeAlias = float | int | np.floating | np.integer | str | None
-
-    Title: TypeAlias = str | None
-    Tr: TypeAlias = float | int | np.floating | np.integer | None
-    Url: TypeAlias = str | None
-    UpperCutoff: TypeAlias = float | np.floating
-    Verbose: TypeAlias = int | np.integer
-    Vmin = float | int | np.floating | np.integer | None
-    Vmax = float | int | np.floating | np.integer | None
+Title: TypeAlias = str | None
+Tr: TypeAlias = float | int | np.floating | np.integer | None
+Url: TypeAlias = str | None
+UpperCutoff: TypeAlias = float | np.floating
+Verbose: TypeAlias = int | np.integer
+Vmin = float | int | np.floating | np.integer | None
+Vmax = float | int | np.floating | np.integer | None

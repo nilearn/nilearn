@@ -78,7 +78,9 @@ regions_value_img, index = connected_regions(
 # %%
 # Visualizing region extraction results
 images = [regions_percentile_img, regions_value_img]
-for image, strategy in zip(images, ["percentile", "image intensity"]):
+for image, strategy in zip(
+    images, ["percentile", "image intensity"], strict=False
+):
     title = (
         f"ROIs using {strategy} thresholding. "
         "Each ROI in same color is an extracted region"

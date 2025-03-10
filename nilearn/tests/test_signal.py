@@ -518,11 +518,11 @@ def test_clean_t_r(rng):
     )
     random_tr_list1 = np.round(rng.uniform(size=3) * 10, decimals=2)
     random_tr_list2 = np.round(rng.uniform(size=3) * 10, decimals=2)
-    for tr1, tr2 in zip(random_tr_list1, random_tr_list2):
+    for tr1, tr2 in zip(random_tr_list1, random_tr_list2, strict=False):
         low_pass_freq_list = tr1 * np.array([1.0 / 100, 1.0 / 110])
         high_pass_freq_list = tr1 * np.array([1.0 / 210, 1.0 / 190])
         for low_cutoff, high_cutoff in zip(
-            low_pass_freq_list, high_pass_freq_list
+            low_pass_freq_list, high_pass_freq_list, strict=False
         ):
             det_one_tr = clean(
                 x_orig, t_r=tr1, low_pass=low_cutoff, high_pass=high_cutoff
@@ -1397,7 +1397,8 @@ def test_sample_mask_across_runs():
     sample_mask_sep = [np.arange(20), np.arange(20)]
     scrub_index = [[6, 7, 8], [10, 11, 12]]
     sample_mask_sep = [
-        np.delete(sm, si) for sm, si in zip(sample_mask_sep, scrub_index)
+        np.delete(sm, si)
+        for sm, si in zip(sample_mask_sep, scrub_index, strict=False)
     ]
 
     scrub_sep_mask = clean(
@@ -1438,7 +1439,8 @@ def test_clean_sample_mask_error():
     sample_mask_sep = [np.arange(20), np.arange(20)]
     scrub_index = [[6, 7, 8], [10, 11, 12]]
     sample_mask_sep = [
-        np.delete(sm, si) for sm, si in zip(sample_mask_sep, scrub_index)
+        np.delete(sm, si)
+        for sm, si in zip(sample_mask_sep, scrub_index, strict=False)
     ]
 
     # 1D sample mask with runs labels

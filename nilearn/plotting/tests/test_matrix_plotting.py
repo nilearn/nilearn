@@ -143,7 +143,7 @@ def test_matrix_plotting_with_labels_and_different_tri(mat, labels, tri):
     assert ax._axes.get_title() == "Title"
     for axis in [ax._axes.xaxis, ax._axes.yaxis]:
         assert len(axis.majorTicks) == len(labels)
-        for tick, label in zip(axis.majorTicks, labels):
+        for tick, label in zip(axis.majorTicks, labels, strict=False):
             assert tick.label1.get_text() == label
 
 
@@ -340,7 +340,7 @@ def test_show_contrast_matrix_axes():
 
     # to actually check we need get_layout_engine, but even without it the
     # above allows us to test the kwargs are at least okay
-    pytest.importorskip("matplotlib", minversion="3.5.0")
+    pytest.importorskip("matplotlib", minversion="3.6.0")
     assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
 
 
