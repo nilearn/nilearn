@@ -165,9 +165,9 @@ def write_imgs_to_path(
                 return filenames[0]
             return filenames
 
-    else:  # No-op
-        if len(imgs) == 1:
-            return imgs[0]
+    elif len(imgs) == 1:
+        return imgs[0]
+    else:
         return imgs
 
 

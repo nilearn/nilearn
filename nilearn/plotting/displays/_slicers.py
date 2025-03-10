@@ -1931,16 +1931,16 @@ class MosaicSlicer(BaseSlicer):
             cut_coords, numbers.Number
         ):
             cut_coords = [cut_coords] * 3
-        else:
-            if len(cut_coords) != len(cls._cut_displayed):
-                raise ValueError(
-                    "The number cut_coords passed does not"
-                    " match the display_mode. Mosaic plotting "
-                    "expects tuple of length 3."
-                )
+        elif len(cut_coords) == len(cls._cut_displayed):
             cut_coords = [
                 cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
             ]
+        else:
+            raise ValueError(
+                "The number cut_coords passed does not"
+                " match the display_mode. Mosaic plotting "
+                "expects tuple of length 3."
+            )
         cut_coords = cls._find_cut_coords(img, cut_coords, cls._cut_displayed)
         return cut_coords
 
