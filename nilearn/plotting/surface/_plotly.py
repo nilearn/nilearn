@@ -2,8 +2,7 @@ import math
 from warnings import warn
 
 import numpy as np
-
-from plotly.graph_objects import Mesh3d, Figure
+from plotly.graph_objects import Figure, Mesh3d
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import is_kaleido_installed
@@ -11,14 +10,13 @@ from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._utils import (
-    _check_hemispheres,
-    _check_views,
-    _check_surf_map,
-    SurfaceBackend,
     VALID_HEMISPHERES,
+    SurfaceBackend,
+    _check_hemispheres,
+    _check_surf_map,
+    _check_views,
 )
 from nilearn.surface import load_surf_data
-
 
 CAMERAS = {
     "left": {
@@ -215,34 +213,33 @@ def _get_cbar_plotly(
 
 
 class PlotlyBackend(SurfaceBackend):
-
     def plot_surf(
-            self,
-            coords,
-            faces,
-            surf_map=None,
-            bg_map=None,
-            hemi="left",
-            view=None,
-            cmap=None,
-            symmetric_cmap=False,
-            colorbar=False,
-            avg_method=None,
-            threshold=None,
-            alpha=None,
-            bg_on_data=False,
-            darkness=0.7,
-            vmin=None,
-            vmax=None,
-            cbar_vmin=None,
-            cbar_vmax=None,
-            cbar_tick_format="auto",
-            title=None,
-            title_font_size=18,
-            output_file=None,
-            axes=None,
-            figure=None,
-     ):
+        self,
+        coords,
+        faces,
+        surf_map=None,
+        bg_map=None,
+        hemi="left",
+        view=None,
+        cmap=None,
+        symmetric_cmap=False,
+        colorbar=False,
+        avg_method=None,
+        threshold=None,
+        alpha=None,
+        bg_on_data=False,
+        darkness=0.7,
+        vmin=None,
+        vmax=None,
+        cbar_vmin=None,
+        cbar_vmax=None,
+        cbar_tick_format="auto",
+        title=None,
+        title_font_size=18,
+        output_file=None,
+        axes=None,
+        figure=None,
+    ):
         parameters_not_implemented_in_plotly = {
             "avg_method": avg_method,
             "alpha": alpha,
@@ -330,7 +327,7 @@ class PlotlyBackend(SurfaceBackend):
 
         # save figure
         plotly_figure = PlotlySurfaceFigure(
-             figure=fig, output_file=output_file, hemi=hemi
+            figure=fig, output_file=output_file, hemi=hemi
         )
 
         if output_file is not None:

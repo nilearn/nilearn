@@ -1,11 +1,10 @@
 from warnings import warn
 
+import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import make_axes
 from matplotlib.colors import LinearSegmentedColormap, Normalize
-import matplotlib.pyplot as plt
-
-import numpy as np
 
 from nilearn.plotting._utils import (
     get_cbar_ticks,
@@ -13,10 +12,10 @@ from nilearn.plotting._utils import (
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.surface._utils import (
+    SurfaceBackend,
     _check_hemispheres,
-    _check_views,
     _check_surf_map,
-    SurfaceBackend
+    _check_views,
 )
 from nilearn.surface import load_surf_data
 
@@ -247,34 +246,33 @@ def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
 
 
 class MatplotlibBackend(SurfaceBackend):
-
     def plot_surf(
-            self,
-            coords,
-            faces,
-            surf_map=None,
-            bg_map=None,
-            hemi="left",
-            view=None,
-            cmap=None,
-            symmetric_cmap=False,
-            colorbar=False,
-            avg_method=None,
-            threshold=None,
-            alpha=None,
-            bg_on_data=False,
-            darkness=0.7,
-            vmin=None,
-            vmax=None,
-            cbar_vmin=None,
-            cbar_vmax=None,
-            cbar_tick_format="auto",
-            title=None,
-            title_font_size=18,
-            output_file=None,
-            axes=None,
-            figure=None,
-     ):
+        self,
+        coords,
+        faces,
+        surf_map=None,
+        bg_map=None,
+        hemi="left",
+        view=None,
+        cmap=None,
+        symmetric_cmap=False,
+        colorbar=False,
+        avg_method=None,
+        threshold=None,
+        alpha=None,
+        bg_on_data=False,
+        darkness=0.7,
+        vmin=None,
+        vmax=None,
+        cbar_vmin=None,
+        cbar_vmax=None,
+        cbar_tick_format="auto",
+        title=None,
+        title_font_size=18,
+        output_file=None,
+        axes=None,
+        figure=None,
+    ):
         if avg_method is None:
             avg_method = "mean"
         if alpha is None:
