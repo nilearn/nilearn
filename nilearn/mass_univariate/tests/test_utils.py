@@ -304,3 +304,21 @@ def test_return_score_threshs(arr3d, two_sided_test, dh):
         np.nanmax(np.abs(arr3d)) if two_sided_test else np.nanmax(arr3d)
     )
     assert (score_threshs <= max_score).all()
+    assert len(score_threshs) >= 10
+
+
+def test_warning_n_steps_return_score_threshs():
+    """Check that warning is thrown when less than 10 steps for TFCE."""
+    arr3d = np.ones((10, 11), dtype="float")
+
+    with pytest.warns(UserWarning, match="Setting it to 10"):
+        score_threshs = _utils._return_score_threshs(
+            arr3d, dh=0.9, two_sided_test=False
+        )
+        assert len(score_threshs) == 10
+
+    with pytest.warns(UserWarning, match="Setting it to 1000"):
+        score_threshs = _utils._return_score_threshs(
+            arr3d, dh=0.0001, two_sided_test=False
+        )
+        assert len(score_threshs) == 1000

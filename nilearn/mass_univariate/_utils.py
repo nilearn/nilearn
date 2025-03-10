@@ -1,5 +1,7 @@
 """Utility functions for the permuted least squares method."""
 
+from warnings import warn
+
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
@@ -135,9 +137,21 @@ def _return_score_threshs(arr3d, dh, two_sided_test):
     max_score = (
         np.nanmax(np.abs(arr3d)) if two_sided_test else np.nanmax(arr3d)
     )
-    number_steps = (
-        100 if dh == "auto" else np.clip(round(max_score / dh), 10, 1000)
-    )
+    number_steps = 100 if dh == "auto" else round(max_score / dh)
+    if number_steps < 10:
+        warn(
+            f"Not enough steps for TFCE. Got: {number_steps=}. "
+            "Setting it to 10.",
+            stacklevel=3,
+        )
+        number_steps = 10
+    if number_steps > 1000:
+        warn(
+            f"Too many steps for TFCE. Got: {number_steps=}. "
+            "Setting it to 1000.",
+            stacklevel=3,
+        )
+        number_steps = 1000
     return np.linspace(0, max_score, number_steps + 1)[1:]
 
 
