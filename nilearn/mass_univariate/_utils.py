@@ -142,14 +142,14 @@ def _return_score_threshs(arr3d, dh, two_sided_test):
         warn(
             f"Not enough steps for TFCE. Got: {number_steps=}. "
             "Setting it to 10.",
-            stacklevel=3,
+            stacklevel=4,
         )
         number_steps = 10
     if number_steps > 1000:
         warn(
             f"Too many steps for TFCE. Got: {number_steps=}. "
             "Setting it to 1000.",
-            stacklevel=3,
+            stacklevel=4,
         )
         number_steps = 1000
     return np.linspace(0, max_score, number_steps + 1)[1:]
