@@ -215,7 +215,7 @@ class PlotlyBackend(SurfaceBackend):
     def name(self):
         return "plotly"
 
-    def plot_surf(
+    def _plot_surf(
         self,
         coords,
         faces,

@@ -3,7 +3,23 @@ from warnings import warn
 
 import numpy as np
 
-from nilearn.surface import load_surf_data
+from nilearn._utils.param_validation import check_params
+from nilearn.plotting._utils import check_surface_plotting_inputs
+from nilearn.surface import (
+    load_surf_data,
+    load_surf_mesh
+)
+from nilearn.surface.surface import (
+    FREESURFER_DATA_EXTENSIONS,
+    check_extensions,
+)
+
+# subset of data format extensions supported
+DATA_EXTENSIONS = (
+    "gii",
+    "gii.gz",
+    "mgz",
+)
 
 VALID_VIEWS = (
     "anterior",
@@ -92,6 +108,75 @@ def _check_views(views) -> list:
 
 
 class SurfaceBackend:
+
+    def plot_surf(
+            self,
+            surf_mesh=None,
+            surf_map=None,
+            bg_map=None,
+            hemi=None,
+            view=None,
+            cmap=None,
+            symmetric_cmap=False,
+            colorbar=True,
+            avg_method=None,
+            threshold=None,
+            alpha=None,
+            bg_on_data=False,
+            darkness=0.7,
+            vmin=None,
+            vmax=None,
+            cbar_vmin=None,
+            cbar_vmax=None,
+            cbar_tick_format="auto",
+            title=None,
+            title_font_size=18,
+            output_file=None,
+            axes=None,
+            figure=None,
+    ):
+
+        check_params(locals())
+        if view is None:
+            view = "dorsal" if hemi == "both" else "lateral"
+
+        surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
+            surf_map, surf_mesh, hemi, bg_map
+        )
+
+        check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+        coords, faces = load_surf_mesh(surf_mesh)
+
+        fig = self._plot_surf(
+            coords,
+            faces,
+            surf_map=surf_map,
+            bg_map=bg_map,
+            hemi=hemi,
+            view=view,
+            cmap=cmap,
+            symmetric_cmap=symmetric_cmap,
+            colorbar=colorbar,
+            avg_method=avg_method,
+            threshold=threshold,
+            alpha=alpha,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+            vmin=vmin,
+            vmax=vmax,
+            cbar_vmin=cbar_vmin,
+            cbar_vmax=cbar_vmax,
+            cbar_tick_format=cbar_tick_format,
+            title=title,
+            title_font_size=title_font_size,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+        )
+
+        return fig
+
     def _check_params(self, params_not_implemented):
         for parameter, value in params_not_implemented.items():
             if value is not None:
