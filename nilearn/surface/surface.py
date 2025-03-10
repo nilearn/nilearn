@@ -650,7 +650,7 @@ def vol_to_surf(
             `n_samples` samples) instead of the mean value. This is useful
             when the image is a
             :term:`deterministic atlas<Deterministic atlas>`.
-            
+
             .. versionadded:: 0.11.2.dev
 
         For one image, the speed difference is small, 'linear' takes about x1.5
