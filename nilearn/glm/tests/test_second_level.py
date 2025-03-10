@@ -692,6 +692,7 @@ def test_fmri_inputs_dataframes_as_input(tmp_path, rng, confounds):
 
 
 def test_fmri_pandas_series_as_input(tmp_path, rng):
+    """Use pandas series of file paths as inputs."""
     # prepare correct input dataframe and lists
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
@@ -711,6 +712,7 @@ def test_fmri_pandas_series_as_input(tmp_path, rng):
 
 
 def test_fmri_inputs_pandas_errors():
+    """Test wrong second level inputs."""
     # test wrong input for list and pandas requirements
     nii_img = ["01", "02", "03"]
     with pytest.raises(ValueError, match="File not found: "):
@@ -743,11 +745,11 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
     _, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
     fmri_data = fmri_data[0]
     n_samples = fmri_data.shape[-1]
-    des = pd.DataFrame(np.ones((n_samples, 1)), columns=["a"])
+    design_matrices = pd.DataFrame(np.ones((n_samples, 1)), columns=["a"])
 
     # prepare correct input first level models
     flm = FirstLevelModel(subject_label="01").fit(
-        fmri_data, design_matrices=des
+        fmri_data, design_matrices=design_matrices
     )
 
     # test first level model requirements
