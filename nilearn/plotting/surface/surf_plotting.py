@@ -443,22 +443,21 @@ def plot_surf_contours(
     )
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-
     # TODO we can add engine param with default value matplotlib to
-    # plot_surf_contours function? 
+    # plot_surf_contours function?
     fig = _get_surface_backend("matplotlib").plot_surf_contours(
         surf_mesh=surf_mesh,
         roi_map=roi_map,
         levels=levels,
         labels=labels,
         colors=colors,
-        legend=False,
+        legend=legend,
         cmap=cmap,
         title=title,
-        output_file=None,
+        output_file=output_file,
         axes=axes,
         figure=figure,
-        **kwargs
+        **kwargs,
     )
 
     return fig

@@ -5,10 +5,7 @@ import numpy as np
 
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import check_surface_plotting_inputs
-from nilearn.surface import (
-    load_surf_data,
-    load_surf_mesh
-)
+from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
     check_extensions,
@@ -108,34 +105,32 @@ def _check_views(views) -> list:
 
 
 class SurfaceBackend:
-
     def plot_surf(
-            self,
-            surf_mesh=None,
-            surf_map=None,
-            bg_map=None,
-            hemi=None,
-            view=None,
-            cmap=None,
-            symmetric_cmap=False,
-            colorbar=True,
-            avg_method=None,
-            threshold=None,
-            alpha=None,
-            bg_on_data=False,
-            darkness=0.7,
-            vmin=None,
-            vmax=None,
-            cbar_vmin=None,
-            cbar_vmax=None,
-            cbar_tick_format="auto",
-            title=None,
-            title_font_size=18,
-            output_file=None,
-            axes=None,
-            figure=None,
+        self,
+        surf_mesh=None,
+        surf_map=None,
+        bg_map=None,
+        hemi=None,
+        view=None,
+        cmap=None,
+        symmetric_cmap=False,
+        colorbar=True,
+        avg_method=None,
+        threshold=None,
+        alpha=None,
+        bg_on_data=False,
+        darkness=0.7,
+        vmin=None,
+        vmax=None,
+        cbar_vmin=None,
+        cbar_vmax=None,
+        cbar_tick_format="auto",
+        title=None,
+        title_font_size=18,
+        output_file=None,
+        axes=None,
+        figure=None,
     ):
-
         check_params(locals())
         if view is None:
             view = "dorsal" if hemi == "both" else "lateral"
