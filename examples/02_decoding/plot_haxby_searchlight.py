@@ -115,7 +115,6 @@ plot_img(
     cmap="inferno",
     threshold=0.2,
     black_bg=True,
-    colorbar=True,
 )
 
 # %%
