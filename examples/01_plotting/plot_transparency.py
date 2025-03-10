@@ -182,7 +182,7 @@ show()
 
 # %%
 # Transparent masking of part of the data
-# ----------------------------------------
+# ---------------------------------------
 #
 # You may want to use transparent masking to highlight
 # specific parts of the brain while leaving other parts partly visible.
@@ -257,14 +257,14 @@ display = plot_stat_map(
 
 show()
 
-# %%
-# Note that the transparency image was automatically
-# resampled to the underlying data.
+# .. note::
+#
+#    The transparency image was automatically resampled to the underlying data.
 #
 
 # %%
 # Transparent thresholding with other functions
-# --------------------------------------------
+# ---------------------------------------------
 #
 # Several plotting functions support transparency including
 # :func:`~nilearn.plotting.plot_glass_brain`,
@@ -337,8 +337,11 @@ show()
 # In the following section we :
 #
 # - download the data,
+#
 # - fit the GLM with some smoothing of the data,
+#
 # - compute the contrast for the only condition present in this dataset,
+#
 # - compute the mean image of the functional data,
 #   to use as underlay for our plots.
 #
@@ -384,8 +387,11 @@ plotting_config = {
 # Here we will:
 #
 # - have a look at the statistical value for our contrast,
+#
 # - have a look at their Z score with opaque contrast,
+#
 # - use the Z score as transparency value,
+#
 # - finally we will threshold the Z-score to identify the significant clusters
 #   (fdr=0.05, 500 voxels)
 #   and plot those as contours.
@@ -434,7 +440,9 @@ display.add_contours(clean_map, filled=False, levels=[threshold], colors=["w"])
 
 show()
 
-# %% Comparing results across studies
+# %%
+# Comparing results across studies
+# --------------------------------
 #
 # NARPS study comparison
 #
@@ -450,47 +458,53 @@ collection_ids = {
     "6VV2": "4883",
 }
 
-# %% uncomment the code below to get images from all teams
+# %%
+# Uncomment the code below to get images from all teams.
+# Note this will take a very long time.
 #
-# import requests
-# import pandas as pd
+# .. code-block:: python
 #
-# output_dir = Path.cwd() / "results" / "plot_transparency"
-# output_dir.mkdir(exist_ok=True, parents=True)
+#    import requests
+#    import pandas as pd
 #
-# output_file = output_dir / "analysis_pipelines.xlsx"
+#    output_dir = Path.cwd() / "results" / "plot_transparency"
+#    output_dir.mkdir(exist_ok=True, parents=True)
 #
-#
-# def download_team_listing(output_file):
-#     url = 'https://github.com/poldrack/narps/raw/refs/heads/master/ImageAnalyses/metadata_files/analysis_pipelines_for_analysis.xlsx'
-#     response = requests.get(url, stream=True)
-#     with open(output_file, "wb") as file:
-#         for chunk in response.iter_content(chunk_size=8192):
-#             file.write(chunk)
+#    output_file = output_dir / "analysis_pipelines.xlsx"
 #
 #
-# def get_collection_ids(infile=output_file):
-#     TEAMS_TO_SKIP = ['1K0E', 'X1Z4', 'L1A8', 'VG39', '5G9K', '16IN']
-#     # requires openpyxl
-#     teaminfo = pd.read_excel(infile, skiprows=1)
-#     collectionID = {}
-#     for t in teaminfo.index:
-#         teamID = teaminfo.loc[t, 'teamID']
-#         if teamID in TEAMS_TO_SKIP:
-#             continue
-#         public_link = teaminfo.loc[t, 'NV_collection_link']
-#         collectionID[teamID] = Path(public_link).stem
+#    def download_team_listing(output_file):
+#        url = 'https://github.com/poldrack/narps/raw/refs/heads/master/ImageAnalyses/metadata_files/analysis_pipelines_for_analysis.xlsx'
+#        response = requests.get(url, stream=True)
+#        with open(output_file, "wb") as file:
+#            for chunk in response.iter_content(chunk_size=8192):
+#                file.write(chunk)
 #
-#     return(collectionID)
 #
-# collection_ids = get_collection_ids()
+#    def get_collection_ids(infile=output_file):
+#        TEAMS_TO_SKIP = ['1K0E', 'X1Z4', 'L1A8', 'VG39', '5G9K', '16IN']
+#        # requires openpyxl
+#        teaminfo = pd.read_excel(infile, skiprows=1)
+#        collectionID = {}
+#        for t in teaminfo.index:
+#            teamID = teaminfo.loc[t, 'teamID']
+#            if teamID in TEAMS_TO_SKIP:
+#                continue
+#            public_link = teaminfo.loc[t, 'NV_collection_link']
+#            collectionID[teamID] = Path(public_link).stem
+#
+#        return(collectionID)
+#
+#    collection_ids = get_collection_ids()
 #
 
 nv_data = fetch_neurovault_ids(collection_ids=collection_ids.values())
 
-# %% Select the data we want to plot.
+# %%
+# Select the data we want to plot.
 #
 # Keep only maps for hypothesis 1.
+#
 
 hypothesis = "1"
 
@@ -509,7 +523,8 @@ for x in nv_data["images_meta"]:
     if "_thresh" in file.stem:
         data_to_plot[team]["thresholded"] = x["absolute_path"]
 
-#  %% Compare the thresholded and unthresholded results
+# %%
+# Compare the thresholded and unthresholded results
 #
 
 threshold = 3
