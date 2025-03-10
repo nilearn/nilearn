@@ -62,4 +62,4 @@ Enhancements
 Changes
 -------
 
-- :bdg-secondary:`Maint` The version of the script ``jquery.min.js`` was bumped from ``3.3.1`` to ``3.6.0`` due to potential vulnerability issues with versions ``< 3.6.0`` (:gh:`2944` by `Nicolas Gensollen`_).
+- :bdg-secondary:`Maint` The version of the script ``jquery.min.js`` was bumped from ``3.3.1`` to ``3.6.0`` due to potential vulnerability issues with versions ``< 3.5.0`` (:gh:`2944` by `Nicolas Gensollen`_).
