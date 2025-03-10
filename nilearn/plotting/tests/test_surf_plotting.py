@@ -26,9 +26,9 @@ from nilearn.plotting import (
 from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.plotting.surface._matplotlib import (
+    MATPLOTLIB_VIEWS,
     _compute_facecolors,
     _get_view_plot_surf,
-    MATPLOTLIB_VIEWS
 )
 from nilearn.plotting.surface._plotly import (
     _get_view_plot_surf_plotly,
@@ -439,8 +439,7 @@ def test_get_view_plot_surf_plotly(full_view):
 def test_get_view_plot_surf_matplotlib(hemi, views):
     for v in views:
         assert (
-            _get_view_plot_surf(hemi, v)
-            == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
+            _get_view_plot_surf(hemi, v) == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
         )
 
 

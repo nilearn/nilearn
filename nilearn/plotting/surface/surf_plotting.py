@@ -3,10 +3,10 @@
 import itertools
 from warnings import warn
 
-from matplotlib import __version__ as mpl_version
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib import __version__ as mpl_version
 from matplotlib import gridspec
 from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
 from matplotlib.patches import Patch
@@ -14,10 +14,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
-from nilearn._utils.helpers import (
-    is_matplotlib_installed,
-    is_plotly_installed
-)
+from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     check_surface_plotting_inputs,
@@ -48,6 +45,7 @@ def _get_surface_backend(engine=None):
     if engine == "matplotlib":
         if is_matplotlib_installed():
             from nilearn.plotting.surface._matplotlib import MatplotlibBackend
+
             return MatplotlibBackend()
         else:
             msg = "Using engine='matplotlib' requires that ``matplotlib`` is installed."
@@ -55,9 +53,12 @@ def _get_surface_backend(engine=None):
     elif engine == "plotly":
         if is_plotly_installed():
             from nilearn.plotting.surface._plotly import PlotlyBackend
+
             return PlotlyBackend()
         else:
-            msg = "Using engine='plotly' requires that ``plotly`` is installed."
+            msg = (
+                "Using engine='plotly' requires that ``plotly`` is installed."
+            )
             raise ImportError(msg)
     else:
         raise ValueError(

@@ -109,7 +109,7 @@ def _check_surf_map(surf_map, n_vertices):
     return surf_map_data
 
 
-class SurfaceBackend():
+class SurfaceBackend:
     pass
 
 
