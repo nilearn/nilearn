@@ -23,7 +23,6 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.plotting.surface._matplotlib import (
     MATPLOTLIB_VIEWS,
@@ -34,6 +33,7 @@ from nilearn.plotting.surface._matplotlib import (
 from nilearn.plotting.surface._plotly import (
     _get_view_plot_surf_plotly,
 )
+from nilearn.plotting.surface._utils import check_surface_plotting_inputs
 from nilearn.surface import (
     InMemoryMesh,
     SurfaceImage,

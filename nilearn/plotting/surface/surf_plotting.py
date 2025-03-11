@@ -10,15 +10,15 @@ from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
-    check_surface_plotting_inputs,
     create_colormap_from_lut,
     get_colorbar_and_data_ranges,
-    sanitize_hemi_for_surface_image,
 )
 from nilearn.plotting.surface._utils import (
     DATA_EXTENSIONS,
     _check_hemispheres,
     _check_views,
+    check_surface_plotting_inputs,
+    sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
     load_surf_data,

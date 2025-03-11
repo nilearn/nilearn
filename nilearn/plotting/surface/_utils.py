@@ -6,13 +6,20 @@ import numpy as np
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
-    check_surface_plotting_inputs,
+    _check_bg_map,
+    _get_hemi,
     get_colorbar_and_data_ranges,
 )
-from nilearn.surface import load_surf_data, load_surf_mesh
+from nilearn.surface import (
+    load_surf_data,
+    load_surf_mesh,
+    PolyMesh,
+    SurfaceImage
+    )
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
     check_extensions,
+    get_data,
 )
 
 VALID_VIEWS = (
@@ -34,6 +41,98 @@ DATA_EXTENSIONS = (
     "gii.gz",
     "mgz",
 )
+
+
+def check_surface_plotting_inputs(
+    surf_map,
+    surf_mesh,
+    hemi="left",
+    bg_map=None,
+    map_var_name="surf_map",
+    mesh_var_name="surf_mesh",
+):
+    """Check inputs for surface plotting.
+
+    Where possible this will 'convert' the inputs
+    if SurfaceImage or PolyMesh objects are passed
+    to be able to give them to the surface plotting functions.
+
+    Returns
+    -------
+    surf_map : numpy.ndarray
+
+    surf_mesh : numpy.ndarray
+
+    bg_map : str | pathlib.Path | numpy.ndarray | None
+
+    """
+    if surf_mesh is None and surf_map is None:
+        raise TypeError(
+            f"{mesh_var_name} and {map_var_name} cannot both be None."
+            f"If you want to pass {mesh_var_name}=None, "
+            f"then {mesh_var_name} must be a SurfaceImage instance."
+        )
+
+    if surf_mesh is None and not isinstance(surf_map, SurfaceImage):
+        raise TypeError(
+            f"If you want to pass {mesh_var_name}=None, "
+            f"then {mesh_var_name} must be a SurfaceImage instance."
+        )
+
+    if isinstance(surf_mesh, PolyMesh):
+        surf_mesh = _get_hemi(surf_mesh, hemi)
+
+    if isinstance(surf_mesh, SurfaceImage):
+        raise TypeError(
+            "'surf_mesh' cannot be a SurfaceImage instance. ",
+            "Accepted types are: str, list of two numpy.ndarray, "
+            "InMemoryMesh, PolyMesh, or None.",
+        )
+
+    if isinstance(surf_map, SurfaceImage):
+        if surf_mesh is None:
+            surf_mesh = _get_hemi(surf_map.mesh, hemi)
+        if len(surf_map.shape) > 1 and surf_map.shape[1] > 1:
+            raise TypeError(
+                "Input data has incompatible dimensionality. "
+                f"Expected dimension is ({surf_map.shape[0]},) "
+                f"or ({surf_map.shape[0]}, 1) "
+                f"and you provided a {surf_map.shape} surface image."
+            )
+        # concatenate the left and right data if hemi is "both"
+        if hemi == "both":
+            surf_map = get_data(surf_map).T
+        else:
+            surf_map = surf_map.data.parts[hemi].T
+
+    bg_map = _check_bg_map(bg_map, hemi)
+
+    return surf_map, surf_mesh, bg_map
+
+
+def sanitize_hemi_for_surface_image(hemi, map, mesh):
+    if hemi is None and (
+        isinstance(map, SurfaceImage) or isinstance(mesh, PolyMesh)
+    ):
+        return "left"
+
+    if (
+        hemi is not None
+        and not isinstance(map, SurfaceImage)
+        and not isinstance(mesh, PolyMesh)
+    ):
+        warn(
+            category=UserWarning,
+            message=(
+                f"{hemi=} was passed "
+                f"with {type(map)=} and {type(mesh)=}.\n"
+                "This value will be ignored as it is only used when "
+                "'roi_map' is a SurfaceImage instance "
+                "and  / or 'surf_mesh' is a PolyMesh instance."
+            ),
+            stacklevel=3,
+        )
+    return hemi
 
 
 def _check_hemisphere_is_valid(hemi):

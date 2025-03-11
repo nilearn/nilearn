@@ -11,7 +11,7 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
-from nilearn.plotting._utils import (
+from nilearn.plotting.surface import (
     check_surface_plotting_inputs,
     sanitize_hemi_for_surface_image,
 )
