@@ -69,7 +69,7 @@ def plot_surf(
     view=None,
     engine="matplotlib",
     cmap=None,
-    symmetric_cmap=False,
+    symmetric_cmap=None,
     colorbar=True,
     avg_method=None,
     threshold=None,
@@ -82,7 +82,7 @@ def plot_surf(
     cbar_vmax=None,
     cbar_tick_format="auto",
     title=None,
-    title_font_size=18,
+    title_font_size=None,
     output_file=None,
     axes=None,
     figure=None,
@@ -156,7 +156,7 @@ def plot_surf(
     %(cmap)s
         If None, matplotlib default will be chosen.
 
-    symmetric_cmap : :obj:`bool`, default=False
+    symmetric_cmap : :obj:`bool`, default=None
         Whether to use a symmetric colormap or not.
 
         .. note::

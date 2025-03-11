@@ -254,6 +254,11 @@ class PlotlyBackend(SurfaceBackend):
 
         self._check_backend_params(parameters_not_implemented)
 
+        if title_font_size is None:
+            title_font_size = 18
+        if symmetric_cmap is None:
+            symmetric_cmap = False
+
         if cbar_tick_format == "auto":
             cbar_tick_format = ".1f"
 
