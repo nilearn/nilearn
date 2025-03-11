@@ -206,8 +206,6 @@ def make_glm_report(
 
     date = datetime.datetime.now().replace(microsecond=0).isoformat()
 
-    noise_model = getattr(model, "noise_model", None)
-    hrf_model = getattr(model, "hrf_model", None)
     smoothing_fwhm = getattr(model, "smoothing_fwhm", 0)
     if smoothing_fwhm == 0:
         smoothing_fwhm = None
@@ -269,30 +267,6 @@ def make_glm_report(
 
     contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
-    drift_model_str = None
-    if isinstance(model, FirstLevelModel) and model.drift_model:
-        if model.drift_model == "cosine":
-            param_str = f"high pass filter={model.high_pass} Hz"
-        else:
-            param_str = f"order={model.drift_order}"
-        drift_model_str = (
-            f"and a {model.drift_model} drift model ({param_str})"
-        )
-    method_section_template_path = HTML_TEMPLATE_PATH / "method_section.html"
-    method_tpl = tempita.HTMLTemplate.from_filename(
-        str(method_section_template_path),
-        encoding="utf-8",
-    )
-    method_section = method_tpl.substitute(
-        version=__version__,
-        model_type=model_type,
-        drift_model_str=drift_model_str,
-        noise_model=noise_model,
-        hrf_model=hrf_model,
-        smoothing_fwhm=smoothing_fwhm,
-        contrasts_dict=contrasts_dict,
-    )
-
     design_matrices_dict = _return_design_matrices_dict(design_matrices)
 
     body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
@@ -317,7 +291,6 @@ def make_glm_report(
         design_matrices_dict=design_matrices_dict,
         unique_id=unique_id,
         date=date,
-        method_section=method_section,
     )
 
     # revert HTML safe substitutions in CSS sections
