@@ -435,6 +435,9 @@ class MatplotlibBackend(SurfaceBackend):
         figure=None,
         **kwargs,
     ):
+        # TODO in the original code, hemi is not specified, and as it is by
+        # default "left" in plot_surf, the code runs. When it is None the tests
+        # fail. Is this the correct behavior?
         if figure is None and axes is None:
             figure = self.plot_surf(surf_mesh, hemi=hemi, **kwargs)
             axes = figure.axes[0]
