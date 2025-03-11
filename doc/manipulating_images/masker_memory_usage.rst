@@ -89,9 +89,9 @@ Once we have loaded the image, we can perform various operations on it.
 We will consider two cases here:
 
 1. Taking the mean over the time axis, which requires all the data to be
-    loaded into memory at once.
+   loaded into memory at once.
 2. Extracting a 3D volume at a given time point from the 4D image, which
-    only requires a chunk of data to be loaded into memory.
+   only requires a chunk of data to be loaded into memory.
 
 Mean over the time axis
 -----------------------
