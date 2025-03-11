@@ -460,6 +460,60 @@ def _projection_matrix(
     return proj
 
 
+def _mask_sample_locations(sample_locations, img_shape, mesh_n_vertices, mask):
+    """Mask sample locations without changing to indices."""
+    sample_locations = np.asarray(np.round(sample_locations), dtype=int)
+    masks = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
+    masks = np.split(masks, mesh_n_vertices)
+    # mask sample locations and make a list of masked indices because
+    # masked locations are not necessarily of the same length
+    masked_sample_locations = [
+        sample_locations[idx][~mask] for idx, mask in enumerate(masks)
+    ]
+    return masked_sample_locations
+
+
+def _nearest_most_frequent(
+    images,
+    mesh,
+    affine,
+    kind="auto",
+    radius=3.0,
+    n_points=None,
+    mask=None,
+    inner_mesh=None,
+    depth=None,
+):
+    """Use the most frequent value of 'n_samples' nearest voxels instead of
+    taking the mean value (as in the _nearest_voxel_sampling function).
+
+    This is useful when the image is a deterministic atlas.
+    """
+    data = np.asarray(images)
+    sample_locations = _sample_locations(
+        mesh,
+        affine,
+        kind=kind,
+        radius=radius,
+        n_points=n_points,
+        inner_mesh=inner_mesh,
+        depth=depth,
+    )
+    sample_locations = _mask_sample_locations(
+        sample_locations, images[0].shape, mesh.n_vertices, mask
+    )
+    texture = np.zeros((mesh.n_vertices, images.shape[0]))
+    for img in range(images.shape[0]):
+        for loc in range(len(sample_locations)):
+            possible_values = [
+                data[img][coords[0], coords[1], coords[2]]
+                for coords in sample_locations[loc]
+            ]
+            unique, counts = np.unique(possible_values, return_counts=True)
+            texture[loc, img] = unique[np.argmax(counts)]
+    return texture.T
+
+
 def _nearest_voxel_sampling(
     images,
     mesh,
@@ -479,6 +533,7 @@ def _nearest_voxel_sampling(
     See documentation of vol_to_surf for details.
 
     """
+    data = np.asarray(images).reshape(len(images), -1).T
     proj = _projection_matrix(
         mesh,
         affine,
@@ -490,7 +545,6 @@ def _nearest_voxel_sampling(
         inner_mesh=inner_mesh,
         depth=depth,
     )
-    data = np.asarray(images).reshape(len(images), -1).T
     texture = proj.dot(data)
     # if all samples around a mesh vertex are outside the image,
     # there is no reasonable value to assign to this vertex.
@@ -582,13 +636,22 @@ def vol_to_surf(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is provided.
 
-    interpolation : {'linear', 'nearest'}, default='linear'
+    interpolation : {'linear', 'nearest', 'nearest_most_frequent'}, \
+                    default='linear'
         How the image intensity is measured at a sample point.
 
         - 'linear':
             Use a trilinear interpolation of neighboring voxels.
         - 'nearest':
             Use the intensity of the nearest voxel.
+
+        - 'nearest_most_frequent':
+            Use the most frequent value in the neighborhood (out of the
+            `n_samples` samples) instead of the mean value. This is useful
+            when the image is a
+            :term:`deterministic atlas<Deterministic atlas>`.
+
+            .. versionadded:: 0.11.2.dev
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20
@@ -670,22 +733,22 @@ def vol_to_surf(
 
     Three strategies are available to select these positions.
 
-        - with 'depth', data is sampled at various cortical depths between
-          corresponding nodes of `surface_mesh` and `inner_mesh` (which can be,
-          for example, a pial surface and a white matter surface). This is the
-          recommended strategy when both the pial and white matter surfaces are
-          available, which is the case for the fsaverage :term:`meshes<mesh>`.
-        - 'ball' uses points regularly spaced in a ball centered
-          at the :term:`mesh` vertex.
-          The radius of the ball is controlled by the parameter `radius`.
-        - 'line' starts by drawing the normal to the :term:`mesh`
-          passing through this vertex.
-          It then selects a segment of this normal,
-          centered at the vertex, of length 2 * `radius`.
-          Image intensities are measured at points regularly spaced
-          on this normal segment, or at positions determined by `depth`.
-        - ('auto' chooses 'depth' if `inner_mesh` is provided and 'line'
-          otherwise)
+    - with 'depth', data is sampled at various cortical depths between
+        corresponding nodes of `surface_mesh` and `inner_mesh` (which can be,
+        for example, a pial surface and a white matter surface). This is the
+        recommended strategy when both the pial and white matter surfaces are
+        available, which is the case for the fsaverage :term:`meshes<mesh>`.
+    - 'ball' uses points regularly spaced in a ball centered
+        at the :term:`mesh` vertex.
+        The radius of the ball is controlled by the parameter `radius`.
+    - 'line' starts by drawing the normal to the :term:`mesh`
+        passing through this vertex.
+        It then selects a segment of this normal,
+        centered at the vertex, of length 2 * `radius`.
+        Image intensities are measured at points regularly spaced
+        on this normal segment, or at positions determined by `depth`.
+    - ('auto' chooses 'depth' if `inner_mesh` is provided and 'line'
+        otherwise)
 
     You can control how many samples are drawn by setting `n_samples`, or their
     position by setting `depth`.
@@ -708,6 +771,13 @@ def vol_to_surf(
     Once the 3d image has been interpolated at each sample point, the
     interpolated values are averaged to produce the value associated to this
     particular :term:`mesh` vertex.
+
+    .. important::
+
+        When using the 'nearest_most_frequent' interpolation, each vertex will
+        be assigned the most frequent value in the neighborhood (out of the
+        `n_samples` samples) instead of the mean value. This option works
+        better if `img` is a :term:`deterministic atlas<Deterministic atlas>`.
 
     Examples
     --------
@@ -733,13 +803,28 @@ def vol_to_surf(
     sampling_schemes = {
         "linear": _interpolation_sampling,
         "nearest": _nearest_voxel_sampling,
+        "nearest_most_frequent": _nearest_most_frequent,
     }
     if interpolation not in sampling_schemes:
         raise ValueError(
             "'interpolation' should be one of "
             f"{tuple(sampling_schemes.keys())}"
         )
+
+    # deprecate nearest interpolation in 0.13.0
+    if interpolation == "nearest":
+        warnings.warn(
+            "The 'nearest' interpolation method will be deprecated in 0.13.0. "
+            "To disable this warning, select either 'linear' or "
+            "'nearest_most_frequent'. If your image is a deterministic atlas "
+            "'nearest_most_frequent' is recommended. Otherwise, use 'linear'. "
+            "See the documentation for more information.",
+            FutureWarning,
+            stacklevel=2,
+        )
+
     img = load_img(img)
+
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
         mask = get_vol_data(
@@ -754,13 +839,20 @@ def vol_to_surf(
         )
     else:
         mask = None
+
     original_dimension = len(img.shape)
+
     img = _utils.check_niimg(img, atleast_4d=True)
+
     frames = np.rollaxis(get_vol_data(img), -1)
+
     mesh = load_surf_mesh(surf_mesh)
+
     if inner_mesh is not None:
         inner_mesh = load_surf_mesh(inner_mesh)
+
     sampling = sampling_schemes[interpolation]
+
     texture = sampling(
         frames,
         mesh,
@@ -772,6 +864,7 @@ def vol_to_surf(
         inner_mesh=inner_mesh,
         depth=depth,
     )
+
     if original_dimension == 3:
         texture = texture[0]
     return texture.T

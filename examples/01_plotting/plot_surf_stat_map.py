@@ -12,7 +12,7 @@ This example use the resting state time series
 of a single subject's left hemisphere
 the :ref:`nki_dataset`.
 
-The :ref:`destrieux_atlas` in fsaverage5 space
+The :ref:`destrieux_2009_atlas` in fsaverage5 space
 is used to select a seed region in the posterior cingulate cortex.
 
 The :func:`~nilearn.plotting.plot_surf_stat_map` function is used
