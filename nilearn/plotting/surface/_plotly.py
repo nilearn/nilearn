@@ -338,6 +338,26 @@ class PlotlyBackend(SurfaceBackend):
 
         return plotly_figure
 
+    def plot_surf_contours(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        hemi="left",
+        levels=None,
+        labels=None,
+        colors=None,
+        legend=False,
+        cmap="tab20",
+        title=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        **kwargs,
+    ):
+        raise NotImplementedError(
+            "'plot_surf_contours' is not implemented for plotly!"
+        )
+
     def plot_surf_stat_map(
         self,
         surf_mesh=None,
