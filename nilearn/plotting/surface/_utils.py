@@ -11,13 +11,6 @@ from nilearn.surface.surface import (
     check_extensions,
 )
 
-# subset of data format extensions supported
-DATA_EXTENSIONS = (
-    "gii",
-    "gii.gz",
-    "mgz",
-)
-
 VALID_VIEWS = (
     "anterior",
     "posterior",
@@ -29,6 +22,14 @@ VALID_VIEWS = (
     "right",
 )
 VALID_HEMISPHERES = "left", "right", "both"
+
+
+# subset of data format extensions supported
+DATA_EXTENSIONS = (
+    "gii",
+    "gii.gz",
+    "mgz",
+)
 
 
 def _check_hemisphere_is_valid(hemi):
@@ -102,6 +103,52 @@ def _check_views(views) -> list:
         )
 
     return views
+
+
+def _check_surf_map(surf_map, n_vertices):
+    """Help for plot_surf.
+
+    This function checks the dimensions of provided surf_map.
+    """
+    surf_map_data = load_surf_data(surf_map)
+    if surf_map_data.ndim != 1:
+        raise ValueError(
+            "'surf_map' can only have one dimension "
+            f"but has '{surf_map_data.ndim}' dimensions"
+        )
+    if surf_map_data.shape[0] != n_vertices:
+        raise ValueError(
+            "The surf_map does not have the same number "
+            "of vertices as the mesh."
+        )
+    return surf_map_data
+
+
+def _get_faces_on_edge(faces, parc_idx):
+    """Identify which faces lie on the outeredge of the parcellation \
+    defined by the indices in parc_idx.
+
+    Parameters
+    ----------
+    faces : :class:`numpy.ndarray` of shape (n, 3), indices of the mesh faces
+
+    parc_idx : :class:`numpy.ndarray`, indices of the vertices
+        of the region to be plotted
+
+    """
+    # count how many vertices belong to the given parcellation in each face
+    verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
+
+    # test if parcellation forms regions
+    if np.all(verts_per_face < 2):
+        raise ValueError("Vertices in parcellation do not form region.")
+
+    vertices_on_edge = np.intersect1d(
+        np.unique(faces[verts_per_face == 2]), parc_idx
+    )
+    faces_outside_edge = np.isin(faces, vertices_on_edge).sum(axis=1)
+
+    return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
 
 
 class SurfaceBackend:
@@ -181,24 +228,6 @@ class SurfaceBackend:
                     f"Got '{parameter} = {value}'.\n"
                     f"Use '{parameter} = None' to silence this warning."
                 )
-
-    def _check_surf_map(self, surf_map, n_vertices):
-        """Help for plot_surf.
-
-        This function checks the dimensions of provided surf_map.
-        """
-        surf_map_data = load_surf_data(surf_map)
-        if surf_map_data.ndim != 1:
-            raise ValueError(
-                "'surf_map' can only have one dimension "
-                f"but has '{surf_map_data.ndim}' dimensions"
-            )
-        if surf_map_data.shape[0] != n_vertices:
-            raise ValueError(
-                "The surf_map does not have the same number "
-                "of vertices as the mesh."
-            )
-        return surf_map_data
 
 
 class SurfaceFigure:

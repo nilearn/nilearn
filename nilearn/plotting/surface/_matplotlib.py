@@ -18,7 +18,9 @@ from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.surface._utils import (
     SurfaceBackend,
     _check_hemispheres,
+    _check_surf_map,
     _check_views,
+    _get_faces_on_edge
 )
 from nilearn.surface import load_surf_data, load_surf_mesh
 
@@ -67,6 +69,77 @@ def _get_view_plot_surf(hemi, view):
             )
         return MATPLOTLIB_VIEWS[hemi][view]
     return view
+
+
+def _compute_surf_map_faces(
+        surf_map, faces, avg_method, n_vertices, face_colors_size
+):
+    """Help for plot_surf.
+
+    This function computes the surf map faces using the
+    provided averaging method.
+
+    .. note::
+        This method is called exclusively when using matplotlib,
+        since it only supports plotting face-colour maps and not
+        vertex-colour maps.
+
+    """
+    surf_map_data = _check_surf_map(surf_map, n_vertices)
+    
+    # create face values from vertex values by selected avg methods
+    error_message = (
+        "avg_method should be either "
+        "['mean', 'median', 'max', 'min'] "
+        "or a custom function"
+    )
+    if isinstance(avg_method, str):
+        try:
+            avg_method = getattr(np, avg_method)
+        except AttributeError:
+            raise ValueError(error_message)
+        surf_map_faces = avg_method(surf_map_data[faces], axis=1)
+    elif callable(avg_method):
+        surf_map_faces = np.apply_along_axis(
+            avg_method, 1, surf_map_data[faces]
+        )
+
+        # check that surf_map_faces has the same length as face_colors
+        if surf_map_faces.shape != (face_colors_size,):
+            raise ValueError(
+                "Array computed with the custom function "
+                "from avg_method does not have the correct shape: "
+                f"{surf_map_faces[0]} != {face_colors_size}"
+            )
+
+        # check that dtype is either int or float
+        if not (
+            "int" in str(surf_map_faces.dtype)
+            or "float" in str(surf_map_faces.dtype)
+        ):
+            raise ValueError(
+                "Array computed with the custom function "
+                "from avg_method should be an array of numbers "
+                "(int or float)"
+            )
+    else:
+        raise ValueError(error_message)
+    return surf_map_faces
+
+
+def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
+    """Help for plot_surf with matplotlib engine.
+
+    This function computes the tick values for the colorbar.
+    """
+    # Default number of ticks is 5...
+    n_ticks = 5
+    # ...unless we are dealing with integers with a small range
+    # in this case, we reduce the number of ticks
+    if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
+        return np.arange(vmin, vmax + 1)
+    else:
+        return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
 def _get_cmap(cmap, vmin, vmax, cbar_tick_format, threshold=None):
@@ -177,102 +250,6 @@ def _get_bounds(data, vmin=None, vmax=None):
     return vmin, vmax
 
 
-def _compute_surf_map_faces(
-    surf_map_data, faces, avg_method, face_colors_size
-):
-    """Help for plot_surf.
-
-    This function computes the surf map faces using the
-    provided averaging method.
-
-    .. note::
-        This method is called exclusively when using matplotlib,
-        since it only supports plotting face-colour maps and not
-        vertex-colour maps.
-
-    """
-    # create face values from vertex values by selected avg methods
-    error_message = (
-        "avg_method should be either "
-        "['mean', 'median', 'max', 'min'] "
-        "or a custom function"
-    )
-    if isinstance(avg_method, str):
-        try:
-            avg_method = getattr(np, avg_method)
-        except AttributeError:
-            raise ValueError(error_message)
-        surf_map_faces = avg_method(surf_map_data[faces], axis=1)
-    elif callable(avg_method):
-        surf_map_faces = np.apply_along_axis(
-            avg_method, 1, surf_map_data[faces]
-        )
-
-        # check that surf_map_faces has the same length as face_colors
-        if surf_map_faces.shape != (face_colors_size,):
-            raise ValueError(
-                "Array computed with the custom function "
-                "from avg_method does not have the correct shape: "
-                f"{surf_map_faces[0]} != {face_colors_size}"
-            )
-
-        # check that dtype is either int or float
-        if not (
-            "int" in str(surf_map_faces.dtype)
-            or "float" in str(surf_map_faces.dtype)
-        ):
-            raise ValueError(
-                "Array computed with the custom function "
-                "from avg_method should be an array of numbers "
-                "(int or float)"
-            )
-    else:
-        raise ValueError(error_message)
-    return surf_map_faces
-
-
-def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
-    """Help for plot_surf with matplotlib engine.
-
-    This function computes the tick values for the colorbar.
-    """
-    # Default number of ticks is 5...
-    n_ticks = 5
-    # ...unless we are dealing with integers with a small range
-    # in this case, we reduce the number of ticks
-    if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
-        return np.arange(vmin, vmax + 1)
-    else:
-        return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
-
-
-def _get_faces_on_edge(faces, parc_idx):
-    """Identify which faces lie on the outeredge of the parcellation \
-    defined by the indices in parc_idx.
-
-    Parameters
-    ----------
-    faces : :class:`numpy.ndarray` of shape (n, 3), indices of the mesh faces
-
-    parc_idx : :class:`numpy.ndarray`, indices of the vertices
-        of the region to be plotted
-
-    """
-    # count how many vertices belong to the given parcellation in each face
-    verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
-
-    # test if parcellation forms regions
-    if np.all(verts_per_face < 2):
-        raise ValueError("Vertices in parcellation do not form region.")
-
-    vertices_on_edge = np.intersect1d(
-        np.unique(faces[verts_per_face == 2]), parc_idx
-    )
-    faces_outside_edge = np.isin(faces, vertices_on_edge).sum(axis=1)
-
-    return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
-
-
 class MatplotlibBackend(SurfaceBackend):
     @property
     def name(self):
@@ -319,6 +296,11 @@ class MatplotlibBackend(SurfaceBackend):
         if cbar_tick_format == "auto":
             cbar_tick_format = "%.2g"
 
+        limits = [coords.min(), coords.max()]
+
+        # Get elevation and azimut from view
+        elev, azim = _get_view_plot_surf(hemi, view)
+
         # if no cmap is given, set to matplotlib default
         if cmap is None:
             cmap = plt.get_cmap(plt.rcParamsDefault["image.cmap"])
@@ -326,13 +308,8 @@ class MatplotlibBackend(SurfaceBackend):
         elif isinstance(cmap, str):
             cmap = plt.get_cmap(cmap)
 
-        limits = [coords.min(), coords.max()]
-
         # Leave space for colorbar
         figsize = [4.7, 5] if colorbar else [4, 5]
-
-        # Get elevation and azimut from view
-        elev, azim = _get_view_plot_surf(hemi, view)
 
         # initiate figure and 3d axes
         if axes is None:
@@ -493,14 +470,15 @@ class MatplotlibBackend(SurfaceBackend):
                     "All elements of colors need to be either a"
                     " matplotlib color string or RGBA values."
                 )
+
         if not (len(levels) == len(labels) == len(colors)):
             raise ValueError(
                 "Levels, labels, and colors "
                 "argument need to be either the same length or None."
             )
 
-        roi = load_surf_data(roi_map)
         _, faces = load_surf_mesh(surf_mesh)
+        roi = load_surf_data(roi_map)
 
         patch_list = []
         for level, color, label in zip(levels, colors, labels):

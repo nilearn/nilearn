@@ -12,6 +12,7 @@ from nilearn.plotting.surface._utils import (
     VALID_HEMISPHERES,
     SurfaceBackend,
     _check_hemispheres,
+    _check_surf_map,
     _check_views,
 )
 from nilearn.surface import load_surf_data
@@ -245,24 +246,22 @@ class PlotlyBackend(SurfaceBackend):
         parameters_not_implemented = {
             "avg_method": avg_method,
             "alpha": alpha,
-            "figure": figure,
-            "axes": axes,
             "cbar_vmin": cbar_vmin,
             "cbar_vmax": cbar_vmax,
+            "figure": figure,
+            "axes": axes,
         }
 
         self._check_params(parameters_not_implemented)
 
         if cbar_tick_format == "auto":
             cbar_tick_format = ".1f"
-        if cmap is None:
-            cmap = DEFAULT_DIVERGING_CMAP
 
         x, y, z = coords.T
         i, j, k = faces.T
 
-        # instantiate plotly figure
-        camera_view = _get_view_plot_surf_plotly(hemi, view)
+        if cmap is None:
+            cmap = DEFAULT_DIVERGING_CMAP
 
         bg_data = None
         if bg_map is not None:
@@ -274,7 +273,7 @@ class PlotlyBackend(SurfaceBackend):
                 )
 
         if surf_map is not None:
-            self._check_surf_map(surf_map, coords.shape[0])
+            _check_surf_map(surf_map, coords.shape[0])
             colors = colorscale(
                 cmap,
                 surf_map,
@@ -314,6 +313,8 @@ class PlotlyBackend(SurfaceBackend):
             )
             fig_data.append(dummy)
 
+        # instantiate plotly figure
+        camera_view = _get_view_plot_surf_plotly(hemi, view)
         fig = Figure(data=fig_data)
         fig.update_layout(
             scene_camera=camera_view,
