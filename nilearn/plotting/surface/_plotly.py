@@ -358,7 +358,7 @@ class PlotlyBackend(SurfaceBackend):
             "'plot_surf_contours' is not implemented for plotly!"
         )
 
-    def plot_surf_stat_map(
+    def _plot_surf_stat_map(
         self,
         surf_mesh=None,
         surf_map=None,
@@ -418,3 +418,29 @@ class PlotlyBackend(SurfaceBackend):
         )
 
         return fig
+
+    def plot_img_on_surf(
+        self,
+        stat_map,
+        surf_mesh,
+        hemispheres,
+        modes,
+        hemis,
+        surf,
+        texture,
+        bg_on_data=False,
+        inflate=False,
+        threshold=None,
+        colorbar=True,
+        cbar_tick_format="%i",
+        symmetric_cbar="auto",
+        cmap=DEFAULT_DIVERGING_CMAP,
+        vmin=None,
+        vmax=None,
+        title=None,
+        output_file=None,
+        **kwargs,
+    ):
+        raise NotImplementedError(
+            "'plot_img_on_surf' is not implemented for plotly!"
+        )

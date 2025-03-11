@@ -40,7 +40,7 @@ def save_figure_if_needed(fig, output_file, bbox_inches=None):
     if not isinstance(fig, (plt.Figure, BaseSlicer)):
         fig = fig.figure
 
-    fig.savefig(output_file)
+    fig.savefig(output_file, bbox_inches=bbox_inches)
     if isinstance(fig, plt.Figure):
         plt.close(fig)
     else:

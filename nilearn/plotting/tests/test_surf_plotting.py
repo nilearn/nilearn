@@ -28,13 +28,11 @@ from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.plotting.surface._matplotlib import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors,
+    _get_ticks,
     _get_view_plot_surf,
 )
 from nilearn.plotting.surface._plotly import (
     _get_view_plot_surf_plotly,
-)
-from nilearn.plotting.surface._matplotlib import (
-    _get_ticks,
 )
 from nilearn.surface import (
     InMemoryMesh,

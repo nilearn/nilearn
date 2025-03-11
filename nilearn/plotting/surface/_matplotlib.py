@@ -1,18 +1,21 @@
+import itertools
 from warnings import warn
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import __version__ as mpl_version
+from matplotlib import gridspec
 from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import make_axes
 from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
 from nilearn._utils import compare_version
 from nilearn.plotting._utils import (
     get_cbar_ticks,
+    get_colorbar_and_data_ranges,
     save_figure_if_needed,
 )
 from nilearn.plotting.cm import mix_colormaps
@@ -249,6 +252,67 @@ def _get_bounds(data, vmin=None, vmax=None):
     vmin = np.nanmin(data) if vmin is None else vmin
     vmax = np.nanmax(data) if vmax is None else vmax
     return vmin, vmax
+
+
+def _colorbar_from_array(
+    array,
+    vmin,
+    vmax,
+    threshold,
+    symmetric_cbar=True,
+    cmap=DEFAULT_DIVERGING_CMAP,
+):
+    """Generate a custom colorbar for an array.
+
+    Internal function used by plot_img_on_surf
+
+    array : :class:`np.ndarray`
+        Any 3D array.
+
+    vmin : :obj:`float`
+        lower bound for plotting of stat_map values.
+
+    vmax : :obj:`float`
+        upper bound for plotting of stat_map values.
+
+    threshold : :obj:`float`
+        If None is given, the colorbar is not thresholded.
+        If a number is given, it is used to threshold the colorbar.
+        Absolute values lower than threshold are shown in gray.
+
+    kwargs : :obj:`dict`
+        Extra arguments passed to get_colorbar_and_data_ranges.
+
+    cmap : :obj:`str`, default='cold_hot'
+        The name of a matplotlib or nilearn colormap.
+
+    """
+    _, _, vmin, vmax = get_colorbar_and_data_ranges(
+        array,
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
+    )
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+
+    if threshold is None:
+        threshold = 0.0
+
+    # set colors to gray for absolute values < threshold
+    istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
+    istop = int(norm(threshold, clip=True) * (cmap.N - 1))
+    for i in range(istart, istop):
+        cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
+    our_cmap = LinearSegmentedColormap.from_list(
+        "Custom cmap", cmaplist, cmap.N
+    )
+    sm = plt.cm.ScalarMappable(cmap=our_cmap, norm=norm)
+
+    # fake up the array of the scalar mappable.
+    sm._A = []
+
+    return sm
 
 
 class MatplotlibBackend(SurfaceBackend):
@@ -519,7 +583,7 @@ class MatplotlibBackend(SurfaceBackend):
 
         return save_figure_if_needed(figure, output_file)
 
-    def plot_surf_stat_map(
+    def _plot_surf_stat_map(
         self,
         surf_mesh=None,
         surf_map=None,
@@ -574,3 +638,112 @@ class MatplotlibBackend(SurfaceBackend):
         )
 
         return fig
+
+    def plot_img_on_surf(
+        self,
+        stat_map,
+        surf_mesh,
+        hemispheres,
+        modes,
+        hemis,
+        surf,
+        texture,
+        bg_on_data=False,
+        inflate=False,
+        threshold=None,
+        colorbar=True,
+        cbar_tick_format="%i",
+        symmetric_cbar="auto",
+        cmap=DEFAULT_DIVERGING_CMAP,
+        vmin=None,
+        vmax=None,
+        title=None,
+        output_file=None,
+        **kwargs,
+    ):
+        cbar_h = 0.25
+        title_h = 0.25 * (title is not None)
+        w, h = plt.figaspect(
+            (len(modes) + cbar_h + title_h) / len(hemispheres)
+        )
+        fig = plt.figure(figsize=(w, h), constrained_layout=False)
+        height_ratios = [title_h] + [1.0] * len(modes) + [cbar_h]
+        grid = gridspec.GridSpec(
+            len(modes) + 2,
+            len(hemis),
+            left=0.0,
+            right=1.0,
+            bottom=0.0,
+            top=1.0,
+            height_ratios=height_ratios,
+            hspace=0.0,
+            wspace=0.0,
+        )
+        axes = []
+
+        for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
+            bg_map = None
+            # By default, add curv sign background map if mesh is inflated,
+            # sulc depth background map otherwise
+            if inflate:
+                curv_map = surface.load_surf_data(surf_mesh[f"curv_{hemi}"])
+                curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
+                bg_map = curv_sign_map
+            else:
+                sulc_map = surf_mesh[f"sulc_{hemi}"]
+                bg_map = sulc_map
+
+            ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
+            axes.append(ax)
+
+            self.plot_surf_stat_map(
+                surf[hemi],
+                texture[hemi],
+                view=mode,
+                hemi=hemi,
+                bg_map=bg_map,
+                bg_on_data=bg_on_data,
+                axes=ax,
+                colorbar=False,  # Colorbar created externally.
+                vmin=vmin,
+                vmax=vmax,
+                threshold=threshold,
+                cmap=cmap,
+                symmetric_cbar=symmetric_cbar,
+                **kwargs,
+            )
+
+            # We increase this value to better position the camera of the
+            # 3D projection plot. The default value makes meshes look too
+            # small.
+            ax.set_box_aspect(None, zoom=1.3)
+
+        if colorbar:
+            sm = _colorbar_from_array(
+                image.get_data(stat_map),
+                vmin,
+                vmax,
+                threshold,
+                symmetric_cbar=symmetric_cbar,
+                cmap=plt.get_cmap(cmap),
+            )
+
+            cbar_grid = gridspec.GridSpecFromSubplotSpec(3, 3, grid[-1, :])
+            cbar_ax = fig.add_subplot(cbar_grid[1])
+            axes.append(cbar_ax)
+            # Get custom ticks to set in colorbar
+            ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
+            fig.colorbar(
+                sm,
+                cax=cbar_ax,
+                orientation="horizontal",
+                ticks=ticks,
+                format=cbar_tick_format,
+            )
+
+        if title is not None:
+            fig.suptitle(
+                title, y=1.0 - title_h / sum(height_ratios), va="bottom"
+            )
+
+        return save_figure_if_needed(fig, output_file, bbox_inches="tight")

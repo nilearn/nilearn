@@ -3,8 +3,12 @@ from warnings import warn
 
 import numpy as np
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.param_validation import check_params
-from nilearn.plotting._utils import check_surface_plotting_inputs
+from nilearn.plotting._utils import (
+    check_surface_plotting_inputs,
+    get_colorbar_and_data_ranges,
+)
 from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
@@ -217,6 +221,77 @@ class SurfaceBackend:
             figure=figure,
         )
 
+        return fig
+
+    def plot_surf_stat_map(
+        self,
+        surf_mesh=None,
+        stat_map=None,
+        bg_map=None,
+        hemi="left",
+        view=None,
+        threshold=None,
+        alpha=None,
+        vmin=None,
+        vmax=None,
+        cmap=DEFAULT_DIVERGING_CMAP,
+        colorbar=True,
+        symmetric_cbar="auto",
+        cbar_tick_format="auto",
+        bg_on_data=False,
+        darkness=0.7,
+        title=None,
+        title_font_size=18,
+        output_file=None,
+        axes=None,
+        figure=None,
+        avg_method=None,
+        **kwargs,
+    ):
+        check_params(locals())
+
+        stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
+            stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
+        )
+
+        check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+        loaded_stat_map = load_surf_data(stat_map)
+
+        # Call get_colorbar_and_data_ranges to derive symmetric vmin, vmax
+        # And colorbar limits depending on symmetric_cbar settings
+        cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
+            loaded_stat_map,
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+        )
+
+        fig = self._plot_surf_stat_map(
+            surf_mesh,
+            surf_map=loaded_stat_map,
+            bg_map=bg_map,
+            hemi=hemi,
+            view=view,
+            avg_method=avg_method,
+            threshold=threshold,
+            cmap=cmap,
+            symmetric_cmap=True,
+            colorbar=colorbar,
+            cbar_tick_format=cbar_tick_format,
+            alpha=alpha,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+            vmin=vmin,
+            vmax=vmax,
+            title=title,
+            title_font_size=title_font_size,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+            cbar_vmin=cbar_vmin,
+            cbar_vmax=cbar_vmax,
+            **kwargs,
+        )
         return fig
 
     def _check_params(self, params_not_implemented):
