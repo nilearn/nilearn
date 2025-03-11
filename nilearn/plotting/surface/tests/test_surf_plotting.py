@@ -5,16 +5,14 @@
 import re
 import tempfile
 from pathlib import Path
-from unittest import mock
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from matplotlib.figure import Figure
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.helpers import is_plotly_installed
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting import (
     plot_img_on_surf,
