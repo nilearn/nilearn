@@ -231,11 +231,6 @@ End pure-button class definition from pure-min.css
   background-color: #2980b9;
 }
 
-.btn-container {
-  float: left;
-  width: 33%;
-}
-
 .scroll-x {
   overflow-x: scroll;
 }
