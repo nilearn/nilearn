@@ -1,9 +1,7 @@
 import numpy as np
-
 import pytest
 
 from nilearn.plotting.surface._plotly import _get_view_plot_surf_plotly
-
 
 EXPECTED_CAMERAS_PLOTLY = [
     (

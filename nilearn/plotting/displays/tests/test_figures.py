@@ -1,15 +1,10 @@
 from unittest import mock
 
 import pytest
-
 from matplotlib.figure import Figure
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
-from nilearn.plotting.displays import (
-    PlotlySurfaceFigure,
-    SurfaceFigure
-)
-
+from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 
 try:
     import IPython.display  # noqa:F401
@@ -101,7 +96,7 @@ def test_plotly_savefig(tmp_path):
 
 
 @pytest.mark.parametrize("input_obj", ["foo", Figure(), ["foo", "bar"]])
-def test_instantiation_error_plotly_surface_figure(plotly, input_obj):
+def test_instantiation_error_plotly_surface_figure(input_obj):
     with pytest.raises(
         TypeError,
         match=("`PlotlySurfaceFigure` accepts only plotly figure objects."),

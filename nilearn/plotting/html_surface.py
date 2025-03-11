@@ -11,10 +11,6 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
-from nilearn.plotting.surface import (
-    check_surface_plotting_inputs,
-    sanitize_hemi_for_surface_image,
-)
 from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
@@ -22,6 +18,10 @@ from nilearn.plotting.js_plotting_utils import (
     get_html_template,
     mesh_to_plotly,
     to_color_strings,
+)
+from nilearn.plotting.surface import (
+    check_surface_plotting_inputs,
+    sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
     PolyMesh,

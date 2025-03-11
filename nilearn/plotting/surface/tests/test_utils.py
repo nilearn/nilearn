@@ -2,7 +2,6 @@ from pathlib import Path
 
 import numpy as np
 import pytest
-
 from numpy.testing import assert_array_equal
 
 from nilearn.plotting.surface._utils import check_surface_plotting_inputs
@@ -106,7 +105,7 @@ def test_check_surface_plotting_inputs_error_mash_and_data_none():
         check_surface_plotting_inputs(None, None)
 
 
-def test_check_surface_plotting_inputs_errors(surf_img_1d, surf_mesh):
+def test_check_surface_plotting_inputs_errors(surf_img_1d):
     """Fail if mesh is none and data is not not SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         check_surface_plotting_inputs(surf_map=1, surf_mesh=None)

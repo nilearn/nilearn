@@ -1,13 +1,12 @@
 import numpy as np
-
 import pytest
 
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.surface._matplotlib import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors,
+    _get_ticks,
     _get_view_plot_surf,
-    _get_ticks
 )
 from nilearn.surface import (
     load_surf_data,

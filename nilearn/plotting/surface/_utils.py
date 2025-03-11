@@ -11,11 +11,11 @@ from nilearn.plotting._utils import (
     get_colorbar_and_data_ranges,
 )
 from nilearn.surface import (
+    PolyMesh,
+    SurfaceImage,
     load_surf_data,
     load_surf_mesh,
-    PolyMesh,
-    SurfaceImage
-    )
+)
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
     check_extensions,
