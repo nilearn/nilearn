@@ -343,7 +343,19 @@ class MatplotlibBackend(SurfaceBackend):
             figure = axes.get_figure()
         axes.set_xlim(*limits)
         axes.set_ylim(*limits)
-        axes.view_init(elev=elev, azim=azim)
+
+        try:
+            axes.view_init(elev=elev, azim=azim)
+        except AttributeError:
+            raise AttributeError(
+                "'Axes' object has no attribute 'view_init'.\n"
+                "Remember that the projection must be '3d'.\n"
+                "For example:\n"
+                "\t plt.subplots(subplot_kw={'projection': '3d'})"
+            )
+        except Exception as e:  # pragma: no cover
+            raise e
+
         axes.set_axis_off()
 
         # plot mesh without data
@@ -364,11 +376,11 @@ class MatplotlibBackend(SurfaceBackend):
             bg_map, faces, coords.shape[0], darkness, alpha
         )
         if surf_map is not None:
-            surf_map_data = self._check_surf_map(surf_map, coords.shape[0])
             surf_map_faces = _compute_surf_map_faces(
-                surf_map_data,
+                surf_map,
                 faces,
                 avg_method,
+                coords.shape[0],
                 bg_face_colors.shape[0],
             )
             surf_map_faces, kept_indices, vmin, vmax = _threshold_and_rescale(

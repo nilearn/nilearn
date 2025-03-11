@@ -395,6 +395,13 @@ def test_check_surface_plotting_hemi_error(surf_img_1d, surf_mesh):
         )
 
 
+def test_surface_plotting_axes_error(surf_img_1d):
+    """Test error msg for invalid axes."""
+    figure, axes = plt.subplots()
+    with pytest.raises(AttributeError, match="the projection must be '3d'"):
+        plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
+
+
 def test_plot_surf_contours_warning_hemi(in_memory_mesh):
     """Test warning that hemi will be ignored."""
     parcellation = np.zeros((in_memory_mesh.n_vertices,))

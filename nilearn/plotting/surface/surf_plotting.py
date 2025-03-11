@@ -80,6 +80,7 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
         return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
+@fill_doc
 def plot_surf(
     surf_mesh=None,
     surf_map=None,
