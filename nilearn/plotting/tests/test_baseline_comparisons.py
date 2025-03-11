@@ -6,6 +6,7 @@ https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-f
 """
 
 import numpy as np
+import pandas as pd
 import pytest
 from matplotlib import pyplot as plt
 
@@ -311,6 +312,30 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
 def test_plot_event_duration_0():
     """Test plot event with events of duration 0."""
     return plot_event(modulated_event_paradigm())
+
+
+@pytest.mark.mpl_image_compare
+def test_plot_event_x_lim(rng):
+    """Test that x_lim is set after end of last event.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/4907
+    """
+    trial_types = ["foo", "bar", "baz"]
+
+    n_runs = 3
+
+    events = [
+        pd.DataFrame(
+            {
+                "trial_type": trial_types,
+                "onset": rng.random((3,)) * 5,
+                "duration": rng.uniform(size=(3,)) * 2 + 1,
+            }
+        )
+        for _ in range(n_runs)
+    ]
+
+    return plot_event(events)
 
 
 @pytest.fixture
