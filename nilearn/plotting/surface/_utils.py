@@ -294,7 +294,7 @@ class SurfaceBackend:
         )
         return fig
 
-    def _check_params(self, params_not_implemented):
+    def _check_backend_params(self, params_not_implemented):
         for parameter, value in params_not_implemented.items():
             if value is not None:
                 warn(

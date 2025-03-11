@@ -352,7 +352,7 @@ class MatplotlibBackend(SurfaceBackend):
             "title_font_size": title_font_size,
         }
 
-        self._check_params(parameters_not_implemented)
+        self._check_backend_params(parameters_not_implemented)
 
         if avg_method is None:
             avg_method = "mean"

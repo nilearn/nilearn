@@ -252,7 +252,7 @@ class PlotlyBackend(SurfaceBackend):
             "axes": axes,
         }
 
-        self._check_params(parameters_not_implemented)
+        self._check_backend_params(parameters_not_implemented)
 
         if cbar_tick_format == "auto":
             cbar_tick_format = ".1f"
