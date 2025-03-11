@@ -355,12 +355,16 @@ def _render_warnings_partial(warning_messages):
 
 def _create_report(estimator, data):
     html_template = _get_estimator_template(estimator)
+
+    # note that some surface images are passed via data
+    # for surface maps masker
     overlay, image = _define_overlay(estimator)
     embeded_images = (
         [embed_img(i) for i in image]
         if isinstance(image, list)
         else embed_img(image)
     )
+
     summary_html = None
     # only convert summary to html table if summary exists
     if "summary" in data and data["summary"] is not None:

@@ -8,9 +8,6 @@ from nilearn._utils.data_gen import (
 )
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.glm.first_level import FirstLevelModel
-from nilearn.glm.first_level.design_matrix import (
-    make_first_level_design_matrix,
-)
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport, make_glm_report
@@ -90,9 +87,9 @@ def test_slm_reporting(slm):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_slice_z(img_3d_mni, cut_coords):
+def test_stat_map_to_png_slice_z(img_3d_mni, cut_coords):
     table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
-    glmr._stat_map_to_svg(
+    glmr._stat_map_to_png(
         stat_img=img_3d_mni,
         bg_img=None,
         cut_coords=cut_coords,
@@ -104,9 +101,9 @@ def test_stat_map_to_svg_slice_z(img_3d_mni, cut_coords):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_glass_z(img_3d_mni, cut_coords):
+def test_stat_map_to_png_glass_z(img_3d_mni, cut_coords):
     table_details = pd.DataFrame.from_dict({"junk": 0}, orient="index")
-    glmr._stat_map_to_svg(
+    glmr._stat_map_to_png(
         stat_img=img_3d_mni,
         bg_img=None,
         cut_coords=cut_coords,
@@ -118,13 +115,13 @@ def test_stat_map_to_svg_glass_z(img_3d_mni, cut_coords):
 
 
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
-def test_stat_map_to_svg_invalid_plot_type(img_3d_mni, cut_coords):
+def test_stat_map_to_png_invalid_plot_type(img_3d_mni, cut_coords):
     expected_error = (
         "Invalid plot type provided. "
         "Acceptable options are 'slice' or 'glass'."
     )
     with pytest.raises(ValueError, match=expected_error):
-        glmr._stat_map_to_svg(
+        glmr._stat_map_to_png(
             stat_img=img_3d_mni,
             bg_img=None,
             cut_coords=cut_coords,
@@ -133,17 +130,6 @@ def test_stat_map_to_svg_invalid_plot_type(img_3d_mni, cut_coords):
             table_details={"junk": 0},
             threshold=2.76,
         )
-
-
-def _make_dummy_contrasts_dmtx():
-    frame_times = np.linspace(0, 127 * 1.0, 128)
-    dmtx = make_first_level_design_matrix(
-        frame_times,
-        drift_model="polynomial",
-        drift_order=3,
-    )
-    contrast = {"test": np.ones(4)}
-    return contrast, dmtx
 
 
 def test_masking_first_level_model():

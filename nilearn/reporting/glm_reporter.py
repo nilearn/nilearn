@@ -56,7 +56,7 @@ from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_TEMPLATE_PATH,
     TEMPLATE_ROOT_PATH,
-    figure_to_svg_quoted,
+    figure_to_png_base64,
 )
 from nilearn.surface import SurfaceImage
 
@@ -322,8 +322,8 @@ def make_glm_report(
     return report
 
 
-def _plot_to_svg(plot):
-    """Create an SVG image as a data URL \
+def _plot_to_png(plot):
+    """Create an PNG image as a data URL \
     from a Matplotlib Axes or Figure object.
 
     Parameters
@@ -333,14 +333,14 @@ def _plot_to_svg(plot):
 
     Returns
     -------
-    url_plot_svg : String
-        SVG Image Data URL.
+    String
+        PNG Image Data URL.
 
     """
     try:
-        return figure_to_svg_quoted(plot)
+        return figure_to_png_base64(plot)
     except AttributeError:
-        return figure_to_svg_quoted(plot.figure)
+        return figure_to_png_base64(plot.figure)
 
 
 def _resize_plot_inches(plot, width_change=0, height_change=0):
@@ -383,7 +383,7 @@ def _resize_plot_inches(plot, width_change=0, height_change=0):
 
 
 def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
-    """Plot a mask image and creates SVG code of it.
+    """Plot a mask image and creates PNG code of it.
 
     Parameters
     ----------
@@ -401,14 +401,14 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
     Returns
     -------
     mask_plot : str
-        SVG Image Data URL for the mask plot.
+        PNG Image for the mask plot.
 
     """
     # Select mask_img to use for plotting
     if not is_volume_glm:
         model.masker_._create_figure_for_report()
         fig = plt.gcf()
-        mask_plot = _plot_to_svg(fig)
+        mask_plot = _plot_to_png(fig)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
         return mask_plot
@@ -434,7 +434,7 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
         cut_coords=cut_coords,
         colorbar=False,
     )
-    mask_plot = _plot_to_svg(plt.gcf())
+    mask_plot = _plot_to_png(plt.gcf())
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
     plt.close()
 
@@ -472,7 +472,7 @@ def _make_stat_maps_contrast_clusters(
        an error is raised if stat_img is None.
 
     contrasts_plots : Dict[str, str]
-        Contains contrast names & HTML code of the contrast's SVG plot.
+        Contains contrast names & HTML code of the contrast's PNG plot.
 
     threshold : float
        Desired threshold in z-scale.
@@ -547,7 +547,7 @@ def _make_stat_maps_contrast_clusters(
                 surf_mesh=surf_mesh,
             )
             fig = plt.gcf()
-            stat_map_svg = _plot_to_svg(fig)
+            stat_map_png = _plot_to_png(fig)
 
             # prevents sphinx-gallery & jupyter from scraping & inserting plots
             plt.close("all")
@@ -558,7 +558,7 @@ def _make_stat_maps_contrast_clusters(
         else:
             # Only use threshold_stats_img to adjust the threshold
             # that we will pass to clustering_params_to_dataframe
-            # and _stat_map_to_svg
+            # and _stat_map_to_png
             # Necessary to avoid :
             # https://github.com/nilearn/nilearn/issues/4192
             thresholded_img, threshold = threshold_stats_img(
@@ -575,7 +575,7 @@ def _make_stat_maps_contrast_clusters(
                 height_control,
                 alpha,
             )
-            stat_map_svg = _stat_map_to_svg(
+            stat_map_png = _stat_map_to_png(
                 stat_img=thresholded_img,
                 threshold=threshold,
                 bg_img=bg_img,
@@ -605,7 +605,7 @@ def _make_stat_maps_contrast_clusters(
             )
 
         results[escape(contrast_name)] = tempita.bunch(
-            stat_map_img=stat_map_svg,
+            stat_map_img=stat_map_png,
             cluster_table_details=table_details_html,
             cluster_table=cluster_table_html,
         )
@@ -614,7 +614,7 @@ def _make_stat_maps_contrast_clusters(
 
 
 @fill_doc
-def _stat_map_to_svg(
+def _stat_map_to_png(
     stat_img,
     threshold,
     bg_img,
@@ -623,7 +623,7 @@ def _stat_map_to_svg(
     plot_type,
     table_details,
 ):
-    """Generate SVG code for a statistical map, \
+    """Generate PNG code for a statistical map, \
     including its clustering parameters.
 
     Parameters
@@ -642,7 +642,6 @@ def _stat_map_to_svg(
         The background image for stat maps to be plotted on upon.
         If nothing is specified, the MNI152 template will be used.
         To turn off background image, just pass "bg_img=False".
-
 
     %(cut_coords)s
 
@@ -666,8 +665,8 @@ def _stat_map_to_svg(
 
     Returns
     -------
-    stat_map_svg : string
-        SVG Image Data URL representing a statistical map.
+    stat_map_png : string
+        PNG Image Data representing a statistical map.
 
     """
     data = safe_get_data(stat_img, ensure_finite=True)
@@ -724,10 +723,10 @@ def _stat_map_to_svg(
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()
-    stat_map_svg = _plot_to_svg(fig)
+    stat_map_png = _plot_to_png(fig)
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
     plt.close()
-    return stat_map_svg
+    return stat_map_png
 
 
 def _add_params_to_plot(table_details, stat_map_plot):
@@ -777,7 +776,7 @@ def _return_design_matrices_dict(design_matrices):
     for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
         dmtx_plot = plot_design_matrix(design_matrix)
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
-        dmtx_svg = _plot_to_svg(dmtx_plot)
+        dmtx_png = _plot_to_png(dmtx_plot)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close("all")
 
@@ -791,7 +790,7 @@ def _return_design_matrices_dict(design_matrices):
             isinstance(design_matrix, pd.DataFrame)
             and len(design_matrix.columns) == 1
         ):
-            dmtx_cor_svg = None
+            dmtx_cor_png = None
         else:
             dmtx_cor_plot = plot_design_matrix_correlation(
                 design_matrix, tri="diag"
@@ -799,12 +798,12 @@ def _return_design_matrices_dict(design_matrices):
             dmtx_cor_plot = _resize_plot_inches(
                 dmtx_cor_plot, height_change=0.3
             )
-            dmtx_cor_svg = _plot_to_svg(dmtx_cor_plot)
+            dmtx_cor_png = _plot_to_png(dmtx_cor_plot)
             # prevents sphinx-gallery & jupyter from scraping & inserting plots
             plt.close("all")
 
         design_matrices_dict[dmtx_count] = tempita.bunch(
-            design_matrix=dmtx_svg, correlation_matrix=dmtx_cor_svg
+            design_matrix=dmtx_png, correlation_matrix=dmtx_cor_png
         )
 
     return design_matrices_dict
@@ -822,10 +821,10 @@ def _return_contrasts_dict(design_matrices, contrasts):
             )
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
-            url_contrast_plot_svg = _plot_to_svg(contrast_plot)
+            url_contrast_plot_png = _plot_to_png(contrast_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
             plt.close("all")
-            contrasts_dict[contrast_name] = url_contrast_plot_svg
+            contrasts_dict[contrast_name] = url_contrast_plot_png
 
     return contrasts_dict

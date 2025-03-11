@@ -143,10 +143,18 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
             title="surface based subject-level model",
         )
 
+# %%
 # View the GLM report of the first subject
 report_flm
 
 # report_flm.open_in_browser()
+
+# %%
+# Save the report to disk
+output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
+output_dir.mkdir(exist_ok=True, parents=True)
+report_flm.save_as_html(output_dir / "report.html")
+
 
 # %%
 # Group level model
@@ -175,31 +183,10 @@ report_slm = second_level_glm.generate_report(
     title="surface based group-level model",
 )
 
+# %%
 # View the GLM report at the group level
 report_slm
 
-# report_slm.open_in_browser()
-
 # %%
-# Visualization
-# -------------
-# We can now also plot
-# the computed group-level maps for left and right hemisphere
-# outside of the report.
-from nilearn.plotting import plot_surf_stat_map, show
-
-results = second_level_glm.compute_contrast("intercept", output_type="z_score")
-
-fsaverage_data = load_fsaverage_data(data_type="sulcal")
-
-for hemi in ["left", "right"]:
-    plot_surf_stat_map(
-        surf_mesh=fsaverage5["inflated"],
-        stat_map=results,
-        hemi=hemi,
-        title=f"(language-string), {hemi} hemisphere\nabs(t) >= 1.96",
-        threshold=1.96,
-        bg_map=fsaverage_data,
-    )
-
-show()
+# Save it as an html file.
+report_slm.save_as_html(output_dir / "report.html")

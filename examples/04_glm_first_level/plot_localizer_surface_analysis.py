@@ -197,12 +197,13 @@ show()
 
 report = glm.generate_report(contrasts, threshold=3.0, bg_img=fsaverage_data)
 
-
-# This report can be viewed in a notebook
+# %%
+# This report can be viewed in a notebook.
 report
 # report.open_in_browser()
 
-# or we can save as an html file
+# %%
+# Or we can save as an html file.
 from pathlib import Path
 
 output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
