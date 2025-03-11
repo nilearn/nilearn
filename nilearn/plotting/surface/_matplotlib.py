@@ -9,6 +9,7 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import compare_version
 from nilearn.plotting._utils import (
     get_cbar_ticks,
@@ -422,6 +423,7 @@ class MatplotlibBackend(SurfaceBackend):
         self,
         surf_mesh=None,
         roi_map=None,
+        hemi="left",
         levels=None,
         labels=None,
         colors=None,
@@ -434,7 +436,7 @@ class MatplotlibBackend(SurfaceBackend):
         **kwargs,
     ):
         if figure is None and axes is None:
-            figure = self.plot_surf(surf_mesh, hemi="left", **kwargs)
+            figure = self.plot_surf(surf_mesh, hemi=hemi, **kwargs)
             axes = figure.axes[0]
         elif figure is None:
             figure = axes.get_figure()
@@ -448,7 +450,7 @@ class MatplotlibBackend(SurfaceBackend):
         if not axes.collections or not isinstance(
             axes.collections[0], Poly3DCollection
         ):
-            _ = self.plot_surf(surf_mesh, hemi="left", axes=axes, **kwargs)
+            _ = self.plot_surf(surf_mesh, hemi=hemi, axes=axes, **kwargs)
 
         if levels is None:
             levels = np.unique(roi_map)
@@ -513,3 +515,59 @@ class MatplotlibBackend(SurfaceBackend):
             axes.set_title(title)
 
         return save_figure_if_needed(figure, output_file)
+
+    def plot_surf_stat_map(
+        self,
+        surf_mesh=None,
+        surf_map=None,
+        bg_map=None,
+        hemi="left",
+        view=None,
+        avg_method=None,
+        threshold=None,
+        cmap=DEFAULT_DIVERGING_CMAP,
+        symmetric_cmap=True,
+        colorbar=True,
+        cbar_tick_format="auto",
+        alpha=None,
+        bg_on_data=False,
+        darkness=0.7,
+        vmin=None,
+        vmax=None,
+        title=None,
+        title_font_size=18,
+        output_file=None,
+        axes=None,
+        figure=None,
+        cbar_vmin=None,
+        cbar_vmax=None,
+        **kwargs,
+    ):
+        fig = self.plot_surf(
+            surf_mesh,
+            surf_map=surf_map,
+            bg_map=bg_map,
+            hemi=hemi,
+            view=view,
+            avg_method=avg_method,
+            threshold=threshold,
+            cmap=cmap,
+            symmetric_cmap=symmetric_cmap,
+            colorbar=colorbar,
+            cbar_tick_format=cbar_tick_format,
+            alpha=alpha,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+            vmax=vmax,
+            vmin=vmin,
+            title=title,
+            title_font_size=title_font_size,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+            cbar_vmin=cbar_vmin,
+            cbar_vmax=cbar_vmax,
+            **kwargs,
+        )
+
+        return fig

@@ -337,3 +337,64 @@ class PlotlyBackend(SurfaceBackend):
             plotly_figure.savefig()
 
         return plotly_figure
+
+    def plot_surf_stat_map(
+        self,
+        surf_mesh=None,
+        surf_map=None,
+        bg_map=None,
+        hemi="left",
+        view=None,
+        avg_method=None,
+        threshold=None,
+        cmap=DEFAULT_DIVERGING_CMAP,
+        symmetric_cmap=True,
+        colorbar=True,
+        cbar_tick_format="auto",
+        alpha=None,
+        bg_on_data=False,
+        darkness=0.7,
+        vmin=None,
+        vmax=None,
+        title=None,
+        title_font_size=18,
+        output_file=None,
+        axes=None,
+        figure=None,
+        cbar_vmin=None,
+        cbar_vmax=None,
+        **kwargs,
+    ):
+        # Set to None the values that are not used by plotly
+        # to avoid warnings thrown by plot_surf
+        cbar_vmin = None
+        cbar_vmax = None
+
+        fig = self.plot_surf(
+            surf_mesh,
+            surf_map=surf_map,
+            bg_map=bg_map,
+            hemi=hemi,
+            view=view,
+            avg_method=avg_method,
+            threshold=threshold,
+            cmap=cmap,
+            symmetric_cmap=symmetric_cmap,
+            colorbar=colorbar,
+            cbar_tick_format=cbar_tick_format,
+            alpha=alpha,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+            vmax=vmax,
+            vmin=vmin,
+            title=title,
+            title_font_size=title_font_size,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+            cbar_vmin=cbar_vmin,
+            cbar_vmax=cbar_vmax,
+            **kwargs,
+        )
+
+        return fig

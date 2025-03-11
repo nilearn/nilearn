@@ -649,10 +649,7 @@ def plot_surf_stat_map(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    # set default view to dorsal if hemi is both and view is not set
     check_params(locals())
-    if view is None:
-        view = "dorsal" if hemi == "both" else "lateral"
 
     stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
@@ -669,19 +666,13 @@ def plot_surf_stat_map(
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
     )
-    # Set to None the values that are not used by plotly
-    # to avoid warnings thrown by plot_surf
-    if engine == "plotly":
-        cbar_vmin = None
-        cbar_vmax = None
 
-    display = plot_surf(
+    fig = _get_surface_backend("matplotlib").plot_surf_stat_map(
         surf_mesh,
         surf_map=loaded_stat_map,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
-        engine=engine,
         avg_method=avg_method,
         threshold=threshold,
         cmap=cmap,
@@ -691,8 +682,8 @@ def plot_surf_stat_map(
         alpha=alpha,
         bg_on_data=bg_on_data,
         darkness=darkness,
-        vmax=vmax,
         vmin=vmin,
+        vmax=vmax,
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,
@@ -702,7 +693,7 @@ def plot_surf_stat_map(
         cbar_vmax=cbar_vmax,
         **kwargs,
     )
-    return display
+    return fig
 
 
 def _colorbar_from_array(
