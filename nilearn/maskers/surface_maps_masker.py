@@ -8,7 +8,7 @@ import numpy as np
 from scipy import linalg
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import signal
+from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils import constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
@@ -117,7 +117,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         memory_level=1,
         verbose=0,
         reports=True,
-        cmap="inferno",
+        cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):
         self.maps_img = maps_img

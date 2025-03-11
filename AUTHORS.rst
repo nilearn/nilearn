@@ -134,6 +134,7 @@ Some other past or present contributors are:
 * `Konstantin Shmelkov`_
 * `Kshitij Chawla`_: Duke University Health System, USA
 * `Kun CHEN`_: University of Macau, Macau, China
+* `Lee Newberg`_: Kitware, Inc., USA
 * `Leonard Sasse`_
 * `Loic Estève`_
 * `Loic Tetrel`_

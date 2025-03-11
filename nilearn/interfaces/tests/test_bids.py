@@ -650,17 +650,17 @@ def test_save_glm_to_bids_second_level(
 
     shapes = ((3, 3, 3, 1),)
     rk = 3
-    mask, func_img, _ = generate_fake_fmri_data_and_design(
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design(
         shapes,
         rk,
     )
-    func_img = func_img[0]
+    fmri_data = fmri_data[0]
 
     # Ordinary Least Squares case
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
 
     # fit model
-    Y = [func_img] * 2
+    Y = [fmri_data] * 2
     X = pd.DataFrame([[1]] * 2, columns=["intercept"])
     model = model.fit(Y, design_matrix=X)
 

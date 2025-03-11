@@ -12,6 +12,7 @@ import numpy as np
 from matplotlib.image import imsave
 from nibabel.affines import apply_affine
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.niimg import safe_get_data
@@ -512,7 +513,7 @@ def view_img(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cmap=True,
     dim="auto",
     vmax=None,

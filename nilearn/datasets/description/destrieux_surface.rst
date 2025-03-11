@@ -1,4 +1,4 @@
-.. _destrieux_atlas:
+.. _destrieux_2009_atlas:
 
 Destrieux atlas
 ===============

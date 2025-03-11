@@ -54,6 +54,9 @@ except ImportError:
 # behavior.
 EXPAND_PATH_WILDCARDS = True
 
+DEFAULT_DIVERGING_CMAP = "RdBu_r"
+DEFAULT_SEQUENTIAL_CMAP = "inferno"
+
 # list all submodules available in nilearn and version
 __all__ = [
     "__version__",

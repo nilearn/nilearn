@@ -16,7 +16,7 @@ from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from nilearn import image, surface
+from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
@@ -331,7 +331,7 @@ def _plot_surf_plotly(
     i, j, k = faces.T
 
     if cmap is None:
-        cmap = "RdBu_r"
+        cmap = DEFAULT_DIVERGING_CMAP
 
     bg_data = None
     if bg_map is not None:
@@ -681,7 +681,19 @@ def _plot_surf_matplotlib(
         figure = axes.get_figure()
     axes.set_xlim(*limits)
     axes.set_ylim(*limits)
-    axes.view_init(elev=elev, azim=azim)
+
+    try:
+        axes.view_init(elev=elev, azim=azim)
+    except AttributeError:
+        raise AttributeError(
+            "'Axes' object has no attribute 'view_init'.\n"
+            "Remember that the projection must be '3d'.\n"
+            "For example:\n"
+            "\t plt.subplots(subplot_kw={'projection': '3d'})"
+        )
+    except Exception as e:  # pragma: no cover
+        raise e
+
     axes.set_axis_off()
 
     # plot mesh without data
@@ -1327,7 +1339,7 @@ def plot_surf_stat_map(
     alpha=None,
     vmin=None,
     vmax=None,
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     colorbar=True,
     symmetric_cbar="auto",
     cbar_tick_format="auto",
@@ -1630,7 +1642,12 @@ def _check_views(views) -> list:
 
 
 def _colorbar_from_array(
-    array, vmin, vmax, threshold, symmetric_cbar=True, cmap="RdBu_r"
+    array,
+    vmin,
+    vmax,
+    threshold,
+    symmetric_cbar=True,
+    cmap=DEFAULT_DIVERGING_CMAP,
 ):
     """Generate a custom colorbar for an array.
 
@@ -1701,7 +1718,7 @@ def plot_img_on_surf(
     vmax=None,
     threshold=None,
     symmetric_cbar="auto",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     cbar_tick_format="%i",
     **kwargs,
 ):
