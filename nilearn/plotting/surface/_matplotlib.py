@@ -20,7 +20,7 @@ from nilearn.plotting.surface._utils import (
     _check_hemispheres,
     _check_surf_map,
     _check_views,
-    _get_faces_on_edge
+    _get_faces_on_edge,
 )
 from nilearn.surface import load_surf_data, load_surf_mesh
 
@@ -72,7 +72,7 @@ def _get_view_plot_surf(hemi, view):
 
 
 def _compute_surf_map_faces(
-        surf_map, faces, avg_method, n_vertices, face_colors_size
+    surf_map, faces, avg_method, n_vertices, face_colors_size
 ):
     """Help for plot_surf.
 
@@ -86,7 +86,7 @@ def _compute_surf_map_faces(
 
     """
     surf_map_data = _check_surf_map(surf_map, n_vertices)
-    
+
     # create face values from vertex values by selected avg methods
     error_message = (
         "avg_method should be either "
