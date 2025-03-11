@@ -33,8 +33,8 @@ from nilearn.plotting.surface._matplotlib import (
 from nilearn.plotting.surface._plotly import (
     _get_view_plot_surf_plotly,
 )
-from nilearn.plotting.surface.surf_plotting import (
-    _get_ticks_matplotlib,
+from nilearn.plotting.surface._matplotlib import (
+    _get_ticks,
 )
 from nilearn.surface import (
     InMemoryMesh,
@@ -1731,8 +1731,8 @@ def test_plot_surf_contours_error(rng, in_memory_mesh, parcellation):
         (0, np.nextafter(0, 1), "%.1f", [0.0e000, 5.0e-324]),
     ],
 )
-def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
-    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold=None)
+def test_get_ticks(vmin, vmax, cbar_tick_format, expected):
+    ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold=None)
     assert 1 <= len(ticks) <= 5
     assert ticks[0] == vmin and ticks[-1] == vmax
     assert (
