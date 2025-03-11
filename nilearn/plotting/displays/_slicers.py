@@ -509,7 +509,6 @@ class BaseSlicer:
                 # We are cutting outside the indices of the data
                 data_2d = None
                 transparency_2d = None
-               
 
             data_2d_list.append(data_2d)
             transparency_list.append(transparency_2d)
