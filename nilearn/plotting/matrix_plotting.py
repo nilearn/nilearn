@@ -591,6 +591,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         )
 
     height = 0.5
+    x_lim = []
     for idx_run, event_df in enumerate(model_event):
         for _, event in event_df.iterrows():
             modulation = 1.0
@@ -602,6 +603,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
             event_onset = event["onset"]
             event_end = event["onset"] + event["duration"]
+
+            x_lim.append(event_end)
 
             color = cmap.colors[cmap_dictionary[event["trial_type"]]]
 
@@ -633,6 +636,7 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     axes.set_xlabel("Time (sec.)")
     axes.set_ylabel("Runs")
     axes.set_ylim(0, n_runs)
+    axes.set_xlim(-1, max(x_lim) + 1)
     axes.set_yticks(np.arange(n_runs) + 0.5)
     axes.set_yticklabels(np.arange(n_runs) + 1)
 
