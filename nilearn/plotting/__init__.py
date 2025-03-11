@@ -39,7 +39,7 @@ from nilearn.plotting.matrix_plotting import (
     plot_event,
     plot_matrix,
 )
-from nilearn.plotting.surface.surf_plotting import (
+from nilearn.plotting.surface import (
     plot_img_on_surf,
     plot_surf,
     plot_surf_contours,
