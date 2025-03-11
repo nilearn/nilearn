@@ -7,6 +7,7 @@ import pytest
 from numpy.testing import assert_array_almost_equal
 from scipy.ndimage import generate_binary_structure
 
+from nilearn.conftest import _rng
 from nilearn.mass_univariate import _utils
 from nilearn.mass_univariate.tests._testing import (
     get_tvalue_with_alternative_library,
@@ -268,3 +269,57 @@ def test_t_score_with_covars_and_normalized_design_withcovar(rng):
     # compute t-scores with linalg or statmodels
     ref_score = get_tvalue_with_alternative_library(var1, var2, covars)
     assert_array_almost_equal(own_score, ref_score)
+
+
+@pytest.mark.parametrize("two_sided_test", [True, False])
+@pytest.mark.parametrize(
+    "dh",
+    [
+        1 / 49,
+        0.1,
+        0.9,
+        "auto",
+    ],
+)
+@pytest.mark.parametrize(
+    "arr3d",
+    [
+        np.ones((10, 11), dtype="float"),
+        _rng().random((10, 11), dtype="float"),
+        _rng().normal(size=(10, 11)),
+    ],
+)
+def test_return_score_threshs(arr3d, two_sided_test, dh):
+    """Check that the range of thresholds to test.
+
+    Also test for robustness to nan values.
+    """
+    arr3d[0, 0] = np.nan
+
+    score_threshs = _utils._return_score_threshs(
+        arr3d, dh=dh, two_sided_test=two_sided_test
+    )
+
+    max_score = (
+        np.nanmax(np.abs(arr3d)) if two_sided_test else np.nanmax(arr3d)
+    )
+    assert (score_threshs <= max_score).all()
+
+    assert len(score_threshs) >= 10
+
+
+def test_warning_n_steps_return_score_threshs():
+    """Check that warning is thrown when less than 10 steps for TFCE."""
+    arr3d = np.ones((10, 11), dtype="float")
+
+    with pytest.warns(UserWarning, match="Setting it to 10"):
+        score_threshs = _utils._return_score_threshs(
+            arr3d, dh=0.9, two_sided_test=False
+        )
+        assert len(score_threshs) == 10
+
+    with pytest.warns(UserWarning, match="Setting it to 1000"):
+        score_threshs = _utils._return_score_threshs(
+            arr3d, dh=0.0001, two_sided_test=False
+        )
+        assert len(score_threshs) == 1000
