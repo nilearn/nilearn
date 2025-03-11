@@ -11,9 +11,6 @@
 name: Check codebase using Sourcery
 
 on:
-    # TODO Test once after merging PR and see how the action behaves
-    pull_request:
-
     push:
         branches: [main]
 
