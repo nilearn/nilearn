@@ -175,6 +175,8 @@
 
 .. _Kun CHEN: https://chenkun.me
 
+.. _Lee Newberg: https://github.com/Leengit
+
 .. _Leonard Sasse: https://github.com/LeSasse
 
 .. _Loic Estève: https://github.com/lesteve
