@@ -612,7 +612,7 @@ class BaseSlicer:
 
             error_msg = (
                 "'transparency_range' must be "
-                "a list or tuple of 2 positive numbers "
+                "a list or tuple of 2 non-negative numbers "
                 "with 'first value < second value'."
             )
 
