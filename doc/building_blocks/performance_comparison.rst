@@ -36,7 +36,7 @@ Proxy images
 ============
 
 If you are reading an image from the disk, you can do so via nibabel's
-:func:`nibabel.loadsave.load` and nilearn's :func:`~nilearn.image.load_img`
+:func:`nibabel.loadsave.load` and nilearn's :func:`nilearn.image.load_img`
 function. Both of these functions return a proxy image. The difference is
 that with :func:`nibabel.loadsave.load` you only get the proxy image and you
 have to call the ``.get_fdata()`` method to load the data into memory.
@@ -69,7 +69,7 @@ Memory usage while loading an image
 -----------------------------------
 
 We can also measure the memory usage of each of these methods using the
-:mod:`memory_profiler`` package. Once we have installed the package (via
+:mod:`memory_profiler` package. Once we have installed the package (via
 ``pip install memory_profiler``), we can use ``%memit`` magic command to
 measure the memory usage of a single line of code.
 
