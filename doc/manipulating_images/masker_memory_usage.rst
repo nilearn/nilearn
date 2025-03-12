@@ -99,26 +99,50 @@ Mean over the time axis
 To take the mean over the time axis, we can use the ``mean_img`` function from
 nilearn. This function requires all the data to be loaded into memory at once.
 
+So when we load the image with nilearn's ``load_img`` and then pass it to
+``mean_img`` function, the data is readily available in memory and the function
+can operate quickly.
+
 .. code-block:: python
 
     from nilearn.image import mean_img
 
     img_nilearn = load_img(example_fmri_path)
-    img_nibabel = nib.load(example_fmri_path)
 
     # mean over image loaded via nilearn.image.load_img
     %time mean_img(img_nilearn, copy_header=True)
     # CPU times: user 225 ms, sys: 324 ms, total: 549 ms
     # Wall time: 555 ms
 
-    %memit mean_img(img_nilearn, copy_header=True)
-    # peak memory: 3669.36 MiB, increment: 3487.14 MiB
+But when compared to when we load the image with nibabel's ``load``:
 
+.. code-block:: python
 
+    from nilearn.image import mean_img
+
+    img_nibabel = nib.load(example_fmri_path)
     # mean over image loaded via nibabel.load
     %time mean_img(img_nibabel, copy_header=True)
     # CPU times: user 4.84 s, sys: 2.29 s, total: 7.13 s
     # Wall time: 8.79 s
 
+This takes more time because ``mean_img`` will have to load the data into
+memory before it can take the mean.
+
+But it is important to note that the overall the time taken to first load the
+image and take the mean over the time axis is similar for both the methods,
+because the data has to be loaded at some point.
+
+The memory usage of the two would also be similar for the same reason.
+
+.. code-block:: python
+
+    %memit mean_img(img_nilearn, copy_header=True)
+    # peak memory: 3669.36 MiB, increment: 3487.14 MiB
+
     %memit mean_img(img_nibabel, copy_header=True)
     # peak memory: 3668.64 MiB, increment: 3483.02 MiB
+
+
+Extracting a 3D volume
+----------------------
