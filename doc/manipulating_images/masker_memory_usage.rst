@@ -56,13 +56,13 @@ than nilearn's ``load_img``.
 
     # load image via nibabel.load
     %time nib.load(example_fmri_path)
-    # CPU times: user 1.78 ms, sys: 4.07 ms, total: 5.85 ms
-    # Wall time: 5.09 ms
+    # CPU times: user 2.09 ms, sys: 1.01 ms, total: 3.1 ms
+    # Wall time: 2.93 ms
 
     # load image via nilearn.image.load_img
     %time load_img(example_fmri_path)
-    # CPU times: user 4.48 s, sys: 1.88 s, total: 6.36 s
-    # Wall time: 7.44 s
+    # CPU times: user 3.93 s, sys: 1.24 s, total: 5.17 s
+    # Wall time: 5.17 s
 
 
 Memory usage while loading an image
@@ -79,11 +79,11 @@ measure the memory usage of a single line of code.
 
     # load image via nibabel.load
     %memit nib.load(example_fmri_path)
-    # peak memory: 570.31 MiB, increment: 0.05 MiB
+    # peak memory: 2179.85 MiB, increment: 0.00 MiB
 
     # load image via nilearn.image.load_img
     %memit load_img(example_fmri_path)
-    # peak memory: 2789.92 MiB, increment: 2298.12 MiB
+    # peak memory: 6113.84 MiB, increment: 3933.99 MiB
 
 
 More use cases
@@ -115,38 +115,95 @@ can operate quickly.
 
     # mean over image loaded via nilearn.image.load_img
     %time mean_img(img_nilearn, copy_header=True)
-    # CPU times: user 225 ms, sys: 324 ms, total: 549 ms
-    # Wall time: 555 ms
+    # CPU times: user 142 ms, sys: 12.8 ms, total: 155 ms
+    # Wall time: 176 ms
 
 But when compared to loading the image with nibabel's ``load``:
 
 .. code-block:: python
 
-    from nilearn.image import mean_img
-
     img_nibabel = nib.load(example_fmri_path)
     # mean over image loaded via nibabel.load
     %time mean_img(img_nibabel, copy_header=True)
-    # CPU times: user 4.84 s, sys: 2.29 s, total: 7.13 s
-    # Wall time: 8.79 s
+    # CPU times: user 4.11 s, sys: 1.22 s, total: 5.34 s
+    # Wall time: 5.34 s
 
 This takes more time because ``mean_img`` will have to load the data before it
 can take the mean.
 
-But it is important to note that the overall the time taken to first load the
-image and take the mean over the time axis is similar for both the methods,
-simply because the data has to be loaded at some point.
+But it is important to note that the overall time taken to first load the
+image and take the mean is similar for both the methods.
+This is simply because the data has to be loaded at some point either before
+or within the ``mean_img`` function.
+
+We can verify that by timing the loading and mean calculation together:
+
+.. code-block:: python
+
+    %%time
+    img_nilearn = load_img(example_fmri_path)
+    mean_img(img_nilearn, copy_header=True)
+    # CPU times: user 4.1 s, sys: 1.28 s, total: 5.38 s
+    # Wall time: 5.38 s
 
 The memory usage of the two would also be similar for the same reason.
 
 .. code-block:: python
 
-    %memit mean_img(img_nilearn, copy_header=True)
-    # peak memory: 3669.36 MiB, increment: 3487.14 MiB
+    %%memit
+    img_nilearn = load_img(example_fmri_path)
+    mean_img(img_nilearn, copy_header=True)
+    # peak memory: 10059.32 MiB, increment: 3936.28 MiB
 
-    %memit mean_img(img_nibabel, copy_header=True)
-    # peak memory: 3668.64 MiB, increment: 3483.02 MiB
+    %%memit
+    img_nibabel = nib.load(example_fmri_path)
+    mean_img(img_nibabel, copy_header=True)
+    # peak memory: 8091.86 MiB, increment: 1967.71 MiB
 
 
 Extracting a 3D volume
 ----------------------
+
+Now let's say we want to extract a 3D volume at some time point from the
+4D image. Here we only need that 3D volume to be loaded into memory.
+
+Proxy images come with an attribute called ``dataobj`` that allows us to
+directly access the chunk of data we need.
+
+So with nilearn's ``load_img``:
+
+.. code-block:: python
+
+    %%time
+    img_nilearn = load_img(example_fmri_path)
+    img_nilearn.dataobj[..., 10]
+    # CPU times: user 4.04 s, sys: 1.53 s, total: 5.57 s
+    # Wall time: 5.57 s
+
+And with nibabel's ``load``:
+
+.. code-block:: python
+
+    %%time
+    img_nibabel = nib.load(example_fmri_path)
+    img_nibabel.dataobj[..., 3]
+    # CPU times: user 11.8 ms, sys: 9.19 ms, total: 21 ms
+    # Wall time: 20.2 ms
+
+So what happens with nilearn's ``load_img`` is that we load the entire image
+into memory even though we only need a chunk of it. This is why it takes more
+time than nibabel's ``load`` which only loads the chunk of data we need.
+
+We will see that with the memory usage as well:
+
+.. code-block:: python
+
+    %%memit
+    img_nilearn = load_img(example_fmri_path)
+    img_nilearn.dataobj[..., 3]
+    # peak memory: 8093.21 MiB, increment: 3936.11 MiB
+
+    %%memit
+    img_nibabel = nib.load(example_fmri_path)
+    img_nibabel.dataobj[..., 3]
+    # peak memory: 4158.06 MiB, increment: 0.00 MiB
