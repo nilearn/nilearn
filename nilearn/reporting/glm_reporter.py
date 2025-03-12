@@ -244,7 +244,7 @@ def make_glm_report(
             and not isinstance(bg_img, SurfaceImage)
         ):
             raise TypeError(
-                f"'bg_img' must a SurfaceImage instance.Got {type(bg_img)=}"
+                f"'bg_img' must a SurfaceImage instance. Got {type(bg_img)=}"
             )
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords, is_volume_glm)
@@ -404,9 +404,6 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
             mask_img = model.mask_img
         except Exception:
             mask_img = model.masker_.mask_img_
-
-    if not mask_img:
-        return None  # HTML image tag's alt attribute is used.
 
     plot_roi(
         roi_img=mask_img,

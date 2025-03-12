@@ -200,14 +200,28 @@ def test_drift_order_in_params(contrasts):
     assert "drift_order" in report.__str__()
 
 
-def test_flm_generate_report_error_with_surface_data(
-    surf_mask_1d, surf_img_2d
-):
+def test_flm_generate_report_surface_data(surf_mask_1d, surf_img_2d):
     """Generate report from flm fitted surface."""
-    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0)
+    # using smoothing_fwhm for coverage
+    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0, smoothing_fwhm=0)
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
 
     report = model.generate_report("c0")
 
     assert isinstance(report, HTMLReport)
+
+
+def test_flm_generate_report_surface_data_error(
+    surf_mask_1d, surf_img_2d, img_3d_mni
+):
+    """Generate report from flm fitted surface."""
+    # using smoothing_fwhm for coverage
+    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0, smoothing_fwhm=0)
+    events = basic_paradigm()
+    model.fit(surf_img_2d(9), events=events)
+
+    with pytest.raises(
+        TypeError, match="'bg_img' must a SurfaceImage instance"
+    ):
+        model.generate_report("c0", bg_img=img_3d_mni)
