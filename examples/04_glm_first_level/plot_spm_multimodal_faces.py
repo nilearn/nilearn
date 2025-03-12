@@ -84,7 +84,7 @@ from nilearn.glm.first_level import FirstLevelModel
 
 print("Fitting a GLM")
 fmri_glm = FirstLevelModel(
-    smoothing_fwhm=6,
+    smoothing_fwhm=0,
     t_r=subject_data.t_r,
     hrf_model=hrf_model,
     drift_model=drift_model,
@@ -117,16 +117,15 @@ contrasts = ["faces - scrambled", "scrambled - faces"]
 # We plot the contrasts values overlaid on the mean fMRI image
 # and we will use the z-score values as transparency,
 # with any voxel with | Z-score | > 3 being fully opaque
-# and any voxel with | Z-score | < 1.96 being fully transparent.
+# and any voxel with 0 < | Z-score | < 1.96 being partly transparent.
 plot_param = {
-    "threshold": 3,
     "vmin": 0,
     "display_mode": "z",
-    "cut_coords": [-40, -25, -6],
+    "cut_coords": 3,
     "black_bg": True,
     "bg_img": mean_image,
     "cmap": "inferno",
-    "transparency_range": [0, 3],
+    # "transparency_range": [0, 3],
 }
 
 # Iterate on contrasts to compute an plot them.
@@ -138,8 +137,7 @@ for contrast_id in contrasts:
     plot_stat_map(
         results["stat"],
         title=contrast_id,
-        transparency=results["z_score"],
-        vmax=6,
+        # transparency=results["z_score"],
         **plot_param,
     )
 
@@ -149,16 +147,33 @@ for contrast_id in contrasts:
 #
 import numpy as np
 
-contrasts = (np.eye(2),)
+contrasts = np.eye(2)
 
 results = fmri_glm.compute_contrast(contrasts, output_type="all")
 
 plot_stat_map(
     results["stat"],
-    title="effects_of_interest",
-    transparency=results["z_score"],
+    title="effects of interest",
+    # transparency=results["z_score"],
     **plot_param,
 )
+
+plot_stat_map(
+    results["stat"],
+    title="effects of interest - with transparency stat",
+    transparency=results["stat"],
+    transparency_range=[0, 1],
+    **plot_param,
+)
+
+plot_stat_map(
+    results["stat"],
+    title="effects of interest - with transparency z_score",
+    transparency=results["z_score"],
+    transparency_range=[0, 1],
+    **plot_param,
+)
+
 
 show()
 
