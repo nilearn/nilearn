@@ -1,15 +1,7 @@
 import itertools
 from warnings import warn
 
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import __version__ as mpl_version
-from matplotlib import gridspec
-from matplotlib.cm import ScalarMappable
-from matplotlib.colorbar import make_axes
-from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
-from matplotlib.patches import Patch
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
 from nilearn._utils import compare_version
@@ -27,6 +19,21 @@ from nilearn.plotting.surface._utils import (
     _get_faces_on_edge,
 )
 from nilearn.surface import load_surf_data, load_surf_mesh
+
+try:
+    import matplotlib.pyplot as plt
+    from matplotlib import __version__ as mpl_version
+    from matplotlib import gridspec
+    from matplotlib.cm import ScalarMappable
+    from matplotlib.colorbar import make_axes
+    from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
+    from matplotlib.patches import Patch
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+except ImportError:
+    from nilearn.plotting._utils import engine_warning
+
+    engine_warning("matplotlib")
+
 
 MATPLOTLIB_VIEWS = {
     "left": {

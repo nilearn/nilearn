@@ -1,7 +1,6 @@
 import math
 
 import numpy as np
-from plotly.graph_objects import Figure, Mesh3d
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import is_kaleido_installed
@@ -16,6 +15,14 @@ from nilearn.plotting.surface._utils import (
     _check_views,
 )
 from nilearn.surface import load_surf_data
+
+try:
+    from plotly.graph_objects import Figure, Mesh3d
+except ImportError:
+    from nilearn.plotting._utils import engine_warning
+
+    engine_warning("plotly")
+
 
 CAMERAS = {
     "left": {
