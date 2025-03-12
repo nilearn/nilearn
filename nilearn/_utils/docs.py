@@ -1045,6 +1045,49 @@ title : :obj:`str`, or None, default=None
     The title displayed on the figure.
 """
 
+# transparency
+docdict["transparency"] = """
+transparency : :obj:`float` between 0 and 1, \
+                or a Niimg-Like object, \
+                or None, \
+                default = None
+    Value to be passed as alpha value to :func:`~matplotlib.pyplot.imshow`.
+    if ``None`` is passed, it will be set to 1.
+    If an image is passed, voxel-wise alpha blending will be applied,
+    by relying on the absolute value of ``transparency`` at each voxel.
+
+    .. versionadded:: 0.11.2
+"""
+
+# transparency
+docdict["transparency_range"] = """
+transparency_range : :obj:`tuple` or :obj:`list` of 2 non-negative numbers, \
+                or None, \
+                default = None
+    When an image is passed to ``transparency``,
+    this determines the range of values in the image
+    to use for transparency (alpha blending).
+    For example with ``transparency_range = [1.96, 3]``,
+    any voxel / vertex (:math:`v_i`):
+
+    - with a value between between -1.96 and 1.96,
+      would be fully transparent (alpha = 0),
+    - with a value less than -3 or greater than 3,
+      would be fully opaque (alpha = 1),
+    - with a value in the intervals ``[-3.0, -1.96]`` or ``[1.96, 3.0]``,
+      would have an alpha_i value
+      scaled linearly between 0 and 1 :
+      :math:`alpha_i = (\\lvert v_i \\lvert - 1.96) / (3.0 - 1.96)`.
+
+    This parameter will be ignored
+    unless an image is passed as ``transparency``.
+    The first number must be greater than 0 and less than the second one.
+    if ``None`` is passed,
+    this will be set to ``[0, max(abs(transparency))]``.
+
+    .. versionadded:: 0.11.2
+"""
+
 # upper_cutoff
 docdict["upper_cutoff"] = """
 upper_cutoff : :obj:`float`, optional
