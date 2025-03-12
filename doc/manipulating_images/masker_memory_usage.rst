@@ -235,3 +235,16 @@ But ``is_proxy`` would return ``True`` for ``img_nilearn.dataobj``:
 
     nib.is_proxy(img_nilearn.dataobj)
     # True
+
+So if you are performing subsequent operations that only require a chunk of
+data in the memory, it could be beneficial to first save the image to disk and
+then loading it again via nibabel's ``load`` function to get a proxy image.
+
+However, if you anyway need all the data in memory, you can directly use
+the array image in subsequent operations.
+
+This applies to most of the operations under nilearn's ``image`` module as
+they all return array images.
+
+Finally, another use case could be when you want to perform several operations
+on the same image in parallel. We examine such a case in another example.
