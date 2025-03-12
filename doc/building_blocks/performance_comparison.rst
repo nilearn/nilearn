@@ -245,5 +245,8 @@ the array image in subsequent operations.
 This applies to most of the operations under nilearn's :mod:`nilearn.image`
 module as they all return array images.
 
-Finally, another use case could be when you want to perform several operations
-on the same image in parallel. We examine such a case in another example.
+Finally, another possible use case could be when you want to perform several
+operations on the same image in parallel.
+
+We examine such a case in detail in this example:
+:ref:`sphx_glr_auto_examples_07_advanced_plot_mask_large_fmri.py`
