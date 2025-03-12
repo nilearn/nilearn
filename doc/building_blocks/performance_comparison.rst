@@ -174,7 +174,7 @@ So with :func:`~nilearn.image.load_img`:
 
     %%time
     img_nilearn = load_img(example_fmri_path)
-    img_nilearn.dataobj[..., 10]
+    img_nilearn.dataobj[..., 3]
     # CPU times: user 4.04 s, sys: 1.53 s, total: 5.57 s
     # Wall time: 5.57 s
 
@@ -249,4 +249,4 @@ Finally, another possible use case could be when you want to perform several
 operations on the same image in parallel.
 
 We examine such a case in detail in this example:
-:ref:`sphx_glr_auto_examples_07_advanced_plot_mask_large_fmri.py`
+:ref:`sphx_glr_auto_examples_07_advanced_plot_mask_large_fmri.py`.
