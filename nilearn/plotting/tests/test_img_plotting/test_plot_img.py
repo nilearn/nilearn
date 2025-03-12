@@ -120,7 +120,7 @@ def test_plot_img_transparency_range_error(
 ):
     """Test transparency_range invalid values."""
     with pytest.raises(
-        ValueError, match="list or tuple of 2 positive numbers"
+        ValueError, match="list or tuple of 2 non-negative numbers"
     ):
         plot_img(
             img_3d_ones_mni,
