@@ -608,7 +608,7 @@ class BaseSlicer:
             transparency = np.abs(transparency)
 
             if transparency_range is None:
-                transparency_range = [0.0, 1.0]
+                transparency_range = [0.0, np.max(transparency)]
 
             error_msg = (
                 "'transparency_range' must be "
