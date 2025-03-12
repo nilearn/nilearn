@@ -5,6 +5,8 @@ import io
 import urllib.parse
 from pathlib import Path
 
+from matplotlib import pyplot as plt
+
 TEMPLATE_ROOT_PATH = Path(__file__).parent / "data"
 
 CSS_PATH = TEMPLATE_ROOT_PATH / "css"
@@ -17,7 +19,12 @@ HTML_PARTIALS_PATH = HTML_TEMPLATE_PATH / "partials"
 
 
 def _figure_to_bytes(fig, format):
-    """Save figure as as certain format and return it as bytes."""
+    """Save figure as as certain format and return it as bytes.
+
+    If a matplotlib axes is passed, it gets the parent figure.
+    """
+    if not isinstance(fig, (plt.Figure)):
+        fig = fig.figure
     with io.BytesIO() as io_buffer:
         fig.savefig(
             io_buffer, format=format, facecolor="white", edgecolor="white"

@@ -322,27 +322,6 @@ def make_glm_report(
     return report
 
 
-def _plot_to_png(plot):
-    """Create an PNG image as a data URL \
-    from a Matplotlib Axes or Figure object.
-
-    Parameters
-    ----------
-    plot : Matplotlib Axes or Figure object
-        Contains the plot information.
-
-    Returns
-    -------
-    String
-        PNG Image Data URL.
-
-    """
-    try:
-        return figure_to_png_base64(plot)
-    except AttributeError:
-        return figure_to_png_base64(plot.figure)
-
-
 def _resize_plot_inches(plot, width_change=0, height_change=0):
     """Accept a matplotlib figure or axes object and resize it (in inches).
 
@@ -367,18 +346,21 @@ def _resize_plot_inches(plot, width_change=0, height_change=0):
         The matplotlib Figure/Axes object after being resized.
 
     """
-    try:
+    if not isinstance(plot, (plt.Figure)):
         orig_size = plot.figure.get_size_inches()
-    except AttributeError:
+    else:
         orig_size = plot.get_size_inches()
+
     new_size = (
         orig_size[0] + width_change,
         orig_size[1] + height_change,
     )
-    try:
+
+    if not isinstance(plot, (plt.Figure)):
         plot.figure.set_size_inches(new_size, forward=True)
-    except AttributeError:
-        plot.set_size_inches(new_size)
+    else:
+        plot.set_size_inches(new_size, forward=True)
+
     return plot
 
 
@@ -408,7 +390,7 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
     if not is_volume_glm:
         model.masker_._create_figure_for_report()
         fig = plt.gcf()
-        mask_plot = _plot_to_png(fig)
+        mask_plot = figure_to_png_base64(fig)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
         return mask_plot
@@ -434,7 +416,7 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
         cut_coords=cut_coords,
         colorbar=False,
     )
-    mask_plot = _plot_to_png(plt.gcf())
+    mask_plot = figure_to_png_base64(plt.gcf())
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
     plt.close()
 
@@ -547,7 +529,7 @@ def _make_stat_maps_contrast_clusters(
                 surf_mesh=surf_mesh,
             )
             fig = plt.gcf()
-            stat_map_png = _plot_to_png(fig)
+            stat_map_png = figure_to_png_base64(fig)
 
             # prevents sphinx-gallery & jupyter from scraping & inserting plots
             plt.close("all")
@@ -723,7 +705,7 @@ def _stat_map_to_png(
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)
     fig = plt.gcf()
-    stat_map_png = _plot_to_png(fig)
+    stat_map_png = figure_to_png_base64(fig)
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
     plt.close()
     return stat_map_png
@@ -776,7 +758,7 @@ def _return_design_matrices_dict(design_matrices):
     for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
         dmtx_plot = plot_design_matrix(design_matrix)
         dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
-        dmtx_png = _plot_to_png(dmtx_plot)
+        dmtx_png = figure_to_png_base64(dmtx_plot)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close("all")
 
@@ -798,7 +780,7 @@ def _return_design_matrices_dict(design_matrices):
             dmtx_cor_plot = _resize_plot_inches(
                 dmtx_cor_plot, height_change=0.3
             )
-            dmtx_cor_png = _plot_to_png(dmtx_cor_plot)
+            dmtx_cor_png = figure_to_png_base64(dmtx_cor_plot)
             # prevents sphinx-gallery & jupyter from scraping & inserting plots
             plt.close("all")
 
@@ -821,7 +803,7 @@ def _return_contrasts_dict(design_matrices, contrasts):
             )
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
-            url_contrast_plot_png = _plot_to_png(contrast_plot)
+            url_contrast_plot_png = figure_to_png_base64(contrast_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
             plt.close("all")

@@ -123,9 +123,8 @@ print(f"Save z-map in '{filename}'.")
 # portable, ready-to-view report with most of the pertinent information.
 # This is easy to do if you have a fitted model and the list of contrasts,
 # which we do here.
-from nilearn.reporting import make_glm_report
 
-report = make_glm_report(
+report = first_level_model.generate_report(
     first_level_model,
     contrasts=contrasts,
     title="ADHD DMN Report",

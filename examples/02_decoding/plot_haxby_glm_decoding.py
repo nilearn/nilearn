@@ -121,11 +121,9 @@ for run in unique_runs:
 # and have the :term:`contrast`, we can quickly create a summary report.
 
 from nilearn.image import mean_img
-from nilearn.reporting import make_glm_report
 
 mean_img_ = mean_img(func_filename, copy_header=True)
-report = make_glm_report(
-    glm,
+report = glm.generate_report(
     contrasts=conditions,
     bg_img=mean_img_,
 )
@@ -138,11 +136,12 @@ report  # This report can be viewed in a notebook
 # We can access the report via a browser:
 # report.open_in_browser()
 
-# or we can save as an html file
-# from pathlib import Path
-# output_dir = Path.cwd() / "results" / "plot_haxby_glm_decoding"
-# output_dir.mkdir(exist_ok=True, parents=True)
-# report.save_as_html(output_dir / 'report.html')
+# Or we can save as an html file.
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_haxby_glm_decoding"
+output_dir.mkdir(exist_ok=True, parents=True)
+report.save_as_html(output_dir / "report.html")
 
 # %%
 # Build the decoding pipeline
