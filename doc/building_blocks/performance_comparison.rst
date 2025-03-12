@@ -64,7 +64,6 @@ than nilearn's ``load_img``.
     # CPU times: user 3.93 s, sys: 1.24 s, total: 5.17 s
     # Wall time: 5.17 s
 
-
 Memory usage while loading an image
 -----------------------------------
 
@@ -84,7 +83,6 @@ measure the memory usage of a single line of code.
     # load image via nilearn.image.load_img
     %memit load_img(example_fmri_path)
     # peak memory: 6113.84 MiB, increment: 3933.99 MiB
-
 
 Some use cases
 ==============
@@ -160,7 +158,6 @@ The memory usage of the two would also be similar for the same reason.
     mean_img(img_nibabel, copy_header=True)
     # peak memory: 8091.86 MiB, increment: 1967.71 MiB
 
-
 Extracting a 3D volume
 ----------------------
 
@@ -207,7 +204,6 @@ We will see that with the memory usage as well:
     img_nibabel = nib.load(example_fmri_path)
     img_nibabel.dataobj[..., 3]
     # peak memory: 4158.06 MiB, increment: 0.00 MiB
-
 
 Array images
 ============
