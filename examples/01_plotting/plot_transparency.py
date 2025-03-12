@@ -15,8 +15,8 @@ This makes use of the "alpha" value that overlays can have
 when using some plotting functions (like :func:`matplotlib.pyplot.imshow`).
 This "alpha" value goes from 0 (perfectly transparent) to 1 (perfectly opaque).
 
-Consider having an underlay color :math:`RGB_{ulay}`
-and overlay color :math:`RGB_{olay}`,
+Consider having an underlay color :math:`RGB_{U}`
+and overlay color :math:`RGB_{O}`,
 where a threshold value T is applied
 and we consider how an element (voxel, node...) with value M is shown.
 
@@ -24,8 +24,8 @@ and we consider how an element (voxel, node...) with value M is shown.
 ---------------------
 
 if :math:`\lvert M \lvert >= T : alpha=1`,
-meaning the overlay is shown as: :math:`RGB_{olay}`
-else : :math:`alpha=0`, meaning the underlay is shown as: :math:`RGB_{ulay}`
+meaning the overlay is shown as: :math:`RGB_{O}`
+else : :math:`alpha=0`, meaning the underlay is shown as: :math:`RGB_{U}`
 
 "Transparent" thresholding
 --------------------------
@@ -33,12 +33,12 @@ else : :math:`alpha=0`, meaning the underlay is shown as: :math:`RGB_{ulay}`
 The steepness of fading can be linear or quadratic. Linear is shown below.
 
 If :math:`\lvert M \lvert >= T : alpha=1`,
-meaning the overlay is shown as: :math:`RGB_{olay}`.
+meaning the overlay is shown as: :math:`RGB_{O}`.
 
 Otherwise :math:`alpha = (\lvert M \lvert /  T)`,
-merging :math:`RGB_{olay}` and :math:`RGB_{ulay}` as:
+merging :math:`RGB_{O}` and :math:`RGB_{U}` as:
 
-:math:`RGB_{final} = (1-alpha) * RGB_{ulay} + alpha * RGB_{olay}`.
+:math:`RGB_{final} = (1-alpha) * RGB_{U} + alpha * RGB_{O}`.
 
 In the end, this is just a small tweak for the case of subthreshold data.
 In that case, alpha is nonzero (rather than simply 0).
