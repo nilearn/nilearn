@@ -207,3 +207,31 @@ We will see that with the memory usage as well:
     img_nibabel = nib.load(example_fmri_path)
     img_nibabel.dataobj[..., 3]
     # peak memory: 4158.06 MiB, increment: 0.00 MiB
+
+
+Array images
+============
+
+In practice, you would initially only use proxy images when you load an image
+from the disk. But once you perform an operation that somehow modifies the
+image, you would get an array image.
+
+For example, if you smooth an image using nilearn's ``smooth_img`` function,
+it will return an array image. We can check this using nibabel's ``is_proxy``
+function on the image.
+
+.. code-block:: python
+
+    from nilearn.image import smooth_img
+
+    img_nilearn = load_img(example_fmri_path)
+    img_smoothed = smooth_img(img_nilearn, fwhm=6)
+    nib.is_proxy(img_smoothed.dataobj)
+    # False
+
+But ``is_proxy`` would return ``True`` for ``img_nilearn.dataobj``:
+
+.. code-block:: python
+
+    nib.is_proxy(img_nilearn.dataobj)
+    # True
