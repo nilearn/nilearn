@@ -3,7 +3,11 @@
   --main-bg-color: white;
 }
 
-/* ALIASES */
+/* ALIASES
+
+most of them are meant to resemble bootstrap classes
+https://getbootstrap.com/docs/5.3/getting-started/introduction/
+*/
 .m-0 {
   margin: 0px;
 }
@@ -72,6 +76,10 @@
   padding-top: 8px;
   padding-bottom: 8px;
 }
+.py-3 {
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
 
 .d-flex {
   display: flex;
@@ -83,6 +91,10 @@
 
 .flex-wrap {
   flex-wrap: wrap;
+}
+
+.align-items-stretch {
+  align-items: stretch;
 }
 
 .justify-content-center {
@@ -112,7 +124,7 @@
   font-size: 8px;
 }
 .fs-2 {
-  font-size: 12px;
+  font-size: 14px;
 }
 .fs-3 {
   font-size: 16px;
@@ -144,6 +156,10 @@
 .rounded-top-2 {
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+}
+
+.text-center {
+  text-align: center;
 }
 /* -----------------------  Pure framework ----------------------- */
 
@@ -213,11 +229,6 @@ End pure-button class definition from pure-min.css
 .btn:hover,
 .btn:focus {
   background-color: #2980b9;
-}
-
-.btn-container {
-  float: left;
-  width: 33%;
 }
 
 .scroll-x {
