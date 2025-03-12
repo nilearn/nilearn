@@ -669,7 +669,7 @@ class BaseSlicer:
                 data,
                 copy=False,
             )
-            data[np.abs(data) <= threshold] = 0
+
             if (vmin is not None) and (vmin >= -threshold):
                 data = np.ma.masked_where(data < vmin, data, copy=False)
             if (vmax is not None) and (vmax <= threshold):

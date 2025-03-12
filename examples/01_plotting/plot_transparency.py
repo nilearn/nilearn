@@ -257,6 +257,7 @@ display = plot_stat_map(
 
 show()
 
+# %%
 # .. note::
 #
 #    The transparency image was automatically resampled to the underlying data.
