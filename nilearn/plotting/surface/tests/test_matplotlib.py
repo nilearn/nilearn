@@ -15,6 +15,8 @@ from nilearn.plotting.surface._matplotlib import (
     _get_view_plot_surf,
 )
 
+pytest.importorskip("matplotlib", reason="Matplotlib is not installed. It is required to run the tests!")
+
 EXPECTED_VIEW_MATPLOTLIB = {
     "left": {
         "anterior": (0, 90),
