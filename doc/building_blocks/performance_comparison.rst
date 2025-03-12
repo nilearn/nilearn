@@ -1,8 +1,8 @@
-.. _masker_memory_usage:
+.. _performance_comparison:
 
-================================================
-Optimizing performance of neuroimaging workflows
-================================================
+=======================================================
+Factors affecting performance of neuroimaging workflows
+=======================================================
 
 In this chapter we will discuss the factors that can affect the performance of
 neuroimaging workflows and the steps that can be taken to optimize them.
