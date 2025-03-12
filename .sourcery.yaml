@@ -13,11 +13,13 @@
 version: '1'
 
 ignore: # A list of paths or files which Sourcery will ignore.
+-   doc
+-   examples
+-   maint_tools
 -   nilearn/_version.py
--   externals/
 -   nilearn/externals/tempita/
 -   nilearn/externals/tempita/__init__.py
--   plotting/data/js/*.js
+-   nilearn/plotting/data/js/*.js
 
 rule_settings:
     enable:

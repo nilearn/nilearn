@@ -6,6 +6,7 @@ https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-f
 """
 
 import numpy as np
+import pandas as pd
 import pytest
 from matplotlib import pyplot as plt
 
@@ -313,6 +314,30 @@ def test_plot_event_duration_0():
     return plot_event(modulated_event_paradigm())
 
 
+@pytest.mark.mpl_image_compare
+def test_plot_event_x_lim(rng):
+    """Test that x_lim is set after end of last event.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/4907
+    """
+    trial_types = ["foo", "bar", "baz"]
+
+    n_runs = 3
+
+    events = [
+        pd.DataFrame(
+            {
+                "trial_type": trial_types,
+                "onset": rng.random((3,)) * 5,
+                "duration": rng.uniform(size=(3,)) * 2 + 1,
+            }
+        )
+        for _ in range(n_runs)
+    ]
+
+    return plot_event(events)
+
+
 @pytest.fixture
 def matrix_to_plot(rng):
     return rng.random((50, 50)) * 10 - 5
@@ -421,6 +446,28 @@ def test_plot_contrast_matrix_colorbar(colorbar):
     ax = plot_contrast_matrix(contrast, dmtx, colorbar=colorbar)
 
     return ax.get_figure()
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("fn", [plot_stat_map, plot_img, plot_glass_brain])
+def test_plot_with_transparency(fn):
+    """Test transparency parameter to determine alpha layer."""
+    return fn(
+        load_sample_motor_activation_image(), transparency=0.5, cmap="cold_hot"
+    )
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("fn", [plot_stat_map, plot_img, plot_glass_brain])
+@pytest.mark.parametrize("transparency_range", [None, [0, 2], [2, 4]])
+def test_plot_with_transparency_range(fn, transparency_range):
+    """Test transparency range parameter to determine alpha layer."""
+    return fn(
+        load_sample_motor_activation_image(),
+        transparency=load_sample_motor_activation_image(),
+        transparency_range=transparency_range,
+        cmap="cold_hot",
+    )
 
 
 IMG_COMPARISON_FUNCS = {plot_img_comparison, plot_bland_altman}

@@ -13,6 +13,10 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Prevent range overrun in TFCE (:gh:`5179` by `Lee Newberg`_).
+
+- :bdg-dark:`Code` Bound the number of thresholds in TFCE calculation (:gh:`5179` by `Lee Newberg`_).
+
 - :bdg-dark:`Code` Ensure that all figures are generated with a color bar by default (:gh:`5172` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Fixes datasets that returned numpy arrays instead of pandas dataframes (:gh:`5109` by `Rémi Gau`_).
@@ -25,8 +29,12 @@ Fixes
 
 - :bdg-dark:`Code` Do not set score to zero if all coefficients are zero in :class:`nilearn.decoding.Decoder` and ensure average scores are comparable to a pure scikit-learn implementation (:gh:`5097` by `Himanshu Aggarwal`_).
 
+- :bdg-dark:`Code` New interpolation method (``method='nearest_most_frequent'``) for :func:`~nilearn.surface.vol_to_surf` to better handle deterministic atlases by assigning most frequent voxel value in the neighborhood of a vertex (:gh:`5169` by `Himanshu Aggarwal`_).
+
 Enhancements
 ------------
+
+- :bdg-info:`Plotting` ``transparency`` and ``transparency_range`` parameters have been added to the :meth:`nilearn.plotting.displays.BaseSlicer.add_overlay` (and therefore to the all classes inheriting :class:`~nilearn.plotting.displays.BaseSlicer`). These parameters were also explicitly added to the plotting functions :func:`~nilearn.plotting.plot_img`, :func:`~nilearn.plotting.plot_stat_map`, :func:`~nilearn.plotting.plot_glass_brain`. (:gh:`5151` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Extend :func:`~nilearn.image.threshold_img` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`4999` by `Rémi Gau`_).
 
