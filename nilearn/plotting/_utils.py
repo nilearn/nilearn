@@ -10,6 +10,15 @@ from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
 
 
+def engine_warning(engine):
+    warning = (
+        f"'{engine}' is not installed. To be able to use '{engine}' as "
+        "plotting engine for 'nilearn.plotting' package:\n"
+        " pip install 'nilearn[plotting]'"
+    )
+    warn(warning)
+
+
 def save_figure_if_needed(fig, output_file, bbox_inches=None):
     """Save figure if an output file value is given.
 
