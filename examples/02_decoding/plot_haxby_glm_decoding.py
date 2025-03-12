@@ -128,7 +128,9 @@ report = glm.generate_report(
     bg_img=mean_img_,
 )
 
-report  # This report can be viewed in a notebook
+# %%
+# This report can be viewed in a notebook.
+report
 
 # %%
 # In a jupyter notebook, the report will be automatically inserted, as above.

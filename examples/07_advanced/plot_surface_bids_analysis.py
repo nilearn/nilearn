@@ -147,7 +147,10 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
 # View the GLM report of the first subject
 report_flm
 
+# %%
+# Or in a separate browser window
 # report_flm.open_in_browser()
+
 
 # %%
 # Save the report to disk
@@ -184,8 +187,12 @@ report_slm = second_level_glm.generate_report(
 )
 
 # %%
-# View the GLM report at the group level
+# View the GLM report at the group level.
 report_slm
+
+# %%
+# Or in a separate browser window
+# report_flm.open_in_browser()
 
 # %%
 # Save it as an html file.

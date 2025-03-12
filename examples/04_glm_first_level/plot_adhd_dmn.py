@@ -134,12 +134,16 @@ report = first_level_model.generate_report(
 
 # %%
 # We have several ways to access the report:
-
-# This report can be viewed in a notebook
+#
+# It can be viewed in a notebook
 report
+
+# %%
+# Or in a separate browser window
 # report.open_in_browser()
 
-# or we can save as an html file
+# %%
+# Or we can save as an html file.
 from pathlib import Path
 
 output_dir = Path.cwd() / "results" / "plot_adhd_dmn"

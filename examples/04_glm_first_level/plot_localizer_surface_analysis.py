@@ -200,6 +200,9 @@ report = glm.generate_report(contrasts, threshold=3.0, bg_img=fsaverage_data)
 # %%
 # This report can be viewed in a notebook.
 report
+
+# %%
+# Or in a separate browser window
 # report.open_in_browser()
 
 # %%
