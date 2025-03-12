@@ -2,15 +2,17 @@ import numpy as np
 import pytest
 
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.plotting.surface._matplotlib import (
-    MATPLOTLIB_VIEWS,
-    _compute_facecolors,
-    _get_ticks,
-    _get_view_plot_surf,
-)
 from nilearn.surface import (
     load_surf_data,
     load_surf_mesh,
+)
+
+from nilearn.plotting.surface._matplotlib import (
+    MATPLOTLIB_VIEWS,
+    _compute_facecolors,
+    _get_bounds,
+    _get_ticks,
+    _get_view_plot_surf,
 )
 
 EXPECTED_VIEW_MATPLOTLIB = {
@@ -47,6 +49,20 @@ def test_get_view_plot_surf_matplotlib(hemi, views):
         assert (
             _get_view_plot_surf(hemi, v) == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
         )
+
+
+@pytest.mark.parametrize(
+    "data,expected",
+    [
+        (np.linspace(0, 1, 100), (0, 1)),
+        (np.linspace(-0.7, -0.01, 40), (-0.7, -0.01)),
+    ],
+)
+def test_get_bounds(data, expected):
+    assert _get_bounds(data) == expected
+    assert _get_bounds(data, vmin=0.2) == (0.2, expected[1])
+    assert _get_bounds(data, vmax=0.8) == (expected[0], 0.8)
+    assert _get_bounds(data, vmin=0.1, vmax=0.8) == (0.1, 0.8)
 
 
 def test_compute_facecolors_matplotlib():

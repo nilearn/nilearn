@@ -240,22 +240,6 @@ def test_add_contours_line_properties(plotly, key, value, surface_image_roi):
     assert newline.get(key) == value
 
 
-@pytest.mark.parametrize(
-    "data,expected",
-    [
-        (np.linspace(0, 1, 100), (0, 1)),
-        (np.linspace(-0.7, -0.01, 40), (-0.7, -0.01)),
-    ],
-)
-def test_get_bounds(data, expected):
-    from nilearn.plotting.surface._matplotlib import _get_bounds
-
-    assert _get_bounds(data) == expected
-    assert _get_bounds(data, vmin=0.2) == (0.2, expected[1])
-    assert _get_bounds(data, vmax=0.8) == (expected[0], 0.8)
-    assert _get_bounds(data, vmin=0.1, vmax=0.8) == (0.1, 0.8)
-
-
 def test_plot_surf_engine_error(in_memory_mesh):
     with pytest.raises(ValueError, match="Unknown plotting engine"):
         plot_surf(in_memory_mesh, engine="foo")
