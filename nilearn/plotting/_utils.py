@@ -303,8 +303,12 @@ def _get_hemi(mesh, hemi):
 
 
 def check_threshold_not_negative(threshold):
-    """Make sure threshold is non negative number."""
-    if isinstance(threshold, (int, float)) and threshold < 0:
+    """Make sure threshold is non negative number.
+
+    If threshold == "auto", it may be set to very small value.
+    So we allow for that.
+    """
+    if isinstance(threshold, (int, float)) and threshold < -1e-5:
         raise ValueError("Threshold should be a non-negative number!")
 
 
