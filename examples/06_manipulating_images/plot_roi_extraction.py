@@ -178,8 +178,8 @@ from nilearn.plotting import plot_stat_map
 log_p_values_img = new_img_like(fmri_img, log_p_values)
 
 # Now, we visualize log p-values image on functional mean image as background
-# with coordinates given manually and colorbar on the right side of plot (by
-# default colorbar=True)
+# with coordinates given manually
+# and colorbar on the right side of plot (by default colorbar=True)
 plot_stat_map(
     log_p_values_img,
     mean_img,
@@ -216,7 +216,6 @@ plot_stat_map(
     mean_img,
     title="Thresholded p-values",
     annotate=False,
-    colorbar=True,
     cut_coords=cut_coords,
     cmap="inferno",
 )

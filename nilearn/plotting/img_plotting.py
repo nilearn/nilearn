@@ -151,9 +151,8 @@ def _plot_img_with_bg(
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
 
-    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%%i" to display as integers.
+    %(cbar_tick_format)s
+        default="%%.2g" (scientific notation)
 
     decimals : :obj:`int` or :obj:`bool`, default=False
         Number of decimal places on slice position annotation.
@@ -362,9 +361,8 @@ def plot_img(
     %(colorbar)s
         Default=True.
 
-    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%%i" to display as integers.
+    %(cbar_tick_format)s
+        default="%%.2g" (scientific notation)
 
     %(resampling_interpolation)s
         Default='continuous'.
@@ -642,12 +640,11 @@ def plot_anat(
     %(cmap)s
         Default=`gray`.
 
-    colorbar : :obj:`bool`, default=False
-        If True, display a colorbar on the right of the plots.
+    %(colorbar)s
+        default=True
 
-    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%%i" to display as integers.
+    %(cbar_tick_format)s
+        default="%%.2g" (scientific notation)
 
     %(radiological)s
 
@@ -762,12 +759,11 @@ def plot_epi(
     %(black_bg)s
         Default=True.
 
-    colorbar : :obj:`bool`, default=False
-        If True, display a colorbar on the right of the plots.
+    %(colorbar)s
+        default=True
 
-    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%%i" to display as integers.
+    %(cbar_tick_format)s
+        default="%%.2g" (scientific notation)
 
     %(cmap)s
         Default=`gray`.
@@ -839,6 +835,8 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     linewidths : :obj:`float`
         This option can be used to set the boundary thickness of the
         contours.
+
+    %(colorbar)s
 
     Returns
     -------
@@ -943,12 +941,11 @@ def plot_roi(
     %(dim)s
         Default='auto'.
 
-    colorbar : :obj:`bool`, default=False
-        If True, display a colorbar on the right of the plots.
+    %(colorbar)s
+        default=True
 
-    cbar_tick_format : :obj:`str`, default="%%i"
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%%.2g" to use scientific notation.
+    %(cbar_tick_format)s
+        default="%%.2g" (scientific notation)
 
     %(vmin)s
 
@@ -1046,7 +1043,11 @@ def plot_roi(
 
     if view_type == "contours":
         display = _plot_roi_contours(
-            display, img, cmap=cmap, alpha=alpha, linewidths=linewidths
+            display,
+            img,
+            cmap=cmap,
+            alpha=alpha,
+            linewidths=linewidths,
         )
 
     return display
@@ -1357,9 +1358,8 @@ def plot_stat_map(
     %(colorbar)s
         Default=True.
 
-    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%%i" to display as integers.
+    %(cbar_tick_format)s
+        default="%%.2g" (scientific notation)
 
     %(figure)s
 
@@ -1524,9 +1524,8 @@ def plot_glass_brain(
     %(colorbar)s
         Default=True.
 
-    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
-        Controls how to format the tick labels of the colorbar.
-        Ex: use "%%i" to display as integers.
+    %(cbar_tick_format)s
+        default="%%.2g" (scientific notation)
 
     %(figure)s
 
