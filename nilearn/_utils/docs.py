@@ -1063,11 +1063,11 @@ transparency_range : :obj:`tuple` or :obj:`list` of 2 real numbers, \
     For example with ``transparency_range = [1.96, 3]``,
     any voxel / vertex (:math:`v_i`):
 
-    - with a value less than 1.96 would be fully transparent (alpha = 0),
-    - with a value greater then 3 than would be fully opaque (alpha = 1),
-    - with a value in the interval ``[1.96, 3.0]`` would have an alpha_i value
+    - with a value between between -1.96 and 1.96 would be fully transparent (alpha = 0),
+    - with a value less than -3 or greater then 3 than would be fully opaque (alpha = 1),
+    - with a value in the intervals ``[-3.0, -3.0]`` or ``[1.96, 3.0]`` would have an alpha_i value
       scaled linearly between 0 and 1 :
-      :math:`alpha_i = (v_i - 1.96) / (3.0 - 1.96)`.
+      :math:`alpha_i = (\lvert v_i \lvert - 1.96) / (3.0 - 1.96)`.
 
     This parameter will be ignored
     unless an image is passed as ``transparency``.
