@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from nilearn.plotting.surface._plotly import _get_view_plot_surf_plotly
+from nilearn.plotting.surface._plotly import (
+    _configure_title,
+    _get_view_plot_surf_plotly
+)
 
 EXPECTED_CAMERAS_PLOTLY = [
     (
@@ -188,3 +191,16 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
 def test_get_view_plot_surf_view_errors(hemi, view):
     with pytest.raises(ValueError, match="Invalid view definition"):
         _get_view_plot_surf_plotly(hemi, view)
+
+
+def test_configure_title():
+    assert _configure_title(None, None) == {}
+    assert _configure_title(None, 22) == {}
+    config = _configure_title("Test Title", 22, color="green")
+    assert config["text"] == "Test Title"
+    assert config["x"] == 0.5
+    assert config["y"] == 0.96
+    assert config["xanchor"] == "center"
+    assert config["yanchor"] == "top"
+    assert config["font"]["size"] == 22
+    assert config["font"]["color"] == "green"
