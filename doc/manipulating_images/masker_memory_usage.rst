@@ -32,12 +32,15 @@ array data on disk. This means that the data is not loaded into memory until
 it is accessed. On the other hand, an array image is an object that loads the
 data into memory as soon as it is created.
 
+Proxy images
+============
+
 If you are reading an image from the disk, you can do so via nibabel's
 ``load`` and nilearn's ``load_img`` function. Both of these functions return
 a proxy image. The difference is that with nibabel's ``load`` you
-only get the proxy image and you have to call the ``get_fdata`` method to load
-the data into memory. On the other hand, with nilearn's ``load_img`` you get a
-proxy image that loads the data into memory as soon as it is created.
+only get the proxy image and you have to call the ``get_fdata()`` method to
+load the data into memory. On the other hand, with nilearn's ``load_img``
+you get a proxy image that loads the data into memory as soon as it is created.
 
 Time taken to load an image
 ---------------------------
@@ -66,8 +69,9 @@ Memory usage while loading an image
 --------------------------------------
 
 We can also measure the memory usage of each of these methods using the
-``memory_profiler`` package. Once we have installed the package, we can use
-``%memit`` magic command to measure the memory usage of a single line of code.
+``memory_profiler`` package. Once we have installed the package (via
+``pip install memory_profiler``), we can use ``%memit`` magic command to
+measure the memory usage of a single line of code.
 
 .. code-block:: python
 
@@ -114,7 +118,7 @@ can operate quickly.
     # CPU times: user 225 ms, sys: 324 ms, total: 549 ms
     # Wall time: 555 ms
 
-But when compared to when we load the image with nibabel's ``load``:
+But when compared to loading the image with nibabel's ``load``:
 
 .. code-block:: python
 
@@ -126,12 +130,12 @@ But when compared to when we load the image with nibabel's ``load``:
     # CPU times: user 4.84 s, sys: 2.29 s, total: 7.13 s
     # Wall time: 8.79 s
 
-This takes more time because ``mean_img`` will have to load the data into
-memory before it can take the mean.
+This takes more time because ``mean_img`` will have to load the data before it
+can take the mean.
 
 But it is important to note that the overall the time taken to first load the
 image and take the mean over the time axis is similar for both the methods,
-because the data has to be loaded at some point.
+simply because the data has to be loaded at some point.
 
 The memory usage of the two would also be similar for the same reason.
 
