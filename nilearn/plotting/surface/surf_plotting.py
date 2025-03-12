@@ -847,7 +847,7 @@ def plot_surf_roi(
     bg_on_data=False,
     darkness=0.7,
     title=None,
-    title_font_size=18,
+    title_font_size=None,
     output_file=None,
     axes=None,
     figure=None,
@@ -1013,10 +1013,6 @@ def plot_surf_roi(
     roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, bg_map
     )
-
-    if engine == "matplotlib" and avg_method is None:
-        avg_method = "median"
-
     # preload roi and mesh to determine vmin, vmax and give more useful error
     # messages in case of wrong inputs
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
@@ -1063,28 +1059,24 @@ def plot_surf_roi(
             DeprecationWarning,
         )
 
-    if cbar_tick_format == "auto":
-        cbar_tick_format = "." if engine == "plotly" else "%i"
-
     if isinstance(cmap, pd.DataFrame):
         cmap = create_colormap_from_lut(cmap)
 
-    display = plot_surf(
+    fig = _get_surface_backend(engine).plot_surf_roi(
         mesh,
-        surf_map=roi,
+        roi_map=roi,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
-        engine=engine,
         avg_method=avg_method,
         threshold=threshold,
-        cmap=cmap,
-        cbar_tick_format=cbar_tick_format,
         alpha=alpha,
-        bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
+        cmap=cmap,
+        cbar_tick_format=cbar_tick_format,
+        bg_on_data=bg_on_data,
+        darkness=darkness,
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,
@@ -1094,4 +1086,4 @@ def plot_surf_roi(
         **kwargs,
     )
 
-    return display
+    return fig

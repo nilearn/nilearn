@@ -449,3 +449,58 @@ class PlotlyBackend(SurfaceBackend):
         raise NotImplementedError(
             "'plot_img_on_surf' is not implemented for plotly!"
         )
+
+    def plot_surf_roi(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        bg_map=None,
+        hemi="left",
+        view=None,
+        avg_method=None,
+        threshold=1e-14,
+        alpha=None,
+        vmin=None,
+        vmax=None,
+        cmap="gist_ncar",
+        cbar_tick_format="auto",
+        bg_on_data=False,
+        darkness=0.7,
+        title=None,
+        title_font_size=18,
+        output_file=None,
+        axes=None,
+        figure=None,
+        colorbar=True,
+        **kwargs,
+    ):
+        if cbar_tick_format == "auto":
+            cbar_tick_format = "."
+        if title_font_size is None:
+            title_font_size = 18
+
+        display = self.plot_surf(
+            surf_mesh=surf_mesh,
+            surf_map=roi_map,
+            bg_map=bg_map,
+            hemi=hemi,
+            view=view,
+            avg_method=avg_method,
+            threshold=threshold,
+            cmap=cmap,
+            cbar_tick_format=cbar_tick_format,
+            alpha=alpha,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+            vmin=vmin,
+            vmax=vmax,
+            title=title,
+            title_font_size=title_font_size,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+            colorbar=colorbar,
+            **kwargs,
+        )
+
+        return display
