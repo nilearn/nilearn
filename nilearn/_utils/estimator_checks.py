@@ -14,9 +14,6 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal, assert_raises
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
-from sklearn.utils.estimator_checks import (
-    check_estimator as sklearn_check_estimator,
-)
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import compare_version
@@ -38,6 +35,16 @@ from nilearn.conftest import (
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.regions import RegionExtractor
 from nilearn.reporting.tests.test_html_report import _check_html
+
+# TODO simplify when dropping sklearn 1.5,
+if compare_version(sklearn_version, ">=", "1.6.0"):
+    from sklearn.utils.estimator_checks import (
+        estimator_checks_generator as sklearn_check_generator,
+    )
+else:
+    from sklearn.utils.estimator_checks import (
+        check_estimator as sklearn_check_estimator,
+    )
 
 # List of sklearn estimators checks that are valid
 # for all nilearn estimators.
@@ -171,41 +178,54 @@ def check_estimator(
 
     if not isinstance(estimator, list):
         estimator = [estimator]
+
     for est in estimator:
-        for e, check in sklearn_check_estimator(
-            estimator=est, generate_only=True
-        ):
-            # TODO when dropping sklearn 1.5,
-            # pass expected_failed_checks directly to
-            # sklearn_check_estimator above
-            if (
-                isinstance(expected_failed_checks, dict)
-                and check.func.__name__ in expected_failed_checks
+        # TODO simplify when dropping sklearn 1.5
+        if compare_version(sklearn_version, ">=", "1.6.0"):
+            for e, check in sklearn_check_generator(
+                estimator=est,
+                expected_failed_checks=expected_failed_checks,
+                mark="skip",
             ):
-                continue
+                tags = est.__sklearn_tags__()
 
-            tags = est._more_tags()
-
-            niimg_input = False
-            surf_img = False
-            # TODO remove first if when dropping sklearn 1.5
-            #  for sklearn >= 1.6 tags are always a dataclass
-            if isinstance(tags, dict) and "X_types" in tags:
-                niimg_input = "niimg_like" in tags["X_types"]
-                surf_img = "surf_img" in tags["X_types"]
-            else:
                 niimg_input = getattr(tags.input_tags, "niimg_like", False)
                 surf_img = getattr(tags.input_tags, "surf_img", False)
 
-            if (
-                niimg_input or surf_img
-            ) and check.func.__name__ in CHECKS_TO_SKIP_IF_IMG_INPUT:
-                continue
+                if (
+                    niimg_input or surf_img
+                ) and check.func.__name__ in CHECKS_TO_SKIP_IF_IMG_INPUT:
+                    continue
 
-            if valid and check.func.__name__ in valid_checks:
-                yield e, check, check.func.__name__
-            if not valid and check.func.__name__ not in valid_checks:
-                yield e, check, check.func.__name__
+                if valid and check.func.__name__ in valid_checks:
+                    yield e, check, check.func.__name__
+                if not valid and check.func.__name__ not in valid_checks:
+                    yield e, check, check.func.__name__
+
+        else:
+            for e, check in sklearn_check_estimator(
+                estimator=est, generate_only=True
+            ):
+                if (
+                    isinstance(expected_failed_checks, dict)
+                    and check.func.__name__ in expected_failed_checks
+                ):
+                    continue
+
+                tags = est._more_tags()
+
+                niimg_input = "niimg_like" in tags["X_types"]
+                surf_img = "surf_img" in tags["X_types"]
+
+                if (
+                    niimg_input or surf_img
+                ) and check.func.__name__ in CHECKS_TO_SKIP_IF_IMG_INPUT:
+                    continue
+
+                if valid and check.func.__name__ in valid_checks:
+                    yield e, check, check.func.__name__
+                if not valid and check.func.__name__ not in valid_checks:
+                    yield e, check, check.func.__name__
 
     if valid:
         for est in estimator:
