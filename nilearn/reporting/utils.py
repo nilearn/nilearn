@@ -5,8 +5,6 @@ import io
 import urllib.parse
 from pathlib import Path
 
-from matplotlib import pyplot as plt
-
 TEMPLATE_ROOT_PATH = Path(__file__).parent / "data"
 
 CSS_PATH = TEMPLATE_ROOT_PATH / "css"
@@ -23,6 +21,10 @@ def _figure_to_bytes(fig, format):
 
     If a matplotlib axes is passed, it gets the parent figure.
     """
+    # TODO move this entire module in a place
+    # where it won't be imported if matplotlib is not around
+    from matplotlib import pyplot as plt
+
     if not isinstance(fig, (plt.Figure)):
         fig = fig.figure
     with io.BytesIO() as io_buffer:
