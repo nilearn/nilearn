@@ -20,14 +20,14 @@ So here we will compare both the time and memory usage of different methods of
 loading and then operations where we need all the data in memory at once and
 where we can process the data in chunks.
 
-Proxy images and array images
+Proxy images vs. array images
 =============================
 
 A nifti image can be loaded as a proxy image or an array image. This page on
 Nibabel documentation does a good job of explaining the difference between the
 two: https://nipy.org/nibabel/images_and_memory.html
 
-But in short, a proxy image is an object that only points to the actual numpy
+But TLDR; a proxy image is an object that only points to the actual numpy
 array data on disk. This means that the data is not loaded into memory until
 it is accessed. On the other hand, an array image is an object that loads the
 data into memory as soon as it is created.
@@ -45,7 +45,7 @@ you get a proxy image that loads the data into memory as soon as it is created.
 Time taken to load an image
 ---------------------------
 
-So we expect that when simply loading the image nibabel's ``load`` would be
+So we expect that when simply loading the image, nibabel's ``load`` would be
 faster and lower on memory usage (because it doesn't load the data into memory)
 than nilearn's ``load_img``.
 
@@ -66,7 +66,7 @@ than nilearn's ``load_img``.
 
 
 Memory usage while loading an image
---------------------------------------
+-----------------------------------
 
 We can also measure the memory usage of each of these methods using the
 ``memory_profiler`` package. Once we have installed the package (via
@@ -86,7 +86,7 @@ measure the memory usage of a single line of code.
     # peak memory: 6113.84 MiB, increment: 3933.99 MiB
 
 
-More use cases
+Some use cases
 ==============
 
 Once we have loaded the image, we can perform various operations on it.
@@ -190,7 +190,7 @@ And with nibabel's ``load``:
     # CPU times: user 11.8 ms, sys: 9.19 ms, total: 21 ms
     # Wall time: 20.2 ms
 
-So what happens with nilearn's ``load_img`` is that we load the entire image
+What happens here with nilearn's ``load_img`` is that we load the entire image
 into memory even though we only need a chunk of it. This is why it takes more
 time than nibabel's ``load`` which only loads the chunk of data we need.
 
@@ -213,8 +213,8 @@ Array images
 ============
 
 In practice, you would initially only use proxy images when you load an image
-from the disk. But once you perform an operation that somehow modifies the
-image, you would get an array image.
+from the disk. But once you perform an operation that modifies the image,
+you would get an array image.
 
 For example, if you smooth an image using nilearn's ``smooth_img`` function,
 it will return an array image. We can check this using nibabel's ``is_proxy``
