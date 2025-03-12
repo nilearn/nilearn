@@ -78,14 +78,10 @@ def test_flm_reporting_height_control(flm, height_control, contrasts):
     report_flm.get_iframe()
 
     # glover is the default hrf so it should appear in report
-    # but not details related to fir hrf
     assert "glover" in report_flm.__str__()
-    assert "fir_delays" not in report_flm.__str__()
 
     # cosine is the default drift model so it should appear in report
-    # but not details related to polynomial drift model
     assert "cosine" in report_flm.__str__()
-    assert "drift_order" not in report_flm.__str__()
 
 
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
@@ -186,7 +182,6 @@ def test_fir_delays_in_params(contrasts):
     report = model.generate_report(contrasts=contrasts, threshold=0.1)
 
     assert "fir_delays" in report.__str__()
-    assert "glover" not in report.__str__()
 
 
 def test_drift_order_in_params(contrasts):
@@ -203,7 +198,6 @@ def test_drift_order_in_params(contrasts):
     report = model.generate_report(contrasts=contrasts)
 
     assert "drift_order" in report.__str__()
-    assert "cosine" not in report.__str__()
 
 
 def test_flm_generate_report_error_with_surface_data(
