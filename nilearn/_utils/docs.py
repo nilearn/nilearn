@@ -1054,7 +1054,7 @@ transparency : :obj:`float` between 0 and 1, \
 
 # transparency
 docdict["transparency_range"] = """
-transparency_range : :obj:`tuple` or :obj:`list` of 2 real numbers, \
+transparency_range : :obj:`tuple` or :obj:`list` of 2 non-negative numbers, \
                 or None, \
                 default = None
     When an image is passed to ``transparency``,
