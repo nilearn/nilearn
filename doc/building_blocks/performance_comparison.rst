@@ -69,7 +69,7 @@ Memory usage while loading an image
 -----------------------------------
 
 We can also measure the memory usage of each of these methods using the
-:mod:`memory_profiler` package. Once we have installed the package (via
+``memory_profiler`` package. Once we have installed the package (via
 ``pip install memory_profiler``), we can use ``%memit`` magic command to
 measure the memory usage of a single line of code.
 
@@ -216,7 +216,7 @@ you would get an array image.
 
 For example, if you smooth an image using :func:`nilearn.image.smooth_img`
 function, it will return an array image. We can check this using nibabel's
-:func:`nibabel.arrayproxy.is_proxy`` function on the image.
+:func:`nibabel.arrayproxy.is_proxy` function on the image.
 
 .. code-block:: python
 
