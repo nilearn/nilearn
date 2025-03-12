@@ -59,6 +59,11 @@ mean_image = mean_img(fmri_img, copy_header=True)
 # %%
 # We can confirm there are only 2 conditions in the dataset.
 #
+from nilearn.plotting import plot_event, show
+
+plot_event(events)
+
+show()
 
 # %%
 # Fit the :term:`GLM` for the 2 runs
@@ -69,7 +74,7 @@ mean_image = mean_img(fmri_img, copy_header=True)
 # Sample at the beginning of each acquisition.
 slice_time_ref = 0.0
 # We use a discrete cosine transform to model signal drifts.
-drift_model = "Cosine"
+drift_model = "cosine"
 # The cutoff for the drift model is 0.01 Hz.
 high_pass = 0.01
 # The hemodynamic response function
@@ -92,7 +97,7 @@ fmri_glm = fmri_glm.fit(fmri_img, events=events)
 # %%
 # Now we can compute contrast-related statistical maps (in z-scale),
 # and plot them.
-from nilearn.plotting import plot_stat_map, show
+from nilearn.plotting import plot_stat_map
 
 print("Computing contrasts")
 
@@ -103,7 +108,7 @@ print("Computing contrasts")
 # We define the two opposite versions to run one-tailed t-tests.
 #
 
-contrasts = ["faces-scrambled", "scrambled-faces"]
+contrasts = ["faces - scrambled", "scrambled - faces"]
 
 
 # %%
@@ -114,14 +119,14 @@ contrasts = ["faces-scrambled", "scrambled-faces"]
 # with any voxel with | Z-score | > 3 being fully opaque
 # and any voxel with | Z-score | < 1.96 being fully transparent.
 plot_param = {
-    "threshold": 1.96,
+    "threshold": 3,
     "vmin": 0,
     "display_mode": "z",
     "cut_coords": [-40, -25, -6],
     "black_bg": True,
     "bg_img": mean_image,
     "cmap": "inferno",
-    # "transparency_range": [1.96, 3],
+    "transparency_range": [0, 3],
 }
 
 # Iterate on contrasts to compute an plot them.
@@ -133,7 +138,7 @@ for contrast_id in contrasts:
     plot_stat_map(
         results["stat"],
         title=contrast_id,
-        # transparency=results["z_score"],
+        transparency=results["z_score"],
         vmax=6,
         **plot_param,
     )
@@ -144,21 +149,16 @@ for contrast_id in contrasts:
 #
 import numpy as np
 
-contrasts = {
-    "effects_of_interest": np.eye(2),
-}
+contrasts = (np.eye(2),)
 
-for contrast_id, contrast_val in contrasts.items():
-    print(f"\tcontrast id: {contrast_id}")
+results = fmri_glm.compute_contrast(contrasts, output_type="all")
 
-    results = fmri_glm.compute_contrast(contrast_val, output_type="all")
-
-    plot_stat_map(
-        results["stat"],
-        title=contrast_id,
-        # transparency=results["z_score"],
-        **plot_param,
-    )
+plot_stat_map(
+    results["stat"],
+    title="effects_of_interest",
+    transparency=results["z_score"],
+    **plot_param,
+)
 
 show()
 
