@@ -241,55 +241,6 @@ def test_add_contours_line_properties(plotly, key, value, surface_image_roi):
 
 
 @pytest.mark.parametrize(
-    "view,is_valid",
-    [
-        ("lateral", True),
-        ("medial", True),
-        ("latreal", False),
-        ((100, 100), True),
-        ([100.0, 100.0], True),
-        ((100, 100, 1), False),
-        (("lateral", "medial"), False),
-        ([100, "bar"], False),
-    ],
-)
-def test_check_view_is_valid(view, is_valid):
-    from nilearn.plotting.surface._utils import _check_view_is_valid
-
-    assert _check_view_is_valid(view) is is_valid
-
-
-@pytest.mark.parametrize(
-    "hemi,is_valid",
-    [
-        ("left", True),
-        ("right", True),
-        ("both", True),
-        ("lft", False),
-    ],
-)
-def test_check_hemisphere_is_valid(hemi, is_valid):
-    from nilearn.plotting.surface._utils import _check_hemisphere_is_valid
-
-    assert _check_hemisphere_is_valid(hemi) is is_valid
-
-
-def test_configure_title():
-    from nilearn.plotting.surface._plotly import _configure_title
-
-    assert _configure_title(None, None) == {}
-    assert _configure_title(None, 22) == {}
-    config = _configure_title("Test Title", 22, color="green")
-    assert config["text"] == "Test Title"
-    assert config["x"] == 0.5
-    assert config["y"] == 0.96
-    assert config["xanchor"] == "center"
-    assert config["yanchor"] == "top"
-    assert config["font"]["size"] == 22
-    assert config["font"]["color"] == "green"
-
-
-@pytest.mark.parametrize(
     "data,expected",
     [
         (np.linspace(0, 1, 100), (0, 1)),
