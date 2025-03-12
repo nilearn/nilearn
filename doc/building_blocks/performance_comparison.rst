@@ -99,12 +99,11 @@ We will consider two cases here:
 Mean over the time axis
 -----------------------
 
-To take the mean over the time axis, we can use the
-:func:`nilearn.image.mean_img``. This function requires all the data to be
-loaded into memory at once.
+To take the mean over the time axis, we can use :func:`nilearn.image.mean_img`.
+This function requires all the data to be loaded into memory at once.
 
 So when we load the image with :func:`~nilearn.image.load_img` and then pass it
-to :func:`~nilearn.image.mean_img`` function, the data is readily available in
+to :func:`~nilearn.image.mean_img` function, the data is readily available in
 memory and the function can operate quickly.
 
 .. code-block:: python
@@ -128,13 +127,13 @@ But when compared to loading the image with :func:`nibabel.loadsave.load`:
     # CPU times: user 4.11 s, sys: 1.22 s, total: 5.34 s
     # Wall time: 5.34 s
 
-This takes more time because :func:`~nilearn.image.mean_img`` will have to load
+This takes more time because :func:`~nilearn.image.mean_img` will have to load
 the data before it can take the mean.
 
 But it is important to note that the overall time taken to first load the
 image and take the mean is similar for both the methods.
 This is simply because the data has to be loaded at some point either before
-or within the :func:`~nilearn.image.mean_img`` function.
+or within :func:`~nilearn.image.mean_img`.
 
 We can verify that by timing the loading and mean calculation together:
 

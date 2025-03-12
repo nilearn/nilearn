@@ -14,4 +14,3 @@ brain images with nilearn.
    input_output.rst
    manipulating_images.rst
    masker_objects.rst
-   masker_memory_usage.rst
