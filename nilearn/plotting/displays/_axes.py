@@ -1,4 +1,5 @@
 import numbers
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -53,10 +54,26 @@ class BaseAxes:
             self.ax.axis(self.get_object_bounds())
 
     def draw_2d(
-        self, data_2d, data_bounds, bounding_box, type="imshow", **kwargs
+        self,
+        data_2d,
+        data_bounds,
+        bounding_box,
+        type="imshow",
+        transparency=None,
+        **kwargs,
     ):
         """Draw 2D."""
         kwargs["origin"] = "upper"
+
+        if "alpha" in kwargs:
+            warnings.warn(
+                f"{kwargs['alpha']=} detected in parameters.\n"
+                f"Overriding with {transparency=}.\n"
+                "To suppress this warning pass "
+                "your 'alpha' value "
+                "via the 'transparency' parameter."
+            )
+        kwargs["alpha"] = transparency
 
         if self.direction == "y":
             (xmin, xmax), (_, _), (zmin, zmax) = data_bounds

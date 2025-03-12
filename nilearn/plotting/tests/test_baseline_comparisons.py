@@ -448,6 +448,28 @@ def test_plot_contrast_matrix_colorbar(colorbar):
     return ax.get_figure()
 
 
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("fn", [plot_stat_map, plot_img, plot_glass_brain])
+def test_plot_with_transparency(fn):
+    """Test transparency parameter to determine alpha layer."""
+    return fn(
+        load_sample_motor_activation_image(), transparency=0.5, cmap="cold_hot"
+    )
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("fn", [plot_stat_map, plot_img, plot_glass_brain])
+@pytest.mark.parametrize("transparency_range", [None, [0, 2], [2, 4]])
+def test_plot_with_transparency_range(fn, transparency_range):
+    """Test transparency range parameter to determine alpha layer."""
+    return fn(
+        load_sample_motor_activation_image(),
+        transparency=load_sample_motor_activation_image(),
+        transparency_range=transparency_range,
+        cmap="cold_hot",
+    )
+
+
 IMG_COMPARISON_FUNCS = {plot_img_comparison, plot_bland_altman}
 
 
