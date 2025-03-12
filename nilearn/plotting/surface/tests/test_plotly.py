@@ -6,6 +6,8 @@ from nilearn.plotting.surface._plotly import (
     _get_view_plot_surf_plotly
 )
 
+pytest.importorskip("plotly", reason="Plotly is not installed. It is required to run the tests!")
+
 EXPECTED_CAMERAS_PLOTLY = [
     (
         "left",
