@@ -162,7 +162,7 @@ def test_shelving():
         masker = MultiNiftiMasker(mask_img=mask_img)
         epis = masker.fit_transform([epi_img1, epi_img2])
 
-        for epi_shelved, epi in zip(epis_shelved, epis):
+        for epi_shelved, epi in zip(epis_shelved, epis, strict=False):
             epi_shelved = epi_shelved.get()
             assert_array_equal(epi_shelved, epi)
 
@@ -254,7 +254,7 @@ def test_standardization(rng, shape_3d_default, affine_eye):
     masker = MultiNiftiMasker(mask, standardize="psc")
     trans_signals = masker.fit_transform([img1, img2])
 
-    for ts, s in zip(trans_signals, signals):
+    for ts, s in zip(trans_signals, signals, strict=False):
         np.testing.assert_almost_equal(ts.mean(0), 0)
         np.testing.assert_almost_equal(
             ts, (s / s.mean(1)[:, np.newaxis] * 100 - 100).T
