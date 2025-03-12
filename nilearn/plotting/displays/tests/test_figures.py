@@ -97,7 +97,7 @@ def test_plotly_savefig(tmp_path):
 
 @pytest.mark.skipif(
     not is_plotly_installed(),
-    reason=("Plotly not installed; required for this test.")
+    reason=("Plotly not installed; required for this test."),
 )
 @pytest.mark.parametrize("input_obj", ["foo", Figure(), ["foo", "bar"]])
 def test_instantiation_error_plotly_surface_figure(input_obj):

@@ -7,7 +7,7 @@ from numpy.testing import assert_array_equal
 from nilearn.plotting.surface._utils import (
     _check_hemisphere_is_valid,
     _check_view_is_valid,
-    check_surface_plotting_inputs
+    check_surface_plotting_inputs,
 )
 from nilearn.surface import InMemoryMesh
 from nilearn.surface._testing import assert_surface_mesh_equal

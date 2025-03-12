@@ -2,11 +2,6 @@ import numpy as np
 import pytest
 
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.surface import (
-    load_surf_data,
-    load_surf_mesh,
-)
-
 from nilearn.plotting.surface._matplotlib import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors,
@@ -14,8 +9,15 @@ from nilearn.plotting.surface._matplotlib import (
     _get_ticks,
     _get_view_plot_surf,
 )
+from nilearn.surface import (
+    load_surf_data,
+    load_surf_mesh,
+)
 
-pytest.importorskip("matplotlib", reason="Matplotlib is not installed. It is required to run the tests!")
+pytest.importorskip(
+    "matplotlib",
+    reason="Matplotlib is not installed. It is required to run the tests!",
+)
 
 EXPECTED_VIEW_MATPLOTLIB = {
     "left": {

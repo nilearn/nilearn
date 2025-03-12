@@ -3,10 +3,13 @@ import pytest
 
 from nilearn.plotting.surface._plotly import (
     _configure_title,
-    _get_view_plot_surf_plotly
+    _get_view_plot_surf_plotly,
 )
 
-pytest.importorskip("plotly", reason="Plotly is not installed. It is required to run the tests!")
+pytest.importorskip(
+    "plotly",
+    reason="Plotly is not installed. It is required to run the tests!",
+)
 
 EXPECTED_CAMERAS_PLOTLY = [
     (
