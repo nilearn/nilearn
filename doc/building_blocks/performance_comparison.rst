@@ -36,18 +36,19 @@ Proxy images
 ============
 
 If you are reading an image from the disk, you can do so via nibabel's
-``load`` and nilearn's ``load_img`` function. Both of these functions return
-a proxy image. The difference is that with nibabel's ``load`` you
-only get the proxy image and you have to call the ``get_fdata()`` method to
-load the data into memory. On the other hand, with nilearn's ``load_img``
-you get a proxy image that loads the data into memory as soon as it is created.
+:func:`nibabel.loadsave.load` and nilearn's :func:`~nilearn.image.load_img`
+function. Both of these functions return a proxy image. The difference is
+that with :func:`nibabel.loadsave.load` you only get the proxy image and you
+have to call the ``.get_fdata()`` method to load the data into memory.
+On the other hand, with :func:`~nilearn.image.load_img` you get a proxy image
+that loads the data into memory as soon as it is created.
 
 Time taken to load an image
 ---------------------------
 
-So we expect that when simply loading the image, nibabel's ``load`` would be
-faster and lower on memory usage (because it doesn't load the data into memory)
-than nilearn's ``load_img``.
+So we expect that when simply loading the image, :func:`nibabel.loadsave.load`
+would be faster and lower on memory usage (because it doesn't load the data
+into memory) than :func:`~nilearn.image.load_img`.
 
 .. code-block:: python
 
@@ -68,7 +69,7 @@ Memory usage while loading an image
 -----------------------------------
 
 We can also measure the memory usage of each of these methods using the
-``memory_profiler`` package. Once we have installed the package (via
+:mod:`memory_profiler`` package. Once we have installed the package (via
 ``pip install memory_profiler``), we can use ``%memit`` magic command to
 measure the memory usage of a single line of code.
 
@@ -98,12 +99,13 @@ We will consider two cases here:
 Mean over the time axis
 -----------------------
 
-To take the mean over the time axis, we can use the ``mean_img`` function from
-nilearn. This function requires all the data to be loaded into memory at once.
+To take the mean over the time axis, we can use the
+:func:`nilearn.image.mean_img``. This function requires all the data to be
+loaded into memory at once.
 
-So when we load the image with nilearn's ``load_img`` and then pass it to
-``mean_img`` function, the data is readily available in memory and the function
-can operate quickly.
+So when we load the image with :func:`~nilearn.image.load_img` and then pass it
+to :func:`~nilearn.image.mean_img`` function, the data is readily available in
+memory and the function can operate quickly.
 
 .. code-block:: python
 
@@ -116,7 +118,7 @@ can operate quickly.
     # CPU times: user 142 ms, sys: 12.8 ms, total: 155 ms
     # Wall time: 176 ms
 
-But when compared to loading the image with nibabel's ``load``:
+But when compared to loading the image with :func:`nibabel.loadsave.load`:
 
 .. code-block:: python
 
@@ -126,13 +128,13 @@ But when compared to loading the image with nibabel's ``load``:
     # CPU times: user 4.11 s, sys: 1.22 s, total: 5.34 s
     # Wall time: 5.34 s
 
-This takes more time because ``mean_img`` will have to load the data before it
-can take the mean.
+This takes more time because :func:`~nilearn.image.mean_img`` will have to load
+the data before it can take the mean.
 
 But it is important to note that the overall time taken to first load the
 image and take the mean is similar for both the methods.
 This is simply because the data has to be loaded at some point either before
-or within the ``mean_img`` function.
+or within the :func:`~nilearn.image.mean_img`` function.
 
 We can verify that by timing the loading and mean calculation together:
 
@@ -164,10 +166,10 @@ Extracting a 3D volume
 Now let's say we want to extract a 3D volume at some time point from the
 4D image. Here we only need that 3D volume to be loaded into memory.
 
-Proxy images come with an attribute called ``dataobj`` that allows us to
+Proxy images come with an attribute called ``.dataobj`` that allows us to
 directly access the chunk of data we need.
 
-So with nilearn's ``load_img``:
+So with :func:`~nilearn.image.load_img`:
 
 .. code-block:: python
 
@@ -177,7 +179,7 @@ So with nilearn's ``load_img``:
     # CPU times: user 4.04 s, sys: 1.53 s, total: 5.57 s
     # Wall time: 5.57 s
 
-And with nibabel's ``load``:
+And with :func:`nibabel.loadsave.load`:
 
 .. code-block:: python
 
@@ -187,9 +189,10 @@ And with nibabel's ``load``:
     # CPU times: user 11.8 ms, sys: 9.19 ms, total: 21 ms
     # Wall time: 20.2 ms
 
-What happens here with nilearn's ``load_img`` is that we load the entire image
-into memory even though we only need a chunk of it. This is why it takes more
-time than nibabel's ``load`` which only loads the chunk of data we need.
+What happens here with :func:`~nilearn.image.load_img` is that we load the
+entire image into memory even though we only need a chunk of it. This is why it
+takes more time than :func:`nibabel.loadsave.load` which only loads the chunk
+of data we need.
 
 We will see that with the memory usage as well:
 
@@ -212,9 +215,9 @@ In practice, you would initially only use proxy images when you load an image
 from the disk. But once you perform an operation that modifies the image,
 you would get an array image.
 
-For example, if you smooth an image using nilearn's ``smooth_img`` function,
-it will return an array image. We can check this using nibabel's ``is_proxy``
-function on the image.
+For example, if you smooth an image using :func:`nilearn.image.smooth_img`
+function, it will return an array image. We can check this using nibabel's
+:func:`nibabel.arrayproxy.is_proxy`` function on the image.
 
 .. code-block:: python
 
@@ -234,13 +237,14 @@ But ``is_proxy`` would return ``True`` for ``img_nilearn.dataobj``:
 
 So if you are performing subsequent operations that only require a chunk of
 data in the memory, it could be beneficial to first save the image to disk and
-then loading it again via nibabel's ``load`` function to get a proxy image.
+then loading it again via :func:`nibabel.loadsave.load` function to get a
+proxy image.
 
 However, if you anyway need all the data in memory, you can directly use
 the array image in subsequent operations.
 
-This applies to most of the operations under nilearn's ``image`` module as
-they all return array images.
+This applies to most of the operations under nilearn's :mod:`nilearn.image`
+module as they all return array images.
 
 Finally, another use case could be when you want to perform several operations
 on the same image in parallel. We examine such a case in another example.
