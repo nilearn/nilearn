@@ -2742,6 +2742,8 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
         - description: data description
 
+        - t_r: repetition time in seconds
+
     """
     check_params(locals())
 
@@ -2749,7 +2751,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     epi_img = "sub-12069_task-localizer_space-MNI305.nii.gz"
     events = "sub-12069_task-localizer_events.tsv"
     opts = {"uncompress": True}
-    options = ("epi_img", "events", "description")
+    options = ("epi_img", "events", "description", "t_r")
     dir_ = Path("localizer_first_level")
     filenames = [(dir_ / name, url, opts) for name in [epi_img, events]]
 
@@ -2762,8 +2764,9 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     params = dict(list(zip(options, files)))
     data = Bunch(**params)
 
-    description = get_dataset_descr(dataset_name)
-    data.description = description
+    data.description = get_dataset_descr(dataset_name)
+
+    data.t_r = 2.4
     return data
 
 

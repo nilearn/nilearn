@@ -63,12 +63,12 @@ fmri_img = data.epi_img
 # * audio_computation: Mental subtraction, indicated by auditory instruction
 # * visual_computation: Mental subtraction, indicated by visual instruction
 #
-import pandas as pd
+from nilearn.plotting import plot_event, show
 
-t_r = 2.4
-events_file = data["events"]
-events = pd.read_table(events_file)
-events
+events = data.events
+plot_event(data.events, figsize=(15, 6))
+
+show()
 
 # %%
 # Running a basic model
@@ -80,7 +80,9 @@ events
 #
 from nilearn.glm.first_level import FirstLevelModel
 
-first_level_model = FirstLevelModel(t_r)
+t_r = data.t_r
+
+first_level_model = FirstLevelModel(t_r=data.t_r)
 first_level_model = first_level_model.fit(fmri_img, events=events)
 design_matrix = first_level_model.design_matrices_[0]
 
@@ -107,7 +109,7 @@ from nilearn.plotting import (
 
 
 def inspect_design_matrix(design_matrix):
-    plt.figure(figsize=(10, 15))
+    plt.figure(figsize=(10, 20))
 
     ax = plt.subplot(211)
     plot_design_matrix(design_matrix, axes=ax)
@@ -122,9 +124,10 @@ show()
 # %%
 # Specification of the contrasts.
 #
-# For this, let's create a function that, given the design matrix, generates
-# the corresponding contrasts.  This will be useful to repeat contrast
-# specification when we change the design matrix.
+# For this, let's create a function that, given the design matrix,
+# generates the corresponding contrasts.
+# This will be useful to repeat contrast specification
+# when we change the design matrix.
 import numpy as np
 
 
@@ -222,7 +225,7 @@ def plot_contrast(first_level_model):
     """
     # Set vmax to keep range of values equal
     # across models / contrasts
-    vmax = 9.5
+    # vmax = 9.5
 
     design_matrix = first_level_model.design_matrices_[0]
 
@@ -233,17 +236,18 @@ def plot_contrast(first_level_model):
     # compute the per-contrast z-map
     for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         ax = plt.subplot(2, 2, 1 + index)
-        z_map = first_level_model.compute_contrast(
-            contrast_val, output_type="z_score"
+        results = first_level_model.compute_contrast(
+            contrast_val, output_type="all"
         )
         plot_stat_map(
-            z_map,
+            results["stat"],
             display_mode="z",
-            threshold=1.96,
-            vmax=vmax,
+            # vmax=vmax,
             title=contrast_id,
             axes=ax,
             cut_coords=1,
+            transparency=results["z_score"],
+            transparency_range=[1.96, 3.0],
         )
 
 
@@ -491,6 +495,8 @@ show()
 #
 # For this we rely on the so-called
 # :func:`~nilearn.image.high_variance_confounds` routine of Nilearn.
+import pandas as pd
+
 from nilearn.image import high_variance_confounds
 
 confounds = pd.DataFrame(high_variance_confounds(fmri_img, percentile=1))
@@ -527,8 +533,12 @@ show()
 # For non-fMRIPrep output, we can still define a sample mask. Here we apply a
 # sample mask that removes the first 50 volumes.
 #
+import nibabel as nib
 
-sample_masks = np.arange(events.shape[0])[50:]
+tmp = nib.load(fmri_img)
+
+
+sample_masks = np.arange(tmp.shape[3])[50:]
 first_level_model = FirstLevelModel(
     t_r, hrf_model="spm + derivative", slice_time_ref=0.5
 )

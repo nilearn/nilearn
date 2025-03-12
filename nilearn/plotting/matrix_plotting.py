@@ -650,7 +650,6 @@ def plot_design_matrix_correlation(
     cmap=DEFAULT_DIVERGING_CMAP,
     colorbar=True,
     output_file=None,
-    colorbar=True,
     exclude=r"^(intercept|constant|drift_)",
     **kwargs,
 ):
