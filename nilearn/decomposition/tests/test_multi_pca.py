@@ -5,7 +5,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition._multi_pca import _MultiPCA
@@ -51,7 +51,6 @@ def multi_pca_data():
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
     "check_no_attributes_set_in_init",
 ]
 
@@ -89,7 +88,8 @@ def test_multi_pca_check_masker_attributes(multi_pca_data, mask_img):
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
 
-def test_multi_pca(multi_pca_data, mask_img):
+@pytest.mark.parametrize("length", [1, 2])
+def test_multi_pca(multi_pca_data, mask_img, length):
     """Components are the same if we put twice the same data, \
        and that fit output is deterministic.
     """
@@ -97,11 +97,12 @@ def test_multi_pca(multi_pca_data, mask_img):
     multi_pca.fit(multi_pca_data)
 
     components1 = multi_pca.components_
-    components2 = multi_pca.fit(multi_pca_data).components_
-    components3 = multi_pca.fit(2 * multi_pca_data).components_
+    components2 = multi_pca.fit(length * multi_pca_data).components_
 
-    np.testing.assert_array_equal(components1, components2)
-    np.testing.assert_array_almost_equal(components1, components3)
+    if length == 1:
+        np.testing.assert_array_equal(components1, components2)
+    else:
+        np.testing.assert_array_almost_equal(components1, components2)
 
 
 def test_multi_pca_with_confounds_smoke(multi_pca_data, mask_img):

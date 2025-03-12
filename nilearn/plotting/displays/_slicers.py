@@ -9,14 +9,20 @@ from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
 
-from nilearn._utils import check_niimg_3d
-from nilearn._utils.docs import fill_doc
+from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
+from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds
-from nilearn.plotting._utils import _check_threshold
-from nilearn.plotting.displays import CutAxes
-from nilearn.plotting.displays._axes import coords_3d_to_2d
+from nilearn.plotting._utils import (
+    check_threshold_not_negative,
+    get_cbar_ticks,
+)
+from nilearn.plotting.displays._axes import CutAxes
+from nilearn.plotting.displays._utils import (
+    coords_3d_to_2d,
+    get_create_display_fun,
+)
 from nilearn.plotting.edge_detect import edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
 
@@ -144,7 +150,8 @@ class BaseSlicer:
         ValueError
             if the specified threshold is a negative number
         """
-        _check_threshold(threshold)
+        check_params(locals())
+        check_threshold_not_negative(threshold)
 
         # deal with "fake" 4D images
         if img is not None and img is not False:
@@ -177,9 +184,7 @@ class BaseSlicer:
             )
 
         if axes is None:
-            axes = [0.0, 0.0, 1.0, 1.0]
-            if leave_space:
-                axes = [0.3, 0, 0.7, 1.0]
+            axes = [0.3, 0, 0.7, 1.0] if leave_space else [0.0, 0.0, 1.0, 1.0]
         if isinstance(axes, collections.abc.Sequence):
             axes = figure.add_axes(axes)
         # People forget to turn their axis off, or to set the zorder, and
@@ -313,7 +318,7 @@ class BaseSlicer:
         ValueError
             if the specified threshold is a negative number
         """
-        _check_threshold(threshold)
+        check_threshold_not_negative(threshold)
 
         if colorbar and self._colorbar:
             raise ValueError(
@@ -384,7 +389,7 @@ class BaseSlicer:
         if not filled:
             threshold = None
         else:
-            _check_threshold(threshold)
+            check_threshold_not_negative(threshold)
 
         self._map_show(img, type="contour", threshold=threshold, **kwargs)
         if filled:
@@ -487,8 +492,8 @@ class BaseSlicer:
                 data_2d = self._threshold(
                     data_2d,
                     threshold,
-                    vmin=kwargs.get("vmin"),
-                    vmax=kwargs.get("vmax"),
+                    vmin=float(kwargs.get("vmin")),
+                    vmax=float(kwargs.get("vmax")),
                 )
 
                 im = display_ax.draw_2d(
@@ -517,7 +522,8 @@ class BaseSlicer:
         ValueError
             if the specified threshold is a negative number
         """
-        _check_threshold(threshold)
+        check_params(locals())
+        check_threshold_not_negative(threshold)
 
         if threshold is not None:
             data = np.ma.masked_where(
@@ -832,7 +838,7 @@ class BaseSlicer:
         """
         plt.close(self.frame_axes.figure.number)
 
-    def savefig(self, filename, dpi=None):
+    def savefig(self, filename, dpi=None, **kwargs):
         """Save the figure to a file.
 
         Parameters
@@ -847,44 +853,12 @@ class BaseSlicer:
         """
         facecolor = edgecolor = "k" if self._black_bg else "w"
         self.frame_axes.figure.savefig(
-            filename, dpi=dpi, facecolor=facecolor, edgecolor=edgecolor
+            filename,
+            dpi=dpi,
+            facecolor=facecolor,
+            edgecolor=edgecolor,
+            **kwargs,
         )
-
-
-def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
-    """Help for BaseSlicer."""
-    # edge case where the data has a single value yields
-    # a cryptic matplotlib error message when trying to plot the color bar
-    if vmin == vmax:
-        return np.linspace(vmin, vmax, 1)
-
-    # edge case where the data has all negative values but vmax is exactly 0
-    if vmax == 0:
-        vmax += np.finfo(np.float32).eps
-
-    # If a threshold is specified, we want two of the tick
-    # to correspond to -thresold and +threshold on the colorbar.
-    # If the threshold is very small compared to vmax,
-    # we use a simple linspace as the result would be very difficult to see.
-    ticks = np.linspace(vmin, vmax, n_ticks)
-    if offset is not None and offset / vmax > 0.12:
-        diff = [abs(abs(tick) - offset) for tick in ticks]
-        # Edge case where the thresholds are exactly
-        # at the same distance to 4 ticks
-        if diff.count(min(diff)) == 4:
-            idx_closest = np.sort(np.argpartition(diff, 4)[:4])
-            idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
-        else:
-            # Find the closest 2 ticks
-            idx_closest = np.sort(np.argpartition(diff, 2)[:2])
-            if 0 in ticks[idx_closest]:
-                idx_closest = np.sort(np.argpartition(diff, 3)[:3])
-                idx_closest = idx_closest[[0, 2]]
-        ticks[idx_closest] = [-offset, offset]
-    if len(ticks) > 0 and ticks[0] < vmin:
-        ticks[0] = vmin
-
-    return ticks
 
 
 @fill_doc
@@ -1957,16 +1931,16 @@ class MosaicSlicer(BaseSlicer):
             cut_coords, numbers.Number
         ):
             cut_coords = [cut_coords] * 3
-        else:
-            if len(cut_coords) != len(cls._cut_displayed):
-                raise ValueError(
-                    "The number cut_coords passed does not"
-                    " match the display_mode. Mosaic plotting "
-                    "expects tuple of length 3."
-                )
+        elif len(cut_coords) == len(cls._cut_displayed):
             cut_coords = [
                 cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
             ]
+        else:
+            raise ValueError(
+                "The number cut_coords passed does not"
+                " match the display_mode. Mosaic plotting "
+                "expects tuple of length 3."
+            )
         cut_coords = cls._find_cut_coords(img, cut_coords, cls._cut_displayed)
         return cut_coords
 
@@ -2206,18 +2180,3 @@ def get_slicer(display_mode):
 
     """
     return get_create_display_fun(display_mode, SLICERS)
-
-
-def get_create_display_fun(display_mode, class_dict):
-    """Help for functions \
-    :func:`~nilearn.plotting.displays.get_slicer` and \
-    :func:`~nilearn.plotting.displays.get_projector`.
-    """
-    try:
-        return class_dict[display_mode].init_with_figure
-    except KeyError:
-        message = (
-            f"{display_mode} is not a valid display_mode. "
-            f"Valid options are {sorted(class_dict.keys())}"
-        )
-        raise ValueError(message)

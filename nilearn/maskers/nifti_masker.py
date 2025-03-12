@@ -1,7 +1,5 @@
 """Transformer used to apply basic transformations on MRI data."""
 
-# Author: Gael Varoquaux, Alexandre Abraham
-
 import warnings
 from copy import copy as copy_object
 from functools import partial
@@ -439,6 +437,7 @@ class NiftiMasker(BaseMasker):
 
         """
         check_params(self.__dict__)
+
         self._report_content = {
             "description": (
                 "This report shows the input Nifti image overlaid "
@@ -455,9 +454,6 @@ class NiftiMasker(BaseMasker):
 
         if getattr(self, "_shelving", None) is None:
             self._shelving = False
-
-        if self.memory is None:
-            self.memory = Memory(location=None)
 
         self = sanitize_cleaning_parameters(self)
 
@@ -476,9 +472,9 @@ class NiftiMasker(BaseMasker):
                     "if no mask is passed to mask_img."
                 )
             mask_args = self.mask_args if self.mask_args is not None else {}
-            compute_mask = _get_mask_strategy(self.mask_strategy)
 
             logger.log("Computing the mask", verbose=self.verbose)
+            compute_mask = _get_mask_strategy(self.mask_strategy)
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
             )
@@ -523,7 +519,7 @@ class NiftiMasker(BaseMasker):
             self.affine_ = self.mask_img_.affine
 
         # Load data in memory, while also checking that mask is binary/valid
-        data, _ = load_mask_img(self.mask_img_, allow_empty=True)
+        data, _ = load_mask_img(self.mask_img_, allow_empty=False)
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())

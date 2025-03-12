@@ -20,8 +20,6 @@ from nilearn import _utils
 from nilearn._utils import stringify_path
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.image import get_data as get_vol_data
-from nilearn.image import load_img, resampling
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -110,6 +108,9 @@ def _vertex_outer_normals(mesh):
 def _sample_locations_between_surfaces(
     mesh, inner_mesh, affine, n_points=10, depth=None
 ):
+    #  Avoid circular import
+    from nilearn.image.resampling import coord_transform
+
     outer_vertices = load_surf_mesh(mesh).coordinates
     inner_vertices = load_surf_mesh(inner_mesh).coordinates
 
@@ -124,7 +125,7 @@ def _sample_locations_between_surfaces(
     sample_locations = np.rollaxis(sample_locations, 1)
 
     sample_locations_voxel_space = np.asarray(
-        resampling.coord_transform(
+        coord_transform(
             *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
         )
     ).T.reshape(sample_locations.shape)
@@ -172,6 +173,9 @@ def _ball_sample_locations(
         z in voxel space.
 
     """
+    #  Avoid circular import
+    from nilearn.image.resampling import coord_transform
+
     if depth is not None:
         raise ValueError(
             "The 'ball' sampling strategy does not support "
@@ -183,12 +187,12 @@ def _ball_sample_locations(
         _load_uniform_ball_cloud(n_points=n_points) * ball_radius
     )
     mesh_voxel_space = np.asarray(
-        resampling.coord_transform(*vertices.T, affine=np.linalg.inv(affine))
+        coord_transform(*vertices.T, affine=np.linalg.inv(affine))
     ).T
     linear_map = np.eye(affine.shape[0])
     linear_map[:-1, :-1] = affine[:-1, :-1]
     offsets_voxel_space = np.asarray(
-        resampling.coord_transform(
+        coord_transform(
             *offsets_world_space.T, affine=np.linalg.inv(linear_map)
         )
     ).T
@@ -240,6 +244,9 @@ def _line_sample_locations(
         z in voxel space.
 
     """
+    #  Avoid circular import
+    from nilearn.image.resampling import coord_transform
+
     vertices = load_surf_mesh(mesh).coordinates
     normals = _vertex_outer_normals(mesh)
     if depth is None:
@@ -254,7 +261,7 @@ def _line_sample_locations(
     )
     sample_locations = np.rollaxis(sample_locations, 1)
     sample_locations_voxel_space = np.asarray(
-        resampling.coord_transform(
+        coord_transform(
             *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
         )
     ).T.reshape(sample_locations.shape)
@@ -453,6 +460,60 @@ def _projection_matrix(
     return proj
 
 
+def _mask_sample_locations(sample_locations, img_shape, mesh_n_vertices, mask):
+    """Mask sample locations without changing to indices."""
+    sample_locations = np.asarray(np.round(sample_locations), dtype=int)
+    masks = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
+    masks = np.split(masks, mesh_n_vertices)
+    # mask sample locations and make a list of masked indices because
+    # masked locations are not necessarily of the same length
+    masked_sample_locations = [
+        sample_locations[idx][~mask] for idx, mask in enumerate(masks)
+    ]
+    return masked_sample_locations
+
+
+def _nearest_most_frequent(
+    images,
+    mesh,
+    affine,
+    kind="auto",
+    radius=3.0,
+    n_points=None,
+    mask=None,
+    inner_mesh=None,
+    depth=None,
+):
+    """Use the most frequent value of 'n_samples' nearest voxels instead of
+    taking the mean value (as in the _nearest_voxel_sampling function).
+
+    This is useful when the image is a deterministic atlas.
+    """
+    data = np.asarray(images)
+    sample_locations = _sample_locations(
+        mesh,
+        affine,
+        kind=kind,
+        radius=radius,
+        n_points=n_points,
+        inner_mesh=inner_mesh,
+        depth=depth,
+    )
+    sample_locations = _mask_sample_locations(
+        sample_locations, images[0].shape, mesh.n_vertices, mask
+    )
+    texture = np.zeros((mesh.n_vertices, images.shape[0]))
+    for img in range(images.shape[0]):
+        for loc in range(len(sample_locations)):
+            possible_values = [
+                data[img][coords[0], coords[1], coords[2]]
+                for coords in sample_locations[loc]
+            ]
+            unique, counts = np.unique(possible_values, return_counts=True)
+            texture[loc, img] = unique[np.argmax(counts)]
+    return texture.T
+
+
 def _nearest_voxel_sampling(
     images,
     mesh,
@@ -472,6 +533,7 @@ def _nearest_voxel_sampling(
     See documentation of vol_to_surf for details.
 
     """
+    data = np.asarray(images).reshape(len(images), -1).T
     proj = _projection_matrix(
         mesh,
         affine,
@@ -483,7 +545,6 @@ def _nearest_voxel_sampling(
         inner_mesh=inner_mesh,
         depth=depth,
     )
-    data = np.asarray(images).reshape(len(images), -1).T
     texture = proj.dot(data)
     # if all samples around a mesh vertex are outside the image,
     # there is no reasonable value to assign to this vertex.
@@ -575,13 +636,22 @@ def vol_to_surf(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is provided.
 
-    interpolation : {'linear', 'nearest'}, default='linear'
+    interpolation : {'linear', 'nearest', 'nearest_most_frequent'}, \
+                    default='linear'
         How the image intensity is measured at a sample point.
 
         - 'linear':
             Use a trilinear interpolation of neighboring voxels.
         - 'nearest':
             Use the intensity of the nearest voxel.
+
+        - 'nearest_most_frequent':
+            Use the most frequent value in the neighborhood (out of the
+            `n_samples` samples) instead of the mean value. This is useful
+            when the image is a
+            :term:`deterministic atlas<Deterministic atlas>`.
+
+            .. versionadded:: 0.11.2.dev
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20
@@ -663,22 +733,22 @@ def vol_to_surf(
 
     Three strategies are available to select these positions.
 
-        - with 'depth', data is sampled at various cortical depths between
-          corresponding nodes of `surface_mesh` and `inner_mesh` (which can be,
-          for example, a pial surface and a white matter surface). This is the
-          recommended strategy when both the pial and white matter surfaces are
-          available, which is the case for the fsaverage :term:`meshes<mesh>`.
-        - 'ball' uses points regularly spaced in a ball centered
-          at the :term:`mesh` vertex.
-          The radius of the ball is controlled by the parameter `radius`.
-        - 'line' starts by drawing the normal to the :term:`mesh`
-          passing through this vertex.
-          It then selects a segment of this normal,
-          centered at the vertex, of length 2 * `radius`.
-          Image intensities are measured at points regularly spaced
-          on this normal segment, or at positions determined by `depth`.
-        - ('auto' chooses 'depth' if `inner_mesh` is provided and 'line'
-          otherwise)
+    - with 'depth', data is sampled at various cortical depths between
+        corresponding nodes of `surface_mesh` and `inner_mesh` (which can be,
+        for example, a pial surface and a white matter surface). This is the
+        recommended strategy when both the pial and white matter surfaces are
+        available, which is the case for the fsaverage :term:`meshes<mesh>`.
+    - 'ball' uses points regularly spaced in a ball centered
+        at the :term:`mesh` vertex.
+        The radius of the ball is controlled by the parameter `radius`.
+    - 'line' starts by drawing the normal to the :term:`mesh`
+        passing through this vertex.
+        It then selects a segment of this normal,
+        centered at the vertex, of length 2 * `radius`.
+        Image intensities are measured at points regularly spaced
+        on this normal segment, or at positions determined by `depth`.
+    - ('auto' chooses 'depth' if `inner_mesh` is provided and 'line'
+        otherwise)
 
     You can control how many samples are drawn by setting `n_samples`, or their
     position by setting `depth`.
@@ -702,6 +772,13 @@ def vol_to_surf(
     interpolated values are averaged to produce the value associated to this
     particular :term:`mesh` vertex.
 
+    .. important::
+
+        When using the 'nearest_most_frequent' interpolation, each vertex will
+        be assigned the most frequent value in the neighborhood (out of the
+        `n_samples` samples) instead of the mean value. This option works
+        better if `img` is a :term:`deterministic atlas<Deterministic atlas>`.
+
     Examples
     --------
     When both the pial and white matter surface are available, the recommended
@@ -718,20 +795,40 @@ def vol_to_surf(
      ... )
 
     """
+    # avoid circular import
+    from nilearn.image import get_data as get_vol_data
+    from nilearn.image import load_img
+    from nilearn.image.resampling import resample_to_img
+
     sampling_schemes = {
         "linear": _interpolation_sampling,
         "nearest": _nearest_voxel_sampling,
+        "nearest_most_frequent": _nearest_most_frequent,
     }
     if interpolation not in sampling_schemes:
         raise ValueError(
             "'interpolation' should be one of "
             f"{tuple(sampling_schemes.keys())}"
         )
+
+    # deprecate nearest interpolation in 0.13.0
+    if interpolation == "nearest":
+        warnings.warn(
+            "The 'nearest' interpolation method will be deprecated in 0.13.0. "
+            "To disable this warning, select either 'linear' or "
+            "'nearest_most_frequent'. If your image is a deterministic atlas "
+            "'nearest_most_frequent' is recommended. Otherwise, use 'linear'. "
+            "See the documentation for more information.",
+            FutureWarning,
+            stacklevel=2,
+        )
+
     img = load_img(img)
+
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
         mask = get_vol_data(
-            resampling.resample_to_img(
+            resample_to_img(
                 mask_img,
                 img,
                 interpolation="nearest",
@@ -742,13 +839,20 @@ def vol_to_surf(
         )
     else:
         mask = None
+
     original_dimension = len(img.shape)
+
     img = _utils.check_niimg(img, atleast_4d=True)
+
     frames = np.rollaxis(get_vol_data(img), -1)
+
     mesh = load_surf_mesh(surf_mesh)
+
     if inner_mesh is not None:
         inner_mesh = load_surf_mesh(inner_mesh)
+
     sampling = sampling_schemes[interpolation]
+
     texture = sampling(
         frames,
         mesh,
@@ -760,6 +864,7 @@ def vol_to_surf(
         inner_mesh=inner_mesh,
         depth=depth,
     )
+
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
@@ -834,6 +939,9 @@ def load_surf_data(surf_data):
         An array containing surface data
 
     """
+    # avoid circular import
+    from nilearn.image import get_data as get_vol_data
+
     # if the input is a filename, load it
     surf_data = stringify_path(surf_data)
 
@@ -1183,8 +1291,7 @@ def load_surf_mesh(surf_mesh):
         try:
             coords, faces = surf_mesh
             mesh = InMemoryMesh(coordinates=coords, faces=faces)
-        except Exception as e:
-            print(str(e))
+        except Exception:
             raise ValueError(
                 "\nIf a list or tuple is given as input, "
                 "it must have two elements,\n"
@@ -1341,8 +1448,8 @@ class PolyData:
         raise ValueError if the data of the SurfaceImage is not of the given
         dimension.
         """
-        if not all(x.ndim == dim for x in self.parts.values()):
-            msg = [f"{v}D for {k}" for k, v in self.parts.items()]
+        if any(x.ndim != dim for x in self.parts.values()):
+            msg = [f"{v.ndim}D for {k}" for k, v in self.parts.items()]
             raise ValueError(
                 f"Data for each part of {var_name} should be {dim}D. "
                 f"Found: {', '.join(msg)}."
@@ -1894,7 +2001,7 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
-def get_data(img):
+def get_data(img, ensure_finite=False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
 
@@ -1903,6 +2010,10 @@ def get_data(img):
     img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
         SurfaceImage whose data to concatenate and extract.
 
+    ensure_finite : bool
+        If True, non-finite values such as (NaNs and infs) found in the
+        image will be replaced by zeros.
+
     Returns
     -------
     :obj:`~numpy.ndarray`
@@ -1910,7 +2021,22 @@ def get_data(img):
     """
     if isinstance(img, SurfaceImage):
         data = img.data
-    return np.concatenate(list(data.parts.values()), axis=0)
+    elif isinstance(img, PolyData):
+        data = img
+
+    data = np.concatenate(list(data.parts.values()), axis=0)
+
+    if ensure_finite:
+        non_finite_mask = np.logical_not(np.isfinite(data))
+        if non_finite_mask.any():  # any non_finite_mask values?
+            warnings.warn(
+                "Non-finite values detected. "
+                "These values will be replaced with zeros.",
+                stacklevel=3,
+            )
+            data[non_finite_mask] = 0
+
+    return data
 
 
 def concat_imgs(imgs):

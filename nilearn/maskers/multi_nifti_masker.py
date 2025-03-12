@@ -2,8 +2,6 @@
 on multi subject MRI data.
 """
 
-# Author: Gael Varoquaux, Alexandre Abraham
-
 import collections.abc
 import itertools
 import warnings
@@ -405,9 +403,7 @@ class MultiNiftiMasker(NiftiMasker):
             If True, guarantees that output array has no memory in common with
             input array.
 
-        n_jobs : :obj:`int`, default=1
-            The number of cpus to use to do the computation. -1 means
-            'all cpus'.
+        %(n_jobs)s
 
         Returns
         -------
@@ -430,11 +426,8 @@ class MultiNiftiMasker(NiftiMasker):
                 "fitted. "
                 "You must call fit() before calling transform()."
             )
-        target_fov = None
-        if self.target_affine is None:
-            # Force resampling on first image
-            target_fov = "first"
 
+        target_fov = "first" if self.target_affine is None else None
         niimg_iter = iter_check_niimg(
             imgs_list,
             ensure_ndim=None,

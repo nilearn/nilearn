@@ -9,12 +9,17 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
-from nilearn._utils import constrained_layout_kwargs, fill_doc
+from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils import (
+    constrained_layout_kwargs,
+    fill_doc,
+    rename_parameters,
+)
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
+from nilearn.plotting._utils import save_figure_if_needed
 
 VALID_TRI_VALUES = ("full", "lower", "diag")
 
@@ -220,7 +225,7 @@ def plot_matrix(
     figure=None,
     axes=None,
     colorbar=True,
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     tri="full",
     auto_fit=True,
     grid=False,
@@ -299,7 +304,7 @@ def plot_matrix(
         Axes image.
 
     """
-    labels, reorder, fig, axes, own_fig = _sanitize_inputs_plot_matrix(
+    labels, reorder, fig, axes, _ = _sanitize_inputs_plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
     if reorder:
@@ -338,7 +343,7 @@ def plot_matrix(
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_contrast_matrix(
-    contrast_def, design_matrix, colorbar=False, axes=None, output_file=None
+    contrast_def, design_matrix, colorbar=True, axes=None, output_file=None
 ):
     """Create plot for :term:`contrast` definition.
 
@@ -352,13 +357,17 @@ def plot_contrast_matrix(
         as they appear in the design matrix of the fitted model
         combined with operators +-
         and combined with numbers with operators +-`*`/.
+
     design_matrix : :class:`pandas.DataFrame`
         Design matrix to use.
+
     %(colorbar)s
-        Default=False.
+        Default=True.
+
     axes : :class:`matplotlib.axes.Axes` or None, default=None
         Axis on which to plot the figure.
         If None, a new figure will be created.
+
     %(output_file)s
 
     Returns
@@ -395,16 +404,11 @@ def plot_contrast_matrix(
     axes.xaxis.set(ticks=np.arange(n_columns_design_matrix))
     axes.set_xticklabels(design_column_names, rotation=50, ha="left")
 
-    fig = axes.figure
     if colorbar:
+        fig = axes.figure
         fig.colorbar(mat, fraction=0.025, pad=0.04)
 
-    if output_file is not None:
-        fig.savefig(output_file)
-        plt.close(fig=fig)
-        axes = None
-
-    return axes
+    return save_figure_if_needed(axes, output_file)
 
 
 def pad_contrast_matrix(contrast_def, design_matrix):
@@ -458,7 +462,10 @@ def pad_contrast_matrix(contrast_def, design_matrix):
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_design_matrix(
-    design_matrix, rescale=True, axes=None, output_file=None
+    design_matrix,
+    rescale=True,
+    axes=None,
+    output_file=None,
 ):
     """Plot a design matrix.
 
@@ -510,12 +517,7 @@ def plot_design_matrix(
     # corresponding dataframe
     axes.xaxis.tick_top()
 
-    if output_file is not None:
-        fig = axes.figure
-        fig.savefig(output_file)
-        plt.close(fig=fig)
-        axes = None
-    return axes
+    return save_figure_if_needed(axes, output_file)
 
 
 @fill_doc
@@ -570,8 +572,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
     # input validation
     if cmap is None:
-        cmap = plt.cm.tab20
-    elif isinstance(cmap, str):
+        cmap = "tab20"
+    if isinstance(cmap, str):
         cmap = plt.get_cmap(cmap)
 
     event_labels = pd.concat(event["trial_type"] for event in model_event)
@@ -583,11 +585,12 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         plt.close(fig=figure)
         raise ValueError(
             "The number of event types is greater than "
-            f" colors in colormap ({len(event_labels)} > {cmap.N}). "
+            f"colors in colormap ({len(event_labels)} > {cmap.N}). "
             "Use a different colormap."
         )
 
     height = 0.5
+    x_lim = []
     for idx_run, event_df in enumerate(model_event):
         for _, event in event_df.iterrows():
             modulation = 1.0
@@ -599,6 +602,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
 
             event_onset = event["onset"]
             event_end = event["onset"] + event["duration"]
+
+            x_lim.append(event_end)
 
             color = cmap.colors[cmap_dictionary[event["trial_type"]]]
 
@@ -630,22 +635,19 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
     axes.set_xlabel("Time (sec.)")
     axes.set_ylabel("Runs")
     axes.set_ylim(0, n_runs)
+    axes.set_xlim(-1, max(x_lim) + 1)
     axes.set_yticks(np.arange(n_runs) + 0.5)
     axes.set_yticklabels(np.arange(n_runs) + 1)
 
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(fig=figure)
-        figure = None
-
-    return figure
+    return save_figure_if_needed(figure, output_file)
 
 
 @fill_doc
 def plot_design_matrix_correlation(
     design_matrix,
     tri="full",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
+    colorbar=True,
     output_file=None,
     **kwargs,
 ):
@@ -729,11 +731,8 @@ def plot_design_matrix_correlation(
         vmax=vmax,
         vmin=vmax * -1,
         labels=col_labels.to_list(),
+        colorbar=colorbar,
         **kwargs,
     )
 
-    if output_file is not None:
-        plt.savefig(output_file)
-        plt.close()
-
-    return display
+    return save_figure_if_needed(display, output_file)

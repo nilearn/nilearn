@@ -10,12 +10,6 @@ Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 
-# Authors: Yannick Schwartz
-#          Andres Hoyos-Idrobo
-#          Binh Nguyen <tuan-binh.nguyen@inria.fr>
-#          Thomas Bazeille
-#
-
 import itertools
 import warnings
 from collections.abc import Iterable
@@ -125,12 +119,11 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     if param_grid is None:
         param_grid = _default_param_grid(estimator, X, y)
 
-    elif isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
-        param_grid = _wrap_param_grid(param_grid, "alphas")
     elif isinstance(estimator, LogisticRegressionCV):
         param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
         param_grid = _wrap_param_grid(param_grid, "Cs")
-    elif isinstance(estimator, LassoCV):
+
+    elif isinstance(estimator, (RidgeCV, RidgeClassifierCV, LassoCV)):
         param_grid = _wrap_param_grid(param_grid, "alphas")
 
     return param_grid
@@ -826,6 +819,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         y_pred : :class:`numpy.ndarray`, shape (n_samples,)
             Predicted class label per sample.
         """
+        check_is_fitted(self)
         # for backwards compatibility - apply masker transform if X is
         # niimg-like or a list of strings
         if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:

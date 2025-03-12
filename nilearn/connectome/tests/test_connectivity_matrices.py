@@ -12,7 +12,7 @@ from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
@@ -51,7 +51,6 @@ def test_check_estimator_cov_estimator(estimator):
 
 extra_valid_checks = [
     "check_no_attributes_set_in_init",
-    "check_estimators_unfitted",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_fit1d",
     "check_estimator_sparse_tag",

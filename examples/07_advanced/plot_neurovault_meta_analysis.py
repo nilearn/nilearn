@@ -6,12 +6,6 @@ This example shows how to download statistical maps from :term:`Neurovault`.
 
 See :func:`~nilearn.datasets.fetch_neurovault_ids`
 documentation for more details.
-
-..
-    Original authors:
-
-    - Ben Cipollini
-
 """
 
 # %%
@@ -56,7 +50,6 @@ for im in images_meta:
         im["absolute_path"],
         title=f"image {im['id']}: {im['contrast_definition']}",
         plot_abs=False,
-        colorbar=True,
         vmin=-12,
         vmax=12,
     )

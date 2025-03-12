@@ -1,7 +1,5 @@
 """Test the datasets module."""
 
-# Author: Alexandre Abraham
-
 import gzip
 import os
 import re
@@ -16,23 +14,17 @@ import numpy as np
 import pytest
 import requests
 
-from nilearn.datasets import _utils
+from nilearn.datasets import _utils, utils
 from nilearn.datasets.tests._testing import Response
 
 datadir = _utils.PACKAGE_DIRECTORY / "data"
 
 DATASET_NAMES = {
-    "aal",
     "ABIDE_pcp",
     "adhd",
-    "allen_rsn_2011",
-    "basc_multiscale_2015",
     "bids_langloc",
     "brainomics_localizer",
-    "craddock_2012",
-    "destrieux_surface",
     "development_fmri",
-    "difumo_atlases",
     "dosenbach_2010",
     "fiac",
     "fsaverage3",
@@ -40,28 +32,33 @@ DATASET_NAMES = {
     "fsaverage5",
     "fsaverage6",
     "fsaverage",
-    "harvard_oxford",
     "haxby2001",
     "icbm152_2009",
     "language_localizer_demo",
     "localizer_first_level",
-    "juelich",
     "Megatrawls",
     "mixed_gambles",
     "miyawaki2008",
-    "msdl_atlas",
     "neurovault",
     "nki_enhanced_surface",
     "oasis1",
-    "pauli_2017",
     "power_2011",
     "spm_auditory",
     "spm_multimodal",
-    "schaefer_2018",
-    "smith_2009",
-    "talairach_atlas",
-    "yeo_2011",
 }
+
+
+@pytest.mark.parametrize("name", DATASET_NAMES)
+def test_get_dataset_descr(name):
+    """Test function ``get_dataset_descr()``.
+
+    Not needed for atlas datasets as this is checked in
+    nilearn/datasets/tests/test_atlas.py
+    """
+    descr = _utils.get_dataset_descr(name)
+
+    assert isinstance(descr, str)
+    assert len(descr) > 0
 
 
 def test_get_dataset_descr_warning():
@@ -76,18 +73,11 @@ def test_get_dataset_descr_warning():
     assert descr == ""
 
 
-@pytest.mark.parametrize("name", DATASET_NAMES)
-def test_get_dataset_descr(name):
-    """Test function ``get_dataset_descr()``."""
-    descr = _utils.get_dataset_descr(name)
-
-    assert isinstance(descr, str)
-    assert len(descr) > 0
-
-
 def test_get_dataset_dir(tmp_path):
-    # testing folder creation under different environments, enforcing
-    # a custom clean install
+    """Test folder creation under different environments.
+
+    Enforcing a custom clean install.
+    """
     os.environ.pop("NILEARN_DATA", None)
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
@@ -130,12 +120,16 @@ def test_get_dataset_dir(tmp_path):
 
 
 def test_add_readme_to_default_data_locations(tmp_path):
+    """Make sure get_dataset_dir creates a README."""
     assert not (tmp_path / "README.md").exists()
+
     _utils.get_dataset_dir(dataset_name="test", verbose=0, data_dir=tmp_path)
+
     assert (tmp_path / "README.md").exists()
 
 
 def test_get_dataset_dir_path_as_str(tmp_path):
+    """Make sure get_dataset_dir can handle string."""
     expected_base_dir = tmp_path / "env_data"
     expected_dataset_dir = expected_base_dir / "test"
     data_dir = _utils.get_dataset_dir(
@@ -149,6 +143,7 @@ def test_get_dataset_dir_path_as_str(tmp_path):
 
 
 def test_get_dataset_dir_write_access(tmp_path):
+    """Check get_dataset_dir can deal with folders with special permissions."""
     os.environ.pop("NILEARN_SHARED_DATA", None)
 
     no_write = tmp_path / "no_write"
@@ -170,6 +165,7 @@ def test_get_dataset_dir_write_access(tmp_path):
 
 
 def test_get_dataset_dir_symlink(tmp_path):
+    """Make sure get_dataset_dir can handle simlink."""
     expected_linked_dir = tmp_path / "linked"
     expected_linked_dir.mkdir(parents=True)
     expected_base_dir = tmp_path / "env_data"
@@ -188,6 +184,7 @@ def test_get_dataset_dir_symlink(tmp_path):
 
 
 def test_md5_sum_file(tmp_path):
+    """Tests nilearn.dataset._utils._md5_sum_file."""
     # Create dummy temporary file
     f = tmp_path / "test"
     f.write_bytes(b"abcfeg")
@@ -196,12 +193,14 @@ def test_md5_sum_file(tmp_path):
 
 
 def test_read_md5_sum_file(tmp_path):
+    """Tests nilearn.dataset._utils.read_md5_sum_file."""
     # Create dummy temporary file
     f = tmp_path / "test"
     f.write_bytes(
         b"20861c8c3fe177da19a7e9539a5dbac  /tmp/test\n"
         b"70886dcabe7bf5c5a1c24ca24e4cbd94  test/some_image.nii",
     )
+
     h = _utils.read_md5_sum_file(f)
 
     assert "/tmp/test" in h
@@ -211,6 +210,7 @@ def test_read_md5_sum_file(tmp_path):
 
 
 def test_tree(tmp_path):
+    """Tests nilearn.dataset._utils.tree."""
     dir1 = tmp_path / "dir1"
     dir11 = dir1 / "dir11"
     dir12 = dir1 / "dir12"
@@ -303,6 +303,7 @@ def test_movetree(tmp_path):
 
 
 def test_filter_columns():
+    """Test filter_columns."""
     # Create fake recarray
     value1 = np.arange(500)
     strings = np.asarray(["a", "b", "c"])
@@ -353,12 +354,14 @@ def test_filter_columns():
     "ext, mode", [("tar", "w"), ("tar.gz", "w:gz"), ("tgz", "w:gz")]
 )
 def test_uncompress_tar(tmp_path, ext, mode):
-    """Tests nilearn.dataset._utils.uncompress_file for tar files."""
-    # for each kind of compression, we create:
-    # - a compressed object (ztemp)
-    # - a temporary file-like object to compress into ztemp
-    # we then uncompress the ztemp object into dtemp under the name ftemp
-    # and check if ftemp exists
+    """Tests nilearn.dataset._utils.uncompress_file for tar files.
+
+    For each kind of compression, we create:
+    - a compressed object (ztemp)
+    - a temporary file-like object to compress into ztemp
+    we then uncompress the ztemp object into dtemp under the name ftemp
+    and check if ftemp exists
+    """
     ztemp = tmp_path / f"test.{ext}"
     ftemp = "test"
     with tarfile.open(ztemp, mode) as testtar:
@@ -367,33 +370,39 @@ def test_uncompress_tar(tmp_path, ext, mode):
         testtar.add(temp)
 
     _utils.uncompress_file(ztemp, verbose=0)
+
     assert (tmp_path / ftemp).exists()
 
 
 def test_uncompress_zip(tmp_path):
-    """Tests nilearn.dataset._utils.uncompress_file for zip files."""
-    # for each kind of compression, we create:
-    # - a compressed object (ztemp)
-    # - a temporary file-like object to compress into ztemp
-    # we then uncompress the ztemp object into dtemp under the name ftemp
-    # and check if ftemp exists
+    """Tests nilearn.dataset._utils.uncompress_file for zip files.
+
+    For each kind of compression, we create:
+    - a compressed object (ztemp)
+    - a temporary file-like object to compress into ztemp
+    we then uncompress the ztemp object into dtemp under the name ftemp
+    and check if ftemp exists
+    """
     ztemp = tmp_path / "test.zip"
     ftemp = "test"
     with ZipFile(ztemp, "w") as testzip:
         testzip.writestr(ftemp, " ")
 
     _utils.uncompress_file(ztemp, verbose=0)
+
     assert (tmp_path / ftemp).exists()
 
 
 @pytest.mark.parametrize("ext", [".gz", ""])
 def test_uncompress_gzip(tmp_path, ext):
-    """Tests nilearn.dataset._utils.uncompress_file for gzip files."""
-    # for each kind of compression, we create:
-    # - a compressed object (ztemp)
-    # - a temporary file-like object to compress into ztemp
-    # we then uncompress the ztemp object into dtemp under the name ftemp
-    # and check if ftemp exists
+    """Tests nilearn.dataset._utils.uncompress_file for gzip files.
+
+    For each kind of compression, we create:
+    - a compressed object (ztemp)
+    - a temporary file-like object to compress into ztemp
+    we then uncompress the ztemp object into dtemp under the name ftemp
+    and check if ftemp exists
+    """
     ztemp = tmp_path / f"test{ext}"
     ftemp = "test"
 
@@ -401,11 +410,12 @@ def test_uncompress_gzip(tmp_path, ext):
         testgzip.write(ftemp)
 
     _utils.uncompress_file(ztemp, verbose=0)
+
     assert (tmp_path / ftemp).exists()
 
 
 def test_safe_extract(tmp_path):
-    # Test vulnerability patch by mimicking path traversal
+    """Test vulnerability patch by mimicking path traversal."""
     ztemp = tmp_path / "test.tar"
     in_archive_file = tmp_path / "something.txt"
     in_archive_file.write_text("hello")
@@ -420,6 +430,8 @@ def test_safe_extract(tmp_path):
 
 
 def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
+    """Check that fetch_single_file can fetch part of file."""
+
     def get_response(match, request):
         """Create mock Response object with correct content range header."""
         req_range = request.headers.get("Range")
@@ -428,9 +440,7 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
         # set up Response object to return partial content
         # and update header accordingly
         if req_range is not None:
-            resp.iter_start = int(
-                re.match(r"bytes=(\d+)-", req_range).group(1)
-            )
+            resp.iter_start = int(re.match(r"bytes=(\d+)-", req_range)[1])
             resp.headers["Content-Range"] = (
                 f"bytes {resp.iter_start}-{len(resp.content) - 1}"
                 f"/{len(resp.content)}"
@@ -469,6 +479,7 @@ def test_fetch_single_file_part(tmp_path, capsys, request_mocker):
 
 
 def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
+    """Check error fetch_single_file."""
     url = "http://foo/temp.txt"
     file_part = tmp_path / "temp.txt.part"
     file_part.touch()  # should not be overwritten
@@ -487,6 +498,7 @@ def test_fetch_single_file_part_error(tmp_path, capsys, request_mocker):
 
 
 def test_fetch_single_file_overwrite(tmp_path, request_mocker):
+    """Check that fetch_single_file can overwrite files."""
     # overwrite non-exiting file.
     fil = _utils.fetch_single_file(
         url="http://foo/", data_dir=tmp_path, verbose=0, overwrite=True
@@ -524,6 +536,7 @@ def test_fetch_files_use_session(
     tmp_path,
     request_mocker,  # noqa: ARG001
 ):
+    """Use session parameter of fetch_files."""
     if should_cast_path_to_string:
         tmp_path = str(tmp_path)
 
@@ -545,6 +558,7 @@ def test_fetch_files_use_session(
 def test_fetch_files_overwrite(
     should_cast_path_to_string, tmp_path, request_mocker
 ):
+    """Check that fetch_files can overwrite files."""
     if should_cast_path_to_string:
         tmp_path = str(tmp_path)
 
@@ -593,6 +607,7 @@ def test_fetch_files_overwrite(
 
 
 def test_naive_ftp_adapter():
+    """Test _NaiveFTPAdapter error."""
     sender = _utils._NaiveFTPAdapter()
     resp = sender.send(requests.Request("GET", "ftp://example.com").prepare())
     resp.close()
@@ -606,11 +621,11 @@ def test_naive_ftp_adapter():
         )
 
 
-# TODO remove for release 0.13.0
-from nilearn.datasets import utils
-
-
 def test_load_sample_motor_activation_image():
+    """Test deprecation utils.load_sample_motor_activation_image.
+
+    Remove when when version >= 0.13.
+    """
     with pytest.warns(
         DeprecationWarning,
         match="Please import this function from 'nilearn.datasets.func'",

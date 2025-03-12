@@ -5,7 +5,6 @@ not the underlying functions used (e.g. clean()). See test_masking.py and
 test_signal.py for this.
 """
 
-# Author: Gael Varoquaux, Philippe Gervais
 import shutil
 import warnings
 from pathlib import Path
@@ -17,23 +16,17 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
 from nilearn._utils import data_gen, exceptions, testing
-from nilearn._utils.class_inspect import check_estimator, get_params
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.class_inspect import get_params
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
-from nilearn.maskers.tests.conftest import check_valid_for_all_maskers
-
-extra_valid_checks = [
-    *check_valid_for_all_maskers(),
-]
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[NiftiMasker()],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -46,7 +39,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[NiftiMasker()],
-        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
@@ -294,21 +286,25 @@ def test_fit_no_mask_no_img_error():
         mask.fit()
 
 
-def test_mask_strategy_errors(img_3d_rand_eye):
+def test_mask_strategy_errors_warnings(img_fmri):
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
-    mask = NiftiMasker(mask_strategy="oops")
+
+    masker = NiftiMasker(mask_strategy="oops", mask_args={"threshold": 0.0})
     with pytest.raises(
         ValueError, match="Unknown value of mask_strategy 'oops'"
     ):
-        mask.fit(img_3d_rand_eye)
+        masker.fit(img_fmri)
+
     # Warning with deprecated 'template' strategy,
     # plus an exception because there's no resulting mask
-    mask = NiftiMasker(mask_strategy="template")
+    masker = NiftiMasker(
+        mask_strategy="template", mask_args={"threshold": 0.0}
+    )
     with pytest.warns(
         UserWarning, match="Masking strategy 'template' is deprecated."
     ):
-        mask.fit(img_3d_rand_eye)
+        masker.fit(img_fmri)
 
 
 def test_compute_epi_mask(affine_eye):
@@ -370,12 +366,26 @@ def expected_mask(mask_args):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-@pytest.mark.parametrize("mask_args", [{}, {"threshold": 0.0}])
-def test_compute_brain_mask(strategy, mask_args, expected_mask):
-    """Check masker for template masking strategy."""
+@pytest.mark.parametrize("mask_args", [{}])
+def test_compute_brain_mask_empty_mask_error(strategy, mask_args):
+    """Check masker raise error when estimated mask is empty."""
+    masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
+
     img, _ = data_gen.generate_random_img((9, 9, 5))
 
+    with pytest.raises(ValueError, match="masks all data"):
+        masker.fit(img)
+
+
+@pytest.mark.parametrize(
+    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+)
+@pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
+def test_compute_brain_mask(strategy, expected_mask, mask_args):
+    """Check masker for template masking strategy."""
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
+    img, _ = data_gen.generate_random_img((9, 9, 5))
+
     masker.fit(img)
 
     np.testing.assert_array_equal(get_data(masker.mask_img_), expected_mask)
@@ -518,17 +528,3 @@ def test_nifti_masker_io_shapes(rng, shape_3d_default, affine_eye):
 
     with pytest.raises(TypeError):
         masker.inverse_transform(data_2d.T)
-
-
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="Test requires matplotlib not to be installed.",
-)
-def test_nifti_masker_reporting_mpl_warning():
-    """Raise warning after exception if matplotlib is not installed."""
-    with warnings.catch_warnings(record=True) as warning_list:
-        result = NiftiMasker().generate_report()
-
-    assert len(warning_list) == 1
-    assert issubclass(warning_list[0].category, ImportWarning)
-    assert result == [None]

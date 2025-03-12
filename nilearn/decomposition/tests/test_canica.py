@@ -5,7 +5,7 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition.canica import CanICA
@@ -112,7 +112,6 @@ def canica_data():
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
     "check_no_attributes_set_in_init",
 ]
 

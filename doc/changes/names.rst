@@ -147,6 +147,8 @@
 
 .. _Johannes Wiesner: https://github.com/JohannesWiesner
 
+.. _John T. Johnson: https://github.com/JohnAtl
+
 .. _Jon Haitz Legarreta Gorrono: https://github.com/jhlegarreta
 
 .. _Jona Sassenhagen: https://github.com/jona-sassenhagen
@@ -172,6 +174,8 @@
 .. _Kshitij Chawla: https://github.com/kchawla-pi
 
 .. _Kun CHEN: https://chenkun.me
+
+.. _Lee Newberg: https://github.com/Leengit
 
 .. _Leonard Sasse: https://github.com/LeSasse
 

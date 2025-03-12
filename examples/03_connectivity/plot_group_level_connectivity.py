@@ -51,7 +51,7 @@ masker = NiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
 ).fit()
 
 # %%
@@ -113,7 +113,6 @@ for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
     plotting.plot_matrix(
         matrix,
         tri="lower",
-        colorbar=True,
         axes=ax,
         title=f"correlation, child {i}",
         vmax=vmax,
@@ -152,7 +151,6 @@ for i, (matrix, ax) in enumerate(zip(partial_correlation_matrices, axes)):
     plotting.plot_matrix(
         matrix,
         tri="lower",
-        colorbar=True,
         axes=ax,
         title=f"partial correlation, child {i}",
         vmax=vmax,
@@ -193,7 +191,6 @@ for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
     plotting.plot_matrix(
         matrix,
         tri="lower",
-        colorbar=True,
         axes=ax,
         title=f"tangent offset, child {i}",
     )

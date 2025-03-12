@@ -6,6 +6,7 @@ from nilearn.interfaces.fsl import get_design_from_fslmat
 
 
 def test_get_design_from_fslmat(tmp_path):
+    """Check that FSL design matrix can be read."""
     fsl_mat_path = tmp_path / "fsl_mat.txt"
     matrix = np.ones((5, 5))
     with fsl_mat_path.open("w") as fsl_mat:

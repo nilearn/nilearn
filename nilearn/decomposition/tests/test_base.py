@@ -4,7 +4,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 from scipy import linalg
 
-from nilearn._utils.class_inspect import check_estimator
+from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _affine_eye, _img_3d_ones, _rng
 from nilearn.decomposition._base import (
     _BaseDecomposition,
@@ -15,7 +15,6 @@ from nilearn.maskers import MultiNiftiMasker
 
 extra_valid_checks = [
     "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_unfitted",
     "check_no_attributes_set_in_init",
 ]
 

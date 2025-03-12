@@ -5,8 +5,6 @@ See http://nilearn.github.io/stable/manipulating_images/input_output.html
 Only matplotlib is required.
 """
 
-# Author: Gael Varoquaux, Chris Filo Gorgolewski
-
 import collections.abc
 import functools
 import numbers
@@ -15,12 +13,15 @@ import warnings
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
 from scipy.ndimage import binary_fill_holes
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import (
+    as_ndarray,
     check_niimg_3d,
     check_niimg_4d,
     compare_version,
@@ -30,8 +31,7 @@ from nilearn._utils import (
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_threshold
+from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn.image import (
     get_data,
@@ -44,9 +44,14 @@ from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
-from nilearn.plotting._utils import _check_threshold
+from nilearn.plotting._utils import (
+    check_threshold_not_negative,
+    create_colormap_from_lut,
+    get_cbar_ticks,
+    get_colorbar_and_data_ranges,
+    save_figure_if_needed,
+)
 from nilearn.plotting.displays import get_projector, get_slicer
-from nilearn.plotting.displays._slicers import get_cbar_ticks
 from nilearn.signal import clean
 
 
@@ -64,89 +69,6 @@ def show():
 
 ###############################################################################
 # Core, usage-agnostic functions
-
-
-def get_colorbar_and_data_ranges(
-    stat_map_data,
-    vmin=None,
-    vmax=None,
-    symmetric_cbar=True,
-    force_min_stat_map_value=None,
-):
-    """Set colormap and colorbar limits.
-
-    Used by plot_stat_map, plot_glass_brain and plot_img_on_surf.
-
-    The limits for the colorbar depend on the symmetric_cbar argument. Please
-    refer to docstring of plot_stat_map.
-    """
-    # handle invalid vmin/vmax inputs
-    if (not isinstance(vmin, numbers.Number)) or (not np.isfinite(vmin)):
-        vmin = None
-    if (not isinstance(vmax, numbers.Number)) or (not np.isfinite(vmax)):
-        vmax = None
-
-    # avoid dealing with masked_array:
-    if hasattr(stat_map_data, "_mask"):
-        stat_map_data = np.asarray(
-            stat_map_data[np.logical_not(stat_map_data._mask)]
-        )
-
-    if force_min_stat_map_value is None:
-        stat_map_min = np.nanmin(stat_map_data)
-    else:
-        stat_map_min = force_min_stat_map_value
-    stat_map_max = np.nanmax(stat_map_data)
-
-    if symmetric_cbar == "auto":
-        if vmin is None or vmax is None:
-            min_value = (
-                stat_map_min if vmin is None else max(vmin, stat_map_min)
-            )
-            max_value = (
-                stat_map_max if vmax is None else min(stat_map_max, vmax)
-            )
-            symmetric_cbar = min_value < 0 < max_value
-        else:
-            symmetric_cbar = np.isclose(vmin, -vmax)
-
-    # check compatibility between vmin, vmax and symmetric_cbar
-    if symmetric_cbar:
-        if vmin is None and vmax is None:
-            vmax = max(-stat_map_min, stat_map_max)
-            vmin = -vmax
-        elif vmin is None:
-            vmin = -vmax
-        elif vmax is None:
-            vmax = -vmin
-        elif not np.isclose(vmin, -vmax):
-            raise ValueError(
-                "vmin must be equal to -vmax unless symmetric_cbar is False."
-            )
-        cbar_vmin = vmin
-        cbar_vmax = vmax
-    # set colorbar limits
-    else:
-        negative_range = stat_map_max <= 0
-        positive_range = stat_map_min >= 0
-        if positive_range:
-            cbar_vmin = 0 if vmin is None else vmin
-            cbar_vmax = vmax
-        elif negative_range:
-            cbar_vmax = 0 if vmax is None else vmax
-            cbar_vmin = vmin
-        else:
-            # limit colorbar to plotted values
-            cbar_vmin = vmin
-            cbar_vmax = vmax
-
-    # set vmin/vmax based on data if they are not already set
-    if vmin is None:
-        vmin = stat_map_min
-    if vmax is None:
-        vmax = stat_map_max
-
-    return cbar_vmin, cbar_vmax, vmin, vmax
 
 
 @fill_doc
@@ -259,7 +181,8 @@ def _plot_img_with_bg(
     ValueError
         if the specified threshold is a negative number
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     show_nan_msg = False
     if vmax is not None and np.isnan(vmax):
@@ -298,7 +221,7 @@ def _plot_img_with_bg(
         if threshold == "auto":
             # Threshold epsilon below a percentile value, to be sure that some
             # voxels pass the threshold
-            threshold = fast_abs_percentile(data) - 1e-5
+            threshold = float(fast_abs_percentile(data)) - 1e-5
 
         img = new_img_like(img, as_ndarray(data), affine)
 
@@ -319,7 +242,7 @@ def _plot_img_with_bg(
             bg_img,
             vmin=bg_vmin,
             vmax=bg_vmax,
-            cmap=plt.cm.gray,
+            cmap="gray",
             interpolation=interpolation,
         )
 
@@ -351,11 +274,8 @@ def _plot_img_with_bg(
             cbar.vmin, cbar.vmax, threshold, n_ticks=len(cbar.locator.locs)
         )
         cbar.set_ticks(new_tick_locs)
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
-    return display
+
+    return save_figure_if_needed(display, output_file)
 
 
 def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
@@ -399,7 +319,7 @@ def plot_img(
     annotate=True,
     draw_cross=True,
     black_bg=False,
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%.2g",
     resampling_interpolation="continuous",
     bg_img=None,
@@ -440,7 +360,7 @@ def plot_img(
         Default=False.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -501,6 +421,9 @@ def plot_img(
         :mod:`nilearn.plotting`
             See API reference for other options
     """
+    check_params(locals())
+    check_threshold_not_negative(threshold)
+
     display = _plot_img_with_bg(
         img,
         cut_coords=cut_coords,
@@ -673,8 +596,8 @@ def plot_anat(
     draw_cross=True,
     black_bg="auto",
     dim="auto",
-    cmap=plt.cm.gray,
-    colorbar=False,
+    cmap="gray",
+    colorbar=True,
     cbar_tick_format="%.2g",
     radiological=False,
     vmin=None,
@@ -717,7 +640,7 @@ def plot_anat(
         Default='auto'.
 
     %(cmap)s
-        Default=`plt.cm.gray`.
+        Default=`gray`.
 
     colorbar : :obj:`bool`, default=False
         If True, display a colorbar on the right of the plots.
@@ -756,7 +679,8 @@ def plot_anat(
     are set to zero.
 
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     anat_img, black_bg, anat_vmin, anat_vmax = load_anat(
         anat_img, dim=dim, black_bg=black_bg
@@ -802,9 +726,9 @@ def plot_epi(
     annotate=True,
     draw_cross=True,
     black_bg=True,
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%.2g",
-    cmap=plt.cm.gray,
+    cmap="gray",
     vmin=None,
     vmax=None,
     radiological=False,
@@ -846,7 +770,7 @@ def plot_epi(
         Ex: use "%%i" to display as integers.
 
     %(cmap)s
-        Default=`plt.cm.gray`.
+        Default=`gray`.
 
     %(vmin)s
 
@@ -869,6 +793,7 @@ def plot_epi(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
+    check_params(locals())
     display = plot_img(
         epi_img,
         cut_coords=cut_coords,
@@ -958,9 +883,9 @@ def plot_roi(
     black_bg="auto",
     threshold=0.5,
     alpha=0.7,
-    cmap=plt.cm.gist_ncar,
+    cmap="gist_ncar",
     dim="auto",
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%i",
     vmin=None,
     vmax=None,
@@ -1012,8 +937,8 @@ def plot_roi(
         Alpha sets the transparency of the color inside the filled
         contours.
 
-    %(cmap)s
-        Default=`plt.cm.gist_ncar`.
+    %(cmap_lut)s
+        Default=`gist_ncar`.
 
     %(dim)s
         Default='auto'.
@@ -1073,7 +998,8 @@ def plot_roi(
     nilearn.plotting.plot_prob_atlas : To simply plot probabilistic atlases
         (4D images)
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     valid_view_types = ["continuous", "contours"]
     if view_type not in valid_view_types:
@@ -1088,6 +1014,9 @@ def plot_roi(
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
     )
+
+    if isinstance(cmap, pd.DataFrame):
+        cmap = create_colormap_from_lut(cmap)
 
     display = _plot_img_with_bg(
         img=roi_img,
@@ -1140,8 +1069,8 @@ def plot_prob_atlas(
     draw_cross=True,
     black_bg="auto",
     dim="auto",
-    colorbar=False,
-    cmap=plt.cm.gist_rainbow,
+    colorbar=True,
+    cmap="gist_rainbow",
     vmin=None,
     vmax=None,
     alpha=0.7,
@@ -1223,10 +1152,10 @@ def plot_prob_atlas(
         Default='auto'.
 
     %(cmap)s
-        Default=`plt.cm.gist_rainbow`.
+        Default=`gist_rainbow`.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     %(vmin)s
 
@@ -1256,7 +1185,8 @@ def plot_prob_atlas(
     --------
     nilearn.plotting.plot_roi : To simply plot max-prob atlases (3D images)
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     display = plot_anat(
         bg_img,
@@ -1374,12 +1304,8 @@ def plot_prob_atlas(
             va="bottom",
             xycoords="axes fraction",
         )
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
 
-    return display
+    return save_figure_if_needed(display, output_file)
 
 
 @fill_doc
@@ -1398,7 +1324,7 @@ def plot_stat_map(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cbar="auto",
     dim="auto",
     vmin=None,
@@ -1498,7 +1424,8 @@ def plot_stat_map(
     nilearn.plotting.plot_epi : To simply plot raw EPI images
     nilearn.plotting.plot_glass_brain : To plot maps in a glass brain
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     # dim the background
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
@@ -1549,7 +1476,7 @@ def plot_glass_brain(
     stat_map_img,
     output_file=None,
     display_mode="ortho",
-    colorbar=False,
+    colorbar=True,
     cbar_tick_format="%.2g",
     figure=None,
     axes=None,
@@ -1595,7 +1522,7 @@ def plot_glass_brain(
         'lzry', 'lyrz'.
 
     %(colorbar)s
-        Default=False.
+        Default=True.
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -1661,7 +1588,8 @@ def plot_glass_brain(
     -----
     Arrays should be passed in numpy convention: (x, y, z) ordered.
     """
-    _check_threshold(threshold)
+    check_params(locals())
+    check_threshold_not_negative(threshold)
 
     if cmap is None:
         cmap = cm.cold_white_hot
@@ -1738,7 +1666,7 @@ def plot_connectome(
     node_coords,
     node_color="auto",
     node_size=50,
-    edge_cmap=cm.bwr,
+    edge_cmap=DEFAULT_DIVERGING_CMAP,
     edge_vmin=None,
     edge_vmax=None,
     edge_threshold=None,
@@ -1752,7 +1680,7 @@ def plot_connectome(
     alpha=0.7,
     edge_kwargs=None,
     node_kwargs=None,
-    colorbar=False,
+    colorbar=True,
     radiological=False,
 ):
     """Plot connectome on top of the brain glass schematics.
@@ -1780,7 +1708,7 @@ def plot_connectome(
     node_size : scalar or array_like, default=50
         Size(s) of the nodes in points^2.
 
-    edge_cmap : colormap, default=cm.bwr
+    edge_cmap : colormap, default="RdBu_r"
         Colormap used for representing the strength of the edges.
 
     edge_vmin, edge_vmax : :obj:`float` or None, default=None
@@ -1819,8 +1747,10 @@ def plot_connectome(
     node_kwargs : :obj:`dict` or None, default=None
         Will be passed as kwargs to the plt.scatter call that plots all
         the nodes in one go.
+
     %(colorbar)s
-        Default=False.
+        Default=True.
+
     %(radiological)s
 
     Returns
@@ -1863,12 +1793,7 @@ def plot_connectome(
         colorbar=colorbar,
     )
 
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
-
-    return display
+    return save_figure_if_needed(display, output_file)
 
 
 @fill_doc
@@ -1876,7 +1801,7 @@ def plot_markers(
     node_values,
     node_coords,
     node_size="auto",
-    node_cmap=plt.cm.gray,
+    node_cmap="gray",
     node_vmin=None,
     node_vmax=None,
     node_threshold=None,
@@ -1910,7 +1835,7 @@ def plot_markers(
         Size(s) of the nodes in points^2. By default the size of the node is
         inversely proportional to the number of nodes.
 
-    node_cmap : :obj:`str` or colormap, default=plt.cm.gray.
+    node_cmap : :obj:`str` or colormap, default="gray".
         Colormap used to represent the node measure.
 
     node_vmin : :obj:`float` or None, default=None
@@ -2029,12 +1954,7 @@ def plot_markers(
         display._colorbar = True
         display._show_colorbar(cmap=node_cmap, norm=norm)
 
-    if output_file is not None:
-        display.savefig(output_file)
-        display.close()
-        display = None
-
-    return display
+    return save_figure_if_needed(display, output_file)
 
 
 @fill_doc
@@ -2051,7 +1971,7 @@ def plot_carpet(
     vmax=None,
     title=None,
     cmap="gray",
-    cmap_labels=plt.cm.gist_ncar,
+    cmap_labels="gist_ncar",
     standardize=True,
 ):
     """Plot an image representation of :term:`voxel` intensities across time.
@@ -2097,7 +2017,7 @@ def plot_carpet(
         Default=`gray`.
 
     cmap_labels : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
-                  default=`plt.cm.gist_ncar`
+                  default=`gist_ncar`
         If ``mask_img`` corresponds to an atlas, then cmap_labels
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
@@ -2128,6 +2048,7 @@ def plot_carpet(
     .. footbibliography::
 
     """
+    check_params(locals())
     img = check_niimg_4d(img, dtype="auto")
 
     # Define TR and number of frames
@@ -2293,18 +2214,13 @@ def plot_carpet(
         axes.spines["left"].set_position(("outward", buffer))
         axes.set_ylabel("voxels")
 
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-        figure = None
-
-    return figure
+    return save_figure_if_needed(figure, output_file)
 
 
 def plot_img_comparison(
     ref_imgs,
     src_imgs,
-    masker,
+    masker=None,
     plot_hist=True,
     log=True,
     ref_label="image set 1",

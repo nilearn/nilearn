@@ -5,11 +5,10 @@ brain regions.
 import warnings
 
 import numpy as np
-from joblib import Memory
 from scipy import linalg
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import signal
+from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils import constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
@@ -118,7 +117,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         memory_level=1,
         verbose=0,
         reports=True,
-        cmap="inferno",
+        cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
     ):
         self.maps_img = maps_img
@@ -208,6 +207,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             "n_vertices": {},
             "number_of_regions": self.n_elements_,
             "summary": {},
+            "warning_message": None,
         }
 
         for part in self.maps_img.data.parts:
@@ -273,11 +273,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
-        if self.mask_img is not None:
-            mask_data = get_data(self.mask_img)
-        else:
-            mask_data = None
-
+        mask_data = (
+            get_data(self.mask_img) if self.mask_img is not None else None
+        )
         if self.smoothing_fwhm is not None:
             warnings.warn(
                 "Parameter smoothing_fwhm "
@@ -298,9 +296,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if self.clean_args is None:
             self.clean_args = {}
         parameters["clean_args"] = self.clean_args
-
-        if self.memory is None:
-            self.memory = Memory(location=None)
 
         # apply mask if provided
         # and then extract signal via least square regression
@@ -406,11 +401,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
-        if self.mask_img is not None:
-            mask_data = get_data(self.mask_img)
-        else:
-            mask_data = None
-
+        mask_data = (
+            get_data(self.mask_img) if self.mask_img is not None else None
+        )
         if region_signals.shape[1] != self.n_elements_:
             raise ValueError(
                 f"Expected {self.n_elements_} regions, "
@@ -514,7 +507,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
                 warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                self._report_content["engine"] = None
                 return [None]
 
         if engine not in ["plotly", "matplotlib"]:

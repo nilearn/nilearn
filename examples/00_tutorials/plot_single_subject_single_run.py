@@ -43,9 +43,9 @@ from nilearn.plotting import plot_anat, plot_img, plot_stat_map, show
 
 fmri_img = subject_data.func
 mean_img = mean_img(subject_data.func[0], copy_header=True)
-plot_img(mean_img, colorbar=True, cbar_tick_format="%i")
+plot_img(mean_img, cbar_tick_format="%i")
 
-plot_anat(subject_data.anat, colorbar=True, cbar_tick_format="%i")
+plot_anat(subject_data.anat, cbar_tick_format="%i")
 
 show()
 
@@ -333,7 +333,16 @@ eff_map.to_filename(output_dir / "listening_gt_rest_eff_map.nii.gz")
 
 # %%
 # We can furthermore extract and report the found positions in a table.
-
+#
+# .. seealso::
+#
+#     This function does not report any named anatomical location
+#     for the clusters.
+#     To get the names of the location of the clusters
+#     according to one or several atlases,
+#     we recommend using
+#     the `atlasreader package <https://github.com/miykael/atlasreader>`_.
+#
 from nilearn.reporting import get_clusters_table
 
 table = get_clusters_table(

@@ -42,6 +42,7 @@ from nilearn.surface.surface import (
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     concat_imgs,
+    get_data,
     index_img,
     iter_img,
     load_surf_data,
@@ -577,11 +578,16 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
     assert np.allclose(locations, expected)
 
 
-def test_depth_ball_sampling():
+def test_vol_to_surf_errors():
+    """Test errors thrown by vol_to_surf."""
     img, *_ = data_gen.generate_mni_space_img()
     mesh = load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
+
     with pytest.raises(ValueError, match=".*does not support.*"):
         vol_to_surf(img, mesh, kind="ball", depth=[0.5])
+
+    with pytest.raises(ValueError, match=".*interpolation.*"):
+        vol_to_surf(img, mesh, interpolation="bad")
 
 
 @pytest.mark.parametrize("kind", ["line", "ball"])
@@ -593,21 +599,51 @@ def test_vol_to_surf(kind, n_scans, use_mask):
         mask_img = None
     if n_scans == 1:
         img = image.new_img_like(img, image.get_data(img).squeeze())
+
     fsaverage = datasets.fetch_surf_fsaverage()
+
     mesh = load_surf_mesh(fsaverage["pial_left"])
     inner_mesh = load_surf_mesh(fsaverage["white_left"])
     center_mesh = (
         np.mean([mesh.coordinates, inner_mesh.coordinates], axis=0),
         mesh.faces,
     )
+
     proj = vol_to_surf(
         img, mesh, kind="depth", inner_mesh=inner_mesh, mask_img=mask_img
     )
     other_proj = vol_to_surf(img, center_mesh, kind=kind, mask_img=mask_img)
+
     correlation = pearsonr(proj.ravel(), other_proj.ravel())[0]
+
     assert correlation > 0.99
-    with pytest.raises(ValueError, match=".*interpolation.*"):
-        vol_to_surf(img, mesh, interpolation="bad")
+
+
+def test_vol_to_surf_nearest_most_frequent(img_labels):
+    """Test nearest most frequent interpolation method in vol_to_surf when
+    converting deterministic atlases with integer labels.
+    """
+    img_labels_data = img_labels.get_fdata()
+    uniques_vol = np.unique(img_labels_data)
+
+    mesh = flat_mesh(5, 7)
+    mesh_labels = vol_to_surf(
+        img_labels, mesh, interpolation="nearest_most_frequent"
+    )
+
+    uniques_surf = np.unique(mesh_labels)
+    assert set(uniques_surf) <= set(uniques_vol)
+
+
+def test_vol_to_surf_nearest_deprecation(img_labels):
+    """Test deprecation warning for nearest interpolation method in
+    vol_to_surf.
+    """
+    mesh = flat_mesh(5, 7)
+    with pytest.warns(
+        FutureWarning, match="interpolation method will be deprecated"
+    ):
+        vol_to_surf(img_labels, mesh, interpolation="nearest")
 
 
 def test_masked_indices():
@@ -740,7 +776,7 @@ def test_choose_kind():
         kind = _choose_kind("depth", None)
 
 
-def test__validate_mesh(rng):
+def test_validate_mesh(rng):
     """Ensures that invalid meshes cannot be instantiated."""
     # valid mesh is fine
     coords = rng.random((20, 3))
@@ -1247,3 +1283,27 @@ def test_index_img_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         index_img(1, index=1)
+
+
+def test_get_data(surf_img_1d):
+    """Check that getting data from image or polydata gives same result."""
+    data_from_image = get_data(surf_img_1d)
+    data_from_polydata = get_data(surf_img_1d.data)
+    assert_array_equal(data_from_image, data_from_polydata)
+
+
+@pytest.mark.parametrize("ensure_finite", [True, False])
+def test_get_data_ensure_finite(surf_img_1d, ensure_finite):
+    """Check get data can deal with non finite values."""
+    surf_img_1d.data.parts["left"][0] = np.nan
+    surf_img_1d.data.parts["left"][1] = np.inf
+
+    if ensure_finite is True:
+        with pytest.warns(UserWarning, match="Non-finite values detected."):
+            data_from_image = get_data(
+                surf_img_1d, ensure_finite=ensure_finite
+            )
+        assert np.all(np.isfinite(data_from_image))
+    else:
+        data_from_image = get_data(surf_img_1d, ensure_finite=ensure_finite)
+        assert np.logical_not(np.all(np.isfinite(data_from_image)))

@@ -67,6 +67,7 @@ plot_prob_atlas(
     components_img,
     view_type="filled_contours",
     title="Dictionary Learning maps",
+    draw_cross=False,
 )
 
 show()
@@ -88,7 +89,7 @@ extractor = RegionExtractor(
     thresholding_strategy="ratio_n_voxels",
     extractor="local_regions",
     standardize="zscore_sample",
-    standardize_confounds="zscore_sample",
+    standardize_confounds=True,
     min_region_size=1350,
     verbose=1,
 )
@@ -107,7 +108,10 @@ title = (
     "Each separate color of region indicates extracted region"
 )
 plot_prob_atlas(
-    regions_extracted_img, view_type="filled_contours", title=title
+    regions_extracted_img,
+    view_type="filled_contours",
+    title=title,
+    draw_cross=False,
 )
 
 show()
@@ -164,7 +168,7 @@ from nilearn.plotting import (
 title = f"Correlation between {int(n_regions_extracted)} regions"
 
 # First plot the matrix
-plot_matrix(mean_correlations, vmax=1, vmin=-1, colorbar=True, title=title)
+plot_matrix(mean_correlations, vmax=1, vmin=-1, title=title)
 
 # Then find the center of the regions and plot a connectome
 regions_img = regions_extracted_img
@@ -190,7 +194,6 @@ coords = find_xyz_cut_coords(img)
 plot_stat_map(
     img,
     cut_coords=coords,
-    colorbar=True,
     title="Showing one specific network",
 )
 
@@ -208,7 +211,9 @@ from nilearn.plotting import cm, plot_anat
 
 regions_indices_of_map3 = np.where(np.array(regions_index) == 4)
 
-display = plot_anat(cut_coords=coords, title="Regions from this network")
+display = plot_anat(
+    cut_coords=coords, title="Regions from this network", colorbar=False
+)
 
 # Add as an overlay all the regions of index 4
 colors = "rgbcmyk"

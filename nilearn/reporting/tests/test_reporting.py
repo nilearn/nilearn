@@ -3,8 +3,6 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.image import get_data
-
-# Set backend to avoid DISPLAY problems
 from nilearn.reporting.get_clusters_table import (
     _cluster_nearest_neighbor,
     _local_max,

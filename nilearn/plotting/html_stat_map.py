@@ -12,18 +12,17 @@ import numpy as np
 from matplotlib.image import imsave
 from nibabel.affines import apply_affine
 
+from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.param_validation import check_threshold
+from nilearn.datasets import load_mni152_template
+from nilearn.image import get_data, new_img_like, reorder_img, resample_to_img
+from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.html_document import HTMLDocument
-
-from .._utils import fill_doc
-from .._utils.extmath import fast_abs_percentile
-from .._utils.niimg import safe_get_data
-from .._utils.niimg_conversions import check_niimg_3d
-from .._utils.param_validation import check_threshold
-from ..datasets import load_mni152_template
-from ..image import get_data, new_img_like, reorder_img, resample_to_img
-from ..plotting.find_cuts import find_xyz_cut_coords
-from ..plotting.img_plotting import load_anat
-from .js_plotting_utils import colorscale, get_html_template
+from nilearn.plotting.img_plotting import load_anat
+from nilearn.plotting.js_plotting_utils import colorscale, get_html_template
 
 
 def _data_to_sprite(data):
@@ -514,7 +513,7 @@ def view_img(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cmap=True,
     dim="auto",
     vmax=None,

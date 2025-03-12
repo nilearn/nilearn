@@ -2,8 +2,6 @@
 with OLS and permutation test.
 """
 
-# Author: Benoit Da Mota, <benoit.da_mota@inria.fr>, sept. 2011
-#         Virgile Fritsch, <virgile.fritsch@inria.fr>, jan. 2014
 import time
 import warnings
 
@@ -16,6 +14,7 @@ from sklearn.utils import check_random_state
 
 from nilearn import image
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.param_validation import check_params
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -582,9 +581,8 @@ def permuted_ols(
     .. footbibliography::
 
     """
-    _check_inputs_permuted_ols(
-        n_jobs, n_perm, tfce, masker, threshold, target_vars
-    )
+    check_params(locals())
+    _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars)
 
     n_jobs, output_type, target_vars, tested_vars = (
         _sanitize_inputs_permuted_ols(
@@ -860,11 +858,7 @@ def _compute_t_stat_threshold(
     )
 
 
-def _check_inputs_permuted_ols(
-    n_jobs, n_perm, tfce, masker, threshold, target_vars
-):
-    if not isinstance(n_perm, int):
-        raise TypeError(f"'n_perm' must be an int. Got {type(n_perm)=}")
+def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
     # invalid according to joblib's conventions
     if n_jobs == 0:
         raise ValueError(

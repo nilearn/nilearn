@@ -74,6 +74,27 @@ of :obj:`float`: (xmin, ymin, width, height), default=None
 """
 
 # bg_img
+docdict["bg_map"] = """
+bg_map : :obj:`str` or :obj:`pathlib.Path` or \
+         :class:`numpy.ndarray` \
+         or :obj:`~nilearn.surface.SurfaceImage` or None,\
+         default=None
+    Background image to be plotted on the :term:`mesh`
+    underneath the surf_data in grayscale,
+    most likely a sulcal depth map for realistic shading.
+    If the map contains values outside [0, 1],
+    it will be rescaled such that all values are in [0, 1].
+    Otherwise, it will not be modified.
+    If a :obj:`str` or :obj:`pathlib.Path` is passed,
+    it should be loadable to a :class:`numpy.ndarray`
+    by :func:`~nilearn.surface.load_surf_data`.
+    If a :class:`numpy.ndarray` is passed,
+    if should have a shape `(n_vertices, )`,
+    with ``n_vertices`` matching that of the underlying mesh
+    used for plotting.
+"""
+
+# bg_img
 docdict["bg_img"] = """
 bg_img : Niimg-like object, optional
     See :ref:`extracting_data`.
@@ -186,7 +207,7 @@ docdict["classifier_options"] = f"""
 
 """
 
-# cmap
+# clean_args
 docdict["clean_args"] = """
 clean_args : :obj:`dict` or None, default=None
     Keyword arguments to be passed
@@ -203,6 +224,20 @@ cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
     The colormap to use.
     Either a string which is a name of a matplotlib colormap,
     or a matplotlib colormap object.
+"""
+
+# cmap or lut
+docdict["cmap_lut"] = """
+cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, \
+       or :class:`pandas.DataFrame`, optional
+    The colormap to use.
+    Either a string which is a name of a matplotlib colormap,
+    or a matplotlib colormap object,
+    or a BIDS compliant
+    `look-up table <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_
+    passed as a pandas dataframe.
+    If the look up table does not contain a ``color`` column,
+    then the default colormap of this function will be used.
 """
 
 # colorbar
@@ -673,7 +708,7 @@ opening : :obj:`bool` or :obj:`int`, optional
 
 # output_file
 docdict["output_file"] = """
-output_file : :obj:`str`, or None, optional
+output_file : :obj:`str` or :obj:`pathlib.Path` or None, optional
     The name of an image file to export the plot to.
     Valid extensions are .png, .pdf, .svg.
     If `output_file` is not `None`, the plot is saved to a file,
@@ -976,6 +1011,13 @@ tfce : :obj:`bool`, default=False
     The TFCE calculation is implemented
     as described in :footcite:t:`Smith2009a`.
 
+    .. note::
+
+       The number of thresholds used in the TFCE procedure
+       will set between 10 and 1000.
+
+       .. versionadded:: 0.11.2dev
+
     .. warning::
 
         Performing TFCE-based inference
@@ -1052,7 +1094,7 @@ view : :obj:`str`, or a pair of :obj:`float` or :obj:`int`, default="lateral"\
 
 # vmax
 docdict["vmax"] = """
-vmax : :obj:`float`, optional
+vmax : :obj:`float` or obj:`int` or None, optional
     Upper bound of the colormap. The values above vmax are masked.
     If `None`, the max of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
@@ -1060,7 +1102,7 @@ vmax : :obj:`float`, optional
 
 # vmin
 docdict["vmin"] = """
-vmin : :obj:`float`, optional
+vmin : :obj:`float`  or obj:`int` or None, optional
     Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
