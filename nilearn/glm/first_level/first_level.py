@@ -671,9 +671,9 @@ class FirstLevelModel(BaseGLM):
                     f"at index {run_idx}."
                 )
 
-        events = check_and_load_tables(events[run_idx], "events")[0]
-        if "trial_type" in events.columns:
-            self._reporting_data["trial_types"].extend(events["trial_type"])
+        tmp = check_and_load_tables(events[run_idx], "events")[0]
+        if "trial_type" in tmp.columns:
+            self._reporting_data["trial_types"].extend(tmp["trial_type"])
 
         start_time = self.slice_time_ref * self.t_r
         end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
