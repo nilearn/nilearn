@@ -58,7 +58,8 @@ from nilearn.reporting.utils import (
     TEMPLATE_ROOT_PATH,
     figure_to_png_base64,
 )
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
 
 HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
 
@@ -193,6 +194,12 @@ def make_glm_report(
         hasattr(model, "masker_") and isinstance(model.masker_, SurfaceMasker)
     ):
         is_volume_glm = False
+
+    if not is_volume_glm and height_control not in [
+        "bonferroni",
+        None,
+    ]:
+        raise ValueError(f"{height_control=} not supported for SurfaceImages.")
 
     unique_id = str(uuid.uuid4()).replace("-", "")
 
@@ -515,55 +522,46 @@ def _make_stat_maps_contrast_clusters(
 
     results = {}
     for contrast_name, stat_map_img in stat_img.items():
-        # TODO refactor once threshold_stats_img can accept SurfaceImage
+        # Only use threshold_stats_img to adjust the threshold
+        # that we will pass to clustering_params_to_dataframe
+        # and _stat_map_to_png
+        # Necessary to avoid :
+        # https://github.com/nilearn/nilearn/issues/4192
+        thresholded_img, threshold = threshold_stats_img(
+            stat_img=stat_map_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+        )
+        table_details = clustering_params_to_dataframe(
+            threshold,
+            cluster_threshold,
+            min_distance,
+            height_control,
+            alpha,
+            is_volume_glm=not isinstance(stat_map_img, SurfaceImage),
+        )
+
+        table_details_html = dataframe_to_html(
+            table_details,
+            precision=3,
+            header=False,
+        )
+
+        stat_map_png = _stat_map_to_png(
+            stat_img=thresholded_img,
+            threshold=threshold,
+            bg_img=bg_img,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            plot_type=plot_type,
+            table_details=table_details,
+        )
+
         if isinstance(stat_map_img, SurfaceImage):
-            surf_mesh = bg_img.mesh if bg_img else None
-            plot_surf_stat_map(
-                stat_map=stat_map_img,
-                hemi="left",
-                threshold=threshold,
-                bg_map=bg_img,
-                surf_mesh=surf_mesh,
-            )
-            fig = plt.gcf()
-            stat_map_png = figure_to_png_base64(fig)
-
-            # prevents sphinx-gallery & jupyter from scraping & inserting plots
-            plt.close("all")
-
-            table_details_html = None
             cluster_table_html = None
-
         else:
-            # Only use threshold_stats_img to adjust the threshold
-            # that we will pass to clustering_params_to_dataframe
-            # and _stat_map_to_png
-            # Necessary to avoid :
-            # https://github.com/nilearn/nilearn/issues/4192
-            thresholded_img, threshold = threshold_stats_img(
-                stat_img=stat_map_img,
-                threshold=threshold,
-                alpha=alpha,
-                cluster_threshold=cluster_threshold,
-                height_control=height_control,
-            )
-            table_details = clustering_params_to_dataframe(
-                threshold,
-                cluster_threshold,
-                min_distance,
-                height_control,
-                alpha,
-            )
-            stat_map_png = _stat_map_to_png(
-                stat_img=thresholded_img,
-                threshold=threshold,
-                bg_img=bg_img,
-                cut_coords=cut_coords,
-                display_mode=display_mode,
-                plot_type=plot_type,
-                table_details=table_details,
-            )
-
             cluster_table = get_clusters_table(
                 thresholded_img,
                 stat_threshold=threshold,
@@ -575,12 +573,6 @@ def _make_stat_maps_contrast_clusters(
                 cluster_table,
                 precision=2,
                 index=False,
-            )
-
-            table_details_html = dataframe_to_html(
-                table_details,
-                precision=3,
-                header=False,
             )
 
         results[escape(contrast_name)] = tempita.bunch(
@@ -648,11 +640,15 @@ def _stat_map_to_png(
         PNG Image Data representing a statistical map.
 
     """
-    data = safe_get_data(stat_img, ensure_finite=True)
+    cmap = DEFAULT_DIVERGING_CMAP
+
+    if isinstance(stat_img, SurfaceImage):
+        data = get_surface_data(stat_img)
+    else:
+        data = safe_get_data(stat_img, ensure_finite=True)
     stat_map_min = np.nanmin(data)
     stat_map_max = np.nanmax(data)
     symmetric_cbar = True
-    cmap = DEFAULT_DIVERGING_CMAP
     if stat_map_min >= 0.0:
         symmetric_cbar = False
         cmap = "red_transparent_full_alpha_range"
@@ -661,34 +657,47 @@ def _stat_map_to_png(
         cmap = "blue_transparent_full_alpha_range"
         cmap = nilearn_cmaps[cmap].reversed()
 
-    if plot_type == "slice":
-        stat_map_plot = plot_stat_map(
-            stat_img,
-            bg_img=bg_img,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            colorbar=True,
-            cmap=cmap,
-            symmetric_cbar=symmetric_cbar,
+    if isinstance(stat_img, SurfaceImage):
+        surf_mesh = bg_img.mesh if bg_img else None
+        stat_map_plot = plot_surf_stat_map(
+            stat_map=stat_img,
+            hemi="left",
             threshold=threshold,
-        )
-    elif plot_type == "glass":
-        stat_map_plot = plot_glass_brain(
-            stat_img,
-            display_mode=display_mode,
-            colorbar=True,
-            plot_abs=False,
-            symmetric_cbar=symmetric_cbar,
+            bg_map=bg_img,
+            surf_mesh=surf_mesh,
             cmap=cmap,
-            threshold=threshold,
-        )
-    else:
-        raise ValueError(
-            "Invalid plot type provided. "
-            "Acceptable options are 'slice' or 'glass'."
         )
 
-    x_label_color = "white" if plot_type == "slice" else "black"
+        x_label_color = "black"
+
+    else:
+        if plot_type == "slice":
+            stat_map_plot = plot_stat_map(
+                stat_img,
+                bg_img=bg_img,
+                cut_coords=cut_coords,
+                display_mode=display_mode,
+                cmap=cmap,
+                symmetric_cbar=symmetric_cbar,
+                threshold=threshold,
+            )
+        elif plot_type == "glass":
+            stat_map_plot = plot_glass_brain(
+                stat_img,
+                display_mode=display_mode,
+                plot_abs=False,
+                symmetric_cbar=symmetric_cbar,
+                cmap=cmap,
+                threshold=threshold,
+            )
+        else:
+            raise ValueError(
+                "Invalid plot type provided. "
+                "Acceptable options are 'slice' or 'glass'."
+            )
+
+        x_label_color = "white" if plot_type == "slice" else "black"
+
     if hasattr(stat_map_plot, "_cbar"):
         cbar_ax = stat_map_plot._cbar.ax
         cbar_ax.set_xlabel(
@@ -701,10 +710,12 @@ def _stat_map_to_png(
 
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)
+
     fig = plt.gcf()
     stat_map_png = figure_to_png_base64(fig)
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
     plt.close()
+
     return stat_map_png
 
 
@@ -736,14 +747,17 @@ def _add_params_to_plot(table_details, stat_map_plot):
         x=0.45,
         wrap=True,
     )
-    fig = next(iter(stat_map_plot.axes.values())).ax.figure
+
+    fig = plt.gcf()
     _resize_plot_inches(
         plot=fig,
         width_change=0.2,
         height_change=1,
     )
-    if stat_map_plot._black_bg:
+
+    if hasattr(stat_map_plot, "_black_bg") and stat_map_plot._black_bg:
         suptitle_text.set_color("w")
+
     return stat_map_plot
 
 
