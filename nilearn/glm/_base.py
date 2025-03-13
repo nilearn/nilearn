@@ -67,6 +67,7 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
         height_control="fpr",
         min_distance=8.0,
         plot_type="slice",
+        cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
     ):
@@ -151,6 +152,8 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
         plot_type : {'slice', 'glass'}, default='slice'
             Specifies the type of plot to be drawn for the statistical maps.
 
+        %(cut_coords)s
+
         display_mode : {'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r',\
         'lr', 'lzr', 'lyr', 'lzry', 'lyrz'}, optional
             Choose the direction of the cuts:
@@ -191,6 +194,7 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
             height_control=height_control,
             min_distance=min_distance,
             plot_type=plot_type,
+            cut_coords=cut_coords,
             display_mode=display_mode,
             report_dims=report_dims,
         )

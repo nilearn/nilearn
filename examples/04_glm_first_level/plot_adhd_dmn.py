@@ -123,10 +123,8 @@ print(f"Save z-map in '{filename}'.")
 # portable, ready-to-view report with most of the pertinent information.
 # This is easy to do if you have a fitted model and the list of contrasts,
 # which we do here.
-from nilearn.reporting import make_glm_report
 
-report = make_glm_report(
-    first_level_model,
+report = first_level_model.generate_report(
     contrasts=contrasts,
     title="ADHD DMN Report",
     cluster_threshold=15,
@@ -136,12 +134,18 @@ report = make_glm_report(
 
 # %%
 # We have several ways to access the report:
+#
+# It can be viewed in a notebook
+report
 
-# report  # This report can be viewed in a notebook
+# %%
+# Or in a separate browser window
 # report.open_in_browser()
 
-# or we can save as an html file
-# from pathlib import Path
-# output_dir = Path.cwd() / "results" / "plot_adhd_dmn"
-# output_dir.mkdir(exist_ok=True, parents=True)
-# report.save_as_html(output_dir / 'report.html')
+# %%
+# Or we can save as an html file.
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_adhd_dmn"
+output_dir.mkdir(exist_ok=True, parents=True)
+report.save_as_html(output_dir / "report.html")

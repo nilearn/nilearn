@@ -251,25 +251,3 @@ save_glm_to_bids(
 # View the generated files
 files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
 print("\n".join([str(x.relative_to(output_dir)) for x in files]))
-
-# %%
-# Only generating the HTML report
-# -------------------------------
-#
-# Using the computed FirstLevelModel and :term:`contrast` information,
-# we can quickly also also only create a summary report.
-from nilearn.reporting import make_glm_report
-
-report = make_glm_report(
-    model=model,
-    contrasts="StopSuccess - Go",
-)
-
-# %%
-# We have several ways to access the report:
-
-# report  # This report can be viewed in a notebook
-# report.open_in_browser()
-
-# or we can save as an html file
-# report.save_as_html(output_dir / 'report.html')
