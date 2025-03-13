@@ -136,8 +136,8 @@ except ImportError:
 def check_estimator(
     estimator=None,
     valid: bool = True,
-    extra_valid_checks: list[str] | None = None,
-    expected_failed_checks: dict[str, str] | None = None,
+    extra_valid_checks=None,
+    expected_failed_checks=None,
 ):
     """Yield a valid or invalid scikit-learn estimators check.
 
