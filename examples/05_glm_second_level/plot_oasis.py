@@ -155,41 +155,22 @@ plotting.plot_stat_map(
 # gray matter density on that dataset.
 
 # %%
-# Generating a report
-# -------------------
+# Saving model outputs to disk
+# ----------------------------
 # It can be useful to quickly generate a portable, ready-to-view report with
 # most of the pertinent information.
+# We can do this by saving the output of the GLM to disk
+# including an HTML report.
 # This is easy to do if you have a fitted model and the list of contrasts,
 # which we do here.
-from nilearn.reporting import make_glm_report
-
-icbm152_2009 = datasets.fetch_icbm152_2009()
-report = make_glm_report(
-    model=second_level_model,
-    contrasts=["age", "sex"],
-    bg_img=icbm152_2009["t1"],
-)
-
-
-# %%
-# We have several ways to access the report:
-# report  # This report can be viewed in a notebook
-# report.open_in_browser()
-
-# or we can save as an html file
 from pathlib import Path
+
+from nilearn.interfaces.bids import save_glm_to_bids
 
 output_dir = Path.cwd() / "results" / "plot_oasis"
 output_dir.mkdir(exist_ok=True, parents=True)
-report.save_as_html(output_dir / "report.html")
 
-
-# %%
-# Saving model outputs to disk
-# ----------------------------
-
-# We can also save the model outputs to disk
-from nilearn.interfaces.bids import save_glm_to_bids
+icbm152_2009 = datasets.fetch_icbm152_2009()
 
 save_glm_to_bids(
     second_level_model,

@@ -17,7 +17,16 @@ HTML_PARTIALS_PATH = HTML_TEMPLATE_PATH / "partials"
 
 
 def _figure_to_bytes(fig, format):
-    """Save figure as as certain format and return it as bytes."""
+    """Save figure as as certain format and return it as bytes.
+
+    If a matplotlib axes is passed, it gets the parent figure.
+    """
+    # TODO move this entire module in a place
+    # where it won't be imported if matplotlib is not around
+    from matplotlib import pyplot as plt
+
+    if not isinstance(fig, (plt.Figure)):
+        fig = fig.figure
     with io.BytesIO() as io_buffer:
         fig.savefig(
             io_buffer, format=format, facecolor="white", edgecolor="white"
