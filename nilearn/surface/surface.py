@@ -1,7 +1,6 @@
 """Functions for surface manipulation."""
 
 import abc
-import copy
 import gzip
 import pathlib
 import warnings
@@ -2053,6 +2052,8 @@ def concat_imgs(imgs):
     -------
     SurfaceImage object
     """
+    from nilearn.image import new_img_like
+
     if not isinstance(imgs, (tuple, list)) or any(
         not isinstance(x, SurfaceImage) for x in imgs
     ):
@@ -2086,6 +2087,8 @@ def mean_img(img):
     -------
     SurfaceImage
     """
+    from nilearn.image import new_img_like
+
     if len(img.shape) < 2 or img.shape[1] < 2:
         data = img.data
     else:
@@ -2133,6 +2136,8 @@ def index_img(img, index):
     -------
     a SurfaceImage object
     """
+    from nilearn.image import new_img_like
+
     if not isinstance(img, SurfaceImage):
         raise TypeError("Input must a be SurfaceImage.")
     img = at_least_2d(img)
@@ -2167,14 +2172,3 @@ def _extract_data(img, index):
         .reshape(mesh.parts[hemi].n_vertices, last_dim)
         for hemi in data.parts
     }
-
-
-def new_img_like(ref_img, data):
-    """Create a new SurfaceImage instance with new data."""
-    if not isinstance(ref_img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
-    mesh = ref_img.mesh
-    return SurfaceImage(
-        mesh=copy.deepcopy(mesh),
-        data=data,
-    )

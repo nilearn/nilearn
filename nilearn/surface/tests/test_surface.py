@@ -48,7 +48,6 @@ from nilearn.surface.surface import (
     load_surf_data,
     load_surf_mesh,
     mean_img,
-    new_img_like,
     vol_to_surf,
 )
 
@@ -1265,12 +1264,6 @@ def test_iter_img_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         iter_img(1)
-
-
-def test_new_img_like_wrong_input():
-    """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        new_img_like(1, data=np.ones(2))
 
 
 def test_extract_data_wrong_input():

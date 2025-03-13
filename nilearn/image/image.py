@@ -41,7 +41,6 @@ from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.surface.surface import new_img_like as new_surface_img_like
 from nilearn.typing import NiimgLike
 
 
@@ -781,7 +780,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
     Parameters
     ----------
-    ref_niimg : Niimg-like object
+    ref_niimg : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Reference image. The new image will be of the same type.
 
     data : :class:`numpy.ndarray`
@@ -793,10 +792,12 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
     affine : 4x4 :class:`numpy.ndarray`, default=None
         Transformation matrix.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     copy_header : :obj:`bool`, default=False
         Indicated if the header of the reference image should be used to
         create the new image.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     Returns
     -------
@@ -805,6 +806,12 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         as the reference image.
 
     """
+    if isinstance(ref_niimg, SurfaceImage):
+        mesh = ref_niimg.mesh
+        return SurfaceImage(
+            mesh=copy.deepcopy(mesh),
+            data=data,
+        )
     # Hand-written loading code to avoid too much memory consumption
     orig_ref_niimg = ref_niimg
     ref_niimg = stringify_path(ref_niimg)
@@ -1159,7 +1166,7 @@ def threshold_img(
     if isinstance(img, NiimgLike):
         return new_img_like(img, img_data, affine, copy_header=copy_header)
 
-    return new_surface_img_like(img, img_data.data)
+    return new_img_like(img, img_data.data)
 
 
 def _apply_threshold(img_data, two_sided, cutoff_threshold):
