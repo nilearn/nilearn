@@ -31,13 +31,12 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
-from nilearn.image import mean_img
+from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.mass_univariate import permuted_ols
 from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
-    concat_imgs,
     iter_img,
 )
 

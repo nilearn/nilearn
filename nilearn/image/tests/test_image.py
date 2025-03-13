@@ -1632,6 +1632,17 @@ def test_concat_niimg_dtype(affine_eye):
     assert get_data(nimg).dtype == np.int16
 
 
+def test_concat_imgs_surface(surf_img_2d):
+    """Check concat_imgs returns a single SurfaceImage.
+
+    Output must have as many samples as the sum of samples in the input.
+    """
+    img = concat_imgs([surf_img_2d(3), surf_img_2d(5)])
+    assert img.shape == (9, 8)
+    for value in img.data.parts.values():
+        assert value.ndim == 2
+
+
 def nifti_generator(buffer):
     for _ in range(10):
         buffer.append(_img_3d_rand())

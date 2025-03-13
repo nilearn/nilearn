@@ -1663,9 +1663,11 @@ def concat_imgs(
 
     Parameters
     ----------
-    niimgs : iterable of Niimg-like objects or glob pattern
+    niimgs : iterable of Niimg-like objects, or glob pattern, \
+             or :obj:`list` or :obj:`tuple` \
+             of :obj:`~nilearn.surface.SurfaceImage` object
         See :ref:`extracting_data`.
-        Niimgs to concatenate.
+        Images to concatenate.
 
     dtype : numpy dtype, default=np.float32
         The dtype of the returned image.
@@ -1693,9 +1695,30 @@ def concat_imgs(
     nilearn.image.index_img
 
     """
-    from ..image import new_img_like  # avoid circular imports
-
     check_params(locals())
+
+    if (
+        niimgs
+        and isinstance(niimgs, (tuple, list))
+        and all(isinstance(x, SurfaceImage) for x in niimgs)
+    ):
+        if len(niimgs) == 1:
+            return niimgs[0]
+
+        for i, img in enumerate(niimgs):
+            check_same_n_vertices(img.mesh, niimgs[0].mesh)
+            niimgs[i] = at_least_2d(img)
+
+        if dtype is None:
+            dtype = extract_data(niimgs[0]).dtype
+
+        output_data = {}
+        for part in niimgs[0].data.parts:
+            tmp = [img.data.parts[part] for img in niimgs]
+            output_data[part] = np.concatenate(tmp, axis=1).astype(dtype)
+
+        return new_img_like(niimgs[0], data=output_data)
+
     if memory is None:
         memory = Memory(location=None)
 

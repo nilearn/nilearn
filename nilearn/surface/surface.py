@@ -2038,44 +2038,6 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     return data
 
 
-def concat_imgs(imgs):
-    """Concatenate the data of a list or tuple of SurfaceImages.
-
-    Assumes all images have same meshes.
-
-    Parameters
-    ----------
-    imgs : :obj:`list` or :obj:`tuple` \
-           of :obj:`~nilearn.surface.SurfaceImage` object
-
-    Returns
-    -------
-    SurfaceImage object
-    """
-    from nilearn.image import new_img_like
-
-    if not isinstance(imgs, (tuple, list)) or any(
-        not isinstance(x, SurfaceImage) for x in imgs
-    ):
-        raise TypeError(
-            "'imgs' must be a list or a tuple of SurfaceImage instances."
-        )
-
-    if len(imgs) == 1:
-        return imgs[0]
-
-    for i, img in enumerate(imgs):
-        check_same_n_vertices(img.mesh, imgs[0].mesh)
-        imgs[i] = at_least_2d(img)
-
-    output_data = {}
-    for part in imgs[0].data.parts:
-        tmp = [img.data.parts[part] for img in imgs]
-        output_data[part] = np.concatenate(tmp, axis=1)
-
-    return new_img_like(imgs[0], data=output_data)
-
-
 def iter_img(img, return_iterator=True):
     """Iterate over a SurfaceImage object in the 2nd dimension.
 

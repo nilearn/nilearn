@@ -40,7 +40,6 @@ from nilearn.surface.surface import (
     _vertex_outer_normals,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
-    concat_imgs,
     extract_data,
     get_data,
     iter_img,
@@ -1193,17 +1192,6 @@ def test_get_min_max(surf_img_2d):
 
     assert vmin == -3.5
     assert vmax == 10
-
-
-def test_concat_imgs(surf_img_2d):
-    """Check concat_imgs returns a single SurfaceImage.
-
-    Output must have as many samples as the sum of samples in the input.
-    """
-    img = concat_imgs([surf_img_2d(3), surf_img_2d(5)])
-    assert img.shape == (9, 8)
-    for value in img.data.parts.values():
-        assert value.ndim == 2
 
 
 def test_iter_img(surf_img_2d):
