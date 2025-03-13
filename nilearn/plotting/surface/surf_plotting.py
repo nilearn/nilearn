@@ -312,8 +312,6 @@ def plot_surf_contours(
     surf_mesh=None,
     roi_map=None,
     hemi=None,
-    axes=None,
-    figure=None,
     levels=None,
     labels=None,
     colors=None,
@@ -321,6 +319,8 @@ def plot_surf_contours(
     cmap="tab20",
     title=None,
     output_file=None,
+    axes=None,
+    figure=None,
     **kwargs,
 ):
     """Plot contours of ROIs on a surface, \
@@ -372,14 +372,6 @@ def plot_surf_contours(
 
         .. versionadded:: 0.11.0
 
-    axes : instance of matplotlib axes or None, default=None
-        The axes instance to plot to. The projection must be '3d' (e.g.,
-        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
-        where axes should be passed.).
-        If None, uses axes from figure if available, else creates new axes.
-
-    %(figure)s
-
     levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
         Every index needs to correspond to one index in roi_map.
@@ -404,6 +396,14 @@ def plot_surf_contours(
 
     %(output_file)s
 
+    axes : instance of matplotlib axes or None, default=None
+        The axes instance to plot to. The projection must be '3d' (e.g.,
+        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
+        where axes should be passed.).
+        If None, uses axes from figure if available, else creates new axes.
+
+    %(figure)s
+
     kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to
         :func:`~nilearn.plotting.plot_surf`.
@@ -418,17 +418,12 @@ def plot_surf_contours(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    hemi = sanitize_hemi_for_surface_image(hemi, roi_map, surf_mesh)
-    roi_map, surf_mesh, _ = check_surface_plotting_inputs(
-        roi_map, surf_mesh, hemi, map_var_name="roi_map"
-    )
-    check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
-
     # TODO we can add engine param with default value matplotlib to
     # plot_surf_contours function?
     fig = _get_surface_backend("matplotlib").plot_surf_contours(
         surf_mesh=surf_mesh,
         roi_map=roi_map,
+        hemi=hemi,
         levels=levels,
         labels=labels,
         colors=colors,

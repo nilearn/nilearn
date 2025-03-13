@@ -350,7 +350,7 @@ class PlotlyBackend(SurfaceBackend):
 
         return plotly_figure
 
-    def plot_surf_contours(
+    def _plot_surf_contours(
         self,
         surf_mesh=None,
         roi_map=None,

@@ -322,6 +322,46 @@ class SurfaceBackend:
 
         return fig
 
+    def plot_surf_contours(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        hemi=None,
+        levels=None,
+        labels=None,
+        colors=None,
+        legend=False,
+        cmap="tab20",
+        title=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        **kwargs,
+    ):
+        # TODO hemi returns None from here, if I pass to plot_surf,
+        # returns error
+        hemi = sanitize_hemi_for_surface_image(hemi, roi_map, surf_mesh)
+        roi_map, surf_mesh, _ = check_surface_plotting_inputs(
+            roi_map, surf_mesh, hemi, map_var_name="roi_map"
+        )
+        check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+        fig = self._plot_surf_contours(
+            surf_mesh=surf_mesh,
+            roi_map=roi_map,
+            levels=levels,
+            labels=labels,
+            colors=colors,
+            legend=legend,
+            cmap=cmap,
+            title=title,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+            **kwargs,
+        )
+        return fig
+
     def plot_surf_stat_map(
         self,
         surf_mesh=None,

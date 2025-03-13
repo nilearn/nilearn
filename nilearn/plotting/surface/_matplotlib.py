@@ -490,7 +490,7 @@ class MatplotlibBackend(SurfaceBackend):
 
         return save_figure_if_needed(figure, output_file)
 
-    def plot_surf_contours(
+    def _plot_surf_contours(
         self,
         surf_mesh=None,
         roi_map=None,
