@@ -202,6 +202,8 @@ We will see that with the memory usage as well:
     img_nilearn.dataobj[..., 3]
     # peak memory: 8093.21 MiB, increment: 3936.11 MiB
 
+.. code-block:: python
+
     %%memit
     img_nibabel = nib.load(example_fmri_path)
     img_nibabel.dataobj[..., 3]
