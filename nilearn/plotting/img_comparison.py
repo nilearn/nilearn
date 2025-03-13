@@ -138,7 +138,7 @@ def plot_img_comparison(
             (ax1, ax2) = axes
             fig = ax1.get_figure()
 
-        ref_data, src_data = extract_data_2_images(
+        ref_data, src_data = _extract_data_2_images(
             ref_img, src_img, masker=masker
         )
 
@@ -306,7 +306,9 @@ def plot_bland_altman(
     .. footbibliography::
 
     """
-    data_ref, data_src = extract_data_2_images(ref_img, src_img, masker=masker)
+    data_ref, data_src = _extract_data_2_images(
+        ref_img, src_img, masker=masker
+    )
 
     mean = np.mean([data_ref, data_src], axis=0)
     diff = data_ref - data_src
@@ -395,7 +397,7 @@ def plot_bland_altman(
     return save_figure_if_needed(figure, output_file)
 
 
-def extract_data_2_images(ref_img, src_img, masker=None):
+def _extract_data_2_images(ref_img, src_img, masker=None):
     """Return data of 2 images as 2 vectors.
 
     Parameters
