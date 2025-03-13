@@ -31,13 +31,17 @@ from nilearn.conftest import (
     _img_4d_rand_eye,
     _img_4d_rand_eye_medium,
     _img_4d_zeros,
+    _img_mask_eye,
     _make_surface_img,
+    _make_surface_mask,
     _rng,
     _shape_3d_default,
 )
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.regions import RegionExtractor
 from nilearn.reporting.tests.test_html_report import _check_html
+from nilearn.surface import SurfaceImage
+from nilearn.surface._testing import assert_surface_image_equal
 
 # List of sklearn estimators checks that are valid
 # for all nilearn estimators.
@@ -234,6 +238,7 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
         yield (clone(estimator), check_masker_generate_report)
         yield (clone(estimator), check_masker_generate_report_false)
+        yield (clone(estimator), check_masker_refit)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -408,6 +413,36 @@ def check_masker_clean(estimator):
     detrended_signal = estimator.fit_transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
+
+
+def check_masker_refit(estimator):
+    """Check masker can be refitted and give different results."""
+    if accept_niimg_input(estimator):
+        mask_img_1 = _img_mask_eye()
+        mask_img_2 = _img_3d_ones()
+    else:
+        mask_img_1 = _make_surface_mask()
+        data = {}
+        for part in mask_img_1.data.parts:
+            data[part] = np.ones(mask_img_1.data.parts[part].shape)
+        mask_img_2 = SurfaceImage(mask_img_1.mesh, data)
+
+    estimator.mask_img = mask_img_1
+    estimator.fit()
+    fitted_mask_1 = estimator.mask_img_
+
+    estimator.mask_img = mask_img_2
+    estimator.fit()
+    fitted_mask_2 = estimator.mask_img_
+
+    if accept_niimg_input(estimator):
+        with pytest.raises(AssertionError):
+            assert_array_equal(
+                fitted_mask_1.get_fdata(), fitted_mask_2.get_fdata()
+            )
+    else:
+        with pytest.raises(AssertionError):
+            assert_surface_image_equal(fitted_mask_1, fitted_mask_2)
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------
