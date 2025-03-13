@@ -8,10 +8,10 @@ from string import Template
 import pandas as pd
 
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.html_document import HTMLDocument
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
-from nilearn.plotting.html_document import HTMLDocument
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,
