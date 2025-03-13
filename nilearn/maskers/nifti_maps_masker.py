@@ -251,20 +251,10 @@ class NiftiMapsMasker(BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(
-                    category=ImportWarning,
-                    message=mpl_unavail_msg,
-                    stacklevel=3,
-                )
-                return [None]
-
         from nilearn.reporting.html_report import generate_report
+
+        if not is_matplotlib_installed():
+            return generate_report(self)
 
         incorrect_type = not isinstance(
             displayed_maps, (list, np.ndarray, int, str)
