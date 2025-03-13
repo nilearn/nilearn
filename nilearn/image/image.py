@@ -1704,7 +1704,7 @@ def concat_imgs(
     check_params(locals())
 
     if (
-        niimgs
+        len(niimgs) > 0
         and isinstance(niimgs, (tuple, list))
         and all(isinstance(x, SurfaceImage) for x in niimgs)
     ):
