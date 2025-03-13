@@ -753,18 +753,24 @@ def iter_img(imgs):
 
     Parameters
     ----------
-    imgs : 4D Niimg-like object
+    imgs : 4D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
 
     Returns
     -------
-    Iterator of 3D :class:`~nibabel.nifti1.Nifti1Image`
+    Iterator of :class:`~nibabel.nifti1.Nifti1Image` \
+        or :obj:`~nilearn.surface.SurfaceImage`
 
     See Also
     --------
     nilearn.image.index_img
 
     """
+    if isinstance(imgs, SurfaceImage):
+        output = (
+            index_img(imgs, i) for i in range(at_least_2d(imgs).shape[1])
+        )
+        return output
     return check_niimg_4d(imgs, return_iterator=True)
 
 

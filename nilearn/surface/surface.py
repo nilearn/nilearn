@@ -2038,28 +2038,6 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     return data
 
 
-def iter_img(img, return_iterator=True):
-    """Iterate over a SurfaceImage object in the 2nd dimension.
-
-    Parameters
-    ----------
-    imgs : SurfaceImage object
-
-    return_iterator : :obj:`bool`, default=True
-        Returns a list if set to False.
-
-    Returns
-    -------
-    Iterator or list of  SurfaceImage
-    """
-    from nilearn.image import index_img
-
-    if not isinstance(img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
-    output = (index_img(img, i) for i in range(at_least_2d(img).shape[1]))
-    return output if return_iterator else list(output)
-
-
 def extract_data(img, index):
     """Extract data of a SurfaceImage a specified indices.
 

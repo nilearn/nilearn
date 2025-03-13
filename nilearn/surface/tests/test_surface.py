@@ -14,10 +14,6 @@ from sklearn.exceptions import EfficiencyWarning
 from nilearn import datasets, image
 from nilearn._utils import data_gen
 from nilearn.image import resampling
-from nilearn.surface._testing import (
-    assert_polymesh_equal,
-    assert_surface_image_equal,
-)
 from nilearn.surface.surface import (
     FileMesh,
     InMemoryMesh,
@@ -42,7 +38,6 @@ from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     extract_data,
     get_data,
-    iter_img,
     load_surf_data,
     load_surf_mesh,
     vol_to_surf,
@@ -1192,44 +1187,6 @@ def test_get_min_max(surf_img_2d):
 
     assert vmin == -3.5
     assert vmax == 10
-
-
-def test_iter_img(surf_img_2d):
-    """Check iter_img returns list of SurfaceImage.
-
-    Each SurfaceImage must have same mesh as input
-    and data from one of the sample of the input SurfaceImage.
-    """
-    input = surf_img_2d(5)
-    output = iter_img(input, return_iterator=False)
-
-    assert isinstance(output, list)
-    assert len(output) == input.shape[1]
-    assert all(isinstance(x, SurfaceImage) for x in output)
-    for i in range(input.shape[1]):
-        assert_polymesh_equal(output[i].mesh, input.mesh)
-        assert_array_equal(
-            np.squeeze(output[i].data.parts["left"]),
-            input.data.parts["left"][..., i],
-        )
-
-
-def test_iter_img_2d(surf_img_1d, surf_img_2d):
-    """Return as is if surface image is 2D."""
-    input = surf_img_2d(1)
-    output = iter_img(input, return_iterator=False)
-
-    assert_surface_image_equal(output[0], input)
-
-    output = iter_img(surf_img_1d, return_iterator=False)
-
-    assert_surface_image_equal(output[0], surf_img_1d)
-
-
-def test_iter_img_wrong_input():
-    """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        iter_img(1)
 
 
 def testextract_data_wrong_input():

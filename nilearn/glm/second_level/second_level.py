@@ -31,13 +31,12 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
-from nilearn.image import concat_imgs, mean_img
+from nilearn.image import concat_imgs, iter_img, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.mass_univariate import permuted_ols
 from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
-    iter_img,
 )
 
 
@@ -339,7 +338,7 @@ def _get_con_val(second_level_contrast, design_matrix):
 def _infer_effect_maps(second_level_input, contrast_def):
     """Deal with the different possibilities of second_level_input."""
     if isinstance(second_level_input, SurfaceImage):
-        return iter_img(second_level_input, return_iterator=False)
+        return list(iter_img(second_level_input))
     if isinstance(second_level_input, list) and isinstance(
         second_level_input[0], SurfaceImage
     ):

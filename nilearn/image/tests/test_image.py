@@ -50,7 +50,10 @@ from nilearn.image import (
     threshold_img,
 )
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface._testing import assert_surface_image_equal
+from nilearn.surface._testing import (
+    assert_polymesh_equal,
+    assert_surface_image_equal,
+)
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
@@ -662,6 +665,38 @@ def test_iter_img(tmp_path):
 
     # enables to delete "img_3d_filename" on windows
     del img
+
+
+def test_iter_surface_img(surf_img_2d):
+    """Check iter_img returns list of SurfaceImage.
+
+    Each SurfaceImage must have same mesh as input
+    and data from one of the sample of the input SurfaceImage.
+    """
+    input = surf_img_2d(5)
+    output = list(iter_img(input))
+
+    assert isinstance(output, list)
+    assert len(output) == input.shape[1]
+    assert all(isinstance(x, SurfaceImage) for x in output)
+    for i in range(input.shape[1]):
+        assert_polymesh_equal(output[i].mesh, input.mesh)
+        assert_array_equal(
+            np.squeeze(output[i].data.parts["left"]),
+            input.data.parts["left"][..., i],
+        )
+
+
+def test_iter_img_surface_2d(surf_img_1d, surf_img_2d):
+    """Return as is if surface image is 2D."""
+    input = surf_img_2d(1)
+    output = list(iter_img(input))
+
+    assert_surface_image_equal(output[0], input)
+
+    output = list(iter_img(surf_img_1d))
+
+    assert_surface_image_equal(output[0], surf_img_1d)
 
 
 def test_new_img_like_mgz():
