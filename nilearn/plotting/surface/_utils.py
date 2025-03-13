@@ -2,6 +2,7 @@ from collections.abc import Sequence
 from warnings import warn
 
 import numpy as np
+import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP, image
 from nilearn._utils import check_niimg_3d
@@ -9,6 +10,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     _check_bg_map,
     _get_hemi,
+    create_colormap_from_lut,
     get_colorbar_and_data_ranges,
 )
 from nilearn.surface import (
@@ -508,6 +510,113 @@ class SurfaceBackend:
             vmax=vmax,
             title=title,
             output_file=output_file,
+            **kwargs,
+        )
+
+        return fig
+
+    def plot_surf_roi(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        bg_map=None,
+        hemi="left",
+        view=None,
+        avg_method=None,
+        threshold=1e-14,
+        alpha=None,
+        vmin=None,
+        vmax=None,
+        cmap="gist_ncar",
+        cbar_tick_format="auto",
+        bg_on_data=False,
+        darkness=0.7,
+        title=None,
+        title_font_size=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        colorbar=True,
+        **kwargs,
+    ):
+        # set default view to dorsal if hemi is both and view is not set
+        check_params(locals())
+        if view is None:
+            view = "dorsal" if hemi == "both" else "lateral"
+
+        roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
+            roi_map, surf_mesh, hemi, bg_map
+        )
+        # preload roi and mesh to determine vmin, vmax and give more useful
+        # error messages in case of wrong inputs
+        check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+        roi = load_surf_data(roi_map)
+
+        idx_not_na = ~np.isnan(roi)
+        if vmin is None:
+            vmin = float(np.nanmin(roi))
+        if vmax is None:
+            vmax = float(1 + np.nanmax(roi))
+
+        mesh = load_surf_mesh(surf_mesh)
+
+        if roi.ndim != 1:
+            raise ValueError(
+                "roi_map can only have one dimension but has "
+                f"{roi.ndim} dimensions"
+            )
+        if roi.shape[0] != mesh.n_vertices:
+            raise ValueError(
+                "roi_map does not have the same number of vertices "
+                "as the mesh. If you have a list of indices for the "
+                "ROI you can convert them into a ROI map like this:\n"
+                "roi_map = np.zeros(n_vertices)\n"
+                "roi_map[roi_idx] = 1"
+            )
+        if (roi < 0).any():
+            # TODO raise ValueError in release 0.13
+            warn(
+                (
+                    "Negative values in roi_map will no longer be allowed in"
+                    " Nilearn version 0.13"
+                ),
+                DeprecationWarning,
+            )
+        if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
+            # TODO raise ValueError in release 0.13
+            warn(
+                (
+                    "Non-integer values in roi_map will no longer be allowed "
+                    "in Nilearn version 0.13"
+                ),
+                DeprecationWarning,
+            )
+
+        if isinstance(cmap, pd.DataFrame):
+            cmap = create_colormap_from_lut(cmap)
+
+        fig = self._plot_surf_roi(
+            mesh,
+            roi_map=roi,
+            bg_map=bg_map,
+            hemi=hemi,
+            view=view,
+            avg_method=avg_method,
+            threshold=threshold,
+            alpha=alpha,
+            vmin=vmin,
+            vmax=vmax,
+            cmap=cmap,
+            cbar_tick_format=cbar_tick_format,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+            title=title,
+            title_font_size=title_font_size,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+            colorbar=colorbar,
             **kwargs,
         )
 

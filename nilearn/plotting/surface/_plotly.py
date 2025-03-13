@@ -456,7 +456,7 @@ class PlotlyBackend(SurfaceBackend):
             "'plot_img_on_surf' is not implemented for plotly!"
         )
 
-    def plot_surf_roi(
+    def _plot_surf_roi(
         self,
         surf_mesh=None,
         roi_map=None,
@@ -485,7 +485,7 @@ class PlotlyBackend(SurfaceBackend):
         if title_font_size is None:
             title_font_size = 18
 
-        display = self.plot_surf(
+        fig = self.plot_surf(
             surf_mesh=surf_mesh,
             surf_map=roi_map,
             bg_map=bg_map,
@@ -509,4 +509,4 @@ class PlotlyBackend(SurfaceBackend):
             **kwargs,
         )
 
-        return display
+        return fig

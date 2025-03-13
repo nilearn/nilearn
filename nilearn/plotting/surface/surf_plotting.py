@@ -1,27 +1,8 @@
 """Functions for surface visualization."""
 
-from warnings import warn
-
-import numpy as np
-import pandas as pd
-
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
-from nilearn._utils.param_validation import check_params
-from nilearn.plotting._utils import create_colormap_from_lut
-from nilearn.plotting.surface._utils import (
-    DATA_EXTENSIONS,
-    check_surface_plotting_inputs,
-)
-from nilearn.surface import (
-    load_surf_data,
-    load_surf_mesh,
-)
-from nilearn.surface.surface import (
-    FREESURFER_DATA_EXTENSIONS,
-    check_extensions,
-)
 
 
 def _get_surface_backend(engine=None):
@@ -958,66 +939,9 @@ def plot_surf_roi(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    # set default view to dorsal if hemi is both and view is not set
-    check_params(locals())
-    if view is None:
-        view = "dorsal" if hemi == "both" else "lateral"
-
-    roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
-        roi_map, surf_mesh, hemi, bg_map
-    )
-    # preload roi and mesh to determine vmin, vmax and give more useful error
-    # messages in case of wrong inputs
-    check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
-
-    roi = load_surf_data(roi_map)
-
-    idx_not_na = ~np.isnan(roi)
-    if vmin is None:
-        vmin = float(np.nanmin(roi))
-    if vmax is None:
-        vmax = float(1 + np.nanmax(roi))
-
-    mesh = load_surf_mesh(surf_mesh)
-
-    if roi.ndim != 1:
-        raise ValueError(
-            "roi_map can only have one dimension but has "
-            f"{roi.ndim} dimensions"
-        )
-    if roi.shape[0] != mesh.n_vertices:
-        raise ValueError(
-            "roi_map does not have the same number of vertices "
-            "as the mesh. If you have a list of indices for the "
-            "ROI you can convert them into a ROI map like this:\n"
-            "roi_map = np.zeros(n_vertices)\n"
-            "roi_map[roi_idx] = 1"
-        )
-    if (roi < 0).any():
-        # TODO raise ValueError in release 0.13
-        warn(
-            (
-                "Negative values in roi_map will no longer be allowed in"
-                " Nilearn version 0.13"
-            ),
-            DeprecationWarning,
-        )
-    if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
-        # TODO raise ValueError in release 0.13
-        warn(
-            (
-                "Non-integer values in roi_map will no longer be allowed in"
-                " Nilearn version 0.13"
-            ),
-            DeprecationWarning,
-        )
-
-    if isinstance(cmap, pd.DataFrame):
-        cmap = create_colormap_from_lut(cmap)
-
     fig = _get_surface_backend(engine).plot_surf_roi(
-        mesh,
-        roi_map=roi,
+        surf_mesh=surf_mesh,
+        roi_map=roi_map,
         bg_map=bg_map,
         hemi=hemi,
         view=view,

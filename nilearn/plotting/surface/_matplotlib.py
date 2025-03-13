@@ -754,7 +754,7 @@ class MatplotlibBackend(SurfaceBackend):
 
         return save_figure_if_needed(fig, output_file, bbox_inches="tight")
 
-    def plot_surf_roi(
+    def _plot_surf_roi(
         self,
         surf_mesh=None,
         roi_map=None,
@@ -783,7 +783,7 @@ class MatplotlibBackend(SurfaceBackend):
         if cbar_tick_format == "auto":
             cbar_tick_format = "%i"
 
-        display = self.plot_surf(
+        fig = self.plot_surf(
             surf_mesh=surf_mesh,
             surf_map=roi_map,
             bg_map=bg_map,
@@ -807,4 +807,4 @@ class MatplotlibBackend(SurfaceBackend):
             **kwargs,
         )
 
-        return display
+        return fig
