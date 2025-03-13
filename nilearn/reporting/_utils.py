@@ -172,54 +172,6 @@ def dataframe_to_html(df, precision, **kwargs):
     return html_table.replace('class="dataframe"', 'class="pure-table"')
 
 
-def make_headings(contrasts, title, model):
-    """Create report page title, heading & sub-heading \
-    using title text or contrast names.
-
-    Accepts contrasts and user supplied title string or
-    contrasts and user supplied 3 element list or tuple.
-
-    If title is not in (None, 'auto'),
-    page title == heading,
-    model type == sub-heading
-
-    Parameters
-    ----------
-    contrasts : Dict[str, np.array or str]
-        Contrast information, as a dict in the form
-            {'contrast_title_1': contrast_info_1/title_1, ...}
-        Contrast titles are used in page title and secondary heading
-        if `title` is not 'auto' or None.
-
-    title : String or List/Tuple with 3 elements
-        User supplied text for HTML Page title and primary heading.
-        Or 3 element List/Tuple for Title Heading, sub-heading resp.
-        Overrides title auto-generation.
-
-    model : FirstLevelModel or SecondLevelModel
-        The model, passed in to determine its type
-        to be used in page title & headings.
-
-    Returns
-    -------
-    (HTML page title, heading, sub-heading) : Tuple[str, str, str]
-        If title is user-supplied, then subheading is empty string.
-
-    """
-    model_type = return_model_type(model)
-
-    if title:
-        return title, title, model_type
-
-    contrasts_names = sorted(contrasts.keys())
-    contrasts_text = ", ".join(contrasts_names)
-
-    page_title = f"Report: {model_type} for {contrasts_text}"
-    page_heading_1 = f"Statistical Report for {contrasts_text}"
-    page_heading_2 = model_type
-    return page_title, page_heading_1, page_heading_2
-
-
 def make_stat_maps(model, contrasts, output_type="z_score"):
     """Given a model and contrasts, return the corresponding z-maps.
 
