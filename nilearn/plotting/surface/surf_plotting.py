@@ -174,7 +174,7 @@ def plot_surf(
 
     %(title)s
 
-    title_font_size : :obj:`int`, default=18
+    title_font_size : :obj:`int`, default=None
         Size of the title font.
 
         .. note::
@@ -878,7 +878,7 @@ def plot_surf_roi(
 
     %(title)s
 
-    title_font_size : :obj:`int`, default=18
+    title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
