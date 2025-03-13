@@ -11,8 +11,8 @@ from nilearn.plotting._utils import (
     save_figure_if_needed,
 )
 from nilearn.plotting.cm import mix_colormaps
+from nilearn.plotting.surface._backend import SurfaceBackend
 from nilearn.plotting.surface._utils import (
-    SurfaceBackend,
     _check_hemispheres,
     _check_surf_map,
     _check_views,

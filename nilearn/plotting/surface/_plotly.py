@@ -7,9 +7,9 @@ from nilearn._utils.helpers import is_kaleido_installed
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.js_plotting_utils import colorscale
+from nilearn.plotting.surface._backend import SurfaceBackend
 from nilearn.plotting.surface._utils import (
     VALID_HEMISPHERES,
-    SurfaceBackend,
     _check_hemispheres,
     _check_surf_map,
     _check_views,

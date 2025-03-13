@@ -1,36 +1,8 @@
-"""Functions for surface visualization."""
+"""Interface module for functions for surface visualization."""
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import fill_doc
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
-
-
-def _get_surface_backend(engine=None):
-    if engine == "matplotlib":
-        if is_matplotlib_installed():
-            from nilearn.plotting.surface._matplotlib import MatplotlibBackend
-
-            return MatplotlibBackend()
-        else:
-            raise ImportError(
-                "Using engine='matplotlib' requires that ``matplotlib`` is "
-                "installed."
-            )
-    elif engine == "plotly":
-        if is_plotly_installed():
-            from nilearn.plotting.surface._plotly import PlotlyBackend
-
-            return PlotlyBackend()
-        else:
-            raise ImportError(
-                "Using engine='plotly' requires that ``plotly`` is installed."
-            )
-    else:
-        raise ValueError(
-            f"Unknown plotting engine {engine}. "
-            "Please use either 'matplotlib' or "
-            "'plotly'."
-        )
+from nilearn.plotting.surface._backend import _get_surface_backend
 
 
 @fill_doc
