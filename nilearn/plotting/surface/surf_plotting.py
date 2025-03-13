@@ -458,7 +458,7 @@ def plot_surf_stat_map(
     bg_on_data=False,
     darkness=0.7,
     title=None,
-    title_font_size=18,
+    title_font_size=None,
     output_file=None,
     axes=None,
     figure=None,
@@ -578,7 +578,7 @@ def plot_surf_stat_map(
 
     %(title)s
 
-    title_font_size : :obj:`int`, default=18
+    title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
