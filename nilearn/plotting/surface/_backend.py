@@ -66,7 +66,7 @@ class SurfaceBackend:
         surf_mesh=None,
         surf_map=None,
         bg_map=None,
-        hemi=None,
+        hemi="left",
         view=None,
         cmap=None,
         symmetric_cmap=None,

@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.plotting.surface.tests.test_backend import BaseTestSurfaceBackend
+from nilearn.plotting.surface._backend import get_surface_backend
 from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors,
@@ -10,10 +10,7 @@ from nilearn.plotting.surface._matplotlib_backend import (
     _get_ticks,
     _get_view_plot_surf,
 )
-from nilearn.plotting.surface.surf_plotting import (
-    plot_img_on_surf,
-    plot_surf_contours,
-)
+from nilearn.plotting.surface.tests.test_backend import BaseTestSurfaceBackend
 from nilearn.surface import (
     load_surf_data,
     load_surf_mesh,
@@ -54,17 +51,29 @@ EXPECTED_VIEW_MATPLOTLIB = {
 }
 
 
+@pytest.fixture
+def engine():
+    return ENGINE
+
+
 class TestMatplotlibBackend(BaseTestSurfaceBackend):
+    """Tests MatplotlibBackend class methods."""
 
-    @pytest.fixture
-    def engine(scope="class", autouse=True):
-        return ENGINE
+    def test_plot_img_on_surf(self, engine, img_3d_mni):
+        """Smoke test for MatplotlibBackend.plot_img_on_surf."""
+        assert (
+            get_surface_backend(engine).plot_img_on_surf(img_3d_mni)
+            is not None
+        )
 
-    def test_plot_img_on_surf(self, img_3d_mni):
-        plot_img_on_surf(img_3d_mni) is not None
-
-    def test_plot_surf_contours(self, surf_mesh, surf_mask_1d):
-        plot_surf_contours(surf_mesh, roi_map=surf_mask_1d) is not None
+    def test_plot_surf_contours(self, engine, surf_mesh, surf_mask_1d):
+        """Smoke test for MatplotlibBackend.plot_surf_contours."""
+        assert (
+            get_surface_backend(engine).plot_surf_contours(
+                surf_mesh, roi_map=surf_mask_1d
+            )
+            is not None
+        )
 
 
 @pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())

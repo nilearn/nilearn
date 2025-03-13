@@ -1,17 +1,14 @@
 import numpy as np
 import pytest
 
-from nilearn.plotting.surface.tests.test_backend import BaseTestSurfaceBackend
+from nilearn.plotting.surface._backend import get_surface_backend
 from nilearn.plotting.surface._plotly_backend import (
     _configure_title,
     _get_camera_view_from_elevation_and_azimut,
     _get_camera_view_from_string_view,
     _get_view_plot_surf_plotly,
 )
-from nilearn.plotting.surface.surf_plotting import (
-    plot_img_on_surf,
-    plot_surf_contours,
-)
+from nilearn.plotting.surface.tests.test_backend import BaseTestSurfaceBackend
 
 ENGINE = "plotly"
 pytest.importorskip(
@@ -153,11 +150,25 @@ EXPECTED_CAMERAS_PLOTLY = [
 ]
 
 
-class TestMatplotlibBackend(BaseTestSurfaceBackend):
+@pytest.fixture
+def engine():
+    return ENGINE
 
-    @pytest.fixture
-    def engine(scope="class", autouse=True):
-        return ENGINE
+
+class TestPlotlyBackend(BaseTestSurfaceBackend):
+    """Tests PlotlyBackend class methods."""
+
+    def test_plot_img_on_surf(self, engine, img_3d_mni):
+        """Smoke test for PlotlyBackend.plot_img_on_surf."""
+        with pytest.raises(NotImplementedError):
+            get_surface_backend(engine).plot_img_on_surf(img_3d_mni)
+
+    def test_plot_surf_contours(self, engine, surf_mesh, surf_mask_1d):
+        """Smoke test for PlotlyBackend.plot_surf_contours."""
+        with pytest.raises(NotImplementedError):
+            get_surface_backend(engine).plot_surf_contours(
+                surf_mesh, roi_map=surf_mask_1d
+            )
 
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
