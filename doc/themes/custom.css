@@ -1,9 +1,11 @@
 h1 {
   font-size: 2em;
 }
+
 h2 {
   font-size: 1.75em;
 }
+
 h3 {
   font-size: 1.4em;
 }
@@ -12,15 +14,19 @@ h3 {
   h1 {
     font-size: 1.75em;
   }
+
   h2 {
     font-size: 1.5em;
   }
+
   h3 {
     font-size: 1.25em;
   }
+
   h4 {
     font-size: 1.15em;
   }
+
   h5 {
     font-size: 1.1em;
   }
@@ -30,15 +36,19 @@ h3 {
   h1 {
     font-size: 1.45em;
   }
+
   h2 {
     font-size: 1.3em;
   }
+
   h3 {
     font-size: 1.15em;
   }
+
   h4 {
     font-size: 1.05em;
   }
+
   h5 {
     font-size: 1em;
   }
@@ -147,4 +157,36 @@ table.plotting-table img {
 
 .announcement-content {
   white-space: normal;
+}
+
+/* Latex images
+
+latex equation are inserted as images but are bit higher
+than the rest of the text and do not play nice with dark mode
+
+*/
+
+img.math {
+  transform: translateY(2px);
+}
+
+/* Light Mode */
+[data-theme="light"] img.math {
+  filter: invert(0);
+}
+
+/* Dark Mode */
+[data-theme="dark"] img.math {
+  filter: invert(1);
+}
+
+/* Auto Mode - Uses System Preference */
+[data-theme="auto"] img.math {
+  filter: invert(0);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme="auto"] img.math {
+    filter: invert(1);
+  }
 }
