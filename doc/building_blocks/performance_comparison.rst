@@ -229,7 +229,7 @@ function, it will return an array image. We can check this using nibabel's
     nib.is_proxy(img_smoothed.dataobj)
     # False
 
-But ``is_proxy`` would return ``True`` for ``img_nilearn.dataobj``:
+But :func:`nibabel.arrayproxy.is_proxy` would return ``True`` for ``img_nilearn.dataobj``:
 
 .. code-block:: python
 
