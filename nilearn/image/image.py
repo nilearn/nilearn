@@ -41,9 +41,9 @@ from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.surface.surface import (
     SurfaceImage,
-    _extract_data,
     at_least_2d,
     check_same_n_vertices,
+    extract_data,
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.typing import NiimgLike
@@ -553,22 +553,27 @@ def mean_img(
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects
+    imgs : Niimg-like object or iterable of Niimg-like objects, \
+           or :obj:`~nilearn.surface.SurfaceImage`.
         Images to be averaged over time (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
     %(target_affine)s
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     %(target_shape)s
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     %(verbose0)s
 
     n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation (-1 means
         'all CPUs').
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
         .. versionadded:: 0.11.0
 
@@ -584,6 +589,16 @@ def mean_img(
     nilearn.image.math_img : For more general operations on images.
 
     """
+    if isinstance(imgs, SurfaceImage):
+        if len(imgs.shape) < 2 or imgs.shape[1] < 2:
+            data = imgs.data
+        else:
+            data = {
+                part: np.mean(value, axis=1).astype(float)
+                for part, value in imgs.data.parts.items()
+            }
+        return new_img_like(imgs, data=data)
+
     # TODO: remove this warning in 0.13.0
     check_copy_header(copy_header)
 
@@ -724,7 +739,7 @@ def index_img(imgs, index):
     """
     if isinstance(imgs, SurfaceImage):
         imgs = at_least_2d(imgs)
-        return new_img_like(imgs, data=_extract_data(imgs, index))
+        return new_img_like(imgs, data=extract_data(imgs, index))
 
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr

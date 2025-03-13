@@ -13,12 +13,12 @@ from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.param_validation import check_params
+from nilearn.image import mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
     concat_imgs,
-    mean_img,
 )
 
 

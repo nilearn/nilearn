@@ -518,6 +518,26 @@ def test_mean_img_copied_header(img_4d_mni_tr2):
     )
 
 
+def test_mean_img_surface(surf_img_1d, surf_img_2d):
+    """Check that mean is properly computed over 'time points'."""
+    # one 'time point' image returns same
+    img = mean_img(surf_img_1d)
+
+    assert_surface_image_equal(img, surf_img_1d)
+
+    # image with left hemisphere
+    # where timepoint 1 has all values == 0
+    # and timepoint 2 == 1
+    two_time_points_img = surf_img_2d(2)
+    two_time_points_img.data.parts["left"][:, 0] = np.zeros(shape=4)
+    two_time_points_img.data.parts["left"][:, 1] = np.ones(shape=4)
+
+    img = mean_img(two_time_points_img)
+
+    assert_array_equal(img.data.parts["left"], np.ones(shape=(4,)) * 0.5)
+    assert img.shape == (img.mesh.n_vertices,)
+
+
 def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
     # make sure input image data is not overwritten inside function
     data = rng.standard_normal(size=shape_3d_default)

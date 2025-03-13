@@ -2076,29 +2076,6 @@ def concat_imgs(imgs):
     return new_img_like(imgs[0], data=output_data)
 
 
-def mean_img(img):
-    """Compute mean of SurfaceImage over time points (for 'time series').
-
-    Parameters
-    ----------
-    img : SurfaceImage
-
-    Returns
-    -------
-    SurfaceImage
-    """
-    from nilearn.image import new_img_like
-
-    if len(img.shape) < 2 or img.shape[1] < 2:
-        data = img.data
-    else:
-        data = {
-            part: np.mean(value, axis=1).astype(float)
-            for part, value in img.data.parts.items()
-        }
-    return new_img_like(img, data=data)
-
-
 def iter_img(img, return_iterator=True):
     """Iterate over a SurfaceImage object in the 2nd dimension.
 
@@ -2121,7 +2098,7 @@ def iter_img(img, return_iterator=True):
     return output if return_iterator else list(output)
 
 
-def _extract_data(img, index):
+def extract_data(img, index):
     """Extract data of a SurfaceImage a specified indices.
 
     Parameters

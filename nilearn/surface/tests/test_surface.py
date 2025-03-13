@@ -26,7 +26,6 @@ from nilearn.surface.surface import (
     SurfaceImage,
     _choose_kind,
     _data_to_gifti,
-    _extract_data,
     _gifti_img_to_mesh,
     _interpolation_sampling,
     _load_surf_files_gifti_gzip,
@@ -42,11 +41,11 @@ from nilearn.surface.surface import (
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     concat_imgs,
+    extract_data,
     get_data,
     iter_img,
     load_surf_data,
     load_surf_mesh,
-    mean_img,
     vol_to_surf,
 )
 
@@ -1182,26 +1181,6 @@ def test_inmemorymesh_index_error(in_memory_mesh):
         in_memory_mesh[2]
 
 
-def test_mean_img(surf_img_1d, surf_img_2d):
-    """Check that mean is properly computed over 'time points'."""
-    # one 'time point' image returns same
-    img = mean_img(surf_img_1d)
-
-    assert_surface_image_equal(img, surf_img_1d)
-
-    # image with left hemisphere
-    # where timepoint 1 has all values == 0
-    # and timepoint 2 == 1
-    two_time_points_img = surf_img_2d(2)
-    two_time_points_img.data.parts["left"][:, 0] = np.zeros(shape=4)
-    two_time_points_img.data.parts["left"][:, 1] = np.ones(shape=4)
-
-    img = mean_img(two_time_points_img)
-
-    assert_array_equal(img.data.parts["left"], np.ones(shape=(4,)) * 0.5)
-    assert img.shape == (img.mesh.n_vertices,)
-
-
 def test_get_min_max(surf_img_2d):
     """Make sure we get the min and max across hemispheres."""
     img = surf_img_2d()
@@ -1265,10 +1244,10 @@ def test_iter_img_wrong_input():
         iter_img(1)
 
 
-def test_extract_data_wrong_input():
+def testextract_data_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        _extract_data(1, index=1)
+        extract_data(1, index=1)
 
 
 def test_get_data(surf_img_1d):

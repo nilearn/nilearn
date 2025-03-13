@@ -40,7 +40,6 @@ from nilearn.surface.surface import (
     concat_imgs,
     iter_img,
 )
-from nilearn.surface.surface import mean_img as surf_mean_img
 
 
 def _input_type_error_message(second_level_input):
@@ -442,7 +441,7 @@ def _process_second_level_input_as_surface_image(second_level_input):
     if isinstance(second_level_input, SurfaceImage):
         return second_level_input, None
 
-    second_level_input = [surf_mean_img(x) for x in second_level_input]
+    second_level_input = [mean_img(x) for x in second_level_input]
     sample_map = concat_imgs(second_level_input)
     return sample_map, None
 
