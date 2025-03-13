@@ -184,10 +184,11 @@ def check_estimator(
             niimg_input = getattr(tags.input_tags, "niimg_like", False)
             surf_img = getattr(tags.input_tags, "surf_img", False)
 
-            if expected_failed_checks is not None and (
-                niimg_input or surf_img
-            ):
-                expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
+            if niimg_input or surf_img:
+                if expected_failed_checks is None:
+                    expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
+                else:
+                    expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
 
             for e, check in sklearn_check_generator(
                 estimator=est,
@@ -199,6 +200,7 @@ def check_estimator(
                 # to get name of the check:
                 # things may break with no deprecation warning
                 name = _check_name(check)
+
                 if valid and name in valid_checks:
                     yield e, check, name
                 if not valid and name not in valid_checks:
