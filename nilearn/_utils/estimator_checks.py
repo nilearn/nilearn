@@ -71,28 +71,42 @@ if compare_version(sklearn_version, ">", "1.5.2"):
 else:
     VALID_CHECKS.append("check_estimator_get_tags_default_keys")
 
+# keeping track of some of those in
+# https://github.com/nilearn/nilearn/issues/4538
+
 
 CHECKS_TO_SKIP_IF_IMG_INPUT = {
-    "check_complex_data": "TODO",
+    # The following do not apply for nilearn maskers
+    # as they do not take numpy arrays as input.
+    "check_complex_data": "not applicable for image input",
+    "check_estimator_sparse_array": "not applicable for image input",
+    "check_estimator_sparse_data": "not applicable for image input",
+    "check_estimator_sparse_matrix": "not applicable for image input",
+    "check_estimator_sparse_tag": "not applicable for image input",
+    "check_f_contiguous_array_estimator": "not applicable for image input",
+    "check_fit1d": "not applicable for image input",
+    "check_fit2d_1feature": "not applicable for image input",
+    "check_fit2d_1sample": "not applicable for image input",
+    "check_fit2d_predict1d": "not applicable for image input",
+    # the following are skipped because there is nilearn specific replacement
+    "check_estimators_fit_returns_self": (
+        "replaced by check_nifti_masker_fit_returns_self "
+        "or check_surface_masker_fit_returns_self"
+    ),
+    "check_fit_check_is_fitted": "replaced by check_masker_fitted",
+    # Those are skipped for now they fail
+    # for unknown reasons
+    #  most often because sklearn inputs expect a numpy array
+    #  that errors with maskers,
+    # or because a suitable nilearn replacement has not yet been created.
     "check_dtype_object": "TODO",
     "check_dict_unchanged": "TODO",
     "check_dont_overwrite_parameters": "TODO",
-    "check_estimator_sparse_array": "TODO",
-    "check_estimator_sparse_data": "TODO",
-    "check_estimator_sparse_matrix": "TODO",
-    "check_estimator_sparse_tag": "TODO",
     "check_estimators_empty_data_messages": "TODO",
     "check_estimators_dtypes": "TODO",
     "check_estimators_nan_inf": "TODO",
     "check_estimators_overwrite_params": "TODO",
     "check_estimators_pickle": "TODO",
-    "check_estimators_fit_returns_self": "TODO",
-    "check_f_contiguous_array_estimator": "TODO",
-    "check_fit_check_is_fitted": "TODO",
-    "check_fit1d": "TODO",
-    "check_fit2d_1feature": "TODO",
-    "check_fit2d_1sample": "TODO",
-    "check_fit2d_predict1d": "TODO",
     "check_fit_score_takes_y": "TODO",
     "check_fit_idempotent": "TODO",
     "check_methods_sample_order_invariance": "TODO",
