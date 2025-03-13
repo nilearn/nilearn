@@ -257,7 +257,11 @@ class NiftiMapsMasker(BaseMasker):
                     "Matplotlib is not imported! No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                warnings.warn(
+                    category=ImportWarning,
+                    message=mpl_unavail_msg,
+                    stacklevel=3,
+                )
                 return [None]
 
         from nilearn.reporting.html_report import generate_report

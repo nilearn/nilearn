@@ -7,6 +7,7 @@ from string import Template
 
 import pandas as pd
 
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
@@ -289,6 +290,17 @@ def generate_report(estimator):
     report : HTMLReport
 
     """
+    if not is_matplotlib_installed():
+        with warnings.catch_warnings():
+            mpl_unavail_msg = (
+                "Matplotlib is not imported! No reports will be generated."
+            )
+            warnings.filterwarnings("always", message=mpl_unavail_msg)
+            warnings.warn(
+                category=ImportWarning, message=mpl_unavail_msg, stacklevel=3
+            )
+            return [None]
+
     if hasattr(estimator, "_report_content"):
         data = estimator._report_content
     else:

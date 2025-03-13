@@ -506,7 +506,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                     "Matplotlib not installed. No reports will be generated."
                 )
                 warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                warnings.warn(
+                    category=ImportWarning,
+                    message=mpl_unavail_msg,
+                    stacklevel=3,
+                )
                 return [None]
 
         if engine not in ["plotly", "matplotlib"]:
