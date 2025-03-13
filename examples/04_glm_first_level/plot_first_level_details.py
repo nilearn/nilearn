@@ -166,7 +166,7 @@ def make_localizer_contrasts(design_matrix):
     )
 
     # Short dictionary of more relevant contrasts
-    contrasts = {
+    return {
         "left - right button press": (
             contrasts["audio_left_hand_button_press"]
             - contrasts["audio_right_hand_button_press"]
@@ -182,7 +182,6 @@ def make_localizer_contrasts(design_matrix):
             - contrasts["vertical_checkerboard"]
         ),
     }
-    return contrasts
 
 
 # %%
@@ -225,13 +224,21 @@ def plot_contrast(first_level_model):
     """
     # Set vmax to keep range of values equal
     # across models / contrasts
-    # vmax = 9.5
+    # vmax = 10
 
     design_matrix = first_level_model.design_matrices_[0]
 
     # Call the contrast specification within the function
     contrasts = make_localizer_contrasts(design_matrix)
     plt.figure(figsize=(10, 10))
+
+    # To make sure we plot the same slice across models.
+    cut_coords = {
+        "left - right button press": 66,
+        "audio - visual": -3,
+        "computation - sentences": -6,
+        "horizontal-vertical": 24,
+    }
 
     # compute the per-contrast z-map
     for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
@@ -242,10 +249,11 @@ def plot_contrast(first_level_model):
         plot_stat_map(
             results["stat"],
             display_mode="z",
+            threshold=1,
             # vmax=vmax,
             title=contrast_id,
             axes=ax,
-            cut_coords=1,
+            cut_coords=[cut_coords[contrast_id]],
             transparency=results["z_score"],
             transparency_range=[1.96, 3.0],
         )
