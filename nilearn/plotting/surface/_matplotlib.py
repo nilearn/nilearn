@@ -603,7 +603,6 @@ class MatplotlibBackend(SurfaceBackend):
         vmax=None,
         cmap=DEFAULT_DIVERGING_CMAP,
         colorbar=True,
-        symmetric_cbar=None,
         cbar_tick_format="auto",
         bg_on_data=False,
         darkness=0.7,
@@ -617,7 +616,6 @@ class MatplotlibBackend(SurfaceBackend):
         cbar_vmax=None,
         **kwargs,
     ):
-        # TODO should the value of symmetric_cmap = symmetric_cbar?
         fig = self.plot_surf(
             surf_mesh,
             surf_map=surf_map,

@@ -420,7 +420,6 @@ class SurfaceBackend:
             vmax=vmax,
             cmap=cmap,
             colorbar=colorbar,
-            symmetric_cbar=symmetric_cbar,
             cbar_tick_format=cbar_tick_format,
             bg_on_data=bg_on_data,
             darkness=darkness,
@@ -523,4 +522,3 @@ class SurfaceBackend:
                     f"Got '{parameter} = {value}'.\n"
                     f"Use '{parameter} = None' to silence this warning."
                 )
-

@@ -383,7 +383,6 @@ class PlotlyBackend(SurfaceBackend):
         vmax=None,
         cmap=DEFAULT_DIVERGING_CMAP,
         colorbar=True,
-        symmetric_cbar=True,
         cbar_tick_format="auto",
         bg_on_data=False,
         darkness=0.7,
@@ -402,7 +401,6 @@ class PlotlyBackend(SurfaceBackend):
         cbar_vmin = None
         cbar_vmax = None
 
-        # TODO should the value of symmetric_cmap = symmetric_cbar?
         fig = self.plot_surf(
             surf_mesh,
             surf_map=surf_map,
