@@ -2113,35 +2113,12 @@ def iter_img(img, return_iterator=True):
     -------
     Iterator or list of  SurfaceImage
     """
+    from nilearn.image import index_img
+
     if not isinstance(img, SurfaceImage):
         raise TypeError("Input must a be SurfaceImage.")
     output = (index_img(img, i) for i in range(at_least_2d(img).shape[1]))
     return output if return_iterator else list(output)
-
-
-def index_img(img, index):
-    """Indexes into a 2D SurfaceImage in the second dimension.
-
-    Common use cases include extracting an image out of `img` or
-    creating a 2D image whose data is a subset of `img` data.
-
-    Parameters
-    ----------
-    img : SurfaceImage object
-
-    index : Any type compatible with numpy array indexing
-        Used for indexing the 2D data array in the 2nd dimension.
-
-    Returns
-    -------
-    a SurfaceImage object
-    """
-    from nilearn.image import new_img_like
-
-    if not isinstance(img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
-    img = at_least_2d(img)
-    return new_img_like(img, data=_extract_data(img, index))
 
 
 def _extract_data(img, index):

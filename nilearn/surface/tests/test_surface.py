@@ -43,7 +43,6 @@ from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     concat_imgs,
     get_data,
-    index_img,
     iter_img,
     load_surf_data,
     load_surf_mesh,
@@ -1270,12 +1269,6 @@ def test_extract_data_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         _extract_data(1, index=1)
-
-
-def test_index_img_wrong_input():
-    """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        index_img(1, index=1)
 
 
 def test_get_data(surf_img_1d):

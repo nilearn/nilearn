@@ -39,7 +39,12 @@ from nilearn._utils.niimg_conversions import (
 )
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
+from nilearn.surface.surface import (
+    SurfaceImage,
+    _extract_data,
+    at_least_2d,
+    check_same_n_vertices,
+)
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.typing import NiimgLike
 
@@ -664,22 +669,23 @@ def swap_img_hemispheres(img):
 
 
 def index_img(imgs, index):
-    """Indexes into a 4D Niimg-like object in the fourth dimension.
+    """Indexes into a image in the last dimension.
 
-    Common use cases include extracting a 3D image out of `img` or
-    creating a 4D image whose data is a subset of `img` data.
+    Common use cases include extracting an image out of `img` or
+    creating a 4D (or 2D fir surface) image
+    whose data is a subset of `img` data.
 
     Parameters
     ----------
-    imgs : 4D Niimg-like object
+    imgs : 4D Niimg-like object or 2D :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
 
     index : Any type compatible with numpy array indexing
-        Used for indexing the 4D data array in the fourth dimension.
+        Used for indexing the data array in the last dimension.
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
+    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`~nilearn.surface.SurfaceImage`
         Indexed image.
 
     See Also
@@ -716,6 +722,10 @@ def index_img(imgs, index):
      (197, 233, 189, 3)
 
     """
+    if isinstance(imgs, SurfaceImage):
+        imgs = at_least_2d(imgs)
+        return new_img_like(imgs, data=_extract_data(imgs, index))
+
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
     if hasattr(index, "values") and hasattr(index, "iloc"):
