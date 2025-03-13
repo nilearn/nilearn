@@ -2,6 +2,7 @@
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import fill_doc
+from nilearn.plotting._utils import DEFAULT_ENGINE
 from nilearn.plotting.surface._backend import get_surface_backend
 
 
@@ -12,7 +13,7 @@ def plot_surf(
     bg_map=None,
     hemi="left",
     view=None,
-    engine="matplotlib",
+    engine=DEFAULT_ENGINE,
     cmap=None,
     symmetric_cmap=None,
     colorbar=True,
@@ -365,7 +366,7 @@ def plot_surf_contours(
     """
     # TODO we can add engine param with default value matplotlib to
     # plot_surf_contours function?
-    fig = get_surface_backend("matplotlib").plot_surf_contours(
+    fig = get_surface_backend(DEFAULT_ENGINE).plot_surf_contours(
         surf_mesh=surf_mesh,
         roi_map=roi_map,
         hemi=hemi,
@@ -391,7 +392,7 @@ def plot_surf_stat_map(
     bg_map=None,
     hemi="left",
     view=None,
-    engine="matplotlib",
+    engine=DEFAULT_ENGINE,
     threshold=None,
     alpha=None,
     vmin=None,
@@ -708,7 +709,7 @@ def plot_img_on_surf(
                 f"plot_img_on_surf does not accept {arg} as an argument"
             )
 
-    fig = get_surface_backend("matplotlib").plot_img_on_surf(
+    fig = get_surface_backend(DEFAULT_ENGINE).plot_img_on_surf(
         stat_map=stat_map,
         surf_mesh=surf_mesh,
         mask_img=mask_img,
@@ -742,7 +743,7 @@ def plot_surf_roi(
     bg_map=None,
     hemi="left",
     view=None,
-    engine="matplotlib",
+    engine=DEFAULT_ENGINE,
     avg_method=None,
     threshold=1e-14,
     alpha=None,
