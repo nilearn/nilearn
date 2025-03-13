@@ -305,8 +305,10 @@ class FirstLevelModel(BaseGLM):
         slice timing preprocessing step of the experimental runs.
         It is expressed as a fraction of the ``t_r`` (repetition time),
         so it can have values between 0. and 1.
+
     %(hrf_model)s
         Default='glover'.
+
     drift_model : :obj:`str`, default='cosine'
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
@@ -669,6 +671,10 @@ class FirstLevelModel(BaseGLM):
                     f"at index {run_idx}."
                 )
 
+        events = check_and_load_tables(events[run_idx], "events")[0]
+        if "trial_type" in events.columns:
+            self._reporting_data["trial_types"].extend(events["trial_type"])
+
         start_time = self.slice_time_ref * self.t_r
         end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
         frame_times = np.linspace(start_time, end_time, n_scans)
@@ -873,8 +879,31 @@ class FirstLevelModel(BaseGLM):
 
         self._prepare_mask(run_imgs[0])
 
+        # collect info that may be useful for report generation
+        drift_model_str = None
+        if self.drift_model:
+            if self.drift_model == "cosine":
+                param_str = f"high pass filter={self.high_pass} Hz"
+            else:
+                param_str = f"order={self.drift_order}"
+            drift_model_str = (
+                f"and a {self.drift_model} drift model ({param_str})"
+            )
+        self._reporting_data = {
+            "trial_types": [],
+            "noise_model": self.noise_model,
+            "hrf_model": "finite impulse response"
+            if self.hrf_model == "fir"
+            else self.hrf_model,
+            "drift_model": drift_model_str,
+        }
+
         self.design_matrices_ = self._create_all_designs(
             run_imgs, events, confounds, design_matrices
+        )
+
+        self._reporting_data["trial_types"] = set(
+            self._reporting_data["trial_types"]
         )
 
         # For each run fit the model and keep only the regression results.
