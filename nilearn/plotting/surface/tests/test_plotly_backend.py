@@ -1,15 +1,21 @@
 import numpy as np
 import pytest
 
+from nilearn.plotting.surface.tests.test_backend import BaseTestSurfaceBackend
 from nilearn.plotting.surface._plotly_backend import (
     _configure_title,
     _get_camera_view_from_elevation_and_azimut,
     _get_camera_view_from_string_view,
     _get_view_plot_surf_plotly,
 )
+from nilearn.plotting.surface.surf_plotting import (
+    plot_img_on_surf,
+    plot_surf_contours,
+)
 
+ENGINE = "plotly"
 pytest.importorskip(
-    "plotly",
+    ENGINE,
     reason="Plotly is not installed. It is required to run the tests!",
 )
 
@@ -145,6 +151,13 @@ EXPECTED_CAMERAS_PLOTLY = [
         },
     ),
 ]
+
+
+class TestMatplotlibBackend(BaseTestSurfaceBackend):
+
+    @pytest.fixture
+    def engine(scope="class", autouse=True):
+        return ENGINE
 
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)

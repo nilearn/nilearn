@@ -24,12 +24,6 @@ from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
 from nilearn.surface import SurfaceImage
 
 
-@pytest.fixture
-def bg_map(rng, in_memory_mesh):
-    """Return a background map with posive value."""
-    return np.abs(rng.standard_normal(size=in_memory_mesh.n_vertices))
-
-
 @pytest.mark.parametrize(
     "fn",
     [
@@ -141,12 +135,6 @@ def surf_roi_data(rng, in_memory_mesh):
     roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
     roi_map[roi_idx] = 1
     return roi_map
-
-
-@pytest.fixture
-def surface_image_roi(surf_mask_1d):
-    """SurfaceImage for plotting."""
-    return surf_mask_1d
 
 
 @pytest.fixture
