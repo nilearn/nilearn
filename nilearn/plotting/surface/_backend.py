@@ -13,9 +13,9 @@ from nilearn.plotting._utils import (
 )
 from nilearn.plotting.surface._utils import (
     DATA_EXTENSIONS,
-    _check_hemispheres,
-    _check_views,
+    check_hemispheres,
     check_surface_plotting_inputs,
+    check_views,
     sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
@@ -30,7 +30,7 @@ from nilearn.surface.surface import (
 )
 
 
-def _get_surface_backend(engine=None):
+def get_surface_backend(engine=None):
     if engine == "matplotlib":
         if is_matplotlib_installed():
             from nilearn.plotting.surface._matplotlib_backend import (
@@ -265,8 +265,8 @@ class SurfaceBackend:
             views = ["lateral", "medial"]
 
         stat_map = check_niimg_3d(stat_map, dtype="auto")
-        modes = _check_views(views)
-        hemis = _check_hemispheres(hemispheres)
+        modes = check_views(views)
+        hemis = check_hemispheres(hemispheres)
         surf_mesh = check_mesh_is_fsaverage(surf_mesh)
 
         mesh_prefix = "infl" if inflate else "pial"

@@ -10,9 +10,9 @@ from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._backend import SurfaceBackend
 from nilearn.plotting.surface._utils import (
     VALID_HEMISPHERES,
-    _check_hemispheres,
-    _check_surf_map,
-    _check_views,
+    check_hemispheres,
+    check_surf_map,
+    check_views,
 )
 from nilearn.surface import load_surf_data
 
@@ -82,6 +82,26 @@ LAYOUT = {
 }
 
 
+def _configure_title(title, font_size, color="black"):
+    """Help for plot_surf with plotly engine.
+
+    This function configures the title if provided.
+    """
+    if title is None:
+        return {}
+    return {
+        "text": title,
+        "font": {
+            "size": font_size,
+            "color": color,
+        },
+        "y": 0.96,
+        "x": 0.5,
+        "xanchor": "center",
+        "yanchor": "top",
+    }
+
+
 def _get_camera_view_from_string_view(hemi, view):
     """Return plotly camera parameters from string view."""
     if hemi in ["left", "right"]:
@@ -146,40 +166,6 @@ def _get_camera_view_from_elevation_and_azimut(view):
     }
 
 
-def _get_view_plot_surf_plotly(hemi, view):
-    """
-    Get camera parameters from hemi and view for the plotly engine.
-
-    This function checks the selected hemisphere and view, and
-    returns the cameras view.
-    """
-    _check_views([view])
-    _check_hemispheres([hemi])
-    if isinstance(view, str):
-        return _get_camera_view_from_string_view(hemi, view)
-    return _get_camera_view_from_elevation_and_azimut(view)
-
-
-def _configure_title(title, font_size, color="black"):
-    """Help for plot_surf with plotly engine.
-
-    This function configures the title if provided.
-    """
-    if title is None:
-        return {}
-    return {
-        "text": title,
-        "font": {
-            "size": font_size,
-            "color": color,
-        },
-        "y": 0.96,
-        "x": 0.5,
-        "xanchor": "center",
-        "yanchor": "top",
-    }
-
-
 def _get_cbar_plotly(
     colorscale,
     vmin,
@@ -216,6 +202,20 @@ def _get_cbar_plotly(
         "cmax": vmax,
     }
     return dummy
+
+
+def _get_view_plot_surf_plotly(hemi, view):
+    """
+    Get camera parameters from hemi and view for the plotly engine.
+
+    This function checks the selected hemisphere and view, and
+    returns the cameras view.
+    """
+    check_views([view])
+    check_hemispheres([hemi])
+    if isinstance(view, str):
+        return _get_camera_view_from_string_view(hemi, view)
+    return _get_camera_view_from_elevation_and_azimut(view)
 
 
 class PlotlyBackend(SurfaceBackend):
@@ -285,7 +285,7 @@ class PlotlyBackend(SurfaceBackend):
                 )
 
         if surf_map is not None:
-            _check_surf_map(surf_map, coords.shape[0])
+            check_surf_map(surf_map, coords.shape[0])
             colors = colorscale(
                 cmap,
                 surf_map,

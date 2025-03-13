@@ -6,9 +6,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
-from nilearn.surface import SurfaceImage
-from nilearn.surface.surface import combine_hemispheres_meshes, get_data
-
 
 def engine_warning(engine):
     warning = (
@@ -172,48 +169,6 @@ def get_colorbar_and_data_ranges(
         vmax = stat_map_max
 
     return cbar_vmin, cbar_vmax, float(vmin), float(vmax)
-
-
-def _check_bg_map(bg_map, hemi):
-    """Get the requested hemisphere if bg_map is a SurfaceImage. If the
-    hemisphere is not present, raise an error. If the hemisphere is "both",
-    concatenate the left and right hemispheres.
-
-    bg_map : Any
-
-    hemi : str
-
-    Returns
-    -------
-    bg_map : str | pathlib.Path | numpy.ndarray | None
-    """
-    if isinstance(bg_map, SurfaceImage):
-        if len(bg_map.shape) > 1 and bg_map.shape[1] > 1:
-            raise TypeError(
-                "Input data has incompatible dimensionality. "
-                f"Expected dimension is ({bg_map.shape[0]},) "
-                f"or ({bg_map.shape[0]}, 1) "
-                f"and you provided a {bg_map.shape} surface image."
-            )
-        if hemi == "both":
-            bg_map = get_data(bg_map)
-        else:
-            assert bg_map.data.parts[hemi] is not None
-            bg_map = bg_map.data.parts[hemi]
-    return bg_map
-
-
-def _get_hemi(mesh, hemi):
-    """Check that a given hemisphere exists in a PolyMesh and return the
-    corresponding mesh. If "both" is requested, combine the left and right
-    hemispheres.
-    """
-    if hemi == "both":
-        return combine_hemispheres_meshes(mesh)
-    elif hemi in mesh.parts:
-        return mesh.parts[hemi]
-    else:
-        raise ValueError("hemi must be one of left, right or both.")
 
 
 def check_threshold_not_negative(threshold):

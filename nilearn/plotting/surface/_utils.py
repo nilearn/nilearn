@@ -3,16 +3,12 @@ from warnings import warn
 
 import numpy as np
 
-from nilearn.plotting._utils import (
-    _check_bg_map,
-    _get_hemi,
-)
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
     load_surf_data,
 )
-from nilearn.surface.surface import get_data
+from nilearn.surface.surface import combine_hemispheres_meshes, get_data
 
 VALID_VIEWS = (
     "anterior",
@@ -33,6 +29,48 @@ DATA_EXTENSIONS = (
     "gii.gz",
     "mgz",
 )
+
+
+def _check_bg_map(bg_map, hemi):
+    """Get the requested hemisphere if bg_map is a SurfaceImage. If the
+    hemisphere is not present, raise an error. If the hemisphere is "both",
+    concatenate the left and right hemispheres.
+
+    bg_map : Any
+
+    hemi : str
+
+    Returns
+    -------
+    bg_map : str | pathlib.Path | numpy.ndarray | None
+    """
+    if isinstance(bg_map, SurfaceImage):
+        if len(bg_map.shape) > 1 and bg_map.shape[1] > 1:
+            raise TypeError(
+                "Input data has incompatible dimensionality. "
+                f"Expected dimension is ({bg_map.shape[0]},) "
+                f"or ({bg_map.shape[0]}, 1) "
+                f"and you provided a {bg_map.shape} surface image."
+            )
+        if hemi == "both":
+            bg_map = get_data(bg_map)
+        else:
+            assert bg_map.data.parts[hemi] is not None
+            bg_map = bg_map.data.parts[hemi]
+    return bg_map
+
+
+def _get_hemi(mesh, hemi):
+    """Check that a given hemisphere exists in a PolyMesh and return the
+    corresponding mesh. If "both" is requested, combine the left and right
+    hemispheres.
+    """
+    if hemi == "both":
+        return combine_hemispheres_meshes(mesh)
+    elif hemi in mesh.parts:
+        return mesh.parts[hemi]
+    else:
+        raise ValueError("hemi must be one of left, right or both.")
 
 
 def check_surface_plotting_inputs(
@@ -131,7 +169,7 @@ def _check_hemisphere_is_valid(hemi):
     return hemi in VALID_HEMISPHERES
 
 
-def _check_hemispheres(hemispheres):
+def check_hemispheres(hemispheres):
     """Check whether the hemispheres passed to in plot_img_on_surf are \
     correct.
 
@@ -172,7 +210,7 @@ def _check_view_is_valid(view) -> bool:
     )
 
 
-def _check_views(views) -> list:
+def check_views(views) -> list:
     """Check whether the views passed to in plot_img_on_surf are correct.
 
     Parameters
@@ -200,7 +238,7 @@ def _check_views(views) -> list:
     return views
 
 
-def _check_surf_map(surf_map, n_vertices):
+def check_surf_map(surf_map, n_vertices):
     """Help for plot_surf.
 
     This function checks the dimensions of provided surf_map.
@@ -219,7 +257,7 @@ def _check_surf_map(surf_map, n_vertices):
     return surf_map_data
 
 
-def _get_faces_on_edge(faces, parc_idx):
+def get_faces_on_edge(faces, parc_idx):
     """Identify which faces lie on the outeredge of the parcellation \
     defined by the indices in parc_idx.
 
