@@ -207,7 +207,7 @@ def test_flm_generate_report_surface_data(surf_mask_1d, surf_img_2d):
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
 
-    report = model.generate_report("c0")
+    report = model.generate_report("c0", height_control=None)
 
     assert isinstance(report, HTMLReport)
 
@@ -224,4 +224,4 @@ def test_flm_generate_report_surface_data_error(
     with pytest.raises(
         TypeError, match="'bg_img' must a SurfaceImage instance"
     ):
-        model.generate_report("c0", bg_img=img_3d_mni)
+        model.generate_report("c0", bg_img=img_3d_mni, height_control=None)
