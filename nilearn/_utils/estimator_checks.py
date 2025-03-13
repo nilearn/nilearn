@@ -31,7 +31,6 @@ from nilearn.conftest import (
     _img_4d_rand_eye,
     _img_4d_rand_eye_medium,
     _img_4d_zeros,
-    _img_mask_eye,
     _make_surface_img,
     _make_surface_mask,
     _rng,
@@ -418,8 +417,17 @@ def check_masker_clean(estimator):
 def check_masker_refit(estimator):
     """Check masker can be refitted and give different results."""
     if accept_niimg_input(estimator):
-        mask_img_1 = _img_mask_eye()
-        mask_img_2 = _img_3d_ones()
+        # using larger images to be compatible
+        # with regions extraction tests
+        # TODO refactor a common fixture for "large 3D shape"
+        shape = (29, 30, 31)
+        mask = np.zeros(shape, dtype=np.int8)
+        mask[1:-1, 1:-1, 1:-1] = 1
+        mask_img_1 = Nifti1Image(mask, _affine_eye())
+
+        mask = np.zeros(shape, dtype=np.int8)
+        mask[3:-3, 3:-3, 3:-3] = 1
+        mask_img_2 = Nifti1Image(mask, _affine_eye())
     else:
         mask_img_1 = _make_surface_mask()
         data = {}
