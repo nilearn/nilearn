@@ -1,8 +1,10 @@
 import numpy as np
 import pytest
 
-from nilearn.plotting.surface._plotly import (
+from nilearn.plotting.surface._plotly_backend import (
     _configure_title,
+    _get_camera_view_from_elevation_and_azimut,
+    _get_camera_view_from_string_view,
     _get_view_plot_surf_plotly,
 )
 
@@ -147,11 +149,6 @@ EXPECTED_CAMERAS_PLOTLY = [
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf_plotly(full_view):
-    from nilearn.plotting.surface._plotly import (
-        _get_camera_view_from_elevation_and_azimut,
-        _get_camera_view_from_string_view,
-    )
-
     hemi, view_name, (elev, azim), expected_camera_view = full_view
     camera_view = _get_view_plot_surf_plotly(hemi, view_name)
     camera_view_string = _get_camera_view_from_string_view(hemi, view_name)

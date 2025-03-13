@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.plotting.surface._matplotlib import (
+from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors,
     _get_bounds,

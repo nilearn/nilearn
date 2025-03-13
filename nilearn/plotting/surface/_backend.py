@@ -13,10 +13,10 @@ from nilearn.plotting._utils import (
 )
 from nilearn.plotting.surface._utils import (
     DATA_EXTENSIONS,
-    _check_views,
     _check_hemispheres,
+    _check_views,
     check_surface_plotting_inputs,
-    sanitize_hemi_for_surface_image
+    sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
     load_surf_data,
@@ -33,7 +33,9 @@ from nilearn.surface.surface import (
 def _get_surface_backend(engine=None):
     if engine == "matplotlib":
         if is_matplotlib_installed():
-            from nilearn.plotting.surface._matplotlib import MatplotlibBackend
+            from nilearn.plotting.surface._matplotlib_backend import (
+                MatplotlibBackend,
+            )
 
             return MatplotlibBackend()
         else:
@@ -43,7 +45,7 @@ def _get_surface_backend(engine=None):
             )
     elif engine == "plotly":
         if is_plotly_installed():
-            from nilearn.plotting.surface._plotly import PlotlyBackend
+            from nilearn.plotting.surface._plotly_backend import PlotlyBackend
 
             return PlotlyBackend()
         else:
