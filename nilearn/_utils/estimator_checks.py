@@ -229,10 +229,11 @@ def check_estimator(
                 niimg_input = "niimg_like" in tags["X_types"]
                 surf_img = "surf_img" in tags["X_types"]
 
-                if expected_failed_checks is not None and (
-                    niimg_input or surf_img
-                ):
-                    expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
+                if niimg_input or surf_img:
+                    if expected_failed_checks is None:
+                        expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
+                    else:
+                        expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
 
                 if (
                     isinstance(expected_failed_checks, dict)
