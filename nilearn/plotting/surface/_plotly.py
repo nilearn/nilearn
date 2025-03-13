@@ -432,7 +432,7 @@ class PlotlyBackend(SurfaceBackend):
 
         return fig
 
-    def plot_img_on_surf(
+    def _plot_img_on_surf(
         self,
         stat_map,
         surf_mesh,

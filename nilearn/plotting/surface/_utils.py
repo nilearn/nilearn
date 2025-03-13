@@ -3,7 +3,8 @@ from warnings import warn
 
 import numpy as np
 
-from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn import DEFAULT_DIVERGING_CMAP, image
+from nilearn._utils import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     _check_bg_map,
@@ -15,10 +16,12 @@ from nilearn.surface import (
     SurfaceImage,
     load_surf_data,
     load_surf_mesh,
+    vol_to_surf,
 )
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
     check_extensions,
+    check_mesh_is_fsaverage,
     get_data,
 )
 
@@ -431,6 +434,84 @@ class SurfaceBackend:
             cbar_vmax=cbar_vmax,
             **kwargs,
         )
+        return fig
+
+    def plot_img_on_surf(
+        self,
+        stat_map,
+        surf_mesh="fsaverage5",
+        mask_img=None,
+        hemispheres=None,
+        bg_on_data=False,
+        inflate=False,
+        views=None,
+        output_file=None,
+        title=None,
+        colorbar=True,
+        vmin=None,
+        vmax=None,
+        threshold=None,
+        symmetric_cbar="auto",
+        cmap=DEFAULT_DIVERGING_CMAP,
+        cbar_tick_format="%i",
+        **kwargs,
+    ):
+        check_params(locals())
+        if hemispheres in (None, "both"):
+            hemispheres = ["left", "right"]
+        if views is None:
+            views = ["lateral", "medial"]
+
+        stat_map = check_niimg_3d(stat_map, dtype="auto")
+        modes = _check_views(views)
+        hemis = _check_hemispheres(hemispheres)
+        surf_mesh = check_mesh_is_fsaverage(surf_mesh)
+
+        mesh_prefix = "infl" if inflate else "pial"
+        surf = {
+            "left": surf_mesh[f"{mesh_prefix}_left"],
+            "right": surf_mesh[f"{mesh_prefix}_right"],
+        }
+
+        texture = {
+            "left": vol_to_surf(
+                stat_map, surf_mesh["pial_left"], mask_img=mask_img
+            ),
+            "right": vol_to_surf(
+                stat_map, surf_mesh["pial_right"], mask_img=mask_img
+            ),
+        }
+
+        # get vmin and vmax for entire data (all hemis)
+        _, _, vmin, vmax = get_colorbar_and_data_ranges(
+            image.get_data(stat_map),
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+        )
+
+        fig = self._plot_img_on_surf(
+            stat_map=stat_map,
+            surf_mesh=surf_mesh,
+            hemispheres=hemispheres,
+            modes=modes,
+            hemis=hemis,
+            surf=surf,
+            texture=texture,
+            bg_on_data=bg_on_data,
+            inflate=inflate,
+            threshold=threshold,
+            colorbar=colorbar,
+            cbar_tick_format=cbar_tick_format,
+            symmetric_cbar=symmetric_cbar,
+            cmap=cmap,
+            vmin=vmin,
+            vmax=vmax,
+            title=title,
+            output_file=output_file,
+            **kwargs,
+        )
+
         return fig
 
     def _check_backend_params(self, params_not_implemented):
