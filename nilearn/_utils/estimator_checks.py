@@ -460,7 +460,6 @@ def check_masker_clean(estimator):
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
 
 
-
 def check_masker_transformer(estimator):
     """Replace sklearn _check_transformer for maskers.
 
@@ -478,6 +477,7 @@ def check_masker_transformer(estimator):
     signal_2 = estimator.fit(input_img).transform(input_img)
 
     assert_array_equal(signal_1, signal_2)
+
 
 def check_masker_refit(estimator):
     """Check masker can be refitted and give different results."""
@@ -516,7 +516,6 @@ def check_masker_refit(estimator):
     else:
         with pytest.raises(AssertionError):
             assert_surface_image_equal(fitted_mask_1, fitted_mask_2)
-
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------
