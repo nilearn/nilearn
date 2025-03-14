@@ -7,8 +7,8 @@ from nilearn import datasets, image
 from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.image import get_data
-from nilearn.plotting import html_surface
-from nilearn.plotting.html_surface import (
+from nilearn.plotting.surface import html_surface
+from nilearn.plotting.surface.html_surface import (
     colorscale,
     get_vertexcolor,
     view_img_on_surf,

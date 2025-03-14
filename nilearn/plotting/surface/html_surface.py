@@ -19,7 +19,7 @@ from nilearn.plotting.js_plotting_utils import (
     mesh_to_plotly,
     to_color_strings,
 )
-from nilearn.plotting.surface import (
+from nilearn.plotting.surface._utils import (
     check_surface_plotting_inputs,
     sanitize_hemi_for_surface_image,
 )
