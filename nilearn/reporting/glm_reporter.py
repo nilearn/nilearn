@@ -207,9 +207,7 @@ def make_glm_report(
     if smoothing_fwhm == 0:
         smoothing_fwhm = None
 
-    model_attributes = model_attributes_to_dataframe(
-        model, is_volume_glm=is_volume_glm(model)
-    )
+    model_attributes = model_attributes_to_dataframe(model)
     with pd.option_context("display.max_colwidth", 100):
         model_attributes_html = dataframe_to_html(
             model_attributes,

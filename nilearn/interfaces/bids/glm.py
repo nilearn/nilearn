@@ -271,16 +271,15 @@ def save_glm_to_bids(
     out_dir = out_dir / sub_directory
     out_dir.mkdir(exist_ok=True, parents=True)
 
-    if not isinstance(contrast_types, dict):
-        contrast_types = {}
-
     # Write out design matrices to files.
     if hasattr(model, "design_matrices_"):
         design_matrices = model.design_matrices_
     else:
         design_matrices = [model.design_matrix_]
 
-    output = _generate_output_filenames(prefix, design_matrices, contrasts)
+    output = _generate_output_filenames(
+        prefix, design_matrices, contrasts, contrast_types
+    )
 
     # TODO: Assuming that cases of multiple design matrices correspond to
     # different runs. Not sure if this is correct. Need to check.
@@ -318,44 +317,10 @@ def save_glm_to_bids(
 
     # Write out contrast-level statistical maps
     statistical_maps = make_stat_maps(model, contrasts, output_type="all")
-    for contrast_name, contrast_maps in statistical_maps.items():
-        # Extract stat_type
-        contrast_matrix = contrasts[contrast_name]
-        # Strings and 1D arrays are assumed to be t-contrasts
-        if isinstance(contrast_matrix, str) or (contrast_matrix.ndim == 1):
-            stat_type = "t"
-        else:
-            stat_type = "F"
-
-        # Override automatic detection with explicit type if provided
-        stat_type = contrast_types.get(contrast_name, stat_type)
-
-        # Convert the contrast name to camelCase
-        contrast_name = _clean_contrast_name(contrast_name)
-
-        # Contrast-level images
-        contrast_level_mapping = {
-            "effect_size": (
-                f"{prefix}contrast-{contrast_name}_stat-effect_statmap.nii.gz"
-            ),
-            "stat": (
-                f"{prefix}contrast-{contrast_name}_stat-{stat_type}_statmap"
-                ".nii.gz"
-            ),
-            "effect_variance": (
-                f"{prefix}contrast-{contrast_name}_stat-variance_statmap"
-                ".nii.gz"
-            ),
-            "z_score": (
-                f"{prefix}contrast-{contrast_name}_stat-z_statmap.nii.gz"
-            ),
-            "p_value": (
-                f"{prefix}contrast-{contrast_name}_stat-p_statmap.nii.gz"
-            ),
-        }
+    for contrast_maps in statistical_maps.values():
         # Rename keys
         renamed_contrast_maps = {
-            contrast_level_mapping.get(k, k): v
+            output["contrast_level_mapping"].get(k, k): v
             for k, v in contrast_maps.items()
         }
 
@@ -371,7 +336,9 @@ def save_glm_to_bids(
     glm_report.save_as_html(out_dir / f"{prefix}report.html")
 
 
-def _generate_output_filenames(prefix, design_matrices, contrasts):
+def _generate_output_filenames(
+    prefix, design_matrices, contrasts, contrast_types
+):
     design_matrices_dict = {}
     contrasts_dict = {}
     for i_run, _ in enumerate(design_matrices, start=1):
@@ -391,9 +358,48 @@ def _generate_output_filenames(prefix, design_matrices, contrasts):
             for contrast_name in contrasts
         }
 
+    if not isinstance(contrast_types, dict):
+        contrast_types = {}
+
+    for contrast_name in contrasts:
+        # Extract stat_type
+        contrast_matrix = contrasts[contrast_name]
+
+        # Strings and 1D arrays are assumed to be t-contrasts
+        if isinstance(contrast_matrix, str) or (contrast_matrix.ndim == 1):
+            stat_type = "t"
+        else:
+            stat_type = "F"
+
+        # Override automatic detection with explicit type if provided
+        stat_type = contrast_types.get(contrast_name, stat_type)
+
+        # Convert the contrast name to camelCase
+        contrast_name = _clean_contrast_name(contrast_name)
+        contrast_level_mapping = {
+            "effect_size": (
+                f"{prefix}contrast-{contrast_name}_stat-effect_statmap.nii.gz"
+            ),
+            "stat": (
+                f"{prefix}contrast-{contrast_name}_stat-{stat_type}_statmap"
+                ".nii.gz"
+            ),
+            "effect_variance": (
+                f"{prefix}contrast-{contrast_name}_stat-variance_statmap"
+                ".nii.gz"
+            ),
+            "z_score": (
+                f"{prefix}contrast-{contrast_name}_stat-z_statmap.nii.gz"
+            ),
+            "p_value": (
+                f"{prefix}contrast-{contrast_name}_stat-p_statmap.nii.gz"
+            ),
+        }
+
     return {
         "design_matrices_dict": design_matrices_dict,
         "contrasts_dict": contrasts_dict,
+        "contrast_level_mapping": contrast_level_mapping,
     }
 
 

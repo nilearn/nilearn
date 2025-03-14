@@ -174,7 +174,7 @@ def make_stat_maps(model, contrasts, output_type="z_score"):
     return statistical_maps
 
 
-def model_attributes_to_dataframe(model, is_volume_glm=True):
+def model_attributes_to_dataframe(model):
     """Return dataframe with pertinent model attributes & information.
 
     Parameters
@@ -191,9 +191,7 @@ def model_attributes_to_dataframe(model, is_volume_glm=True):
         DataFrame with the pertinent attributes of the model.
     """
     if model.__class__.__name__ in ["FirstLevelModel", "SecondLevelModel"]:
-        return _glm_model_attributes_to_dataframe(
-            model, is_volume_glm=is_volume_glm
-        )
+        return _glm_model_attributes_to_dataframe(model)
     attributes_df = OrderedDict(
         (
             attr_name,
@@ -229,10 +227,15 @@ def _glm_model_attributes_to_dataframe(model):
         "smoothing_fwhm": "mm",
     }
     display_attributes = glm_model_attributes_to_dict(model)
+
     model_attributes = pd.DataFrame.from_dict(
         display_attributes,
         orient="index",
     )
+
+    if len(model_attributes) == 0:
+        return model_attributes
+
     attribute_names_with_units = {
         attribute_name_: attribute_name_ + f" ({attribute_unit_})"
         for attribute_name_, attribute_unit_ in attribute_units.items()
