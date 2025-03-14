@@ -179,16 +179,22 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 verbose=self.verbose,
             )
             check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
+            self.mask_img_ = self.mask_img
             # squeeze the mask data if it is 2D and has a single column
-            for part in self.mask_img.data.parts:
+            for part in self.mask_img_.data.parts:
                 if (
-                    self.mask_img.data.parts[part].ndim == 2
-                    and self.mask_img.data.parts[part].shape[1] == 1
+                    self.mask_img_.data.parts[part].ndim == 2
+                    and self.mask_img_.data.parts[part].shape[1] == 1
                 ):
-                    self.mask_img.data.parts[part] = np.squeeze(
-                        self.mask_img.data.parts[part], axis=1
+                    self.mask_img_.data.parts[part] = np.squeeze(
+                        self.mask_img_.data.parts[part], axis=1
                     )
-            self.mask_img.data._check_ndims(1, "mask_img")
+            self.mask_img_.data._check_ndims(1, "mask_img")
+        else:
+            # TODO
+            # self.mask_img_ should be a SurfaceImage instance
+            # after fit
+            self.mask_img_ = None
 
         self._shelving = False
 
@@ -216,8 +222,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             )
 
         self._reporting_data = {
-            "maps_img": self.maps_img,
-            "mask": self.mask_img,
+            "maps_img": self.maps_img_,
+            "mask": self.mask_img_,
             "images": None,  # we will update image in transform
         }
 
