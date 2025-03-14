@@ -104,6 +104,11 @@
 {{def report}}
 
 <div class="report">
+  <section>
+    <h2>Description</h2>
+    {{ method_section|html }}
+  </section>
+
   <section id="model-details-{{unique_id}}">
     <h2>Model details</h2>
     <div class="table-container">{{ parameters|html }}</div>

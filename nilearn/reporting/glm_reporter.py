@@ -285,6 +285,23 @@ def make_glm_report(
         contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
         design_matrices_dict = _return_design_matrices_dict(design_matrices)
 
+    # for methods writing, only keep the contrast expressed as strings
+    if contrasts is not None:
+        contrasts = [x for x in contrasts.values() if isinstance(x, str)]
+
+    method_section_template_path = HTML_TEMPLATE_PATH / "method_section.html"
+    method_tpl = tempita.HTMLTemplate.from_filename(
+        str(method_section_template_path),
+        encoding="utf-8",
+    )
+    method_section = method_tpl.substitute(
+        version=__version__,
+        model_type=model_type,
+        reporting_data=tempita.bunch(**model._reporting_data),
+        smoothing_fwhm=smoothing_fwhm,
+        contrasts=contrasts,
+    )
+
     body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path),
@@ -308,6 +325,7 @@ def make_glm_report(
         unique_id=unique_id,
         date=date,
         input=input,
+        method_section=method_section,
     )
 
     # revert HTML safe substitutions in CSS sections

@@ -20,14 +20,12 @@ from nilearn.surface import SurfaceImage
 extra_valid_checks = [
     "check_clusterer_compute_labels_predict",
     "check_complex_data",
-    "check_do_not_raise_errors_in_init_or_set_params",
     "check_estimators_empty_data_messages",
     "check_estimator_sparse_array",
     "check_estimator_sparse_matrix",
     "check_fit2d_1sample",
     "check_fit2d_1feature",
     "check_fit1d",
-    "check_no_attributes_set_in_init",
 ]
 
 

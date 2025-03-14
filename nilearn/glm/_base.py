@@ -184,6 +184,14 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
         """
         from nilearn.reporting import make_glm_report
 
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = {
+                "trial_types": [],
+                "noise_model": getattr(self, "noise_model", None),
+                "hrf_model": getattr(self, "hrf_model", None),
+                "drift_model": None,
+            }
+
         return make_glm_report(
             self,
             contrasts,
