@@ -121,7 +121,6 @@ for the labels visualization.
 .. figure:: ../auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_001.png
    :target: ../auto_examples/03_connectivity/plot_data_driven_parcellations.html
    :align: center
-   :scale: 80
 
 Compressed representation
 --------------------------
@@ -136,11 +135,11 @@ representation, taking the average on each parcel:
 
 .. |left_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_002.png
    :target: ../auto_examples/03_connectivity/plot_data_driven_parcellations.html
-   :width: 49%
+
 
 .. |right_img| image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_data_driven_parcellations_003.png
    :target: ../auto_examples/03_connectivity/plot_data_driven_parcellations.html
-   :width: 49%
+
 
 |left_img| |right_img|
 

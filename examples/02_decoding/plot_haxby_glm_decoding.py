@@ -25,9 +25,9 @@ More specifically:
 import numpy as np
 import pandas as pd
 
-from nilearn import datasets
+from nilearn.datasets import fetch_haxby
 
-haxby_dataset = datasets.fetch_haxby()
+haxby_dataset = fetch_haxby()
 
 # repetition has to be known
 t_r = 2.5

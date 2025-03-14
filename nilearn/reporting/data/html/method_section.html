@@ -1,0 +1,54 @@
+<p>
+  Data were analyzed using <a href="https://nilearn.github.io">Nilearn</a>
+  (version= {{ version }}; RRID:SCR_001362).
+</p>
+
+{{if model_type == "First Level Model"}}
+  <p>
+    At the subject level, a mass univariate analysis was performed with a linear
+    regression at each voxel of the brain, using generalized least squares with a
+    global {{ reporting_data.noise_model }} noise model to account for temporal auto-correlation
+    {{ reporting_data.drift_model }}.
+  </p>
+
+  {{if reporting_data.trial_types}}
+  <p>
+    Regressors were entered into run-specific design matrices and onsets were
+    convolved with a {{ reporting_data.hrf_model }} canonical hemodynamic response function
+    for the following conditions:
+    <ul>
+      {{for trial in reporting_data.trial_types}}
+      <li>{{ trial }}</li>
+      {{endfor}}
+    </ul>
+  </p>
+  {{endif}}
+
+{{else}}
+  <p>
+    At the group level, a mass univariate analysis was performed with a linear
+    regression at each voxel of the brain.
+  </p>
+{{endif}}
+
+{{if smoothing_fwhm }}
+  <p>
+    Input images were smoothed with gaussian kernel
+    <!--  -->
+    (full-width at half maximum={{ smoothing_fwhm }} mm).
+  </p>
+{{endif}}
+
+{{if contrasts }}
+  <p>
+    The following contrasts were computed
+    {{if model_type == "First Level Model"}}
+      using a fixed-effect approach across runs
+    {{endif}}:
+    <ul>
+      {{for c in contrasts}}
+      <li>{{ c }}</li>
+      {{endfor}}
+    </ul>
+  </p>
+{{endif}}

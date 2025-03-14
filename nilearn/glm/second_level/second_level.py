@@ -657,6 +657,8 @@ class SecondLevelModel(BaseGLM):
             verbose=self.verbose,
         )
 
+        self._reporting_data = {}
+
         return self
 
     def __sklearn_is_fitted__(self):
