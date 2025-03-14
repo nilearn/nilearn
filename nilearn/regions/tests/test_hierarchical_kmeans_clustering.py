@@ -18,7 +18,6 @@ from nilearn.surface.tests.test_surface import flat_mesh
 extra_valid_checks = [
     "check_clusterer_compute_labels_predict",
     "check_complex_data",
-    "check_do_not_raise_errors_in_init_or_set_params",
     "check_dont_overwrite_parameters",
     "check_dtype_object",
     "check_estimator_sparse_array",
@@ -28,7 +27,6 @@ extra_valid_checks = [
     "check_fit2d_1sample",
     "check_fit2d_1feature",
     "check_fit1d",
-    "check_no_attributes_set_in_init",
     "check_methods_subset_invariance",
     "check_methods_sample_order_invariance",
 ]

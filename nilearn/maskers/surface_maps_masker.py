@@ -506,14 +506,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         # need to have matplotlib installed to generate reports no matter what
         # engine is selected
+        from nilearn.reporting.html_report import generate_report
+
         if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib not installed. No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
+            return generate_report(self)
 
         if engine not in ["plotly", "matplotlib"]:
             raise ValueError(
@@ -551,7 +547,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             )
 
         self.displayed_maps = displayed_maps
-        from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)
 

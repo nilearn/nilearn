@@ -31,17 +31,9 @@ def canica_data():
     return _make_canica_test_data()[0]
 
 
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_no_attributes_set_in_init",
-]
-
-
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[DictLearning()], extra_valid_checks=extra_valid_checks
-    ),
+    check_estimator(estimator=[DictLearning()]),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -54,7 +46,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[DictLearning()],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
