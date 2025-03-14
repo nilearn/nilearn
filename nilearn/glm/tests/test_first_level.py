@@ -55,18 +55,9 @@ BASEDIR = Path(__file__).resolve().parent
 FUNCFILE = BASEDIR / "functional.nii.gz"
 
 
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_no_attributes_set_in_init",
-]
-
-
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[FirstLevelModel()],
-        extra_valid_checks=extra_valid_checks,
-    ),
+    check_estimator(estimator=[FirstLevelModel()]),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -78,7 +69,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[FirstLevelModel()],
-        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )

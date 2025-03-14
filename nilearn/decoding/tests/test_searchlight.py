@@ -9,17 +9,11 @@ from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _img_3d_ones, _rng
 from nilearn.decoding import searchlight
 
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_no_attributes_set_in_init",
-]
-
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[searchlight.SearchLight(mask_img=_img_3d_ones)],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -33,7 +27,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[searchlight.SearchLight(mask_img=_img_3d_ones)],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001

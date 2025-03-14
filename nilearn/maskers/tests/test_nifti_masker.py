@@ -21,12 +21,14 @@ from nilearn._utils.estimator_checks import check_estimator
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
+from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[NiftiMasker()],
+        expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001

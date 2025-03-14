@@ -54,6 +54,7 @@ else:
 # for all nilearn estimators.
 VALID_CHECKS = [
     "check_decision_proba_consistency",
+    "check_do_not_raise_errors_in_init_or_set_params",
     "check_estimator_cloneable",
     "check_estimator_repr",
     "check_estimator_tags_renamed",
@@ -62,6 +63,7 @@ VALID_CHECKS = [
     "check_fit_check_is_fitted",
     "check_get_params_invariance",
     "check_mixin_order",
+    "check_no_attributes_set_in_init",
     "check_non_transformer_estimators_n_iter",
     "check_parameters_default_constructible",
     "check_set_params",

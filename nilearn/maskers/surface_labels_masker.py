@@ -18,7 +18,6 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     constrained_layout_kwargs,
-    is_matplotlib_installed,
 )
 from nilearn._utils.param_validation import (
     check_params,
@@ -545,15 +544,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     def generate_report(self):
         """Generate a report."""
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
-
         from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)

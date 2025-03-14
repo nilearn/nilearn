@@ -12,7 +12,8 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
-from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
+from nilearn.maskers import MultiNiftiLabelsMasker
+from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
 
 @pytest.mark.parametrize(
@@ -20,8 +21,8 @@ from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
     check_estimator(
         estimator=[
             MultiNiftiLabelsMasker(labels_img=_img_labels()),
-            NiftiLabelsMasker(labels_img=_img_labels()),
         ],
+        expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -35,7 +36,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[
             MultiNiftiLabelsMasker(_img_labels()),
-            NiftiLabelsMasker(_img_labels()),
         ],
         valid=False,
     ),

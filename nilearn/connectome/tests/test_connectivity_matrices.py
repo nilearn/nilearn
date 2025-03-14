@@ -50,8 +50,6 @@ def test_check_estimator_cov_estimator(estimator):
 
 
 extra_valid_checks = [
-    "check_no_attributes_set_in_init",
-    "check_do_not_raise_errors_in_init_or_set_params",
     "check_fit1d",
     "check_estimator_sparse_tag",
 ]

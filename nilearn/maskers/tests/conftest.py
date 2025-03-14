@@ -29,3 +29,24 @@ def shape_mask():
 def shape_maps():
     """Shape for maps."""
     return (16, 17, 18)
+
+
+def expected_failed_checks_0pt13pt2():
+    """List estimators check that fail.
+
+    Concerns
+    - (multi)nifti maskers
+    - (multi)nifti maps maskers
+    - (multi)nifti labels maskers
+    - nifti sphere maskers
+
+    TODO remove when bumping to nilearn 0.13.2
+    """
+    return {
+        "check_do_not_raise_errors_in_init_or_set_params": (
+            "Deprecation cycle started to fix."
+        ),
+        "check_no_attributes_set_in_init": (
+            "Deprecation cycle started to fix."
+        ),
+    }

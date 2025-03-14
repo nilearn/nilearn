@@ -7,8 +7,8 @@ from matplotlib import cm as mpl_cm
 from scipy import sparse
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils.html_document import HTMLDocument
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.plotting.html_document import HTMLDocument
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
     colorscale,
