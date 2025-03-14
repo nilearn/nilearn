@@ -528,9 +528,6 @@ class NiftiSpheresMasker(BaseMasker):
         All parameters are unused; they are for scikit-learn compatibility.
 
         """
-        if hasattr(self, "seeds_"):
-            return self
-
         self._report_content = {
             "description": (
                 "This reports shows the regions defined "
