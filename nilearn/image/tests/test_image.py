@@ -50,7 +50,10 @@ from nilearn.image import (
     threshold_img,
 )
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface._testing import assert_surface_image_equal
+from nilearn.surface._testing import (
+    assert_polymesh_equal,
+    assert_surface_image_equal,
+)
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
@@ -518,6 +521,26 @@ def test_mean_img_copied_header(img_4d_mni_tr2):
     )
 
 
+def test_mean_img_surface(surf_img_1d, surf_img_2d):
+    """Check that mean is properly computed over 'time points'."""
+    # one 'time point' image returns same
+    img = mean_img(surf_img_1d)
+
+    assert_surface_image_equal(img, surf_img_1d)
+
+    # image with left hemisphere
+    # where timepoint 1 has all values == 0
+    # and timepoint 2 == 1
+    two_time_points_img = surf_img_2d(2)
+    two_time_points_img.data.parts["left"][:, 0] = np.zeros(shape=4)
+    two_time_points_img.data.parts["left"][:, 1] = np.ones(shape=4)
+
+    img = mean_img(two_time_points_img)
+
+    assert_array_equal(img.data.parts["left"], np.ones(shape=(4,)) * 0.5)
+    assert img.shape == (img.mesh.n_vertices,)
+
+
 def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
     # make sure input image data is not overwritten inside function
     data = rng.standard_normal(size=shape_3d_default)
@@ -642,6 +665,38 @@ def test_iter_img(tmp_path):
 
     # enables to delete "img_3d_filename" on windows
     del img
+
+
+def test_iter_surface_img(surf_img_2d):
+    """Check iter_img returns list of SurfaceImage.
+
+    Each SurfaceImage must have same mesh as input
+    and data from one of the sample of the input SurfaceImage.
+    """
+    input = surf_img_2d(5)
+    output = list(iter_img(input))
+
+    assert isinstance(output, list)
+    assert len(output) == input.shape[1]
+    assert all(isinstance(x, SurfaceImage) for x in output)
+    for i in range(input.shape[1]):
+        assert_polymesh_equal(output[i].mesh, input.mesh)
+        assert_array_equal(
+            np.squeeze(output[i].data.parts["left"]),
+            input.data.parts["left"][..., i],
+        )
+
+
+def test_iter_img_surface_2d(surf_img_1d, surf_img_2d):
+    """Return as is if surface image is 2D."""
+    input = surf_img_2d(1)
+    output = list(iter_img(input))
+
+    assert_surface_image_equal(output[0], input)
+
+    output = list(iter_img(surf_img_1d))
+
+    assert_surface_image_equal(output[0], surf_img_1d)
 
 
 def test_new_img_like_mgz():
@@ -1610,6 +1665,17 @@ def test_concat_niimg_dtype(affine_eye):
     assert get_data(nimg).dtype == np.float32
     nimg = concat_imgs(vols, dtype=None)
     assert get_data(nimg).dtype == np.int16
+
+
+def test_concat_imgs_surface(surf_img_2d):
+    """Check concat_imgs returns a single SurfaceImage.
+
+    Output must have as many samples as the sum of samples in the input.
+    """
+    img = concat_imgs([surf_img_2d(3), surf_img_2d(5)])
+    assert img.shape == (9, 8)
+    for value in img.data.parts.values():
+        assert value.ndim == 2
 
 
 def nifti_generator(buffer):
