@@ -1,5 +1,6 @@
 """Functions for generating BIDS-compliant GLM outputs."""
 
+import inspect
 import json
 import warnings
 from pathlib import Path
@@ -214,19 +215,11 @@ def save_glm_to_bids(
     from nilearn.glm.utils import return_model_type
     from nilearn.reporting.glm_reporter import make_stat_maps
 
+    # fail early if invalid paramaeters to pass to generate_report()
     allowed_extra_kwarg = [
-        "title",
-        "bg_img",
-        "threshold",
-        "alpha",
-        "cluster_threshold",
-        "height_control",
-        "two_sided",
-        "min_distance",
-        "plot_type",
-        "cut_coords",
-        "display_mode",
-        "report_dims",
+        x
+        for x in inspect.signature(model.generate_report).parameters
+        if x not in ["contrasts", "input"]
     ]
     for key in kwargs:
         if key not in allowed_extra_kwarg:

@@ -164,14 +164,13 @@ def make_stat_maps(model, contrasts, output_type="z_score"):
     nilearn.glm.second_level.SecondLevelModel.compute_contrast
 
     """
-    statistical_maps = {
-        contrast_id: model.compute_contrast(
-            contrast_val,
+    return {
+        contrast_name: model.compute_contrast(
+            contrast_data,
             output_type=output_type,
         )
-        for contrast_id, contrast_val in contrasts.items()
+        for contrast_name, contrast_data in contrasts.items()
     }
-    return statistical_maps
 
 
 def model_attributes_to_dataframe(model):
