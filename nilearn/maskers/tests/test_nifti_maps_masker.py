@@ -48,7 +48,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
         # to speed up the tests
         estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
         valid=False,
-        expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001

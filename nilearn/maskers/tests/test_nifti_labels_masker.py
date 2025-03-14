@@ -41,7 +41,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[NiftiLabelsMasker(labels_img=_img_labels())],
         valid=False,
-        expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
