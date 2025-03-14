@@ -92,11 +92,13 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
         alpha=0.001,
         cluster_threshold=0,
         height_control="fpr",
+        two_sided=False,
         min_distance=8.0,
         plot_type="slice",
         cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
+        input=None,
     ):
         """Return a :class:`~nilearn.reporting.HTMLReport` \
         which shows all important aspects of a fitted :term:`GLM`.
@@ -176,6 +178,10 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
             For display purposes only.
             Minimum distance between subpeaks in mm.
 
+        two_sided : :obj:`bool`, default=False
+            Whether to employ two-sided thresholding
+            or to evaluate positive values only.
+
         plot_type : {'slice', 'glass'}, default='slice'
             Specifies the type of plot to be drawn for the statistical maps.
 
@@ -208,7 +214,7 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
             Contains the HTML code for the :term:`GLM` report.
 
         """
-        from nilearn.reporting import make_glm_report
+        from nilearn.reporting.glm_reporter import make_glm_report
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data = {
@@ -227,9 +233,11 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
             alpha=alpha,
             cluster_threshold=cluster_threshold,
             height_control=height_control,
+            two_sided=two_sided,
             min_distance=min_distance,
             plot_type=plot_type,
             cut_coords=cut_coords,
             display_mode=display_mode,
             report_dims=report_dims,
+            input=input,
         )

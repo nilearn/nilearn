@@ -2,14 +2,12 @@
 
 import warnings
 from collections import OrderedDict
-from collections.abc import Iterable
 from decimal import Decimal
 
 import numpy as np
 import pandas as pd
 
-from nilearn.glm.first_level import FirstLevelModel
-from nilearn.glm.second_level import SecondLevelModel
+from nilearn.glm.utils import glm_model_attributes_to_dict
 
 
 def check_report_dims(report_size):
@@ -107,43 +105,6 @@ def clustering_params_to_dataframe(
     return table_details
 
 
-def coerce_to_dict(input_arg):
-    """Construct a dict from the provided arg.
-
-    If input_arg is:
-      dict or None then returns it unchanged.
-
-      string or collection of Strings or Sequence[int],
-      returns a dict {str(value): value, ...}
-
-    Parameters
-    ----------
-    input_arg : String or Collection[str or Int or Sequence[Int]]
-     or Dict[str, str or np.array] or None
-        Can be of the form:
-         'string'
-         ['string_1', 'string_2', ...]
-         list/array
-         [list/array_1, list/array_2, ...]
-         {'string_1': list/array1, ...}
-
-    Returns
-    -------
-    input_args: Dict[str, np.array or str] or None
-
-    """
-    if input_arg is None:
-        return None
-    if not isinstance(input_arg, dict):
-        if isinstance(input_arg, Iterable) and not isinstance(
-            input_arg[0], Iterable
-        ):
-            input_arg = [input_arg]
-        input_arg = [input_arg] if isinstance(input_arg, str) else input_arg
-        input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
-    return input_arg
-
-
 def dataframe_to_html(df, precision, **kwargs):
     """Make HTML table from provided dataframe.
 
@@ -194,7 +155,7 @@ def make_stat_maps(model, contrasts, output_type="z_score"):
 
     Returns
     -------
-    statistical_maps : Dict[str, niimg]
+    statistical_maps : Dict[str, niimg] or Dict[str, Dict[str, niimg]]
         Dict of statistical z-maps keyed to contrast names/titles.
 
     See Also
@@ -203,18 +164,17 @@ def make_stat_maps(model, contrasts, output_type="z_score"):
     nilearn.glm.second_level.SecondLevelModel.compute_contrast
 
     """
-    statistical_maps = {
-        contrast_id: model.compute_contrast(
-            contrast_val,
+    return {
+        contrast_name: model.compute_contrast(
+            contrast_data,
             output_type=output_type,
         )
-        for contrast_id, contrast_val in contrasts.items()
+        for contrast_name, contrast_data in contrasts.items()
     }
-    return statistical_maps
 
 
-def model_attributes_to_dataframe(model, is_volume_glm=True):
-    """Return an HTML table with pertinent model attributes & information.
+def model_attributes_to_dataframe(model):
+    """Return dataframe with pertinent model attributes & information.
 
     Parameters
     ----------
@@ -230,9 +190,7 @@ def model_attributes_to_dataframe(model, is_volume_glm=True):
         DataFrame with the pertinent attributes of the model.
     """
     if model.__class__.__name__ in ["FirstLevelModel", "SecondLevelModel"]:
-        return _glm_model_attributes_to_dataframe(
-            model, is_volume_glm=is_volume_glm
-        )
+        return _glm_model_attributes_to_dataframe(model)
     attributes_df = OrderedDict(
         (
             attr_name,
@@ -250,7 +208,7 @@ def model_attributes_to_dataframe(model, is_volume_glm=True):
     return attributes_df
 
 
-def _glm_model_attributes_to_dataframe(model, is_volume_glm=True):
+def _glm_model_attributes_to_dataframe(model):
     """Return a pandas dataframe with pertinent model attributes & information.
 
     Parameters
@@ -262,43 +220,21 @@ def _glm_model_attributes_to_dataframe(model, is_volume_glm=True):
     pandas.DataFrame
         DataFrame with the pertinent attributes of the model.
     """
-    selected_attributes = [
-        "subject_label",
-        "drift_model",
-        "hrf_model",
-        "standardize",
-        "noise_model",
-        "t_r",
-        "signal_scaling",
-        "scaling_axis",
-        "smoothing_fwhm",
-        "slice_time_ref",
-    ]
-    if is_volume_glm:
-        selected_attributes.extend(["target_shape", "target_affine"])
-    if hasattr(model, "hrf_model") and model.hrf_model == "fir":
-        selected_attributes.append("fir_delays")
-    if hasattr(model, "drift_model"):
-        if model.drift_model == "cosine":
-            selected_attributes.append("high_pass")
-        elif model.drift_model == "polynomial":
-            selected_attributes.append("drift_order")
-
     attribute_units = {
         "t_r": "seconds",
         "high_pass": "Hertz",
+        "smoothing_fwhm": "mm",
     }
+    display_attributes = glm_model_attributes_to_dict(model)
 
-    selected_attributes.sort()
-    display_attributes = OrderedDict(
-        (attr_name, getattr(model, attr_name))
-        for attr_name in selected_attributes
-        if hasattr(model, attr_name)
-    )
     model_attributes = pd.DataFrame.from_dict(
         display_attributes,
         orient="index",
     )
+
+    if len(model_attributes) == 0:
+        return model_attributes
+
     attribute_names_with_units = {
         attribute_name_: attribute_name_ + f" ({attribute_unit_})"
         for attribute_name_, attribute_unit_ in attribute_units.items()
@@ -310,10 +246,3 @@ def _glm_model_attributes_to_dataframe(model, is_volume_glm=True):
     model_attributes.columns = ["Value"]
 
     return model_attributes
-
-
-def return_model_type(model):
-    if isinstance(model, FirstLevelModel):
-        return "First Level Model"
-    elif isinstance(model, SecondLevelModel):
-        return "Second Level Model"
