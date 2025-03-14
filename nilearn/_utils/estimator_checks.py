@@ -29,6 +29,7 @@ from nilearn.conftest import (
     _img_4d_rand_eye_medium,
     _img_4d_zeros,
     _make_surface_img,
+    _make_surface_img_and_design,
     _rng,
     _shape_3d_default,
 )
@@ -91,9 +92,12 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     # the following are skipped because there is nilearn specific replacement
     "check_estimators_fit_returns_self": (
         "replaced by check_nifti_masker_fit_returns_self "
-        "or check_surface_masker_fit_returns_self"
+        "or check_surface_masker_fit_returns_self or "
+        "check_glm_fit_returns_self"
     ),
-    "check_fit_check_is_fitted": "replaced by check_masker_fitted",
+    "check_fit_check_is_fitted": (
+        "replaced by check_masker_fitted or check_glm_is_fitted"
+    ),
     # Those are skipped for now they fail
     # for unknown reasons
     #  most often because sklearn inputs expect a numpy array
@@ -256,14 +260,17 @@ def nilearn_check_estimator(estimator):
     tags = estimator._more_tags()
 
     is_masker = False
+    is_glm = False
     surf_img_input = False
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
         is_masker = "masker" in tags["X_types"]
+        is_glm = "glm" in tags["X_types"]
         surf_img_input = "surf_img" in tags["X_types"]
     else:
         is_masker = getattr(tags.input_tags, "masker", False)
+        is_glm = getattr(tags.input_tags, "glm", False)
         surf_img_input = getattr(tags.input_tags, "surf_img", False)
 
     yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
@@ -309,6 +316,10 @@ def nilearn_check_estimator(estimator):
         if surf_img_input:
             yield (clone(estimator), check_surface_masker_fit_returns_self)
             yield (clone(estimator), check_surface_masker_smooth)
+
+    if is_glm:
+        yield (clone(estimator), check_glm_fit_returns_self)
+        yield (clone(estimator), check_glm_is_fitted)
 
 
 def is_multimasker(estimator):
@@ -453,11 +464,7 @@ def check_masker_clean(estimator):
 
 
 def check_surface_masker_fit_returns_self(estimator):
-    """Check detrending does something.
-
-    Fit transform on same input should give different results
-    if detrend is true or false.
-    """
+    """Check surface maskers return itself after fit."""
     assert estimator.fit(_make_surface_img(10)) is estimator
 
 
@@ -761,6 +768,40 @@ def check_nifti_masker_fit_with_4d_mask(estimator):
     with pytest.raises(DimensionError, match="Expected dimension is 3D"):
         estimator.mask_img = _img_4d_zeros()
         estimator.fit([_img_3d_rand()])
+
+
+# ------------------ GLM CHECKS ------------------
+
+
+def check_glm_fit_returns_self(estimator):
+    """Check surface maskers return itself after fit."""
+    data, design_matrices = _make_surface_img_and_design()
+    # FirstLevel
+    if hasattr(estimator, "hrf_model"):
+        assert (
+            estimator.fit(data, design_matrices=design_matrices) is estimator
+        )
+    # SecondLevel
+    else:
+        assert estimator.fit(data, design_matrix=design_matrices) is estimator
+
+
+def check_glm_is_fitted(estimator):
+    """Check glm throws proper error when not fitted."""
+    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
+        estimator.compute_contrast([])
+
+    data, design_matrices = _make_surface_img_and_design()
+    # FirstLevel
+    if hasattr(estimator, "hrf_model"):
+        estimator.fit(data, design_matrices=design_matrices)
+    # SecondLevel
+    else:
+        estimator.fit(data, design_matrix=design_matrices)
+
+    assert estimator.__sklearn_is_fitted__()
+
+    check_is_fitted(estimator)
 
 
 # ------------------ REPORT GENERATION CHECKS ------------------
