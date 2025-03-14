@@ -51,6 +51,7 @@ from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import (
     HTMLReport,
     _render_warnings_partial,
+    is_notebook,
 )
 from nilearn.reporting.utils import (
     CSS_PATH,
@@ -313,6 +314,7 @@ def make_glm_report(
             "head_css": head_css,
             "version": __version__,
             "page_title": title,
+            "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
 
