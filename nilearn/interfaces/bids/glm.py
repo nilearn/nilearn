@@ -53,7 +53,7 @@ def _clean_contrast_name(contrast_name):
     if new_name != contrast_name:
         warnings.warn(
             f'Contrast name "{contrast_name}" changed to "{new_name}"',
-            stacklevel=3,
+            stacklevel=4,
         )
     return new_name
 
@@ -271,7 +271,7 @@ def save_glm_to_bids(
         design_matrices = [model.design_matrix_]
 
     output = _generate_output_filenames(
-        prefix, design_matrices, contrasts, contrast_types
+        prefix, design_matrices, contrasts, contrast_types, out_dir
     )
 
     # TODO: Assuming that cases of multiple design matrices correspond to
@@ -310,15 +310,11 @@ def save_glm_to_bids(
 
     # Write out contrast-level statistical maps
     statistical_maps = make_stat_maps(model, contrasts, output_type="all")
-    for contrast_maps in statistical_maps.values():
-        # Rename keys
-        renamed_contrast_maps = {
-            output["contrast_level_mapping"].get(k, k): v
-            for k, v in contrast_maps.items()
-        }
-
-        for map_name, img in renamed_contrast_maps.items():
-            img.to_filename(out_dir / map_name)
+    for contrast_name, contrast_maps in statistical_maps.items():
+        for output_type in contrast_maps:
+            img = statistical_maps[contrast_name][output_type]
+            filename = output["statistical_maps"][contrast_name][output_type]
+            img.to_filename(out_dir / filename)
 
     _write_model_level_statistical_maps(model, prefix, out_dir)
 
@@ -330,7 +326,7 @@ def save_glm_to_bids(
 
 
 def _generate_output_filenames(
-    prefix, design_matrices, contrasts, contrast_types
+    prefix, design_matrices, contrasts, contrast_types, out_dir
 ):
     design_matrices_dict = {}
     contrasts_dict = {}
@@ -354,6 +350,7 @@ def _generate_output_filenames(
     if not isinstance(contrast_types, dict):
         contrast_types = {}
 
+    statistical_maps = {}
     for contrast_name in contrasts:
         # Extract stat_type
         contrast_matrix = contrasts[contrast_name]
@@ -368,31 +365,23 @@ def _generate_output_filenames(
         stat_type = contrast_types.get(contrast_name, stat_type)
 
         # Convert the contrast name to camelCase
-        contrast_name = _clean_contrast_name(contrast_name)
-        contrast_level_mapping = {
-            "effect_size": (
-                f"{prefix}contrast-{contrast_name}_stat-effect_statmap.nii.gz"
-            ),
-            "stat": (
-                f"{prefix}contrast-{contrast_name}_stat-{stat_type}_statmap"
-                ".nii.gz"
-            ),
+        contrast_entity = f"contrast-{_clean_contrast_name(contrast_name)}_"
+        suffix = "_statmap.nii.gz"
+        statistical_maps[contrast_name] = {
+            "effect_size": (f"{prefix}{contrast_entity}stat-effect{suffix}"),
+            "stat": (f"{prefix}{contrast_entity}stat-{stat_type}{suffix}"),
             "effect_variance": (
-                f"{prefix}contrast-{contrast_name}_stat-variance_statmap"
-                ".nii.gz"
+                f"{prefix}{contrast_entity}stat-variance{suffix}"
             ),
-            "z_score": (
-                f"{prefix}contrast-{contrast_name}_stat-z_statmap.nii.gz"
-            ),
-            "p_value": (
-                f"{prefix}contrast-{contrast_name}_stat-p_statmap.nii.gz"
-            ),
+            "z_score": (f"{prefix}{contrast_entity}stat-z{suffix}"),
+            "p_value": (f"{prefix}{contrast_entity}stat-p{suffix}"),
         }
 
     return {
         "design_matrices_dict": design_matrices_dict,
         "contrasts_dict": contrasts_dict,
-        "contrast_level_mapping": contrast_level_mapping,
+        "statistical_maps": statistical_maps,
+        "out_dir": out_dir,
     }
 
 

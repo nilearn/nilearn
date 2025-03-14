@@ -155,7 +155,7 @@ def make_stat_maps(model, contrasts, output_type="z_score"):
 
     Returns
     -------
-    statistical_maps : Dict[str, niimg]
+    statistical_maps : Dict[str, niimg] or Dict[str, Dict[str, niimg]]
         Dict of statistical z-maps keyed to contrast names/titles.
 
     See Also

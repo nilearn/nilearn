@@ -246,7 +246,16 @@ def make_glm_report(
             model, bg_img, cut_coords, is_volume_glm(model)
         )
 
-        statistical_maps = make_stat_maps(model, contrasts)
+        if input is not None:
+            statistical_maps = {
+                contrast_name: input["out_dir"]
+                / input["statistical_maps"][contrast_name]["z_score"]
+                for contrast_name in contrasts
+            }
+        else:
+            statistical_maps = make_stat_maps(
+                model, contrasts, output_type="z_score"
+            )
 
         results = _make_stat_maps_contrast_clusters(
             stat_img=statistical_maps,
