@@ -292,6 +292,7 @@ def make_glm_report(
         design_matrices_dict=design_matrices_dict,
         unique_id=unique_id,
         date=date,
+        show_navbar="style='display: none;'" if is_notebook() else "",
     )
 
     # revert HTML safe substitutions in CSS sections
