@@ -65,6 +65,7 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
         alpha=0.001,
         cluster_threshold=0,
         height_control="fpr",
+        two_sided=False,
         min_distance=8.0,
         plot_type="slice",
         cut_coords=None,
@@ -150,6 +151,10 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
             For display purposes only.
             Minimum distance between subpeaks in mm.
 
+        two_sided : :obj:`bool`, default=False
+            Whether to employ two-sided thresholding
+            or to evaluate positive values only.
+
         plot_type : {'slice', 'glass'}, default='slice'
             Specifies the type of plot to be drawn for the statistical maps.
 
@@ -201,6 +206,7 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
             alpha=alpha,
             cluster_threshold=cluster_threshold,
             height_control=height_control,
+            two_sided=two_sided,
             min_distance=min_distance,
             plot_type=plot_type,
             cut_coords=cut_coords,

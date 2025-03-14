@@ -172,7 +172,8 @@ def save_glm_to_bids(
         See :func:`nilearn.reporting.make_glm_report` for more details.
         Can be any of the following: ``title``, ``bg_img``, ``threshold``,
         ``alpha``, ``cluster_threshold``, ``height_control``,
-        ``min_distance``, ``plot_type``, ``display_mode``.
+        ``min_distance``, ``plot_type``, ``display_mode``,
+        ``two_sided``, ``cut_coords``.
 
     Warnings
     --------
@@ -220,9 +221,12 @@ def save_glm_to_bids(
         "alpha",
         "cluster_threshold",
         "height_control",
+        "two_sided",
         "min_distance",
         "plot_type",
+        "cut_coords",
         "display_mode",
+        "report_dims",
     ]
     for key in kwargs:
         if key not in allowed_extra_kwarg:
