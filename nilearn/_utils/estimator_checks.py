@@ -284,6 +284,7 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_generate_report)
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_refit)
+        yield (clone(estimator), check_masker_transformer)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
