@@ -28,11 +28,12 @@ underlying routine that extract masks from EPI
 #
 # With data that has already been masked, this will work well, as it lies
 # on a homogeneous background
-from nilearn import datasets, image
+from nilearn import image
+from nilearn.datasets import fetch_development_fmri, fetch_miyawaki2008
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting import plot_epi, plot_roi, show
 
-miyawaki_dataset = datasets.fetch_miyawaki2008()
+miyawaki_dataset = fetch_miyawaki2008()
 
 # print basic information on the dataset
 print(
@@ -67,7 +68,7 @@ report
 # strategy is necessary
 
 # Load movie watching based brain development fMRI dataset
-dataset = datasets.fetch_development_fmri(n_subjects=1)
+dataset = fetch_development_fmri(n_subjects=1)
 epi_filename = dataset.func[0]
 
 # Restrict to 100 frames to speed up computation
