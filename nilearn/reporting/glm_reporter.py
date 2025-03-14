@@ -267,11 +267,11 @@ def make_glm_report(
         )
 
     if input is not None:
-        # TODO: only contrast of first run are displayed
-        # contrasts_dict[i_run] = tempita.bunch(**input["contrasts_dict"][i_run]) # noqa: E501
         contrasts_dict = tempita.bunch()
         for i_run in input["contrasts_dict"]:
             for _ in input["contrasts_dict"][i_run]:
+                # TODO: only contrast of first run are displayed
+                # contrasts_dict[i_run] = tempita.bunch(**input["contrasts_dict"][i_run]) # noqa: E501
                 contrasts_dict = tempita.bunch(
                     **input["contrasts_dict"][i_run]
                 )
