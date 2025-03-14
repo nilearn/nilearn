@@ -27,6 +27,15 @@ from nilearn.maskers.nifti_masker import filter_and_mask
     "estimator, check, name",
     check_estimator(
         estimator=[NiftiMasker()],
+        expected_failed_checks={
+            # TODO remove after 0.13.2
+            "check_do_not_raise_errors_in_init_or_set_params": (
+                "Deprecation cycle started to fix."
+            ),
+            "check_no_attributes_set_in_init": (
+                "Deprecation cycle started to fix."
+            ),
+        },
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -40,6 +49,15 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[NiftiMasker()],
         valid=False,
+        expected_failed_checks={
+            # TODO remove after 0.13.2
+            "check_do_not_raise_errors_in_init_or_set_params": (
+                "Deprecation cycle started to fix."
+            ),
+            "check_no_attributes_set_in_init": (
+                "Deprecation cycle started to fix."
+            ),
+        },
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
