@@ -182,7 +182,7 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
             Contains the HTML code for the :term:`GLM` report.
 
         """
-        from nilearn.reporting import make_glm_report
+        from nilearn.reporting.glm_reporter import make_glm_report
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data = {

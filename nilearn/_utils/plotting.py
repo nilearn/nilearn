@@ -22,25 +22,26 @@ def generate_design_matrices_figures(
     design_matrices_dict = tempita.bunch()
 
     for i_run, design_matrix in enumerate(design_matrices, start=1):
+        dmtx_png = None
+
         dmtx_plot = plot_design_matrix(design_matrix)
         dmtx_plot = resize_plot_inches(dmtx_plot, height_change=0.3)
-
         if out_dir and output:
             dmtx_plot.figure.savefig(
                 out_dir
                 / output["design_matrices_dict"][i_run]["design_matrix"]
             )
-
         else:
             dmtx_png = figure_to_png_base64(dmtx_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
             plt.close("all")
 
+        dmtx_cor_png = None
+
         # in case of second level model with a single regressor
         # (for example one-sample t-test)
         # no point in plotting the correlation
-        dmtx_cor_png = None
         if (
             isinstance(design_matrix, np.ndarray)
             and design_matrix.shape[1] > 1
@@ -61,7 +62,6 @@ def generate_design_matrices_figures(
                         "correlation_matrix"
                     ]
                 )
-
             else:
                 dmtx_cor_png = figure_to_png_base64(dmtx_cor_plot)
                 # prevents sphinx-gallery & jupyter
@@ -76,13 +76,13 @@ def generate_design_matrices_figures(
 
 
 def generate_constrat_matrices_figures(
-    design_matrices, contrasts, out_dir=None, output=None
+    design_matrices, contrasts=None, out_dir=None, output=None
 ):
     if design_matrices is None or not contrasts:
         return None
 
     contrasts_dict = {}
-    for i_run, design_matrix in enumerate(design_matrices):
+    for i_run, design_matrix in enumerate(design_matrices, start=1):
         for contrast_name, contrast_data in contrasts.items():
             contrast_plot = plot_contrast_matrix(
                 contrast_data, design_matrix, colorbar=True
@@ -94,6 +94,9 @@ def generate_constrat_matrices_figures(
 
             if out_dir and output:
                 contrast_plot.figure.savefig(
+                    out_dir / output["contrasts_dict"][i_run][contrast_name]
+                )
+                contrasts_dict[contrast_name] = (
                     out_dir / output["contrasts_dict"][i_run][contrast_name]
                 )
             else:

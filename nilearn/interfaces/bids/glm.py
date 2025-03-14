@@ -267,7 +267,10 @@ def save_glm_to_bids(
 
     contrasts = coerce_to_dict(contrasts)
 
-    for v in contrasts.values():
+    for k, v in contrasts.items():
+        if not isinstance(k, str):
+            raise ValueError(f"contrast names must be strings, not {type(k)}")
+
         if not isinstance(v, (str, np.ndarray, list)):
             raise ValueError(
                 "contrast definitions must be strings or array_likes, "
@@ -306,6 +309,7 @@ def save_glm_to_bids(
     # TODO: Assuming that cases of multiple design matrices correspond to
     # different runs. Not sure if this is correct. Need to check.
     generate_design_matrices_figures(design_matrices, out_dir, output)
+
     generate_constrat_matrices_figures(
         design_matrices, contrasts, out_dir, output
     )
