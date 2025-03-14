@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.plotting.surface._backend import get_surface_backend
 from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors,
@@ -59,21 +58,7 @@ def engine():
 class TestMatplotlibBackend(BaseTestSurfaceBackend):
     """Tests MatplotlibBackend class methods."""
 
-    def test_plot_img_on_surf(self, engine, img_3d_mni):
-        """Smoke test for MatplotlibBackend.plot_img_on_surf."""
-        assert (
-            get_surface_backend(engine).plot_img_on_surf(img_3d_mni)
-            is not None
-        )
-
-    def test_plot_surf_contours(self, engine, surf_mesh, surf_mask_1d):
-        """Smoke test for MatplotlibBackend.plot_surf_contours."""
-        assert (
-            get_surface_backend(engine).plot_surf_contours(
-                surf_mesh, roi_map=surf_mask_1d
-            )
-            is not None
-        )
+    pass
 
 
 @pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
