@@ -7,10 +7,14 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
 )
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
-from nilearn.glm.first_level import FirstLevelModel
+from nilearn.datasets import load_fsaverage
+from nilearn.glm.first_level import (
+    FirstLevelModel,
+)
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport
+from nilearn.surface import SurfaceImage
 
 
 @pytest.fixture
@@ -200,12 +204,27 @@ def test_drift_order_in_params(contrasts):
     assert "drift_order" in report.__str__()
 
 
-def test_flm_generate_report_surface_data(surf_mask_1d, surf_img_2d):
-    """Generate report from flm fitted surface."""
-    # using smoothing_fwhm for coverage
-    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0, smoothing_fwhm=0)
+def test_flm_generate_report_surface_data(rng):
+    """Generate report from flm fitted surface.
+
+    Need a larger image to avoid issues with colormap.
+    """
+    t_r = 2.0
     events = basic_paradigm()
-    model.fit(surf_img_2d(9), events=events)
+    n_scans = int(max(events["onset"] + events["duration"]) + 20.0 / t_r)
+
+    mesh = load_fsaverage(mesh="fsaverage5")["pial"]
+    data = {}
+    for key, val in mesh.parts.items():
+        data_shape = (val.n_vertices, n_scans)
+        data_part = rng.normal(size=data_shape)
+        data[key] = data_part
+    fmri_data = SurfaceImage(mesh, data)
+
+    # using smoothing_fwhm for coverage
+    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=0)
+
+    model.fit(fmri_data, events=events)
 
     report = model.generate_report("c0", height_control=None)
 
@@ -216,8 +235,7 @@ def test_flm_generate_report_surface_data_error(
     surf_mask_1d, surf_img_2d, img_3d_mni
 ):
     """Generate report from flm fitted surface."""
-    # using smoothing_fwhm for coverage
-    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0, smoothing_fwhm=0)
+    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0)
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
 
