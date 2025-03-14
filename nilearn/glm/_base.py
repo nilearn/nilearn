@@ -28,7 +28,7 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags(surf_img=True, niimg_like=False, masker=True)
+            return tags(surf_img=True, niimg_like=True, glm=True)
 
         from nilearn._utils.tags import InputTags
 
