@@ -137,6 +137,7 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
     if i == 1:
         report_flm = first_level_glm.generate_report(
             contrasts="language-string",
+            height_control=None,
             threshold=1.96,
             alpha=0.001,
             bg_img=curvature,
@@ -154,9 +155,9 @@ report_flm
 
 # %%
 # Save the report to disk
-output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
+output_dir = Path.cwd() / "results" / "plot_surface_bids_analysis"
 output_dir.mkdir(exist_ok=True, parents=True)
-report_flm.save_as_html(output_dir / "report.html")
+report_flm.save_as_html(output_dir / "report_flm.html")
 
 
 # %%
@@ -181,6 +182,7 @@ second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
 report_slm = second_level_glm.generate_report(
     contrasts=["intercept"],
     threshold=1.96,
+    height_control=None,
     alpha=0.001,
     bg_img=curvature,
     title="surface based group-level model",
@@ -196,4 +198,4 @@ report_slm
 
 # %%
 # Save it as an html file.
-report_slm.save_as_html(output_dir / "report.html")
+report_slm.save_as_html(output_dir / "report_slm.html")

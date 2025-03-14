@@ -195,7 +195,12 @@ for contrast_id, contrast_val in contrasts.items():
 show()
 
 
-report = glm.generate_report(contrasts, threshold=3.0, bg_img=fsaverage_data)
+report = glm.generate_report(
+    contrasts,
+    threshold=3.0,
+    bg_img=fsaverage_data,
+    height_control=None,
+)
 
 # %%
 # This report can be viewed in a notebook.
