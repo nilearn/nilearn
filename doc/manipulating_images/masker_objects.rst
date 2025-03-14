@@ -156,8 +156,6 @@ or saved as a portable HTML file ``report.save_as_html(output_filepath)``.
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
     :align: center
 
-.. :scale: 50%
-
 Different masking strategies
 .............................
 
