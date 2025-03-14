@@ -1,5 +1,6 @@
 """Miscellaneous matrix plotting utilities."""
 
+import re
 import warnings
 
 import matplotlib.patches as mpatches
@@ -649,6 +650,7 @@ def plot_design_matrix_correlation(
     cmap=DEFAULT_DIVERGING_CMAP,
     colorbar=True,
     output_file=None,
+    exclude=r"^(intercept|constant|drift_)",
     **kwargs,
 ):
     """Compute and plot the correlation between regressor of a design matrix.
@@ -669,6 +671,10 @@ def plot_design_matrix_correlation(
         - ``"diag"``: Plot the lower part with the diagonal
         - ``"full"``: Plot the full matrix
 
+    exclude : :obj:`str`, \
+              default = "^(intercept|constant|drift_)"
+              regular expression of the columns to drop
+
     %(cmap)s
         default="RdBu_r"
 
@@ -681,6 +687,9 @@ def plot_design_matrix_correlation(
         - ``"seismic_r"``
 
     %(output_file)s
+
+    %(colorbar)s
+        Default=True.
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments are sent to
@@ -700,13 +709,13 @@ def plot_design_matrix_correlation(
     if cmap_name not in ALLOWED_CMAP:
         raise ValueError(f"cmap must be one of {ALLOWED_CMAP}")
 
-    columns_to_drop = ["intercept", "constant"]
-    columns_to_drop.extend(
-        col for col in design_matrix.columns if col.startswith("drift_")
-    )
-    design_matrix = design_matrix.drop(
-        columns=columns_to_drop, errors="ignore"
-    )
+    if exclude is not None:
+        columns_to_drop = [
+            col for col in design_matrix.columns if re.match(exclude, col)
+        ]
+        design_matrix = design_matrix.drop(
+            columns=columns_to_drop, errors="ignore"
+        )
 
     if len(design_matrix.columns) == 0:
         raise ValueError(
