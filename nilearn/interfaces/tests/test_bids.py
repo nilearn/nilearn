@@ -579,6 +579,8 @@ def test_save_glm_to_bids_contrast_definitions(
     )
 
     EXPECTED_FILENAME_ENDINGS = [
+        "statmap.json",
+        "report.html",
         "contrast-aaaMinusBbb_stat-effect_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-p_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-t_statmap.nii.gz",
@@ -596,8 +598,6 @@ def test_save_glm_to_bids_contrast_definitions(
         "run-2_design.json",
         "run-2_stat-errorts_statmap.nii.gz",
         "run-2_stat-rsquared_statmap.nii.gz",
-        "statmap.json",
-        "report.html",
     ]
 
     save_glm_to_bids(

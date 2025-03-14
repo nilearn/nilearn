@@ -32,6 +32,7 @@ from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.glm.first_level import FirstLevelModel
+from nilearn.glm.utils import return_model_type
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting import (
     plot_glass_brain,
@@ -47,7 +48,6 @@ from nilearn.reporting._utils import (
     dataframe_to_html,
     make_stat_maps,
     model_attributes_to_dataframe,
-    return_model_type,
 )
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import (

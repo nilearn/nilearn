@@ -7,9 +7,6 @@ from decimal import Decimal
 import numpy as np
 import pandas as pd
 
-from nilearn.glm.first_level import FirstLevelModel
-from nilearn.glm.second_level import SecondLevelModel
-
 
 def check_report_dims(report_size):
     """Warns user & reverts to default if report dimensions are non-numerical.
@@ -272,10 +269,3 @@ def _glm_model_attributes_to_dataframe(model, is_volume_glm=True):
     model_attributes.columns = ["Value"]
 
     return model_attributes
-
-
-def return_model_type(model):
-    if isinstance(model, FirstLevelModel):
-        return "First Level Model"
-    elif isinstance(model, SecondLevelModel):
-        return "Second Level Model"

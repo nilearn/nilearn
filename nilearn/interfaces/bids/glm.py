@@ -123,18 +123,15 @@ def _generate_dataset_description(out_file, model_level):
     ----------
     out_file : :obj:`pathlib.Path`
         Output JSON filename, to be created by the function.
-    model_level : {1, 2}
-        The level of the model. 1 means a first-level model.
-        2 means a second-level model.
+    model_level : str
+        The level of the model.
     """
     repo_url = "https://github.com/nilearn/nilearn"
 
     GeneratedBy = {
         "Name": "nilearn",
         "Version": __version__,
-        "Description": (
-            f"A Nilearn {'first' if model_level == 1 else 'second'}-level GLM."
-        ),
+        "Description": (f"A Nilearn {model_level}-level GLM."),
         "CodeURL": (f"{repo_url}/releases/tag/{__version__}"),
     }
 
@@ -239,6 +236,7 @@ def save_glm_to_bids(
         generate_constrat_matrices_figures,
         generate_design_matrices_figures,
     )
+    from nilearn.glm.utils import return_model_type
     from nilearn.reporting.glm_reporter import make_stat_maps
 
     allowed_extra_kwarg = [
@@ -277,9 +275,9 @@ def save_glm_to_bids(
                 f"not {type(v)}"
             )
 
-    model_level = _model_level(model)
+    model_level = return_model_type(model)
 
-    if model_level == 2:
+    if model_level == "Second Level Model":
         sub_directory = "group"
     else:
         sub_directory = (
@@ -314,8 +312,8 @@ def save_glm_to_bids(
         design_matrices, contrasts, out_dir, output
     )
 
-    for i_run, design_matrix in enumerate(design_matrices):
-        run_str = f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
+    for i_run, design_matrix in enumerate(design_matrices, start=1):
+        run_str = f"run-{i_run}_" if len(design_matrices) > 1 else ""
 
         # Save design matrix and associated figure
         design_matrix.to_csv(
@@ -324,7 +322,7 @@ def save_glm_to_bids(
             index=False,
         )
 
-        if model_level == 1:
+        if model_level == "First Level Model":
             with (out_dir / f"{prefix}{run_str}design.json").open(
                 "w"
             ) as f_obj:
@@ -399,7 +397,7 @@ def _generate_output_filenames(prefix, design_matrices, contrasts):
     design_matrices_dict = {}
     contrasts_dict = {}
     for i_run, _ in enumerate(design_matrices, start=1):
-        run_str = f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
+        run_str = f"run-{i_run}_" if len(design_matrices) > 1 else ""
 
         design_matrices_dict[i_run] = {
             "design_matrix": f"{prefix}{run_str}design.svg",
@@ -421,14 +419,10 @@ def _generate_output_filenames(prefix, design_matrices, contrasts):
     }
 
 
-def _model_level(model):
-    from nilearn.glm.first_level import FirstLevelModel
-
-    return 1 if isinstance(model, FirstLevelModel) else 2
-
-
 def _write_model_level_statistical_maps(model, prefix, out_dir):
-    if _model_level(model) == 2:
+    from nilearn.glm.utils import return_model_type
+
+    if return_model_type(model) == "Second Level Model":
         model_level_mapping = {
             "residuals": f"{prefix}stat-errorts_statmap.nii.gz",
             "r_square": f"{prefix}stat-rsquared_statmap.nii.gz",
