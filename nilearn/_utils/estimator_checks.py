@@ -64,6 +64,9 @@ VALID_CHECKS = [
     "check_set_params",
     "check_transformer_n_iter",
     "check_transformers_unfitted",
+    "check_transformer_data_not_an_array",
+    "check_transformer_general",
+    "check_transformer_preserve_dtypes",
 ]
 
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -94,6 +97,13 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
         "or check_surface_masker_fit_returns_self"
     ),
     "check_fit_check_is_fitted": "replaced by check_masker_fitted",
+    "check_transformer_data_not_an_array": (
+        "replaced by check_masker_transformer"
+    ),
+    "check_transformer_general": ("replaced by check_masker_transformer"),
+    "check_transformer_preserve_dtypes": (
+        "replaced by check_masker_transformer"
+    ),
     # Those are skipped for now they fail
     # for unknown reasons
     #  most often because sklearn inputs expect a numpy array
@@ -116,9 +126,6 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_positive_only_tag_during_fit": "TODO",
     "check_pipeline_consistency": "TODO",
     "check_readonly_memmap_input": "TODO",
-    "check_transformer_data_not_an_array": "TODO",
-    "check_transformer_general": "TODO",
-    "check_transformer_preserve_dtypes": "TODO",
 }
 
 # TODO
@@ -447,6 +454,25 @@ def check_masker_clean(estimator):
     detrended_signal = estimator.fit_transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
+
+
+def check_masker_transformer(estimator):
+    """Replace sklearn _check_transformer for maskers.
+
+    - fit_transform method should work on non fitted estimator
+    - fit_transform should give same result as fit then transform
+    """
+    if accept_niimg_input(estimator):
+        input_img = _img_4d_rand_eye_medium()
+    else:
+        input_img = _make_surface_img(100)
+
+    signal_1 = estimator.fit_transform(input_img)
+
+    estimator = clone(estimator)
+    signal_2 = estimator.fit(input_img).transform(input_img)
+
+    assert_array_equal(signal_1, signal_2)
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------
