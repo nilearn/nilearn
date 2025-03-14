@@ -21,16 +21,19 @@ from matplotlib import pyplot as plt
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.plotting import (
+    generate_constrat_matrices_figures,
+    generate_design_matrices_figures,
+    resize_plot_inches,
+)
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting import (
-    plot_contrast_matrix,
-    plot_design_matrix,
-    plot_design_matrix_correlation,
     plot_glass_brain,
     plot_roi,
     plot_stat_map,
@@ -41,7 +44,6 @@ from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.reporting._utils import (
     check_report_dims,
     clustering_params_to_dataframe,
-    coerce_to_dict,
     dataframe_to_html,
     make_stat_maps,
     model_attributes_to_dataframe,
@@ -282,8 +284,12 @@ def make_glm_report(
                 **input["design_matrices_dict"][i_run]
             )
     else:
-        contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
-        design_matrices_dict = _return_design_matrices_dict(design_matrices)
+        contrasts_dict = generate_constrat_matrices_figures(
+            design_matrices, contrasts
+        )
+        design_matrices_dict = generate_design_matrices_figures(
+            design_matrices
+        )
 
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
@@ -355,48 +361,6 @@ def make_glm_report(
     report.width, report.height = check_report_dims(report_dims)
 
     return report
-
-
-def _resize_plot_inches(plot, width_change=0, height_change=0):
-    """Accept a matplotlib figure or axes object and resize it (in inches).
-
-    Returns the original object.
-
-    Parameters
-    ----------
-    plot : matplotlib.Figure() or matplotlib.Axes()
-        The matplotlib Figure/Axes object to be resized.
-
-    width_change : float, default=0
-        The amount of change to be added on to original width.
-        Use negative values for reducing figure dimensions.
-
-    height_change : float, default=0
-        The amount of change to be added on to original height.
-        Use negative values for reducing figure dimensions.
-
-    Returns
-    -------
-    plot : matplotlib.Figure() or matplotlib.Axes()
-        The matplotlib Figure/Axes object after being resized.
-
-    """
-    if not isinstance(plot, (plt.Figure)):
-        orig_size = plot.figure.get_size_inches()
-    else:
-        orig_size = plot.get_size_inches()
-
-    new_size = (
-        orig_size[0] + width_change,
-        orig_size[1] + height_change,
-    )
-
-    if not isinstance(plot, (plt.Figure)):
-        plot.figure.set_size_inches(new_size, forward=True)
-    else:
-        plot.set_size_inches(new_size, forward=True)
-
-    return plot
 
 
 def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
@@ -772,7 +736,7 @@ def _add_params_to_plot(table_details, stat_map_plot):
         wrap=True,
     )
     fig = next(iter(stat_map_plot.axes.values())).ax.figure
-    _resize_plot_inches(
+    resize_plot_inches(
         plot=fig,
         width_change=0.2,
         height_change=1,
@@ -780,65 +744,3 @@ def _add_params_to_plot(table_details, stat_map_plot):
     if stat_map_plot._black_bg:
         suptitle_text.set_color("w")
     return stat_map_plot
-
-
-def _return_design_matrices_dict(design_matrices):
-    if design_matrices is None:
-        return None
-
-    design_matrices_dict = tempita.bunch()
-    for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
-        dmtx_plot = plot_design_matrix(design_matrix)
-        dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
-        dmtx_png = figure_to_png_base64(dmtx_plot)
-        # prevents sphinx-gallery & jupyter from scraping & inserting plots
-        plt.close("all")
-
-        # in case of second level model with a single regressor
-        # (for example one-sample t-test)
-        # no point in plotting the correlation
-        if (
-            isinstance(design_matrix, np.ndarray)
-            and design_matrix.shape[1] == 1
-        ) or (
-            isinstance(design_matrix, pd.DataFrame)
-            and len(design_matrix.columns) == 1
-        ):
-            dmtx_cor_png = None
-        else:
-            dmtx_cor_plot = plot_design_matrix_correlation(
-                design_matrix, tri="diag"
-            )
-            dmtx_cor_plot = _resize_plot_inches(
-                dmtx_cor_plot, height_change=0.3
-            )
-            dmtx_cor_png = figure_to_png_base64(dmtx_cor_plot)
-            # prevents sphinx-gallery & jupyter from scraping & inserting plots
-            plt.close("all")
-
-        design_matrices_dict[dmtx_count] = tempita.bunch(
-            design_matrix=dmtx_png, correlation_matrix=dmtx_cor_png
-        )
-
-    return design_matrices_dict
-
-
-def _return_contrasts_dict(design_matrices, contrasts):
-    if design_matrices is None or not contrasts:
-        return None
-
-    contrasts_dict = {}
-    for design_matrix in design_matrices:
-        for contrast_name, contrast_data in contrasts.items():
-            contrast_plot = plot_contrast_matrix(
-                contrast_data, design_matrix, colorbar=True
-            )
-            contrast_plot.set_xlabel(contrast_name)
-            contrast_plot.figure.set_figheight(2)
-            url_contrast_plot_png = figure_to_png_base64(contrast_plot)
-            # prevents sphinx-gallery & jupyter
-            # from scraping & inserting plots
-            plt.close("all")
-            contrasts_dict[contrast_name] = url_contrast_plot_png
-
-    return contrasts_dict

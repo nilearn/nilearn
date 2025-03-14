@@ -5,9 +5,9 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 
 from nilearn import __version__
+from nilearn._utils.glm import coerce_to_dict
 
 
 def _clean_contrast_name(contrast_name):
@@ -235,10 +235,9 @@ def save_glm_to_bids(
 
     """
     # Import here to avoid circular imports
-    from nilearn.plotting import (
-        plot_contrast_matrix,
-        plot_design_matrix,
-        plot_design_matrix_correlation,
+    from nilearn._utils.plotting import (
+        generate_constrat_matrices_figures,
+        generate_design_matrices_figures,
     )
     from nilearn.reporting.glm_reporter import make_stat_maps
 
@@ -266,15 +265,9 @@ def save_glm_to_bids(
     if prefix and not prefix.endswith("_"):
         prefix += "_"
 
-    if isinstance(contrasts, list):
-        contrasts = {c: c for c in contrasts}
-    elif isinstance(contrasts, str):
-        contrasts = {contrasts: contrasts}
+    contrasts = coerce_to_dict(contrasts)
 
-    for k, v in contrasts.items():
-        if not isinstance(k, str):
-            raise ValueError(f"contrast names must be strings, not {type(k)}")
-
+    for v in contrasts.values():
         if not isinstance(v, (str, np.ndarray, list)):
             raise ValueError(
                 "contrast definitions must be strings or array_likes, "
@@ -312,6 +305,11 @@ def save_glm_to_bids(
 
     # TODO: Assuming that cases of multiple design matrices correspond to
     # different runs. Not sure if this is correct. Need to check.
+    generate_design_matrices_figures(design_matrices, out_dir, output)
+    generate_constrat_matrices_figures(
+        design_matrices, contrasts, out_dir, output
+    )
+
     for i_run, design_matrix in enumerate(design_matrices):
         run_str = f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
 
@@ -321,29 +319,6 @@ def save_glm_to_bids(
             sep="\t",
             index=False,
         )
-
-        dm_fig = plot_design_matrix(design_matrix)
-        dm_fig.figure.savefig(
-            out_dir / output["design_matrices_dict"][i_run]["design_matrix"]
-        )
-
-        # in case of second level model with a single regressor
-        # (for example one-sample t-test)
-        # no point in plotting the correlation
-        if (
-            isinstance(design_matrix, np.ndarray)
-            and design_matrix.shape[1] > 1
-        ) or (
-            isinstance(design_matrix, pd.DataFrame)
-            and len(design_matrix.columns) > 1
-        ):
-            dm_corr_fig = plot_design_matrix_correlation(
-                design_matrix, tri="diag"
-            )
-            dm_corr_fig.figure.savefig(
-                out_dir
-                / output["design_matrices_dict"][i_run]["correlation_matrix"]
-            )
 
         if model_level == 1:
             with (out_dir / f"{prefix}{run_str}design.json").open(
@@ -355,19 +330,6 @@ def save_glm_to_bids(
                     indent=4,
                     sort_keys=True,
                 )
-
-        # Save contrast plots as well
-        for contrast_name, contrast_data in contrasts.items():
-            contrast_plot = plot_contrast_matrix(
-                contrast_data,
-                design_matrix,
-                colorbar=True,
-            )
-            contrast_plot.set_xlabel(contrast_name)
-            contrast_plot.figure.set_figheight(2)
-            contrast_plot.figure.savefig(
-                out_dir / output["contrasts_dict"][i_run][contrast_name]
-            )
 
     # Model metadata
     # TODO: Determine optimal mapping of model metadata to BIDS fields.
@@ -432,7 +394,7 @@ def save_glm_to_bids(
 def _generate_output_filenames(prefix, design_matrices, contrasts):
     design_matrices_dict = {}
     contrasts_dict = {}
-    for i_run, _ in enumerate(design_matrices):
+    for i_run, _ in enumerate(design_matrices, start=1):
         run_str = f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
 
         design_matrices_dict[i_run] = {
