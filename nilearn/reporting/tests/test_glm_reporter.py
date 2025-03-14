@@ -211,7 +211,7 @@ def test_flm_generate_report_surface_data(rng):
     """
     t_r = 2.0
     events = basic_paradigm()
-    n_scans = int(max(events["onset"] + events["duration"]) + 20.0 / t_r)
+    n_scans = 10
 
     mesh = load_fsaverage(mesh="fsaverage5")["pial"]
     data = {}
