@@ -315,8 +315,6 @@ def save_glm_to_bids(
             img = statistical_maps[contrast_name][output_type]
             filename = output["statistical_maps"][contrast_name][output_type]
             img.to_filename(out_dir / filename)
-            # replace filename with image instance to plot in reports
-            output["statistical_maps"][contrast_name][output_type] = img
 
     _write_model_level_statistical_maps(model, prefix, out_dir)
 
@@ -328,7 +326,7 @@ def save_glm_to_bids(
 
 
 def _generate_output_filenames(
-    prefix, design_matrices, contrasts, contrast_types
+    prefix, design_matrices, contrasts, contrast_types, out_dir
 ):
     design_matrices_dict = {}
     contrasts_dict = {}
@@ -380,6 +378,7 @@ def _generate_output_filenames(
         }
 
     return {
+        "out_dir": out_dir,
         "design_matrices_dict": design_matrices_dict,
         "contrasts_dict": contrasts_dict,
         "statistical_maps": statistical_maps,

@@ -248,9 +248,8 @@ def make_glm_report(
 
         if input is not None:
             statistical_maps = {
-                contrast_name: input["statistical_maps"][contrast_name][
-                    "z_score"
-                ]
+                contrast_name: input["out_dir"]
+                / input["statistical_maps"][contrast_name]["z_score"]
                 for contrast_name in contrasts
             }
         else:
