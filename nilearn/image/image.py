@@ -687,7 +687,7 @@ def index_img(imgs, index):
     """Indexes into a image in the last dimension.
 
     Common use cases include extracting an image out of `img` or
-    creating a 4D (or 2D fir surface) image
+    creating a 4D (or 2D for surface) image
     whose data is a subset of `img` data.
 
     Parameters
