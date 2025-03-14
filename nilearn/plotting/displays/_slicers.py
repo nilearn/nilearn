@@ -12,11 +12,11 @@ from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
 from nibabel import Nifti1Image
 
-from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import _check_fov
 from nilearn._utils.param_validation import check_params
-from nilearn.image import get_data, new_img_like, reorder_img
+from nilearn.image import get_data, index_img, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
@@ -122,6 +122,7 @@ class BaseSlicer:
         leave_space=False,
         colorbar=False,
         brain_color=(0.5, 0.5, 0.5),
+        as_rgb=False,
         **kwargs,
     ):
         """Initialize the slicer with an image.
@@ -159,7 +160,11 @@ class BaseSlicer:
 
         # deal with "fake" 4D images
         if img is not None and img is not False:
-            img = check_niimg_3d(img)
+            if as_rgb:
+                img = check_niimg_4d(img)
+                assert img.shape[3] == 3
+            else:
+                img = check_niimg_3d(img)
 
         cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
 
@@ -283,6 +288,7 @@ class BaseSlicer:
         cbar_vmax=None,
         transparency=None,
         transparency_range=None,
+        as_rgb=False,
         **kwargs,
     ):
         """Plot a 3D map in all the views.
@@ -338,7 +344,11 @@ class BaseSlicer:
         self._colorbar = colorbar
         self._cbar_tick_format = cbar_tick_format
 
-        img = check_niimg_3d(img)
+        if as_rgb:
+            img = check_niimg_4d(img, dtype="auto")
+            assert img.shape[3] == 3
+        else:
+            img = check_niimg_3d(img, dtype="auto")
 
         # Make sure that add_overlay shows consistent default behavior
         # with plot_stat_map
@@ -462,7 +472,11 @@ class BaseSlicer:
             data = self._threshold(data, threshold, None, None)
             img = new_img_like(img, data, affine)
 
-        data = safe_get_data(img, ensure_finite=True)
+        if len(img.shape) > 3 and img.shape[3] > 1:
+            first_img = img = index_img(img, 1)
+            data = safe_get_data(first_img, ensure_finite=True)
+        else:
+            data = safe_get_data(img, ensure_finite=True)
         data_bounds = get_bounds(data.shape, affine)
         (xmin, xmax), (ymin, ymax), (zmin, zmax) = data_bounds
 
