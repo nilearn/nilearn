@@ -31,7 +31,6 @@ from nilearn._utils.param_validation import (
     check_params,
     check_run_sample_masks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -305,8 +304,10 @@ class FirstLevelModel(BaseGLM):
         slice timing preprocessing step of the experimental runs.
         It is expressed as a fraction of the ``t_r`` (repetition time),
         so it can have values between 0. and 1.
+
     %(hrf_model)s
         Default='glover'.
+
     drift_model : :obj:`str`, default='cosine'
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
@@ -669,6 +670,10 @@ class FirstLevelModel(BaseGLM):
                     f"at index {run_idx}."
                 )
 
+        tmp = check_and_load_tables(events[run_idx], "events")[0]
+        if "trial_type" in tmp.columns:
+            self._reporting_data["trial_types"].extend(tmp["trial_type"])
+
         start_time = self.slice_time_ref * self.t_r
         end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
         frame_times = np.linspace(start_time, end_time, n_scans)
@@ -694,33 +699,6 @@ class FirstLevelModel(BaseGLM):
             and self.labels_ is not None
             and self.results_ is not None
         )
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=True, surf_img=True)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(niimg_like=True, surf_img=True)
-        return tags
 
     def fit(
         self,
@@ -873,8 +851,31 @@ class FirstLevelModel(BaseGLM):
 
         self._prepare_mask(run_imgs[0])
 
+        # collect info that may be useful for report generation
+        drift_model_str = None
+        if self.drift_model:
+            if self.drift_model == "cosine":
+                param_str = f"high pass filter={self.high_pass} Hz"
+            else:
+                param_str = f"order={self.drift_order}"
+            drift_model_str = (
+                f"and a {self.drift_model} drift model ({param_str})"
+            )
+        self._reporting_data = {
+            "trial_types": [],
+            "noise_model": self.noise_model,
+            "hrf_model": "finite impulse response"
+            if self.hrf_model == "fir"
+            else self.hrf_model,
+            "drift_model": drift_model_str,
+        }
+
         self.design_matrices_ = self._create_all_designs(
             run_imgs, events, confounds, design_matrices
+        )
+
+        self._reporting_data["trial_types"] = set(
+            self._reporting_data["trial_types"]
         )
 
         # For each run fit the model and keep only the regression results.
