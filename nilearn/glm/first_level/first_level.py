@@ -31,7 +31,6 @@ from nilearn._utils.param_validation import (
     check_params,
     check_run_sample_masks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -700,33 +699,6 @@ class FirstLevelModel(BaseGLM):
             and self.labels_ is not None
             and self.results_ is not None
         )
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=True, surf_img=True)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(niimg_like=True, surf_img=True)
-        return tags
 
     def fit(
         self,
