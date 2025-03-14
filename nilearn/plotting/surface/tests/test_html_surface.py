@@ -7,10 +7,11 @@ from nilearn import datasets, image
 from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.image import get_data
+from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting.surface.html_surface import (
-    _one_mesh_info,
     _fill_html_template,
     _full_brain_info,
+    _one_mesh_info,
     colorscale,
     full_brain_info,
     get_vertexcolor,
@@ -18,7 +19,6 @@ from nilearn.plotting.surface.html_surface import (
     view_img_on_surf,
     view_surf,
 )
-from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting.tests.test_js_plotting_utils import (
     check_colors,
     check_html,
@@ -263,9 +263,7 @@ def test_view_surf(tmp_path, rng):
     html = view_surf(fsaverage["pial_right"])
     check_html(tmp_path, html)
     atlas = rng.integers(0, 10, size=len(mesh.coordinates))
-    html = view_surf(
-        fsaverage["pial_left"], atlas, symmetric_cmap=False
-    )
+    html = view_surf(fsaverage["pial_left"], atlas, symmetric_cmap=False)
     check_html(tmp_path, html)
     html = view_surf(
         fsaverage["pial_right"],

@@ -5,7 +5,6 @@ import numpy as np
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import is_kaleido_installed
 from nilearn.plotting.displays import PlotlySurfaceFigure
-from nilearn.plotting.surface.html_surface import get_vertexcolor
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._backend import SurfaceBackend
 from nilearn.plotting.surface._utils import (
@@ -14,6 +13,7 @@ from nilearn.plotting.surface._utils import (
     check_surf_map,
     check_views,
 )
+from nilearn.plotting.surface.html_surface import get_vertexcolor
 from nilearn.surface import load_surf_data
 
 try:
