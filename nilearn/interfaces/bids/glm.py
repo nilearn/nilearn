@@ -237,6 +237,7 @@ def save_glm_to_bids(
     from nilearn.plotting import (
         plot_contrast_matrix,
         plot_design_matrix,
+        plot_design_matrix_correlation,
     )
     from nilearn.reporting.glm_reporter import make_stat_maps
 
@@ -308,6 +309,25 @@ def save_glm_to_bids(
 
     # TODO: Assuming that cases of multiple design matrices correspond to
     # different runs. Not sure if this is correct. Need to check.
+    design_matrices_dict = {}
+    contrasts_dict = {}
+    for i_run, _ in enumerate(design_matrices):
+        run_str = f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
+
+        design_matrices_dict[i_run] = {
+            "design_matrix": f"{prefix}{run_str}design.svg",
+            "correlation_matrix": f"{prefix}{run_str}corrdesign.svg",
+        }
+
+        contrasts_dict[i_run] = {
+            contrast_name: (
+                f"{prefix}{run_str}"
+                f"contrast-{_clean_contrast_name(contrast_name)}"
+                "_design.svg"
+            )
+            for contrast_name in contrasts
+        }
+
     for i_run, design_matrix in enumerate(design_matrices):
         run_str = f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
 
@@ -319,7 +339,14 @@ def save_glm_to_bids(
         )
 
         dm_fig = plot_design_matrix(design_matrix)
-        dm_fig.figure.savefig(out_dir / f"{prefix}{run_str}design.svg")
+        dm_fig.figure.savefig(
+            out_dir / design_matrices_dict[i_run]["design_matrix"]
+        )
+
+        dm_corr_fig = plot_design_matrix_correlation(design_matrix, tri="diag")
+        dm_corr_fig.figure.savefig(
+            out_dir / design_matrices_dict[i_run]["correlation_matrix"]
+        )
 
         if model_level == 1:
             with (out_dir / f"{prefix}{run_str}design.json").open(
@@ -341,12 +368,9 @@ def save_glm_to_bids(
             )
             contrast_plot.set_xlabel(contrast_name)
             contrast_plot.figure.set_figheight(2)
-            contrast_name = _clean_contrast_name(contrast_name)
-            constrast_fig_file = (
-                out_dir
-                / f"{prefix}{run_str}contrast-{contrast_name}_design.svg"
+            contrast_plot.figure.savefig(
+                out_dir / contrasts_dict[i_run][contrast_name]
             )
-            contrast_plot.figure.savefig(constrast_fig_file)
 
     # Model metadata
     # TODO: Determine optimal mapping of model metadata to BIDS fields.
@@ -402,7 +426,13 @@ def save_glm_to_bids(
     _write_model_level_statistical_maps(model, prefix, out_dir)
 
     # Add html report
-    glm_report = model.generate_report(contrasts=contrasts, **kwargs)
+    input = {
+        "design_matrices_dict": design_matrices_dict,
+        "contrasts_dict": contrasts_dict,
+    }
+    glm_report = model.generate_report(
+        contrasts=contrasts, input=input, **kwargs
+    )
     glm_report.save_as_html(out_dir / f"{prefix}report.html")
 
 

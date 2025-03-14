@@ -79,6 +79,7 @@ def make_glm_report(
     cut_coords=None,
     display_mode=None,
     report_dims=(1600, 800),
+    input=None,
 ):
     """Return HTMLReport object \
     for a report which shows all important aspects of a fitted GLM.
@@ -265,9 +266,24 @@ def make_glm_report(
             plot_type=plot_type,
         )
 
-    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
+    if input is not None:
+        # TODO: only contrast of first run are displayed
+        # contrasts_dict[i_run] = tempita.bunch(**input["contrasts_dict"][i_run]) # noqa: E501
+        contrasts_dict = tempita.bunch()
+        for i_run in input["contrasts_dict"]:
+            for _ in input["contrasts_dict"][i_run]:
+                contrasts_dict = tempita.bunch(
+                    **input["contrasts_dict"][i_run]
+                )
 
-    design_matrices_dict = _return_design_matrices_dict(design_matrices)
+        design_matrices_dict = tempita.bunch()
+        for i_run in input["design_matrices_dict"]:
+            design_matrices_dict[i_run] = tempita.bunch(
+                **input["design_matrices_dict"][i_run]
+            )
+    else:
+        contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
+        design_matrices_dict = _return_design_matrices_dict(design_matrices)
 
     body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
     tpl = tempita.HTMLTemplate.from_filename(
@@ -291,6 +307,7 @@ def make_glm_report(
         design_matrices_dict=design_matrices_dict,
         unique_id=unique_id,
         date=date,
+        input=input,
     )
 
     # revert HTML safe substitutions in CSS sections
