@@ -32,8 +32,8 @@ from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.glm.first_level import FirstLevelModel
-from nilearn.glm.utils import return_model_type
-from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.glm.utils import is_volume_glm, return_model_type
+from nilearn.maskers import NiftiMasker
 from nilearn.plotting import (
     plot_glass_brain,
     plot_roi,
@@ -191,12 +191,6 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
-    is_volume_glm = True
-    if isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or (
-        hasattr(model, "masker_") and isinstance(model.masker_, SurfaceMasker)
-    ):
-        is_volume_glm = False
-
     unique_id = str(uuid.uuid4()).replace("-", "")
 
     model_type = return_model_type(model)
@@ -214,7 +208,7 @@ def make_glm_report(
         smoothing_fwhm = None
 
     model_attributes = model_attributes_to_dataframe(
-        model, is_volume_glm=is_volume_glm
+        model, is_volume_glm=is_volume_glm(model)
     )
     with pd.option_context("display.max_colwidth", 100):
         model_attributes_html = dataframe_to_html(
@@ -240,9 +234,9 @@ def make_glm_report(
         )
 
         if bg_img == "MNI152TEMPLATE":
-            bg_img = MNI152TEMPLATE if is_volume_glm else None
+            bg_img = MNI152TEMPLATE if is_volume_glm(model) else None
         if (
-            not is_volume_glm
+            not is_volume_glm(model)
             and bg_img
             and not isinstance(bg_img, SurfaceImage)
         ):
@@ -250,7 +244,9 @@ def make_glm_report(
                 f"'bg_img' must a SurfaceImage instance. Got {type(bg_img)=}"
             )
 
-        mask_plot = _mask_to_plot(model, bg_img, cut_coords, is_volume_glm)
+        mask_plot = _mask_to_plot(
+            model, bg_img, cut_coords, is_volume_glm(model)
+        )
 
         statistical_maps = make_stat_maps(model, contrasts)
 

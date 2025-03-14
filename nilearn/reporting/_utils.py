@@ -7,6 +7,8 @@ from decimal import Decimal
 import numpy as np
 import pandas as pd
 
+from nilearn.glm.utils import glm_model_attributes_to_dict
+
 
 def check_report_dims(report_size):
     """Warns user & reverts to default if report dimensions are non-numerical.
@@ -173,7 +175,7 @@ def make_stat_maps(model, contrasts, output_type="z_score"):
 
 
 def model_attributes_to_dataframe(model, is_volume_glm=True):
-    """Return an HTML table with pertinent model attributes & information.
+    """Return dataframe with pertinent model attributes & information.
 
     Parameters
     ----------
@@ -209,7 +211,7 @@ def model_attributes_to_dataframe(model, is_volume_glm=True):
     return attributes_df
 
 
-def _glm_model_attributes_to_dataframe(model, is_volume_glm=True):
+def _glm_model_attributes_to_dataframe(model):
     """Return a pandas dataframe with pertinent model attributes & information.
 
     Parameters
@@ -221,39 +223,12 @@ def _glm_model_attributes_to_dataframe(model, is_volume_glm=True):
     pandas.DataFrame
         DataFrame with the pertinent attributes of the model.
     """
-    selected_attributes = [
-        "subject_label",
-        "drift_model",
-        "hrf_model",
-        "standardize",
-        "noise_model",
-        "t_r",
-        "signal_scaling",
-        "scaling_axis",
-        "smoothing_fwhm",
-        "slice_time_ref",
-    ]
-    if is_volume_glm:
-        selected_attributes.extend(["target_shape", "target_affine"])
-    if hasattr(model, "hrf_model") and model.hrf_model == "fir":
-        selected_attributes.append("fir_delays")
-    if hasattr(model, "drift_model"):
-        if model.drift_model == "cosine":
-            selected_attributes.append("high_pass")
-        elif model.drift_model == "polynomial":
-            selected_attributes.append("drift_order")
-
     attribute_units = {
         "t_r": "seconds",
         "high_pass": "Hertz",
+        "smoothing_fwhm": "mm",
     }
-
-    selected_attributes.sort()
-    display_attributes = OrderedDict(
-        (attr_name, getattr(model, attr_name))
-        for attr_name in selected_attributes
-        if hasattr(model, attr_name)
-    )
+    display_attributes = glm_model_attributes_to_dict(model)
     model_attributes = pd.DataFrame.from_dict(
         display_attributes,
         orient="index",
