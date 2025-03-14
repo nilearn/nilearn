@@ -13,6 +13,7 @@ from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
+from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
 
 @pytest.mark.parametrize(
@@ -21,15 +22,7 @@ from nilearn.maskers import MultiNiftiLabelsMasker
         estimator=[
             MultiNiftiLabelsMasker(labels_img=_img_labels()),
         ],
-        expected_failed_checks={
-            # TODO remove after 0.13.2
-            "check_do_not_raise_errors_in_init_or_set_params": (
-                "Deprecation cycle started to fix."
-            ),
-            "check_no_attributes_set_in_init": (
-                "Deprecation cycle started to fix."
-            ),
-        },
+        expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -45,15 +38,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
             MultiNiftiLabelsMasker(_img_labels()),
         ],
         valid=False,
-        expected_failed_checks={
-            # TODO remove after 0.13.2
-            "check_do_not_raise_errors_in_init_or_set_params": (
-                "Deprecation cycle started to fix."
-            ),
-            "check_no_attributes_set_in_init": (
-                "Deprecation cycle started to fix."
-            ),
-        },
+        expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001

@@ -23,6 +23,7 @@ from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
 
 @pytest.mark.parametrize(
@@ -31,15 +32,7 @@ from nilearn.maskers import NiftiMapsMasker
         # pass less than the default number of regions
         # to speed up the tests
         estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
-        expected_failed_checks={
-            # TODO remove after 0.13.2
-            "check_do_not_raise_errors_in_init_or_set_params": (
-                "Deprecation cycle started to fix."
-            ),
-            "check_no_attributes_set_in_init": (
-                "Deprecation cycle started to fix."
-            ),
-        },
+        expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -55,15 +48,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
         # to speed up the tests
         estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
         valid=False,
-        expected_failed_checks={
-            # TODO remove after 0.13.2
-            "check_do_not_raise_errors_in_init_or_set_params": (
-                "Deprecation cycle started to fix."
-            ),
-            "check_no_attributes_set_in_init": (
-                "Deprecation cycle started to fix."
-            ),
-        },
+        expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
