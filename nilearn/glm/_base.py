@@ -72,6 +72,7 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
         display_mode=None,
         report_dims=(1600, 800),
         input=None,
+        verbose=1,
     ):
         """Return a :class:`~nilearn.reporting.HTMLReport` \
         which shows all important aspects of a fitted :term:`GLM`.
@@ -213,4 +214,5 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
             display_mode=display_mode,
             report_dims=report_dims,
             input=input,
+            verbose=verbose,
         )

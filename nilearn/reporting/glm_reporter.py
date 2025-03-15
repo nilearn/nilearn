@@ -20,7 +20,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils import check_niimg, fill_doc, logger
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.plotting import (
@@ -82,6 +82,7 @@ def make_glm_report(
     display_mode=None,
     report_dims=(1600, 800),
     input=None,
+    verbose=1,
 ):
     """Return HTMLReport object \
     for a report which shows all important aspects of a fitted GLM.
@@ -248,7 +249,7 @@ def make_glm_report(
 
         if input is not None:
             statistical_maps = {
-                contrast_name: input["out_dir"]
+                contrast_name: input["dir"]
                 / input["statistical_maps"][contrast_name]["z_score"]
                 for contrast_name in contrasts
             }
@@ -257,6 +258,7 @@ def make_glm_report(
                 model, contrasts, output_type="z_score"
             )
 
+        logger.log("Generating contrast-level figures...", verbose=verbose)
         results = _make_stat_maps_contrast_clusters(
             stat_img=statistical_maps,
             threshold=threshold,
@@ -271,33 +273,28 @@ def make_glm_report(
             plot_type=plot_type,
         )
 
+    design_matrices_dict = tempita.bunch()
+    contrasts_dict = tempita.bunch()
     if input is not None:
-        contrasts_dict = tempita.bunch()
-        for i_run in input["contrasts_dict"]:
-            for _ in input["contrasts_dict"][i_run]:
-                # TODO: only contrast of first run are displayed
-                # contrasts_dict[i_run] = tempita.bunch(**input["contrasts_dict"][i_run]) # noqa: E501
-                contrasts_dict = tempita.bunch(
-                    **input["contrasts_dict"][i_run]
-                )
+        design_matrices_dict = input["design_matrices_dict"]
+        # TODO: only contrast of first run are displayed
+        # contrasts_dict[i_run] = tempita.bunch(**input["contrasts_dict"][i_run]) # noqa: E501
+        contrasts_dict = input["contrasts_dict"]
 
-        design_matrices_dict = tempita.bunch()
-        for i_run in input["design_matrices_dict"]:
-            design_matrices_dict[i_run] = tempita.bunch(
-                **input["design_matrices_dict"][i_run]
-            )
-    else:
-        contrasts_dict = generate_constrat_matrices_figures(
-            design_matrices, contrasts
-        )
-        design_matrices_dict = generate_design_matrices_figures(
-            design_matrices
-        )
+    logger.log("Generating design matrices figures...", verbose=verbose)
+    design_matrices_dict = generate_design_matrices_figures(
+        design_matrices,
+        design_matrices_dict=design_matrices_dict,
+        output=input,
+    )
 
+    logger.log("Generating contrast matrices figures...", verbose=verbose)
+    contrasts_dict = generate_constrat_matrices_figures(
+        design_matrices, contrasts, contrasts_dict=contrasts_dict, output=input
+    )
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
-
     method_section_template_path = HTML_TEMPLATE_PATH / "method_section.html"
     method_tpl = tempita.HTMLTemplate.from_filename(
         str(method_section_template_path),

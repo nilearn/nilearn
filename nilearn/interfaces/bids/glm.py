@@ -8,7 +8,9 @@ from pathlib import Path
 import numpy as np
 
 from nilearn import __version__
+from nilearn._utils import logger
 from nilearn._utils.glm import coerce_to_dict
+from nilearn.externals import tempita
 
 
 def _clean_contrast_name(contrast_name):
@@ -234,6 +236,8 @@ def save_glm_to_bids(
     if prefix and not prefix.endswith("_"):
         prefix += "_"
 
+    verbose = model.verbose
+
     contrasts = coerce_to_dict(contrasts)
 
     for k, v in contrasts.items():
@@ -270,16 +274,18 @@ def save_glm_to_bids(
     else:
         design_matrices = [model.design_matrix_]
 
-    output = _generate_output_filenames(
-        prefix, design_matrices, contrasts, contrast_types
+    output = _generate_filenames_output(
+        prefix, design_matrices, contrasts, contrast_types, out_dir
     )
 
+    logger.log("Generating design matrices figures...", verbose=verbose)
     # TODO: Assuming that cases of multiple design matrices correspond to
     # different runs. Not sure if this is correct. Need to check.
-    generate_design_matrices_figures(design_matrices, out_dir, output)
+    generate_design_matrices_figures(design_matrices, output=output)
 
+    logger.log("Generating contrast matrices figures...", verbose=verbose)
     generate_constrat_matrices_figures(
-        design_matrices, contrasts, out_dir, output
+        design_matrices, contrasts, output=output
     )
 
     for i_run, design_matrix in enumerate(design_matrices, start=1):
@@ -308,7 +314,9 @@ def save_glm_to_bids(
     metadata_file = out_dir / f"{prefix}statmap.json"
     _generate_model_metadata(metadata_file, model)
 
-    # Write out contrast-level statistical maps
+    logger.log(
+        "Generating contrast-level statistical maps...", verbose=verbose
+    )
     statistical_maps = make_stat_maps(model, contrasts, output_type="all")
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
@@ -316,29 +324,30 @@ def save_glm_to_bids(
             filename = output["statistical_maps"][contrast_name][output_type]
             img.to_filename(out_dir / filename)
 
+    logger.log("Saving contrast-level statistical maps...", verbose=verbose)
     _write_model_level_statistical_maps(model, prefix, out_dir)
 
-    # Add html report
+    logger.log("Generating HTML...", verbose=verbose)
     glm_report = model.generate_report(
-        contrasts=contrasts, input=output, **kwargs
+        contrasts=contrasts, input=output, verbose=verbose - 1, **kwargs
     )
     glm_report.save_as_html(out_dir / f"{prefix}report.html")
 
 
-def _generate_output_filenames(
+def _generate_filenames_output(
     prefix, design_matrices, contrasts, contrast_types, out_dir
 ):
-    design_matrices_dict = {}
-    contrasts_dict = {}
+    design_matrices_dict = tempita.bunch()
+    contrasts_dict = tempita.bunch()
     for i_run, _ in enumerate(design_matrices, start=1):
         run_str = f"run-{i_run}_" if len(design_matrices) > 1 else ""
 
-        design_matrices_dict[i_run] = {
-            "design_matrix": f"{prefix}{run_str}design.svg",
-            "correlation_matrix": f"{prefix}{run_str}corrdesign.svg",
-        }
+        design_matrices_dict[i_run] = tempita.bunch(
+            design_matrix=f"{prefix}{run_str}design.svg",
+            correlation_matrix=f"{prefix}{run_str}corrdesign.svg",
+        )
 
-        contrasts_dict[i_run] = {
+        tmp = {
             contrast_name: (
                 f"{prefix}{run_str}"
                 f"contrast-{_clean_contrast_name(contrast_name)}"
@@ -346,6 +355,7 @@ def _generate_output_filenames(
             )
             for contrast_name in contrasts
         }
+        contrasts_dict[i_run] = tempita.bunch(**tmp)
 
     if not isinstance(contrast_types, dict):
         contrast_types = {}
@@ -378,7 +388,7 @@ def _generate_output_filenames(
         }
 
     return {
-        "out_dir": out_dir,
+        "dir": out_dir,
         "design_matrices_dict": design_matrices_dict,
         "contrasts_dict": contrasts_dict,
         "statistical_maps": statistical_maps,

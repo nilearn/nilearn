@@ -125,9 +125,10 @@
     <div class="d-flex flex-column">
       <h3>run {{dmtx_title}}</h3>
       <div class="scroll-y">
+        {{py: is_bytes = isinstance(dmtx.design_matrix, bytes)}}
         <img
           class="pure-img"
-          src="{{if input}}{{else}}data:image/png;base64,{{endif}}{{dmtx.design_matrix}}"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.design_matrix}}"
           title="Plot of design matrix for {{dmtx_title}}."
           alt="Plot of design matrix for {{dmtx_title}}."
           style="min-width: 600px"

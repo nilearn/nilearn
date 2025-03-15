@@ -14,31 +14,57 @@ from nilearn.reporting.utils import (
 
 
 def generate_design_matrices_figures(
-    design_matrices, out_dir=None, output=None
+    design_matrices, design_matrices_dict=None, output=None
 ):
-    if design_matrices is None:
-        return None
+    """Generate plot for design matrices and their correlation matrices.
 
-    design_matrices_dict = tempita.bunch()
+    After generating the figure it can either :
+
+    - convert it to bytes for insertion into HTML report
+    - save it to disk if the appropriate "output" was passed
+
+    design_matrices_dict is a dict-lile (tempita.bunc)
+    that contains the figure (as bytes or relative path).
+    A tempita bunch is used to facilitate injecting its content
+    into HTML templates.
+    If a design_matrices_dict is passed its content will be updated.
+
+    Returns
+    -------
+    design_matrices_dict : tempita.bunch
+
+        design_matrices_dict[i_run].design_matrix
+        design_matrices_dict[i_run].correlation_matrix
+
+    """
+    if design_matrices_dict is None:
+        design_matrices_dict = tempita.bunch()
+
+    if design_matrices is None:
+        return design_matrices_dict
 
     for i_run, design_matrix in enumerate(design_matrices, start=1):
-        dmtx_png = None
-
         dmtx_plot = plot_design_matrix(design_matrix)
+
         dmtx_plot = resize_plot_inches(dmtx_plot, height_change=0.3)
-        if out_dir and output:
-            dmtx_plot.figure.savefig(
-                out_dir
-                / output["design_matrices_dict"][i_run]["design_matrix"]
-            )
-        else:
-            dmtx_png = figure_to_png_base64(dmtx_plot)
+
+        dmtx_fig = None
+        if output:
+            # the try is mostly here in case badly formed dict
+            try:
+                dmtx_fig = output["design_matrices_dict"][i_run][
+                    "design_matrix"
+                ]
+                dmtx_plot.figure.savefig(output["dir"] / dmtx_fig)
+            except Exception:
+                dmtx_fig = None
+        if dmtx_fig is None:
+            dmtx_fig = figure_to_png_base64(dmtx_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
             plt.close("all")
 
-        dmtx_cor_png = None
-
+        dmtx_cor_fig = None
         # in case of second level model with a single regressor
         # (for example one-sample t-test)
         # no point in plotting the correlation
@@ -52,36 +78,66 @@ def generate_design_matrices_figures(
             dmtx_cor_plot = plot_design_matrix_correlation(
                 design_matrix, tri="diag"
             )
+
             dmtx_cor_plot = resize_plot_inches(
                 dmtx_cor_plot, height_change=0.3
             )
-            if out_dir and output:
-                dmtx_cor_plot.figure.savefig(
-                    out_dir
-                    / output["design_matrices_dict"][i_run][
+            if output:
+                try:
+                    dmtx_cor_fig = output["design_matrices_dict"][i_run][
                         "correlation_matrix"
                     ]
-                )
-            else:
-                dmtx_cor_png = figure_to_png_base64(dmtx_cor_plot)
+                    dmtx_cor_plot.figure.savefig(output["dir"] / dmtx_cor_fig)
+                except Exception:
+                    dmtx_cor_fig = None
+
+            if dmtx_cor_fig is None:
+                dmtx_cor_fig = figure_to_png_base64(dmtx_cor_plot)
                 # prevents sphinx-gallery & jupyter
                 # from scraping & inserting plots
                 plt.close("all")
 
-        design_matrices_dict[i_run] = tempita.bunch(
-            design_matrix=dmtx_png, correlation_matrix=dmtx_cor_png
-        )
+        if i_run not in design_matrices_dict:
+            design_matrices_dict[i_run] = tempita.bunch(
+                design_matrix=None, correlation_matrix=None
+            )
+
+        design_matrices_dict[i_run]["design_matrix"] = dmtx_fig
+        design_matrices_dict[i_run]["correlation_matrix"] = dmtx_cor_fig
 
     return design_matrices_dict
 
 
 def generate_constrat_matrices_figures(
-    design_matrices, contrasts=None, out_dir=None, output=None
+    design_matrices, contrasts=None, contrasts_dict=None, output=None
 ):
-    if design_matrices is None or not contrasts:
-        return None
+    """Generate plot for contrasts matrices.
 
-    contrasts_dict = {}
+    After generating the figure it can either :
+
+    - convert it to bytes for insertion into HTML report
+    - save it to disk if the appropriate "output" was passed
+
+    contrasts_dict is a dict-lile (tempita.bunc)
+    that contains the figure (as bytes or relative path).
+    A tempita bunch is used to facilitate injecting its content
+    into HTML templates.
+    If a contrasts_dict is passed its content will be updated.
+
+    Returns
+    -------
+    contrasts_dict : tempita.bunch
+
+        contrasts_dict[contrast_name]
+
+
+    """
+    if contrasts_dict is None:
+        contrasts_dict = tempita.bunch()
+
+    if design_matrices is None or not contrasts:
+        return contrasts_dict
+
     for i_run, design_matrix in enumerate(design_matrices, start=1):
         for contrast_name, contrast_data in contrasts.items():
             contrast_plot = plot_contrast_matrix(
@@ -92,19 +148,24 @@ def generate_constrat_matrices_figures(
 
             contrast_plot.figure.set_figheight(2)
 
-            if out_dir and output:
-                contrast_plot.figure.savefig(
-                    out_dir / output["contrasts_dict"][i_run][contrast_name]
-                )
-                contrasts_dict[contrast_name] = (
-                    out_dir / output["contrasts_dict"][i_run][contrast_name]
-                )
-            else:
-                url_contrast_plot_png = figure_to_png_base64(contrast_plot)
+            contrast_fig = None
+            if output:
+                try:
+                    contrast_fig = output["contrasts_dict"][i_run][
+                        contrast_name
+                    ]
+                    contrast_plot.figure.savefig(output["dir"] / contrast_fig)
+                except Exception:
+                    contrast_fig = None
+
+            if contrast_fig is None:
+                contrast_fig = figure_to_png_base64(contrast_plot)
                 # prevents sphinx-gallery & jupyter
                 # from scraping & inserting plots
                 plt.close("all")
-                contrasts_dict[contrast_name] = url_contrast_plot_png
+
+            # TODO save each contrast for each run
+            contrasts_dict[contrast_name] = contrast_fig
 
     return contrasts_dict
 
