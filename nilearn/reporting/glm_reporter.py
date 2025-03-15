@@ -330,7 +330,6 @@ def make_glm_report(
         design_matrices_dict=design_matrices_dict,
         unique_id=unique_id,
         date=date,
-        input=input,
         method_section=method_section,
     )
 

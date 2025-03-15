@@ -10,9 +10,13 @@ from nilearn.surface import SurfaceImage
 
 
 def is_volume_glm(model):
-    """Return if mpdel is run on volume data or not."""
-    return not isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or (
-        hasattr(model, "masker_") and isinstance(model.masker_, SurfaceMasker)
+    """Return if model is run on volume data or not."""
+    return not (
+        isinstance(model.mask_img, (SurfaceMasker, SurfaceImage))
+        or (
+            model.__sklearn_is_fitted__()
+            and isinstance(model.masker_, SurfaceMasker)
+        )
     )
 
 
