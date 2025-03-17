@@ -167,7 +167,7 @@ def save_glm_to_bids(
         )
     else:
         warnings.warn(
-            ("No plotting back-end detected. Output will be missing figures."),
+            ("No plotting backend detected. Output will be missing figures."),
             UserWarning,
             stacklevel=2,
         )

@@ -60,9 +60,10 @@ def generate_design_matrices_figures(
                 dmtx_fig = None
         if dmtx_fig is None:
             dmtx_fig = figure_to_png_base64(dmtx_plot)
-            # prevents sphinx-gallery & jupyter
-            # from scraping & inserting plots
-            plt.close("all")
+
+        # prevents sphinx-gallery & jupyter
+        # from scraping & inserting plots
+        plt.close("all")
 
         dmtx_cor_fig = None
         # in case of second level model with a single regressor
@@ -93,9 +94,10 @@ def generate_design_matrices_figures(
 
             if dmtx_cor_fig is None:
                 dmtx_cor_fig = figure_to_png_base64(dmtx_cor_plot)
-                # prevents sphinx-gallery & jupyter
-                # from scraping & inserting plots
-                plt.close("all")
+
+            # prevents sphinx-gallery & jupyter
+            # from scraping & inserting plots
+            plt.close("all")
 
         if i_run not in design_matrices_dict:
             design_matrices_dict[i_run] = tempita.bunch(

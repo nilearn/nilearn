@@ -54,6 +54,7 @@ if is_matplotlib_installed():
 else:
     collect_ignore.extend(
         [
+            "_utils/plotting.py",
             "plotting",
             "reporting/glm_reporter.py",
             "reporting/html_report.py",
