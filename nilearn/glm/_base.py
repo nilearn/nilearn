@@ -300,7 +300,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
             cut_coords=cut_coords,
             display_mode=display_mode,
             report_dims=report_dims,
-            verbose=self.verbose,
         )
 
     def _generate_filenames_output(
