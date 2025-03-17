@@ -276,7 +276,7 @@ def threshold_stats_img(
             return None, threshold
         else:
             raise ValueError(
-                f"'stat_img' cannot to be None for {height_control=}"
+                f"'stat_img' cannot be None for {height_control=}"
             )
 
     if mask_img is None:
