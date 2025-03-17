@@ -415,6 +415,9 @@ class FirstLevelModel(BaseGLM):
 
     """
 
+    def __str__(self):
+        return "First Level Model"
+
     def __init__(
         self,
         t_r=None,

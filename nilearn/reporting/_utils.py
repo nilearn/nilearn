@@ -7,8 +7,6 @@ from decimal import Decimal
 import numpy as np
 import pandas as pd
 
-from nilearn.glm.utils import glm_model_attributes_to_dict
-
 
 def check_report_dims(report_size):
     """Warns user & reverts to default if report dimensions are non-numerical.
@@ -180,10 +178,6 @@ def model_attributes_to_dataframe(model):
     ----------
     model : Any masker or FirstLevelModel or SecondLevelModel object.
 
-    is_volume_glm : bool, optional, default=True
-        Whether the GLM model is for a volume image or not. Only relevant for
-        FirstLevelModel and SecondLevelModel objects.
-
     Returns
     -------
     attributes_df: pandas.DataFrame
@@ -220,21 +214,19 @@ def _glm_model_attributes_to_dataframe(model):
     pandas.DataFrame
         DataFrame with the pertinent attributes of the model.
     """
-    attribute_units = {
-        "t_r": "seconds",
-        "high_pass": "Hertz",
-        "smoothing_fwhm": "mm",
-    }
-    display_attributes = glm_model_attributes_to_dict(model)
-
     model_attributes = pd.DataFrame.from_dict(
-        display_attributes,
+        model._attributes_to_dict(),
         orient="index",
     )
 
     if len(model_attributes) == 0:
         return model_attributes
 
+    attribute_units = {
+        "t_r": "seconds",
+        "high_pass": "Hertz",
+        "smoothing_fwhm": "mm",
+    }
     attribute_names_with_units = {
         attribute_name_: attribute_name_ + f" ({attribute_unit_})"
         for attribute_name_, attribute_unit_ in attribute_units.items()

@@ -494,6 +494,9 @@ class SecondLevelModel(BaseGLM):
         on memory consumption.
     """
 
+    def __str__(self):
+        return "Second Level Model"
+
     def __init__(
         self,
         mask_img=None,

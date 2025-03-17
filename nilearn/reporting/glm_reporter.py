@@ -32,7 +32,6 @@ from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.glm.first_level import FirstLevelModel
-from nilearn.glm.utils import is_volume_glm, return_model_type
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting import (
     plot_glass_brain,
@@ -194,10 +193,8 @@ def make_glm_report(
     """
     unique_id = str(uuid.uuid4()).replace("-", "")
 
-    model_type = return_model_type(model)
-
     title = f"<br>{title}" if title else ""
-    title = f"Statistical Report - {model_type}{title}"
+    title = f"Statistical Report - {model.__str__()}{title}"
 
     docstring = model.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
@@ -233,9 +230,9 @@ def make_glm_report(
         )
 
         if bg_img == "MNI152TEMPLATE":
-            bg_img = MNI152TEMPLATE if is_volume_glm(model) else None
+            bg_img = MNI152TEMPLATE if model._is_volume_glm() else None
         if (
-            not is_volume_glm(model)
+            not model._is_volume_glm()
             and bg_img
             and not isinstance(bg_img, SurfaceImage)
         ):
@@ -243,9 +240,7 @@ def make_glm_report(
                 f"'bg_img' must a SurfaceImage instance. Got {type(bg_img)=}"
             )
 
-        mask_plot = _mask_to_plot(
-            model, bg_img, cut_coords, is_volume_glm(model)
-        )
+        mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
         if input is not None:
             statistical_maps = {
@@ -302,7 +297,7 @@ def make_glm_report(
     )
     method_section = method_tpl.substitute(
         version=__version__,
-        model_type=model_type,
+        model_type=model.__str__(),
         reporting_data=tempita.bunch(**model._reporting_data),
         smoothing_fwhm=smoothing_fwhm,
         contrasts=contrasts,
@@ -362,7 +357,7 @@ def make_glm_report(
     return report
 
 
-def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
+def _mask_to_plot(model, bg_img, cut_coords):
     """Plot a mask image and creates PNG code of it.
 
     Parameters
@@ -376,7 +371,6 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
 
     cut_coords
 
-    is_volume_glm : bool
 
     Returns
     -------
@@ -385,7 +379,7 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
 
     """
     # Select mask_img to use for plotting
-    if not is_volume_glm:
+    if not model._is_volume_glm():
         model.masker_._create_figure_for_report()
         fig = plt.gcf()
         mask_plot = figure_to_png_base64(fig)

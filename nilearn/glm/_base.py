@@ -1,13 +1,71 @@
+from collections import OrderedDict
+
+import numpy as np
 from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn._utils import CacheMixin
+from nilearn.maskers import SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 
 class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
     """
+
+    def _is_volume_glm(self):
+        """Return if model is run on volume data or not."""
+        return not (
+            isinstance(self.mask_img, (SurfaceMasker, SurfaceImage))
+            or (
+                self.__sklearn_is_fitted__()
+                and isinstance(self.masker_, SurfaceMasker)
+            )
+        )
+
+    def _attributes_to_dict(self):
+        """Return dict with pertinent model attributes & information.
+
+        Returns
+        -------
+        dict
+        """
+        selected_attributes = [
+            "subject_label",
+            "drift_model",
+            "hrf_model",
+            "standardize",
+            "noise_model",
+            "t_r",
+            "signal_scaling",
+            "scaling_axis",
+            "smoothing_fwhm",
+            "slice_time_ref",
+        ]
+        if self._is_volume_glm():
+            selected_attributes.extend(["target_shape", "target_affine"])
+        if hasattr(self, "hrf_model") and self.hrf_model == "fir":
+            selected_attributes.append("fir_delays")
+        if hasattr(self, "drift_model"):
+            if self.drift_model == "cosine":
+                selected_attributes.append("high_pass")
+            elif self.drift_model == "polynomial":
+                selected_attributes.append("drift_order")
+
+        selected_attributes.sort()
+
+        model_param = OrderedDict(
+            (attr_name, getattr(self, attr_name))
+            for attr_name in selected_attributes
+            if getattr(self, attr_name, None) is not None
+        )
+
+        for k, v in model_param.items():
+            if isinstance(v, np.ndarray):
+                model_param[k] = v.tolist()
+
+        return model_param
 
     # @auto_attr store the value as an object attribute after initial call
     # better performance than @property
