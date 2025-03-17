@@ -522,9 +522,10 @@ def check_masker_refit(estimator):
         mask_img_2 = Nifti1Image(mask, _affine_eye())
     else:
         mask_img_1 = _make_surface_mask()
-        data = {}
-        for part in mask_img_1.data.parts:
-            data[part] = np.ones(mask_img_1.data.parts[part].shape)
+        data = {
+            part: np.ones(mask_img_1.data.parts[part].shape)
+            for part in mask_img_1.data.parts
+        }
         mask_img_2 = SurfaceImage(mask_img_1.mesh, data)
 
     estimator.mask_img = mask_img_1
@@ -936,12 +937,9 @@ def _generate_report(estimator):
         estimator,
         (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
     ) and hasattr(estimator, "n_elements_"):
-        report = estimator.generate_report(
-            displayed_maps=estimator.n_elements_
-        )
+        return estimator.generate_report(displayed_maps=estimator.n_elements_)
     else:
-        report = estimator.generate_report()
-    return report
+        return estimator.generate_report()
 
 
 def check_masker_generate_report(estimator):
