@@ -219,7 +219,6 @@ def threshold_stats_img(
     height_control : :obj:`str`, or None, default='fpr'
         False positive control meaning of cluster forming
         threshold: None|'fpr'|'fdr'|'bonferroni'
-        Only `None` and `'bonferroni'` supported for SurfaceImages.
 
     cluster_threshold : :obj:`float`, default=0
         cluster size threshold. In the returned thresholded map,
