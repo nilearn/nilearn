@@ -156,10 +156,10 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
 
 
 def test_threshold_stats_img_errors():
-    with pytest.raises(ValueError, match="'stat_img' cannot to be None"):
+    with pytest.raises(ValueError, match="'stat_img' cannot be None"):
         threshold_stats_img(None, None, alpha=0.05, height_control="fdr")
 
-    with pytest.raises(ValueError, match="'stat_img' cannot to be None"):
+    with pytest.raises(ValueError, match="'stat_img' cannot be None"):
         threshold_stats_img(
             None, None, alpha=0.05, height_control="bonferroni"
         )
