@@ -56,9 +56,7 @@ else:
         [
             "_utils/plotting.py",
             "plotting",
-            "reporting/glm_reporter.py",
             "reporting/html_report.py",
-            "reporting/tests/test_glm_reporter.py",
             "reporting/tests/test_html_report.py",
         ]
     )

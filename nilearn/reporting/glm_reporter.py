@@ -230,7 +230,11 @@ def make_glm_report(
 
     contrasts = coerce_to_dict(contrasts)
 
-    output = model._reporting_data.get("filenames", None)
+    # If some contrasts are passed
+    # we do not rely on filenames stored in the model.
+    output = None
+    if contrasts is None:
+        output = model._reporting_data.get("filenames", None)
 
     design_matrices = None
     mask_plot = None
@@ -259,11 +263,17 @@ def make_glm_report(
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
         if output is not None:
-            statistical_maps = {
-                contrast_name: output["dir"]
-                / output["statistical_maps"][contrast_name]["z_score"]
-                for contrast_name in contrasts
-            }
+            # we try to rely on the content of glm object only
+            try:
+                statistical_maps = {
+                    contrast_name: output["dir"]
+                    / output["statistical_maps"][contrast_name]["z_score"]
+                    for contrast_name in output["statistical_maps"]
+                }
+            except KeyError:
+                statistical_maps = make_stat_maps(
+                    model, contrasts, output_type="z_score"
+                )
         else:
             statistical_maps = make_stat_maps(
                 model, contrasts, output_type="z_score"

@@ -696,3 +696,73 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
 
     for fname in EXPECTED_FILENAMES:
         assert (tmpdir / "group" / f"{prefix}_{fname}").exists()
+
+
+def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
+    """Run generate_report with no contrasts after save_glm_to_bids.
+
+    generate_report tries to rely on some of the generated output,
+    if no contrasts are requested to generate_report
+    then it will rely on the content of the model.
+
+    report should contain the proper contrast and not filenames and not bytes
+    """
+    contrasts = {"BBB-AAA": "BBB-AAA"}
+    contrast_types = {"BBB-AAA": "t"}
+    model = save_glm_to_bids(
+        model=two_runs_model,
+        contrasts=contrasts,
+        contrast_types=contrast_types,
+        out_dir=tmp_path,
+    )
+
+    assert model._reporting_data.get("filenames", None) is not None
+
+    EXPECTED_FILENAMES = [
+        "run-1_design.svg",
+        "run-1_corrdesign.svg",
+        "run-1_contrast-bbbMinusAaa_design.svg",
+    ]
+
+    with (tmp_path / "report.html").open("r") as f:
+        content = f.read()
+    assert "BBB-AAA" in content
+    for file in EXPECTED_FILENAMES:
+        assert file in content
+
+    report = model.generate_report(verbose=0)
+
+    assert "BBB-AAA" in content
+    for file in EXPECTED_FILENAMES:
+        assert file in report.__str__()
+
+
+def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
+    """Run generate_report after save_glm_to_bids with different contrasts.
+
+    generate_report tries to rely on some of the generated output,
+    but if different contrasts are requested
+    then it will have to do some extra contrast computation.
+    """
+    contrasts = {"BBB-AAA": "BBB-AAA"}
+    contrast_types = {"BBB-AAA": "t"}
+    model = save_glm_to_bids(
+        model=two_runs_model,
+        contrasts=contrasts,
+        contrast_types=contrast_types,
+        out_dir=tmp_path,
+    )
+
+    EXPECTED_FILENAMES = [
+        "run-1_design.svg",
+        "run-1_corrdesign.svg",
+        "run-1_contrast-bbbMinusAaa_design.svg",
+    ]
+
+    # check content of a new report
+    report = model.generate_report(contrasts=["AAA-BBB"], verbose=0)
+
+    assert "AAA-BBB" in report.__str__()
+    assert "BBB-AAA" not in report.__str__()
+    for file in EXPECTED_FILENAMES:
+        assert file not in report.__str__()

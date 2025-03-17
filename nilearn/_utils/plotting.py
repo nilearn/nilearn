@@ -45,9 +45,7 @@ def generate_design_matrices_figures(
 
     for i_run, design_matrix in enumerate(design_matrices, start=1):
         dmtx_plot = plot_design_matrix(design_matrix)
-
         dmtx_plot = resize_plot_inches(dmtx_plot, height_change=0.3)
-
         dmtx_fig = None
         if output:
             # the try is mostly here in case badly formed dict
@@ -57,10 +55,9 @@ def generate_design_matrices_figures(
                 ]
                 dmtx_plot.figure.savefig(output["dir"] / dmtx_fig)
             except Exception:
-                dmtx_fig = None
+                dmtx_fig = None  # pragma: no cover
         if dmtx_fig is None:
             dmtx_fig = figure_to_png_base64(dmtx_plot)
-
         # prevents sphinx-gallery & jupyter
         # from scraping & inserting plots
         plt.close("all")
@@ -79,7 +76,6 @@ def generate_design_matrices_figures(
             dmtx_cor_plot = plot_design_matrix_correlation(
                 design_matrix, tri="diag"
             )
-
             dmtx_cor_plot = resize_plot_inches(
                 dmtx_cor_plot, height_change=0.3
             )
@@ -89,12 +85,10 @@ def generate_design_matrices_figures(
                         "correlation_matrix"
                     ]
                     dmtx_cor_plot.figure.savefig(output["dir"] / dmtx_cor_fig)
-                except Exception:
-                    dmtx_cor_fig = None
-
+                except KeyError:
+                    dmtx_cor_fig = None  # pragma: no cover
             if dmtx_cor_fig is None:
                 dmtx_cor_fig = figure_to_png_base64(dmtx_cor_plot)
-
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
             plt.close("all")
@@ -157,9 +151,8 @@ def generate_constrat_matrices_figures(
                         contrast_name
                     ]
                     contrast_plot.figure.savefig(output["dir"] / contrast_fig)
-                except Exception:
-                    contrast_fig = None
-
+                except KeyError:
+                    contrast_fig = None  # pragma: no cover
             if contrast_fig is None:
                 contrast_fig = figure_to_png_base64(contrast_plot)
                 # prevents sphinx-gallery & jupyter

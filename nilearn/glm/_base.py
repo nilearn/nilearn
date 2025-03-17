@@ -307,7 +307,30 @@ class BaseGLM(CacheMixin, BaseEstimator):
     def _generate_filenames_output(
         self, prefix, contrasts, contrast_types, out_dir
     ):
-        """Generate output filenames for a series of contrasts."""
+        """Generate output filenames for a series of contrasts.
+
+        Store the name of the output files in the model.
+
+        See nilearn.interfaces.bids.save_glm_to_bids for more details.
+
+        Parameters
+        ----------
+        prefix : :obj:`str` or None, default=None
+            String to prepend to generated filenames.
+            If a string is provided, '_' will be added to the end.
+
+        contrasts : :obj:`str` or array of shape (n_col) or :obj:`list` \
+                of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
+                Contrast definitions.
+
+        contrast_types : None or :obj:`dict` of :obj:`str`, default=None
+            An optional dictionary mapping some
+            or all of the :term:`contrast` names to
+            specific contrast types ('t' or 'F').
+
+        out_dir : :obj:`str` or :obj:`pathlib.Path`, default="."
+            Output directory for files. Default is current working directory.
+        """
         if not isinstance(prefix, str):
             prefix = ""
         if prefix and not prefix.endswith("_"):
