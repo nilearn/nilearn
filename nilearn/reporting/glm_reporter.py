@@ -313,7 +313,6 @@ def make_glm_report(
             output=output,
         )
 
-    if is_matplotlib_installed():
         logger.log(
             "Generating contrast matrices figures...", verbose=model.verbose
         )

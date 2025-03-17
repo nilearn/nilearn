@@ -237,7 +237,6 @@ def save_glm_to_bids(
             design_matrices, output=model._reporting_data["filenames"]
         )
 
-    if is_matplotlib_installed():
         logger.log("Generating contrast matrices figures...", verbose=verbose)
         generate_constrat_matrices_figures(
             design_matrices,
