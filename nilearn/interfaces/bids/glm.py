@@ -289,7 +289,11 @@ def save_glm_to_bids(
     logger.log("Generating HTML...", verbose=verbose)
     # generate_report can just rely on the name of the files
     # stored in the model instance.
-    glm_report = model.generate_report(verbose=verbose - 1, **kwargs)
+    # temporarily drop verbosity to avoid generate_report
+    # logging the same thing
+    model.verbose -= 1
+    glm_report = model.generate_report(**kwargs)
+    model.verbose += 1
     glm_report.save_as_html(out_dir / f"{prefix}report.html")
 
     return model

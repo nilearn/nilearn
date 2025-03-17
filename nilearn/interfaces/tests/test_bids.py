@@ -730,7 +730,7 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
     for file in EXPECTED_FILENAMES:
         assert file in content
 
-    report = model.generate_report(verbose=0)
+    report = model.generate_report()
 
     assert "BBB-AAA" in content
     for file in EXPECTED_FILENAMES:
@@ -760,7 +760,7 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
     ]
 
     # check content of a new report
-    report = model.generate_report(contrasts=["AAA-BBB"], verbose=0)
+    report = model.generate_report(contrasts=["AAA-BBB"])
 
     assert "AAA-BBB" in report.__str__()
     assert "BBB-AAA" not in report.__str__()

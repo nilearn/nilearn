@@ -88,7 +88,6 @@ def make_glm_report(
     cut_coords=None,
     display_mode=None,
     report_dims=(1600, 800),
-    verbose=1,
 ):
     """Return HTMLReport object \
     for a report which shows all important aspects of a fitted GLM.
@@ -279,7 +278,9 @@ def make_glm_report(
                 model, contrasts, output_type="z_score"
             )
 
-        logger.log("Generating contrast-level figures...", verbose=verbose)
+        logger.log(
+            "Generating contrast-level figures...", verbose=model.verbose
+        )
         results = _make_stat_maps_contrast_clusters(
             stat_img=statistical_maps,
             threshold=threshold,
@@ -303,7 +304,9 @@ def make_glm_report(
         contrasts_dict = output["contrasts_dict"]
 
     if is_matplotlib_installed():
-        logger.log("Generating design matrices figures...", verbose=verbose)
+        logger.log(
+            "Generating design matrices figures...", verbose=model.verbose
+        )
         design_matrices_dict = generate_design_matrices_figures(
             design_matrices,
             design_matrices_dict=design_matrices_dict,
@@ -311,7 +314,9 @@ def make_glm_report(
         )
 
     if is_matplotlib_installed():
-        logger.log("Generating contrast matrices figures...", verbose=verbose)
+        logger.log(
+            "Generating contrast matrices figures...", verbose=model.verbose
+        )
         contrasts_dict = generate_constrat_matrices_figures(
             design_matrices,
             contrasts,

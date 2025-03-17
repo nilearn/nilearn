@@ -160,7 +160,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
         cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
-        verbose=1,
     ):
         """Return a :class:`~nilearn.reporting.HTMLReport` \
         which shows all important aspects of a fitted :term:`GLM`.
@@ -301,7 +300,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             cut_coords=cut_coords,
             display_mode=display_mode,
             report_dims=report_dims,
-            verbose=verbose,
+            verbose=self.verbose,
         )
 
     def _generate_filenames_output(
