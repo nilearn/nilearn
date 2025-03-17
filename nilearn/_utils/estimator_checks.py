@@ -55,6 +55,15 @@ else:
 # for all nilearn estimators.
 # Some may be explicitly skipped : see CHECKS_TO_SKIP_IF_IMG_INPUT below
 VALID_CHECKS = [
+    "check_dict_unchangedcheck_clusterer_compute_labels_predict",
+    "check_dtype_object",
+    "check_estimators_empty_data_messages",
+    "check_methods_subset_invariance",
+    "check_methods_sample_order_invariance",
+    "check_dont_overwrite_parameters",
+    "check_estimators_overwrite_params",
+    "check_positive_only_tag_during_fit",
+    "check_readonly_memmap_input",
     "check_complex_data",
     "check_estimator_sparse_array",
     "check_estimator_sparse_data",
@@ -163,7 +172,6 @@ except ImportError:
 def check_estimator(
     estimator=None,
     valid: bool = True,
-    extra_valid_checks=None,
     expected_failed_checks=None,
 ):
     """Yield a valid or invalid scikit-learn estimators check.
@@ -178,9 +186,6 @@ def check_estimator(
     along with a
     - valid check from sklearn: those should stay valid
     - or an invalid check that is known to fail.
-
-    If new 'valid' checks are added to scikit-learn,
-    then tests marked as xfail will start passing.
 
     If estimator have some nilearn specific tags
     then some checks will skip rather than yield.
@@ -197,9 +202,6 @@ def check_estimator(
     valid : bool, default=True
         Whether to return only the valid checks or not.
 
-    extra_valid_checks : list of strings
-        Names of checks to be tested as valid for this estimator.
-
     expected_failed_checks: dict or None, default=None
         A dictionary of the form::
 
@@ -211,8 +213,6 @@ def check_estimator(
         the check fails.
     """
     valid_checks = VALID_CHECKS
-    if extra_valid_checks is not None:
-        valid_checks = VALID_CHECKS + extra_valid_checks
 
     if not isinstance(estimator, list):
         estimator = [estimator]
