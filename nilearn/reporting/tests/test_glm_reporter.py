@@ -118,7 +118,7 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
     )
 
 
-def test_report_invalid_plot_type(flm, contrasts):
+def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: ARG001
     with pytest.raises(KeyError, match="junk"):
         flm.generate_report(
             contrasts=contrasts,

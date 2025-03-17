@@ -2,6 +2,7 @@
 
 import inspect
 import json
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -9,6 +10,7 @@ import numpy as np
 from nilearn import __version__
 from nilearn._utils import logger
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
+from nilearn._utils.helpers import is_matplotlib_installed
 
 
 def _generate_model_metadata(out_file, model):
@@ -158,10 +160,17 @@ def save_glm_to_bids(
 
     """
     # Import here to avoid circular imports
-    from nilearn._utils.plotting import (
-        generate_constrat_matrices_figures,
-        generate_design_matrices_figures,
-    )
+    if is_matplotlib_installed():
+        from nilearn._utils.plotting import (
+            generate_constrat_matrices_figures,
+            generate_design_matrices_figures,
+        )
+    else:
+        warnings.warn(
+            ("No plotting back-end detected. Output will be missing figures."),
+            UserWarning,
+            stacklevel=2,
+        )
 
     # fail early if invalid paramaeters to pass to generate_report()
     allowed_extra_kwarg = [
@@ -213,17 +222,21 @@ def save_glm_to_bids(
     else:
         design_matrices = [model.design_matrix_]
 
-    logger.log("Generating design matrices figures...", verbose=verbose)
-    # TODO: Assuming that cases of multiple design matrices correspond to
-    # different runs. Not sure if this is correct. Need to check.
-    generate_design_matrices_figures(
-        design_matrices, output=model._reporting_data["filenames"]
-    )
+    if is_matplotlib_installed():
+        logger.log("Generating design matrices figures...", verbose=verbose)
+        # TODO: Assuming that cases of multiple design matrices correspond to
+        # different runs. Not sure if this is correct. Need to check.
+        generate_design_matrices_figures(
+            design_matrices, output=model._reporting_data["filenames"]
+        )
 
-    logger.log("Generating contrast matrices figures...", verbose=verbose)
-    generate_constrat_matrices_figures(
-        design_matrices, contrasts, output=model._reporting_data["filenames"]
-    )
+    if is_matplotlib_installed():
+        logger.log("Generating contrast matrices figures...", verbose=verbose)
+        generate_constrat_matrices_figures(
+            design_matrices,
+            contrasts,
+            output=model._reporting_data["filenames"],
+        )
 
     for i_run, design_matrix in enumerate(design_matrices, start=1):
         run_str = f"run-{i_run}_" if len(design_matrices) > 1 else ""

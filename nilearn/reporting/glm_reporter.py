@@ -11,36 +11,24 @@ make_glm_report(model, contrasts):
 
 import datetime
 import uuid
+import warnings
 from html import escape
 from pathlib import Path
 from string import Template
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg, fill_doc, logger
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.plotting import (
-    generate_constrat_matrices_figures,
-    generate_design_matrices_figures,
-    resize_plot_inches,
-)
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.maskers import NiftiMasker
-from nilearn.plotting import (
-    plot_glass_brain,
-    plot_roi,
-    plot_stat_map,
-    plot_surf_stat_map,
-)
-from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
 from nilearn.reporting._utils import (
     check_report_dims,
     clustering_params_to_dataframe,
@@ -59,6 +47,27 @@ from nilearn.reporting.utils import (
     figure_to_png_base64,
 )
 from nilearn.surface import SurfaceImage
+
+MNI152TEMPLATE = None
+if is_matplotlib_installed():
+    from matplotlib import pyplot as plt
+
+    from nilearn._utils.plotting import (
+        generate_constrat_matrices_figures,
+        generate_design_matrices_figures,
+        resize_plot_inches,
+    )
+    from nilearn.plotting import (
+        plot_glass_brain,
+        plot_roi,
+        plot_stat_map,
+        plot_surf_stat_map,
+    )
+    from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
+    from nilearn.plotting.img_plotting import (  # type: ignore[assignment]
+        MNI152TEMPLATE,
+    )
+
 
 HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
 
@@ -189,6 +198,13 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    if not is_matplotlib_installed():
+        warnings.warn(
+            ("No plotting back-end detected. Output will be missing figures."),
+            UserWarning,
+            stacklevel=2,
+        )
+
     unique_id = str(uuid.uuid4()).replace("-", "")
 
     title = f"<br>{title}" if title else ""
@@ -276,20 +292,22 @@ def make_glm_report(
         # contrasts_dict[i_run] = tempita.bunch(**input["contrasts_dict"][i_run]) # noqa: E501
         contrasts_dict = output["contrasts_dict"]
 
-    logger.log("Generating design matrices figures...", verbose=verbose)
-    design_matrices_dict = generate_design_matrices_figures(
-        design_matrices,
-        design_matrices_dict=design_matrices_dict,
-        output=output,
-    )
+    if is_matplotlib_installed():
+        logger.log("Generating design matrices figures...", verbose=verbose)
+        design_matrices_dict = generate_design_matrices_figures(
+            design_matrices,
+            design_matrices_dict=design_matrices_dict,
+            output=output,
+        )
 
-    logger.log("Generating contrast matrices figures...", verbose=verbose)
-    contrasts_dict = generate_constrat_matrices_figures(
-        design_matrices,
-        contrasts,
-        contrasts_dict=contrasts_dict,
-        output=output,
-    )
+    if is_matplotlib_installed():
+        logger.log("Generating contrast matrices figures...", verbose=verbose)
+        contrasts_dict = generate_constrat_matrices_figures(
+            design_matrices,
+            contrasts,
+            contrasts_dict=contrasts_dict,
+            output=output,
+        )
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
@@ -381,6 +399,8 @@ def _mask_to_plot(model, bg_img, cut_coords):
         PNG Image for the mask plot.
 
     """
+    if not is_matplotlib_installed():
+        return None
     # Select mask_img to use for plotting
     if not model._is_volume_glm():
         model.masker_._create_figure_for_report()
@@ -512,22 +532,24 @@ def _make_stat_maps_contrast_clusters(
     for contrast_name, stat_map_img in stat_img.items():
         # TODO refactor once threshold_stats_img can accept SurfaceImage
         if isinstance(stat_map_img, SurfaceImage):
-            surf_mesh = bg_img.mesh if bg_img else None
-            plot_surf_stat_map(
-                stat_map=stat_map_img,
-                hemi="left",
-                threshold=threshold,
-                bg_map=bg_img,
-                surf_mesh=surf_mesh,
-            )
-            fig = plt.gcf()
-            stat_map_png = figure_to_png_base64(fig)
-
-            # prevents sphinx-gallery & jupyter from scraping & inserting plots
-            plt.close("all")
-
             table_details_html = None
             cluster_table_html = None
+            stat_map_png = None
+            if is_matplotlib_installed():
+                surf_mesh = bg_img.mesh if bg_img else None
+                plot_surf_stat_map(
+                    stat_map=stat_map_img,
+                    hemi="left",
+                    threshold=threshold,
+                    bg_map=bg_img,
+                    surf_mesh=surf_mesh,
+                )
+                fig = plt.gcf()
+                stat_map_png = figure_to_png_base64(fig)
+
+                # prevents sphinx-gallery & jupyter
+                # from scraping & inserting plots
+                plt.close("all")
 
         else:
             # Only use threshold_stats_img to adjust the threshold
@@ -643,6 +665,9 @@ def _stat_map_to_png(
         PNG Image Data representing a statistical map.
 
     """
+    if not is_matplotlib_installed():
+        return None
+
     data = safe_get_data(stat_img, ensure_finite=True)
     stat_map_min = np.nanmin(data)
     stat_map_max = np.nanmax(data)
