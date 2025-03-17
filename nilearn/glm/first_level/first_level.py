@@ -1003,11 +1003,13 @@ class FirstLevelModel(BaseGLM):
 
         return outputs if output_type == "all" else output
 
-    def _get_voxelwise_model_attribute(self, attribute, result_as_time_series):
+    def _get_element_wise_model_attribute(
+        self, attribute, result_as_time_series
+    ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
         noise model or only 0.0 under 'ols' noise_model and values are the \
-        RegressionResults instances) into input nifti space.
+        RegressionResults instances) into an image.
 
         Parameters
         ----------
@@ -1023,7 +1025,7 @@ class FirstLevelModel(BaseGLM):
         Returns
         -------
         output : :obj:`list`
-            A list of Nifti1Image(s).
+            A list of Nifti1Image(s) or SurfaceImage(s).
 
         """
         # check if valid attribute is being accessed.

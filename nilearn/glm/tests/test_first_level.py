@@ -1316,7 +1316,7 @@ def test_first_level_residuals_errors(shape_4d_default):
 
     # For coverage
     with pytest.raises(ValueError, match="attribute must be one of"):
-        model._get_voxelwise_model_attribute("foo", True)
+        model._get_element_wise_model_attribute("foo", True)
 
 
 @pytest.mark.parametrize(
@@ -1329,7 +1329,7 @@ def test_first_level_residuals_errors(shape_4d_default):
 def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(
     shapes,
 ):
-    """Check outputs _get_voxelwise_model_attribute same shape as input."""
+    """Check outputs _get_element_wise_model_attribute same shape as input."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes
     )
@@ -1342,9 +1342,9 @@ def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    assert len(model._get_voxelwise_model_attribute("residuals", True)) == len(
-        shapes
-    )
+    assert len(
+        model._get_element_wise_model_attribute("residuals", True)
+    ) == len(shapes)
 
 
 def test_first_level_predictions_r_square(shape_4d_default):
@@ -2382,10 +2382,12 @@ def test_flm_compute_contrast_with_surface_data(surface_glm_data):
     assert_polymesh_equal(img.mesh, result.mesh)
 
 
-def test_flm_get_voxelwise_model_attribute_with_surface_data(surface_glm_data):
+def test_flm_get_element_wise_model_attribute_with_surface_data(
+    surface_glm_data,
+):
     """Smoke test 'voxel wise' attribute with surface data.
 
-    TODO: rename the private function _get_voxelwise_model_attribute
+    TODO: rename the private function _get_element_wise_model_attribute
     to work for both voxel and vertex
     """
     img, _ = surface_glm_data(5)
