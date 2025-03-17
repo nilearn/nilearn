@@ -1118,9 +1118,6 @@ def check_mesh_is_fsaverage(mesh):
     """Check that :term:`mesh` data is either a :obj:`str`, or a :obj:`dict`
     with sufficient entries. Basically ensures that the mesh data is
     Freesurfer-like fsaverage data.
-
-    Used by plotting.surface.plot_img_on_surf and
-    plotting.surface.html_surface._full_brain_info.
     """
     if isinstance(mesh, str):
         # avoid circular imports
