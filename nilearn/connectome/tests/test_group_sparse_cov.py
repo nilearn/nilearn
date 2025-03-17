@@ -41,7 +41,6 @@ def test_check_estimator_group_sparse_covariance(estimator, check, name):  # noq
     check_estimator(
         estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
         valid=False,
-        expected_failed_checks=expected_failed_checks,
     ),
 )
 def test_check_estimator_invalid_group_sparse_covariance(

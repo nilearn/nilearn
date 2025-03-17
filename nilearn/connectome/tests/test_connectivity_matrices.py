@@ -90,7 +90,6 @@ def test_check_estimator_group_sparse_covariance(
     check_estimator(
         estimator=[ConnectivityMeasure(cov_estimator=EmpiricalCovariance())],
         valid=False,
-        expected_failed_checks=expected_failed_checks,
     ),
 )
 def test_check_estimator_invalid_group_sparse_covariance(

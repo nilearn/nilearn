@@ -234,6 +234,8 @@ def check_estimator(
             for e, check in sklearn_check_generator(
                 estimator=est,
                 expected_failed_checks=expected_failed_checks,
+                # TODO use  mark="xfail"
+                # once using only expected_failed_checks and no valid_checks
                 mark="skip",
             ):
                 # DANGER
