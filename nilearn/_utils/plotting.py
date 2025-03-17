@@ -164,7 +164,7 @@ def generate_constrat_matrices_figures(
                 contrast_fig = figure_to_png_base64(contrast_plot)
                 # prevents sphinx-gallery & jupyter
                 # from scraping & inserting plots
-                plt.close("all")
+            plt.close("all")
 
             # TODO save each contrast for each run
             contrasts_dict[contrast_name] = contrast_fig
