@@ -106,7 +106,6 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_fit_check_is_fitted": (
         "replaced by check_masker_fitted or check_glm_is_fitted"
     ),
-    "check_fit_check_is_fitted": "replaced by check_masker_fitted",
     "check_transformer_data_not_an_array": (
         "replaced by check_masker_transformer"
     ),
