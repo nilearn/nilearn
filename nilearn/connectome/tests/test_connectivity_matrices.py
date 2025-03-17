@@ -7,11 +7,13 @@ import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pandas import DataFrame
 from scipy import linalg
+from sklearn import __version__ as sklearn_version
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
 from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
 
+from nilearn._utils import compare_version
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.extmath import is_spd
 from nilearn.connectome.connectivity_matrices import (
@@ -62,6 +64,11 @@ expected_failed_checks = {
     "check_transformer_general": "TODO",
     "check_transformer_preserve_dtypes": "TODO",
 }
+
+if compare_version(sklearn_version, "<", "1.5.0"):
+    expected_failed_checks |= {
+        "check_estimator_sparse_data": "TODO",
+    }
 
 
 @pytest.mark.parametrize(

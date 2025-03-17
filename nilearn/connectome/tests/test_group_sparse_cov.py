@@ -1,6 +1,8 @@
 import numpy as np
 import pytest
+from sklearn import __version__ as sklearn_version
 
+from nilearn._utils import compare_version
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
@@ -19,6 +21,11 @@ expected_failed_checks = {
     "check_fit2d_1sample": "TODO",
     "check_fit2d_predict1d": "TODO",
 }
+
+if compare_version(sklearn_version, "<", "1.5.0"):
+    expected_failed_checks |= {
+        "check_estimator_sparse_data": "TODO",
+    }
 
 
 @pytest.mark.parametrize(
