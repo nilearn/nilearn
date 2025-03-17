@@ -9,11 +9,16 @@ from nilearn.connectome.group_sparse_cov import (
     group_sparse_scores,
 )
 
-extra_valid_checks = [
-    "check_complex_data",
-    "check_estimator_sparse_tag",
-    "check_fit1d",
-]
+expected_failed_checks = {
+    "check_complex_data": "TODO",
+    "check_estimator_sparse_array": "TODO",
+    "check_estimator_sparse_matrix": "TODO",
+    "check_f_contiguous_array_estimator": "TODO",
+    "check_fit_check_is_fitted": "handled by nilearn checks",
+    "check_fit2d_1feature": "TODO",
+    "check_fit2d_1sample": "TODO",
+    "check_fit2d_predict1d": "TODO",
+}
 
 
 @pytest.mark.parametrize(
@@ -21,10 +26,7 @@ extra_valid_checks = [
     (
         check_estimator(
             estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
-            extra_valid_checks=extra_valid_checks,
-            expected_failed_checks={
-                "check_fit_check_is_fitted": "handled by nilearn checks"
-            },
+            expected_failed_checks=expected_failed_checks,
         )
     ),
 )
@@ -39,10 +41,7 @@ def test_check_estimator_group_sparse_covariance(estimator, check, name):  # noq
     check_estimator(
         estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
-        expected_failed_checks={
-            "check_fit_check_is_fitted": "handled by nilearn checks"
-        },
+        expected_failed_checks=expected_failed_checks,
     ),
 )
 def test_check_estimator_invalid_group_sparse_covariance(

@@ -51,9 +51,20 @@ else:
         check_estimator as sklearn_check_estimator,
     )
 
-# List of sklearn estimators checks that are valid
+# List of sklearn estimators checks that are 'valid'
 # for all nilearn estimators.
+# Some may be explicitly skipped : see CHECKS_TO_SKIP_IF_IMG_INPUT below
 VALID_CHECKS = [
+    "check_complex_data",
+    "check_estimator_sparse_array",
+    "check_estimator_sparse_data",
+    "check_estimator_sparse_matrix",
+    "check_estimator_sparse_tag",
+    "check_f_contiguous_array_estimator",
+    "check_fit1d",
+    "check_fit2d_1feature",
+    "check_fit2d_1sample",
+    "check_fit2d_predict1d",
     "check_decision_proba_consistency",
     "check_do_not_raise_errors_in_init_or_set_params",
     "check_estimator_cloneable",

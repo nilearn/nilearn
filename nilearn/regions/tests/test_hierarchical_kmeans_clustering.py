@@ -17,16 +17,9 @@ from nilearn.surface.tests.test_surface import flat_mesh
 
 extra_valid_checks = [
     "check_clusterer_compute_labels_predict",
-    "check_complex_data",
     "check_dont_overwrite_parameters",
     "check_dtype_object",
-    "check_estimator_sparse_array",
-    "check_estimator_sparse_matrix",
     "check_estimators_empty_data_messages",
-    "check_f_contiguous_array_estimator",
-    "check_fit2d_1sample",
-    "check_fit2d_1feature",
-    "check_fit1d",
     "check_methods_subset_invariance",
     "check_methods_sample_order_invariance",
 ]
@@ -35,7 +28,6 @@ extra_valid_checks = [
 if compare_version(sklearn_version, "<", "1.5.0"):
     extra_valid_checks.extend(
         [
-            "check_estimator_sparse_data",
             "check_dict_unchanged",
         ]
     )

@@ -49,10 +49,19 @@ def test_check_estimator_cov_estimator(estimator):
     sklearn_check_estimator(estimator)
 
 
-extra_valid_checks = [
-    "check_fit1d",
-    "check_estimator_sparse_tag",
-]
+expected_failed_checks = {
+    "check_complex_data": "TODO",
+    "check_estimator_sparse_array": "TODO",
+    "check_estimator_sparse_matrix": "TODO",
+    "check_f_contiguous_array_estimator": "TODO",
+    "check_fit_check_is_fitted": "handled by nilearn checks",
+    "check_fit2d_1feature": "TODO",
+    "check_fit2d_1sample": "TODO",
+    "check_fit2d_predict1d": "TODO",
+    "check_transformer_data_not_an_array": "TODO",
+    "check_transformer_general": "TODO",
+    "check_transformer_preserve_dtypes": "TODO",
+}
 
 
 @pytest.mark.parametrize(
@@ -62,13 +71,7 @@ extra_valid_checks = [
             estimator=[
                 ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
             ],
-            extra_valid_checks=extra_valid_checks,
-            expected_failed_checks={
-                "check_fit_check_is_fitted": "handled by nilearn checks",
-                "check_transformer_data_not_an_array": "TODO",
-                "check_transformer_general": "TODO",
-                "check_transformer_preserve_dtypes": "TODO",
-            },
+            expected_failed_checks=expected_failed_checks,
         )
     ),
 )
@@ -87,13 +90,7 @@ def test_check_estimator_group_sparse_covariance(
     check_estimator(
         estimator=[ConnectivityMeasure(cov_estimator=EmpiricalCovariance())],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
-        expected_failed_checks={
-            "check_fit_check_is_fitted": "handled by nilearn checks",
-            "check_transformer_data_not_an_array": "TODO",
-            "check_transformer_general": "TODO",
-            "check_transformer_preserve_dtypes": "TODO",
-        },
+        expected_failed_checks=expected_failed_checks,
     ),
 )
 def test_check_estimator_invalid_group_sparse_covariance(
