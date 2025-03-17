@@ -1326,7 +1326,7 @@ def test_first_level_residuals_errors(shape_4d_default):
         [(10, 10, 10, 25), (10, 10, 10, 100)],
     ],
 )
-def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(
+def test_get_element_wise_attributes_should_return_as_many_as_design_matrices(
     shapes,
 ):
     """Check outputs _get_element_wise_model_attribute same shape as input."""
