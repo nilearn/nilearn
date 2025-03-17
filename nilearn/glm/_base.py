@@ -1,5 +1,6 @@
 import warnings
 from collections import OrderedDict
+from pathlib import Path
 
 import numpy as np
 from nibabel.onetime import auto_attr
@@ -159,7 +160,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
         cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
-        input=None,
         verbose=1,
     ):
         """Return a :class:`~nilearn.reporting.HTMLReport` \
@@ -301,13 +301,13 @@ class BaseGLM(CacheMixin, BaseEstimator):
             cut_coords=cut_coords,
             display_mode=display_mode,
             report_dims=report_dims,
-            input=input,
             verbose=verbose,
         )
 
     def _generate_filenames_output(
         self, prefix, contrasts, contrast_types, out_dir
     ):
+        """Generate output filenames for a series of contrasts."""
         if not isinstance(prefix, str):
             prefix = ""
         if prefix and not prefix.endswith("_"):
@@ -335,7 +335,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             )
             design_matrices = self.design_matrices_
 
-        out_dir = out_dir / sub_directory
+        out_dir = Path(out_dir) / sub_directory
 
         design_matrices_dict = tempita.bunch()
         contrasts_dict = tempita.bunch()
@@ -391,7 +391,10 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 "p_value": (f"{prefix}{contrast_entity}stat-p{suffix}"),
             }
 
-        return {
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = {}
+
+        self._reporting_data["filenames"] = {
             "dir": out_dir,
             "design_matrices_dict": design_matrices_dict,
             "contrasts_dict": contrasts_dict,

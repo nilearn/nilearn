@@ -8,7 +8,7 @@ import numpy as np
 
 from nilearn import __version__
 from nilearn._utils import logger
-from nilearn._utils.glm import coerce_to_dict
+from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 
 
 def _generate_model_metadata(out_file, model):
@@ -162,7 +162,6 @@ def save_glm_to_bids(
         generate_constrat_matrices_figures,
         generate_design_matrices_figures,
     )
-    from nilearn.reporting.glm_reporter import make_stat_maps
 
     # fail early if invalid paramaeters to pass to generate_report()
     allowed_extra_kwarg = [
@@ -200,10 +199,12 @@ def save_glm_to_bids(
     dset_desc_file = out_dir / "dataset_description.json"
     _generate_dataset_description(dset_desc_file, model.__str__())
 
-    output = model._generate_filenames_output(
+    model._generate_filenames_output(
         prefix, contrasts, contrast_types, out_dir
     )
-    output["dir"].mkdir(exist_ok=True, parents=True)
+
+    out_dir = model._reporting_data["filenames"]["dir"]
+    out_dir.mkdir(exist_ok=True, parents=True)
 
     verbose = model.verbose
 
@@ -215,11 +216,13 @@ def save_glm_to_bids(
     logger.log("Generating design matrices figures...", verbose=verbose)
     # TODO: Assuming that cases of multiple design matrices correspond to
     # different runs. Not sure if this is correct. Need to check.
-    generate_design_matrices_figures(design_matrices, output=output)
+    generate_design_matrices_figures(
+        design_matrices, output=model._reporting_data["filenames"]
+    )
 
     logger.log("Generating contrast matrices figures...", verbose=verbose)
     generate_constrat_matrices_figures(
-        design_matrices, contrasts, output=output
+        design_matrices, contrasts, output=model._reporting_data["filenames"]
     )
 
     for i_run, design_matrix in enumerate(design_matrices, start=1):
@@ -227,13 +230,13 @@ def save_glm_to_bids(
 
         # Save design matrix and associated figure
         design_matrix.to_csv(
-            output["dir"] / f"{prefix}{run_str}design.tsv",
+            out_dir / f"{prefix}{run_str}design.tsv",
             sep="\t",
             index=False,
         )
 
         if model.__str__() == "First Level Model":
-            with (output["dir"] / f"{prefix}{run_str}design.json").open(
+            with (out_dir / f"{prefix}{run_str}design.json").open(
                 "w"
             ) as f_obj:
                 json.dump(
@@ -245,7 +248,7 @@ def save_glm_to_bids(
 
     # Model metadata
     # TODO: Determine optimal mapping of model metadata to BIDS fields.
-    metadata_file = output["dir"] / f"{prefix}statmap.json"
+    metadata_file = out_dir / f"{prefix}statmap.json"
     _generate_model_metadata(metadata_file, model)
 
     logger.log(
@@ -255,17 +258,19 @@ def save_glm_to_bids(
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
             img = statistical_maps[contrast_name][output_type]
-            filename = output["statistical_maps"][contrast_name][output_type]
-            img.to_filename(output["dir"] / filename)
+            filename = model._reporting_data["filenames"]["statistical_maps"][
+                contrast_name
+            ][output_type]
+            img.to_filename(out_dir / filename)
 
     logger.log("Saving contrast-level statistical maps...", verbose=verbose)
-    _write_model_level_statistical_maps(model, prefix, output["dir"])
+    _write_model_level_statistical_maps(model, prefix, out_dir)
 
     logger.log("Generating HTML...", verbose=verbose)
     glm_report = model.generate_report(
-        contrasts=contrasts, input=output, verbose=verbose - 1, **kwargs
+        contrasts=contrasts, verbose=verbose - 1, **kwargs
     )
-    glm_report.save_as_html(output["dir"] / f"{prefix}report.html")
+    glm_report.save_as_html(out_dir / f"{prefix}report.html")
 
 
 def _write_model_level_statistical_maps(model, prefix, out_dir):

@@ -131,46 +131,6 @@ def dataframe_to_html(df, precision, **kwargs):
     return html_table.replace('class="dataframe"', 'class="pure-table"')
 
 
-def make_stat_maps(model, contrasts, output_type="z_score"):
-    """Given a model and contrasts, return the corresponding z-maps.
-
-    Parameters
-    ----------
-    model : FirstLevelModel or SecondLevelModel object
-        Must have a fitted design matrix(ces).
-
-    contrasts : Dict[str, ndarray or str]
-        Dict of contrasts for a first or second level model.
-        Corresponds to the contrast_def for the FirstLevelModel
-        (nilearn.glm.first_level.FirstLevelModel.compute_contrast)
-        & second_level_contrast for a SecondLevelModel
-        (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
-
-    output_type : :obj:`str`, default='z_score'
-        The type of statistical map to retain from the contrast.
-
-        .. versionadded:: 0.9.2
-
-    Returns
-    -------
-    statistical_maps : Dict[str, niimg] or Dict[str, Dict[str, niimg]]
-        Dict of statistical z-maps keyed to contrast names/titles.
-
-    See Also
-    --------
-    nilearn.glm.first_level.FirstLevelModel.compute_contrast
-    nilearn.glm.second_level.SecondLevelModel.compute_contrast
-
-    """
-    return {
-        contrast_name: model.compute_contrast(
-            contrast_data,
-            output_type=output_type,
-        )
-        for contrast_name, contrast_data in contrasts.items()
-    }
-
-
 def model_attributes_to_dataframe(model):
     """Return dataframe with pertinent model attributes & information.
 

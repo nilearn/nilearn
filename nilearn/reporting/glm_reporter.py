@@ -21,7 +21,7 @@ from matplotlib import pyplot as plt
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg, fill_doc, logger
-from nilearn._utils.glm import coerce_to_dict
+from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.plotting import (
     generate_constrat_matrices_figures,
@@ -45,7 +45,6 @@ from nilearn.reporting._utils import (
     check_report_dims,
     clustering_params_to_dataframe,
     dataframe_to_html,
-    make_stat_maps,
     model_attributes_to_dataframe,
 )
 from nilearn.reporting.get_clusters_table import get_clusters_table
@@ -80,7 +79,6 @@ def make_glm_report(
     cut_coords=None,
     display_mode=None,
     report_dims=(1600, 800),
-    input=None,
     verbose=1,
 ):
     """Return HTMLReport object \
@@ -216,6 +214,8 @@ def make_glm_report(
 
     contrasts = coerce_to_dict(contrasts)
 
+    output = model._reporting_data.get("filenames", None)
+
     design_matrices = None
     mask_plot = None
     results = None
@@ -242,10 +242,10 @@ def make_glm_report(
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
-        if input is not None:
+        if output is not None:
             statistical_maps = {
-                contrast_name: input["dir"]
-                / input["statistical_maps"][contrast_name]["z_score"]
+                contrast_name: output["dir"]
+                / output["statistical_maps"][contrast_name]["z_score"]
                 for contrast_name in contrasts
             }
         else:
@@ -270,22 +270,25 @@ def make_glm_report(
 
     design_matrices_dict = tempita.bunch()
     contrasts_dict = tempita.bunch()
-    if input is not None:
-        design_matrices_dict = input["design_matrices_dict"]
+    if output is not None:
+        design_matrices_dict = output["design_matrices_dict"]
         # TODO: only contrast of first run are displayed
         # contrasts_dict[i_run] = tempita.bunch(**input["contrasts_dict"][i_run]) # noqa: E501
-        contrasts_dict = input["contrasts_dict"]
+        contrasts_dict = output["contrasts_dict"]
 
     logger.log("Generating design matrices figures...", verbose=verbose)
     design_matrices_dict = generate_design_matrices_figures(
         design_matrices,
         design_matrices_dict=design_matrices_dict,
-        output=input,
+        output=output,
     )
 
     logger.log("Generating contrast matrices figures...", verbose=verbose)
     contrasts_dict = generate_constrat_matrices_figures(
-        design_matrices, contrasts, contrasts_dict=contrasts_dict, output=input
+        design_matrices,
+        contrasts,
+        contrasts_dict=contrasts_dict,
+        output=output,
     )
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
