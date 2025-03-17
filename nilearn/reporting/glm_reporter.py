@@ -195,12 +195,6 @@ def make_glm_report(
     ):
         is_volume_glm = False
 
-    if not is_volume_glm and height_control not in [
-        "bonferroni",
-        None,
-    ]:
-        raise ValueError(f"{height_control=} not supported for SurfaceImages.")
-
     unique_id = str(uuid.uuid4()).replace("-", "")
 
     model_type = return_model_type(model)

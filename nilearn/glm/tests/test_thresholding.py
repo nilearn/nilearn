@@ -313,12 +313,6 @@ def test_all_resolution_inference_height_control(
     assert_equal(np.sum(vals < 0), 0)
 
 
-@pytest.mark.parametrize("height_control", [None, "bonferroni"])
+@pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_threshold_stats_img_surface(surf_img_1d, height_control):
     threshold_stats_img(surf_img_1d, height_control=height_control)
-
-
-@pytest.mark.parametrize("height_control", ["fdr", "fpr"])
-def test_threshold_stats_img_surface_errors(surf_img_1d, height_control):
-    with pytest.raises(ValueError, match="not supported for SurfaceImages."):
-        threshold_stats_img(surf_img_1d, height_control=height_control)

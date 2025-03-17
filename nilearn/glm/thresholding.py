@@ -262,11 +262,6 @@ def threshold_stats_img(
         raise ValueError(
             f"'height_control' should be one of {height_control_methods}"
         )
-    if isinstance(stat_img, SurfaceImage) and height_control not in [
-        "bonferroni",
-        None,
-    ]:
-        raise ValueError(f"{height_control=} not supported for SurfaceImages.")
 
     # if two-sided, correct alpha by a factor of 2
     alpha_ = alpha / 2 if two_sided else alpha
