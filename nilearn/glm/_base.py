@@ -1,3 +1,4 @@
+import warnings
 from collections import OrderedDict
 
 import numpy as np
@@ -5,6 +6,8 @@ from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator, TransformerMixin
 
 from nilearn._utils import CacheMixin
+from nilearn._utils.glm import coerce_to_dict
+from nilearn.externals import tempita
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 
@@ -274,3 +277,143 @@ class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
             input=input,
             verbose=verbose,
         )
+
+    def _generate_filenames_output(
+        self, prefix, contrasts, contrast_types, out_dir
+    ):
+        if not isinstance(prefix, str):
+            prefix = ""
+        if prefix and not prefix.endswith("_"):
+            prefix += "_"
+
+        contrasts = coerce_to_dict(contrasts)
+        for k, v in contrasts.items():
+            if not isinstance(k, str):
+                raise ValueError(
+                    f"contrast names must be strings, not {type(k)}"
+                )
+
+            if not isinstance(v, (str, np.ndarray, list)):
+                raise ValueError(
+                    "contrast definitions must be strings or array_likes, "
+                    f"not {type(v)}"
+                )
+
+        if self.__str__() == "Second Level Model":
+            sub_directory = "group"
+            design_matrices = [self.design_matrix_]
+        else:
+            sub_directory = (
+                prefix.split("_")[0] if prefix.startswith("sub-") else ""
+            )
+            design_matrices = self.design_matrices_
+
+        out_dir = out_dir / sub_directory
+
+        design_matrices_dict = tempita.bunch()
+        contrasts_dict = tempita.bunch()
+        for i_run, _ in enumerate(design_matrices, start=1):
+            run_str = f"run-{i_run}_" if len(design_matrices) > 1 else ""
+
+            design_matrices_dict[i_run] = tempita.bunch(
+                design_matrix=f"{prefix}{run_str}design.svg",
+                correlation_matrix=f"{prefix}{run_str}corrdesign.svg",
+            )
+
+            tmp = {
+                contrast_name: (
+                    f"{prefix}{run_str}"
+                    f"contrast-{_clean_contrast_name(contrast_name)}"
+                    "_design.svg"
+                )
+                for contrast_name in contrasts
+            }
+            contrasts_dict[i_run] = tempita.bunch(**tmp)
+
+        if not isinstance(contrast_types, dict):
+            contrast_types = {}
+
+        statistical_maps = {}
+        for contrast_name in contrasts:
+            # Extract stat_type
+            contrast_matrix = contrasts[contrast_name]
+
+            # Strings and 1D arrays are assumed to be t-contrasts
+            if isinstance(contrast_matrix, str) or (contrast_matrix.ndim == 1):
+                stat_type = "t"
+            else:
+                stat_type = "F"
+
+            # Override automatic detection with explicit type if provided
+            stat_type = contrast_types.get(contrast_name, stat_type)
+
+            # Convert the contrast name to camelCase
+            contrast_entity = (
+                f"contrast-{_clean_contrast_name(contrast_name)}_"
+            )
+            suffix = "_statmap.nii.gz"
+            statistical_maps[contrast_name] = {
+                "effect_size": (
+                    f"{prefix}{contrast_entity}stat-effect{suffix}"
+                ),
+                "stat": (f"{prefix}{contrast_entity}stat-{stat_type}{suffix}"),
+                "effect_variance": (
+                    f"{prefix}{contrast_entity}stat-variance{suffix}"
+                ),
+                "z_score": (f"{prefix}{contrast_entity}stat-z{suffix}"),
+                "p_value": (f"{prefix}{contrast_entity}stat-p{suffix}"),
+            }
+
+        return {
+            "dir": out_dir,
+            "design_matrices_dict": design_matrices_dict,
+            "contrasts_dict": contrasts_dict,
+            "statistical_maps": statistical_maps,
+        }
+
+
+def _clean_contrast_name(contrast_name):
+    """Remove prohibited characters from name and convert to camelCase.
+
+    .. versionadded:: 0.9.2
+
+    BIDS filenames, in which the contrast name will appear as a
+    contrast-<name> key/value pair, must be alphanumeric strings.
+
+    Parameters
+    ----------
+    contrast_name : :obj:`str`
+        Contrast name to clean.
+
+    Returns
+    -------
+    new_name : :obj:`str`
+        Contrast name converted to alphanumeric-only camelCase.
+    """
+    new_name = contrast_name[:]
+
+    # Some characters translate to words
+    new_name = new_name.replace("-", " Minus ")
+    new_name = new_name.replace("+", " Plus ")
+    new_name = new_name.replace(">", " Gt ")
+    new_name = new_name.replace("<", " Lt ")
+
+    # Others translate to spaces
+    new_name = new_name.replace("_", " ")
+
+    # Convert to camelCase
+    new_name = new_name.split(" ")
+    new_name[0] = new_name[0].lower()
+    new_name[1:] = [c.title() for c in new_name[1:]]
+    new_name = " ".join(new_name)
+
+    # Remove non-alphanumeric characters
+    new_name = "".join(ch for ch in new_name if ch.isalnum())
+
+    # Let users know if the name was changed
+    if new_name != contrast_name:
+        warnings.warn(
+            f'Contrast name "{contrast_name}" changed to "{new_name}"',
+            stacklevel=4,
+        )
+    return new_name
