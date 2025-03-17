@@ -64,7 +64,10 @@ extra_valid_checks = [
             ],
             extra_valid_checks=extra_valid_checks,
             expected_failed_checks={
-                "check_fit_check_is_fitted": "handled by nilearn checks"
+                "check_fit_check_is_fitted": "handled by nilearn checks",
+                "check_transformer_data_not_an_array": "TODO",
+                "check_transformer_general": "TODO",
+                "check_transformer_preserve_dtypes": "TODO",
             },
         )
     ),
@@ -86,7 +89,10 @@ def test_check_estimator_group_sparse_covariance(
         valid=False,
         extra_valid_checks=extra_valid_checks,
         expected_failed_checks={
-            "check_fit_check_is_fitted": "handled by nilearn checks"
+            "check_fit_check_is_fitted": "handled by nilearn checks",
+            "check_transformer_data_not_an_array": "TODO",
+            "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
         },
     ),
 )

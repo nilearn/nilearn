@@ -1,11 +1,11 @@
 from nibabel.onetime import auto_attr
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator
 
 from nilearn._utils import CacheMixin
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
-class BaseGLM(TransformerMixin, CacheMixin, BaseEstimator):
+class BaseGLM(CacheMixin, BaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
     """
