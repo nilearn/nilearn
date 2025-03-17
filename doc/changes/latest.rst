@@ -62,6 +62,8 @@ Enhancements
 
 - :bdg-dark:`Code` Add reports for SurfaceMapsMasker (:gh:`4968` by `Himanshu Aggarwal`_).
 
+- :bdg-dark:`Code` Move ``nilearn.plotting.surf_plotting`` and ``nilearn.plotting.html_surface`` under ``nilearn.plotting.surface`` (:gh:`5234` by `Hande Gözükan`_).
+
 Changes
 -------
 
