@@ -49,7 +49,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             A list of Nifti1Image(s).
 
         """
-        return self._get_voxelwise_model_attribute(
+        return self._get_element_wise_model_attribute(
             "residuals", result_as_time_series=True
         )
 
@@ -64,7 +64,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             A list of Nifti1Image(s).
 
         """
-        return self._get_voxelwise_model_attribute(
+        return self._get_element_wise_model_attribute(
             "predicted", result_as_time_series=True
         )
 
@@ -79,7 +79,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             A list of Nifti1Image(s).
 
         """
-        return self._get_voxelwise_model_attribute(
+        return self._get_element_wise_model_attribute(
             "r_square", result_as_time_series=False
         )
 

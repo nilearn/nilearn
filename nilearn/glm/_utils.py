@@ -4,6 +4,7 @@ from warnings import warn
 
 import numpy as np
 import scipy.linalg as spl
+from scipy.linalg.lapack import get_lapack_funcs
 from scipy.stats import norm
 
 
@@ -73,7 +74,6 @@ def multiple_fast_inverse(a):
     """
     if a.shape[1] != a.shape[2]:
         raise ValueError("a must have shape (n_samples, n_dim, n_dim)")
-    from scipy.linalg.lapack import get_lapack_funcs
 
     a1, n = a[0], a.shape[0]
     getrf, getri, getri_lwork = get_lapack_funcs(

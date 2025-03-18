@@ -245,7 +245,7 @@ def _mask_and_reduce_single(
         assert n_samples is not None
         n_samples = min(n_samples, data_n_samples)
     else:
-        n_samples = int(ceil(data_n_samples * reduction_ratio))
+        n_samples = ceil(data_n_samples * reduction_ratio)
 
     U, S, V = cache(
         _fast_svd, memory, memory_level=memory_level, func_memory_level=3
