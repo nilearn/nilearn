@@ -6,7 +6,6 @@
 <div class="pure-g">
   <div class="pure-u-1 pure-u-md-2-3">
     <div class="image">
-      <!-- prettier-ignore -->
       <div
         class="pure-g d-flex justify-content-center align-items-stretch mt-2"
       >
@@ -17,10 +16,8 @@
         >
           Previous Sphere
         </button>
-        <h4
-          class="pure-u-1-4 py-3 text-center"
-          style="margin: 0px"
-        >
+        <!-- the content of the h4 will be injected by javascript -->
+        <h4 class="pure-u-1-4 py-3 text-center" style="margin: 0px">
           <span id="comp-{{unique_id}}"></span>
         </h4>
         <button
@@ -38,7 +35,7 @@
         class="pure-img"
         width="100%"
         style="display: block"
-        alt="image"
+        alt="No image to display."
         src="data:image/svg+xml;base64,{{content[0]}}"
       />
 
@@ -49,7 +46,7 @@
         class="pure-img"
         width="100%"
         style="display: none"
-        alt="image"
+        alt="No image to display"
         src="data:image/svg+xml;base64,{{content[map]}}"
       />
       {{endfor}}
@@ -87,7 +84,9 @@
       </details>
       {{endif}}
       <!--  -->
+      {{if parameters}}
       <div class="table-container">{{ parameters|html }}</div>
+      {{endif}}
     </div>
   </div>
 </div>
