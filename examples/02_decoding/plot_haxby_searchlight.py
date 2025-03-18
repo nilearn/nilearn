@@ -16,11 +16,11 @@ the :term:`fMRI` (see the generated figures).
 # ------------------
 import pandas as pd
 
-from nilearn import datasets
+from nilearn.datasets import fetch_haxby
 from nilearn.image import get_data, load_img, new_img_like
 
 # We fetch 2nd subject from haxby datasets (which is default)
-haxby_dataset = datasets.fetch_haxby()
+haxby_dataset = fetch_haxby()
 
 # print basic information on the dataset
 print(f"Anatomical nifti image (3D) is located at: {haxby_dataset.mask}")

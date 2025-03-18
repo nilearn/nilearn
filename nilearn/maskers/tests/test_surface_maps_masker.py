@@ -9,22 +9,11 @@ from nilearn.conftest import _surf_maps_img
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
 
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_dont_overwrite_parameters",
-    "check_estimators_fit_returns_self",
-    "check_estimators_overwrite_params",
-    "check_no_attributes_set_in_init",
-    "check_positive_only_tag_during_fit",
-    "check_readonly_memmap_input",
-]
-
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[SurfaceMapsMasker(_surf_maps_img())],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -38,7 +27,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[SurfaceMapsMasker(_surf_maps_img())],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001

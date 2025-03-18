@@ -9,17 +9,10 @@ from nilearn.surface._testing import (
     assert_surface_image_equal,
 )
 
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_no_attributes_set_in_init",
-]
-
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[SurfaceMasker()], extra_valid_checks=extra_valid_checks
-    ),
+    check_estimator(estimator=[SurfaceMasker()]),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -29,11 +22,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.xfail(reason="invalid checks should fail")
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[SurfaceMasker()],
-        valid=False,
-        extra_valid_checks=extra_valid_checks,
-    ),
+    check_estimator(estimator=[SurfaceMasker()], valid=False),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""

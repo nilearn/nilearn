@@ -338,7 +338,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         )
         raise ValueError(message)
     else:
-        n_cuts = int(round(n_cuts))
+        n_cuts = round(n_cuts)
 
     if spacing == "auto":
         spacing = max(int(0.5 / n_cuts * data.shape[axis]), 1)

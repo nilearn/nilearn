@@ -3,6 +3,8 @@ import operator
 import os
 import warnings
 
+from packaging.version import parse
+
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
 
@@ -263,8 +265,6 @@ def compare_version(version_a, operator, version_b):
         The result of the version comparison.
 
     """
-    from packaging.version import parse
-
     if operator not in VERSION_OPERATORS:
         error_msg = "'compare_version' received an unexpected operator "
         raise ValueError(error_msg + operator + ".")

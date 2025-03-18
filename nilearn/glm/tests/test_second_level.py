@@ -40,18 +40,10 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
 from nilearn.surface._testing import assert_surface_image_equal
 
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_no_attributes_set_in_init",
-]
-
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[SecondLevelModel()],
-        extra_valid_checks=extra_valid_checks,
-    ),
+    check_estimator(estimator=[SecondLevelModel()]),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -63,7 +55,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[SecondLevelModel()],
-        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
@@ -932,7 +923,7 @@ def test_second_level_voxelwise_attribute_errors(attribute):
     with pytest.raises(ValueError, match="The model has no results."):
         getattr(model, attribute)
     with pytest.raises(ValueError, match="attribute must be one of"):
-        model._get_voxelwise_model_attribute("foo", True)
+        model._get_element_wise_model_attribute("foo", True)
 
     model = SecondLevelModel(mask_img=mask, minimize_memory=True)
     model.fit(Y, design_matrix=X)
