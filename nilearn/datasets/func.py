@@ -2339,7 +2339,7 @@ def fetch_language_localizer_demo_dataset(
     files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
     # Only download if directory is empty
     # Directory will have been created by the call to get_dataset_dir above
-    if not data_dir.iterdir():
+    if not list(data_dir.iterdir()):
         downloaded_files = fetch_files(
             data_dir, files_spec, resume=True, verbose=verbose
         )
