@@ -661,6 +661,7 @@ class FirstLevelModel(BaseGLM):
                 confounds_names = [
                     f"confound_{i}" for i in range(confounds_matrix.shape[1])
                 ]
+            confounds_names = [str(x) for x in confounds_names]
 
             if confounds_matrix.shape[0] != n_scans:
                 raise ValueError(
