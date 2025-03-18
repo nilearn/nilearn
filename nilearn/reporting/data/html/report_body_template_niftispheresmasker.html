@@ -19,17 +19,9 @@
         </button>
         <h4
           class="pure-u-1-4 py-3 text-center"
-          id="title-all-{{unique_id}}"
-          style="display: block; margin: 0px"
+          style="margin: 0px"
         >
-          All Spheres
-        </h4>
-        <h4
-          class="pure-u-1-4 py-3 text-center"
-          id="title-sphere-{{unique_id}}"
-          style="display: none; margin: 0px"
-        >
-          Sphere <span id="comp-{{unique_id}}"></span>
+          <span id="comp-{{unique_id}}"></span>
         </h4>
         <button
           class="btn pure-u-1-3 text-center rounded-2"
@@ -40,23 +32,25 @@
         </button>
       </div>
 
+      <!-- glass brain with all spheres -->
       <img
         id="map-{{unique_id}}-0"
         class="pure-img"
         width="100%"
-        src="data:image/svg+xml;base64,{{content[0]}}"
         style="display: block"
         alt="image"
+        src="data:image/svg+xml;base64,{{content[0]}}"
       />
 
-      {{for map in range(1, len(displayed_maps)+1)}}
+      <!-- individual spheres -->
+      {{for map in range(1, len(displayed_maps))}}
       <img
         id="map-{{unique_id}}-{{map}}"
         class="pure-img"
         width="100%"
-        src="data:image/svg+xml;base64,{{content[map]}}"
         style="display: none"
         alt="image"
+        src="data:image/svg+xml;base64,{{content[map]}}"
       />
       {{endfor}}
     </div>

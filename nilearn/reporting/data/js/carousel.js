@@ -20,57 +20,36 @@ class MapCarousel {
     }
 
     showMap(index) {
-        if (this.is_sphere) {
-            let allSpheres = document.getElementById(`title-all-${this.uid}`);
-            if (allSpheres) {
-                allSpheres.style.display = index === 0 ? "block" : "none";
-            }
-        }
-
         this.displayed_maps.forEach((_, i) => {
             let mapElement = document.getElementById(`map-${this.uid}-${i}`);
             if (mapElement) {
                 mapElement.style.display = i === index ? "block" : "none";
-            }
-
-            if (this.is_sphere) {
-                let allSingleSphere = document.getElementById(`title-sphere-${this.uid}`);
-                if (allSingleSphere) {
-                    allSingleSphere.style.display = i === index ? "block" : "none";
-                }
             }
         });
 
         let compElement = document.getElementById(`comp-${this.uid}`);
         if (compElement) {
             compElement.innerHTML = this.displayed_maps[index];
+            if (this.is_sphere){
+                if (index === 0){
+                    compElement.innerHTML = "All Spheres"
+                } else{
+                    compElement.innerHTML = "Sphere " + this.displayed_maps[index];
+                }
+            }
+
         }
     }
 
+    // for the following methods
     // using % modulo to ensure we 'wrap' back to start in the carousel
     displayNextMap() {
-        if (this.is_sphere) {
-            this.current_map_idx = this.current_map_idx + 1;
-            if (this.current_map_idx >= this.number_maps + 1) {
-                this.current_map_idx = 0;
-            }
-        } else{
-            this.current_map_idx = (this.current_map_idx + 1) % this.number_maps;
-
-        }
+        this.current_map_idx = (this.current_map_idx + 1) % this.number_maps;
         this.showMap(this.current_map_idx);
     }
 
     displayPreviousMap() {
-        if (this.is_sphere) {
-            this.current_map_idx = this.current_map_idx - 1;
-            if (this.current_map_idx < 0) {
-                this.current_map_idx = this.number_maps - 1;
-            }
-        }   else{
-             this.current_map_idx = (this.current_map_idx - 1 + this.number_maps) % this.number_maps;
-
-         }
+        this.current_map_idx = (this.current_map_idx - 1 + this.number_maps) % this.number_maps;
         this.showMap(this.current_map_idx);
     }
 }

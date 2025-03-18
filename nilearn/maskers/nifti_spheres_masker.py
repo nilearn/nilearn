@@ -471,7 +471,12 @@ class NiftiSpheresMasker(BaseMasker):
                     f"masker only has {len(seeds)} seeds."
                 )
             spheres_to_be_displayed = self.displayed_spheres
-        self._report_content["displayed_maps"] = list(spheres_to_be_displayed)
+        # extend spheres_to_be_displayed by 1
+        # as the default image is a glass brain with all the spheres
+        tmp = [0]
+        spheres_to_be_displayed = np.asarray(spheres_to_be_displayed) + 1
+        tmp.extend(spheres_to_be_displayed.tolist())
+        self._report_content["displayed_maps"] = tmp
 
         columns = [
             "seed number",
@@ -491,6 +496,8 @@ class NiftiSpheresMasker(BaseMasker):
         embeded_images = [embed_img(display)]
         display.close()
         for idx, seed in enumerate(seeds):
+            print(seeds)
+            print(idx)
             regions_summary["seed number"].append(idx)
             regions_summary["coordinates"].append(str(seed))
             regions_summary["position"].append(positions[idx])
@@ -500,15 +507,20 @@ class NiftiSpheresMasker(BaseMasker):
                 round(4.0 / 3.0 * np.pi * radius**3, 2)
             )
             regions_summary["relative size (in %)"].append("not implemented")
-            if idx in spheres_to_be_displayed:
-                display = plotting.plot_img(img, cut_coords=seed, cmap="gray")
-                display.add_markers(
-                    marker_coords=[seed],
-                    marker_color="g",
-                    marker_size=20 * radius,
-                )
-                embeded_images.append(embed_img(display))
-                display.close()
+
+            display = plotting.plot_img(img, cut_coords=seed, cmap="gray")
+            display.add_markers(
+                marker_coords=[seed],
+                marker_color="g",
+                marker_size=20 * radius,
+            )
+            embeded_images.append(embed_img(display))
+            display.close()
+
+        assert len(embeded_images) == len(
+            self._report_content["displayed_maps"]
+        )
+
         self._report_content["summary"] = regions_summary
 
         return embeded_images

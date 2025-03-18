@@ -210,18 +210,15 @@ def _define_overlay(estimator):
     displays = estimator._reporting()
 
     if len(displays) == 1:  # set overlay to None
-        overlay, image = None, displays[0]
+        return None, displays[0]
 
     elif isinstance(estimator, NiftiSpheresMasker):
-        overlay, image = None, displays
+        return None, displays
 
     elif len(displays) == 2:
-        overlay, image = displays[0], displays[1]
+        return displays[0], displays[1]
 
-    else:
-        overlay, image = None, displays
-
-    return overlay, image
+    return None, displays
 
 
 def generate_report(estimator):
