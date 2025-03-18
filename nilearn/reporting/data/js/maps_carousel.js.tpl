@@ -4,53 +4,51 @@
 // from the Python code using Tempita. The substituted code will be then be
 // inserted into the HTML file.
 
+function updateMaps(uid, displayed_maps) {
+    let current_map_idx = 0;
+    let number_maps = displayed_maps.length;
 
-function updateMaps() {
-    const uid = "{{unique_id}}";
+    window['current_map_idx_' + uid] = current_map_idx;
+    window['displayed_maps_' + uid] = displayed_maps;
+    window['number_maps_' + uid] = number_maps;
 
-    window['current_map_idx_' + uid] = 0;
-    window['displayed_maps_' + uid] = {{displayed_maps}};
-    window['number_maps_' + uid] = window['displayed_maps_' + uid].length;
+    function showMap(index) {
+        displayed_maps.forEach((_, i) => {
+            let mapElement = document.getElementById(`map-${uid}-${i}`);
+            if (mapElement) {
+                mapElement.style.display = i === index ? "block" : "none";
+            }
+        });
 
-    document.getElementById("comp-" + uid).innerHTML = window['displayed_maps_' + uid][0];
+        let compElement = document.getElementById(`comp-${uid}`);
+        if (compElement) {
+            compElement.innerHTML = displayed_maps[index];
+        }
+    }
 
     function displayNextMap() {
-      let current_map_idx = window['current_map_idx_' + uid];
-      let displayed_maps = window['displayed_maps_' + uid];
-      let number_maps = window['number_maps_' + uid];
-
-      document.getElementById("map-" + uid + "-" + current_map_idx).style["display"] = "none";
-      current_map_idx = current_map_idx + 1;
-      if (current_map_idx >= number_maps) {
-        current_map_idx = 0;
-      }
-      document.getElementById("map-" + uid + "-" + current_map_idx).style["display"] = "block";
-      document.getElementById("comp-" + uid).innerHTML = displayed_maps[current_map_idx];
-      window['current_map_idx_' + uid] = current_map_idx;
+        current_map_idx = (current_map_idx + 1) % number_maps;
+        window['current_map_idx_' + uid] = current_map_idx;
+        showMap(current_map_idx);
     }
 
     function displayPreviousMap() {
-      let current_map_idx = window['current_map_idx_' + uid];
-      let displayed_maps = window['displayed_maps_' + uid];
-      let number_maps = window['number_maps_' + uid];
-
-      document.getElementById("map-" + uid + "-" + current_map_idx).style["display"] = "none";
-      current_map_idx = current_map_idx - 1;
-      if (current_map_idx < 0) {
-        current_map_idx = number_maps - 1;
-      }
-      document.getElementById("map-" + uid + "-" + current_map_idx).style["display"] = "block";
-      document.getElementById("comp-" + uid).innerHTML = displayed_maps[current_map_idx];
-      window['current_map_idx_' + uid] = current_map_idx;
+        current_map_idx = (current_map_idx - 1 + number_maps) % number_maps;
+        window['current_map_idx_' + uid] = current_map_idx;
+        showMap(current_map_idx);
     }
 
-    // Attach functions to buttons
-    document.querySelector("#prev-btn-" + uid).onclick = displayPreviousMap;
-    document.querySelector("#next-btn-" + uid).onclick = displayNextMap ;
+    // Initialize maps
+    showMap(0);
+
+    // Attach event listeners safely
+    let prevButton = document.querySelector(`#prev-btn-${uid}`);
+    let nextButton = document.querySelector(`#next-btn-${uid}`);
+
+    if (prevButton) prevButton.addEventListener("click", displayPreviousMap);
+    if (nextButton) nextButton.addEventListener("click", displayNextMap);
 }
 
-document.addEventListener("DOMContentLoaded", function() {
-
-updateMaps()
-
-  });
+document.addEventListener("DOMContentLoaded", function () {
+    updateMaps("{{unique_id}}", {{displayed_maps}});
+});
