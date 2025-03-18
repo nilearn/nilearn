@@ -526,15 +526,20 @@ def report_multi_nifti_maps_masker(build_type):
 
 def report_sphere_masker(build_type):
     if build_type == "partial":
-        _generate_dummy_html(filenames=["nifti_sphere_masker.html"])
+        _generate_dummy_html(
+            filenames=[
+                "nifti_sphere_masker.html",
+                "nifti_sphere_masker_fitted.html",
+            ]
+        )
         return None
 
     t_r = 2.0
 
-    pcc_coords = (0, -53, 26)
+    pcc_coords = [(0, -53, 26), (5, 53, -26)]
 
-    seed_masker = NiftiSpheresMasker(
-        [pcc_coords],
+    masker = NiftiSpheresMasker(
+        pcc_coords,
         radius=10,
         detrend=True,
         standardize=True,
@@ -545,10 +550,17 @@ def report_sphere_masker(build_type):
         memory_level=1,
     )
 
-    masker_report = seed_masker.generate_report()
-    masker_report.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
+    report_unfitted = masker.generate_report()
+    report_unfitted.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
 
-    return masker_report
+    data = fetch_development_fmri(n_subjects=1)
+
+    masker.fit(data.func[0])
+
+    report = masker.generate_report()
+    report.save_as_html(REPORTS_DIR / "nifti_sphere_masker_fitted.html")
+
+    return report_unfitted, report
 
 
 def report_surface_masker(build_type):
@@ -704,16 +716,16 @@ def main(args=sys.argv):
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
-    report_surface_masker(build_type)
-    report_surface_label_masker(build_type)
+    # report_surface_masker(build_type)
+    # report_surface_label_masker(build_type)
     report_surface_maps_masker(build_type)
-    report_nifti_masker(build_type)
+    # report_nifti_masker(build_type)
     report_nifti_maps_masker(build_type)
-    report_nifti_labels_masker(build_type)
+    # report_nifti_labels_masker(build_type)
     report_sphere_masker(build_type)
-    report_multi_nifti_masker(build_type)
-    report_multi_nifti_labels_masker(build_type)
-    report_multi_nifti_maps_masker(build_type)
+    # report_multi_nifti_masker(build_type)
+    # report_multi_nifti_labels_masker(build_type)
+    # report_multi_nifti_maps_masker(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
@@ -721,11 +733,11 @@ def main(args=sys.argv):
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
-    report_flm_adhd_dmn(build_type)
-    report_flm_bids_features(build_type)
-    report_flm_fiac(build_type)
-    report_slm_oasis(build_type)
-    report_surface_glm(build_type)
+    # report_flm_adhd_dmn(build_type)
+    # report_flm_bids_features(build_type)
+    # report_flm_fiac(build_type)
+    # report_slm_oasis(build_type)
+    # report_surface_glm(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")

@@ -22,7 +22,6 @@ class MapCarousel {
     showMap(index) {
         if (this.is_sphere) {
             let allSpheres = document.getElementById(`title-all-${this.uid}`);
-
             if (allSpheres) {
                 allSpheres.style.display = index === 0 ? "block" : "none";
             }
@@ -50,12 +49,28 @@ class MapCarousel {
 
     // using % modulo to ensure we 'wrap' back to start in the carousel
     displayNextMap() {
-        this.current_map_idx = (this.current_map_idx + 1) % this.number_maps;
+        if (this.is_sphere) {
+            this.current_map_idx = this.current_map_idx + 1;
+            if (this.current_map_idx >= this.number_maps + 1) {
+                this.current_map_idx = 0;
+            }
+        } else{
+            this.current_map_idx = (this.current_map_idx + 1) % this.number_maps;
+
+        }
         this.showMap(this.current_map_idx);
     }
 
     displayPreviousMap() {
-        this.current_map_idx = (this.current_map_idx - 1 + this.number_maps) % this.number_maps;
+        if (this.is_sphere) {
+            this.current_map_idx = this.current_map_idx - 1;
+            if (this.current_map_idx < 0) {
+                this.current_map_idx = this.number_maps - 1;
+            }
+        }   else{
+             this.current_map_idx = (this.current_map_idx - 1 + this.number_maps) % this.number_maps;
+
+         }
         this.showMap(this.current_map_idx);
     }
 }
