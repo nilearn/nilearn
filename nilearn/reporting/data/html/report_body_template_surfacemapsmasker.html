@@ -7,10 +7,6 @@
   <div class="pure-u-1 pure-u-md-2-3">
     <div class="image">
       <!-- prettier-ignore -->
-      <script>
-        {{js_content}}
-      </script>
-
       <div
         class="pure-g d-flex justify-content-center align-items-stretch mt-2"
       >
@@ -79,4 +75,13 @@
     {{ parameters|html }}
   </div>
 </div>
+
+<script>
+  {{js_carousel|html}}
+  document.addEventListener("DOMContentLoaded", function () {
+    new MapCarousel("{{unique_id}}", {{displayed_maps}});
+    }
+  );
+</script>
+
 {{enddef}}

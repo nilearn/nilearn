@@ -1,6 +1,5 @@
 """Generate HTML reports."""
 
-import html
 import uuid
 import warnings
 from string import Template
@@ -36,11 +35,6 @@ ESTIMATOR_TEMPLATES = {
     "default": "report_body_template.html",
 }
 
-JS_TEMPLATE = {
-    "MapsMasker": "maps_carousel.js.tpl",
-    "SpheresMasker": "spheres_carousel.js.tpl",
-}
-
 
 def _get_estimator_template(estimator):
     """Return the HTML template to use for a given estimator \
@@ -62,32 +56,6 @@ def _get_estimator_template(estimator):
         return ESTIMATOR_TEMPLATES[estimator.__class__.__name__]
     else:
         return ESTIMATOR_TEMPLATES["default"]
-
-
-def _get_js_template(estimator_name):
-    """Return the JS template to use for a given estimator \
-    if a specific template was defined in JS_TEMPLATES, \
-    otherwise return None.
-
-    Parameters
-    ----------
-    estimator : str
-        The name of the estimator.
-
-    Returns
-    -------
-    template : str
-        Name of the template file to use.
-
-    """
-    return next(
-        (
-            JS_PATH / JS_TEMPLATE[key]
-            for key in JS_TEMPLATE
-            if key in estimator_name
-        ),
-        None,
-    )
 
 
 def embed_img(display):
@@ -182,18 +150,8 @@ def _update_template(
         str(body_template_path), encoding="utf-8"
     )
 
-    # Load JS template
-    js_template_path = _get_js_template(title)
-    if js_template_path is not None:
-        with js_template_path.open(encoding="utf-8") as js_file:
-            js_tpl = js_file.read()
-            # # remove comments from the top of the file
-            # # our scripts start with "document.addEventListener"
-            # # so we can find the start
-            # js_tpl = js_tpl[js_tpl.find("document.addEventListener") :]
-        js_content = tempita.Template(js_tpl).substitute(**data)
-    else:
-        js_content = None
+    with (JS_PATH / "carousel.js").open(encoding="utf-8") as js_file:
+        js_carousel = js_file.read()
 
     css_file_path = CSS_PATH / "masker_report.css"
     with css_file_path.open(encoding="utf-8") as css_file:
@@ -217,20 +175,13 @@ def _update_template(
         ),
         **data,
         css=css,
-        js_content=js_content,
+        js_carousel=js_carousel,
         warning_messages=_render_warnings_partial(warning_messages),
         summary_html=summary_html,
     )
 
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
-
-    # revert HTML safe substitutions in JS sections
-    if js_template_path is not None:
-        js_start = body.find("<script>")
-        js_end = body.find("</script>") + len("</script>")
-        unescaped_js = html.unescape(body[js_start:js_end])
-        body = body[:js_start] + unescaped_js + body[js_end:]
 
     head_template_name = "report_head_template.html"
     head_template_path = HTML_TEMPLATE_PATH / head_template_name

@@ -7,10 +7,6 @@
   <div class="pure-u-1 pure-u-md-2-3">
     <div class="image">
       <!-- prettier-ignore -->
-      <script>
-        {{js_content}}
-      </script>
-
       <div
         class="pure-g d-flex justify-content-center align-items-stretch mt-2"
       >
@@ -53,7 +49,7 @@
         alt="image"
       />
 
-      {{for map in range(1, len(displayed_spheres)+1)}}
+      {{for map in range(1, len(displayed_maps)+1)}}
       <img
         id="map-{{unique_id}}-{{map}}"
         class="pure-img"
@@ -73,9 +69,9 @@
       The masker has <b>{{number_of_seeds}}</b> spheres in total (displayed
       together on the first image).
     </p>
-    {{if len(displayed_spheres) != number_of_seeds}}
+    {{if len(displayed_maps) != number_of_seeds}}
     <p>
-      Only <b>{{len(displayed_spheres)}}</b> specific spheres can be browsed in
+      Only <b>{{len(displayed_maps)}}</b> specific spheres can be browsed in
       this report with <b>Previous</b> and <b>Next</b> buttons.
     </p>
     {{else}}
@@ -101,4 +97,12 @@
     </div>
   </div>
 </div>
+
+<script>
+  {{js_carousel|html}}
+  document.addEventListener("DOMContentLoaded", function () {
+    new MapCarousel("{{unique_id}}", {{displayed_maps}});
+    }
+  );
+</script>
 {{enddef}}

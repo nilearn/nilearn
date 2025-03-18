@@ -1,14 +1,14 @@
 // This is a template for a JavaScript code snippet that will be used to
 // implement a carousel of maps.
-// Everything in {{ }} will be substituted by the corresponding values
+// Everything in  will be substituted by the corresponding values
 // from the Python code using Tempita. The substituted code will be then be
 // inserted into the HTML file.
 document.addEventListener("DOMContentLoaded", function() {
   (function() {
     var uid = "{{unique_id}}";
     var current_map_idx_{{unique_id}} = 0;
-    var displayed_maps_{{unique_id}} = {{displayed_spheres}};
-    var number_maps_{{unique_id}} = {{len(displayed_spheres)}};
+    var displayed_maps_{{unique_id}} = {{displayed_maps}};
+    var number_maps_{{unique_id}} = {{len(displayed_maps)}};
     window['current_map_idx_' + uid] = current_map_idx_{{unique_id}};
     window['displayed_maps_' + uid] = displayed_maps_{{unique_id}};
     window['number_maps_' + uid] = number_maps_{{unique_id}};

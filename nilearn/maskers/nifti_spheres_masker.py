@@ -448,6 +448,7 @@ class NiftiSpheresMasker(BaseMasker):
             ]
 
         self._report_content["number_of_seeds"] = len(seeds)
+
         spheres_to_be_displayed = range(len(seeds))
         if isinstance(self.displayed_spheres, int):
             if len(seeds) < self.displayed_spheres:
@@ -470,9 +471,8 @@ class NiftiSpheresMasker(BaseMasker):
                     f"masker only has {len(seeds)} seeds."
                 )
             spheres_to_be_displayed = self.displayed_spheres
-        self._report_content["displayed_spheres"] = list(
-            spheres_to_be_displayed
-        )
+        self._report_content["displayed_maps"] = list(spheres_to_be_displayed)
+
         columns = [
             "seed number",
             "coordinates",
@@ -483,6 +483,7 @@ class NiftiSpheresMasker(BaseMasker):
             "relative size (in %)",
         ]
         regions_summary = {c: [] for c in columns}
+
         radius = 1.0 if self.radius is None else self.radius
         display = plotting.plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
