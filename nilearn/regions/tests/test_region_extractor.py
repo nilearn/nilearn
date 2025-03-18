@@ -64,12 +64,6 @@ def maps_and_mask(n_regions):
     return generate_maps(shape=MAP_SHAPE, n_regions=n_regions, random_state=42)
 
 
-extra_valid_checks = [
-    "check_positive_only_tag_during_fit",
-    "check_readonly_memmap_input",
-]
-
-
 # Note: some report genetation tests take too long
 # Incresaing the timeout for this one
 
@@ -84,7 +78,6 @@ extra_valid_checks = [
                 )[0]
             )
         ],
-        extra_valid_checks=extra_valid_checks,
         expected_failed_checks={
             # TODO remove when buming to nilearn 0.13.2
             "check_no_attributes_set_in_init": (
@@ -110,7 +103,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
             )
         ],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001

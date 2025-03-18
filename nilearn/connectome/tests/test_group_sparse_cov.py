@@ -13,13 +13,21 @@ from nilearn.connectome.group_sparse_cov import (
 
 expected_failed_checks = {
     "check_complex_data": "TODO",
+    "check_dont_overwrite_parameters": "TODO",
+    "check_dtype_object": "TODO",
     "check_estimator_sparse_array": "TODO",
     "check_estimator_sparse_matrix": "TODO",
+    "check_estimators_empty_data_messages": "TODO",
+    "check_estimators_overwrite_params": "TODO",
     "check_f_contiguous_array_estimator": "TODO",
     "check_fit_check_is_fitted": "handled by nilearn checks",
     "check_fit2d_1feature": "TODO",
     "check_fit2d_1sample": "TODO",
     "check_fit2d_predict1d": "TODO",
+    "check_methods_sample_order_invariance": "TODO",
+    "check_methods_subset_invariance": "TODO",
+    "check_positive_only_tag_during_fit": "TODO",
+    "check_readonly_memmap_input": "TODO",
 }
 
 if compare_version(sklearn_version, "<", "1.5.0"):

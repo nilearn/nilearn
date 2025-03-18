@@ -56,34 +56,43 @@ else:
 # Some may be explicitly skipped : see CHECKS_TO_SKIP_IF_IMG_INPUT below
 VALID_CHECKS = [
     "check_complex_data",
+    "check_decision_proba_consistency",
+    "check_dict_unchangedcheck_clusterer_compute_labels_predict",
+    "check_do_not_raise_errors_in_init_or_set_params",
+    "check_dont_overwrite_parameters",
+    "check_dtype_object",
+    "check_estimator_cloneable",
+    "check_estimator_repr",
     "check_estimator_sparse_array",
     "check_estimator_sparse_data",
     "check_estimator_sparse_matrix",
     "check_estimator_sparse_tag",
+    "check_estimator_tags_renamed",
+    "check_estimators_empty_data_messages",
+    "check_estimators_overwrite_params",
+    "check_estimators_partial_fit_n_features",
+    "check_estimators_unfitted",
     "check_f_contiguous_array_estimator",
     "check_fit1d",
     "check_fit2d_1feature",
     "check_fit2d_1sample",
     "check_fit2d_predict1d",
-    "check_decision_proba_consistency",
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimator_cloneable",
-    "check_estimator_repr",
-    "check_estimator_tags_renamed",
-    "check_estimators_partial_fit_n_features",
-    "check_estimators_unfitted",
     "check_fit_check_is_fitted",
     "check_get_params_invariance",
+    "check_methods_sample_order_invariance",
+    "check_methods_subset_invariance",
     "check_mixin_order",
     "check_no_attributes_set_in_init",
     "check_non_transformer_estimators_n_iter",
     "check_parameters_default_constructible",
+    "check_positive_only_tag_during_fit",
+    "check_readonly_memmap_input",
     "check_set_params",
-    "check_transformer_n_iter",
-    "check_transformers_unfitted",
     "check_transformer_data_not_an_array",
     "check_transformer_general",
+    "check_transformer_n_iter",
     "check_transformer_preserve_dtypes",
+    "check_transformers_unfitted",
 ]
 
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -163,7 +172,6 @@ except ImportError:
 def check_estimator(
     estimator=None,
     valid: bool = True,
-    extra_valid_checks=None,
     expected_failed_checks=None,
 ):
     """Yield a valid or invalid scikit-learn estimators check.
@@ -178,9 +186,6 @@ def check_estimator(
     along with a
     - valid check from sklearn: those should stay valid
     - or an invalid check that is known to fail.
-
-    If new 'valid' checks are added to scikit-learn,
-    then tests marked as xfail will start passing.
 
     If estimator have some nilearn specific tags
     then some checks will skip rather than yield.
@@ -197,9 +202,6 @@ def check_estimator(
     valid : bool, default=True
         Whether to return only the valid checks or not.
 
-    extra_valid_checks : list of strings
-        Names of checks to be tested as valid for this estimator.
-
     expected_failed_checks: dict or None, default=None
         A dictionary of the form::
 
@@ -211,8 +213,6 @@ def check_estimator(
         the check fails.
     """
     valid_checks = VALID_CHECKS
-    if extra_valid_checks is not None:
-        valid_checks = VALID_CHECKS + extra_valid_checks
 
     if not isinstance(estimator, list):
         estimator = [estimator]
@@ -522,9 +522,10 @@ def check_masker_refit(estimator):
         mask_img_2 = Nifti1Image(mask, _affine_eye())
     else:
         mask_img_1 = _make_surface_mask()
-        data = {}
-        for part in mask_img_1.data.parts:
-            data[part] = np.ones(mask_img_1.data.parts[part].shape)
+        data = {
+            part: np.ones(mask_img_1.data.parts[part].shape)
+            for part in mask_img_1.data.parts
+        }
         mask_img_2 = SurfaceImage(mask_img_1.mesh, data)
 
     estimator.mask_img = mask_img_1
@@ -936,12 +937,9 @@ def _generate_report(estimator):
         estimator,
         (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
     ) and hasattr(estimator, "n_elements_"):
-        report = estimator.generate_report(
-            displayed_maps=estimator.n_elements_
-        )
+        return estimator.generate_report(displayed_maps=estimator.n_elements_)
     else:
-        report = estimator.generate_report()
-    return report
+        return estimator.generate_report()
 
 
 def check_masker_generate_report(estimator):
