@@ -4,11 +4,13 @@
 // from the Python code using Tempita. The substituted code will be then be
 // inserted into the HTML file.
 
+
 function updateMaps() {
-    var uid = "{{unique_id}}";
-    var current_map_idx_{{unique_id}} = 0;
-    var displayed_maps_{{unique_id}} = {{displayed_maps}};
-    var number_maps_{{unique_id}} = {{len(displayed_maps)}};
+    const uid = "{{unique_id}}";
+    let current_map_idx_{{unique_id}} = 0;
+    const displayed_maps_{{unique_id}} = {{displayed_maps}};
+    let number_maps_{{unique_id}} = displayed_maps_{{unique_id}}.length;
+
     window['current_map_idx_' + uid] = current_map_idx_{{unique_id}};
     window['displayed_maps_' + uid] = displayed_maps_{{unique_id}};
     window['number_maps_' + uid] = number_maps_{{unique_id}};
@@ -16,9 +18,9 @@ function updateMaps() {
     document.getElementById("comp-" + uid).innerHTML = displayed_maps_{{unique_id}}[current_map_idx_{{unique_id}}];
 
     function displayNextMap() {
-      var current_map_idx = window['current_map_idx_' + uid];
-      var displayed_maps = window['displayed_maps_' + uid];
-      var number_maps = window['number_maps_' + uid];
+      let current_map_idx = window['current_map_idx_' + uid];
+      let displayed_maps = window['displayed_maps_' + uid];
+      let number_maps = window['number_maps_' + uid];
 
       document.getElementById("map-" + uid + "-" + current_map_idx).style["display"] = "none";
       current_map_idx = current_map_idx + 1;
@@ -31,9 +33,9 @@ function updateMaps() {
     }
 
     function displayPreviousMap() {
-      var current_map_idx = window['current_map_idx_' + uid];
-      var displayed_maps = window['displayed_maps_' + uid];
-      var number_maps = window['number_maps_' + uid];
+      let current_map_idx = window['current_map_idx_' + uid];
+      let displayed_maps = window['displayed_maps_' + uid];
+      let number_maps = window['number_maps_' + uid];
 
       document.getElementById("map-" + uid + "-" + current_map_idx).style["display"] = "none";
       current_map_idx = current_map_idx - 1;
@@ -47,7 +49,7 @@ function updateMaps() {
 
     // Attach functions to buttons
     document.querySelector("#prev-btn-" + uid).onclick = displayPreviousMap;
-    document.querySelector("#next-btn-" + uid).onclick = displayNextMap;
+    document.querySelector("#next-btn-" + uid).onclick = displayNextMap ;
 }
 
 document.addEventListener("DOMContentLoaded", function() {
