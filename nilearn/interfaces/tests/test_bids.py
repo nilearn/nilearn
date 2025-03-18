@@ -530,28 +530,24 @@ def test_save_glm_to_bids_errors(
 
     # Contrast names must be strings
     contrasts = {5: np.eye(n_cols_design_matrix)}
-    contrast_types = {5: "F"}
-
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="contrast names must be strings"):
         save_glm_to_bids(
             model=two_runs_model,
             contrasts=contrasts,
-            contrast_types=contrast_types,
             out_dir=tmpdir,
-            prefix="sub-01_ses-01_task-nback",
+            prefix="sub-01",
         )
 
     # Contrast definitions must be strings, numpy arrays, or lists
     contrasts = {"effects of interest": 5}
-    contrast_types = {"effects of interest": "F"}
-
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError, match="contrast definitions must be strings or array_likes"
+    ):
         save_glm_to_bids(
             model=two_runs_model,
             contrasts=contrasts,
-            contrast_types=contrast_types,
             out_dir=tmpdir,
-            prefix="sub-01_ses-01_task-nback",
+            prefix="sub-01",
         )
 
     with pytest.raises(
@@ -561,7 +557,7 @@ def test_save_glm_to_bids_errors(
             model=two_runs_model,
             contrasts=["AAA - BBB"],
             out_dir=tmpdir,
-            prefix="sub-01_ses-01_task-nback",
+            prefix="sub-01",
             foo="bar",
         )
 

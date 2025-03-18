@@ -54,8 +54,8 @@ def generate_design_matrices_figures(
                     "design_matrix"
                 ]
                 dmtx_plot.figure.savefig(output["dir"] / dmtx_fig)
-            except Exception:
-                dmtx_fig = None  # pragma: no cover
+            except Exception:  # pragma: no cover
+                dmtx_fig = None
         if dmtx_fig is None:
             dmtx_fig = figure_to_png_base64(dmtx_plot)
         # prevents sphinx-gallery & jupyter
@@ -85,8 +85,8 @@ def generate_design_matrices_figures(
                         "correlation_matrix"
                     ]
                     dmtx_cor_plot.figure.savefig(output["dir"] / dmtx_cor_fig)
-                except KeyError:
-                    dmtx_cor_fig = None  # pragma: no cover
+                except KeyError:  # pragma: no cover
+                    dmtx_cor_fig = None
             if dmtx_cor_fig is None:
                 dmtx_cor_fig = figure_to_png_base64(dmtx_cor_plot)
             # prevents sphinx-gallery & jupyter
@@ -151,8 +151,8 @@ def generate_constrat_matrices_figures(
                         contrast_name
                     ]
                     contrast_plot.figure.savefig(output["dir"] / contrast_fig)
-                except KeyError:
-                    contrast_fig = None  # pragma: no cover
+                except KeyError:  # pragma: no cover
+                    contrast_fig = None
             if contrast_fig is None:
                 contrast_fig = figure_to_png_base64(contrast_plot)
                 # prevents sphinx-gallery & jupyter

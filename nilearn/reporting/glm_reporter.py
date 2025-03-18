@@ -269,7 +269,7 @@ def make_glm_report(
                     / output["statistical_maps"][contrast_name]["z_score"]
                     for contrast_name in output["statistical_maps"]
                 }
-            except KeyError:
+            except KeyError:  # pragma: no cover
                 statistical_maps = make_stat_maps(
                     model, contrasts, output_type="z_score"
                 )

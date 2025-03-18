@@ -5,8 +5,6 @@ import json
 import warnings
 from pathlib import Path
 
-import numpy as np
-
 from nilearn import __version__
 from nilearn._utils import logger
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
@@ -193,21 +191,7 @@ def save_glm_to_bids(
                 f"Got: {key}"
             )
 
-    if not isinstance(prefix, str):
-        prefix = ""
-    if prefix and not prefix.endswith("_"):
-        prefix += "_"
-
     contrasts = coerce_to_dict(contrasts)
-    for k, v in contrasts.items():
-        if not isinstance(k, str):
-            raise ValueError(f"contrast names must be strings, not {type(k)}")
-
-        if not isinstance(v, (str, np.ndarray, list)):
-            raise ValueError(
-                "contrast definitions must be strings or array_likes, "
-                f"not {type(v)}"
-            )
 
     out_dir = Path(out_dir)
     out_dir.mkdir(exist_ok=True, parents=True)
@@ -215,7 +199,7 @@ def save_glm_to_bids(
     dset_desc_file = out_dir / "dataset_description.json"
     _generate_dataset_description(dset_desc_file, model.__str__())
 
-    model._generate_filenames_output(
+    model = model._generate_filenames_output(
         prefix, contrasts, contrast_types, out_dir
     )
 
@@ -228,6 +212,11 @@ def save_glm_to_bids(
         design_matrices = model.design_matrices_
     else:
         design_matrices = [model.design_matrix_]
+
+    if not isinstance(prefix, str):
+        prefix = ""
+    if prefix and not prefix.endswith("_"):
+        prefix += "_"
 
     if is_matplotlib_installed():
         logger.log("Generating design matrices figures...", verbose=verbose)

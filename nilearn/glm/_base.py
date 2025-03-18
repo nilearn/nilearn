@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
@@ -313,7 +314,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        prefix : :obj:`str` or None, default=None
+        prefix : :obj:`str`
             String to prepend to generated filenames.
             If a string is provided, '_' will be added to the end.
 
@@ -321,14 +322,16 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 of (:obj:`str` or array of shape (n_col)) or :obj:`dict`
                 Contrast definitions.
 
-        contrast_types : None or :obj:`dict` of :obj:`str`, default=None
+        contrast_types ::obj:`dict` of :obj:`str`
             An optional dictionary mapping some
             or all of the :term:`contrast` names to
             specific contrast types ('t' or 'F').
 
-        out_dir : :obj:`str` or :obj:`pathlib.Path`, default="."
-            Output directory for files. Default is current working directory.
+        out_dir : :obj:`str` or :obj:`pathlib.Path`
+            Output directory for files.
         """
+        check_is_fitted(self)
+
         if not isinstance(prefix, str):
             prefix = ""
         if prefix and not prefix.endswith("_"):
@@ -412,15 +415,14 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 "p_value": (f"{prefix}{contrast_entity}stat-p{suffix}"),
             }
 
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {}
-
         self._reporting_data["filenames"] = {
             "dir": out_dir,
             "design_matrices_dict": design_matrices_dict,
             "contrasts_dict": contrasts_dict,
             "statistical_maps": statistical_maps,
         }
+
+        return self
 
 
 def _clean_contrast_name(contrast_name):
