@@ -496,8 +496,6 @@ class NiftiSpheresMasker(BaseMasker):
         embeded_images = [embed_img(display)]
         display.close()
         for idx, seed in enumerate(seeds):
-            print(seeds)
-            print(idx)
             regions_summary["seed number"].append(idx)
             regions_summary["coordinates"].append(str(seed))
             regions_summary["position"].append(positions[idx])
