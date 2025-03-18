@@ -60,7 +60,7 @@ def clustering_params_to_dataframe(
     cluster_threshold : int or None
         Cluster size threshold, in voxels.
 
-    min_distance : float, default=8
+    min_distance : float
         For display purposes only.
         Minimum distance between subpeaks in mm.
 
