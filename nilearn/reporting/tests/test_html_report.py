@@ -207,14 +207,25 @@ def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
-def test_nifti_spheres_masker_report_displayed_spheres_list():
-    """Tests that spheres_to_be_displayed is set correctly."""
-    displayed_spheres = [0, 1, 2]
+@pytest.mark.parametrize(
+    "displayed_spheres, expected_displayed_maps",
+    [("all", [0, 1, 2, 3]), ([1], [0, 2]), ([0, 2], [0, 1, 3])],
+)
+def test_nifti_spheres_masker_report_displayed_spheres_list(
+    displayed_spheres, expected_displayed_maps
+):
+    """Tests that spheres_to_be_displayed is set correctly.
+
+    report_content["displayed_maps"]
+    should have one more value than requested
+    as _report_content["displayed_maps"][0]
+    is a glass brain with all the spheres
+    """
     seeds = [(1, 1, 1), (2, 2, 2), (3, 3, 3)]
     masker = NiftiSpheresMasker(seeds=seeds)
     masker.fit()
     masker.generate_report(displayed_spheres=displayed_spheres)
-    assert masker._report_content["displayed_spheres"] == displayed_spheres
+    assert masker._report_content["displayed_maps"] == expected_displayed_maps
 
 
 def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():

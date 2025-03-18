@@ -506,14 +506,15 @@ class NiftiSpheresMasker(BaseMasker):
             )
             regions_summary["relative size (in %)"].append("not implemented")
 
-            display = plotting.plot_img(img, cut_coords=seed, cmap="gray")
-            display.add_markers(
-                marker_coords=[seed],
-                marker_color="g",
-                marker_size=20 * radius,
-            )
-            embeded_images.append(embed_img(display))
-            display.close()
+            if idx + 1 in self._report_content["displayed_maps"]:
+                display = plotting.plot_img(img, cut_coords=seed, cmap="gray")
+                display.add_markers(
+                    marker_coords=[seed],
+                    marker_color="g",
+                    marker_size=20 * radius,
+                )
+                embeded_images.append(embed_img(display))
+                display.close()
 
         assert len(embeded_images) == len(
             self._report_content["displayed_maps"]

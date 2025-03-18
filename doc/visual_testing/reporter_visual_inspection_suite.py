@@ -525,6 +525,7 @@ def report_multi_nifti_maps_masker(build_type):
 
 
 def report_sphere_masker(build_type):
+    """Generate masker with 3 spheres but only 2 in the report."""
     if build_type == "partial":
         _generate_dummy_html(
             filenames=[
@@ -536,7 +537,7 @@ def report_sphere_masker(build_type):
 
     t_r = 2.0
 
-    pcc_coords = [(0, -53, 26), (5, 53, -26)]
+    pcc_coords = [(0, -53, 26), (5, 53, -26), (0, 0, 0)]
 
     masker = NiftiSpheresMasker(
         pcc_coords,
@@ -550,14 +551,14 @@ def report_sphere_masker(build_type):
         memory_level=1,
     )
 
-    report_unfitted = masker.generate_report()
+    report_unfitted = masker.generate_report([0, 2])
     report_unfitted.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
 
     data = fetch_development_fmri(n_subjects=1)
 
     masker.fit(data.func[0])
 
-    report = masker.generate_report()
+    report = masker.generate_report([0, 2])
     report.save_as_html(REPORTS_DIR / "nifti_sphere_masker_fitted.html")
 
     return report_unfitted, report
