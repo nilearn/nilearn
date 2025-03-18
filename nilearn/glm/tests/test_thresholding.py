@@ -315,4 +315,12 @@ def test_all_resolution_inference_height_control(
 
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_threshold_stats_img_surface(surf_img_1d, height_control):
+    """Smoke test threshold_stats_img works on surface."""
     threshold_stats_img(surf_img_1d, height_control=height_control)
+
+
+def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
+    """Smoke test threshold_stats_img works on surface with a mask."""
+    threshold_stats_img(
+        surf_img_1d, height_control="bonferroni", mask_img=surf_mask_1d
+    )
