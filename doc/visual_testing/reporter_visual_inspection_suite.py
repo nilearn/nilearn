@@ -64,9 +64,7 @@ REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 # Adapted from examples/04_glm_first_level/plot_adhd_dmn.py
 def report_flm_adhd_dmn(build_type):
     if build_type == "partial":
-        _generate_dummy_html(
-            filenames=["nifti_sphere_masker.html", "flm_adhd_dmn.html"]
-        )
+        _generate_dummy_html(filenames=["flm_adhd_dmn.html"])
         return None
 
     t_r = 2.0
@@ -89,9 +87,6 @@ def report_flm_adhd_dmn(build_type):
 
     adhd_dataset = fetch_adhd(n_subjects=1)
     seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
-
-    masker_report = seed_masker.generate_report()
-    masker_report.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
 
     frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
 
@@ -122,7 +117,7 @@ def report_flm_adhd_dmn(build_type):
     )
     glm_report.save_as_html(REPORTS_DIR / "flm_adhd_dmn.html")
 
-    return masker_report, glm_report
+    return glm_report
 
 
 # %%
@@ -529,6 +524,33 @@ def report_multi_nifti_maps_masker(build_type):
     return empty_report, report
 
 
+def report_sphere_masker(build_type):
+    if build_type == "partial":
+        _generate_dummy_html(filenames=["nifti_sphere_masker.html"])
+        return None
+
+    t_r = 2.0
+
+    pcc_coords = (0, -53, 26)
+
+    seed_masker = NiftiSpheresMasker(
+        [pcc_coords],
+        radius=10,
+        detrend=True,
+        standardize=True,
+        low_pass=0.1,
+        high_pass=0.01,
+        t_r=t_r,
+        memory="nilearn_cache",
+        memory_level=1,
+    )
+
+    masker_report = seed_masker.generate_report()
+    masker_report.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
+
+    return masker_report
+
+
 def report_surface_masker(build_type):
     if build_type == "partial":
         _generate_dummy_html(
@@ -688,6 +710,7 @@ def main(args=sys.argv):
     report_nifti_masker(build_type)
     report_nifti_maps_masker(build_type)
     report_nifti_labels_masker(build_type)
+    report_sphere_masker(build_type)
     report_multi_nifti_masker(build_type)
     report_multi_nifti_labels_masker(build_type)
     report_multi_nifti_maps_masker(build_type)
