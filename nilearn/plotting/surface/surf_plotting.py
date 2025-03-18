@@ -30,8 +30,8 @@ from nilearn.plotting._utils import (
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays import PlotlySurfaceFigure
-from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.js_plotting_utils import colorscale
+from nilearn.plotting.surface.html_surface import get_vertexcolor
 from nilearn.surface import (
     load_surf_data,
     load_surf_mesh,
