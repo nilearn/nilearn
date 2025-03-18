@@ -546,10 +546,15 @@ def mean_img(
     n_jobs=1,
     copy_header=False,
 ):
-    """Compute the mean of the images over time or the 4th dimension.
+    """Compute the mean over images.
 
-    Note that if list of 4D images are given, the mean of each 4D image is
-    computed separately, and the resulting mean is computed after.
+    This can be a mean over time or the 4th dimension for a volume,
+    or the 2nd dimension for a surface image.
+
+    Note that if list of 4D volumen images (or 2D surface images)
+    are given,
+    the mean of each image is computed separately,
+    and the resulting mean is computed after.
 
     Parameters
     ----------
@@ -749,7 +754,10 @@ def index_img(imgs, index):
 
 
 def iter_img(imgs):
-    """Iterate over a 4D Niimg-like object in the fourth dimension.
+    """Iterate over images.
+
+    Could be along the the 4th dimension for 4D Niimg-like object
+    or the 2nd dimension for 2D Surface images..
 
     Parameters
     ----------
