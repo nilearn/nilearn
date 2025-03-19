@@ -11,41 +11,27 @@ make_glm_report(model, contrasts):
 
 import datetime
 import uuid
+import warnings
 from html import escape
 from pathlib import Path
 from string import Template
 
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils import check_niimg, fill_doc, logger
+from nilearn._utils.glm import coerce_to_dict, make_stat_maps
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.niimg import safe_get_data
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
-from nilearn.glm.first_level import FirstLevelModel
-from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.plotting import (
-    plot_contrast_matrix,
-    plot_design_matrix,
-    plot_design_matrix_correlation,
-    plot_glass_brain,
-    plot_roi,
-    plot_stat_map,
-    plot_surf_stat_map,
-)
-from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
+from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
     check_report_dims,
     clustering_params_to_dataframe,
-    coerce_to_dict,
     dataframe_to_html,
-    make_stat_maps,
-    model_attributes_to_dataframe,
-    return_model_type,
 )
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import (
@@ -60,6 +46,27 @@ from nilearn.reporting.utils import (
 )
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
+
+MNI152TEMPLATE = None
+if is_matplotlib_installed():
+    from matplotlib import pyplot as plt
+
+    from nilearn._utils.plotting import (
+        generate_constrat_matrices_figures,
+        generate_design_matrices_figures,
+        resize_plot_inches,
+    )
+    from nilearn.plotting import (
+        plot_glass_brain,
+        plot_roi,
+        plot_stat_map,
+        plot_surf_stat_map,
+    )
+    from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
+    from nilearn.plotting.img_plotting import (  # type: ignore[assignment]
+        MNI152TEMPLATE,
+    )
+
 
 HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
 
@@ -189,18 +196,17 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
-    is_volume_glm = True
-    if isinstance(model.mask_img, (SurfaceMasker, SurfaceImage)) or (
-        hasattr(model, "masker_") and isinstance(model.masker_, SurfaceMasker)
-    ):
-        is_volume_glm = False
+    if not is_matplotlib_installed():
+        warnings.warn(
+            ("No plotting back-end detected. Output will be missing figures."),
+            UserWarning,
+            stacklevel=2,
+        )
 
     unique_id = str(uuid.uuid4()).replace("-", "")
 
-    model_type = return_model_type(model)
-
     title = f"<br>{title}" if title else ""
-    title = f"Statistical Report - {model_type}{title}"
+    title = f"Statistical Report - {model.__str__()}{title}"
 
     docstring = model.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
@@ -211,9 +217,7 @@ def make_glm_report(
     if smoothing_fwhm == 0:
         smoothing_fwhm = None
 
-    model_attributes = model_attributes_to_dataframe(
-        model, is_volume_glm=is_volume_glm
-    )
+    model_attributes = _glm_model_attributes_to_dataframe(model)
     with pd.option_context("display.max_colwidth", 100):
         model_attributes_html = dataframe_to_html(
             model_attributes,
@@ -224,6 +228,12 @@ def make_glm_report(
 
     contrasts = coerce_to_dict(contrasts)
 
+    # If some contrasts are passed
+    # we do not rely on filenames stored in the model.
+    output = None
+    if contrasts is None:
+        output = model._reporting_data.get("filenames", None)
+
     design_matrices = None
     mask_plot = None
     results = None
@@ -231,16 +241,15 @@ def make_glm_report(
     if model.__sklearn_is_fitted__():
         warning_messages = []
 
-        design_matrices = (
-            model.design_matrices_
-            if isinstance(model, FirstLevelModel)
-            else [model.design_matrix_]
-        )
+        if model.__str__() == "Second Level Model":
+            design_matrices = [model.design_matrix_]
+        else:
+            design_matrices = model.design_matrices_
 
         if bg_img == "MNI152TEMPLATE":
-            bg_img = MNI152TEMPLATE if is_volume_glm else None
+            bg_img = MNI152TEMPLATE if model._is_volume_glm() else None
         if (
-            not is_volume_glm
+            not model._is_volume_glm()
             and bg_img
             and not isinstance(bg_img, SurfaceImage)
         ):
@@ -248,10 +257,28 @@ def make_glm_report(
                 f"'bg_img' must a SurfaceImage instance. Got {type(bg_img)=}"
             )
 
-        mask_plot = _mask_to_plot(model, bg_img, cut_coords, is_volume_glm)
+        mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
-        statistical_maps = make_stat_maps(model, contrasts)
+        if output is not None:
+            # we try to rely on the content of glm object only
+            try:
+                statistical_maps = {
+                    contrast_name: output["dir"]
+                    / output["statistical_maps"][contrast_name]["z_score"]
+                    for contrast_name in output["statistical_maps"]
+                }
+            except KeyError:  # pragma: no cover
+                statistical_maps = make_stat_maps(
+                    model, contrasts, output_type="z_score"
+                )
+        else:
+            statistical_maps = make_stat_maps(
+                model, contrasts, output_type="z_score"
+            )
 
+        logger.log(
+            "Generating contrast-level figures...", verbose=model.verbose
+        )
         results = _make_stat_maps_contrast_clusters(
             stat_img=statistical_maps,
             threshold=threshold,
@@ -266,12 +293,36 @@ def make_glm_report(
             plot_type=plot_type,
         )
 
-    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
+    design_matrices_dict = tempita.bunch()
+    contrasts_dict = tempita.bunch()
+    if output is not None:
+        design_matrices_dict = output["design_matrices_dict"]
+        # TODO: only contrast of first run are displayed
+        # contrasts_dict[i_run] = tempita.bunch(**input["contrasts_dict"][i_run]) # noqa: E501
+        contrasts_dict = output["contrasts_dict"]
 
+    if is_matplotlib_installed():
+        logger.log(
+            "Generating design matrices figures...", verbose=model.verbose
+        )
+        design_matrices_dict = generate_design_matrices_figures(
+            design_matrices,
+            design_matrices_dict=design_matrices_dict,
+            output=output,
+        )
+
+        logger.log(
+            "Generating contrast matrices figures...", verbose=model.verbose
+        )
+        contrasts_dict = generate_constrat_matrices_figures(
+            design_matrices,
+            contrasts,
+            contrasts_dict=contrasts_dict,
+            output=output,
+        )
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
-
     method_section_template_path = HTML_TEMPLATE_PATH / "method_section.html"
     method_tpl = tempita.HTMLTemplate.from_filename(
         str(method_section_template_path),
@@ -279,13 +330,11 @@ def make_glm_report(
     )
     method_section = method_tpl.substitute(
         version=__version__,
-        model_type=model_type,
+        model_type=model.__str__(),
         reporting_data=tempita.bunch(**model._reporting_data),
         smoothing_fwhm=smoothing_fwhm,
         contrasts=contrasts,
     )
-
-    design_matrices_dict = _return_design_matrices_dict(design_matrices)
 
     body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
     tpl = tempita.HTMLTemplate.from_filename(
@@ -341,49 +390,45 @@ def make_glm_report(
     return report
 
 
-def _resize_plot_inches(plot, width_change=0, height_change=0):
-    """Accept a matplotlib figure or axes object and resize it (in inches).
-
-    Returns the original object.
+def _glm_model_attributes_to_dataframe(model):
+    """Return a pandas dataframe with pertinent model attributes & information.
 
     Parameters
     ----------
-    plot : matplotlib.Figure() or matplotlib.Axes()
-        The matplotlib Figure/Axes object to be resized.
-
-    width_change : float, default=0
-        The amount of change to be added on to original width.
-        Use negative values for reducing figure dimensions.
-
-    height_change : float, default=0
-        The amount of change to be added on to original height.
-        Use negative values for reducing figure dimensions.
+    model : FirstLevelModel or SecondLevelModel object.
 
     Returns
     -------
-    plot : matplotlib.Figure() or matplotlib.Axes()
-        The matplotlib Figure/Axes object after being resized.
-
+    pandas.DataFrame
+        DataFrame with the pertinent attributes of the model.
     """
-    if not isinstance(plot, (plt.Figure)):
-        orig_size = plot.figure.get_size_inches()
-    else:
-        orig_size = plot.get_size_inches()
-
-    new_size = (
-        orig_size[0] + width_change,
-        orig_size[1] + height_change,
+    model_attributes = pd.DataFrame.from_dict(
+        model._attributes_to_dict(),
+        orient="index",
     )
 
-    if not isinstance(plot, (plt.Figure)):
-        plot.figure.set_size_inches(new_size, forward=True)
-    else:
-        plot.set_size_inches(new_size, forward=True)
+    if len(model_attributes) == 0:
+        return model_attributes
 
-    return plot
+    attribute_units = {
+        "t_r": "seconds",
+        "high_pass": "Hertz",
+        "smoothing_fwhm": "mm",
+    }
+    attribute_names_with_units = {
+        attribute_name_: attribute_name_ + f" ({attribute_unit_})"
+        for attribute_name_, attribute_unit_ in attribute_units.items()
+    }
+    model_attributes = model_attributes.rename(
+        index=attribute_names_with_units
+    )
+    model_attributes.index.names = ["Parameter"]
+    model_attributes.columns = ["Value"]
+
+    return model_attributes
 
 
-def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
+def _mask_to_plot(model, bg_img, cut_coords):
     """Plot a mask image and creates PNG code of it.
 
     Parameters
@@ -397,7 +442,6 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
 
     cut_coords
 
-    is_volume_glm : bool
 
     Returns
     -------
@@ -405,8 +449,10 @@ def _mask_to_plot(model, bg_img, cut_coords, is_volume_glm):
         PNG Image for the mask plot.
 
     """
+    if not is_matplotlib_installed():
+        return None
     # Select mask_img to use for plotting
-    if not is_volume_glm:
+    if not model._is_volume_glm():
         model.masker_._create_figure_for_report()
         fig = plt.gcf()
         mask_plot = figure_to_png_base64(fig)
@@ -546,6 +592,7 @@ def _make_stat_maps_contrast_clusters(
             cluster_threshold=cluster_threshold,
             height_control=height_control,
         )
+
         table_details = clustering_params_to_dataframe(
             threshold,
             cluster_threshold,
@@ -554,26 +601,14 @@ def _make_stat_maps_contrast_clusters(
             alpha,
             is_volume_glm=not isinstance(stat_map_img, SurfaceImage),
         )
-
         table_details_html = dataframe_to_html(
             table_details,
             precision=3,
             header=False,
         )
 
-        stat_map_png = _stat_map_to_png(
-            stat_img=thresholded_img,
-            threshold=threshold,
-            bg_img=bg_img,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            plot_type=plot_type,
-            table_details=table_details,
-        )
-
-        if isinstance(stat_map_img, SurfaceImage):
-            cluster_table_html = None
-        else:
+        cluster_table_html = None
+        if not isinstance(thresholded_img, SurfaceImage):
             cluster_table = get_clusters_table(
                 thresholded_img,
                 stat_threshold=threshold,
@@ -586,6 +621,16 @@ def _make_stat_maps_contrast_clusters(
                 precision=2,
                 index=False,
             )
+
+        stat_map_png = _stat_map_to_png(
+            stat_img=thresholded_img,
+            threshold=threshold,
+            bg_img=bg_img,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            plot_type=plot_type,
+            table_details=table_details,
+        )
 
         results[escape(contrast_name)] = tempita.bunch(
             stat_map_img=stat_map_png,
@@ -652,12 +697,16 @@ def _stat_map_to_png(
         PNG Image Data representing a statistical map.
 
     """
+    if not is_matplotlib_installed():
+        return None
+
     cmap = DEFAULT_DIVERGING_CMAP
 
     if isinstance(stat_img, SurfaceImage):
         data = get_surface_data(stat_img)
     else:
         data = safe_get_data(stat_img, ensure_finite=True)
+
     stat_map_min = np.nanmin(data)
     stat_map_max = np.nanmax(data)
     symmetric_cbar = True
@@ -759,9 +808,8 @@ def _add_params_to_plot(table_details, stat_map_plot):
         x=0.45,
         wrap=True,
     )
-
     fig = plt.gcf()
-    _resize_plot_inches(
+    resize_plot_inches(
         plot=fig,
         width_change=0.2,
         height_change=1,
@@ -771,65 +819,3 @@ def _add_params_to_plot(table_details, stat_map_plot):
         suptitle_text.set_color("w")
 
     return stat_map_plot
-
-
-def _return_design_matrices_dict(design_matrices):
-    if design_matrices is None:
-        return None
-
-    design_matrices_dict = tempita.bunch()
-    for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
-        dmtx_plot = plot_design_matrix(design_matrix)
-        dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
-        dmtx_png = figure_to_png_base64(dmtx_plot)
-        # prevents sphinx-gallery & jupyter from scraping & inserting plots
-        plt.close("all")
-
-        # in case of second level model with a single regressor
-        # (for example one-sample t-test)
-        # no point in plotting the correlation
-        if (
-            isinstance(design_matrix, np.ndarray)
-            and design_matrix.shape[1] == 1
-        ) or (
-            isinstance(design_matrix, pd.DataFrame)
-            and len(design_matrix.columns) == 1
-        ):
-            dmtx_cor_png = None
-        else:
-            dmtx_cor_plot = plot_design_matrix_correlation(
-                design_matrix, tri="diag"
-            )
-            dmtx_cor_plot = _resize_plot_inches(
-                dmtx_cor_plot, height_change=0.3
-            )
-            dmtx_cor_png = figure_to_png_base64(dmtx_cor_plot)
-            # prevents sphinx-gallery & jupyter from scraping & inserting plots
-            plt.close("all")
-
-        design_matrices_dict[dmtx_count] = tempita.bunch(
-            design_matrix=dmtx_png, correlation_matrix=dmtx_cor_png
-        )
-
-    return design_matrices_dict
-
-
-def _return_contrasts_dict(design_matrices, contrasts):
-    if design_matrices is None or not contrasts:
-        return None
-
-    contrasts_dict = {}
-    for design_matrix in design_matrices:
-        for contrast_name, contrast_data in contrasts.items():
-            contrast_plot = plot_contrast_matrix(
-                contrast_data, design_matrix, colorbar=True
-            )
-            contrast_plot.set_xlabel(contrast_name)
-            contrast_plot.figure.set_figheight(2)
-            url_contrast_plot_png = figure_to_png_base64(contrast_plot)
-            # prevents sphinx-gallery & jupyter
-            # from scraping & inserting plots
-            plt.close("all")
-            contrasts_dict[contrast_name] = url_contrast_plot_png
-
-    return contrasts_dict
