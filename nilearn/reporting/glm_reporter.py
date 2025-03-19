@@ -572,18 +572,20 @@ def _make_stat_maps_contrast_clusters(
             header=False,
         )
 
-        cluster_table = get_clusters_table(
-            thresholded_img,
-            stat_threshold=threshold,
-            cluster_threshold=cluster_threshold,
-            min_distance=min_distance,
-            two_sided=two_sided,
-        )
-        cluster_table_html = dataframe_to_html(
-            cluster_table,
-            precision=2,
-            index=False,
-        )
+        cluster_table_html = None
+        if not isinstance(thresholded_img, SurfaceImage):
+            cluster_table = get_clusters_table(
+                thresholded_img,
+                stat_threshold=threshold,
+                cluster_threshold=cluster_threshold,
+                min_distance=min_distance,
+                two_sided=two_sided,
+            )
+            cluster_table_html = dataframe_to_html(
+                cluster_table,
+                precision=2,
+                index=False,
+            )
 
         stat_map_png = _stat_map_to_png(
             stat_img=thresholded_img,
