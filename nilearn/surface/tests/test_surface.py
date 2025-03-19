@@ -1189,7 +1189,7 @@ def test_get_min_max(surf_img_2d):
     assert vmax == 10
 
 
-def testextract_data_wrong_input():
+def test_extract_data_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         extract_data(1, index=1)
