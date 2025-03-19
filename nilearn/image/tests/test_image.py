@@ -37,18 +37,22 @@ from nilearn.image import (
     crop_img,
     get_data,
     high_variance_confounds,
-    image,
     index_img,
     iter_img,
     largest_connected_component_img,
     math_img,
     mean_img,
     new_img_like,
-    resampling,
     smooth_img,
     swap_img_hemispheres,
     threshold_img,
 )
+from nilearn.image.image import (
+    _crop_img_to,
+    _fast_smooth_array,
+    smooth_array,
+)
+from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
 from nilearn.surface._testing import (
     assert_polymesh_equal,
@@ -220,7 +224,7 @@ def test_fast_smooth_array():
     n_neighbors_max = 6
 
     data = np.ones(shape)
-    smooth_data = image._fast_smooth_array(data)
+    smooth_data = _fast_smooth_array(data)
 
     # this contains the number of neighbors for each cell in the array
     n_neighbors_arr = np.empty(shape)
@@ -245,7 +249,7 @@ def test_smooth_array_fwhm_is_odd_with_copy(smooth_array_data, affine):
     data = smooth_array_data
     fwhm = 9
 
-    filtered = image.smooth_array(data, affine, fwhm=fwhm, copy=True)
+    filtered = smooth_array(data, affine, fwhm=fwhm, copy=True)
 
     assert not np.may_share_memory(filtered, data)
 
@@ -262,7 +266,7 @@ def test_smooth_array_fwhm_is_odd_no_copy(affine):
     data = _new_data_for_smooth_array()
     fwhm = 9
 
-    image.smooth_array(data, affine, fwhm=fwhm, copy=False)
+    smooth_array(data, affine, fwhm=fwhm, copy=False)
 
     _check_fwhm(data, affine, fwhm)
 
@@ -273,7 +277,7 @@ def test_smooth_array_nan_do_not_propagate():
     fwhm = 9
     affine = AFFINE_TO_TEST[2]
 
-    filtered = image.smooth_array(
+    filtered = smooth_array(
         data, affine, fwhm=fwhm, ensure_finite=True, copy=True
     )
 
@@ -285,8 +289,8 @@ def test_smooth_array_same_result_with_fwhm_none_or_zero(
 ):
     affine = AFFINE_TO_TEST[2]
 
-    out_fwhm_none = image.smooth_array(smooth_array_data, affine, fwhm=None)
-    out_fwhm_zero = image.smooth_array(smooth_array_data, affine, fwhm=0.0)
+    out_fwhm_none = smooth_array(smooth_array_data, affine, fwhm=None)
+    out_fwhm_zero = smooth_array(smooth_array_data, affine, fwhm=0.0)
 
     assert_array_equal(out_fwhm_none, out_fwhm_zero)
 
@@ -296,8 +300,8 @@ def test_fast_smooth_array_give_same_result_as_smooth_array(
     smooth_array_data, affine
 ):
     assert_equal(
-        image.smooth_array(smooth_array_data, affine, fwhm="fast"),
-        image._fast_smooth_array(smooth_array_data),
+        smooth_array(smooth_array_data, affine, fwhm="fast"),
+        _fast_smooth_array(smooth_array_data),
     )
 
 
@@ -305,7 +309,7 @@ def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
     """See https://github.com/nilearn/nilearn/issues/1537."""
     affine = AFFINE_TO_TEST[2]
     with pytest.warns(UserWarning):
-        image.smooth_array(smooth_array_data, affine, fwhm=0.0)
+        smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
 def test_smooth_img(affine_eye, tmp_path):
@@ -362,7 +366,7 @@ def test_crop_img_to():
     img = Nifti1Image(data, affine=affine)
 
     slices = [slice(2, 4), slice(1, 5), slice(3, 6)]
-    cropped_img = image._crop_img_to(img, slices, copy=False)
+    cropped_img = _crop_img_to(img, slices, copy=False)
 
     new_origin = np.array((4, 3, 2)) * np.array((2, 1, 3))
 
@@ -379,7 +383,7 @@ def test_crop_img_to():
     assert (get_data(cropped_img) == 2).all()
 
     # check that copying works
-    copied_cropped_img = image._crop_img_to(img, slices)
+    copied_cropped_img = _crop_img_to(img, slices)
 
     data[2:4, 1:5, 3:6] = 1
     assert (get_data(copied_cropped_img) == 2).all()
@@ -457,14 +461,14 @@ def test_mean_img(images_to_mean, tmp_path):
 
     truth = _mean_ground_truth(images_to_mean)
 
-    mean_img = image.mean_img(images_to_mean, copy_header=True)
+    mean_img = mean_img(images_to_mean, copy_header=True)
 
     assert_array_equal(mean_img.affine, affine)
     assert_array_equal(get_data(mean_img), truth)
 
     # Test with files
     imgs = testing.write_imgs_to_path(*images_to_mean, file_path=tmp_path)
-    mean_img = image.mean_img(imgs, copy_header=True)
+    mean_img = mean_img(imgs, copy_header=True)
 
     assert_array_equal(mean_img.affine, affine)
     if X64:
@@ -491,11 +495,11 @@ def test_mean_img_resample(rng):
 
     target_affine = affine[:, [1, 0, 2, 3]]  # permutation of axes
 
-    mean_img_with_resampling = image.mean_img(
+    mean_img_with_resampling = mean_img(
         img, target_affine=target_affine, copy_header=True
     )
 
-    resampled_mean_image = resampling.resample_img(
+    resampled_mean_image = resample_img(
         mean_img,
         target_affine=target_affine,
         copy_header=True,
@@ -513,7 +517,7 @@ def test_mean_img_resample(rng):
 
 def test_mean_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
-    result = image.mean_img(img_4d_mni_tr2, copy_header=True)
+    result = mean_img(img_4d_mni_tr2, copy_header=True)
     match_headers_keys(
         result,
         img_4d_mni_tr2,
@@ -1567,7 +1571,7 @@ def test_clean_img_sample_mask(img_4d_rand_eye, shape_4d_default):
     # exclude last time point
     sample_mask = np.arange(length - 1)
 
-    img = image.clean_img(
+    img = clean_img(
         img_4d_rand_eye,
         confounds=confounds,
         clean__sample_mask=sample_mask,
@@ -1587,7 +1591,7 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
     sample_mask = np.arange(length - 1)
 
     # test with sample mask
-    img = image.clean_img(
+    img = clean_img(
         img_4d,
         confounds=confounds,
         mask_img=mask_img,
@@ -1672,10 +1676,11 @@ def test_concat_imgs_surface(surf_img_2d):
 
     Output must have as many samples as the sum of samples in the input.
     """
-    img = concat_imgs([surf_img_2d(3), surf_img_2d(5)])
+    img = concat_imgs([surf_img_2d(3), surf_img_2d(5)], dtype=np.float32)
     assert img.shape == (9, 8)
     for value in img.data.parts.values():
         assert value.ndim == 2
+        assert value.dtype == np.float32
 
 
 def nifti_generator(buffer):
@@ -1692,7 +1697,7 @@ def test_iterator_generator(img_3d_rand_eye):
     assert_array_almost_equal(get_data(cc)[..., 0], get_data(list_images[0]))
 
     # Same with iteration
-    i = image.iter_img(list_images)
+    i = iter_img(list_images)
     cc = concat_imgs(i)
     assert cc.shape[-1] == 10
     assert_array_almost_equal(get_data(cc)[..., 0], get_data(list_images[0]))
