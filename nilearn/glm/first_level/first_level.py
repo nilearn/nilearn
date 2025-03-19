@@ -491,8 +491,6 @@ class FirstLevelModel(BaseGLM):
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
 
-        check_compatibility_mask_and_images(self.mask_img, run_imgs)
-
         if design_matrices is None:
             if events is None:
                 raise ValueError("events or design matrices must be provided")
@@ -516,6 +514,9 @@ class FirstLevelModel(BaseGLM):
 
         if sample_masks is not None:
             sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
+
+        if self.mask_img not in [None, False]:
+            check_compatibility_mask_and_images(self.mask_img, run_imgs)
 
         return (
             run_imgs,
