@@ -3,6 +3,7 @@
 import inspect
 import json
 import warnings
+from collections.abc import Iterable
 from pathlib import Path
 
 from nilearn import __version__
@@ -259,9 +260,7 @@ def save_glm_to_bids(
     metadata_file = out_dir / f"{prefix}statmap.json"
     _generate_model_metadata(metadata_file, model)
 
-    logger.log(
-        "Generating contrast-level statistical maps...", verbose=verbose
-    )
+    logger.log("Saving contrast-level statistical maps...", verbose=verbose)
     statistical_maps = make_stat_maps(model, contrasts, output_type="all")
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
@@ -271,8 +270,8 @@ def save_glm_to_bids(
             ][output_type]
             img.to_filename(out_dir / filename)
 
-    logger.log("Saving contrast-level statistical maps...", verbose=verbose)
-    _write_model_level_statistical_maps(model, prefix, out_dir)
+    logger.log("Saving model level statistical maps...", verbose=verbose)
+    _write_model_level_statistical_maps(model, out_dir)
 
     logger.log("Generating HTML...", verbose=verbose)
     # generate_report can just rely on the name of the files
@@ -287,29 +286,11 @@ def save_glm_to_bids(
     return model
 
 
-def _write_model_level_statistical_maps(model, prefix, out_dir):
-    if model.__str__() == "Second Level Model":
-        model_level_mapping = {
-            "residuals": f"{prefix}stat-errorts_statmap.nii.gz",
-            "r_square": f"{prefix}stat-rsquared_statmap.nii.gz",
-        }
+def _write_model_level_statistical_maps(model, out_dir):
+    for i_run, model_level_mapping in model._reporting_data["filenames"][
+        "model_level_mapping"
+    ].items():
         for attr, map_name in model_level_mapping.items():
-            stat_map_to_save = getattr(model, attr)
+            img = getattr(model, attr)
+            stat_map_to_save = img[i_run] if isinstance(img, Iterable) else img
             stat_map_to_save.to_filename(out_dir / map_name)
-
-    else:
-        if hasattr(model, "design_matrices_"):
-            design_matrices = model.design_matrices_
-        else:
-            design_matrices = [model.design_matrix_]
-
-        for i_run, _ in enumerate(design_matrices):
-            run_str = f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
-            model_level_mapping = {
-                "residuals": f"{prefix}{run_str}stat-errorts_statmap.nii.gz",
-                "r_square": f"{prefix}{run_str}stat-rsquared_statmap.nii.gz",
-            }
-            for attr, map_name in model_level_mapping.items():
-                img = getattr(model, attr)
-                stat_map_to_save = img[i_run]
-                stat_map_to_save.to_filename(out_dir / map_name)

@@ -351,17 +351,33 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 )
 
         if self.__str__() == "Second Level Model":
-            sub_directory = "group"
             design_matrices = [self.design_matrix_]
         else:
-            sub_directory = (
-                prefix.split("_")[0] if prefix.startswith("sub-") else ""
-            )
             design_matrices = self.design_matrices_
 
-        out_dir = Path(out_dir) / sub_directory
+        suffix = "_statmap.nii.gz"
 
+        model_level_mapping: dict[int, dict[str, str]] = {}
+        if self.__str__() == "Second Level Model":
+            model_level_mapping[0] = {
+                "residuals": f"{prefix}stat-errorts{suffix}",
+                "r_square": f"{prefix}stat-rsquared{suffix}",
+            }
+        else:
+            for i_run, _ in enumerate(design_matrices):
+                run_str = (
+                    f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
+                )
+                model_level_mapping[i_run] = {
+                    "residuals": f"{prefix}{run_str}stat-errorts{suffix}",
+                    "r_square": f"{prefix}{run_str}stat-rsquared{suffix}",
+                }
+
+        # design_matrices_dict[i_run] = {"design_matrix": filename,
+        #                                "correlation_matrix": filename}
         design_matrices_dict = tempita.bunch()
+
+        # contrasts_dict[i_run][contrast_name] = filename
         contrasts_dict = tempita.bunch()
         for i_run, _ in enumerate(design_matrices, start=1):
             run_str = f"run-{i_run}_" if len(design_matrices) > 1 else ""
@@ -384,7 +400,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         if not isinstance(contrast_types, dict):
             contrast_types = {}
 
-        statistical_maps = {}
+        statistical_maps: dict[str, dict[str, str]] = {}
         for contrast_name in contrasts:
             # Extract stat_type
             contrast_matrix = contrasts[contrast_name]
@@ -394,7 +410,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 stat_type = "t"
             else:
                 stat_type = "F"
-
             # Override automatic detection with explicit type if provided
             stat_type = contrast_types.get(contrast_name, stat_type)
 
@@ -402,7 +417,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
             contrast_entity = (
                 f"contrast-{_clean_contrast_name(contrast_name)}_"
             )
-            suffix = "_statmap.nii.gz"
             statistical_maps[contrast_name] = {
                 "effect_size": (
                     f"{prefix}{contrast_entity}stat-effect{suffix}"
@@ -415,11 +429,20 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 "p_value": (f"{prefix}{contrast_entity}stat-p{suffix}"),
             }
 
+        if self.__str__() == "Second Level Model":
+            sub_directory = "group"
+        else:
+            sub_directory = (
+                prefix.split("_")[0] if prefix.startswith("sub-") else ""
+            )
+        out_dir = Path(out_dir) / sub_directory
+
         self._reporting_data["filenames"] = {
             "dir": out_dir,
             "design_matrices_dict": design_matrices_dict,
             "contrasts_dict": contrasts_dict,
             "statistical_maps": statistical_maps,
+            "model_level_mapping": model_level_mapping,
         }
 
         return self
