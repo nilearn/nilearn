@@ -923,6 +923,7 @@ def create_fake_bids_dataset(
     random_state=0,
     entities=None,
     n_vertices=0,
+    n_voxels=4,
     spaces=None,
 ):
     """Create a fake :term:`BIDS` dataset directory with dummy files.
@@ -988,6 +989,9 @@ def create_fake_bids_dataset(
         Use n_vertices == 10242 to match the number of vertices
         in fsaverage5.
 
+    n_voxels : :obj:`int`, default = 4
+        Number of voxel along x, y, z dimensions for volume data.
+
     spaces : :obj:`list` of :obj:`str`, optional.
         Defaults to ``("MNI", "T1w")``
 
@@ -1009,7 +1013,6 @@ def create_fake_bids_dataset(
         n_runs = [1, 3]
     if spaces is None:
         spaces = ("MNI", "T1w")
-    n_voxels = 4
 
     rand_gen = np.random.default_rng(random_state)
 

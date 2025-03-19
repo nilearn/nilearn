@@ -43,7 +43,7 @@ def generate_design_matrices_figures(
     if design_matrices is None:
         return design_matrices_dict
 
-    for i_run, design_matrix in enumerate(design_matrices, start=1):
+    for i_run, design_matrix in enumerate(design_matrices):
         dmtx_plot = plot_design_matrix(design_matrix)
         dmtx_plot = resize_plot_inches(dmtx_plot, height_change=0.3)
         dmtx_fig = None
@@ -134,7 +134,7 @@ def generate_constrat_matrices_figures(
     if design_matrices is None or not contrasts:
         return contrasts_dict
 
-    for i_run, design_matrix in enumerate(design_matrices, start=1):
+    for i_run, design_matrix in enumerate(design_matrices):
         for contrast_name, contrast_data in contrasts.items():
             contrast_plot = plot_contrast_matrix(
                 contrast_data, design_matrix, colorbar=True

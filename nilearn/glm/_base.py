@@ -1,5 +1,6 @@
 import warnings
 from collections import OrderedDict
+from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -11,6 +12,7 @@ from nilearn._utils import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.externals import tempita
+from nilearn.interfaces.bids.utils import create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 
@@ -309,7 +311,11 @@ class BaseGLM(CacheMixin, BaseEstimator):
     ):
         """Generate output filenames for a series of contrasts.
 
-        Store the name of the output files in the model.
+        This function constructs and stores the expected output filenames
+        for contrast-related statistical maps and design matrices within
+        the model.
+
+        The filenames follow the BIDS convention where applicable.
 
         See nilearn.interfaces.bids.save_glm_to_bids for more details.
 
@@ -330,13 +336,67 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         out_dir : :obj:`str` or :obj:`pathlib.Path`
             Output directory for files.
+
+        Returns
+        -------
+        self : object
+            The model instance with updated reporting data that includes
+            generated filenames for contrasts,
+            statistical maps, and design matrices.
+
+        Notes
+        -----
+        - The function ensures that contrast names are valid strings.
+        - It constructs filenames for effect sizes, statistical maps,
+          and design matrices in a structured manner.
+        - The output directory structure may include a subject-level
+          or group-level subdirectory based on the model type.
         """
         check_is_fitted(self)
 
+        generate_bids_name = (
+            self.__str__() == "First Level Model"
+            and len(self._reporting_data["run_imgs"]) > 0
+            and all(
+                x is not None
+                for x in self._reporting_data["run_imgs"][0].get("sub", None)
+            )
+        )
+
+        entities = {
+            "sub": None,
+            "ses": None,
+            "task": None,
+            "space": None,
+        }
+
         if not isinstance(prefix, str):
             prefix = ""
-        if prefix and not prefix.endswith("_"):
-            prefix += "_"
+            # try to figure out filename entities from input files
+            # only keep entity label if unique
+            if generate_bids_name:
+                for entity in ["sub", "ses", "task", "space"]:
+                    label = [
+                        x.get(entity)
+                        for x in self._reporting_data["run_imgs"].values()
+                        if x.get(entity) is not None
+                    ]
+
+                    label = set(label)
+                    if len(label) != 1:
+                        continue
+                    label = next(iter(label))
+                    entities[entity] = label
+
+                    if entity in ["sub", "ses", "task"]:
+                        prefix += f"{entity}-{label}_"
+
+        if self.__str__() == "Second Level Model":
+            sub = "group"
+        elif entities["sub"]:
+            sub = f"sub-{entities['sub']}"
+        else:
+            sub = prefix.split("_")[0] if prefix.startswith("sub-") else ""
 
         contrasts = coerce_to_dict(contrasts)
         for k, v in contrasts.items():
@@ -358,45 +418,29 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         suffix = "_statmap.nii.gz"
 
-        model_level_mapping: dict[int, dict[str, str]] = {}
-        if self.__str__() == "Second Level Model":
-            model_level_mapping[0] = {
-                "residuals": f"{prefix}stat-errorts{suffix}",
-                "r_square": f"{prefix}stat-rsquared{suffix}",
-            }
-        else:
-            for i_run, _ in enumerate(design_matrices):
-                run_str = (
-                    f"run-{i_run + 1}_" if len(design_matrices) > 1 else ""
-                )
-                model_level_mapping[i_run] = {
-                    "residuals": f"{prefix}{run_str}stat-errorts{suffix}",
-                    "r_square": f"{prefix}{run_str}stat-rsquared{suffix}",
-                }
+        entities_to_include = [
+            "prefix",
+            "sub",
+            "ses",
+            "task",
+            "acq",
+            "ce",
+            "rec",
+            "dir",
+            "run",
+            "hemi",
+            "space",
+            "res",
+            "den",
+            "contrast",
+            "stat",
+        ]
 
-        # design_matrices_dict[i_run] = {"design_matrix": filename,
-        #                                "correlation_matrix": filename}
-        design_matrices_dict = tempita.bunch()
-
-        # contrasts_dict[i_run][contrast_name] = filename
-        contrasts_dict = tempita.bunch()
-        for i_run, _ in enumerate(design_matrices, start=1):
-            run_str = f"run-{i_run}_" if len(design_matrices) > 1 else ""
-
-            design_matrices_dict[i_run] = tempita.bunch(
-                design_matrix=f"{prefix}{run_str}design.svg",
-                correlation_matrix=f"{prefix}{run_str}corrdesign.svg",
-            )
-
-            tmp = {
-                contrast_name: (
-                    f"{prefix}{run_str}"
-                    f"contrast-{_clean_contrast_name(contrast_name)}"
-                    "_design.svg"
-                )
-                for contrast_name in contrasts
-            }
-            contrasts_dict[i_run] = tempita.bunch(**tmp)
+        fields = {
+            "suffix": "statmap",
+            "extension": "nii.gz",
+            "entities": entities,
+        }
 
         if not isinstance(contrast_types, dict):
             contrast_types = {}
@@ -414,29 +458,113 @@ class BaseGLM(CacheMixin, BaseEstimator):
             # Override automatic detection with explicit type if provided
             stat_type = contrast_types.get(contrast_name, stat_type)
 
-            # Convert the contrast name to camelCase
-            contrast_entity = (
-                f"contrast-{_clean_contrast_name(contrast_name)}_"
+            if not generate_bids_name:
+                fields["entities"]["prefix"] = prefix
+
+            fields["entities"]["contrast"] = _clean_contrast_name(
+                contrast_name
             )
-            statistical_maps[contrast_name] = {
-                "effect_size": (
-                    f"{prefix}{contrast_entity}stat-effect{suffix}"
-                ),
-                "stat": (f"{prefix}{contrast_entity}stat-{stat_type}{suffix}"),
-                "effect_variance": (
-                    f"{prefix}{contrast_entity}stat-variance{suffix}"
-                ),
-                "z_score": (f"{prefix}{contrast_entity}stat-z{suffix}"),
-                "p_value": (f"{prefix}{contrast_entity}stat-p{suffix}"),
+
+            tmp = {}
+            for key, stat_label in zip(
+                [
+                    "effect_size",
+                    "stat",
+                    "effect_variance",
+                    "z_score",
+                    "p_value",
+                ],
+                ["effect", stat_type, "variance", "z", "p"],
+            ):
+                fields["entities"]["stat"] = stat_label
+                tmp[key] = create_bids_filename(fields, entities_to_include)
+
+            statistical_maps[contrast_name] = tempita.bunch(**tmp)
+
+        fields = {
+            "suffix": "statmap",
+            "extension": "nii.gz",
+            "entities": entities,
+        }
+
+        model_level_mapping: dict[int, dict[str, str]] = {}
+        if self.__str__() == "Second Level Model":
+            model_level_mapping[0] = {
+                "residuals": f"{prefix}stat-errorts{suffix}",
+                "r_square": f"{prefix}stat-rsquared{suffix}",
             }
 
-        if self.__str__() == "Second Level Model":
-            sub_directory = "group"
         else:
-            sub_directory = (
-                prefix.split("_")[0] if prefix.startswith("sub-") else ""
-            )
-        out_dir = Path(out_dir) / sub_directory
+            for i_run, _ in enumerate(design_matrices):
+                if generate_bids_name:
+                    fields["entities"] = deepcopy(
+                        self._reporting_data["run_imgs"][i_run]
+                    )
+                else:
+                    fields["entities"]["prefix"] = prefix
+                    fields["entities"]["run"] = i_run + 1
+
+                tmp = {}
+                for key, stat_label in zip(
+                    ["residuals", "r_square"],
+                    ["errorts", "rsquared"],
+                ):
+                    fields["entities"]["stat"] = stat_label
+                    tmp[key] = create_bids_filename(
+                        fields, entities_to_include
+                    )
+
+                model_level_mapping[i_run] = tempita.bunch(**tmp)
+
+        fields = {
+            "extension": "svg",
+            "entities": entities,
+        }
+        # design_matrices_dict[i_run] = {"design_matrix": filename,
+        #                                "correlation_matrix": filename}
+        design_matrices_dict = tempita.bunch()
+        for i_run, _ in enumerate(design_matrices):
+            if generate_bids_name:
+                fields["entities"] = deepcopy(
+                    self._reporting_data["run_imgs"][i_run]
+                )
+            else:
+                fields["entities"]["prefix"] = prefix
+                fields["entities"]["run"] = i_run + 1
+
+            tmp = {}
+            for key, suffix in zip(
+                ["design_matrix", "correlation_matrix"],
+                ["design", "corrdesign"],
+            ):
+                fields["suffix"] = suffix
+                tmp[key] = create_bids_filename(fields, entities_to_include)
+
+            design_matrices_dict[i_run] = tempita.bunch(**tmp)
+
+        fields = {"extension": "svg", "entities": entities, "suffix": "design"}
+
+        # contrasts_dict[i_run][contrast_name] = filename
+        contrasts_dict = tempita.bunch()
+        for i_run, _ in enumerate(design_matrices):
+            if generate_bids_name:
+                fields["entities"] = deepcopy(
+                    self._reporting_data["run_imgs"][i_run]
+                )
+            else:
+                fields["entities"]["prefix"] = prefix
+                fields["entities"]["run"] = i_run + 1
+
+            tmp = {}
+            for contrast_name in contrasts:
+                fields["entities"]["contrast"] = contrast_name
+                tmp[contrast_name] = create_bids_filename(
+                    fields, entities_to_include
+                )
+
+            contrasts_dict[i_run] = tempita.bunch(**tmp)
+
+        out_dir = Path(out_dir) / sub
 
         self._reporting_data["filenames"] = {
             "dir": out_dir,
@@ -450,7 +578,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
 
 def _clean_contrast_name(contrast_name):
-    """Remove prohibited characters from name and convert to camelCase.
+    """Remove prohibited characters from name camelCase.
 
     .. versionadded:: 0.9.2
 

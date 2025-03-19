@@ -87,10 +87,8 @@ def create_bids_filename(fields, entities_to_include=None):
     filename = ""
 
     for key in entities_to_include:
-        if key in fields["entities"]:
-            value = fields["entities"][key]
-            if value not in (None, ""):
-                filename += f"{key}-{value}_"
+        if value := fields["entities"].get(key):
+            filename += f"{key}-{value}_"
     if "suffix" in fields:
         filename += f"{fields['suffix']}"
     if "extension" in fields:

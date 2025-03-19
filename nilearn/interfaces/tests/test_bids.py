@@ -13,7 +13,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
 )
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.glm.first_level import FirstLevelModel
+from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.interfaces.bids import (
     get_bids_files,
@@ -762,3 +762,51 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
     assert "BBB-AAA" not in report.__str__()
     for file in EXPECTED_FILENAMES:
         assert file not in report.__str__()
+
+
+def test_get_bids_files_names(tmp_path):
+    """Do To."""
+    n_sub = 1
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=2,
+        tasks=["main"],
+        n_runs=[2],
+        n_voxels=20,
+    )
+
+    models, imgs, events, _ = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+    )
+
+    model = models[0]
+    run_imgs = imgs[0]
+    events = events[0]
+
+    model.minimize_memory = False
+    model.fit(run_imgs=run_imgs, events=events)
+
+    assert len(model._reporting_data["run_imgs"]) == 4
+
+    model = save_glm_to_bids(
+        model=model, out_dir=tmp_path / "output", contrasts=["c0"]
+    )
+
+    EXPECTED_FILENAME_ENDINGS = [
+        "sub-01_task-main_space-MNI_contrast-c0_stat-z_statmap.nii.gz",
+        "sub-01_ses-01_task-main_run-01_space-MNI_stat-rsquared_statmap.nii.gz",
+        "sub-01_ses-02_task-main_run-01_space-MNI_design.svg",
+        "sub-01_ses-02_task-main_run-01_space-MNI_corrdesign.svg",
+        "sub-01_ses-01_task-main_run-02_space-MNI_contrast-c0_design.svg",
+        # "sub-01_ses-02_task-main_run-02_space-MNI_design.tsv",
+        # "sub-01_ses-01_task-main_run-02_space-MNI_design.json",
+    ]
+
+    for fname in EXPECTED_FILENAME_ENDINGS:
+        assert (tmp_path / "output" / "sub-01" / fname).exists()
