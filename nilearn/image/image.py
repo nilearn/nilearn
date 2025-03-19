@@ -551,7 +551,7 @@ def mean_img(
     This can be a mean over time or the 4th dimension for a volume,
     or the 2nd dimension for a surface image.
 
-    Note that if list of 4D volumen images (or 2D surface images)
+    Note that if list of 4D volume images (or 2D surface images)
     are given,
     the mean of each image is computed separately,
     and the resulting mean is computed after.
