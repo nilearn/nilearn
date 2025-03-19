@@ -90,6 +90,7 @@ derivatives_folder = "derivatives/fmriprep"
     smoothing_fwhm=5.0,
     derivatives_folder=derivatives_folder,
     n_jobs=2,
+    verbose=1,
 )
 
 # %%

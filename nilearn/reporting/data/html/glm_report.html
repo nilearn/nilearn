@@ -125,9 +125,10 @@
     <div class="d-flex flex-column">
       <h3>run {{dmtx_title}}</h3>
       <div class="scroll-y">
+        {{py: is_bytes = isinstance(dmtx.design_matrix, bytes)}}
         <img
           class="pure-img"
-          src="data:image/png;base64,{{dmtx.design_matrix}}"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.design_matrix}}"
           title="Plot of design matrix for {{dmtx_title}}."
           alt="Plot of design matrix for {{dmtx_title}}."
           style="min-width: 600px"
@@ -137,9 +138,10 @@
       {{if dmtx.correlation_matrix }}
       <h4>correlation matrix</h4>
       <div class="scroll-y">
+        {{py: is_bytes = isinstance(dmtx.correlation_matrix, bytes)}}
         <img
           class="pure-img"
-          src="data:image/png;base64,{{dmtx.correlation_matrix}}"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.correlation_matrix}}"
           title="Plot of correlation of design matrix for run {{dmtx_title}}."
           alt="Plot of correlation of design matrix for run {{dmtx_title}}."
           style="min-width: 600px"
@@ -163,9 +165,10 @@
       <!--  -->
       {{for contrast_name, contrast_plot in contrasts}}
       <div class="scroll-y">
+        {{py: is_bytes = isinstance(contrast_plot, bytes)}}
         <img
           class="pure-img"
-          src="data:image/png;base64,{{contrast_plot}}"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{contrast_plot}}"
           title="Plot of the contrast: {{contrast_name}}."
           alt="Plot of the contrast: {{contrast_name}}."
           style="min-width: 600px"

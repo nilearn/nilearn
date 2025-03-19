@@ -2,14 +2,10 @@
 
 import warnings
 from collections import OrderedDict
-from collections.abc import Iterable
 from decimal import Decimal
 
 import numpy as np
 import pandas as pd
-
-from nilearn.glm.first_level import FirstLevelModel
-from nilearn.glm.second_level import SecondLevelModel
 
 
 def check_report_dims(report_size):
@@ -114,43 +110,6 @@ def clustering_params_to_dataframe(
     return table_details
 
 
-def coerce_to_dict(input_arg):
-    """Construct a dict from the provided arg.
-
-    If input_arg is:
-      dict or None then returns it unchanged.
-
-      string or collection of Strings or Sequence[int],
-      returns a dict {str(value): value, ...}
-
-    Parameters
-    ----------
-    input_arg : String or Collection[str or Int or Sequence[Int]]
-     or Dict[str, str or np.array] or None
-        Can be of the form:
-         'string'
-         ['string_1', 'string_2', ...]
-         list/array
-         [list/array_1, list/array_2, ...]
-         {'string_1': list/array1, ...}
-
-    Returns
-    -------
-    input_args: Dict[str, np.array or str] or None
-
-    """
-    if input_arg is None:
-        return None
-    if not isinstance(input_arg, dict):
-        if isinstance(input_arg, Iterable) and not isinstance(
-            input_arg[0], Iterable
-        ):
-            input_arg = [input_arg]
-        input_arg = [input_arg] if isinstance(input_arg, str) else input_arg
-        input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
-    return input_arg
-
-
 def dataframe_to_html(df, precision, **kwargs):
     """Make HTML table from provided dataframe.
 
@@ -179,67 +138,18 @@ def dataframe_to_html(df, precision, **kwargs):
     return html_table.replace('class="dataframe"', 'class="pure-table"')
 
 
-def make_stat_maps(model, contrasts, output_type="z_score"):
-    """Given a model and contrasts, return the corresponding z-maps.
+def model_attributes_to_dataframe(model):
+    """Return dataframe with pertinent model attributes & information.
 
     Parameters
     ----------
-    model : FirstLevelModel or SecondLevelModel object
-        Must have a fitted design matrix(ces).
-
-    contrasts : Dict[str, ndarray or str]
-        Dict of contrasts for a first or second level model.
-        Corresponds to the contrast_def for the FirstLevelModel
-        (nilearn.glm.first_level.FirstLevelModel.compute_contrast)
-        & second_level_contrast for a SecondLevelModel
-        (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
-
-    output_type : :obj:`str`, default='z_score'
-        The type of statistical map to retain from the contrast.
-
-        .. versionadded:: 0.9.2
-
-    Returns
-    -------
-    statistical_maps : Dict[str, niimg]
-        Dict of statistical z-maps keyed to contrast names/titles.
-
-    See Also
-    --------
-    nilearn.glm.first_level.FirstLevelModel.compute_contrast
-    nilearn.glm.second_level.SecondLevelModel.compute_contrast
-
-    """
-    statistical_maps = {
-        contrast_id: model.compute_contrast(
-            contrast_val,
-            output_type=output_type,
-        )
-        for contrast_id, contrast_val in contrasts.items()
-    }
-    return statistical_maps
-
-
-def model_attributes_to_dataframe(model, is_volume_glm=True):
-    """Return an HTML table with pertinent model attributes & information.
-
-    Parameters
-    ----------
-    model : Any masker or FirstLevelModel or SecondLevelModel object.
-
-    is_volume_glm : bool, optional, default=True
-        Whether the GLM model is for a volume image or not. Only relevant for
-        FirstLevelModel and SecondLevelModel objects.
+    model : Any masker object.
 
     Returns
     -------
     attributes_df: pandas.DataFrame
         DataFrame with the pertinent attributes of the model.
     """
-    if model.__class__.__name__ in ["FirstLevelModel", "SecondLevelModel"]:
-        return _glm_model_attributes_to_dataframe(
-            model, is_volume_glm=is_volume_glm
-        )
     attributes_df = OrderedDict(
         (
             attr_name,
@@ -255,72 +165,3 @@ def model_attributes_to_dataframe(model, is_volume_glm=True):
     attributes_df.index.names = ["Parameter"]
     attributes_df.columns = ["Value"]
     return attributes_df
-
-
-def _glm_model_attributes_to_dataframe(model, is_volume_glm=True):
-    """Return a pandas dataframe with pertinent model attributes & information.
-
-    Parameters
-    ----------
-    model : FirstLevelModel or SecondLevelModel object.
-
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame with the pertinent attributes of the model.
-    """
-    selected_attributes = [
-        "subject_label",
-        "drift_model",
-        "hrf_model",
-        "standardize",
-        "noise_model",
-        "t_r",
-        "signal_scaling",
-        "scaling_axis",
-        "smoothing_fwhm",
-        "slice_time_ref",
-    ]
-    if is_volume_glm:
-        selected_attributes.extend(["target_shape", "target_affine"])
-    if hasattr(model, "hrf_model") and model.hrf_model == "fir":
-        selected_attributes.append("fir_delays")
-    if hasattr(model, "drift_model"):
-        if model.drift_model == "cosine":
-            selected_attributes.append("high_pass")
-        elif model.drift_model == "polynomial":
-            selected_attributes.append("drift_order")
-
-    attribute_units = {
-        "t_r": "seconds",
-        "high_pass": "Hertz",
-    }
-
-    selected_attributes.sort()
-    display_attributes = OrderedDict(
-        (attr_name, getattr(model, attr_name))
-        for attr_name in selected_attributes
-        if hasattr(model, attr_name)
-    )
-    model_attributes = pd.DataFrame.from_dict(
-        display_attributes,
-        orient="index",
-    )
-    attribute_names_with_units = {
-        attribute_name_: attribute_name_ + f" ({attribute_unit_})"
-        for attribute_name_, attribute_unit_ in attribute_units.items()
-    }
-    model_attributes = model_attributes.rename(
-        index=attribute_names_with_units
-    )
-    model_attributes.index.names = ["Parameter"]
-    model_attributes.columns = ["Value"]
-
-    return model_attributes
-
-
-def return_model_type(model):
-    if isinstance(model, FirstLevelModel):
-        return "First Level Model"
-    elif isinstance(model, SecondLevelModel):
-        return "Second Level Model"
