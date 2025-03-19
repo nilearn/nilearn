@@ -23,8 +23,8 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
+from nilearn.plotting.surface._utils import check_surface_plotting_inputs
 from nilearn.plotting.surface.surf_plotting import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors_matplotlib,
