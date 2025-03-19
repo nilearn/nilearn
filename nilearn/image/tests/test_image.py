@@ -461,25 +461,25 @@ def test_mean_img(images_to_mean, tmp_path):
 
     truth = _mean_ground_truth(images_to_mean)
 
-    mean_img = mean_img(images_to_mean, copy_header=True)
+    img = mean_img(images_to_mean, copy_header=True)
 
-    assert_array_equal(mean_img.affine, affine)
-    assert_array_equal(get_data(mean_img), truth)
+    assert_array_equal(img.affine, affine)
+    assert_array_equal(get_data(img), truth)
 
     # Test with files
     imgs = testing.write_imgs_to_path(*images_to_mean, file_path=tmp_path)
-    mean_img = mean_img(imgs, copy_header=True)
+    img = mean_img(imgs, copy_header=True)
 
-    assert_array_equal(mean_img.affine, affine)
+    assert_array_equal(img.affine, affine)
     if X64:
-        assert_array_equal(get_data(mean_img), truth)
+        assert_array_equal(get_data(img), truth)
     else:
         # We don't really understand but arrays are not
         # exactly equal on 32bit. Given that you can not do
         # much real world data analysis with nilearn on a
         # 32bit machine it is not worth investigating more
         assert_allclose(
-            get_data(mean_img),
+            get_data(img),
             truth,
             rtol=np.finfo(truth.dtype).resolution,
             atol=0,
