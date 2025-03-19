@@ -45,6 +45,7 @@ def clustering_params_to_dataframe(
     min_distance,
     height_control,
     alpha,
+    is_volume_glm,
 ):
     """Create a Pandas DataFrame from the supplied arguments.
 
@@ -59,7 +60,7 @@ def clustering_params_to_dataframe(
     cluster_threshold : int or None
         Cluster size threshold, in voxels.
 
-    min_distance : float, default=8
+    min_distance : float
         For display purposes only.
         Minimum distance between subpeaks in mm.
 
@@ -71,6 +72,9 @@ def clustering_params_to_dataframe(
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
+
+    is_volume_glm: bool
+        True if we are dealing with volume data.
 
     Returns
     -------
@@ -96,14 +100,17 @@ def clustering_params_to_dataframe(
         table_details.update({"Height control": "None"})
         table_details.update({"Threshold Z": threshold})
 
-    table_details.update(
-        {"Cluster size threshold (voxels)": cluster_threshold}
-    )
-    table_details.update({"Minimum distance (mm)": min_distance})
+    if is_volume_glm:
+        table_details.update(
+            {"Cluster size threshold (voxels)": cluster_threshold}
+        )
+        table_details.update({"Minimum distance (mm)": min_distance})
+
     table_details = pd.DataFrame.from_dict(
         table_details,
         orient="index",
     )
+
     return table_details
 
 

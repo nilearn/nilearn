@@ -751,7 +751,7 @@ def _plot_surf_matplotlib(
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(surf_map_faces)
-            cax, _ = make_axes(
+            figure._colorbar_ax, _ = make_axes(
                 axes,
                 location="right",
                 fraction=0.15,
@@ -759,9 +759,9 @@ def _plot_surf_matplotlib(
                 pad=0.0,
                 aspect=10.0,
             )
-            figure.colorbar(
+            figure._cbar = figure.colorbar(
                 proxy_mappable,
-                cax=cax,
+                cax=figure._colorbar_ax,
                 ticks=ticks,
                 boundaries=bounds,
                 spacing="proportional",
