@@ -27,7 +27,6 @@ from nilearn._utils.niimg import safe_get_data
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
-from nilearn.glm.first_level import FirstLevelModel
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
     check_report_dims,
@@ -242,11 +241,10 @@ def make_glm_report(
     if model.__sklearn_is_fitted__():
         warning_messages = []
 
-        design_matrices = (
-            model.design_matrices_
-            if isinstance(model, FirstLevelModel)
-            else [model.design_matrix_]
-        )
+        if model.__str__() == "Second Level Model":
+            design_matrices = [model.design_matrix_]
+        else:
+            design_matrices = model.design_matrices_
 
         if bg_img == "MNI152TEMPLATE":
             bg_img = MNI152TEMPLATE if model._is_volume_glm() else None

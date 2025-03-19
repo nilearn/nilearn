@@ -209,10 +209,10 @@ def save_glm_to_bids(
 
     verbose = model.verbose
 
-    if hasattr(model, "design_matrices_"):
-        design_matrices = model.design_matrices_
-    else:
+    if model.__str__() == "Second Level Model":
         design_matrices = [model.design_matrix_]
+    else:
+        design_matrices = model.design_matrices_
 
     if not isinstance(prefix, str):
         prefix = ""

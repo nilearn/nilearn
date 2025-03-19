@@ -51,9 +51,10 @@ class BaseGLM(CacheMixin, BaseEstimator):
         ]
         if self._is_volume_glm():
             selected_attributes.extend(["target_shape", "target_affine"])
-        if hasattr(self, "hrf_model") and self.hrf_model == "fir":
-            selected_attributes.append("fir_delays")
-        if hasattr(self, "drift_model"):
+        if self.__str__() == "First Level Model":
+            if self.hrf_model == "fir":
+                selected_attributes.append("fir_delays")
+
             if self.drift_model == "cosine":
                 selected_attributes.append("high_pass")
             elif self.drift_model == "polynomial":
