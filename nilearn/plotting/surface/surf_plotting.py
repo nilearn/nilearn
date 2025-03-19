@@ -30,8 +30,8 @@ from nilearn.plotting._utils import (
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays import PlotlySurfaceFigure
-from nilearn.plotting.html_surface import get_vertexcolor
 from nilearn.plotting.js_plotting_utils import colorscale
+from nilearn.plotting.surface.html_surface import get_vertexcolor
 from nilearn.surface import (
     load_surf_data,
     load_surf_mesh,
@@ -749,7 +749,7 @@ def _plot_surf_matplotlib(
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
             proxy_mappable.set_array(surf_map_faces)
-            cax, _ = make_axes(
+            figure._colorbar_ax, _ = make_axes(
                 axes,
                 location="right",
                 fraction=0.15,
@@ -757,9 +757,9 @@ def _plot_surf_matplotlib(
                 pad=0.0,
                 aspect=10.0,
             )
-            figure.colorbar(
+            figure._cbar = figure.colorbar(
                 proxy_mappable,
-                cax=cax,
+                cax=figure._colorbar_ax,
                 ticks=ticks,
                 boundaries=bounds,
                 spacing="proportional",

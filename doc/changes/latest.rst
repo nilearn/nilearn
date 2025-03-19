@@ -34,6 +34,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add surface support to :func:`~nilearn.glm.threshold_stats_img` (:gh:`5222` by `Rémi Gau`_).
+
 - :bdg-info:`Plotting` ``transparency`` and ``transparency_range`` parameters have been added to the :meth:`nilearn.plotting.displays.BaseSlicer.add_overlay` (and therefore to the all classes inheriting :class:`~nilearn.plotting.displays.BaseSlicer`). These parameters were also explicitly added to the plotting functions :func:`~nilearn.plotting.plot_img`, :func:`~nilearn.plotting.plot_stat_map`, :func:`~nilearn.plotting.plot_glass_brain`. (:gh:`5151` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Extend :func:`~nilearn.image.threshold_img` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`4999` by `Rémi Gau`_).
@@ -65,6 +67,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-info:`Plotting` Improve layout of GLM reports (:gh:`5202` by `Rémi Gau`_).
+
 - :bdg-info:`Plotting` Allow a :func:`~nilearn.plotting.img_comparison.plot_img_comparison` to accept 3D Niimg-like image and to be run without a masker (:gh:`5132` by `Rémi Gau`_).
 
 - :bdg-info:`Deprecation` Add a ``nilearn.plotting.img_plotting.plot_img_comparison`` was moved to :func:`~nilearn.plotting.img_comparison.plot_img_comparison` (:gh:`5120` by `Rémi Gau`_).
@@ -82,3 +86,7 @@ Changes
 - :bdg-info:`Plotting` Improve sulci and subcortical schema for glass brain sagittal plots (:gh:`4807` by `John T. Johnson`_).
 
 - :bdg-primary:`Doc` Add license information for Yeo 2011 atlas (:gh:`5195` by `Patrick Sadil`_).
+
+- :bdg-dark:`Code` Move ``nilearn.plotting.surf_plotting`` and ``nilearn.plotting.html_surface`` under ``nilearn.plotting.surface`` (:gh:`5234` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Move ``nilearn.plotting.matrix_plotting`` under ``nilearn.plotting.matrix`` (:gh:`5240` by `Hande Gözükan`_).

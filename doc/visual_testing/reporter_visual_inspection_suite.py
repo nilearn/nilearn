@@ -64,9 +64,7 @@ REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 # Adapted from examples/04_glm_first_level/plot_adhd_dmn.py
 def report_flm_adhd_dmn(build_type):
     if build_type == "partial":
-        _generate_dummy_html(
-            filenames=["nifti_sphere_masker.html", "flm_adhd_dmn.html"]
-        )
+        _generate_dummy_html(filenames=["flm_adhd_dmn.html"])
         return None
 
     t_r = 2.0
@@ -89,9 +87,6 @@ def report_flm_adhd_dmn(build_type):
 
     adhd_dataset = fetch_adhd(n_subjects=1)
     seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
-
-    masker_report = seed_masker.generate_report()
-    masker_report.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
 
     frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
 
@@ -122,7 +117,7 @@ def report_flm_adhd_dmn(build_type):
     )
     glm_report.save_as_html(REPORTS_DIR / "flm_adhd_dmn.html")
 
-    return masker_report, glm_report
+    return glm_report
 
 
 # %%
@@ -326,17 +321,18 @@ def report_slm_oasis(build_type):
 
 
 def report_surface_glm(build_type):
+    """Empyt reports."""
     flm = FirstLevelModel(mask_img=SurfaceMasker())
-    report_flm_empty = flm.generate_report()
+    report_flm_empty = flm.generate_report(height_control=None)
     report_flm_empty.save_as_html(REPORTS_DIR / "flm_surf_empty.html")
 
     flm = SecondLevelModel(mask_img=SurfaceMasker())
-    report_slm_empty = flm.generate_report()
+    report_slm_empty = flm.generate_report(height_control="bonferroni")
     report_slm_empty.save_as_html(REPORTS_DIR / "slm_surf_empty.html")
 
     if build_type == "partial":
-        _generate_dummy_html(filenames=["flm_surf.html"])
-        _generate_dummy_html(filenames=["flm_surf.html"])
+        _generate_dummy_html(filenames=["flm_surf_empty.html"])
+        _generate_dummy_html(filenames=["slm_surf_empty.html"])
         return report_flm_empty, report_slm_empty
 
 
@@ -529,6 +525,46 @@ def report_multi_nifti_maps_masker(build_type):
     return empty_report, report
 
 
+def report_sphere_masker(build_type):
+    """Generate masker with 3 spheres but only 2 in the report."""
+    if build_type == "partial":
+        _generate_dummy_html(
+            filenames=[
+                "nifti_sphere_masker.html",
+                "nifti_sphere_masker_fitted.html",
+            ]
+        )
+        return None
+
+    t_r = 2.0
+
+    pcc_coords = [(0, -53, 26), (5, 53, -26), (0, 0, 0)]
+
+    masker = NiftiSpheresMasker(
+        pcc_coords,
+        radius=10,
+        detrend=True,
+        standardize=True,
+        low_pass=0.1,
+        high_pass=0.01,
+        t_r=t_r,
+        memory="nilearn_cache",
+        memory_level=1,
+    )
+
+    report_unfitted = masker.generate_report([0, 2])
+    report_unfitted.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
+
+    data = fetch_development_fmri(n_subjects=1)
+
+    masker.fit(data.func[0])
+
+    report = masker.generate_report([0, 2])
+    report.save_as_html(REPORTS_DIR / "nifti_sphere_masker_fitted.html")
+
+    return report_unfitted, report
+
+
 def report_surface_masker(build_type):
     if build_type == "partial":
         _generate_dummy_html(
@@ -688,6 +724,7 @@ def main(args=sys.argv):
     report_nifti_masker(build_type)
     report_nifti_maps_masker(build_type)
     report_nifti_labels_masker(build_type)
+    report_sphere_masker(build_type)
     report_multi_nifti_masker(build_type)
     report_multi_nifti_labels_masker(build_type)
     report_multi_nifti_maps_masker(build_type)

@@ -81,23 +81,21 @@ def search_light(
         search_light scores
     """
     group_iter = GroupIterator(A.shape[0], n_jobs)
-    with warnings.catch_warnings():  # might not converge
-        warnings.simplefilter("ignore", ConvergenceWarning)
-        scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
-            delayed(_group_iter_search_light)(
-                A.rows[list_i],
-                estimator,
-                X,
-                y,
-                groups,
-                scoring,
-                cv,
-                thread_id + 1,
-                A.shape[0],
-                verbose,
-            )
-            for thread_id, list_i in enumerate(group_iter)
+    scores = Parallel(n_jobs=n_jobs, verbose=verbose)(
+        delayed(_group_iter_search_light)(
+            A.rows[list_i],
+            estimator,
+            X,
+            y,
+            groups,
+            scoring,
+            cv,
+            thread_id + 1,
+            A.shape[0],
+            verbose,
         )
+        for thread_id, list_i in enumerate(group_iter)
+    )
     return np.concatenate(scores)
 
 
@@ -196,20 +194,22 @@ def _group_iter_search_light(
         if isinstance(cv, KFold):
             kwargs = {"scoring": scoring}
 
-        if y is None:
-            y_dummy = np.array(
-                [0] * (X.shape[0] // 2) + [1] * (X.shape[0] // 2)
-            )
-            estimator.fit(
-                X[:, row], y_dummy[: X.shape[0]]
-            )  # Ensure the size matches X
-            par_scores[i] = np.mean(estimator.decision_function(X[:, row]))
-        else:
-            par_scores[i] = np.mean(
-                cross_val_score(
-                    estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs
+        with warnings.catch_warnings():  # might not converge
+            warnings.simplefilter("ignore", ConvergenceWarning)
+            if y is None:
+                y_dummy = np.array(
+                    [0] * (X.shape[0] // 2) + [1] * (X.shape[0] // 2)
                 )
-            )
+                estimator.fit(
+                    X[:, row], y_dummy[: X.shape[0]]
+                )  # Ensure the size matches X
+                par_scores[i] = np.mean(estimator.decision_function(X[:, row]))
+            else:
+                par_scores[i] = np.mean(
+                    cross_val_score(
+                        estimator, X[:, row], y, cv=cv, n_jobs=1, **kwargs
+                    )
+                )
 
         if verbose > 0:
             # One can't print less than each 10 iterations

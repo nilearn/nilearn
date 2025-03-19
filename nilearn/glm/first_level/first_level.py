@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
+from scipy.linalg import toeplitz
 from sklearn.base import clone
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -103,8 +104,6 @@ def _yule_walker(x, order):
 
     Operates along the last axis of x.
     """
-    from scipy.linalg import toeplitz
-
     if order < 1:
         raise ValueError("AR order must be positive")
     if type(order) is not int:
@@ -1006,11 +1005,13 @@ class FirstLevelModel(BaseGLM):
 
         return outputs if output_type == "all" else output
 
-    def _get_voxelwise_model_attribute(self, attribute, result_as_time_series):
+    def _get_element_wise_model_attribute(
+        self, attribute, result_as_time_series
+    ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
         noise model or only 0.0 under 'ols' noise_model and values are the \
-        RegressionResults instances) into input nifti space.
+        RegressionResults instances) into an image.
 
         Parameters
         ----------
@@ -1026,7 +1027,7 @@ class FirstLevelModel(BaseGLM):
         Returns
         -------
         output : :obj:`list`
-            A list of Nifti1Image(s).
+            A list of Nifti1Image(s) or SurfaceImage(s).
 
         """
         # check if valid attribute is being accessed.

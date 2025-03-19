@@ -198,7 +198,7 @@ def _chunk_read_(
 @fill_doc
 def get_dataset_dir(
     dataset_name, data_dir=None, default_paths=None, verbose=1
-):
+) -> Path:
     """Create if necessary and return data directory of given dataset.
 
     Parameters

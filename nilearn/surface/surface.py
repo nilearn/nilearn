@@ -645,6 +645,15 @@ def vol_to_surf(
         - 'nearest':
             Use the intensity of the nearest voxel.
 
+            .. versionchanged:: 0.11.2.dev
+
+                The 'nearest' interpolation method will be removed in
+                version 0.13.0. It is recommended to use 'linear' for
+                statistical maps and
+                :term:`probabilistic atlases<Probabilistic atlas>` and
+                'nearest_most_frequent' for
+                :term:`deterministic atlases<Deterministic atlas>`.
+
         - 'nearest_most_frequent':
             Use the most frequent value in the neighborhood (out of the
             `n_samples` samples) instead of the mean value. This is useful
@@ -1118,9 +1127,6 @@ def check_mesh_is_fsaverage(mesh):
     """Check that :term:`mesh` data is either a :obj:`str`, or a :obj:`dict`
     with sufficient entries. Basically ensures that the mesh data is
     Freesurfer-like fsaverage data.
-
-    Used by plotting.surf_plotting.plot_img_on_surf and
-    plotting.html_surface._full_brain_info.
     """
     if isinstance(mesh, str):
         # avoid circular imports

@@ -23,19 +23,10 @@ def _sklearn_surf_label_img():
     return SurfaceImage(_make_mesh(), labels)
 
 
-extra_valid_checks = [
-    "check_dont_overwrite_parameters",
-    "check_estimators_overwrite_params",
-    "check_positive_only_tag_during_fit",
-    "check_readonly_memmap_input",
-]
-
-
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -49,7 +40,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001

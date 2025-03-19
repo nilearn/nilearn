@@ -1,9 +1,7 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
-from sklearn import __version__ as sklearn_version
 
-from nilearn._utils import compare_version
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn.maskers import NiftiMasker, SurfaceMasker
@@ -15,37 +13,15 @@ from nilearn.regions.hierarchical_kmeans_clustering import (
 from nilearn.surface import SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
-extra_valid_checks = [
-    "check_clusterer_compute_labels_predict",
-    "check_complex_data",
-    "check_dont_overwrite_parameters",
-    "check_dtype_object",
-    "check_estimator_sparse_array",
-    "check_estimator_sparse_matrix",
-    "check_estimators_empty_data_messages",
-    "check_f_contiguous_array_estimator",
-    "check_fit2d_1sample",
-    "check_fit2d_1feature",
-    "check_fit1d",
-    "check_methods_subset_invariance",
-    "check_methods_sample_order_invariance",
-]
-
-# TODO remove when dropping support for sklearn_version < 1.5.0
-if compare_version(sklearn_version, "<", "1.5.0"):
-    extra_valid_checks.extend(
-        [
-            "check_estimator_sparse_data",
-            "check_dict_unchanged",
-        ]
-    )
+expected_failed_checks = {
+    "check_clusterer_compute_labels_predict": "TODO",
+}
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[HierarchicalKMeans(n_clusters=8)],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -58,8 +34,8 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[HierarchicalKMeans(n_clusters=8)],
-        extra_valid_checks=extra_valid_checks,
         valid=False,
+        expected_failed_checks=expected_failed_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001

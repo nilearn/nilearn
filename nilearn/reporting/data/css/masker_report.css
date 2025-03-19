@@ -332,7 +332,7 @@ End pure-button class definition from pure-min.css
   overflow: hidden; /* Needed to avoid scrolling in jupyter :( */
   color: black;
   background-color: var(--main-bg-color);
-  height: 800px;
+  height: 90vh;
   overflow-y: scroll;
 }
 
