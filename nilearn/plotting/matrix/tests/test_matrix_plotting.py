@@ -19,7 +19,7 @@ from nilearn.plotting import (
     plot_event,
     plot_matrix,
 )
-from nilearn.plotting.matrix_plotting import (
+from nilearn.plotting.matrix.matrix_plotting import (
     _sanitize_figure_and_axes,
     _sanitize_labels,
     _sanitize_reorder,

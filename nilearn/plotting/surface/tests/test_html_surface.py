@@ -7,13 +7,18 @@ from nilearn import datasets, image
 from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.image import get_data
-from nilearn.plotting import html_surface
-from nilearn.plotting.html_surface import (
-    colorscale,
-    get_vertexcolor,
-    view_img_on_surf,
-)
 from nilearn.plotting.js_plotting_utils import decode
+from nilearn.plotting.surface.html_surface import (
+    _fill_html_template,
+    _full_brain_info,
+    _one_mesh_info,
+    colorscale,
+    full_brain_info,
+    get_vertexcolor,
+    one_mesh_info,
+    view_img_on_surf,
+    view_surf,
+)
 from nilearn.plotting.tests.test_js_plotting_utils import (
     check_colors,
     check_html,
@@ -154,7 +159,7 @@ def test_one_mesh_info():
     mesh = fsaverage["pial_left"]
     surf_map = load_surf_data(fsaverage["sulc_left"])
     mesh = load_surf_mesh(mesh)
-    info = html_surface._one_mesh_info(
+    info = _one_mesh_info(
         surf_map, mesh, "90%", black_bg=True, bg_map=surf_map
     )
     assert {"_x", "_y", "_z", "_i", "_j", "_k"}.issubset(
@@ -176,13 +181,13 @@ def test_one_mesh_info():
         "to _one_mesh_info. Using the deprecated name will "
         "raise an error in release 0.13",
     ):
-        html_surface.one_mesh_info(surf_map, mesh)
+        one_mesh_info(surf_map, mesh)
 
 
 def test_full_brain_info(mni152_template_res_2):
     surfaces = datasets.fetch_surf_fsaverage()
 
-    info = html_surface._full_brain_info(mni152_template_res_2, surfaces)
+    info = _full_brain_info(mni152_template_res_2, surfaces)
     check_colors(info["colorscale"])
     assert {
         "pial_left",
@@ -213,14 +218,14 @@ def test_full_brain_info(mni152_template_res_2):
         "_full_brain_info. Using the deprecated name will raise an error "
         "in release 0.13",
     ):
-        html_surface.full_brain_info(mni152_template_res_2)
+        full_brain_info(mni152_template_res_2)
 
 
 def test_fill_html_template(tmp_path, mni152_template_res_2):
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh.coordinates[:, 0]
-    info = html_surface._one_mesh_info(
+    info = _one_mesh_info(
         surf_map,
         fsaverage["pial_right"],
         "90%",
@@ -228,12 +233,12 @@ def test_fill_html_template(tmp_path, mni152_template_res_2):
         bg_map=fsaverage["sulc_right"],
     )
     info["title"] = None
-    html = html_surface._fill_html_template(info, embed_js=False)
+    html = _fill_html_template(info, embed_js=False)
     check_html(tmp_path, html)
     assert "jquery.min.js" in html.html
-    info = html_surface._full_brain_info(mni152_template_res_2)
+    info = _full_brain_info(mni152_template_res_2)
     info["title"] = None
-    html = html_surface._fill_html_template(info)
+    html = _fill_html_template(info)
     check_html(tmp_path, html)
     assert "* plotly.js (gl3d - minified) v1." in html.html
 
@@ -242,11 +247,11 @@ def test_view_surf(tmp_path, rng):
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh.coordinates[:, 0]
-    html = html_surface.view_surf(
+    html = view_surf(
         fsaverage["pial_right"], surf_map, fsaverage["sulc_right"], "90%"
     )
     check_html(tmp_path, html, title="Surface plot")
-    html = html_surface.view_surf(
+    html = view_surf(
         fsaverage["pial_right"],
         surf_map,
         fsaverage["sulc_right"],
@@ -255,14 +260,12 @@ def test_view_surf(tmp_path, rng):
     )
     check_html(tmp_path, html, title="SOME_TITLE")
     assert "SOME_TITLE" in html.html
-    html = html_surface.view_surf(fsaverage["pial_right"])
+    html = view_surf(fsaverage["pial_right"])
     check_html(tmp_path, html)
     atlas = rng.integers(0, 10, size=len(mesh.coordinates))
-    html = html_surface.view_surf(
-        fsaverage["pial_left"], atlas, symmetric_cmap=False
-    )
+    html = view_surf(fsaverage["pial_left"], atlas, symmetric_cmap=False)
     check_html(tmp_path, html)
-    html = html_surface.view_surf(
+    html = view_surf(
         fsaverage["pial_right"],
         fsaverage["sulc_right"],
         threshold=None,
@@ -270,9 +273,9 @@ def test_view_surf(tmp_path, rng):
     )
     check_html(tmp_path, html)
     with pytest.raises(ValueError):
-        html_surface.view_surf(mesh, mesh.coordinates[::2, 0])
+        view_surf(mesh, mesh.coordinates[::2, 0])
     with pytest.raises(ValueError):
-        html_surface.view_surf(
+        view_surf(
             mesh, mesh.coordinates[:, 0], bg_map=mesh.coordinates[::2, 0]
         )
 

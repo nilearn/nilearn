@@ -393,16 +393,10 @@ class NiftiSpheresMasker(BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
-
         from nilearn.reporting.html_report import generate_report
+
+        if not is_matplotlib_installed():
+            return generate_report(self)
 
         if displayed_spheres != "all" and not isinstance(
             displayed_spheres, (list, np.ndarray, int)
@@ -528,9 +522,6 @@ class NiftiSpheresMasker(BaseMasker):
         All parameters are unused; they are for scikit-learn compatibility.
 
         """
-        if hasattr(self, "seeds_"):
-            return self
-
         self._report_content = {
             "description": (
                 "This reports shows the regions defined "

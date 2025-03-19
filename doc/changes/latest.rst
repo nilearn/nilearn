@@ -86,3 +86,7 @@ Changes
 - :bdg-info:`Plotting` Improve sulci and subcortical schema for glass brain sagittal plots (:gh:`4807` by `John T. Johnson`_).
 
 - :bdg-primary:`Doc` Add license information for Yeo 2011 atlas (:gh:`5195` by `Patrick Sadil`_).
+
+- :bdg-dark:`Code` Move ``nilearn.plotting.surf_plotting`` and ``nilearn.plotting.html_surface`` under ``nilearn.plotting.surface`` (:gh:`5234` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Move ``nilearn.plotting.matrix_plotting`` under ``nilearn.plotting.matrix`` (:gh:`5240` by `Hande Gözükan`_).
