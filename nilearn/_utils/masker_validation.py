@@ -6,8 +6,8 @@ from string import Template
 import numpy as np
 from nibabel import Nifti1Image
 
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.typing import NiimgLike
 
 from .cache_mixin import check_memory
 from .class_inspect import get_params
@@ -46,6 +46,8 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         New masker
 
     """
+    from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
+
     if masker_type == "surface":
         masker_type = SurfaceMasker
     elif masker_type == "multi_nii":
@@ -145,6 +147,8 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
     Similarly, only SurfaceImages can be fitted
     with a SurfaceImage or a SrufaceMasked as mask.
     """
+    from nilearn.maskers import SurfaceMasker
+
     if mask_img is None:
         return None
 
@@ -157,7 +161,7 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
         f"and images of type: {[type(x) for x in run_imgs]}"
     )
 
-    volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
+    volumetric_type = (Nifti1Image, *NiimgLike)
     if isinstance(mask_img, volumetric_type) and any(
         not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
     ):

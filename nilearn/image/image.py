@@ -31,6 +31,9 @@ from nilearn._utils.helpers import (
     check_copy_header,
     stringify_path,
 )
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.niimg import _get_data, safe_get_data
 from nilearn._utils.niimg_conversions import (
     _index_img,
@@ -1053,18 +1056,8 @@ def threshold_img(
             f"Got {type(img)=}."
         )
 
-    if mask_img is not None and (
-        (isinstance(img, NiimgLike) and not isinstance(mask_img, NiimgLike))
-        or (
-            isinstance(img, SurfaceImage)
-            and not isinstance(mask_img, SurfaceImage)
-        )
-    ):
-        raise TypeError(
-            "'img' and 'mask_img' should both be "
-            "3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(img)=} and {type(mask_img)=}."
-        )
+    if mask_img is not None:
+        check_compatibility_mask_and_images(mask_img, img)
 
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_same_n_vertices(mask_img.mesh, img.mesh)
