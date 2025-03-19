@@ -30,16 +30,13 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
-from nilearn.image import mean_img
+from nilearn.image import concat_imgs, iter_img, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.mass_univariate import permuted_ols
 from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
-    concat_imgs,
-    iter_img,
 )
-from nilearn.surface.surface import mean_img as surf_mean_img
 
 
 def _input_type_error_message(second_level_input):
@@ -340,7 +337,7 @@ def _get_con_val(second_level_contrast, design_matrix):
 def _infer_effect_maps(second_level_input, contrast_def):
     """Deal with the different possibilities of second_level_input."""
     if isinstance(second_level_input, SurfaceImage):
-        return iter_img(second_level_input, return_iterator=False)
+        return list(iter_img(second_level_input))
     if isinstance(second_level_input, list) and isinstance(
         second_level_input[0], SurfaceImage
     ):
@@ -441,7 +438,7 @@ def _process_second_level_input_as_surface_image(second_level_input):
     if isinstance(second_level_input, SurfaceImage):
         return second_level_input, None
 
-    second_level_input = [surf_mean_img(x) for x in second_level_input]
+    second_level_input = [mean_img(x) for x in second_level_input]
     sample_map = concat_imgs(second_level_input)
     return sample_map, None
 

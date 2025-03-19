@@ -1,7 +1,6 @@
 """Functions for surface manipulation."""
 
 import abc
-import copy
 import gzip
 import pathlib
 import warnings
@@ -2045,107 +2044,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     return data
 
 
-def concat_imgs(imgs):
-    """Concatenate the data of a list or tuple of SurfaceImages.
-
-    Assumes all images have same meshes.
-
-    Parameters
-    ----------
-    imgs : :obj:`list` or :obj:`tuple` \
-           of :obj:`~nilearn.surface.SurfaceImage` object
-
-    Returns
-    -------
-    SurfaceImage object
-    """
-    if not isinstance(imgs, (tuple, list)) or any(
-        not isinstance(x, SurfaceImage) for x in imgs
-    ):
-        raise TypeError(
-            "'imgs' must be a list or a tuple of SurfaceImage instances."
-        )
-
-    if len(imgs) == 1:
-        return imgs[0]
-
-    for i, img in enumerate(imgs):
-        check_same_n_vertices(img.mesh, imgs[0].mesh)
-        imgs[i] = at_least_2d(img)
-
-    output_data = {}
-    for part in imgs[0].data.parts:
-        tmp = [img.data.parts[part] for img in imgs]
-        output_data[part] = np.concatenate(tmp, axis=1)
-
-    return new_img_like(imgs[0], data=output_data)
-
-
-def mean_img(img):
-    """Compute mean of SurfaceImage over time points (for 'time series').
-
-    Parameters
-    ----------
-    img : SurfaceImage
-
-    Returns
-    -------
-    SurfaceImage
-    """
-    if len(img.shape) < 2 or img.shape[1] < 2:
-        data = img.data
-    else:
-        data = {
-            part: np.mean(value, axis=1).astype(float)
-            for part, value in img.data.parts.items()
-        }
-    return new_img_like(img, data=data)
-
-
-def iter_img(img, return_iterator=True):
-    """Iterate over a SurfaceImage object in the 2nd dimension.
-
-    Parameters
-    ----------
-    imgs : SurfaceImage object
-
-    return_iterator : :obj:`bool`, default=True
-        Returns a list if set to False.
-
-    Returns
-    -------
-    Iterator or list of  SurfaceImage
-    """
-    if not isinstance(img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
-    output = (index_img(img, i) for i in range(at_least_2d(img).shape[1]))
-    return output if return_iterator else list(output)
-
-
-def index_img(img, index):
-    """Indexes into a 2D SurfaceImage in the second dimension.
-
-    Common use cases include extracting an image out of `img` or
-    creating a 2D image whose data is a subset of `img` data.
-
-    Parameters
-    ----------
-    img : SurfaceImage object
-
-    index : Any type compatible with numpy array indexing
-        Used for indexing the 2D data array in the 2nd dimension.
-
-    Returns
-    -------
-    a SurfaceImage object
-    """
-    if not isinstance(img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
-    img = at_least_2d(img)
-    return new_img_like(img, data=_extract_data(img, index))
-
-
-def _extract_data(img, index):
+def extract_data(img, index):
     """Extract data of a SurfaceImage a specified indices.
 
     Parameters
@@ -2173,14 +2072,3 @@ def _extract_data(img, index):
         .reshape(mesh.parts[hemi].n_vertices, last_dim)
         for hemi in data.parts
     }
-
-
-def new_img_like(ref_img, data):
-    """Create a new SurfaceImage instance with new data."""
-    if not isinstance(ref_img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
-    mesh = ref_img.mesh
-    return SurfaceImage(
-        mesh=copy.deepcopy(mesh),
-        data=data,
-    )

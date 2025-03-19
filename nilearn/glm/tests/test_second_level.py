@@ -39,7 +39,6 @@ from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
 from nilearn.surface._testing import assert_surface_image_equal
-from nilearn.surface.surface import concat_imgs as surf_concat_imgs
 
 
 @pytest.mark.parametrize(
@@ -1417,7 +1416,7 @@ def test_second_level_input_as_surface_image_3d_same_as_list_2d(surf_img_1d):
     model.fit(second_level_input, design_matrix=design_matrix)
     result_2d = model.compute_contrast()
 
-    second_level_input_3d = surf_concat_imgs(second_level_input)
+    second_level_input_3d = concat_imgs(second_level_input)
     model.fit(second_level_input_3d, design_matrix=design_matrix)
     result_3d = model.compute_contrast()
 
