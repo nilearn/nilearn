@@ -33,7 +33,6 @@ from nilearn.reporting._utils import (
     check_report_dims,
     clustering_params_to_dataframe,
     dataframe_to_html,
-    model_attributes_to_dataframe,
 )
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import (
@@ -219,7 +218,7 @@ def make_glm_report(
     if smoothing_fwhm == 0:
         smoothing_fwhm = None
 
-    model_attributes = model_attributes_to_dataframe(model)
+    model_attributes = _glm_model_attributes_to_dataframe(model)
     with pd.option_context("display.max_colwidth", 100):
         model_attributes_html = dataframe_to_html(
             model_attributes,
@@ -391,6 +390,44 @@ def make_glm_report(
     report.width, report.height = check_report_dims(report_dims)
 
     return report
+
+
+def _glm_model_attributes_to_dataframe(model):
+    """Return a pandas dataframe with pertinent model attributes & information.
+
+    Parameters
+    ----------
+    model : FirstLevelModel or SecondLevelModel object.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with the pertinent attributes of the model.
+    """
+    model_attributes = pd.DataFrame.from_dict(
+        model._attributes_to_dict(),
+        orient="index",
+    )
+
+    if len(model_attributes) == 0:
+        return model_attributes
+
+    attribute_units = {
+        "t_r": "seconds",
+        "high_pass": "Hertz",
+        "smoothing_fwhm": "mm",
+    }
+    attribute_names_with_units = {
+        attribute_name_: attribute_name_ + f" ({attribute_unit_})"
+        for attribute_name_, attribute_unit_ in attribute_units.items()
+    }
+    model_attributes = model_attributes.rename(
+        index=attribute_names_with_units
+    )
+    model_attributes.index.names = ["Parameter"]
+    model_attributes.columns = ["Value"]
+
+    return model_attributes
 
 
 def _mask_to_plot(model, bg_img, cut_coords):
