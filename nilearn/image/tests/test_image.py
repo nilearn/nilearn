@@ -491,7 +491,7 @@ def test_mean_img_resample(rng):
     data = rng.uniform(size=(5, 6, 7, 40))
     affine = np.diag((4, 3, 2, 1))
     img = Nifti1Image(data, affine=affine)
-    mean_img = Nifti1Image(data.mean(axis=-1), affine=affine)
+    mean_img_to_resample = Nifti1Image(data.mean(axis=-1), affine=affine)
 
     target_affine = affine[:, [1, 0, 2, 3]]  # permutation of axes
 
@@ -500,7 +500,7 @@ def test_mean_img_resample(rng):
     )
 
     resampled_mean_image = resample_img(
-        mean_img,
+        mean_img_to_resample,
         target_affine=target_affine,
         copy_header=True,
         force_resample=True,
