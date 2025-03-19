@@ -114,7 +114,7 @@ def generate_constrat_matrices_figures(
     - convert it to bytes for insertion into HTML report
     - save it to disk if the appropriate "output" was passed
 
-    contrasts_dict is a dict-lile (tempita.bunc)
+    contrasts_dict is a dict-like (tempita.bunc)
     that contains the figure (as bytes or relative path).
     A tempita bunch is used to facilitate injecting its content
     into HTML templates.
