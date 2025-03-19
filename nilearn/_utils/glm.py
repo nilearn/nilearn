@@ -125,9 +125,10 @@ def coerce_to_dict(input_arg):
     if input_arg is None:
         return None
     if not isinstance(input_arg, dict):
-        if (isinstance(input_arg, Iterable) and not isinstance(
-            input_arg[0], Iterable
-        )) or isinstance(input_arg, str):
+        if (
+            isinstance(input_arg, Iterable)
+            and not isinstance(input_arg[0], Iterable)
+        ) or isinstance(input_arg, str):
             input_arg = [input_arg]
         input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
     return input_arg
