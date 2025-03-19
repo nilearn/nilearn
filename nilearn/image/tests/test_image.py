@@ -1676,11 +1676,11 @@ def test_concat_imgs_surface(surf_img_2d):
 
     Output must have as many samples as the sum of samples in the input.
     """
-    img = concat_imgs([surf_img_2d(3), surf_img_2d(5)], dtype=np.float32)
+    img = concat_imgs([surf_img_2d(3), surf_img_2d(5)], dtype=np.float16)
     assert img.shape == (9, 8)
     for value in img.data.parts.values():
         assert value.ndim == 2
-        assert value.dtype == np.float32
+        assert value.dtype == np.float16
 
 
 def nifti_generator(buffer):
