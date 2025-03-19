@@ -1,12 +1,10 @@
 """Functions to compare volume or surface images."""
 
 import warnings
-from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import gridspec
-from nibabel import Nifti1Image
 from scipy import stats
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
@@ -15,9 +13,13 @@ from nilearn._utils import (
     constrained_layout_kwargs,
     fill_doc,
 )
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting._utils import save_figure_if_needed
 from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
+from nilearn.typing import NiimgLike
 
 
 def plot_img_comparison(
@@ -93,9 +95,9 @@ def plot_img_comparison(
 
     """
     # Cast to list
-    if isinstance(ref_imgs, (str, Path, Nifti1Image, SurfaceImage)):
+    if isinstance(ref_imgs, (*NiimgLike, SurfaceImage)):
         ref_imgs = [ref_imgs]
-    if isinstance(src_imgs, (str, Path, Nifti1Image, SurfaceImage)):
+    if isinstance(src_imgs, (*NiimgLike, SurfaceImage)):
         src_imgs = [src_imgs]
     if not isinstance(ref_imgs, list) or not isinstance(src_imgs, list):
         raise TypeError(
@@ -104,8 +106,8 @@ def plot_img_comparison(
             f"Got {type(ref_imgs)=} and {type(src_imgs)=}."
         )
 
-    if all(isinstance(x, (str, Path, Nifti1Image)) for x in ref_imgs) and all(
-        isinstance(x, (str, Path, Nifti1Image)) for x in src_imgs
+    if all(isinstance(x, NiimgLike) for x in ref_imgs) and all(
+        isinstance(x, NiimgLike) for x in src_imgs
     ):
         image_type = "volume"
 
@@ -421,9 +423,7 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
         an appropriate masker will be fitted on the reference image.
 
     """
-    if isinstance(ref_img, (str, Path, Nifti1Image)) and isinstance(
-        src_img, (str, Path, Nifti1Image)
-    ):
+    if isinstance(ref_img, NiimgLike) and isinstance(src_img, NiimgLike):
         image_type = "volume"
         ref_img = check_niimg_3d(ref_img)
         src_img = check_niimg_3d(src_img)
@@ -455,7 +455,7 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
 
 
 def _sanitize_masker(masker, image_type, ref_img):
-    """Return an appropriate fiited masker.
+    """Return an appropriate fitted masker.
 
     Raise exception
     if there is type mismatch between the masker and ref_img.
@@ -469,32 +469,19 @@ def _sanitize_masker(masker, image_type, ref_img):
         else:
             masker = SurfaceMasker()
 
-    if image_type == "volume":
-        if not isinstance(masker, (NiftiMasker, Nifti1Image, str, Path)):
-            raise TypeError(
-                "'masker' must be NiftiMasker or Niimg-Like "
-                "for volume based images.\n"
-                f"Got {type(masker)}"
-            )
-        elif isinstance(masker, (Nifti1Image, str, Path)):
-            masker = NiftiMasker(
-                mask_img=masker,
-                target_affine=ref_img.affine,
-                target_shape=ref_img.shape,
-            )
+    check_compatibility_mask_and_images(masker, ref_img)
 
-    else:
-        if not isinstance(masker, (SurfaceMasker, SurfaceImage)):
-            raise TypeError(
-                "'masker' must be SurfaceMasker or SurfaceImage "
-                "for surface based images.\n"
-                f"Got {type(masker)}"
-            )
-        if isinstance(masker, SurfaceImage):
-            check_same_n_vertices(ref_img.mesh, masker.mesh)
-            masker = SurfaceMasker(
-                mask_img=masker,
-            )
+    if isinstance(masker, NiimgLike):
+        masker = NiftiMasker(
+            mask_img=masker,
+            target_affine=ref_img.affine,
+            target_shape=ref_img.shape,
+        )
+    elif isinstance(masker, SurfaceImage):
+        check_same_n_vertices(ref_img.mesh, masker.mesh)
+        masker = SurfaceMasker(
+            mask_img=masker,
+        )
 
     if not masker.__sklearn_is_fitted__():
         masker.fit(ref_img)

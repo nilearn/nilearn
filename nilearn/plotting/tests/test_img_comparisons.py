@@ -230,10 +230,10 @@ def test_plot_bland_altman_errors(
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(surf_img_1d, img_3d_rand_eye)
 
-    error_msg = "'masker' must be NiftiMasker or Niimg-Like"
-    with pytest.raises(TypeError, match=error_msg):
+    with pytest.raises(TypeError, match="Mask should be of type:"):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, masker=1)
 
+    error_msg = "Mask and images to fit must be of compatible types."
     # invalid masker for that image type
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(
@@ -243,8 +243,6 @@ def test_plot_bland_altman_errors(
         plot_bland_altman(
             img_3d_rand_eye, img_3d_rand_eye, masker=surf_mask_1d
         )
-
-    error_msg = "'masker' must be SurfaceMasker or SurfaceImage"
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(surf_img_1d, surf_img_1d, masker=NiftiMasker())
 
