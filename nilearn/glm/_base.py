@@ -242,7 +242,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         two_sided : :obj:`bool`, default=False
             Whether to employ two-sided thresholding
-            or to evaluate positive values only.
+            or to evaluate either positive or negative values only.
 
         plot_type : {'slice', 'glass'}, default='slice'
             Specifies the type of plot to be drawn for the statistical maps.
