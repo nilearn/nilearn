@@ -274,6 +274,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         img = concat_imgs(img)
         # check img data is 2D
         img.data._check_ndims(2, "img")
+        check_compatibility_mask_and_images(self.maps_img, img)
         check_same_n_vertices(self.maps_img.mesh, img.mesh)
         img_data = np.concatenate(
             list(img.data.parts.values()), axis=0
@@ -307,6 +308,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         # apply mask if provided
         # and then extract signal via least square regression
+        if self.mask_img_ is not None:
+            check_compatibility_mask_and_images(self.mask_img_, img)
 
         if mask_data is not None:
             region_signals = cache(

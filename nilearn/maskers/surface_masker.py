@@ -275,6 +275,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
             img = [img]
         img = concat_imgs(img)
 
+        check_compatibility_mask_and_images(self.mask_img_, img)
+
         check_same_n_vertices(self.mask_img_.mesh, img.mesh)
 
         if self.reports:

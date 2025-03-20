@@ -470,7 +470,14 @@ def check_masker_detrending(estimator):
 
 
 def check_masker_compatibility_mask_image(estimator):
-    """Check compatibility of the mask_img and images to masker.fit."""
+    """Check compatibility of the mask_img and images to masker.
+
+    Compatibility should be check at fit and transform time.
+
+    For nifti maskers this is handled by one the check_nifti functions.
+    For surface maskers, check_compatibility_mask_and_images does it.
+    But this means we do not have exactly the same error messages.
+    """
     if accept_niimg_input(estimator):
         mask_img = _img_mask_mni()
         input_img = _make_surface_img()
@@ -481,6 +488,21 @@ def check_masker_compatibility_mask_image(estimator):
     estimator.mask_img = mask_img
     with pytest.raises(TypeError):
         estimator.fit(input_img)
+
+    if accept_niimg_input(estimator):
+        mask_img = _img_mask_mni()
+        input_img = _img_3d_mni()
+        image_to_transform = _make_surface_img()
+    else:
+        mask_img = _make_surface_mask()
+        input_img = _make_surface_img()
+        image_to_transform = _img_3d_mni()
+
+    estimator = clone(estimator)
+    estimator.mask_img = mask_img
+    estimator.fit(input_img)
+    with pytest.raises(TypeError):
+        estimator.transform(image_to_transform)
 
 
 def check_masker_clean(estimator):

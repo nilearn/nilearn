@@ -401,6 +401,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if not isinstance(img, list):
             img = [img]
         img = concat_imgs(img)
+        check_compatibility_mask_and_images(self.labels_img, img)
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
         img = at_least_2d(img)
         # concatenate data over hemispheres
@@ -409,6 +410,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         labels_data = self._labels_data
         labels = self._labels_
         if self.mask_img_ is not None:
+            check_compatibility_mask_and_images(self.mask_img_, img)
             mask_data = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
             )
