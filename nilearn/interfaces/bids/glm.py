@@ -204,7 +204,9 @@ def save_glm_to_bids(
         prefix, contrasts, contrast_types, out_dir
     )
 
-    out_dir = model._reporting_data["filenames"]["dir"]
+    filenames = model._reporting_data["filenames"]
+
+    out_dir = filenames["dir"]
     out_dir.mkdir(exist_ok=True, parents=True)
 
     verbose = model.verbose
@@ -223,22 +225,18 @@ def save_glm_to_bids(
         logger.log("Generating design matrices figures...", verbose=verbose)
         # TODO: Assuming that cases of multiple design matrices correspond to
         # different runs. Not sure if this is correct. Need to check.
-        generate_design_matrices_figures(
-            design_matrices, output=model._reporting_data["filenames"]
-        )
+        generate_design_matrices_figures(design_matrices, output=filenames)
 
         logger.log("Generating contrast matrices figures...", verbose=verbose)
         generate_constrat_matrices_figures(
             design_matrices,
             contrasts,
-            output=model._reporting_data["filenames"],
+            output=filenames,
         )
 
     for i_run, design_matrix in enumerate(design_matrices):
         filename = Path(
-            model._reporting_data["filenames"]["design_matrices_dict"][i_run][
-                "design_matrix_tsv"
-            ]
+            filenames["design_matrices_dict"][i_run]["design_matrix_tsv"]
         )
 
         # Save design matrix and associated figure
@@ -267,9 +265,9 @@ def save_glm_to_bids(
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
             img = statistical_maps[contrast_name][output_type]
-            filename = model._reporting_data["filenames"]["statistical_maps"][
-                contrast_name
-            ][output_type]
+            filename = filenames["statistical_maps"][contrast_name][
+                output_type
+            ]
             img.to_filename(out_dir / filename)
 
     logger.log("Saving model level statistical maps...", verbose=verbose)

@@ -360,41 +360,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         generate_bids_name = _use_input_files_for_filenaming(self, prefix)
 
-        entities = {
-            "sub": None,
-            "ses": None,
-            "task": None,
-            "space": None,
-        }
-
-        if not isinstance(prefix, str):
-            prefix = ""
-            # try to figure out filename entities from input files
-            # only keep entity label if unique
-            if generate_bids_name:
-                for entity in ["sub", "ses", "task", "space"]:
-                    label = [
-                        x.get(entity)
-                        for x in self._reporting_data["run_imgs"].values()
-                        if x.get(entity) is not None
-                    ]
-
-                    label = set(label)
-                    if len(label) != 1:
-                        continue
-                    label = next(iter(label))
-                    entities[entity] = label
-
-                    if entity in ["sub", "ses", "task"]:
-                        prefix += f"{entity}-{label}_"
-
-        if self.__str__() == "Second Level Model":
-            sub = "group"
-        elif entities["sub"]:
-            sub = f"sub-{entities['sub']}"
-        else:
-            sub = prefix.split("_")[0] if prefix.startswith("sub-") else ""
-
         contrasts = coerce_to_dict(contrasts)
         for k, v in contrasts.items():
             if not isinstance(k, str):
@@ -407,6 +372,38 @@ class BaseGLM(CacheMixin, BaseEstimator):
                     "contrast definitions must be strings or array_likes, "
                     f"not {type(v)}"
                 )
+
+        entities = {
+            "sub": None,
+            "ses": None,
+            "task": None,
+            "space": None,
+        }
+
+        if not isinstance(prefix, str):
+            prefix = ""
+            # try to figure out filename entities from input files
+            # only keep entity label if unique across runs
+            if generate_bids_name:
+                for k in entities:
+                    label = [
+                        x.get(k)
+                        for x in self._reporting_data["run_imgs"].values()
+                        if x.get(k) is not None
+                    ]
+
+                    label = set(label)
+                    if len(label) != 1:
+                        continue
+                    label = next(iter(label))
+                    entities[k] = label
+
+        if self.__str__() == "Second Level Model":
+            sub = "group"
+        elif entities["sub"]:
+            sub = f"sub-{entities['sub']}"
+        else:
+            sub = prefix.split("_")[0] if prefix.startswith("sub-") else ""
 
         if self.__str__() == "Second Level Model":
             design_matrices = [self.design_matrix_]
