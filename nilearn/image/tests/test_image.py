@@ -2,7 +2,6 @@
 
 import platform
 import warnings
-from copy import deepcopy
 from pathlib import Path
 
 import joblib
@@ -1181,15 +1180,27 @@ def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     assert np.sum(thr_img.get_fdata() == 4) == 8
 
 
-def test_threshold_img_copy_surface(surf_img_1d):
-    """Test that copy can be used with surface."""
-    threshold = 0.2
+def test_threshold_img_no_copy_surface(surf_img_1d):
+    """Test copy=False on surface data.
 
-    input_img = deepcopy(surf_img_1d)
-
-    # Check that not copying does mutate.
+    Check that not copying does mutate the original image.
+    """
+    threshold = 15
+    input_img = surf_img_1d
     result = threshold_img(input_img, threshold=threshold, copy=False)
     assert_surface_image_equal(result, surf_img_1d)
+
+
+def test_threshold_img_copy_surface(surf_img_1d):
+    """Test copy=True on surface data.
+
+    Check that copying does not mutate the original image.
+    """
+    threshold = 15
+    input_img = surf_img_1d
+    result = threshold_img(input_img, threshold=threshold, copy=True)
+    with pytest.raises(AssertionError):
+        assert_surface_image_equal(result, surf_img_1d)
 
 
 def test_threshold_img_copy_volume(img_4d_ones_eye):
