@@ -254,7 +254,6 @@ def threshold_stats_img(
         "fpr",
         "fdr",
         "bonferroni",
-        "all-resolution-inference",
         None,
     ]
     if height_control not in height_control_methods:

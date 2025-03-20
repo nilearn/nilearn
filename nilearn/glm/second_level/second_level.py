@@ -18,6 +18,9 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn.glm._base import BaseGLM
@@ -590,6 +593,8 @@ class SecondLevelModel(BaseGLM):
                 stacklevel=2,
             )
             self.smoothing_fwhm = None
+
+        check_compatibility_mask_and_images(self.mask_img, sample_map)
 
         # Learn the mask. Assume the first level imgs have been masked.
         if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):

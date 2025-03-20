@@ -887,19 +887,20 @@ def test_input_in_threshold_img_errors(
 
     # invalid input: img is an int
     with pytest.raises(
-        TypeError, match="3D/4D Niimg-like object or a SurfaceImage"
+        TypeError,
+        match="'img' should be a 3D/4D Niimg-like object or a SurfaceImage.",
     ):
         threshold_img(img=1, threshold=1)
 
     # incompatible inputs raise errors
     with pytest.raises(
         TypeError,
-        match="should both be 3D/4D Niimg-like object or a SurfaceImage",
+        match="Mask and images to fit must be of compatible types.",
     ):
         threshold_img(vol_img, threshold=1, mask_img=surf_mask_1d)
     with pytest.raises(
         TypeError,
-        match="should both be 3D/4D Niimg-like object or a SurfaceImage",
+        match="Mask and images to fit must be of compatible types.",
     ):
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
