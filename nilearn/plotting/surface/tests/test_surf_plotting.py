@@ -4,7 +4,6 @@
 
 import re
 import tempfile
-from pathlib import Path
 from unittest import mock
 
 import matplotlib.pyplot as plt
@@ -23,8 +22,8 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
+from nilearn.plotting.surface._utils import check_surface_plotting_inputs
 from nilearn.plotting.surface.surf_plotting import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors_matplotlib,
@@ -38,7 +37,6 @@ from nilearn.surface import (
     load_surf_data,
     load_surf_mesh,
 )
-from nilearn.surface._testing import assert_surface_mesh_equal
 
 try:
     import IPython.display  # noqa:F401
@@ -216,100 +214,9 @@ def bg_map(rng, in_memory_mesh):
     return np.abs(rng.standard_normal(size=in_memory_mesh.n_vertices))
 
 
-@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
-@pytest.mark.parametrize("surf_map", ["some_path", Path("some_path")])
-@pytest.mark.parametrize("surf_mesh", ["some_path", Path("some_path")])
-def test_check_surface_plotting_inputs_no_change(surf_map, surf_mesh, bg_map):
-    """Cover use cases where the inputs are not changed."""
-    hemi = "left"
-    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
-        surf_map, surf_mesh, hemi, bg_map
-    )
-    assert surf_map == out_surf_map
-    assert surf_mesh == out_surf_mesh
-    assert bg_map == out_bg_map
-
-
-@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
-@pytest.mark.parametrize("mesh", [None])
-def test_check_surface_plotting_inputs_extract_mesh_and_data(
-    surf_img_1d, mesh, bg_map
-):
-    """Extract mesh and data when a SurfaceImage is passed."""
-    hemi = "left"
-    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img_1d,
-        surf_mesh=mesh,
-        hemi=hemi,
-        bg_map=bg_map,
-    )
-
-    assert_array_equal(out_surf_map, surf_img_1d.data.parts[hemi].T)
-    assert_surface_mesh_equal(out_surf_mesh, surf_img_1d.mesh.parts[hemi])
-
-    assert bg_map == out_bg_map
-
-
-def test_check_surface_plotting_inputs_many_time_points(
-    surf_img_1d, surf_img_2d
-):
-    """Extract mesh and data when a SurfaceImage is passed."""
-    with pytest.raises(
-        TypeError, match="Input data has incompatible dimensionality"
-    ):
-        check_surface_plotting_inputs(
-            surf_map=surf_img_2d(10),
-            surf_mesh=None,
-            hemi="left",
-            bg_map=None,
-        )
-
-    with pytest.raises(
-        TypeError, match="Input data has incompatible dimensionality"
-    ):
-        check_surface_plotting_inputs(
-            surf_map=surf_img_1d,
-            surf_mesh=None,
-            hemi="left",
-            bg_map=surf_img_2d(10),
-        )
-
-
-@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
-def test_check_surface_plotting_inputs_extract_mesh_from_polymesh(
-    surf_img_1d, surf_mesh, bg_map
-):
-    """Extract mesh from Polymesh and data from SurfaceImage."""
-    hemi = "left"
-    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img_1d,
-        surf_mesh=surf_mesh,
-        hemi=hemi,
-        bg_map=bg_map,
-    )
-    assert_array_equal(out_surf_map, surf_img_1d.data.parts[hemi].T)
-    assert_surface_mesh_equal(out_surf_mesh, surf_mesh.parts[hemi])
-    assert bg_map == out_bg_map
-
-
-def test_check_surface_plotting_inputs_extract_bg_map_data(
-    surf_img_1d, surf_mesh
-):
-    """Extract background map data."""
-    hemi = "left"
-    _, _, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img_1d,
-        surf_mesh=surf_mesh,
-        hemi=hemi,
-        bg_map=surf_img_1d,
-    )
-    assert_array_equal(out_bg_map, surf_img_1d.data.parts[hemi])
-
-
 @pytest.mark.parametrize(
     "fn",
     [
-        check_surface_plotting_inputs,
         plot_surf,
         plot_surf_stat_map,
         plot_surf_contours,
