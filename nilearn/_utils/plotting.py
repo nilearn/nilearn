@@ -146,13 +146,11 @@ def generate_constrat_matrices_figures(
 
             contrast_fig = None
             if output:
-                try:
-                    contrast_fig = output["contrasts_dict"][i_run][
-                        contrast_name
-                    ]
-                    contrast_plot.figure.savefig(output["dir"] / contrast_fig)
-                except KeyError:  # pragma: no cover
-                    contrast_fig = None
+                # try:
+                contrast_fig = output["contrasts_dict"][i_run][contrast_name]
+                contrast_plot.figure.savefig(output["dir"] / contrast_fig)
+            # except KeyError:  # pragma: no cover
+            #     contrast_fig = None
             if contrast_fig is None:
                 contrast_fig = figure_to_png_base64(contrast_plot)
                 # prevents sphinx-gallery & jupyter

@@ -1,5 +1,6 @@
 import warnings
 from collections import OrderedDict
+from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -486,7 +487,7 @@ def _generate_statistical_maps(
         "prefix": prefix,
         "suffix": "statmap",
         "extension": "nii.gz",
-        "entities": entities,
+        "entities": deepcopy(entities),
     }
 
     if generate_bids_name:
@@ -538,7 +539,7 @@ def _generate_model_level_mapping(
         "prefix": prefix,
         "suffix": "statmap",
         "extension": "nii.gz",
-        "entities": entities,
+        "entities": deepcopy(entities),
     }
 
     if generate_bids_name:
@@ -550,7 +551,9 @@ def _generate_model_level_mapping(
         if _is_flm_with_single_run(model):
             fields["entities"]["run"] = i_run + 1
         if generate_bids_name:
-            fields["entities"] = model._reporting_data["run_imgs"][i_run]
+            fields["entities"] = deepcopy(
+                model._reporting_data["run_imgs"][i_run]
+            )
 
         tmp = {}
         for key, stat_label in zip(
@@ -582,7 +585,9 @@ def _generate_design_matrices_dict(
         if _is_flm_with_single_run(model):
             fields["entities"] = {"run": i_run + 1}  # type: ignore[assignment]
         if generate_bids_name:
-            fields["entities"] = model._reporting_data["run_imgs"][i_run]
+            fields["entities"] = deepcopy(
+                model._reporting_data["run_imgs"][i_run]
+            )
 
         tmp = {}
         for extension in ["svg", "tsv"]:
@@ -613,7 +618,7 @@ def _generate_contrasts_dict(
     fields = {
         "prefix": prefix,
         "extension": "svg",
-        "entities": entities,
+        "entities": deepcopy(entities),
         "suffix": "design",
     }
     if generate_bids_name:
@@ -625,7 +630,9 @@ def _generate_contrasts_dict(
         if _is_flm_with_single_run(model):
             fields["entities"]["run"] = i_run + 1
         if generate_bids_name:
-            fields["entities"] = model._reporting_data["run_imgs"][i_run]
+            fields["entities"] = deepcopy(
+                model._reporting_data["run_imgs"][i_run]
+            )
 
         tmp = {}
         for contrast_name in contrasts:
