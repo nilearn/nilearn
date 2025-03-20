@@ -23,13 +23,12 @@ from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
 )
+from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
     check_same_n_vertices,
-    concat_imgs,
-    mean_img,
 )
 
 

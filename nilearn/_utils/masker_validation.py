@@ -6,8 +6,8 @@ from string import Template
 import numpy as np
 from nibabel import Nifti1Image
 
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.typing import NiimgLike
 
 from .cache_mixin import check_memory
 from .class_inspect import get_params
@@ -46,6 +46,8 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         New masker
 
     """
+    from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
+
     if masker_type == "surface":
         masker_type = SurfaceMasker
     elif masker_type == "multi_nii":
@@ -143,8 +145,10 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
     Images to fit should be a Niimg-Like
     if the mask is a NiftiImage, NiftiMasker or a path.
     Similarly, only SurfaceImages can be fitted
-    with a SurfaceImage or a SrufaceMasked as mask.
+    with a SurfaceImage or a SurfaceMasker as mask.
     """
+    from nilearn.maskers import NiftiMasker, SurfaceMasker
+
     if mask_img is None:
         return None
 
@@ -157,7 +161,17 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
         f"and images of type: {[type(x) for x in run_imgs]}"
     )
 
-    volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
+    volumetric_type = (*NiimgLike, NiftiMasker)
+    surface_type = (SurfaceImage, SurfaceMasker)
+    all_allowed_types = (*volumetric_type, *surface_type)
+
+    if not isinstance(mask_img, all_allowed_types):
+        raise TypeError(
+            "\nMask should be of type: "
+            f"{[x.__name__ for x in all_allowed_types]}.\n"
+            f"Got : '{mask_img.__class__.__name__}'"
+        )
+
     if isinstance(mask_img, volumetric_type) and any(
         not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
     ):
@@ -166,9 +180,7 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
             f"where images should be NiftiImage-like instances "
             f"(Nifti1Image or str or Path)."
         )
-
-    surface_type = (SurfaceImage, SurfaceMasker)
-    if isinstance(mask_img, surface_type) and any(
+    elif isinstance(mask_img, surface_type) and any(
         not isinstance(x, SurfaceImage) for x in run_imgs
     ):
         raise TypeError(

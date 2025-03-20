@@ -39,7 +39,6 @@ from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
 from nilearn.surface._testing import assert_surface_image_equal
-from nilearn.surface.surface import concat_imgs as surf_concat_imgs
 
 
 @pytest.mark.parametrize(
@@ -1417,7 +1416,7 @@ def test_second_level_input_as_surface_image_3d_same_as_list_2d(surf_img_1d):
     model.fit(second_level_input, design_matrix=design_matrix)
     result_2d = model.compute_contrast()
 
-    second_level_input_3d = surf_concat_imgs(second_level_input)
+    second_level_input_3d = concat_imgs(second_level_input)
     model.fit(second_level_input_3d, design_matrix=design_matrix)
     result_3d = model.compute_contrast()
 
@@ -1452,6 +1451,36 @@ def test_second_level_input_as_surface_image_with_mask(
 
     model = SecondLevelModel(mask_img=surf_mask)
     model = model.fit(second_level_input, design_matrix=design_matrix)
+
+
+def test_second_level_input_with_wrong_mask(
+    surf_img_1d, surf_mask_1d, img_mask_mni
+):
+    """Test slm with mask of the wrong type."""
+    n_subjects = 5
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame(
+        [1] * len(second_level_input), columns=["intercept"]
+    )
+
+    # volume mask with surface data
+    model = SecondLevelModel(mask_img=img_mask_mni)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model = model.fit(second_level_input, design_matrix=design_matrix)
+
+    # surface mask with volume data
+    func_img, _ = fake_fmri_data()
+    second_level_input = [func_img] * 4
+    model = SecondLevelModel(mask_img=surf_mask_1d)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
 def test_second_level_input_as_surface_image_warning_smoothing(surf_img_1d):

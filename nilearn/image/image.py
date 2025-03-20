@@ -31,6 +31,9 @@ from nilearn._utils.helpers import (
     check_copy_header,
     stringify_path,
 )
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.niimg import _get_data, safe_get_data
 from nilearn._utils.niimg_conversions import (
     _index_img,
@@ -39,9 +42,13 @@ from nilearn._utils.niimg_conversions import (
 )
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
+from nilearn.surface.surface import (
+    SurfaceImage,
+    at_least_2d,
+    check_same_n_vertices,
+    extract_data,
+)
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.surface.surface import new_img_like as new_surface_img_like
 from nilearn.typing import NiimgLike
 
 
@@ -542,29 +549,39 @@ def mean_img(
     n_jobs=1,
     copy_header=False,
 ):
-    """Compute the mean of the images over time or the 4th dimension.
+    """Compute the mean over images.
 
-    Note that if list of 4D images are given, the mean of each 4D image is
-    computed separately, and the resulting mean is computed after.
+    This can be a mean over time or the 4th dimension for a volume,
+    or the 2nd dimension for a surface image.
+
+    Note that if list of 4D volume images (or 2D surface images)
+    are given,
+    the mean of each image is computed separately,
+    and the resulting mean is computed after.
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects
+    imgs : Niimg-like object or iterable of Niimg-like objects, \
+           or :obj:`~nilearn.surface.SurfaceImage`.
         Images to be averaged over time (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
     %(target_affine)s
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     %(target_shape)s
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     %(verbose0)s
 
     n_jobs : :obj:`int`, default=1
         The number of CPUs to use to do the computation (-1 means
         'all CPUs').
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
         .. versionadded:: 0.11.0
 
@@ -580,6 +597,16 @@ def mean_img(
     nilearn.image.math_img : For more general operations on images.
 
     """
+    if isinstance(imgs, SurfaceImage):
+        if len(imgs.shape) < 2 or imgs.shape[1] < 2:
+            data = imgs.data
+        else:
+            data = {
+                part: np.mean(value, axis=1).astype(float)
+                for part, value in imgs.data.parts.items()
+            }
+        return new_img_like(imgs, data=data)
+
     # TODO: remove this warning in 0.13.0
     check_copy_header(copy_header)
 
@@ -665,22 +692,23 @@ def swap_img_hemispheres(img):
 
 
 def index_img(imgs, index):
-    """Indexes into a 4D Niimg-like object in the fourth dimension.
+    """Indexes into a image in the last dimension.
 
-    Common use cases include extracting a 3D image out of `img` or
-    creating a 4D image whose data is a subset of `img` data.
+    Common use cases include extracting an image out of `img` or
+    creating a 4D (or 2D for surface) image
+    whose data is a subset of `img` data.
 
     Parameters
     ----------
-    imgs : 4D Niimg-like object
+    imgs : 4D Niimg-like object or 2D :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
 
     index : Any type compatible with numpy array indexing
-        Used for indexing the 4D data array in the fourth dimension.
+        Used for indexing the data array in the last dimension.
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
+    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`~nilearn.surface.SurfaceImage`
         Indexed image.
 
     See Also
@@ -717,6 +745,10 @@ def index_img(imgs, index):
      (197, 233, 189, 3)
 
     """
+    if isinstance(imgs, SurfaceImage):
+        imgs = at_least_2d(imgs)
+        return new_img_like(imgs, data=extract_data(imgs, index))
+
     imgs = check_niimg_4d(imgs)
     # duck-type for pandas arrays, and select the 'values' attr
     if hasattr(index, "values") and hasattr(index, "iloc"):
@@ -725,22 +757,31 @@ def index_img(imgs, index):
 
 
 def iter_img(imgs):
-    """Iterate over a 4D Niimg-like object in the fourth dimension.
+    """Iterate over images.
+
+    Could be along the the 4th dimension for 4D Niimg-like object
+    or the 2nd dimension for 2D Surface images..
 
     Parameters
     ----------
-    imgs : 4D Niimg-like object
+    imgs : 4D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
 
     Returns
     -------
-    Iterator of 3D :class:`~nibabel.nifti1.Nifti1Image`
+    Iterator of :class:`~nibabel.nifti1.Nifti1Image` \
+        or :obj:`~nilearn.surface.SurfaceImage`
 
     See Also
     --------
     nilearn.image.index_img
 
     """
+    if isinstance(imgs, SurfaceImage):
+        output = (
+            index_img(imgs, i) for i in range(at_least_2d(imgs).shape[1])
+        )
+        return output
     return check_niimg_4d(imgs, return_iterator=True)
 
 
@@ -781,7 +822,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
     Parameters
     ----------
-    ref_niimg : Niimg-like object
+    ref_niimg : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Reference image. The new image will be of the same type.
 
     data : :class:`numpy.ndarray`
@@ -793,10 +834,12 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
     affine : 4x4 :class:`numpy.ndarray`, default=None
         Transformation matrix.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     copy_header : :obj:`bool`, default=False
         Indicated if the header of the reference image should be used to
         create the new image.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     Returns
     -------
@@ -805,6 +848,12 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         as the reference image.
 
     """
+    if isinstance(ref_niimg, SurfaceImage):
+        mesh = ref_niimg.mesh
+        return SurfaceImage(
+            mesh=copy.deepcopy(mesh),
+            data=data,
+        )
     # Hand-written loading code to avoid too much memory consumption
     orig_ref_niimg = ref_niimg
     ref_niimg = stringify_path(ref_niimg)
@@ -1053,18 +1102,8 @@ def threshold_img(
             f"Got {type(img)=}."
         )
 
-    if mask_img is not None and (
-        (isinstance(img, NiimgLike) and not isinstance(mask_img, NiimgLike))
-        or (
-            isinstance(img, SurfaceImage)
-            and not isinstance(mask_img, SurfaceImage)
-        )
-    ):
-        raise TypeError(
-            "'img' and 'mask_img' should both be "
-            "3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(img)=} and {type(mask_img)=}."
-        )
+    if mask_img is not None:
+        check_compatibility_mask_and_images(mask_img, img)
 
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_same_n_vertices(mask_img.mesh, img.mesh)
@@ -1159,7 +1198,7 @@ def threshold_img(
     if isinstance(img, NiimgLike):
         return new_img_like(img, img_data, affine, copy_header=copy_header)
 
-    return new_surface_img_like(img, img_data.data)
+    return new_img_like(img, img_data.data)
 
 
 def _apply_threshold(img_data, two_sided, cutoff_threshold):
@@ -1631,9 +1670,11 @@ def concat_imgs(
 
     Parameters
     ----------
-    niimgs : iterable of Niimg-like objects or glob pattern
+    niimgs : iterable of Niimg-like objects, or glob pattern, \
+             or :obj:`list` or :obj:`tuple` \
+             of :obj:`~nilearn.surface.SurfaceImage` object
         See :ref:`extracting_data`.
-        Niimgs to concatenate.
+        Images to concatenate.
 
     dtype : numpy dtype, default=np.float32
         The dtype of the returned image.
@@ -1661,9 +1702,30 @@ def concat_imgs(
     nilearn.image.index_img
 
     """
-    from ..image import new_img_like  # avoid circular imports
-
     check_params(locals())
+
+    if (
+        isinstance(niimgs, (tuple, list))
+        and len(niimgs) > 0
+        and all(isinstance(x, SurfaceImage) for x in niimgs)
+    ):
+        if len(niimgs) == 1:
+            return niimgs[0]
+
+        for i, img in enumerate(niimgs):
+            check_same_n_vertices(img.mesh, niimgs[0].mesh)
+            niimgs[i] = at_least_2d(img)
+
+        if dtype is None:
+            dtype = extract_data(niimgs[0]).dtype
+
+        output_data = {}
+        for part in niimgs[0].data.parts:
+            tmp = [img.data.parts[part] for img in niimgs]
+            output_data[part] = np.concatenate(tmp, axis=1).astype(dtype)
+
+        return new_img_like(niimgs[0], data=output_data)
+
     if memory is None:
         memory = Memory(location=None)
 
