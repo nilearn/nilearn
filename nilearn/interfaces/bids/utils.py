@@ -95,7 +95,9 @@ def create_bids_filename(fields, entities_to_include=None):
         filename += f".{fields['extension']}"
     if "prefix" in fields:
         prefix = fields["prefix"]
-        if prefix != "" and not prefix.endswith("_"):
+        if prefix is None:
+            prefix = ""
+        if prefix and not prefix.endswith("_"):
             prefix += "_"
         filename = f"{prefix}{filename}"
 

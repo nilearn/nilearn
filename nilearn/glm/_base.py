@@ -1,6 +1,5 @@
 import warnings
 from collections import OrderedDict
-from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
@@ -484,16 +483,20 @@ def _generate_statistical_maps(
         contrast_types = {}
 
     fields = {
+        "prefix": prefix,
         "suffix": "statmap",
         "extension": "nii.gz",
-        "entities": deepcopy(entities),
+        "entities": entities,
     }
 
+    if generate_bids_name:
+        fields["prefix"] = None
+
     statistical_maps: dict[str, dict[str, str]] = {}
+
     for contrast_name in contrasts:
         # Extract stat_type
         contrast_matrix = contrasts[contrast_name]
-
         # Strings and 1D arrays are assumed to be t-contrasts
         if isinstance(contrast_matrix, str) or (contrast_matrix.ndim == 1):
             stat_type = "t"
@@ -501,9 +504,6 @@ def _generate_statistical_maps(
             stat_type = "F"
         # Override automatic detection with explicit type if provided
         stat_type = contrast_types.get(contrast_name, stat_type)
-
-        if not generate_bids_name:
-            fields["prefix"] = prefix
 
         fields["entities"]["contrast"] = _clean_contrast_name(contrast_name)
 
@@ -535,39 +535,22 @@ def _generate_model_level_mapping(
     entities_to_include: list[str],
 ):
     fields = {
+        "prefix": prefix,
         "suffix": "statmap",
         "extension": "nii.gz",
-        "entities": deepcopy(entities),
+        "entities": entities,
     }
 
+    if generate_bids_name:
+        fields["prefix"] = None
+
     model_level_mapping = {}
-    if model.__str__() == "Second Level Model":
-        fields["prefix"] = prefix
-
-        fields["entities"]["stat"] = "errorts"
-        residuals = create_bids_filename(fields, entities_to_include)
-
-        fields["entities"]["stat"] = "rsquared"
-        r_square = create_bids_filename(fields, entities_to_include)
-
-        model_level_mapping[0] = {
-            "residuals": residuals,
-            "r_square": r_square,
-        }
-        return model_level_mapping
 
     for i_run, _ in enumerate(design_matrices):
+        if _is_flm_with_single_run(model):
+            fields["entities"]["run"] = i_run + 1
         if generate_bids_name:
-            fields["entities"] = deepcopy(
-                model._reporting_data["run_imgs"][i_run]
-            )
-        else:
-            fields["prefix"] = prefix
-            if (
-                model.__str__() == "First Level Model"
-                and len(design_matrices) > 1
-            ):
-                fields["entities"]["run"] = i_run + 1
+            fields["entities"] = model._reporting_data["run_imgs"][i_run]
 
         tmp = {}
         for key, stat_label in zip(
@@ -589,24 +572,17 @@ def _generate_design_matrices_dict(
     generate_bids_name: bool,
     entities_to_include: list[str],
 ) -> dict[int, dict[str, str]]:
-    fields = {
-        "extension": "svg",
-    }
-    # design_matrices_dict[i_run] = {"design_matrix": filename,
-    #                                "correlation_matrix": filename}
+    fields = {"prefix": prefix, "extension": "svg", "entities": {}}
+    if generate_bids_name:
+        fields["prefix"] = None  # type: ignore[assignment]
+
     design_matrices_dict = tempita.bunch()
+
     for i_run, _ in enumerate(design_matrices):
+        if _is_flm_with_single_run(model):
+            fields["entities"] = {"run": i_run + 1}  # type: ignore[assignment]
         if generate_bids_name:
-            fields["entities"] = deepcopy(
-                model._reporting_data["run_imgs"][i_run]
-            )
-        else:
-            fields["prefix"] = prefix
-            if (
-                model.__str__() == "First Level Model"
-                and len(design_matrices) > 1
-            ):
-                fields["entities"] = {"run": i_run + 1}  # type: ignore[assignment]
+            fields["entities"] = model._reporting_data["run_imgs"][i_run]
 
         tmp = {}
         for extension in ["svg", "tsv"]:
@@ -635,25 +611,21 @@ def _generate_contrasts_dict(
     entities_to_include: list[str],
 ) -> dict[int, dict[str, str]]:
     fields = {
+        "prefix": prefix,
         "extension": "svg",
-        "entities": deepcopy(entities),
+        "entities": entities,
         "suffix": "design",
     }
+    if generate_bids_name:
+        fields["prefix"] = None
 
-    # contrasts_dict[i_run][contrast_name] = filename
     contrasts_dict = tempita.bunch()
+
     for i_run, _ in enumerate(design_matrices):
+        if _is_flm_with_single_run(model):
+            fields["entities"]["run"] = i_run + 1
         if generate_bids_name:
-            fields["entities"] = deepcopy(
-                model._reporting_data["run_imgs"][i_run]
-            )
-        else:
-            fields["prefix"] = prefix
-            if (
-                model.__str__() == "First Level Model"
-                and len(design_matrices) > 1
-            ):
-                fields["entities"]["run"] = i_run + 1
+            fields["entities"] = model._reporting_data["run_imgs"][i_run]
 
         tmp = {}
         for contrast_name in contrasts:
@@ -683,6 +655,13 @@ def _use_input_files_for_filenaming(self, prefix):
     all_files_have_same_sub = len(tmp) == 1 and tmp is not None
 
     return files_used_as_input and all_files_have_same_sub
+
+
+def _is_flm_with_single_run(model):
+    return (
+        model.__str__() == "First Level Model"
+        and len(model._reporting_data["run_imgs"]) > 1
+    )
 
 
 def _clean_contrast_name(contrast_name):
