@@ -568,7 +568,8 @@ def _generate_model_level_mapping(
             )
         else:
             fields["prefix"] = prefix
-            fields["entities"]["run"] = i_run + 1
+            if model.__str__() == "First Level Model"  and len(design_matrices) > 1:
+                fields["entities"]["run"] = i_run + 1
 
         tmp = {}
         for key, stat_label in zip(
@@ -604,7 +605,7 @@ def _generate_design_matrices_dict(
             )
         else:
             fields["prefix"] = prefix
-            if model.__str__() == "First Level Model":
+            if model.__str__() == "First Level Model"  and len(design_matrices) > 1:
                 fields["entities"]["run"] = i_run + 1
 
         tmp = {}
@@ -644,7 +645,7 @@ def _generate_contrasts_dict(
             )
         else:
             fields["prefix"] = prefix
-            if model.__str__() == "First Level Model":
+            if model.__str__() == "First Level Model" and len(design_matrices) > 1:
                 fields["entities"]["run"] = i_run + 1
 
         tmp = {}
