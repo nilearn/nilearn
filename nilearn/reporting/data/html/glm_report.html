@@ -138,8 +138,7 @@
       {{if dmtx.correlation_matrix_svg }}
       <h4>correlation matrix</h4>
       <div class="scroll-y">
-        {{py: is_bytes = is_bytes = not
-        dmtx.correlation_matrix_svg.endswith('.svg')}}
+        {{py: is_bytes = is_bytes = not dmtx.correlation_matrix_svg.endswith('.svg')}}
         <img
           class="pure-img"
           src="{{if is_bytes}}data:image/svg+xml;base64,{{endif}}{{dmtx.correlation_matrix_svg}}"
