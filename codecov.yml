@@ -21,3 +21,4 @@ ignore:
 -   nilearn/**/*/tests/    # ignore folders related to testing
 -   nilearn/conftest.py
 -   nilearn/datasets/data/convert_templates.py
+-   nilearn/plotting/glass_brain_files/
