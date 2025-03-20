@@ -9,7 +9,7 @@ from nilearn.plotting import (
     plot_design_matrix_correlation,
 )
 from nilearn.reporting.utils import (
-    figure_to_svg_base64,
+    figure_to_png_base64,
 )
 
 
@@ -51,13 +51,13 @@ def generate_design_matrices_figures(
             # the try is mostly here in case badly formed dict
             try:
                 dmtx_fig = output["design_matrices_dict"][i_run][
-                    "design_matrix_svg"
+                    "design_matrix_png"
                 ]
                 dmtx_plot.figure.savefig(output["dir"] / dmtx_fig)
             except Exception:  # pragma: no cover
                 dmtx_fig = None
         if dmtx_fig is None:
-            dmtx_fig = figure_to_svg_base64(dmtx_plot)
+            dmtx_fig = figure_to_png_base64(dmtx_plot)
         # prevents sphinx-gallery & jupyter
         # from scraping & inserting plots
         plt.close("all")
@@ -82,13 +82,13 @@ def generate_design_matrices_figures(
             if output:
                 try:
                     dmtx_cor_fig = output["design_matrices_dict"][i_run][
-                        "correlation_matrix_svg"
+                        "correlation_matrix_png"
                     ]
                     dmtx_cor_plot.figure.savefig(output["dir"] / dmtx_cor_fig)
                 except KeyError:  # pragma: no cover
                     dmtx_cor_fig = None
             if dmtx_cor_fig is None:
-                dmtx_cor_fig = figure_to_svg_base64(dmtx_cor_plot)
+                dmtx_cor_fig = figure_to_png_base64(dmtx_cor_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
             plt.close("all")
@@ -98,8 +98,8 @@ def generate_design_matrices_figures(
                 design_matrix=None, correlation_matrix=None
             )
 
-        design_matrices_dict[i_run]["design_matrix_svg"] = dmtx_fig
-        design_matrices_dict[i_run]["correlation_matrix_svg"] = dmtx_cor_fig
+        design_matrices_dict[i_run]["design_matrix_png"] = dmtx_fig
+        design_matrices_dict[i_run]["correlation_matrix_png"] = dmtx_cor_fig
 
     return design_matrices_dict
 
@@ -155,7 +155,7 @@ def generate_constrat_matrices_figures(
                 except KeyError:  # pragma: no cover
                     contrast_fig = None
             if contrast_fig is None:
-                contrast_fig = figure_to_svg_base64(contrast_plot)
+                contrast_fig = figure_to_png_base64(contrast_plot)
                 # prevents sphinx-gallery & jupyter
                 # from scraping & inserting plots
             plt.close("all")

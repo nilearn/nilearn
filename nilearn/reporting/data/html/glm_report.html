@@ -125,23 +125,24 @@
     <div class="d-flex flex-column">
       <h3>run {{dmtx_title}}</h3>
       <div class="scroll-y">
-        {{py: is_bytes = not dmtx.design_matrix_svg.endswith('.svg')}}
+        {{py: is_bytes = not dmtx.design_matrix_png.endswith('.svg')}}
         <img
           class="pure-img"
-          src="{{if is_bytes}}data:image/svg+xml;base64,{{endif}}{{dmtx.design_matrix_svg}}"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.design_matrix_png}}"
           title="Plot of design matrix for {{dmtx_title}}."
           alt="Plot of design matrix for {{dmtx_title}}."
           style="min-width: 600px"
         />
       </div>
 
-      {{if dmtx.correlation_matrix_svg }}
+      {{if dmtx.correlation_matrix_png }}
       <h4>correlation matrix</h4>
       <div class="scroll-y">
-        {{py: is_bytes = is_bytes = not dmtx.correlation_matrix_svg.endswith('.svg')}}
+        {{py: is_bytes = is_bytes = not
+        dmtx.correlation_matrix_png.endswith('.svg')}}
         <img
           class="pure-img"
-          src="{{if is_bytes}}data:image/svg+xml;base64,{{endif}}{{dmtx.correlation_matrix_svg}}"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.correlation_matrix_png}}"
           title="Plot of correlation of design matrix for run {{dmtx_title}}."
           alt="Plot of correlation of design matrix for run {{dmtx_title}}."
           style="min-width: 600px"
@@ -169,7 +170,7 @@
         {{py: is_bytes = not contrast_plot.endswith('.svg')}}
         <img
           class="pure-img"
-          src="{{if is_bytes}}data:image/svg+xml;base64,{{endif}}{{contrast_plot}}"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{contrast_plot}}"
           title="Plot of the contrast {{contrast_name}} (run {{ i_run }})."
           alt="Plot of the contrast {{contrast_name}} (run {{ i_run }})."
           style="min-width: 600px"

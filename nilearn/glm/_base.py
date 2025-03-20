@@ -16,6 +16,8 @@ from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 
+FIGURE_FORMAT = "png"
+
 
 class BaseGLM(CacheMixin, BaseEstimator):
     """Implement a base class \
@@ -575,7 +577,7 @@ def _generate_design_matrices_dict(
     generate_bids_name: bool,
     entities_to_include: list[str],
 ) -> dict[int, dict[str, str]]:
-    fields = {"prefix": prefix, "extension": "svg", "entities": {}}
+    fields = {"prefix": prefix, "extension": FIGURE_FORMAT, "entities": {}}
     if generate_bids_name:
         fields["prefix"] = None  # type: ignore[assignment]
 
@@ -590,7 +592,7 @@ def _generate_design_matrices_dict(
             )
 
         tmp = {}
-        for extension in ["svg", "tsv"]:
+        for extension in [FIGURE_FORMAT, "tsv"]:
             for key, suffix in zip(
                 ["design_matrix", "correlation_matrix"],
                 ["design", "corrdesign"],
@@ -617,7 +619,7 @@ def _generate_contrasts_dict(
 ) -> dict[int, dict[str, str]]:
     fields = {
         "prefix": prefix,
-        "extension": "svg",
+        "extension": FIGURE_FORMAT,
         "entities": deepcopy(entities),
         "suffix": "design",
     }
