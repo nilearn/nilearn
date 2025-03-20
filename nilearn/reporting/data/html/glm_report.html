@@ -125,23 +125,23 @@
     <div class="d-flex flex-column">
       <h3>run {{dmtx_title}}</h3>
       <div class="scroll-y">
-        {{py: is_bytes = isinstance(dmtx.design_matrix, bytes)}}
+        {{py: is_bytes = isinstance(dmtx.design_matrix_svg, bytes)}}
         <img
           class="pure-img"
-          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.design_matrix}}"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.design_matrix_svg}}"
           title="Plot of design matrix for {{dmtx_title}}."
           alt="Plot of design matrix for {{dmtx_title}}."
           style="min-width: 600px"
         />
       </div>
 
-      {{if dmtx.correlation_matrix }}
+      {{if dmtx.correlation_matrix_svg }}
       <h4>correlation matrix</h4>
       <div class="scroll-y">
-        {{py: is_bytes = isinstance(dmtx.correlation_matrix, bytes)}}
+        {{py: is_bytes = isinstance(dmtx.correlation_matrix_svg, bytes)}}
         <img
           class="pure-img"
-          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.correlation_matrix}}"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.correlation_matrix_svg}}"
           title="Plot of correlation of design matrix for run {{dmtx_title}}."
           alt="Plot of correlation of design matrix for run {{dmtx_title}}."
           style="min-width: 600px"

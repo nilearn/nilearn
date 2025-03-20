@@ -9,7 +9,7 @@ from nilearn.plotting import (
     plot_design_matrix_correlation,
 )
 from nilearn.reporting.utils import (
-    figure_to_png_base64,
+    figure_to_svg_base64,
 )
 
 
@@ -57,7 +57,7 @@ def generate_design_matrices_figures(
             except Exception:  # pragma: no cover
                 dmtx_fig = None
         if dmtx_fig is None:
-            dmtx_fig = figure_to_png_base64(dmtx_plot)
+            dmtx_fig = figure_to_svg_base64(dmtx_plot)
         # prevents sphinx-gallery & jupyter
         # from scraping & inserting plots
         plt.close("all")
@@ -88,7 +88,7 @@ def generate_design_matrices_figures(
                 except KeyError:  # pragma: no cover
                     dmtx_cor_fig = None
             if dmtx_cor_fig is None:
-                dmtx_cor_fig = figure_to_png_base64(dmtx_cor_plot)
+                dmtx_cor_fig = figure_to_svg_base64(dmtx_cor_plot)
             # prevents sphinx-gallery & jupyter
             # from scraping & inserting plots
             plt.close("all")
@@ -154,7 +154,7 @@ def generate_constrat_matrices_figures(
                 except KeyError:  # pragma: no cover
                     contrast_fig = None
             if contrast_fig is None:
-                contrast_fig = figure_to_png_base64(contrast_plot)
+                contrast_fig = figure_to_svg_base64(contrast_plot)
                 # prevents sphinx-gallery & jupyter
                 # from scraping & inserting plots
             plt.close("all")
