@@ -297,8 +297,6 @@ def make_glm_report(
     contrasts_dict = tempita.bunch()
     if output is not None:
         design_matrices_dict = output["design_matrices_dict"]
-        # FIXME only contrast of first run are displayed
-        # contrasts_dict[i_run] = tempita.bunch(**input["contrasts_dict"][i_run]) # noqa: E501
         contrasts_dict = output["contrasts_dict"]
 
     if is_matplotlib_installed():
@@ -320,12 +318,6 @@ def make_glm_report(
             contrasts_dict=contrasts_dict,
             output=output,
         )
-
-        # FIXME
-        # temporaty hack as the GLM reports only
-        # show the contrast matrices of a single run
-        if len(contrasts_dict) > 0:
-            contrasts_dict = contrasts_dict[0]
 
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
