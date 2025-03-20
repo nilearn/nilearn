@@ -315,7 +315,11 @@ class BaseGLM(CacheMixin, BaseEstimator):
         for contrast-related statistical maps and design matrices within
         the model.
 
-        The filenames follow the BIDS convention where applicable.
+        Output files try to follow the BIDS convention where applicable.
+        For first level models,
+        if no prefix is passed,
+        and str or Path were used as input files to the GLM
+        the output filenames will be based on the input files.
 
         See nilearn.interfaces.bids.save_glm_to_bids for more details.
 
@@ -354,14 +358,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        generate_bids_name = (
-            self.__str__() == "First Level Model"
-            and len(self._reporting_data["run_imgs"]) > 0
-            and all(
-                x is not None
-                for x in self._reporting_data["run_imgs"][0].get("sub", None)
-            )
-        )
+        generate_bids_name = _use_input_files_for_filenaming(self, prefix)
 
         entities = {
             "sub": None,
@@ -419,7 +416,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
         suffix = "_statmap.nii.gz"
 
         entities_to_include = [
-            "prefix",
             "sub",
             "ses",
             "task",
@@ -435,57 +431,18 @@ class BaseGLM(CacheMixin, BaseEstimator):
             "contrast",
             "stat",
         ]
+        if not generate_bids_name:
+            entities_to_include = ["run", "contrast", "stat"]
+            prefix = prefix if prefix.endswith("_") else f"{prefix}_"
 
-        fields = {
-            "suffix": "statmap",
-            "extension": "nii.gz",
-            "entities": entities,
-        }
-
-        if not isinstance(contrast_types, dict):
-            contrast_types = {}
-
-        statistical_maps: dict[str, dict[str, str]] = {}
-        for contrast_name in contrasts:
-            # Extract stat_type
-            contrast_matrix = contrasts[contrast_name]
-
-            # Strings and 1D arrays are assumed to be t-contrasts
-            if isinstance(contrast_matrix, str) or (contrast_matrix.ndim == 1):
-                stat_type = "t"
-            else:
-                stat_type = "F"
-            # Override automatic detection with explicit type if provided
-            stat_type = contrast_types.get(contrast_name, stat_type)
-
-            if not generate_bids_name:
-                fields["entities"]["prefix"] = prefix
-
-            fields["entities"]["contrast"] = _clean_contrast_name(
-                contrast_name
-            )
-
-            tmp = {}
-            for key, stat_label in zip(
-                [
-                    "effect_size",
-                    "stat",
-                    "effect_variance",
-                    "z_score",
-                    "p_value",
-                ],
-                ["effect", stat_type, "variance", "z", "p"],
-            ):
-                fields["entities"]["stat"] = stat_label
-                tmp[key] = create_bids_filename(fields, entities_to_include)
-
-            statistical_maps[contrast_name] = tempita.bunch(**tmp)
-
-        fields = {
-            "suffix": "statmap",
-            "extension": "nii.gz",
-            "entities": entities,
-        }
+        statistical_maps = _generate_statistical_maps(
+            prefix,
+            contrasts,
+            contrast_types,
+            generate_bids_name,
+            entities,
+            entities_to_include,
+        )
 
         model_level_mapping: dict[int, dict[str, str]] = {}
         if self.__str__() == "Second Level Model":
@@ -495,74 +452,32 @@ class BaseGLM(CacheMixin, BaseEstimator):
             }
 
         else:
-            for i_run, _ in enumerate(design_matrices):
-                if generate_bids_name:
-                    fields["entities"] = deepcopy(
-                        self._reporting_data["run_imgs"][i_run]
-                    )
-                else:
-                    fields["entities"]["prefix"] = prefix
-                    fields["entities"]["run"] = i_run + 1
+            model_level_mapping = _generate_model_level_mapping(
+                self,
+                prefix,
+                design_matrices,
+                generate_bids_name,
+                entities,
+                entities_to_include,
+            )
 
-                tmp = {}
-                for key, stat_label in zip(
-                    ["residuals", "r_square"],
-                    ["errorts", "rsquared"],
-                ):
-                    fields["entities"]["stat"] = stat_label
-                    tmp[key] = create_bids_filename(
-                        fields, entities_to_include
-                    )
+        design_matrices_dict = _generate_design_matrices_dict(
+            self,
+            prefix,
+            design_matrices,
+            generate_bids_name,
+            entities_to_include,
+        )
 
-                model_level_mapping[i_run] = tempita.bunch(**tmp)
-
-        fields = {
-            "extension": "svg",
-            "entities": entities,
-        }
-        # design_matrices_dict[i_run] = {"design_matrix": filename,
-        #                                "correlation_matrix": filename}
-        design_matrices_dict = tempita.bunch()
-        for i_run, _ in enumerate(design_matrices):
-            if generate_bids_name:
-                fields["entities"] = deepcopy(
-                    self._reporting_data["run_imgs"][i_run]
-                )
-            else:
-                fields["entities"]["prefix"] = prefix
-                fields["entities"]["run"] = i_run + 1
-
-            tmp = {}
-            for key, suffix in zip(
-                ["design_matrix", "correlation_matrix"],
-                ["design", "corrdesign"],
-            ):
-                fields["suffix"] = suffix
-                tmp[key] = create_bids_filename(fields, entities_to_include)
-
-            design_matrices_dict[i_run] = tempita.bunch(**tmp)
-
-        fields = {"extension": "svg", "entities": entities, "suffix": "design"}
-
-        # contrasts_dict[i_run][contrast_name] = filename
-        contrasts_dict = tempita.bunch()
-        for i_run, _ in enumerate(design_matrices):
-            if generate_bids_name:
-                fields["entities"] = deepcopy(
-                    self._reporting_data["run_imgs"][i_run]
-                )
-            else:
-                fields["entities"]["prefix"] = prefix
-                fields["entities"]["run"] = i_run + 1
-
-            tmp = {}
-            for contrast_name in contrasts:
-                fields["entities"]["contrast"] = contrast_name
-                tmp[contrast_name] = create_bids_filename(
-                    fields, entities_to_include
-                )
-
-            contrasts_dict[i_run] = tempita.bunch(**tmp)
+        contrasts_dict = _generate_contrasts_dict(
+            self,
+            prefix,
+            contrasts,
+            design_matrices,
+            generate_bids_name,
+            entities,
+            entities_to_include,
+        )
 
         out_dir = Path(out_dir) / sub
 
@@ -575,6 +490,193 @@ class BaseGLM(CacheMixin, BaseEstimator):
         }
 
         return self
+
+
+def _generate_statistical_maps(
+    prefix: str,
+    contrasts,
+    contrast_types,
+    generate_bids_name: bool,
+    entities,
+    entities_to_include: list[str],
+):
+    if not isinstance(contrast_types, dict):
+        contrast_types = {}
+
+    fields = {
+        "suffix": "statmap",
+        "extension": "nii.gz",
+        "entities": deepcopy(entities),
+    }
+
+    statistical_maps: dict[str, dict[str, str]] = {}
+    for contrast_name in contrasts:
+        # Extract stat_type
+        contrast_matrix = contrasts[contrast_name]
+
+        # Strings and 1D arrays are assumed to be t-contrasts
+        if isinstance(contrast_matrix, str) or (contrast_matrix.ndim == 1):
+            stat_type = "t"
+        else:
+            stat_type = "F"
+        # Override automatic detection with explicit type if provided
+        stat_type = contrast_types.get(contrast_name, stat_type)
+
+        if not generate_bids_name:
+            fields["prefix"] = prefix
+
+        fields["entities"]["contrast"] = _clean_contrast_name(contrast_name)
+
+        tmp = {}
+        for key, stat_label in zip(
+            [
+                "effect_size",
+                "stat",
+                "effect_variance",
+                "z_score",
+                "p_value",
+            ],
+            ["effect", stat_type, "variance", "z", "p"],
+        ):
+            fields["entities"]["stat"] = stat_label
+            tmp[key] = create_bids_filename(fields, entities_to_include)
+
+        statistical_maps[contrast_name] = tempita.bunch(**tmp)
+
+    return statistical_maps
+
+
+def _generate_model_level_mapping(
+    model,
+    prefix: str,
+    design_matrices,
+    generate_bids_name: bool,
+    entities: dict[str, str | None],
+    entities_to_include: list[str],
+):
+    fields = {
+        "suffix": "statmap",
+        "extension": "nii.gz",
+        "entities": deepcopy(entities),
+    }
+
+    model_level_mapping = {}
+    for i_run, _ in enumerate(design_matrices):
+        if generate_bids_name:
+            fields["entities"] = deepcopy(
+                model._reporting_data["run_imgs"][i_run]
+            )
+        else:
+            fields["prefix"] = prefix
+            fields["entities"]["run"] = i_run + 1
+
+        tmp = {}
+        for key, stat_label in zip(
+            ["residuals", "r_square"],
+            ["errorts", "rsquared"],
+        ):
+            fields["entities"]["stat"] = stat_label
+            tmp[key] = create_bids_filename(fields, entities_to_include)
+
+        model_level_mapping[i_run] = tempita.bunch(**tmp)
+
+    return model_level_mapping
+
+
+def _generate_design_matrices_dict(
+    model,
+    prefix: str,
+    design_matrices,
+    generate_bids_name: bool,
+    entities_to_include: list[str],
+) -> dict[int, dict[str, str]]:
+    fields = {
+        "extension": "svg",
+        "entities": {},
+    }
+    # design_matrices_dict[i_run] = {"design_matrix": filename,
+    #                                "correlation_matrix": filename}
+    design_matrices_dict = tempita.bunch()
+    for i_run, _ in enumerate(design_matrices):
+        if generate_bids_name:
+            fields["entities"] = deepcopy(
+                model._reporting_data["run_imgs"][i_run]
+            )
+        else:
+            fields["prefix"] = prefix
+            if model.__str__() == "First Level Model":
+                fields["entities"]["run"] = i_run + 1
+
+        tmp = {}
+        for key, suffix in zip(
+            ["design_matrix", "correlation_matrix"],
+            ["design", "corrdesign"],
+        ):
+            fields["suffix"] = suffix
+            tmp[key] = create_bids_filename(fields, entities_to_include)
+
+        design_matrices_dict[i_run] = tempita.bunch(**tmp)
+
+    return design_matrices_dict
+
+
+def _generate_contrasts_dict(
+    model,
+    prefix: str,
+    contrasts,
+    design_matrices,
+    generate_bids_name: bool,
+    entities,
+    entities_to_include: list[str],
+) -> dict[int, dict[str, str]]:
+    fields = {
+        "extension": "svg",
+        "entities": deepcopy(entities),
+        "suffix": "design",
+    }
+
+    # contrasts_dict[i_run][contrast_name] = filename
+    contrasts_dict = tempita.bunch()
+    for i_run, _ in enumerate(design_matrices):
+        if generate_bids_name:
+            fields["entities"] = deepcopy(
+                model._reporting_data["run_imgs"][i_run]
+            )
+        else:
+            fields["prefix"] = prefix
+            if model.__str__() == "First Level Model":
+                fields["entities"]["run"] = i_run + 1
+
+        tmp = {}
+        for contrast_name in contrasts:
+            fields["entities"]["contrast"] = _clean_contrast_name(
+                contrast_name
+            )
+            tmp[contrast_name] = create_bids_filename(
+                fields, entities_to_include
+            )
+
+        contrasts_dict[i_run] = tempita.bunch(**tmp)
+
+    return contrasts_dict
+
+
+def _use_input_files_for_filenaming(self, prefix):
+    # for first level models with input files
+    # try to generate bids like output based on GLM input
+
+    prefix_passed = isinstance(prefix, str) and prefix != ""
+
+    if self.__str__() == "Second Level Model" or prefix_passed:
+        return False
+
+    input_files = self._reporting_data["run_imgs"]
+
+    files_used_as_input = all(len(x) > 0 for x in input_files.values())
+    tmp = {x.get("sub") for x in input_files.values()}
+    all_files_have_same_sub = len(tmp) == 1 and tmp is not None
+
+    return files_used_as_input and all_files_have_same_sub
 
 
 def _clean_contrast_name(contrast_name):
