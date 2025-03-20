@@ -490,17 +490,21 @@ def check_masker_compatibility_mask_image(estimator):
         estimator.fit(input_img)
 
     if accept_niimg_input(estimator):
-        mask_img = _img_mask_mni()
-        input_img = _img_3d_mni()
+        # using larger images to be compatible
+        # with regions extraction tests
+        # TODO refactor a common fixture for "large 3D shape"
+        shape = (29, 30, 31)
+        mask = np.zeros(shape, dtype=np.int8)
+        mask[1:-1, 1:-1, 1:-1] = 1
+        mask_img = Nifti1Image(mask, _affine_eye())
         image_to_transform = _make_surface_img()
     else:
         mask_img = _make_surface_mask()
-        input_img = _make_surface_img()
         image_to_transform = _img_3d_mni()
 
     estimator = clone(estimator)
     estimator.mask_img = mask_img
-    estimator.fit(input_img)
+    estimator.fit()
     with pytest.raises(TypeError):
         estimator.transform(image_to_transform)
 

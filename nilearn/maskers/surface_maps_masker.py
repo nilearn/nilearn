@@ -267,6 +267,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
+        check_compatibility_mask_and_images(self.maps_img, img)
         # if img is a single image, convert it to a list
         # to be able to concatenate it
         if not isinstance(img, list):
@@ -274,7 +275,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         img = concat_imgs(img)
         # check img data is 2D
         img.data._check_ndims(2, "img")
-        check_compatibility_mask_and_images(self.maps_img, img)
         check_same_n_vertices(self.maps_img.mesh, img.mesh)
         img_data = np.concatenate(
             list(img.data.parts.values()), axis=0
