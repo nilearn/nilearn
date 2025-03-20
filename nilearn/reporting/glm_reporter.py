@@ -324,7 +324,8 @@ def make_glm_report(
         # FIXME
         # temporaty hack as the GLM reports only
         # show the contrast matrices of a single run
-        contrasts_dict = contrasts_dict[0]
+        if len(contrasts_dict) > 0:
+            contrasts_dict = contrasts_dict[0]
 
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
