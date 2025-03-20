@@ -234,20 +234,22 @@ def save_glm_to_bids(
             output=model._reporting_data["filenames"],
         )
 
-    for i_run, design_matrix in enumerate(design_matrices, start=1):
-        run_str = f"run-{i_run}_" if len(design_matrices) > 1 else ""
+    for i_run, design_matrix in enumerate(design_matrices):
+        filename = Path(
+            model._reporting_data["filenames"]["design_matrices_dict"][i_run][
+                "design_matrix_tsv"
+            ]
+        )
 
         # Save design matrix and associated figure
         design_matrix.to_csv(
-            out_dir / f"{prefix}{run_str}design.tsv",
+            out_dir / filename,
             sep="\t",
             index=False,
         )
 
         if model.__str__() == "First Level Model":
-            with (out_dir / f"{prefix}{run_str}design.json").open(
-                "w"
-            ) as f_obj:
+            with (out_dir / filename.with_suffix(".json")).open("w") as f_obj:
                 json.dump(
                     {"RepetitionTime": model.t_r},
                     f_obj,

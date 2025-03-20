@@ -51,7 +51,7 @@ def generate_design_matrices_figures(
             # the try is mostly here in case badly formed dict
             try:
                 dmtx_fig = output["design_matrices_dict"][i_run][
-                    "design_matrix"
+                    "design_matrix_svg"
                 ]
                 dmtx_plot.figure.savefig(output["dir"] / dmtx_fig)
             except Exception:  # pragma: no cover
@@ -82,7 +82,7 @@ def generate_design_matrices_figures(
             if output:
                 try:
                     dmtx_cor_fig = output["design_matrices_dict"][i_run][
-                        "correlation_matrix"
+                        "correlation_matrix_svg"
                     ]
                     dmtx_cor_plot.figure.savefig(output["dir"] / dmtx_cor_fig)
                 except KeyError:  # pragma: no cover

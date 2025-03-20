@@ -12,7 +12,7 @@ from nilearn._utils import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.externals import tempita
-from nilearn.interfaces.bids.utils import create_bids_filename
+from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 
@@ -413,27 +413,18 @@ class BaseGLM(CacheMixin, BaseEstimator):
         else:
             design_matrices = self.design_matrices_
 
-        suffix = "_statmap.nii.gz"
-
+        # dropping some entities to avoid polluting output names
+        all_entities = [
+            *bids_entities()["raw"],
+            *bids_entities()["derivatives"],
+        ]
+        entities_to_drop = ["part", "echo", "hemi", "desc"]
         entities_to_include = [
-            "sub",
-            "ses",
-            "task",
-            "acq",
-            "ce",
-            "rec",
-            "dir",
-            "run",
-            "hemi",
-            "space",
-            "res",
-            "den",
-            "contrast",
-            "stat",
+            x for x in all_entities if x not in entities_to_drop
         ]
         if not generate_bids_name:
-            entities_to_include = ["run", "contrast", "stat"]
-            prefix = prefix if prefix.endswith("_") else f"{prefix}_"
+            entities_to_include = ["run"]
+        entities_to_include.extend(["contrast", "stat"])
 
         statistical_maps = _generate_statistical_maps(
             prefix,
@@ -444,22 +435,14 @@ class BaseGLM(CacheMixin, BaseEstimator):
             entities_to_include,
         )
 
-        model_level_mapping: dict[int, dict[str, str]] = {}
-        if self.__str__() == "Second Level Model":
-            model_level_mapping[0] = {
-                "residuals": f"{prefix}stat-errorts{suffix}",
-                "r_square": f"{prefix}stat-rsquared{suffix}",
-            }
-
-        else:
-            model_level_mapping = _generate_model_level_mapping(
-                self,
-                prefix,
-                design_matrices,
-                generate_bids_name,
-                entities,
-                entities_to_include,
-            )
+        model_level_mapping = _generate_model_level_mapping(
+            self,
+            prefix,
+            design_matrices,
+            generate_bids_name,
+            entities,
+            entities_to_include,
+        )
 
         design_matrices_dict = _generate_design_matrices_dict(
             self,
@@ -561,6 +544,21 @@ def _generate_model_level_mapping(
     }
 
     model_level_mapping = {}
+    if model.__str__() == "Second Level Model":
+        fields["prefix"] = prefix
+
+        fields["entities"]["stat"] = "errorts"
+        residuals = create_bids_filename(fields, entities_to_include)
+
+        fields["entities"]["stat"] = "rsquared"
+        r_square = create_bids_filename(fields, entities_to_include)
+
+        model_level_mapping[0] = {
+            "residuals": residuals,
+            "r_square": r_square,
+        }
+        return model_level_mapping
+
     for i_run, _ in enumerate(design_matrices):
         if generate_bids_name:
             fields["entities"] = deepcopy(
@@ -568,7 +566,10 @@ def _generate_model_level_mapping(
             )
         else:
             fields["prefix"] = prefix
-            if model.__str__() == "First Level Model"  and len(design_matrices) > 1:
+            if (
+                model.__str__() == "First Level Model"
+                and len(design_matrices) > 1
+            ):
                 fields["entities"]["run"] = i_run + 1
 
         tmp = {}
@@ -605,16 +606,23 @@ def _generate_design_matrices_dict(
             )
         else:
             fields["prefix"] = prefix
-            if model.__str__() == "First Level Model"  and len(design_matrices) > 1:
+            if (
+                model.__str__() == "First Level Model"
+                and len(design_matrices) > 1
+            ):
                 fields["entities"]["run"] = i_run + 1
 
         tmp = {}
-        for key, suffix in zip(
-            ["design_matrix", "correlation_matrix"],
-            ["design", "corrdesign"],
-        ):
-            fields["suffix"] = suffix
-            tmp[key] = create_bids_filename(fields, entities_to_include)
+        for extension in ["svg", "tsv"]:
+            for key, suffix in zip(
+                ["design_matrix", "correlation_matrix"],
+                ["design", "corrdesign"],
+            ):
+                fields["extension"] = extension
+                fields["suffix"] = suffix
+                tmp[f"{key}_{extension}"] = create_bids_filename(
+                    fields, entities_to_include
+                )
 
         design_matrices_dict[i_run] = tempita.bunch(**tmp)
 
@@ -645,7 +653,10 @@ def _generate_contrasts_dict(
             )
         else:
             fields["prefix"] = prefix
-            if model.__str__() == "First Level Model" and len(design_matrices) > 1:
+            if (
+                model.__str__() == "First Level Model"
+                and len(design_matrices) > 1
+            ):
                 fields["entities"]["run"] = i_run + 1
 
         tmp = {}
@@ -666,9 +677,7 @@ def _use_input_files_for_filenaming(self, prefix):
     # for first level models with input files
     # try to generate bids like output based on GLM input
 
-    prefix_passed = isinstance(prefix, str) and prefix != ""
-
-    if self.__str__() == "Second Level Model" or prefix_passed:
+    if self.__str__() == "Second Level Model" or prefix is not None:
         return False
 
     input_files = self._reporting_data["run_imgs"]

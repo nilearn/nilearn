@@ -804,8 +804,8 @@ def test_get_bids_files_names(tmp_path):
         "sub-01_ses-02_task-main_run-01_space-MNI_design.svg",
         "sub-01_ses-02_task-main_run-01_space-MNI_corrdesign.svg",
         "sub-01_ses-01_task-main_run-02_space-MNI_contrast-c0_design.svg",
-        # "sub-01_ses-02_task-main_run-02_space-MNI_design.tsv",
-        # "sub-01_ses-01_task-main_run-02_space-MNI_design.json",
+        "sub-01_ses-02_task-main_run-02_space-MNI_design.tsv",
+        "sub-01_ses-01_task-main_run-02_space-MNI_design.json",
     ]
 
     for fname in EXPECTED_FILENAME_ENDINGS:
