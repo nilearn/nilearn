@@ -531,7 +531,7 @@ def _generate_model_level_mapping(
     prefix: str,
     design_matrices,
     generate_bids_name: bool,
-    entities: dict[str, str | None],
+    entities,
     entities_to_include: list[str],
 ):
     fields = {
