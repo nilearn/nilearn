@@ -11,6 +11,9 @@ from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
@@ -155,6 +158,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         img = concat_imgs(img)
 
         if self.mask_img is not None:
+            check_compatibility_mask_and_images(self.mask_img, img)
             check_same_n_vertices(self.mask_img.mesh, img.mesh)
             self.mask_img_ = self.mask_img
             return

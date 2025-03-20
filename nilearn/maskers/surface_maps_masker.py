@@ -13,6 +13,9 @@ from nilearn._utils import constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
@@ -142,7 +145,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         Parameters
         ----------
         img : :obj:`~nilearn.surface.SurfaceImage` object or None, default=None
-            This parameter is currently unused.
 
         y : None
             This parameter is unused.
@@ -153,7 +155,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         SurfaceMapsMasker object
         """
         check_params(self.__dict__)
-        del img, y
+        del y
 
         if self.maps_img is None:
             raise ValueError(
@@ -172,6 +174,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.n_elements_ = self.maps_img.shape[1]
 
         if self.mask_img is not None:
+            if img is not None:
+                check_compatibility_mask_and_images(self.mask_img, img)
             logger.log(
                 msg=f"loading regions from {self.mask_img.__repr__()}",
                 verbose=self.verbose,
