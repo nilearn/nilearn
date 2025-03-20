@@ -591,7 +591,6 @@ def _generate_design_matrices_dict(
 ) -> dict[int, dict[str, str]]:
     fields = {
         "extension": "svg",
-        "entities": {},
     }
     # design_matrices_dict[i_run] = {"design_matrix": filename,
     #                                "correlation_matrix": filename}
@@ -607,7 +606,7 @@ def _generate_design_matrices_dict(
                 model.__str__() == "First Level Model"
                 and len(design_matrices) > 1
             ):
-                fields["entities"]["run"] = i_run + 1
+                fields["entities"] = {"run": i_run + 1}  # type: ignore[assignment]
 
         tmp = {}
         for extension in ["svg", "tsv"]:
