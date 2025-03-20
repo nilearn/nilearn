@@ -1193,7 +1193,7 @@ def test_threshold_img_no_copy_surface(surf_img_1d):
 def test_threshold_img_copy_surface(surf_img_1d):
     """Test copy=True on surface data.
 
-    Check that copying does not mutate.
+    Check that copying does not mutate the original image.
     """
     threshold = 15
     input_img = surf_img_1d
