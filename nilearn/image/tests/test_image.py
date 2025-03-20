@@ -1182,7 +1182,7 @@ def test_threshold_img_threshold_n_clusters(stat_img_test_data):
 def test_threshold_img_no_copy_surface(surf_img_1d):
     """Test copy=False on surface data.
 
-    Check that not copying does mutate.
+    Check that not copying does mutate the original image.
     """
     threshold = 15
     input_img = surf_img_1d
