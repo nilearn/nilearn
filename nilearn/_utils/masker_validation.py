@@ -13,7 +13,7 @@ from .cache_mixin import check_memory
 from .class_inspect import get_params
 
 
-def check_embedded_masker(estimator, masker_type="multi_nii"):
+def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     """Create a masker from instance parameters.
 
     Base function for using a masker within a BaseEstimator class
@@ -46,6 +46,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         New masker
 
     """
+    from nilearn.glm.first_level import FirstLevelModel
     from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 
     if masker_type == "surface":
@@ -54,8 +55,12 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         masker_type = MultiNiftiMasker
     else:
         masker_type = NiftiMasker
-    estimator_params = get_params(masker_type, estimator)
+
+    estimator_params = get_params(masker_type, estimator, ignore=ignore)
+
     mask = getattr(estimator, "mask", None)
+    if isinstance(estimator, FirstLevelModel):
+        mask = getattr(estimator, "mask_img", None)
 
     if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
         # Creating masker from provided masker

@@ -11,7 +11,6 @@ import csv
 import time
 from collections.abc import Iterable
 from pathlib import Path
-from string import Template
 from warnings import warn
 
 import numpy as np
@@ -19,16 +18,15 @@ import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from scipy.linalg import toeplitz
-from sklearn.base import clone
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import check_memory
-from nilearn._utils.class_inspect import get_params
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
+    check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
@@ -1123,9 +1121,9 @@ class FirstLevelModel(BaseGLM):
 
         # deal with self.mask_img as image, str, path, none
         if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):
-            # self._transfer_attribute(masker_type)
-
-            self.masker_ = self.check_embedded_masker(masker_type)
+            self.masker_ = check_embedded_masker(
+                self, masker_type, ignore=["high_pass"]
+            )
 
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
@@ -1138,159 +1136,18 @@ class FirstLevelModel(BaseGLM):
             # Make sure masker has been fitted otherwise no attribute mask_img_
             check_is_fitted(self.mask_img)
             if self.mask_img.mask_img_ is None and self.masker_ is None:
-                self.masker_ = clone(self.mask_img)
+                self.masker_ = check_embedded_masker(
+                    self, masker_type, ignore=["high_pass"]
+                )
 
-                for param_name in ["memory"]:
-                    if getattr(self.masker_, param_name, None):
-                        warn(
-                            f"Parameter {param_name} of the masker overridden"
-                        )
+                if isinstance(self.masker_, NiftiMasker):
+                    self.masker_.mask_strategy = "epi"
 
                 self.masker_.fit(run_img)
             else:
                 self.masker_ = self.mask_img
 
         assert self.masker_ is not None
-
-    def _transfer_attribute(self, masker_type):
-        from nilearn.maskers import (
-            MultiNiftiMasker,
-            NiftiMasker,
-            SurfaceMasker,
-        )
-
-        if masker_type == "surface":
-            masker_type = SurfaceMasker
-        elif masker_type == "multi_nii":
-            masker_type = MultiNiftiMasker
-        else:
-            masker_type = NiftiMasker
-
-        estimator_params = get_params(masker_type, self, ignore=["high_pass"])
-        mask = getattr(self, "mask_img", None)
-
-        if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
-            # Creating masker from provided masker
-            new_masker_params = get_params(masker_type, mask)
-        else:
-            # Creating a masker with parameters extracted from estimator
-            new_masker_params = estimator_params
-            new_masker_params["mask_img"] = mask
-
-        tmp = {k: v for k, v in new_masker_params.items() if v is not None}
-        new_masker_params = tmp
-
-        # new_masker_params["mask_img"] = self.mask_img
-        self.masker_ = masker_type(**new_masker_params)
-
-        # self.masker_ = masker_type(self.mask_img)
-
-        # Forwarding potential attribute of provided masker
-        if hasattr(mask, "mask_img_"):
-            # Allow free fit of returned mask
-            self.masker_.mask_img = mask.mask_img_
-
-        if masker_type == NiftiMasker:
-            self.masker_.mask_strategy = "epi"
-
-    def check_embedded_masker(self, masker_type="multi_nii"):
-        """Smoke."""
-        from nilearn.maskers import (
-            MultiNiftiMasker,
-            NiftiMasker,
-            SurfaceMasker,
-        )
-
-        if masker_type == "surface":
-            masker_type = SurfaceMasker
-        elif masker_type == "multi_nii":
-            masker_type = MultiNiftiMasker
-        else:
-            masker_type = NiftiMasker
-        estimator_params = get_params(masker_type, self, ignore=["high_pass"])
-        mask = getattr(self, "mask_img", None)
-
-        if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
-            # Creating masker from provided masker
-            new_masker_params = get_params(masker_type, mask)
-        else:
-            # Creating a masker with parameters extracted from estimator
-            new_masker_params = estimator_params
-            new_masker_params["mask_img"] = mask
-
-        # Forwarding system parameters of instance to new masker in all case
-        if issubclass(masker_type, MultiNiftiMasker) and hasattr(
-            self, "n_jobs"
-        ):
-            # For MultiNiftiMasker only
-            new_masker_params["n_jobs"] = self.n_jobs
-
-        warning_msg = Template(
-            "Provided estimator has no $attribute attribute set."
-            "Setting $attribute to $default_value by default."
-        )
-
-        if hasattr(self, "memory"):
-            new_masker_params["memory"] = check_memory(self.memory)
-        else:
-            warn(
-                warning_msg.substitute(
-                    attribute="memory",
-                    default_value="Memory(location=None)",
-                ),
-                stacklevel=3,
-            )
-            new_masker_params["memory"] = check_memory(None)
-
-        if hasattr(self, "memory_level"):
-            new_masker_params["memory_level"] = max(0, self.memory_level - 1)
-        else:
-            warn(
-                warning_msg.substitute(
-                    attribute="memory_level", default_value="0"
-                ),
-                stacklevel=3,
-            )
-            new_masker_params["memory_level"] = 0
-
-        if hasattr(self, "verbose"):
-            new_masker_params["verbose"] = self.verbose
-        else:
-            warn(
-                warning_msg.substitute(attribute="verbose", default_value="0"),
-                stacklevel=3,
-            )
-            new_masker_params["verbose"] = 0
-
-        conflicting_param = [
-            k
-            for k in sorted(estimator_params)
-            if np.any(new_masker_params[k] != estimator_params[k])
-        ]
-        if conflicting_param:
-            conflict_string = "".join(
-                (
-                    f"Parameter {k} :\n"
-                    f"    Masker parameter {new_masker_params[k]}"
-                    " - overriding estimator parameter "
-                    f"{estimator_params[k]}\n"
-                )
-                for k in conflicting_param
-            )
-            warn_str = (
-                "Overriding provided-default estimator parameters with"
-                f" provided masker parameters :\n{conflict_string}"
-            )
-            warn(warn_str, stacklevel=3)
-
-        masker = masker_type(**new_masker_params)
-
-        # Forwarding potential attribute of provided masker
-        if hasattr(mask, "mask_img_"):
-            # Allow free fit of returned mask
-            masker.mask_img = mask.mask_img_
-
-        return masker
 
 
 def _check_events_file_uses_tab_separators(events_files):
