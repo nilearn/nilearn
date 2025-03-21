@@ -823,8 +823,21 @@ So if you don't need the plots, a quicker option is:
 
       make html-noplot
 
-4. Visually review the output in ``nilearn/doc/_build/html/auto_examples/``.
+An even quicker option is:
+
+.. code-block:: bash
+
+      make html-noplot-noreport
+
+4. Visually review the output in ``nilearn/doc/_build/html/index.html``.
    If all looks well and there were no errors, commit and push the changes.
+
+.. tip::
+
+      The documentation build by the CI uses the oldest supported version of Python
+      and Nilearn's dependencies.
+      This may explain some differences with a local build of the doc
+      if you are using different dependencies.
 
 5. You can now open a Pull Request from Nilearn's Pull Request page.
 
@@ -843,6 +856,14 @@ So if you don't need the plots, a quicker option is:
 
             python3 -m sphinx -D sphinx_gallery_conf.filename_pattern=\\
             plot_decoding_tutorial.py -b html -d _build/doctrees . _build/html
+
+      or if you want to use make :
+
+      .. code-block:: bash
+
+            PATTERN='examples/04_glm_first_level/plot_bids_features.py'
+            export PATTERN
+            make make -C doc html-modified-examples-only
 
 
 Additional cases
