@@ -11,6 +11,7 @@ import csv
 import time
 from collections.abc import Iterable
 from pathlib import Path
+from string import Template
 from warnings import warn
 
 import numpy as np
@@ -1133,6 +1134,8 @@ class FirstLevelModel(BaseGLM):
 
             self._transfer_attribute()
 
+            # self.masker_ = self.check_embedded_masker(masker_type)
+
             self.masker_.fit(run_img)
 
         else:
@@ -1167,6 +1170,107 @@ class FirstLevelModel(BaseGLM):
                 setattr(self.masker_, param_name, new_attr)
 
         self.masker_.verbose = max(0, self.verbose - 2)
+
+    def check_embedded_masker(self, masker_type="multi_nii"):
+        """Smoke."""
+        from nilearn._utils.class_inspect import get_params
+        from nilearn.maskers import (
+            MultiNiftiMasker,
+            NiftiMasker,
+            SurfaceMasker,
+        )
+
+        if masker_type == "surface":
+            masker_type = SurfaceMasker
+        elif masker_type == "multi_nii":
+            masker_type = MultiNiftiMasker
+        else:
+            masker_type = NiftiMasker
+        estimator_params = get_params(masker_type, self)
+        mask = getattr(self, "mask_img", None)
+
+        if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
+            # Creating masker from provided masker
+            masker_params = get_params(masker_type, mask)
+            new_masker_params = masker_params
+        else:
+            # Creating a masker with parameters extracted from estimator
+            new_masker_params = estimator_params
+            new_masker_params["mask_img"] = mask
+
+        # Forwarding system parameters of instance to new masker in all case
+        if issubclass(masker_type, MultiNiftiMasker) and hasattr(
+            self, "n_jobs"
+        ):
+            # For MultiNiftiMasker only
+            new_masker_params["n_jobs"] = self.n_jobs
+
+        warning_msg = Template(
+            "Provided estimator has no $attribute attribute set."
+            "Setting $attribute to $default_value by default."
+        )
+
+        if hasattr(self, "memory"):
+            new_masker_params["memory"] = check_memory(self.memory)
+        else:
+            warn(
+                warning_msg.substitute(
+                    attribute="memory",
+                    default_value="Memory(location=None)",
+                ),
+                stacklevel=3,
+            )
+            new_masker_params["memory"] = check_memory(None)
+
+        if hasattr(self, "memory_level"):
+            new_masker_params["memory_level"] = max(0, self.memory_level - 1)
+        else:
+            warn(
+                warning_msg.substitute(
+                    attribute="memory_level", default_value="0"
+                ),
+                stacklevel=3,
+            )
+            new_masker_params["memory_level"] = 0
+
+        if hasattr(self, "verbose"):
+            new_masker_params["verbose"] = self.verbose
+        else:
+            warn(
+                warning_msg.substitute(attribute="verbose", default_value="0"),
+                stacklevel=3,
+            )
+            new_masker_params["verbose"] = 0
+
+        conflicting_param = [
+            k
+            for k in sorted(estimator_params)
+            if np.any(new_masker_params[k] != estimator_params[k])
+        ]
+        if conflicting_param:
+            conflict_string = "".join(
+                (
+                    f"Parameter {k} :\n"
+                    f"    Masker parameter {new_masker_params[k]}"
+                    " - overriding estimator parameter "
+                    f"{estimator_params[k]}\n"
+                )
+                for k in conflicting_param
+            )
+            warn_str = (
+                "Overriding provided-default estimator parameters with"
+                f" provided masker parameters :\n{conflict_string}"
+            )
+            warn(warn_str, stacklevel=3)
+
+        masker = masker_type(**new_masker_params)
+
+        # Forwarding potential attribute of provided masker
+        if hasattr(mask, "mask_img_"):
+            # Allow free fit of returned mask
+            masker.mask_img = mask.mask_img_
+
+        return masker
 
 
 def _check_events_file_uses_tab_separators(events_files):
