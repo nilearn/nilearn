@@ -25,6 +25,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import check_memory
+from nilearn._utils.class_inspect import get_params
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -1122,17 +1123,7 @@ class FirstLevelModel(BaseGLM):
 
         # deal with self.mask_img as image, str, path, none
         if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):
-            if masker_type == "surface":
-                self.masker_ = SurfaceMasker(
-                    mask_img=self.mask_img,
-                )
-            elif masker_type == "nii":
-                self.masker_ = NiftiMasker(
-                    mask_img=self.mask_img,
-                    mask_strategy="epi",
-                )
-
-            self._transfer_attribute()
+            self._transfer_attribute(masker_type)
 
             # self.masker_ = self.check_embedded_masker(masker_type)
 
@@ -1145,35 +1136,79 @@ class FirstLevelModel(BaseGLM):
             check_is_fitted(self.mask_img)
             if self.mask_img.mask_img_ is None and self.masker_ is None:
                 self.masker_ = clone(self.mask_img)
-                self._transfer_attribute()
+
+                for param_name in ["t_r", "memory"]:
+                    original_attr = getattr(self.masker_, param_name, None)
+                    if (
+                        new_attr := getattr(self, param_name, None)
+                        and original_attr
+                    ):
+                        if original_attr is not None:
+                            warn(
+                                f"Parameter {param_name} "
+                                "of the masker overridden"
+                            )
+                        setattr(self.masker_, param_name, new_attr)
+
                 self.masker_.fit(run_img)
             else:
                 self.masker_ = self.mask_img
 
         assert self.masker_ is not None
 
-    def _transfer_attribute(self):
-        for param_name in [
-            "memory",
-            "memory_level",
-            "smoothing_fwhm",
-            "standardize",
-            "t_r",
-            "target_affine",
-            "target_shape",
-            "verbose",
-        ]:
-            original_attr = getattr(self.masker_, param_name, None)
-            if new_attr := getattr(self, param_name, None) and original_attr:
-                if original_attr is not None:
-                    warn(f"Parameter {param_name} of the masker overridden")
-                setattr(self.masker_, param_name, new_attr)
+    def _transfer_attribute(self, masker_type):
+        from nilearn.maskers import (
+            MultiNiftiMasker,
+            NiftiMasker,
+            SurfaceMasker,
+        )
 
-        self.masker_.verbose = max(0, self.verbose - 2)
+        if masker_type == "surface":
+            self.masker_ = SurfaceMasker(
+                mask_img=self.mask_img,
+            )
+        elif masker_type == "nii":
+            self.masker_ = NiftiMasker(
+                mask_img=self.mask_img,
+                mask_strategy="epi",
+            )
+
+        if masker_type == "surface":
+            masker_type = SurfaceMasker
+        elif masker_type == "multi_nii":
+            masker_type = MultiNiftiMasker
+        else:
+            masker_type = NiftiMasker
+        estimator_params = get_params(masker_type, self)
+        mask = getattr(self, "mask_img", None)
+
+        if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
+            # Creating masker from provided masker
+            new_masker_params = get_params(masker_type, mask)
+        else:
+            # Creating a masker with parameters extracted from estimator
+            new_masker_params = estimator_params
+            new_masker_params["mask_img"] = mask
+
+        # for x in new_masker_params:
+        #     if x is None:
+        #         new_masker_params.pop(x)
+
+        # self.masker_ = masker_type(**new_masker_params)
+
+        # self.masker_.t_r = self.t_r
+
+        for k, v in new_masker_params.items():
+            original_attr = getattr(self.masker_, k, None)
+            if v is not None and original_attr:
+                if original_attr is not None:
+                    warn(f"Parameter {k} of the masker overridden")
+                setattr(self.masker_, k, v)
+
+        # self.masker_.verbose = max(0, self.verbose - 2)
 
     def check_embedded_masker(self, masker_type="multi_nii"):
         """Smoke."""
-        from nilearn._utils.class_inspect import get_params
         from nilearn.maskers import (
             MultiNiftiMasker,
             NiftiMasker,
@@ -1191,8 +1226,7 @@ class FirstLevelModel(BaseGLM):
 
         if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
             # Creating masker from provided masker
-            masker_params = get_params(masker_type, mask)
-            new_masker_params = masker_params
+            new_masker_params = get_params(masker_type, mask)
         else:
             # Creating a masker with parameters extracted from estimator
             new_masker_params = estimator_params
