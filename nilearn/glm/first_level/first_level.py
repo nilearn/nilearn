@@ -1110,44 +1110,49 @@ class FirstLevelModel(BaseGLM):
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        if masker_type == "surface" and not isinstance(
-            self.mask_img, SurfaceMasker
-        ):
-            if self.smoothing_fwhm is not None:
-                warn(
-                    "Parameter smoothing_fwhm is not "
-                    "yet supported for surface data",
-                    UserWarning,
-                    stacklevel=3,
-                )
-            self.masker_ = SurfaceMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
-                t_r=self.t_r,
-                memory=self.memory,
-                memory_level=self.memory_level,
+        if masker_type == "surface" and self.smoothing_fwhm is not None:
+            warn(
+                "Parameter smoothing_fwhm is not "
+                "yet supported for surface data",
+                UserWarning,
+                stacklevel=3,
             )
-            self.masker_.fit(run_img)
+            self.smoothing_fwhm = 0
 
-        elif masker_type == "nii" and not isinstance(
-            self.mask_img, (NiftiMasker)
-        ):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                target_affine=self.target_affine,
-                standardize=self.standardize,
-                mask_strategy="epi",
-                t_r=self.t_r,
-                memory=self.memory,
-                verbose=max(0, self.verbose - 2),
-                target_shape=self.target_shape,
-                memory_level=self.memory_level,
-            )
+        # deal with self.mask_img as image, str, path, none
+        if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):
+            if masker_type == "surface":
+                self.masker_ = SurfaceMasker(
+                    mask_img=self.mask_img,
+                )
+            elif masker_type == "nii":
+                self.masker_ = NiftiMasker(
+                    mask_img=self.mask_img,
+                    mask_strategy="epi",
+                )
+
+            for param_name in [
+                "memory",
+                "memory_level",
+                "smoothing_fwhm",
+                "standardize",
+                "t_r",
+                "target_affine",
+                "target_shape",
+                "verbose",
+            ]:
+                if our_param := getattr(self, param_name, None) and getattr(
+                    self.masker_, param_name
+                ):
+                    setattr(self.masker_, param_name, our_param)
+
+            self.masker_.verbose = max(0, self.verbose - 2)
+
             self.masker_.fit(run_img)
 
         else:
+            assert isinstance(self.mask_img, (NiftiMasker, SurfaceMasker))
+
             # Make sure masker has been fitted otherwise no attribute mask_img_
             check_is_fitted(self.mask_img)
             if self.mask_img.mask_img_ is None and self.masker_ is None:
@@ -1175,6 +1180,8 @@ class FirstLevelModel(BaseGLM):
                 self.masker_.fit(run_img)
             else:
                 self.masker_ = self.mask_img
+
+        assert self.masker_ is not None
 
 
 def _check_events_file_uses_tab_separators(events_files):
