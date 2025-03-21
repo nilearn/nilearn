@@ -39,6 +39,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
         Indicates whether to return a MultiNiftiMasker, NiftiMasker, or a
         SurfaceMasker.
 
+    ignore : None or list of strings
+        Names of the parameters of the estimator that should not be
+        transferred to the new masker.
+
     Returns
     -------
     masker : MultiNiftiMasker, NiftiMasker, \
