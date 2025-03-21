@@ -1096,7 +1096,7 @@ class FirstLevelModel(BaseGLM):
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
-            if isinstance(run_img, SurfaceImage):
+            if masker_type == "surface":
                 surf_data = {
                     part: np.ones(
                         run_img.data.parts[part].shape[0], dtype=bool
@@ -1119,8 +1119,18 @@ class FirstLevelModel(BaseGLM):
             )
             self.smoothing_fwhm = 0
 
-        # deal with self.mask_img as image, str, path, none
-        if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):
+        if (  # deal with self.mask_img as image, str, path, none
+            (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
+            or
+            # edge case:
+            # If fitted NiftiMasker with a None mask_img_ attribute
+            # the masker parameters are overridden
+            # by the FirstLevelModel parameters
+            (
+                getattr(self.mask_img, "mask_img_", "not_none") is None
+                and self.masker_ is None
+            )
+        ):
             self.masker_ = check_embedded_masker(
                 self, masker_type, ignore=["high_pass"]
             )
@@ -1131,23 +1141,8 @@ class FirstLevelModel(BaseGLM):
             self.masker_.fit(run_img)
 
         else:
-            assert isinstance(self.mask_img, (NiftiMasker, SurfaceMasker))
-
-            # Make sure masker has been fitted otherwise no attribute mask_img_
             check_is_fitted(self.mask_img)
-            if self.mask_img.mask_img_ is None and self.masker_ is None:
-                self.masker_ = check_embedded_masker(
-                    self, masker_type, ignore=["high_pass"]
-                )
-
-                if isinstance(self.masker_, NiftiMasker):
-                    self.masker_.mask_strategy = "epi"
-
-                self.masker_.fit(run_img)
-            else:
-                self.masker_ = self.mask_img
-
-        assert self.masker_ is not None
+            self.masker_ = self.mask_img
 
 
 def _check_events_file_uses_tab_separators(events_files):
