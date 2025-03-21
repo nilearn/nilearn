@@ -100,6 +100,7 @@ def _plot_img_with_bg(
     radiological=False,
     transparency=None,
     transparency_range=None,
+    as_rgb=False,
     **kwargs,
 ):
     """Refer to the docstring of plot_img for parameters not listed below.
@@ -216,7 +217,11 @@ def _plot_img_with_bg(
         )
 
     if img is not False and img is not None:
-        img = check_niimg_3d(img, dtype="auto")
+        if as_rgb:
+            img = check_niimg_4d(img, dtype="auto")
+            assert img.shape[3] == 3
+        else:
+            img = check_niimg_3d(img, dtype="auto")
         data = safe_get_data(img, ensure_finite=True)
         affine = img.affine
 
@@ -241,6 +246,7 @@ def _plot_img_with_bg(
         colorbar=colorbar,
         brain_color=brain_color,
         radiological=radiological,
+        as_rgb=as_rgb,
     )
     if bg_img is not None:
         bg_img = check_niimg_3d(bg_img)
@@ -265,6 +271,7 @@ def _plot_img_with_bg(
             cbar_tick_format=cbar_tick_format,
             transparency=transparency,
             transparency_range=transparency_range,
+            as_rgb=as_rgb,
             **kwargs,
         )
     if radiological:
@@ -1355,6 +1362,7 @@ def plot_stat_map(
     resampling_interpolation="continuous",
     transparency=None,
     transparency_range=None,
+    as_rgb=False,
     **kwargs,
 ):
     """Plot cuts of an ROI/mask image.
@@ -1460,7 +1468,11 @@ def plot_stat_map(
         bg_img, dim=dim, black_bg=black_bg
     )
 
-    stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
+    if as_rgb:
+        stat_map_img = check_niimg_4d(stat_map_img, dtype="auto")
+        assert stat_map_img.shape[3] == 3
+    else:
+        stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
 
     cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
         safe_get_data(stat_map_img, ensure_finite=True),
@@ -1495,6 +1507,7 @@ def plot_stat_map(
         radiological=radiological,
         transparency=transparency,
         transparency_range=transparency_range,
+        as_rgb=as_rgb,
         **kwargs,
     )
 
