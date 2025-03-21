@@ -120,6 +120,13 @@ def save_glm_to_bids(
         String to prepend to generated filenames.
         If a string is provided, '_' will be added to the end.
 
+        For FirstLevelModel that used files as inputs at fit time,
+        and if ``prefix`` is ``None``,
+        the name of the output will be inferred from the input filenames
+        assuming by trying to parse them as BIDS files.
+        This behavior can prevented by passing ``""`` as ``prefix``.
+
+
     kwargs : extra keywords arguments to pass to ``model.generate_report``
         See :func:`nilearn.reporting.make_glm_report` for more details.
         Can be any of the following: ``title``, ``bg_img``, ``threshold``,

@@ -382,23 +382,23 @@ class BaseGLM(CacheMixin, BaseEstimator):
             "space": None,
         }
 
-        if not isinstance(prefix, str):
-            prefix = ""
+        if generate_bids_name:
             # try to figure out filename entities from input files
             # only keep entity label if unique across runs
-            if generate_bids_name:
-                for k in entities:
-                    label = [
-                        x.get(k)
-                        for x in self._reporting_data["run_imgs"].values()
-                        if x.get(k) is not None
-                    ]
+            for k in entities:
+                label = [
+                    x.get(k)
+                    for x in self._reporting_data["run_imgs"].values()
+                    if x.get(k) is not None
+                ]
 
-                    label = set(label)
-                    if len(label) != 1:
-                        continue
-                    label = next(iter(label))
-                    entities[k] = label
+                label = set(label)
+                if len(label) != 1:
+                    continue
+                label = next(iter(label))
+                entities[k] = label
+        elif not isinstance(prefix, str):
+            prefix = ""
 
         if self.__str__() == "Second Level Model":
             sub = "group"
@@ -463,6 +463,8 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         out_dir = Path(out_dir) / sub
 
+        # consider using a class or data class
+        # to better standardize naming
         self._reporting_data["filenames"] = {
             "dir": out_dir,
             "design_matrices_dict": design_matrices_dict,
@@ -482,6 +484,10 @@ def _generate_statistical_maps(
     entities,
     entities_to_include: list[str],
 ):
+    """Return dictionary containing statmap filenames for each contrast.
+
+    statistical_maps[contrast_name][statmap_label] = filename
+    """
     if not isinstance(contrast_types, dict):
         contrast_types = {}
 
@@ -537,6 +543,10 @@ def _generate_model_level_mapping(
     entities,
     entities_to_include: list[str],
 ):
+    """Return dictionary containing filenames runwise error an residuls nifti.
+
+    model_level_mapping[i_run][statmap_label] = filename
+    """
     fields = {
         "prefix": prefix,
         "suffix": "statmap",
@@ -577,6 +587,10 @@ def _generate_design_matrices_dict(
     generate_bids_name: bool,
     entities_to_include: list[str],
 ) -> dict[int, dict[str, str]]:
+    """Return dictionary with filenames for design_matrices figures / tables.
+
+    design_matrices_dict[i_run][key] = filename
+    """
     fields = {"prefix": prefix, "extension": FIGURE_FORMAT, "entities": {}}
     if generate_bids_name:
         fields["prefix"] = None  # type: ignore[assignment]
@@ -617,6 +631,10 @@ def _generate_contrasts_dict(
     entities,
     entities_to_include: list[str],
 ) -> dict[int, dict[str, str]]:
+    """Return dictionary with filenames for contrast matrices figures.
+
+    contrasts_dict[i_run][contrast_name] = filename
+    """
     fields = {
         "prefix": prefix,
         "extension": FIGURE_FORMAT,
