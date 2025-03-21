@@ -1123,9 +1123,12 @@ class FirstLevelModel(BaseGLM):
 
         # deal with self.mask_img as image, str, path, none
         if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):
-            self._transfer_attribute(masker_type)
+            # self._transfer_attribute(masker_type)
 
-            # self.masker_ = self.check_embedded_masker(masker_type)
+            self.masker_ = self.check_embedded_masker(masker_type)
+
+            if isinstance(self.masker_, NiftiMasker):
+                self.masker_.mask_strategy = "epi"
 
             self.masker_.fit(run_img)
 
@@ -1137,18 +1140,11 @@ class FirstLevelModel(BaseGLM):
             if self.mask_img.mask_img_ is None and self.masker_ is None:
                 self.masker_ = clone(self.mask_img)
 
-                for param_name in ["t_r", "memory"]:
-                    original_attr = getattr(self.masker_, param_name, None)
-                    if (
-                        new_attr := getattr(self, param_name, None)
-                        and original_attr
-                    ):
-                        if original_attr is not None:
-                            warn(
-                                f"Parameter {param_name} "
-                                "of the masker overridden"
-                            )
-                        setattr(self.masker_, param_name, new_attr)
+                for param_name in ["memory"]:
+                    if getattr(self.masker_, param_name, None):
+                        warn(
+                            f"Parameter {param_name} of the masker overridden"
+                        )
 
                 self.masker_.fit(run_img)
             else:
@@ -1170,7 +1166,7 @@ class FirstLevelModel(BaseGLM):
         else:
             masker_type = NiftiMasker
 
-        estimator_params = get_params(masker_type, self, ignore=["t_r"])
+        estimator_params = get_params(masker_type, self, ignore=["high_pass"])
         mask = getattr(self, "mask_img", None)
 
         if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
@@ -1184,30 +1180,18 @@ class FirstLevelModel(BaseGLM):
         tmp = {k: v for k, v in new_masker_params.items() if v is not None}
         new_masker_params = tmp
 
-        from rich import print
+        # new_masker_params["mask_img"] = self.mask_img
+        self.masker_ = masker_type(**new_masker_params)
 
-        print(new_masker_params)
+        # self.masker_ = masker_type(self.mask_img)
 
-        print(self.mask_img)
-
-        self.masker_ = masker_type(self.mask_img)
-        # if mask is None:
-        #     self.masker_ = masker_type(self.mask_img)
-        # else:
-        #     self.masker_ = masker_type(**new_masker_params)
-
-        print(f"{self.masker_.t_r=}")
-        print(f"{self.t_r=}")
+        # Forwarding potential attribute of provided masker
+        if hasattr(mask, "mask_img_"):
+            # Allow free fit of returned mask
+            self.masker_.mask_img = mask.mask_img_
 
         if masker_type == NiftiMasker:
             self.masker_.mask_strategy = "epi"
-
-        # for k, v in new_masker_params.items():
-        #     original_attr = getattr(self.masker_, k, None)
-        #     if original_attr:
-        #         if original_attr is not None:
-        #             warn(f"Parameter {k} of the masker overridden")
-        #         setattr(self.masker_, k, v)
 
     def check_embedded_masker(self, masker_type="multi_nii"):
         """Smoke."""
@@ -1223,7 +1207,7 @@ class FirstLevelModel(BaseGLM):
             masker_type = MultiNiftiMasker
         else:
             masker_type = NiftiMasker
-        estimator_params = get_params(masker_type, self)
+        estimator_params = get_params(masker_type, self, ignore=["high_pass"])
         mask = getattr(self, "mask_img", None)
 
         if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
