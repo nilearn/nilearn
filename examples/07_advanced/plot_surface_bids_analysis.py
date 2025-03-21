@@ -104,6 +104,8 @@ fsaverage5 = load_fsaverage()
 # to use as background for the GLM report.
 curvature = load_fsaverage_data(mesh_type="inflated", data_type="curvature")
 
+threshold = 1.96
+
 # Empty lists in which we are going to store activation values.
 z_scores = []
 z_scores_left = []
@@ -137,8 +139,8 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
     if i == 1:
         report_flm = first_level_glm.generate_report(
             contrasts="language-string",
+            threshold=threshold,
             height_control=None,
-            threshold=1.96,
             alpha=0.001,
             bg_img=curvature,
             title="surface based subject-level model",
@@ -173,15 +175,13 @@ import pandas as pd
 
 from nilearn.glm.second_level import SecondLevelModel
 
-threshold = 1.96
-
 second_level_glm = SecondLevelModel()
 design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
 second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
 
 report_slm = second_level_glm.generate_report(
     contrasts=["intercept"],
-    threshold=1.96,
+    threshold=threshold,
     height_control=None,
     alpha=0.001,
     bg_img=curvature,
