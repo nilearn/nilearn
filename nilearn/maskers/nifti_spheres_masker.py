@@ -615,12 +615,12 @@ class NiftiSpheresMasker(BaseMasker):
 
         return self
 
-    def fit_transform(self, imgs, confounds=None, sample_mask=None):
+    def fit_transform(self, X, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction.
 
         Parameters
         ----------
-        imgs : 3D/4D Niimg-like object
+        X : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
@@ -648,8 +648,8 @@ class NiftiSpheresMasker(BaseMasker):
             shape: (number of scans, number of spheres)
 
         """
-        return self.fit(imgs).transform(
-            imgs, confounds=confounds, sample_mask=sample_mask
+        return self.fit(X).transform(
+            X, confounds=confounds, sample_mask=sample_mask
         )
 
     def __sklearn_is_fitted__(self):

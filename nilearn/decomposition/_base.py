@@ -427,7 +427,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     def fit(
         self,
-        imgs,
+        X,
         y=None,  # noqa: ARG002
         confounds=None,
     ):
@@ -435,7 +435,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        imgs : list of Niimg-like objects or
+        X : list of Niimg-like objects or
         list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data on which the mask is calculated. If this is a list,
@@ -459,21 +459,19 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         check_params(self.__dict__)
 
         if (
-            isinstance(imgs, str)
+            isinstance(X, str)
             and nilearn.EXPAND_PATH_WILDCARDS
-            and glob.has_magic(imgs)
+            and glob.has_magic(X)
         ):
-            imgs = resolve_globbing(imgs)
+            X = resolve_globbing(X)
 
-        if isinstance(imgs, (str, Path)) or not hasattr(imgs, "__iter__"):
+        if isinstance(X, (str, Path)) or not hasattr(X, "__iter__"):
             # these classes are meant for list of 4D images
             # (multi-subject), we want it to work also on a single
             # subject, so we hack it.
-            imgs = [
-                imgs,
-            ]
+            X = [X]
 
-        if len(imgs) == 0:
+        if len(X) == 0:
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
             raise ValueError(
@@ -483,7 +481,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         masker_type = "nii"
         if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
-            isinstance(x, SurfaceImage) for x in imgs
+            isinstance(x, SurfaceImage) for x in X
         ):
             masker_type = "surface"
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
@@ -491,7 +489,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
         if self.masker_.mask_img is None:
-            self.masker_.fit(imgs)
+            self.masker_.fit(X)
         else:
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
@@ -501,7 +499,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         logger.log("Loading data", self.verbose)
         data = _mask_and_reduce(
             self.masker_,
-            imgs,
+            X,
             confounds=confounds,
             n_components=self.n_components,
             random_state=self.random_state,
@@ -542,7 +540,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "components_")
 
-    def transform(self, imgs, confounds=None):
+    def transform(self, X, confounds=None):
         """Project the data into a reduced representation.
 
         Parameters
@@ -569,10 +567,10 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         # XXX: dealing properly with 4D/ list of 4D data?
         if confounds is None:
-            confounds = [None] * len(imgs)
+            confounds = [None] * len(X)
         return [
             self.maps_masker_.transform(img, confounds=confound)
-            for img, confound in zip(imgs, confounds)
+            for img, confound in zip(X, confounds)
         ]
 
     def inverse_transform(self, loadings):

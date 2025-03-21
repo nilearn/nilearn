@@ -239,7 +239,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         return region_signals
 
     @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
+    def transform(self, X, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
@@ -257,8 +257,8 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         """
         check_is_fitted(self)
-        if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
-            return self.transform_single_imgs(imgs)
+        if not hasattr(X, "__iter__") or isinstance(X, str):
+            return self.transform_single_imgs(X)
         return self.transform_imgs(
-            imgs, confounds, n_jobs=self.n_jobs, sample_mask=sample_mask
+            X, confounds, n_jobs=self.n_jobs, sample_mask=sample_mask
         )
