@@ -658,8 +658,8 @@ def plot_anat(
     %(cmap)s
         Default=`gray`.
 
-    colorbar : :obj:`bool`, default=False
-        If True, display a colorbar on the right of the plots.
+    %(colorbar)s
+        Default=True
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -778,8 +778,8 @@ def plot_epi(
     %(black_bg)s
         Default=True.
 
-    colorbar : :obj:`bool`, default=False
-        If True, display a colorbar on the right of the plots.
+    %(colorbar)s
+        Default=True
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -954,13 +954,13 @@ def plot_roi(
         contours.
 
     %(cmap_lut)s
-        Default=`gist_ncar`.
+        Default = `gist_ncar`.
 
     %(dim)s
         Default='auto'.
 
-    colorbar : :obj:`bool`, default=False
-        If True, display a colorbar on the right of the plots.
+    %(colorbar)s
+        Default=True
 
     cbar_tick_format : :obj:`str`, default="%%i"
         Controls how to format the tick labels of the colorbar.
@@ -1121,8 +1121,9 @@ def plot_prob_atlas(
         If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
 
-    threshold : a :obj:`int` or :obj:`float` or :obj:`str` or :obj:`list` of
-        :obj:`int` or :obj:`float` or :obj:`str`, default='auto'
+    threshold : a :obj:`int` or :obj:`float` or :obj:`str` or \
+              :obj:`list` of :obj:`int` or :obj:`float` or \
+              :obj:`str`, default='auto'
         This parameter is optional and is used to threshold the maps image
         using the given value or automatically selected value. The values
         in the image (in absolute value) above the threshold level will be
@@ -1747,14 +1748,14 @@ def plot_connectome(
     edge_cmap : colormap, default="RdBu_r"
         Colormap used for representing the strength of the edges.
 
-    edge_vmin, edge_vmax : :obj:`float` or None, default=None
+    edge_vmin, edge_vmax : :obj:`float` or None, Default=None
         If not None, either or both of these values will be used to
         as the minimum and maximum values to color edges. If None are
         supplied the maximum absolute value within the given threshold
         will be used as minimum (multiplied by -1) and maximum
         coloring levels.
 
-    edge_threshold : :obj:`str`, number or None, default=None
+    edge_threshold : :obj:`str`, number or None, Default=None
         If it is a number only the edges with a value greater than
         edge_threshold will be shown.
         If it is a string it must finish with a percent sign,
