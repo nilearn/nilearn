@@ -125,7 +125,7 @@
     <div class="d-flex flex-column">
       <h3>run {{dmtx_title}}</h3>
       <div class="scroll-y">
-        {{py: is_bytes = not dmtx.design_matrix_png.endswith('.svg')}}
+        {{py: is_bytes = not dmtx.design_matrix_png.endswith('.png')}}
         <img
           class="pure-img"
           src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.design_matrix_png}}"
@@ -138,8 +138,9 @@
       {{if dmtx.correlation_matrix_png }}
       <h4>correlation matrix</h4>
       <div class="scroll-y">
-        {{py: is_bytes = is_bytes = not
-        dmtx.correlation_matrix_png.endswith('.svg')}}
+        <!--  -->
+        {{py: is_bytes = is_bytes = not dmtx.correlation_matrix_png.endswith('.png')}}
+        <!--  -->
         <img
           class="pure-img"
           src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.correlation_matrix_png}}"
@@ -167,7 +168,7 @@
       {{py: contrasts = all_contrasts.items()}} {{for contrast_name,
       contrast_plot in contrasts}}
       <div class="scroll-y">
-        {{py: is_bytes = not contrast_plot.endswith('.svg')}}
+        {{py: is_bytes = not contrast_plot.endswith('.png')}}
         <img
           class="pure-img"
           src="{{if is_bytes}}data:image/png;base64,{{endif}}{{contrast_plot}}"
