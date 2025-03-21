@@ -409,14 +409,14 @@ class NiftiMasker(BaseMasker):
 
     def fit(
         self,
-        imgs=None,
+        X=None,
         y=None,  # noqa: ARG002
     ):
         """Compute the mask corresponding to the data.
 
         Parameters
         ----------
-        imgs : :obj:`list` of Niimg-like objects or None, default=None
+        X : :obj:`list` of Niimg-like objects or None, default=None
             See :ref:`extracting_data`.
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
@@ -449,15 +449,15 @@ class NiftiMasker(BaseMasker):
 
         # Load data (if filenames are given, load them)
         logger.log(
-            f"Loading data from {_utils.repr_niimgs(imgs, shorten=False)}",
+            f"Loading data from {_utils.repr_niimgs(X, shorten=False)}",
             verbose=self.verbose,
         )
 
         # Compute the mask if not given by the user
         if self.mask_img is None:
-            if imgs is None:
+            if X is None:
                 raise ValueError(
-                    "Parameter 'imgs' must be provided to "
+                    "Parameter 'X' must be provided to "
                     f"{self.__class__.__name__}.fit() "
                     "if no mask is passed to mask_img."
                 )
@@ -466,7 +466,7 @@ class NiftiMasker(BaseMasker):
             logger.log("Computing the mask", verbose=self.verbose)
             compute_mask = _get_mask_strategy(self.mask_strategy)
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
-                imgs, verbose=max(0, self.verbose - 1), **mask_args
+                X, verbose=max(0, self.verbose - 1), **mask_args
             )
         else:
             self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
@@ -478,11 +478,11 @@ class NiftiMasker(BaseMasker):
             self._reporting_data = {
                 "mask": self.mask_img_,
                 "dim": None,
-                "images": imgs,
+                "images": X,
             }
-            if imgs is not None:
-                imgs, dims = compute_middle_image(imgs)
-                self._reporting_data["images"] = imgs
+            if X is not None:
+                X, dims = compute_middle_image(X)
+                self._reporting_data["images"] = X
                 self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
@@ -519,11 +519,11 @@ class NiftiMasker(BaseMasker):
         if (self.target_shape is not None) or (
             (self.target_affine is not None) and self.reports
         ):
-            if imgs is not None:
+            if X is not None:
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 resampl_imgs = self._cache(resample_img)(
-                    imgs,
+                    X,
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
