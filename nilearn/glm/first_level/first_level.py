@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import time
+from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
 
@@ -1085,6 +1086,13 @@ class FirstLevelModel(BaseGLM):
         # Local import to prevent circular imports
         from nilearn.maskers import NiftiMasker
 
+        masker_type = "nii"
+        # all elements of X should be of the similar type by now
+        # so we can only check the first one
+        to_check = run_img[0] if isinstance(run_img, Iterable) else run_img
+        if not self._is_volume_glm() or isinstance(to_check, SurfaceImage):
+            masker_type = "surface"
+
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
@@ -1102,7 +1110,7 @@ class FirstLevelModel(BaseGLM):
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        if isinstance(run_img, SurfaceImage) and not isinstance(
+        if masker_type == "surface" and not isinstance(
             self.mask_img, SurfaceMasker
         ):
             if self.smoothing_fwhm is not None:
@@ -1122,8 +1130,8 @@ class FirstLevelModel(BaseGLM):
             )
             self.masker_.fit(run_img)
 
-        elif not isinstance(
-            self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
+        elif masker_type == "nii" and not isinstance(
+            self.mask_img, (NiftiMasker)
         ):
             self.masker_ = NiftiMasker(
                 mask_img=self.mask_img,
