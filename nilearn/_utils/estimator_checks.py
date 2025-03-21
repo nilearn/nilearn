@@ -22,12 +22,14 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
+    _img_3d_mni,
     _img_3d_ones,
     _img_3d_rand,
     _img_3d_zeros,
     _img_4d_rand_eye,
     _img_4d_rand_eye_medium,
     _img_4d_zeros,
+    _img_mask_mni,
     _make_surface_img,
     _make_surface_img_and_design,
     _make_surface_mask,
@@ -307,6 +309,7 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_transformer)
+        yield (clone(estimator), check_masker_compatibility_mask_image)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -464,6 +467,46 @@ def check_masker_detrending(estimator):
     detrended_signal = estimator.fit_transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
+
+
+def check_masker_compatibility_mask_image(estimator):
+    """Check compatibility of the mask_img and images to masker.
+
+    Compatibility should be check at fit and transform time.
+
+    For nifti maskers this is handled by one the check_nifti functions.
+    For surface maskers, check_compatibility_mask_and_images does it.
+    But this means we do not have exactly the same error messages.
+    """
+    if accept_niimg_input(estimator):
+        mask_img = _img_mask_mni()
+        input_img = _make_surface_img()
+    else:
+        mask_img = _make_surface_mask()
+        input_img = _img_3d_mni()
+
+    estimator.mask_img = mask_img
+    with pytest.raises(TypeError):
+        estimator.fit(input_img)
+
+    if accept_niimg_input(estimator):
+        # using larger images to be compatible
+        # with regions extraction tests
+        # TODO refactor a common fixture for "large 3D shape"
+        shape = (29, 30, 31)
+        mask = np.zeros(shape, dtype=np.int8)
+        mask[1:-1, 1:-1, 1:-1] = 1
+        mask_img = Nifti1Image(mask, _affine_eye())
+        image_to_transform = _make_surface_img()
+    else:
+        mask_img = _make_surface_mask()
+        image_to_transform = _img_3d_mni()
+
+    estimator = clone(estimator)
+    estimator.mask_img = mask_img
+    estimator.fit()
+    with pytest.raises(TypeError):
+        estimator.transform(image_to_transform)
 
 
 def check_masker_clean(estimator):
