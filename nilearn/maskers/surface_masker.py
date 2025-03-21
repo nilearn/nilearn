@@ -220,12 +220,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         return self
 
     @rename_parameters(replacement_params={"img": "X"}, end_version="0.13.2")
-    def transform(
-        self,
-        X,
-        confounds=None,
-        sample_mask=None,
-    ):
+    def transform(self, X, confounds=None, sample_mask=None):
         """Extract signals from fitted surface object.
 
         Parameters

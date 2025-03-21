@@ -152,7 +152,7 @@ def test_transform_and_fit_errors(mask_img):
     # error is raised when no data is passed.
     with pytest.raises(
         TypeError,
-        match="missing 1 required positional argument: 'imgs'",
+        match="missing 1 required positional argument: 'X'",
     ):
         canica.fit()
 
