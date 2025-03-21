@@ -70,6 +70,7 @@ def create_bids_filename(fields, entities_to_include=None):
         Dictionary of entity-label pairs, for example:
 
         {
+         "prefix": None, # can be useful to easily prefix filenames
          "suffix": "T1w",
          "extension": "nii.gz",
          "entities": {"acq":  "ap",
@@ -87,13 +88,18 @@ def create_bids_filename(fields, entities_to_include=None):
     filename = ""
 
     for key in entities_to_include:
-        if key in fields["entities"]:
-            value = fields["entities"][key]
-            if value not in (None, ""):
-                filename += f"{key}-{value}_"
+        if value := fields["entities"].get(key):
+            filename += f"{key}-{value}_"
     if "suffix" in fields:
         filename += f"{fields['suffix']}"
     if "extension" in fields:
         filename += f".{fields['extension']}"
+    if "prefix" in fields:
+        prefix = fields["prefix"]
+        if prefix is None:
+            prefix = ""
+        if prefix and prefix != "" and not prefix.endswith("_"):
+            prefix += "_"
+        filename = f"{prefix}{filename}"
 
     return filename

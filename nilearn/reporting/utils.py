@@ -16,7 +16,7 @@ HTML_TEMPLATE_PATH = TEMPLATE_ROOT_PATH / "html"
 HTML_PARTIALS_PATH = HTML_TEMPLATE_PATH / "partials"
 
 
-def _figure_to_bytes(fig, format):
+def _figure_to_bytes(fig, format, **kwargs):
     """Save figure as as certain format and return it as bytes.
 
     If a matplotlib axes is passed, it gets the parent figure.
@@ -29,7 +29,11 @@ def _figure_to_bytes(fig, format):
         fig = fig.figure
     with io.BytesIO() as io_buffer:
         fig.savefig(
-            io_buffer, format=format, facecolor="white", edgecolor="white"
+            io_buffer,
+            format=format,
+            facecolor="white",
+            edgecolor="white",
+            **kwargs,
         )
         return io_buffer.getvalue()
 
@@ -41,7 +45,7 @@ def _figure_to_svg_bytes(fig):
 
 def _figure_to_png_bytes(fig):
     """Save figure as png and return it as bytes."""
-    return _figure_to_bytes(fig, format="png")
+    return _figure_to_bytes(fig, format="png", bbox_inches="tight")
 
 
 def figure_to_svg_base64(fig):
