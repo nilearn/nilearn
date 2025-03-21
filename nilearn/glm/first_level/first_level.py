@@ -1164,23 +1164,13 @@ class FirstLevelModel(BaseGLM):
         )
 
         if masker_type == "surface":
-            self.masker_ = SurfaceMasker(
-                mask_img=self.mask_img,
-            )
-        elif masker_type == "nii":
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                mask_strategy="epi",
-            )
-
-        if masker_type == "surface":
             masker_type = SurfaceMasker
         elif masker_type == "multi_nii":
             masker_type = MultiNiftiMasker
         else:
             masker_type = NiftiMasker
 
-        estimator_params = get_params(masker_type, self)
+        estimator_params = get_params(masker_type, self, ignore=["t_r"])
         mask = getattr(self, "mask_img", None)
 
         if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
@@ -1191,22 +1181,33 @@ class FirstLevelModel(BaseGLM):
             new_masker_params = estimator_params
             new_masker_params["mask_img"] = mask
 
-        for x in new_masker_params:
-            if x is None:
-                new_masker_params.pop(x)
+        tmp = {k: v for k, v in new_masker_params.items() if v is not None}
+        new_masker_params = tmp
 
-        # self.masker_ = masker_type(**new_masker_params)
+        from rich import print
 
-        # self.masker_.t_r = self.t_r
+        print(new_masker_params)
 
-        for k, v in new_masker_params.items():
-            original_attr = getattr(self.masker_, k, None)
-            if original_attr:
-                if original_attr is not None:
-                    warn(f"Parameter {k} of the masker overridden")
-                setattr(self.masker_, k, v)
+        print(self.mask_img)
 
-        # self.masker_.verbose = max(0, self.verbose - 2)
+        self.masker_ = masker_type(self.mask_img)
+        # if mask is None:
+        #     self.masker_ = masker_type(self.mask_img)
+        # else:
+        #     self.masker_ = masker_type(**new_masker_params)
+
+        print(f"{self.masker_.t_r=}")
+        print(f"{self.t_r=}")
+
+        if masker_type == NiftiMasker:
+            self.masker_.mask_strategy = "epi"
+
+        # for k, v in new_masker_params.items():
+        #     original_attr = getattr(self.masker_, k, None)
+        #     if original_attr:
+        #         if original_attr is not None:
+        #             warn(f"Parameter {k} of the masker overridden")
+        #         setattr(self.masker_, k, v)
 
     def check_embedded_masker(self, masker_type="multi_nii"):
         """Smoke."""
