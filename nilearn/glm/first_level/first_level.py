@@ -1142,26 +1142,7 @@ class FirstLevelModel(BaseGLM):
             check_is_fitted(self.mask_img)
             if self.mask_img.mask_img_ is None and self.masker_ is None:
                 self.masker_ = clone(self.mask_img)
-                for param_name in [
-                    "target_affine",
-                    "target_shape",
-                    "smoothing_fwhm",
-                    "t_r",
-                    "memory",
-                    "memory_level",
-                ]:
-                    our_param = getattr(self, param_name)
-                    if our_param is None:
-                        continue
-                    if getattr(self.masker_, param_name) is not None:
-                        warn(
-                            f"Parameter {param_name} of the masker overridden"
-                        )
-                    if (
-                        isinstance(self.masker_, SurfaceMasker)
-                        and param_name not in ["target_affine", "target_shape"]
-                    ) or not isinstance(self.masker_, SurfaceMasker):
-                        setattr(self.masker_, param_name, our_param)
+                self._transfer_attribute()
                 self.masker_.fit(run_img)
             else:
                 self.masker_ = self.mask_img
