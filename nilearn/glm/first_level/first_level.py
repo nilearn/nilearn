@@ -1179,6 +1179,7 @@ class FirstLevelModel(BaseGLM):
             masker_type = MultiNiftiMasker
         else:
             masker_type = NiftiMasker
+
         estimator_params = get_params(masker_type, self)
         mask = getattr(self, "mask_img", None)
 
@@ -1190,9 +1191,9 @@ class FirstLevelModel(BaseGLM):
             new_masker_params = estimator_params
             new_masker_params["mask_img"] = mask
 
-        # for x in new_masker_params:
-        #     if x is None:
-        #         new_masker_params.pop(x)
+        for x in new_masker_params:
+            if x is None:
+                new_masker_params.pop(x)
 
         # self.masker_ = masker_type(**new_masker_params)
 
@@ -1200,7 +1201,7 @@ class FirstLevelModel(BaseGLM):
 
         for k, v in new_masker_params.items():
             original_attr = getattr(self.masker_, k, None)
-            if v is not None and original_attr:
+            if original_attr:
                 if original_attr is not None:
                     warn(f"Parameter {k} of the masker overridden")
                 setattr(self.masker_, k, v)
