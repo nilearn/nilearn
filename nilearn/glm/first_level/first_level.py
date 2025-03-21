@@ -1131,22 +1131,7 @@ class FirstLevelModel(BaseGLM):
                     mask_strategy="epi",
                 )
 
-            for param_name in [
-                "memory",
-                "memory_level",
-                "smoothing_fwhm",
-                "standardize",
-                "t_r",
-                "target_affine",
-                "target_shape",
-                "verbose",
-            ]:
-                if our_param := getattr(self, param_name, None) and getattr(
-                    self.masker_, param_name
-                ):
-                    setattr(self.masker_, param_name, our_param)
-
-            self.masker_.verbose = max(0, self.verbose - 2)
+            self._transfer_attribute()
 
             self.masker_.fit(run_img)
 
@@ -1182,6 +1167,25 @@ class FirstLevelModel(BaseGLM):
                 self.masker_ = self.mask_img
 
         assert self.masker_ is not None
+
+    def _transfer_attribute(self):
+        for param_name in [
+            "memory",
+            "memory_level",
+            "smoothing_fwhm",
+            "standardize",
+            "t_r",
+            "target_affine",
+            "target_shape",
+            "verbose",
+        ]:
+            original_attr = getattr(self.masker_, param_name, None)
+            if new_attr := getattr(self, param_name, None) and original_attr:
+                if original_attr is not None:
+                    warn(f"Parameter {param_name} of the masker overridden")
+                setattr(self.masker_, param_name, new_attr)
+
+        self.masker_.verbose = max(0, self.verbose - 2)
 
 
 def _check_events_file_uses_tab_separators(events_files):
