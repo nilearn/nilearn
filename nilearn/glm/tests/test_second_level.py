@@ -539,7 +539,11 @@ def test_high_level_glm_with_paths_errors():
     # Provide a masker as mask_img
     masker = NiftiMasker(mask).fit()
     with pytest.warns(
-        UserWarning, match="Parameter memory of the masker overridden"
+        UserWarning,
+        match=(
+            "Overriding provided-default estimator parameters "
+            "with provided masker parameters"
+        ),
     ):
         SecondLevelModel(mask_img=masker, verbose=1).fit(Y, design_matrix=X)
 

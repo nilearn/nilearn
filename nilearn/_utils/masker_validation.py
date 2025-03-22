@@ -51,6 +51,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
 
     """
     from nilearn.glm.first_level import FirstLevelModel
+    from nilearn.glm.second_level import SecondLevelModel
     from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 
     if masker_type == "surface":
@@ -63,7 +64,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     estimator_params = get_params(masker_type, estimator, ignore=ignore)
 
     mask = getattr(estimator, "mask", None)
-    if isinstance(estimator, FirstLevelModel):
+    if isinstance(estimator, (FirstLevelModel, SecondLevelModel)):
         mask = getattr(estimator, "mask_img", None)
 
     if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
