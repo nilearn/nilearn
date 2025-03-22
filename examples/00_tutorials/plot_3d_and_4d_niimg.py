@@ -14,17 +14,7 @@ Here we discover how to work with 3D and 4D niimgs.
 # Let's first check where the data is downloaded on our disk:
 from nilearn import datasets
 
-print(f"Datasets are stored in: {datasets.get_data_dirs()!r}")
-
-# %%
-# Let's now retrieve a motor :term:`contrast`
-# from a :term:`Neurovault` repository
-motor_images = datasets.fetch_neurovault_motor_task()
-motor_images.images
-
-# %%
-# motor_images is a list of filenames. We need to take the first one
-tmap_filename = motor_images.images[0]
+tmap_filename = datasets.load_sample_motor_activation_image()
 
 
 # %%

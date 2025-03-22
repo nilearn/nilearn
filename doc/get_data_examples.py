@@ -97,7 +97,6 @@ def main(args=sys.argv) -> None:
                 n_subjects=n_subjects,
             )
         datasets.fetch_localizer_first_level()
-        datasets.fetch_neurovault_motor_task()
         datasets.fetch_neurovault_ids(
             image_ids=(151, 3041, 3042, 2676, 2675, 2818, 2834)
         )
