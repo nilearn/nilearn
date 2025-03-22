@@ -275,7 +275,6 @@ max-complexity = 21
 "nilearn/decoding/*" = ["B028"]  # 5 errors to fix
 "nilearn/decoding/**/{tests}/*" = ["D103"]  # 81 errors to fix
 "nilearn/decomposition/**/{tests}/*" = ["D103"]  # 32 errors to fix
-# "nilearn/glm/*" = ["B028"]  # 19 errors to fix
 "nilearn/glm/tests/test_check_events_file_uses_tab_separators.py" = ["D103"]
 "nilearn/glm/tests/test_contrasts.py" = ["D103"]
 "nilearn/glm/tests/test_design_matrix.py" = ["D103"]
