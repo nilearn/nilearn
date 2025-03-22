@@ -568,6 +568,7 @@ def compute_fixed_effects(
         "changed in release 0.13 to have an additional"
         "return value 'fixed_fx_z_score_img'  by default. "
         "Please set return_z_score to True.",
+        stacklevel=2,
     )
     if return_z_score:
         return (
