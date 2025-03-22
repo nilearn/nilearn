@@ -204,7 +204,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         warnings.warn(
             f"Maximum number of iterations {max_iter} reached without "
             f"getting to the requested tolerance level {tol}.",
-            stacklevel=4,
+            stacklevel=5,
         )
 
     return gmean

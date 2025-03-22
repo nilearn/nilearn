@@ -386,7 +386,7 @@ def _group_sparse_covariance(
 
                         if fder == 0:
                             msg = "derivative was zero."
-                            warnings.warn(msg, RuntimeWarning, stacklevel=3)
+                            warnings.warn(msg, RuntimeWarning, stacklevel=4)
                             break
                         fval = -(alpha2 - (cc / aq2).sum()) / fder
                         gamma = fval + gamma
@@ -397,7 +397,7 @@ def _group_sparse_covariance(
                         warnings.warn(
                             "Newton-Raphson step did not converge.\n"
                             "This may indicate a badly conditioned system.",
-                            stacklevel=3,
+                            stacklevel=4,
                         )
 
                     if debug:
@@ -453,7 +453,7 @@ def _group_sparse_covariance(
         warnings.warn(
             "Maximum number of iterations reached without getting "
             "to the requested tolerance level.",
-            stacklevel=3,
+            stacklevel=4,
         )
 
     return omega

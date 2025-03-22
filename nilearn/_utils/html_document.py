@@ -105,7 +105,8 @@ class HTMLDocument:
                 f"more than {MAX_IMG_VIEWS_BEFORE_WARNING} "
                 "nilearn views. As each view uses dozens "
                 "of megabytes of RAM, you might want to "
-                "delete some of them."
+                "delete some of them.",
+                stacklevel=5,
             )
 
     def resize(self, width, height):
