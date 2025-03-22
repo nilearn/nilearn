@@ -2851,6 +2851,16 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     """Fetch left vs right button press \
        group :term:`contrast` map from :term:`Neurovault`.
 
+    .. deprecated:: 0.11.2dev
+
+        This fetcher function will be removed in version>0.13.1
+        as it returns the same data
+        as :func:`nilearn.datasets.load_sample_motor_activation_image`.
+
+        Please use
+        :func:`nilearn.datasets.load_sample_motor_activation_image`
+        instead.
+
     Parameters
     ----------
     %(data_dir)s
@@ -2882,6 +2892,17 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
 
     """
     check_params(locals())
+
+    warnings.warn(
+        (
+            "The 'fetch_neurovault_motor_task' function will be removed "
+            "in version>0.13.1 as it returns the same data "
+            "as 'load_sample_motor_activation_image'.\n"
+            "Please use 'load_sample_motor_activation_image' instead.'"
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
     data = fetch_neurovault_ids(
         image_ids=[10426], data_dir=data_dir, verbose=verbose
@@ -2921,7 +2942,6 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     --------
     nilearn.datasets.fetch_neurovault_ids
     nilearn.datasets.fetch_neurovault
-    nilearn.datasets.fetch_neurovault_motor_task
 
     """
     check_params(locals())
