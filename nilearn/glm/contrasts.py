@@ -158,7 +158,7 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     n_contrasts = 0
     for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
         if np.all(con_val == 0):
-            warn(f"Contrast for run {int(i)} is null.")
+            warn(f"Contrast for run {int(i)} is null.", stacklevel=3)
             continue
         contrast_ = compute_contrast(lab, res, con_val, stat_type)
         contrast = contrast_ if contrast is None else contrast + contrast_

@@ -87,7 +87,7 @@ def mean_scaling(Y, axis=0):
             "The data have probably been centered."
             "Scaling might not work as expected",
             UserWarning,
-            stacklevel=2,
+            stacklevel=4,
         )
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
