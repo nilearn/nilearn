@@ -165,7 +165,8 @@ def iter_check_niimg(
                     warnings.warn(
                         "Affine is different across subjects."
                         " Realignement on first subject "
-                        "affine forced"
+                        "affine forced",
+                        stacklevel=3,
                     )
                 niimg = cache(
                     image.resample_img,

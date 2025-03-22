@@ -179,7 +179,9 @@ def test_get_mask_extent():
     if Path(mni152_brain_mask).is_file():
         assert _get_mask_extent(load(mni152_brain_mask)) == MNI152_BRAIN_VOLUME
     else:
-        warnings.warn(f"Couldn't find {mni152_brain_mask} (for testing)")
+        warnings.warn(
+            f"Couldn't find {mni152_brain_mask} (for testing)", stacklevel=2
+        )
 
 
 def test_feature_screening(affine_eye):

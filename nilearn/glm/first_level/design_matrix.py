@@ -109,7 +109,8 @@ def create_cosine_drift(high_pass, frame_times):
             "High-pass filter will span all accessible frequencies "
             "and saturate the design matrix. "
             "You may want to reduce the high_pass value."
-            f"The provided value is {high_pass} Hz"
+            f"The provided value is {high_pass} Hz",
+            stacklevel=3,
         )
     order = np.minimum(
         n_frames - 1, int(np.floor(2 * n_frames * high_pass * dt))
@@ -527,6 +528,7 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
     if np.linalg.cond(design_matrix.values) > design_matrix.size:
         warn(
             "Attention: Design matrix is singular. Aberrant estimates "
-            "are expected."
+            "are expected.",
+            stacklevel=3,
         )
     return design_matrix

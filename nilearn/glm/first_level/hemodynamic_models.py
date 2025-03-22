@@ -450,6 +450,7 @@ def _sample_condition(
                 " experiment and are thus not considered in the model."
             ),
             UserWarning,
+            stacklevel=4,
         )
 
     # Set up the regressor timecourse

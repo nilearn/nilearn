@@ -623,7 +623,10 @@ class SecondLevelModel(BaseGLM):
                 if our_param is None:
                     continue
                 if getattr(self.masker_, param_name) is not None:
-                    warn(f"Parameter {param_name} of the masker overridden")
+                    warn(
+                        f"Parameter {param_name} of the masker overridden",
+                        stacklevel=2,
+                    )
                 setattr(self.masker_, param_name, our_param)
         self.masker_.fit(sample_map)
 
@@ -1048,7 +1051,10 @@ def non_parametric_inference(
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = clone(mask)
         if smoothing_fwhm is not None and masker.smoothing_fwhm is not None:
-            warn("Parameter 'smoothing_fwhm' of the masker overridden.")
+            warn(
+                "Parameter 'smoothing_fwhm' of the masker overridden.",
+                stacklevel=2,
+            )
             masker.smoothing_fwhm = smoothing_fwhm
 
     elif isinstance(sample_map, SurfaceImage):
