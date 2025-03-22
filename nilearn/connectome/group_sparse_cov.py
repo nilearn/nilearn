@@ -386,7 +386,7 @@ def _group_sparse_covariance(
 
                         if fder == 0:
                             msg = "derivative was zero."
-                            warnings.warn(msg, RuntimeWarning)
+                            warnings.warn(msg, RuntimeWarning, stacklevel=3)
                             break
                         fval = -(alpha2 - (cc / aq2).sum()) / fder
                         gamma = fval + gamma
@@ -396,7 +396,8 @@ def _group_sparse_covariance(
                     if abs(fval) > 0.1:
                         warnings.warn(
                             "Newton-Raphson step did not converge.\n"
-                            "This may indicate a badly conditioned system."
+                            "This may indicate a badly conditioned system.",
+                            stacklevel=3,
                         )
 
                     if debug:
@@ -451,7 +452,8 @@ def _group_sparse_covariance(
     if tol is not None and not tolerance_reached and not probe_interrupted:
         warnings.warn(
             "Maximum number of iterations reached without getting "
-            "to the requested tolerance level."
+            "to the requested tolerance level.",
+            stacklevel=3,
         )
 
     return omega
@@ -489,7 +491,8 @@ def _check_diagonal_normalization(emp_covs, n_subjects):
         ).any():
             warnings.warn(
                 "Input signals do not all have unit variance. "
-                "This can lead to numerical instability."
+                "This can lead to numerical instability.",
+                stacklevel=4,
             )
             break
 

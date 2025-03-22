@@ -264,7 +264,6 @@ max-complexity = 21
 "__init__.py" = ["D104", "E402"]
 "nilearn/**/tests/test_*" = ["D100"]
 "nilearn/_utils/*" = ["B028"]  # 7 errors to fix
-"nilearn/connectome/*" = ["B028"]  # 5 errors to fix
 "nilearn/connectome/**/{tests}/*" = ["D103"]  # 35 errors to fix
 "nilearn/datasets/*" = ["B028"]  # 23 errors to fix
 "nilearn/datasets/tests/test_atlas.py" = ["D103"]
