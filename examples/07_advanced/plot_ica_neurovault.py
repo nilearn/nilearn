@@ -20,10 +20,10 @@ import numpy as np
 from scipy import stats
 from sklearn.decomposition import FastICA
 
-from nilearn import plotting
 from nilearn.datasets import fetch_neurovault, load_mni152_brain_mask
 from nilearn.image import smooth_img
 from nilearn.maskers import NiftiMasker
+from nilearn.plotting import plot_stat_map, show
 
 # %%
 # Get image and term data
@@ -122,9 +122,7 @@ for index, (ic_map, ic_terms) in enumerate(
     important_terms = vocabulary[np.argsort(ic_terms)[-3:]]
     title = f"IC{int(index)}  {', '.join(important_terms[::-1])}"
 
-    plotting.plot_stat_map(
-        ic_img, threshold=ic_threshold, colorbar=False, title=title
-    )
+    plot_stat_map(ic_img, threshold=ic_threshold, colorbar=False, title=title)
 
 # %%
 # As we can see, some of the components capture cognitive or neurological
@@ -132,4 +130,4 @@ for index, (ic_map, ic_terms) in enumerate(
 # filtering, and better cognitive labels would give better maps
 
 # Done.
-plotting.show()
+show()
