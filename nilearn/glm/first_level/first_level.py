@@ -1116,6 +1116,7 @@ class FirstLevelModel(BaseGLM):
             )
             self.smoothing_fwhm = 0
 
+        check_compatibility_mask_and_images(self.mask_img, run_img)
         if (  # deal with self.mask_img as image, str, path, none
             (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
             or
@@ -1131,7 +1132,6 @@ class FirstLevelModel(BaseGLM):
             self.masker_ = check_embedded_masker(
                 self, masker_type, ignore=["high_pass"]
             )
-            check_compatibility_mask_and_images(self.masker_, run_img)
 
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"

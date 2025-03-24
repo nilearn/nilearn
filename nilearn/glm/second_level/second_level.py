@@ -596,8 +596,8 @@ class SecondLevelModel(BaseGLM):
             )
             self.smoothing_fwhm = None
 
+        check_compatibility_mask_and_images(self.mask_img, sample_map)
         self.masker_ = check_embedded_masker(self, masker_type)
-        check_compatibility_mask_and_images(self.masker_, sample_map)
 
         self.masker_.fit(sample_map)
 
