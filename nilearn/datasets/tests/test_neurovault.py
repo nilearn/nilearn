@@ -1139,5 +1139,5 @@ def test_timeout_error(capsys, request_mocker):
     assert len(data.images) == 0
 
     captured = capsys.readouterr()
-    match = re.search("Try increasing 'timeout' value.", captured.out)
+    match = re.search("Try increasing", captured.out)
     assert match is not None
