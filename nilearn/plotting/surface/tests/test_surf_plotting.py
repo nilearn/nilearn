@@ -23,10 +23,10 @@ from nilearn.plotting import (
     plot_surf_stat_map,
 )
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
-from nilearn.plotting.surface._utils import check_surface_plotting_inputs
-from nilearn.plotting.surface.surf_plotting import (
+from nilearn.plotting.surface._plotly_backend import (
     _get_view_plot_surf_plotly,
 )
+from nilearn.plotting.surface._utils import check_surface_plotting_inputs
 from nilearn.surface import (
     InMemoryMesh,
     SurfaceImage,
@@ -281,7 +281,7 @@ def test_plot_surf_contours_warning_hemi(in_memory_mesh):
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf_plotly(full_view):
-    from nilearn.plotting.surface.surf_plotting import (
+    from nilearn.plotting.surface._plotly_backend import (
         _get_camera_view_from_elevation_and_azimut,
         _get_camera_view_from_string_view,
     )
