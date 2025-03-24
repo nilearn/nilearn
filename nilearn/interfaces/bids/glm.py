@@ -123,7 +123,7 @@ def save_glm_to_bids(
         For FirstLevelModel that used files as inputs at fit time,
         and if ``prefix`` is ``None``,
         the name of the output will be inferred from the input filenames
-        assuming by trying to parse them as BIDS files.
+        by trying to parse them as BIDS files.
         This behavior can prevented by passing ``""`` as ``prefix``.
 
 
