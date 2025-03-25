@@ -1,10 +1,8 @@
 import warnings
 from collections.abc import Iterable
-from pathlib import Path
 from string import Template
 
 import numpy as np
-from nibabel import Nifti1Image
 
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike
@@ -13,7 +11,7 @@ from .cache_mixin import check_memory
 from .class_inspect import get_params
 
 
-def check_embedded_masker(estimator, masker_type="multi_nii"):
+def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     """Create a masker from instance parameters.
 
     Base function for using a masker within a BaseEstimator class
@@ -39,6 +37,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         Indicates whether to return a MultiNiftiMasker, NiftiMasker, or a
         SurfaceMasker.
 
+    ignore : None or list of strings
+        Names of the parameters of the estimator that should not be
+        transferred to the new masker.
+
     Returns
     -------
     masker : MultiNiftiMasker, NiftiMasker, \
@@ -46,6 +48,8 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         New masker
 
     """
+    from nilearn.glm.first_level import FirstLevelModel
+    from nilearn.glm.second_level import SecondLevelModel
     from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 
     if masker_type == "surface":
@@ -54,8 +58,12 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         masker_type = MultiNiftiMasker
     else:
         masker_type = NiftiMasker
-    estimator_params = get_params(masker_type, estimator)
+
+    estimator_params = get_params(masker_type, estimator, ignore=ignore)
+
     mask = getattr(estimator, "mask", None)
+    if isinstance(estimator, (FirstLevelModel, SecondLevelModel)):
+        mask = getattr(estimator, "mask_img", None)
 
     if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
         # Creating masker from provided masker
@@ -173,7 +181,7 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
         )
 
     if isinstance(mask_img, volumetric_type) and any(
-        not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
+        not isinstance(x, NiimgLike) for x in run_imgs
     ):
         raise TypeError(
             f"{msg} "

@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import time
+from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
 
@@ -17,7 +18,6 @@ import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from scipy.linalg import toeplitz
-from sklearn.base import clone
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -26,6 +26,7 @@ from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
+    check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
@@ -57,6 +58,7 @@ from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.typing import NiimgLike
 
 
 def mean_scaling(Y, axis=0):
@@ -520,9 +522,6 @@ class FirstLevelModel(BaseGLM):
         if sample_masks is not None:
             sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
 
-        if self.mask_img not in [None, False]:
-            check_compatibility_mask_and_images(self.mask_img, run_imgs)
-
         return (
             run_imgs,
             events,
@@ -821,8 +820,7 @@ class FirstLevelModel(BaseGLM):
         ) or (
             isinstance(run_imgs, (list, tuple))
             and not all(
-                isinstance(x, (str, Path, Nifti1Image, SurfaceImage))
-                for x in run_imgs
+                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
             )
         ):
             input_type = type(run_imgs)
@@ -1087,10 +1085,17 @@ class FirstLevelModel(BaseGLM):
         # Local import to prevent circular imports
         from nilearn.maskers import NiftiMasker
 
+        masker_type = "nii"
+        # all elements of X should be of the similar type by now
+        # so we can only check the first one
+        to_check = run_img[0] if isinstance(run_img, Iterable) else run_img
+        if not self._is_volume_glm() or isinstance(to_check, SurfaceImage):
+            masker_type = "surface"
+
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
-            if isinstance(run_img, SurfaceImage):
+            if masker_type == "surface":
                 surf_data = {
                     part: np.ones(
                         run_img.data.parts[part].shape[0], dtype=bool
@@ -1104,71 +1109,41 @@ class FirstLevelModel(BaseGLM):
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        if isinstance(run_img, SurfaceImage) and not isinstance(
-            self.mask_img, SurfaceMasker
-        ):
-            if self.smoothing_fwhm is not None:
-                warn(
-                    "Parameter smoothing_fwhm is not "
-                    "yet supported for surface data",
-                    UserWarning,
-                    stacklevel=3,
-                )
-            self.masker_ = SurfaceMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
-                t_r=self.t_r,
-                memory=self.memory,
-                memory_level=self.memory_level,
+        if masker_type == "surface" and self.smoothing_fwhm is not None:
+            warn(
+                "Parameter smoothing_fwhm is not "
+                "yet supported for surface data",
+                UserWarning,
+                stacklevel=3,
             )
-            self.masker_.fit(run_img)
+            self.smoothing_fwhm = 0
 
-        elif not isinstance(
-            self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
-        ):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                target_affine=self.target_affine,
-                standardize=self.standardize,
-                mask_strategy="epi",
-                t_r=self.t_r,
-                memory=self.memory,
-                verbose=max(0, self.verbose - 2),
-                target_shape=self.target_shape,
-                memory_level=self.memory_level,
+        check_compatibility_mask_and_images(self.mask_img, run_img)
+        if (  # deal with self.mask_img as image, str, path, none
+            (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
+            or
+            # edge case:
+            # If fitted NiftiMasker with a None mask_img_ attribute
+            # the masker parameters are overridden
+            # by the FirstLevelModel parameters
+            (
+                getattr(self.mask_img, "mask_img_", "not_none") is None
+                and self.masker_ is None
             )
+        ):
+            self.masker_ = check_embedded_masker(
+                self, masker_type, ignore=["high_pass"]
+            )
+
+            if isinstance(self.masker_, NiftiMasker):
+                self.masker_.mask_strategy = "epi"
+
             self.masker_.fit(run_img)
 
         else:
-            # Make sure masker has been fitted otherwise no attribute mask_img_
             check_is_fitted(self.mask_img)
-            if self.mask_img.mask_img_ is None and self.masker_ is None:
-                self.masker_ = clone(self.mask_img)
-                for param_name in [
-                    "target_affine",
-                    "target_shape",
-                    "smoothing_fwhm",
-                    "t_r",
-                    "memory",
-                    "memory_level",
-                ]:
-                    our_param = getattr(self, param_name)
-                    if our_param is None:
-                        continue
-                    if getattr(self.masker_, param_name) is not None:
-                        warn(  # noqa : B028
-                            f"Parameter {param_name} of the masker overridden"
-                        )
-                    if (
-                        isinstance(self.masker_, SurfaceMasker)
-                        and param_name not in ["target_affine", "target_shape"]
-                    ) or not isinstance(self.masker_, SurfaceMasker):
-                        setattr(self.masker_, param_name, our_param)
-                self.masker_.fit(run_img)
-            else:
-                self.masker_ = self.mask_img
+
+            self.masker_ = self.mask_img
 
 
 def _check_events_file_uses_tab_separators(events_files):
