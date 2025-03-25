@@ -309,7 +309,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         )
 
     def _generate_filenames_output(
-        self, prefix, contrasts, contrast_types, out_dir
+        self, prefix, contrasts, contrast_types, out_dir, entities_to_drop=None
     ):
         """Generate output filenames for a series of contrasts.
 
@@ -343,6 +343,12 @@ class BaseGLM(CacheMixin, BaseEstimator):
         out_dir : :obj:`str` or :obj:`pathlib.Path`
             Output directory for files.
 
+        entities_to_drop : :obj:`list` of :obj:`str` or None, default=None
+                           name of BIDS entities to drop
+                           from input filenames
+                           when generating output filenames.
+                           If None is passed this will default to:
+                           ["part", "echo", "hemi", "desc"]
 
         Notes
         -----
@@ -411,7 +417,9 @@ class BaseGLM(CacheMixin, BaseEstimator):
             *bids_entities()["raw"],
             *bids_entities()["derivatives"],
         ]
-        entities_to_drop = ["part", "echo", "hemi", "desc"]
+        if entities_to_drop is None:
+            entities_to_drop = ["part", "echo", "hemi", "desc"]
+        assert all(isinstance(x, str) for x in entities_to_drop)
         entities_to_include = [
             x for x in all_entities if x not in entities_to_drop
         ]
