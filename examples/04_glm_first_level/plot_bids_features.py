@@ -2,7 +2,6 @@
 First level analysis of a complete BIDS dataset from openneuro
 ==============================================================
 
-
 Full step-by-step example of fitting a :term:`GLM`
 to perform a first level analysis in an openneuro :term:`BIDS` dataset.
 We demonstrate how :term:`BIDS`
@@ -245,7 +244,6 @@ save_glm_to_bids(
     contrasts="StopSuccess - Go",
     contrast_types={"StopSuccess - Go": "t"},
     out_dir=output_dir / "derivatives" / "nilearn_glm",
-    prefix=f"{subject}_task-stopsignal",
 )
 
 # %%

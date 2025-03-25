@@ -34,6 +34,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` :func:`~nilearn.interfaces.bids.save_glm_to_bids` can infer the naming scheme for output files from the input files passed at fit time to :class:`~nilearn.glm.first_level.FirstLevelModel`.
+
 - :bdg-dark:`Code` Add a ``timeout`` parameter to the neurovault fetching functions (:gh:`5268` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add surface support to :func:`~nilearn.glm.threshold_stats_img` (:gh:`5222` by `Rémi Gau`_).

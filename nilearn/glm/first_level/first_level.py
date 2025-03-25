@@ -883,10 +883,20 @@ class FirstLevelModel(BaseGLM):
 
         # For each run fit the model and keep only the regression results.
         self.labels_, self.results_ = [], []
+        self._reporting_data["run_imgs"] = {}
         n_runs = len(run_imgs)
         t0 = time.time()
         for run_idx, run_img in enumerate(run_imgs):
             self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
+
+            # collect name of input files
+            # for eventual saving to disk later
+            self._reporting_data["run_imgs"][run_idx] = {}
+            if isinstance(run_img, (str, Path)):
+                self._reporting_data["run_imgs"][run_idx] = (
+                    parse_bids_filename(run_img)
+                )
+
             self._fit_single_run(sample_masks, bins, run_img, run_idx)
 
         self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)

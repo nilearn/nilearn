@@ -120,6 +120,13 @@ def save_glm_to_bids(
         String to prepend to generated filenames.
         If a string is provided, '_' will be added to the end.
 
+        For FirstLevelModel that used files as inputs at fit time,
+        and if ``prefix`` is ``None``,
+        the name of the output will be inferred from the input filenames
+        by trying to parse them as BIDS files.
+        This behavior can prevented by passing ``""`` as ``prefix``.
+
+
     kwargs : extra keywords arguments to pass to ``model.generate_report``
         See :func:`nilearn.reporting.make_glm_report` for more details.
         Can be any of the following: ``title``, ``bg_img``, ``threshold``,
@@ -200,11 +207,13 @@ def save_glm_to_bids(
     dset_desc_file = out_dir / "dataset_description.json"
     _generate_dataset_description(dset_desc_file, model.__str__())
 
-    model = model._generate_filenames_output(
+    model._generate_filenames_output(
         prefix, contrasts, contrast_types, out_dir
     )
 
-    out_dir = model._reporting_data["filenames"]["dir"]
+    filenames = model._reporting_data["filenames"]
+
+    out_dir = filenames["dir"]
     out_dir.mkdir(exist_ok=True, parents=True)
 
     verbose = model.verbose
@@ -223,31 +232,29 @@ def save_glm_to_bids(
         logger.log("Generating design matrices figures...", verbose=verbose)
         # TODO: Assuming that cases of multiple design matrices correspond to
         # different runs. Not sure if this is correct. Need to check.
-        generate_design_matrices_figures(
-            design_matrices, output=model._reporting_data["filenames"]
-        )
+        generate_design_matrices_figures(design_matrices, output=filenames)
 
         logger.log("Generating contrast matrices figures...", verbose=verbose)
         generate_constrat_matrices_figures(
             design_matrices,
             contrasts,
-            output=model._reporting_data["filenames"],
+            output=filenames,
         )
 
-    for i_run, design_matrix in enumerate(design_matrices, start=1):
-        run_str = f"run-{i_run}_" if len(design_matrices) > 1 else ""
+    for i_run, design_matrix in enumerate(design_matrices):
+        filename = Path(
+            filenames["design_matrices_dict"][i_run]["design_matrix_tsv"]
+        )
 
         # Save design matrix and associated figure
         design_matrix.to_csv(
-            out_dir / f"{prefix}{run_str}design.tsv",
+            out_dir / filename,
             sep="\t",
             index=False,
         )
 
         if model.__str__() == "First Level Model":
-            with (out_dir / f"{prefix}{run_str}design.json").open(
-                "w"
-            ) as f_obj:
+            with (out_dir / filename.with_suffix(".json")).open("w") as f_obj:
                 json.dump(
                     {"RepetitionTime": model.t_r},
                     f_obj,
@@ -265,9 +272,9 @@ def save_glm_to_bids(
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
             img = statistical_maps[contrast_name][output_type]
-            filename = model._reporting_data["filenames"]["statistical_maps"][
-                contrast_name
-            ][output_type]
+            filename = filenames["statistical_maps"][contrast_name][
+                output_type
+            ]
             img.to_filename(out_dir / filename)
 
     logger.log("Saving model level statistical maps...", verbose=verbose)
