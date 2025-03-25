@@ -9,14 +9,11 @@ from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.helpers import (
-    stringify_path,
-)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
 
 from .. import _utils, image, masking, signal
-from .._utils import logger
+from .._utils import logger, stringify_path
 from .._utils.cache_mixin import CacheMixin, cache
 
 
@@ -236,16 +233,16 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         tags.input_tags = InputTags(masker=True)
         return tags
 
-    def fit(self, X=None, y=None):
+    def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
         ...
 
-    def transform(self, X, confounds=None, sample_mask=None):
+    def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
         ----------
-        X : 3D/4D Niimg-like object
+        imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
@@ -284,13 +281,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         if confounds is None and not self.high_variance_confounds:
             return self.transform_single_imgs(
-                X, confounds=confounds, sample_mask=sample_mask
+                imgs, confounds=confounds, sample_mask=sample_mask
             )
 
         # Compute high variance confounds if requested
         all_confounds = []
         if self.high_variance_confounds:
-            hv_confounds = self._cache(high_variance_confounds)(X)
+            hv_confounds = self._cache(high_variance_confounds)(imgs)
             all_confounds.append(hv_confounds)
         if confounds is not None:
             if isinstance(confounds, list):
@@ -299,7 +296,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 all_confounds.append(confounds)
 
         return self.transform_single_imgs(
-            X, confounds=all_confounds, sample_mask=sample_mask
+            imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
     def fit_transform(

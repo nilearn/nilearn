@@ -357,12 +357,12 @@ class SearchLight(TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags()
         return tags
 
-    def fit(self, X, y, groups=None):
+    def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
 
         Parameters
         ----------
-        X : Niimg-like object
+        imgs : Niimg-like object
             See :ref:`extracting_data`.
             4D image.
 
@@ -377,7 +377,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         check_params(self.__dict__)
 
         # check if image is 4D
-        X = check_niimg_4d(X)
+        imgs = check_niimg_4d(imgs)
 
         # Get the seeds
         if self.mask_img is not None:
@@ -401,7 +401,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
         X, A = apply_mask_and_get_affinity(
             process_mask_coords,
-            X,
+            imgs,
             self.radius,
             True,
             mask_img=self.mask_img,
@@ -443,15 +443,15 @@ class SearchLight(TransformerMixin, BaseEstimator):
         check_is_fitted(self)
         return new_img_like(self.mask_img, self.scores_)
 
-    def transform(self, X):
+    def transform(self, imgs):
         """Apply the fitted searchlight on new images."""
         check_is_fitted(self)
 
-        X = check_niimg_4d(X)
+        imgs = check_niimg_4d(imgs)
 
         X, A = apply_mask_and_get_affinity(
             np.asarray(np.where(self.process_mask_)).T,
-            X,
+            imgs,
             self.radius,
             True,
             mask_img=self.mask_img,
