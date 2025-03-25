@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import time
+from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
 
@@ -17,7 +18,6 @@ import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
 from scipy.linalg import toeplitz
-from sklearn.base import clone
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -26,6 +26,7 @@ from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
+    check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
@@ -57,6 +58,7 @@ from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.typing import NiimgLike
 
 
 def mean_scaling(Y, axis=0):
@@ -87,7 +89,7 @@ def mean_scaling(Y, axis=0):
             "The data have probably been centered."
             "Scaling might not work as expected",
             UserWarning,
-            stacklevel=2,
+            stacklevel=4,
         )
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
@@ -281,7 +283,8 @@ def _check_trial_type(events):
             "as if they are instances of same experimental condition.\n"
             "If there is a column in the dataframe "
             "corresponding to trial information, "
-            "consider renaming it to 'trial_type'."
+            "consider renaming it to 'trial_type'.",
+            stacklevel=6,
         )
 
 
@@ -485,7 +488,8 @@ class FirstLevelModel(BaseGLM):
         ):
             warn(
                 "If design matrices are supplied, "
-                "confounds and events will be ignored."
+                "confounds and events will be ignored.",
+                stacklevel=3,
             )
 
         if events is not None:
@@ -493,8 +497,6 @@ class FirstLevelModel(BaseGLM):
 
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
-
-        check_compatibility_mask_and_images(self.mask_img, run_imgs)
 
         if design_matrices is None:
             if events is None:
@@ -818,8 +820,7 @@ class FirstLevelModel(BaseGLM):
         ) or (
             isinstance(run_imgs, (list, tuple))
             and not all(
-                isinstance(x, (str, Path, Nifti1Image, SurfaceImage))
-                for x in run_imgs
+                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
             )
         ):
             input_type = type(run_imgs)
@@ -1094,10 +1095,17 @@ class FirstLevelModel(BaseGLM):
         # Local import to prevent circular imports
         from nilearn.maskers import NiftiMasker
 
+        masker_type = "nii"
+        # all elements of X should be of the similar type by now
+        # so we can only check the first one
+        to_check = run_img[0] if isinstance(run_img, Iterable) else run_img
+        if not self._is_volume_glm() or isinstance(to_check, SurfaceImage):
+            masker_type = "surface"
+
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
-            if isinstance(run_img, SurfaceImage):
+            if masker_type == "surface":
                 surf_data = {
                     part: np.ones(
                         run_img.data.parts[part].shape[0], dtype=bool
@@ -1111,71 +1119,41 @@ class FirstLevelModel(BaseGLM):
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        if isinstance(run_img, SurfaceImage) and not isinstance(
-            self.mask_img, SurfaceMasker
-        ):
-            if self.smoothing_fwhm is not None:
-                warn(
-                    "Parameter smoothing_fwhm is not "
-                    "yet supported for surface data",
-                    UserWarning,
-                    stacklevel=3,
-                )
-            self.masker_ = SurfaceMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
-                t_r=self.t_r,
-                memory=self.memory,
-                memory_level=self.memory_level,
+        if masker_type == "surface" and self.smoothing_fwhm is not None:
+            warn(
+                "Parameter smoothing_fwhm is not "
+                "yet supported for surface data",
+                UserWarning,
+                stacklevel=3,
             )
-            self.masker_.fit(run_img)
+            self.smoothing_fwhm = 0
 
-        elif not isinstance(
-            self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
-        ):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                target_affine=self.target_affine,
-                standardize=self.standardize,
-                mask_strategy="epi",
-                t_r=self.t_r,
-                memory=self.memory,
-                verbose=max(0, self.verbose - 2),
-                target_shape=self.target_shape,
-                memory_level=self.memory_level,
+        check_compatibility_mask_and_images(self.mask_img, run_img)
+        if (  # deal with self.mask_img as image, str, path, none
+            (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
+            or
+            # edge case:
+            # If fitted NiftiMasker with a None mask_img_ attribute
+            # the masker parameters are overridden
+            # by the FirstLevelModel parameters
+            (
+                getattr(self.mask_img, "mask_img_", "not_none") is None
+                and self.masker_ is None
             )
+        ):
+            self.masker_ = check_embedded_masker(
+                self, masker_type, ignore=["high_pass"]
+            )
+
+            if isinstance(self.masker_, NiftiMasker):
+                self.masker_.mask_strategy = "epi"
+
             self.masker_.fit(run_img)
 
         else:
-            # Make sure masker has been fitted otherwise no attribute mask_img_
             check_is_fitted(self.mask_img)
-            if self.mask_img.mask_img_ is None and self.masker_ is None:
-                self.masker_ = clone(self.mask_img)
-                for param_name in [
-                    "target_affine",
-                    "target_shape",
-                    "smoothing_fwhm",
-                    "t_r",
-                    "memory",
-                    "memory_level",
-                ]:
-                    our_param = getattr(self, param_name)
-                    if our_param is None:
-                        continue
-                    if getattr(self.masker_, param_name) is not None:
-                        warn(
-                            f"Parameter {param_name} of the masker overridden"
-                        )
-                    if (
-                        isinstance(self.masker_, SurfaceMasker)
-                        and param_name not in ["target_affine", "target_shape"]
-                    ) or not isinstance(self.masker_, SurfaceMasker):
-                        setattr(self.masker_, param_name, our_param)
-                self.masker_.fit(run_img)
-            else:
-                self.masker_ = self.mask_img
+
+            self.masker_ = self.mask_img
 
 
 def _check_events_file_uses_tab_separators(events_files):
@@ -1483,6 +1461,7 @@ def first_level_from_bids(
         warn(
             "Starting in version 0.12, slice_time_ref will default to None.",
             DeprecationWarning,
+            stacklevel=2,
         )
     if space_label is None:
         space_label = "MNI152NLin2009cAsym"
@@ -1527,6 +1506,7 @@ def first_level_from_bids(
  Remember to visualize your design matrix before fitting your model
  to check that your model is not overspecified.""",
             UserWarning,
+            stacklevel=2,
         )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
@@ -1614,7 +1594,8 @@ def first_level_from_bids(
                 "It will be assumed that the slice timing reference "
                 "is 0.0 percent of the repetition time.\n"
                 "If it is not the case it will need to "
-                "be set manually in the generated list of models."
+                "be set manually in the generated list of models.",
+                stacklevel=2,
             )
         inferred_slice_time_ref = 0.0
 
@@ -1628,7 +1609,8 @@ def first_level_from_bids(
             f"'slice_time_ref' provided ({slice_time_ref}) is different "
             f"from the value found in the BIDS dataset "
             f"({inferred_slice_time_ref}).\n"
-            "Note this may lead to the wrong model specification."
+            "Note this may lead to the wrong model specification.",
+            stacklevel=2,
         )
     if slice_time_ref is not None:
         _check_slice_time_ref(slice_time_ref)

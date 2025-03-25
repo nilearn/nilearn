@@ -31,6 +31,9 @@ from nilearn._utils.helpers import (
     check_copy_header,
     stringify_path,
 )
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.niimg import _get_data, safe_get_data
 from nilearn._utils.niimg_conversions import (
     _index_img,
@@ -434,57 +437,6 @@ def crop_img(
     slices = [slice(s, e) for s, e in zip(start, end)][:3]
     cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
-
-
-def _pad_array(array, pad_sizes):
-    """Pad an array with zeros.
-
-    Pads an array with zeros as specified in `pad_sizes`.
-
-    Parameters
-    ----------
-    array : :class:`numpy.ndarray`
-        Array to pad.
-
-    pad_sizes : :obj:`list`
-        Padding quantity specified as
-        *[x1minpad, x1maxpad, x2minpad,x2maxpad, x3minpad, ...]*.
-
-    Returns
-    -------
-    :class:`numpy.ndarray`
-        Padded array.
-
-    Raises
-    ------
-    ValueError
-        Inconsistent min/max padding quantities.
-
-    """
-    if len(pad_sizes) % 2 != 0:
-        raise ValueError(
-            "Please specify as many max paddings as min"
-            f" paddings. You have specified {len(pad_sizes)} arguments"
-        )
-
-    all_paddings = np.zeros([array.ndim, 2], dtype=np.int64)
-    all_paddings[: len(pad_sizes) // 2] = np.array(pad_sizes).reshape(-1, 2)
-
-    lower_paddings, upper_paddings = all_paddings.T
-    new_shape = np.array(array.shape) + upper_paddings + lower_paddings
-
-    padded = np.zeros(new_shape, dtype=array.dtype)
-    source_slices = [
-        slice(max(-lp, 0), min(s + up, s))
-        for lp, up, s in zip(lower_paddings, upper_paddings, array.shape)
-    ]
-    target_slices = [
-        slice(max(lp, 0), min(s - up, s))
-        for lp, up, s in zip(lower_paddings, upper_paddings, new_shape)
-    ]
-
-    padded[tuple(target_slices)] = array[tuple(source_slices)].copy()
-    return padded
 
 
 def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
@@ -1099,18 +1051,8 @@ def threshold_img(
             f"Got {type(img)=}."
         )
 
-    if mask_img is not None and (
-        (isinstance(img, NiimgLike) and not isinstance(mask_img, NiimgLike))
-        or (
-            isinstance(img, SurfaceImage)
-            and not isinstance(mask_img, SurfaceImage)
-        )
-    ):
-        raise TypeError(
-            "'img' and 'mask_img' should both be "
-            "3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(img)=} and {type(mask_img)=}."
-        )
+    if mask_img is not None:
+        check_compatibility_mask_and_images(mask_img, img)
 
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_same_n_vertices(mask_img.mesh, img.mesh)

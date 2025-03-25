@@ -12,16 +12,16 @@ from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
-from nilearn.plotting._utils import (
-    check_surface_plotting_inputs,
-    sanitize_hemi_for_surface_image,
-)
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
     colorscale,
     get_html_template,
     mesh_to_plotly,
     to_color_strings,
+)
+from nilearn.plotting.surface._utils import (
+    check_surface_plotting_inputs,
+    sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
     PolyMesh,

@@ -126,7 +126,8 @@ def _handle_missing_trial_types(events):
     """Create 'dummy' events trial_type if the column is not present."""
     if "trial_type" not in events.columns:
         warnings.warn(
-            "'trial_type' column not found in the given events data."
+            "'trial_type' column not found in the given events data.",
+            stacklevel=6,
         )
         events["trial_type"] = "dummy"
     return events
@@ -174,7 +175,8 @@ def _check_unexpected_columns(events):
         warnings.warn(
             "The following unexpected columns "
             "in events data will be ignored: "
-            f"{', '.join(unexpected_columns)}"
+            f"{', '.join(unexpected_columns)}",
+            stacklevel=6,
         )
 
 
@@ -205,7 +207,8 @@ def handle_modulation_of_duplicate_events(events):
         warnings.warn(
             "Duplicated events were detected. "
             "Amplitudes of these events will be summed. "
-            "You might want to verify your inputs."
+            "You might want to verify your inputs.",
+            stacklevel=5,
         )
 
     return cleaned_events

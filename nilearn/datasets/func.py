@@ -3157,5 +3157,16 @@ def load_sample_motor_activation_image():
     -------
     str
         Path to the sample functional image.
+
+    Notes
+    -----
+    The 'left vs right button press' contrast is used:
+    https://neurovault.org/images/10426/
+
+    See Also
+    --------
+    nilearn.datasets.fetch_neurovault_ids
+    nilearn.datasets.fetch_neurovault
+    nilearn.datasets.fetch_neurovault_auditory_computation_task
     """
     return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

@@ -13,7 +13,6 @@ import datetime
 import uuid
 import warnings
 from html import escape
-from pathlib import Path
 from string import Template
 
 import numpy as np
@@ -66,9 +65,6 @@ if is_matplotlib_installed():
     from nilearn.plotting.img_plotting import (  # type: ignore[assignment]
         MNI152TEMPLATE,
     )
-
-
-HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
 
 
 @fill_doc

@@ -27,9 +27,13 @@ class BaseGLM(CacheMixin, BaseEstimator):
     def _is_volume_glm(self):
         """Return if model is run on volume data or not."""
         return not (
-            isinstance(self.mask_img, (SurfaceMasker, SurfaceImage))
+            (
+                hasattr(self, "mask_img")
+                and isinstance(self.mask_img, (SurfaceMasker, SurfaceImage))
+            )
             or (
                 self.__sklearn_is_fitted__()
+                and hasattr(self, "masker_")
                 and isinstance(self.masker_, SurfaceMasker)
             )
         )

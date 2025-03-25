@@ -19,6 +19,9 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     constrained_layout_kwargs,
 )
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -238,7 +241,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         Parameters
         ----------
         img : :obj:`~nilearn.surface.SurfaceImage` object or None, default=None
-            This parameter is currently unused.
 
         y : None
             This parameter is unused.
@@ -249,7 +251,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         SurfaceLabelsMasker object
         """
         check_params(self.__dict__)
-        del img, y
+        del y
 
         check_reduction_strategy(self.strategy)
 
@@ -295,6 +297,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.label_names_ = self.lut_.name.to_list()
 
         if self.mask_img is not None:
+            if img is not None:
+                check_compatibility_mask_and_images(self.mask_img, img)
             check_same_n_vertices(self.labels_img.mesh, self.mask_img.mesh)
         self.mask_img_ = self.mask_img
 
@@ -397,6 +401,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if not isinstance(img, list):
             img = [img]
         img = concat_imgs(img)
+        check_compatibility_mask_and_images(self.labels_img, img)
         check_same_n_vertices(self.labels_img.mesh, img.mesh)
         img = at_least_2d(img)
         # concatenate data over hemispheres
@@ -405,6 +410,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         labels_data = self._labels_data
         labels = self._labels_
         if self.mask_img_ is not None:
+            check_compatibility_mask_and_images(self.mask_img_, img)
             mask_data = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
             )

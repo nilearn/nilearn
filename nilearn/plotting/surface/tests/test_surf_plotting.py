@@ -4,7 +4,6 @@
 
 import re
 import tempfile
-from pathlib import Path
 from unittest import mock
 
 import matplotlib.pyplot as plt
@@ -23,22 +22,12 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting._utils import check_surface_plotting_inputs
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
-from nilearn.plotting.surface.surf_plotting import (
-    MATPLOTLIB_VIEWS,
-    _compute_facecolors_matplotlib,
-    _get_ticks_matplotlib,
-    _get_view_plot_surf_matplotlib,
-    _get_view_plot_surf_plotly,
-)
+from nilearn.plotting.surface._utils import check_surface_plotting_inputs
 from nilearn.surface import (
     InMemoryMesh,
     SurfaceImage,
-    load_surf_data,
-    load_surf_mesh,
 )
-from nilearn.surface._testing import assert_surface_mesh_equal
 
 try:
     import IPython.display  # noqa:F401
@@ -48,268 +37,15 @@ else:
     IPYTHON_INSTALLED = True
 
 
-EXPECTED_CAMERAS_PLOTLY = [
-    (
-        "left",
-        "lateral",
-        (0, 180),
-        {
-            "eye": {"x": -1.5, "y": 0, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    (
-        "left",
-        "medial",
-        (0, 0),
-        {
-            "eye": {"x": 1.5, "y": 0, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    # Dorsal left
-    (
-        "left",
-        "dorsal",
-        (90, 0),
-        {
-            "eye": {"x": 0, "y": 0, "z": 1.5},
-            "up": {"x": -1, "y": 0, "z": 0},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    # Ventral left
-    (
-        "left",
-        "ventral",
-        (270, 0),
-        {
-            "eye": {"x": 0, "y": 0, "z": -1.5},
-            "up": {"x": 1, "y": 0, "z": 0},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    # Anterior left
-    (
-        "left",
-        "anterior",
-        (0, 90),
-        {
-            "eye": {"x": 0, "y": 1.5, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    # Posterior left
-    (
-        "left",
-        "posterior",
-        (0, 270),
-        {
-            "eye": {"x": 0, "y": -1.5, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    # Lateral right
-    (
-        "right",
-        "lateral",
-        (0, 0),
-        {
-            "eye": {"x": 1.5, "y": 0, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    # Medial right
-    (
-        "right",
-        "medial",
-        (0, 180),
-        {
-            "eye": {"x": -1.5, "y": 0, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    # Dorsal right
-    (
-        "right",
-        "dorsal",
-        (90, 0),
-        {
-            "eye": {"x": 0, "y": 0, "z": 1.5},
-            "up": {"x": -1, "y": 0, "z": 0},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    # Ventral right
-    (
-        "right",
-        "ventral",
-        (270, 0),
-        {
-            "eye": {"x": 0, "y": 0, "z": -1.5},
-            "up": {"x": 1, "y": 0, "z": 0},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    # Anterior right
-    (
-        "right",
-        "anterior",
-        (0, 90),
-        {
-            "eye": {"x": 0, "y": 1.5, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-    # Posterior right
-    (
-        "right",
-        "posterior",
-        (0, 270),
-        {
-            "eye": {"x": 0, "y": -1.5, "z": 0},
-            "up": {"x": 0, "y": 0, "z": 1},
-            "center": {"x": 0, "y": 0, "z": 0},
-        },
-    ),
-]
-
-
-EXPECTED_VIEW_MATPLOTLIB = {
-    "left": {
-        "anterior": (0, 90),
-        "posterior": (0, 270),
-        "medial": (0, 0),
-        "lateral": (0, 180),
-        "dorsal": (90, 0),
-        "ventral": (270, 0),
-    },
-    "right": {
-        "anterior": (0, 90),
-        "posterior": (0, 270),
-        "medial": (0, 180),
-        "lateral": (0, 0),
-        "dorsal": (90, 0),
-        "ventral": (270, 0),
-    },
-    "both": {
-        "right": (0, 0),
-        "left": (0, 180),
-        "dorsal": (90, 0),
-        "ventral": (270, 0),
-        "anterior": (0, 90),
-        "posterior": (0, 270),
-    },
-}
-
-
 @pytest.fixture
 def bg_map(rng, in_memory_mesh):
     """Return a background map with posive value."""
     return np.abs(rng.standard_normal(size=in_memory_mesh.n_vertices))
 
 
-@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
-@pytest.mark.parametrize("surf_map", ["some_path", Path("some_path")])
-@pytest.mark.parametrize("surf_mesh", ["some_path", Path("some_path")])
-def test_check_surface_plotting_inputs_no_change(surf_map, surf_mesh, bg_map):
-    """Cover use cases where the inputs are not changed."""
-    hemi = "left"
-    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
-        surf_map, surf_mesh, hemi, bg_map
-    )
-    assert surf_map == out_surf_map
-    assert surf_mesh == out_surf_mesh
-    assert bg_map == out_bg_map
-
-
-@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
-@pytest.mark.parametrize("mesh", [None])
-def test_check_surface_plotting_inputs_extract_mesh_and_data(
-    surf_img_1d, mesh, bg_map
-):
-    """Extract mesh and data when a SurfaceImage is passed."""
-    hemi = "left"
-    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img_1d,
-        surf_mesh=mesh,
-        hemi=hemi,
-        bg_map=bg_map,
-    )
-
-    assert_array_equal(out_surf_map, surf_img_1d.data.parts[hemi].T)
-    assert_surface_mesh_equal(out_surf_mesh, surf_img_1d.mesh.parts[hemi])
-
-    assert bg_map == out_bg_map
-
-
-def test_check_surface_plotting_inputs_many_time_points(
-    surf_img_1d, surf_img_2d
-):
-    """Extract mesh and data when a SurfaceImage is passed."""
-    with pytest.raises(
-        TypeError, match="Input data has incompatible dimensionality"
-    ):
-        check_surface_plotting_inputs(
-            surf_map=surf_img_2d(10),
-            surf_mesh=None,
-            hemi="left",
-            bg_map=None,
-        )
-
-    with pytest.raises(
-        TypeError, match="Input data has incompatible dimensionality"
-    ):
-        check_surface_plotting_inputs(
-            surf_map=surf_img_1d,
-            surf_mesh=None,
-            hemi="left",
-            bg_map=surf_img_2d(10),
-        )
-
-
-@pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
-def test_check_surface_plotting_inputs_extract_mesh_from_polymesh(
-    surf_img_1d, surf_mesh, bg_map
-):
-    """Extract mesh from Polymesh and data from SurfaceImage."""
-    hemi = "left"
-    out_surf_map, out_surf_mesh, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img_1d,
-        surf_mesh=surf_mesh,
-        hemi=hemi,
-        bg_map=bg_map,
-    )
-    assert_array_equal(out_surf_map, surf_img_1d.data.parts[hemi].T)
-    assert_surface_mesh_equal(out_surf_mesh, surf_mesh.parts[hemi])
-    assert bg_map == out_bg_map
-
-
-def test_check_surface_plotting_inputs_extract_bg_map_data(
-    surf_img_1d, surf_mesh
-):
-    """Extract background map data."""
-    hemi = "left"
-    _, _, out_bg_map = check_surface_plotting_inputs(
-        surf_map=surf_img_1d,
-        surf_mesh=surf_mesh,
-        hemi=hemi,
-        bg_map=surf_img_1d,
-    )
-    assert_array_equal(out_bg_map, surf_img_1d.data.parts[hemi])
-
-
 @pytest.mark.parametrize(
     "fn",
     [
-        check_surface_plotting_inputs,
         plot_surf,
         plot_surf_stat_map,
         plot_surf_contours,
@@ -404,47 +140,6 @@ def test_plot_surf_contours_warning_hemi(in_memory_mesh):
     parcellation[in_memory_mesh.faces[3]] = 1
     with pytest.warns(UserWarning, match="This value will be ignored"):
         plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
-
-
-@pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
-def test_get_view_plot_surf_plotly(full_view):
-    from nilearn.plotting.surface.surf_plotting import (
-        _get_camera_view_from_elevation_and_azimut,
-        _get_camera_view_from_string_view,
-    )
-
-    hemi, view_name, (elev, azim), expected_camera_view = full_view
-    camera_view = _get_view_plot_surf_plotly(hemi, view_name)
-    camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
-    camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
-        (elev, azim)
-    )
-    # Check each camera view parameter
-    for k in ["center", "eye", "up"]:
-        # Check default camera view
-        assert np.allclose(
-            list(camera_view[k].values()),
-            list(expected_camera_view[k].values()),
-        )
-        # Check camera view obtained from string view
-        assert np.allclose(
-            list(camera_view_string[k].values()),
-            list(expected_camera_view[k].values()),
-        )
-        # Check camera view obtained from elevation & azimut
-        assert np.allclose(
-            list(camera_view_elev_azim[k].values()),
-            list(expected_camera_view[k].values()),
-        )
-
-
-@pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
-def test_get_view_plot_surf_matplotlib(hemi, views):
-    for v in views:
-        assert (
-            _get_view_plot_surf_matplotlib(hemi, v)
-            == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
-        )
 
 
 def test_surface_figure():
@@ -719,97 +414,6 @@ def test_add_contours_line_properties(plotly, key, value, surface_image_roi):
     figure.add_contours(surface_image_roi, levels=[1], lines=[{key: value}])
     newline = figure.figure.to_dict().get("data")[2].get("line")
     assert newline.get(key) == value
-
-
-@pytest.mark.parametrize(
-    "view,is_valid",
-    [
-        ("lateral", True),
-        ("medial", True),
-        ("latreal", False),
-        ((100, 100), True),
-        ([100.0, 100.0], True),
-        ((100, 100, 1), False),
-        (("lateral", "medial"), False),
-        ([100, "bar"], False),
-    ],
-)
-def test_check_view_is_valid(view, is_valid):
-    from nilearn.plotting.surface.surf_plotting import _check_view_is_valid
-
-    assert _check_view_is_valid(view) is is_valid
-
-
-@pytest.mark.parametrize(
-    "hemi,is_valid",
-    [
-        ("left", True),
-        ("right", True),
-        ("both", True),
-        ("lft", False),
-    ],
-)
-def test_check_hemisphere_is_valid(hemi, is_valid):
-    from nilearn.plotting.surface.surf_plotting import (
-        _check_hemisphere_is_valid,
-    )
-
-    assert _check_hemisphere_is_valid(hemi) is is_valid
-
-
-@pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
-def test_get_view_plot_surf_hemisphere_errors(hemi, view):
-    with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        _get_view_plot_surf_matplotlib(hemi, view)
-    with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        _get_view_plot_surf_plotly(hemi, view)
-
-
-@pytest.mark.parametrize(
-    "hemi,view,f",
-    [
-        ("left", "foo", _get_view_plot_surf_matplotlib),
-        ("right", "bar", _get_view_plot_surf_plotly),
-        ("both", "lateral", _get_view_plot_surf_matplotlib),
-        ("both", "medial", _get_view_plot_surf_plotly),
-        ("both", "foo", _get_view_plot_surf_matplotlib),
-        ("both", "bar", _get_view_plot_surf_plotly),
-    ],
-)
-def test_get_view_plot_surf_view_errors(hemi, view, f):
-    with pytest.raises(ValueError, match="Invalid view definition"):
-        f(hemi, view)
-
-
-def test_configure_title_plotly():
-    from nilearn.plotting.surface.surf_plotting import _configure_title_plotly
-
-    assert _configure_title_plotly(None, None) == {}
-    assert _configure_title_plotly(None, 22) == {}
-    config = _configure_title_plotly("Test Title", 22, color="green")
-    assert config["text"] == "Test Title"
-    assert config["x"] == 0.5
-    assert config["y"] == 0.96
-    assert config["xanchor"] == "center"
-    assert config["yanchor"] == "top"
-    assert config["font"]["size"] == 22
-    assert config["font"]["color"] == "green"
-
-
-@pytest.mark.parametrize(
-    "data,expected",
-    [
-        (np.linspace(0, 1, 100), (0, 1)),
-        (np.linspace(-0.7, -0.01, 40), (-0.7, -0.01)),
-    ],
-)
-def test_get_bounds(data, expected):
-    from nilearn.plotting.surface.surf_plotting import _get_bounds
-
-    assert _get_bounds(data) == expected
-    assert _get_bounds(data, vmin=0.2) == (0.2, expected[1])
-    assert _get_bounds(data, vmax=0.8) == (expected[0], 0.8)
-    assert _get_bounds(data, vmin=0.1, vmax=0.8) == (0.1, 0.8)
 
 
 def test_plot_surf_engine_error(in_memory_mesh):
@@ -1727,117 +1331,6 @@ def test_plot_surf_contours_error(rng, in_memory_mesh, parcellation):
             levels=[1, 2],
             colors=["r"],
             labels=["1", "2"],
-        )
-
-
-@pytest.mark.parametrize(
-    "vmin,vmax,cbar_tick_format,expected",
-    [
-        (0, 0, "%i", [0]),
-        (0, 3, "%i", [0, 1, 2, 3]),
-        (0, 4, "%i", [0, 1, 2, 3, 4]),
-        (1, 5, "%i", [1, 2, 3, 4, 5]),
-        (0, 5, "%i", [0, 1.25, 2.5, 3.75, 5]),
-        (0, 10, "%i", [0, 2.5, 5, 7.5, 10]),
-        (0, 0, "%.1f", [0]),
-        (0, 1, "%.1f", [0, 0.25, 0.5, 0.75, 1]),
-        (1, 2, "%.1f", [1, 1.25, 1.5, 1.75, 2]),
-        (1.1, 1.2, "%.1f", [1.1, 1.125, 1.15, 1.175, 1.2]),
-        (0, np.nextafter(0, 1), "%.1f", [0.0e000, 5.0e-324]),
-    ],
-)
-def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
-    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold=None)
-    assert 1 <= len(ticks) <= 5
-    assert ticks[0] == vmin and ticks[-1] == vmax
-    assert (
-        len(np.unique(ticks)) == len(expected)
-        and (np.unique(ticks) == expected).all()
-    )
-
-
-def test_compute_facecolors_matplotlib():
-    fsaverage = fetch_surf_fsaverage()
-    mesh = load_surf_mesh(fsaverage["pial_left"])
-    alpha = "auto"
-    # Surface map whose value in each vertex is
-    # 1 if this vertex's curv > 0
-    # 0 if this vertex's curv is 0
-    # -1 if this vertex's curv < 0
-    bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
-    bg_min, bg_max = np.min(bg_map), np.max(bg_map)
-    assert bg_min < 0 or bg_max > 1
-
-    facecolors_auto_normalized = _compute_facecolors_matplotlib(
-        bg_map,
-        mesh.faces,
-        len(mesh.coordinates),
-        None,
-        alpha,
-    )
-
-    assert len(facecolors_auto_normalized) == len(mesh.faces)
-
-    # Manually set values of background map between 0 and 1
-    bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
-    assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
-
-    facecolors_manually_normalized = _compute_facecolors_matplotlib(
-        bg_map_normalized,
-        mesh.faces,
-        len(mesh.coordinates),
-        None,
-        alpha,
-    )
-
-    assert len(facecolors_manually_normalized) == len(mesh.faces)
-    assert np.allclose(
-        facecolors_manually_normalized, facecolors_auto_normalized
-    )
-
-    # Scale background map between 0.25 and 0.75
-    bg_map_scaled = bg_map_normalized / 2 + 0.25
-    assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
-
-    facecolors_manually_rescaled = _compute_facecolors_matplotlib(
-        bg_map_scaled,
-        mesh.faces,
-        len(mesh.coordinates),
-        None,
-        alpha,
-    )
-
-    assert len(facecolors_manually_rescaled) == len(mesh.faces)
-    assert not np.allclose(
-        facecolors_manually_rescaled, facecolors_auto_normalized
-    )
-
-
-def test_compute_facecolors_matplotlib_deprecation():
-    """Test warning deprecation."""
-    fsaverage = fetch_surf_fsaverage()
-    mesh = load_surf_mesh(fsaverage["pial_left"])
-    alpha = "auto"
-    # Surface map whose value in each vertex is
-    # 1 if this vertex's curv > 0
-    # 0 if this vertex's curv is 0
-    # -1 if this vertex's curv < 0
-    bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
-    bg_min, bg_max = np.min(bg_map), np.max(bg_map)
-    assert bg_min < 0 or bg_max > 1
-    with pytest.warns(
-        DeprecationWarning,
-        match=(
-            "The `darkness` parameter will be deprecated in release 0.13. "
-            "We recommend setting `darkness` to None"
-        ),
-    ):
-        _compute_facecolors_matplotlib(
-            bg_map,
-            mesh.faces,
-            len(mesh.coordinates),
-            0.5,
-            alpha,
         )
 
 
