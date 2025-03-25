@@ -507,14 +507,14 @@ class NiftiLabelsMasker(BaseMasker):
 
     def fit(
         self,
-        X=None,
+        imgs=None,
         y=None,  # noqa: ARG002
     ):
         """Prepare signal extraction from regions.
 
         Parameters
         ----------
-        X : :obj:`list` of Niimg-like objects or None, default=None
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
             See :ref:`extracting_data`.
             Image data passed to the reporter.
 
@@ -659,11 +659,11 @@ class NiftiLabelsMasker(BaseMasker):
                 "labels_image": self._resampled_labels_img_,
                 "mask": self.mask_img_,
                 "dim": None,
-                "img": X,
+                "img": imgs,
             }
-            if X is not None:
-                X, dims = compute_middle_image(X)
-                self._reporting_data["img"] = X
+            if imgs is not None:
+                imgs, dims = compute_middle_image(imgs)
+                self._reporting_data["img"] = imgs
                 self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
@@ -677,12 +677,12 @@ class NiftiLabelsMasker(BaseMasker):
 
         return self
 
-    def fit_transform(self, X, confounds=None, sample_mask=None):
+    def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
         Parameters
         ----------
-        X : 3D/4D Niimg-like object
+        imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
@@ -710,8 +710,8 @@ class NiftiLabelsMasker(BaseMasker):
             shape: (number of scans, number of labels)
 
         """
-        return self.fit(X).transform(
-            X, confounds=confounds, sample_mask=sample_mask
+        return self.fit(imgs).transform(
+            imgs, confounds=confounds, sample_mask=sample_mask
         )
 
     def __sklearn_is_fitted__(self):

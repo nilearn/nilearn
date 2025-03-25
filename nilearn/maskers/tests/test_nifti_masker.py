@@ -282,7 +282,9 @@ def test_joblib_cache(tmp_path, mask_img_1):
 def test_fit_no_mask_no_img_error():
     """Check error is raised when no mask and no img is provided."""
     mask = NiftiMasker(mask_img=None)
-    with pytest.raises(ValueError, match="Parameter 'X' must be provided to "):
+    with pytest.raises(
+        ValueError, match="Parameter 'imgs' must be provided to "
+    ):
         mask.fit()
 
 

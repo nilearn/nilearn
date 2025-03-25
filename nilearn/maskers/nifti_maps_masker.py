@@ -371,14 +371,14 @@ class NiftiMapsMasker(BaseMasker):
 
     def fit(
         self,
-        X=None,
+        imgs=None,
         y=None,  # noqa: ARG002
     ):
         """Prepare signal extraction from regions.
 
         Parameters
         ----------
-        X : :obj:`list` of Niimg-like objects or None, default=None
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
             See :ref:`extracting_data`.
             Image data passed to the reporter.
 
@@ -480,11 +480,11 @@ class NiftiMapsMasker(BaseMasker):
                 "maps_image": self.maps_img_,
                 "mask": self.mask_img_,
                 "dim": None,
-                "img": X,
+                "img": imgs,
             }
-            if X is not None:
-                X, dims = compute_middle_image(X)
-                self._reporting_data["img"] = X
+            if imgs is not None:
+                imgs, dims = compute_middle_image(imgs)
+                self._reporting_data["img"] = imgs
                 self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
@@ -497,10 +497,10 @@ class NiftiMapsMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
-    def fit_transform(self, X, confounds=None, sample_mask=None):
+    def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction."""
-        return self.fit(X).transform(
-            X, confounds=confounds, sample_mask=sample_mask
+        return self.fit(imgs).transform(
+            imgs, confounds=confounds, sample_mask=sample_mask
         )
 
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):

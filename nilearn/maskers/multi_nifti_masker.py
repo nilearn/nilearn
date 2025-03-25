@@ -236,14 +236,14 @@ class MultiNiftiMasker(NiftiMasker):
 
     def fit(
         self,
-        X=None,
+        imgs=None,
         y=None,  # noqa: ARG002
     ):
         """Compute the mask corresponding to the data.
 
         Parameters
         ----------
-        X   : Niimg-like objects, :obj:`list` of Niimg-like objects or None, \
+        imgs : Niimg-like objects, :obj:`list` of Niimg-like objects or None, \
             default=None
             See :ref:`extracting_data`.
             Data on which the mask must be calculated. If this is a list,
@@ -276,7 +276,7 @@ class MultiNiftiMasker(NiftiMasker):
 
         # Load data (if filenames are given, load them)
         logger.log(
-            f"Loading data from {repr_niimgs(X, shorten=False)}.",
+            f"Loading data from {repr_niimgs(imgs, shorten=False)}.",
             self.verbose,
         )
 
@@ -284,11 +284,11 @@ class MultiNiftiMasker(NiftiMasker):
         if self.mask_img is None:
             logger.log("Computing mask", self.verbose)
 
-            X = stringify_path(X)
-            if not isinstance(X, collections.abc.Iterable) or isinstance(
-                X, str
+            imgs = stringify_path(imgs)
+            if not isinstance(imgs, collections.abc.Iterable) or isinstance(
+                imgs, str
             ):
-                X = [X]
+                imgs = [imgs]
 
             mask_args = self.mask_args if self.mask_args is not None else {}
             compute_mask = _get_mask_strategy(self.mask_strategy)
@@ -296,7 +296,7 @@ class MultiNiftiMasker(NiftiMasker):
                 compute_mask,
                 ignore=["n_jobs", "verbose", "memory"],
             )(
-                X,
+                imgs,
                 target_affine=self.target_affine,
                 target_shape=self.target_shape,
                 n_jobs=self.n_jobs,
@@ -305,10 +305,10 @@ class MultiNiftiMasker(NiftiMasker):
                 **mask_args,
             )
         else:
-            if X is not None:
+            if imgs is not None:
                 warnings.warn(
                     f"[{self.__class__.__name__}.fit] "
-                    "Generation of a mask has been requested (X != None) "
+                    "Generation of a mask has been requested (imgs != None) "
                     "while a mask has been provided at masker creation. "
                     "Given mask will be used.",
                     stacklevel=2,
@@ -324,11 +324,11 @@ class MultiNiftiMasker(NiftiMasker):
             self._reporting_data = {
                 "mask": self.mask_img_,
                 "dim": None,
-                "images": X,
+                "images": imgs,
             }
-            if X is not None:
-                X, dims = compute_middle_image(X)
-                self._reporting_data["images"] = X
+            if imgs is not None:
+                imgs, dims = compute_middle_image(imgs)
+                self._reporting_data["images"] = imgs
                 self._reporting_data["dim"] = dims
 
         # If resampling is requested, resample the mask as well.
@@ -362,11 +362,11 @@ class MultiNiftiMasker(NiftiMasker):
             (self.target_affine is not None) and self.reports
         ):
             resampl_imgs = None
-            if X is not None:
+            if imgs is not None:
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 resampl_imgs = self._cache(resample_img)(
-                    X,
+                    imgs,
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
@@ -488,12 +488,12 @@ class MultiNiftiMasker(NiftiMasker):
         )
         return data
 
-    def transform(self, X, confounds=None, sample_mask=None):
+    def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
 
         Parameters
         ----------
-        X : :obj:`list` of Niimg-like objects
+        imgs : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
             Data to be preprocessed
 
@@ -523,11 +523,11 @@ class MultiNiftiMasker(NiftiMasker):
 
         """
         check_is_fitted(self)
-        if not hasattr(X, "__iter__") or isinstance(X, str):
-            return self.transform_single_imgs(X)
+        if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
+            return self.transform_single_imgs(imgs)
 
         return self.transform_imgs(
-            X,
+            imgs,
             confounds=confounds,
             sample_mask=sample_mask,
             n_jobs=self.n_jobs,
