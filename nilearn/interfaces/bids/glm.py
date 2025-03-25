@@ -207,7 +207,7 @@ def save_glm_to_bids(
     dset_desc_file = out_dir / "dataset_description.json"
     _generate_dataset_description(dset_desc_file, model.__str__())
 
-    model = model._generate_filenames_output(
+    model._generate_filenames_output(
         prefix, contrasts, contrast_types, out_dir
     )
 

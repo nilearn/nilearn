@@ -343,12 +343,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
         out_dir : :obj:`str` or :obj:`pathlib.Path`
             Output directory for files.
 
-        Returns
-        -------
-        self : object
-            The model instance with updated reporting data that includes
-            generated filenames for contrasts,
-            statistical maps, and design matrices.
 
         Notes
         -----
@@ -473,8 +467,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
             "model_level_mapping": model_level_mapping,
         }
 
-        return self
-
 
 def _generate_statistical_maps(
     prefix: str,
@@ -543,7 +535,7 @@ def _generate_model_level_mapping(
     entities,
     entities_to_include: list[str],
 ):
-    """Return dictionary containing filenames runwise error an residuls nifti.
+    """Return dictionary of filenames for nifti of runwise error & residuals.
 
     model_level_mapping[i_run][statmap_label] = filename
     """
@@ -668,10 +660,10 @@ def _generate_contrasts_dict(
     return contrasts_dict
 
 
-def _use_input_files_for_filenaming(self, prefix):
-    # for first level models with input files
-    # try to generate bids like output based on GLM input
-
+def _use_input_files_for_filenaming(self, prefix) -> bool:
+    """Determine if we should try to use input files to generate \
+       output filenames.
+    """
     if self.__str__() == "Second Level Model" or prefix is not None:
         return False
 
@@ -684,7 +676,7 @@ def _use_input_files_for_filenaming(self, prefix):
     return files_used_as_input and all_files_have_same_sub
 
 
-def _is_flm_with_single_run(model):
+def _is_flm_with_single_run(model) -> bool:
     return (
         model.__str__() == "First Level Model"
         and len(model._reporting_data["run_imgs"]) > 1
@@ -692,7 +684,7 @@ def _is_flm_with_single_run(model):
 
 
 def _clean_contrast_name(contrast_name):
-    """Remove prohibited characters from name camelCase.
+    """Remove prohibited characters from name and convert to camelCase.
 
     .. versionadded:: 0.9.2
 
