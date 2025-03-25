@@ -448,7 +448,7 @@ def pad_contrast_matrix(contrast_def, design_matrix):
             "column(s) of zeros."
         ),
         category=UserWarning,
-        stacklevel=3,
+        stacklevel=4,
     )
     contrast_def = np.pad(
         contrast_def,

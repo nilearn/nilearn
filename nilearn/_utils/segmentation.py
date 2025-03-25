@@ -255,13 +255,15 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
         warnings.warn(
             "Random walker only segments unlabeled areas, where "
             "labels == 0. No zero valued areas in labels were "
-            "found. Returning provided labels."
+            "found. Returning provided labels.",
+            stacklevel=4,
         )
         return out_labels
 
     if (labels == 0).all():
         warnings.warn(
-            "Random walker received no seed label. Returning provided labels."
+            "Random walker received no seed label. Returning provided labels.",
+            stacklevel=4,
         )
         return out_labels
 
@@ -324,7 +326,8 @@ def random_walker(data, labels, beta=130, tol=1.0e-3, copy=True, spacing=None):
         warnings.warn(
             "Random walker only segments unlabeled areas, where "
             "labels == 0. Data provided only contains isolated seeds "
-            "and isolated pixels. Returning provided labels."
+            "and isolated pixels. Returning provided labels.",
+            stacklevel=4,
         )
         return out_labels
 

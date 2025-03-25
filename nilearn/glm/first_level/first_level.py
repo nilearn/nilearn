@@ -87,7 +87,7 @@ def mean_scaling(Y, axis=0):
             "The data have probably been centered."
             "Scaling might not work as expected",
             UserWarning,
-            stacklevel=2,
+            stacklevel=4,
         )
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
@@ -281,7 +281,8 @@ def _check_trial_type(events):
             "as if they are instances of same experimental condition.\n"
             "If there is a column in the dataframe "
             "corresponding to trial information, "
-            "consider renaming it to 'trial_type'."
+            "consider renaming it to 'trial_type'.",
+            stacklevel=6,
         )
 
 
@@ -485,7 +486,8 @@ class FirstLevelModel(BaseGLM):
         ):
             warn(
                 "If design matrices are supplied, "
-                "confounds and events will be ignored."
+                "confounds and events will be ignored.",
+                stacklevel=3,
             )
 
         if events is not None:
@@ -1156,7 +1158,7 @@ class FirstLevelModel(BaseGLM):
                     if our_param is None:
                         continue
                     if getattr(self.masker_, param_name) is not None:
-                        warn(
+                        warn(  # noqa : B028
                             f"Parameter {param_name} of the masker overridden"
                         )
                     if (
@@ -1474,6 +1476,7 @@ def first_level_from_bids(
         warn(
             "Starting in version 0.12, slice_time_ref will default to None.",
             DeprecationWarning,
+            stacklevel=2,
         )
     if space_label is None:
         space_label = "MNI152NLin2009cAsym"
@@ -1518,6 +1521,7 @@ def first_level_from_bids(
  Remember to visualize your design matrix before fitting your model
  to check that your model is not overspecified.""",
             UserWarning,
+            stacklevel=2,
         )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
@@ -1605,7 +1609,8 @@ def first_level_from_bids(
                 "It will be assumed that the slice timing reference "
                 "is 0.0 percent of the repetition time.\n"
                 "If it is not the case it will need to "
-                "be set manually in the generated list of models."
+                "be set manually in the generated list of models.",
+                stacklevel=2,
             )
         inferred_slice_time_ref = 0.0
 
@@ -1619,7 +1624,8 @@ def first_level_from_bids(
             f"'slice_time_ref' provided ({slice_time_ref}) is different "
             f"from the value found in the BIDS dataset "
             f"({inferred_slice_time_ref}).\n"
-            "Note this may lead to the wrong model specification."
+            "Note this may lead to the wrong model specification.",
+            stacklevel=2,
         )
     if slice_time_ref is not None:
         _check_slice_time_ref(slice_time_ref)
