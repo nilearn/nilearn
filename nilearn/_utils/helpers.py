@@ -37,7 +37,7 @@ def set_mpl_backend(message=None):
         )
         if message is not None:
             warning = f"{message}\n{warning}"
-        warnings.warn(warning)
+        warnings.warn(warning, stacklevel=3)
         raise
     else:
         # When matplotlib was successfully imported we need to check
@@ -64,7 +64,7 @@ def set_mpl_backend(message=None):
 
         if new_backend != current_backend:
             # Matplotlib backend has been changed, let's warn the user
-            warnings.warn(f"Backend changed to {new_backend}...")
+            warnings.warn(f"Backend changed to {new_backend}...", stacklevel=3)
 
 
 def rename_parameters(

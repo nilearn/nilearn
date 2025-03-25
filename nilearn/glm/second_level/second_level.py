@@ -1022,7 +1022,10 @@ def non_parametric_inference(
     if isinstance(mask, (NiftiMasker, SurfaceMasker)):
         masker = clone(mask)
         if smoothing_fwhm is not None and masker.smoothing_fwhm is not None:
-            warn("Parameter 'smoothing_fwhm' of the masker overridden.")
+            warn(
+                "Parameter 'smoothing_fwhm' of the masker overridden.",
+                stacklevel=2,
+            )
             masker.smoothing_fwhm = smoothing_fwhm
 
     elif isinstance(sample_map, SurfaceImage):

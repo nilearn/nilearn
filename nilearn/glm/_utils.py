@@ -174,7 +174,10 @@ def full_rank(X, cmax=1e15):
     if cond < cmax:
         return X, cond
 
-    warn("Matrix is singular at working precision, regularizing...")
+    warn(
+        "Matrix is singular at working precision, regularizing...",
+        stacklevel=4,
+    )
     lda = (smax - cmax * smin) / (cmax - 1)
     X = np.dot(U, np.dot(np.diag(s + lda), V))
     return X, cmax

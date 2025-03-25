@@ -1129,3 +1129,8 @@ def _check_no_affine_match_neurovault_affine(data):
     assert not np.any(
         [np.all(affine == neurovault.STD_AFFINE) for affine in affines]
     )
+
+
+def test_fetch_neurovault_motor_task():
+    with pytest.warns(DeprecationWarning, match="will be removed"):
+        neurovault.fetch_neurovault_motor_task(verbose=0)
