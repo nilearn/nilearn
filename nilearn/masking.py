@@ -2,9 +2,12 @@
 
 import numbers
 import warnings
+from pathlib import Path
+from typing import Union, overload
 
 import numpy as np
 from joblib import Parallel, delayed
+from nibabel import Nifti1Image
 from scipy.ndimage import binary_dilation, binary_erosion
 
 from nilearn._utils import fill_doc, logger
@@ -18,7 +21,10 @@ from nilearn.datasets import (
     load_mni152_wm_template,
 )
 from nilearn.image import get_data, new_img_like, resampling
-from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import (
+    SurfaceImage,
+    check_same_n_vertices,
+)
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.typing import NiimgLike
 
@@ -44,7 +50,21 @@ class _MaskWarning(UserWarning):
 warnings.simplefilter("always", _MaskWarning)
 
 
-def load_mask_img(mask_img, allow_empty=False):
+@overload
+def load_mask_img(
+    mask_img: Union[str, Path, Nifti1Image],
+    allow_empty: bool = ...,
+) -> tuple[np.ndarray, np.ndarray]: ...
+
+
+@overload
+def load_mask_img(
+    mask_img: SurfaceImage,
+    allow_empty: bool = ...,
+) -> tuple[SurfaceImage, None]: ...
+
+
+def load_mask_img(mask_img, allow_empty):
     """Check that a mask is valid.
 
     This checks if it contains two values including 0 and load it.
@@ -817,17 +837,18 @@ def apply_mask(
 ):
     """Extract signals from images using specified mask.
 
-    Read the time series from the given Niimg-like object, using the mask.
+    Read the time series from the given image object, using the mask.
 
     Parameters
     ----------
-    imgs : :obj:`list` of 4D Niimg-like objects
+    imgs : :obj:`list` of 4D Niimg-like objects or 2D SurfaceImage
         See :ref:`extracting_data`.
-        Images to be masked. list of lists of 3D images are also accepted.
+        Images to be masked.
+        List of lists of 3D Niimg-like or 2D surface images are also accepted.
 
-    mask_img : Niimg-like object
+    mask_img : Niimg-like or SurfaceImage object
         See :ref:`extracting_data`.
-        3D mask array: True where a :term:`voxel` should be used.
+        Mask array with True where a voxel / vertex should be used.
 
     dtype : numpy dtype or 'f', default="f"
         The dtype of the output, if 'f', any float output is acceptable
@@ -840,6 +861,10 @@ def apply_mask(
 
             Implies ensure_finite=True.
 
+        .. warning::
+
+            Not yet implemented to for surface images
+
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and
         infs) found in the images will be replaced by zeros.
@@ -847,7 +872,8 @@ def apply_mask(
     Returns
     -------
     run_series : :class:`numpy.ndarray`
-        2D array of series with shape (image number, :term:`voxel` number)
+        2D array of series with shape
+        (image number, :term:`voxel` / vertex number)
 
     Notes
     -----
@@ -856,7 +882,10 @@ def apply_mask(
     """
     mask_img = _utils.check_niimg_3d(mask_img)
     mask, mask_affine = load_mask_img(mask_img)
-    mask_img = new_img_like(mask_img, mask, mask_affine)
+    if not isinstance(imgs, SurfaceImage):
+        mask_img = new_img_like(mask_img, mask, mask_affine)
+    else:
+        mask_img = mask
     return apply_mask_fmri(
         imgs,
         mask_img,
@@ -868,7 +897,7 @@ def apply_mask(
 
 def apply_mask_fmri(
     imgs, mask_img, dtype="f", smoothing_fwhm=None, ensure_finite=True
-):
+) -> np.ndarray:
     """Perform similar action to :func:`nilearn.masking.apply_mask`.
 
     The only difference with :func:`nilearn.masking.apply_mask` is that
@@ -876,6 +905,29 @@ def apply_mask_fmri(
     assumed to contain only two different values (this is checked for in
     :func:`nilearn.masking.apply_mask`, not in this function).
     """
+    if isinstance(imgs, SurfaceImage) and isinstance(mask_img, SurfaceImage):
+        check_same_n_vertices(mask_img.mesh, imgs.mesh)
+
+        if smoothing_fwhm is not None:
+            warnings.warn(
+                "Parameter smoothing_fwhm "
+                "is not yet supported for surface data",
+                UserWarning,
+                stacklevel=2,
+            )
+            smoothing_fwhm = True
+
+        mask_data = _utils.as_ndarray(get_surface_data(mask_img), dtype=bool)
+        series = get_surface_data(imgs)
+
+        if dtype == "f":
+            dtype = series.dtype if series.dtype.kind == "f" else np.float32
+
+        series = _utils.as_ndarray(series, dtype=dtype, order="C", copy=True)
+        del imgs  # frees a lot of memory
+
+        return series[mask_data].T
+
     mask_img = _utils.check_niimg_3d(mask_img)
     mask_affine = mask_img.affine
     mask_data = _utils.as_ndarray(get_data(mask_img), dtype=bool)
@@ -907,7 +959,7 @@ def apply_mask_fmri(
         dtype = series.dtype if series.dtype.kind == "f" else np.float32
 
     series = _utils.as_ndarray(series, dtype=dtype, order="C", copy=True)
-    del imgs_img  # frees a lot of memory
+    del imgs  # frees a lot of memory
 
     # Delayed import to avoid circular imports
     from .image.image import smooth_array

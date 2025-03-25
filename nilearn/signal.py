@@ -467,7 +467,7 @@ def butterworth(
 @fill_doc
 def high_variance_confounds(
     series, n_confounds=5, percentile=2.0, detrend=True
-):
+) -> np.ndarray:
     """Return confounds time series extracted from series \
     with highest variance.
 
