@@ -36,7 +36,8 @@ def _compute_hommel_value(z_vals, alpha, verbose=0):
         if not is_matplotlib_installed():
             warnings.warn(
                 '"verbose" option requires the package Matplotlib.'
-                "Please install it using `pip install matplotlib`."
+                "Please install it using `pip install matplotlib`.",
+                stacklevel=4,
             )
         else:
             from matplotlib import pyplot as plt
