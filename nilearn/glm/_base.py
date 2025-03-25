@@ -431,6 +431,10 @@ class BaseGLM(CacheMixin, BaseEstimator):
             entities_to_include = ["run"]
         entities_to_include.extend(["contrast", "stat"])
 
+        mask = _generate_mask(
+            prefix, generate_bids_name, entities, entities_to_include
+        )
+
         statistical_maps = _generate_statistical_maps(
             prefix,
             contrasts,
@@ -473,11 +477,34 @@ class BaseGLM(CacheMixin, BaseEstimator):
         # to better standardize naming
         self._reporting_data["filenames"] = {
             "dir": out_dir,
+            "mask": mask,
             "design_matrices_dict": design_matrices_dict,
             "contrasts_dict": contrasts_dict,
             "statistical_maps": statistical_maps,
             "model_level_mapping": model_level_mapping,
         }
+
+
+def _generate_mask(
+    prefix: str,
+    generate_bids_name: bool,
+    entities,
+    entities_to_include: list[str],
+):
+    """Return filename for GLM mask."""
+    fields = {
+        "prefix": prefix,
+        "suffix": "mask",
+        "extension": "nii.gz",
+        "entities": deepcopy(entities),
+    }
+    fields["entities"].pop("run", None)
+    fields["entities"].pop("ses", None)
+
+    if generate_bids_name:
+        fields["prefix"] = None
+
+    return create_bids_filename(fields, entities_to_include)
 
 
 def _generate_statistical_maps(
