@@ -1,10 +1,8 @@
 import warnings
 from collections.abc import Iterable
-from pathlib import Path
 from string import Template
 
 import numpy as np
-from nibabel import Nifti1Image
 
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike
@@ -173,7 +171,7 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
         )
 
     if isinstance(mask_img, volumetric_type) and any(
-        not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
+        not isinstance(x, NiimgLike) for x in run_imgs
     ):
         raise TypeError(
             f"{msg} "

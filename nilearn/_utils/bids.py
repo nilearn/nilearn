@@ -1,14 +1,13 @@
 import warnings
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from nibabel import Nifti1Image
 
 from nilearn._utils import check_niimg
 from nilearn._utils.niimg import safe_get_data
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.typing import NiimgLike
 
 
 def generate_atlas_look_up_table(
@@ -204,7 +203,7 @@ def sanitize_look_up_table(lut, atlas):
 
 
 def _get_indices_from_image(image):
-    if isinstance(image, (str, Path, Nifti1Image)):
+    if isinstance(image, NiimgLike):
         img = check_niimg(image)
         data = safe_get_data(img)
     elif isinstance(image, SurfaceImage):

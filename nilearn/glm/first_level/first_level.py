@@ -57,6 +57,7 @@ from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.typing import NiimgLike
 
 
 def mean_scaling(Y, axis=0):
@@ -821,8 +822,7 @@ class FirstLevelModel(BaseGLM):
         ) or (
             isinstance(run_imgs, (list, tuple))
             and not all(
-                isinstance(x, (str, Path, Nifti1Image, SurfaceImage))
-                for x in run_imgs
+                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
             )
         ):
             input_type = type(run_imgs)
