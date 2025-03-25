@@ -7,12 +7,19 @@ import numpy as np
 from scipy.ndimage import center_of_mass, find_objects, label
 
 from nilearn._utils import as_ndarray, check_niimg_3d, check_niimg_4d
+from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.ndimage import largest_connected_component
 from nilearn._utils.niimg import safe_get_data
 
 # Local imports
-from nilearn.image import get_data, iter_img, new_img_like, reorder_img
+from nilearn.image import (
+    get_data,
+    index_img,
+    iter_img,
+    new_img_like,
+    reorder_img,
+)
 from nilearn.image.image import smooth_array
 from nilearn.image.resampling import coord_transform, get_mask_bounds
 from nilearn.plotting._utils import check_threshold_not_negative
@@ -59,7 +66,13 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     check_threshold_not_negative(activation_threshold)
     # if a pseudo-4D image or several images were passed (cf. #922),
     # we reduce to a single 3D image to find the coordinates
-    img = check_niimg_3d(img)
+    try:
+        img = check_niimg_3d(img)
+    except DimensionError:
+        img = check_niimg_4d(img)
+        assert img.shape[3] == 3
+        img = index_img(img, 1)
+
     data = safe_get_data(img)
 
     # when given image is empty, return (0., 0., 0.)
