@@ -64,7 +64,7 @@ def load_mask_img(
 ) -> tuple[SurfaceImage, None]: ...
 
 
-def load_mask_img(mask_img, allow_empty):
+def load_mask_img(mask_img, allow_empty=False):
     """Check that a mask is valid.
 
     This checks if it contains two values including 0 and load it.
@@ -880,11 +880,12 @@ def apply_mask(
     When using smoothing, ``ensure_finite`` is set to True, as non-finite
     values would spread across the image.
     """
-    mask_img = _utils.check_niimg_3d(mask_img)
-    mask, mask_affine = load_mask_img(mask_img)
     if not isinstance(imgs, SurfaceImage):
+        mask_img = _utils.check_niimg_3d(mask_img)
+        mask, mask_affine = load_mask_img(mask_img)
         mask_img = new_img_like(mask_img, mask, mask_affine)
     else:
+        mask, mask_affine = load_mask_img(mask_img)
         mask_img = mask
     return apply_mask_fmri(
         imgs,
