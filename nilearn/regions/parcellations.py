@@ -530,7 +530,7 @@ class Parcellations(_MultiPCA):
         return hasattr(self, "labels_img_")
 
     @fill_doc
-    def transform(self, X, confounds=None):
+    def transform(self, imgs, confounds=None):
         """Extract signals from :term:`parcellations<parcellation>` learned \
         on :term:`fMRI` images.
 
@@ -558,13 +558,13 @@ class Parcellations(_MultiPCA):
 
         """
         check_is_fitted(self)
-        X, confounds, single_subject = _check_parameters_transform(
-            X, confounds
+        imgs, confounds, single_subject = _check_parameters_transform(
+            imgs, confounds
         )
         # Required for special cases like extracting signals on list of
         # 3D images or SurfaceImages.
         if isinstance(self.masker_.mask_img_, SurfaceImage):
-            imgs_list = X.copy()
+            imgs_list = imgs.copy()
             masker = SurfaceLabelsMasker(
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
@@ -579,7 +579,7 @@ class Parcellations(_MultiPCA):
                 verbose=self.verbose,
             )
         else:
-            imgs_list = iter_check_niimg(X, atleast_4d=True)
+            imgs_list = iter_check_niimg(imgs, atleast_4d=True)
             masker = NiftiLabelsMasker(
                 self.labels_img_,
                 mask_img=self.masker_.mask_img_,
@@ -605,7 +605,7 @@ class Parcellations(_MultiPCA):
         return region_signals[0] if single_subject else region_signals
 
     @fill_doc
-    def fit_transform(self, X, confounds=None):
+    def fit_transform(self, imgs, confounds=None):
         """Fit the images to :term:`parcellations<parcellation>` and \
         then transform them.
 
@@ -637,7 +637,7 @@ class Parcellations(_MultiPCA):
             (number of scans, number of labels)
 
         """
-        return self.fit(X, confounds=confounds).transform(X, confounds)
+        return self.fit(imgs, confounds=confounds).transform(imgs, confounds)
 
     @fill_doc
     def inverse_transform(self, signals):
