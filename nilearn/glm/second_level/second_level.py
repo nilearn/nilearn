@@ -20,6 +20,7 @@ from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
+    check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
@@ -582,10 +583,11 @@ class SecondLevelModel(BaseGLM):
             )[0]
         self.design_matrix_ = design_matrix
 
-        if (
-            isinstance(sample_map, SurfaceImage)
-            and self.smoothing_fwhm is not None
-        ):
+        masker_type = "nii"
+        if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
+            masker_type = "surface"
+
+        if masker_type == "surface" and self.smoothing_fwhm is not None:
             warn(
                 "Parameter 'smoothing_fwhm' is not "
                 "yet supported for surface data.",
@@ -595,39 +597,8 @@ class SecondLevelModel(BaseGLM):
             self.smoothing_fwhm = None
 
         check_compatibility_mask_and_images(self.mask_img, sample_map)
+        self.masker_ = check_embedded_masker(self, masker_type)
 
-        # Learn the mask. Assume the first level imgs have been masked.
-        if not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)):
-            if isinstance(sample_map, SurfaceImage):
-                self.masker_ = SurfaceMasker(
-                    mask_img=self.mask_img,
-                    smoothing_fwhm=self.smoothing_fwhm,
-                    memory=self.memory,
-                    verbose=max(0, self.verbose - 1),
-                    memory_level=self.memory_level,
-                )
-            else:
-                self.masker_ = NiftiMasker(
-                    mask_img=self.mask_img,
-                    target_affine=self.target_affine,
-                    target_shape=self.target_shape,
-                    smoothing_fwhm=self.smoothing_fwhm,
-                    memory=self.memory,
-                    verbose=max(0, self.verbose - 1),
-                    memory_level=self.memory_level,
-                )
-        else:
-            self.masker_ = clone(self.mask_img)
-            for param_name in ["smoothing_fwhm", "memory", "memory_level"]:
-                our_param = getattr(self, param_name)
-                if our_param is None:
-                    continue
-                if getattr(self.masker_, param_name) is not None:
-                    warn(
-                        f"Parameter {param_name} of the masker overridden",
-                        stacklevel=2,
-                    )
-                setattr(self.masker_, param_name, our_param)
         self.masker_.fit(sample_map)
 
         # Report progress
