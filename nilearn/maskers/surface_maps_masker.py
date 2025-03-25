@@ -144,13 +144,16 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-    @rename_parameters(replacement_params={"img": "X"}, end_version="0.13.2")
-    def fit(self, X=None, y=None):
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters
         ----------
-        X : :obj:`~nilearn.surface.SurfaceImage` object or None, default=None
+        imgs : :obj:`~nilearn.surface.SurfaceImage` object or None, \
+               default=None
 
         y : None
             This parameter is unused.
@@ -180,8 +183,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.n_elements_ = self.maps_img.shape[1]
 
         if self.mask_img is not None:
-            if X is not None:
-                check_compatibility_mask_and_images(self.mask_img, X)
+            if imgs is not None:
+                check_compatibility_mask_and_images(self.mask_img, imgs)
             logger.log(
                 msg=f"loading regions from {self.mask_img.__repr__()}",
                 verbose=self.verbose,
@@ -240,8 +243,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
 
-    @rename_parameters(replacement_params={"img": "X"}, end_version="0.13.2")
-    def transform(self, X, confounds=None, sample_mask=None):
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
+    def transform(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
         Parameters
@@ -274,18 +279,18 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        check_compatibility_mask_and_images(self.maps_img, X)
+        check_compatibility_mask_and_images(self.maps_img, imgs)
         # if img is a single image, convert it to a list
         # to be able to concatenate it
-        if not isinstance(X, list):
-            X = [X]
-        X = concat_imgs(X)
+        if not isinstance(imgs, list):
+            imgs = [imgs]
+        imgs = concat_imgs(imgs)
         # check img data is 2D
-        X.data._check_ndims(2, "X")
-        check_same_n_vertices(self.maps_img.mesh, X.mesh)
-        img_data = np.concatenate(list(X.data.parts.values()), axis=0).astype(
-            np.float32
-        )
+        imgs.data._check_ndims(2, "imgs")
+        check_same_n_vertices(self.maps_img.mesh, imgs.mesh)
+        img_data = np.concatenate(
+            list(imgs.data.parts.values()), axis=0
+        ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
@@ -303,7 +308,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         # add the image to the reporting data
         if self.reports:
-            self._reporting_data["images"] = X
+            self._reporting_data["images"] = imgs
 
         parameters = get_params(
             self.__class__,
@@ -316,7 +321,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # apply mask if provided
         # and then extract signal via least square regression
         if self.mask_img_ is not None:
-            check_compatibility_mask_and_images(self.mask_img_, X)
+            check_compatibility_mask_and_images(self.mask_img_, imgs)
 
         if mask_data is not None:
             region_signals = cache(
@@ -361,13 +366,15 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         return region_signals
 
-    @rename_parameters(replacement_params={"img": "X"}, end_version="0.13.2")
-    def fit_transform(self, X, y=None, confounds=None, sample_mask=None):
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
         Parameters
         ----------
-        X : :obj:`~nilearn.surface.SurfaceImage` object or \
+        imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres. The data for each hemisphere \
@@ -398,7 +405,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             shape: (n_timepoints, n_regions)
         """
         del y
-        return self.fit().transform(X, confounds, sample_mask)
+        return self.fit(imgs).transform(imgs, confounds, sample_mask)
 
     def inverse_transform(self, region_signals):
         """Compute :term:`vertex` signals from region signals.
