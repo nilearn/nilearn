@@ -5,7 +5,7 @@ import warnings
 
 from packaging.version import parse
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
+OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.4.0"
 
 
 def set_mpl_backend(message=None):

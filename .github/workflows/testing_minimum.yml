@@ -16,6 +16,7 @@ on:
     push:
         branches:
         -   main
+    pull_request:
     # Uses the cron schedule for github actions
     #
     # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#scheduled-events
@@ -56,7 +57,7 @@ jobs:
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 python-version: ['3.9']
-                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.3.0]
+                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.4.0]
 
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
 
