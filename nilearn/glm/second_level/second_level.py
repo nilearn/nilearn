@@ -41,6 +41,7 @@ from nilearn.surface.surface import (
     SurfaceImage,
     check_same_n_vertices,
 )
+from nilearn.typing import NiimgLike
 
 
 def _input_type_error_message(second_level_input):
@@ -78,7 +79,7 @@ def _check_input_type(second_level_input):
         return "df_object"
     if isinstance(second_level_input, pd.Series):
         return "pd_series"
-    if isinstance(second_level_input, (str, Nifti1Image)):
+    if isinstance(second_level_input, NiimgLike):
         return "nii_object"
     if isinstance(second_level_input, SurfaceImage):
         return "surf_img_object"
@@ -105,7 +106,7 @@ def _check_input_type_when_list(second_level_input):
     _check_all_elements_of_same_type(second_level_input)
 
     # Can now only check first element
-    if isinstance(second_level_input[0], (str, Nifti1Image)):
+    if isinstance(second_level_input[0], NiimgLike):
         return "nii_object"
     if isinstance(second_level_input[0], (FirstLevelModel)):
         return "flm_object"
@@ -219,7 +220,7 @@ def _check_input_as_dataframe(second_level_input):
 
 
 def _check_input_as_nifti_images(second_level_input, none_design_matrix):
-    if isinstance(second_level_input, (str, Nifti1Image)):
+    if isinstance(second_level_input, NiimgLike):
         second_level_input = [second_level_input]
     for niimg in second_level_input:
         check_niimg(niimg=niimg, atleast_4d=True)
