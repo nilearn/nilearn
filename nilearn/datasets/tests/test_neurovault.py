@@ -1131,6 +1131,18 @@ def _check_no_affine_match_neurovault_affine(data):
     )
 
 
+def test_timeout_error(capsys, request_mocker):
+    """Check the proper log message is thrown on timeout."""
+    request_mocker.url_mapping["*"] = requests.exceptions.ReadTimeout()
+    data = neurovault.fetch_neurovault(verbose=0)
+
+    assert len(data.images) == 0
+
+    captured = capsys.readouterr()
+    match = re.search("Try increasing", captured.out)
+    assert match is not None
+
+
 def test_fetch_neurovault_motor_task():
     with pytest.warns(DeprecationWarning, match="will be removed"):
         neurovault.fetch_neurovault_motor_task(verbose=0)
