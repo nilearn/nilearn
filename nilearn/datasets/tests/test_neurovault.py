@@ -1141,3 +1141,8 @@ def test_timeout_error(capsys, request_mocker):
     captured = capsys.readouterr()
     match = re.search("Try increasing", captured.out)
     assert match is not None
+
+
+def test_fetch_neurovault_motor_task():
+    with pytest.warns(DeprecationWarning, match="will be removed"):
+        neurovault.fetch_neurovault_motor_task(verbose=0)
