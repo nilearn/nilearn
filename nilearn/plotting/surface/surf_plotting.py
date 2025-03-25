@@ -1,8 +1,6 @@
 """Functions for surface visualization."""
 
 import itertools
-import math
-from collections.abc import Sequence
 from warnings import warn
 
 import matplotlib as mpl
@@ -12,7 +10,7 @@ import pandas as pd
 from matplotlib import gridspec
 from matplotlib.cm import ScalarMappable
 from matplotlib.colorbar import make_axes
-from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
+from matplotlib.colors import Normalize, to_rgba
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
@@ -22,13 +20,31 @@ from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     create_colormap_from_lut,
-    get_cbar_ticks,
     get_colorbar_and_data_ranges,
     save_figure_if_needed,
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.js_plotting_utils import colorscale
+from nilearn.plotting.surface._backend import (
+    _check_hemispheres,
+    _check_surf_map,
+    _check_views,
+)
+from nilearn.plotting.surface._matplotlib_backend import (
+    _colorbar_from_array,
+    _compute_facecolors_matplotlib,
+    _compute_surf_map_faces_matplotlib,
+    _get_cmap_matplotlib,
+    _get_ticks_matplotlib,
+    _get_view_plot_surf_matplotlib,
+    _threshold_and_rescale,
+)
+from nilearn.plotting.surface._plotly_backend import (
+    _configure_title_plotly,
+    _get_cbar_plotly,
+    _get_view_plot_surf_plotly,
+)
 from nilearn.plotting.surface._utils import (
     check_surface_plotting_inputs,
     sanitize_hemi_for_surface_image,
@@ -45,86 +61,12 @@ from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
 )
 
-VALID_VIEWS = (
-    "anterior",
-    "posterior",
-    "medial",
-    "lateral",
-    "dorsal",
-    "ventral",
-    "left",
-    "right",
-)
-VALID_HEMISPHERES = "left", "right", "both"
-
 # subset of data format extensions supported
 DATA_EXTENSIONS = (
     "gii",
     "gii.gz",
     "mgz",
 )
-
-
-MATPLOTLIB_VIEWS = {
-    "left": {
-        "lateral": (0, 180),
-        "medial": (0, 0),
-        "dorsal": (90, 0),
-        "ventral": (270, 0),
-        "anterior": (0, 90),
-        "posterior": (0, 270),
-    },
-    "right": {
-        "lateral": (0, 0),
-        "medial": (0, 180),
-        "dorsal": (90, 0),
-        "ventral": (270, 0),
-        "anterior": (0, 90),
-        "posterior": (0, 270),
-    },
-    "both": {
-        "right": (0, 0),
-        "left": (0, 180),
-        "dorsal": (90, 0),
-        "ventral": (270, 0),
-        "anterior": (0, 90),
-        "posterior": (0, 270),
-    },
-}
-
-
-CAMERAS = {
-    "left": {
-        "eye": {"x": -1.5, "y": 0, "z": 0},
-        "up": {"x": 0, "y": 0, "z": 1},
-        "center": {"x": 0, "y": 0, "z": 0},
-    },
-    "right": {
-        "eye": {"x": 1.5, "y": 0, "z": 0},
-        "up": {"x": 0, "y": 0, "z": 1},
-        "center": {"x": 0, "y": 0, "z": 0},
-    },
-    "dorsal": {
-        "eye": {"x": 0, "y": 0, "z": 1.5},
-        "up": {"x": -1, "y": 0, "z": 0},
-        "center": {"x": 0, "y": 0, "z": 0},
-    },
-    "ventral": {
-        "eye": {"x": 0, "y": 0, "z": -1.5},
-        "up": {"x": 1, "y": 0, "z": 0},
-        "center": {"x": 0, "y": 0, "z": 0},
-    },
-    "anterior": {
-        "eye": {"x": 0, "y": 1.5, "z": 0},
-        "up": {"x": 0, "y": 0, "z": 1},
-        "center": {"x": 0, "y": 0, "z": 0},
-    },
-    "posterior": {
-        "eye": {"x": 0, "y": -1.5, "z": 0},
-        "up": {"x": 0, "y": 0, "z": 1},
-        "center": {"x": 0, "y": 0, "z": 0},
-    },
-}
 
 
 AXIS_CONFIG = {
@@ -149,142 +91,6 @@ LAYOUT = {
     "hovermode": False,
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
 }
-
-
-def _get_camera_view_from_string_view(hemi, view):
-    """Return plotly camera parameters from string view."""
-    if hemi in ["left", "right"]:
-        if view == "lateral":
-            return CAMERAS[hemi]
-        elif view == "medial":
-            return CAMERAS[
-                (
-                    VALID_HEMISPHERES[0]
-                    if hemi == VALID_HEMISPHERES[1]
-                    else VALID_HEMISPHERES[1]
-                )
-            ]
-    elif hemi == "both" and view in ["lateral", "medial"]:
-        raise ValueError(
-            "Invalid view definition: when hemi is 'both', "
-            "view cannot be 'lateral' or 'medial'.\n"
-            "Maybe you meant 'left' or 'right'?"
-        )
-    return CAMERAS[view]
-
-
-def _get_camera_view_from_elevation_and_azimut(view):
-    """Compute plotly camera parameters from elevation and azimut."""
-    elev, azim = view
-    # The radius is useful only when using a "perspective" projection,
-    # otherwise, if projection is "orthographic",
-    # one should tweak the "aspectratio" to emulate zoom
-    r = 1.5
-    # The camera position and orientation is set by three 3d vectors,
-    # whose coordinates are independent of the plotted data.
-    return {
-        # Where the camera should look at
-        # (it should always be looking at the center of the scene)
-        "center": {"x": 0, "y": 0, "z": 0},
-        # Where the camera should be located
-        "eye": {
-            "x": (
-                r
-                * math.cos(azim / 360 * 2 * math.pi)
-                * math.cos(elev / 360 * 2 * math.pi)
-            ),
-            "y": (
-                r
-                * math.sin(azim / 360 * 2 * math.pi)
-                * math.cos(elev / 360 * 2 * math.pi)
-            ),
-            "z": r * math.sin(elev / 360 * 2 * math.pi),
-        },
-        # How the camera should be rotated.
-        # It is determined by a 3d vector indicating which direction
-        # should look up in the generated plot
-        "up": {
-            "x": math.sin(elev / 360 * 2 * math.pi)
-            * math.cos(azim / 360 * 2 * math.pi + math.pi),
-            "y": math.sin(elev / 360 * 2 * math.pi)
-            * math.sin(azim / 360 * 2 * math.pi + math.pi),
-            "z": math.cos(elev / 360 * 2 * math.pi),
-        },
-        # "projection": {"type": "perspective"},
-        "projection": {"type": "orthographic"},
-    }
-
-
-def _get_view_plot_surf_plotly(hemi, view):
-    """
-    Get camera parameters from hemi and view for the plotly engine.
-
-    This function checks the selected hemisphere and view, and
-    returns the cameras view.
-    """
-    _check_views([view])
-    _check_hemispheres([hemi])
-    if isinstance(view, str):
-        return _get_camera_view_from_string_view(hemi, view)
-    return _get_camera_view_from_elevation_and_azimut(view)
-
-
-def _configure_title_plotly(title, font_size, color="black"):
-    """Help for plot_surf with plotly engine.
-
-    This function configures the title if provided.
-    """
-    if title is None:
-        return {}
-    return {
-        "text": title,
-        "font": {
-            "size": font_size,
-            "color": color,
-        },
-        "y": 0.96,
-        "x": 0.5,
-        "xanchor": "center",
-        "yanchor": "top",
-    }
-
-
-def _get_cbar_plotly(
-    colorscale,
-    vmin,
-    vmax,
-    cbar_tick_format,
-    fontsize=25,
-    color="black",
-    height=0.5,
-):
-    """Help for _plot_surf_plotly.
-
-    This function configures the colorbar and creates a small
-    invisible plot that uses the appropriate cmap to trigger
-    the generation of the colorbar. This dummy plot has then to
-    be added to the figure.
-    """
-    dummy = {
-        "opacity": 0,
-        "colorbar": {
-            "tickfont": {"size": fontsize, "color": color},
-            "tickformat": cbar_tick_format,
-            "len": height,
-        },
-        "type": "mesh3d",
-        "colorscale": colorscale,
-        "x": [1, 0, 0],
-        "y": [0, 1, 0],
-        "z": [0, 0, 1],
-        "i": [0],
-        "j": [1],
-        "k": [2],
-        "intensity": [0.0],
-        "cmin": vmin,
-        "cmax": vmax,
-    }
-    return dummy
 
 
 def _plot_surf_plotly(
@@ -409,223 +215,6 @@ def _plot_surf_plotly(
         plotly_figure.savefig()
 
     return plotly_figure
-
-
-def _get_view_plot_surf_matplotlib(hemi, view):
-    """Help function for plot_surf with matplotlib engine.
-
-    This function checks the selected hemisphere and view, and
-    returns elev and azim.
-    """
-    _check_views([view])
-    _check_hemispheres([hemi])
-    if isinstance(view, str):
-        if hemi == "both" and view in ["lateral", "medial"]:
-            raise ValueError(
-                "Invalid view definition: when hemi is 'both', "
-                "view cannot be 'lateral' or 'medial'.\n"
-                "Maybe you meant 'left' or 'right'?"
-            )
-        return MATPLOTLIB_VIEWS[hemi][view]
-    return view
-
-
-def _check_surf_map(surf_map, n_vertices):
-    """Help for plot_surf.
-
-    This function checks the dimensions of provided surf_map.
-    """
-    surf_map_data = load_surf_data(surf_map)
-    if surf_map_data.ndim != 1:
-        raise ValueError(
-            "'surf_map' can only have one dimension "
-            f"but has '{surf_map_data.ndim}' dimensions"
-        )
-    if surf_map_data.shape[0] != n_vertices:
-        raise ValueError(
-            "The surf_map does not have the same number "
-            "of vertices as the mesh."
-        )
-    return surf_map_data
-
-
-def _compute_surf_map_faces_matplotlib(
-    surf_map, faces, avg_method, n_vertices, face_colors_size
-):
-    """Help for plot_surf.
-
-    This function computes the surf map faces using the
-    provided averaging method.
-
-    .. note::
-        This method is called exclusively when using matplotlib,
-        since it only supports plotting face-colour maps and not
-        vertex-colour maps.
-
-    """
-    surf_map_data = _check_surf_map(surf_map, n_vertices)
-
-    # create face values from vertex values by selected avg methods
-    error_message = (
-        "avg_method should be either "
-        "['mean', 'median', 'max', 'min'] "
-        "or a custom function"
-    )
-    if isinstance(avg_method, str):
-        try:
-            avg_method = getattr(np, avg_method)
-        except AttributeError:
-            raise ValueError(error_message)
-        surf_map_faces = avg_method(surf_map_data[faces], axis=1)
-    elif callable(avg_method):
-        surf_map_faces = np.apply_along_axis(
-            avg_method, 1, surf_map_data[faces]
-        )
-
-        # check that surf_map_faces has the same length as face_colors
-        if surf_map_faces.shape != (face_colors_size,):
-            raise ValueError(
-                "Array computed with the custom function "
-                "from avg_method does not have the correct shape: "
-                f"{surf_map_faces[0]} != {face_colors_size}"
-            )
-
-        # check that dtype is either int or float
-        if not (
-            "int" in str(surf_map_faces.dtype)
-            or "float" in str(surf_map_faces.dtype)
-        ):
-            raise ValueError(
-                "Array computed with the custom function "
-                "from avg_method should be an array of numbers "
-                "(int or float)"
-            )
-    else:
-        raise ValueError(error_message)
-    return surf_map_faces
-
-
-def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
-    """Help for plot_surf with matplotlib engine.
-
-    This function computes the tick values for the colorbar.
-    """
-    # Default number of ticks is 5...
-    n_ticks = 5
-    # ...unless we are dealing with integers with a small range
-    # in this case, we reduce the number of ticks
-    if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
-        return np.arange(vmin, vmax + 1)
-    else:
-        return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
-
-
-def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
-    """Help for plot_surf with matplotlib engine.
-
-    This function returns the colormap.
-    """
-    our_cmap = plt.get_cmap(cmap)
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-    if threshold is not None:
-        if cbar_tick_format == "%i" and int(threshold) != threshold:
-            warn(
-                "You provided a non integer threshold "
-                "but configured the colorbar to use integer formatting."
-            )
-        # set colors to gray for absolute values < threshold
-        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
-        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, our_cmap.N
-    )
-    return our_cmap, norm
-
-
-def _compute_facecolors_matplotlib(bg_map, faces, n_vertices, darkness, alpha):
-    """Help for plot_surf with matplotlib engine.
-
-    This function computes the facecolors.
-    """
-    if bg_map is None:
-        bg_data = np.ones(n_vertices) * 0.5
-    else:
-        bg_data = np.copy(load_surf_data(bg_map))
-        if bg_data.shape[0] != n_vertices:
-            raise ValueError(
-                "The bg_map does not have the same number "
-                "of vertices as the mesh."
-            )
-
-    bg_faces = np.mean(bg_data[faces], axis=1)
-    # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_faces), np.max(bg_faces)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_faces = bg_norm(bg_faces)
-
-    if darkness is not None:
-        bg_faces *= darkness
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-        )
-
-    face_colors = plt.cm.gray_r(bg_faces)
-
-    # set alpha if in auto mode
-    if alpha == "auto":
-        alpha = 0.5 if bg_map is None else 1
-    # modify alpha values of background
-    face_colors[:, 3] = alpha * face_colors[:, 3]
-
-    return face_colors
-
-
-def _threshold_and_rescale(data, threshold, vmin, vmax):
-    """Help for plot_surf.
-
-    This function thresholds and rescales the provided data.
-    """
-    data_copy, vmin, vmax = _rescale(data, vmin, vmax)
-    return data_copy, _threshold(data, threshold, vmin, vmax), vmin, vmax
-
-
-def _threshold(data, threshold, vmin, vmax):
-    """Thresholds the data."""
-    # If no thresholding and nans, filter them out
-    if threshold is None:
-        mask = np.logical_not(np.isnan(data))
-    else:
-        mask = np.abs(data) >= threshold
-        if vmin > -threshold:
-            mask = np.logical_and(mask, data >= vmin)
-        if vmax < threshold:
-            mask = np.logical_and(mask, data <= vmax)
-    return mask
-
-
-def _rescale(data, vmin=None, vmax=None):
-    """Rescales the data."""
-    data_copy = np.copy(data)
-    # if no vmin/vmax are passed figure them out from data
-    vmin, vmax = _get_bounds(data_copy, vmin, vmax)
-    data_copy -= vmin
-    data_copy /= vmax - vmin
-    return data_copy, vmin, vmax
-
-
-def _get_bounds(data, vmin=None, vmax=None):
-    """Help returning the data bounds."""
-    vmin = np.nanmin(data) if vmin is None else vmin
-    vmax = np.nanmax(data) if vmax is None else vmax
-    return vmin, vmax
 
 
 def _plot_surf_matplotlib(
@@ -1568,140 +1157,6 @@ def plot_surf_stat_map(
         **kwargs,
     )
     return display
-
-
-def _check_hemisphere_is_valid(hemi):
-    return hemi in VALID_HEMISPHERES
-
-
-def _check_hemispheres(hemispheres):
-    """Check whether the hemispheres passed to in plot_img_on_surf are \
-    correct.
-
-    hemispheres : :obj:`list`
-        Any combination of 'left' and 'right'.
-
-    """
-    invalid_hemis = [
-        not _check_hemisphere_is_valid(hemi) for hemi in hemispheres
-    ]
-    if any(invalid_hemis):
-        raise ValueError(
-            "Invalid hemispheres definition!\n"
-            f"Got: {np.array(hemispheres)[invalid_hemis]!s}\n"
-            f"Supported values are: {VALID_HEMISPHERES!s}"
-        )
-    return hemispheres
-
-
-def _check_view_is_valid(view) -> bool:
-    """Check whether a single view is one of two valid input types.
-
-    Parameters
-    ----------
-    view : :obj:`str` in {"anterior", "posterior", "medial", "lateral",
-        "dorsal", "ventral" or pair of floats (elev, azim).
-
-    Returns
-    -------
-    valid : True if view is valid, False otherwise.
-    """
-    if isinstance(view, str) and (view in VALID_VIEWS):
-        return True
-    return (
-        isinstance(view, Sequence)
-        and len(view) == 2
-        and all(isinstance(x, (int, float)) for x in view)
-    )
-
-
-def _check_views(views) -> list:
-    """Check whether the views passed to in plot_img_on_surf are correct.
-
-    Parameters
-    ----------
-    views : :obj:`list`
-        Any combination of strings in {"anterior", "posterior", "medial",
-        "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
-
-    Returns
-    -------
-    views : :obj:`list`
-        Views given as inputs.
-    """
-    invalid_views = [not _check_view_is_valid(view) for view in views]
-
-    if any(invalid_views):
-        raise ValueError(
-            "Invalid view definition!\n"
-            f"Got: {np.array(views)[invalid_views]!s}\n"
-            f"Supported values are: {VALID_VIEWS!s}"
-            " or a sequence of length 2"
-            " setting the elevation and azimut of the camera."
-        )
-
-    return views
-
-
-def _colorbar_from_array(
-    array,
-    vmin,
-    vmax,
-    threshold,
-    symmetric_cbar=True,
-    cmap=DEFAULT_DIVERGING_CMAP,
-):
-    """Generate a custom colorbar for an array.
-
-    Internal function used by plot_img_on_surf
-
-    array : :class:`np.ndarray`
-        Any 3D array.
-
-    vmin : :obj:`float`
-        lower bound for plotting of stat_map values.
-
-    vmax : :obj:`float`
-        upper bound for plotting of stat_map values.
-
-    threshold : :obj:`float`
-        If None is given, the colorbar is not thresholded.
-        If a number is given, it is used to threshold the colorbar.
-        Absolute values lower than threshold are shown in gray.
-
-    kwargs : :obj:`dict`
-        Extra arguments passed to get_colorbar_and_data_ranges.
-
-    cmap : :obj:`str`, default='cold_hot'
-        The name of a matplotlib or nilearn colormap.
-
-    """
-    _, _, vmin, vmax = get_colorbar_and_data_ranges(
-        array,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
-    )
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [cmap(i) for i in range(cmap.N)]
-
-    if threshold is None:
-        threshold = 0.0
-
-    # set colors to gray for absolute values < threshold
-    istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
-    istop = int(norm(threshold, clip=True) * (cmap.N - 1))
-    for i in range(istart, istop):
-        cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, cmap.N
-    )
-    sm = plt.cm.ScalarMappable(cmap=our_cmap, norm=norm)
-
-    # fake up the array of the scalar mappable.
-    sm._A = []
-
-    return sm
 
 
 @fill_doc
