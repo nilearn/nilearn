@@ -990,7 +990,7 @@ def create_fake_bids_dataset(
         in fsaverage5.
 
     n_voxels : :obj:`int`, default = 4
-        Number of voxel along x, y, z dimensions for volume data.
+        Number of voxels along x, y, z dimensions for volume data.
 
     spaces : :obj:`list` of :obj:`str`, optional.
         Defaults to ``("MNI", "T1w")``
