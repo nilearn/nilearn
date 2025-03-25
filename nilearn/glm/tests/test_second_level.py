@@ -63,10 +63,6 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-# This directory path
-BASEDIR = Path(__file__).resolve().parent
-FUNCFILE = BASEDIR / "functional.nii.gz"
-
 N_PERM = 5
 SHAPE = (*_shape_3d_default(), 1)
 

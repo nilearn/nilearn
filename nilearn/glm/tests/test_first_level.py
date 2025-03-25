@@ -51,9 +51,6 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface._testing import assert_polymesh_equal
 
-BASEDIR = Path(__file__).resolve().parent
-FUNCFILE = BASEDIR / "functional.nii.gz"
-
 
 @pytest.mark.parametrize(
     "estimator, check, name",
