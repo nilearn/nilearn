@@ -35,7 +35,7 @@ stop_go_image_ids = (151, 3041, 3042, 2676, 2675, 2818, 2834)
 #
 # print([meta['id'] for meta in nv_data['images_meta']])
 
-nv_data = fetch_neurovault_ids(image_ids=stop_go_image_ids)
+nv_data = fetch_neurovault_ids(image_ids=stop_go_image_ids, timeout=30.0)
 
 images_meta = nv_data["images_meta"]
 

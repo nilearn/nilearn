@@ -37,7 +37,9 @@ print(
     "if you haven't downloaded any Neurovault data before "
     "this will take several minutes."
 )
-nv_data = fetch_neurovault(max_images=30, fetch_neurosynth_words=True)
+nv_data = fetch_neurovault(
+    max_images=30, fetch_neurosynth_words=True, timeout=30.0
+)
 
 images = nv_data["images"]
 term_weights = nv_data["word_frequencies"]

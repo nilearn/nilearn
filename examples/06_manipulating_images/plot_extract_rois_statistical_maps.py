@@ -20,7 +20,7 @@ extract objects using a function
 # utilities
 from nilearn.datasets import fetch_neurovault_auditory_computation_task
 
-localizer = fetch_neurovault_auditory_computation_task()
+localizer = fetch_neurovault_auditory_computation_task(timeout=30.0)
 tmap_filename = localizer.images[0]
 
 # %%
