@@ -29,10 +29,12 @@ from nilearn.glm import threshold_stats_img
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
     check_report_dims,
-    clustering_params_to_dataframe,
     dataframe_to_html,
 )
-from nilearn.reporting.get_clusters_table import get_clusters_table
+from nilearn.reporting.get_clusters_table import (
+    clustering_params_to_dataframe,
+    get_clusters_table,
+)
 from nilearn.reporting.html_report import (
     HTMLReport,
     _render_warnings_partial,

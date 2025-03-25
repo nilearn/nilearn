@@ -534,6 +534,14 @@ def _generate_statistical_maps(
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
 
+        fields["entities"]["stat"] = None
+        fields["suffix"] = "results"
+        fields["extension"] = "tsv"
+        tmp["results"] = create_bids_filename(fields, entities_to_include)
+
+        fields["extension"] = "json"
+        tmp["metadata"] = create_bids_filename(fields, entities_to_include)
+
         statistical_maps[contrast_name] = tempita.bunch(**tmp)
 
     return statistical_maps

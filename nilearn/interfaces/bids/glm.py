@@ -173,6 +173,12 @@ def save_glm_to_bids(
 
     """
     # Import here to avoid circular imports
+    from nilearn.glm import threshold_stats_img
+    from nilearn.reporting.get_clusters_table import (
+        clustering_params_to_dataframe,
+        get_clusters_table,
+    )
+
     if is_matplotlib_installed():
         from nilearn._utils.plotting import (
             generate_constrat_matrices_figures,
@@ -185,19 +191,20 @@ def save_glm_to_bids(
             stacklevel=2,
         )
 
-    # fail early if invalid paramaeters to pass to generate_report()
-    allowed_extra_kwarg = [
-        x
-        for x in inspect.signature(model.generate_report).parameters
-        if x not in ["contrasts", "input"]
-    ]
+    # grab the default from generate_report()
+    # fail early if invalid parameters to pass to generate_report()
+    tmp = dict(**inspect.signature(model.generate_report).parameters)
+    tmp.pop("contrasts")
+    report_kwargs = {k: v.default for k, v in tmp.items()}
     for key in kwargs:
-        if key not in allowed_extra_kwarg:
+        if key not in report_kwargs:
             raise ValueError(
                 f"Extra key-word arguments must be one of: "
-                f"{allowed_extra_kwarg}\n"
+                f"{report_kwargs}\n"
                 f"Got: {key}"
             )
+        else:
+            report_kwargs[key] = kwargs[key]
 
     contrasts = coerce_to_dict(contrasts)
 
@@ -271,11 +278,46 @@ def save_glm_to_bids(
     statistical_maps = make_stat_maps(model, contrasts, output_type="all")
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
+            if output_type in ["metadata", "results"]:
+                continue
+
             img = statistical_maps[contrast_name][output_type]
             filename = filenames["statistical_maps"][contrast_name][
                 output_type
             ]
             img.to_filename(out_dir / filename)
+
+        thresholded_img, threshold = threshold_stats_img(
+            stat_img=img,
+            threshold=report_kwargs["threshold"],
+            alpha=report_kwargs["alpha"],
+            cluster_threshold=report_kwargs["cluster_threshold"],
+            height_control=report_kwargs["height_control"],
+        )
+        table_details = clustering_params_to_dataframe(
+            report_kwargs["threshold"],
+            report_kwargs["alpha"],
+            report_kwargs["min_distance"],
+            report_kwargs["height_control"],
+            report_kwargs["alpha"],
+            is_volume_glm=model._is_volume_glm,
+        )
+        table_details.to_json(
+            out_dir / filenames["statistical_maps"][contrast_name]["metadata"]
+        )
+
+        cluster_table = get_clusters_table(
+            thresholded_img,
+            stat_threshold=threshold,
+            cluster_threshold=report_kwargs["cluster_threshold"],
+            min_distance=report_kwargs["min_distance"],
+            two_sided=report_kwargs["two_sided"],
+        )
+        cluster_table.to_csv(
+            out_dir / filenames["statistical_maps"][contrast_name]["results"],
+            sep="\t",
+            index=False,
+        )
 
     logger.log("Saving model level statistical maps...", verbose=verbose)
     _write_model_level_statistical_maps(model, out_dir)

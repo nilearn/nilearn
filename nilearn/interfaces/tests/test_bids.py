@@ -413,6 +413,8 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
         "contrast-effectsOfInterest_stat-p_statmap.nii.gz",
         "contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
         "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
+        "contrast-effectsOfInterest_results.tsv",
+        "contrast-effectsOfInterest_results.json",
         "design.tsv",
         "design.json",
         "stat-errorts_statmap.nii.gz",
@@ -587,6 +589,8 @@ def test_save_glm_to_bids_contrast_definitions(
         "contrast-aaaMinusBbb_stat-t_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-variance_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-z_statmap.nii.gz",
+        "contrast-aaaMinusBbb_results.tsv",
+        "contrast-aaaMinusBbb_results.json",
         "run-1_design.tsv",
         "run-1_design.json",
         "run-1_stat-errorts_statmap.nii.gz",
@@ -645,6 +649,8 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
         "contrast-effectsOfInterest_stat-p_statmap.nii.gz",
         "contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
         "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
+        "contrast-effectsOfInterest_results.tsv",
+        "contrast-effectsOfInterest_results.json",
         "design.tsv",
         "stat-errorts_statmap.nii.gz",
         "stat-rsquared_statmap.nii.gz",
@@ -801,6 +807,8 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
 
     EXPECTED_FILENAME_ENDINGS = [
         "sub-01_task-main_space-MNI_contrast-c0_stat-z_statmap.nii.gz",
+        "sub-01_task-main_space-MNI_contrast-c0_results.tsv",
+        "sub-01_task-main_space-MNI_contrast-c0_results.json",
         "sub-01_ses-01_task-main_run-01_space-MNI_stat-rsquared_statmap.nii.gz",
         "sub-01_ses-02_task-main_run-02_space-MNI_design.tsv",
         "sub-01_ses-01_task-main_run-02_space-MNI_design.json",
@@ -856,6 +864,8 @@ def test_save_glm_to_bids_infer_filenames_overide(tmp_path, prefix):
 
     EXPECTED_FILENAME_ENDINGS = [
         "contrast-c0_stat-z_statmap.nii.gz",
+        "contrast-c0_results.tsv",
+        "contrast-c0_results.json",
         "stat-rsquared_statmap.nii.gz",
         "design.tsv",
         "design.json",
