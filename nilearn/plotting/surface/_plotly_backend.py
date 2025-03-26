@@ -1,10 +1,22 @@
 import math
+from warnings import warn
 
+import numpy as np
+import plotly.graph_objects as go
+
+from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils.helpers import is_kaleido_installed
+from nilearn.plotting.displays import PlotlySurfaceFigure
+from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._backend import (
     VALID_HEMISPHERES,
+    SurfaceBackend,
     _check_hemispheres,
+    _check_surf_map,
     _check_views,
 )
+from nilearn.plotting.surface.html_surface import get_vertexcolor
+from nilearn.surface import load_surf_data
 
 CAMERAS = {
     "left": {
@@ -37,6 +49,30 @@ CAMERAS = {
         "up": {"x": 0, "y": 0, "z": 1},
         "center": {"x": 0, "y": 0, "z": 0},
     },
+}
+
+
+AXIS_CONFIG = {
+    "showgrid": False,
+    "showline": False,
+    "ticks": "",
+    "title": "",
+    "showticklabels": False,
+    "zeroline": False,
+    "showspikes": False,
+    "spikesides": False,
+    "showbackground": False,
+}
+
+
+LAYOUT = {
+    "scene": {
+        "dragmode": "orbit",
+        **{f"{dim}axis": AXIS_CONFIG for dim in ("x", "y", "z")},
+    },
+    "paper_bgcolor": "#fff",
+    "hovermode": False,
+    "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
 }
 
 
@@ -174,3 +210,138 @@ def _get_view_plot_surf_plotly(hemi, view):
     if isinstance(view, str):
         return _get_camera_view_from_string_view(hemi, view)
     return _get_camera_view_from_elevation_and_azimut(view)
+
+
+class PlotlyBackend(SurfaceBackend):
+    def _check_backend_params(self, params):
+        parameters_not_implemented_in_plotly = {
+            "avg_method": params["avg_method"],
+            "figure": params["figure"],
+            "axes": params["axes"],
+            "cbar_vmin": params["cbar_vmin"],
+            "cbar_vmax": params["cbar_vmax"],
+            "alpha": params["alpha"],
+        }
+
+        for parameter, value in parameters_not_implemented_in_plotly.items():
+            if value is not None:
+                warn(
+                    f"'{parameter}' is not implemented "
+                    "for the plotly engine.\n"
+                    f"Got '{parameter} = {value}'.\n"
+                    f"Use '{parameter} = None' to silence this warning."
+                )
+
+    def _plot_surf(
+        self,
+        coords,
+        faces,
+        surf_map=None,
+        bg_map=None,
+        hemi="left",
+        view=None,
+        cmap=None,
+        symmetric_cmap=False,
+        colorbar=True,
+        avg_method=None,
+        threshold=None,
+        alpha=None,
+        bg_on_data=False,
+        darkness=0.7,
+        vmin=None,
+        vmax=None,
+        cbar_vmin=None,
+        cbar_vmax=None,
+        cbar_tick_format="auto",
+        title=None,
+        title_font_size=18,
+        output_file=None,
+        axes=None,
+        figure=None,
+    ):
+        self._check_backend_params(locals())
+
+        if cbar_tick_format == "auto":
+            cbar_tick_format = ".1f"
+        x, y, z = coords.T
+        i, j, k = faces.T
+
+        if cmap is None:
+            cmap = DEFAULT_DIVERGING_CMAP
+
+        bg_data = None
+        if bg_map is not None:
+            bg_data = load_surf_data(bg_map)
+            if bg_data.shape[0] != coords.shape[0]:
+                raise ValueError(
+                    "The bg_map does not have the same number "
+                    "of vertices as the mesh."
+                )
+
+        if surf_map is not None:
+            _check_surf_map(surf_map, coords.shape[0])
+            colors = colorscale(
+                cmap,
+                surf_map,
+                threshold,
+                vmax=vmax,
+                vmin=vmin,
+                symmetric_cmap=symmetric_cmap,
+            )
+            vertexcolor = get_vertexcolor(
+                surf_map,
+                colors["cmap"],
+                colors["norm"],
+                absolute_threshold=colors["abs_threshold"],
+                bg_map=bg_data,
+                bg_on_data=bg_on_data,
+                darkness=darkness,
+            )
+        else:
+            if bg_data is None:
+                bg_data = np.zeros(coords.shape[0])
+            colors = colorscale("Greys", bg_data, symmetric_cmap=False)
+            vertexcolor = get_vertexcolor(
+                bg_data,
+                colors["cmap"],
+                colors["norm"],
+                absolute_threshold=colors["abs_threshold"],
+            )
+
+        mesh_3d = go.Mesh3d(
+            x=x, y=y, z=z, i=i, j=j, k=k, vertexcolor=vertexcolor
+        )
+        fig_data = [mesh_3d]
+        if colorbar:
+            dummy = _get_cbar_plotly(
+                colors["colors"],
+                float(colors["vmin"]),
+                float(colors["vmax"]),
+                cbar_tick_format,
+            )
+            fig_data.append(dummy)
+
+        # instantiate plotly figure
+        camera_view = _get_view_plot_surf_plotly(hemi, view)
+        fig = go.Figure(data=fig_data)
+        fig.update_layout(
+            scene_camera=camera_view,
+            title=_configure_title_plotly(title, title_font_size),
+            **LAYOUT,
+        )
+
+        # save figure
+        plotly_figure = PlotlySurfaceFigure(
+            figure=fig, output_file=output_file, hemi=hemi
+        )
+
+        if output_file is not None:
+            if not is_kaleido_installed():
+                msg = (
+                    "Saving figures to file with engine='plotly' requires "
+                    "that ``kaleido`` is installed."
+                )
+                raise ImportError(msg)
+            plotly_figure.savefig()
+
+        return plotly_figure
