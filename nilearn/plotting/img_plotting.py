@@ -954,7 +954,7 @@ def plot_roi(
         contours.
 
     %(cmap_lut)s
-        Default = `gist_ncar`.
+        Default=`gist_ncar`.
 
     %(dim)s
         Default='auto'.
