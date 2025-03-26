@@ -962,8 +962,8 @@ repository, use the following command:
 This will measure both time taken and peak memory usage of the
 :func:`nilearn.image.load_img` function.
 
-You can also track the performance of a specific benchmark over N commits,
-until a given release, like this:
+You can also track the performance of a specific benchmark over, say,
+5 commits, until release 0.10.0, like this:
 
 .. code-block:: bash
 
