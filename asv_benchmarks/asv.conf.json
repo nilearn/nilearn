@@ -74,7 +74,6 @@
     "matrix": {
         "numpy": ["1.22.4"],
         "scipy": ["1.8.0"],
-        "cython": ["3.0.10"],
         "joblib": ["1.2.0"],
         "pandas": ["2.2.0"],
         "scikit-learn": ["1.4.0"],
