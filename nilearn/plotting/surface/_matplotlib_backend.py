@@ -1,11 +1,6 @@
 from warnings import warn
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.cm import ScalarMappable
-from matplotlib.colorbar import make_axes
-from matplotlib.colors import LinearSegmentedColormap, Normalize
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn.plotting._utils import (
@@ -21,6 +16,17 @@ from nilearn.plotting.surface._backend import (
     _check_views,
 )
 from nilearn.surface import load_surf_data
+
+try:
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    from matplotlib.cm import ScalarMappable
+    from matplotlib.colorbar import make_axes
+    from matplotlib.colors import LinearSegmentedColormap, Normalize
+except ImportError:
+    from nilearn.plotting._utils import engine_warning
+
+    engine_warning("matplotlib")
 
 MATPLOTLIB_VIEWS = {
     "left": {

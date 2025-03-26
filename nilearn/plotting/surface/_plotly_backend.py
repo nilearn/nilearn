@@ -2,7 +2,6 @@ import math
 from warnings import warn
 
 import numpy as np
-import plotly.graph_objects as go
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import is_kaleido_installed
@@ -17,6 +16,13 @@ from nilearn.plotting.surface._backend import (
 )
 from nilearn.plotting.surface.html_surface import get_vertexcolor
 from nilearn.surface import load_surf_data
+
+try:
+    import plotly.graph_objects as go
+except ImportError:
+    from nilearn.plotting._utils import engine_warning
+
+    engine_warning("plotly")
 
 CAMERAS = {
     "left": {
