@@ -22,6 +22,7 @@ from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
 from nilearn.typing import NiimgLike
 
 
+@fill_doc
 def plot_img_comparison(
     ref_imgs,
     src_imgs,
@@ -58,7 +59,7 @@ def plot_img_comparison(
             :obj:`~nilearn.maskers.NiftiMasker` or \
             binary :obj:`~nilearn.surface.SurfaceImage` or \
             or :obj:`~nilearn.maskers.SurfaceMasker` or \
-            None
+            None, default = None
         Mask to be used on data.
         Its type must be compatible with that of the ``ref_img``.
         If ``None`` is passed,
@@ -258,7 +259,7 @@ def plot_bland_altman(
             :obj:`~nilearn.maskers.NiftiMasker` or \
             binary :obj:`~nilearn.surface.SurfaceImage` or \
             or :obj:`~nilearn.maskers.SurfaceMasker` or \
-            None
+            None, default = None
         Mask to be used on data.
         Its type must be compatible with that of the ``ref_img``.
         If ``None`` is passed,
