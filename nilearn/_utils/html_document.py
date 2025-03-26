@@ -16,6 +16,9 @@ from nilearn._utils import remove_parameters
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 BROWSER_TIMEOUT_SECONDS = 3.0
 
+WIDTH_DEFAULT = 800
+HEIGHT_DEFAULT = 800
+
 
 def set_max_img_views_before_warning(new_value):
     """Set the number of open views which triggers a warning.
@@ -82,13 +85,52 @@ class HTMLDocument:
 
     _all_open_html_repr: weakref.WeakSet = weakref.WeakSet()
 
-    def __init__(self, html, width=600, height=400):
+    def __init__(self, html, width=WIDTH_DEFAULT, height=HEIGHT_DEFAULT):
         self.html = html
         self.width = width
         self.height = height
         self._temp_file = None
         self._check_n_open()
         self._temp_file_removing_proc = None
+
+    @property
+    def width(self):
+        return self._width
+
+    @width.setter
+    def width(self, value):
+        try:
+            value = int(value)
+        except ValueError:
+            warnings.warn(
+                (
+                    f"Invalid width {value=}. "
+                    f"Using default instead {WIDTH_DEFAULT}"
+                ),
+                stacklevel=3,
+            )
+            value = WIDTH_DEFAULT
+
+        self._width = value
+
+    @property
+    def height(self):
+        return self._height
+
+    @height.setter
+    def height(self, value):
+        try:
+            value = int(value)
+        except ValueError:
+            warnings.warn(
+                (
+                    f"Invalid height {value=}. "
+                    f"Using default instead {HEIGHT_DEFAULT}"
+                ),
+                stacklevel=3,
+            )
+            value = WIDTH_DEFAULT
+        self._height = value
 
     def _check_n_open(self):
         HTMLDocument._all_open_html_repr.add(self)
@@ -110,18 +152,19 @@ class HTMLDocument:
             )
 
     def resize(self, width, height):
-        """Resize the plot displayed in a Jupyter notebook.
+        """Resize the document displayed.
 
         Parameters
         ----------
         width : :obj:`int`
-            New width of the plot.
+            New width of the document.
 
         height : :obj:`int`
-            New height of the plot.
+            New height of the document.
 
         """
-        self.width, self.height = width, height
+        self.width = width
+        self.height = height
         return self
 
     def get_iframe(self, width=None, height=None):
