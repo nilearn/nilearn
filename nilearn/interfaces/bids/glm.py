@@ -296,15 +296,17 @@ def save_glm_to_bids(
         )
         table_details = clustering_params_to_dataframe(
             report_kwargs["threshold"],
-            report_kwargs["alpha"],
+            report_kwargs["cluster_threshold"],
             report_kwargs["min_distance"],
             report_kwargs["height_control"],
             report_kwargs["alpha"],
             is_volume_glm=model._is_volume_glm,
         )
-        table_details.to_json(
+        table_details = table_details.to_dict()
+        with (
             out_dir / filenames["statistical_maps"][contrast_name]["metadata"]
-        )
+        ).open("w") as f:
+            json.dump(table_details[0], f)
 
         cluster_table = get_clusters_table(
             thresholded_img,

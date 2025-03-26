@@ -825,6 +825,25 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
     for fname in EXPECTED_FILENAME_ENDINGS:
         assert (tmp_path / "output" / "sub-01" / fname).exists()
 
+    with (
+        tmp_path
+        / "output"
+        / "sub-01"
+        / "sub-01_task-main_space-MNI_contrast-c0_results.json"
+    ).open("r") as f:
+        metadata = json.load(f)
+
+    for key in [
+        "Height control",
+        "Threshold (computed)",
+        "Cluster size threshold (voxels)",
+        "Minimum distance (mm)",
+    ]:
+        assert key in metadata
+
+
+# Cluster ID	X	Y	Z	Peak Stat	Cluster Size (mm3)
+
 
 @pytest.mark.parametrize("prefix", ["", "sub-01", "foo_"])
 def test_save_glm_to_bids_infer_filenames_overide(tmp_path, prefix):
