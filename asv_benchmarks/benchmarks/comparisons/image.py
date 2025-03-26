@@ -10,7 +10,7 @@ from ..utils import load
 
 class Loading(Benchmark):
     """
-    A benchmark that compare the performance of loading images from
+    A benchmark that compares the performance of loading images from
     disk using nibabel and nilearn.
     """
 
@@ -27,9 +27,9 @@ class Loading(Benchmark):
         load(loader)
 
 
-class Mean(Benchmark):
+class Meaning(Benchmark):
     """
-    A benchmark that compares the performance of computing the mean
+    A benchmark that compares the performance of first computing the mean
     of a 4D image loaded via nibabel and nilearn.
     """
 
@@ -37,12 +37,12 @@ class Mean(Benchmark):
     param_names = ["loader"]
     params = ["nilearn", "nibabel (ref)"]
 
-    def time_mean(self, loader):
+    def time_meaning(self, loader):
         """Time the loading followed by taking the mean."""
         img = load(loader)[1]
         mean_img(img, copy_header=True)
 
-    def peakmem_mean(self, loader):
+    def peakmem_meaning(self, loader):
         """Peak memory of loading followed by taking the mean."""
         img = load(loader)[1]
         mean_img(img, copy_header=True)
@@ -50,7 +50,7 @@ class Mean(Benchmark):
 
 class Slicing(Benchmark):
     """
-    A enchmark that compares the performance of slicing a 4D image loaded
+    A benchmark that compares the performance of slicing a 4D image loaded
     via nibabel and nilearn.
     """
 

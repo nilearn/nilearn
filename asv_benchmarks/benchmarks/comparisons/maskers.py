@@ -6,7 +6,7 @@ from ..common import Benchmark
 from ..utils import apply_mask, load
 
 
-class NiftiMaskingVsReference(Benchmark):
+class Masking(Benchmark):
     """
     Comparison between the performance of applying a mask to an image using
     nilearn vs. numpy.
@@ -18,12 +18,12 @@ class NiftiMaskingVsReference(Benchmark):
     param_names = ["implementation", "loader"]
     params = (["nilearn", "numpy (ref)"], ["nilearn", "nibabel (ref)"])
 
-    def time_masker(self, implementation, loader):
+    def time_masking(self, implementation, loader):
         """Time the loading and then masking."""
         mask, img = load(loader)
         apply_mask(mask, img, implementation)
 
-    def peakmem_masker(self, implementation, loader):
+    def peakmem_masking(self, implementation, loader):
         """Peak memory of loading and then masking."""
         mask, img = load(loader)
         apply_mask(mask, img, implementation)

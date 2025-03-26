@@ -8,7 +8,7 @@ from ..utils import apply_mask, load
 
 class NiftiMaskerBenchmark(Benchmark):
     """
-    Benchmark for applying a mask to an image using nilearn with different
+    Benchmark for applying a mask to an image using NiftiMasker with different
     parameters.
     """
 
@@ -20,7 +20,7 @@ class NiftiMaskerBenchmark(Benchmark):
         [False, True],
     )
 
-    def time_masker(
+    def time_nifti_masker(
         self,
         smoothing_fwhm,
         standardize,
@@ -41,7 +41,7 @@ class NiftiMaskerBenchmark(Benchmark):
             },
         )
 
-    def peakmem_masker(
+    def peakmem_nifti_masker(
         self,
         smoothing_fwhm,
         standardize,
