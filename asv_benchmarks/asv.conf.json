@@ -78,7 +78,6 @@
         "pandas": ["2.2.0"],
         "scikit-learn": ["1.4.0"],
         "nibabel": ["5.2.0"],
-        "matplotlib": ["3.3.0"]
     }
 
     // Combinations of libraries/python versions can be excluded/included
