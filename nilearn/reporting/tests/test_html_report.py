@@ -7,6 +7,7 @@ from numpy.testing import assert_almost_equal
 
 from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
 from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 from nilearn.conftest import _img_maps
 from nilearn.image import get_data
@@ -31,7 +32,22 @@ from nilearn.surface import SurfaceImage
 
 
 def _check_html(html_view, reports_requested=True, is_fit=True):
-    """Check the presence of some expected code in the html viewer."""
+    """Check the presence of some expected code in the html viewer.
+
+    Also ensure some common behavior to all reports.
+    """
+    assert isinstance(html_view, HTMLDocument)
+
+    # resize width and height
+    html_view.resize(1200, 800)
+    assert html_view.width == 1200
+    assert html_view.height == 800
+
+    # invalid values fall back on default dimensions
+    with pytest.warns(UserWarning, match="Using default instead"):
+        html_view.width = "foo"
+    assert html_view.width == WIDTH_DEFAULT
+
     if reports_requested and is_fit:
         assert "<th>Parameter</th>" in str(html_view)
     if "Surface" in str(html_view):

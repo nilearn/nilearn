@@ -30,7 +30,6 @@ from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
-    check_report_dims,
     clustering_params_to_dataframe,
     dataframe_to_html,
 )
@@ -388,8 +387,7 @@ def make_glm_report(
         },
     )
 
-    # setting report size for better visual experience in Jupyter Notebooks.
-    report.width, report.height = check_report_dims(report_dims)
+    report.resize(*report_dims)
 
     return report
 
