@@ -4,12 +4,13 @@
 
 from nilearn.image import mean_img
 
-from .common import Benchmark, load
+from ..common import Benchmark
+from ..utils import load
 
 
 class Loading(Benchmark):
     """
-    A benchmark that measures the performance of loading images from
+    A benchmark that compare the performance of loading images from
     disk using nibabel and nilearn.
     """
 
@@ -28,8 +29,8 @@ class Loading(Benchmark):
 
 class Mean(Benchmark):
     """
-    An example benchmark that measures the performance of computing the mean
-    of a 4D image using nibabel and nilearn.
+    A benchmark that compares the performance of computing the mean
+    of a 4D image loaded via nibabel and nilearn.
     """
 
     # compare loading images using nibabel and nilearn
@@ -49,8 +50,8 @@ class Mean(Benchmark):
 
 class Slicing(Benchmark):
     """
-    An example benchmark that measures the performance of slicing a 4D image
-    using nibabel and nilearn.
+    A enchmark that compares the performance of slicing a 4D image loaded
+    via nibabel and nilearn.
     """
 
     # compare loading images using nibabel and nilearn
