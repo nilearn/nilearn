@@ -13,19 +13,10 @@ class NiftiMaskerBenchmark(Benchmark):
     """
 
     # try different combinations of parameters for the NiftiMasker object
-    param_names = ["smoothing_fwhm", "standardize", "detrend"]
-    params = (
-        [None, 6],
-        [False, "zscore_sample", "zscore", "psc"],
-        [False, True],
-    )
+    param_names = ["smoothing_fwhm"]
+    params = [None, 6]
 
-    def time_nifti_masker(
-        self,
-        smoothing_fwhm,
-        standardize,
-        detrend,
-    ):
+    def time_nifti_masker(self, smoothing_fwhm):
         """Time the loading (only with nilearn here) and then masking with
         different parameters.
         """
@@ -34,19 +25,10 @@ class NiftiMaskerBenchmark(Benchmark):
             mask,
             img,
             "nilearn",
-            nifti_masker_params={
-                "smoothing_fwhm": smoothing_fwhm,
-                "standardize": standardize,
-                "detrend": detrend,
-            },
+            nifti_masker_params={"smoothing_fwhm": smoothing_fwhm},
         )
 
-    def peakmem_nifti_masker(
-        self,
-        smoothing_fwhm,
-        standardize,
-        detrend,
-    ):
+    def peakmem_nifti_masker(self, smoothing_fwhm):
         """Peak memory for the loading (only with nilearn here) and then
         masking with different parameters.
         """
@@ -55,9 +37,5 @@ class NiftiMaskerBenchmark(Benchmark):
             mask,
             img,
             "nilearn",
-            nifti_masker_params={
-                "smoothing_fwhm": smoothing_fwhm,
-                "standardize": standardize,
-                "detrend": detrend,
-            },
+            nifti_masker_params={"smoothing_fwhm": smoothing_fwhm},
         )
