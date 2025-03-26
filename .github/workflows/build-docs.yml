@@ -126,9 +126,14 @@ jobs:
         steps:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
+
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v5
+
         -   uses: actions/setup-python@v5
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
+
         -   name: Install tox
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
 
