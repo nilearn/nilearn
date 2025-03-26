@@ -120,6 +120,30 @@ jobs:
             with:
                 args: --validate
 
+    quality_control:
+        # run a couple of scripts to check quality of the docstrings
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+        -   uses: actions/setup-python@v5
+            with:
+                python-version: ${{ env.MIN_PYTHON_VERSION }}
+        -   name: Install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+
+        -   name: Show tox config
+            run: tox c
+
+        -   name: Build docs
+            id: build-docs
+            run: |
+                tox run \
+                    --colored yes \
+                    --list-dependencies \
+                    -e doc_qc
+
+
     check_skip_flags:
         name: Check skip flags
         runs-on: ubuntu-latest
