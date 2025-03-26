@@ -218,6 +218,8 @@ def save_glm_to_bids(
 
     verbose = model.verbose
 
+    model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
+
     if model.__str__() == "Second Level Model":
         design_matrices = [model.design_matrix_]
     else:
