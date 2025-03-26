@@ -2,6 +2,7 @@
 # Workflow to build the documentation.
 #
 # - validate CITATION.CFF file
+# - check the quality of the doc strings
 # - get datasets from cache or from source
 # - build doc and upload it as artifact
 # - on `main` (or on github release): trigger hosting of dev (or stable) doc on https://github.com/nilearn//nilearn.github.io.git
@@ -126,28 +127,21 @@ jobs:
         steps:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
-
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v5
-
         -   uses: actions/setup-python@v5
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
-
         -   name: Install tox
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
-
         -   name: Show tox config
             run: tox c
-
-        -   name: Build docs
-            id: build-docs
+        -   name: Check doc strings
             run: |
                 tox run \
                     --colored yes \
                     --list-dependencies \
                     -e doc_qc
-
 
     check_skip_flags:
         name: Check skip flags
