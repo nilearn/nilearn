@@ -23,6 +23,7 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg, fill_doc, logger
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.niimg import safe_get_data
 from nilearn._version import __version__
 from nilearn.externals import tempita
@@ -37,6 +38,7 @@ from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import (
     HTMLReport,
     _render_warnings_partial,
+    is_notebook,
 )
 from nilearn.reporting.utils import (
     CSS_PATH,
@@ -86,7 +88,7 @@ def make_glm_report(
     plot_type="slice",
     cut_coords=None,
     display_mode=None,
-    report_dims=(1600, 800),
+    report_dims=(WIDTH_DEFAULT, HEIGHT_DEFAULT),
 ):
     """Return HTMLReport object \
     for a report which shows all important aspects of a fitted GLM.
@@ -358,6 +360,7 @@ def make_glm_report(
         design_matrices_dict=design_matrices_dict,
         unique_id=unique_id,
         date=date,
+        show_navbar="style='display: none;'" if is_notebook() else "",
         method_section=method_section,
     )
 
@@ -381,6 +384,7 @@ def make_glm_report(
             "head_css": head_css,
             "version": __version__,
             "page_title": title,
+            "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
 

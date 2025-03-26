@@ -16,6 +16,9 @@ from nilearn._utils import remove_parameters
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 BROWSER_TIMEOUT_SECONDS = 3.0
 
+WIDTH_DEFAULT = 800
+HEIGHT_DEFAULT = 800
+
 
 def set_max_img_views_before_warning(new_value):
     """Set the number of open views which triggers a warning.

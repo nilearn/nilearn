@@ -199,6 +199,7 @@ def _update_template(
             "head_css": head_css,
             "version": __version__,
             "page_title": f"{title} report",
+            "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
 
@@ -377,6 +378,23 @@ def _create_report(estimator, data):
         template_name=html_template,
         summary_html=summary_html,
     )
+
+
+def is_notebook() -> bool:
+    """Detect if we are running in a notebook.
+
+    From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
+    """
+    try:
+        shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        elif shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False  # Probably standard Python interpreter
 
 
 class HTMLReport(HTMLDocument):

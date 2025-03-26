@@ -369,12 +369,12 @@ h6 {
 .nilearn-report .table-container {
   overflow-x: scroll;
   overflow-y: scroll;
-  max-height: 700px;
+  max-height: 800px;
 }
 
 .nilearn-report table {
   margin: 50px auto;
-  max-height: 500px;
+  max-height: 800px;
 }
 
 .nilearn-report thead th {
