@@ -11,6 +11,9 @@ from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.helpers import (
+    rename_parameters,
+)
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -171,12 +174,15 @@ class SurfaceMasker(_BaseSurfaceMasker):
         }
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
-    def fit(self, img=None, y=None):
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` or \
+        imgs : :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage` or None, \
               default = None
@@ -192,7 +198,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         check_params(self.__dict__)
         del y
-        self._fit_mask_img(img)
+        self._fit_mask_img(imgs)
         assert self.mask_img_ is not None
 
         start, stop = 0, 0
@@ -210,25 +216,23 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 )
             self._reporting_data = {
                 "mask": self.mask_img_,
-                "images": img,
+                "images": imgs,
             }
 
         return self
 
-    def transform(
-        self,
-        img,
-        confounds=None,
-        sample_mask=None,
-    ):
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
+    def transform(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from fitted surface object.
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` or \
+        imgs : :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
-            Mesh and data for both hemispheres.
+              Mesh and data for both hemispheres.
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
                     :class:`pathlib.Path`, \
@@ -271,23 +275,23 @@ class SurfaceMasker(_BaseSurfaceMasker):
             self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
-        if not isinstance(img, list):
-            img = [img]
-        img = concat_imgs(img)
+        if not isinstance(imgs, list):
+            imgs = [imgs]
+        imgs = concat_imgs(imgs)
 
-        check_compatibility_mask_and_images(self.mask_img_, img)
+        check_compatibility_mask_and_images(self.mask_img_, imgs)
 
-        check_same_n_vertices(self.mask_img_.mesh, img.mesh)
+        check_same_n_vertices(self.mask_img_.mesh, imgs.mesh)
 
         if self.reports:
-            self._reporting_data["images"] = img
+            self._reporting_data["images"] = imgs
 
         output = np.empty((1, self.output_dimension_))
-        if len(img.shape) == 2:
-            output = np.empty((img.shape[1], self.output_dimension_))
+        if len(imgs.shape) == 2:
+            output = np.empty((imgs.shape[1], self.output_dimension_))
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name].ravel()
-            output[:, start:stop] = img.data.parts[part_name][mask].T
+            output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
         # signal cleaning here
         output = cache(
@@ -311,9 +315,12 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         return output
 
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
     def fit_transform(
         self,
-        img,
+        imgs,
         y=None,
         confounds=None,
         sample_mask=None,
@@ -322,10 +329,10 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` or \
+        imgs : :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
-            Mesh and data for both hemispheres.
+              Mesh and data for both hemispheres.
 
         y : None
             This parameter is unused. It is solely included for scikit-learn
@@ -350,7 +357,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             shape: (img data shape, total number of vertices)
         """
         del y
-        return self.fit(img).transform(img, confounds, sample_mask)
+        return self.fit(imgs).transform(imgs, confounds, sample_mask)
 
     def inverse_transform(self, signals):
         """Transform extracted signal back to surface object.
