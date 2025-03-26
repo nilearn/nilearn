@@ -6,7 +6,7 @@ from ..common import Benchmark
 from ..utils import apply_mask, load
 
 
-class Masking(Benchmark):
+class CompareMask(Benchmark):
     """
     Comparison between the performance of applying a mask to an image using
     nilearn vs. numpy.
