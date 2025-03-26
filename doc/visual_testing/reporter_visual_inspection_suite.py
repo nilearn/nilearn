@@ -552,14 +552,14 @@ def report_sphere_masker(build_type):
         memory_level=1,
     )
 
-    report_unfitted = masker.generate_report([0, 2])
+    report_unfitted = masker.generate_report(10)
     report_unfitted.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
 
     data = fetch_development_fmri(n_subjects=1)
 
     masker.fit(data.func[0])
 
-    report = masker.generate_report([0, 2])
+    report = masker.generate_report(10)
     report.save_as_html(REPORTS_DIR / "nifti_sphere_masker_fitted.html")
 
     return report_unfitted, report
@@ -718,16 +718,16 @@ def main(args=sys.argv):
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
-    report_surface_masker(build_type)
-    report_surface_label_masker(build_type)
-    report_surface_maps_masker(build_type)
-    report_nifti_masker(build_type)
-    report_nifti_maps_masker(build_type)
-    report_nifti_labels_masker(build_type)
+    # report_surface_masker(build_type)
+    # report_surface_label_masker(build_type)
+    # report_surface_maps_masker(build_type)
+    # report_nifti_masker(build_type)
+    # report_nifti_maps_masker(build_type)
+    # report_nifti_labels_masker(build_type)
     report_sphere_masker(build_type)
-    report_multi_nifti_masker(build_type)
-    report_multi_nifti_labels_masker(build_type)
-    report_multi_nifti_maps_masker(build_type)
+    # report_multi_nifti_masker(build_type)
+    # report_multi_nifti_labels_masker(build_type)
+    # report_multi_nifti_maps_masker(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
@@ -735,11 +735,11 @@ def main(args=sys.argv):
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
-    report_flm_adhd_dmn(build_type)
-    report_flm_bids_features(build_type)
-    report_flm_fiac(build_type)
-    report_slm_oasis(build_type)
-    report_surface_glm(build_type)
+    # report_flm_adhd_dmn(build_type)
+    # report_flm_bids_features(build_type)
+    # report_flm_fiac(build_type)
+    # report_slm_oasis(build_type)
+    # report_surface_glm(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
