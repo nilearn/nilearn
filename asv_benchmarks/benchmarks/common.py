@@ -39,7 +39,6 @@ class Benchmark:
             atlas_path,
             concat,
             interpolation="nearest",
-            copy_header=True,
             force_resample=True,
         )
         for idx in range(1, n_masks + 1):
