@@ -157,7 +157,8 @@ def test_surface_figure():
 
 
 @pytest.mark.skipif(
-    is_plotly_installed(), reason="This test only runs if Plotly is installed."
+    is_plotly_installed(),
+    reason=("This test only runs if Plotly is not installed."),
 )
 def test_plotly_surface_figure_import_error():
     """Test that an ImportError is raised when instantiating \
