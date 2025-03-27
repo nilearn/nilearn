@@ -10,7 +10,7 @@ from nilearn.plotting._utils import (
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.surface._backend import (
-    SurfaceBackend,
+    BaseSurfaceBackend,
     _check_hemispheres,
     _check_surf_map,
     _check_views,
@@ -315,7 +315,7 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
     return data_copy, _threshold(data, threshold, vmin, vmax), vmin, vmax
 
 
-class MatplotlibBackend(SurfaceBackend):
+class MatplotlibBackend(BaseSurfaceBackend):
     def _check_backend_params(self, params):
         pass
 

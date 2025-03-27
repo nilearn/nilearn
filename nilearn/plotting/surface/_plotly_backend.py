@@ -9,7 +9,7 @@ from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._backend import (
     VALID_HEMISPHERES,
-    SurfaceBackend,
+    BaseSurfaceBackend,
     _check_hemispheres,
     _check_surf_map,
     _check_views,
@@ -218,7 +218,7 @@ def _get_view_plot_surf_plotly(hemi, view):
     return _get_camera_view_from_elevation_and_azimut(view)
 
 
-class PlotlyBackend(SurfaceBackend):
+class PlotlyBackend(BaseSurfaceBackend):
     def _check_backend_params(self, params):
         parameters_not_implemented_in_plotly = {
             "avg_method": params["avg_method"],

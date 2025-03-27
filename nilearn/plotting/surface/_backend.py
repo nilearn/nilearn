@@ -42,7 +42,7 @@ def get_surface_backend(engine="matplotlib"):
 
     Returns
     -------
-    backend : :class:`~nilearn.plotting.surface._backend.SurfaceBackend`
+    backend : :class:`~nilearn.plotting.surface._backend.BaseSurfaceBackend`
         The backend for the specified engine.
     """
     if engine == "matplotlib":
@@ -74,7 +74,7 @@ def get_surface_backend(engine="matplotlib"):
         )
 
 
-class SurfaceBackend:
+class BaseSurfaceBackend:
     """A base class that behaves as an interface for Surface plotting
     backend.
 
