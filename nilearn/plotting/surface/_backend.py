@@ -33,6 +33,18 @@ VALID_HEMISPHERES = "left", "right", "both"
 
 
 def get_surface_backend(engine="matplotlib"):
+    """Instantiate and return the required backend engine.
+
+    Parameters
+    ----------
+    engine: :obj:`str`, default='matplotlib'
+        Name of the required backend engine. Can be 'matplotlib' or 'plotly'.
+
+    Returns
+    -------
+    backend : :class:`~nilearn.plotting.surface._backend.SurfaceBackend`
+        The backend for the specified engine.
+    """
     if engine == "matplotlib":
         if is_matplotlib_installed():
             from nilearn.plotting.surface._matplotlib_backend import (
@@ -63,6 +75,12 @@ def get_surface_backend(engine="matplotlib"):
 
 
 class SurfaceBackend:
+    """A base class that behaves as an interface for Surface plotting
+    backend.
+
+    The methods of class should be implemented by each engine used as backend.
+    """
+
     def plot_surf(
         self,
         surf_mesh=None,
