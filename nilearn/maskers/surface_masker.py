@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import warnings
-
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -215,9 +213,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         return self
 
-    def transform(
+    def transform_single_imgs(
         self,
-        img,
+        imgs,
         confounds=None,
         sample_mask=None,
     ):
@@ -225,15 +223,13 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` or \
-              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
-              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+        img : :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres.
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
                     :class:`pathlib.Path`, \
                     :class:`pandas.DataFrame` \
-                    or :obj:`list` of confounds timeseries, default=None
+                    default=None
             Confounds to pass to :func:`nilearn.signal.clean`.
 
         sample_mask : None, Any type compatible with numpy-array indexing, \
@@ -248,18 +244,11 @@ class SurfaceMasker(_BaseSurfaceMasker):
         2D :class:`numpy.ndarray`
             Signal for each element.
             shape: (n samples, total number of vertices)
+
         """
-        check_is_fitted(self)
-
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                UserWarning,
-                stacklevel=2,
-            )
-            self.smoothing_fwhm = None
-
+        # Ignore the mask-computing params: they are not useful and will
+        # just invalid the cache for no good reason
+        # target_shape and target_affine are conveyed implicitly in mask_img
         parameters = get_params(
             self.__class__,
             self,
@@ -271,23 +260,15 @@ class SurfaceMasker(_BaseSurfaceMasker):
             self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
-        if not isinstance(img, list):
-            img = [img]
-        img = concat_imgs(img)
-
-        check_compatibility_mask_and_images(self.mask_img_, img)
-
-        check_same_n_vertices(self.mask_img_.mesh, img.mesh)
-
         if self.reports:
-            self._reporting_data["images"] = img
+            self._reporting_data["images"] = imgs
 
         output = np.empty((1, self.output_dimension_))
-        if len(img.shape) == 2:
-            output = np.empty((img.shape[1], self.output_dimension_))
+        if len(imgs.shape) == 2:
+            output = np.empty((imgs.shape[1], self.output_dimension_))
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name].ravel()
-            output[:, start:stop] = img.data.parts[part_name][mask].T
+            output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
         # signal cleaning here
         output = cache(

@@ -9,12 +9,17 @@ from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn import _utils, image, masking, signal
+from nilearn._utils import logger, stringify_path
+from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image import high_variance_confounds
-
-from .. import _utils, image, masking, signal
-from .._utils import logger, stringify_path
-from .._utils.cache_mixin import CacheMixin, cache
+from nilearn.image import concat_imgs, high_variance_confounds
+from nilearn.surface.surface import (
+    check_same_n_vertices,
+)
 
 
 def filter_and_extract(
@@ -421,3 +426,108 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             surf_img=True, niimg_like=False, masker=True
         )
         return tags
+
+    def transform(self, imgs, confounds=None, sample_mask=None):
+        """Apply mask, spatial and temporal preprocessing.
+
+        Parameters
+        ----------
+        imgs : 1D/2D Surface image
+            Images to process.
+
+        confounds : CSV file or array-like, default=None
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: (number of scans, number of confounds)
+
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
+            shape: (number of scans - number of volumes removed, )
+            Masks the niimgs along time/fourth dimension to perform scrubbing
+            (remove volumes with high motion) and/or non-steady-state volumes.
+            This parameter is passed to signal.clean.
+
+        Returns
+        -------
+        region_signals : 2D numpy.ndarray
+            Signal for each element.
+            shape: (number of scans, number of elements)
+
+        """
+        check_is_fitted(self)
+
+        if not isinstance(imgs, list):
+            imgs = [imgs]
+        imgs = concat_imgs(imgs)
+
+        check_compatibility_mask_and_images(self.mask_img_, imgs)
+
+        check_same_n_vertices(self.mask_img_.mesh, imgs.mesh)
+
+        if self.smoothing_fwhm is not None:
+            warnings.warn(
+                "Parameter smoothing_fwhm "
+                "is not yet supported for surface data",
+                UserWarning,
+                stacklevel=2,
+            )
+            self.smoothing_fwhm = None
+
+        if confounds is None and not self.high_variance_confounds:
+            return self.transform_single_imgs(
+                imgs, confounds=confounds, sample_mask=sample_mask
+            )
+
+        # Compute high variance confounds if requested
+        all_confounds = []
+
+        if self.high_variance_confounds:
+            warnings.warn("'high_variance_confounds' not implemented.")
+            # TODO
+            # hv_confounds = self._cache(high_variance_confounds)(imgs)
+            # all_confounds.append(hv_confounds)
+
+        if confounds is not None:
+            if isinstance(confounds, list):
+                all_confounds += confounds
+            else:
+                all_confounds.append(confounds)
+
+        return self.transform_single_imgs(
+            imgs, confounds=all_confounds, sample_mask=sample_mask
+        )
+
+    @abc.abstractmethod
+    def transform_single_imgs(
+        self, imgs, confounds=None, sample_mask=None, copy=True
+    ):
+        """Extract signals from a single surface image.
+
+        Parameters
+        ----------
+        imgs : 1D/2D Surface image
+            Images to process.
+
+        confounds : CSV file or array-like, default=None
+            This parameter is passed to signal.clean. Please see the related
+            documentation for details.
+            shape: (number of scans, number of confounds)
+
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
+            shape: (number of scans - number of volumes removed, )
+            Masks the niimgs along time/fourth dimension to perform scrubbing
+            (remove volumes with high motion) and/or non-steady-state volumes.
+            This parameter is passed to signal.clean.
+
+        copy : :obj:`bool`, default=True
+            Indicates whether a copy is returned or not.
+
+        Returns
+        -------
+        region_signals : 2D numpy.ndarray
+            Signal for each element.
+            shape: (number of scans, number of elements)
+
+        """
+        raise NotImplementedError()
