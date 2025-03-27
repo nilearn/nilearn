@@ -471,6 +471,27 @@ def test_plot_surf(
     )
 
 
+@pytest.mark.skipif(
+    not is_plotly_installed() or is_kaleido_installed(),
+    reason=("This test only runs if Plotly is installed, but not kaleido."),
+)
+def test_plot_surf_error_when_kaleido_missing(
+    tmp_path, in_memory_mesh, bg_map
+):
+    with pytest.raises(ImportError, match="Saving figures"):
+        engine = "plotly"
+        # Plot with non None output file
+        fname = tmp_path / "tmp.png"
+        plot_surf(
+            in_memory_mesh,
+            bg_map=bg_map,
+            colorbar=True,
+            cbar_tick_format="%i",
+            engine=engine,
+            output_file=str(fname),
+        )
+
+
 @pytest.mark.parametrize("view", ["anterior", "posterior"])
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
 def test_plot_surf_hemi_views_plotly(
