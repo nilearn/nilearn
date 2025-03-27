@@ -32,7 +32,7 @@ VALID_VIEWS = (
 VALID_HEMISPHERES = "left", "right", "both"
 
 
-def get_surface_backend(engine=None):
+def get_surface_backend(engine="matplotlib"):
     if engine == "matplotlib":
         if is_matplotlib_installed():
             from nilearn.plotting.surface._matplotlib_backend import (
