@@ -31,9 +31,9 @@ class MeanImgBenchmark(Benchmark):
     def time_mean_img(self):
         """Time the loading followed by taking the mean."""
         img = load("nilearn")[1]
-        mean_img(img, copy_header=True)
+        mean_img(img)
 
     def peakmem_mean_img(self):
         """Peak memory of loading followed by taking the mean."""
         img = load("nilearn")[1]
-        mean_img(img, copy_header=True)
+        mean_img(img)

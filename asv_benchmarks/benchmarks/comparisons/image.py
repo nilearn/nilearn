@@ -40,12 +40,12 @@ class CompareMean(Benchmark):
     def time_compare_mean(self, loader):
         """Time the loading followed by taking the mean."""
         img = load(loader)[1]
-        mean_img(img, copy_header=True)
+        mean_img(img)
 
     def peakmem_compare_mean(self, loader):
         """Peak memory of loading followed by taking the mean."""
         img = load(loader)[1]
-        mean_img(img, copy_header=True)
+        mean_img(img)
 
 
 class CompareSlice(Benchmark):
