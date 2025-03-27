@@ -365,12 +365,12 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             and hasattr(self, "mask_img_")
         )
 
-    def transform_single_imgs(self, img, confounds=None, sample_mask=None):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object or \
+        imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres.
@@ -394,11 +394,11 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
-        check_compatibility_mask_and_images(self.labels_img, img)
-        check_same_n_vertices(self.labels_img.mesh, img.mesh)
-        img = at_least_2d(img)
+        check_compatibility_mask_and_images(self.labels_img, imgs)
+        check_same_n_vertices(self.labels_img.mesh, imgs.mesh)
+        imgs = at_least_2d(imgs)
         # concatenate data over hemispheres
-        img_data = np.concatenate(list(img.data.parts.values()), axis=0)
+        img_data = np.concatenate(list(imgs.data.parts.values()), axis=0)
 
         labels_data = self._labels_data
         labels = self._labels_

@@ -234,12 +234,12 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
 
-    def transform_single_imgs(self, img, confounds=None, sample_mask=None):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object or \
+        imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
               :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
               :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
             Mesh and data for both hemispheres/parts. The data for each \
@@ -264,11 +264,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             Signal for each region as provided in the maps (via `maps_img`).
             shape: (n_timepoints, n_regions)
         """
+        check_compatibility_mask_and_images(self.maps_img, imgs)
+        check_same_n_vertices(self.maps_img.mesh, imgs.mesh)
+
         # check img data is 2D
-        img.data._check_ndims(2, "img")
+        imgs.data._check_ndims(2, "img")
 
         img_data = np.concatenate(
-            list(img.data.parts.values()), axis=0
+            list(imgs.data.parts.values()), axis=0
         ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
