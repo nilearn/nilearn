@@ -156,7 +156,9 @@ def test_surface_figure():
     assert s.output_file == "bar.png"
 
 
-@pytest.mark.skipif(is_plotly_installed(), reason="Plotly is installed.")
+@pytest.mark.skipif(
+    is_plotly_installed(), reason="This test only runs if Plotly is installed."
+)
 def test_plotly_surface_figure_import_error():
     """Test that an ImportError is raised when instantiating \
        a PlotlySurfaceFigure without having Plotly installed.
@@ -192,8 +194,13 @@ def test_plotly_surface_figure():
 
 
 @pytest.mark.skipif(
-    not is_plotly_installed() or not IPYTHON_INSTALLED,
-    reason=("Plotly and/or Ipython is not installed; required for this test."),
+    not is_plotly_installed()
+    or not IPYTHON_INSTALLED
+    or not is_kaleido_installed(),
+    reason=(
+        "Plotly, Kaleido and/or Ipython is not installed; required for this"
+        " test."
+    ),
 )
 @pytest.mark.parametrize("renderer", ["png", "jpeg", "svg"])
 def test_plotly_show(renderer):
