@@ -8,6 +8,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import (
@@ -308,7 +309,11 @@ class NiftiMapsMasker(BaseMasker):
                     f"But masker only has {n_maps} maps. "
                     f"Setting number of displayed maps to {n_maps}."
                 )
-                warnings.warn(category=UserWarning, message=msg)
+                warnings.warn(
+                    category=UserWarning,
+                    message=msg,
+                    stacklevel=find_stack_level(),
+                )
                 self.displayed_maps = n_maps
             maps_to_be_displayed = range(self.displayed_maps)
 
@@ -332,7 +337,7 @@ class NiftiMapsMasker(BaseMasker):
                 "No image provided to fit in NiftiMapsMasker. "
                 "Plotting only spatial maps for reporting."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
             for component in maps_to_be_displayed:
                 display = plotting.plot_stat_map(
@@ -347,7 +352,7 @@ class NiftiMapsMasker(BaseMasker):
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
 
         for component in maps_to_be_displayed:

@@ -19,6 +19,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     constrained_layout_kwargs,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -57,7 +58,7 @@ def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
             "masked labels image only contains "
             f"{len(labels_after_mask)} labels "
             "(including background).",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
     labels = np.unique(labels_data)
     labels = labels[labels != background_label]
@@ -425,7 +426,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "Parameter smoothing_fwhm "
                 "is not yet supported for surface data",
                 UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
 

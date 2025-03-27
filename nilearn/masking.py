@@ -9,6 +9,7 @@ from scipy.ndimage import binary_dilation, binary_erosion
 
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import cache
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
@@ -243,7 +244,7 @@ def _post_process_mask(
         warnings.warn(
             f"Computed an empty mask. {warning_msg}",
             _MaskWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if connected and mask_any:
         mask = largest_connected_component(mask)
