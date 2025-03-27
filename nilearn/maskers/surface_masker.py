@@ -246,9 +246,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
             shape: (n samples, total number of vertices)
 
         """
-        # Ignore the mask-computing params: they are not useful and will
-        # just invalid the cache for no good reason
-        # target_shape and target_affine are conveyed implicitly in mask_img
         parameters = get_params(
             self.__class__,
             self,
