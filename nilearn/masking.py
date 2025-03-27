@@ -848,7 +848,7 @@ def apply_mask(
 
     mask_img : Niimg-like or SurfaceImage object
         See :ref:`extracting_data`.
-        Mask array with True where a voxel / vertex should be used.
+        Mask array with True value where a voxel / vertex should be used.
 
     dtype : numpy dtype or 'f', default="f"
         The dtype of the output, if 'f', any float output is acceptable
