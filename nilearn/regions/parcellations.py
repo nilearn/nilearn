@@ -19,8 +19,8 @@ from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
 from nilearn.surface import SurfaceImage
 
-from .hierarchical_kmeans_clustering import HierarchicalKMeans
-from .rena_clustering import (
+from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
+from nilearn.regions.rena_clustering import (
     ReNA,
     make_edges_surface,
 )
