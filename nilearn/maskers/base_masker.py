@@ -462,7 +462,8 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 
-        check_same_n_vertices(self.mask_img_.mesh, imgs.mesh)
+        if self.mask_img_ is not None:
+            check_same_n_vertices(self.mask_img_.mesh, imgs.mesh)
 
         if self.smoothing_fwhm is not None:
             warnings.warn(
@@ -472,6 +473,9 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 stacklevel=2,
             )
             self.smoothing_fwhm = None
+
+        if self.reports:
+            self._reporting_data["images"] = imgs
 
         if confounds is None and not self.high_variance_confounds:
             return self.transform_single_imgs(

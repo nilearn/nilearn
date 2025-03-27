@@ -223,13 +223,16 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage`
-            Mesh and data for both hemispheres.
+        imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
+              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+            Mesh and data for both hemispheres/parts. The data for each \
+            hemisphere is of shape (n_vertices_per_hemisphere, n_timepoints).
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
                     :class:`pathlib.Path`, \
                     :class:`pandas.DataFrame` \
-                    default=None
+                    or :obj:`list` of confounds timeseries, default=None
             Confounds to pass to :func:`nilearn.signal.clean`.
 
         sample_mask : None, Any type compatible with numpy-array indexing, \
@@ -256,9 +259,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if self.clean_args is None:
             self.clean_args = {}
         parameters["clean_args"] = self.clean_args
-
-        if self.reports:
-            self._reporting_data["images"] = imgs
 
         output = np.empty((1, self.output_dimension_))
         if len(imgs.shape) == 2:
