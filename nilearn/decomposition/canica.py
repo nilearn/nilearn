@@ -10,6 +10,7 @@ from sklearn.decomposition import fastica
 from sklearn.utils import check_random_state
 
 from nilearn._utils import fill_doc
+from nilearn._utils.logger import find_stack_level
 
 from ._multi_pca import _MultiPCA
 
@@ -243,7 +244,7 @@ class CanICA(_MultiPCA):
                     "Threshold should be decreased or "
                     "number of components should be adjusted.",
                     UserWarning,
-                    stacklevel=4,
+                    stacklevel=find_stack_level(),
                 )
             else:
                 threshold = scoreatpercentile(abs_ica_maps, percentile)

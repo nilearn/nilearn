@@ -4,6 +4,8 @@ import warnings
 
 import pandas as pd
 
+from nilearn._utils.logger import find_stack_level
+
 from . import load_confounds_components as components
 from .load_confounds_utils import (
     MissingConfoundError,
@@ -60,7 +62,8 @@ def _check_strategy(strategy):
 
     if len(strategy) == 0:
         warnings.warn(
-            "strategy is empty, confounds will return None.", stacklevel=3
+            "strategy is empty, confounds will return None.",
+            stacklevel=find_stack_level(),
         )
 
     for conf in strategy:
@@ -70,7 +73,7 @@ def _check_strategy(strategy):
                 "doesn't need to be supplied as part of the "
                 "strategy. Supplying non_steady_state in strategy "
                 "will not have additional effect.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
         if conf not in all_confounds:
             raise ValueError(f"{conf} is not a supported type of confounds.")
@@ -318,7 +321,7 @@ def load_confounds(
         warnings.warn(
             category=DeprecationWarning,
             message=fd_threshold_default,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if "scrub" in strategy and std_dvars_threshold == 3:
         std_dvars_threshold_default = (
@@ -330,7 +333,7 @@ def load_confounds(
         warnings.warn(
             category=DeprecationWarning,
             message=std_dvars_threshold_default,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     # load confounds per image provided
     img_files, flag_single = sanitize_confounds(img_files)

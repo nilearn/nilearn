@@ -2,6 +2,8 @@
 
 import warnings
 
+from nilearn._utils.logger import find_stack_level
+
 from . import load_confounds
 
 # defining a preset strategy with python dictionary:
@@ -220,7 +222,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
             "The following parameters are not needed for the "
             f"selected strategy '{denoise_strategy}': {not_needed}; "
             f"parameters accepted: {check_parameters}",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     return load_confounds(img_files, **user_parameters)
 
