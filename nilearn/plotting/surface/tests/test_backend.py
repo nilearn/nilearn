@@ -63,8 +63,8 @@ def test_get_surface_backend_plotly_not_installed():
 
 
 def test_get_surface_backend_unknown_error():
-    """Tests to see if get_surface_backend raises error when plotly is not
-    installed.
+    """Tests to see if get_surface_backend raises error when the specified
+    backend is not implemented.
     """
     with pytest.raises(ValueError, match="Unknown plotting"):
         get_surface_backend("unknown")
