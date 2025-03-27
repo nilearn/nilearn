@@ -863,7 +863,7 @@ def apply_mask(
 
         .. warning::
 
-            Not yet implemented to for surface images
+            Not yet implemented for surface images
 
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and
