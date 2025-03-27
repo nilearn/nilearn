@@ -210,7 +210,7 @@ def engine():
     return ENGINE
 
 
-class TestPlotlyBackend(BaseTestSurfaceBackend):
+class TestMatplotlibBackend(BaseTestSurfaceBackend):
     """Extend BaseTestSurfaceBackend class to run all test methods for
     'matplotlib' engine.
 
