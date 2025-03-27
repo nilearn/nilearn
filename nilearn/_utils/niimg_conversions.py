@@ -9,6 +9,7 @@ import numpy as np
 from joblib import Memory
 
 import nilearn as ni
+from nilearn._utils.logger import find_stack_level
 
 from .cache_mixin import cache
 from .exceptions import DimensionError
@@ -166,7 +167,7 @@ def iter_check_niimg(
                         "Affine is different across subjects."
                         " Realignement on first subject "
                         "affine forced",
-                        stacklevel=3,
+                        stacklevel=find_stack_level(),
                     )
                 niimg = cache(
                     image.resample_img,
