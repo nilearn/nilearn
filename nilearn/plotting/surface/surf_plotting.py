@@ -1552,6 +1552,9 @@ def plot_surf_roi(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    %(colorbar)s
+        Default=True
+
     kwargs : :obj:`dict`, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 

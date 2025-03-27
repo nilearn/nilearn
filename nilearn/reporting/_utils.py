@@ -1,36 +1,8 @@
 """Utility functions that do not require matplotlib."""
 
-import warnings
 from collections import OrderedDict
 
 import pandas as pd
-
-
-def check_report_dims(report_size):
-    """Warns user & reverts to default if report dimensions are non-numerical.
-
-    Parameters
-    ----------
-    report_size : Tuple[int, int]
-        Report width, height in jupyter notebook.
-
-    Returns
-    -------
-    report_size : Tuple[int, int]
-        Valid values for report width, height in jupyter notebook.
-
-    """
-    width, height = report_size
-    try:
-        width = int(width)
-        height = int(height)
-    except ValueError:
-        warnings.warn(
-            "Report size has invalid values. Using default 1600x800",
-            stacklevel=3,
-        )
-        width, height = (1600, 800)
-    return width, height
 
 
 def dataframe_to_html(df, precision, **kwargs):

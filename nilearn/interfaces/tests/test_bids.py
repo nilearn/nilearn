@@ -420,6 +420,7 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
         "stat-errorts_statmap.nii.gz",
         "stat-rsquared_statmap.nii.gz",
         "statmap.json",
+        "mask.nii.gz",
         "report.html",
     ]
 
@@ -600,6 +601,7 @@ def test_save_glm_to_bids_contrast_definitions(
         "run-2_stat-errorts_statmap.nii.gz",
         "run-2_stat-rsquared_statmap.nii.gz",
         "statmap.json",
+        "mask.nii.gz",
         "report.html",
     ]
     if is_matplotlib_installed():
@@ -655,6 +657,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
         "stat-errorts_statmap.nii.gz",
         "stat-rsquared_statmap.nii.gz",
         "statmap.json",
+        "mask.nii.gz",
         "report.html",
     ]
     if is_matplotlib_installed():
@@ -812,6 +815,8 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
         "sub-01_ses-01_task-main_run-01_space-MNI_stat-rsquared_statmap.nii.gz",
         "sub-01_ses-02_task-main_run-02_space-MNI_design.tsv",
         "sub-01_ses-01_task-main_run-02_space-MNI_design.json",
+        # mask is common to all sessions and runs
+        "sub-01_task-main_space-MNI_mask.nii.gz",
     ]
     if is_matplotlib_installed():
         EXPECTED_FILENAME_ENDINGS.extend(
@@ -882,6 +887,7 @@ def test_save_glm_to_bids_infer_filenames_overide(tmp_path, prefix):
     )
 
     EXPECTED_FILENAME_ENDINGS = [
+        "mask.nii.gz",
         "contrast-c0_stat-z_statmap.nii.gz",
         "contrast-c0_results.tsv",
         "contrast-c0_results.json",
