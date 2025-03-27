@@ -3,7 +3,6 @@
 import warnings
 
 from nilearn._utils.logger import find_stack_level
-
 from nilearn.interfaces.fmriprep import load_confounds
 
 # defining a preset strategy with python dictionary:

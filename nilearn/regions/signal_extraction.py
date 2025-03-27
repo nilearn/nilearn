@@ -11,10 +11,10 @@ import numpy as np
 from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
+from nilearn import _utils, masking
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_reduction_strategy
 
-from nilearn import _utils, masking
 from .._utils.niimg import safe_get_data
 from ..image import new_img_like
 

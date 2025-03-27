@@ -15,7 +15,6 @@ from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.helpers import check_copy_header
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
-
 from nilearn.image.image import copy_img, crop_img
 
 ###############################################################################

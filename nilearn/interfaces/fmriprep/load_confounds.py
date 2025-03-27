@@ -5,7 +5,6 @@ import warnings
 import pandas as pd
 
 from nilearn._utils.logger import find_stack_level
-
 from nilearn.interfaces.fmriprep import load_confounds_components as components
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
     MissingConfoundError,
