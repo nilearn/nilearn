@@ -25,7 +25,7 @@ message = (
 warnings.warn(message, DeprecationWarning, stacklevel=find_stack_level())
 
 
-from .base_masker import BaseMasker
+from nilearn.input_data.base_masker import BaseMasker
 from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_labels_masker import NiftiLabelsMasker
 from .nifti_maps_masker import NiftiMapsMasker
