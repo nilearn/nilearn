@@ -502,9 +502,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
 
     @abc.abstractmethod
-    def transform_single_imgs(
-        self, imgs, confounds=None, sample_mask=None, copy=True
-    ):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single surface image.
 
         Parameters
@@ -523,9 +521,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
             This parameter is passed to signal.clean.
-
-        copy : :obj:`bool`, default=True
-            Indicates whether a copy is returned or not.
 
         Returns
         -------
