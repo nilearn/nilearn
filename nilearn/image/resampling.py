@@ -16,7 +16,7 @@ from nilearn._utils.helpers import check_copy_header
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 
-from .image import copy_img, crop_img
+from nilearn.image.image import copy_img, crop_img
 
 ###############################################################################
 # Affine utils
