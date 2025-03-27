@@ -481,14 +481,11 @@ def test_plot_surf_error_when_kaleido_missing(
     with pytest.raises(ImportError, match="Saving figures"):
         engine = "plotly"
         # Plot with non None output file
-        fname = tmp_path / "tmp.png"
         plot_surf(
             in_memory_mesh,
             bg_map=bg_map,
-            colorbar=True,
-            cbar_tick_format="%i",
             engine=engine,
-            output_file=str(fname),
+            output_file=tmp_path / "tmp.png",
         )
 
 
