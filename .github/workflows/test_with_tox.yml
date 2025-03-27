@@ -52,7 +52,8 @@ jobs:
         name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
         runs-on: ${{ matrix.os }}
         strategy:
-            fail-fast: true
+            # reset to true before merging
+            fail-fast: false
             matrix:
                 description: [latest dependencies]
                 py: ['3.14', '3.13', '3.12', '3.11', '3.10', '3.9']
