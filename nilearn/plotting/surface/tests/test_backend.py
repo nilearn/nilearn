@@ -68,3 +68,35 @@ def test_get_surface_backend_unknown_error():
     """
     with pytest.raises(ValueError, match="Unknown plotting"):
         get_surface_backend("unknown")
+
+
+class BaseTestSurfaceBackend:
+    """A base test class to test classes that extend from
+    nilearn.plotting.surface._backend.BaseSurfaceBackend.
+
+    For each concrete class that extends
+    nilearn.plotting.surface._backend.BaseSurfaceBackend, a test class that
+    extends this base class should be created in the corresponding backend
+    engine test module.
+
+    The engine test module should also contain a fixture with name 'engine'
+    that returns the name of the engine.
+
+    If a method for a specific engine is not implemented or should be tested
+    differently than the test in this base class, it should be overridden in
+    the concrete test class in the engine test module.
+    """
+
+    def test_get_surface_backend(self, engine):
+        """Tests if an engine backend instance is returned for the specified
+        engine.
+        """
+        assert get_surface_backend(engine) is not None
+
+    def test_plot_surf(self, engine, in_memory_mesh):
+        """Smoke test for BaseSurfaceBackend.plot_surf for implemented
+        engines.
+        """
+        assert (
+            get_surface_backend(engine).plot_surf(in_memory_mesh) is not None
+        )

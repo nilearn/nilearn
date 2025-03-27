@@ -7,9 +7,12 @@ from nilearn.plotting.surface._plotly_backend import (
     _get_camera_view_from_string_view,
     _get_view_plot_surf_plotly,
 )
+from nilearn.plotting.surface.tests.test_backend import BaseTestSurfaceBackend
+
+ENGINE = "plotly"
 
 pytest.importorskip(
-    "plotly",
+    ENGINE,
     reason="Plotly is not installed. It is required to run the tests!",
 )
 
@@ -206,3 +209,23 @@ def test_configure_title_plotly():
     assert config["yanchor"] == "top"
     assert config["font"]["size"] == 22
     assert config["font"]["color"] == "green"
+
+
+@pytest.fixture
+def engine():
+    return ENGINE
+
+
+class TestPlotlyBackend(BaseTestSurfaceBackend):
+    """Extend BaseTestSurfaceBackend class to run all test methods for 'plotly'
+    engine.
+
+    This class should override the test methods of BaseTestSurfaceBackend if
+    the behavior for 'plotly' engine differs from the behavior expected in
+    BaseTestSurfaceBackend.
+
+    Otherwise all methods will be run injecting the engine fixture defined in
+    this module.
+    """
+
+    pass
