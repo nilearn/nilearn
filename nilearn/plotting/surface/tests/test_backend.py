@@ -66,7 +66,7 @@ def test_get_surface_backend_unknown_error():
     """Tests to see if get_surface_backend raises error when the specified
     backend is not implemented.
     """
-    with pytest.raises(ValueError, match="Unknown plotting"):
+    with pytest.raises(ValueError, match="Unknown plotting engine"):
         get_surface_backend("unknown")
 
 
