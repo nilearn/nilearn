@@ -156,7 +156,10 @@ def test_surface_figure():
     assert s.output_file == "bar.png"
 
 
-@pytest.mark.skipif(is_plotly_installed(), reason="Plotly is installed.")
+@pytest.mark.skipif(
+    is_plotly_installed(),
+    reason=("This test only runs if Plotly is not installed."),
+)
 def test_plotly_surface_figure_import_error():
     """Test that an ImportError is raised when instantiating \
        a PlotlySurfaceFigure without having Plotly installed.
@@ -192,8 +195,13 @@ def test_plotly_surface_figure():
 
 
 @pytest.mark.skipif(
-    not is_plotly_installed() or not IPYTHON_INSTALLED,
-    reason=("Plotly and/or Ipython is not installed; required for this test."),
+    not is_plotly_installed()
+    or not IPYTHON_INSTALLED
+    or not is_kaleido_installed(),
+    reason=(
+        "Plotly, Kaleido and/or Ipython is not installed; required for this"
+        " test."
+    ),
 )
 @pytest.mark.parametrize("renderer", ["png", "jpeg", "svg"])
 def test_plotly_show(renderer):
@@ -462,6 +470,24 @@ def test_plot_surf(
         cbar_tick_format="%i",
         engine=engine,
     )
+
+
+@pytest.mark.skipif(
+    not is_plotly_installed() or is_kaleido_installed(),
+    reason=("This test only runs if Plotly is installed, but not kaleido."),
+)
+def test_plot_surf_error_when_kaleido_missing(
+    tmp_path, in_memory_mesh, bg_map
+):
+    with pytest.raises(ImportError, match="Saving figures"):
+        engine = "plotly"
+        # Plot with non None output file
+        plot_surf(
+            in_memory_mesh,
+            bg_map=bg_map,
+            engine=engine,
+            output_file=tmp_path / "tmp.png",
+        )
 
 
 @pytest.mark.parametrize("view", ["anterior", "posterior"])

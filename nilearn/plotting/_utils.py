@@ -7,6 +7,15 @@ import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
 
+def engine_warning(engine):
+    warning = (
+        f"'{engine}' is not installed. To be able to use '{engine}' as "
+        "plotting engine for 'nilearn.plotting' package:\n"
+        " pip install 'nilearn[plotting]'"
+    )
+    warn(warning)
+
+
 def save_figure_if_needed(fig, output_file):
     """Save figure if an output file value is given.
 

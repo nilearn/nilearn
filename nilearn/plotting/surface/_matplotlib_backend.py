@@ -1,21 +1,32 @@
 from warnings import warn
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import LinearSegmentedColormap, Normalize
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
+    save_figure_if_needed,
 )
+from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.surface._backend import (
+    BaseSurfaceBackend,
     _check_hemispheres,
     _check_surf_map,
     _check_views,
 )
 from nilearn.surface import load_surf_data
+
+try:
+    import matplotlib as mpl
+    import matplotlib.pyplot as plt
+    from matplotlib.cm import ScalarMappable
+    from matplotlib.colorbar import make_axes
+    from matplotlib.colors import LinearSegmentedColormap, Normalize
+except ImportError:
+    from nilearn.plotting._utils import engine_warning
+
+    engine_warning("matplotlib")
 
 MATPLOTLIB_VIEWS = {
     "left": {
@@ -302,3 +313,170 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
     """
     data_copy, vmin, vmax = _rescale(data, vmin, vmax)
     return data_copy, _threshold(data, threshold, vmin, vmax), vmin, vmax
+
+
+class MatplotlibBackend(BaseSurfaceBackend):
+    def _check_backend_params(self, params):
+        pass
+
+    def _plot_surf(
+        self,
+        coords,
+        faces,
+        surf_map=None,
+        bg_map=None,
+        hemi="left",
+        view=None,
+        cmap=None,
+        symmetric_cmap=False,
+        colorbar=True,
+        avg_method=None,
+        threshold=None,
+        alpha=None,
+        bg_on_data=False,
+        darkness=0.7,
+        vmin=None,
+        vmax=None,
+        cbar_vmin=None,
+        cbar_vmax=None,
+        cbar_tick_format="auto",
+        title=None,
+        title_font_size=18,
+        output_file=None,
+        axes=None,
+        figure=None,
+    ):
+        self._check_backend_params(locals())
+
+        # setting defaults
+        if avg_method is None:
+            avg_method = "mean"
+        if alpha is None:
+            alpha = "auto"
+
+        if cbar_tick_format == "auto":
+            cbar_tick_format = "%.2g"
+
+        _default_figsize = [4, 5]
+        limits = [coords.min(), coords.max()]
+
+        # Get elevation and azimut from view
+        elev, azim = _get_view_plot_surf_matplotlib(hemi, view)
+
+        # if no cmap is given, set to matplotlib default
+        if cmap is None:
+            cmap = plt.get_cmap(plt.rcParamsDefault["image.cmap"])
+        # if cmap is given as string, translate to matplotlib cmap
+        elif isinstance(cmap, str):
+            cmap = plt.get_cmap(cmap)
+
+        figsize = _default_figsize
+        # Leave space for colorbar
+        if colorbar:
+            figsize[0] += 0.7
+        # initiate figure and 3d axes
+        if axes is None:
+            if figure is None:
+                figure = plt.figure(figsize=figsize)
+            axes = figure.add_axes((0, 0, 1, 1), projection="3d")
+        elif figure is None:
+            figure = axes.get_figure()
+        axes.set_xlim(*limits)
+        axes.set_ylim(*limits)
+
+        try:
+            axes.view_init(elev=elev, azim=azim)
+        except AttributeError:
+            raise AttributeError(
+                "'Axes' object has no attribute 'view_init'.\n"
+                "Remember that the projection must be '3d'.\n"
+                "For example:\n"
+                "\t plt.subplots(subplot_kw={'projection': '3d'})"
+            )
+        except Exception as e:  # pragma: no cover
+            raise e
+
+        axes.set_axis_off()
+
+        # plot mesh without data
+        p3dcollec = axes.plot_trisurf(
+            coords[:, 0],
+            coords[:, 1],
+            coords[:, 2],
+            triangles=faces,
+            linewidth=0.1,
+            antialiased=False,
+            color="white",
+        )
+
+        # reduce viewing distance to remove space around mesh
+        axes.set_box_aspect(None, zoom=1.3)
+
+        bg_face_colors = _compute_facecolors_matplotlib(
+            bg_map, faces, coords.shape[0], darkness, alpha
+        )
+        if surf_map is not None:
+            surf_map_faces = _compute_surf_map_faces_matplotlib(
+                surf_map,
+                faces,
+                avg_method,
+                coords.shape[0],
+                bg_face_colors.shape[0],
+            )
+            surf_map_faces, kept_indices, vmin, vmax = _threshold_and_rescale(
+                surf_map_faces, threshold, vmin, vmax
+            )
+
+            surf_map_face_colors = cmap(surf_map_faces)
+            # set transparency of voxels under threshold to 0
+            surf_map_face_colors[~kept_indices, 3] = 0
+            if bg_on_data:
+                # if need be, set transparency of voxels above threshold to 0.7
+                # so that background map becomes visible
+                surf_map_face_colors[kept_indices, 3] = 0.7
+
+            face_colors = mix_colormaps(surf_map_face_colors, bg_face_colors)
+
+            if colorbar:
+                cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
+                cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
+                ticks = _get_ticks_matplotlib(
+                    cbar_vmin, cbar_vmax, cbar_tick_format, threshold
+                )
+                our_cmap, norm = _get_cmap_matplotlib(
+                    cmap, vmin, vmax, cbar_tick_format, threshold
+                )
+                bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
+
+                # we need to create a proxy mappable
+                proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
+                proxy_mappable.set_array(surf_map_faces)
+                figure._colorbar_ax, _ = make_axes(
+                    axes,
+                    location="right",
+                    fraction=0.15,
+                    shrink=0.5,
+                    pad=0.0,
+                    aspect=10.0,
+                )
+                figure._cbar = figure.colorbar(
+                    proxy_mappable,
+                    cax=figure._colorbar_ax,
+                    ticks=ticks,
+                    boundaries=bounds,
+                    spacing="proportional",
+                    format=cbar_tick_format,
+                    orientation="vertical",
+                )
+
+            # fix floating point bug causing highest to sometimes surpass 1
+            # (for example 1.0000000000000002)
+            face_colors[face_colors > 1] = 1
+
+            p3dcollec.set_facecolors(face_colors)
+            p3dcollec.set_edgecolors(face_colors)
+
+        if title is not None:
+            axes.set_title(title)
+
+        return save_figure_if_needed(figure, output_file)
