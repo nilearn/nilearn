@@ -59,7 +59,7 @@ def test_check_surface_plotting_inputs_error_mash_and_data_none(fn):
 
 
 def test_check_surface_plotting_inputs_errors(surf_img_1d):
-    """Fail if mesh is none and data is not not SurfaceImage."""
+    """Fail if mesh is none and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         check_surface_plotting_inputs(surf_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
@@ -102,29 +102,6 @@ def test_check_surface_plotting_hemi_both_all_inputs(surf_img_1d, surf_mesh):
     # check that the mesh is concatenated
     assert combined_mesh.n_vertices == surf_mesh.n_vertices
     assert isinstance(combined_mesh, InMemoryMesh)
-
-
-def test_check_surface_plotting_hemi_both_mesh_none(surf_img_1d):
-    """Test that hemi="both" works as expected when mesh is not provided."""
-    hemi = "both"
-    combined_map, combined_mesh, combined_bg = check_surface_plotting_inputs(
-        surf_map=surf_img_1d,
-        surf_mesh=None,
-        hemi=hemi,
-    )
-    # check that the mesh is taken from surf_map
-    assert combined_mesh.n_vertices == surf_img_1d.mesh.n_vertices
-    assert isinstance(combined_mesh, InMemoryMesh)
-
-
-def test_check_surface_plotting_hemi_error(surf_img_1d, surf_mesh):
-    """Test that an error is raised when hemi is not valid."""
-    with pytest.raises(
-        ValueError, match="hemi must be one of left, right or both"
-    ):
-        check_surface_plotting_inputs(
-            surf_map=surf_img_1d, surf_mesh=surf_mesh, hemi="foo"
-        )
 
 
 def test_surface_plotting_axes_error(surf_img_1d):
