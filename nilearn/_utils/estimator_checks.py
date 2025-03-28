@@ -310,6 +310,7 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_transformer)
         yield (clone(estimator), check_masker_compatibility_mask_image)
+        yield (clone(estimator), check_masker_empty_data_messages)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -587,6 +588,25 @@ def check_masker_refit(estimator):
     else:
         with pytest.raises(AssertionError):
             assert_surface_image_equal(fitted_mask_1, fitted_mask_2)
+
+
+def check_masker_empty_data_messages(estimator):
+    if accept_niimg_input(estimator):
+        # using larger images to be compatible
+        # with regions extraction tests
+        # TODO refactor a common fixture for "large 3D shape"
+        shape = (29, 30, 31)
+        data = np.empty(shape)
+        imgs = Nifti1Image(data, _affine_eye())
+    else:
+        imgs = _make_surface_img()
+        data = {
+            part: np.empty(imgs.data.parts[part].shape)
+            for part in imgs.data.parts
+        }
+        imgs = SurfaceImage(imgs.mesh, data)
+
+    estimator.fit(imgs)
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------
