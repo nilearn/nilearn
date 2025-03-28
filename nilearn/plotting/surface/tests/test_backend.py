@@ -87,16 +87,8 @@ class BaseTestSurfaceBackend:
     the concrete test class in the engine test module.
     """
 
-    def test_get_surface_backend(self, engine):
-        """Tests if an engine backend instance is returned for the specified
-        engine.
-        """
-        assert get_surface_backend(engine) is not None
-
     def test_plot_surf(self, engine, in_memory_mesh):
         """Smoke test for BaseSurfaceBackend.plot_surf for implemented
         engines.
         """
-        assert (
-            get_surface_backend(engine).plot_surf(in_memory_mesh) is not None
-        )
+        assert engine.plot_surf(in_memory_mesh) is not None

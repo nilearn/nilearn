@@ -4,6 +4,7 @@ import pytest
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
+    MatplotlibBackend,
     _compute_facecolors_matplotlib,
     _get_bounds,
     _get_ticks_matplotlib,
@@ -207,7 +208,7 @@ def test_compute_facecolors_matplotlib_deprecation():
 
 @pytest.fixture
 def engine():
-    return ENGINE
+    return MatplotlibBackend()
 
 
 class TestMatplotlibBackend(BaseTestSurfaceBackend):

@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 from nilearn.plotting.surface._plotly_backend import (
+    PlotlyBackend,
     _configure_title_plotly,
     _get_camera_view_from_elevation_and_azimut,
     _get_camera_view_from_string_view,
@@ -213,7 +214,7 @@ def test_configure_title_plotly():
 
 @pytest.fixture
 def engine():
-    return ENGINE
+    return PlotlyBackend()
 
 
 class TestPlotlyBackend(BaseTestSurfaceBackend):
