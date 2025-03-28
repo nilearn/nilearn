@@ -538,7 +538,7 @@ def mean_img(
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
+    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`~nilearn.surface.SurfaceImage`
         Mean image.
 
     See Also
@@ -792,7 +792,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
     Returns
     -------
-    Niimg-like object
+    Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
         A loaded image with the same file type (and, optionally, header)
         as the reference image.
 
@@ -1611,11 +1611,17 @@ def concat_imgs(
     auto_resample=False,
     verbose=0,
 ):
-    """Concatenate a list of 3D/4D niimgs of varying lengths.
+    """Concatenate a list of images of varying lengths.
 
-    The niimgs list can contain niftis/paths to images of varying dimensions
-    (i.e., 3D or 4D) as well as different 3D shapes and affines, as they
-    will be matched to the first image in the list if auto_resample=True.
+    The image list can contain:
+
+    - Niimg-like objects of varying dimensions (i.e., 3D or 4D)
+      as well as different 3D shapes and affines,
+      as they will be matched to the first image in the list
+      if ``auto_resample=True``.
+
+    - surface images of varying dimensions (i.e., 1D or 2D)
+      but with same number of vertices
 
     Parameters
     ----------
@@ -1643,7 +1649,8 @@ def concat_imgs(
 
     Returns
     -------
-    concatenated : nibabel.Nifti1Image
+    concatenated : :obj:`~nibabel.nifti1.Nifti1Image` \
+                   or :obj:`~nilearn.surface.SurfaceImage`
         A single image.
 
     See Also
