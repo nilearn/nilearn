@@ -13,6 +13,7 @@ from nilearn._utils import constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -280,6 +281,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             get_data(self.mask_img) if self.mask_img is not None else None
         )
 
+        parameters = get_params(
+            self.__class__,
+            self,
+        )
+        if self.clean_args is None:
+            self.clean_args = {}
+        parameters["clean_args"] = self.clean_args
+
         # apply mask if provided
         # and then extract signal via least square regression
         if mask_data is not None:
@@ -507,7 +516,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             warnings.warn(
                 "Plotly is not installed. "
                 "Switching to matplotlib for report generation.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         if hasattr(self, "_report_content"):
             self._report_content["engine"] = engine
@@ -567,7 +576,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                     f"But masker only has {n_maps} maps. "
                     f"Setting number of displayed maps to {n_maps}."
                 )
-                warnings.warn(category=UserWarning, message=msg, stacklevel=6)
+                warnings.warn(
+                    category=UserWarning,
+                    message=msg,
+                    stacklevel=find_stack_level(),
+                )
                 self.displayed_maps = n_maps
             maps_to_be_displayed = range(self.displayed_maps)
 
@@ -589,7 +602,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "SurfaceMapsMasker has not been transformed (via transform() "
                 "method) on any image yet. Plotting only maps for reporting."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
 
         for roi in maps_to_be_displayed:
             roi = index_img(maps_img, roi)

@@ -12,6 +12,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import _utils, image, masking, signal
 from nilearn._utils import logger, stringify_path
 from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -85,6 +86,7 @@ def filter_and_extract(
             "Until then, 3D images will be coerced to 2D arrays, with a "
             "singleton first dimension representing time.",
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
     imgs = _utils.check_niimg(
@@ -357,7 +359,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             "Generation of a mask has been"
             " requested (y != None) while a mask has"
             " been provided at masker creation. Given mask"
-            " will be used."
+            " will be used.",
+            stacklevel=find_stack_level(),
         )
         return self.fit(**fit_params).transform(
             X, confounds=confounds, sample_mask=sample_mask
@@ -470,7 +473,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 "Parameter smoothing_fwhm "
                 "is not yet supported for surface data",
                 UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
 
@@ -486,7 +489,10 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         all_confounds = []
 
         if self.high_variance_confounds:
-            warnings.warn("'high_variance_confounds' not implemented.")
+            warnings.warn(
+                "'high_variance_confounds' not implemented.",
+                stacklevel=find_stack_level(),
+            )
             # TODO
             # hv_confounds = self._cache(high_variance_confounds)(imgs)
             # all_confounds.append(hv_confounds)

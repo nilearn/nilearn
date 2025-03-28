@@ -2,6 +2,7 @@
 
 import inspect
 import traceback
+from pathlib import Path
 
 from sklearn.base import BaseEstimator
 
@@ -132,3 +133,35 @@ def compose_err_msg(msg, **kwargs):
             updated_msg += f"\n{k}: {v}"
 
     return updated_msg
+
+
+def find_stack_level() -> int:
+    """
+    Find the first place in the stack that is not inside nilearn
+    (tests notwithstanding).
+
+    Taken from the pandas codebase.
+    https://github.com/pandas-dev/pandas/tree/main/pandas/util/_exceptions.py#L37
+    """
+    import nilearn as nil
+
+    pkg_dir = Path(nil.__file__).parent
+
+    # https://stackoverflow.com/questions/17407119/python-inspect-stack-is-slow
+    frame = inspect.currentframe()
+    try:
+        n = 0
+        while frame:
+            filename = inspect.getfile(frame)
+            if filename.startswith(str(pkg_dir)) and not Path(
+                filename
+            ).name.startswith("test_"):
+                frame = frame.f_back
+                n += 1
+            else:
+                break
+    finally:
+        # See note in
+        # https://docs.python.org/3/library/inspect.html#inspect.Traceback
+        del frame
+    return n
