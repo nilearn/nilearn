@@ -406,6 +406,15 @@ def test_plot_surf_engine_error(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="foo")
 
 
+@pytest.mark.skipif(
+    is_plotly_installed(),
+    reason="This test is run only if plotly is not installed.",
+)
+def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
+    with pytest.raises(ImportError, match="Using engine"):
+        plot_surf(in_memory_mesh, engine="plotly")
+
+
 @pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf(
     matplotlib_pyplot, engine, tmp_path, in_memory_mesh, bg_map
