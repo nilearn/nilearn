@@ -1621,6 +1621,7 @@ def concat_imgs(
       if ``auto_resample=True``.
 
     - surface images of varying dimensions (i.e., 1D or 2D)
+      but with same number of vertices
 
     Parameters
     ----------
