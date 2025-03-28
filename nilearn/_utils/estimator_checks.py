@@ -533,9 +533,16 @@ def check_masker_clean(estimator):
 def check_masker_transformer(estimator):
     """Replace sklearn _check_transformer for maskers.
 
+    - for maskers transform is in the base class and
+      implemented via a transform_single_imgs
     - fit_transform method should work on non fitted estimator
     - fit_transform should give same result as fit then transform
     """
+    # transform_single_imgs should not be an abstract method anymore
+    assert not getattr(
+        estimator.transform_single_imgs, "__isabstractmethod__", False
+    )
+
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
