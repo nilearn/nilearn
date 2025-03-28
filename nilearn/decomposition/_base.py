@@ -19,17 +19,17 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
+from nilearn._utils.path_finding import resolve_globbing
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
+from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
-
-from .._utils import fill_doc, logger
-from .._utils.cache_mixin import CacheMixin, cache
-from .._utils.niimg import safe_get_data
-from .._utils.path_finding import resolve_globbing
-from ..signal import row_sum_of_squares
 
 
 def _fast_svd(X, n_components, random_state=None):
@@ -535,7 +535,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             "and will be removed in Nilearn 0.13.0.\n"
             "Please use 'maps_masker_' instead.",
             category=FutureWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
         return self.maps_masker_
 

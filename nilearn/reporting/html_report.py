@@ -8,6 +8,7 @@ import pandas as pd
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
@@ -246,7 +247,9 @@ def generate_report(estimator):
             )
             warnings.filterwarnings("always", message=mpl_unavail_msg)
             warnings.warn(
-                category=ImportWarning, message=mpl_unavail_msg, stacklevel=3
+                category=ImportWarning,
+                message=mpl_unavail_msg,
+                stacklevel=find_stack_level(),
             )
             return [None]
 
@@ -275,7 +278,7 @@ def generate_report(estimator):
         for msg in warning_messages:
             warnings.warn(
                 msg,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
         return _update_template(

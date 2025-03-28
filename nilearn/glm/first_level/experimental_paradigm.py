@@ -16,6 +16,7 @@ import pandas as pd
 from pandas.api.types import is_numeric_dtype
 
 from nilearn._utils import logger
+from nilearn._utils.logger import find_stack_level
 
 
 def check_events(events):
@@ -127,7 +128,7 @@ def _handle_missing_trial_types(events):
     if "trial_type" not in events.columns:
         warnings.warn(
             "'trial_type' column not found in the given events data.",
-            stacklevel=6,
+            stacklevel=find_stack_level(),
         )
         events["trial_type"] = "dummy"
     return events
@@ -148,7 +149,7 @@ def _check_null_duration(events):
                 "The following conditions contain events with null duration:\n"
                 f"{ordered_list}"
             ),
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
 
 
@@ -176,7 +177,7 @@ def _check_unexpected_columns(events):
             "The following unexpected columns "
             "in events data will be ignored: "
             f"{', '.join(unexpected_columns)}",
-            stacklevel=6,
+            stacklevel=find_stack_level(),
         )
 
 
@@ -208,7 +209,7 @@ def handle_modulation_of_duplicate_events(events):
             "Duplicated events were detected. "
             "Amplitudes of these events will be summed. "
             "You might want to verify your inputs.",
-            stacklevel=5,
+            stacklevel=find_stack_level(),
         )
 
     return cleaned_events

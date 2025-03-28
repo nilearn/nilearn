@@ -18,6 +18,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
@@ -593,7 +594,7 @@ class SecondLevelModel(BaseGLM):
                 "Parameter 'smoothing_fwhm' is not "
                 "yet supported for surface data.",
                 UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
 
@@ -998,7 +999,7 @@ def non_parametric_inference(
             "Parameter 'smoothing_fwhm' is not "
             "yet supported for surface data.",
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
         smoothing_fwhm = None
 
@@ -1012,7 +1013,7 @@ def non_parametric_inference(
                 f"Setting {tfce=} and {threshold=}."
             ),
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     # Report progress
@@ -1025,7 +1026,7 @@ def non_parametric_inference(
         if smoothing_fwhm is not None and masker.smoothing_fwhm is not None:
             warn(
                 "Parameter 'smoothing_fwhm' of the masker overridden.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             masker.smoothing_fwhm = smoothing_fwhm
 

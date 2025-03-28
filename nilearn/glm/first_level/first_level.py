@@ -24,6 +24,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
@@ -89,7 +90,7 @@ def mean_scaling(Y, axis=0):
             "The data have probably been centered."
             "Scaling might not work as expected",
             UserWarning,
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
@@ -284,7 +285,7 @@ def _check_trial_type(events):
             "If there is a column in the dataframe "
             "corresponding to trial information, "
             "consider renaming it to 'trial_type'.",
-            stacklevel=6,
+            stacklevel=find_stack_level(),
         )
 
 
@@ -489,7 +490,7 @@ class FirstLevelModel(BaseGLM):
             warn(
                 "If design matrices are supplied, "
                 "confounds and events will be ignored.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
         if events is not None:
@@ -966,7 +967,7 @@ class FirstLevelModel(BaseGLM):
             warn(
                 f"One contrast given, assuming it for all {n_runs} runs",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
@@ -1124,7 +1125,7 @@ class FirstLevelModel(BaseGLM):
                 "Parameter smoothing_fwhm is not "
                 "yet supported for surface data",
                 UserWarning,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = 0
 
@@ -1461,7 +1462,7 @@ def first_level_from_bids(
         warn(
             "Starting in version 0.12, slice_time_ref will default to None.",
             DeprecationWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if space_label is None:
         space_label = "MNI152NLin2009cAsym"
@@ -1506,7 +1507,7 @@ def first_level_from_bids(
  Remember to visualize your design matrix before fitting your model
  to check that your model is not overspecified.""",
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
@@ -1553,7 +1554,7 @@ def first_level_from_bids(
             f"\n't_r' provided ({t_r}) is different "
             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
             "Note this may lead to the wrong model specification.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if t_r is not None:
         _check_repetition_time(t_r)
@@ -1562,7 +1563,7 @@ def first_level_from_bids(
             "\n't_r' not provided and cannot be inferred from BIDS metadata.\n"
             "It will need to be set manually in the list of models, "
             "otherwise their fit will throw an exception.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     # Slice time correction reference time
@@ -1595,7 +1596,7 @@ def first_level_from_bids(
                 "is 0.0 percent of the repetition time.\n"
                 "If it is not the case it will need to "
                 "be set manually in the generated list of models.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         inferred_slice_time_ref = 0.0
 
@@ -1610,7 +1611,7 @@ def first_level_from_bids(
             f"from the value found in the BIDS dataset "
             f"({inferred_slice_time_ref}).\n"
             "Note this may lead to the wrong model specification.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if slice_time_ref is not None:
         _check_slice_time_ref(slice_time_ref)
@@ -1726,7 +1727,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
                 f"\nSubject label '{sub_label_}' is not present "
                 "in the following dataset and cannot be processed:\n"
                 f" {derivatives_path}",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
     return sorted(set(sub_labels_exist))
@@ -2239,7 +2240,7 @@ def _make_bids_files_filter(
                         f"The filter {filter_} will be skipped. "
                         f"'{filter_[0]}' is not among the supported filters. "
                         f"Allowed filters include: {supported_filters}",
-                        stacklevel=3,
+                        stacklevel=find_stack_level(),
                     )
                 continue
 

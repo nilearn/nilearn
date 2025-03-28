@@ -13,6 +13,7 @@ from scipy.linalg import pinv
 from scipy.stats import gamma
 
 from nilearn._utils import fill_doc, rename_parameters
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 
 
@@ -450,7 +451,7 @@ def _sample_condition(
                 " experiment and are thus not considered in the model."
             ),
             UserWarning,
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
 
     # Set up the regressor timecourse

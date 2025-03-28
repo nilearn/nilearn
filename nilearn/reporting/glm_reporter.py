@@ -23,6 +23,7 @@ from nilearn._utils import check_niimg, fill_doc, logger
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._version import __version__
 from nilearn.externals import tempita
@@ -197,7 +198,7 @@ def make_glm_report(
         warnings.warn(
             ("No plotting back-end detected. Output will be missing figures."),
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     unique_id = str(uuid.uuid4()).replace("-", "")
