@@ -44,6 +44,8 @@ VALUES = [
 
 def main() -> None:
     """Find missing :obj:`` in doc string type."""
+    print("\n[blue]Finding missing :obj:`` in doc string type.\n")
+
     filenames = list_modules()
 
     n_issues = 0
@@ -60,7 +62,7 @@ def main() -> None:
             for meth_def in list_functions(class_def):
                 n_issues = check_docstring(meth_def, filename, n_issues)
 
-    print(f"{n_issues} detected")
+    print(f"{n_issues} detected\n\n")
 
 
 def check_fill_doc_decorator(

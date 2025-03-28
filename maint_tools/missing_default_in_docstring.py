@@ -22,6 +22,8 @@ PUBLIC_API_ONLY = True
 
 def main():
     """Flag functions or methods with missing defaults."""
+    print("\n[blue]Flag functions or methods with missing defaults.\n")
+
     filenames = list_modules()
 
     n_issues = 0
@@ -38,7 +40,7 @@ def main():
             for meth_def in list_functions(class_def):
                 n_issues = check_def(meth_def, n_issues, filename)
 
-    print(f"{n_issues} issues detected")
+    print(f"{n_issues} issues detected\n\n")
 
 
 def check_def(ast_def, n_issues, filename):
