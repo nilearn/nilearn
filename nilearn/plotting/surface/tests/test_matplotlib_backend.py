@@ -4,13 +4,11 @@ import pytest
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
-    MatplotlibBackend,
     _compute_facecolors_matplotlib,
     _get_bounds,
     _get_ticks_matplotlib,
     _get_view_plot_surf_matplotlib,
 )
-from nilearn.plotting.surface.tests.test_backend import BaseTestSurfaceBackend
 from nilearn.surface import (
     load_surf_data,
     load_surf_mesh,
@@ -204,23 +202,3 @@ def test_compute_facecolors_matplotlib_deprecation():
             0.5,
             alpha,
         )
-
-
-@pytest.fixture
-def engine():
-    return MatplotlibBackend()
-
-
-class TestMatplotlibBackend(BaseTestSurfaceBackend):
-    """Extend BaseTestSurfaceBackend class to run all test methods for
-    'matplotlib' engine.
-
-    This class should override the test methods of BaseTestSurfaceBackend if
-    the behavior for 'matplotlib' engine differs from the behavior expected in
-    BaseTestSurfaceBackend.
-
-    Otherwise all methods will be run injecting the engine fixture defined in
-    this module.
-    """
-
-    pass
