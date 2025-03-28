@@ -1,0 +1,36 @@
+---
+name: Run and deploy Nilearn benchmarks
+
+on:
+    push:
+        branches:
+        -   main
+
+jobs:
+    benchmark:
+        if: contains(github.event.head_commit.message, '[bm]')
+        runs-on: ubuntu-22.04
+        steps:
+        -   uses: actions/checkout@v3
+        -   uses: actions/setup-python@v3
+        -   name: Install asv
+            run: |
+                pip install --upgrade pip
+                pip install asv
+        -   name: Run benchmarks
+            run: |
+                asv machine --yes
+                asv run -ev --append
+        -   name: Create html with all results
+            run: |
+                asv publish
+        -   name: Deploy
+            uses: peaceiris/actions-gh-pages@v4
+        # If you're changing the branch from main,
+        # also change the `main` in `refs/heads/main`
+        # below accordingly.
+            if: github.ref == 'refs/heads/main'
+            with:
+                publish_branch: gh-pages
+                github_token: ${{ secrets.GITHUB_TOKEN }}
+                publish_dir: ./html
