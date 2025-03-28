@@ -48,7 +48,7 @@ def bg_map(rng, in_memory_mesh):
         plot_surf_roi,
     ],
 )
-def test_check_surface_plotting_inputs_error_mash_and_data_none(fn):
+def test_check_surface_plotting_inputs_error_mesh_and_data_none(fn):
     """Fail if no mesh or data is passed."""
     with pytest.raises(TypeError, match="cannot both be None"):
         fn(None, None)
