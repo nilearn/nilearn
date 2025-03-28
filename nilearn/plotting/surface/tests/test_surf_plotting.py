@@ -35,7 +35,7 @@ else:
 
 @pytest.fixture
 def bg_map(rng, in_memory_mesh):
-    """Return a background map with posive value."""
+    """Return a background map with positive value."""
     return np.abs(rng.standard_normal(size=in_memory_mesh.n_vertices))
 
 
