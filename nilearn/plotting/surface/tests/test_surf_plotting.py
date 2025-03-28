@@ -54,7 +54,7 @@ def test_check_surface_plotting_inputs_error_mash_and_data_none(fn):
         fn(None, None)
 
 
-def test_check_surface_plotting_inputs_errors(surf_img_1d):
+def test_check_surface_plotting_inputs_errors():
     """Fail if mesh is none and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf(surf_map=1, surf_mesh=None)
