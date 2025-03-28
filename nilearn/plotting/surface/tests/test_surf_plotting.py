@@ -23,11 +23,7 @@ from nilearn.plotting import (
     plot_surf_stat_map,
 )
 from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
-from nilearn.plotting.surface._utils import check_surface_plotting_inputs
-from nilearn.surface import (
-    InMemoryMesh,
-    SurfaceImage,
-)
+from nilearn.surface import SurfaceImage
 
 try:
     import IPython.display  # noqa:F401
@@ -61,8 +57,6 @@ def test_check_surface_plotting_inputs_error_mash_and_data_none(fn):
 def test_check_surface_plotting_inputs_errors(surf_img_1d):
     """Fail if mesh is none and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
-        check_surface_plotting_inputs(surf_map=1, surf_mesh=None)
-    with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf(surf_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf_stat_map(stat_map=1, surf_mesh=None)
@@ -70,38 +64,6 @@ def test_check_surface_plotting_inputs_errors(surf_img_1d):
         plot_surf_contours(roi_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf_roi(roi_map=1, surf_mesh=None)
-    with pytest.raises(
-        TypeError, match="'surf_mesh' cannot be a SurfaceImage instance."
-    ):
-        check_surface_plotting_inputs(
-            surf_map=surf_img_1d, surf_mesh=surf_img_1d
-        )
-
-
-def test_check_surface_plotting_hemi_both_all_inputs(surf_img_1d, surf_mesh):
-    """Test that hemi="both" works as expected when all inputs are provided."""
-    hemi = "both"
-    combined_map, combined_mesh, combined_bg = check_surface_plotting_inputs(
-        surf_map=surf_img_1d,
-        surf_mesh=surf_mesh,
-        hemi=hemi,
-        bg_map=surf_img_1d,
-    )
-    # check that the data is concatenated
-    for data in [combined_map, combined_bg]:
-        assert_array_equal(
-            data,
-            np.concatenate(
-                (
-                    surf_img_1d.data.parts["left"],
-                    surf_img_1d.data.parts["right"],
-                )
-            ),
-        )
-        assert isinstance(data, np.ndarray)
-    # check that the mesh is concatenated
-    assert combined_mesh.n_vertices == surf_mesh.n_vertices
-    assert isinstance(combined_mesh, InMemoryMesh)
 
 
 def test_surface_plotting_axes_error(surf_img_1d):
