@@ -378,6 +378,15 @@ def test_apply_mask(tmp_path, create_files, affine):
         assert_equal(proj.sum(), 9 / np.abs(affine[axis, axis]))
 
 
+def test_apply_mask_surface(surf_img_2d, surf_mask_1d):
+    """Test apply_mask on surface."""
+    length = 5
+    series = apply_mask(surf_img_2d(length), surf_mask_1d)
+
+    assert isinstance(series, np.ndarray)
+    assert series.shape[0] == length
+
+
 def test_apply_mask_nan(affine_eye):
     """Check that NaNs in the data do not propagate."""
     data = np.zeros((40, 40, 40, 2))
