@@ -489,13 +489,8 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         all_confounds = []
 
         if self.high_variance_confounds:
-            warnings.warn(
-                "'high_variance_confounds' not implemented.",
-                stacklevel=find_stack_level(),
-            )
-            # TODO
-            # hv_confounds = self._cache(high_variance_confounds)(imgs)
-            # all_confounds.append(hv_confounds)
+            hv_confounds = self._cache(high_variance_confounds)(imgs)
+            all_confounds.append(hv_confounds)
 
         if confounds is not None:
             if isinstance(confounds, list):
