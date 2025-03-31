@@ -191,10 +191,12 @@ def test_get_data(tmp_path, shape_3d_default):
 
 
 def test_high_variance_confounds(shape_3d_default):
-    # See also test_signals.test_high_variance_confounds()
-    # There is only tests on what is added by high_variance_confounds()
-    # compared to signal.high_variance_confounds()
+    """Check high_variance_confounds returns proper shape.
 
+    See also test_signals.test_high_variance_confounds()
+    There is only tests on what is added by high_variance_confounds()
+    compared to signal.high_variance_confounds()
+    """
     length = 17
     n_confounds = 10
 
@@ -202,6 +204,27 @@ def test_high_variance_confounds(shape_3d_default):
 
     confounds1 = high_variance_confounds(
         img, mask_img=mask_img, percentile=10.0, n_confounds=n_confounds
+    )
+
+    assert confounds1.shape == (length, n_confounds)
+
+    # No mask.
+    confounds2 = high_variance_confounds(
+        img, percentile=10.0, n_confounds=n_confounds
+    )
+
+    assert confounds2.shape == (length, n_confounds)
+
+
+def test_high_variance_confounds_surface(surf_mask_1d, surface_glm_data):
+    """Check high_variance_confounds returns proper shape from surface."""
+    length = 17
+    n_confounds = 10
+
+    img, _ = surface_glm_data(length)
+
+    confounds1 = high_variance_confounds(
+        img, mask_img=surf_mask_1d, percentile=10.0, n_confounds=n_confounds
     )
 
     assert confounds1.shape == (length, n_confounds)

@@ -17,6 +17,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
 from nilearn._utils import stringify_path
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
 
@@ -45,7 +46,7 @@ def _load_uniform_ball_cloud(n_points=20):
         "have a big impact on the result, we strongly recommend using one "
         'of these values when using kind="ball" for much better performance.',
         EfficiencyWarning,
-        stacklevel=3,
+        stacklevel=find_stack_level(),
     )
     return _uniform_ball_cloud(n_points=n_points)
 
@@ -828,7 +829,7 @@ def vol_to_surf(
             "'nearest_most_frequent' is recommended. Otherwise, use 'linear'. "
             "See the documentation for more information.",
             FutureWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     img = load_img(img)
@@ -2012,7 +2013,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
             warnings.warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
             data[non_finite_mask] = 0
 

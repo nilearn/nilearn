@@ -31,6 +31,7 @@ from nilearn._utils.helpers import (
     check_copy_header,
     stringify_path,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -75,18 +76,18 @@ def get_data(img):
 
 def high_variance_confounds(
     imgs, n_confounds=5, percentile=2.0, detrend=True, mask_img=None
-):
+) -> np.ndarray:
     """Return confounds extracted from input signals with highest variance.
 
     Parameters
     ----------
-    imgs : Niimg-like object
-        4D image.
+    imgs : 4D Niimg-like or 2D SurfaceImage object
         See :ref:`extracting_data`.
 
-    mask_img : Niimg-like object or None, default=None
-        If not provided, all voxels are used.
-        If provided, confounds are extracted from voxels inside the mask.
+    mask_img : Niimg-like or SurfaceImage object, or None, default=None
+        If not provided, all voxels / vertices are used.
+        If provided, confounds are extracted
+        from voxels / vertices inside the mask.
         See :ref:`extracting_data`.
 
     n_confounds : :obj:`int`, default=5
@@ -125,15 +126,24 @@ def high_variance_confounds(
     """
     from .. import masking
 
+    check_compatibility_mask_and_images(mask_img, imgs)
+
     if mask_img is not None:
+        if isinstance(imgs, SurfaceImage):
+            check_same_n_vertices(mask_img.mesh, imgs.mesh)
         sigs = masking.apply_mask(imgs, mask_img)
+
+    # Load the data only if it doesn't need to be masked
+    # Not using apply_mask here saves memory in most cases.
+    elif isinstance(imgs, SurfaceImage):
+        sigs = as_ndarray(get_surface_data(imgs))
+        sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
     else:
-        # Load the data only if it doesn't need to be masked
         imgs = check_niimg_4d(imgs)
         sigs = as_ndarray(get_data(imgs))
-        # Not using apply_mask here saves memory in most cases.
-        del imgs  # help reduce memory consumption
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
+
+    del imgs  # help reduce memory consumption
 
     return signal.high_variance_confounds(
         sigs, n_confounds=n_confounds, percentile=percentile, detrend=detrend
@@ -231,7 +241,7 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         warnings.warn(
             f"The parameter 'fwhm' for smoothing is specified as {fwhm}. "
             "Setting it to None (no smoothing will be performed)",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         fwhm = None
     if arr.dtype.kind == "i":
@@ -752,7 +762,7 @@ def _downcast_from_int64_if_possible(data):
             "passing `int` as the `dtype`. Many tools such as FSL and SPM "
             "cannot deal with int64 in Nifti images, so for compatibility the "
             "data has been converted to int32.",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         return data.astype("int32")
     warnings.warn(
@@ -761,7 +771,7 @@ def _downcast_from_int64_if_possible(data):
         "thus contains 64-bit ints, which may cause some compatibility issues "
         "with some other tools or an error when saving the image to a "
         "Nifti file.",
-        stacklevel=3,
+        stacklevel=find_stack_level(),
     )
     return data
 
@@ -1061,7 +1071,7 @@ def threshold_img(
         warnings.warn(
             "Cluster thresholding not implemented for SurfaceImage. "
             "Setting 'cluster_threshold' to 0.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
         cluster_threshold = 0
 
@@ -1373,7 +1383,7 @@ def binarize_img(
         'is  "True". This behavior will be changed to "False" in '
         "version 0.13.",
         DeprecationWarning,
-        stacklevel=3,
+        stacklevel=find_stack_level(),
     )
 
     return math_img(
