@@ -154,7 +154,7 @@ def transfer_deprecated_param_vals(replacement_params, kwargs):
     the values passed to their corresponding deprecated parameters \
     for the decorator replace_parameters().
 
-    Parametershttps://calendar.google.com/calendar/u/0/r?pli=1
+    Parameters
     ----------
     replacement_params : Dict[str, str]
         Dictionary of old_parameters as keys with replacement parameters
