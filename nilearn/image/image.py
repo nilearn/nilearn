@@ -45,10 +45,10 @@ from nilearn._utils.path_finding import resolve_globbing
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
-    check_same_n_vertices,
     extract_data,
 )
 from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.surface.utils import assert_polymesh_equal
 from nilearn.typing import NiimgLike
 
 
@@ -1055,7 +1055,7 @@ def threshold_img(
         check_compatibility_mask_and_images(mask_img, img)
 
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
-        check_same_n_vertices(mask_img.mesh, img.mesh)
+        assert_polymesh_equal(mask_img.mesh, img.mesh)
 
     if isinstance(img, SurfaceImage) and cluster_threshold > 0:
         warnings.warn(
@@ -1669,7 +1669,7 @@ def concat_imgs(
             return niimgs[0]
 
         for i, img in enumerate(niimgs):
-            check_same_n_vertices(img.mesh, niimgs[0].mesh)
+            assert_polymesh_equal(img.mesh, niimgs[0].mesh)
             niimgs[i] = at_least_2d(img)
 
         if dtype is None:

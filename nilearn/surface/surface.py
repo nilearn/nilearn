@@ -1747,31 +1747,6 @@ def _check_data_and_mesh_compat(mesh, data):
             )
 
 
-def check_same_n_vertices(mesh_1, mesh_2):
-    """Check that 2 PolyMesh have the same keys and that n vertices match.
-
-    Parameters
-    ----------
-    mesh_1: PolyMesh
-
-    mesh_2: PolyMesh
-    """
-    keys_1, keys_2 = set(mesh_1.parts.keys()), set(mesh_2.parts.keys())
-    if keys_1 != keys_2:
-        diff = keys_1.symmetric_difference(keys_2)
-        raise ValueError(
-            f"Meshes do not have the same keys. Offending keys: {diff}"
-        )
-    for key in keys_1:
-        if mesh_1.parts[key].n_vertices != mesh_2.parts[key].n_vertices:
-            raise ValueError(
-                f"Number of vertices do not match for '{key}'."
-                "number of vertices in mesh_1: "
-                f"{mesh_1.parts[key].n_vertices}; "
-                f"in mesh_2: {mesh_2.parts[key].n_vertices}"
-            )
-
-
 def _mesh_to_gifti(coordinates, faces, gifti_file):
     """Write surface mesh to gifti file on disk.
 

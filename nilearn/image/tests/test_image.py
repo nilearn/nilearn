@@ -53,12 +53,12 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface._testing import (
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.surface.utils import (
     assert_polymesh_equal,
     assert_surface_image_equal,
 )
-from nilearn.surface.surface import SurfaceImage
-from nilearn.surface.surface import get_data as get_surface_data
 
 X64 = platform.architecture()[0] == "64bit"
 
