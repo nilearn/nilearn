@@ -26,7 +26,7 @@
 #   So we setup the SSH key for the nilearn.github.io repo and clone it.
 #   Update the submodule to sync with the latest commit on the
 #   nilearn/benchmarks repo and commit the changes.
-
+###
 name: Run and deploy Nilearn benchmarks
 
 on:
