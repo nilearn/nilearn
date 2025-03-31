@@ -65,7 +65,6 @@ if sys.version_info[1] < 10:
     RandomState = (int, np.integer, np.random.RandomState)
     Resolution = (int, np.integer)
     SmoothingFwhm = (float, int, np.floating, np.integer)
-    SpatialImageLike = Union[str | os.PathLike[str] | SpatialImage]
     TargetAffine = ndarray
     TargetShape = (tuple, list)
     Threshold = (float, int, str, np.floating, np.integer)
@@ -87,6 +86,8 @@ if sys.version_info[1] < 10:
     Verbose = (int, np.integer)
     Vmin = (float, int, np.floating, np.integer)
     Vmax = (float, int, np.floating, np.integer)
+
+    SpatialImageLike = Union[str, os.PathLike[str], SpatialImage]
 
 
 else:
