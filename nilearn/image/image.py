@@ -76,18 +76,18 @@ def get_data(img):
 
 def high_variance_confounds(
     imgs, n_confounds=5, percentile=2.0, detrend=True, mask_img=None
-):
+) -> np.ndarray:
     """Return confounds extracted from input signals with highest variance.
 
     Parameters
     ----------
-    imgs : Niimg-like object
-        4D image.
+    imgs : 4D Niimg-like or 2D SurfaceImage object
         See :ref:`extracting_data`.
 
-    mask_img : Niimg-like object or None, default=None
-        If not provided, all voxels are used.
-        If provided, confounds are extracted from voxels inside the mask.
+    mask_img : Niimg-like or SurfaceImage object, or None, default=None
+        If not provided, all voxels / vertices are used.
+        If provided, confounds are extracted
+        from voxels / vertices inside the mask.
         See :ref:`extracting_data`.
 
     n_confounds : :obj:`int`, default=5
@@ -126,15 +126,24 @@ def high_variance_confounds(
     """
     from .. import masking
 
+    check_compatibility_mask_and_images(mask_img, imgs)
+
     if mask_img is not None:
+        if isinstance(imgs, SurfaceImage):
+            check_same_n_vertices(mask_img.mesh, imgs.mesh)
         sigs = masking.apply_mask(imgs, mask_img)
+
+    # Load the data only if it doesn't need to be masked
+    # Not using apply_mask here saves memory in most cases.
+    elif isinstance(imgs, SurfaceImage):
+        sigs = as_ndarray(get_surface_data(imgs))
+        sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
     else:
-        # Load the data only if it doesn't need to be masked
         imgs = check_niimg_4d(imgs)
         sigs = as_ndarray(get_data(imgs))
-        # Not using apply_mask here saves memory in most cases.
-        del imgs  # help reduce memory consumption
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
+
+    del imgs  # help reduce memory consumption
 
     return signal.high_variance_confounds(
         sigs, n_confounds=n_confounds, percentile=percentile, detrend=detrend
