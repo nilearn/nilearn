@@ -2,6 +2,7 @@
 
 import numbers
 import warnings
+from typing import overload
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -30,7 +31,7 @@ from nilearn.surface.surface import (
     check_same_n_vertices,
 )
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.typing import NiimgLike
+from nilearn.typing import NiimgLike, SpatialImageLike
 
 __all__ = [
     "apply_mask",
@@ -50,6 +51,20 @@ class _MaskWarning(UserWarning):
 
 
 warnings.simplefilter("always", _MaskWarning)
+
+
+@overload
+def load_mask_img(
+    mask_img: SpatialImageLike,
+    allow_empty: bool = ...,
+) -> tuple[np.ndarray, np.ndarray]: ...
+
+
+@overload
+def load_mask_img(
+    mask_img: SurfaceImage,
+    allow_empty: bool = ...,
+) -> tuple[SurfaceImage, None]: ...
 
 
 def load_mask_img(mask_img, allow_empty=False):
