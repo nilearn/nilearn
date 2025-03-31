@@ -1,31 +1,43 @@
 ---
 # TL;DR: this workflow runs the benchmarks on the latest commit on the main
-# and then deploys the updated benchmarks to nilearn.github.io/benchmarks.
-# You can trigger it manually by adding [bm] to the commit message to the main.
-# It will also run on a schedule every day at 10pm UTC.
+# and then deploys the updated benchmarks to
+# `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
+# You can trigger it manually by adding ``[bm]`` to the commit message on the
+# main. It will also run on a schedule every day at 10pm UTC.
 #
 # Step-wise details:
+#
 # - The benchmarks are set to run everday at 10pm UTC via cron.
-# - It can also be triggered manually by adding [bm] to the commit message.
-# - First it installs asv.
-# - Then it sets up the SSH key to access the nilearn/benchmarks repo.
-# - It pulls the benchmarks repo, and copies the results in the current dir.
-#   We will append the new results to the old ones.
-# - ASV fetches the machine info like CPU, RAM, OS, etc. and saves it in
-#   asv-machine.json, but it gives a unique name to the machine on every run
-#   even though the specs are the same. So we need to set a fixed name.
-# - So we edit the asv-machine.json file to edit the machine name to a fixed
-#   name. This is done by the build_tools/github/set_machine_name.py script.
-# - Then we run the benchmarks (asv run) so that the results are appended to
-#   the old results (via --append-samples parameter). -ev makes sure any
-#   errors are printed in detail and all the output can be seen in the logs.
-# - Then we create the HTML with all the results via asv publish.
+# - It can also be triggered manually by adding ``[bm]`` to the commit message.
+# - First it installs `asv <https://asv.readthedocs.io/en/latest/index.html>`_.
+# - Then it sets up the SSH key to access the
+#   `benchmarks <https://github.com/nilearn/benchmarks>`_ repo,
+#   pulls it, and copies the results dir into the current dir. We will append
+#   the new results to these results.
+# - ``asv machine --yes`` then fetches the machine info like CPU, RAM, OS,
+#   etc. and saves it in ``~/.asv-machine.json``, but it gives a unique name
+#   to the machine on every run even if the specs are the same. So we will set
+#   a fixed name for the machine so the legend isn't too overcrowded.
+# - To do this, we edit the ``~/.asv-machine.json`` file to change the machine
+#   name to a fixed name ``fv-az1113-357``. The name is arbitrary and has been
+#   chosen to match the first run. The script
+#   ``build_tools/github/set_machine_name.py`` does all this.
+# - Then we run the benchmarks (``asv run``) such that the results are
+#   appended to the old results (via ``--append-samples`` parameter).
+#   ``-ev`` makes sure any errors are printed in detail and all the output can
+#   be seen in the logs.
+# - Then we create the HTML with all the results via ``asv publish``.
 # - We upload the results as artifacts so that we can download them later.
-# - Then we push the new results back to the nilearn/benchmarks repo.
-# - The nilearn/benchmarks repo is a submodule in the nilearn.github.io repo.
-#   So we setup the SSH key for the nilearn.github.io repo and clone it.
-#   Update the submodule to sync with the latest commit on the
-#   nilearn/benchmarks repo and commit the changes.
+# - Then we push the new results back to the
+#   `benchmarks <https://github.com/nilearn/benchmarks>`_  repo.
+# - The `benchmarks <https://github.com/nilearn/benchmarks>`_ repo is
+#   a submodule in the
+#   `nilearn.github.io <https://github.com/nilearn/nilearn.github.io>`_ repo.
+#   So we setup the SSH key for the
+#   `nilearn.github.io <https://github.com/nilearn/nilearn.github.io>`_ repo,
+#   clone it, update the submodule to sync with the latest commit on the
+#   `benchmarks <https://github.com/nilearn/benchmarks>`_ repo and push the
+#   changes to deploy the updated benchmarks.
 ###
 name: Run and deploy Nilearn benchmarks
 
@@ -48,7 +60,7 @@ jobs:
             run: |
                 pip install --upgrade pip
                 pip install asv
-        -   name: Add SSH key for nilearn/benchmarks repo
+        -   name: Add SSH key for benchmarks repo
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -58,7 +70,7 @@ jobs:
                 chmod 600 ~/.ssh/github_actions
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
-        -   name: Pull previous results from nilearn/benchmarks repo
+        -   name: Pull previous results from benchmarks repo
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -83,7 +95,7 @@ jobs:
                     ./html
                     ./results
                 compression-level: 9
-        -   name: Push new results back to nilearn/benchmarks repo
+        -   name: Push new results back to benchmarks repo
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent.sock
             run: |
@@ -96,7 +108,7 @@ jobs:
                 git commit -m "Update benchmark results and HTML"
                 git push origin main
                 cd ..
-        -   name: Add SSH key for nilearn/nilearn.github.io
+        -   name: Add SSH key for nilearn.github.io repo
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_nilearn_github_io.sock
             run: |
@@ -106,7 +118,7 @@ jobs:
                 chmod 600 ~/.ssh/github_actions
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
-        -   name: Deploy updated benchmarks on nilearn.github.io/benchmarks
+        -   name: Deploy updated benchmarks to nilearn.github.io/benchmarks
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_nilearn_github_io.sock
             run: |
