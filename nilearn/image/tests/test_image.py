@@ -1199,7 +1199,7 @@ def test_threshold_img_copy_surface(surf_img_1d):
     threshold = 15
     input_img = surf_img_1d
     result = threshold_img(input_img, threshold=threshold, copy=True)
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         assert_surface_image_equal(result, surf_img_1d)
 
 

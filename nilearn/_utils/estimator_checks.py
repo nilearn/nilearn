@@ -585,7 +585,7 @@ def check_masker_refit(estimator):
                 fitted_mask_1.get_fdata(), fitted_mask_2.get_fdata()
             )
     else:
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             assert_surface_image_equal(fitted_mask_1, fitted_mask_2)
 
 
