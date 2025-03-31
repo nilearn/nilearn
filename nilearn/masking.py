@@ -2,12 +2,9 @@
 
 import numbers
 import warnings
-from pathlib import Path
-from typing import Union, overload
 
 import numpy as np
 from joblib import Parallel, delayed
-from nibabel import Nifti1Image
 from scipy.ndimage import binary_dilation, binary_erosion
 
 from nilearn._utils import (
@@ -52,20 +49,6 @@ class _MaskWarning(UserWarning):
 
 
 warnings.simplefilter("always", _MaskWarning)
-
-
-@overload
-def load_mask_img(
-    mask_img: Union[str, Path, Nifti1Image],
-    allow_empty: bool = ...,
-) -> tuple[np.ndarray, np.ndarray]: ...
-
-
-@overload
-def load_mask_img(
-    mask_img: SurfaceImage,
-    allow_empty: bool = ...,
-) -> tuple[SurfaceImage, None]: ...
 
 
 def load_mask_img(mask_img, allow_empty=False):
