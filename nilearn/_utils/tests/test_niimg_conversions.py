@@ -9,6 +9,7 @@ import os
 import re
 from pathlib import Path
 from tempfile import mkstemp
+from types import GeneratorType
 
 import numpy as np
 import pytest
@@ -98,6 +99,47 @@ def test_check_same_fov(affine_eye):
         check_same_fov(
             a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True
         )
+
+
+def test_check_niimg_return_type(img_3d_zeros_eye, tmp_path, img_4d_mni):
+    """Check type returned by check_niimg."""
+    assert isinstance(check_niimg(img_3d_zeros_eye), Nifti1Image)
+
+    img_3d_zeros_eye.to_filename(tmp_path / "tmp.nii.gz")
+
+    assert isinstance(check_niimg(tmp_path / "tmp.nii.gz"), Nifti1Image)
+    assert isinstance(check_niimg(str(tmp_path / "tmp.nii.gz")), Nifti1Image)
+
+    assert isinstance(
+        check_niimg(
+            [
+                str(tmp_path / "tmp.nii.gz"),
+                tmp_path / "tmp.nii.gz",
+                img_3d_zeros_eye,
+            ]
+        ),
+        Nifti1Image,
+    )
+    assert isinstance(
+        check_niimg(
+            (
+                str(tmp_path / "tmp.nii.gz"),
+                tmp_path / "tmp.nii.gz",
+                img_3d_zeros_eye,
+            )
+        ),
+        Nifti1Image,
+    )
+
+    assert isinstance(check_niimg(str(tmp_path / "*.nii.gz")), Nifti1Image)
+
+    assert isinstance(
+        check_niimg(str(tmp_path / "*.nii.gz"), return_iterator=True),
+        GeneratorType,
+    )
+    assert isinstance(
+        check_niimg(img_4d_mni, return_iterator=True), GeneratorType
+    )
 
 
 def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):

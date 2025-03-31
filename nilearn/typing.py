@@ -18,14 +18,16 @@ To expand the functionality of check_params you need to:
 
 from __future__ import annotations
 
+import os
 import pathlib
 import sys
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Union
 
 import numpy as np
 from joblib.memory import Memory
 from nibabel import Nifti1Image
+from nibabel.spatialimages import SpatialImage
 from numpy import ndarray
 from numpy.typing import DTypeLike
 
@@ -63,6 +65,7 @@ if sys.version_info[1] < 10:
     RandomState = (int, np.integer, np.random.RandomState)
     Resolution = (int, np.integer)
     SmoothingFwhm = (float, int, np.floating, np.integer)
+    SpatialImageLike = Union[str | os.PathLike[str] | SpatialImage]
     TargetAffine = ndarray
     TargetShape = (tuple, list)
     Threshold = (float, int, str, np.floating, np.integer)
@@ -110,6 +113,7 @@ else:
     Opening: TypeAlias = bool | int | np.integer
     Resolution: TypeAlias = int | np.integer | None
     SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
+    SpatialImageLike: TypeAlias = str | os.PathLike[str] | SpatialImage
     TargetAffine: TypeAlias = ndarray | None
 
     # Note that this is usable as for static type checking,

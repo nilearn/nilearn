@@ -54,6 +54,7 @@ def _add_nans_to_img(img, affine_mni=None):
 
 def test_mni152template_is_reordered():
     """See issue #2550."""
+    assert MNI152TEMPLATE.header is not None
     reordered_mni = reorder_img(
         load_mni152_template(resolution=2), copy_header=True
     )

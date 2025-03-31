@@ -2,6 +2,7 @@ import functools
 import operator
 import os
 import warnings
+from typing import TypeVar, Union, overload
 
 from packaging.version import parse
 
@@ -153,7 +154,7 @@ def transfer_deprecated_param_vals(replacement_params, kwargs):
     the values passed to their corresponding deprecated parameters \
     for the decorator replace_parameters().
 
-    Parameters
+    Parametershttps://calendar.google.com/calendar/u/0/r?pli=1
     ----------
     replacement_params : Dict[str, str]
         Dictionary of old_parameters as keys with replacement parameters
@@ -218,7 +219,18 @@ def remove_parameters(removed_params, reason, end_version="future"):
     return _remove_params
 
 
-def stringify_path(path):
+T = TypeVar("T")  # Generic type variable for non-path-like inputs
+
+
+@overload
+def stringify_path(path: Union[str, os.PathLike[str]]) -> str: ...
+
+
+@overload
+def stringify_path(path: T) -> T: ...
+
+
+def stringify_path(path: Union[T, str, os.PathLike[str]]):
     """Convert path-like objects to string.
 
     This is used to allow functions expecting string filesystem paths to accept
@@ -226,11 +238,11 @@ def stringify_path(path):
 
     Parameters
     ----------
-    path : str or path-like object
+    path : can be anything but usually, str, Path or a NiftiImage
 
     Returns
     -------
-    str
+    str if the input is pathlike otherwise it returns the input
 
     """
     return path.__fspath__() if isinstance(path, os.PathLike) else path

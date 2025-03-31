@@ -4,12 +4,15 @@ import collections.abc
 import copy
 import gc
 from pathlib import Path
+from typing import Union
 from warnings import warn
 
 import numpy as np
 from nibabel import is_proxy, load, spatialimages
+from numpy.typing import DTypeLike
 
 from nilearn._utils.logger import find_stack_level
+from nilearn.typing import SpatialImageLike
 
 from .helpers import stringify_path
 
@@ -95,7 +98,10 @@ def _get_target_dtype(dtype, target_dtype):
     return None if target_dtype == dtype else target_dtype
 
 
-def load_niimg(niimg, dtype=None):
+def load_niimg(
+    niimg: SpatialImageLike,
+    dtype: Union[DTypeLike, None] = None,
+) -> spatialimages.SpatialImage:
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed.
 
     Parameters
@@ -108,40 +114,41 @@ def load_niimg(niimg, dtype=None):
 
     Returns
     -------
-    img : image
+    img : spatialimages.SpatialImage
         A loaded image object.
     """
-    from ..image import new_img_like  # avoid circular imports
+    from nilearn.image import new_img_like  # avoid circular imports
 
-    niimg = stringify_path(niimg)
-    if isinstance(niimg, str):
+    tmp = stringify_path(niimg)
+    if isinstance(tmp, (str)):
         # data is a filename, we load it
-        niimg = load(niimg)
-    elif not isinstance(niimg, spatialimages.SpatialImage):
+        loaded_niimg = load(tmp)
+    elif isinstance(tmp, spatialimages.SpatialImage):
+        loaded_niimg = tmp
+    else:
         raise TypeError(
             "Data given cannot be loaded because it is"
             " not compatible with nibabel format:\n"
-            + repr_niimgs(niimg, shorten=True)
+            + repr_niimgs(tmp, shorten=True)
         )
 
-    dtype = _get_target_dtype(_get_data(niimg).dtype, dtype)
+    assert isinstance(loaded_niimg, spatialimages.SpatialImage)
 
-    if dtype is not None:
-        # Copyheader and set dtype in header if header exists
-        if niimg.header is not None:
-            niimg = new_img_like(
-                niimg,
-                _get_data(niimg).astype(dtype),
-                niimg.affine,
-                copy_header=True,
-            )
-            niimg.header.set_data_dtype(dtype)
-        else:
-            niimg = new_img_like(
-                niimg, _get_data(niimg).astype(dtype), niimg.affine
-            )
+    dtype = _get_target_dtype(_get_data(loaded_niimg).dtype, dtype)
 
-    return niimg
+    if dtype is None:
+        return loaded_niimg
+
+    # Copyheader and set dtype in header
+    new_niimg = new_img_like(
+        loaded_niimg,
+        _get_data(loaded_niimg).astype(dtype),
+        loaded_niimg.affine,
+        copy_header=True,
+    )
+    new_niimg.header.set_data_dtype(dtype)
+
+    return new_niimg
 
 
 def is_binary_niimg(niimg):
