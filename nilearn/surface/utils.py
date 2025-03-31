@@ -5,10 +5,12 @@ import numpy as np
 
 def assert_polydata_equal(data_1, data_2):
     """Check that 2 PolyData data are equal."""
-    if set(data_1.parts.keys()) != set(data_2.parts.keys()):
-        diff = data_1.parts.keys.symmetric_difference(data_2.parts.keys)
+    set_1 = set(data_1.parts.keys())
+    set_2 = set(data_2.parts.keys())
+    if set_1 != set_2:
+        diff = set_1.symmetric_difference(set_2)
         raise ValueError(
-            f"Polydata do not have the same keys. Offending keys: {diff}"
+            f"PolyData do not have the same keys. Offending keys: {diff}"
         )
 
     for key in data_1.parts:
