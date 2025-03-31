@@ -1,14 +1,45 @@
 ---
+# TL;DR: this workflow runs the benchmarks on the latest commit on the main
+# and then deploys the updated benchmarks to nilearn.github.io/benchmarks.
+# You can trigger it manually by adding [bm] to the commit message to the main.
+# It will also run on a schedule every day at 10pm UTC.
+#
+# Step-wise details:
+# - The benchmarks are set to run everday at 10pm UTC via cron.
+# - It can also be triggered manually by adding [bm] to the commit message.
+# - First it installs asv.
+# - Then it sets up the SSH key to access the nilearn/benchmarks repo.
+# - It pulls the benchmarks repo, and copies the results in the current dir.
+#   We will append the new results to the old ones.
+# - ASV fetches the machine info like CPU, RAM, OS, etc. and saves it in
+#   asv-machine.json, but it gives a unique name to the machine on every run
+#   even though the specs are the same. So we need to set a fixed name.
+# - So we edit the asv-machine.json file to edit the machine name to a fixed
+#   name. This is done by the build_tools/github/set_machine_name.py script.
+# - Then we run the benchmarks (asv run) so that the results are appended to
+#   the old results (via --append-samples parameter). -ev makes sure any
+#   errors are printed in detail and all the output can be seen in the logs.
+# - Then we create the HTML with all the results via asv publish.
+# - We upload the results as artifacts so that we can download them later.
+# - Then we push the new results back to the nilearn/benchmarks repo.
+# - The nilearn/benchmarks repo is a submodule in the nilearn.github.io repo.
+#   So we setup the SSH key for the nilearn.github.io repo and clone it.
+#   Update the submodule to sync with the latest commit on the
+#   nilearn/benchmarks repo and commit the changes.
+
 name: Run and deploy Nilearn benchmarks
 
 on:
     push:
         branches:
         -   main
+    schedule:
+    # everday at 10pm UTC
+    -   cron: 0 22 * * *
 
 jobs:
     benchmark:
-        if: contains(github.event.head_commit.message, '[bm]')
+        if: contains(github.event.head_commit.message, '[bm]') || github.event_name == 'schedule'
         runs-on: ubuntu-22.04
         steps:
         -   uses: actions/checkout@v3
@@ -17,20 +48,73 @@ jobs:
             run: |
                 pip install --upgrade pip
                 pip install asv
-        -   name: Run benchmarks
+        -   name: Add SSH key for nilearn/benchmarks repo
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                mkdir -p ~/.ssh
+                ssh-keyscan github.com >> ~/.ssh/known_hosts
+                echo "${{ secrets.UPLOAD_BENCHMARK_RESULTS }}" > ~/.ssh/github_actions
+                chmod 600 ~/.ssh/github_actions
+                ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+                ssh-add ~/.ssh/github_actions
+        -   name: Pull previous results from nilearn/benchmarks repo
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
+                cp -r benchmarks_repo/results .
+        -   name: Get all the machine info
             run: |
                 asv machine --yes
-                asv run -ev --append
+        -   name: Edit asv-machine.json to a custom machine name
+            run: python ./build_tools/github/set_machine_name.py fv-az1113-357
+        -   name: Run all benchmarks on the latest commit
+            run: |
+                asv run -ev --append-samples --machine fv-az1113-357
         -   name: Create html with all results
             run: |
                 asv publish
-        -   name: Deploy
-            uses: peaceiris/actions-gh-pages@v4
-        # If you're changing the branch from main,
-        # also change the `main` in `refs/heads/main`
-        # below accordingly.
-            if: github.ref == 'refs/heads/main'
+        -   uses: actions/upload-artifact@v4
             with:
-                publish_branch: gh-pages
-                github_token: ${{ secrets.GITHUB_TOKEN }}
-                publish_dir: ./html
+                name: Upload asv benchmark results as artifacts
+                path: |
+                    ./env
+                    ./html
+                    ./results
+                compression-level: 9
+        -   name: Push new results back to nilearn/benchmarks repo
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+            run: |
+                cd benchmarks_repo
+                cp -r ../results .
+                cp -r ../html/* .
+                git config --global user.name "GitHub Actions"
+                git config --global user.email "actions@github.com"
+                git add .
+                git commit -m "Update benchmark results and HTML"
+                git push origin main
+                cd ..
+        -   name: Add SSH key for nilearn/nilearn.github.io
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_nilearn_github_io.sock
+            run: |
+                mkdir -p ~/.ssh
+                ssh-keyscan github.com >> ~/.ssh/known_hosts
+                echo "${{ secrets.ACTIONS_SSH_DEPLOY }}" > ~/.ssh/github_actions
+                chmod 600 ~/.ssh/github_actions
+                ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+                ssh-add ~/.ssh/github_actions
+        -   name: Deploy updated benchmarks on nilearn.github.io/benchmarks
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_nilearn_github_io.sock
+            run: |
+                git clone --depth 1 git@github.com:nilearn/nilearn.github.io.git --recursive
+                cd nilearn.github.io
+                git config --global user.name "GitHub Actions"
+                git config --global user.email "actions@github.com"
+                git submodule update --remote --merge
+                git add benchmarks
+                git commit -m "Deploy benchmarks"
+                git push origin main
