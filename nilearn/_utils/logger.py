@@ -29,7 +29,7 @@ def log(
     msg,
     verbose=1,
     object_classes=(BaseEstimator,),
-    stack_level=1,
+    stack_level=None,
     msg_level=1,
     with_traceback=False,
 ):
@@ -51,9 +51,11 @@ def log(
     object_classes : tuple of type, default=(BaseEstimator, )
         Classes that should appear to emit the message.
 
-    stack_level : int, default=1
+    stack_level : int or None, default=None
         If no object in the call stack matches object_classes, go back that
         amount in the call stack and display class/function name thereof.
+        If None is passed this should show
+        the first nilearn public function in the stack.
 
     msg_level : int, default=1
         Verbosity level at and above which message should be displayed to the
@@ -72,6 +74,8 @@ def log(
     """
     if verbose < msg_level:
         return
+    if stack_level is None:
+        stack_level = find_stack_level() - 2
     stack = inspect.stack()
     object_frame = None
     object_self = None
