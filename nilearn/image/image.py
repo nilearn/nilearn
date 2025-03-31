@@ -130,7 +130,7 @@ def high_variance_confounds(
 
     if mask_img is not None:
         if isinstance(imgs, SurfaceImage):
-            check_same_n_vertices(mask_img.mesh, imgs.mesh)
+            assert_polymesh_equal(mask_img.mesh, imgs.mesh)
         sigs = masking.apply_mask(imgs, mask_img)
 
     # Load the data only if it doesn't need to be masked
