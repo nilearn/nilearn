@@ -10,6 +10,7 @@ from nilearn import __version__
 from nilearn._utils import logger
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 
 
 def _generate_model_metadata(out_file, model):
@@ -182,7 +183,7 @@ def save_glm_to_bids(
         warnings.warn(
             ("No plotting backend detected. Output will be missing figures."),
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     # fail early if invalid paramaeters to pass to generate_report()
