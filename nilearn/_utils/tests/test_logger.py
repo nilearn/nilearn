@@ -17,7 +17,7 @@ from nilearn._utils.logger import _has_rich, log
 
 # Helper functions and classes
 def run():
-    log("function run()")
+    log("function run()", stack_level=1)
 
 
 def other_run():
@@ -28,20 +28,20 @@ def other_run():
 
 class Run3:
     def run3(self):
-        log("method Test3")
+        log("method Test3", stack_level=1)
         run()
 
 
 class Run2(BaseEstimator):
     def run2(self):
-        log("method Test2")
+        log("method Test2", stack_level=1)
         t = Run()
         t.run()
 
 
 class Run(BaseEstimator):
     def run(self):
-        log("method Test")
+        log("method Test", stack_level=1)
         run()
 
 
@@ -110,7 +110,7 @@ def capture_output():
 
 # Will be executed by testrunner upon importing
 with capture_output() as out:
-    log("message from no function")
+    log("message from no function", stack_level=1)
     if _has_rich() is False:
         if isinstance(out[0], StringIO):
             assert out[0].getvalue() == "[<module>] message from no function\n"
