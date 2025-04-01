@@ -262,7 +262,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, default=None
-            This parameter is passed to clean. Please see the related
+            This parameter is passed to signal.clean. Please see the related
             documentation for details.
             shape: (number of scans, number of confounds)
 
