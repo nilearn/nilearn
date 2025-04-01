@@ -939,7 +939,11 @@ benchmarks. The goal is two-fold:
   :func:`nibabel.loadsave.load`).
 
 A collection of these benchmarks are located in the ``asv_benchmarks``
-directory. To run these benchmarks, you will need to install
+directory. Currently, we run them on GitHub CI everyday on the latest commit
+of the main branch. The results are available on
+`nilearn.github.io/benchmarks/ <https://nilearn.github.io/benchmarks/>`_.
+
+To run these benchmarks locally, you will need to install
 the asv package:
 
 .. code-block:: bash
