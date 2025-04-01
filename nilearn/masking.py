@@ -28,10 +28,14 @@ from nilearn.datasets import (
 from nilearn.image import get_data, new_img_like, resampling
 from nilearn.surface.surface import (
     SurfaceImage,
-    check_same_n_vertices,
 )
 from nilearn.surface.surface import get_data as get_surface_data
+
 from nilearn.typing import NiimgLike, SpatialImageLike
+
+from nilearn.surface.utils import assert_polymesh_equal
+from nilearn.typing import NiimgLike
+
 
 __all__ = [
     "apply_mask",
@@ -908,7 +912,7 @@ def apply_mask_fmri(
     :func:`nilearn.masking.apply_mask`, not in this function).
     """
     if isinstance(imgs, SurfaceImage) and isinstance(mask_img, SurfaceImage):
-        check_same_n_vertices(mask_img.mesh, imgs.mesh)
+        assert_polymesh_equal(mask_img.mesh, imgs.mesh)
 
         if smoothing_fwhm is not None:
             warnings.warn(
