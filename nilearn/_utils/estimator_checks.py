@@ -309,6 +309,10 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_transformer)
+        yield (
+            clone(estimator),
+            check_masker_transformer_high_variance_confounds,
+        )
         yield (clone(estimator), check_masker_compatibility_mask_image)
 
         if not is_multimasker(estimator):
@@ -554,6 +558,27 @@ def check_masker_transformer(estimator):
     signal_2 = estimator.fit(input_img).transform(input_img)
 
     assert_array_equal(signal_1, signal_2)
+
+
+def check_masker_transformer_high_variance_confounds(estimator):
+    """Check high_variance_confounds use in maskers.
+
+    Make sure that using high_variance_confounds returns different result.
+    """
+    estimator.high_variance_confounds = False
+
+    if accept_niimg_input(estimator):
+        input_img = _img_4d_rand_eye_medium()
+    else:
+        input_img = _make_surface_img(100)
+
+    signal_1 = estimator.fit_transform(input_img)
+
+    estimator = clone(estimator)
+    estimator.high_variance_confounds = True
+    signal_2 = estimator.fit_transform(input_img)
+
+    assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
 
 def check_masker_refit(estimator):
