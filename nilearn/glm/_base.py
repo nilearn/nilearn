@@ -562,9 +562,9 @@ def _generate_statistical_maps(
             tmp[key] = create_bids_filename(fields, entities_to_include)
 
         fields["entities"]["stat"] = None
-        fields["suffix"] = "results"
+        fields["suffix"] = "clusters"
         fields["extension"] = "tsv"
-        tmp["results"] = create_bids_filename(fields, entities_to_include)
+        tmp["clusters_tsv"] = create_bids_filename(fields, entities_to_include)
 
         fields["extension"] = "json"
         tmp["metadata"] = create_bids_filename(fields, entities_to_include)
