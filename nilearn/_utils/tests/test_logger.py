@@ -59,7 +59,7 @@ def test_log_2_matching_object(capsys):
 
 @pytest.mark.skipif(_has_rich(), reason="Skip test when rich is installed.")
 def test_log_1_matching_object(capsys):
-    t = Run()
+    t = Run1()
     t.run()
     captured = capsys.readouterr()
     assert captured.out == "[Run.run] method Test\n[Run.run] function run()\n"
