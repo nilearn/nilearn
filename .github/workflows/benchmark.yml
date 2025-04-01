@@ -55,6 +55,7 @@ jobs:
             (contains(github.event.head_commit.message, '[bm]') ||
             github.event_name == 'schedule') &&
             github.repository == 'nilearn/nilearn'
+        # TODO bump to 24.04 when bumping minimum python to 3.10
         runs-on: ubuntu-22.04
         steps:
         -   uses: actions/checkout@v3
