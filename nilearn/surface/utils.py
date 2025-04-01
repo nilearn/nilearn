@@ -27,6 +27,13 @@ def assert_polydata_equal(data_1, data_2):
 
 def assert_polymesh_equal(mesh_1, mesh_2):
     """Check that 2 PolyMeshes are equal."""
+    assert_polymesh_have_same_keys(mesh_1, mesh_2)
+    for key in mesh_1.parts:
+        assert_surface_mesh_equal(mesh_1.parts[key], mesh_2.parts[key])
+
+
+def assert_polymesh_have_same_keys(mesh_1, mesh_2):
+    """Check that 2 polymeshes have the same keys."""
     set_1 = set(mesh_1.parts.keys())
     set_2 = set(mesh_2.parts.keys())
     if set_1 != set_2:
@@ -35,8 +42,19 @@ def assert_polymesh_equal(mesh_1, mesh_2):
             f"PolyMeshes do not have the same keys. Offending keys: {diff}"
         )
 
-    for key in mesh_1.parts:
-        assert_surface_mesh_equal(mesh_1.parts[key], mesh_2.parts[key])
+
+def check_polymesh_equal(mesh_1, mesh_2):
+    """Check polymesh at-least have same number of vertices if not equal."""
+    try:
+        assert_polymesh_equal(mesh_1, mesh_2)
+    except MeshDimensionError:
+        assert_polymesh_have_same_keys(mesh_1, mesh_2)
+        for key in mesh_1.parts:
+            assert_same_number_vertices(mesh_1.parts[key], mesh_2.parts[key])
+        warn(
+            "Meshes are not identical but have compatible number of vertices.",
+            stacklevel=find_stack_level(),
+        )
 
 
 def assert_same_number_vertices(mesh_1, mesh_2):
@@ -45,19 +63,6 @@ def assert_same_number_vertices(mesh_1, mesh_2):
         raise MeshDimensionError(
             f"Number of vertices do not match for between meshes.\n"
             f"{mesh_1.n_vertices=} and {mesh_2.n_vertices=}"
-        )
-
-
-def check_polymesh_equal(mesh_1, mesh_2):
-    """Check polymesh at-least have same number of vertices if not equal."""
-    try:
-        assert_polymesh_equal(mesh_1, mesh_2)
-    except MeshDimensionError:
-        for key in mesh_1.parts:
-            assert_same_number_vertices(mesh_1.parts[key], mesh_2.parts[key])
-        warn(
-            "Meshes are not identical but have compatible number of vertices.",
-            stacklevel=find_stack_level(),
         )
 
 
