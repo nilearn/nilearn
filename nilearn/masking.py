@@ -30,12 +30,8 @@ from nilearn.surface.surface import (
     SurfaceImage,
 )
 from nilearn.surface.surface import get_data as get_surface_data
-
-from nilearn.typing import NiimgLike, SpatialImageLike
-
 from nilearn.surface.utils import assert_polymesh_equal
-from nilearn.typing import NiimgLike
-
+from nilearn.typing import NiimgLike, SpatialImageLike
 
 __all__ = [
     "apply_mask",
