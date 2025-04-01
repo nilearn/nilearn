@@ -24,7 +24,7 @@ from nilearn.surface.surface import (
     SurfaceImage,
     get_data,
 )
-from nilearn.surface.utils import assert_polymesh_equal
+from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
@@ -181,7 +181,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 msg=f"loading regions from {self.mask_img.__repr__()}",
                 verbose=self.verbose,
             )
-            assert_polymesh_equal(self.maps_img.mesh, self.mask_img.mesh)
+            check_polymesh_equal(self.maps_img.mesh, self.mask_img.mesh)
             self.mask_img_ = self.mask_img
             # squeeze the mask data if it is 2D and has a single column
             for part in self.mask_img_.data.parts:
@@ -276,7 +276,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         img = concat_imgs(img)
         # check img data is 2D
         img.data._check_ndims(2, "img")
-        assert_polymesh_equal(self.maps_img.mesh, img.mesh)
+        check_polymesh_equal(self.maps_img.mesh, img.mesh)
         img_data = np.concatenate(
             list(img.data.parts.values()), axis=0
         ).astype(np.float32)
