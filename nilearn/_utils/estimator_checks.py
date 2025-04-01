@@ -40,7 +40,7 @@ from nilearn.maskers import NiftiSpheresMasker
 from nilearn.regions import RegionExtractor
 from nilearn.reporting.tests.test_html_report import _check_html
 from nilearn.surface import SurfaceImage
-from nilearn.surface._testing import assert_surface_image_equal
+from nilearn.surface.utils import assert_surface_image_equal
 
 # TODO simplify when dropping sklearn 1.5,
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -585,7 +585,7 @@ def check_masker_refit(estimator):
                 fitted_mask_1.get_fdata(), fitted_mask_2.get_fdata()
             )
     else:
-        with pytest.raises(AssertionError):
+        with pytest.raises(ValueError):
             assert_surface_image_equal(fitted_mask_1, fitted_mask_2)
 
 

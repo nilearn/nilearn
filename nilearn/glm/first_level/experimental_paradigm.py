@@ -159,7 +159,6 @@ def _handle_modulation(events):
         logger.log(
             "A 'modulation' column was found in "
             "the given events data and is used.",
-            stack_level=2,
         )
     else:
         events["modulation"] = 1

@@ -4,7 +4,7 @@ import pytest
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
-from nilearn.surface._testing import (
+from nilearn.surface.utils import (
     assert_polydata_equal,
     assert_surface_image_equal,
 )

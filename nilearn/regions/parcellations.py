@@ -439,7 +439,8 @@ class Parcellations(_MultiPCA):
         mask_img_ = self.masker_.mask_img_
 
         logger.log(
-            f"computing {self.method}", verbose=self.verbose, stack_level=3
+            f"computing {self.method}",
+            verbose=self.verbose,
         )
 
         if self.method == "kmeans":

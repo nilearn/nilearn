@@ -309,7 +309,6 @@ def _group_sparse_covariance(
         logger.log(
             f"* iteration {n:d} ({100.0 * n / max_iter:.0f} %){suffix} ...",
             verbose=verbose,
-            stack_level=2,
         )
 
         omega_old[...] = omega
@@ -436,10 +435,7 @@ def _group_sparse_covariance(
         ):
             probe_interrupted = True
             logger.log(
-                "probe_function interrupted loop",
-                verbose=verbose,
-                msg_level=2,
-                stack_level=2,
+                "probe_function interrupted loop", verbose=verbose, msg_level=2
             )
             break
 
@@ -542,7 +538,6 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
         logger.log(
             f"tolerance reached at iteration number {n + 1:d}: {max_norm:.3e}",
             verbose=verbose,
-            stack_level=2,
         )
     return tolerance_reached
 
