@@ -7,7 +7,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import (
@@ -20,6 +19,10 @@ from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting._utils import save_figure_if_needed
+from nilearn.plotting.matrix._utils import (
+    _mask_matrix,
+    _reorder_matrix,
+)
 
 VALID_TRI_VALUES = ("full", "lower", "diag")
 
@@ -138,39 +141,6 @@ def _sanitize_reorder(reorder):
         )
     reorder = "average" if reorder is True else reorder
     return reorder
-
-
-def _reorder_matrix(mat, labels, reorder):
-    """Help for plot_matrix.
-
-    This function reorders the provided matrix.
-    """
-    if not labels:
-        raise ValueError("Labels are needed to show the reordering.")
-
-    linkage_matrix = linkage(mat, method=reorder)
-    ordered_linkage = optimal_leaf_ordering(linkage_matrix, mat)
-    index = leaves_list(ordered_linkage)
-    # make sure labels is an ndarray and copy it
-    labels = np.array(labels).copy()
-    mat = mat.copy()
-    # and reorder labels and matrix
-    labels = labels[index].tolist()
-    mat = mat[index, :][:, index]
-    return mat, labels
-
-
-def _mask_matrix(mat, tri):
-    """Help for plot_matrix.
-
-    This function masks the matrix depending on the provided
-    value of ``tri``.
-    """
-    if tri == "lower":
-        mask = np.tri(mat.shape[0], k=-1, dtype=bool) ^ True
-    else:
-        mask = np.tri(mat.shape[0], dtype=bool) ^ True
-    return np.ma.masked_array(mat, mask)
 
 
 def _configure_axis(
