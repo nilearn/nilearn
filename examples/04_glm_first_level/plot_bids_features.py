@@ -310,15 +310,15 @@ table
 #
 print(table.to_latex())
 
-#  %%
-#   You can also print the output to markdown,
-#   if you have the `tabulate` dependencies installed.
+# %%
+# You can also print the output to markdown,
+# if you have the `tabulate` dependencies installed.
 #
-#     .. code-block:: bash
+# .. code-block:: bash
 #
-#        pip install tabulate
+#    pip install tabulate
 #
-#     .. code-block:: python
+# .. code-block:: python
 #
-#        table.to_markdown()
+#    table.to_markdown()
 #
