@@ -371,9 +371,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         Parameters
         ----------
-        imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
-              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
-              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+        imgs : imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
+              iterable of :obj:`~nilearn.surface.SurfaceImage`
+            Images to process.
             Mesh and data for both hemispheres.
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\

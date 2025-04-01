@@ -441,7 +441,8 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        imgs : 1D/2D Surface image
+        imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
+              iterable of :obj:`~nilearn.surface.SurfaceImage`
             Images to process.
 
         confounds : CSV file or array-like, default=None
@@ -507,30 +508,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
-        """Extract signals from a single surface image.
-
-        Parameters
-        ----------
-        imgs : 1D/2D Surface image
-            Images to process.
-
-        confounds : CSV file or array-like, default=None
-            This parameter is passed to clean. Please see the related
-            documentation for details.
-            shape: (number of scans, number of confounds)
-
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to clean.
-
-        Returns
-        -------
-        region_signals : 2D numpy.ndarray
-            Signal for each element.
-            shape: (number of scans, number of elements)
-
-        """
+        """Extract signals from a single surface image."""
+        # implemented in children classes
         raise NotImplementedError()
