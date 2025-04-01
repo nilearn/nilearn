@@ -975,7 +975,6 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
         f"{prefix_msg}getting new batch:\n\t{query}",
         verbose=verbose,
         msg_level=_DEBUG,
-        stack_level=6,
     )
     try:
         resp = session.send(prepped, timeout=timeout)
@@ -991,7 +990,6 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
             msg_level=_ERROR,
             verbose=verbose,
             with_traceback=False,
-            stack_level=4,
         )
         raise
     except Exception:
@@ -1000,7 +998,6 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
             msg_level=_ERROR,
             verbose=verbose,
             with_traceback=True,
-            stack_level=4,
         )
         raise
     if "id" in batch:
@@ -1011,7 +1008,7 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
                 f'Could not find required key "{key}" '
                 f"in batch retrieved from {query}."
             )
-            logger.log(msg, msg_level=_ERROR, verbose=verbose, stack_level=4)
+            logger.log(msg, msg_level=_ERROR, verbose=verbose)
             raise ValueError(msg)
 
     return batch
@@ -1095,7 +1092,6 @@ def _scroll_server_results(
                 f"{prefix_msg}batch size: {batch_size}",
                 msg_level=_DEBUG,
                 verbose=verbose,
-                stack_level=5,
             )
             if n_available is None:
                 n_available = batch["count"]
@@ -1183,7 +1179,6 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         f"Downloading file: {url}",
         msg_level=_DEBUG,
         verbose=verbose,
-        stack_level=8,
     )
     try:
         downloaded = fetch_single_file(
@@ -1194,7 +1189,6 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
             f"Problem downloading file from {url}",
             msg_level=_ERROR,
             verbose=verbose,
-            stack_level=9,
         )
         raise
     shutil.move(downloaded, target_file)
@@ -1202,7 +1196,6 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         f"Download succeeded, downloaded to: {target_file}",
         msg_level=_DEBUG,
         verbose=verbose,
-        stack_level=8,
     )
     return target_file
 
@@ -1567,7 +1560,9 @@ def _download_image_nii_file(image_info, collection, download_params):
         )
 
         # Resample here
-        logger.log("Resampling...", stack_level=8)
+        logger.log(
+            "Resampling...",
+        )
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
         im_resampled = resample_img(
@@ -1665,7 +1660,6 @@ def _download_image_terms(image_info, collection, download_params):
             msg_level=_ERROR,
             verbose=download_params["verbose"],
             with_traceback=True,
-            stack_level=2,
         )
 
     return image_info, collection
@@ -1785,7 +1779,6 @@ def _scroll_local(download_params):
         "Reading local neurovault data.",
         msg_level=_DEBUG,
         verbose=download_params["verbose"],
-        stack_level=4,
     )
 
     collections = Path(download_params["nv_data_dir"]).rglob(
@@ -1886,7 +1879,6 @@ def _scroll_collection(collection, download_params):
                 msg_level=_ERROR,
                 verbose=download_params["verbose"],
                 with_traceback=True,
-                stack_level=4,
             )
             yield None
         if fails_in_collection == download_params["max_fails_in_collection"]:
@@ -1895,7 +1887,6 @@ def _scroll_collection(collection, download_params):
                 f"{fails_in_collection} bad images.",
                 msg_level=_ERROR,
                 verbose=download_params["verbose"],
-                stack_level=4,
             )
             return
     logger.log(
@@ -1905,7 +1896,6 @@ def _scroll_collection(collection, download_params):
         f"matched query in collection {collection['id']}",
         msg_level=_INFO,
         verbose=download_params["verbose"],
-        stack_level=5,
     )
 
 
@@ -1940,7 +1930,6 @@ def _scroll_filtered(download_params):
         "Reading server neurovault data.",
         msg_level=_DEBUG,
         verbose=download_params["verbose"],
-        stack_level=4,
     )
 
     download_params["collection_filter"] = ResultFilter(
@@ -2005,7 +1994,6 @@ def _scroll_collection_ids(download_params):
             "Reading collections from server neurovault data.",
             msg_level=_DEBUG,
             verbose=download_params["verbose"],
-            stack_level=4,
         )
 
     collections = _yield_from_url_list(
@@ -2111,7 +2099,6 @@ def _print_progress(found, download_params, level=_INFO):
         f"Already fetched {found} image{'s' if found > 1 else ''}",
         msg_level=level,
         verbose=download_params["verbose"],
-        stack_level=4,
     )
 
 
@@ -2163,7 +2150,6 @@ def _scroll(download_params):
             "found on local disk.",
             msg_level=_INFO,
             verbose=download_params["verbose"],
-            stack_level=3,
         )
 
     if download_params["download_mode"] == "offline":

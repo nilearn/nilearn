@@ -278,7 +278,8 @@ class DictLearning(_BaseDecomposition):
         _, n_features = data.shape
 
         logger.log(
-            "Computing initial loadings", verbose=self.verbose, stack_level=2
+            "Computing initial loadings",
+            verbose=self.verbose,
         )
         self._init_loadings(data)
 
@@ -286,7 +287,10 @@ class DictLearning(_BaseDecomposition):
 
         max_iter = ((n_features - 1) // self.batch_size + 1) * self.n_epochs
 
-        logger.log(" Learning dictionary", verbose=self.verbose, stack_level=2)
+        logger.log(
+            " Learning dictionary",
+            verbose=self.verbose,
+        )
 
         kwargs = transfer_deprecated_param_vals(
             {"n_iter": "max_iter"}, {"max_iter": max_iter}
