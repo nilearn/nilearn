@@ -499,7 +499,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     return mean_data, affine
 
 
-def compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
+def _compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
     """Compute mean of a single surface image over its 2nd dimension."""
     if len(imgs.shape) < 2 or imgs.shape[1] < 2:
         data = imgs.data
@@ -576,8 +576,8 @@ def mean_img(
     if is_surface_img:
         if not is_iterable:
             imgs = [imgs]
-        all_means = concat_imgs([compute_surface_mean(x) for x in imgs])
-        return compute_surface_mean(all_means)
+        all_means = concat_imgs([_compute_surface_mean(x) for x in imgs])
+        return _compute_surface_mean(all_means)
 
     # TODO: remove this warning in 0.13.0
     check_copy_header(copy_header)
