@@ -318,7 +318,8 @@ def save_glm_to_bids(
             two_sided=report_kwargs["two_sided"],
         )
         cluster_table.to_csv(
-            out_dir / filenames["statistical_maps"][contrast_name]["results"],
+            out_dir
+            / filenames["statistical_maps"][contrast_name]["clusters_tsv"],
             sep="\t",
             index=False,
         )

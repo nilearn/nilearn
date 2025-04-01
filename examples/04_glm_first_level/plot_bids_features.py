@@ -194,15 +194,44 @@ plot_bland_altman(
 show()
 
 # %%
+# Saving model outputs to disk
+# ----------------------------
+#
+# We can now easily save the main results,
+# the model metadata and an HTML report to the disk.
+#
+output_dir = Path.cwd() / "results" / "plot_bids_features"
+output_dir.mkdir(exist_ok=True, parents=True)
+
+from nilearn.interfaces.bids import save_glm_to_bids
+
+stat_threshold = norm.isf(0.001)
+
+save_glm_to_bids(
+    model,
+    contrasts="StopSuccess - Go",
+    contrast_types={"StopSuccess - Go": "t"},
+    out_dir=output_dir / "derivatives" / "nilearn_glm",
+    threshold=stat_threshold,
+    cluster_threshold=10,
+)
+
+# %%
+# View the generated files
+files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
+print("\n".join([str(x.relative_to(output_dir)) for x in files]))
+
+# %%
 # Simple statistical report of thresholded contrast
 # -------------------------------------------------
 # We display the :term:`contrast` plot and table with cluster information.
 from nilearn.plotting import plot_contrast_matrix
 
 plot_contrast_matrix("StopSuccess - Go", design_matrix)
+
 plot_glass_brain(
     z_map,
-    threshold=norm.isf(0.001),
+    threshold=stat_threshold,
     plot_abs=False,
     display_mode="z",
     figure=plt.figure(figsize=(4, 4)),
@@ -211,7 +240,7 @@ show()
 
 # %%
 # We can get a latex table from a Pandas Dataframe for display and publication
-# purposes
+# purposes.
 #
 # .. seealso::
 #
@@ -224,29 +253,7 @@ show()
 #
 from nilearn.reporting import get_clusters_table
 
-table = get_clusters_table(z_map, norm.isf(0.001), 10)
-print(table.to_latex())
-
-# %%
-# Saving model outputs to disk
-# ----------------------------
-#
-# We can now easily save the main results,
-# the model metadata and an HTML report to the disk.
-#
-output_dir = Path.cwd() / "results" / "plot_bids_features"
-output_dir.mkdir(exist_ok=True, parents=True)
-
-from nilearn.interfaces.bids import save_glm_to_bids
-
-save_glm_to_bids(
-    model,
-    contrasts="StopSuccess - Go",
-    contrast_types={"StopSuccess - Go": "t"},
-    out_dir=output_dir / "derivatives" / "nilearn_glm",
+table = get_clusters_table(
+    z_map, stat_threshold=stat_threshold, cluster_threshold=10
 )
-
-# %%
-# View the generated files
-files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
-print("\n".join([str(x.relative_to(output_dir)) for x in files]))
+print(table.to_markdown())
