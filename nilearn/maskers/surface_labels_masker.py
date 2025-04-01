@@ -396,8 +396,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             shape: (img data shape, total number of vertices)
         """
         check_compatibility_mask_and_images(self.labels_img, imgs)
-        imgs = at_least_2d(imgs)
         assert_polymesh_equal(self.labels_img.mesh, imgs.mesh)
+        imgs = at_least_2d(imgs)
 
         # concatenate data over hemispheres
         img_data = np.concatenate(list(imgs.data.parts.values()), axis=0)
