@@ -561,8 +561,8 @@ class NiftiMasker(BaseMasker):
 
         confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
             default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details: :func:`nilearn.signal.clean`.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, \

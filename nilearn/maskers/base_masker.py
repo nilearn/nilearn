@@ -186,8 +186,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, \
@@ -262,8 +262,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, \
@@ -446,8 +446,8 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             Images to process.
 
         confounds : CSV file or array-like, default=None
-            This parameter is passed to clean. Please see the related
-            documentation for details.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, \
