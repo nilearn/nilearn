@@ -19,11 +19,15 @@ from nilearn.plotting import (
     plot_event,
     plot_matrix,
 )
-from nilearn.plotting.matrix.matrix_plotting import (
-    _sanitize_figure_and_axes,
+from nilearn.plotting.matrix._backend import (
     _sanitize_labels,
     _sanitize_reorder,
     _sanitize_tri,
+)
+from nilearn.plotting.matrix._matplotlib_backend import (
+    _sanitize_figure_and_axes,
+)
+from nilearn.plotting.matrix.matrix_plotting import (
     pad_contrast_matrix,
 )
 
