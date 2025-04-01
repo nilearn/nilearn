@@ -53,12 +53,12 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface._testing import (
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.surface.utils import (
     assert_polymesh_equal,
     assert_surface_image_equal,
 )
-from nilearn.surface.surface import SurfaceImage
-from nilearn.surface.surface import get_data as get_surface_data
 
 X64 = platform.architecture()[0] == "64bit"
 
@@ -1222,7 +1222,7 @@ def test_threshold_img_copy_surface(surf_img_1d):
     threshold = 15
     input_img = surf_img_1d
     result = threshold_img(input_img, threshold=threshold, copy=True)
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         assert_surface_image_equal(result, surf_img_1d)
 
 

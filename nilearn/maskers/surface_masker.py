@@ -17,8 +17,8 @@ from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
-    check_same_n_vertices,
 )
+from nilearn.surface.utils import assert_polymesh_equal
 
 
 @fill_doc
@@ -157,7 +157,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         if self.mask_img is not None:
             check_compatibility_mask_and_images(self.mask_img, img)
-            check_same_n_vertices(self.mask_img.mesh, img.mesh)
+            assert_polymesh_equal(self.mask_img.mesh, img.mesh)
             self.mask_img_ = self.mask_img
             return
 

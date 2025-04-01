@@ -2781,7 +2781,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
 
 def _download_spm_auditory_data(data_dir):
-    logger.log("Data absent, downloading...", stack_level=2)
+    logger.log("Data absent, downloading...")
     url = (
         "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
         "MoAEpilot.bids.zip"
@@ -2791,9 +2791,7 @@ def _download_spm_auditory_data(data_dir):
     try:
         uncompress_file(archive_path)
     except Exception:
-        logger.log(
-            "Archive corrupted, trying to download it again.", stack_level=2
-        )
+        logger.log("Archive corrupted, trying to download it again.")
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
@@ -2880,8 +2878,7 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     if len(session_func) < 390:
         logger.log(
             f"Missing {390 - len(session_func)} functional scans "
-            f"for session {session}.",
-            stack_level=2,
+            f"for session {session}."
         )
         return None
 
@@ -2892,7 +2889,7 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
 def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
     sess_trials = subject_dir / f"fMRI/trials_ses{int(session)}.mat"
     if not sess_trials.is_file():
-        logger.log(f"Missing session file: {sess_trials}", stack_level=2)
+        logger.log(f"Missing session file: {sess_trials}")
         return None
 
     _subject_data[f"trials_ses{int(session)}"] = str(sess_trials)
@@ -2902,7 +2899,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
 def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
     anat = subject_dir / "sMRI/smri.img"
     if not anat.is_file():
-        logger.log("Missing structural image.", stack_level=2)
+        logger.log("Missing structural image.")
         return None
 
     _subject_data["anat"] = str(anat)
@@ -2950,7 +2947,7 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
 
 
 def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
-    logger.log("Data absent, downloading...", stack_level=2)
+    logger.log("Data absent, downloading...")
     urls = [
         # fmri
         (
@@ -2970,10 +2967,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
         try:
             uncompress_file(archive_path)
         except Exception:
-            logger.log(
-                "Archive corrupted, trying to download it again.",
-                stack_level=2,
-            )
+            logger.log("Archive corrupted, trying to download it again.")
             return fetch_spm_multimodal_fmri(
                 data_dir=data_dir, data_name="", subject_id=subject_id
             )

@@ -26,9 +26,6 @@ from nilearn.image import (
 )
 from nilearn.masking import unmask
 from nilearn.signal import clean
-from nilearn.surface.surface import (
-    check_same_n_vertices,
-)
 
 
 def filter_and_extract(
@@ -78,7 +75,6 @@ def filter_and_extract(
     log(
         f"Loading data from {repr_niimgs(imgs, shorten=False)}",
         verbose=verbose,
-        stack_level=2,
     )
 
     # Convert input to niimg to check shape.
@@ -102,7 +98,7 @@ def filter_and_extract(
     target_shape = parameters.get("target_shape")
     target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
-        log("Resampling images", stack_level=2)
+        log("Resampling images")
 
         imgs = cache(
             resample_img,
@@ -122,7 +118,8 @@ def filter_and_extract(
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
     if smoothing_fwhm is not None:
-        log("Smoothing images", verbose=verbose, stack_level=2)
+        log("Smoothing images", verbose=verbose)
+
         imgs = cache(
             smooth_img,
             memory,
@@ -130,7 +127,8 @@ def filter_and_extract(
             memory_level=memory_level,
         )(imgs, parameters["smoothing_fwhm"])
 
-    log("Extracting region signals", verbose=verbose, stack_level=2)
+    log("Extracting region signals", verbose=verbose)
+
     region_signals, aux = cache(
         extraction_function,
         memory,
@@ -144,7 +142,9 @@ def filter_and_extract(
     # Filtering
     # Confounds removing (from csv file or numpy array)
     # Normalizing
-    log("Cleaning extracted signals", verbose=verbose, stack_level=2)
+
+    log("Cleaning extracted signals", verbose=verbose)
+
     runs = parameters.get("runs", None)
     region_signals = cache(
         clean,
@@ -470,9 +470,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         imgs = concat_imgs(imgs)
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
-
-        if self.mask_img_ is not None:
-            check_same_n_vertices(self.mask_img_.mesh, imgs.mesh)
 
         if self.smoothing_fwhm is not None:
             warnings.warn(

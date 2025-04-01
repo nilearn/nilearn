@@ -867,7 +867,10 @@ class NiftiLabelsMasker(BaseMasker):
         return region_signals
 
     def _resample_labels(self, imgs_):
-        logger.log("Resampling labels", self.verbose, stack_level=2)
+        logger.log(
+            "Resampling labels",
+            self.verbose,
+        )
         labels_before_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
         )
