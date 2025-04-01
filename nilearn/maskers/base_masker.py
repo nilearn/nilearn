@@ -195,7 +195,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             shape: (number of scans - number of volumes removed, )
             Masks the niimgs along time/fourth dimension to perform scrubbing
             (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to clean.
+            This parameter is passed to signal.clean.
 
                 .. versionadded:: 0.8.0
 
