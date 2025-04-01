@@ -10,6 +10,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.externals import tempita
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
@@ -772,6 +773,6 @@ def _clean_contrast_name(contrast_name):
     if new_name != contrast_name:
         warnings.warn(
             f'Contrast name "{contrast_name}" changed to "{new_name}"',
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
     return new_name

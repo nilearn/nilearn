@@ -20,6 +20,7 @@ from nilearn._utils import (
 from nilearn._utils.class_inspect import (
     get_params,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -52,7 +53,8 @@ def _get_mask_strategy(strategy):
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated. "
-            "Please use 'whole-brain-template' instead."
+            "Please use 'whole-brain-template' instead.",
+            stacklevel=find_stack_level(),
         )
         return partial(compute_multi_brain_mask, mask_type="whole-brain")
     else:
@@ -311,7 +313,7 @@ class MultiNiftiMasker(NiftiMasker):
                     "Generation of a mask has been requested (imgs != None) "
                     "while a mask has been provided at masker creation. "
                     "Given mask will be used.",
-                    stacklevel=2,
+                    stacklevel=find_stack_level(),
                 )
 
             self.mask_img_ = check_niimg_3d(self.mask_img)

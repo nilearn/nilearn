@@ -9,6 +9,8 @@ from warnings import warn
 import numpy as np
 from nibabel import is_proxy, load, spatialimages
 
+from nilearn._utils.logger import find_stack_level
+
 from .helpers import stringify_path
 
 
@@ -60,7 +62,7 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
             warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             data[non_finite_mask] = 0
 

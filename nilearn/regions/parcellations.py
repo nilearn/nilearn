@@ -10,19 +10,19 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import iter_check_niimg
+from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
-from nilearn.surface import SurfaceImage
-
-from .._utils import fill_doc, logger, stringify_path
-from .._utils.niimg import safe_get_data
-from .._utils.niimg_conversions import iter_check_niimg
-from ..decomposition._multi_pca import _MultiPCA
-from .hierarchical_kmeans_clustering import HierarchicalKMeans
-from .rena_clustering import (
+from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
+from nilearn.regions.rena_clustering import (
     ReNA,
     make_edges_surface,
 )
+from nilearn.surface import SurfaceImage
 
 
 def _connectivity_surface(mask_img):
@@ -518,7 +518,9 @@ class Parcellations(_MultiPCA):
                 "match the requested number of parcels."
             )
             warnings.warn(
-                message=n_parcels_warning, category=UserWarning, stacklevel=3
+                message=n_parcels_warning,
+                category=UserWarning,
+                stacklevel=find_stack_level(),
             )
         self.labels_img_ = self.masker_.inverse_transform(
             labels.astype(np.int32)

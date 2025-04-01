@@ -17,6 +17,7 @@ from scipy.ndimage import (
 )
 
 from nilearn._utils import check_niimg_3d
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn.image import new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
@@ -106,7 +107,7 @@ def _identify_subpeaks(data):
                 "falls outside of the cluster body. "
                 "Identifying the nearest in-cluster voxel."
             ),
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
         # Replace centers of mass with their nearest neighbor points in the
         # corresponding clusters. Note this is also equivalent to computing the
@@ -354,7 +355,7 @@ def get_clusters_table(
                 f"with stat {'higher' if sign == 1 else 'lower'} "
                 f"than {stat_threshold * sign}",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             continue
 

@@ -10,6 +10,7 @@ from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     ALLOWED_DATA_TYPES,
@@ -684,14 +685,16 @@ def fetch_oasis_vbm(
             warnings.warn(
                 "Only 403 subjects are available in the "
                 "DARTEL-normalized version of the dataset. "
-                f"All of them will be used instead of the wanted {n_subjects}"
+                f"All of them will be used instead of the wanted {n_subjects}",
+                stacklevel=find_stack_level(),
             )
             n_subjects = 403
     elif n_subjects > 415:
         warnings.warn(
             "Only 415 subjects are available in the "
             "non-DARTEL-normalized version of the dataset. "
-            f"All of them will be used instead of the wanted {n_subjects}"
+            f"All of them will be used instead of the wanted {n_subjects}",
+            stacklevel=find_stack_level(),
         )
         n_subjects = 415
     if n_subjects < 1:

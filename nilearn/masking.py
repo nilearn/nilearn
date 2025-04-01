@@ -7,8 +7,15 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy.ndimage import binary_dilation, binary_erosion
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import (
+    as_ndarray,
+    check_niimg,
+    check_niimg_3d,
+    fill_doc,
+    logger,
+)
 from nilearn._utils.cache_mixin import cache
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
@@ -18,11 +25,12 @@ from nilearn.datasets import (
     load_mni152_wm_template,
 )
 from nilearn.image import get_data, new_img_like, resampling
-from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import (
+    SurfaceImage,
+    check_same_n_vertices,
+)
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.typing import NiimgLike
-
-from . import _utils
 
 __all__ = [
     "apply_mask",
@@ -78,7 +86,7 @@ def load_mask_img(mask_img, allow_empty=False):
         )
 
     if isinstance(mask_img, NiimgLike):
-        mask_img = _utils.check_niimg_3d(mask_img)
+        mask_img = check_niimg_3d(mask_img)
         mask = safe_get_data(mask_img, ensure_finite=True)
     else:
         mask_img.data._check_ndims(1)
@@ -106,13 +114,13 @@ def load_mask_img(mask_img, allow_empty=False):
             "Cannot interpret as true or false."
         )
 
-    mask = _utils.as_ndarray(mask, dtype=bool)
+    mask = as_ndarray(mask, dtype=bool)
 
     if isinstance(mask_img, NiimgLike):
         return mask, mask_img.affine
 
     for hemi in mask_img.data.parts:
-        mask_img.data.parts[hemi] = _utils.as_ndarray(
+        mask_img.data.parts[hemi] = as_ndarray(
             mask_img.data.parts[hemi], dtype=bool
         )
 
@@ -163,7 +171,7 @@ def extrapolate_out_mask(data, mask, iterations=1):
 #
 # Utilities to compute masks
 #
-@_utils.fill_doc
+@fill_doc
 def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     """Compute intersection of several masks.
 
@@ -209,7 +217,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
         if grp_mask is None:
             # We use int here because there may be a lot of masks to merge
-            grp_mask = _utils.as_ndarray(mask, dtype=int)
+            grp_mask = as_ndarray(mask, dtype=int)
         else:
             # If this_mask is floating point and grp_mask is integer, numpy 2
             # casting rules raise an error for in-place addition. Hence we do
@@ -221,10 +229,8 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
 
     if np.any(grp_mask > 0) and connected:
         grp_mask = largest_connected_component(grp_mask)
-    grp_mask = _utils.as_ndarray(grp_mask, dtype=np.int8)
-    return new_img_like(
-        _utils.check_niimg_3d(mask_imgs[0]), grp_mask, ref_affine
-    )
+    grp_mask = as_ndarray(grp_mask, dtype=np.int8)
+    return new_img_like(check_niimg_3d(mask_imgs[0]), grp_mask, ref_affine)
 
 
 def _post_process_mask(
@@ -243,7 +249,7 @@ def _post_process_mask(
         warnings.warn(
             f"Computed an empty mask. {warning_msg}",
             _MaskWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if connected and mask_any:
         mask = largest_connected_component(mask)
@@ -253,7 +259,7 @@ def _post_process_mask(
     return mask, affine
 
 
-@_utils.fill_doc
+@fill_doc
 def compute_epi_mask(
     epi_img,
     lower_cutoff=0.2,
@@ -328,7 +334,7 @@ def compute_epi_mask(
     logger.log("EPI mask computation", verbose)
 
     # Delayed import to avoid circular imports
-    from .image.image import compute_mean
+    from nilearn.image.image import compute_mean
 
     mean_epi, affine = cache(compute_mean, memory)(
         epi_img,
@@ -339,7 +345,7 @@ def compute_epi_mask(
 
     if ensure_finite:
         # Get rid of memmapping
-        mean_epi = _utils.as_ndarray(mean_epi)
+        mean_epi = as_ndarray(mean_epi)
         # SPM tends to put NaNs in the data outside the brain
         mean_epi[np.logical_not(np.isfinite(mean_epi))] = 0
     sorted_input = np.sort(np.ravel(mean_epi))
@@ -372,7 +378,7 @@ def compute_epi_mask(
     return new_img_like(epi_img, mask, affine)
 
 
-@_utils.fill_doc
+@fill_doc
 def compute_multi_epi_mask(
     epi_imgs,
     lower_cutoff=0.2,
@@ -470,7 +476,7 @@ def compute_multi_epi_mask(
     return mask
 
 
-@_utils.fill_doc
+@fill_doc
 def compute_background_mask(
     data_imgs,
     border_size=2,
@@ -521,10 +527,10 @@ def compute_background_mask(
     check_params(locals())
     logger.log("Background mask computation", verbose)
 
-    data_imgs = _utils.check_niimg(data_imgs)
+    data_imgs = check_niimg(data_imgs)
 
     # Delayed import to avoid circular imports
-    from .image.image import compute_mean
+    from nilearn.image.image import compute_mean
 
     data, affine = cache(compute_mean, memory)(
         data_imgs,
@@ -552,7 +558,7 @@ def compute_background_mask(
     return new_img_like(data_imgs, mask, affine)
 
 
-@_utils.fill_doc
+@fill_doc
 def compute_multi_background_mask(
     data_imgs,
     border_size=2,
@@ -641,7 +647,7 @@ def compute_multi_background_mask(
     return mask
 
 
-@_utils.fill_doc
+@fill_doc
 def compute_brain_mask(
     target_img,
     threshold=0.5,
@@ -683,7 +689,7 @@ def compute_brain_mask(
     check_params(locals())
     logger.log(f"Template {mask_type} mask computation", verbose)
 
-    target_img = _utils.check_niimg(target_img)
+    target_img = check_niimg(target_img)
 
     if mask_type == "whole-brain":
         template = load_mni152_template(resolution=1)
@@ -721,7 +727,7 @@ def compute_brain_mask(
     return new_img_like(target_img, mask, affine)
 
 
-@_utils.fill_doc
+@fill_doc
 def compute_multi_brain_mask(
     target_imgs,
     threshold=0.5,
@@ -792,7 +798,7 @@ def compute_multi_brain_mask(
         )
 
     # Check images in the list have the same FOV without loading them in memory
-    _ = list(_utils.check_niimg(target_imgs, return_iterator=True))
+    _ = list(check_niimg(target_imgs, return_iterator=True))
 
     mask = compute_brain_mask(
         target_imgs[0],
@@ -817,17 +823,18 @@ def apply_mask(
 ):
     """Extract signals from images using specified mask.
 
-    Read the time series from the given Niimg-like object, using the mask.
+    Read the time series from the given image object, using the mask.
 
     Parameters
     ----------
-    imgs : :obj:`list` of 4D Niimg-like objects
+    imgs : :obj:`list` of 4D Niimg-like objects or 2D SurfaceImage
         See :ref:`extracting_data`.
-        Images to be masked. list of lists of 3D images are also accepted.
+        Images to be masked.
+        List of lists of 3D Niimg-like or 2D surface images are also accepted.
 
-    mask_img : Niimg-like object
+    mask_img : Niimg-like or SurfaceImage object
         See :ref:`extracting_data`.
-        3D mask array: True where a :term:`voxel` should be used.
+        Mask array with True value where a voxel / vertex should be used.
 
     dtype : numpy dtype or 'f', default="f"
         The dtype of the output, if 'f', any float output is acceptable
@@ -840,6 +847,10 @@ def apply_mask(
 
             Implies ensure_finite=True.
 
+        .. warning::
+
+            Not yet implemented for surface images
+
     ensure_finite : :obj:`bool`, default=True
         If ensure_finite is True, the non-finite values (NaNs and
         infs) found in the images will be replaced by zeros.
@@ -847,16 +858,21 @@ def apply_mask(
     Returns
     -------
     run_series : :class:`numpy.ndarray`
-        2D array of series with shape (image number, :term:`voxel` number)
+        2D array of series with shape
+        (image number, :term:`voxel` / vertex number)
 
     Notes
     -----
     When using smoothing, ``ensure_finite`` is set to True, as non-finite
     values would spread across the image.
     """
-    mask_img = _utils.check_niimg_3d(mask_img)
-    mask, mask_affine = load_mask_img(mask_img)
-    mask_img = new_img_like(mask_img, mask, mask_affine)
+    if not isinstance(imgs, SurfaceImage):
+        mask_img = check_niimg_3d(mask_img)
+        mask, mask_affine = load_mask_img(mask_img)
+        mask_img = new_img_like(mask_img, mask, mask_affine)
+    else:
+        mask, mask_affine = load_mask_img(mask_img)
+        mask_img = mask
     return apply_mask_fmri(
         imgs,
         mask_img,
@@ -868,7 +884,7 @@ def apply_mask(
 
 def apply_mask_fmri(
     imgs, mask_img, dtype="f", smoothing_fwhm=None, ensure_finite=True
-):
+) -> np.ndarray:
     """Perform similar action to :func:`nilearn.masking.apply_mask`.
 
     The only difference with :func:`nilearn.masking.apply_mask` is that
@@ -876,14 +892,37 @@ def apply_mask_fmri(
     assumed to contain only two different values (this is checked for in
     :func:`nilearn.masking.apply_mask`, not in this function).
     """
-    mask_img = _utils.check_niimg_3d(mask_img)
+    if isinstance(imgs, SurfaceImage) and isinstance(mask_img, SurfaceImage):
+        check_same_n_vertices(mask_img.mesh, imgs.mesh)
+
+        if smoothing_fwhm is not None:
+            warnings.warn(
+                "Parameter smoothing_fwhm "
+                "is not yet supported for surface data",
+                UserWarning,
+                stacklevel=2,
+            )
+            smoothing_fwhm = True
+
+        mask_data = as_ndarray(get_surface_data(mask_img), dtype=bool)
+        series = get_surface_data(imgs)
+
+        if dtype == "f":
+            dtype = series.dtype if series.dtype.kind == "f" else np.float32
+
+        series = as_ndarray(series, dtype=dtype, order="C", copy=True)
+        del imgs  # frees a lot of memory
+
+        return series[mask_data].T
+
+    mask_img = check_niimg_3d(mask_img)
     mask_affine = mask_img.affine
-    mask_data = _utils.as_ndarray(get_data(mask_img), dtype=bool)
+    mask_data = as_ndarray(get_data(mask_img), dtype=bool)
 
     if smoothing_fwhm is not None:
         ensure_finite = True
 
-    imgs_img = _utils.check_niimg(imgs)
+    imgs_img = check_niimg(imgs)
     affine = imgs_img.affine[:3, :3]
 
     if not np.allclose(mask_affine, imgs_img.affine):
@@ -906,11 +945,11 @@ def apply_mask_fmri(
     if dtype == "f":
         dtype = series.dtype if series.dtype.kind == "f" else np.float32
 
-    series = _utils.as_ndarray(series, dtype=dtype, order="C", copy=True)
-    del imgs_img  # frees a lot of memory
+    series = as_ndarray(series, dtype=dtype, order="C", copy=True)
+    del imgs  # frees a lot of memory
 
     # Delayed import to avoid circular imports
-    from .image.image import smooth_array
+    from nilearn.image.image import smooth_array
 
     smooth_array(
         series,
@@ -1020,7 +1059,7 @@ def unmask(X, mask_img, order="F"):
     # The code after this block assumes that X is an ndarray; ensure this
     X = np.asanyarray(X)
 
-    mask_img = _utils.check_niimg_3d(mask_img)
+    mask_img = check_niimg_3d(mask_img)
     mask, affine = load_mask_img(mask_img)
 
     if np.ndim(X) == 2:

@@ -21,6 +21,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from nilearn._utils import fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import resample_img
 
@@ -1267,7 +1268,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     if voc_empty:
         warnings.warn(
             "No word weight could be loaded, "
-            "vectorizing Neurosynth words failed."
+            "vectorizing Neurosynth words failed.",
+            stacklevel=find_stack_level(),
         )
         return None, None
     vectorizer = DictVectorizer(**kwargs)
@@ -1748,7 +1750,8 @@ def _update_image(image_info, download_params):
         warnings.warn(
             f"Could not update metadata for image {image_info['id']}, "
             "most likely because you do not have "
-            "write permissions to its metadata file."
+            "write permissions to its metadata file.",
+            stacklevel=find_stack_level(),
         )
     return image_info
 
@@ -2181,7 +2184,8 @@ def _scroll(download_params):
         if n_consecutive_fails >= download_params["max_consecutive_fails"]:
             warnings.warn(
                 "Neurovault download stopped early: "
-                f"too many downloads failed in a row ({n_consecutive_fails})"
+                f"too many downloads failed in a row ({n_consecutive_fails})",
+                stacklevel=find_stack_level(),
             )
             return
         if found == download_params["max_images"]:
@@ -2262,7 +2266,8 @@ def _move_col_id(im_terms, col_terms):
         warnings.warn(
             "You specified contradictory collection ids, "
             "one in the image filters and one in the "
-            "collection filters"
+            "collection filters",
+            stacklevel=find_stack_level(),
         )
     return im_terms, col_terms
 
@@ -2491,7 +2496,8 @@ def _fetch_neurovault_implementation(
         warnings.warn(
             "You don't have write access to neurovault dir: "
             f"{neurovault_data_dir}. "
-            "fetch_neurovault is working offline."
+            "fetch_neurovault is working offline.",
+            stacklevel=find_stack_level(),
         )
         mode = "offline"
 
@@ -2739,7 +2745,8 @@ def fetch_neurovault(
         warnings.warn(
             "You specified a value for `image_filter` but the "
             "default filters in `image_terms` still apply. "
-            "If you want to disable them, pass `image_terms={}`"
+            "If you want to disable them, pass `image_terms={}`",
+            stacklevel=find_stack_level(),
         )
     if (
         collection_filter is not _empty_filter
@@ -2748,7 +2755,8 @@ def fetch_neurovault(
         warnings.warn(
             "You specified a value for `collection_filter` but the "
             "default filters in `collection_terms` still apply. "
-            "If you want to disable them, pass `collection_terms={}`"
+            "If you want to disable them, pass `collection_terms={}`",
+            stacklevel=find_stack_level(),
         )
 
     return _fetch_neurovault_implementation(
@@ -2945,7 +2953,7 @@ def fetch_neurovault_motor_task(
             "Please use 'load_sample_motor_activation_image' instead.'"
         ),
         DeprecationWarning,
-        stacklevel=2,
+        stacklevel=find_stack_level(),
     )
 
     data = fetch_neurovault_ids(
