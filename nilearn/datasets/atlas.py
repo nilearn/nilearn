@@ -18,6 +18,7 @@ from nilearn._utils.bids import (
     check_look_up_table,
     generate_atlas_look_up_table,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
@@ -343,6 +344,7 @@ def fetch_atlas_craddock_2012(
                 "to specify the exact atlas image you want."
             )
         ),
+        stacklevel=find_stack_level(),
     )
 
     params = dict(
@@ -1241,6 +1243,7 @@ def fetch_atlas_smith_2009(
                 "to specify the exact atlas image you want."
             )
         ),
+        stacklevel=find_stack_level(),
     )
 
     keys = list(files.keys())
@@ -1405,6 +1408,7 @@ def fetch_atlas_yeo_2011(
                     "to specify the exact atlas image you want."
                 )
             ),
+            stacklevel=find_stack_level(),
         )
 
     if n_networks is not None:
@@ -1633,7 +1637,9 @@ def fetch_atlas_aal(
                 "Starting in version 0.13, the default fetched mask will be"
                 "AAL 3v2 instead."
             )
-            warnings.warn(message, DeprecationWarning)
+            warnings.warn(
+                message, DeprecationWarning, stacklevel=find_stack_level()
+            )
 
         elif version == "3v2":
             url = f"{base_url}wp-content/uploads/AAL3v2_for_SPM12.tar.gz"
@@ -1848,6 +1854,7 @@ def fetch_atlas_basc_multiscale_2015(
                 "to specify the exact atlas image you want."
             )
         ),
+        stacklevel=find_stack_level(),
     )
 
     basenames = [
@@ -2446,7 +2453,7 @@ def fetch_atlas_pauli_2017(
         warnings.warn(
             category=DeprecationWarning,
             message=atlas_type_values,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
         atlas_type = (
             "probabilistic" if atlas_type == "prob" else "deterministic"

@@ -21,6 +21,7 @@ from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, remove_parameters
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     ALLOWED_MESH_TYPES,
@@ -314,7 +315,10 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     if n_subjects is None:
         n_subjects = max_subjects
     if n_subjects > max_subjects:
-        warnings.warn(f"Warning: there are only {max_subjects} subjects")
+        warnings.warn(
+            f"Warning: there are only {max_subjects} subjects.",
+            stacklevel=find_stack_level(),
+        )
         n_subjects = max_subjects
     ids = ids[:n_subjects]
     nitrc_ids = nitrc_ids[:n_subjects]
@@ -738,7 +742,8 @@ def fetch_localizer_contrasts(
     ):
         warnings.warn(
             "Wrong value for 'n_subjects' (%d). The maximum "
-            "value will be used instead ('n_subjects=94')"
+            "value will be used instead ('n_subjects=94').",
+            stacklevel=find_stack_level(),
         )
         n_subjects = 94  # 94 subjects available
 
@@ -1411,7 +1416,10 @@ def fetch_mixed_gambles(
     check_params(locals())
 
     if n_subjects > 16:
-        warnings.warn("Warning: there are only 16 subjects!")
+        warnings.warn(
+            "Warning: there are only 16 subjects!",
+            stacklevel=find_stack_level(),
+        )
         n_subjects = 16
     if url is None:
         url = (
@@ -1758,7 +1766,10 @@ def fetch_surf_nki_enhanced(
     if n_subjects is None:
         n_subjects = max_subjects
     if n_subjects > max_subjects:
-        warnings.warn(f"Warning: there are only {max_subjects} subjects")
+        warnings.warn(
+            f"Warning: there are only {max_subjects} subjects.",
+            stacklevel=find_stack_level(),
+        )
         n_subjects = max_subjects
     ids = ids[:n_subjects]
 
@@ -2253,7 +2264,8 @@ def _set_invalid_n_subjects_to_max(n_subjects, max_subjects, age_group):
         warnings.warn(
             f"Wrong value for n_subjects={n_subjects}. "
             f"The maximum value (for age_group={age_group}) "
-            f"will be used instead: n_subjects={max_subjects}"
+            f"will be used instead: n_subjects={max_subjects}.",
+            stacklevel=find_stack_level(),
         )
         n_subjects = max_subjects
     return n_subjects
@@ -2349,7 +2361,7 @@ def fetch_language_localizer_demo_dataset(
     if legacy_output:
         warnings.warn(
             category=DeprecationWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
             message=(
                 "From version 0.13.0 this fetcher"
                 "will always return a Bunch.\n"
@@ -2401,7 +2413,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
             "Please use 'fetch_language_localizer_demo_dataset' instead.'"
         ),
         DeprecationWarning,
-        stacklevel=2,
+        stacklevel=find_stack_level(),
     )
     url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"
     dataset_name = "bids_langloc_example"
@@ -2647,7 +2659,8 @@ def fetch_openneuro_dataset(
         if dataset_version != DATASET_VERSION:
             warnings.warn(
                 'If `dataset_version` is not "ds000030_R1.0.4", '
-                '`urls` must be specified. Downloading "ds000030_R1.0.4".'
+                '`urls` must be specified. Downloading "ds000030_R1.0.4".',
+                stacklevel=find_stack_level(),
             )
 
         data_prefix = (
@@ -2919,7 +2932,8 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
             )
         except MatReadError as mat_err:
             warnings.warn(
-                f"{mat_err!s}. An events.tsv file cannot be generated"
+                f"{mat_err!s}. An events.tsv file cannot be generated",
+                stacklevel=find_stack_level(),
             )
         else:
             events_filepath = _make_events_filepath_spm_multimodal_fmri(

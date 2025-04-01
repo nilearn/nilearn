@@ -9,6 +9,7 @@ from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
 
@@ -80,6 +81,7 @@ def filter_and_extract(
             "Until then, 3D images will be coerced to 2D arrays, with a "
             "singleton first dimension representing time.",
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
     imgs = _utils.check_niimg(
@@ -352,7 +354,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             "Generation of a mask has been"
             " requested (y != None) while a mask has"
             " been provided at masker creation. Given mask"
-            " will be used."
+            " will be used.",
+            stacklevel=find_stack_level(),
         )
         return self.fit(**fit_params).transform(
             X, confounds=confounds, sample_mask=sample_mask
