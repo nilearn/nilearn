@@ -157,6 +157,7 @@ def iter_check_niimg(
                 dtype=dtype,
                 return_iterator=False,
             )
+
             if i == 0:
                 ndim_minus_one = len(loaded_niimg.shape)
                 if ref_fov is None:
@@ -184,6 +185,7 @@ def iter_check_niimg(
                         "affine forced",
                         stacklevel=find_stack_level(),
                     )
+
                 resampled_niimg = cache(
                     resample_img,
                     memory,
@@ -196,11 +198,17 @@ def iter_check_niimg(
                     copy_header=True,
                     force_resample=False,  # TODO update to True in 0.13.0
                 )
+
+            else:
+                resampled_niimg = loaded_niimg
+
             yield resampled_niimg
+
         except DimensionError as exc:
             # Keep track of the additional dimension in the error
             exc.increment_stack_counter()
             raise
+
         except TypeError as exc:
             img_name = f" ({niimg}) " if isinstance(niimg, (str, Path)) else ""
 
