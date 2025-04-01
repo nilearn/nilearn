@@ -39,7 +39,7 @@ class Run2(BaseEstimator):
         t.run()
 
 
-class Run(BaseEstimator):
+class Run1(BaseEstimator):
     def run(self):
         log("method Test", stack_level=1)
         run()
