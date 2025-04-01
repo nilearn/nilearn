@@ -499,7 +499,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     return mean_data, affine
 
 
-def compute_surface_mean(imgs):
+def compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
     """Compute mean of a single surface image over its 2nd dimension."""
     if len(imgs.shape) < 2 or imgs.shape[1] < 2:
         data = imgs.data
