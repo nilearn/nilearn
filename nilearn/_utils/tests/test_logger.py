@@ -35,7 +35,7 @@ class Run3:
 class Run2(BaseEstimator):
     def run2(self):
         log("method Test2", stack_level=1)
-        t = Run()
+        t = Run1()
         t.run()
 
 
