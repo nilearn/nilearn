@@ -135,7 +135,7 @@ image and take the mean is similar for both the methods.
 This is simply because the data has to be loaded at some point either before (i.e., with :func:`~nilearn.image.load_img`)
 or within :func:`~nilearn.image.mean_img`.
 
-We can verify that by timing the loading and mean calculation together:
+We can verify that by adding the timing of the loading and :func:`~nilearn.image.mean_img` calculation together:
 
 .. code-block:: python
 
