@@ -34,6 +34,10 @@ Fixes
 Enhancements
 ------------
 
+
+
+- :bdg-dark:`Code` Add surface support for :func:`~nilearn.image.new_img_like`, :func:`~nilearn.image.index_img`, :func:`~nilearn.image.mean_img`, :func:`~nilearn.image.concat_imgs`, :func:`~nilearn.image.iter_imgs` (:gh:`5224`, :gh:`5301` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` :func:`~nilearn.interfaces.bids.save_glm_to_bids` can infer the naming scheme for output files from the input files passed at fit time to :class:`~nilearn.glm.first_level.FirstLevelModel`. It will also now save the GLM mask to disk (:gh:`5256`, :gh:`5279` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add a ``timeout`` parameter to the neurovault fetching functions (:gh:`5268` by `Rémi Gau`_).
