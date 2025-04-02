@@ -7,7 +7,7 @@
 #
 # Step-wise details:
 #
-# - The benchmarks are set to run everday at 10pm UTC via cron.
+# - The benchmarks are set to run at regular intervals via cron.
 # - It can also be triggered manually by adding ``[bm]`` to the commit message.
 # - First it installs `asv <https://asv.readthedocs.io/en/latest/index.html>`_.
 # - Then it sets up the SSH key to access the
