@@ -847,7 +847,7 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
         assert key in metadata
 
 
-def test_save_glm_to_bids_surface(tmp_path):
+def test_save_glm_to_bids_surface_overide(tmp_path):
     """Save surface GLM results to disk."""
     n_sub = 1
 
@@ -874,34 +874,41 @@ def test_save_glm_to_bids_surface(tmp_path):
     model.minimize_memory = False
     model.fit(run_imgs=run_imgs, events=events)
 
-    # 2 sessions with 2 runs each
-    assert len(model._reporting_data["run_imgs"]) == 4
+    prefix = "sub-01"
 
     model = save_glm_to_bids(
-        model=model, out_dir=tmp_path / "output", contrasts=["c0"]
+        model=model,
+        out_dir=tmp_path / "output",
+        contrasts=["c0"],
+        prefix=prefix,
     )
 
     EXPECTED_FILENAME_ENDINGS = [
-        "sub-01_task-main_space-MNI_contrast-c0_stat-z_statmap.nii.gz",
-        "sub-01_task-main_space-MNI_contrast-c0_clusters.tsv",
-        "sub-01_task-main_space-MNI_contrast-c0_clusters.json",
-        "sub-01_ses-01_task-main_run-01_space-MNI_stat-rsquared_statmap.nii.gz",
-        "sub-01_ses-02_task-main_run-02_space-MNI_design.tsv",
-        "sub-01_ses-01_task-main_run-02_space-MNI_design.json",
+        "run-2_design.tsv",
+        "run-2_design.json",
+        "contrast-c0_clusters.tsv",
+        "contrast-c0_clusters.json",
+        "contrast-c0_stat-z_statmap.gii",
+        "run-1_stat-rsquared_statmap.gii",
         # mask is common to all sessions and runs
-        "sub-01_task-main_space-MNI_mask.nii.gz",
+        "mask.gii",
     ]
     if is_matplotlib_installed():
         EXPECTED_FILENAME_ENDINGS.extend(
             [
-                "sub-01_ses-02_task-main_run-01_space-MNI_design.png",
-                "sub-01_ses-02_task-main_run-01_space-MNI_corrdesign.png",
-                "sub-01_ses-01_task-main_run-02_space-MNI_contrast-c0_design.png",
+                "run-1_design.png",
+                "run-1_corrdesign.png",
+                "run-2_contrast-c0_design.png",
             ]
         )
 
+    if prefix != "" and not prefix.endswith("_"):
+        prefix += "_"
+
+    sub_prefix = prefix.split("_")[0] if prefix.startswith("sub-") else ""
+
     for fname in EXPECTED_FILENAME_ENDINGS:
-        assert (tmp_path / "output" / "sub-01" / fname).exists()
+        assert (tmp_path / "output" / sub_prefix / f"{prefix}{fname}").exists()
 
 
 @pytest.mark.parametrize("prefix", ["", "sub-01", "foo_"])
