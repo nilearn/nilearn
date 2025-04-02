@@ -928,7 +928,7 @@ this fixture. Existing tests can also serve as examples.
 Performance monitoring
 ----------------------
 
-As of March 2025, we are starting to incorporate performance monitoring in the
+Nilearn includes performance monitoring in the
 library using `asv <https://asv.readthedocs.io/en/latest/index.html>`_
 benchmarks. The goal is two-fold:
 
