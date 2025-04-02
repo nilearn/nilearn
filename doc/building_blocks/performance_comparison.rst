@@ -48,7 +48,7 @@ Time taken to load an image
 
 So we expect that when simply loading the image, :func:`nibabel.loadsave.load`
 would be faster and lower on memory usage (because it doesn't load the data
-into memory) than :func:`~nilearn.image.load_img`.
+into memory) compared to :func:`~nilearn.image.load_img`.
 
 .. code-block:: python
 
