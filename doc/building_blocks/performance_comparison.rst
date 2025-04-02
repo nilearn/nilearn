@@ -241,7 +241,7 @@ data in the memory, it could be beneficial to first save the image to disk and
 then loading it again via :func:`nibabel.loadsave.load` function to get a
 proxy image.
 
-However, if you anyway need all the data in memory, you can directly use
+However, if you will need all the data in memory at once (i.e., as we saw with `mean_img`, you can directly use
 the array image in subsequent operations.
 
 This applies to most of the operations under nilearn's :mod:`nilearn.image`
