@@ -135,10 +135,12 @@ the data before it can take the mean.
 
 But it is important to note that the overall time taken to first load the
 image and take the mean is similar for both the methods.
-This is simply because the data has to be loaded at some point either before (i.e., with :func:`~nilearn.image.load_img`)
-or within :func:`~nilearn.image.mean_img`.
+This is simply because the data has to be loaded at some point either before
+(i.e., with :func:`~nilearn.image.load_img`) or within
+:func:`~nilearn.image.mean_img`.
 
-We can verify that by adding the timing of the loading and :func:`~nilearn.image.mean_img` calculation together:
+We can verify that by adding the timing of the loading and
+:func:`~nilearn.image.mean_img` calculation together:
 
 .. code-block:: python
 
@@ -234,7 +236,8 @@ property.
     nib.is_proxy(img_smoothed.dataobj)
     # False
 
-But :func:`nibabel.arrayproxy.is_proxy` would return ``True`` for ``img_nilearn.dataobj``:
+But :func:`nibabel.arrayproxy.is_proxy` would return ``True`` for
+``img_nilearn.dataobj``:
 
 .. code-block:: python
 
