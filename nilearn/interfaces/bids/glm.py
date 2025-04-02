@@ -281,7 +281,7 @@ def save_glm_to_bids(
     statistical_maps = make_stat_maps(model, contrasts, output_type="all")
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
-            if output_type in ["metadata", "results"]:
+            if output_type in ["metadata", "clusters_tsv"]:
                 continue
 
             img = statistical_maps[contrast_name][output_type]
