@@ -43,7 +43,7 @@ def generate_design_matrices_figures(
     if design_matrices is None:
         return design_matrices_dict
 
-    for i_run, design_matrix in enumerate(design_matrices, start=1):
+    for i_run, design_matrix in enumerate(design_matrices):
         dmtx_plot = plot_design_matrix(design_matrix)
         dmtx_plot = resize_plot_inches(dmtx_plot, height_change=0.3)
         dmtx_fig = None
@@ -51,7 +51,7 @@ def generate_design_matrices_figures(
             # the try is mostly here in case badly formed dict
             try:
                 dmtx_fig = output["design_matrices_dict"][i_run][
-                    "design_matrix"
+                    "design_matrix_png"
                 ]
                 dmtx_plot.figure.savefig(output["dir"] / dmtx_fig)
             except Exception:  # pragma: no cover
@@ -82,7 +82,7 @@ def generate_design_matrices_figures(
             if output:
                 try:
                     dmtx_cor_fig = output["design_matrices_dict"][i_run][
-                        "correlation_matrix"
+                        "correlation_matrix_png"
                     ]
                     dmtx_cor_plot.figure.savefig(output["dir"] / dmtx_cor_fig)
                 except KeyError:  # pragma: no cover
@@ -98,8 +98,8 @@ def generate_design_matrices_figures(
                 design_matrix=None, correlation_matrix=None
             )
 
-        design_matrices_dict[i_run]["design_matrix"] = dmtx_fig
-        design_matrices_dict[i_run]["correlation_matrix"] = dmtx_cor_fig
+        design_matrices_dict[i_run]["design_matrix_png"] = dmtx_fig
+        design_matrices_dict[i_run]["correlation_matrix_png"] = dmtx_cor_fig
 
     return design_matrices_dict
 
@@ -134,7 +134,8 @@ def generate_constrat_matrices_figures(
     if design_matrices is None or not contrasts:
         return contrasts_dict
 
-    for i_run, design_matrix in enumerate(design_matrices, start=1):
+    for i_run, design_matrix in enumerate(design_matrices):
+        tmp = {}
         for contrast_name, contrast_data in contrasts.items():
             contrast_plot = plot_contrast_matrix(
                 contrast_data, design_matrix, colorbar=True
@@ -159,8 +160,9 @@ def generate_constrat_matrices_figures(
                 # from scraping & inserting plots
             plt.close("all")
 
-            # TODO save each contrast for each run
-            contrasts_dict[contrast_name] = contrast_fig
+            tmp[contrast_name] = contrast_fig
+
+        contrasts_dict[i_run] = tempita.bunch(**tmp)
 
     return contrasts_dict
 

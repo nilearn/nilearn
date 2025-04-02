@@ -13,7 +13,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
 )
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn.glm.first_level import FirstLevelModel
+from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.interfaces.bids import (
     get_bids_files,
@@ -413,19 +413,22 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
         "contrast-effectsOfInterest_stat-p_statmap.nii.gz",
         "contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
         "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
+        "contrast-effectsOfInterest_clusters.tsv",
+        "contrast-effectsOfInterest_clusters.json",
         "design.tsv",
         "design.json",
         "stat-errorts_statmap.nii.gz",
         "stat-rsquared_statmap.nii.gz",
         "statmap.json",
+        "mask.nii.gz",
         "report.html",
     ]
 
     if is_matplotlib_installed():
         EXPECTED_FILENAMES.extend(
             [
-                "design.svg",
-                "contrast-effectsOfInterest_design.svg",
+                "design.png",
+                "contrast-effectsOfInterest_design.png",
             ]
         )
 
@@ -587,6 +590,8 @@ def test_save_glm_to_bids_contrast_definitions(
         "contrast-aaaMinusBbb_stat-t_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-variance_statmap.nii.gz",
         "contrast-aaaMinusBbb_stat-z_statmap.nii.gz",
+        "contrast-aaaMinusBbb_clusters.tsv",
+        "contrast-aaaMinusBbb_clusters.json",
         "run-1_design.tsv",
         "run-1_design.json",
         "run-1_stat-errorts_statmap.nii.gz",
@@ -596,15 +601,16 @@ def test_save_glm_to_bids_contrast_definitions(
         "run-2_stat-errorts_statmap.nii.gz",
         "run-2_stat-rsquared_statmap.nii.gz",
         "statmap.json",
+        "mask.nii.gz",
         "report.html",
     ]
     if is_matplotlib_installed():
         EXPECTED_FILENAME_ENDINGS.extend(
             [
-                "run-1_contrast-aaaMinusBbb_design.svg",
-                "run-1_design.svg",
-                "run-2_contrast-aaaMinusBbb_design.svg",
-                "run-2_design.svg",
+                "run-1_contrast-aaaMinusBbb_design.png",
+                "run-1_design.png",
+                "run-2_contrast-aaaMinusBbb_design.png",
+                "run-2_design.png",
             ]
         )
 
@@ -645,17 +651,20 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
         "contrast-effectsOfInterest_stat-p_statmap.nii.gz",
         "contrast-effectsOfInterest_stat-variance_statmap.nii.gz",
         "contrast-effectsOfInterest_stat-z_statmap.nii.gz",
+        "contrast-effectsOfInterest_clusters.tsv",
+        "contrast-effectsOfInterest_clusters.json",
         "design.tsv",
         "stat-errorts_statmap.nii.gz",
         "stat-rsquared_statmap.nii.gz",
         "statmap.json",
+        "mask.nii.gz",
         "report.html",
     ]
     if is_matplotlib_installed():
         EXPECTED_FILENAMES.extend(
             [
-                "design.svg",
-                "contrast-effectsOfInterest_design.svg",
+                "design.png",
+                "contrast-effectsOfInterest_design.png",
             ]
         )
 
@@ -715,9 +724,9 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
     assert model._reporting_data.get("filenames", None) is not None
 
     EXPECTED_FILENAMES = [
-        "run-1_design.svg",
-        "run-1_corrdesign.svg",
-        "run-1_contrast-bbbMinusAaa_design.svg",
+        "run-1_design.png",
+        "run-1_corrdesign.png",
+        "run-1_contrast-bbbMinusAaa_design.png",
     ]
 
     with (tmp_path / "report.html").open("r") as f:
@@ -750,9 +759,9 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
     )
 
     EXPECTED_FILENAMES = [
-        "run-1_design.svg",
-        "run-1_corrdesign.svg",
-        "run-1_contrast-bbbMinusAaa_design.svg",
+        "run-1_design.png",
+        "run-1_corrdesign.png",
+        "run-1_contrast-bbbMinusAaa_design.png",
     ]
 
     # check content of a new report
@@ -762,3 +771,132 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
     assert "BBB-AAA" not in report.__str__()
     for file in EXPECTED_FILENAMES:
         assert file not in report.__str__()
+
+
+def test_save_glm_to_bids_infer_filenames(tmp_path):
+    """Check that output filenames can be inferred from BIDS input."""
+    n_sub = 1
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=2,
+        tasks=["main"],
+        n_runs=[2],
+        n_voxels=20,
+    )
+
+    models, imgs, events, _ = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+    )
+
+    model = models[0]
+    run_imgs = imgs[0]
+    events = events[0]
+
+    model.minimize_memory = False
+    model.fit(run_imgs=run_imgs, events=events)
+
+    # 2 sessions with 2 runs each
+    assert len(model._reporting_data["run_imgs"]) == 4
+
+    model = save_glm_to_bids(
+        model=model, out_dir=tmp_path / "output", contrasts=["c0"]
+    )
+
+    EXPECTED_FILENAME_ENDINGS = [
+        "sub-01_task-main_space-MNI_contrast-c0_stat-z_statmap.nii.gz",
+        "sub-01_task-main_space-MNI_contrast-c0_clusters.tsv",
+        "sub-01_task-main_space-MNI_contrast-c0_clusters.json",
+        "sub-01_ses-01_task-main_run-01_space-MNI_stat-rsquared_statmap.nii.gz",
+        "sub-01_ses-02_task-main_run-02_space-MNI_design.tsv",
+        "sub-01_ses-01_task-main_run-02_space-MNI_design.json",
+        # mask is common to all sessions and runs
+        "sub-01_task-main_space-MNI_mask.nii.gz",
+    ]
+    if is_matplotlib_installed():
+        EXPECTED_FILENAME_ENDINGS.extend(
+            [
+                "sub-01_ses-02_task-main_run-01_space-MNI_design.png",
+                "sub-01_ses-02_task-main_run-01_space-MNI_corrdesign.png",
+                "sub-01_ses-01_task-main_run-02_space-MNI_contrast-c0_design.png",
+            ]
+        )
+
+    for fname in EXPECTED_FILENAME_ENDINGS:
+        assert (tmp_path / "output" / "sub-01" / fname).exists()
+
+    with (
+        tmp_path
+        / "output"
+        / "sub-01"
+        / "sub-01_task-main_space-MNI_contrast-c0_clusters.json"
+    ).open("r") as f:
+        metadata = json.load(f)
+
+    for key in [
+        "Height control",
+        "Threshold (computed)",
+        "Cluster size threshold (voxels)",
+        "Minimum distance (mm)",
+    ]:
+        assert key in metadata
+
+
+@pytest.mark.parametrize("prefix", ["", "sub-01", "foo_"])
+def test_save_glm_to_bids_infer_filenames_overide(tmp_path, prefix):
+    """Check that output filenames is not inferred when prefix is passed."""
+    n_sub = 1
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=1,
+        tasks=["main"],
+        n_runs=[1],
+        n_voxels=20,
+    )
+
+    models, imgs, events, _ = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="MNI",
+        img_filters=[("desc", "preproc")],
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+    )
+
+    model = models[0]
+    run_imgs = imgs[0]
+    events = events[0]
+
+    model.minimize_memory = False
+    model.fit(run_imgs=run_imgs, events=events)
+
+    model = save_glm_to_bids(
+        model=model,
+        out_dir=tmp_path / "output",
+        contrasts=["c0"],
+        prefix=prefix,
+    )
+
+    EXPECTED_FILENAME_ENDINGS = [
+        "mask.nii.gz",
+        "contrast-c0_stat-z_statmap.nii.gz",
+        "contrast-c0_clusters.tsv",
+        "contrast-c0_clusters.json",
+        "stat-rsquared_statmap.nii.gz",
+        "design.tsv",
+        "design.json",
+    ]
+
+    if prefix != "" and not prefix.endswith("_"):
+        prefix += "_"
+
+    sub_prefix = prefix.split("_")[0] if prefix.startswith("sub-") else ""
+
+    for fname in EXPECTED_FILENAME_ENDINGS:
+        assert (tmp_path / "output" / sub_prefix / f"{prefix}{fname}").exists()

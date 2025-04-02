@@ -13,7 +13,6 @@ import datetime
 import uuid
 import warnings
 from html import escape
-from pathlib import Path
 from string import Template
 
 import numpy as np
@@ -23,20 +22,24 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg, fill_doc, logger
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
-    check_report_dims,
-    clustering_params_to_dataframe,
     dataframe_to_html,
 )
-from nilearn.reporting.get_clusters_table import get_clusters_table
+from nilearn.reporting.get_clusters_table import (
+    clustering_params_to_dataframe,
+    get_clusters_table,
+)
 from nilearn.reporting.html_report import (
     HTMLReport,
     _render_warnings_partial,
+    is_notebook,
 )
 from nilearn.reporting.utils import (
     CSS_PATH,
@@ -68,9 +71,6 @@ if is_matplotlib_installed():
     )
 
 
-HTML_TEMPLATE_ROOT_PATH = Path(__file__).parent / "glm_reporter_templates"
-
-
 @fill_doc
 def make_glm_report(
     model,
@@ -86,7 +86,7 @@ def make_glm_report(
     plot_type="slice",
     cut_coords=None,
     display_mode=None,
-    report_dims=(1600, 800),
+    report_dims=(WIDTH_DEFAULT, HEIGHT_DEFAULT),
 ):
     """Return HTMLReport object \
     for a report which shows all important aspects of a fitted GLM.
@@ -200,7 +200,7 @@ def make_glm_report(
         warnings.warn(
             ("No plotting back-end detected. Output will be missing figures."),
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     unique_id = str(uuid.uuid4()).replace("-", "")
@@ -267,14 +267,21 @@ def make_glm_report(
                     / output["statistical_maps"][contrast_name]["z_score"]
                     for contrast_name in output["statistical_maps"]
                 }
+                clusters_tsvs = {
+                    contrast_name: output["dir"]
+                    / output["statistical_maps"][contrast_name]["clusters_tsv"]
+                    for contrast_name in output["statistical_maps"]
+                }
             except KeyError:  # pragma: no cover
                 statistical_maps = make_stat_maps(
                     model, contrasts, output_type="z_score"
                 )
+                clusters_tsvs = None
         else:
             statistical_maps = make_stat_maps(
                 model, contrasts, output_type="z_score"
             )
+            clusters_tsvs = None
 
         logger.log(
             "Generating contrast-level figures...", verbose=model.verbose
@@ -291,14 +298,13 @@ def make_glm_report(
             cut_coords=cut_coords,
             display_mode=display_mode,
             plot_type=plot_type,
+            clusters_tsvs=clusters_tsvs,
         )
 
     design_matrices_dict = tempita.bunch()
     contrasts_dict = tempita.bunch()
     if output is not None:
         design_matrices_dict = output["design_matrices_dict"]
-        # TODO: only contrast of first run are displayed
-        # contrasts_dict[i_run] = tempita.bunch(**input["contrasts_dict"][i_run]) # noqa: E501
         contrasts_dict = output["contrasts_dict"]
 
     if is_matplotlib_installed():
@@ -320,6 +326,7 @@ def make_glm_report(
             contrasts_dict=contrasts_dict,
             output=output,
         )
+
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
@@ -358,6 +365,7 @@ def make_glm_report(
         design_matrices_dict=design_matrices_dict,
         unique_id=unique_id,
         date=date,
+        show_navbar="style='display: none;'" if is_notebook() else "",
         method_section=method_section,
     )
 
@@ -381,11 +389,11 @@ def make_glm_report(
             "head_css": head_css,
             "version": __version__,
             "page_title": title,
+            "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
 
-    # setting report size for better visual experience in Jupyter Notebooks.
-    report.width, report.height = check_report_dims(report_dims)
+    report.resize(*report_dims)
 
     return report
 
@@ -498,6 +506,7 @@ def _make_stat_maps_contrast_clusters(
     cut_coords,
     display_mode,
     plot_type,
+    clusters_tsvs,
 ):
     """Populate a smaller HTML sub-template with the proper values, \
     make a list containing one or more of such components \
@@ -508,7 +517,7 @@ def _make_stat_maps_contrast_clusters(
 
     Parameters
     ----------
-    stat_img : Niimg-like object or None
+    stat_img : dictionary of Niimg-like object or None
        Statistical image (presumably in z scale)
        whenever height_control is 'fpr' or None,
        stat_img=None is acceptable.
@@ -567,6 +576,8 @@ def _make_stat_maps_contrast_clusters(
     plot_type : string {'slice', 'glass'}
         The type of plot to be drawn.
 
+    clusters_tsvs : dictionary of path of to tsv files
+
     Returns
     -------
     results : dict
@@ -609,13 +620,30 @@ def _make_stat_maps_contrast_clusters(
 
         cluster_table_html = None
         if not isinstance(thresholded_img, SurfaceImage):
-            cluster_table = get_clusters_table(
-                thresholded_img,
-                stat_threshold=threshold,
-                cluster_threshold=cluster_threshold,
-                min_distance=min_distance,
-                two_sided=two_sided,
-            )
+            if clusters_tsvs:
+                # try to reuse results saved to disk by
+                # save_glm_to_bids
+                try:
+                    cluster_table = pd.read_csv(
+                        clusters_tsvs[contrast_name], sep="\t"
+                    )
+                except Exception:
+                    cluster_table = get_clusters_table(
+                        thresholded_img,
+                        stat_threshold=threshold,
+                        cluster_threshold=cluster_threshold,
+                        min_distance=min_distance,
+                        two_sided=two_sided,
+                    )
+            else:
+                cluster_table = get_clusters_table(
+                    thresholded_img,
+                    stat_threshold=threshold,
+                    cluster_threshold=cluster_threshold,
+                    min_distance=min_distance,
+                    two_sided=two_sided,
+                )
+
             cluster_table_html = dataframe_to_html(
                 cluster_table,
                 precision=2,

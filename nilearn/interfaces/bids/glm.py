@@ -10,6 +10,7 @@ from nilearn import __version__
 from nilearn._utils import logger
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 
 
 def _generate_model_metadata(out_file, model):
@@ -120,6 +121,13 @@ def save_glm_to_bids(
         String to prepend to generated filenames.
         If a string is provided, '_' will be added to the end.
 
+        For FirstLevelModel that used files as inputs at fit time,
+        and if ``prefix`` is ``None``,
+        the name of the output will be inferred from the input filenames
+        by trying to parse them as BIDS files.
+        This behavior can prevented by passing ``""`` as ``prefix``.
+
+
     kwargs : extra keywords arguments to pass to ``model.generate_report``
         See :func:`nilearn.reporting.make_glm_report` for more details.
         Can be any of the following: ``title``, ``bg_img``, ``threshold``,
@@ -166,6 +174,12 @@ def save_glm_to_bids(
 
     """
     # Import here to avoid circular imports
+    from nilearn.glm import threshold_stats_img
+    from nilearn.reporting.get_clusters_table import (
+        clustering_params_to_dataframe,
+        get_clusters_table,
+    )
+
     if is_matplotlib_installed():
         from nilearn._utils.plotting import (
             generate_constrat_matrices_figures,
@@ -175,22 +189,23 @@ def save_glm_to_bids(
         warnings.warn(
             ("No plotting backend detected. Output will be missing figures."),
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
-    # fail early if invalid paramaeters to pass to generate_report()
-    allowed_extra_kwarg = [
-        x
-        for x in inspect.signature(model.generate_report).parameters
-        if x not in ["contrasts", "input"]
-    ]
+    # grab the default from generate_report()
+    # fail early if invalid parameters to pass to generate_report()
+    tmp = dict(**inspect.signature(model.generate_report).parameters)
+    tmp.pop("contrasts")
+    report_kwargs = {k: v.default for k, v in tmp.items()}
     for key in kwargs:
-        if key not in allowed_extra_kwarg:
+        if key not in report_kwargs:
             raise ValueError(
                 f"Extra key-word arguments must be one of: "
-                f"{allowed_extra_kwarg}\n"
+                f"{report_kwargs}\n"
                 f"Got: {key}"
             )
+        else:
+            report_kwargs[key] = kwargs[key]
 
     contrasts = coerce_to_dict(contrasts)
 
@@ -200,14 +215,18 @@ def save_glm_to_bids(
     dset_desc_file = out_dir / "dataset_description.json"
     _generate_dataset_description(dset_desc_file, model.__str__())
 
-    model = model._generate_filenames_output(
+    model._generate_filenames_output(
         prefix, contrasts, contrast_types, out_dir
     )
 
-    out_dir = model._reporting_data["filenames"]["dir"]
+    filenames = model._reporting_data["filenames"]
+
+    out_dir = filenames["dir"]
     out_dir.mkdir(exist_ok=True, parents=True)
 
     verbose = model.verbose
+
+    model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
 
     if model.__str__() == "Second Level Model":
         design_matrices = [model.design_matrix_]
@@ -223,31 +242,29 @@ def save_glm_to_bids(
         logger.log("Generating design matrices figures...", verbose=verbose)
         # TODO: Assuming that cases of multiple design matrices correspond to
         # different runs. Not sure if this is correct. Need to check.
-        generate_design_matrices_figures(
-            design_matrices, output=model._reporting_data["filenames"]
-        )
+        generate_design_matrices_figures(design_matrices, output=filenames)
 
         logger.log("Generating contrast matrices figures...", verbose=verbose)
         generate_constrat_matrices_figures(
             design_matrices,
             contrasts,
-            output=model._reporting_data["filenames"],
+            output=filenames,
         )
 
-    for i_run, design_matrix in enumerate(design_matrices, start=1):
-        run_str = f"run-{i_run}_" if len(design_matrices) > 1 else ""
+    for i_run, design_matrix in enumerate(design_matrices):
+        filename = Path(
+            filenames["design_matrices_dict"][i_run]["design_matrix_tsv"]
+        )
 
         # Save design matrix and associated figure
         design_matrix.to_csv(
-            out_dir / f"{prefix}{run_str}design.tsv",
+            out_dir / filename,
             sep="\t",
             index=False,
         )
 
         if model.__str__() == "First Level Model":
-            with (out_dir / f"{prefix}{run_str}design.json").open(
-                "w"
-            ) as f_obj:
+            with (out_dir / filename.with_suffix(".json")).open("w") as f_obj:
                 json.dump(
                     {"RepetitionTime": model.t_r},
                     f_obj,
@@ -264,11 +281,49 @@ def save_glm_to_bids(
     statistical_maps = make_stat_maps(model, contrasts, output_type="all")
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
+            if output_type in ["metadata", "results"]:
+                continue
+
             img = statistical_maps[contrast_name][output_type]
-            filename = model._reporting_data["filenames"]["statistical_maps"][
-                contrast_name
-            ][output_type]
+            filename = filenames["statistical_maps"][contrast_name][
+                output_type
+            ]
             img.to_filename(out_dir / filename)
+
+        thresholded_img, threshold = threshold_stats_img(
+            stat_img=img,
+            threshold=report_kwargs["threshold"],
+            alpha=report_kwargs["alpha"],
+            cluster_threshold=report_kwargs["cluster_threshold"],
+            height_control=report_kwargs["height_control"],
+        )
+        table_details = clustering_params_to_dataframe(
+            report_kwargs["threshold"],
+            report_kwargs["cluster_threshold"],
+            report_kwargs["min_distance"],
+            report_kwargs["height_control"],
+            report_kwargs["alpha"],
+            is_volume_glm=model._is_volume_glm,
+        )
+        table_details = table_details.to_dict()
+        with (
+            out_dir / filenames["statistical_maps"][contrast_name]["metadata"]
+        ).open("w") as f:
+            json.dump(table_details[0], f)
+
+        cluster_table = get_clusters_table(
+            thresholded_img,
+            stat_threshold=threshold,
+            cluster_threshold=report_kwargs["cluster_threshold"],
+            min_distance=report_kwargs["min_distance"],
+            two_sided=report_kwargs["two_sided"],
+        )
+        cluster_table.to_csv(
+            out_dir
+            / filenames["statistical_maps"][contrast_name]["clusters_tsv"],
+            sep="\t",
+            index=False,
+        )
 
     logger.log("Saving model level statistical maps...", verbose=verbose)
     _write_model_level_statistical_maps(model, out_dir)

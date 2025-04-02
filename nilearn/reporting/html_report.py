@@ -8,6 +8,7 @@ import pandas as pd
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
@@ -199,6 +200,7 @@ def _update_template(
             "head_css": head_css,
             "version": __version__,
             "page_title": f"{title} report",
+            "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
 
@@ -245,7 +247,9 @@ def generate_report(estimator):
             )
             warnings.filterwarnings("always", message=mpl_unavail_msg)
             warnings.warn(
-                category=ImportWarning, message=mpl_unavail_msg, stacklevel=3
+                category=ImportWarning,
+                message=mpl_unavail_msg,
+                stacklevel=find_stack_level(),
             )
             return [None]
 
@@ -274,7 +278,7 @@ def generate_report(estimator):
         for msg in warning_messages:
             warnings.warn(
                 msg,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
         return _update_template(
@@ -377,6 +381,23 @@ def _create_report(estimator, data):
         template_name=html_template,
         summary_html=summary_html,
     )
+
+
+def is_notebook() -> bool:
+    """Detect if we are running in a notebook.
+
+    From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
+    """
+    try:
+        shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        elif shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False  # Probably standard Python interpreter
 
 
 class HTMLReport(HTMLDocument):

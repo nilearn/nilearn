@@ -11,6 +11,7 @@ from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -19,8 +20,8 @@ from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
-    check_same_n_vertices,
 )
+from nilearn.surface.utils import assert_polymesh_equal
 
 
 @fill_doc
@@ -159,7 +160,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         if self.mask_img is not None:
             check_compatibility_mask_and_images(self.mask_img, img)
-            check_same_n_vertices(self.mask_img.mesh, img.mesh)
+            assert_polymesh_equal(self.mask_img.mesh, img.mesh)
             self.mask_img_ = self.mask_img
             return
 
@@ -256,7 +257,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 "Parameter smoothing_fwhm "
                 "is not yet supported for surface data",
                 UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
 
@@ -277,7 +278,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         check_compatibility_mask_and_images(self.mask_img_, img)
 
-        check_same_n_vertices(self.mask_img_.mesh, img.mesh)
+        assert_polymesh_equal(self.mask_img_.mesh, img.mesh)
 
         if self.reports:
             self._reporting_data["images"] = img

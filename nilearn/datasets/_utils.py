@@ -18,6 +18,7 @@ import numpy as np
 import requests
 
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.logger import find_stack_level
 
 from .utils import get_data_dirs
 
@@ -685,7 +686,10 @@ def get_dataset_descr(ds_name):
         descr = ""
 
     if not descr:
-        warnings.warn("Could not find dataset description.")
+        warnings.warn(
+            "Could not find dataset description.",
+            stacklevel=find_stack_level(),
+        )
 
     if isinstance(descr, bytes):
         descr = descr.decode("utf-8")
@@ -851,7 +855,10 @@ def fetch_files(data_dir, files, resume=True, verbose=1, session=None):
             and not target_file.exists()
             and not temp_target_file.exists()
         ):
-            warnings.warn(f"An error occurred while fetching {file_}")
+            warnings.warn(
+                f"An error occurred while fetching {file_}",
+                stacklevel=find_stack_level(),
+            )
             abort = (
                 "Dataset has been downloaded but requested file was "
                 f"not provided:\nURL: {url}\n"

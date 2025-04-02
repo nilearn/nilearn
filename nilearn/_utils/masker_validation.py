@@ -1,11 +1,10 @@
 import warnings
 from collections.abc import Iterable
-from pathlib import Path
 from string import Template
 
 import numpy as np
-from nibabel import Nifti1Image
 
+from nilearn._utils.logger import find_stack_level
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -95,7 +94,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
                 attribute="memory",
                 default_value="Memory(location=None)",
             ),
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         new_masker_params["memory"] = check_memory(None)
 
@@ -106,7 +105,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
             warning_msg.substitute(
                 attribute="memory_level", default_value="0"
             ),
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         new_masker_params["memory_level"] = 0
 
@@ -115,7 +114,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     else:
         warnings.warn(
             warning_msg.substitute(attribute="verbose", default_value="0"),
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         new_masker_params["verbose"] = 0
 
@@ -137,7 +136,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
             "Overriding provided-default estimator parameters with"
             f" provided masker parameters :\n{conflict_string}"
         )
-        warnings.warn(warn_str, stacklevel=3)
+        warnings.warn(warn_str, stacklevel=find_stack_level())
 
     masker = masker_type(**new_masker_params)
 
@@ -183,7 +182,7 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
         )
 
     if isinstance(mask_img, volumetric_type) and any(
-        not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
+        not isinstance(x, NiimgLike) for x in run_imgs
     ):
         raise TypeError(
             f"{msg} "

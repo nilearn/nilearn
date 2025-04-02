@@ -19,6 +19,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     constrained_layout_kwargs,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -31,8 +32,8 @@ from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
-    check_same_n_vertices,
 )
+from nilearn.surface.utils import assert_polymesh_equal
 
 
 def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
@@ -57,7 +58,7 @@ def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
             "masked labels image only contains "
             f"{len(labels_after_mask)} labels "
             "(including background).",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
     labels = np.unique(labels_data)
     labels = labels[labels != background_label]
@@ -299,7 +300,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if self.mask_img is not None:
             if img is not None:
                 check_compatibility_mask_and_images(self.mask_img, img)
-            check_same_n_vertices(self.labels_img.mesh, self.mask_img.mesh)
+            assert_polymesh_equal(self.labels_img.mesh, self.mask_img.mesh)
         self.mask_img_ = self.mask_img
 
         self._shelving = False
@@ -402,7 +403,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             img = [img]
         img = concat_imgs(img)
         check_compatibility_mask_and_images(self.labels_img, img)
-        check_same_n_vertices(self.labels_img.mesh, img.mesh)
+        assert_polymesh_equal(self.labels_img.mesh, img.mesh)
         img = at_least_2d(img)
         # concatenate data over hemispheres
         img_data = np.concatenate(list(img.data.parts.values()), axis=0)
@@ -425,7 +426,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "Parameter smoothing_fwhm "
                 "is not yet supported for surface data",
                 UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
 

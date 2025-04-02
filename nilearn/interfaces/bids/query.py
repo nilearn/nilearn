@@ -8,6 +8,7 @@ from pathlib import Path
 from warnings import warn
 
 from nilearn._utils import fill_doc
+from nilearn._utils.logger import find_stack_level
 
 
 def _get_metadata_from_bids(
@@ -47,10 +48,16 @@ def _get_metadata_from_bids(
         if value is not None:
             return value
         else:
-            warn(f"'{field}' not found in file {json_files[0]}.", stacklevel=4)
+            warn(
+                f"'{field}' not found in file {json_files[0]}.",
+                stacklevel=find_stack_level(),
+            )
     else:
         msg_suffix = f" in:\n {bids_path}" if bids_path else ""
-        warn(f"\nNo bold.json found in BIDS folder{msg_suffix}.", stacklevel=3)
+        warn(
+            f"\nNo bold.json found in BIDS folder{msg_suffix}.",
+            stacklevel=find_stack_level(),
+        )
 
     return None
 
@@ -95,7 +102,7 @@ def infer_slice_timing_start_time_from_dataset(bids_path, filters, verbose=0):
             msg_suffix = f" in:\n {bids_path}"
             warn(
                 f"\nNo bold.json found in BIDS folder{msg_suffix}.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
         return None
 
@@ -142,7 +149,7 @@ def infer_repetition_time_from_dataset(bids_path, filters, verbose=0):
             msg_suffix = f" in:\n {bids_path}"
             warn(
                 f"\nNo bold.json found in BIDS folder{msg_suffix}.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
         return None
 

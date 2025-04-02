@@ -23,16 +23,19 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
 
+from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import CacheMixin
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import check_embedded_masker
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    adjust_screening_percentile,
+    check_params,
+)
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
 
-from .._utils import fill_doc, logger
-from .._utils.cache_mixin import CacheMixin
-from .._utils.param_validation import adjust_screening_percentile
 from .space_net_solvers import (
     graph_net_logistic,
     graph_net_squared_loss,
@@ -243,7 +246,10 @@ class _EarlyStoppingCallback:
                 message = (
                     f"Early stopping.\nTest score: {score:.8f} {40 * '-'}"
                 )
-            logger.log(message, verbose=self.verbose, stack_level=2)
+            logger.log(
+                message,
+                verbose=self.verbose,
+            )
             return True
 
         logger.log(
@@ -781,7 +787,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                     warnings.warn(
                         f"Specified l1_ratio = {l1_ratio:g}. "
                         "It's advised to only specify values of l1_ratio "
-                        "strictly between 0 and 1."
+                        "strictly between 0 and 1.",
+                        stacklevel=find_stack_level(),
                     )
         if not (0.0 <= self.screening_percentile <= 100.0):
             raise ValueError(
