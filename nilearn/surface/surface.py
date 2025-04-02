@@ -1535,6 +1535,16 @@ class SurfaceMesh(abc.ABC):
             f"{len(self.faces)} faces.>"
         )
 
+    def __eq__(self, mesh):
+        if not isinstance(mesh, SurfaceMesh):
+            raise TypeError(
+                "'mesh' must be a SurfaceMesh.\n"
+                f"Got: {mesh.__class__.__name__}"
+            )
+        return np.array_equal(
+            self.coordinates, mesh.coordinates
+        ) and np.array_equal(self.faces, mesh.faces)
+
     def to_gifti(self, gifti_file):
         """Write surface mesh to a Gifti file on disk.
 
@@ -1694,6 +1704,18 @@ class PolyMesh:
             self.parts["right"] = right
 
         self.n_vertices = sum(p.n_vertices for p in self.parts.values())
+
+    def __eq__(self, polymesh):
+        if not isinstance(polymesh, PolyMesh):
+            raise TypeError(
+                "'polymesh' must be a PolyMesh.\n"
+                f"Got: {polymesh.__class__.__name__}"
+            )
+        set_1 = set(self.parts.keys())
+        set_2 = set(polymesh.parts.keys())
+        return set_1 == set_2 and all(
+            self.parts[key] == polymesh.parts[key] for key in self.parts
+        )
 
     def to_filename(self, filename):
         """Save mesh to gifti.
