@@ -53,12 +53,12 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface._testing import (
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.surface.utils import (
     assert_polymesh_equal,
     assert_surface_image_equal,
 )
-from nilearn.surface.surface import SurfaceImage
-from nilearn.surface.surface import get_data as get_surface_data
 
 X64 = platform.architecture()[0] == "64bit"
 
@@ -191,10 +191,12 @@ def test_get_data(tmp_path, shape_3d_default):
 
 
 def test_high_variance_confounds(shape_3d_default):
-    # See also test_signals.test_high_variance_confounds()
-    # There is only tests on what is added by high_variance_confounds()
-    # compared to signal.high_variance_confounds()
+    """Check high_variance_confounds returns proper shape.
 
+    See also test_signals.test_high_variance_confounds()
+    There is only tests on what is added by high_variance_confounds()
+    compared to signal.high_variance_confounds()
+    """
     length = 17
     n_confounds = 10
 
@@ -202,6 +204,27 @@ def test_high_variance_confounds(shape_3d_default):
 
     confounds1 = high_variance_confounds(
         img, mask_img=mask_img, percentile=10.0, n_confounds=n_confounds
+    )
+
+    assert confounds1.shape == (length, n_confounds)
+
+    # No mask.
+    confounds2 = high_variance_confounds(
+        img, percentile=10.0, n_confounds=n_confounds
+    )
+
+    assert confounds2.shape == (length, n_confounds)
+
+
+def test_high_variance_confounds_surface(surf_mask_1d, surface_glm_data):
+    """Check high_variance_confounds returns proper shape from surface."""
+    length = 17
+    n_confounds = 10
+
+    img, _ = surface_glm_data(length)
+
+    confounds1 = high_variance_confounds(
+        img, mask_img=surf_mask_1d, percentile=10.0, n_confounds=n_confounds
     )
 
     assert confounds1.shape == (length, n_confounds)
@@ -542,6 +565,21 @@ def test_mean_img_surface(surf_img_1d, surf_img_2d):
 
     assert_array_equal(img.data.parts["left"], np.ones(shape=(4,)) * 0.5)
     assert img.shape == (img.mesh.n_vertices,)
+
+
+def test_mean_img_surface_list(surf_img_2d):
+    """Check that mean_img computes mean of mean."""
+    surf_img_1 = surf_img_2d(2)
+    surf_img_2 = surf_img_2d(3)
+
+    mean_surf_img_1 = mean_img(surf_img_1)
+    mean_surf_img_2 = mean_img(surf_img_2)
+
+    direct_mean = mean_img([surf_img_1, surf_img_2])
+
+    assert_surface_image_equal(
+        direct_mean, mean_img([mean_surf_img_1, mean_surf_img_2])
+    )
 
 
 def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
@@ -1199,7 +1237,7 @@ def test_threshold_img_copy_surface(surf_img_1d):
     threshold = 15
     input_img = surf_img_1d
     result = threshold_img(input_img, threshold=threshold, copy=True)
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         assert_surface_image_equal(result, surf_img_1d)
 
 

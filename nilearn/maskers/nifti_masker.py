@@ -8,6 +8,7 @@ from joblib import Memory
 
 from nilearn import _utils
 from nilearn._utils import logger
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
 from nilearn.maskers._utils import (
@@ -56,7 +57,8 @@ def _get_mask_strategy(strategy):
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated."
-            "Please use 'whole-brain-template' instead."
+            "Please use 'whole-brain-template' instead.",
+            stacklevel=find_stack_level(),
         )
         return partial(compute_brain_mask, mask_type="whole-brain")
     else:
@@ -112,6 +114,7 @@ def filter_and_mask(
             "Until then, 3D images will be coerced to 2D arrays, with a "
             "singleton first dimension representing time.",
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
@@ -127,6 +130,7 @@ def filter_and_mask(
             "or resample the mask beforehand "
             "to save memory and computation time.",
             UserWarning,
+            stacklevel=find_stack_level(),
         )
         parameters = copy_object(parameters)
         # now we can crop
@@ -352,7 +356,7 @@ class NiftiMasker(BaseMasker):
                 "No image provided to fit in NiftiMasker. "
                 "Setting image to mask for reporting."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
             img = mask
         if self._reporting_data["dim"] == 5:
@@ -360,7 +364,7 @@ class NiftiMasker(BaseMasker):
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
         # create display of retained input mask, image
         # for visual comparison
@@ -557,8 +561,8 @@ class NiftiMasker(BaseMasker):
 
         confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
             default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details: :func:`nilearn.signal.clean`.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, \

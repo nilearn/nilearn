@@ -6,6 +6,8 @@ import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
 
+from nilearn._utils.logger import find_stack_level
+
 
 def calculate_tfce(
     arr4d,
@@ -143,14 +145,14 @@ def _return_score_threshs(arr3d, dh, two_sided_test):
         warn(
             f"Not enough steps for TFCE. Got: {number_steps=}. "
             "Setting it to 10.",
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
         number_steps = 10
     if number_steps > 1000:
         warn(
             f"Too many steps for TFCE. Got: {number_steps=}. "
             "Setting it to 1000.",
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
         number_steps = 1000
 

@@ -10,6 +10,7 @@ from nilearn import __version__
 from nilearn._utils import logger
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 
 
 def _generate_model_metadata(out_file, model):
@@ -173,6 +174,12 @@ def save_glm_to_bids(
 
     """
     # Import here to avoid circular imports
+    from nilearn.glm import threshold_stats_img
+    from nilearn.reporting.get_clusters_table import (
+        clustering_params_to_dataframe,
+        get_clusters_table,
+    )
+
     if is_matplotlib_installed():
         from nilearn._utils.plotting import (
             generate_constrat_matrices_figures,
@@ -182,22 +189,23 @@ def save_glm_to_bids(
         warnings.warn(
             ("No plotting backend detected. Output will be missing figures."),
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
-    # fail early if invalid paramaeters to pass to generate_report()
-    allowed_extra_kwarg = [
-        x
-        for x in inspect.signature(model.generate_report).parameters
-        if x not in ["contrasts", "input"]
-    ]
+    # grab the default from generate_report()
+    # fail early if invalid parameters to pass to generate_report()
+    tmp = dict(**inspect.signature(model.generate_report).parameters)
+    tmp.pop("contrasts")
+    report_kwargs = {k: v.default for k, v in tmp.items()}
     for key in kwargs:
-        if key not in allowed_extra_kwarg:
+        if key not in report_kwargs:
             raise ValueError(
                 f"Extra key-word arguments must be one of: "
-                f"{allowed_extra_kwarg}\n"
+                f"{report_kwargs}\n"
                 f"Got: {key}"
             )
+        else:
+            report_kwargs[key] = kwargs[key]
 
     contrasts = coerce_to_dict(contrasts)
 
@@ -217,6 +225,8 @@ def save_glm_to_bids(
     out_dir.mkdir(exist_ok=True, parents=True)
 
     verbose = model.verbose
+
+    model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
 
     if model.__str__() == "Second Level Model":
         design_matrices = [model.design_matrix_]
@@ -271,11 +281,49 @@ def save_glm_to_bids(
     statistical_maps = make_stat_maps(model, contrasts, output_type="all")
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
+            if output_type in ["metadata", "results"]:
+                continue
+
             img = statistical_maps[contrast_name][output_type]
             filename = filenames["statistical_maps"][contrast_name][
                 output_type
             ]
             img.to_filename(out_dir / filename)
+
+        thresholded_img, threshold = threshold_stats_img(
+            stat_img=img,
+            threshold=report_kwargs["threshold"],
+            alpha=report_kwargs["alpha"],
+            cluster_threshold=report_kwargs["cluster_threshold"],
+            height_control=report_kwargs["height_control"],
+        )
+        table_details = clustering_params_to_dataframe(
+            report_kwargs["threshold"],
+            report_kwargs["cluster_threshold"],
+            report_kwargs["min_distance"],
+            report_kwargs["height_control"],
+            report_kwargs["alpha"],
+            is_volume_glm=model._is_volume_glm,
+        )
+        table_details = table_details.to_dict()
+        with (
+            out_dir / filenames["statistical_maps"][contrast_name]["metadata"]
+        ).open("w") as f:
+            json.dump(table_details[0], f)
+
+        cluster_table = get_clusters_table(
+            thresholded_img,
+            stat_threshold=threshold,
+            cluster_threshold=report_kwargs["cluster_threshold"],
+            min_distance=report_kwargs["min_distance"],
+            two_sided=report_kwargs["two_sided"],
+        )
+        cluster_table.to_csv(
+            out_dir
+            / filenames["statistical_maps"][contrast_name]["clusters_tsv"],
+            sep="\t",
+            index=False,
+        )
 
     logger.log("Saving model level statistical maps...", verbose=verbose)
     _write_model_level_statistical_maps(model, out_dir)

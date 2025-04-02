@@ -34,13 +34,21 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-dark:`Code` :func:`~nilearn.interfaces.bids.save_glm_to_bids` can infer the naming scheme for output files from the input files passed at fit time to :class:`~nilearn.glm.first_level.FirstLevelModel`.
+
+
+- :bdg-dark:`Code` Add surface support for :func:`~nilearn.image.new_img_like`, :func:`~nilearn.image.index_img`, :func:`~nilearn.image.mean_img`, :func:`~nilearn.image.concat_imgs`, :func:`~nilearn.image.iter_img` (:gh:`5224`, :gh:`5301` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` :func:`~nilearn.interfaces.bids.save_glm_to_bids` can infer the naming scheme for output files from the input files passed at fit time to :class:`~nilearn.glm.first_level.FirstLevelModel`. It will also now save the GLM mask to disk (:gh:`5256`, :gh:`5279` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add a ``timeout`` parameter to the neurovault fetching functions (:gh:`5268` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add surface support to :func:`~nilearn.glm.threshold_stats_img` (:gh:`5222` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` ``transparency`` and ``transparency_range`` parameters have been added to the :meth:`nilearn.plotting.displays.BaseSlicer.add_overlay` (and therefore to the all classes inheriting :class:`~nilearn.plotting.displays.BaseSlicer`). These parameters were also explicitly added to the plotting functions :func:`~nilearn.plotting.plot_img`, :func:`~nilearn.plotting.plot_stat_map`, :func:`~nilearn.plotting.plot_glass_brain`. (:gh:`5151` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Extend :func:`~nilearn.image.high_variance_confounds` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`5277` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Extend :func:`~nilearn.masking.apply_mask` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`5277` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Extend :func:`~nilearn.image.threshold_img` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`4999` by `Rémi Gau`_).
 

@@ -1,6 +1,7 @@
 import warnings
 
 from nilearn import image
+from nilearn._utils.logger import find_stack_level
 
 
 def sanitize_cleaning_parameters(masker):
@@ -15,6 +16,7 @@ def sanitize_cleaning_parameters(masker):
                 "This behavior is deprecated "
                 "and will be removed in version 0.13.2.",
                 DeprecationWarning,
+                stacklevel=find_stack_level(),
             )
             if masker.clean_args:
                 raise ValueError(

@@ -9,12 +9,23 @@ from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._utils import repr_niimgs
+from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils.helpers import stringify_path
+from nilearn._utils.logger import find_stack_level, log
+from nilearn._utils.masker_validation import (
+    check_compatibility_mask_and_images,
+)
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image import high_variance_confounds
-
-from .. import _utils, image, masking, signal
-from .._utils import logger, stringify_path
-from .._utils.cache_mixin import CacheMixin, cache
+from nilearn.image import (
+    concat_imgs,
+    high_variance_confounds,
+    resample_img,
+    smooth_img,
+)
+from nilearn.masking import unmask
+from nilearn.signal import clean
 
 
 def filter_and_extract(
@@ -61,16 +72,15 @@ def filter_and_extract(
     if isinstance(imgs, str):
         copy = False
 
-    logger.log(
-        f"Loading data from {_utils.repr_niimgs(imgs, shorten=False)}",
+    log(
+        f"Loading data from {repr_niimgs(imgs, shorten=False)}",
         verbose=verbose,
-        stack_level=2,
     )
 
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
     # coerce 5D data to 4D, which we don't want.
-    temp_imgs = _utils.check_niimg(imgs)
+    temp_imgs = check_niimg(imgs)
 
     # Raise warning if a 3D niimg is provided.
     if temp_imgs.ndim == 3:
@@ -80,19 +90,18 @@ def filter_and_extract(
             "Until then, 3D images will be coerced to 2D arrays, with a "
             "singleton first dimension representing time.",
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
-    imgs = _utils.check_niimg(
-        imgs, atleast_4d=True, ensure_ndim=4, dtype=dtype
-    )
+    imgs = check_niimg(imgs, atleast_4d=True, ensure_ndim=4, dtype=dtype)
 
     target_shape = parameters.get("target_shape")
     target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
-        logger.log("Resampling images", stack_level=2)
+        log("Resampling images")
 
         imgs = cache(
-            image.resample_img,
+            resample_img,
             memory,
             func_memory_level=2,
             memory_level=memory_level,
@@ -109,15 +118,17 @@ def filter_and_extract(
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
     if smoothing_fwhm is not None:
-        logger.log("Smoothing images", verbose=verbose, stack_level=2)
+        log("Smoothing images", verbose=verbose)
+
         imgs = cache(
-            image.smooth_img,
+            smooth_img,
             memory,
             func_memory_level=2,
             memory_level=memory_level,
         )(imgs, parameters["smoothing_fwhm"])
 
-    logger.log("Extracting region signals", verbose=verbose, stack_level=2)
+    log("Extracting region signals", verbose=verbose)
+
     region_signals, aux = cache(
         extraction_function,
         memory,
@@ -131,10 +142,12 @@ def filter_and_extract(
     # Filtering
     # Confounds removing (from csv file or numpy array)
     # Normalizing
-    logger.log("Cleaning extracted signals", verbose=verbose, stack_level=2)
+
+    log("Cleaning extracted signals", verbose=verbose)
+
     runs = parameters.get("runs", None)
     region_signals = cache(
-        signal.clean,
+        clean,
         memory=memory,
         func_memory_level=2,
         memory_level=memory_level,
@@ -173,8 +186,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, \
@@ -249,8 +262,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, \
@@ -352,7 +365,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             "Generation of a mask has been"
             " requested (y != None) while a mask has"
             " been provided at masker creation. Given mask"
-            " will be used."
+            " will be used.",
+            stacklevel=find_stack_level(),
         )
         return self.fit(**fit_params).transform(
             X, confounds=confounds, sample_mask=sample_mask
@@ -383,7 +397,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        img = self._cache(masking.unmask)(X, self.mask_img_)
+        img = self._cache(unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array
         with contextlib.suppress(Exception):
@@ -421,3 +435,79 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             surf_img=True, niimg_like=False, masker=True
         )
         return tags
+
+    def transform(self, imgs, confounds=None, sample_mask=None):
+        """Apply mask, spatial and temporal preprocessing.
+
+        Parameters
+        ----------
+        imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
+              iterable of :obj:`~nilearn.surface.SurfaceImage`
+            Images to process.
+
+        confounds : CSV file or array-like, default=None
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
+            shape: (number of scans, number of confounds)
+
+        sample_mask : Any type compatible with numpy-array indexing, \
+            default=None
+            shape: (number of scans - number of volumes removed, )
+            Masks the niimgs along time/fourth dimension to perform scrubbing
+            (remove volumes with high motion) and/or non-steady-state volumes.
+            This parameter is passed to clean.
+
+        Returns
+        -------
+        region_signals : 2D numpy.ndarray
+            Signal for each element.
+            shape: (number of scans, number of elements)
+
+        """
+        check_is_fitted(self)
+
+        if not isinstance(imgs, list):
+            imgs = [imgs]
+        imgs = concat_imgs(imgs)
+
+        check_compatibility_mask_and_images(self.mask_img_, imgs)
+
+        if self.smoothing_fwhm is not None:
+            warnings.warn(
+                "Parameter smoothing_fwhm "
+                "is not yet supported for surface data",
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            self.smoothing_fwhm = None
+
+        if self.reports:
+            self._reporting_data["images"] = imgs
+
+        if confounds is None and not self.high_variance_confounds:
+            return self.transform_single_imgs(
+                imgs, confounds=confounds, sample_mask=sample_mask
+            )
+
+        # Compute high variance confounds if requested
+        all_confounds = []
+
+        if self.high_variance_confounds:
+            hv_confounds = self._cache(high_variance_confounds)(imgs)
+            all_confounds.append(hv_confounds)
+
+        if confounds is not None:
+            if isinstance(confounds, list):
+                all_confounds += confounds
+            else:
+                all_confounds.append(confounds)
+
+        return self.transform_single_imgs(
+            imgs, confounds=all_confounds, sample_mask=sample_mask
+        )
+
+    @abc.abstractmethod
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
+        """Extract signals from a single surface image."""
+        # implemented in children classes
+        raise NotImplementedError()

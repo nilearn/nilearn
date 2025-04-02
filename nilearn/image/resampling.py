@@ -13,9 +13,9 @@ from scipy.ndimage import affine_transform, find_objects
 from nilearn import _utils
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.helpers import check_copy_header
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
-
-from .image import copy_img, crop_img
+from nilearn.image.image import copy_img, crop_img
 
 ###############################################################################
 # Affine utils
@@ -228,7 +228,7 @@ def get_mask_bounds(img):
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = find_objects(mask.astype(int))
     if len(slices) == 0:
-        warnings.warn("empty mask", stacklevel=3)
+        warnings.warn("empty mask", stacklevel=find_stack_level())
     else:
         x_slice, y_slice, z_slice = slices[0]
         x_width, y_width, z_width = mask.shape
@@ -278,7 +278,7 @@ def _resample_one_img(
             "passed to resample. This is a bad thing as they "
             "make resampling ill-defined and much slower.",
             RuntimeWarning,
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         if copy:
             # We need to do a copy to avoid modifying the input
@@ -299,7 +299,7 @@ def _resample_one_img(
             "linear interpolation. This might lead to "
             "unexpected results. You might consider using "
             "nearest interpolation instead.",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
 
     # Suppresses warnings in https://github.com/nilearn/nilearn/issues/1363
@@ -346,7 +346,7 @@ def _check_force_resample(force_resample):
                 "Use 'force_resample=True' to suppress this warning."
             ),
             FutureWarning,
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
     return force_resample
 
@@ -485,7 +485,7 @@ def resample_img(
                 "The provided image has no sform in its header. "
                 "Please check the provided file. "
                 "Results may not be as expected.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
 
     # noop cases
@@ -717,7 +717,8 @@ def _get_resampled_data_dtype(data, interpolation, A):
         if aux in ["float8", "float16"]:
             aux = "float32"
         warnings.warn(
-            f"Casting data from {data.dtype.name} to {aux}", stacklevel=2
+            f"Casting data from {data.dtype.name} to {aux}",
+            stacklevel=find_stack_level(),
         )
         resampled_data_dtype = np.dtype(aux)
 

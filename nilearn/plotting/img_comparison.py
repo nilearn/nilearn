@@ -18,10 +18,12 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting._utils import save_figure_if_needed
-from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
 
 
+@fill_doc
 def plot_img_comparison(
     ref_imgs,
     src_imgs,
@@ -58,7 +60,7 @@ def plot_img_comparison(
             :obj:`~nilearn.maskers.NiftiMasker` or \
             binary :obj:`~nilearn.surface.SurfaceImage` or \
             or :obj:`~nilearn.maskers.SurfaceMasker` or \
-            None
+            None, default = None
         Mask to be used on data.
         Its type must be compatible with that of the ``ref_img``.
         If ``None`` is passed,
@@ -258,7 +260,7 @@ def plot_bland_altman(
             :obj:`~nilearn.maskers.NiftiMasker` or \
             binary :obj:`~nilearn.surface.SurfaceImage` or \
             or :obj:`~nilearn.maskers.SurfaceMasker` or \
-            None
+            None, default = None
         Mask to be used on data.
         Its type must be compatible with that of the ``ref_img``.
         If ``None`` is passed,
@@ -434,7 +436,7 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
         image_type = "surface"
         ref_img.data._check_ndims(1)
         src_img.data._check_ndims(1)
-        check_same_n_vertices(ref_img.mesh, src_img.mesh)
+        check_polymesh_equal(ref_img.mesh, src_img.mesh)
 
     else:
         raise TypeError(
@@ -478,7 +480,7 @@ def _sanitize_masker(masker, image_type, ref_img):
             target_shape=ref_img.shape,
         )
     elif isinstance(masker, SurfaceImage):
-        check_same_n_vertices(ref_img.mesh, masker.mesh)
+        check_polymesh_equal(ref_img.mesh, masker.mesh)
         masker = SurfaceMasker(
             mask_img=masker,
         )

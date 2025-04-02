@@ -9,6 +9,7 @@ import pandas as pd
 import scipy.stats as sps
 
 from nilearn._utils import logger, rename_parameters
+from nilearn._utils.logger import find_stack_level
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -158,7 +159,10 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     n_contrasts = 0
     for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
         if np.all(con_val == 0):
-            warn(f"Contrast for run {int(i)} is null.", stacklevel=3)
+            warn(
+                f"Contrast for run {int(i)} is null.",
+                stacklevel=find_stack_level(),
+            )
             continue
         contrast_ = compute_contrast(lab, res, con_val, stat_type)
         contrast = contrast_ if contrast is None else contrast + contrast_
@@ -268,7 +272,7 @@ class Contrast:
         warn(
             category=DeprecationWarning,
             message=attrib_deprecation_msg,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
         return self.stat_type
 
@@ -427,7 +431,7 @@ class Contrast:
             warn(
                 "Running approximate fixed effects on F statistics.",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         effect_ = self.effect + other.effect
         variance_ = self.variance + other.variance
@@ -568,7 +572,7 @@ def compute_fixed_effects(
         "changed in release 0.13 to have an additional"
         "return value 'fixed_fx_z_score_img'  by default. "
         "Please set return_z_score to True.",
-        stacklevel=2,
+        stacklevel=find_stack_level(),
     )
     if return_z_score:
         return (

@@ -13,17 +13,18 @@ from nilearn._utils import constrained_layout_kwargs, fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
-from nilearn.image import concat_imgs, index_img, mean_img
+from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
-    check_same_n_vertices,
     get_data,
 )
+from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
@@ -180,7 +181,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 msg=f"loading regions from {self.mask_img.__repr__()}",
                 verbose=self.verbose,
             )
-            check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
+            check_polymesh_equal(self.maps_img.mesh, self.mask_img.mesh)
             self.mask_img_ = self.mask_img
             # squeeze the mask data if it is 2D and has a single column
             for part in self.mask_img_.data.parts:
@@ -234,14 +235,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
 
-    def transform(self, img, confounds=None, sample_mask=None):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object or \
-              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
-              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+        imgs : imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
+              iterable of :obj:`~nilearn.surface.SurfaceImage`
+            Images to process.
             Mesh and data for both hemispheres/parts. The data for each \
             hemisphere is of shape (n_vertices_per_hemisphere, n_timepoints).
 
@@ -258,26 +259,20 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                   default=None
             sample_mask to pass to :func:`nilearn.signal.clean`.
 
-
         Returns
         -------
         region_signals: :obj:`numpy.ndarray`
             Signal for each region as provided in the maps (via `maps_img`).
             shape: (n_timepoints, n_regions)
         """
-        check_is_fitted(self)
+        check_compatibility_mask_and_images(self.maps_img, imgs)
 
-        check_compatibility_mask_and_images(self.maps_img, img)
-        # if img is a single image, convert it to a list
-        # to be able to concatenate it
-        if not isinstance(img, list):
-            img = [img]
-        img = concat_imgs(img)
-        # check img data is 2D
-        img.data._check_ndims(2, "img")
-        check_same_n_vertices(self.maps_img.mesh, img.mesh)
+        imgs.data._check_ndims(2, "imgs")
+
+        check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+
         img_data = np.concatenate(
-            list(img.data.parts.values()), axis=0
+            list(imgs.data.parts.values()), axis=0
         ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
@@ -285,18 +280,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         mask_data = (
             get_data(self.mask_img) if self.mask_img is not None else None
         )
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                UserWarning,
-                stacklevel=2,
-            )
-            self.smoothing_fwhm = None
-
-        # add the image to the reporting data
-        if self.reports:
-            self._reporting_data["images"] = img
 
         parameters = get_params(
             self.__class__,
@@ -308,9 +291,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         # apply mask if provided
         # and then extract signal via least square regression
-        if self.mask_img_ is not None:
-            check_compatibility_mask_and_images(self.mask_img_, img)
-
         if mask_data is not None:
             region_signals = cache(
                 linalg.lstsq,
@@ -331,6 +311,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 memory_level=self.memory_level,
                 shelve=self._shelving,
             )(maps_data, img_data)[0].T
+
+        parameters = get_params(
+            self.__class__,
+            self,
+        )
+        if self.clean_args is None:
+            self.clean_args = {}
+        parameters["clean_args"] = self.clean_args
 
         # signal cleaning here
         region_signals = cache(
@@ -528,7 +516,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             warnings.warn(
                 "Plotly is not installed. "
                 "Switching to matplotlib for report generation.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         if hasattr(self, "_report_content"):
             self._report_content["engine"] = engine
@@ -588,7 +576,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                     f"But masker only has {n_maps} maps. "
                     f"Setting number of displayed maps to {n_maps}."
                 )
-                warnings.warn(category=UserWarning, message=msg, stacklevel=6)
+                warnings.warn(
+                    category=UserWarning,
+                    message=msg,
+                    stacklevel=find_stack_level(),
+                )
                 self.displayed_maps = n_maps
             maps_to_be_displayed = range(self.displayed_maps)
 
@@ -610,7 +602,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "SurfaceMapsMasker has not been transformed (via transform() "
                 "method) on any image yet. Plotting only maps for reporting."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
 
         for roi in maps_to_be_displayed:
             roi = index_img(maps_img, roi)

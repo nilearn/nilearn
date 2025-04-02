@@ -49,7 +49,7 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
-from nilearn.surface._testing import assert_polymesh_equal
+from nilearn.surface.utils import assert_polymesh_equal
 
 
 @pytest.mark.parametrize(

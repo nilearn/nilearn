@@ -31,6 +31,7 @@ from nilearn._utils.helpers import (
     check_copy_header,
     stringify_path,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -45,10 +46,10 @@ from nilearn._utils.path_finding import resolve_globbing
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
-    check_same_n_vertices,
     extract_data,
 )
 from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
 
 
@@ -75,18 +76,18 @@ def get_data(img):
 
 def high_variance_confounds(
     imgs, n_confounds=5, percentile=2.0, detrend=True, mask_img=None
-):
+) -> np.ndarray:
     """Return confounds extracted from input signals with highest variance.
 
     Parameters
     ----------
-    imgs : Niimg-like object
-        4D image.
+    imgs : 4D Niimg-like or 2D SurfaceImage object
         See :ref:`extracting_data`.
 
-    mask_img : Niimg-like object or None, default=None
-        If not provided, all voxels are used.
-        If provided, confounds are extracted from voxels inside the mask.
+    mask_img : Niimg-like or SurfaceImage object, or None, default=None
+        If not provided, all voxels / vertices are used.
+        If provided, confounds are extracted
+        from voxels / vertices inside the mask.
         See :ref:`extracting_data`.
 
     n_confounds : :obj:`int`, default=5
@@ -125,15 +126,24 @@ def high_variance_confounds(
     """
     from .. import masking
 
+    check_compatibility_mask_and_images(mask_img, imgs)
+
     if mask_img is not None:
+        if isinstance(imgs, SurfaceImage):
+            check_polymesh_equal(mask_img.mesh, imgs.mesh)
         sigs = masking.apply_mask(imgs, mask_img)
+
+    # Load the data only if it doesn't need to be masked
+    # Not using apply_mask here saves memory in most cases.
+    elif isinstance(imgs, SurfaceImage):
+        sigs = as_ndarray(get_surface_data(imgs))
+        sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
     else:
-        # Load the data only if it doesn't need to be masked
         imgs = check_niimg_4d(imgs)
         sigs = as_ndarray(get_data(imgs))
-        # Not using apply_mask here saves memory in most cases.
-        del imgs  # help reduce memory consumption
         sigs = np.reshape(sigs, (-1, sigs.shape[-1])).T
+
+    del imgs  # help reduce memory consumption
 
     return signal.high_variance_confounds(
         sigs, n_confounds=n_confounds, percentile=percentile, detrend=detrend
@@ -231,7 +241,7 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         warnings.warn(
             f"The parameter 'fwhm' for smoothing is specified as {fwhm}. "
             "Setting it to None (no smoothing will be performed)",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         fwhm = None
     if arr.dtype.kind == "i":
@@ -489,6 +499,18 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     return mean_data, affine
 
 
+def _compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
+    """Compute mean of a single surface image over its 2nd dimension."""
+    if len(imgs.shape) < 2 or imgs.shape[1] < 2:
+        data = imgs.data
+    else:
+        data = {
+            part: np.mean(value, axis=1).astype(float)
+            for part, value in imgs.data.parts.items()
+        }
+    return new_img_like(imgs, data=data)
+
+
 @fill_doc
 def mean_img(
     imgs,
@@ -510,9 +532,10 @@ def mean_img(
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects, \
-           or :obj:`~nilearn.surface.SurfaceImage`.
-        Images to be averaged over time (see :ref:`extracting_data`
+    imgs : Niimg-like or or :obj:`~nilearn.surface.SurfaceImage` object, or \
+           iterable of Niimg-like or :obj:`~nilearn.surface.SurfaceImage`.
+        Images to be averaged over 'time'
+        (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
     %(target_affine)s
@@ -538,7 +561,7 @@ def mean_img(
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
+    :obj:`~nibabel.nifti1.Nifti1Image` or :obj:`~nilearn.surface.SurfaceImage`
         Mean image.
 
     See Also
@@ -546,15 +569,15 @@ def mean_img(
     nilearn.image.math_img : For more general operations on images.
 
     """
-    if isinstance(imgs, SurfaceImage):
-        if len(imgs.shape) < 2 or imgs.shape[1] < 2:
-            data = imgs.data
-        else:
-            data = {
-                part: np.mean(value, axis=1).astype(float)
-                for part, value in imgs.data.parts.items()
-            }
-        return new_img_like(imgs, data=data)
+    is_iterable = isinstance(imgs, collections.abc.Iterable)
+    is_surface_img = isinstance(imgs, SurfaceImage) or (
+        is_iterable and all(isinstance(x, SurfaceImage) for x in imgs)
+    )
+    if is_surface_img:
+        if not is_iterable:
+            imgs = [imgs]
+        all_means = concat_imgs([_compute_surface_mean(x) for x in imgs])
+        return _compute_surface_mean(all_means)
 
     # TODO: remove this warning in 0.13.0
     check_copy_header(copy_header)
@@ -563,9 +586,7 @@ def mean_img(
     is_str = isinstance(imgs, str)
     is_iterable = isinstance(imgs, collections.abc.Iterable)
     if is_str or not is_iterable:
-        imgs = [
-            imgs,
-        ]
+        imgs = [imgs]
 
     imgs_iter = iter(imgs)
     first_img = check_niimg(next(imgs_iter))
@@ -752,7 +773,7 @@ def _downcast_from_int64_if_possible(data):
             "passing `int` as the `dtype`. Many tools such as FSL and SPM "
             "cannot deal with int64 in Nifti images, so for compatibility the "
             "data has been converted to int32.",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         return data.astype("int32")
     warnings.warn(
@@ -761,7 +782,7 @@ def _downcast_from_int64_if_possible(data):
         "thus contains 64-bit ints, which may cause some compatibility issues "
         "with some other tools or an error when saving the image to a "
         "Nifti file.",
-        stacklevel=3,
+        stacklevel=find_stack_level(),
     )
     return data
 
@@ -792,7 +813,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
     Returns
     -------
-    Niimg-like object
+    Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
         A loaded image with the same file type (and, optionally, header)
         as the reference image.
 
@@ -1055,13 +1076,13 @@ def threshold_img(
         check_compatibility_mask_and_images(mask_img, img)
 
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
-        check_same_n_vertices(mask_img.mesh, img.mesh)
+        check_polymesh_equal(mask_img.mesh, img.mesh)
 
     if isinstance(img, SurfaceImage) and cluster_threshold > 0:
         warnings.warn(
             "Cluster thresholding not implemented for SurfaceImage. "
             "Setting 'cluster_threshold' to 0.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
         cluster_threshold = 0
 
@@ -1373,7 +1394,7 @@ def binarize_img(
         'is  "True". This behavior will be changed to "False" in '
         "version 0.13.",
         DeprecationWarning,
-        stacklevel=3,
+        stacklevel=find_stack_level(),
     )
 
     return math_img(
@@ -1611,11 +1632,17 @@ def concat_imgs(
     auto_resample=False,
     verbose=0,
 ):
-    """Concatenate a list of 3D/4D niimgs of varying lengths.
+    """Concatenate a list of images of varying lengths.
 
-    The niimgs list can contain niftis/paths to images of varying dimensions
-    (i.e., 3D or 4D) as well as different 3D shapes and affines, as they
-    will be matched to the first image in the list if auto_resample=True.
+    The image list can contain:
+
+    - Niimg-like objects of varying dimensions (i.e., 3D or 4D)
+      as well as different 3D shapes and affines,
+      as they will be matched to the first image in the list
+      if ``auto_resample=True``.
+
+    - surface images of varying dimensions (i.e., 1D or 2D)
+      but with same number of vertices
 
     Parameters
     ----------
@@ -1643,7 +1670,8 @@ def concat_imgs(
 
     Returns
     -------
-    concatenated : nibabel.Nifti1Image
+    concatenated : :obj:`~nibabel.nifti1.Nifti1Image` \
+                   or :obj:`~nilearn.surface.SurfaceImage`
         A single image.
 
     See Also
@@ -1662,7 +1690,7 @@ def concat_imgs(
             return niimgs[0]
 
         for i, img in enumerate(niimgs):
-            check_same_n_vertices(img.mesh, niimgs[0].mesh)
+            check_polymesh_equal(img.mesh, niimgs[0].mesh)
             niimgs[i] = at_least_2d(img)
 
         if dtype is None:

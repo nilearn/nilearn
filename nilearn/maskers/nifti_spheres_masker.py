@@ -14,6 +14,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
     check_niimg_3d,
@@ -105,7 +106,8 @@ def apply_mask_and_get_affinity(
         if np.isnan(np.sum(safe_get_data(niimg))):
             warnings.warn(
                 "The imgs you have fed into fit_transform() contains NaN "
-                "values which will be converted to zeroes."
+                "values which will be converted to zeroes.",
+                stacklevel=find_stack_level(),
             )
             X = safe_get_data(niimg, True).reshape([-1, niimg.shape[3]]).T
         else:
@@ -437,7 +439,7 @@ class NiftiSpheresMasker(BaseMasker):
                 "No image provided to fit in NiftiSpheresMasker. "
                 "Spheres are plotted on top of the MNI152 template."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
         else:
             positions = [
@@ -459,7 +461,11 @@ class NiftiSpheresMasker(BaseMasker):
                     "Setting number of displayed spheres "
                     f"to {len(seeds)}."
                 )
-                warnings.warn(category=UserWarning, message=msg)
+                warnings.warn(
+                    category=UserWarning,
+                    message=msg,
+                    stacklevel=find_stack_level(),
+                )
                 self.displayed_spheres = len(seeds)
             spheres_to_be_displayed = range(self.displayed_spheres)
         elif isinstance(self.displayed_spheres, (list, np.ndarray)):
@@ -628,8 +634,8 @@ class NiftiSpheresMasker(BaseMasker):
 
         confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
             default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, \
@@ -668,8 +674,8 @@ class NiftiSpheresMasker(BaseMasker):
 
         confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
             default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
         sample_mask : Any type compatible with numpy-array indexing, \
