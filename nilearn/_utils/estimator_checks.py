@@ -535,16 +535,17 @@ def check_masker_transformer(estimator):
 
     - fit_transform method should work on non fitted estimator
     - fit_transform should give same result as fit then transform
+    - also checks that "imgs" is the parameter for input for fit / transform
     """
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
         input_img = _make_surface_img(100)
 
-    signal_1 = estimator.fit_transform(input_img)
+    signal_1 = estimator.fit_transform(imgs=input_img)
 
     estimator = clone(estimator)
-    signal_2 = estimator.fit(input_img).transform(input_img)
+    signal_2 = estimator.fit(imgs=input_img).transform(imgs=input_img)
 
     assert_array_equal(signal_1, signal_2)
 

@@ -300,13 +300,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
 
     def fit_transform(
-        self, X, y=None, confounds=None, sample_mask=None, **fit_params
+        self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
     ):
         """Fit to data, then transform it.
 
         Parameters
         ----------
-        X : Niimg-like object
+        imgs : Niimg-like object
             See :ref:`extracting_data`.
 
         y : numpy array of shape [n_samples], default=None
@@ -333,18 +333,18 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if y is None:
             # fit method of arity 1 (unsupervised transformation)
             if self.mask_img is None:
-                return self.fit(X, **fit_params).transform(
-                    X, confounds=confounds, sample_mask=sample_mask
+                return self.fit(imgs, **fit_params).transform(
+                    imgs, confounds=confounds, sample_mask=sample_mask
                 )
 
             return self.fit(**fit_params).transform(
-                X, confounds=confounds, sample_mask=sample_mask
+                imgs, confounds=confounds, sample_mask=sample_mask
             )
 
         # fit method of arity 2 (supervised transformation)
         if self.mask_img is None:
-            return self.fit(X, y, **fit_params).transform(
-                X, confounds=confounds, sample_mask=sample_mask
+            return self.fit(imgs, y, **fit_params).transform(
+                imgs, confounds=confounds, sample_mask=sample_mask
             )
 
         warnings.warn(
@@ -355,7 +355,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             " will be used."
         )
         return self.fit(**fit_params).transform(
-            X, confounds=confounds, sample_mask=sample_mask
+            imgs, confounds=confounds, sample_mask=sample_mask
         )
 
     def inverse_transform(self, X):
