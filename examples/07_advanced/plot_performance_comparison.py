@@ -14,8 +14,8 @@ Another important aspect is the operations being performed on the data. For
 example, there can be situations where we either need all the data in
 memory at once, or where we can process the data in chunks.
 
-So here we will compare both the time and memory usage of different methods of
-loading and then operations where we need all the data in memory at once and
+So here we will compare both  the time and memory usage of (1) different methods of
+loading and then (2) operations where we need all the data in memory at once versus
 where we can process the data in chunks.
 
 Proxy images vs. array images
