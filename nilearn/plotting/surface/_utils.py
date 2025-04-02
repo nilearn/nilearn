@@ -119,7 +119,7 @@ def check_surface_plotting_inputs(
         else:
             surf_map = surf_map.data.parts[hemi].T
 
-    bg_map = _check_bg_map(bg_map, hemi, surf_map)
+    bg_map = _check_bg_map(bg_map, hemi)
 
     return surf_map, surf_mesh, bg_map
 
