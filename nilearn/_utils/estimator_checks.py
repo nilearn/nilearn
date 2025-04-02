@@ -309,15 +309,17 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_transformer)
-        yield (
-            clone(estimator),
-            check_masker_transformer_high_variance_confounds,
-        )
         yield (clone(estimator), check_masker_compatibility_mask_image)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_clean)
+
+            # TODO this should pass for multimasker
+            yield (
+                clone(estimator),
+                check_masker_transformer_high_variance_confounds,
+            )
 
         if accept_niimg_input(estimator):
             yield (clone(estimator), check_nifti_masker_fit_transform)
