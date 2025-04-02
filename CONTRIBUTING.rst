@@ -938,8 +938,8 @@ benchmarks. The goal is two-fold:
   (for example, loading an image using :func:`nilearn.image.load_img` vs.
   :func:`nibabel.loadsave.load`).
 
-A collection of these benchmarks are located in the ``asv_benchmarks``
-directory. Currently, we run them on GitHub CI everyday on the latest commit
+A collection of these benchmarks are located in the ``nilearn/asv_benchmarks``
+directory. Currently, we run them on GitHub CI regularly on the latest commit
 of the main branch. The results are available on
 `nilearn.github.io/benchmarks/ <https://nilearn.github.io/benchmarks/>`_.
 
