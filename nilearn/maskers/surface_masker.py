@@ -229,11 +229,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             Mesh and data for both hemispheres/parts. The data for each \
             hemisphere is of shape (n_vertices_per_hemisphere, n_timepoints).
 
-        confounds : :class:`numpy.ndarray`, :obj:`str`,\
-                    :class:`pathlib.Path`, \
-                    :class:`pandas.DataFrame` \
-                    or :obj:`list` of confounds timeseries, default=None
-            Confounds to pass to :func:`nilearn.signal.clean`.
+        %(confounds)s
 
         %(sample_mask)s
 
@@ -311,11 +307,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
 
-        confounds : :class:`numpy.ndarray`, :obj:`str`,\
-                    :class:`pathlib.Path`, \
-                    :class:`pandas.DataFrame` \
-                    or :obj:`list` of confounds timeseries, default=None
-            Confounds to pass to :func:`nilearn.signal.clean`.
+        %(confounds)s
 
         %(sample_mask)s
 

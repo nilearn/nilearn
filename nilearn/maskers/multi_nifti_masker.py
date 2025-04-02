@@ -391,9 +391,7 @@ class MultiNiftiMasker(NiftiMasker):
             See :ref:`extracting_data`.
             List of imgs file to prepare. One item per subject.
 
-        confounds : :obj:`list` of confounds, default=None
-            List of confounds (2D arrays or filenames pointing to CSV
-            files or pandas DataFrames). Must be of same length than imgs_list.
+        %(confounds)s
 
         %(sample_mask)s
 
@@ -497,10 +495,7 @@ class MultiNiftiMasker(NiftiMasker):
             See :ref:`extracting_data`.
             Data to be preprocessed
 
-        confounds : CSV file or 2D :obj:`numpy.ndarray` or \
-                :obj:`pandas.DataFrame`, default=None
-            This parameter is passed to signal.clean. Please see the
-            corresponding documentation for details.
+        %(confounds)s
 
         %(sample_mask)s
 

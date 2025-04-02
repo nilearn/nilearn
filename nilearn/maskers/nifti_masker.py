@@ -559,11 +559,7 @@ class NiftiMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
-            default=None
-            This parameter is passed to :func:`nilearn.signal.clean`.
-            Please see the related documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
         %(sample_mask)s
 

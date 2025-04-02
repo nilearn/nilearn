@@ -254,7 +254,9 @@ connected : :obj:`bool`, optional
 
 # confounds
 docdict["confounds"] = """
-confounds : CSV file or array-like, optional
+confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
+            :class:`pandas.DataFrame` \
+            or :obj:`list` of confounds timeseries, default=None
     This parameter is passed to :func:`nilearn.signal.clean`.
     Please see the related documentation for details.
     shape: list of (number of scans, number of confounds)
