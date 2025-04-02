@@ -256,7 +256,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         plot_type : {'slice', 'glass'}, default='slice'
             Specifies the type of plot to be drawn for the statistical maps.
-        _use_input_files_for_filenaming
+
         %(cut_coords)s
 
         display_mode : {'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz', 'l', 'r',\
@@ -323,7 +323,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         the model.
 
         Output files try to follow the BIDS convention where applicable.
-        For first level models,_use_input_files_for_filenaming
+        For first level models,
         if no prefix is passed,
         and str or Path were used as input files to the GLM
         the output filenames will be based on the input files.
