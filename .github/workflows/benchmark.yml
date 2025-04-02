@@ -3,7 +3,7 @@
 # and then deploys the updated benchmarks to
 # `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
 # You can trigger it manually by adding ``[bm]`` to the commit message on the
-# main. It will also run on a schedule every day at 10pm UTC.
+# main. It will also run on a schedule at regular interval.
 #
 # Step-wise details:
 #
