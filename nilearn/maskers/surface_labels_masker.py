@@ -382,12 +382,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     or :obj:`list` of confounds timeseries, default=None
             Confounds to pass to :func:`nilearn.signal.clean`.
 
-        sample_mask : None, Any type compatible with numpy-array indexing, \
-                  or :obj:`list` of \
-                  shape: (total number of scans - number of scans removed) \
-                  for explicit index, or (number of scans) for binary mask, \
-                  default=None
-            sample_mask to pass to :func:`nilearn.signal.clean`.
+        %(sample_mask)s
 
         Returns
         -------
@@ -487,12 +482,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     or :obj:`list` of confounds timeseries, default=None
             Confounds to pass to :func:`nilearn.signal.clean`.
 
-        sample_mask : None, Any type compatible with numpy-array indexing, \
-                  or :obj:`list` of \
-                  shape: (total number of scans - number of scans removed) \
-                  for explicit index, or (number of scans) for binary mask, \
-                  default=None
-            sample_mask to pass to :func:`nilearn.signal.clean`.
+        %(sample_mask)s
 
         Returns
         -------

@@ -807,9 +807,9 @@ resume : :obj:`bool`, default=True
 
 # sample_mask
 docdict["sample_mask"] = """
-sample_mask : Any type compatible with numpy-array indexing, optional
+sample_mask : Any type compatible with numpy-array indexing, default=None
     shape: (number of scans - number of volumes removed, )
-    Masks the niimgs along time/fourth dimension to perform scrubbing
+    Masks the images along time dimension to perform scrubbing
     (remove volumes with high motion) and/or non-steady-state volumes.
     This parameter is passed to :func:`nilearn.signal.clean`.
 """

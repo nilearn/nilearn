@@ -395,9 +395,7 @@ class MultiNiftiMasker(NiftiMasker):
             List of confounds (2D arrays or filenames pointing to CSV
             files or pandas DataFrames). Must be of same length than imgs_list.
 
-        sample_mask : :obj:`list` of sample_mask, default=None
-            List of sample_mask (1D arrays) if scrubbing motion outliers.
-            Must be of same length than imgs_list.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -504,9 +502,7 @@ class MultiNiftiMasker(NiftiMasker):
             This parameter is passed to signal.clean. Please see the
             corresponding documentation for details.
 
-        sample_mask : :obj:`list` of 1D :obj:`numpy.ndarray`, default=None
-            List of sample_mask (1D arrays) if scrubbing motion outliers.
-            Must be of same length than imgs_list.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 

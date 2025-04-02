@@ -638,12 +638,7 @@ class NiftiSpheresMasker(BaseMasker):
             Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
-            shape: (number of scans - number of volumes removed, )
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -678,12 +673,7 @@ class NiftiSpheresMasker(BaseMasker):
             Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
-            shape: (number of scans - number of volumes removed, )
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 

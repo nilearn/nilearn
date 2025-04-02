@@ -190,12 +190,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -266,12 +261,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -329,9 +319,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             List of confounds (2D arrays or filenames pointing to CSV
             files). Must be of same length than imgs_list.
 
-        sample_mask : :obj:`list` of sample_mask, default=None
-            List of sample_mask (1D arrays) if scrubbing motion outliers.
-            Must be of same length than imgs_list.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -450,12 +438,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to clean.
+        %(sample_mask)s
 
         Returns
         -------
