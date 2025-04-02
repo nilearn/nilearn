@@ -27,7 +27,7 @@ from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
 )
-from nilearn.image import concat_imgs, mean_img
+from nilearn.image import mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -366,14 +366,14 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             and hasattr(self, "mask_img_")
         )
 
-    def transform(self, img, confounds=None, sample_mask=None):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object or \
-              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
-              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+        imgs : imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
+              iterable of :obj:`~nilearn.surface.SurfaceImage`
+            Images to process.
             Mesh and data for both hemispheres.
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
@@ -395,23 +395,17 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
-        check_is_fitted(self)
+        check_compatibility_mask_and_images(self.labels_img, imgs)
+        check_polymesh_equal(self.labels_img.mesh, imgs.mesh)
+        imgs = at_least_2d(imgs)
 
-        # if img is a single image, convert it to a list
-        # to be able to concatenate it
-        if not isinstance(img, list):
-            img = [img]
-        img = concat_imgs(img)
-        check_compatibility_mask_and_images(self.labels_img, img)
-        check_polymesh_equal(self.labels_img.mesh, img.mesh)
-        img = at_least_2d(img)
         # concatenate data over hemispheres
-        img_data = np.concatenate(list(img.data.parts.values()), axis=0)
+        img_data = np.concatenate(list(imgs.data.parts.values()), axis=0)
 
         labels_data = self._labels_data
         labels = self._labels_
+
         if self.mask_img_ is not None:
-            check_compatibility_mask_and_images(self.mask_img_, img)
             mask_data = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
             )
@@ -421,17 +415,24 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 self.background_label,
             )
 
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                UserWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
+        target_datatype = (
+            np.float32 if img_data.dtype == np.float32 else np.float64
+        )
 
-        if self.reports:
-            self._reporting_data["images"] = img
+        img_data = img_data.astype(target_datatype)
+
+        n_time_points = 1 if len(img_data.shape) == 1 else img_data.shape[1]
+
+        region_signals = np.ndarray(
+            (n_time_points, len(labels)), dtype=target_datatype
+        )
+        # adapted from nilearn.regions.signal_extraction.img_to_signals_labels
+        # iterate over time points and apply reduction function over labels.
+        reduction_function = getattr(ndimage, self.strategy)
+        for n, sample in enumerate(np.rollaxis(img_data, -1)):
+            region_signals[n] = np.asarray(
+                reduction_function(sample, labels=labels_data, index=labels)
+            )
 
         parameters = get_params(
             self.__class__,
@@ -443,24 +444,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if self.clean_args is None:
             self.clean_args = {}
         parameters["clean_args"] = self.clean_args
-
-        target_datatype = (
-            np.float32 if img_data.dtype == np.float32 else np.float64
-        )
-        img_data = img_data.astype(target_datatype)
-
-        n_time_points = 1 if len(img_data.shape) == 1 else img_data.shape[1]
-        region_signals = np.ndarray(
-            (n_time_points, len(labels)), dtype=target_datatype
-        )
-
-        # adapted from nilearn.regions.signal_extraction.img_to_signals_labels
-        # iterate over time points and apply reduction function over labels.
-        reduction_function = getattr(ndimage, self.strategy)
-        for n, sample in enumerate(np.rollaxis(img_data, -1)):
-            region_signals[n] = np.asarray(
-                reduction_function(sample, labels=labels_data, index=labels)
-            )
 
         # signal cleaning here
         region_signals = cache(
