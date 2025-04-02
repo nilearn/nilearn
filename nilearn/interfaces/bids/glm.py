@@ -292,10 +292,13 @@ def save_glm_to_bids(
             if model._is_volume_glm():
                 img.to_filename(out_dir / filename)
             else:
-                for label in ["L", "R"]:
+                for label, hemi in zip(["L", "R"], ["left", "right"]):
+                    density = img.mesh.parts[hemi].n_vertices
                     img.data.to_filename(
                         out_dir
-                        / _generate_filename_surface_file(filename, label)
+                        / _generate_filename_surface_file(
+                            filename, label, density
+                        )
                     )
 
         thresholded_img, threshold = threshold_stats_img(
@@ -371,9 +374,12 @@ def _write_mask(model):
         mask = model.masker_.mask_img_
         for label, hemi in zip(["L", "R"], ["left", "right"]):
             mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
+            density = mask.mesh.parts[hemi].n_vertices
             mask.data.to_filename(
                 out_dir
-                / _generate_filename_surface_file(filenames["mask"], label)
+                / _generate_filename_surface_file(
+                    filenames["mask"], label, density
+                )
             )
 
 
@@ -387,17 +393,20 @@ def _write_model_level_statistical_maps(model, out_dir):
             if model._is_volume_glm():
                 stat_map_to_save.to_filename(out_dir / map_name)
             else:
-                for label in ["L", "R"]:
+                for label, hemi in zip(["L", "R"], ["left", "right"]):
+                    density = stat_map_to_save.mesh.parts[hemi].n_vertices
                     stat_map_to_save.data.to_filename(
                         out_dir
-                        / _generate_filename_surface_file(map_name, label)
+                        / _generate_filename_surface_file(
+                            map_name, label, density
+                        )
                     )
 
 
-def _generate_filename_surface_file(filename, hemi):
+def _generate_filename_surface_file(filename, hemi, den=None):
     """Generate valid BIDS filename for surface file.
 
-    Ensure that the hemi entity is placed in the correct position.
+    Ensure that the hemi and den entities are placed in the correct position.
     """
     from nilearn.interfaces.bids import parse_bids_filename
     from nilearn.interfaces.bids.utils import (
@@ -415,6 +424,8 @@ def _generate_filename_surface_file(filename, hemi):
     }
 
     fields["entities"]["hemi"] = hemi
+    if den:
+        fields["entities"]["den"] = den
 
     all_entities = [
         *bids_entities()["raw"],

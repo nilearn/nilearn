@@ -888,12 +888,12 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
         "run-2_design.json",
         "contrast-c0_clusters.tsv",
         "contrast-c0_clusters.json",
-        "hemi-L_mask.gii",
-        "hemi-R_mask.gii",
-        "hemi-L_contrast-c0_stat-z_statmap.gii",
-        "hemi-R_contrast-c0_stat-z_statmap.gii",
-        "run-1_hemi-L_stat-rsquared_statmap.gii",
-        "run-1_hemi-R_stat-rsquared_statmap.gii",
+        "hemi-L_den-10242_mask.gii",
+        "hemi-R_den-10242_mask.gii",
+        "hemi-L_den-10242_contrast-c0_stat-z_statmap.gii",
+        "hemi-R_den-10242_contrast-c0_stat-z_statmap.gii",
+        "run-1_hemi-L_den-10242_stat-rsquared_statmap.gii",
+        "run-1_hemi-R_den-10242_stat-rsquared_statmap.gii",
     ]
     if is_matplotlib_installed():
         EXPECTED_FILENAME_ENDINGS.extend(
