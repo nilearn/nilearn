@@ -194,6 +194,20 @@ for contrast_id, contrast_val in contrasts.items():
 
 show()
 
+# %%
+from rich import print
+
+from nilearn.interfaces.bids import save_glm_to_bids
+
+print(contrasts)
+
+save_glm_to_bids(
+    glm,
+    contrasts=contrasts,
+    threshold=3.0,
+    bg_img=fsaverage_data,
+    height_control=None,
+)
 
 report = glm.generate_report(
     contrasts,

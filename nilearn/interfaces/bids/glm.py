@@ -226,7 +226,14 @@ def save_glm_to_bids(
 
     verbose = model.verbose
 
-    model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
+    if model._is_volume_glm():
+        model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
+    else:
+        # need to convert mask from book to a type that's gifti friendly
+        mask = model.masker_.mask_img_
+        for hemi in model.masker_.mask_img_.data.parts:
+            mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
+        mask.data.to_filename(out_dir / filenames["mask"])
 
     if model.__str__() == "Second Level Model":
         design_matrices = [model.design_matrix_]
@@ -288,7 +295,11 @@ def save_glm_to_bids(
             filename = filenames["statistical_maps"][contrast_name][
                 output_type
             ]
-            img.to_filename(out_dir / filename)
+
+            if model._is_volume_glm():
+                img.to_filename(out_dir / filename)
+            else:
+                img.data.to_filename(out_dir / filename)
 
         thresholded_img, threshold = threshold_stats_img(
             stat_img=img,
@@ -329,12 +340,23 @@ def save_glm_to_bids(
     _write_model_level_statistical_maps(model, out_dir)
 
     logger.log("Generating HTML...", verbose=verbose)
-    # generate_report can just rely on the name of the files
-    # stored in the model instance.
-    # temporarily drop verbosity to avoid generate_report
-    # logging the same thing
+
+    # temporarily drop verbosity
+    # to avoid generate_report logging the same thing
     model.verbose -= 1
-    glm_report = model.generate_report(**kwargs)
+
+    # generate_report can just rely on the name of the files
+    # stored in the model instance
+    # for volume based GLM,
+    # so no need to pass the contrasts.
+    # For surface GLM, we recompute the stats maps
+    # as only the surface data but no mesh
+    # was saved to disk.
+    if model._is_volume_glm():
+        glm_report = model.generate_report(**kwargs)
+    else:
+        glm_report = model.generate_report(contrasts=contrasts, **kwargs)
+
     model.verbose += 1
     glm_report.save_as_html(out_dir / f"{prefix}report.html")
 
@@ -348,4 +370,7 @@ def _write_model_level_statistical_maps(model, out_dir):
         for attr, map_name in model_level_mapping.items():
             img = getattr(model, attr)
             stat_map_to_save = img[i_run] if isinstance(img, Iterable) else img
-            stat_map_to_save.to_filename(out_dir / map_name)
+            if model._is_volume_glm():
+                stat_map_to_save.to_filename(out_dir / map_name)
+            else:
+                stat_map_to_save.data.to_filename(out_dir / map_name)
