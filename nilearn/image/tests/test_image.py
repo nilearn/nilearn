@@ -567,6 +567,21 @@ def test_mean_img_surface(surf_img_1d, surf_img_2d):
     assert img.shape == (img.mesh.n_vertices,)
 
 
+def test_mean_img_surface_list(surf_img_2d):
+    """Check that mean_img computes mean of mean."""
+    surf_img_1 = surf_img_2d(2)
+    surf_img_2 = surf_img_2d(3)
+
+    mean_surf_img_1 = mean_img(surf_img_1)
+    mean_surf_img_2 = mean_img(surf_img_2)
+
+    direct_mean = mean_img([surf_img_1, surf_img_2])
+
+    assert_surface_image_equal(
+        direct_mean, mean_img([mean_surf_img_1, mean_surf_img_2])
+    )
+
+
 def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
     # make sure input image data is not overwritten inside function
     data = rng.standard_normal(size=shape_3d_default)

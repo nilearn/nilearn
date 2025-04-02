@@ -33,7 +33,7 @@ from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
 )
-from nilearn.surface.utils import assert_polymesh_equal
+from nilearn.surface.utils import check_polymesh_equal
 
 
 def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
@@ -300,7 +300,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if self.mask_img is not None:
             if img is not None:
                 check_compatibility_mask_and_images(self.mask_img, img)
-            assert_polymesh_equal(self.labels_img.mesh, self.mask_img.mesh)
+            check_polymesh_equal(self.labels_img.mesh, self.mask_img.mesh)
         self.mask_img_ = self.mask_img
 
         self._shelving = False
@@ -396,7 +396,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             shape: (img data shape, total number of vertices)
         """
         check_compatibility_mask_and_images(self.labels_img, imgs)
-        assert_polymesh_equal(self.labels_img.mesh, imgs.mesh)
+        check_polymesh_equal(self.labels_img.mesh, imgs.mesh)
         imgs = at_least_2d(imgs)
 
         # concatenate data over hemispheres
