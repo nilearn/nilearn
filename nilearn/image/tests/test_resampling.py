@@ -22,7 +22,7 @@ from nilearn import _utils
 from nilearn._utils import testing
 from nilearn._utils.exceptions import DimensionError
 from nilearn.image import get_data
-from nilearn.image.image import _pad_array, crop_img
+from nilearn.image.image import crop_img
 from nilearn.image.resampling import (
     BoundingBoxError,
     coord_transform,
@@ -33,7 +33,7 @@ from nilearn.image.resampling import (
     resample_img,
     resample_to_img,
 )
-from nilearn.image.tests._testing import match_headers_keys
+from nilearn.image.tests._testing import match_headers_keys, pad_array
 
 ANGLES_TO_TEST = (0, np.pi, np.pi / 2.0, np.pi / 4.0, np.pi / 3.0)
 
@@ -717,7 +717,7 @@ def test_resampling_result_axis_permutation(
         .T.ravel()
         .astype(int)
     )
-    expected_data = _pad_array(
+    expected_data = pad_array(
         full_data.transpose(axis_permutation), list(offset_cropping)
     )
     assert_array_almost_equal(resampled_data, expected_data)
@@ -820,7 +820,7 @@ def test_crop(affine_eye):
     # Testing that padding of arrays and cropping of images work symmetrically
     shape = (4, 6, 2)
     data = np.ones(shape)
-    padded = _pad_array(data, [3, 2, 4, 4, 5, 7])
+    padded = pad_array(data, [3, 2, 4, 4, 5, 7])
     padd_nii = Nifti1Image(padded, affine_eye)
 
     cropped = crop_img(padd_nii, pad=False, copy_header=True)

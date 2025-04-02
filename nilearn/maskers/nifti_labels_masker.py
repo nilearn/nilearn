@@ -8,6 +8,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
 from nilearn._utils import logger
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -320,7 +321,7 @@ class NiftiLabelsMasker(BaseMasker):
                     "after resampling."
                 )
             if tolerant:
-                warnings.warn(msg, UserWarning, stacklevel=3)
+                warnings.warn(msg, UserWarning, stacklevel=find_stack_level())
             else:
                 raise ValueError(msg)
 
@@ -467,7 +468,7 @@ class NiftiLabelsMasker(BaseMasker):
                         "A list of 4D subject images were provided to fit. "
                         "Only first subject is shown in the report."
                     )
-                    warnings.warn(msg, stacklevel=6)
+                    warnings.warn(msg, stacklevel=find_stack_level())
                     self._report_content["warning_message"] = msg
                 display = plotting.plot_img(
                     img,
@@ -486,7 +487,7 @@ class NiftiLabelsMasker(BaseMasker):
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )
-                warnings.warn(msg, stacklevel=6)
+                warnings.warn(msg, stacklevel=find_stack_level())
                 self._report_content["warning_message"] = msg
                 display = plotting.plot_roi(labels_image)
                 plt.close()
@@ -577,7 +578,7 @@ class NiftiLabelsMasker(BaseMasker):
                 warnings.warn(
                     "Number of regions in the labels image "
                     "does not match the number of labels provided.",
-                    stacklevel=2,
+                    stacklevel=find_stack_level(),
                 )
             # if number of regions in the labels image is more
             # than the number of labels provided, then we cannot
@@ -866,7 +867,10 @@ class NiftiLabelsMasker(BaseMasker):
         return region_signals
 
     def _resample_labels(self, imgs_):
-        logger.log("Resampling labels", self.verbose, stack_level=2)
+        logger.log(
+            "Resampling labels",
+            self.verbose,
+        )
         labels_before_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
         )
@@ -891,7 +895,8 @@ class NiftiLabelsMasker(BaseMasker):
                 f"the following labels were removed: {labels_diff}. "
                 "Label image only contains "
                 f"{len(labels_after_resampling)} labels "
-                "(including background)."
+                "(including background).",
+                stacklevel=find_stack_level(),
             )
 
         return self

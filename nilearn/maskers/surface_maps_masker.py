@@ -18,6 +18,7 @@ from nilearn._utils.helpers import (
     is_plotly_installed,
     rename_parameters,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -26,9 +27,9 @@ from nilearn.image import concat_imgs, index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
-    check_same_n_vertices,
     get_data,
 )
+from nilearn.surface.utils import assert_polymesh_equal
 
 
 @fill_doc
@@ -189,7 +190,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 msg=f"loading regions from {self.mask_img.__repr__()}",
                 verbose=self.verbose,
             )
-            check_same_n_vertices(self.maps_img.mesh, self.mask_img.mesh)
+            assert_polymesh_equal(self.maps_img.mesh, self.mask_img.mesh)
             self.mask_img_ = self.mask_img
             # squeeze the mask data if it is 2D and has a single column
             for part in self.mask_img_.data.parts:
@@ -284,7 +285,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         img = concat_imgs(img)
         # check img data is 2D
         img.data._check_ndims(2, "img")
-        check_same_n_vertices(self.maps_img.mesh, img.mesh)
+        assert_polymesh_equal(self.maps_img.mesh, img.mesh)
         img_data = np.concatenate(
             list(img.data.parts.values()), axis=0
         ).astype(np.float32)
@@ -299,7 +300,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "Parameter smoothing_fwhm "
                 "is not yet supported for surface data",
                 UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
 
@@ -540,7 +541,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             warnings.warn(
                 "Plotly is not installed. "
                 "Switching to matplotlib for report generation.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         if hasattr(self, "_report_content"):
             self._report_content["engine"] = engine
@@ -600,7 +601,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                     f"But masker only has {n_maps} maps. "
                     f"Setting number of displayed maps to {n_maps}."
                 )
-                warnings.warn(category=UserWarning, message=msg, stacklevel=6)
+                warnings.warn(
+                    category=UserWarning,
+                    message=msg,
+                    stacklevel=find_stack_level(),
+                )
                 self.displayed_maps = n_maps
             maps_to_be_displayed = range(self.displayed_maps)
 
@@ -622,7 +627,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "SurfaceMapsMasker has not been transformed (via transform() "
                 "method) on any image yet. Plotting only maps for reporting."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
 
         for roi in maps_to_be_displayed:
             roi = index_img(maps_img, roi)

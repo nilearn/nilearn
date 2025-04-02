@@ -49,10 +49,7 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
-from nilearn.surface._testing import assert_polymesh_equal
-
-BASEDIR = Path(__file__).resolve().parent
-FUNCFILE = BASEDIR / "functional.nii.gz"
+from nilearn.surface.utils import assert_polymesh_equal
 
 
 @pytest.mark.parametrize(
@@ -99,7 +96,11 @@ def test_glm_fit_invalid_mask_img(shape_4d_default):
     masker.fit()
     masker.mask_img_ = None
     with pytest.warns(
-        UserWarning, match="Parameter memory of the masker overridden"
+        UserWarning,
+        match=(
+            "Overriding provided-default estimator parameters "
+            "with provided masker parameters"
+        ),
     ):
         FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0]

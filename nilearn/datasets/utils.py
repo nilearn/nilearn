@@ -4,7 +4,8 @@ import os
 from pathlib import Path
 from warnings import warn
 
-from .._utils import fill_doc
+from nilearn._utils import fill_doc
+from nilearn._utils.logger import find_stack_level
 
 _GENERAL_MESSAGE = (
     "The import path 'nilearn.datasets.utils'\n"
@@ -76,10 +77,9 @@ def load_sample_motor_activation_image():
     from .func import load_sample_motor_activation_image as tmp
 
     warn(
-        (
-            f"{_GENERAL_MESSAGE}"
-            "Please import this function from 'nilearn.datasets.func' instead."
-        ),
+        f"{_GENERAL_MESSAGE}"
+        "Please import this function from 'nilearn.datasets.func' instead.",
         DeprecationWarning,
+        stacklevel=find_stack_level(),
     )
     return tmp()

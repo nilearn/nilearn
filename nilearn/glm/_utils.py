@@ -7,6 +7,8 @@ import scipy.linalg as spl
 from scipy.linalg.lapack import get_lapack_funcs
 from scipy.stats import norm
 
+from nilearn._utils.logger import find_stack_level
+
 
 def z_score(pvalue, one_minus_pvalue=None):
     """Return the z-score(s) corresponding to certain p-value(s) and, \
@@ -174,7 +176,10 @@ def full_rank(X, cmax=1e15):
     if cond < cmax:
         return X, cond
 
-    warn("Matrix is singular at working precision, regularizing...")
+    warn(
+        "Matrix is singular at working precision, regularizing...",
+        stacklevel=find_stack_level(),
+    )
     lda = (smax - cmax * smin) / (cmax - 1)
     X = np.dot(U, np.dot(np.diag(s + lda), V))
     return X, cmax
@@ -248,7 +253,7 @@ def pad_contrast(con_val, theta, stat_type):
                 f"but it has length {n_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
         if stat_type == "F":
             warn(
@@ -256,7 +261,7 @@ def pad_contrast(con_val, theta, stat_type):
                 f"but it has only {n_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
     if pad:

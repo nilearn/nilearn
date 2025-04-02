@@ -9,6 +9,7 @@ from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
 
@@ -64,7 +65,6 @@ def filter_and_extract(
     logger.log(
         f"Loading data from {_utils.repr_niimgs(imgs, shorten=False)}",
         verbose=verbose,
-        stack_level=2,
     )
 
     # Convert input to niimg to check shape.
@@ -80,6 +80,7 @@ def filter_and_extract(
             "Until then, 3D images will be coerced to 2D arrays, with a "
             "singleton first dimension representing time.",
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
     imgs = _utils.check_niimg(
@@ -89,7 +90,9 @@ def filter_and_extract(
     target_shape = parameters.get("target_shape")
     target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
-        logger.log("Resampling images", stack_level=2)
+        logger.log(
+            "Resampling images",
+        )
 
         imgs = cache(
             image.resample_img,
@@ -109,7 +112,10 @@ def filter_and_extract(
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
     if smoothing_fwhm is not None:
-        logger.log("Smoothing images", verbose=verbose, stack_level=2)
+        logger.log(
+            "Smoothing images",
+            verbose=verbose,
+        )
         imgs = cache(
             image.smooth_img,
             memory,
@@ -117,7 +123,10 @@ def filter_and_extract(
             memory_level=memory_level,
         )(imgs, parameters["smoothing_fwhm"])
 
-    logger.log("Extracting region signals", verbose=verbose, stack_level=2)
+    logger.log(
+        "Extracting region signals",
+        verbose=verbose,
+    )
     region_signals, aux = cache(
         extraction_function,
         memory,
@@ -131,7 +140,10 @@ def filter_and_extract(
     # Filtering
     # Confounds removing (from csv file or numpy array)
     # Normalizing
-    logger.log("Cleaning extracted signals", verbose=verbose, stack_level=2)
+    logger.log(
+        "Cleaning extracted signals",
+        verbose=verbose,
+    )
     runs = parameters.get("runs", None)
     region_signals = cache(
         signal.clean,
@@ -352,7 +364,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             "Generation of a mask has been"
             " requested (y != None) while a mask has"
             " been provided at masker creation. Given mask"
-            " will be used."
+            " will be used.",
+            stacklevel=find_stack_level(),
         )
         return self.fit(**fit_params).transform(
             imgs, confounds=confounds, sample_mask=sample_mask

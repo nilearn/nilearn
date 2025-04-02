@@ -9,10 +9,10 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn import signal
 from nilearn._utils.docs import fill_doc
-
-from .. import signal
-from .._utils.extmath import is_spd
+from nilearn._utils.extmath import is_spd
+from nilearn._utils.logger import find_stack_level
 
 
 def _check_square(matrix):
@@ -203,7 +203,8 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
     if tol is not None and norm / gmean.size >= tol:
         warnings.warn(
             f"Maximum number of iterations {max_iter} reached without "
-            f"getting to the requested tolerance level {tol}."
+            f"getting to the requested tolerance level {tol}.",
+            stacklevel=find_stack_level(),
         )
 
     return gmean

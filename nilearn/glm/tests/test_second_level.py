@@ -38,7 +38,7 @@ from nilearn.glm.second_level.second_level import (
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
-from nilearn.surface._testing import assert_surface_image_equal
+from nilearn.surface.utils import assert_surface_image_equal
 
 
 @pytest.mark.parametrize(
@@ -62,10 +62,6 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
-
-# This directory path
-BASEDIR = Path(__file__).resolve().parent
-FUNCFILE = BASEDIR / "functional.nii.gz"
 
 N_PERM = 5
 SHAPE = (*_shape_3d_default(), 1)
@@ -539,7 +535,11 @@ def test_high_level_glm_with_paths_errors():
     # Provide a masker as mask_img
     masker = NiftiMasker(mask).fit()
     with pytest.warns(
-        UserWarning, match="Parameter memory of the masker overridden"
+        UserWarning,
+        match=(
+            "Overriding provided-default estimator parameters "
+            "with provided masker parameters"
+        ),
     ):
         SecondLevelModel(mask_img=masker, verbose=1).fit(Y, design_matrix=X)
 

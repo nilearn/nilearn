@@ -60,7 +60,8 @@ design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 # %%
 # Initialize and run the GLM
 # --------------------------
-# First, we need to specify the model before fitting it to the data.
+# First, we need to specify the model
+# before fitting it to the data.
 # Note that a brain mask was provided in the dataset,
 # so that is what we will use.
 from nilearn.glm.first_level import FirstLevelModel

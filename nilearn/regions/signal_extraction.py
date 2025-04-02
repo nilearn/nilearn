@@ -11,9 +11,10 @@ import numpy as np
 from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
+from nilearn import _utils, masking
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_reduction_strategy
 
-from .. import _utils, masking
 from .._utils.niimg import safe_get_data
 from ..image import new_img_like
 
@@ -175,7 +176,7 @@ def _get_labels_data(
             '"keep_masked_labels" parameter will be removed '
             "in version 0.15.",
             DeprecationWarning,
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
 
     # Consider only data within the mask
@@ -199,7 +200,7 @@ def _get_labels_data(
                 "masked labels image only contains "
                 f"{len(labels_after_mask)} labels "
                 "(including background).",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
     if not keep_masked_labels:
@@ -331,7 +332,7 @@ def img_to_signals_labels(
             "used to toggle this behavior. In version 0.15, "
             '"return_masked_atlas" parameter will be removed.',
             DeprecationWarning,
-            stacklevel=1,
+            stacklevel=find_stack_level(),
         )
         return signals, labels
 
@@ -491,7 +492,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
                 '"keep_masked_maps" parameter will be removed '
                 "in version 0.15.",
                 DeprecationWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         else:
             labels_after_mask = {int(label) for label in labels}
@@ -505,7 +506,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
                     f"Out of {len(labels_before_mask)} maps, the "
                     "masked map image only contains "
                     f"{len(labels_after_mask)} maps.",
-                    stacklevel=2,
+                    stacklevel=find_stack_level(),
                 )
 
     data = safe_get_data(imgs, ensure_finite=True)
