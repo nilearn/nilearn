@@ -224,16 +224,7 @@ def save_glm_to_bids(
     out_dir = filenames["dir"]
     out_dir.mkdir(exist_ok=True, parents=True)
 
-    verbose = model.verbose
-
-    if model._is_volume_glm():
-        model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
-    else:
-        # need to convert mask from book to a type that's gifti friendly
-        mask = model.masker_.mask_img_
-        for hemi in model.masker_.mask_img_.data.parts:
-            mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
-        mask.data.to_filename(out_dir / filenames["mask"])
+    _write_mask(model)
 
     if model.__str__() == "Second Level Model":
         design_matrices = [model.design_matrix_]
@@ -244,6 +235,8 @@ def save_glm_to_bids(
         prefix = ""
     if prefix and not prefix.endswith("_"):
         prefix += "_"
+
+    verbose = model.verbose
 
     if is_matplotlib_installed():
         logger.log("Generating design matrices figures...", verbose=verbose)
@@ -299,7 +292,11 @@ def save_glm_to_bids(
             if model._is_volume_glm():
                 img.to_filename(out_dir / filename)
             else:
-                img.data.to_filename(out_dir / filename)
+                for label in ["L", "R"]:
+                    img.data.to_filename(
+                        out_dir
+                        / _generate_filename_surface_file(filename, label)
+                    )
 
         thresholded_img, threshold = threshold_stats_img(
             stat_img=img,
@@ -363,6 +360,23 @@ def save_glm_to_bids(
     return model
 
 
+def _write_mask(model):
+    logger.log("Saving mask...", verbose=model.verbose)
+    filenames = model._reporting_data["filenames"]
+    out_dir = filenames["dir"]
+    if model._is_volume_glm():
+        model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
+    else:
+        # need to convert mask from book to a type that's gifti friendly
+        mask = model.masker_.mask_img_
+        for label, hemi in zip(["L", "R"], ["left", "right"]):
+            mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
+            mask.data.to_filename(
+                out_dir
+                / _generate_filename_surface_file(filenames["mask"], label)
+            )
+
+
 def _write_model_level_statistical_maps(model, out_dir):
     for i_run, model_level_mapping in model._reporting_data["filenames"][
         "model_level_mapping"
@@ -373,4 +387,44 @@ def _write_model_level_statistical_maps(model, out_dir):
             if model._is_volume_glm():
                 stat_map_to_save.to_filename(out_dir / map_name)
             else:
-                stat_map_to_save.data.to_filename(out_dir / map_name)
+                for label in ["L", "R"]:
+                    stat_map_to_save.data.to_filename(
+                        out_dir
+                        / _generate_filename_surface_file(map_name, label)
+                    )
+
+
+def _generate_filename_surface_file(filename, hemi):
+    """Generate valid BIDS filename for surface file.
+
+    Ensure that the hemi entity is placed in the correct position.
+    """
+    from nilearn.interfaces.bids import parse_bids_filename
+    from nilearn.interfaces.bids.utils import (
+        bids_entities,
+        create_bids_filename,
+    )
+
+    parsed_file = parse_bids_filename(filename)
+
+    fields = {
+        "prefix": None,
+        "suffix": parsed_file["file_tag"],
+        "extension": parsed_file["file_type"],
+        "entities": {k: parsed_file[k] for k in parsed_file["file_fields"]},
+    }
+
+    fields["entities"]["hemi"] = hemi
+
+    all_entities = [
+        *bids_entities()["raw"],
+        *bids_entities()["derivatives"],
+    ]
+    entities_to_include = [x for x in all_entities if x in fields["entities"]]
+    for entity in fields["entities"]:
+        if entity not in entities_to_include:
+            entities_to_include.append(entity)
+
+    return create_bids_filename(
+        fields, entities_to_include=entities_to_include
+    )
