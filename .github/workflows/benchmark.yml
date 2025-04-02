@@ -41,7 +41,7 @@ on:
         -   main
     schedule:
     # everday at 10pm UTC
-    -   cron: 0 22 * * *
+    -   cron: 0 22 * * 0
 
 jobs:
     benchmark:
