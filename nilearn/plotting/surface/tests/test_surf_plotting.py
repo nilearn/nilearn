@@ -13,6 +13,7 @@ import pytest
 from matplotlib.figure import Figure
 from numpy.testing import assert_array_equal
 
+from nilearn._utils.exceptions import MeshDimensionError
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting import (
@@ -473,6 +474,23 @@ def test_plot_surf_hemi_views_plotly(
     plot_surf(
         in_memory_mesh, bg_map=bg_map, hemi=hemi, view=view, engine="plotly"
     )
+
+
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
+def test_plot_surf_swap_hemi(
+    matplotlib_pyplot, surf_img_1d, hemi, flip_surf_img
+):
+    """Check error is raised if background image is incompatible."""
+    with pytest.raises(
+        MeshDimensionError,
+        match="Number of vertices do not match for between meshes.",
+    ):
+        plot_surf(
+            surf_map=surf_img_1d,
+            bg_map=flip_surf_img(surf_img_1d),
+            hemi=hemi,
+            surf_mesh=None,
+        )
 
 
 def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):

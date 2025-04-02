@@ -56,14 +56,14 @@ def test_mask_img_fit_shape_mismatch(
         and that of image to fit.
     """
     masker = SurfaceMasker(surf_mask_1d)
-    with pytest.raises(ValueError, match="number of vertices"):
+    with pytest.raises(ValueError, match="Number of vertices"):
         masker.fit(flip_surf_img(surf_img_2d(shape)))
     masker.fit(surf_img_2d(shape))
     assert_polydata_equal(surf_mask_1d.data, masker.mask_img_.data)
 
 
 def test_mask_img_fit_keys_mismatch(surf_mask_1d, drop_surf_img_part):
-    """Check fitr fails if one hemisphere is missing."""
+    """Check fit fails if one hemisphere is missing."""
     masker = SurfaceMasker(surf_mask_1d)
     with pytest.raises(ValueError, match="key"):
         masker.fit(drop_surf_img_part(surf_mask_1d))
@@ -132,7 +132,7 @@ def test_mask_img_transform_shape_mismatch(
         and that of image to transform.
     """
     masker = SurfaceMasker(surf_mask_1d).fit()
-    with pytest.raises(ValueError, match="number of vertices"):
+    with pytest.raises(ValueError, match="Number of vertices"):
         masker.transform(flip_surf_img(surf_img_1d))
     # non-flipped is ok
     masker.transform(surf_img_1d)
