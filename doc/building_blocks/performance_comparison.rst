@@ -7,8 +7,11 @@ Factors affecting performance of neuroimaging workflows
 In this chapter we will discuss the factors that can affect the performance of
 neuroimaging workflows and the steps that can be taken to optimize them.
 
-The performance of a workflow can be measured in terms of the time it takes to
-complete and the amount of memory it uses. Both these aspects are heavily
+The performance of a workflow can be measured in:
+1. the time it takes to complete
+2. the amount of memory it uses
+
+Both these aspects are heavily
 dependent on the size of the data being processed and how that data is loaded
 into memory.
 
@@ -214,11 +217,13 @@ Array images
 
 In practice, you would initially only use proxy images when you load an image
 from the disk. But once you perform an operation that modifies the image,
-you would get an array image; i.e., one that is loaded to disk as a numpy array.
+you would get an array image; i.e., one that is loaded to disk as a numpy
+array.
 
 For example, if you smooth an image using :func:`nilearn.image.smooth_img`
 function, it will return an array image. We can check this using nibabel's
-:func:`nibabel.arrayproxy.is_proxy` function on the image's `dataobj` property.
+:func:`nibabel.arrayproxy.is_proxy` function on the image's ``dataobj``
+property.
 
 .. code-block:: python
 
@@ -241,8 +246,9 @@ data in the memory, it could be beneficial to first save the image to disk and
 then loading it again via :func:`nibabel.loadsave.load` function to get a
 proxy image.
 
-However, if you will need all the data in memory at once (i.e., as we saw with `mean_img`, you can directly use
-the array image in subsequent operations.
+However, if you will need all the data in memory at once (i.e., as we saw with
+:func:`~nilearn.image.mean_img`), you can directly use the array image in
+subsequent operations.
 
 This applies to most of the operations under nilearn's :mod:`nilearn.image`
 module as they all return array images.
