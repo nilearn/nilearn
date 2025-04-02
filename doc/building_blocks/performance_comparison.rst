@@ -218,7 +218,7 @@ you would get an array image; i.e., one that is loaded to disk as a numpy array.
 
 For example, if you smooth an image using :func:`nilearn.image.smooth_img`
 function, it will return an array image. We can check this using nibabel's
-:func:`nibabel.arrayproxy.is_proxy` function on the image.
+:func:`nibabel.arrayproxy.is_proxy` function on the image's `dataobj` property.
 
 .. code-block:: python
 
