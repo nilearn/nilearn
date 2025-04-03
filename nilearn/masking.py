@@ -29,7 +29,7 @@ from nilearn.surface.surface import (
     SurfaceImage,
 )
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.surface.utils import assert_polymesh_equal
+from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
 
 __all__ = [
@@ -893,7 +893,7 @@ def apply_mask_fmri(
     :func:`nilearn.masking.apply_mask`, not in this function).
     """
     if isinstance(imgs, SurfaceImage) and isinstance(mask_img, SurfaceImage):
-        assert_polymesh_equal(mask_img.mesh, imgs.mesh)
+        check_polymesh_equal(mask_img.mesh, imgs.mesh)
 
         if smoothing_fwhm is not None:
             warnings.warn(

@@ -555,6 +555,7 @@ def _generate_statistical_maps(
 
         if generate_bids_name:
             fields["prefix"] = None
+
         fields["entities"]["contrast"] = _clean_contrast_name(contrast_name)
 
         tmp = {}

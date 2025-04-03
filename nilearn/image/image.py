@@ -49,7 +49,7 @@ from nilearn.surface.surface import (
     extract_data,
 )
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.surface.utils import assert_polymesh_equal
+from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
 
 
@@ -130,7 +130,7 @@ def high_variance_confounds(
 
     if mask_img is not None:
         if isinstance(imgs, SurfaceImage):
-            assert_polymesh_equal(mask_img.mesh, imgs.mesh)
+            check_polymesh_equal(mask_img.mesh, imgs.mesh)
         sigs = masking.apply_mask(imgs, mask_img)
 
     # Load the data only if it doesn't need to be masked
@@ -1076,7 +1076,7 @@ def threshold_img(
         check_compatibility_mask_and_images(mask_img, img)
 
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
-        assert_polymesh_equal(mask_img.mesh, img.mesh)
+        check_polymesh_equal(mask_img.mesh, img.mesh)
 
     if isinstance(img, SurfaceImage) and cluster_threshold > 0:
         warnings.warn(
@@ -1690,7 +1690,7 @@ def concat_imgs(
             return niimgs[0]
 
         for i, img in enumerate(niimgs):
-            assert_polymesh_equal(img.mesh, niimgs[0].mesh)
+            check_polymesh_equal(img.mesh, niimgs[0].mesh)
             niimgs[i] = at_least_2d(img)
 
         if dtype is None:
