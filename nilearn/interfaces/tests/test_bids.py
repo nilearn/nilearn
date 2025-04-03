@@ -847,8 +847,74 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
         assert key in metadata
 
 
+def test_save_glm_to_bids_surface_prefix_override(tmp_path):
+    """Save surface GLM results to disk with prefix."""
+    n_sub = 1
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=2,
+        tasks=["main"],
+        n_runs=[2],
+        n_vertices=10242,
+    )
+
+    models, imgs, events, _ = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label="main",
+        space_label="fsaverage5",
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+    )
+
+    model = models[0]
+    run_imgs = imgs[0]
+    events = events[0]
+
+    model.minimize_memory = False
+    model.fit(run_imgs=run_imgs, events=events)
+
+    prefix = "sub-01"
+
+    model = save_glm_to_bids(
+        model=model,
+        out_dir=tmp_path / "output",
+        contrasts=["c0"],
+        prefix=prefix,
+    )
+
+    EXPECTED_FILENAME_ENDINGS = [
+        "run-2_design.tsv",
+        "run-2_design.json",
+        "contrast-c0_clusters.tsv",
+        "contrast-c0_clusters.json",
+        "hemi-L_den-10242_mask.gii",
+        "hemi-R_den-10242_mask.gii",
+        "hemi-L_den-10242_contrast-c0_stat-z_statmap.gii",
+        "hemi-R_den-10242_contrast-c0_stat-z_statmap.gii",
+        "run-1_hemi-L_den-10242_stat-rsquared_statmap.gii",
+        "run-1_hemi-R_den-10242_stat-rsquared_statmap.gii",
+    ]
+    if is_matplotlib_installed():
+        EXPECTED_FILENAME_ENDINGS.extend(
+            [
+                "run-1_design.png",
+                "run-1_corrdesign.png",
+                "run-2_contrast-c0_design.png",
+            ]
+        )
+
+    if prefix != "" and not prefix.endswith("_"):
+        prefix += "_"
+
+    sub_prefix = prefix.split("_")[0] if prefix.startswith("sub-") else ""
+
+    for fname in EXPECTED_FILENAME_ENDINGS:
+        assert (tmp_path / "output" / sub_prefix / f"{prefix}{fname}").exists()
+
+
 @pytest.mark.parametrize("prefix", ["", "sub-01", "foo_"])
-def test_save_glm_to_bids_infer_filenames_overide(tmp_path, prefix):
+def test_save_glm_to_bids_infer_filenames_override(tmp_path, prefix):
     """Check that output filenames is not inferred when prefix is passed."""
     n_sub = 1
 

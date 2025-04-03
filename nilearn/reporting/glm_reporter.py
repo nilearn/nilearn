@@ -259,8 +259,9 @@ def make_glm_report(
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
+        # We try to rely on the content of glm object only
+        # by reading images from disk rarther than recomputing them
         if output is not None:
-            # we try to rely on the content of glm object only
             try:
                 statistical_maps = {
                     contrast_name: output["dir"]

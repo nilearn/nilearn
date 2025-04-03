@@ -224,9 +224,7 @@ def save_glm_to_bids(
     out_dir = filenames["dir"]
     out_dir.mkdir(exist_ok=True, parents=True)
 
-    verbose = model.verbose
-
-    model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
+    _write_mask(model)
 
     if model.__str__() == "Second Level Model":
         design_matrices = [model.design_matrix_]
@@ -237,6 +235,8 @@ def save_glm_to_bids(
         prefix = ""
     if prefix and not prefix.endswith("_"):
         prefix += "_"
+
+    verbose = model.verbose
 
     if is_matplotlib_installed():
         logger.log("Generating design matrices figures...", verbose=verbose)
@@ -281,14 +281,25 @@ def save_glm_to_bids(
     statistical_maps = make_stat_maps(model, contrasts, output_type="all")
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
-            if output_type in ["metadata", "results"]:
+            if output_type in ["metadata", "clusters_tsv"]:
                 continue
 
             img = statistical_maps[contrast_name][output_type]
             filename = filenames["statistical_maps"][contrast_name][
                 output_type
             ]
-            img.to_filename(out_dir / filename)
+
+            if model._is_volume_glm():
+                img.to_filename(out_dir / filename)
+            else:
+                for label, hemi in zip(["L", "R"], ["left", "right"]):
+                    density = img.mesh.parts[hemi].n_vertices
+                    img.data.to_filename(
+                        out_dir
+                        / _generate_filename_surface_file(
+                            filename, label, density
+                        )
+                    )
 
         thresholded_img, threshold = threshold_stats_img(
             stat_img=img,
@@ -329,16 +340,47 @@ def save_glm_to_bids(
     _write_model_level_statistical_maps(model, out_dir)
 
     logger.log("Generating HTML...", verbose=verbose)
-    # generate_report can just rely on the name of the files
-    # stored in the model instance.
-    # temporarily drop verbosity to avoid generate_report
-    # logging the same thing
+
+    # temporarily drop verbosity
+    # to avoid generate_report logging the same thing
     model.verbose -= 1
-    glm_report = model.generate_report(**kwargs)
+
+    # generate_report can just rely on the name of the files
+    # stored in the model instance
+    # for volume based GLM,
+    # so no need to pass the contrasts.
+    # For surface GLM, we recompute the stats maps
+    # as only the surface data but no mesh
+    # was saved to disk.
+    if model._is_volume_glm():
+        glm_report = model.generate_report(**kwargs)
+    else:
+        glm_report = model.generate_report(contrasts=contrasts, **kwargs)
+
     model.verbose += 1
     glm_report.save_as_html(out_dir / f"{prefix}report.html")
 
     return model
+
+
+def _write_mask(model):
+    logger.log("Saving mask...", verbose=model.verbose)
+    filenames = model._reporting_data["filenames"]
+    out_dir = filenames["dir"]
+    if model._is_volume_glm():
+        model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
+    else:
+        # need to convert mask from book to a type that's gifti friendly
+        mask = model.masker_.mask_img_
+        for label, hemi in zip(["L", "R"], ["left", "right"]):
+            mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
+            density = mask.mesh.parts[hemi].n_vertices
+            mask.data.to_filename(
+                out_dir
+                / _generate_filename_surface_file(
+                    filenames["mask"], label, density
+                )
+            )
 
 
 def _write_model_level_statistical_maps(model, out_dir):
@@ -348,4 +390,52 @@ def _write_model_level_statistical_maps(model, out_dir):
         for attr, map_name in model_level_mapping.items():
             img = getattr(model, attr)
             stat_map_to_save = img[i_run] if isinstance(img, Iterable) else img
-            stat_map_to_save.to_filename(out_dir / map_name)
+            if model._is_volume_glm():
+                stat_map_to_save.to_filename(out_dir / map_name)
+            else:
+                for label, hemi in zip(["L", "R"], ["left", "right"]):
+                    density = stat_map_to_save.mesh.parts[hemi].n_vertices
+                    stat_map_to_save.data.to_filename(
+                        out_dir
+                        / _generate_filename_surface_file(
+                            map_name, label, density
+                        )
+                    )
+
+
+def _generate_filename_surface_file(filename, hemi, den=None):
+    """Generate valid BIDS filename for surface file.
+
+    Ensure that the hemi and den entities are placed in the correct position.
+    """
+    from nilearn.interfaces.bids import parse_bids_filename
+    from nilearn.interfaces.bids.utils import (
+        bids_entities,
+        create_bids_filename,
+    )
+
+    parsed_file = parse_bids_filename(filename)
+
+    fields = {
+        "prefix": None,
+        "suffix": parsed_file["file_tag"],
+        "extension": parsed_file["file_type"],
+        "entities": {k: parsed_file[k] for k in parsed_file["file_fields"]},
+    }
+
+    fields["entities"]["hemi"] = hemi
+    if den:
+        fields["entities"]["den"] = den
+
+    all_entities = [
+        *bids_entities()["raw"],
+        *bids_entities()["derivatives"],
+    ]
+    entities_to_include = [x for x in all_entities if x in fields["entities"]]
+    for entity in fields["entities"]:
+        if entity not in entities_to_include:
+            entities_to_include.append(entity)
+
+    return create_bids_filename(
+        fields, entities_to_include=entities_to_include
+    )
