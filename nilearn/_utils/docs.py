@@ -259,7 +259,15 @@ confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
             or :obj:`list` of confounds timeseries, default=None
     This parameter is passed to :func:`nilearn.signal.clean`.
     Please see the related documentation for details.
-    shape: list of (number of scans, number of confounds)
+    shape: (number of scans, number of confounds)
+"""
+docdict["confounds_multi"] = """
+confounds : :obj:`list` of confounds, default=None
+    List of confounds (arrays, dataframes,
+    str or path of files loadable into an array).
+    As confounds are passed to :func:`nilearn.signal.clean`,
+    please see the related documentation for details about accepted types.
+    Must be of same length than imgs.
 """
 
 # cut_coords

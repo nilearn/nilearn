@@ -1,6 +1,3 @@
-from os.path import join
-from pathlib import Path
-
 import numpy as np
 import pytest
 
@@ -174,25 +171,3 @@ def test_surface_maps_masker_labels_img_none():
         match="provide a maps_img during initialization",
     ):
         SurfaceMapsMasker(maps_img=None).fit()
-
-
-@pytest.mark.parametrize("confounds", [None, np.ones((20, 3)), "str", "Path"])
-def test_surface_maps_masker_confounds_to_fit_transform(
-    surf_maps_img, surf_img_2d, confounds
-):
-    """Test fit_transform with confounds."""
-    masker = SurfaceMapsMasker(surf_maps_img)
-    if isinstance(confounds, str):
-        if confounds == "Path":
-            nilearn_dir = Path(__file__).parent.parent.parent
-            confounds = nilearn_dir / "tests" / "data" / "spm_confounds.txt"
-        elif confounds == "str":
-            # we need confound to be a string so using os.path.join
-            confounds = join(  # noqa: PTH118
-                Path(__file__).parent.parent.parent,
-                "tests",
-                "data",
-                "spm_confounds.txt",
-            )
-    signals = masker.fit_transform(surf_img_2d(20), confounds=confounds)
-    assert signals.shape == (20, masker.n_elements_)

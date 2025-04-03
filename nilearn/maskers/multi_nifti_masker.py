@@ -391,7 +391,7 @@ class MultiNiftiMasker(NiftiMasker):
             See :ref:`extracting_data`.
             List of imgs file to prepare. One item per subject.
 
-        %(confounds)s
+        %(confounds_multi)s
 
         %(sample_mask_multi)s
 
@@ -495,7 +495,7 @@ class MultiNiftiMasker(NiftiMasker):
             See :ref:`extracting_data`.
             Data to be preprocessed
 
-        %(confounds)s
+        %(confounds_multi)s
 
         %(sample_mask_multi)s
 

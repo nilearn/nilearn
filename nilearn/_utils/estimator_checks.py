@@ -9,6 +9,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal, assert_raises
@@ -315,6 +316,7 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_clean)
             yield (clone(estimator), check_masker_transformer_sample_mask)
+            yield (clone(estimator), check_masker_with_confounds)
 
             # TODO this should pass for multimasker
             yield (
@@ -345,6 +347,7 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_fit_transform_5d)
 
             if is_multimasker(estimator):
+                yield (clone(estimator), check_multi_masker_with_confounds)
                 yield (
                     clone(estimator),
                     check_multi_masker_transformer_sample_mask,
@@ -603,7 +606,6 @@ def check_multi_masker_transformer_sample_mask(estimator):
     sample_mask1 = np.arange(length - n_scrub1)
     sample_mask2 = np.arange(length - n_scrub2)
 
-    estimator.maps_img = _img_3d_ones()
     signals_list = estimator.fit_transform(
         [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
         sample_mask=[sample_mask1, sample_mask2],
@@ -664,6 +666,88 @@ def check_masker_transformer_sample_mask(estimator):
     signal_5 = estimator.transform(input_img, sample_mask=sample_mask)
 
     assert_array_equal(signal_2, signal_5)
+
+
+def check_multi_masker_with_confounds(estimator):
+    """Test multi maskers with a list of confounds.
+
+    Ensure results is different than when not using confounds.
+    """
+    length = _img_4d_rand_eye_medium().shape[3]
+
+    array = _rng().random((length, 3))
+
+    signals_list_1 = estimator.fit_transform(
+        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+    )
+    signals_list_2 = estimator.fit_transform(
+        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+        confounds=[array, array],
+    )
+
+    for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
+        assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+
+
+def check_masker_with_confounds(estimator):
+    """Test fit_transform with confounds.
+
+    Check different types of confounds
+    (array, dataframe, str or path to txt, csv, tsv)
+    and ensure results is different
+    than when not using confounds.
+
+    Check proper errors are raised if file is not found
+    or if confounds do not match signal length.
+
+    For more tests see those of signal.clean.
+    """
+    length = 20
+    if accept_niimg_input(estimator):
+        input_img = Nifti1Image(
+            _rng().random((4, 5, 6, length)), affine=_affine_eye()
+        )
+    else:
+        input_img = _make_surface_img(length)
+
+    signal_1 = estimator.fit_transform(input_img, confounds=None)
+
+    array = _rng().random((length, 3))
+    dataframe = pd.DataFrame(array)
+
+    nilearn_dir = Path(__file__).parents[1]
+    confounds_path = nilearn_dir / "tests" / "data" / "spm_confounds.txt"
+
+    for confounds in [array, dataframe, confounds_path, str(confounds_path)]:
+        signal_2 = estimator.fit_transform(input_img, confounds=confounds)
+
+        assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+
+    with TemporaryDirectory() as tmp_dir:
+        tmp_dir = Path(tmp_dir)
+        dataframe.to_csv(tmp_dir / "confounds.csv")
+        signal_2 = estimator.fit_transform(
+            input_img, confounds=tmp_dir / "confounds.csv"
+        )
+
+        assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+
+        dataframe.to_csv(tmp_dir / "confounds.tsv", sep="\t")
+        signal_2 = estimator.fit_transform(
+            input_img, confounds=tmp_dir / "confounds.tsv"
+        )
+
+        assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+
+    with pytest.raises(FileNotFoundError):
+        estimator.fit_transform(input_img, confounds="not_a_file.txt")
+
+    with pytest.raises(
+        ValueError, match="Confound signal has an incorrect length"
+    ):
+        estimator.fit_transform(
+            input_img, confounds=_rng().random((length * 2, 3))
+        )
 
 
 def check_masker_refit(estimator):

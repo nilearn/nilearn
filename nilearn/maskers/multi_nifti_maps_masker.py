@@ -197,11 +197,11 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         %(imgs)s
             Images to process. Each element of the list is a 4D image.
 
-        %(confounds)s
+        %(confounds_multi)s
 
         %(n_jobs)s
 
-        %(sample_mask)s
+        %(sample_mask_multi)s
 
         Returns
         -------
@@ -247,7 +247,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         %(imgs)s
             Images to process. Each element of the list is a 4D image.
 
-        %(confounds)s
+        %(confounds_multi)s
 
         %(sample_mask_multi)s
 
