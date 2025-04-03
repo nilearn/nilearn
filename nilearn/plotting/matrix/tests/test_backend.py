@@ -3,7 +3,7 @@ import re
 import numpy as np
 import pytest
 
-from nilearn.plotting.matrix._backend import (
+from nilearn.plotting.matrix._matplotlib_backend import (
     _sanitize_labels,
     _sanitize_reorder,
     _sanitize_tri,

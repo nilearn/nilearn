@@ -19,14 +19,12 @@ from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting._utils import save_figure_if_needed
-from nilearn.plotting.matrix._backend import (
-    _sanitize_inputs_plot_matrix,
-    _sanitize_tri,
-)
 from nilearn.plotting.matrix._matplotlib_backend import (
     _configure_axis,
     _configure_grid,
     _fit_axes,
+    _sanitize_inputs_plot_matrix,
+    _sanitize_tri,
 )
 from nilearn.plotting.matrix._utils import (
     _mask_matrix,
