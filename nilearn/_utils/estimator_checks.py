@@ -4,6 +4,7 @@ Most of those estimators have pytest dependencies
 and importing them will fail if pytest is not installed.
 """
 
+import inspect
 import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -550,15 +551,27 @@ def check_masker_transformer(estimator):
         estimator.transform_single_imgs, "__isabstractmethod__", False
     )
 
+    tmp = dict(**inspect.signature(estimator.fit).parameters)
+    assert "imgs" in tmp
+    assert "X" not in tmp
+
+    tmp = dict(**inspect.signature(estimator.transform).parameters)
+    assert "imgs" in tmp
+    assert "X" not in tmp
+
+    tmp = dict(**inspect.signature(estimator.fit_transform).parameters)
+    assert "imgs" in tmp
+    assert "X" not in tmp
+
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
         input_img = _make_surface_img(100)
 
-    signal_1 = estimator.fit_transform(imgs=input_img)
+    signal_1 = estimator.fit_transform(input_img)
 
     estimator = clone(estimator)
-    signal_2 = estimator.fit(imgs=input_img).transform(imgs=input_img)
+    signal_2 = estimator.fit(input_img).transform(input_img)
 
     assert_array_equal(signal_1, signal_2)
 
