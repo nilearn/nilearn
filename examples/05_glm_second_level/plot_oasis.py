@@ -32,12 +32,12 @@ Note that more power would be obtained from using a larger sample of subjects.
 # %%
 # Load Oasis dataset
 # ------------------
-from nilearn import plotting
 from nilearn.datasets import (
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
     fetch_oasis_vbm,
 )
+from nilearn.plotting import plot_design_matrix, plot_stat_map, show
 
 n_subjects = 100  # more subjects requires more memory
 
@@ -97,7 +97,7 @@ from matplotlib import pyplot as plt
 # %%
 # Let's plot the design matrix.
 fig, ax1 = plt.subplots(1, 1, figsize=(4, 8))
-ax = plotting.plot_design_matrix(design_matrix, axes=ax1)
+ax = plot_design_matrix(design_matrix, axes=ax1)
 ax.set_ylabel("maps")
 fig.suptitle("Second level design matrix")
 
@@ -135,7 +135,7 @@ _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 print(f"The FDR=.05-corrected threshold is: {threshold:03g}")
 
 fig = plt.figure(figsize=(5, 3))
-display = plotting.plot_stat_map(
+display = plot_stat_map(
     z_map,
     threshold=threshold,
     display_mode="z",
@@ -143,7 +143,7 @@ display = plotting.plot_stat_map(
     figure=fig,
 )
 fig.suptitle("age effect on gray matter density (FDR = .05)")
-plotting.show()
+show()
 
 # %%
 # We can also study the effect of sex by computing the contrast, thresholding
@@ -153,11 +153,12 @@ z_map = second_level_model.compute_contrast(
     output_type="z_score",
 )
 _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
-plotting.plot_stat_map(
+plot_stat_map(
     z_map,
     threshold=threshold,
     title="sex effect on gray matter density (FDR = .05)",
 )
+show()
 
 # %%
 # Note that there does not seem to be any significant effect of sex on
@@ -206,4 +207,4 @@ report = second_level_model.generate_report(
     alpha=0.05,
     height_control=None,
 )
-report
+report.save_as_html(output_dir / "report.html")
