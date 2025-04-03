@@ -625,7 +625,6 @@ class NiftiSpheresMasker(BaseMasker):
 
         return self
 
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction.
 
