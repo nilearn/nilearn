@@ -226,9 +226,19 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
+        elif len(confounds) != len(imgs_list):
+            raise ValueError(
+                f"number of confounds ({len(confounds)}) unequal to "
+                f"number of images ({len(imgs_list)})."
+            )
 
         if sample_mask is None:
             sample_mask = itertools.repeat(None, len(imgs_list))
+        elif len(sample_mask) != len(imgs_list):
+            raise ValueError(
+                f"number of sample_mask ({len(sample_mask)}) unequal to "
+                f"number of images ({len(imgs_list)})."
+            )
 
         func = self._cache(self.transform_single_imgs)
 

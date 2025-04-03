@@ -614,6 +614,15 @@ def check_multi_masker_transformer_sample_mask(estimator):
     for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2]):
         assert ts.shape[0] == length - n_scrub
 
+    with pytest.raises(
+        ValueError,
+        match="number of sample_mask .* unequal to number of images",
+    ):
+        estimator.fit_transform(
+            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+            sample_mask=sample_mask1,
+        )
+
 
 def check_masker_transformer_sample_mask(estimator):
     """Check sample_mask use in maskers.
@@ -672,6 +681,9 @@ def check_multi_masker_with_confounds(estimator):
     """Test multi maskers with a list of confounds.
 
     Ensure results is different than when not using confounds.
+
+    Check that error is raised if number of confounds
+    does not match number of images
     """
     length = _img_4d_rand_eye_medium().shape[3]
 
@@ -687,6 +699,14 @@ def check_multi_masker_with_confounds(estimator):
 
     for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
         assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+
+    with pytest.raises(
+        ValueError, match="number of confounds .* unequal to number of images"
+    ):
+        estimator.fit_transform(
+            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+            confounds=array,
+        )
 
 
 def check_masker_with_confounds(estimator):
