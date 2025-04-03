@@ -526,20 +526,6 @@ def test_surface_labels_masker_confounds_to_fit_transform(
     assert signals.shape == (20, masker.n_elements_)
 
 
-def test_surface_labels_masker_sample_mask_to_fit_transform(
-    surf_label_img, surf_img_2d
-):
-    """Test transform with sample_mask."""
-    masker = SurfaceLabelsMasker(surf_label_img)
-    masker = masker.fit()
-    signals = masker.transform(
-        surf_img_2d(5),
-        sample_mask=np.asarray([True, False, True, False, True]),
-    )
-    # we remove two samples via sample_mask so we should have 3 samples
-    assert signals.shape == (3, masker.n_elements_)
-
-
 def test_surface_label_masker_labels_img_none():
     """Test that an error is raised when labels_img is None."""
     with pytest.raises(

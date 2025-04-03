@@ -393,7 +393,7 @@ class MultiNiftiMasker(NiftiMasker):
 
         %(confounds)s
 
-        %(sample_mask)s
+        %(sample_mask_multi)s
 
                 .. versionadded:: 0.8.0
 
@@ -497,7 +497,7 @@ class MultiNiftiMasker(NiftiMasker):
 
         %(confounds)s
 
-        %(sample_mask)s
+        %(sample_mask_multi)s
 
                 .. versionadded:: 0.8.0
 

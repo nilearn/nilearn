@@ -196,17 +196,3 @@ def test_surface_maps_masker_confounds_to_fit_transform(
             )
     signals = masker.fit_transform(surf_img_2d(20), confounds=confounds)
     assert signals.shape == (20, masker.n_elements_)
-
-
-def test_surface_maps_masker_sample_mask_to_fit_transform(
-    surf_maps_img, surf_img_2d
-):
-    """Test transform with sample_mask."""
-    masker = SurfaceMapsMasker(surf_maps_img)
-    masker = masker.fit()
-    signals = masker.transform(
-        surf_img_2d(5),
-        sample_mask=np.asarray([True, False, True, False, True]),
-    )
-    # we remove two samples via sample_mask so we should have 3 samples
-    assert signals.shape == (3, masker.n_elements_)

@@ -194,7 +194,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
         %(n_jobs)s
 
-        %(sample_mask)s
+        %(sample_mask_multi)s
 
         Returns
         -------
@@ -237,8 +237,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         ----------
         %(imgs)s
             Images to process. Each element of the list is a 4D image.
+
         %(confounds)s
-        %(sample_mask)s
+
+        %(sample_mask_multi)s
 
         Returns
         -------

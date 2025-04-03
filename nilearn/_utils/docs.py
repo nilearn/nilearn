@@ -810,9 +810,29 @@ resume : :obj:`bool`, default=True
 # sample_mask
 docdict["sample_mask"] = """
 sample_mask : Any type compatible with numpy-array indexing, default=None
-    shape: (number of scans - number of volumes removed, )
-    Masks the images along time dimension to perform scrubbing
-    (remove volumes with high motion) and/or non-steady-state volumes.
+    ``shape = (total number of scans - number of scans removed)``
+    for explicit index (for example, ``sample_mask=np.asarray([1, 2, 4])``),
+    or ``shape = (number of scans)`` for binary mask
+    (for example,
+    ``sample_mask=np.asarray([False, True, True, False, True])``).
+    Masks the images along the last dimension to perform scrubbing:
+    for example to remove volumes with high motion
+    and/or non-steady-state volumes.
+    This parameter is passed to :func:`nilearn.signal.clean`.
+"""
+docdict["sample_mask_multi"] = """
+sample_mask : :obj:`list` of sample_mask, default=None
+    List of sample_mask (any type compatible with numpy-array indexing)
+    to use for scrubbing outliers.
+    Must be of same length as ``imgs``.
+    ``shape = (total number of scans - number of scans removed)``
+    for explicit index (for example, ``sample_mask=np.asarray([1, 2, 4])``),
+    or ``shape = (number of scans)`` for binary mask
+    (for example,
+    ``sample_mask=np.asarray([False, True, True, False, True])``).
+    Masks the images along the last dimension to perform scrubbing:
+    for example to remove volumes with high motion
+    and/or non-steady-state volumes.
     This parameter is passed to :func:`nilearn.signal.clean`.
 """
 

@@ -314,6 +314,7 @@ def nilearn_check_estimator(estimator):
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_clean)
+            yield (clone(estimator), check_masker_transformer_sample_mask)
 
             # TODO this should pass for multimasker
             yield (
@@ -344,6 +345,10 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_fit_transform_5d)
 
             if is_multimasker(estimator):
+                yield (
+                    clone(estimator),
+                    check_multi_masker_transformer_sample_mask,
+                )
                 yield (
                     clone(estimator),
                     check_multi_nifti_masker_generate_report_4d_fit,
@@ -581,6 +586,84 @@ def check_masker_transformer_high_variance_confounds(estimator):
     signal_2 = estimator.fit_transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+
+
+def check_multi_masker_transformer_sample_mask(estimator):
+    """Test multi maskers with a list of "sample_mask".
+
+    "sample_mask" was directly sent as input to the parallel calls of
+    "transform_single_imgs" instead of sending iterations.
+    See https://github.com/nilearn/nilearn/issues/3967 for more details.
+    """
+    length = _img_4d_rand_eye_medium().shape[3]
+
+    n_scrub1 = 3
+    n_scrub2 = 2
+
+    sample_mask1 = np.arange(length - n_scrub1)
+    sample_mask2 = np.arange(length - n_scrub2)
+
+    estimator.maps_img = _img_3d_ones()
+    signals_list = estimator.fit_transform(
+        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+        sample_mask=[sample_mask1, sample_mask2],
+    )
+
+    for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2]):
+        assert ts.shape[0] == length - n_scrub
+
+
+def check_masker_transformer_sample_mask(estimator):
+    """Check sample_mask use in maskers.
+
+    Make sure that using sample_mask returns different result
+    compare to when it's not used.
+
+    Try different types of sample_mask
+    that always keep the same samples (sample 1, 2 and 4)
+    that should all return the same thing.
+    """
+    if accept_niimg_input(estimator):
+        input_img = _img_4d_rand_eye()
+    else:
+        input_img = _make_surface_img(5)
+
+    estimator.fit(input_img)
+    signal_1 = estimator.transform(input_img, sample_mask=None)
+
+    assert signal_1.ndim == 2
+
+    # index sample to keep
+    sample_mask = np.asarray([1, 2, 4])
+
+    signal_2 = estimator.transform(input_img, sample_mask=sample_mask)
+
+    assert signal_2.shape[0] == 3
+
+    assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+
+    # logical indexing
+    n_sample = signal_1.shape[0]
+    sample_mask = np.full((n_sample,), True)
+    np.put(sample_mask, [0, 3], [False, False])
+
+    signal_3 = estimator.transform(input_img, sample_mask=sample_mask)
+
+    assert_array_equal(signal_2, signal_3)
+
+    # list of explicit index
+    sample_mask = [[1, 2, 4]]
+
+    signal_4 = estimator.transform(input_img, sample_mask=sample_mask)
+
+    assert_array_equal(signal_2, signal_4)
+
+    # list of logical index
+    sample_mask = [[False, True, True, False, True]]
+
+    signal_5 = estimator.transform(input_img, sample_mask=sample_mask)
+
+    assert_array_equal(signal_2, signal_5)
 
 
 def check_masker_refit(estimator):
