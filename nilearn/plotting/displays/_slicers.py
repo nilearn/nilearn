@@ -25,7 +25,7 @@ from nilearn.plotting.displays._utils import (
     coords_3d_to_2d,
     get_create_display_fun,
 )
-from nilearn.plotting.edge_detect import edge_map
+from nilearn.plotting.displays.edge_detect import edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
 from nilearn.typing import NiimgLike
 
