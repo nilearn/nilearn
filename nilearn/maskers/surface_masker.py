@@ -12,7 +12,6 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import (
     rename_parameters,
 )
-from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
