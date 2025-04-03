@@ -315,6 +315,12 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_clean)
 
+            # TODO this should pass for multimasker
+            yield (
+                clone(estimator),
+                check_masker_transformer_high_variance_confounds,
+            )
+
         if accept_niimg_input(estimator):
             yield (clone(estimator), check_nifti_masker_fit_transform)
             yield (clone(estimator), check_nifti_masker_fit_transform_files)
@@ -533,10 +539,17 @@ def check_masker_clean(estimator):
 def check_masker_transformer(estimator):
     """Replace sklearn _check_transformer for maskers.
 
+    - for maskers transform is in the base class and
+      implemented via a transform_single_imgs
     - fit_transform method should work on non fitted estimator
     - fit_transform should give same result as fit then transform
     - also checks that "imgs" is the parameter for input for fit / transform
     """
+    # transform_single_imgs should not be an abstract method anymore
+    assert not getattr(
+        estimator.transform_single_imgs, "__isabstractmethod__", False
+    )
+
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
     else:
@@ -548,6 +561,27 @@ def check_masker_transformer(estimator):
     signal_2 = estimator.fit(imgs=input_img).transform(imgs=input_img)
 
     assert_array_equal(signal_1, signal_2)
+
+
+def check_masker_transformer_high_variance_confounds(estimator):
+    """Check high_variance_confounds use in maskers.
+
+    Make sure that using high_variance_confounds returns different result.
+    """
+    estimator.high_variance_confounds = False
+
+    if accept_niimg_input(estimator):
+        input_img = _img_4d_rand_eye_medium()
+    else:
+        input_img = _make_surface_img(100)
+
+    signal_1 = estimator.fit_transform(input_img)
+
+    estimator = clone(estimator)
+    estimator.high_variance_confounds = True
+    signal_2 = estimator.fit_transform(input_img)
+
+    assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
 
 def check_masker_refit(estimator):

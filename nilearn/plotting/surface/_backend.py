@@ -2,7 +2,21 @@ from collections.abc import Sequence
 
 import numpy as np
 
-from nilearn.surface import load_surf_data
+from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.param_validation import check_params
+from nilearn.plotting.surface._utils import check_surface_plotting_inputs
+from nilearn.surface import load_surf_data, load_surf_mesh
+from nilearn.surface.surface import (
+    FREESURFER_DATA_EXTENSIONS,
+    check_extensions,
+)
+
+# subset of data format extensions supported
+DATA_EXTENSIONS = (
+    "gii",
+    "gii.gz",
+    "mgz",
+)
 
 VALID_VIEWS = (
     "anterior",
@@ -14,7 +28,123 @@ VALID_VIEWS = (
     "left",
     "right",
 )
+
 VALID_HEMISPHERES = "left", "right", "both"
+
+
+def get_surface_backend(engine="matplotlib"):
+    """Instantiate and return the required backend engine.
+
+    Parameters
+    ----------
+    engine: :obj:`str`, default='matplotlib'
+        Name of the required backend engine. Can be 'matplotlib' or 'plotly'.
+
+    Returns
+    -------
+    backend : :class:`~nilearn.plotting.surface._backend.BaseSurfaceBackend`
+        The backend for the specified engine.
+    """
+    if engine == "matplotlib":
+        if is_matplotlib_installed():
+            from nilearn.plotting.surface._matplotlib_backend import (
+                MatplotlibBackend,
+            )
+
+            return MatplotlibBackend()
+        else:
+            raise ImportError(
+                "Using engine='matplotlib' requires that ``matplotlib`` is "
+                "installed."
+            )
+    elif engine == "plotly":
+        if is_plotly_installed():
+            from nilearn.plotting.surface._plotly_backend import PlotlyBackend
+
+            return PlotlyBackend()
+        else:
+            raise ImportError(
+                "Using engine='plotly' requires that ``plotly`` is installed."
+            )
+    else:
+        raise ValueError(
+            f"Unknown plotting engine {engine}. "
+            "Please use either 'matplotlib' or "
+            "'plotly'."
+        )
+
+
+class BaseSurfaceBackend:
+    """A base class that behaves as an interface for Surface plotting
+    backend.
+
+    The methods of class should be implemented by each engine used as backend.
+    """
+
+    def plot_surf(
+        self,
+        surf_mesh=None,
+        surf_map=None,
+        bg_map=None,
+        hemi="left",
+        view=None,
+        cmap=None,
+        symmetric_cmap=False,
+        colorbar=True,
+        avg_method=None,
+        threshold=None,
+        alpha=None,
+        bg_on_data=False,
+        darkness=0.7,
+        vmin=None,
+        vmax=None,
+        cbar_vmin=None,
+        cbar_vmax=None,
+        cbar_tick_format="auto",
+        title=None,
+        title_font_size=18,
+        output_file=None,
+        axes=None,
+        figure=None,
+    ):
+        check_params(locals())
+        if view is None:
+            view = "dorsal" if hemi == "both" else "lateral"
+
+        surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
+            surf_map, surf_mesh, hemi, bg_map
+        )
+
+        check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+        coords, faces = load_surf_mesh(surf_mesh)
+
+        return self._plot_surf(
+            coords,
+            faces,
+            surf_map=surf_map,
+            bg_map=bg_map,
+            hemi=hemi,
+            view=view,
+            cmap=cmap,
+            symmetric_cmap=symmetric_cmap,
+            colorbar=colorbar,
+            avg_method=avg_method,
+            threshold=threshold,
+            alpha=alpha,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+            vmin=vmin,
+            vmax=vmax,
+            cbar_vmin=cbar_vmin,
+            cbar_vmax=cbar_vmax,
+            cbar_tick_format=cbar_tick_format,
+            title=title,
+            title_font_size=title_font_size,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+        )
 
 
 def _check_hemisphere_is_valid(hemi):

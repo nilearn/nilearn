@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import warnings
-
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -24,7 +22,7 @@ from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
 )
-from nilearn.surface.utils import assert_polymesh_equal
+from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
@@ -163,7 +161,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         if self.mask_img is not None:
             check_compatibility_mask_and_images(self.mask_img, img)
-            assert_polymesh_equal(self.mask_img.mesh, img.mesh)
+            check_polymesh_equal(self.mask_img.mesh, img.mesh)
             self.mask_img_ = self.mask_img
             return
 
@@ -222,9 +220,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         return self
 
-    def transform(
+    def transform_single_imgs(
         self,
-        img,
+        imgs,
         confounds=None,
         sample_mask=None,
     ):
@@ -232,10 +230,11 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` or \
-              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
-              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
-            Mesh and data for both hemispheres.
+        imgs : imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
+              iterable of :obj:`~nilearn.surface.SurfaceImage`
+            Images to process.
+            Mesh and data for both hemispheres/parts. The data for each \
+            hemisphere is of shape (n_vertices_per_hemisphere, n_timepoints).
 
         confounds : :class:`numpy.ndarray`, :obj:`str`,\
                     :class:`pathlib.Path`, \
@@ -255,18 +254,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         2D :class:`numpy.ndarray`
             Signal for each element.
             shape: (n samples, total number of vertices)
+
         """
-        check_is_fitted(self)
-
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                UserWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
-
         parameters = get_params(
             self.__class__,
             self,
@@ -278,23 +267,19 @@ class SurfaceMasker(_BaseSurfaceMasker):
             self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
-        if not isinstance(img, list):
-            img = [img]
-        img = concat_imgs(img)
+        check_compatibility_mask_and_images(self.mask_img_, imgs)
 
-        check_compatibility_mask_and_images(self.mask_img_, img)
-
-        assert_polymesh_equal(self.mask_img_.mesh, img.mesh)
+        check_polymesh_equal(self.mask_img_.mesh, imgs.mesh)
 
         if self.reports:
-            self._reporting_data["images"] = img
+            self._reporting_data["images"] = imgs
 
         output = np.empty((1, self.output_dimension_))
-        if len(img.shape) == 2:
-            output = np.empty((img.shape[1], self.output_dimension_))
+        if len(imgs.shape) == 2:
+            output = np.empty((imgs.shape[1], self.output_dimension_))
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name].ravel()
-            output[:, start:stop] = img.data.parts[part_name][mask].T
+            output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
         # signal cleaning here
         output = cache(

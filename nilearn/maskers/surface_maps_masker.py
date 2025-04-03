@@ -23,13 +23,13 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
-from nilearn.image import concat_imgs, index_img, mean_img
+from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
     get_data,
 )
-from nilearn.surface.utils import assert_polymesh_equal
+from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
@@ -190,7 +190,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 msg=f"loading regions from {self.mask_img.__repr__()}",
                 verbose=self.verbose,
             )
-            assert_polymesh_equal(self.maps_img.mesh, self.mask_img.mesh)
+            check_polymesh_equal(self.maps_img.mesh, self.mask_img.mesh)
             self.mask_img_ = self.mask_img
             # squeeze the mask data if it is 2D and has a single column
             for part in self.mask_img_.data.parts:
@@ -244,14 +244,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
 
-    def transform(self, img, confounds=None, sample_mask=None):
+    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object or \
-              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
-              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+        imgs : imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
+              iterable of :obj:`~nilearn.surface.SurfaceImage`
+            Images to process.
             Mesh and data for both hemispheres/parts. The data for each \
             hemisphere is of shape (n_vertices_per_hemisphere, n_timepoints).
 
@@ -268,26 +268,20 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                   default=None
             sample_mask to pass to :func:`nilearn.signal.clean`.
 
-
         Returns
         -------
         region_signals: :obj:`numpy.ndarray`
             Signal for each region as provided in the maps (via `maps_img`).
             shape: (n_timepoints, n_regions)
         """
-        check_is_fitted(self)
+        check_compatibility_mask_and_images(self.maps_img, imgs)
 
-        check_compatibility_mask_and_images(self.maps_img, img)
-        # if img is a single image, convert it to a list
-        # to be able to concatenate it
-        if not isinstance(img, list):
-            img = [img]
-        img = concat_imgs(img)
-        # check img data is 2D
-        img.data._check_ndims(2, "img")
-        assert_polymesh_equal(self.maps_img.mesh, img.mesh)
+        imgs.data._check_ndims(2, "imgs")
+
+        check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+
         img_data = np.concatenate(
-            list(img.data.parts.values()), axis=0
+            list(imgs.data.parts.values()), axis=0
         ).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
@@ -295,18 +289,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         mask_data = (
             get_data(self.mask_img) if self.mask_img is not None else None
         )
-        if self.smoothing_fwhm is not None:
-            warnings.warn(
-                "Parameter smoothing_fwhm "
-                "is not yet supported for surface data",
-                UserWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
-
-        # add the image to the reporting data
-        if self.reports:
-            self._reporting_data["images"] = img
 
         parameters = get_params(
             self.__class__,
@@ -318,9 +300,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         # apply mask if provided
         # and then extract signal via least square regression
-        if self.mask_img_ is not None:
-            check_compatibility_mask_and_images(self.mask_img_, img)
-
         if mask_data is not None:
             region_signals = cache(
                 linalg.lstsq,
@@ -341,6 +320,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 memory_level=self.memory_level,
                 shelve=self._shelving,
             )(maps_data, img_data)[0].T
+
+        parameters = get_params(
+            self.__class__,
+            self,
+        )
+        if self.clean_args is None:
+            self.clean_args = {}
+        parameters["clean_args"] = self.clean_args
 
         # signal cleaning here
         region_signals = cache(
