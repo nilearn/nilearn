@@ -13,6 +13,7 @@ import datetime
 import uuid
 import warnings
 from html import escape
+from pathlib import Path
 from string import Template
 
 import numpy as np
@@ -233,6 +234,8 @@ def make_glm_report(
     output = None
     if contrasts is None:
         output = model._reporting_data.get("filenames", None)
+        if output is not None and output["use_absolute_path"]:
+            output = _turn_into_full_path(output, output["dir"])
 
     design_matrices = None
     mask_plot = None
@@ -397,6 +400,22 @@ def make_glm_report(
     report.resize(*report_dims)
 
     return report
+
+
+def _turn_into_full_path(bunch, dir: Path):
+    """Recursively turns str values of a dict into path.
+
+    Used to turn relative paths into full paths.
+    """
+    if isinstance(bunch, str) and not bunch.startswith(str(dir)):
+        return str(dir / bunch)
+    tmp = tempita.bunch()
+    for k in bunch:
+        if isinstance(bunch[k], (dict, str, tempita.bunch)):
+            tmp[k] = _turn_into_full_path(bunch[k], dir)
+        else:
+            tmp[k] = bunch[k]
+    return tmp
 
 
 def _glm_model_attributes_to_dataframe(model):

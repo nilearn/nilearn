@@ -37,7 +37,7 @@ from nilearn.datasets import (
     fetch_icbm152_brain_gm_mask,
     fetch_oasis_vbm,
 )
-from nilearn.plotting import plot_design_matrix, plot_stat_map, show
+from nilearn.plotting import plot_design_matrix, plot_stat_map
 
 n_subjects = 100  # more subjects requires more memory
 
@@ -143,7 +143,7 @@ display = plot_stat_map(
     figure=fig,
 )
 fig.suptitle("age effect on gray matter density (FDR = .05)")
-show()
+# show()
 
 # %%
 # We can also study the effect of sex by computing the contrast, thresholding
@@ -158,7 +158,7 @@ plot_stat_map(
     threshold=threshold,
     title="sex effect on gray matter density (FDR = .05)",
 )
-show()
+# show()
 
 # %%
 # Note that there does not seem to be any significant effect of sex on
@@ -201,6 +201,7 @@ print("\n".join([str(x.relative_to(output_dir)) for x in files]))
 # Generate a report and view it.
 # If no new contrast is passed to ``generate_report``,
 # the results saved to disk will be reused to generate the report.
+
 report = second_level_model.generate_report(
     bg_img=icbm152_2009["t1"],
     plot_type="glass",

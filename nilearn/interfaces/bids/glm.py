@@ -360,6 +360,10 @@ def save_glm_to_bids(
     model.verbose += 1
     glm_report.save_as_html(out_dir / f"{prefix}report.html")
 
+    # make sure that any new report generated
+    # will use absolute paths to the figures, images, tables...
+    model._reporting_data["filenames"]["use_absolute_path"] = True
+
     return model
 
 

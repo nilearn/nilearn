@@ -479,6 +479,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         # to better standardize naming
         self._reporting_data["filenames"] = {
             "dir": out_dir,
+            "use_absolute_path": False,
             "mask": mask,
             "design_matrices_dict": design_matrices_dict,
             "contrasts_dict": contrasts_dict,
