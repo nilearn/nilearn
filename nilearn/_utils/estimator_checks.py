@@ -17,11 +17,13 @@ from sklearn import clone
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import compare_version
-from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
+    _drop_surf_img_part,
+    _flip_surf_img,
     _img_3d_mni,
     _img_3d_ones,
     _img_3d_rand,
@@ -40,7 +42,10 @@ from nilearn.maskers import NiftiSpheresMasker
 from nilearn.regions import RegionExtractor
 from nilearn.reporting.tests.test_html_report import _check_html
 from nilearn.surface import SurfaceImage
-from nilearn.surface.utils import assert_surface_image_equal
+from nilearn.surface.utils import (
+    assert_polydata_equal,
+    assert_surface_image_equal,
+)
 
 # TODO simplify when dropping sklearn 1.5,
 if compare_version(sklearn_version, ">", "1.5.2"):
@@ -352,6 +357,7 @@ def nilearn_check_estimator(estimator):
         if surf_img_input:
             yield (clone(estimator), check_surface_masker_fit_returns_self)
             yield (clone(estimator), check_surface_masker_smooth)
+            yield (clone(estimator), check_surface_masker_fit_with_mask)
 
     if is_glm:
         yield (clone(estimator), check_glm_fit_returns_self)
@@ -629,6 +635,62 @@ def check_masker_refit(estimator):
 def check_surface_masker_fit_returns_self(estimator):
     """Check surface maskers return itself after fit."""
     assert estimator.fit(_make_surface_img(10)) is estimator
+
+
+def check_surface_masker_fit_with_mask(estimator):
+    """Check fit / transform with mask provided at init.
+
+    Check with 2D and 1D images.
+
+    Also check 'shape' errors between images to fit and mask.
+    """
+    mask_img = _make_surface_mask()
+
+    # 1D image
+    imgs = _make_surface_img(1)
+    estimator.mask_img = mask_img
+    estimator.fit(imgs)
+
+    assert_polydata_equal(mask_img.data, estimator.mask_img_.data)
+
+    signal = estimator.transform(imgs)
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape[0] == 1
+
+    # 2D image
+    imgs = _make_surface_img(5)
+    estimator = clone(estimator)
+    estimator.mask_img = mask_img
+    estimator.fit(imgs)
+
+    assert_polydata_equal(mask_img.data, estimator.mask_img_.data)
+
+    signal = estimator.transform(imgs)
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape[0] == 5
+
+    # errors
+    with pytest.raises(
+        MeshDimensionError,
+        match="Number of vertices do not match for between meshes.",
+    ):
+        estimator.fit(_flip_surf_img(imgs))
+    with pytest.raises(
+        MeshDimensionError,
+        match="Number of vertices do not match for between meshes.",
+    ):
+        estimator.transform(_flip_surf_img(imgs))
+
+    with pytest.raises(
+        MeshDimensionError, match="PolyMeshes do not have the same keys."
+    ):
+        estimator.fit(_drop_surf_img_part(imgs))
+    with pytest.raises(
+        MeshDimensionError, match="PolyMeshes do not have the same keys."
+    ):
+        estimator.transform(_drop_surf_img_part(imgs))
 
 
 def check_surface_masker_smooth(estimator):
