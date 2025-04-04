@@ -374,18 +374,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             Images to process.
             Mesh and data for both hemispheres.
 
-        confounds : :class:`numpy.ndarray`, :obj:`str`,\
-                    :class:`pathlib.Path`, \
-                    :class:`pandas.DataFrame` \
-                    or :obj:`list` of confounds timeseries, default=None
-            Confounds to pass to :func:`nilearn.signal.clean`.
+        %(confounds)s
 
-        sample_mask : None, Any type compatible with numpy-array indexing, \
-                  or :obj:`list` of \
-                  shape: (total number of scans - number of scans removed) \
-                  for explicit index, or (number of scans) for binary mask, \
-                  default=None
-            sample_mask to pass to :func:`nilearn.signal.clean`.
+        %(sample_mask)s
 
         Returns
         -------
@@ -479,18 +470,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             This parameter is unused.
             It is solely included for scikit-learn compatibility.
 
-        confounds : :class:`numpy.ndarray`, :obj:`str`,\
-                    :class:`pathlib.Path`, \
-                    :class:`pandas.DataFrame` \
-                    or :obj:`list` of confounds timeseries, default=None
-            Confounds to pass to :func:`nilearn.signal.clean`.
+        %(confounds)s
 
-        sample_mask : None, Any type compatible with numpy-array indexing, \
-                  or :obj:`list` of \
-                  shape: (total number of scans - number of scans removed) \
-                  for explicit index, or (number of scans) for binary mask, \
-                  default=None
-            sample_mask to pass to :func:`nilearn.signal.clean`.
+        %(sample_mask)s
 
         Returns
         -------

@@ -12,6 +12,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
@@ -188,17 +189,9 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like, default=None
-            This parameter is passed to :func:`nilearn.signal.clean`.
-            Please see the related documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -277,6 +270,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return mask_img_
 
+    @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
 
@@ -288,17 +282,9 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like, default=None
-            This parameter is passed to :func:`nilearn.signal.clean`.
-            Please see the related documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -339,6 +325,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
+    @fill_doc
     def fit_transform(
         self, X, y=None, confounds=None, sample_mask=None, **fit_params
     ):
@@ -352,13 +339,9 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         y : numpy array of shape [n_samples], default=None
             Target values.
 
-        confounds : :obj:`list` of confounds, default=None
-            List of confounds (2D arrays or filenames pointing to CSV
-            files). Must be of same length than imgs_list.
+        %(confounds)s
 
-        sample_mask : :obj:`list` of sample_mask, default=None
-            List of sample_mask (1D arrays) if scrubbing motion outliers.
-            Must be of same length than imgs_list.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -502,6 +485,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return mask_img_
 
+    @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
 
@@ -511,17 +495,9 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
               iterable of :obj:`~nilearn.surface.SurfaceImage`
             Images to process.
 
-        confounds : CSV file or array-like, default=None
-            This parameter is passed to :func:`nilearn.signal.clean`.
-            Please see the related documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to clean.
+        %(sample_mask)s
 
         Returns
         -------
