@@ -177,7 +177,8 @@ xfail_strict = true
 [tool.ruff]
 extend-exclude = [
     "nilearn/externals/*",
-    "doc/auto_examples/*"
+    "doc/auto_examples/*",
+    "examples/07_advanced/plot_performance_comparison.py"
 ]
 include = ["pyproject.toml", "nilearn/**/*.py", "examples/**/*.py", "maint_tools/**/*.py", "doc/**/*.py"]
 indent-width = 4
