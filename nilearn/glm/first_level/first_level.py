@@ -2296,9 +2296,9 @@ def _check_bids_image_list(imgs, sub_label, filters):
     run_check_list = []
 
     for img_ in imgs:
-        parsed_filename = parse_bids_filename(img_)
-        session = parsed_filename.get("ses")
-        run = parsed_filename.get("run")
+        parsed_filename = parse_bids_filename(img_, legacy=False)
+        session = parsed_filename["entities"].get("ses")
+        run = parsed_filename["entities"].get("run")
 
         if session and run:
             if (session, run) in set(run_check_list):
@@ -2382,11 +2382,11 @@ def _check_bids_events_list(
         *bids_entities()["raw"],
     ]
     for this_img in imgs:
-        parsed_filename = parse_bids_filename(this_img)
+        parsed_filename = parse_bids_filename(this_img, legacy=False)
         extra_filter = [
-            (key, parsed_filename[key])
-            for key in parsed_filename
-            if key in supported_filters
+            (entity, parsed_filename["entities"][entity])
+            for entity in parsed_filename["entities"]
+            if entity in supported_filters
         ]
         filters = _make_bids_files_filter(
             task_label=task_label,
