@@ -746,10 +746,10 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
 
     report.save_as_html(tmp_path / "new_report.html")
 
-    assert "BBB-AAA" in content
+    assert "BBB-AAA" in report.__str__()
     for file in EXPECTED_FILENAMES:
-        assert file in report.__str__()
-        assert f'src="{file}"' not in content
+        assert f'src="{tmp_path / file}"' in report.__str__()
+        assert f'src="{file}"' not in report.__str__()
 
 
 def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
