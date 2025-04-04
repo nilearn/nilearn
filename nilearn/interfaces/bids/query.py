@@ -252,20 +252,23 @@ def get_bids_files(
 
     filters = filters or []
     if filters:
-        files = [parse_bids_filename(file_) for file_ in files]
-        for key, value in filters:
+        files = [parse_bids_filename(file_, legacy=False) for file_ in files]
+        for entity, label in filters:
             files = [
                 file_
                 for file_ in files
-                if (key not in file_ and value == "")
-                or (key in file_ and file_[key] == value)
+                if (entity not in file_["entities"] and label == "")
+                or (
+                    entity in file_["entities"]
+                    and file_["entities"][entity] == label
+                )
             ]
         return [ref_file["file_path"] for ref_file in files]
 
     return files
 
 
-def parse_bids_filename(img_path):
+def parse_bids_filename(img_path, legacy=True):
     r"""Return dictionary with parsed information from file path.
 
     Parameters
@@ -295,18 +298,34 @@ def parse_bids_filename(img_path):
         "file_basename": Path(img_path).name,
     }
     parts = reference["file_basename"].split("_")
-    tag, type_ = parts[-1].split(".", 1)
-    reference["file_tag"] = tag
-    reference["file_type"] = type_
-    reference["file_fields"] = []
-    for part in parts[:-1]:
-        field = part.split("-")[0]
-        reference["file_fields"].append(field)
-        # In derivatives is not clear if the source file name will
-        # be parsed as a field with no value.
-        if len(part.split("-")) > 1:
-            value = part.split("-")[1]
-            reference[field] = value
-        else:
+    suffix, extension = parts[-1].split(".", 1)
+
+    if legacy:
+        reference["file_tag"] = suffix
+        reference["file_type"] = extension
+        reference["file_fields"] = []
+        for part in parts[:-1]:
+            field = part.split("-")[0]
+            reference["file_fields"].append(field)
+            # In derivatives is not clear if the source file name will
+            # be parsed as a field with no value.
             reference[field] = None
+            if len(part.split("-")) > 1:
+                value = part.split("-")[1]
+                reference[field] = value
+
+    else:
+        reference["extension"] = extension
+        reference["suffix"] = suffix
+        reference["entities"] = {}
+        for part in parts[:-1]:
+            entity = part.split("-")[0]
+            # In derivatives is not clear if the source file name will
+            # be parsed as a field with no value.
+            label = None
+            if len(part.split("-")) > 1:
+                value = part.split("-")[1]
+                label = value
+            reference["entities"][entity] = label
+
     return reference
