@@ -174,30 +174,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         self.n_elements_ = self.maps_img.shape[1]
 
-        if self.mask_img is not None:
-            if img is not None:
-                check_compatibility_mask_and_images(self.mask_img, img)
-            logger.log(
-                msg=f"loading regions from {self.mask_img.__repr__()}",
-                verbose=self.verbose,
-            )
-            check_polymesh_equal(self.maps_img.mesh, self.mask_img.mesh)
-            self.mask_img_ = self.mask_img
-            # squeeze the mask data if it is 2D and has a single column
-            for part in self.mask_img_.data.parts:
-                if (
-                    self.mask_img_.data.parts[part].ndim == 2
-                    and self.mask_img_.data.parts[part].shape[1] == 1
-                ):
-                    self.mask_img_.data.parts[part] = np.squeeze(
-                        self.mask_img_.data.parts[part], axis=1
-                    )
-            self.mask_img_.data._check_ndims(1, "mask_img")
-        else:
-            # TODO
-            # self.mask_img_ should be a SurfaceImage instance
-            # after fit
-            self.mask_img_ = None
+        self.mask_img_ = self._load_mask(img)
+
+        if self.mask_img_ is not None:
+            check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
+
+        # TODO
+        # self.mask_img_ should be a SurfaceImage instance
+        # after fit
 
         self._shelving = False
 

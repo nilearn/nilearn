@@ -16,7 +16,6 @@ from nilearn.maskers._utils import (
     sanitize_cleaning_parameters,
 )
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
-from nilearn.masking import load_mask_img
 
 
 class _ExtractionFunctor:
@@ -428,19 +427,7 @@ class NiftiMapsMasker(BaseMasker):
             ensure_finite=True,
         )
 
-        if self.mask_img is not None:
-            repr = _utils.repr_niimgs(
-                self.mask_img, shorten=(not self.verbose)
-            )
-            msg = f"loading mask from {repr}"
-            logger.log(msg=msg, verbose=self.verbose)
-            self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
-
-            # Just check that the mask is valid
-            load_mask_img(self.mask_img_)
-
-        else:
-            self.mask_img_ = None
+        self.mask_img_ = self._load_mask(imgs)
 
         # Check shapes and affines or resample.
         if self.resampling_target is None and self.mask_img_ is not None:

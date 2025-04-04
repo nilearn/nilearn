@@ -709,42 +709,45 @@ def surf_maps_img():
     return _surf_maps_img()
 
 
+def _flip_surf_img_parts(poly_obj):
+    """Flip hemispheres of a surface image data or mesh."""
+    keys = list(poly_obj.parts.keys())
+    keys = [keys[-1]] + keys[:-1]
+    return dict(zip(keys, poly_obj.parts.values()))
+
+
 @pytest.fixture
 def flip_surf_img_parts():
     """Flip hemispheres of a surface image data or mesh."""
+    return _flip_surf_img_parts
 
-    def f(poly_obj):
-        keys = list(poly_obj.parts.keys())
-        keys = [keys[-1]] + keys[:-1]
-        return dict(zip(keys, poly_obj.parts.values()))
 
-    return f
+def _flip_surf_img(img):
+    """Flip hemispheres of a surface image."""
+    return SurfaceImage(
+        _flip_surf_img_parts(img.mesh), _flip_surf_img_parts(img.data)
+    )
 
 
 @pytest.fixture
-def flip_surf_img(flip_surf_img_parts):
+def flip_surf_img():
     """Flip hemispheres of a surface image."""
+    return _flip_surf_img
 
-    def f(img):
-        return SurfaceImage(
-            flip_surf_img_parts(img.mesh), flip_surf_img_parts(img.data)
-        )
 
-    return f
+def _drop_surf_img_part(img, part_name="right"):
+    """Remove one hemisphere from a SurfaceImage."""
+    mesh_parts = img.mesh.parts.copy()
+    mesh_parts.pop(part_name)
+    data_parts = img.data.parts.copy()
+    data_parts.pop(part_name)
+    return SurfaceImage(mesh_parts, data_parts)
 
 
 @pytest.fixture
 def drop_surf_img_part():
     """Remove one hemisphere from a SurfaceImage."""
-
-    def f(img, part_name="right"):
-        mesh_parts = img.mesh.parts.copy()
-        mesh_parts.pop(part_name)
-        data_parts = img.data.parts.copy()
-        data_parts.pop(part_name)
-        return SurfaceImage(mesh_parts, data_parts)
-
-    return f
+    return _drop_surf_img_part
 
 
 def _make_surface_img_and_design(n_samples=5):
