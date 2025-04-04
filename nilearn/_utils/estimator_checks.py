@@ -542,26 +542,20 @@ def check_masker_transformer(estimator):
 
     - for maskers transform is in the base class and
       implemented via a transform_single_imgs
+    - checks that "imgs" (and not X) is the parameter
+      for input for fit / transform
     - fit_transform method should work on non fitted estimator
     - fit_transform should give same result as fit then transform
-    - also checks that "imgs" is the parameter for input for fit / transform
     """
     # transform_single_imgs should not be an abstract method anymore
     assert not getattr(
         estimator.transform_single_imgs, "__isabstractmethod__", False
     )
 
-    tmp = dict(**inspect.signature(estimator.fit).parameters)
-    assert "imgs" in tmp
-    assert "X" not in tmp
-
-    tmp = dict(**inspect.signature(estimator.transform).parameters)
-    assert "imgs" in tmp
-    assert "X" not in tmp
-
-    tmp = dict(**inspect.signature(estimator.fit_transform).parameters)
-    assert "imgs" in tmp
-    assert "X" not in tmp
+    for attr in ["fit", "transform", "fit_transform"]:
+        tmp = dict(**inspect.signature(getattr(estimator, attr)).parameters)
+        assert next(iter(tmp)) == "imgs"
+        assert "X" not in tmp
 
     if accept_niimg_input(estimator):
         input_img = _img_4d_rand_eye_medium()
