@@ -1101,7 +1101,7 @@ def _sanitize_confound_dtype(n_signal, confound):
             confound = csv_to_array(filename, skip_header=1)
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect length.\n"
+                "Confound signal has an incorrect length. \n"
                 f"Signal length: {n_signal}; "
                 f"confound length: {confound.shape[0]}"
             )
