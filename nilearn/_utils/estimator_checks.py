@@ -315,6 +315,7 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_transformer)
         yield (clone(estimator), check_masker_compatibility_mask_image)
+        yield (clone(estimator), check_masker_validation_mask)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -479,6 +480,18 @@ def check_masker_detrending(estimator):
     detrended_signal = estimator.fit_transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
+
+
+def check_masker_validation_mask(estimator):
+    """Raise error when mask_img is not binary."""
+    if accept_niimg_input(estimator):
+        mask_img = _img_3d_mni()
+    else:
+        mask_img = _make_surface_img()
+    estimator.mask_img = mask_img
+
+    with pytest.raises(ValueError, match="Given mask is not made of 2 values"):
+        estimator.fit()
 
 
 def check_masker_compatibility_mask_image(estimator):
