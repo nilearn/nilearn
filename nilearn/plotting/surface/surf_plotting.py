@@ -198,6 +198,10 @@ def plot_surf(
         Lower bound for the colorbar.
         If None, the value will be set from the data.
 
+        .. note::
+            This option is currently only implemented for the
+            ``matplotlib`` engine.
+
     cbar_vmax : :obj:`float` or None, default=None
         Upper bound for the colorbar.
         If None, the value will be set from the data.
