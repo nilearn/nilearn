@@ -222,11 +222,11 @@ class PlotlyBackend(BaseSurfaceBackend):
     def _check_backend_params(self, params):
         parameters_not_implemented_in_plotly = {
             "avg_method": params["avg_method"],
-            "figure": params["figure"],
-            "axes": params["axes"],
+            "alpha": params["alpha"],
             "cbar_vmin": params["cbar_vmin"],
             "cbar_vmax": params["cbar_vmax"],
-            "alpha": params["alpha"],
+            "axes": params["axes"],
+            "figure": params["figure"],
         }
 
         for parameter, value in parameters_not_implemented_in_plotly.items():
