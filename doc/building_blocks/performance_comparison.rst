@@ -11,9 +11,8 @@ The performance of a workflow can be measured in:
 1. the time it takes to complete
 2. the amount of memory it uses
 
-Both these aspects are heavily
-dependent on the size of the data being processed and how that data is loaded
-into memory.
+Both these aspects are heavily dependent on the size of the data being
+processed and how that data is loaded into memory.
 
 Another important aspect is the operations being performed on the data. For
 example, there can be situations where we either need all the data in
@@ -27,10 +26,10 @@ Proxy images vs. array images
 =============================
 
 A nifti image can be loaded as a proxy image or an array image. This page on
-Nibabel documentation does a good job of explaining the difference between the
-two: https://nipy.org/nibabel/images_and_memory.html
+:nibabel:`Nibabel documentation <images_and_memory.html>` does a good job of
+explaining the difference between the two.
 
-But TLDR; a proxy image is an object that only points to the actual numpy
+But TL;DR: a proxy image is an object that only points to the actual numpy
 array data on disk. This means that the data is not loaded into memory until
 it is accessed. On the other hand, an array image is an object that loads the
 data into memory as soon as it is created.
