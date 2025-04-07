@@ -17,6 +17,8 @@ new_machine_name = sys.argv[1]
 json_file_path = Path("~/.asv-machine.json").expanduser()
 loaded_json = json.load(Path.open(json_file_path))
 
+print(f"Current machine info: {loaded_json}")
+
 # copy the first key into a new key new_machine_name
 loaded_json[new_machine_name] = loaded_json[next(iter(loaded_json.keys()))]
 # also update "machine" value in the new key
@@ -24,6 +26,8 @@ loaded_json[new_machine_name]["machine"] = new_machine_name
 
 # remove the old key
 del loaded_json[next(iter(loaded_json.keys()))]
+
+print(f"Updated machine info: {loaded_json}")
 
 # write the modified json back to the file
 with Path.open(json_file_path) as json_file:
