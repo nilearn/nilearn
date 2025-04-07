@@ -220,6 +220,9 @@ def _get_view_plot_surf_plotly(hemi, view):
 
 class PlotlyBackend(BaseSurfaceBackend):
     def _check_backend_params(self, params):
+        """Check default values of the parameters that are not implemented for
+        plotly and warns the user if the parameter has other value then None.
+        """
         parameters_not_implemented_in_plotly = {
             "avg_method": params["avg_method"],
             "alpha": params["alpha"],
