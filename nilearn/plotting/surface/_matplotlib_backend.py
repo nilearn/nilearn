@@ -361,14 +361,12 @@ class MatplotlibBackend(BaseSurfaceBackend):
 
         self._check_engine_params(parameters_not_implemented_in_matplotlib)
 
-        # setting defaults
-        if avg_method is None:
-            avg_method = "mean"
-        if alpha is None:
-            alpha = "auto"
-
-        if cbar_tick_format == "auto":
-            cbar_tick_format = "%.2g"
+        # adjust values depending on defaults
+        avg_method = "mean" if avg_method is None else avg_method
+        alpha = "auto" if alpha is None else alpha
+        cbar_tick_format = (
+            "%.2g" if cbar_tick_format == "auto" else cbar_tick_format
+        )
 
         _default_figsize = [4, 5]
         limits = [coords.min(), coords.max()]
