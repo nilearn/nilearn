@@ -26,8 +26,8 @@ Proxy images vs. array images
 =============================
 
 A nifti image can be loaded as a proxy image or an array image. This page on
-:nibabel:`Nibabel documentation <images_and_memory.html>` does a good job of
-explaining the difference between the two.
+:doc:`Nibabel documentation <nibabel:images_and_memory.html>` does a good job
+of explaining the difference between the two.
 
 But TL;DR: a proxy image is an object that only points to the actual numpy
 array data on disk. This means that the data is not loaded into memory until
