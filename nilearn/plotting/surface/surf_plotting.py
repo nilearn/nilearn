@@ -174,14 +174,16 @@ def plot_surf(
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
-        When using matplotlib as engine,
-        `alpha` will default to ``"auto"`` if ``None`` is passed.
+
         If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
 
         .. note::
             This option is currently only implemented for the
             ``matplotlib`` engine.
+
+        When using matplotlib as engine,
+        `alpha` will default to ``"auto"`` if ``None`` is passed.
 
     %(bg_on_data)s
 
