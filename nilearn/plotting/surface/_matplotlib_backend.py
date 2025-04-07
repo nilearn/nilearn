@@ -324,7 +324,26 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
 
 class MatplotlibBackend(BaseSurfaceBackend):
     def _check_engine_params(self, params):
-        pass
+        """Check default values of the parameters that are not implemented for
+        matplotlib and warns the user if the parameter has other value then
+        None.
+        """
+        parameters_not_implemented_in_matplotlib = {
+            "symmetric_cmap": params["symmetric_cmap"],
+            "title_font_size": params["title_font_size"],
+        }
+
+        for (
+            parameter,
+            value,
+        ) in parameters_not_implemented_in_matplotlib.items():
+            if value is not None:
+                warn(
+                    f"'{parameter}' is not implemented "
+                    "for the plotly engine.\n"
+                    f"Got '{parameter} = {value}'.\n"
+                    f"Use '{parameter} = None' to silence this warning."
+                )
 
     def _plot_surf(
         self,
