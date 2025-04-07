@@ -76,12 +76,12 @@ jobs:
                 cp -r benchmarks_repo/results .
         -   name: Get all the machine info
             run: |
-                asv machine --yes 2>&1 | tee log_$GITHUB_RUN_ID
+                asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
         -   name: Edit asv-machine.json to a custom machine name
             run: python ./build_tools/github/set_machine_name.py fv-az1113-357
         -   name: Run all benchmarks on the latest commit
             run: |
-                asv run -ev --append-samples --machine fv-az1113-357 2>&1 | tee log_$GITHUB_RUN_ID
+                asv run -ev --append-samples --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
         -   name: Create html with all results
             run: |
                 asv publish
@@ -99,11 +99,11 @@ jobs:
             run: |
                 cd benchmarks_repo
                 cp -r ../results .
-                cp -r ../log_$GITHUB_RUN_ID ./logs/log_$GITHUB_RUN_ID
+                cp -r ../log_${{ github.event.repository.updated_at }}_${{ github.run_number }} ./logs/log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
                 git config --global user.name "GitHub Actions"
                 git config --global user.email "actions@github.com"
                 git add .
-                git commit -m "Update benchmark results and logs ($GITHUB_RUN_ID)"
+                git commit -m "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin main
         -   name: Push html to gh-pages branch
             env:
@@ -112,5 +112,5 @@ jobs:
                 git checkout gh-pages
                 cp -r ../html/* .
                 git add .
-                git commit -m "Update benchmark HTML ($GITHUB_RUN_ID)"
+                git commit -m "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin gh-pages
