@@ -221,7 +221,11 @@ def plot_surf(
     %(title)s
 
     title_font_size : :obj:`int`, default=18
-        Size of the title font (only implemented for the plotly engine).
+        Size of the title font
+
+        .. note::
+            This option is currently only implemented for
+            the ``plotly`` engine.
 
         .. versionadded:: 0.9.0
 
