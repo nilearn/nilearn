@@ -1,3 +1,10 @@
+"""Functions specific to "plotly" backend for surface visualization
+functions in :obj:`~nilearn.plotting.surface.surf_plotting`.
+
+Any imports from "plotly" package, or "plotly" engine specific utility
+functions in :obj:`~nilearn.plotting.surface` should be in this file.
+"""
+
 import math
 from warnings import warn
 

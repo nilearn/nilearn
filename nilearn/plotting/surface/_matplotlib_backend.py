@@ -1,3 +1,10 @@
+"""Functions specific to "matplotlib" backend for surface visualization
+functions in :obj:`~nilearn.plotting.surface.surf_plotting`.
+
+Any imports from "matplotlib" package, or "matplotlib" engine specific utility
+functions in :obj:`~nilearn.plotting.surface` should be in this file.
+"""
+
 from warnings import warn
 
 import numpy as np

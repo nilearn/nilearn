@@ -1,3 +1,21 @@
+"""Functions that are common to all possible backend implementations for
+surface visualization functions in
+:obj:`~nilearn.plotting.surface.surf_plotting`.
+
+"Matplotlib" is common engine for surface visualization functions. For some
+functions, there is also a "plotly" implementation.
+
+All dependencies and functions related to "matplotlib" implementation is in
+:obj:`~nilearn.plotting.surface._matplotlib_backend` module.
+
+All dependencies and functions related to "plotly" implementation is in
+:obj:`~nilearn.plotting.surface._plotly_backend` module.
+
+Each backend engine implementation should be a self contained module. Any
+imports on the engine package, or engine specific utility functions should not
+appear elsewhere.
+"""
+
 from collections.abc import Sequence
 
 import numpy as np
