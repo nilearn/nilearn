@@ -367,8 +367,9 @@ class MatplotlibBackend(BaseSurfaceBackend):
         cbar_tick_format = (
             "%.2g" if cbar_tick_format == "auto" else cbar_tick_format
         )
+        # Leave space for colorbar
+        figsize = [4.7, 5] if colorbar else [4, 5]
 
-        _default_figsize = [4, 5]
         limits = [coords.min(), coords.max()]
 
         # Get elevation and azimut from view
@@ -381,10 +382,6 @@ class MatplotlibBackend(BaseSurfaceBackend):
         elif isinstance(cmap, str):
             cmap = plt.get_cmap(cmap)
 
-        figsize = _default_figsize
-        # Leave space for colorbar
-        if colorbar:
-            figsize[0] += 0.7
         # initiate figure and 3d axes
         if axes is None:
             if figure is None:
