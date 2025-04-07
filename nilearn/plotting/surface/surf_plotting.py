@@ -29,7 +29,7 @@ from nilearn.plotting.surface._backend import (
 )
 from nilearn.plotting.surface._matplotlib_backend import (
     _colorbar_from_array,
-    _get_ticks_matplotlib,
+    _get_ticks,
 )
 from nilearn.plotting.surface._utils import (
     check_surface_plotting_inputs,
@@ -992,7 +992,7 @@ def plot_img_on_surf(
         cbar_ax = fig.add_subplot(cbar_grid[1])
         axes.append(cbar_ax)
         # Get custom ticks to set in colorbar
-        ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold)
+        ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
         fig.colorbar(
             sm,
             cax=cbar_ax,

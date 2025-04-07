@@ -17,10 +17,10 @@ from nilearn.plotting import (
 )
 from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
-    _compute_facecolors_matplotlib,
+    _compute_facecolors,
     _get_bounds,
-    _get_ticks_matplotlib,
-    _get_view_plot_surf_matplotlib,
+    _get_ticks,
+    _get_view_plot_surf,
 )
 from nilearn.surface import (
     load_surf_data,
@@ -63,33 +63,32 @@ EXPECTED_VIEW_MATPLOTLIB = {
 
 
 @pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
-def test_get_view_plot_surf_matplotlib(hemi, views):
+def test_get_view_plot_surf(hemi, views):
     for v in views:
         assert (
-            _get_view_plot_surf_matplotlib(hemi, v)
-            == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
+            _get_view_plot_surf(hemi, v) == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
         )
 
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        _get_view_plot_surf_matplotlib(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
-    "hemi,view,f",
+    "hemi,view",
     [
-        ("left", "foo", _get_view_plot_surf_matplotlib),
-        ("right", "bar", _get_view_plot_surf_matplotlib),
-        ("both", "lateral", _get_view_plot_surf_matplotlib),
-        ("both", "medial", _get_view_plot_surf_matplotlib),
-        ("both", "foo", _get_view_plot_surf_matplotlib),
+        ("left", "foo"),
+        ("right", "bar"),
+        ("both", "lateral"),
+        ("both", "medial"),
+        ("both", "foo"),
     ],
 )
-def test_get_view_plot_surf_view_errors(hemi, view, f):
+def test_get_view_plot_surf_view_errors(hemi, view):
     with pytest.raises(ValueError, match="Invalid view definition"):
-        f(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
@@ -122,8 +121,8 @@ def test_get_bounds(data, expected):
         (0, np.nextafter(0, 1), "%.1f", [0.0e000, 5.0e-324]),
     ],
 )
-def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
-    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold=None)
+def test_get_ticks(vmin, vmax, cbar_tick_format, expected):
+    ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold=None)
     assert 1 <= len(ticks) <= 5
     assert ticks[0] == vmin and ticks[-1] == vmax
     assert (
@@ -132,7 +131,7 @@ def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
     )
 
 
-def test_compute_facecolors_matplotlib():
+def test_compute_facecolors():
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_left"])
     alpha = "auto"
@@ -144,7 +143,7 @@ def test_compute_facecolors_matplotlib():
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert bg_min < 0 or bg_max > 1
 
-    facecolors_auto_normalized = _compute_facecolors_matplotlib(
+    facecolors_auto_normalized = _compute_facecolors(
         bg_map,
         mesh.faces,
         len(mesh.coordinates),
@@ -158,7 +157,7 @@ def test_compute_facecolors_matplotlib():
     bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
     assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
 
-    facecolors_manually_normalized = _compute_facecolors_matplotlib(
+    facecolors_manually_normalized = _compute_facecolors(
         bg_map_normalized,
         mesh.faces,
         len(mesh.coordinates),
@@ -175,7 +174,7 @@ def test_compute_facecolors_matplotlib():
     bg_map_scaled = bg_map_normalized / 2 + 0.25
     assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
 
-    facecolors_manually_rescaled = _compute_facecolors_matplotlib(
+    facecolors_manually_rescaled = _compute_facecolors(
         bg_map_scaled,
         mesh.faces,
         len(mesh.coordinates),
@@ -189,7 +188,7 @@ def test_compute_facecolors_matplotlib():
     )
 
 
-def test_compute_facecolors_matplotlib_deprecation():
+def test_compute_facecolors_deprecation():
     """Test warning deprecation."""
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_left"])
@@ -208,7 +207,7 @@ def test_compute_facecolors_matplotlib_deprecation():
             "We recommend setting `darkness` to None"
         ),
     ):
-        _compute_facecolors_matplotlib(
+        _compute_facecolors(
             bg_map,
             mesh.faces,
             len(mesh.coordinates),

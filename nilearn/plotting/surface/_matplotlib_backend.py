@@ -124,7 +124,7 @@ def _colorbar_from_array(
     return sm
 
 
-def _compute_facecolors_matplotlib(bg_map, faces, n_vertices, darkness, alpha):
+def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
     """Help for plot_surf with matplotlib engine.
 
     This function computes the facecolors.
@@ -167,7 +167,7 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices, darkness, alpha):
     return face_colors
 
 
-def _compute_surf_map_faces_matplotlib(
+def _compute_surf_map_faces(
     surf_map, faces, avg_method, n_vertices, face_colors_size
 ):
     """Help for plot_surf.
@@ -230,7 +230,7 @@ def _get_bounds(data, vmin=None, vmax=None):
     return vmin, vmax
 
 
-def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
+def _get_cmap(cmap, vmin, vmax, cbar_tick_format, threshold=None):
     """Help for plot_surf with matplotlib engine.
 
     This function returns the colormap.
@@ -255,7 +255,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
     return our_cmap, norm
 
 
-def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
+def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
     """Help for plot_surf with matplotlib engine.
 
     This function computes the tick values for the colorbar.
@@ -270,7 +270,7 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
         return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
-def _get_view_plot_surf_matplotlib(hemi, view):
+def _get_view_plot_surf(hemi, view):
     """Help function for plot_surf with matplotlib engine.
 
     This function checks the selected hemisphere and view, and
@@ -373,7 +373,7 @@ class MatplotlibBackend(BaseSurfaceBackend):
         limits = [coords.min(), coords.max()]
 
         # Get elevation and azimut from view
-        elev, azim = _get_view_plot_surf_matplotlib(hemi, view)
+        elev, azim = _get_view_plot_surf(hemi, view)
 
         # if no cmap is given, set to matplotlib default
         if cmap is None:
@@ -420,11 +420,11 @@ class MatplotlibBackend(BaseSurfaceBackend):
         # reduce viewing distance to remove space around mesh
         axes.set_box_aspect(None, zoom=1.3)
 
-        bg_face_colors = _compute_facecolors_matplotlib(
+        bg_face_colors = _compute_facecolors(
             bg_map, faces, coords.shape[0], darkness, alpha
         )
         if surf_map is not None:
-            surf_map_faces = _compute_surf_map_faces_matplotlib(
+            surf_map_faces = _compute_surf_map_faces(
                 surf_map,
                 faces,
                 avg_method,
@@ -448,10 +448,10 @@ class MatplotlibBackend(BaseSurfaceBackend):
             if colorbar:
                 cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
                 cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
-                ticks = _get_ticks_matplotlib(
+                ticks = _get_ticks(
                     cbar_vmin, cbar_vmax, cbar_tick_format, threshold
                 )
-                our_cmap, norm = _get_cmap_matplotlib(
+                our_cmap, norm = _get_cmap(
                     cmap, vmin, vmax, cbar_tick_format, threshold
                 )
                 bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
