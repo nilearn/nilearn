@@ -6,7 +6,6 @@ functions in :obj:`~nilearn.plotting.surface` should be in this file.
 """
 
 import math
-from warnings import warn
 
 import numpy as np
 
@@ -226,27 +225,9 @@ def _get_view_plot_surf_plotly(hemi, view):
 
 
 class PlotlyBackend(BaseSurfaceBackend):
-    def _check_engine_params(self, params):
-        """Check default values of the parameters that are not implemented for
-        plotly and warns the user if the parameter has other value then None.
-        """
-        parameters_not_implemented_in_plotly = {
-            "avg_method": params["avg_method"],
-            "alpha": params["alpha"],
-            "cbar_vmin": params["cbar_vmin"],
-            "cbar_vmax": params["cbar_vmax"],
-            "axes": params["axes"],
-            "figure": params["figure"],
-        }
-
-        for parameter, value in parameters_not_implemented_in_plotly.items():
-            if value is not None:
-                warn(
-                    f"'{parameter}' is not implemented "
-                    "for the plotly engine.\n"
-                    f"Got '{parameter} = {value}'.\n"
-                    f"Use '{parameter} = None' to silence this warning."
-                )
+    @property
+    def name(self):
+        return "plotly"
 
     def _plot_surf(
         self,
@@ -275,7 +256,15 @@ class PlotlyBackend(BaseSurfaceBackend):
         axes=None,
         figure=None,
     ):
-        self._check_engine_params(locals())
+        parameters_not_implemented_in_plotly = {
+            "avg_method": avg_method,
+            "alpha": alpha,
+            "cbar_vmin": cbar_vmin,
+            "cbar_vmax": cbar_vmax,
+            "axes": axes,
+            "figure": figure,
+        }
+        self._check_engine_params(parameters_not_implemented_in_plotly)
 
         # adjust values depending on defaults
         cbar_tick_format = (

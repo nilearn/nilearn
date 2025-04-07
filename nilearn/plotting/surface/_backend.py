@@ -17,6 +17,7 @@ appear elsewhere.
 """
 
 from collections.abc import Sequence
+from warnings import warn
 
 import numpy as np
 
@@ -98,6 +99,20 @@ class BaseSurfaceBackend:
 
     The methods of class should be implemented by each engine used as backend.
     """
+
+    def _check_engine_params(self, params):
+        """Check default values of the parameters that are not implemented for
+        current engine and warns the user if the parameter has other value then
+        None.
+        """
+        for parameter, value in params.items():
+            if value is not None:
+                warn(
+                    f"'{parameter}' is not implemented "
+                    f"for the {self.name} engine.\n"
+                    f"Got '{parameter} = {value}'.\n"
+                    f"Use '{parameter} = None' to silence this warning."
+                )
 
     def plot_surf(
         self,
