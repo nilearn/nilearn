@@ -93,16 +93,37 @@ jobs:
                     ./html
                     ./results
                 compression-level: 9
+        -   name: Fetch log for this CI run
+            run: |
+                # Download the current run logs using GitHub API
+                curl -L \
+                  -H "Accept: application/vnd.github+json" \
+                  -H "Authorization: Bearer ${{ secrets.UPLOAD_BENCHMARK_RESULTS }}" \
+                  -H "X-GitHub-Api-Version: 2022-11-28" \
+                  "https://api.github.com/repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/logs" \
+                  --output workflow_logs.zip
+
+                # Extract the logs
+                mkdir -p workflow_logs
+                unzip -o workflow_logs.zip -d workflow_logs/
+
+                # Create a combined log file
+                cat workflow_logs/* > logs/log_$GITHUB_RUN_ID || echo "Could not concatenate logs"
+
+                # Clean up
+                rm -rf workflow_logs workflow_logs.zip
+
+                echo "Workflow logs downloaded and saved to results directory"
         -   name: Push new results back to benchmarks repo and deploy
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent.sock
             run: |
                 cd benchmarks_repo
                 cp -r ../results .
-                cp -r ../html/* .
+                cp -r ../html/* ./html/
                 git config --global user.name "GitHub Actions"
                 git config --global user.email "actions@github.com"
                 git add .
-                git commit -m "Update benchmark results and HTML"
+                git commit -m "Update benchmark results and HTML ($GITHUB_RUN_ID)"
                 git push origin main
                 cd ..
