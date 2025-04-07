@@ -8,6 +8,7 @@ In this chapter we will discuss the factors that can affect the performance of
 neuroimaging workflows and the steps that can be taken to optimize them.
 
 The performance of a workflow can be measured in:
+
 1. the time it takes to complete
 2. the amount of memory it uses
 
