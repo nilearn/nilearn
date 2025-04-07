@@ -114,17 +114,26 @@ jobs:
                 rm -rf workflow_logs workflow_logs.zip
 
                 echo "Workflow logs downloaded and saved to results directory"
-        -   name: Push new results back to benchmarks repo and deploy
+        -   name: Push new results and logs back to benchmarks repo
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent.sock
             run: |
                 cd benchmarks_repo
                 cp -r ../results .
-                cp -r ../html/* ./html/
                 cp -r ../logs/log_$GITHUB_RUN_ID ./logs/log_$GITHUB_RUN_ID
                 git config --global user.name "GitHub Actions"
                 git config --global user.email "actions@github.com"
                 git add .
-                git commit -m "Update benchmark results and HTML ($GITHUB_RUN_ID)"
+                git commit -m "Update benchmark results and logs ($GITHUB_RUN_ID)"
                 git push origin main
                 cd ..
+        -   name: Push html to gh-pages branch
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+            run: |
+                cd benchmarks_repo
+                git checkout gh-pages
+                cp -r ../html/* .
+                git add .
+                git commit -m "Update benchmark HTML ($GITHUB_RUN_ID)"
+                git push origin gh-pages
