@@ -270,19 +270,16 @@ class PlotlyBackend(BaseSurfaceBackend):
     ):
         self._check_backend_params(locals())
 
-        if cbar_tick_format == "auto":
-            cbar_tick_format = ".1f"
+        # adjust values depending on defaults
+        cbar_tick_format = (
+            ".1f" if cbar_tick_format == "auto" else cbar_tick_format
+        )
+        cmap = DEFAULT_DIVERGING_CMAP if cmap is None else cmap
+        symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
+        title_font_size = 18 if title_font_size is None else title_font_size
+
         x, y, z = coords.T
         i, j, k = faces.T
-
-        if cmap is None:
-            cmap = DEFAULT_DIVERGING_CMAP
-
-        if symmetric_cmap is None:
-            symmetric_cmap = False
-
-        if title_font_size is None:
-            title_font_size = 18
 
         bg_data = None
         if bg_map is not None:
