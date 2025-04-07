@@ -226,7 +226,7 @@ def _get_view_plot_surf_plotly(hemi, view):
 
 
 class PlotlyBackend(BaseSurfaceBackend):
-    def _check_backend_params(self, params):
+    def _check_engine_params(self, params):
         """Check default values of the parameters that are not implemented for
         plotly and warns the user if the parameter has other value then None.
         """
@@ -275,7 +275,7 @@ class PlotlyBackend(BaseSurfaceBackend):
         axes=None,
         figure=None,
     ):
-        self._check_backend_params(locals())
+        self._check_engine_params(locals())
 
         # adjust values depending on defaults
         cbar_tick_format = (

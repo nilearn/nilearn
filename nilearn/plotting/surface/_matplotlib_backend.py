@@ -323,7 +323,7 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
 
 
 class MatplotlibBackend(BaseSurfaceBackend):
-    def _check_backend_params(self, params):
+    def _check_engine_params(self, params):
         pass
 
     def _plot_surf(
@@ -353,7 +353,7 @@ class MatplotlibBackend(BaseSurfaceBackend):
         axes=None,
         figure=None,
     ):
-        self._check_backend_params(locals())
+        self._check_engine_params(locals())
 
         # setting defaults
         if avg_method is None:
