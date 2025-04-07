@@ -341,7 +341,7 @@ class MatplotlibBackend(BaseSurfaceBackend):
         cbar_vmax=None,
         cbar_tick_format="auto",
         title=None,
-        title_font_size=18,
+        title_font_size=None,
         output_file=None,
         axes=None,
         figure=None,

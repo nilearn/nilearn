@@ -263,7 +263,7 @@ class PlotlyBackend(BaseSurfaceBackend):
         cbar_vmax=None,
         cbar_tick_format="auto",
         title=None,
-        title_font_size=18,
+        title_font_size=None,
         output_file=None,
         axes=None,
         figure=None,
@@ -280,6 +280,9 @@ class PlotlyBackend(BaseSurfaceBackend):
 
         if symmetric_cmap is None:
             symmetric_cmap = False
+
+        if title_font_size is None:
+            title_font_size = 18
 
         bg_data = None
         if bg_map is not None:

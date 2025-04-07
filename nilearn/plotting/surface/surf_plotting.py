@@ -69,7 +69,7 @@ def plot_surf(
     cbar_vmax=None,
     cbar_tick_format="auto",
     title=None,
-    title_font_size=18,
+    title_font_size=None,
     output_file=None,
     axes=None,
     figure=None,
@@ -220,12 +220,15 @@ def plot_surf(
 
     %(title)s
 
-    title_font_size : :obj:`int`, default=18
+    title_font_size : :obj:`int`, default=None
         Size of the title font
 
         .. note::
             This option is currently only implemented for
             the ``plotly`` engine.
+
+        When using plotly as engine, `title_font_size` will default to ``18``
+        if ``None`` is passed.
 
         .. versionadded:: 0.9.0
 
