@@ -247,7 +247,7 @@ class PlotlyBackend(BaseSurfaceBackend):
         hemi="left",
         view=None,
         cmap=None,
-        symmetric_cmap=False,
+        symmetric_cmap=None,
         colorbar=True,
         avg_method=None,
         threshold=None,
@@ -274,6 +274,9 @@ class PlotlyBackend(BaseSurfaceBackend):
 
         if cmap is None:
             cmap = DEFAULT_DIVERGING_CMAP
+
+        if symmetric_cmap is None:
+            symmetric_cmap = False
 
         bg_data = None
         if bg_map is not None:

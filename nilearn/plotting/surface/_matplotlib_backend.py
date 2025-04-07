@@ -328,7 +328,7 @@ class MatplotlibBackend(BaseSurfaceBackend):
         hemi="left",
         view=None,
         cmap=None,
-        symmetric_cmap=False,
+        symmetric_cmap=None,
         colorbar=True,
         avg_method=None,
         threshold=None,

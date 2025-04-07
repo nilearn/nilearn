@@ -143,12 +143,15 @@ def plot_surf(
     %(cmap)s
         If None, matplotlib default will be chosen.
 
-    symmetric_cmap : :obj:`bool`, default=False
+    symmetric_cmap : :obj:`bool`, default=None
         Whether to use a symmetric colormap or not.
 
         .. note::
             This option is currently only implemented for
             the ``plotly`` engine.
+
+        When using plotly as engine, `symmetric_cmap` will default to ``False``
+        if ``None`` is passed.
 
         .. versionadded:: 0.9.0
 
