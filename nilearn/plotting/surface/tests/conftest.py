@@ -8,6 +8,10 @@ from nilearn.surface import SurfaceImage
 
 
 def pytest_generate_tests(metafunc):
+    """Check installed packages and set engines to be used for the tests.
+
+    https://docs.pytest.org/en/stable/example/parametrize.html#deferring-the-setup-of-parametrized-resources
+    """
     if "engine" in metafunc.fixturenames:
         installed_engines = []
         if is_matplotlib_installed():
@@ -19,6 +23,7 @@ def pytest_generate_tests(metafunc):
 
 @pytest.fixture
 def engine(request):
+    """Return the list of engines detected by pytest_generate_tests."""
     return request.param
 
 

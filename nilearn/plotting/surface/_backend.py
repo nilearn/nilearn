@@ -102,14 +102,15 @@ class BaseSurfaceBackend:
 
     def _check_engine_params(self, params):
         """Check default values of the parameters that are not implemented for
-        current engine and warns the user if the parameter has other value then
+        current engine and warn the user if the parameter has other value then
         None.
 
         Parameters
         ----------
         params: :obj:`dict`
-        A dictionary where keys are the unimplemented parameter names and
-        values are the assigned value for corresponding parameter.
+            A dictionary where keys are the unimplemented parameter names for a
+        specific engine and values are the assigned value for corresponding
+        parameter.
         """
         for parameter, value in params.items():
             if value is not None:
