@@ -56,7 +56,7 @@ def plot_surf(
     view=None,
     engine="matplotlib",
     cmap=None,
-    symmetric_cmap=False,
+    symmetric_cmap=None,
     colorbar=True,
     avg_method=None,
     threshold=None,
