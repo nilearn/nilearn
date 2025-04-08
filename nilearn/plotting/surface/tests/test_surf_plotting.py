@@ -113,13 +113,9 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf(
     matplotlib_pyplot, engine, tmp_path, in_memory_mesh, bg_map
 ):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     # to avoid extra warnings
     alpha = None
     cbar_vmin = None
@@ -184,10 +180,7 @@ def test_plot_surf_swap_hemi(
         )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_error(engine, rng, in_memory_mesh):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
     # Wrong inputs for view or hemi
     with pytest.raises(ValueError, match="Invalid view definition"):
         plot_surf(in_memory_mesh, view="middle", engine=engine)
@@ -224,12 +217,7 @@ def test_plot_surf_error(engine, rng, in_memory_mesh):
         )
 
 
-# @pytest.mark.parametrize()
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_stat_map(matplotlib_pyplot, engine, in_memory_mesh, bg_map):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     alpha = 1 if engine == "matplotlib" else None
     # Plot mesh with stat map
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, engine=engine)
@@ -238,14 +226,10 @@ def test_plot_surf_stat_map(matplotlib_pyplot, engine, in_memory_mesh, bg_map):
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_stat_map_with_background(
     matplotlib_pyplot, engine, in_memory_mesh, bg_map
 ):
     """Plot mesh with background and stat map."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf_stat_map(
         in_memory_mesh, stat_map=bg_map, bg_map=bg_map, engine=engine
     )
@@ -259,28 +243,20 @@ def test_plot_surf_stat_map_with_background(
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_stat_map_with_title(
     matplotlib_pyplot, engine, in_memory_mesh, bg_map
 ):
     """Check title is added."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     display = plot_surf_stat_map(
         in_memory_mesh, stat_map=bg_map, title="Stat map title"
     )
     assert display.axes[0].title._text == "Stat map title"
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_stat_map_with_threshold(
     matplotlib_pyplot, engine, in_memory_mesh, bg_map
 ):
     """Check title is added."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf_stat_map(
         in_memory_mesh,
         stat_map=bg_map,
@@ -289,25 +265,17 @@ def test_plot_surf_stat_map_with_threshold(
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_stat_map_vmax(
     matplotlib_pyplot, engine, in_memory_mesh, bg_map
 ):
     """Change vmax."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, vmax=5, engine=engine)
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_stat_map_colormap(
     matplotlib_pyplot, engine, in_memory_mesh, bg_map
 ):
     """Change colormap."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf_stat_map(
         in_memory_mesh, stat_map=bg_map, cmap="cubehelix", engine=engine
     )
@@ -330,11 +298,8 @@ def test_plot_surf_stat_map_error(in_memory_mesh, bg_map):
         )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 @pytest.mark.parametrize("colorbar", [True, False])
 def test_plot_surf_roi(matplotlib_pyplot, engine, surface_image_roi, colorbar):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
     plot_surf_roi(
         surface_image_roi.mesh,
         roi_map=surface_image_roi,
@@ -359,10 +324,7 @@ def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
         )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
     # too many axes
     with pytest.raises(
         ValueError, match="roi_map can only have one dimension but has"
@@ -661,7 +623,6 @@ def test_plot_surf_contours_axis_title(
 
 @pytest.mark.parametrize("avg_method", ["mean", "median"])
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_default_arguments(
     plotly, engine, symmetric_cmap, avg_method, surface_image_roi
 ):

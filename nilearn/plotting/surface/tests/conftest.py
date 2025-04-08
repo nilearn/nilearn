@@ -3,7 +3,23 @@
 import numpy as np
 import pytest
 
+from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn.surface import SurfaceImage
+
+
+def pytest_generate_tests(metafunc):
+    if "engine" in metafunc.fixturenames:
+        installed_engines = []
+        if is_matplotlib_installed():
+            installed_engines.append("matplotlib")
+        if is_plotly_installed():
+            installed_engines.append("plotly")
+        metafunc.parametrize("engine", installed_engines, indirect=True)
+
+
+@pytest.fixture
+def engine(request):
+    return request.param
 
 
 @pytest.fixture
