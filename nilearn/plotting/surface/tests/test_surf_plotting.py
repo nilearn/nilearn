@@ -118,12 +118,12 @@ def test_plot_surf(
 
 @pytest.mark.parametrize("view", ["anterior", "posterior"])
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
-def test_plot_surf_hemi_views_plotly(
-    matplotlib_pyplot, plotly, in_memory_mesh, hemi, view, bg_map
+def test_plot_surf_hemi_views(
+    matplotlib_pyplot, plotly, engine, in_memory_mesh, hemi, view, bg_map
 ):
     """Check plotting view and hemispheres."""
     plot_surf(
-        in_memory_mesh, bg_map=bg_map, hemi=hemi, view=view, engine="plotly"
+        in_memory_mesh, bg_map=bg_map, hemi=hemi, view=view, engine=engine
     )
 
 
