@@ -361,7 +361,7 @@ class MatplotlibBackend(BaseSurfaceBackend):
 
         self._check_engine_params(parameters_not_implemented_in_matplotlib)
 
-        # adjust values depending on defaults
+        # adjust values
         avg_method = "mean" if avg_method is None else avg_method
         alpha = "auto" if alpha is None else alpha
         cbar_tick_format = (

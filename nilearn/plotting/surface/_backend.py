@@ -2,7 +2,7 @@
 surface visualization functions in
 :obj:`~nilearn.plotting.surface.surf_plotting`.
 
-"Matplotlib" is common engine for surface visualization functions. For some
+"Matplotlib" is default engine for surface visualization functions. For some
 functions, there is also a "plotly" implementation.
 
 All dependencies and functions related to "matplotlib" implementation is in
@@ -104,6 +104,12 @@ class BaseSurfaceBackend:
         """Check default values of the parameters that are not implemented for
         current engine and warns the user if the parameter has other value then
         None.
+
+        Parameters
+        ----------
+        params: :obj:`dict`
+        A dictionary where keys are the unimplemented parameter names and
+        values are the assigned value for corresponding parameter.
         """
         for parameter, value in params.items():
             if value is not None:

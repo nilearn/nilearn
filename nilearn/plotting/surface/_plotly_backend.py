@@ -266,7 +266,7 @@ class PlotlyBackend(BaseSurfaceBackend):
         }
         self._check_engine_params(parameters_not_implemented_in_plotly)
 
-        # adjust values depending on defaults
+        # adjust values
         cbar_tick_format = (
             ".1f" if cbar_tick_format == "auto" else cbar_tick_format
         )
