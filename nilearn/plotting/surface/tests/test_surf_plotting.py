@@ -37,7 +37,7 @@ def test_check_surface_plotting_inputs_error_mesh_and_data_none(fn):
 
 
 def test_check_surface_plotting_inputs_errors():
-    """Fail if mesh is none and data is not a SurfaceImage."""
+    """Fail if mesh is None and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf(surf_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
@@ -57,26 +57,26 @@ def test_plot_surf_contours_warning_hemi(in_memory_mesh):
 
 
 def test_surface_figure():
+    """Tests SurfaceFigure class."""
     s = SurfaceFigure()
     assert s.output_file is None
     assert s.figure is None
-    with pytest.raises(NotImplementedError):
-        s.show()
-    with pytest.raises(ValueError, match="You must provide an output file"):
-        s._check_output_file()
+    assert s.hemi == "left"
     s._check_output_file("foo.png")
     assert s.output_file == "foo.png"
     s = SurfaceFigure(output_file="bar.png")
     assert s.output_file == "bar.png"
 
 
-def test_surface_figure_add_contours_raises_not_implemented():
-    """Test that calling add_contours method of SurfaceFigure raises a \
-    NotImplementedError.
-    """
+def test_surface_figure_errors():
+    """Test SurfaceFigure class for errors."""
     figure = SurfaceFigure()
     with pytest.raises(NotImplementedError):
         figure.add_contours()
+    with pytest.raises(NotImplementedError):
+        figure.show()
+    with pytest.raises(ValueError, match="You must provide an output file"):
+        figure._check_output_file()
 
 
 @pytest.mark.skipif(
