@@ -88,7 +88,7 @@ LAYOUT = {
 }
 
 
-def _configure_title_plotly(title, font_size, color="black"):
+def _configure_title(title, font_size, color="black"):
     """Help for plot_surf with plotly engine.
 
     This function configures the title if provided.
@@ -172,7 +172,7 @@ def _get_camera_view_from_string_view(hemi, view):
     return CAMERAS[view]
 
 
-def _get_cbar_plotly(
+def _get_cbar(
     colorscale,
     vmin,
     vmax,
@@ -210,7 +210,7 @@ def _get_cbar_plotly(
     return dummy
 
 
-def _get_view_plot_surf_plotly(hemi, view):
+def _get_view_plot_surf(hemi, view):
     """
     Get camera parameters from hemi and view for the plotly engine.
 
@@ -321,7 +321,7 @@ class PlotlyBackend(BaseSurfaceBackend):
         )
         fig_data = [mesh_3d]
         if colorbar:
-            dummy = _get_cbar_plotly(
+            dummy = _get_cbar(
                 colors["colors"],
                 float(colors["vmin"]),
                 float(colors["vmax"]),
@@ -330,11 +330,11 @@ class PlotlyBackend(BaseSurfaceBackend):
             fig_data.append(dummy)
 
         # instantiate plotly figure
-        camera_view = _get_view_plot_surf_plotly(hemi, view)
+        camera_view = _get_view_plot_surf(hemi, view)
         fig = go.Figure(data=fig_data)
         fig.update_layout(
             scene_camera=camera_view,
-            title=_configure_title_plotly(title, title_font_size),
+            title=_configure_title(title, title_font_size),
             **LAYOUT,
         )
 

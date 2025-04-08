@@ -15,10 +15,10 @@ from nilearn.plotting import (
 )
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surface._plotly_backend import (
-    _configure_title_plotly,
+    _configure_title,
     _get_camera_view_from_elevation_and_azimut,
     _get_camera_view_from_string_view,
-    _get_view_plot_surf_plotly,
+    _get_view_plot_surf,
 )
 
 ENGINE = "plotly"
@@ -171,9 +171,9 @@ EXPECTED_CAMERAS_PLOTLY = [
 
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
-def test_get_view_plot_surf_plotly(full_view):
+def test_get_view_plot_surf(full_view):
     hemi, view_name, (elev, azim), expected_camera_view = full_view
-    camera_view = _get_view_plot_surf_plotly(hemi, view_name)
+    camera_view = _get_view_plot_surf(hemi, view_name)
     camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
     camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
         (elev, azim)
@@ -200,28 +200,28 @@ def test_get_view_plot_surf_plotly(full_view):
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        _get_view_plot_surf_plotly(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
-    "hemi,view,f",
+    "hemi,view",
     [
-        ("left", "foo", _get_view_plot_surf_plotly),
-        ("right", "bar", _get_view_plot_surf_plotly),
-        ("both", "lateral", _get_view_plot_surf_plotly),
-        ("both", "medial", _get_view_plot_surf_plotly),
-        ("both", "foo", _get_view_plot_surf_plotly),
+        ("left", "foo"),
+        ("right", "bar"),
+        ("both", "lateral"),
+        ("both", "medial"),
+        ("both", "foo"),
     ],
 )
-def test_get_view_plot_surf_view_errors(hemi, view, f):
+def test_get_view_plot_surf_view_errors(hemi, view):
     with pytest.raises(ValueError, match="Invalid view definition"):
-        f(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
-def test_configure_title_plotly():
-    assert _configure_title_plotly(None, None) == {}
-    assert _configure_title_plotly(None, 22) == {}
-    config = _configure_title_plotly("Test Title", 22, color="green")
+def test_configure_title():
+    assert _configure_title(None, None) == {}
+    assert _configure_title(None, 22) == {}
+    config = _configure_title("Test Title", 22, color="green")
     assert config["text"] == "Test Title"
     assert config["x"] == 0.5
     assert config["y"] == 0.96
