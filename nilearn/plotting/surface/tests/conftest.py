@@ -23,7 +23,7 @@ def pytest_generate_tests(metafunc):
 
 @pytest.fixture
 def engine(request):
-    """Return the list of engines detected by pytest_generate_tests."""
+    """Return each of the engines detected by pytest_generate_tests."""
     return request.param
 
 
