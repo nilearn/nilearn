@@ -40,7 +40,7 @@ def test_surface_figure_errors():
 
 @pytest.mark.skipif(
     is_plotly_installed(),
-    reason=("This test only runs if Plotly is not installed."),
+    reason="This test only runs if Plotly is not installed.",
 )
 def test_plotly_surface_figure_import_error():
     """Test that an ImportError is raised when instantiating \
@@ -52,7 +52,7 @@ def test_plotly_surface_figure_import_error():
 
 @pytest.mark.skipif(
     is_kaleido_installed(),
-    reason=("This test only runs if Plotly is installed, but not kaleido."),
+    reason="This test only runs if Plotly is installed, but not kaleido.",
 )
 def test_plotly_surface_figure_savefig_error(plotly):
     """Test that an ImportError is raised when saving \
@@ -64,7 +64,7 @@ def test_plotly_surface_figure_savefig_error(plotly):
 
 @pytest.mark.skipif(
     not is_kaleido_installed(),
-    reason=("Plotly and/or kaleido not installed; required for this test."),
+    reason="Kaleido not installed; required for this test.",
 )
 def test_plotly_surface_figure(plotly):
     ps = PlotlySurfaceFigure()
@@ -77,11 +77,12 @@ def test_plotly_surface_figure(plotly):
 
 
 @pytest.mark.skipif(
-    not IPYTHON_INSTALLED or not is_kaleido_installed(),
-    reason=(
-        "Plotly, Kaleido and/or IPython is not installed; required for this"
-        " test."
-    ),
+    not IPYTHON_INSTALLED,
+    reason="IPython is not installed; required for this test.",
+)
+@pytest.mark.skipif(
+    not is_kaleido_installed(),
+    reason="Kaleido is not installed; required for this test.",
 )
 @pytest.mark.parametrize("renderer", ["png", "jpeg", "svg"])
 def test_plotly_show(plotly, renderer):
@@ -97,7 +98,7 @@ def test_plotly_show(plotly, renderer):
 
 @pytest.mark.skipif(
     not is_kaleido_installed(),
-    reason=("Plotly and/or kaleido not installed; required for this test."),
+    reason="Kaleido is not installed; required for this test.",
 )
 def test_plotly_savefig(plotly, tmp_path):
     ps = PlotlySurfaceFigure(plotly.Figure(), output_file=tmp_path / "foo.png")
