@@ -18,9 +18,9 @@ from nilearn.plotting._utils import (
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.surface._backend import (
     BaseSurfaceBackend,
-    _check_hemispheres,
-    _check_surf_map,
-    _check_views,
+    check_hemispheres,
+    check_surf_map,
+    check_views,
 )
 from nilearn.surface import load_surf_data
 
@@ -181,7 +181,7 @@ def _compute_surf_map_faces(
         vertex-colour maps.
 
     """
-    surf_map_data = _check_surf_map(surf_map, n_vertices)
+    surf_map_data = check_surf_map(surf_map, n_vertices)
 
     # create face values from vertex values by selected avg methods
     error_message = (
@@ -276,8 +276,8 @@ def _get_view_plot_surf(hemi, view):
     This function checks the selected hemisphere and view, and
     returns elev and azim.
     """
-    _check_views([view])
-    _check_hemispheres([hemi])
+    check_views([view])
+    check_hemispheres([hemi])
     if isinstance(view, str):
         if hemi == "both" and view in ["lateral", "medial"]:
             raise ValueError(

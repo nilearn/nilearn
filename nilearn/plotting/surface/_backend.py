@@ -191,7 +191,7 @@ def _check_hemisphere_is_valid(hemi):
     return hemi in VALID_HEMISPHERES
 
 
-def _check_hemispheres(hemispheres):
+def check_hemispheres(hemispheres):
     """Check whether the hemispheres passed to in plot_img_on_surf are \
     correct.
 
@@ -232,7 +232,7 @@ def _check_view_is_valid(view) -> bool:
     )
 
 
-def _check_views(views) -> list:
+def check_views(views) -> list:
     """Check whether the views passed to in plot_img_on_surf are correct.
 
     Parameters
@@ -260,7 +260,7 @@ def _check_views(views) -> list:
     return views
 
 
-def _check_surf_map(surf_map, n_vertices):
+def check_surf_map(surf_map, n_vertices):
     """Help for plot_surf.
 
     This function checks the dimensions of provided surf_map.
