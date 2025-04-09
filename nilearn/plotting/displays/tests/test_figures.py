@@ -67,6 +67,9 @@ def test_plotly_surface_figure_savefig_error(plotly):
     reason="Kaleido not installed; required for this test.",
 )
 def test_plotly_surface_figure(plotly):
+    """Test ValueError when saving a PlotlySurfaceFigure without specifying
+    output file.
+    """
     ps = PlotlySurfaceFigure()
     assert ps.output_file is None
     assert ps.figure is None
@@ -86,6 +89,7 @@ def test_plotly_surface_figure(plotly):
 )
 @pytest.mark.parametrize("renderer", ["png", "jpeg", "svg"])
 def test_plotly_show(plotly, renderer):
+    """Test PlotlySurfaceFigure.show method."""
     ps = PlotlySurfaceFigure(plotly.Figure())
     assert ps.output_file is None
     assert ps.figure is not None
@@ -101,6 +105,7 @@ def test_plotly_show(plotly, renderer):
     reason="Kaleido is not installed; required for this test.",
 )
 def test_plotly_savefig(plotly, tmp_path):
+    """Test PlotlySurfaceFigure.savefig method."""
     ps = PlotlySurfaceFigure(plotly.Figure(), output_file=tmp_path / "foo.png")
     assert ps.output_file == tmp_path / "foo.png"
     assert ps.figure is not None
@@ -110,9 +115,12 @@ def test_plotly_savefig(plotly, tmp_path):
 
 @pytest.mark.parametrize("input_obj", ["foo", Figure(), ["foo", "bar"]])
 def test_instantiation_error_plotly_surface_figure(plotly, input_obj):
+    """Test if PlotlySurfaceFigure raises TypeError if an object other than
+    :obj:`plotly.Figure` object is specified.
+    """
     with pytest.raises(
         TypeError,
-        match=("`PlotlySurfaceFigure` accepts only plotly figure objects."),
+        match=("`PlotlySurfaceFigure` accepts only plotly.Figure objects."),
     ):
         PlotlySurfaceFigure(input_obj)
 
