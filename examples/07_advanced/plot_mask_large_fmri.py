@@ -58,7 +58,7 @@ from nilearn.datasets import fetch_adhd
 from nilearn.image import concat_imgs
 
 N_SUBJECTS = 6
-N_REGIONS = 6
+N_REGIONS = 4
 
 fmri_data = fetch_adhd(n_subjects=N_SUBJECTS)
 fmri_img = concat_imgs(fmri_data.func)
