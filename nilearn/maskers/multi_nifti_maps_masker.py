@@ -197,11 +197,11 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         %(imgs)s
             Images to process. Each element of the list is a 4D image.
 
-        %(confounds)s
+        %(confounds_multi)s
 
         %(n_jobs)s
 
-        %(sample_mask)s
+        %(sample_mask_multi)s
 
         Returns
         -------
@@ -226,9 +226,19 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
+        elif len(confounds) != len(imgs_list):
+            raise ValueError(
+                f"number of confounds ({len(confounds)}) unequal to "
+                f"number of images ({len(imgs_list)})."
+            )
 
         if sample_mask is None:
             sample_mask = itertools.repeat(None, len(imgs_list))
+        elif len(sample_mask) != len(imgs_list):
+            raise ValueError(
+                f"number of sample_mask ({len(sample_mask)}) unequal to "
+                f"number of images ({len(imgs_list)})."
+            )
 
         func = self._cache(self.transform_single_imgs)
 
@@ -246,8 +256,10 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         ----------
         %(imgs)s
             Images to process. Each element of the list is a 4D image.
-        %(confounds)s
-        %(sample_mask)s
+
+        %(confounds_multi)s
+
+        %(sample_mask_multi)s
 
         Returns
         -------

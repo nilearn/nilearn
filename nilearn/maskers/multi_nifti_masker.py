@@ -391,13 +391,9 @@ class MultiNiftiMasker(NiftiMasker):
             See :ref:`extracting_data`.
             List of imgs file to prepare. One item per subject.
 
-        confounds : :obj:`list` of confounds, default=None
-            List of confounds (2D arrays or filenames pointing to CSV
-            files or pandas DataFrames). Must be of same length than imgs_list.
+        %(confounds_multi)s
 
-        sample_mask : :obj:`list` of sample_mask, default=None
-            List of sample_mask (1D arrays) if scrubbing motion outliers.
-            Must be of same length than imgs_list.
+        %(sample_mask_multi)s
 
                 .. versionadded:: 0.8.0
 
@@ -441,9 +437,19 @@ class MultiNiftiMasker(NiftiMasker):
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
+        elif len(confounds) != len(imgs_list):
+            raise ValueError(
+                f"number of confounds ({len(confounds)}) unequal to "
+                f"number of images ({len(imgs_list)})."
+            )
 
         if sample_mask is None:
             sample_mask = itertools.repeat(None, len(imgs_list))
+        elif len(sample_mask) != len(imgs_list):
+            raise ValueError(
+                f"number of sample_mask ({len(sample_mask)}) unequal to "
+                f"number of images ({len(imgs_list)})."
+            )
 
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason
@@ -499,14 +505,9 @@ class MultiNiftiMasker(NiftiMasker):
             See :ref:`extracting_data`.
             Data to be preprocessed
 
-        confounds : CSV file or 2D :obj:`numpy.ndarray` or \
-                :obj:`pandas.DataFrame`, default=None
-            This parameter is passed to signal.clean. Please see the
-            corresponding documentation for details.
+        %(confounds_multi)s
 
-        sample_mask : :obj:`list` of 1D :obj:`numpy.ndarray`, default=None
-            List of sample_mask (1D arrays) if scrubbing motion outliers.
-            Must be of same length than imgs_list.
+        %(sample_mask_multi)s
 
                 .. versionadded:: 0.8.0
 
