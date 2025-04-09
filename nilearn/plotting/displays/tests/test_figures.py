@@ -54,7 +54,7 @@ def test_plotly_surface_figure_import_error():
     is_kaleido_installed(),
     reason=("This test only runs if Plotly is installed, but not kaleido."),
 )
-def test_plotly_surface_figure_savefig_error():
+def test_plotly_surface_figure_savefig_error(plotly):
     """Test that an ImportError is raised when saving \
        a PlotlySurfaceFigure without having kaleido installed.
     """
@@ -66,7 +66,7 @@ def test_plotly_surface_figure_savefig_error():
     not is_kaleido_installed(),
     reason=("Plotly and/or kaleido not installed; required for this test."),
 )
-def test_plotly_surface_figure():
+def test_plotly_surface_figure(plotly):
     ps = PlotlySurfaceFigure()
     assert ps.output_file is None
     assert ps.figure is None
@@ -84,10 +84,8 @@ def test_plotly_surface_figure():
     ),
 )
 @pytest.mark.parametrize("renderer", ["png", "jpeg", "svg"])
-def test_plotly_show(renderer):
-    import plotly.graph_objects as go
-
-    ps = PlotlySurfaceFigure(go.Figure())
+def test_plotly_show(plotly, renderer):
+    ps = PlotlySurfaceFigure(plotly.Figure())
     assert ps.output_file is None
     assert ps.figure is not None
     with mock.patch("IPython.display.display") as mock_display:
@@ -101,10 +99,8 @@ def test_plotly_show(renderer):
     not is_kaleido_installed(),
     reason=("Plotly and/or kaleido not installed; required for this test."),
 )
-def test_plotly_savefig(tmp_path):
-    import plotly.graph_objects as go
-
-    ps = PlotlySurfaceFigure(go.Figure(), output_file=tmp_path / "foo.png")
+def test_plotly_savefig(plotly, tmp_path):
+    ps = PlotlySurfaceFigure(plotly.Figure(), output_file=tmp_path / "foo.png")
     assert ps.output_file == tmp_path / "foo.png"
     assert ps.figure is not None
     ps.savefig()
