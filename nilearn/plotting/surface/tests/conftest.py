@@ -28,6 +28,17 @@ def engine(request):
 
 
 @pytest.fixture
+def plt(request, engine):
+    """Return the fixture for setup and teardown of test depending on the
+    engine.
+    """
+    if engine == "matplotlib":
+        return request.getfixturevalue("matplotlib_pyplot")
+    elif engine == "plotly":
+        return request.getfixturevalue("plotly")
+
+
+@pytest.fixture
 def bg_map(rng, in_memory_mesh):
     """Return a background map with positive value."""
     return np.abs(rng.standard_normal(size=in_memory_mesh.n_vertices))
