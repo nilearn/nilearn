@@ -451,7 +451,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        mask_img_ : None or 3D nifti
+        mask_img_ : None or SurfaceImage
         """
         if self.mask_img is None:
             return None

@@ -541,6 +541,11 @@ def check_masker_compatibility_mask_image(estimator):
     with pytest.raises(TypeError):
         estimator.transform(image_to_transform)
 
+    if accept_niimg_input(estimator):
+        assert isinstance(estimator.mask_img_, Nifti1Image)
+    else:
+        assert isinstance(estimator.mask_img_, SurfaceImage)
+
 
 def check_masker_clean(estimator):
     """Check that cleaning does something on fit transform.

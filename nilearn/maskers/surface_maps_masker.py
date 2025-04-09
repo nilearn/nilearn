@@ -179,10 +179,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
 
-        # TODO
-        # self.mask_img_ should be a SurfaceImage instance
-        # after fit
-
         self._shelving = False
 
         # initialize reporting content and data
