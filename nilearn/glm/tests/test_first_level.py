@@ -2285,10 +2285,7 @@ def test_flm_fit_surface_image_with_mask(
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    if surf_mask_dim == 1:
-        assert model.masker_.mask_img_.shape == (9,)
-    else:
-        assert model.masker_.mask_img_.shape == (9, 1)
+    assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
