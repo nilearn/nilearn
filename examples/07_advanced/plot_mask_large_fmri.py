@@ -58,7 +58,7 @@ from nilearn.datasets import fetch_adhd
 from nilearn.image import concat_imgs
 
 N_SUBJECTS = 6
-N_REGIONS = 6
+N_REGIONS = 4
 
 fmri_data = fetch_adhd(n_subjects=N_SUBJECTS)
 fmri_img = concat_imgs(fmri_data.func)
@@ -74,11 +74,11 @@ fmri_img.to_filename(fmri_path)
 # %%
 # Create a set of binary masks
 # ----------------------------
-# We will now create 6 binary masks from a brain atlas. Here we will use the
+# We will now create 4 binary masks from a brain atlas. Here we will use the
 # multiscale functional brain parcellations via the
 # :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` function.
 # We will fetch a 64-region version of this atlas and then create separate
-# binary masks for the first 6 regions.
+# binary masks for the first 4 regions.
 
 from nilearn.datasets import fetch_atlas_basc_multiscale_2015
 from nilearn.image import load_img, new_img_like, resample_to_img
