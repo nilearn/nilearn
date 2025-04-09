@@ -330,12 +330,6 @@ def _plot_surf_matplotlib(
             cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
             cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
 
-            # in rare cases where plotting an image of zeroes
-            # this avoids a matplolib error
-            if cbar_vmax == cbar_vmin == 0:
-                cbar_vmax = 1
-                cbar_vmin = -1
-
             ticks = _get_ticks_matplotlib(
                 cbar_vmin, cbar_vmax, cbar_tick_format, threshold
             )
