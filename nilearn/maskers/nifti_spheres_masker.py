@@ -632,18 +632,9 @@ class NiftiSpheresMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
-            default=None
-            This parameter is passed to :func:`nilearn.signal.clean`.
-            Please see the related documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
-            shape: (number of scans - number of volumes removed, )
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -672,18 +663,9 @@ class NiftiSpheresMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
-            default=None
-            This parameter is passed to :func:`nilearn.signal.clean`.
-            Please see the related documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
-            shape: (number of scans - number of volumes removed, )
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 

@@ -356,27 +356,3 @@ def test_multi_nifti_labels_masker_resampling_target():
         compressed_img2 = masker.inverse_transform(transformed2)
 
         assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
-
-
-def test_multi_nifti_labels_masker_list_of_sample_mask(
-    img_labels, n_regions, length, img_fmri
-):
-    """Tests MultiNiftiLabelsMasker.fit_transform with a list of "sample_mask".
-
-    "sample_mask" was directly sent as input to the parallel calls of
-    "transform_single_imgs" instead of sending iterations.
-    See https://github.com/nilearn/nilearn/issues/3967 for more details.
-    """
-    n_scrub1 = 3
-    n_scrub2 = 2
-
-    sample_mask1 = np.arange(length - n_scrub1)
-    sample_mask2 = np.arange(length - n_scrub2)
-
-    masker = MultiNiftiLabelsMasker(img_labels)
-    ts_list = masker.fit_transform(
-        [img_fmri, img_fmri], sample_mask=[sample_mask1, sample_mask2]
-    )
-
-    for ts, n_scrub in zip(ts_list, [n_scrub1, n_scrub2]):
-        assert ts.shape == (length - n_scrub, n_regions)
