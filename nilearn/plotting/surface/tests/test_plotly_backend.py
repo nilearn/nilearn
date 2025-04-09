@@ -1,10 +1,7 @@
 # ruff: noqa: ARG001
 
-from unittest import mock
-
 import numpy as np
 import pytest
-from matplotlib.figure import Figure
 
 from nilearn._utils.helpers import is_kaleido_installed
 from nilearn.plotting import (
@@ -13,7 +10,6 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surface._plotly_backend import (
     _configure_title,
     _get_camera_view_from_elevation_and_azimut,
@@ -27,14 +23,6 @@ pytest.importorskip(
     ENGINE,
     reason="Plotly is not installed. It is required to run the tests!",
 )
-
-try:
-    import IPython.display  # noqa:F401
-except ImportError:
-    IPYTHON_INSTALLED = False
-else:
-    IPYTHON_INSTALLED = True
-
 
 EXPECTED_CAMERAS_PLOTLY = [
     (
@@ -231,76 +219,6 @@ def test_configure_title():
     assert config["font"]["color"] == "green"
 
 
-@pytest.mark.skipif(
-    is_kaleido_installed(),
-    reason=("This test only runs if Plotly is installed, but not kaleido."),
-)
-def test_plotly_surface_figure_savefig_error():
-    """Test that an ImportError is raised when saving \
-       a PlotlySurfaceFigure without having kaleido installed.
-    """
-    with pytest.raises(ImportError, match="`kaleido` is required"):
-        PlotlySurfaceFigure().savefig()
-
-
-@pytest.mark.skipif(
-    not is_kaleido_installed(),
-    reason=("Plotly and/or kaleido not installed; required for this test."),
-)
-def test_plotly_surface_figure():
-    ps = PlotlySurfaceFigure()
-    assert ps.output_file is None
-    assert ps.figure is None
-    ps.show()
-    with pytest.raises(ValueError, match="You must provide an output file"):
-        ps.savefig()
-    ps.savefig("foo.png")
-
-
-@pytest.mark.skipif(
-    not IPYTHON_INSTALLED or not is_kaleido_installed(),
-    reason=(
-        "Plotly, Kaleido and/or Ipython is not installed; required for this"
-        " test."
-    ),
-)
-@pytest.mark.parametrize("renderer", ["png", "jpeg", "svg"])
-def test_plotly_show(renderer):
-    import plotly.graph_objects as go
-
-    ps = PlotlySurfaceFigure(go.Figure())
-    assert ps.output_file is None
-    assert ps.figure is not None
-    with mock.patch("IPython.display.display") as mock_display:
-        ps.show(renderer=renderer)
-    assert len(mock_display.call_args.args) == 1
-    key = "svg+xml" if renderer == "svg" else renderer
-    assert f"image/{key}" in mock_display.call_args.args[0]
-
-
-@pytest.mark.skipif(
-    not is_kaleido_installed(),
-    reason=("Plotly and/or kaleido not installed; required for this test."),
-)
-def test_plotly_savefig(tmp_path):
-    import plotly.graph_objects as go
-
-    ps = PlotlySurfaceFigure(go.Figure(), output_file=tmp_path / "foo.png")
-    assert ps.output_file == tmp_path / "foo.png"
-    assert ps.figure is not None
-    ps.savefig()
-    assert (tmp_path / "foo.png").exists()
-
-
-@pytest.mark.parametrize("input_obj", ["foo", Figure(), ["foo", "bar"]])
-def test_instantiation_error_plotly_surface_figure(plotly, input_obj):
-    with pytest.raises(
-        TypeError,
-        match=("`PlotlySurfaceFigure` accepts only plotly figure objects."),
-    ):
-        PlotlySurfaceFigure(input_obj)
-
-
 def test_value_error_get_faces_on_edge(plotly, in_memory_mesh):
     """Test that calling _get_faces_on_edge raises a ValueError when \
        called with with indices that do not form a region.
@@ -338,11 +256,6 @@ def test_plotly_surface_figure_warns_on_isolated_roi(plotly, in_memory_mesh):
             figure.add_contours(levels=[0], roi_map=np.array([0, 1] * 10))
     except Exception:
         pass
-
-
-def test_distant_line_segments_detected_as_not_intersecting(plotly):
-    """Test that distant lines are detected as not intersecting."""
-    assert not PlotlySurfaceFigure._do_segs_intersect(0, 0, 1, 1, 5, 5, 6, 6)
 
 
 @pytest.mark.parametrize("levels,labels", [([0], ["a", "b"]), ([0, 1], ["a"])])
