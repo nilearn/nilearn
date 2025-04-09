@@ -31,7 +31,7 @@ ENGINE = "matplotlib"
 
 pytest.importorskip(
     ENGINE,
-    reason="Matplotlib is not installed. It is required to run the tests!",
+    reason="Matplotlib is not installed; required to run the tests!",
 )
 
 EXPECTED_VIEW_MATPLOTLIB = {

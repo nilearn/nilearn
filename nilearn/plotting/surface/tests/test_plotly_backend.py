@@ -21,7 +21,7 @@ ENGINE = "plotly"
 
 pytest.importorskip(
     ENGINE,
-    reason="Plotly is not installed. It is required to run the tests!",
+    reason="Plotly is not installed; required to run the tests!",
 )
 
 EXPECTED_CAMERAS_PLOTLY = [
