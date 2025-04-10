@@ -254,19 +254,18 @@ def test_plot_surf_error_when_kaleido_missing(
     tmp_path, in_memory_mesh, bg_map
 ):
     with pytest.raises(ImportError, match="Saving figures"):
-        engine = "plotly"
         # Plot with non None output file
         plot_surf(
             in_memory_mesh,
             bg_map=bg_map,
-            engine=engine,
+            engine=ENGINE,
             output_file=tmp_path / "tmp.png",
         )
 
 
 @pytest.mark.parametrize("kwargs", [{"avg_method": "mean"}, {"alpha": "auto"}])
 def test_plot_surf_warnings_not_implemented_in_plotly(
-    plotly, kwargs, in_memory_mesh, bg_map
+    kwargs, in_memory_mesh, bg_map
 ):
     with pytest.warns(
         UserWarning, match="is not implemented for the plotly engine"
@@ -274,25 +273,24 @@ def test_plot_surf_warnings_not_implemented_in_plotly(
         plot_surf(
             in_memory_mesh,
             surf_map=bg_map,
-            engine="plotly",
+            engine=ENGINE,
             **kwargs,
         )
 
 
-def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
+def test_plot_surf_stat_map_colorbar_tick(in_memory_mesh, bg_map):
     """Change colorbar tick format."""
     plot_surf_stat_map(
         in_memory_mesh,
         stat_map=bg_map,
         cbar_tick_format="%.2g",
-        engine="plotly",
+        engine=ENGINE,
     )
 
 
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
 def test_plot_surf_parcellation_plotly(
-    plotly,
     colorbar,
     surface_image_parcellation,
     cbar_tick_format,
@@ -300,7 +298,7 @@ def test_plot_surf_parcellation_plotly(
     plot_surf_roi(
         surface_image_parcellation.mesh,
         roi_map=surface_image_parcellation,
-        engine="plotly",
+        engine=ENGINE,
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
     )
