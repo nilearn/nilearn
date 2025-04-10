@@ -1,4 +1,3 @@
-# ruff: noqa: ARG001
 from unittest import mock
 
 import numpy as np
@@ -16,12 +15,19 @@ except ImportError:
 else:
     IPYTHON_INSTALLED = True
 
+ENGINE = "plotly"
+
+pytest.importorskip(
+    ENGINE,
+    reason="Plotly is not installed; required to run the tests!",
+)
+
 
 @pytest.mark.skipif(
     is_kaleido_installed(),
     reason="This test only runs if Plotly is installed, but not kaleido.",
 )
-def test_plotly_surface_figure_savefig_error(plotly):
+def test_plotly_surface_figure_savefig_error():
     """Test that an ImportError is raised when saving \
        a PlotlySurfaceFigure without having kaleido installed.
     """
@@ -33,7 +39,7 @@ def test_plotly_surface_figure_savefig_error(plotly):
     not is_kaleido_installed(),
     reason="Kaleido is not installed; required for this test.",
 )
-def test_plotly_surface_figure(plotly):
+def test_plotly_surface_figure():
     """Test ValueError when saving a PlotlySurfaceFigure without specifying
     output file.
     """
@@ -57,7 +63,7 @@ def test_plotly_surface_figure(plotly):
 @pytest.mark.parametrize("renderer", ["png", "jpeg", "svg"])
 def test_plotly_show(plotly, renderer):
     """Test PlotlySurfaceFigure.show method."""
-    ps = PlotlySurfaceFigure(plotly.Figure())
+    ps = PlotlySurfaceFigure(plotly.graph_objects.Figure())
     assert ps.output_file is None
     assert ps.figure is not None
     with mock.patch("IPython.display.display") as mock_display:
@@ -73,7 +79,8 @@ def test_plotly_show(plotly, renderer):
 )
 def test_plotly_savefig(plotly, tmp_path):
     """Test PlotlySurfaceFigure.savefig method."""
-    ps = PlotlySurfaceFigure(plotly.Figure(), output_file=tmp_path / "foo.png")
+    figure = plotly.graph_objects.Figure()
+    ps = PlotlySurfaceFigure(figure, output_file=tmp_path / "foo.png")
     assert ps.output_file == tmp_path / "foo.png"
     assert ps.figure is not None
     ps.savefig()
@@ -81,7 +88,7 @@ def test_plotly_savefig(plotly, tmp_path):
 
 
 @pytest.mark.parametrize("input_obj", ["foo", Figure(), ["foo", "bar"]])
-def test_instantiation_error_plotly_surface_figure(plotly, input_obj):
+def test_instantiation_error_plotly_surface_figure(input_obj):
     """Test if PlotlySurfaceFigure raises TypeError if an object other than
     :obj:`plotly.Figure` object is specified.
     """
@@ -92,25 +99,25 @@ def test_instantiation_error_plotly_surface_figure(plotly, input_obj):
         PlotlySurfaceFigure(input_obj)
 
 
-def test_distant_line_segments_detected_as_not_intersecting(plotly):
+def test_distant_line_segments_detected_as_not_intersecting():
     """Test that distant lines are detected as not intersecting."""
     assert not PlotlySurfaceFigure._do_segs_intersect(0, 0, 1, 1, 5, 5, 6, 6)
 
 
-def test_value_error_get_faces_on_edge(plotly, in_memory_mesh):
+def test_value_error_get_faces_on_edge(in_memory_mesh):
     """Test that calling _get_faces_on_edge raises a ValueError when \
        called with with indices that do not form a region.
     """
-    figure = plot_surf(in_memory_mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine=ENGINE)
     with pytest.raises(
         ValueError, match=("Vertices in parcellation do not form region.")
     ):
         figure._get_faces_on_edge([91])
 
 
-def test_plotly_surface_figure_warns_on_isolated_roi(plotly, in_memory_mesh):
+def test_plotly_surface_figure_warns_on_isolated_roi(in_memory_mesh):
     """Test that a warning is generated for ROIs with isolated vertices."""
-    figure = plot_surf(in_memory_mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine=ENGINE)
     # the method raises an error because the (randomly generated)
     # vertices don't form regions
     try:
@@ -122,12 +129,12 @@ def test_plotly_surface_figure_warns_on_isolated_roi(plotly, in_memory_mesh):
 
 @pytest.mark.parametrize("levels,labels", [([0], ["a", "b"]), ([0, 1], ["a"])])
 def test_value_error_add_contours_levels_labels(
-    plotly, levels, labels, in_memory_mesh
+    levels, labels, in_memory_mesh
 ):
     """Test that add_contours raises a ValueError when called with levels and \
     labels that have incompatible lengths.
     """
-    figure = plot_surf(in_memory_mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine=ENGINE)
     with pytest.raises(
         ValueError,
         match=("levels and labels need to be either the same length or None."),
@@ -141,13 +148,11 @@ def test_value_error_add_contours_levels_labels(
     "levels,lines",
     [([0], [{}, {}]), ([0, 1], [{}, {}, {}])],
 )
-def test_value_error_add_contours_levels_lines(
-    plotly, levels, lines, in_memory_mesh
-):
+def test_value_error_add_contours_levels_lines(levels, lines, in_memory_mesh):
     """Test that add_contours raises a ValueError when called with levels and \
     lines that have incompatible lengths.
     """
-    figure = plot_surf(in_memory_mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine=ENGINE)
     with pytest.raises(
         ValueError,
         match=("levels and lines need to be either the same length or None."),
@@ -155,9 +160,9 @@ def test_value_error_add_contours_levels_lines(
         figure.add_contours(levels=levels, lines=lines, roi_map=np.ones((10,)))
 
 
-def test_add_contours(plotly, surface_image_roi):
+def test_add_contours(surface_image_roi):
     """Test that add_contours updates data in PlotlySurfaceFigure."""
-    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure = plot_surf(surface_image_roi.mesh, engine=ENGINE)
     figure.add_contours(surface_image_roi)
     assert len(figure.figure.to_dict().get("data")) == 4
 
@@ -166,11 +171,7 @@ def test_add_contours(plotly, surface_image_roi):
 
 
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
-def test_add_contours_hemi(
-    plotly,
-    surface_image_roi,
-    hemi,
-):
+def test_add_contours_hemi(surface_image_roi, hemi):
     """Test that add_contours works with all hemi inputs."""
     if hemi == "both":
         n_vertices = surface_image_roi.mesh.n_vertices
@@ -178,33 +179,31 @@ def test_add_contours_hemi(
         n_vertices = surface_image_roi.data.parts[hemi].shape[0]
     figure = plot_surf(
         surface_image_roi.mesh,
-        engine="plotly",
+        engine=ENGINE,
         hemi=hemi,
     )
     figure.add_contours(surface_image_roi)
     assert figure._coords.shape[0] == n_vertices
 
 
-def test_add_contours_plotly_surface_image(plotly, surface_image_roi):
+def test_add_contours_plotly_surface_image(surface_image_roi):
     """Test that add_contours works with SurfaceImage."""
-    figure = plot_surf(
-        surf_map=surface_image_roi, hemi="left", engine="plotly"
-    )
+    figure = plot_surf(surf_map=surface_image_roi, hemi="left", engine=ENGINE)
     figure.add_contours(roi_map=surface_image_roi)
 
 
-def test_add_contours_has_name(plotly, surface_image_roi):
+def test_add_contours_has_name(surface_image_roi):
     """Test that contours added to a PlotlySurfaceFigure can be named."""
-    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure = plot_surf(surface_image_roi.mesh, engine=ENGINE)
     figure.add_contours(surface_image_roi, levels=[1], labels=["x"])
     assert figure.figure.to_dict().get("data")[2].get("name") == "x"
 
 
-def test_add_contours_lines_duplicated(plotly, surface_image_roi):
+def test_add_contours_lines_duplicated(surface_image_roi):
     """Test that the specifications of length 1 line provided to \
      add_contours are duplicated to all requested contours.
     """
-    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure = plot_surf(surface_image_roi.mesh, engine=ENGINE)
     figure.add_contours(surface_image_roi, lines=[{"width": 10}])
     newlines = figure.figure.to_dict().get("data")[2:]
     assert all(x.get("line").__contains__("width") for x in newlines)
@@ -217,11 +216,11 @@ def test_add_contours_lines_duplicated(plotly, surface_image_roi):
         ("width", 10),
     ],
 )
-def test_add_contours_line_properties(plotly, key, value, surface_image_roi):
+def test_add_contours_line_properties(key, value, surface_image_roi):
     """Test that the specifications of a line provided to add_contours are \
     stored in the PlotlySurfaceFigure data.
     """
-    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
+    figure = plot_surf(surface_image_roi.mesh, engine=ENGINE)
     figure.add_contours(surface_image_roi, levels=[1], lines=[{key: value}])
     newline = figure.figure.to_dict().get("data")[2].get("line")
     assert newline.get(key) == value
