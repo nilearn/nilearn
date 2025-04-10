@@ -64,7 +64,7 @@ def test_plotly_surface_figure_savefig_error(plotly):
 
 @pytest.mark.skipif(
     not is_kaleido_installed(),
-    reason="Kaleido not installed; required for this test.",
+    reason="Kaleido is not installed; required for this test.",
 )
 def test_plotly_surface_figure(plotly):
     """Test ValueError when saving a PlotlySurfaceFigure without specifying
