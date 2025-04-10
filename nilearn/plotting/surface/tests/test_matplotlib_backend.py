@@ -3,7 +3,6 @@
 import re
 import tempfile
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
@@ -216,9 +215,9 @@ def test_compute_facecolors_deprecation():
         )
 
 
-def test_surface_plotting_axes_error(surf_img_1d):
+def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     """Test error msg for invalid axes."""
-    figure, axes = plt.subplots()
+    figure, axes = matplotlib_pyplot.subplots()
     with pytest.raises(AttributeError, match="the projection must be '3d'"):
         plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
 
@@ -257,7 +256,9 @@ def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
         vmax = np.max(agg_faces)
         agg_faces -= vmin
         agg_faces /= vmax - vmin
-        cmap = plt.get_cmap(plt.rcParamsDefault["image.cmap"])
+        cmap = matplotlib_pyplot.get_cmap(
+            matplotlib_pyplot.rcParamsDefault["image.cmap"]
+        )
         assert_array_equal(
             cmap(agg_faces),
             display._axstack.as_list()[0].collections[0]._facecolors,
@@ -343,10 +344,14 @@ def test_plot_surf_stat_map_matplotlib_specific(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
     # Plot to axes
-    axes = plt.subplots(ncols=2, subplot_kw={"projection": "3d"})[1]
+    axes = matplotlib_pyplot.subplots(
+        ncols=2, subplot_kw={"projection": "3d"}
+    )[1]
     for ax in axes.flatten():
         plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, axes=ax)
-    axes = plt.subplots(ncols=2, subplot_kw={"projection": "3d"})[1]
+    axes = matplotlib_pyplot.subplots(
+        ncols=2, subplot_kw={"projection": "3d"}
+    )[1]
     for ax in axes.flatten():
         plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, axes=ax)
 
@@ -404,7 +409,7 @@ def test_plot_surf_roi_matplotlib_specific(
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
-        engine="matplotlib",
+        engine=ENGINE,
     )
     img.canvas.draw()
     cbar = img.axes[-1]
@@ -421,7 +426,7 @@ def test_plot_surf_roi_matplotlib_specific(
         vmax=8.9,
         colorbar=True,
         cbar_tick_format="%.2g",
-        engine="matplotlib",
+        engine=ENGINE,
     )
     img2.canvas.draw()
     cbar = img2.axes[-1]
@@ -441,7 +446,7 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     img = plot_surf_roi(
         surface_image_parcellation.mesh,
         roi_map=surface_image_parcellation,
-        engine="matplotlib",
+        engine=ENGINE,
         hemi="left",
     )
     # Check that the resulting plot facecolors contain no transparent faces
@@ -460,11 +465,11 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
         surface_image_roi.mesh,
         roi_map=surface_image_roi,
         axes=None,
-        figure=plt.gcf(),
+        figure=matplotlib_pyplot.gcf(),
         engine=ENGINE,
     )
 
-    _, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    _, ax = matplotlib_pyplot.subplots(subplot_kw={"projection": "3d"})
 
     with tempfile.NamedTemporaryFile() as tmp_file:
         plot_surf_roi(
@@ -491,12 +496,16 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
 def test_plot_surf_contours_fig_axes(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
-    fig, axes = plt.subplots(1, 1, subplot_kw={"projection": "3d"})
+    fig, axes = matplotlib_pyplot.subplots(
+        1, 1, subplot_kw={"projection": "3d"}
+    )
     plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
     plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
 
 
-def test_plot_surf_contours_error(rng, in_memory_mesh, parcellation):
+def test_plot_surf_contours_error(
+    matplotlib_pyplot, rng, in_memory_mesh, parcellation
+):
     # we need an invalid parcellation for testing
     invalid_parcellation = rng.uniform(size=(in_memory_mesh.n_vertices))
     with pytest.raises(
@@ -504,7 +513,7 @@ def test_plot_surf_contours_error(rng, in_memory_mesh, parcellation):
     ):
         plot_surf_contours(in_memory_mesh, invalid_parcellation)
 
-    _, axes = plt.subplots(1, 1)
+    _, axes = matplotlib_pyplot.subplots(1, 1)
     with pytest.raises(ValueError, match="Axes must be 3D."):
         plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
 
