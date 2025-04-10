@@ -98,7 +98,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
 
         if figure is not None and not isinstance(figure, go.Figure):
             raise TypeError(
-                "`PlotlySurfaceFigure` accepts only plotly.Figure objects."
+                "`PlotlySurfaceFigure` accepts only plotly Figure objects."
             )
         super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 

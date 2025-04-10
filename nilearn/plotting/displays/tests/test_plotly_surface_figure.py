@@ -90,11 +90,11 @@ def test_plotly_savefig(plotly, tmp_path):
 @pytest.mark.parametrize("input_obj", ["foo", Figure(), ["foo", "bar"]])
 def test_instantiation_error_plotly_surface_figure(input_obj):
     """Test if PlotlySurfaceFigure raises TypeError if an object other than
-    :obj:`plotly.Figure` object is specified.
+    :obj:`plotly Figure` object is specified.
     """
     with pytest.raises(
         TypeError,
-        match=("`PlotlySurfaceFigure` accepts only plotly.Figure objects."),
+        match=("`PlotlySurfaceFigure` accepts only plotly Figure objects."),
     ):
         PlotlySurfaceFigure(input_obj)
 
