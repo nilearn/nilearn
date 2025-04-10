@@ -1,3 +1,4 @@
+"""Test nilearn.plotting.surface._plotly_backend functions."""
 # ruff: noqa: ARG001
 
 import numpy as np
@@ -160,6 +161,9 @@ EXPECTED_CAMERAS_PLOTLY = [
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf(full_view):
+    """Test nilearn.plotting.surface._plotly_backend._get_view_plot_surf
+    returns expected values.
+    """
     hemi, view_name, (elev, azim), expected_camera_view = full_view
     camera_view = _get_view_plot_surf(hemi, view_name)
     camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
@@ -187,6 +191,9 @@ def test_get_view_plot_surf(full_view):
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
+    """Test nilearn.plotting.surface._plotly_backend._get_view_plot_surf
+    for invalid hemispheres.
+    """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
         _get_view_plot_surf(hemi, view)
 
@@ -202,11 +209,15 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     ],
 )
 def test_get_view_plot_surf_view_errors(hemi, view):
+    """Test nilearn.plotting.surface._plotly_backend._get_view_plot_surf
+    for invalid views.
+    """
     with pytest.raises(ValueError, match="Invalid view definition"):
         _get_view_plot_surf(hemi, view)
 
 
 def test_configure_title():
+    """Test nilearn.plotting.surface._plotly_backend._configure_title."""
     assert _configure_title(None, None) == {}
     assert _configure_title(None, 22) == {}
     config = _configure_title("Test Title", 22, color="green")
@@ -220,15 +231,15 @@ def test_configure_title():
 
 
 def test_plot_surf_contours_errors_with_plotly_figure(in_memory_mesh):
-    """Test that plot_surf_contours rasises error when given plotly obj."""
+    """Test that plot_surf_contours raises error when given plotly obj."""
     figure = plot_surf(in_memory_mesh, engine=ENGINE)
     with pytest.raises(ValueError):
         plot_surf_contours(in_memory_mesh, np.ones((10,)), figure=figure)
 
 
 def test_plot_surf_contours_errors_with_plotly_axes(in_memory_mesh):
-    """Test that plot_surf_contours rasises error when given plotly \
-        obj as axis.
+    """Test that plot_surf_contours raises error when given plotly obj as
+    axis.
     """
     figure = plot_surf(in_memory_mesh, engine=ENGINE)
     with pytest.raises(ValueError):
