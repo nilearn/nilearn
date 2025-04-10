@@ -194,10 +194,10 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
        `<https://github.com/nipreps/fmriprep-notebooks/>`_
 
        .. attention::
-            The `--use-aroma` option is deprecated in :term:`fMRIPrep`
-            version 23.2.3 and no longer works since version 24.0.0.
-            See `fmripost-aroma docs <https://fmripost-aroma.readthedocs.io/latest/usage.html>`_
-            for the new ICA-AROMA implementation.
+            Since version 24.0.0 `fMRIPrep` does not perform ICA-AROMA anymore.
+            This feature has been replaced by `fmripost-aroma <https://fmripost-aroma.readthedocs.io/latest/usage.html>`_
+            and consequently the suffixes of files produced by `fmripost-aroma`
+            may differ from the ones produced by `fMRIPrep < 24.0.0`.
 
 
     See Also
