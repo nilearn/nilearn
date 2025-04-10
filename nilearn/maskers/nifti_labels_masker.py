@@ -589,16 +589,7 @@ class NiftiLabelsMasker(BaseMasker):
                     for i, region_id in enumerate(initial_region_ids)
                 }
 
-        if self.mask_img is not None:
-            repr = _utils.repr_niimgs(
-                self.mask_img, shorten=(not self.verbose)
-            )
-            msg = f"loading data from {repr}"
-            logger.log(msg=msg, verbose=self.verbose)
-            self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
-
-        else:
-            self.mask_img_ = None
+        self.mask_img_ = self._load_mask(imgs)
 
         # Check shapes and affines or resample.
         if self.mask_img_ is not None:

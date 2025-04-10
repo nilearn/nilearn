@@ -14,9 +14,6 @@ from nilearn._utils import (
     check_niimg_4d,
     fill_doc,
 )
-from nilearn._utils.masker_validation import (
-    check_compatibility_mask_and_images,
-)
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_same_fov
@@ -30,7 +27,6 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.maskers import NiftiMapsMasker
-from nilearn.masking import load_mask_img
 
 
 def _threshold_maps_ratio(maps_img, threshold):
@@ -454,11 +450,7 @@ class RegionExtractor(NiftiMapsMasker):
         maps_img = check_niimg_4d(self.maps_img)
 
         # Check mask
-        if self.mask_img is not None:
-            if X is not None:
-                check_compatibility_mask_and_images(self.mask_img, X)
-            self.mask_img = check_niimg_3d(self.mask_img)
-            load_mask_img(self.mask_img)
+        self._load_mask(X)
 
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
         if self.thresholding_strategy not in list_of_strategies:
