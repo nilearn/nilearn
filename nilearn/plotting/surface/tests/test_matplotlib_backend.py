@@ -236,7 +236,9 @@ def test_compute_facecolors_deprecation():
 
 
 def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
-    """Check title in figure."""
+    """Test if figure title is set correctly in
+    nilearn.plotting.surface.surf_plotting.plot_surf.
+    """
     display = plot_surf(
         in_memory_mesh, bg_map=bg_map, title="Test title", engine=ENGINE
     )
@@ -246,6 +248,9 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
 
 
 def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf for different
+    values of avg_method.
+    """
     # Plot with avg_method
     # Test all built-in methods and check
     faces = in_memory_mesh.faces
@@ -290,6 +295,9 @@ def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
 
 
 def test_plot_surf_avg_method_errors(in_memory_mesh, bg_map):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf for invalid
+    values of avg_method.
+    """
     with pytest.raises(
         ValueError,
         match=(
