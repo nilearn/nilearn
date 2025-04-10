@@ -243,7 +243,7 @@ authors:
   - given-names: Fabian
     family-names: Pedregosa
     website: https://github.com/fabianp
-    affiliation: "@google, Geneva, Switzerland"
+    affiliation: '@google, Geneva, Switzerland'
     orcid: https://orcid.org/0000-0003-4025-3953
   - given-names: Florent
     family-names: Pollet
@@ -543,7 +543,7 @@ authors:
   - given-names: Natasha
     family-names: Clarke
     website: https://github.com/clarkenj
-    affiliation: "@SIMEXP, Montréal, Canada"
+    affiliation: '@SIMEXP, Montréal, Canada'
   - given-names: Neelay
     family-names: Shah
     website: https://github.com/NeelayS
@@ -631,7 +631,7 @@ authors:
   - given-names: Robert
     family-names: Luke
     website: https://github.com/rob-luke
-    affiliation: "@agencyenterprise, Melbourne, Australia"
+    affiliation: '@agencyenterprise, Melbourne, Australia'
     orcid: https://orcid.org/0000-0002-4930-8351
   - given-names: Robert
     family-names: Williamson
@@ -682,7 +682,7 @@ authors:
     family-names: Kim
     website: https://github.com/kimsin98
     orcid: https://orcid.org/0000-0003-4652-3758
-    affiliation: "Korea Advanced Institute of Science and Technology: Daejeon, KR"
+    affiliation: 'Korea Advanced Institute of Science and Technology: Daejeon, KR'
   - given-names: Sourav
     family-names: Singh
     website: https://github.com/souravsingh
