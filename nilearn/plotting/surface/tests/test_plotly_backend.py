@@ -1,5 +1,4 @@
 """Test nilearn.plotting.surface._plotly_backend functions."""
-# ruff: noqa: ARG001
 
 import numpy as np
 import pytest
@@ -301,32 +300,4 @@ def test_plot_surf_parcellation_plotly(
         engine=ENGINE,
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
-    )
-
-
-@pytest.mark.parametrize(
-    "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
-)
-def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
-    matplotlib_pyplot, kwargs, in_memory_mesh
-):
-    """See issue https://github.com/nilearn/nilearn/issues/3944."""
-    roi_map = np.arange(0, len(in_memory_mesh.coordinates))
-
-    mpl_plot = plot_surf_roi(
-        in_memory_mesh,
-        roi_map=roi_map,
-        colorbar=True,
-        engine="matplotlib",
-        **kwargs,
-    )
-    plotly_plot = plot_surf_roi(
-        in_memory_mesh,
-        roi_map=roi_map,
-        colorbar=True,
-        engine="plotly",
-        **kwargs,
-    )
-    assert (
-        mpl_plot.axes[-1].get_ylim()[0] == plotly_plot.figure.data[1]["cmin"]
     )

@@ -596,6 +596,34 @@ def test_plot_surf_roi_default_arguments(
 
 
 @pytest.mark.parametrize(
+    "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
+)
+def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
+    matplotlib_pyplot, plotly, kwargs, in_memory_mesh
+):
+    """See issue https://github.com/nilearn/nilearn/issues/3944."""
+    roi_map = np.arange(0, len(in_memory_mesh.coordinates))
+
+    mpl_plot = plot_surf_roi(
+        in_memory_mesh,
+        roi_map=roi_map,
+        colorbar=True,
+        engine="matplotlib",
+        **kwargs,
+    )
+    plotly_plot = plot_surf_roi(
+        in_memory_mesh,
+        roi_map=roi_map,
+        colorbar=True,
+        engine="plotly",
+        **kwargs,
+    )
+    assert (
+        mpl_plot.axes[-1].get_ylim()[0] == plotly_plot.figure.data[1]["cmin"]
+    )
+
+
+@pytest.mark.parametrize(
     "function",
     [plot_surf_roi, plot_surf_stat_map, plot_surf_contours, plot_surf],
 )
