@@ -14,6 +14,9 @@ from nilearn._utils import (
     check_niimg_4d,
     fill_doc,
 )
+from nilearn._utils.helpers import (
+    rename_parameters,
+)
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -444,9 +447,10 @@ class RegionExtractor(NiftiMapsMasker):
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit(
         self,
-        X=None,
+        imgs=None,
         y=None,  # noqa: ARG002
     ):
         """Prepare the data and setup for the region extraction."""
@@ -455,8 +459,8 @@ class RegionExtractor(NiftiMapsMasker):
 
         # Check mask
         if self.mask_img is not None:
-            if X is not None:
-                check_compatibility_mask_and_images(self.mask_img, X)
+            if imgs is not None:
+                check_compatibility_mask_and_images(self.mask_img, imgs)
             self.mask_img = check_niimg_3d(self.mask_img)
             load_mask_img(self.mask_img)
 
