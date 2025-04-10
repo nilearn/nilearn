@@ -160,7 +160,7 @@ EXPECTED_CAMERAS_PLOTLY = [
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf(full_view):
-    """Test nilearn.plotting.surface._plotly_backend._get_view_plot_surf
+    """Test if nilearn.plotting.surface._plotly_backend._get_view_plot_surf
     returns expected values.
     """
     hemi, view_name, (elev, azim), expected_camera_view = full_view
@@ -191,7 +191,7 @@ def test_get_view_plot_surf(full_view):
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     """Test nilearn.plotting.surface._plotly_backend._get_view_plot_surf
-    for invalid hemispheres.
+    for invalid hemisphere values.
     """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
         _get_view_plot_surf(hemi, view)
@@ -209,7 +209,7 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
 )
 def test_get_view_plot_surf_view_errors(hemi, view):
     """Test nilearn.plotting.surface._plotly_backend._get_view_plot_surf
-    for invalid views.
+    for invalid view values.
     """
     with pytest.raises(ValueError, match="Invalid view definition"):
         _get_view_plot_surf(hemi, view)
@@ -266,6 +266,10 @@ def test_plot_surf_error_when_kaleido_missing(
 def test_plot_surf_warnings_not_implemented_in_plotly(
     kwargs, in_memory_mesh, bg_map
 ):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf raises error
+    when a parameter that is not supported by plotly is specified with a
+    value other than None.
+    """
     with pytest.warns(
         UserWarning, match="is not implemented for the plotly engine"
     ):

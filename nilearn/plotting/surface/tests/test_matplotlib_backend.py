@@ -65,7 +65,7 @@ EXPECTED_VIEW_MATPLOTLIB = {
 
 @pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
 def test_get_view_plot_surf(hemi, views):
-    """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
+    """Test if nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
     returns expected values.
     """
     for v in views:
@@ -77,7 +77,7 @@ def test_get_view_plot_surf(hemi, views):
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
-    for invalid hemispheres.
+    for invalid hemisphere values.
     """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
         _get_view_plot_surf(hemi, view)
@@ -95,7 +95,7 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
 )
 def test_get_view_plot_surf_view_errors(hemi, view):
     """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
-    for invalid views.
+    for invalid view values.
     """
     with pytest.raises(ValueError, match="Invalid view definition"):
         _get_view_plot_surf(hemi, view)
@@ -109,7 +109,7 @@ def test_get_view_plot_surf_view_errors(hemi, view):
     ],
 )
 def test_get_bounds(data, expected):
-    """Test nilearn.plotting.surface._matplotlib_backend._get_bounds
+    """Test if nilearn.plotting.surface._matplotlib_backend._get_bounds
     returns expected values.
     """
     assert _get_bounds(data) == expected
@@ -135,7 +135,7 @@ def test_get_bounds(data, expected):
     ],
 )
 def test_get_ticks(vmin, vmax, cbar_tick_format, expected):
-    """Test nilearn.plotting.surface._matplotlib_backend._get_ticks
+    """Test if nilearn.plotting.surface._matplotlib_backend._get_ticks
     returns expected values.
     """
     ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold=None)
@@ -148,7 +148,7 @@ def test_get_ticks(vmin, vmax, cbar_tick_format, expected):
 
 
 def test_compute_facecolors():
-    """Test nilearn.plotting.surface._matplotlib_backend._compute_facecolors
+    """Test if nilearn.plotting.surface._matplotlib_backend._compute_facecolors
     returns expected values.
     """
     fsaverage = fetch_surf_fsaverage()
@@ -248,7 +248,7 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
 
 
 def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
-    """Test nilearn.plotting.surface.surf_plotting.plot_surf for different
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf for valid
     values of avg_method.
     """
     # Plot with avg_method
@@ -367,6 +367,10 @@ def test_plot_surf_avg_method_errors(in_memory_mesh, bg_map):
 def test_plot_surf_warnings_not_implemented_in_matplotlib(
     kwargs, in_memory_mesh, bg_map
 ):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf raises error
+    when a parameter that is not supported by matplotlib is specified with a
+    value other than None.
+    """
     with pytest.warns(
         UserWarning, match="is not implemented for the matplotlib engine"
     ):

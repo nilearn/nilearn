@@ -1,3 +1,5 @@
+"""Test nilearn.plotting.displays._figures.SurfaceFigure."""
+
 import pytest
 
 from nilearn._utils.helpers import is_plotly_installed
