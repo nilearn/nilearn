@@ -1,4 +1,4 @@
-# Tests for functions in surf_plotting.py
+"""Test nilearn.plotting.surface.surf_plotting functions."""
 
 # ruff: noqa: ARG001
 
@@ -64,6 +64,7 @@ def test_plot_surf_contours_warning_hemi(in_memory_mesh):
 
 
 def test_plot_surf_engine_error(in_memory_mesh):
+    """Test error if unknown engine is specified."""
     with pytest.raises(ValueError, match="Unknown plotting engine"):
         plot_surf(in_memory_mesh, engine="foo")
 
@@ -73,11 +74,15 @@ def test_plot_surf_engine_error(in_memory_mesh):
     reason="This test is run only if plotly is not installed.",
 )
 def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
+    """Test error if plotly is not installed but specified as engine."""
     with pytest.raises(ImportError, match="Using engine"):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
+    available engine backends.
+    """
     # to avoid extra warnings
     alpha = None
     cbar_vmin = None
@@ -140,6 +145,9 @@ def test_plot_surf_swap_hemi(plt, engine, surf_img_1d, hemi, flip_surf_img):
 
 
 def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
+    """Check error if invalid parameters values are specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf.
+    """
     # Wrong inputs for view or hemi
     with pytest.raises(ValueError, match="Invalid view definition"):
         plot_surf(in_memory_mesh, view="middle", engine=engine)

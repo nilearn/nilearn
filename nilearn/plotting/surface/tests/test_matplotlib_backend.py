@@ -1,3 +1,5 @@
+"""Test nilearn.plotting.surface._matplotlib_backend functions."""
+
 # ruff: noqa: ARG001
 
 import re
@@ -63,6 +65,9 @@ EXPECTED_VIEW_MATPLOTLIB = {
 
 @pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
 def test_get_view_plot_surf(hemi, views):
+    """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
+    returns expected values.
+    """
     for v in views:
         assert (
             _get_view_plot_surf(hemi, v) == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
@@ -71,6 +76,9 @@ def test_get_view_plot_surf(hemi, views):
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
+    """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
+    for invalid hemispheres.
+    """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
         _get_view_plot_surf(hemi, view)
 
@@ -86,6 +94,9 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     ],
 )
 def test_get_view_plot_surf_view_errors(hemi, view):
+    """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
+    for invalid views.
+    """
     with pytest.raises(ValueError, match="Invalid view definition"):
         _get_view_plot_surf(hemi, view)
 
@@ -98,6 +109,9 @@ def test_get_view_plot_surf_view_errors(hemi, view):
     ],
 )
 def test_get_bounds(data, expected):
+    """Test nilearn.plotting.surface._matplotlib_backend._get_bounds
+    returns expected values.
+    """
     assert _get_bounds(data) == expected
     assert _get_bounds(data, vmin=0.2) == (0.2, expected[1])
     assert _get_bounds(data, vmax=0.8) == (expected[0], 0.8)
@@ -121,6 +135,9 @@ def test_get_bounds(data, expected):
     ],
 )
 def test_get_ticks(vmin, vmax, cbar_tick_format, expected):
+    """Test nilearn.plotting.surface._matplotlib_backend._get_ticks
+    returns expected values.
+    """
     ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold=None)
     assert 1 <= len(ticks) <= 5
     assert ticks[0] == vmin and ticks[-1] == vmax
@@ -131,6 +148,9 @@ def test_get_ticks(vmin, vmax, cbar_tick_format, expected):
 
 
 def test_compute_facecolors():
+    """Test nilearn.plotting.surface._matplotlib_backend._compute_facecolors
+    returns expected values.
+    """
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_left"])
     alpha = "auto"
