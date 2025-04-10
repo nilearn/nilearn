@@ -1,3 +1,5 @@
+"""Test nilearn.plotting.displays.PlotlySurfaceFigure."""
+
 from unittest import mock
 
 import numpy as np
