@@ -13,7 +13,9 @@ import datetime
 import uuid
 import warnings
 from html import escape
+from pathlib import Path
 from string import Template
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -233,6 +235,8 @@ def make_glm_report(
     output = None
     if contrasts is None:
         output = model._reporting_data.get("filenames", None)
+        if output is not None and output["use_absolute_path"]:
+            output = _turn_into_full_path(output, output["dir"])
 
     design_matrices = None
     mask_plot = None
@@ -259,8 +263,9 @@ def make_glm_report(
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
+        # We try to rely on the content of glm object only
+        # by reading images from disk rarther than recomputing them
         if output is not None:
-            # we try to rely on the content of glm object only
             try:
                 statistical_maps = {
                     contrast_name: output["dir"]
@@ -396,6 +401,22 @@ def make_glm_report(
     report.resize(*report_dims)
 
     return report
+
+
+def _turn_into_full_path(bunch, dir: Path) -> Union[str, tempita.bunch]:
+    """Recursively turns str values of a dict into path.
+
+    Used to turn relative paths into full paths.
+    """
+    if isinstance(bunch, str) and not bunch.startswith(str(dir)):
+        return str(dir / bunch)
+    tmp = tempita.bunch()
+    for k in bunch:
+        if isinstance(bunch[k], (dict, str, tempita.bunch)):
+            tmp[k] = _turn_into_full_path(bunch[k], dir)
+        else:
+            tmp[k] = bunch[k]
+    return tmp
 
 
 def _glm_model_attributes_to_dataframe(model):

@@ -433,10 +433,11 @@ class BaseGLM(CacheMixin, BaseEstimator):
         entities_to_include.extend(["contrast", "stat"])
 
         mask = _generate_mask(
-            prefix, generate_bids_name, entities, entities_to_include
+            self, prefix, generate_bids_name, entities, entities_to_include
         )
 
         statistical_maps = _generate_statistical_maps(
+            self,
             prefix,
             contrasts,
             contrast_types,
@@ -478,6 +479,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         # to better standardize naming
         self._reporting_data["filenames"] = {
             "dir": out_dir,
+            "use_absolute_path": False,
             "mask": mask,
             "design_matrices_dict": design_matrices_dict,
             "contrasts_dict": contrasts_dict,
@@ -487,16 +489,20 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
 
 def _generate_mask(
+    model,
     prefix: str,
     generate_bids_name: bool,
     entities,
     entities_to_include: list[str],
 ):
     """Return filename for GLM mask."""
+    extension = "gii"
+    if model._is_volume_glm():
+        extension = "nii.gz"
     fields = {
         "prefix": prefix,
         "suffix": "mask",
-        "extension": "nii.gz",
+        "extension": extension,
         "entities": deepcopy(entities),
     }
     fields["entities"].pop("run", None)
@@ -509,6 +515,7 @@ def _generate_mask(
 
 
 def _generate_statistical_maps(
+    model,
     prefix: str,
     contrasts,
     contrast_types,
@@ -520,6 +527,10 @@ def _generate_statistical_maps(
 
     statistical_maps[contrast_name][statmap_label] = filename
     """
+    extension = "gii"
+    if model._is_volume_glm():
+        extension = "nii.gz"
+
     if not isinstance(contrast_types, dict):
         contrast_types = {}
 
@@ -539,7 +550,7 @@ def _generate_statistical_maps(
         fields = {
             "prefix": prefix,
             "suffix": "statmap",
-            "extension": "nii.gz",
+            "extension": extension,
             "entities": deepcopy(entities),
         }
 
@@ -587,10 +598,13 @@ def _generate_model_level_mapping(
 
     model_level_mapping[i_run][statmap_label] = filename
     """
+    extension = "gii"
+    if model._is_volume_glm():
+        extension = "nii.gz"
     fields = {
         "prefix": prefix,
         "suffix": "statmap",
-        "extension": "nii.gz",
+        "extension": extension,
         "entities": deepcopy(entities),
     }
 
