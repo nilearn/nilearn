@@ -361,6 +361,23 @@ def test_plot_surf_avg_method_errors(in_memory_mesh, bg_map):
         )
 
 
+@pytest.mark.parametrize(
+    "kwargs", [{"symmetric_cmap": True}, {"title_font_size": 18}]
+)
+def test_plot_surf_warnings_not_implemented_in_matplotlib(
+    kwargs, in_memory_mesh, bg_map
+):
+    with pytest.warns(
+        UserWarning, match="is not implemented for the matplotlib engine"
+    ):
+        plot_surf(
+            in_memory_mesh,
+            surf_map=bg_map,
+            engine=ENGINE,
+            **kwargs,
+        )
+
+
 def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     """Test error msg for invalid axes."""
     figure, axes = matplotlib_pyplot.subplots()
