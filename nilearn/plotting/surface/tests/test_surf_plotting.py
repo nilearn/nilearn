@@ -124,9 +124,7 @@ def test_plot_surf_hemi_views(plt, engine, in_memory_mesh, hemi, view, bg_map):
 
 
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
-def test_plot_surf_swap_hemi(
-    matplotlib_pyplot, surf_img_1d, hemi, flip_surf_img
-):
+def test_plot_surf_swap_hemi(plt, engine, surf_img_1d, hemi, flip_surf_img):
     """Check error is raised if background image is incompatible."""
     with pytest.raises(
         MeshDimensionError,
@@ -137,6 +135,7 @@ def test_plot_surf_swap_hemi(
             bg_map=flip_surf_img(surf_img_1d),
             hemi=hemi,
             surf_mesh=None,
+            engine=engine,
         )
 
 
