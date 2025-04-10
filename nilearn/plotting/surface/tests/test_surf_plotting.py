@@ -20,6 +20,14 @@ from nilearn.plotting import (
 )
 
 
+@pytest.fixture
+def surf_roi_data(rng, in_memory_mesh):
+    roi_map = np.zeros((in_memory_mesh.n_vertices, 1))
+    roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
+    roi_map[roi_idx] = 1
+    return roi_map
+
+
 @pytest.mark.parametrize(
     "fn",
     [
@@ -53,14 +61,6 @@ def test_plot_surf_contours_warning_hemi(in_memory_mesh):
     parcellation[in_memory_mesh.faces[3]] = 1
     with pytest.warns(UserWarning, match="This value will be ignored"):
         plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
-
-
-@pytest.fixture
-def surf_roi_data(rng, in_memory_mesh):
-    roi_map = np.zeros((in_memory_mesh.n_vertices, 1))
-    roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
-    roi_map[roi_idx] = 1
-    return roi_map
 
 
 def test_plot_surf_engine_error(in_memory_mesh):
