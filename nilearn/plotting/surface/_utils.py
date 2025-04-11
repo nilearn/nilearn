@@ -1,3 +1,5 @@
+"""Utility functions used in nilearn.plotting.surface module."""
+
 from warnings import warn
 
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
