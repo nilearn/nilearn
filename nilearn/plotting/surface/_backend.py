@@ -21,7 +21,6 @@ from warnings import warn
 
 import numpy as np
 
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting.surface._utils import check_surface_plotting_inputs
 from nilearn.surface import load_surf_data, load_surf_mesh
@@ -49,48 +48,6 @@ VALID_VIEWS = (
 )
 
 VALID_HEMISPHERES = "left", "right", "both"
-
-
-def get_surface_backend(engine="matplotlib"):
-    """Instantiate and return the required backend engine.
-
-    Parameters
-    ----------
-    engine: :obj:`str`, default='matplotlib'
-        Name of the required backend engine. Can be 'matplotlib' or 'plotly'.
-
-    Returns
-    -------
-    backend : :class:`~nilearn.plotting.surface._backend.BaseSurfaceBackend`
-        The backend for the specified engine.
-    """
-    if engine == "matplotlib":
-        if is_matplotlib_installed():
-            from nilearn.plotting.surface._matplotlib_backend import (
-                MatplotlibBackend,
-            )
-
-            return MatplotlibBackend()
-        else:
-            raise ImportError(
-                "Using engine='matplotlib' requires that ``matplotlib`` is "
-                "installed."
-            )
-    elif engine == "plotly":
-        if is_plotly_installed():
-            from nilearn.plotting.surface._plotly_backend import PlotlyBackend
-
-            return PlotlyBackend()
-        else:
-            raise ImportError(
-                "Using engine='plotly' requires that ``plotly`` is installed."
-            )
-    else:
-        raise ValueError(
-            f"Unknown plotting engine {engine}. "
-            "Please use either 'matplotlib' or "
-            "'plotly'."
-        )
 
 
 class BaseSurfaceBackend:

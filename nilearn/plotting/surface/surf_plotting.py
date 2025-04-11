@@ -25,7 +25,6 @@ from nilearn.plotting.surface._backend import (
     DATA_EXTENSIONS,
     check_hemispheres,
     check_views,
-    get_surface_backend,
 )
 from nilearn.plotting.surface._matplotlib_backend import (
     _colorbar_from_array,
@@ -33,6 +32,7 @@ from nilearn.plotting.surface._matplotlib_backend import (
 )
 from nilearn.plotting.surface._utils import (
     check_surface_plotting_inputs,
+    get_surface_backend,
     sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
