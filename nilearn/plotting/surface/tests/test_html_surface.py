@@ -1,3 +1,5 @@
+"""Test nilearn.plotting.surface.html_surface functions."""
+
 import json
 
 import numpy as np

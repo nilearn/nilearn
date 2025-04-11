@@ -1,9 +1,10 @@
+"""Test nilearn.plotting.surface._matplotlib_backend functions."""
+
 # ruff: noqa: ARG001
 
 import re
 import tempfile
 
-import matplotlib.pyplot as plt
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
@@ -17,10 +18,10 @@ from nilearn.plotting import (
 )
 from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
-    _compute_facecolors_matplotlib,
+    _compute_facecolors,
     _get_bounds,
-    _get_ticks_matplotlib,
-    _get_view_plot_surf_matplotlib,
+    _get_ticks,
+    _get_view_plot_surf,
 )
 from nilearn.surface import (
     load_surf_data,
@@ -31,7 +32,7 @@ ENGINE = "matplotlib"
 
 pytest.importorskip(
     ENGINE,
-    reason="Matplotlib is not installed. It is required to run the tests!",
+    reason="Matplotlib is not installed; required to run the tests!",
 )
 
 EXPECTED_VIEW_MATPLOTLIB = {
@@ -63,33 +64,41 @@ EXPECTED_VIEW_MATPLOTLIB = {
 
 
 @pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
-def test_get_view_plot_surf_matplotlib(hemi, views):
+def test_get_view_plot_surf(hemi, views):
+    """Test if nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
+    returns expected values.
+    """
     for v in views:
         assert (
-            _get_view_plot_surf_matplotlib(hemi, v)
-            == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
+            _get_view_plot_surf(hemi, v) == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
         )
 
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
+    """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
+    for invalid hemisphere values.
+    """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        _get_view_plot_surf_matplotlib(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
-    "hemi,view,f",
+    "hemi,view",
     [
-        ("left", "foo", _get_view_plot_surf_matplotlib),
-        ("right", "bar", _get_view_plot_surf_matplotlib),
-        ("both", "lateral", _get_view_plot_surf_matplotlib),
-        ("both", "medial", _get_view_plot_surf_matplotlib),
-        ("both", "foo", _get_view_plot_surf_matplotlib),
+        ("left", "foo"),
+        ("right", "bar"),
+        ("both", "lateral"),
+        ("both", "medial"),
+        ("both", "foo"),
     ],
 )
-def test_get_view_plot_surf_view_errors(hemi, view, f):
+def test_get_view_plot_surf_view_errors(hemi, view):
+    """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
+    for invalid view values.
+    """
     with pytest.raises(ValueError, match="Invalid view definition"):
-        f(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
@@ -100,6 +109,9 @@ def test_get_view_plot_surf_view_errors(hemi, view, f):
     ],
 )
 def test_get_bounds(data, expected):
+    """Test if nilearn.plotting.surface._matplotlib_backend._get_bounds
+    returns expected values.
+    """
     assert _get_bounds(data) == expected
     assert _get_bounds(data, vmin=0.2) == (0.2, expected[1])
     assert _get_bounds(data, vmax=0.8) == (expected[0], 0.8)
@@ -122,8 +134,11 @@ def test_get_bounds(data, expected):
         (0, np.nextafter(0, 1), "%.1f", [0.0e000, 5.0e-324]),
     ],
 )
-def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
-    ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold=None)
+def test_get_ticks(vmin, vmax, cbar_tick_format, expected):
+    """Test if nilearn.plotting.surface._matplotlib_backend._get_ticks
+    returns expected values.
+    """
+    ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold=None)
     assert 1 <= len(ticks) <= 5
     assert ticks[0] == vmin and ticks[-1] == vmax
     assert (
@@ -132,7 +147,10 @@ def test_get_ticks_matplotlib(vmin, vmax, cbar_tick_format, expected):
     )
 
 
-def test_compute_facecolors_matplotlib():
+def test_compute_facecolors():
+    """Test if nilearn.plotting.surface._matplotlib_backend._compute_facecolors
+    returns expected values.
+    """
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_left"])
     alpha = "auto"
@@ -144,7 +162,7 @@ def test_compute_facecolors_matplotlib():
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert bg_min < 0 or bg_max > 1
 
-    facecolors_auto_normalized = _compute_facecolors_matplotlib(
+    facecolors_auto_normalized = _compute_facecolors(
         bg_map,
         mesh.faces,
         len(mesh.coordinates),
@@ -158,7 +176,7 @@ def test_compute_facecolors_matplotlib():
     bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
     assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
 
-    facecolors_manually_normalized = _compute_facecolors_matplotlib(
+    facecolors_manually_normalized = _compute_facecolors(
         bg_map_normalized,
         mesh.faces,
         len(mesh.coordinates),
@@ -175,7 +193,7 @@ def test_compute_facecolors_matplotlib():
     bg_map_scaled = bg_map_normalized / 2 + 0.25
     assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
 
-    facecolors_manually_rescaled = _compute_facecolors_matplotlib(
+    facecolors_manually_rescaled = _compute_facecolors(
         bg_map_scaled,
         mesh.faces,
         len(mesh.coordinates),
@@ -189,7 +207,7 @@ def test_compute_facecolors_matplotlib():
     )
 
 
-def test_compute_facecolors_matplotlib_deprecation():
+def test_compute_facecolors_deprecation():
     """Test warning deprecation."""
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_left"])
@@ -208,7 +226,7 @@ def test_compute_facecolors_matplotlib_deprecation():
             "We recommend setting `darkness` to None"
         ),
     ):
-        _compute_facecolors_matplotlib(
+        _compute_facecolors(
             bg_map,
             mesh.faces,
             len(mesh.coordinates),
@@ -217,15 +235,10 @@ def test_compute_facecolors_matplotlib_deprecation():
         )
 
 
-def test_surface_plotting_axes_error(surf_img_1d):
-    """Test error msg for invalid axes."""
-    figure, axes = plt.subplots()
-    with pytest.raises(AttributeError, match="the projection must be '3d'"):
-        plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
-
-
 def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
-    """Check title in figure."""
+    """Test if figure title is set correctly in
+    nilearn.plotting.surface.surf_plotting.plot_surf.
+    """
     display = plot_surf(
         in_memory_mesh, bg_map=bg_map, title="Test title", engine=ENGINE
     )
@@ -235,6 +248,9 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
 
 
 def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf for valid
+    values of avg_method.
+    """
     # Plot with avg_method
     # Test all built-in methods and check
     faces = in_memory_mesh.faces
@@ -258,7 +274,9 @@ def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
         vmax = np.max(agg_faces)
         agg_faces -= vmin
         agg_faces /= vmax - vmin
-        cmap = plt.get_cmap(plt.rcParamsDefault["image.cmap"])
+        cmap = matplotlib_pyplot.get_cmap(
+            matplotlib_pyplot.rcParamsDefault["image.cmap"]
+        )
         assert_array_equal(
             cmap(agg_faces),
             display._axstack.as_list()[0].collections[0]._facecolors,
@@ -277,6 +295,9 @@ def test_plot_surf_avg_method(matplotlib_pyplot, in_memory_mesh, bg_map):
 
 
 def test_plot_surf_avg_method_errors(in_memory_mesh, bg_map):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf for invalid
+    values of avg_method.
+    """
     with pytest.raises(
         ValueError,
         match=(
@@ -340,14 +361,46 @@ def test_plot_surf_avg_method_errors(in_memory_mesh, bg_map):
         )
 
 
+@pytest.mark.parametrize(
+    "kwargs", [{"symmetric_cmap": True}, {"title_font_size": 18}]
+)
+def test_plot_surf_warnings_not_implemented_in_matplotlib(
+    kwargs, in_memory_mesh, bg_map
+):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf raises error
+    when a parameter that is not supported by matplotlib is specified with a
+    value other than None.
+    """
+    with pytest.warns(
+        UserWarning, match="is not implemented for the matplotlib engine"
+    ):
+        plot_surf(
+            in_memory_mesh,
+            surf_map=bg_map,
+            engine=ENGINE,
+            **kwargs,
+        )
+
+
+def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
+    """Test error msg for invalid axes."""
+    figure, axes = matplotlib_pyplot.subplots()
+    with pytest.raises(AttributeError, match="the projection must be '3d'"):
+        plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
+
+
 def test_plot_surf_stat_map_matplotlib_specific(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
     # Plot to axes
-    axes = plt.subplots(ncols=2, subplot_kw={"projection": "3d"})[1]
+    axes = matplotlib_pyplot.subplots(
+        ncols=2, subplot_kw={"projection": "3d"}
+    )[1]
     for ax in axes.flatten():
         plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, axes=ax)
-    axes = plt.subplots(ncols=2, subplot_kw={"projection": "3d"})[1]
+    axes = matplotlib_pyplot.subplots(
+        ncols=2, subplot_kw={"projection": "3d"}
+    )[1]
     for ax in axes.flatten():
         plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, axes=ax)
 
@@ -405,7 +458,7 @@ def test_plot_surf_roi_matplotlib_specific(
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
-        engine="matplotlib",
+        engine=ENGINE,
     )
     img.canvas.draw()
     cbar = img.axes[-1]
@@ -422,7 +475,7 @@ def test_plot_surf_roi_matplotlib_specific(
         vmax=8.9,
         colorbar=True,
         cbar_tick_format="%.2g",
-        engine="matplotlib",
+        engine=ENGINE,
     )
     img2.canvas.draw()
     cbar = img2.axes[-1]
@@ -442,7 +495,7 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     img = plot_surf_roi(
         surface_image_parcellation.mesh,
         roi_map=surface_image_parcellation,
-        engine="matplotlib",
+        engine=ENGINE,
         hemi="left",
     )
     # Check that the resulting plot facecolors contain no transparent faces
@@ -461,11 +514,11 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
         surface_image_roi.mesh,
         roi_map=surface_image_roi,
         axes=None,
-        figure=plt.gcf(),
+        figure=matplotlib_pyplot.gcf(),
         engine=ENGINE,
     )
 
-    _, ax = plt.subplots(subplot_kw={"projection": "3d"})
+    _, ax = matplotlib_pyplot.subplots(subplot_kw={"projection": "3d"})
 
     with tempfile.NamedTemporaryFile() as tmp_file:
         plot_surf_roi(
@@ -492,12 +545,16 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
 def test_plot_surf_contours_fig_axes(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
-    fig, axes = plt.subplots(1, 1, subplot_kw={"projection": "3d"})
+    fig, axes = matplotlib_pyplot.subplots(
+        1, 1, subplot_kw={"projection": "3d"}
+    )
     plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
     plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
 
 
-def test_plot_surf_contours_error(rng, in_memory_mesh, parcellation):
+def test_plot_surf_contours_error(
+    matplotlib_pyplot, rng, in_memory_mesh, parcellation
+):
     # we need an invalid parcellation for testing
     invalid_parcellation = rng.uniform(size=(in_memory_mesh.n_vertices))
     with pytest.raises(
@@ -505,7 +562,7 @@ def test_plot_surf_contours_error(rng, in_memory_mesh, parcellation):
     ):
         plot_surf_contours(in_memory_mesh, invalid_parcellation)
 
-    _, axes = plt.subplots(1, 1)
+    _, axes = matplotlib_pyplot.subplots(1, 1)
     with pytest.raises(ValueError, match="Axes must be 3D."):
         plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
 
