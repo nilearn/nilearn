@@ -110,7 +110,7 @@ def make_glm_report(
         or :obj:`str` \
         or :obj:`list` of :obj:`str` \
         or ndarray or \
-        :obj:`list` of ndarray
+        :obj:`list` of ndarray, Default=None
 
         Contrasts information for a first or second level model.
 
