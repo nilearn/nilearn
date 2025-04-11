@@ -322,7 +322,7 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
     return data_copy, _threshold(data, threshold, vmin, vmax), vmin, vmax
 
 
-class MatplotlibBackend(BaseSurfaceBackend):
+class MatplotlibSurfaceBackend(BaseSurfaceBackend):
     @property
     def name(self):
         return "matplotlib"

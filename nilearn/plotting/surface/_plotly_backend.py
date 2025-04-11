@@ -224,7 +224,7 @@ def _get_view_plot_surf(hemi, view):
     return _get_camera_view_from_elevation_and_azimut(view)
 
 
-class PlotlyBackend(BaseSurfaceBackend):
+class PlotlySurfaceBackend(BaseSurfaceBackend):
     @property
     def name(self):
         return "plotly"
