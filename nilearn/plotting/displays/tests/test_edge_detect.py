@@ -1,6 +1,6 @@
 import numpy as np
 
-from nilearn.plotting.edge_detect import _edge_detect
+from nilearn.plotting.displays.edge_detect import _edge_detect
 
 
 def test_edge_detect():

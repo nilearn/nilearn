@@ -32,11 +32,16 @@ Note that more power would be obtained from using a larger sample of subjects.
 # %%
 # Load Oasis dataset
 # ------------------
-from nilearn import datasets, plotting
+from nilearn import plotting
+from nilearn.datasets import (
+    fetch_icbm152_2009,
+    fetch_icbm152_brain_gm_mask,
+    fetch_oasis_vbm,
+)
 
 n_subjects = 100  # more subjects requires more memory
 
-oasis_dataset = datasets.fetch_oasis_vbm(
+oasis_dataset = fetch_oasis_vbm(
     n_subjects=n_subjects,
 )
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
@@ -59,7 +64,7 @@ print(
 
 # %%
 # Get a mask image: A mask of the cortex of the ICBM template.
-gm_mask = datasets.fetch_icbm152_brain_gm_mask()
+gm_mask = fetch_icbm152_brain_gm_mask()
 
 # %%
 # Resample the mask, since this mask has a different resolution.
@@ -102,7 +107,11 @@ fig.suptitle("Second level design matrix")
 from nilearn.glm.second_level import SecondLevelModel
 
 second_level_model = SecondLevelModel(
-    smoothing_fwhm=2.0, mask_img=mask_img, n_jobs=2, minimize_memory=False
+    smoothing_fwhm=2.0,
+    mask_img=mask_img,
+    n_jobs=2,
+    minimize_memory=False,
+    verbose=1,
 )
 second_level_model.fit(
     gray_matter_map_filenames,
@@ -170,17 +179,31 @@ from nilearn.interfaces.bids import save_glm_to_bids
 output_dir = Path.cwd() / "results" / "plot_oasis"
 output_dir.mkdir(exist_ok=True, parents=True)
 
-icbm152_2009 = datasets.fetch_icbm152_2009()
+icbm152_2009 = fetch_icbm152_2009()
 
-save_glm_to_bids(
+second_level_model = save_glm_to_bids(
     second_level_model,
     contrasts=["age", "sex"],
     out_dir=output_dir / "derivatives" / "nilearn_glm",
     prefix="ageEffectOnGM",
     bg_img=icbm152_2009["t1"],
+    alpha=0.05,
+    height_control="fdr",
 )
 
 # %%
 # View the generated files
 files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
 print("\n".join([str(x.relative_to(output_dir)) for x in files]))
+
+#  %%
+# Generate a report and view it.
+# If no new contrast is passed to ``generate_report``,
+# the results saved to disk will be reused to generate the report.
+report = second_level_model.generate_report(
+    bg_img=icbm152_2009["t1"],
+    plot_type="glass",
+    alpha=0.05,
+    height_control=None,
+)
+report

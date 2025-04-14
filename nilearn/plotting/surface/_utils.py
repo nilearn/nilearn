@@ -5,6 +5,7 @@ from nilearn.surface import (
     SurfaceImage,
 )
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
+from nilearn.surface.utils import check_polymesh_equal
 
 
 def _check_bg_map(bg_map, hemi):
@@ -15,6 +16,8 @@ def _check_bg_map(bg_map, hemi):
     bg_map : Any
 
     hemi : str
+
+    surf_map: SurfaceImage
 
     Returns
     -------
@@ -98,6 +101,7 @@ def check_surface_plotting_inputs(
     if isinstance(surf_map, SurfaceImage):
         if surf_mesh is None:
             surf_mesh = _get_hemi(surf_map.mesh, hemi)
+
         if len(surf_map.shape) > 1 and surf_map.shape[1] > 1:
             raise TypeError(
                 "Input data has incompatible dimensionality. "
@@ -105,6 +109,10 @@ def check_surface_plotting_inputs(
                 f"or ({surf_map.shape[0]}, 1) "
                 f"and you provided a {surf_map.shape} surface image."
             )
+
+        if isinstance(bg_map, SurfaceImage):
+            check_polymesh_equal(bg_map.mesh, surf_map.mesh)
+
         # concatenate the left and right data if hemi is "both"
         if hemi == "both":
             surf_map = get_data(surf_map).T

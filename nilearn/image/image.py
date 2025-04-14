@@ -49,7 +49,7 @@ from nilearn.surface.surface import (
     extract_data,
 )
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.surface.utils import assert_polymesh_equal
+from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
 
 
@@ -130,7 +130,7 @@ def high_variance_confounds(
 
     if mask_img is not None:
         if isinstance(imgs, SurfaceImage):
-            assert_polymesh_equal(mask_img.mesh, imgs.mesh)
+            check_polymesh_equal(mask_img.mesh, imgs.mesh)
         sigs = masking.apply_mask(imgs, mask_img)
 
     # Load the data only if it doesn't need to be masked
@@ -499,6 +499,18 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
     return mean_data, affine
 
 
+def _compute_surface_mean(imgs: SurfaceImage) -> SurfaceImage:
+    """Compute mean of a single surface image over its 2nd dimension."""
+    if len(imgs.shape) < 2 or imgs.shape[1] < 2:
+        data = imgs.data
+    else:
+        data = {
+            part: np.mean(value, axis=1).astype(float)
+            for part, value in imgs.data.parts.items()
+        }
+    return new_img_like(imgs, data=data)
+
+
 @fill_doc
 def mean_img(
     imgs,
@@ -520,9 +532,10 @@ def mean_img(
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects, \
-           or :obj:`~nilearn.surface.SurfaceImage`.
-        Images to be averaged over time (see :ref:`extracting_data`
+    imgs : Niimg-like or or :obj:`~nilearn.surface.SurfaceImage` object, or \
+           iterable of Niimg-like or :obj:`~nilearn.surface.SurfaceImage`.
+        Images to be averaged over 'time'
+        (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
     %(target_affine)s
@@ -556,15 +569,15 @@ def mean_img(
     nilearn.image.math_img : For more general operations on images.
 
     """
-    if isinstance(imgs, SurfaceImage):
-        if len(imgs.shape) < 2 or imgs.shape[1] < 2:
-            data = imgs.data
-        else:
-            data = {
-                part: np.mean(value, axis=1).astype(float)
-                for part, value in imgs.data.parts.items()
-            }
-        return new_img_like(imgs, data=data)
+    is_iterable = isinstance(imgs, collections.abc.Iterable)
+    is_surface_img = isinstance(imgs, SurfaceImage) or (
+        is_iterable and all(isinstance(x, SurfaceImage) for x in imgs)
+    )
+    if is_surface_img:
+        if not is_iterable:
+            imgs = [imgs]
+        all_means = concat_imgs([_compute_surface_mean(x) for x in imgs])
+        return _compute_surface_mean(all_means)
 
     # TODO: remove this warning in 0.13.0
     check_copy_header(copy_header)
@@ -573,9 +586,7 @@ def mean_img(
     is_str = isinstance(imgs, str)
     is_iterable = isinstance(imgs, collections.abc.Iterable)
     if is_str or not is_iterable:
-        imgs = [
-            imgs,
-        ]
+        imgs = [imgs]
 
     imgs_iter = iter(imgs)
     first_img = check_niimg(next(imgs_iter))
@@ -1065,7 +1076,7 @@ def threshold_img(
         check_compatibility_mask_and_images(mask_img, img)
 
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
-        assert_polymesh_equal(mask_img.mesh, img.mesh)
+        check_polymesh_equal(mask_img.mesh, img.mesh)
 
     if isinstance(img, SurfaceImage) and cluster_threshold > 0:
         warnings.warn(
@@ -1679,7 +1690,7 @@ def concat_imgs(
             return niimgs[0]
 
         for i, img in enumerate(niimgs):
-            assert_polymesh_equal(img.mesh, niimgs[0].mesh)
+            check_polymesh_equal(img.mesh, niimgs[0].mesh)
             niimgs[i] = at_least_2d(img)
 
         if dtype is None:

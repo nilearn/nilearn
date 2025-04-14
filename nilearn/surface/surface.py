@@ -1991,7 +1991,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
         SurfaceImage whose data to concatenate and extract.
 
-    ensure_finite : bool
+    ensure_finite : bool, Default=False
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 

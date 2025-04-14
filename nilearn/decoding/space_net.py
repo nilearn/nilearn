@@ -246,7 +246,10 @@ class _EarlyStoppingCallback:
                 message = (
                     f"Early stopping.\nTest score: {score:.8f} {40 * '-'}"
                 )
-            logger.log(message, verbose=self.verbose, stack_level=2)
+            logger.log(
+                message,
+                verbose=self.verbose,
+            )
             return True
 
         logger.log(

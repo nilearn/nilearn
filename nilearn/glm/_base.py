@@ -523,16 +523,6 @@ def _generate_statistical_maps(
     if not isinstance(contrast_types, dict):
         contrast_types = {}
 
-    fields = {
-        "prefix": prefix,
-        "suffix": "statmap",
-        "extension": "nii.gz",
-        "entities": deepcopy(entities),
-    }
-
-    if generate_bids_name:
-        fields["prefix"] = None
-
     statistical_maps: dict[str, dict[str, str]] = {}
 
     for contrast_name in contrasts:
@@ -545,6 +535,16 @@ def _generate_statistical_maps(
             stat_type = "F"
         # Override automatic detection with explicit type if provided
         stat_type = contrast_types.get(contrast_name, stat_type)
+
+        fields = {
+            "prefix": prefix,
+            "suffix": "statmap",
+            "extension": "nii.gz",
+            "entities": deepcopy(entities),
+        }
+
+        if generate_bids_name:
+            fields["prefix"] = None
 
         fields["entities"]["contrast"] = _clean_contrast_name(contrast_name)
 
@@ -561,6 +561,14 @@ def _generate_statistical_maps(
         ):
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
+
+        fields["entities"]["stat"] = None
+        fields["suffix"] = "clusters"
+        fields["extension"] = "tsv"
+        tmp["clusters_tsv"] = create_bids_filename(fields, entities_to_include)
+
+        fields["extension"] = "json"
+        tmp["metadata"] = create_bids_filename(fields, entities_to_include)
 
         statistical_maps[contrast_name] = tempita.bunch(**tmp)
 
