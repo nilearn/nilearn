@@ -2,8 +2,8 @@
 # TL;DR: this workflow runs the benchmarks on the latest commit on the main
 # and then deploys the updated benchmarks to
 # `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
-# You can trigger it manually by adding ``[bm]`` to the commit message on the
-# main. It will also run on a schedule at regular interval.
+# You can trigger it manually via the GitHub UI. It will also run on a schedule
+# at regular interval.
 #
 # Step-wise details:
 #
@@ -43,10 +43,12 @@ on:
     # everday at 10pm UTC
     -   cron: 0 22 * * 0
 
+    workflow_dispatch:  # This enables manual triggering from GitHub UI
+
 jobs:
     benchmark:
         if: >-
-            (contains(github.event.head_commit.message, '[bm]') ||
+            (github.event_name == 'workflow_dispatch' ||
             github.event_name == 'schedule') &&
             github.repository == 'nilearn/nilearn'
         # TODO bump to 24.04 when bumping minimum python to 3.10
