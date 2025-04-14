@@ -423,6 +423,9 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
         return tags
 
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
@@ -495,6 +498,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.2"
     )
+    @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
