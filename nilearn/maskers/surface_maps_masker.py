@@ -342,38 +342,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         return region_signals
 
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
-    )
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
-        """Prepare and perform signal extraction from regions.
-
-        Parameters
-        ----------
-        imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
-              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
-              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
-            Mesh and data for both hemispheres. The data for each hemisphere \
-            is of shape (n_vertices_per_hemisphere, n_timepoints).
-
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
-
-        %(confounds)s
-
-        %(sample_mask)s
-
-
-        Returns
-        -------
-        region_signals: :obj:`numpy.ndarray`
-            Signal for each region as provided in the maps (via `maps_img`).
-            shape: (n_timepoints, n_regions)
-        """
-        del y
-        return self.fit(imgs).transform(imgs, confounds, sample_mask)
-
     def inverse_transform(self, region_signals):
         """Compute :term:`vertex` signals from region signals.
 
