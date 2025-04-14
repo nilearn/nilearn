@@ -633,14 +633,14 @@ class NiftiLabelsMasker(BaseMasker):
                     force_resample=False,
                 )
 
+                # Just check that the mask is valid
+                load_mask_img(self.mask_img_)
+
             else:
                 raise ValueError(
                     "Invalid value for "
                     f"resampling_target: {self.resampling_target}"
                 )
-
-            # Just check that the mask is valid
-            load_mask_img(self.mask_img_)
 
         if not hasattr(self, "_resampled_labels_img_"):
             # obviates need to run .transform() before .inverse_transform()

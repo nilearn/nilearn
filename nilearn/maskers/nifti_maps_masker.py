@@ -16,6 +16,7 @@ from nilearn.maskers._utils import (
     sanitize_cleaning_parameters,
 )
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.masking import load_mask_img
 
 
 class _ExtractionFunctor:
@@ -429,43 +430,47 @@ class NiftiMapsMasker(BaseMasker):
 
         self.mask_img_ = self._load_mask(imgs)
 
-        # Check shapes and affines or resample.
-        if self.resampling_target is None and self.mask_img_ is not None:
-            _utils.niimg_conversions.check_same_fov(
-                mask=self.mask_img_,
-                maps=self.maps_img_,
-                raise_error=True,
-            )
+        if self.mask_img_ is not None:
+            # Check shapes and affines or resample.
+            if self.resampling_target is None:
+                _utils.niimg_conversions.check_same_fov(
+                    mask=self.mask_img_,
+                    maps=self.maps_img_,
+                    raise_error=True,
+                )
 
-        elif self.resampling_target == "mask" and self.mask_img_ is not None:
-            logger.log("Resampling maps", self.verbose)
+            elif self.resampling_target == "mask":
+                logger.log("Resampling maps", self.verbose)
 
-            # TODO switch to force_resample=True
-            # when bumping to version > 0.13
-            self.maps_img_ = resample_img(
-                self.maps_img_,
-                target_affine=self.mask_img_.affine,
-                target_shape=self.mask_img_.shape,
-                interpolation="continuous",
-                copy=True,
-                copy_header=True,
-                force_resample=False,
-            )
+                # TODO switch to force_resample=True
+                # when bumping to version > 0.13
+                self.maps_img_ = resample_img(
+                    self.maps_img_,
+                    target_affine=self.mask_img_.affine,
+                    target_shape=self.mask_img_.shape,
+                    interpolation="continuous",
+                    copy=True,
+                    copy_header=True,
+                    force_resample=False,
+                )
 
-        elif self.resampling_target == "maps" and self.mask_img_ is not None:
-            logger.log("Resampling mask", self.verbose)
+            elif self.resampling_target == "maps":
+                logger.log("Resampling mask", self.verbose)
 
-            # TODO switch to force_resample=True
-            # when bumping to version > 0.13
-            self.mask_img_ = resample_img(
-                self.mask_img_,
-                target_affine=self.maps_img_.affine,
-                target_shape=self.maps_img_.shape[:3],
-                interpolation="nearest",
-                copy=True,
-                copy_header=True,
-                force_resample=False,
-            )
+                # TODO switch to force_resample=True
+                # when bumping to version > 0.13
+                self.mask_img_ = resample_img(
+                    self.mask_img_,
+                    target_affine=self.maps_img_.affine,
+                    target_shape=self.maps_img_.shape[:3],
+                    interpolation="nearest",
+                    copy=True,
+                    copy_header=True,
+                    force_resample=False,
+                )
+
+                # Just check that the mask is valid
+                load_mask_img(self.mask_img_)
 
         if self.reports:
             self._reporting_data = {

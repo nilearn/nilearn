@@ -317,6 +317,9 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_transformer)
         yield (clone(estimator), check_masker_compatibility_mask_image)
         yield (clone(estimator), check_masker_validation_mask)
+        yield (clone(estimator), check_masker_fit_with_mask_too_many_samples)
+        yield (clone(estimator), check_masker_fit_with_empty_mask)
+        yield (clone(estimator), check_masker_fit_returns_self)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -334,8 +337,6 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_fit_transform)
             yield (clone(estimator), check_nifti_masker_fit_transform_files)
             yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
-            yield (clone(estimator), check_nifti_masker_fit_with_4d_mask)
-            yield (clone(estimator), check_nifti_masker_fit_with_empty_mask)
             yield (clone(estimator), check_nifti_masker_fit_with_only_mask)
             yield (
                 clone(estimator),
@@ -349,7 +350,6 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_clean_warning)
             yield (clone(estimator), check_nifti_masker_dtype)
             yield (clone(estimator), check_nifti_masker_smooth)
-            yield (clone(estimator), check_nifti_masker_fit_returns_self)
             yield (clone(estimator), check_nifti_masker_fit_transform_5d)
 
             if is_multimasker(estimator):
@@ -364,7 +364,6 @@ def nilearn_check_estimator(estimator):
                 )
 
         if surf_img_input:
-            yield (clone(estimator), check_surface_masker_fit_returns_self)
             yield (clone(estimator), check_surface_masker_smooth)
             yield (clone(estimator), check_surface_masker_fit_with_mask)
 
@@ -462,6 +461,16 @@ def check_masker_fitted(estimator):
     check_is_fitted(estimator)
 
 
+def check_masker_fit_returns_self(estimator):
+    """Check maskers return itself after fit."""
+    if accept_niimg_input(estimator):
+        imgs = _img_3d_rand()
+    else:
+        imgs = _make_surface_img(10)
+
+    assert estimator.fit(imgs) is estimator
+
+
 def check_masker_clean_kwargs(estimator):
     """Check attributes for cleaning.
 
@@ -488,18 +497,6 @@ def check_masker_detrending(estimator):
     detrended_signal = estimator.fit_transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
-
-
-def check_masker_validation_mask(estimator):
-    """Raise error when mask_img is not binary."""
-    if accept_niimg_input(estimator):
-        mask_img = _img_3d_mni()
-    else:
-        mask_img = _make_surface_img()
-    estimator.mask_img = mask_img
-
-    with pytest.raises(ValueError, match="Given mask is not made of 2 values"):
-        estimator.fit()
 
 
 def check_masker_compatibility_mask_image(estimator):
@@ -615,39 +612,6 @@ def check_masker_transformer_high_variance_confounds(estimator):
     assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
 
-def check_multi_masker_transformer_sample_mask(estimator):
-    """Test multi maskers with a list of "sample_mask".
-
-    "sample_mask" was directly sent as input to the parallel calls of
-    "transform_single_imgs" instead of sending iterations.
-    See https://github.com/nilearn/nilearn/issues/3967 for more details.
-    """
-    length = _img_4d_rand_eye_medium().shape[3]
-
-    n_scrub1 = 3
-    n_scrub2 = 2
-
-    sample_mask1 = np.arange(length - n_scrub1)
-    sample_mask2 = np.arange(length - n_scrub2)
-
-    signals_list = estimator.fit_transform(
-        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-        sample_mask=[sample_mask1, sample_mask2],
-    )
-
-    for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2]):
-        assert ts.shape[0] == length - n_scrub
-
-    with pytest.raises(
-        ValueError,
-        match="number of sample_mask .* unequal to number of images",
-    ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            sample_mask=sample_mask1,
-        )
-
-
 def check_masker_transformer_sample_mask(estimator):
     """Check sample_mask use in maskers.
 
@@ -699,38 +663,6 @@ def check_masker_transformer_sample_mask(estimator):
     signal_5 = estimator.transform(input_img, sample_mask=sample_mask)
 
     assert_array_equal(signal_2, signal_5)
-
-
-def check_multi_masker_with_confounds(estimator):
-    """Test multi maskers with a list of confounds.
-
-    Ensure results is different than when not using confounds.
-
-    Check that error is raised if number of confounds
-    does not match number of images
-    """
-    length = _img_4d_rand_eye_medium().shape[3]
-
-    array = _rng().random((length, 3))
-
-    signals_list_1 = estimator.fit_transform(
-        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-    )
-    signals_list_2 = estimator.fit_transform(
-        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-        confounds=[array, array],
-    )
-
-    for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
-        assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
-
-    with pytest.raises(
-        ValueError, match="number of confounds .* unequal to number of images"
-    ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            confounds=array,
-        )
 
 
 def check_masker_with_confounds(estimator):
@@ -834,12 +766,60 @@ def check_masker_refit(estimator):
             assert_surface_image_equal(fitted_mask_1, fitted_mask_2)
 
 
+def check_masker_validation_mask(estimator):
+    """Raise error when mask_img is not binary."""
+    if accept_niimg_input(estimator):
+        mask_img = _img_3d_mni()
+    else:
+        mask_img = _make_surface_img()
+    estimator.mask_img = mask_img
+
+    with pytest.raises(ValueError, match="Given mask is not made of 2 values"):
+        estimator.fit()
+
+
+def check_masker_fit_with_mask_too_many_samples(estimator):
+    """Check mask with too many sample cannot be used with maskers.
+
+    - 4D masks not allowed for nifti maskers
+    - 2D masks not allowed for surface maskers
+    """
+    if accept_niimg_input(estimator):
+        mask_img = _img_4d_zeros()
+        imgs = [_img_3d_rand()]
+        msg = "Expected dimension is 3D"
+        error = DimensionError
+    else:
+        mask_img = _make_surface_img(2)
+        imgs = _make_surface_img(1)
+        msg = "Data for each part of img should be 1D."
+        error = ValueError
+
+    estimator.mask_img = mask_img
+    with pytest.raises(error, match=msg):
+        estimator.fit(imgs)
+
+
+def check_masker_fit_with_empty_mask(estimator):
+    """Check mask that excludes all voxels raise an error."""
+    if accept_niimg_input(estimator):
+        mask_img = _img_3d_zeros()
+        imgs = [_img_3d_rand()]
+    else:
+        mask_img = _make_surface_mask()
+        for k, v in mask_img.data.parts.items():
+            mask_img.data.parts[k] = np.zeros(v.shape)
+        imgs = _make_surface_img(1)
+
+    estimator.mask_img = mask_img
+    with pytest.raises(
+        ValueError,
+        match="The mask is invalid as it is empty: it masks all data",
+    ):
+        estimator.fit(imgs)
+
+
 # ------------------ SURFACE MASKER CHECKS ------------------
-
-
-def check_surface_masker_fit_returns_self(estimator):
-    """Check surface maskers return itself after fit."""
-    assert estimator.fit(_make_surface_img(10)) is estimator
 
 
 def check_surface_masker_fit_with_mask(estimator):
@@ -932,11 +912,6 @@ def check_surface_masker_smooth(estimator):
 
 
 # ------------------ NIFTI MASKER CHECKS ------------------
-
-
-def check_nifti_masker_fit_returns_self(estimator):
-    """Check if self is returned when calling fit."""
-    assert estimator.fit(_img_3d_rand()) is estimator
 
 
 def check_nifti_masker_fit_transform(estimator):
@@ -1183,21 +1158,72 @@ def check_nifti_masker_fit_with_non_finite_in_mask(estimator):
     assert np.all(np.isfinite(signal))
 
 
-def check_nifti_masker_fit_with_empty_mask(estimator):
-    """Check mask that excludes all voxels raise an error."""
-    estimator.mask_img = _img_3d_zeros()
+# ------------------ MULTI NIFTI MASKER CHECKS ------------------
+
+
+def check_multi_masker_with_confounds(estimator):
+    """Test multi maskers with a list of confounds.
+
+    Ensure results is different than when not using confounds.
+
+    Check that error is raised if number of confounds
+    does not match number of images
+    """
+    length = _img_4d_rand_eye_medium().shape[3]
+
+    array = _rng().random((length, 3))
+
+    signals_list_1 = estimator.fit_transform(
+        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+    )
+    signals_list_2 = estimator.fit_transform(
+        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+        confounds=[array, array],
+    )
+
+    for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
+        assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+
+    with pytest.raises(
+        ValueError, match="number of confounds .* unequal to number of images"
+    ):
+        estimator.fit_transform(
+            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+            confounds=array,
+        )
+
+
+def check_multi_masker_transformer_sample_mask(estimator):
+    """Test multi maskers with a list of "sample_mask".
+
+    "sample_mask" was directly sent as input to the parallel calls of
+    "transform_single_imgs" instead of sending iterations.
+    See https://github.com/nilearn/nilearn/issues/3967 for more details.
+    """
+    length = _img_4d_rand_eye_medium().shape[3]
+
+    n_scrub1 = 3
+    n_scrub2 = 2
+
+    sample_mask1 = np.arange(length - n_scrub1)
+    sample_mask2 = np.arange(length - n_scrub2)
+
+    signals_list = estimator.fit_transform(
+        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+        sample_mask=[sample_mask1, sample_mask2],
+    )
+
+    for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2]):
+        assert ts.shape[0] == length - n_scrub
+
     with pytest.raises(
         ValueError,
-        match="The mask is invalid as it is empty: it masks all data",
+        match="number of sample_mask .* unequal to number of images",
     ):
-        estimator.fit([_img_3d_rand()])
-
-
-def check_nifti_masker_fit_with_4d_mask(estimator):
-    """Check 4D mask cannot be used with nifti maskers."""
-    with pytest.raises(DimensionError, match="Expected dimension is 3D"):
-        estimator.mask_img = _img_4d_zeros()
-        estimator.fit([_img_3d_rand()])
+        estimator.fit_transform(
+            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+            sample_mask=sample_mask1,
+        )
 
 
 # ------------------ GLM CHECKS ------------------
