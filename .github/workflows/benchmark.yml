@@ -54,8 +54,8 @@ jobs:
         # TODO bump to 24.04 when bumping minimum python to 3.10
         runs-on: ubuntu-22.04
         steps:
-        -   uses: actions/checkout@v3
-        -   uses: actions/setup-python@v3
+        -   uses: actions/checkout@v4
+        -   uses: actions/setup-python@v5
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
