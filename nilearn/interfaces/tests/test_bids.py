@@ -385,7 +385,11 @@ def test_parse_bids_filename():
     file_name = "sub-01_ses-01_task-langloc_lolo-lala_bold.nii.gz"
 
     file_path = Path("dataset", "sub-01", "ses-01", "func", file_name)
-    file_dict = parse_bids_filename(file_path, legacy=True)
+
+    with pytest.deprecated_call(
+        match="a dictionary that uses BIDS terms as keys"
+    ):
+        file_dict = parse_bids_filename(file_path, legacy=True)
 
     for fidx, field in enumerate(fields):
         assert file_dict[field] == labels[fidx]

@@ -276,13 +276,24 @@ def parse_bids_filename(img_path, legacy=True):
     img_path : :obj:`str`
         Path to file from which to parse information.
 
+    legacy : :obj:`bool`, default=True
+        Whether to return a dictionary that uses BIDS terms (``False``)
+        or the legacy content for the output (``True``).
+        ``False`` will become the default in version >= 0.13.2.
+
+        .. versionadded :: 0.11.2dev
+
     Returns
     -------
     reference : :obj:`dict`
         Returns a dictionary with all key-value pairs in the file name
-        parsed and other useful fields like 'file_path', 'file_basename',
-        'file_tag', 'file_type' and 'file_fields'.
+        parsed and other useful fields.
 
+        The dictionary will contain ``'file_path'``, ``'file_basename'``.
+
+        If ``legacy`` is set to ``True``,
+        the dictionary will also contain
+        'file_tag', 'file_type' and 'file_fields'.
         The 'file_tag' field refers to the last part of the file under the
         :term:`BIDS` convention that is of the form \*_tag.type.
         Contrary to the rest of the file name it is not a key-value pair.
@@ -291,6 +302,13 @@ def parse_bids_filename(img_path, legacy=True):
         added in the case of preprocessed files that also end with another tag.
         This parser will consider any tag in the middle of the file name as a
         key with no value and will be included in the 'file_fields' key.
+
+        If ``legacy`` is set to ``False``,
+        the dictionary will instead contain
+        ``'extension'``, ``'suffix'`` and ``'entities'``.
+        (See the documentation on
+        `typical bids filename <https://bids.neuroimaging.io/getting_started/folders_and_files/files.html#filename-template>`_
+        for more information).
 
     """
     reference = {
@@ -301,6 +319,16 @@ def parse_bids_filename(img_path, legacy=True):
     suffix, extension = parts[-1].split(".", 1)
 
     if legacy:
+        warn(
+            (
+                "For versions >= 0.13.2 this function will always return "
+                "a dictionary that uses BIDS terms as keys. "
+                "Set 'legacy=False' to start using this new behavior."
+            ),
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
+
         reference["file_tag"] = suffix
         reference["file_type"] = extension
         reference["file_fields"] = []
