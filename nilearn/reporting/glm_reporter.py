@@ -259,6 +259,8 @@ def make_glm_report(
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
+        clusters_tsvs = None
+        statistical_maps = {}
         if output is not None:
             # we try to rely on the content of glm object only
             try:
@@ -273,15 +275,14 @@ def make_glm_report(
                     for contrast_name in output["statistical_maps"]
                 }
             except KeyError:  # pragma: no cover
-                statistical_maps = make_stat_maps(
-                    model, contrasts, output_type="z_score"
-                )
-                clusters_tsvs = None
-        else:
+                if contrasts is not None:
+                    statistical_maps = make_stat_maps(
+                        model, contrasts, output_type="z_score"
+                    )
+        elif contrasts is not None:
             statistical_maps = make_stat_maps(
                 model, contrasts, output_type="z_score"
             )
-            clusters_tsvs = None
 
         logger.log(
             "Generating contrast-level figures...", verbose=model.verbose
