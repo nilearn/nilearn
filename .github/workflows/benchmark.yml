@@ -56,10 +56,11 @@ jobs:
         steps:
         -   uses: actions/checkout@v3
         -   uses: actions/setup-python@v3
-        -   name: Install asv
+        -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
                 pip install asv
+                cd asv_benchmarks
         -   name: Add SSH key for benchmarks repo
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
