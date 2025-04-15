@@ -39,9 +39,6 @@ on:
     push:
         branches:
         -   main
-    pull_request:
-        branches:
-        -   '*'
     schedule:
     # everday at 10pm UTC
     -   cron: 0 22 * * 0
@@ -51,9 +48,9 @@ on:
 jobs:
     benchmark:
         if: >-
-            ((github.event_name == 'push' && contains(github.event.head_commit.message, '[bm]')) ||
-            github.event_name == 'workflow_dispatch' ||
-            github.event_name == 'schedule')
+            (github.event_name == 'workflow_dispatch' ||
+            github.event_name == 'schedule') &&
+            github.repository == 'nilearn/nilearn'
         # TODO bump to 24.04 when bumping minimum python to 3.10
         runs-on: self-hosted
         defaults:
@@ -105,25 +102,25 @@ jobs:
                     ./asv_benchmarks/html
                     ./asv_benchmarks/results
                 compression-level: 9
-        -   name: Push new results and logs back to benchmarks repo
-            env:
-                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
-            run: |
-                cd benchmarks_repo
-                cp -r ../results .
-                cp -r ../log_${{ github.event.repository.updated_at }}_${{ github.run_number }} ./logs/log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
-                git config --global user.name "GitHub Actions"
-                git config --global user.email "actions@github.com"
-                git add .
-                git commit -m "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
-                git push origin main
-        -   name: Push html to gh-pages branch
-            env:
-                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
-            run: |
-                cd benchmarks_repo
-                git checkout gh-pages
-                cp -r ../html/* .
-                git add .
-                git commit -m "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
-                git push origin gh-pages
+        # -   name: Push new results and logs back to benchmarks repo
+        #     env:
+        #         SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+        #     run: |
+        #         cd benchmarks_repo
+        #         cp -r ../results .
+        #         cp -r ../log_${{ github.event.repository.updated_at }}_${{ github.run_number }} ./logs/log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+        #         git config --global user.name "GitHub Actions"
+        #         git config --global user.email "actions@github.com"
+        #         git add .
+        #         git commit -m "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+        #         git push origin main
+        # -   name: Push html to gh-pages branch
+        #     env:
+        #         SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+        #     run: |
+        #         cd benchmarks_repo
+        #         git checkout gh-pages
+        #         cp -r ../html/* .
+        #         git add .
+        #         git commit -m "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+        #         git push origin gh-pages
