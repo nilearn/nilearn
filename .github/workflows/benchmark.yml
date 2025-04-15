@@ -98,13 +98,13 @@ jobs:
             with:
                 name: Upload asv benchmark results as artifacts
                 path: |
-                    ./env
-                    ./html
-                    ./results
+                    ./asv_benchmarks/env
+                    ./asv_benchmarks/html
+                    ./asv_benchmarks/results
                 compression-level: 9
         -   name: Push new results and logs back to benchmarks repo
             env:
-                SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
                 cd benchmarks_repo
                 cp -r ../results .
@@ -116,7 +116,7 @@ jobs:
                 git push origin main
         -   name: Push html to gh-pages branch
             env:
-                SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
                 cd benchmarks_repo
                 git checkout gh-pages
