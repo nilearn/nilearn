@@ -380,6 +380,7 @@ class MultiNiftiMasker(NiftiMasker):
 
         return self
 
+    @fill_doc
     def transform_imgs(
         self, imgs_list, confounds=None, sample_mask=None, copy=True, n_jobs=1
     ):
@@ -496,6 +497,7 @@ class MultiNiftiMasker(NiftiMasker):
         )
         return data
 
+    @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
 
