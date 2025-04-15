@@ -50,6 +50,7 @@ from nilearn.image.image import (
     _crop_img_to,
     _fast_smooth_array,
     smooth_array,
+    smooth_surface_img,
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
@@ -379,6 +380,40 @@ def test_smooth_img(affine_eye, tmp_path):
     img1_nifti2 = Nifti2Image(data1, affine=affine_eye)
     img2_nifti2 = Nifti2Image(data2, affine=affine_eye)
     out = smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
+
+
+def test_smooth_surf_img(surf_img_1d):
+    """Check smoothing change data."""
+    smoothed_imgs = smooth_surface_img(surf_img_1d, iterations=1)
+
+    assert isinstance(smoothed_imgs, SurfaceImage)
+    for part in surf_img_1d.data.parts:
+        assert not np.array_equal(
+            surf_img_1d.data.parts[part], smoothed_imgs.data.parts[part]
+        )
+
+    more_smoothed_imgs = smooth_surface_img(surf_img_1d, iterations=2)
+    for part in surf_img_1d.data.parts:
+        assert not np.array_equal(
+            more_smoothed_imgs.data.parts[part], smoothed_imgs.data.parts[part]
+        )
+
+
+def test_smooth_surf_img_center_surround_knob_minus_inf(surf_img_1d):
+    """Set center_surround_knob to -inf leads to no smoothing."""
+    smoothed_imgs = smooth_surface_img(
+        surf_img_1d, center_surround_knob=-np.inf
+    )
+
+    assert_surface_image_equal(smoothed_imgs, surf_img_1d)
+
+
+def test_smooth_surf_img_errors(surf_img_1d):
+    with pytest.raises(TypeError, match=""):
+        smooth_surface_img(
+            surf_img_1d,
+            vertex_weights="'vertex_weights' must be None or a SurfaceImage.",
+        )
 
 
 def test_crop_img_to():

@@ -21,7 +21,6 @@ from nilearn._utils import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.surface.utils import assert_same_number_vertices
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -2052,7 +2051,7 @@ def extract_data(img, index):
     }
 
 
-def _compute_adjacency_matrix(mesh, values="ones", dtype=None):
+def compute_adjacency_matrix(mesh, values="ones", dtype=None):
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
@@ -2123,143 +2122,3 @@ def _compute_adjacency_matrix(mesh, values="ones", dtype=None):
     vu = np.concatenate([v, u])
 
     return csr_matrix((ee, (uv, vu)), shape=(n, n))
-
-
-def smooth_img(
-    imgs,
-    iterations=1,
-    distance_weights=False,
-    vertex_weights=None,
-    center_surround_knob=0,
-):
-    """Smooth values along the surface.
-
-    Parameters
-    ----------
-    imgs : SurfaceImage
-        The surface whose is to be smoothed.
-        In the case of 2D data, each sample is smoothed independently.
-
-    iterations : :obj:`int`, default = 1
-        The number of times to repeat the smoothing operation
-        (it must be a positive value).
-        Defaults to 1
-
-    distance_weights : :obj:`bool`, default = False
-        Whether to add distance-based weighting to the smoothing.
-        With such weights, the value calculated for each vertex
-        at each iteration is the weighted sum of neighboring vertices
-        where the weight on each neighbor is the inverse
-        of the distances to it.
-
-    vertex_weights : SurfaceImage or None, default = None
-        A SurfaceImage whose data are vector of weights, one per vertex.
-        These weights are normalized and
-        applied to the smoothing
-        after the application of center-surround weights.
-
-    center_surround_knob : :obj:`float`, default = 0
-        The relative weighting of the center and the surround
-        in each iteration of the smoothing.
-        If the value of the knob is `k`,
-        then the total weight of vertices that are neighbors
-        of a given vertex (the vertex's surround)
-        is `2**k` times the weight of the vertex itself (the center).
-        A value of 0 (the default) means that, in each smoothing iteration,
-        each vertex is updated with the average of its value
-        and the average value of its neighbors.
-        A value of `-inf` results in no smoothing because the entire
-        weight is on the center, so each vertex is updated with its own value.
-        A value of `inf` results in each vertex being updated
-        with the average of its neighbors without including its own value.
-
-    Returns
-    -------
-    smoothed_imgs : SurfaceImage
-        SurfaceImage with smoothed data at each vertex.
-
-    Examples
-    --------
-    >>> from nilearn import datasets, surface
-    >>> curv = datasets.load_fsaverage_data(data_type="curvature")
-    >>> curv_smooth = surface.smooth_img(curv, iterations=50)
-
-    """
-    from nilearn.image import new_img_like
-
-    # First, calculate the center and surround weights for the
-    # center-surround knob.
-    center_weight = 1 / (1 + np.exp2(-center_surround_knob))
-    surround_weight = 1 - center_weight
-    if surround_weight == 0:
-        # There's nothing to do in this case.
-        return imgs
-
-    # Calculate the adjacency matrix either weighting
-    # by inverse distance or not weighting (ones)
-    values = "invlen" if distance_weights else "ones"
-
-    _ = _sanitize_weights(imgs, vertex_weights=vertex_weights)
-
-    new_data = {}
-    for hemi in imgs.mesh.parts:
-        mesh = imgs.mesh.parts[hemi]
-        data = imgs.data.parts[hemi]
-
-        matrix = _compute_adjacency_matrix(mesh, values=values)
-
-        # We need to normalize the matrix columns, and we can do this now by
-        # normalizing everything but the diagonal to the surround weight, then
-        # adding the center weight along the diagonal.
-        colsums = matrix.sum(axis=1)
-        colsums = np.asarray(colsums).flatten()
-        matrix = matrix.multiply(surround_weight / colsums[:, None])
-        # Add in the diagonal.
-        matrix.setdiag(center_weight)
-
-        # Run the iterations of smoothing.
-        tmp = data
-        for _ in range(iterations):
-            tmp = matrix.dot(tmp)
-
-        # Convert back into numpy array.
-        new_data[hemi] = np.reshape(np.asarray(tmp), np.shape(data))
-
-    smoothed_imgs = new_img_like(imgs, new_data)
-
-    return smoothed_imgs
-
-
-def _sanitize_weights(
-    imgs,
-    vertex_weights=None,
-):
-    """Check passed weights or set them all to 1 if None is passed.
-
-    Parameters
-    ----------
-    imgs : SurfaceImage
-        The surface whose is to be smoothed.
-        In the case of 2D data, each sample is smoothed independently.
-
-    vertex_weights : SurfaceImage or None, default = None
-        A SurfaceImage whose data are vector of weights, one per vertex.
-    """
-    from nilearn.image import new_img_like
-
-    weights = {}
-
-    if vertex_weights is not None:
-        if not isinstance(vertex_weights, SurfaceImage):
-            raise TypeError("'vertex_weights' must be None or a SurfaceImage.")
-        assert_same_number_vertices(imgs.mesh, vertex_weights.mesh)
-
-    for hemi in imgs.mesh.parts:
-        w = np.ones(imgs.mesh.parts[hemi].n_vertices)
-        if vertex_weights:
-            w = vertex_weights.data.parts[hemi]
-
-        w /= np.sum(w)
-        weights[hemi] = w
-
-    return new_img_like(imgs, weights)

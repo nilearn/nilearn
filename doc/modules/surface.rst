@@ -38,4 +38,3 @@ Functions
    load_surf_data
    load_surf_mesh
    vol_to_surf
-   smooth_img

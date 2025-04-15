@@ -52,9 +52,9 @@ from nilearn.datasets import (
     load_fsaverage_data,
     load_sample_motor_activation_image,
 )
+from nilearn.image.image import smooth_surface_img
 from nilearn.plotting import plot_surf_stat_map
 from nilearn.surface import SurfaceImage
-from nilearn.surface import smooth_img as smooth_surf_img
 
 fsaverage_meshes = load_fsaverage()
 
@@ -68,7 +68,7 @@ surface_image = SurfaceImage.from_volume(
 )
 
 for iteration in range(0, 25, 5):
-    smoothed_surface_image = smooth_surf_img(
+    smoothed_surface_image = smooth_surface_img(
         surface_image, iterations=iteration
     )
     plot_surf_stat_map(
