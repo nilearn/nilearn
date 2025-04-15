@@ -158,6 +158,9 @@ def _update_template(
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
+    if "coverage" in data:
+        data["coverage"] = f"{data['coverage']:0.1f}"
+
     body = tpl.substitute(
         title=title,
         content=content,

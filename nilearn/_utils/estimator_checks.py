@@ -432,6 +432,7 @@ def check_masker_fitted(estimator):
     check that after fitting
     - __sklearn_is_fitted__ returns true
     - running sklearn check_fitted throws no error
+    - masker have a n_elements_ attribute that is positive int
     """
     # Failure should happen before the input type is determined
     # so we can pass nifti image to surface maskers.
@@ -453,6 +454,8 @@ def check_masker_fitted(estimator):
     assert estimator.__sklearn_is_fitted__()
 
     check_is_fitted(estimator)
+
+    assert isinstance(estimator.n_elements_, int) and estimator.n_elements_ > 0
 
 
 def check_masker_clean_kwargs(estimator):

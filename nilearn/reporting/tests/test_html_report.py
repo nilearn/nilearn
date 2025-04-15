@@ -404,8 +404,11 @@ def test_4d_reports(img_mask_eye, affine_eye):
     masker = NiftiMasker(mask_strategy="epi")
     masker.fit(data_img_4d)
 
+    assert masker._report_content["coverage"] > 0
+
     html = masker.generate_report()
     _check_html(html)
+    assert "The mask includes" in str(html)
 
     # test .fit_transform method
     masker = NiftiMasker(mask_img=img_mask_eye, standardize=True)
@@ -466,7 +469,7 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
     masker.fit([img_fmri, img_fmri]).generate_report()
 
 
-def test_mask_img_generate_report(surf_img_1d, surf_mask_1d):
+def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     """Smoke test generate report."""
     masker = SurfaceMasker(surf_mask_1d, reports=True).fit()
 
@@ -480,7 +483,7 @@ def test_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     masker.generate_report()
 
 
-def test_mask_img_generate_no_report(surf_img_2d, surf_mask_1d):
+def test_surface_masker_mask_img_generate_no_report(surf_img_2d, surf_mask_1d):
     """Smoke test generate report."""
     masker = SurfaceMasker(surf_mask_1d, reports=False).fit()
 
@@ -520,6 +523,9 @@ def test_surface_masker_minimal_report_fit(
     assert '<div class="image">' in str(report)
     if not reports:
         assert 'src="data:image/svg+xml;base64,"' in str(report)
+    else:
+        assert masker._report_content["coverage"] > 0
+        assert "The mask includes" in str(report)
 
 
 def test_generate_report_engine_error(surf_maps_img, surf_img_2d):
