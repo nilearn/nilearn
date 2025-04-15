@@ -102,3 +102,5 @@ Changes
 - :bdg-dark:`Code` Move ``nilearn.plotting.surf_plotting`` and ``nilearn.plotting.html_surface`` under ``nilearn.plotting.surface`` (:gh:`5234` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Move ``nilearn.plotting.matrix_plotting`` under ``nilearn.plotting.matrix`` (:gh:`5240` by `Hande Gözükan`_).
+
+- :bdg-danger:`Deprecation` For version >=0.13.2 :func:`~nilearn.interfaces.bids.parse_bids_filename` will return a dictionary whose keys correspond to valid BIDS terms. (:gh:`5320` by `Rémi Gau`_).
