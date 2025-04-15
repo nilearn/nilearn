@@ -3,6 +3,7 @@ functional datasets (task + resting-state).
 """
 
 import fnmatch
+import functools
 import itertools
 import json
 import numbers
@@ -20,6 +21,7 @@ from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
 from nilearn._utils import check_niimg, fill_doc, logger, remove_parameters
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     ALLOWED_MESH_TYPES,
@@ -313,7 +315,10 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     if n_subjects is None:
         n_subjects = max_subjects
     if n_subjects > max_subjects:
-        warnings.warn(f"Warning: there are only {max_subjects} subjects")
+        warnings.warn(
+            f"Warning: there are only {max_subjects} subjects.",
+            stacklevel=find_stack_level(),
+        )
         n_subjects = max_subjects
     ids = ids[:n_subjects]
     nitrc_ids = nitrc_ids[:n_subjects]
@@ -737,7 +742,8 @@ def fetch_localizer_contrasts(
     ):
         warnings.warn(
             "Wrong value for 'n_subjects' (%d). The maximum "
-            "value will be used instead ('n_subjects=94')"
+            "value will be used instead ('n_subjects=94').",
+            stacklevel=find_stack_level(),
         )
         n_subjects = 94  # 94 subjects available
 
@@ -1410,7 +1416,10 @@ def fetch_mixed_gambles(
     check_params(locals())
 
     if n_subjects > 16:
-        warnings.warn("Warning: there are only 16 subjects!")
+        warnings.warn(
+            "Warning: there are only 16 subjects!",
+            stacklevel=find_stack_level(),
+        )
         n_subjects = 16
     if url is None:
         url = (
@@ -1757,7 +1766,10 @@ def fetch_surf_nki_enhanced(
     if n_subjects is None:
         n_subjects = max_subjects
     if n_subjects > max_subjects:
-        warnings.warn(f"Warning: there are only {max_subjects} subjects")
+        warnings.warn(
+            f"Warning: there are only {max_subjects} subjects.",
+            stacklevel=find_stack_level(),
+        )
         n_subjects = max_subjects
     ids = ids[:n_subjects]
 
@@ -2252,7 +2264,8 @@ def _set_invalid_n_subjects_to_max(n_subjects, max_subjects, age_group):
         warnings.warn(
             f"Wrong value for n_subjects={n_subjects}. "
             f"The maximum value (for age_group={age_group}) "
-            f"will be used instead: n_subjects={max_subjects}"
+            f"will be used instead: n_subjects={max_subjects}.",
+            stacklevel=find_stack_level(),
         )
         n_subjects = max_subjects
     return n_subjects
@@ -2338,7 +2351,7 @@ def fetch_language_localizer_demo_dataset(
     files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
     # Only download if directory is empty
     # Directory will have been created by the call to get_dataset_dir above
-    if not os.listdir(data_dir):
+    if not list(data_dir.iterdir()):
         downloaded_files = fetch_files(
             data_dir, files_spec, resume=True, verbose=verbose
         )
@@ -2348,7 +2361,7 @@ def fetch_language_localizer_demo_dataset(
     if legacy_output:
         warnings.warn(
             category=DeprecationWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
             message=(
                 "From version 0.13.0 this fetcher"
                 "will always return a Bunch.\n"
@@ -2400,7 +2413,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
             "Please use 'fetch_language_localizer_demo_dataset' instead.'"
         ),
         DeprecationWarning,
-        stacklevel=2,
+        stacklevel=find_stack_level(),
     )
     url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"
     dataset_name = "bids_langloc_example"
@@ -2646,7 +2659,8 @@ def fetch_openneuro_dataset(
         if dataset_version != DATASET_VERSION:
             warnings.warn(
                 'If `dataset_version` is not "ds000030_R1.0.4", '
-                '`urls` must be specified. Downloading "ds000030_R1.0.4".'
+                '`urls` must be specified. Downloading "ds000030_R1.0.4".',
+                stacklevel=find_stack_level(),
             )
 
         data_prefix = (
@@ -2767,7 +2781,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
 
 def _download_spm_auditory_data(data_dir):
-    logger.log("Data absent, downloading...", stack_level=2)
+    logger.log("Data absent, downloading...")
     url = (
         "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
         "MoAEpilot.bids.zip"
@@ -2777,9 +2791,7 @@ def _download_spm_auditory_data(data_dir):
     try:
         uncompress_file(archive_path)
     except Exception:
-        logger.log(
-            "Archive corrupted, trying to download it again.", stack_level=2
-        )
+        logger.log("Archive corrupted, trying to download it again.")
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
@@ -2866,8 +2878,7 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     if len(session_func) < 390:
         logger.log(
             f"Missing {390 - len(session_func)} functional scans "
-            f"for session {session}.",
-            stack_level=2,
+            f"for session {session}."
         )
         return None
 
@@ -2878,7 +2889,7 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
 def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
     sess_trials = subject_dir / f"fMRI/trials_ses{int(session)}.mat"
     if not sess_trials.is_file():
-        logger.log(f"Missing session file: {sess_trials}", stack_level=2)
+        logger.log(f"Missing session file: {sess_trials}")
         return None
 
     _subject_data[f"trials_ses{int(session)}"] = str(sess_trials)
@@ -2888,7 +2899,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
 def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
     anat = subject_dir / "sMRI/smri.img"
     if not anat.is_file():
-        logger.log("Missing structural image.", stack_level=2)
+        logger.log("Missing structural image.")
         return None
 
     _subject_data["anat"] = str(anat)
@@ -2918,7 +2929,8 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
             )
         except MatReadError as mat_err:
             warnings.warn(
-                f"{mat_err!s}. An events.tsv file cannot be generated"
+                f"{mat_err!s}. An events.tsv file cannot be generated",
+                stacklevel=find_stack_level(),
             )
         else:
             events_filepath = _make_events_filepath_spm_multimodal_fmri(
@@ -2935,7 +2947,7 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
 
 
 def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
-    logger.log("Data absent, downloading...", stack_level=2)
+    logger.log("Data absent, downloading...")
     urls = [
         # fmri
         (
@@ -2955,10 +2967,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
         try:
             uncompress_file(archive_path)
         except Exception:
-            logger.log(
-                "Archive corrupted, trying to download it again.",
-                stack_level=2,
-            )
+            logger.log("Archive corrupted, trying to download it again.")
             return fetch_spm_multimodal_fmri(
                 data_dir=data_dir, data_name="", subject_id=subject_id
             )
@@ -3148,6 +3157,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     return data
 
 
+@functools.lru_cache
 def load_sample_motor_activation_image():
     """Load a single functional image showing motor activations.
 
@@ -3155,5 +3165,16 @@ def load_sample_motor_activation_image():
     -------
     str
         Path to the sample functional image.
+
+    Notes
+    -----
+    The 'left vs right button press' contrast is used:
+    https://neurovault.org/images/10426/
+
+    See Also
+    --------
+    nilearn.datasets.fetch_neurovault_ids
+    nilearn.datasets.fetch_neurovault
+    nilearn.datasets.fetch_neurovault_auditory_computation_task
     """
     return str(Path(__file__).parent / "data" / "image_10426.nii.gz")

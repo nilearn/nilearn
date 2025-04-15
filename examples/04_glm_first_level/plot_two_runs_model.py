@@ -60,7 +60,8 @@ design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 # %%
 # Initialize and run the GLM
 # --------------------------
-# First, we need to specify the model before fitting it to the data.
+# First, we need to specify the model
+# before fitting it to the data.
 # Note that a brain mask was provided in the dataset,
 # so that is what we will use.
 from nilearn.glm.first_level import FirstLevelModel
@@ -262,12 +263,14 @@ report = fmri_glm_multirun.generate_report(
 
 # %%
 # We have several ways to access the report:
-
-# This report can be viewed in a notebook
+#
+# This report can be viewed in a notebook.
 report
 
+# %%
 # Or in a separate browser window
 # report.open_in_browser()
 
-# or we can save as an html file
+# %%
+# Or we can save as an html file.
 report.save_as_html(output_dir / "report.html")

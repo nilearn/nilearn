@@ -9,6 +9,7 @@ from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
 import nilearn.typing as nilearn_typing
 from nilearn._utils import logger
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -99,7 +100,7 @@ def check_threshold(
                     f"The given float value must not exceed {value_check}. "
                     f"But, you have given threshold={threshold}.",
                     category=UserWarning,
-                    stacklevel=3,
+                    stacklevel=find_stack_level(),
                 )
     else:
         if two_sided:
@@ -118,7 +119,7 @@ def check_threshold(
                 f"{value_check}. But, you have given "
                 f"threshold={threshold}.",
                 category=UserWarning,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
     return threshold
@@ -206,14 +207,14 @@ def adjust_screening_percentile(
             "Brain mask is bigger than the standard "
             "human brain. This object is probably not tuned to "
             "be used on such data.",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
     elif mask_extent < 0.005 * reference_extent:
         warnings.warn(
             "Brain mask is smaller than .5% of the size of the standard "
             "human brain. This object is probably not tuned to "
             "be used on such data.",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
 
     if screening_percentile < 100.0:
@@ -398,6 +399,8 @@ TYPE_MAPS = {
     "two_sided_test": nilearn_typing.TwoSidedTest,
     "target_affine": nilearn_typing.TargetAffine,
     "target_shape": nilearn_typing.TargetShape,
+    "transparency": nilearn_typing.Transparency,
+    "transparency_range": nilearn_typing.TransparencyRange,
     "url": nilearn_typing.Url,
     "upper_cutoff": nilearn_typing.UpperCutoff,
     "verbose": nilearn_typing.Verbose,

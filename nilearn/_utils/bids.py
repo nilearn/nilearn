@@ -1,14 +1,14 @@
 import warnings
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from nibabel import Nifti1Image
 
 from nilearn._utils import check_niimg
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.typing import NiimgLike
 
 
 def generate_atlas_look_up_table(
@@ -87,19 +87,17 @@ def generate_atlas_look_up_table(
 
         if len(name) < len(index):
             warnings.warn(
-                "Too many indices for the names."
+                "Too many indices for the names. "
                 "Padding 'names' with 'unknown'.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
             name += ["unknown"] * (len(index) - len(name))
 
         if len(name) > len(index):
             warnings.warn(
-                (
-                    "Too many names for the indices. "
-                    "Dropping excess names values."
-                ),
-                stacklevel=3,
+                "Too many names for the indices. "
+                "Dropping excess names values.",
+                stacklevel=find_stack_level(),
             )
             name = name[: len(index)]
 
@@ -179,7 +177,7 @@ def check_look_up_table(lut, atlas, strict=False, verbose=1):
             if strict:
                 raise ValueError(msg)
             if verbose:
-                warnings.warn(msg, stacklevel=3)
+                warnings.warn(msg, stacklevel=find_stack_level())
 
         if missing_from_lut := set(roi_id) - set(lut["index"].to_list()):
             msg = (
@@ -191,7 +189,7 @@ def check_look_up_table(lut, atlas, strict=False, verbose=1):
             if strict:
                 raise ValueError(msg)
             if verbose:
-                warnings.warn(msg, stacklevel=3)
+                warnings.warn(msg, stacklevel=find_stack_level())
 
 
 def sanitize_look_up_table(lut, atlas):
@@ -204,7 +202,7 @@ def sanitize_look_up_table(lut, atlas):
 
 
 def _get_indices_from_image(image):
-    if isinstance(image, (str, Path, Nifti1Image)):
+    if isinstance(image, NiimgLike):
         img = check_niimg(image)
         data = safe_get_data(img)
     elif isinstance(image, SurfaceImage):

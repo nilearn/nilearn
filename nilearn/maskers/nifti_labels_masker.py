@@ -8,7 +8,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
 from nilearn._utils import logger
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -321,7 +321,7 @@ class NiftiLabelsMasker(BaseMasker):
                     "after resampling."
                 )
             if tolerant:
-                warnings.warn(msg, UserWarning, stacklevel=3)
+                warnings.warn(msg, UserWarning, stacklevel=find_stack_level())
             else:
                 raise ValueError(msg)
 
@@ -378,15 +378,6 @@ class NiftiLabelsMasker(BaseMasker):
 
     def generate_report(self):
         """Generate a report."""
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
-
         from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)
@@ -477,7 +468,7 @@ class NiftiLabelsMasker(BaseMasker):
                         "A list of 4D subject images were provided to fit. "
                         "Only first subject is shown in the report."
                     )
-                    warnings.warn(msg, stacklevel=6)
+                    warnings.warn(msg, stacklevel=find_stack_level())
                     self._report_content["warning_message"] = msg
                 display = plotting.plot_img(
                     img,
@@ -496,7 +487,7 @@ class NiftiLabelsMasker(BaseMasker):
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )
-                warnings.warn(msg, stacklevel=6)
+                warnings.warn(msg, stacklevel=find_stack_level())
                 self._report_content["warning_message"] = msg
                 display = plotting.plot_roi(labels_image)
                 plt.close()
@@ -587,7 +578,7 @@ class NiftiLabelsMasker(BaseMasker):
                 warnings.warn(
                     "Number of regions in the labels image "
                     "does not match the number of labels provided.",
-                    stacklevel=2,
+                    stacklevel=find_stack_level(),
                 )
             # if number of regions in the labels image is more
             # than the number of labels provided, then we cannot
@@ -698,18 +689,9 @@ class NiftiLabelsMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
-            default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -738,18 +720,9 @@ class NiftiLabelsMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
-            default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -876,7 +849,10 @@ class NiftiLabelsMasker(BaseMasker):
         return region_signals
 
     def _resample_labels(self, imgs_):
-        logger.log("Resampling labels", self.verbose, stack_level=2)
+        logger.log(
+            "Resampling labels",
+            self.verbose,
+        )
         labels_before_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
         )
@@ -901,7 +877,8 @@ class NiftiLabelsMasker(BaseMasker):
                 f"the following labels were removed: {labels_diff}. "
                 "Label image only contains "
                 f"{len(labels_after_resampling)} labels "
-                "(including background)."
+                "(including background).",
+                stacklevel=find_stack_level(),
             )
 
         return self

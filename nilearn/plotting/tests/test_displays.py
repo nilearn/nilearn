@@ -130,7 +130,7 @@ def test_get_index_from_direction_exception():
     """Tests that a ValueError is raised when an invalid direction \
        is given to function ``_get_index_from_direction``.
     """
-    from nilearn.plotting.displays._axes import _get_index_from_direction
+    from nilearn.plotting.displays._utils import _get_index_from_direction
 
     with pytest.raises(ValueError, match="foo is not a valid direction."):
         _get_index_from_direction("foo")
@@ -410,3 +410,61 @@ def test_threshold(threshold, vmin, vmax, expected_results):
         OrthoSlicer._threshold(data, threshold, vmin, vmax),
         np.ma.masked_invalid(expected_results),
     )
+
+
+@pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
+@pytest.mark.parametrize("display,name", zip(SLICERS, SLICER_KEYS))
+def test_display_slicers_transparency(
+    display, img, name, cut_coords, transparency
+):
+    """Test several valid transparency values.
+
+    Also make sure warning is thrown that alpha value is overridden.
+    """
+    display = display(cut_coords=cut_coords)
+    with pytest.warns(UserWarning, match="Overriding with"):
+        display.add_overlay(
+            img, cmap=plt.cm.gray, transparency=transparency, alpha=0.5
+        )
+    display.title(f"display mode is {name}")
+
+
+@pytest.mark.parametrize("transparency", [-2, 10])
+@pytest.mark.parametrize("display,name", zip(SLICERS, SLICER_KEYS))
+def test_display_slicers_transparency_warning(
+    display, img, name, cut_coords, transparency
+):
+    """Test several invalid transparency values throw warnings."""
+    display = display(cut_coords=cut_coords)
+    with pytest.warns(UserWarning, match="Setting it to"):
+        display.add_overlay(img, cmap=plt.cm.gray, transparency=transparency)
+    display.title(f"display mode is {name}")
+
+
+@pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
+@pytest.mark.parametrize("display,name", zip(PROJECTORS, PROJECTOR_KEYS))
+def test_display_projectors_transparency(
+    display, img, name, cut_coords, transparency
+):
+    """Test several valid transparency values.
+
+    Also make sure warning is thrown that alpha value is overridden.
+    """
+    display = display(cut_coords=cut_coords)
+    with pytest.warns(UserWarning, match="Overriding with"):
+        display.add_overlay(
+            img, cmap=plt.cm.gray, transparency=transparency, alpha=0.5
+        )
+    display.title(f"display mode is {name}")
+
+
+@pytest.mark.parametrize("transparency", [-2, 10])
+@pytest.mark.parametrize("display,name", zip(PROJECTORS, PROJECTOR_KEYS))
+def test_display_projectors_transparency_warning(
+    display, img, name, cut_coords, transparency
+):
+    """Test several invalid transparency values throw warnings."""
+    display = display(cut_coords=cut_coords)
+    with pytest.warns(UserWarning, match="Setting it to"):
+        display.add_overlay(img, cmap=plt.cm.gray, transparency=transparency)
+    display.title(f"display mode is {name}")

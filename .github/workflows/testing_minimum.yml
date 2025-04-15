@@ -46,27 +46,65 @@ env:
 
 jobs:
     test_min_install:
+
         if: github.repository == 'nilearn/nilearn'
+
         runs-on: ${{ matrix.os }}
+
         strategy:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 python-version: ['3.9']
                 min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.3.0]
+
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
+
         steps:
+
         -   name: Checkout nilearn
             uses: actions/checkout@v4
+
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
                 python-version: ${{ matrix.python-version }}
+
         -   name: Install dependencies for building Nilearn
             run: |
                 python -m pip install --upgrade pip setuptools
                 pip install ${{ matrix.min_dep }}
+
         -   name: Install nilearn
             run: pip install .[plotting,plotly,test]
+
+        # there are some numpy 2.0 related issues when using pytest-mpl
+        # with matplotlib 3.3.0 on windows:
+        # seems some transitive dependencies do not play nice with numpy 2.0.
+        # So skipping for now.
+
         -   name: Run tests
-            run: pytest --pyargs nilearn --cov=nilearn
+            if: ${{ !(contains(matrix.min_dep, 'matplotlib==3.3.0') && matrix.os == 'windows-latest') }}
+            run: |
+                pip install pytest-mpl
+                pytest --pyargs nilearn --report=report.html -n auto --csv results/pytest_output/pytest_output.csv
+
+        -   name: Generate plots tests timing
+            if: success() || failure()
+            run: |
+                pip install tox
+                tox run -e plot_test_timing
+
+        -   name: Upload test report
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: ${{ matrix.os }}_${{ matrix.min_dep }}_report.html
+                path: report.html
+
+        -   name: Upload test timings
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: ${{ matrix.os }}_${{ matrix.min_dep }}_pytest_output
+                path: results/pytest_output

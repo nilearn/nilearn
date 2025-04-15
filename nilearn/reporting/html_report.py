@@ -1,16 +1,17 @@
 """Generate HTML reports."""
 
-import html
 import uuid
 import warnings
 from string import Template
 
 import pandas as pd
 
+from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
-from nilearn.plotting.html_document import HTMLDocument
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,
@@ -35,11 +36,6 @@ ESTIMATOR_TEMPLATES = {
     "default": "report_body_template.html",
 }
 
-JS_TEMPLATE = {
-    "MapsMasker": "maps_carousel.js.tpl",
-    "SpheresMasker": "spheres_carousel.js.tpl",
-}
-
 
 def _get_estimator_template(estimator):
     """Return the HTML template to use for a given estimator \
@@ -61,32 +57,6 @@ def _get_estimator_template(estimator):
         return ESTIMATOR_TEMPLATES[estimator.__class__.__name__]
     else:
         return ESTIMATOR_TEMPLATES["default"]
-
-
-def _get_js_template(estimator_name):
-    """Return the JS template to use for a given estimator \
-    if a specific template was defined in JS_TEMPLATES, \
-    otherwise return None.
-
-    Parameters
-    ----------
-    estimator : str
-        The name of the estimator.
-
-    Returns
-    -------
-    template : str
-        Name of the template file to use.
-
-    """
-    return next(
-        (
-            JS_PATH / JS_TEMPLATE[key]
-            for key in JS_TEMPLATE
-            if key in estimator_name
-        ),
-        None,
-    )
 
 
 def embed_img(display):
@@ -181,18 +151,8 @@ def _update_template(
         str(body_template_path), encoding="utf-8"
     )
 
-    # Load JS template
-    js_template_path = _get_js_template(title)
-    if js_template_path is not None:
-        with js_template_path.open(encoding="utf-8") as js_file:
-            js_tpl = js_file.read()
-            # remove comments from the top of the file
-            # our scripts start with "document.addEventListener"
-            # so we can find the start
-            js_tpl = js_tpl[js_tpl.find("document.addEventListener") :]
-        js_content = tempita.Template(js_tpl).substitute(**data)
-    else:
-        js_content = None
+    with (JS_PATH / "carousel.js").open(encoding="utf-8") as js_file:
+        js_carousel = js_file.read()
 
     css_file_path = CSS_PATH / "masker_report.css"
     with css_file_path.open(encoding="utf-8") as css_file:
@@ -216,20 +176,13 @@ def _update_template(
         ),
         **data,
         css=css,
-        js_content=js_content,
+        js_carousel=js_carousel,
         warning_messages=_render_warnings_partial(warning_messages),
         summary_html=summary_html,
     )
 
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
-
-    # revert HTML safe substitutions in JS sections
-    if js_template_path is not None:
-        js_start = body.find("<script>")
-        js_end = body.find("</script>") + len("</script>")
-        unescaped_js = html.unescape(body[js_start:js_end])
-        body = body[:js_start] + unescaped_js + body[js_end:]
 
     head_template_name = "report_head_template.html"
     head_template_path = HTML_TEMPLATE_PATH / head_template_name
@@ -247,6 +200,7 @@ def _update_template(
             "head_css": head_css,
             "version": __version__,
             "page_title": f"{title} report",
+            "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
 
@@ -258,18 +212,15 @@ def _define_overlay(estimator):
     displays = estimator._reporting()
 
     if len(displays) == 1:  # set overlay to None
-        overlay, image = None, displays[0]
+        return None, displays[0]
 
     elif isinstance(estimator, NiftiSpheresMasker):
-        overlay, image = None, displays
+        return None, displays
 
     elif len(displays) == 2:
-        overlay, image = displays[0], displays[1]
+        return displays[0], displays[1]
 
-    else:
-        overlay, image = None, displays
-
-    return overlay, image
+    return None, displays
 
 
 def generate_report(estimator):
@@ -289,6 +240,19 @@ def generate_report(estimator):
     report : HTMLReport
 
     """
+    if not is_matplotlib_installed():
+        with warnings.catch_warnings():
+            mpl_unavail_msg = (
+                "Matplotlib is not imported! No reports will be generated."
+            )
+            warnings.filterwarnings("always", message=mpl_unavail_msg)
+            warnings.warn(
+                category=ImportWarning,
+                message=mpl_unavail_msg,
+                stacklevel=find_stack_level(),
+            )
+            return [None]
+
     if hasattr(estimator, "_report_content"):
         data = estimator._report_content
     else:
@@ -314,7 +278,7 @@ def generate_report(estimator):
         for msg in warning_messages:
             warnings.warn(
                 msg,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
         return _update_template(
@@ -355,12 +319,16 @@ def _render_warnings_partial(warning_messages):
 
 def _create_report(estimator, data):
     html_template = _get_estimator_template(estimator)
+
+    # note that some surface images are passed via data
+    # for surface maps masker
     overlay, image = _define_overlay(estimator)
     embeded_images = (
         [embed_img(i) for i in image]
         if isinstance(image, list)
         else embed_img(image)
     )
+
     summary_html = None
     # only convert summary to html table if summary exists
     if "summary" in data and data["summary"] is not None:
@@ -413,6 +381,23 @@ def _create_report(estimator, data):
         template_name=html_template,
         summary_html=summary_html,
     )
+
+
+def is_notebook() -> bool:
+    """Detect if we are running in a notebook.
+
+    From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
+    """
+    try:
+        shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        elif shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+    except NameError:
+        return False  # Probably standard Python interpreter
 
 
 class HTMLReport(HTMLDocument):

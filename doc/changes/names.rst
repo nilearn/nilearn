@@ -175,6 +175,8 @@
 
 .. _Kun CHEN: https://chenkun.me
 
+.. _Lee Newberg: https://github.com/Leengit
+
 .. _Leonard Sasse: https://github.com/LeSasse
 
 .. _Loic Estève: https://github.com/lesteve
@@ -275,7 +277,7 @@
 
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
 
-.. _Sage Hahn: https://sagehahn.com/
+.. _Sage Hahn: https://github.com/sahahn
 
 .. _Salma Bougacha: https://github.com/salma1601
 

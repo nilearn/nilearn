@@ -14,10 +14,6 @@ from sklearn.exceptions import EfficiencyWarning
 from nilearn import datasets, image
 from nilearn._utils import data_gen
 from nilearn.image import resampling
-from nilearn.surface._testing import (
-    assert_polymesh_equal,
-    assert_surface_image_equal,
-)
 from nilearn.surface.surface import (
     FileMesh,
     InMemoryMesh,
@@ -26,7 +22,6 @@ from nilearn.surface.surface import (
     SurfaceImage,
     _choose_kind,
     _data_to_gifti,
-    _extract_data,
     _gifti_img_to_mesh,
     _interpolation_sampling,
     _load_surf_files_gifti_gzip,
@@ -41,17 +36,14 @@ from nilearn.surface.surface import (
     _vertex_outer_normals,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
-    concat_imgs,
+    extract_data,
     get_data,
-    index_img,
-    iter_img,
     load_surf_data,
     load_surf_mesh,
-    mean_img,
-    new_img_like,
     smooth_img,
     vol_to_surf,
 )
+from nilearn.surface.utils import assert_surface_image_equal
 
 datadir = Path(__file__).resolve().parent / "data"
 
@@ -579,11 +571,16 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
     assert np.allclose(locations, expected)
 
 
-def test_depth_ball_sampling():
+def test_vol_to_surf_errors():
+    """Test errors thrown by vol_to_surf."""
     img, *_ = data_gen.generate_mni_space_img()
     mesh = load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
+
     with pytest.raises(ValueError, match=".*does not support.*"):
         vol_to_surf(img, mesh, kind="ball", depth=[0.5])
+
+    with pytest.raises(ValueError, match=".*interpolation.*"):
+        vol_to_surf(img, mesh, interpolation="bad")
 
 
 @pytest.mark.parametrize("kind", ["line", "ball"])
@@ -595,21 +592,51 @@ def test_vol_to_surf(kind, n_scans, use_mask):
         mask_img = None
     if n_scans == 1:
         img = image.new_img_like(img, image.get_data(img).squeeze())
+
     fsaverage = datasets.fetch_surf_fsaverage()
+
     mesh = load_surf_mesh(fsaverage["pial_left"])
     inner_mesh = load_surf_mesh(fsaverage["white_left"])
     center_mesh = (
         np.mean([mesh.coordinates, inner_mesh.coordinates], axis=0),
         mesh.faces,
     )
+
     proj = vol_to_surf(
         img, mesh, kind="depth", inner_mesh=inner_mesh, mask_img=mask_img
     )
     other_proj = vol_to_surf(img, center_mesh, kind=kind, mask_img=mask_img)
+
     correlation = pearsonr(proj.ravel(), other_proj.ravel())[0]
+
     assert correlation > 0.99
-    with pytest.raises(ValueError, match=".*interpolation.*"):
-        vol_to_surf(img, mesh, interpolation="bad")
+
+
+def test_vol_to_surf_nearest_most_frequent(img_labels):
+    """Test nearest most frequent interpolation method in vol_to_surf when
+    converting deterministic atlases with integer labels.
+    """
+    img_labels_data = img_labels.get_fdata()
+    uniques_vol = np.unique(img_labels_data)
+
+    mesh = flat_mesh(5, 7)
+    mesh_labels = vol_to_surf(
+        img_labels, mesh, interpolation="nearest_most_frequent"
+    )
+
+    uniques_surf = np.unique(mesh_labels)
+    assert set(uniques_surf) <= set(uniques_vol)
+
+
+def test_vol_to_surf_nearest_deprecation(img_labels):
+    """Test deprecation warning for nearest interpolation method in
+    vol_to_surf.
+    """
+    mesh = flat_mesh(5, 7)
+    with pytest.warns(
+        FutureWarning, match="interpolation method will be deprecated"
+    ):
+        vol_to_surf(img_labels, mesh, interpolation="nearest")
 
 
 def test_masked_indices():
@@ -1182,26 +1209,6 @@ def test_smooth_img_errors(surf_img_1d):
         )
 
 
-def test_mean_img(surf_img_1d, surf_img_2d):
-    """Check that mean is properly computed over 'time points'."""
-    # one 'time point' image returns same
-    img = mean_img(surf_img_1d)
-
-    assert_surface_image_equal(img, surf_img_1d)
-
-    # image with left hemisphere
-    # where timepoint 1 has all values == 0
-    # and timepoint 2 == 1
-    two_time_points_img = surf_img_2d(2)
-    two_time_points_img.data.parts["left"][:, 0] = np.zeros(shape=4)
-    two_time_points_img.data.parts["left"][:, 1] = np.ones(shape=4)
-
-    img = mean_img(two_time_points_img)
-
-    assert_array_equal(img.data.parts["left"], np.ones(shape=(4,)) * 0.5)
-    assert img.shape == (img.mesh.n_vertices,)
-
-
 def test_get_min_max(surf_img_2d):
     """Make sure we get the min and max across hemispheres."""
     img = surf_img_2d()
@@ -1216,71 +1223,10 @@ def test_get_min_max(surf_img_2d):
     assert vmax == 10
 
 
-def test_concat_imgs(surf_img_2d):
-    """Check concat_imgs returns a single SurfaceImage.
-
-    Output must have as many samples as the sum of samples in the input.
-    """
-    img = concat_imgs([surf_img_2d(3), surf_img_2d(5)])
-    assert img.shape == (9, 8)
-    for value in img.data.parts.values():
-        assert value.ndim == 2
-
-
-def test_iter_img(surf_img_2d):
-    """Check iter_img returns list of SurfaceImage.
-
-    Each SurfaceImage must have same mesh as input
-    and data from one of the sample of the input SurfaceImage.
-    """
-    input = surf_img_2d(5)
-    output = iter_img(input, return_iterator=False)
-
-    assert isinstance(output, list)
-    assert len(output) == input.shape[1]
-    assert all(isinstance(x, SurfaceImage) for x in output)
-    for i in range(input.shape[1]):
-        assert_polymesh_equal(output[i].mesh, input.mesh)
-        assert_array_equal(
-            np.squeeze(output[i].data.parts["left"]),
-            input.data.parts["left"][..., i],
-        )
-
-
-def test_iter_img_2d(surf_img_1d, surf_img_2d):
-    """Return as is if surface image is 2D."""
-    input = surf_img_2d(1)
-    output = iter_img(input, return_iterator=False)
-
-    assert_surface_image_equal(output[0], input)
-
-    output = iter_img(surf_img_1d, return_iterator=False)
-
-    assert_surface_image_equal(output[0], surf_img_1d)
-
-
-def test_iter_img_wrong_input():
-    """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        iter_img(1)
-
-
-def test_new_img_like_wrong_input():
-    """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        new_img_like(1, data=np.ones(2))
-
-
 def test_extract_data_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        _extract_data(1, index=1)
-
-
-def test_index_img_wrong_input():
-    """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
-        index_img(1, index=1)
+        extract_data(1, index=1)
 
 
 def test_get_data(surf_img_1d):

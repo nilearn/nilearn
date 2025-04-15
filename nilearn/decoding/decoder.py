@@ -45,6 +45,7 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import check_memory
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
@@ -119,12 +120,11 @@ def _check_param_grid(estimator, X, y, param_grid=None):
     if param_grid is None:
         param_grid = _default_param_grid(estimator, X, y)
 
-    elif isinstance(estimator, (RidgeCV, RidgeClassifierCV)):
-        param_grid = _wrap_param_grid(param_grid, "alphas")
     elif isinstance(estimator, LogisticRegressionCV):
         param_grid = _replace_param_grid_key(param_grid, "C", "Cs")
         param_grid = _wrap_param_grid(param_grid, "Cs")
-    elif isinstance(estimator, LassoCV):
+
+    elif isinstance(estimator, (RidgeCV, RidgeClassifierCV, LassoCV)):
         param_grid = _wrap_param_grid(param_grid, "alphas")
 
     return param_grid
@@ -260,7 +260,8 @@ def _wrap_param_grid(param_grid, param_name):
                 f"parameter '{param_name}' should be a sequence of iterables"
                 f" (e.g., {{param_name: [[1, 10, 100]]}}) to benefit from"
                 " the built-in cross-validation of the estimator."
-                f" Wrapping {param_grid_item[param_name]} in an outer list."
+                f" Wrapping {param_grid_item[param_name]} in an outer list.",
+                stacklevel=find_stack_level(),
             )
 
             param_grid_item = dict(param_grid_item)  # make a new dict
@@ -310,7 +311,7 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
                 " choice of underlying scikit-learn estimator. In a future"
                 " version, this will result in an error.",
                 DeprecationWarning,
-                stacklevel=13,
+                stacklevel=find_stack_level(),
             )
             param_grid_item[new_key] = param_grid_item.pop(key_to_replace)
         new_param_grid.append(param_grid_item)
@@ -326,7 +327,8 @@ def _check_estimator(estimator):
     if not isinstance(estimator, str):
         warnings.warn(
             "Use a custom estimator at your own risk "
-            "of the process not working as intended."
+            "of the process not working as intended.",
+            stacklevel=find_stack_level(),
         )
     elif estimator in SUPPORTED_ESTIMATORS:
         estimator = SUPPORTED_ESTIMATORS.get(estimator)
@@ -654,7 +656,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             warnings.warn(
                 "groups parameter is specified but "
                 "cv parameter is not set to custom CV splitter. "
-                "Using default object LeaveOneGroupOut()."
+                "Using default object LeaveOneGroupOut().",
+                stacklevel=find_stack_level(),
             )
             cv_object = LeaveOneGroupOut()
         else:
@@ -708,6 +711,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 "Consider raising clustering_percentile or "
                 "screening_percentile parameters.",
                 UserWarning,
+                stacklevel=find_stack_level(),
             )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)

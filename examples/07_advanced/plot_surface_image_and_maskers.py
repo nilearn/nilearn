@@ -54,28 +54,16 @@ mean_img = masker.inverse_transform(mean_data)
 print(f"Image mean: {mean_img}")
 
 # %%
-# let's create a figure with all the views for both hemispheres
+# let's create a figure with several views for both hemispheres
 views = [
     "lateral",
-    "medial",
     "dorsal",
-    "ventral",
-    "anterior",
-    "posterior",
 ]
 hemispheres = ["left", "right", "both"]
 
 # %%
 # for our plots we will be using the fsaverage sulcal data as background map
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
-
-fig, axes = plt.subplots(
-    nrows=len(views),
-    ncols=len(hemispheres),
-    subplot_kw={"projection": "3d"},
-    figsize=(4 * len(hemispheres), 4),
-)
-axes = np.atleast_2d(axes)
 
 mean_img = threshold_img(mean_img, threshold=1e-08, copy=False, two_sided=True)
 
@@ -84,6 +72,14 @@ mean_img = threshold_img(mean_img, threshold=1e-08, copy=False, two_sided=True)
 # centered on 0 for all subplots.
 vmax = max(np.absolute(hemi).max() for hemi in mean_img.data.parts.values())
 vmin = -vmax
+
+fig, axes = plt.subplots(
+    nrows=len(views),
+    ncols=len(hemispheres),
+    subplot_kw={"projection": "3d"},
+    figsize=(4 * len(hemispheres), 4),
+)
+axes = np.atleast_2d(axes)
 
 for view, ax_row in zip(views, axes):
     for ax, hemi in zip(ax_row, hemispheres):
@@ -97,7 +93,7 @@ for view, ax_row in zip(views, axes):
             view=view,
             figure=fig,
             axes=ax,
-            title=f"mean image - {hemi} - {view}",
+            title=f"{hemi} - {view}",
             colorbar=False,
             symmetric_cmap=True,
             bg_on_data=True,
@@ -217,7 +213,6 @@ plot_surf(
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    colorbar=True,
     cmap="inferno",
     vmin=0,
 )
@@ -250,6 +245,5 @@ plot_surf(
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    colorbar=True,
 )
 show()

@@ -4,22 +4,15 @@ import pytest
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
-from nilearn.surface._testing import (
+from nilearn.surface.utils import (
     assert_polydata_equal,
     assert_surface_image_equal,
 )
 
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_no_attributes_set_in_init",
-]
-
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[SurfaceMasker()], extra_valid_checks=extra_valid_checks
-    ),
+    check_estimator(estimator=[SurfaceMasker()]),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -29,11 +22,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.xfail(reason="invalid checks should fail")
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[SurfaceMasker()],
-        valid=False,
-        extra_valid_checks=extra_valid_checks,
-    ),
+    check_estimator(estimator=[SurfaceMasker()], valid=False),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -67,14 +56,14 @@ def test_mask_img_fit_shape_mismatch(
         and that of image to fit.
     """
     masker = SurfaceMasker(surf_mask_1d)
-    with pytest.raises(ValueError, match="number of vertices"):
+    with pytest.raises(ValueError, match="Number of vertices"):
         masker.fit(flip_surf_img(surf_img_2d(shape)))
     masker.fit(surf_img_2d(shape))
     assert_polydata_equal(surf_mask_1d.data, masker.mask_img_.data)
 
 
 def test_mask_img_fit_keys_mismatch(surf_mask_1d, drop_surf_img_part):
-    """Check fitr fails if one hemisphere is missing."""
+    """Check fit fails if one hemisphere is missing."""
     masker = SurfaceMasker(surf_mask_1d)
     with pytest.raises(ValueError, match="key"):
         masker.fit(drop_surf_img_part(surf_mask_1d))
@@ -143,7 +132,7 @@ def test_mask_img_transform_shape_mismatch(
         and that of image to transform.
     """
     masker = SurfaceMasker(surf_mask_1d).fit()
-    with pytest.raises(ValueError, match="number of vertices"):
+    with pytest.raises(ValueError, match="Number of vertices"):
         masker.transform(flip_surf_img(surf_img_1d))
     # non-flipped is ok
     masker.transform(surf_img_1d)

@@ -20,6 +20,9 @@ with each different color which are picked randomly from the colormap
 which is already defined.
 
 See :ref:`plotting` for more information to know how to tune the parameters.
+
+Check the :ref:`list of atlases <listing_probabilistic_atlases>`
+to know the ones that are shipped with Nilearn.
 """
 
 # %%
@@ -48,11 +51,10 @@ plotting.plot_prob_atlas(
     (icbm["wm"], icbm["gm"], icbm["csf"]), title="ICBM tissues"
 )
 
-# "filled_contours" example. An optional colorbar can be set.
+# "filled_contours" example.
 plotting.plot_prob_atlas(
     smith_bm20,
-    title="Smith2009 20 Brainmap (with colorbar)",
-    colorbar=True,
+    title="Smith2009 20 Brainmap",
 )
 
 plotting.show()

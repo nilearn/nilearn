@@ -2,7 +2,6 @@
 
 import platform
 import warnings
-from copy import deepcopy
 from pathlib import Path
 
 import joblib
@@ -37,22 +36,29 @@ from nilearn.image import (
     crop_img,
     get_data,
     high_variance_confounds,
-    image,
     index_img,
     iter_img,
     largest_connected_component_img,
     math_img,
     mean_img,
     new_img_like,
-    resampling,
     smooth_img,
     swap_img_hemispheres,
     threshold_img,
 )
+from nilearn.image.image import (
+    _crop_img_to,
+    _fast_smooth_array,
+    smooth_array,
+)
+from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface._testing import assert_surface_image_equal
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.surface.utils import (
+    assert_polymesh_equal,
+    assert_surface_image_equal,
+)
 
 X64 = platform.architecture()[0] == "64bit"
 
@@ -185,10 +191,12 @@ def test_get_data(tmp_path, shape_3d_default):
 
 
 def test_high_variance_confounds(shape_3d_default):
-    # See also test_signals.test_high_variance_confounds()
-    # There is only tests on what is added by high_variance_confounds()
-    # compared to signal.high_variance_confounds()
+    """Check high_variance_confounds returns proper shape.
 
+    See also test_signals.test_high_variance_confounds()
+    There is only tests on what is added by high_variance_confounds()
+    compared to signal.high_variance_confounds()
+    """
     length = 17
     n_confounds = 10
 
@@ -196,6 +204,27 @@ def test_high_variance_confounds(shape_3d_default):
 
     confounds1 = high_variance_confounds(
         img, mask_img=mask_img, percentile=10.0, n_confounds=n_confounds
+    )
+
+    assert confounds1.shape == (length, n_confounds)
+
+    # No mask.
+    confounds2 = high_variance_confounds(
+        img, percentile=10.0, n_confounds=n_confounds
+    )
+
+    assert confounds2.shape == (length, n_confounds)
+
+
+def test_high_variance_confounds_surface(surf_mask_1d, surface_glm_data):
+    """Check high_variance_confounds returns proper shape from surface."""
+    length = 17
+    n_confounds = 10
+
+    img, _ = surface_glm_data(length)
+
+    confounds1 = high_variance_confounds(
+        img, mask_img=surf_mask_1d, percentile=10.0, n_confounds=n_confounds
     )
 
     assert confounds1.shape == (length, n_confounds)
@@ -217,7 +246,7 @@ def test_fast_smooth_array():
     n_neighbors_max = 6
 
     data = np.ones(shape)
-    smooth_data = image._fast_smooth_array(data)
+    smooth_data = _fast_smooth_array(data)
 
     # this contains the number of neighbors for each cell in the array
     n_neighbors_arr = np.empty(shape)
@@ -242,7 +271,7 @@ def test_smooth_array_fwhm_is_odd_with_copy(smooth_array_data, affine):
     data = smooth_array_data
     fwhm = 9
 
-    filtered = image.smooth_array(data, affine, fwhm=fwhm, copy=True)
+    filtered = smooth_array(data, affine, fwhm=fwhm, copy=True)
 
     assert not np.may_share_memory(filtered, data)
 
@@ -259,7 +288,7 @@ def test_smooth_array_fwhm_is_odd_no_copy(affine):
     data = _new_data_for_smooth_array()
     fwhm = 9
 
-    image.smooth_array(data, affine, fwhm=fwhm, copy=False)
+    smooth_array(data, affine, fwhm=fwhm, copy=False)
 
     _check_fwhm(data, affine, fwhm)
 
@@ -270,7 +299,7 @@ def test_smooth_array_nan_do_not_propagate():
     fwhm = 9
     affine = AFFINE_TO_TEST[2]
 
-    filtered = image.smooth_array(
+    filtered = smooth_array(
         data, affine, fwhm=fwhm, ensure_finite=True, copy=True
     )
 
@@ -282,8 +311,8 @@ def test_smooth_array_same_result_with_fwhm_none_or_zero(
 ):
     affine = AFFINE_TO_TEST[2]
 
-    out_fwhm_none = image.smooth_array(smooth_array_data, affine, fwhm=None)
-    out_fwhm_zero = image.smooth_array(smooth_array_data, affine, fwhm=0.0)
+    out_fwhm_none = smooth_array(smooth_array_data, affine, fwhm=None)
+    out_fwhm_zero = smooth_array(smooth_array_data, affine, fwhm=0.0)
 
     assert_array_equal(out_fwhm_none, out_fwhm_zero)
 
@@ -293,8 +322,8 @@ def test_fast_smooth_array_give_same_result_as_smooth_array(
     smooth_array_data, affine
 ):
     assert_equal(
-        image.smooth_array(smooth_array_data, affine, fwhm="fast"),
-        image._fast_smooth_array(smooth_array_data),
+        smooth_array(smooth_array_data, affine, fwhm="fast"),
+        _fast_smooth_array(smooth_array_data),
     )
 
 
@@ -302,7 +331,7 @@ def test_smooth_array_raise_warning_if_fwhm_is_zero(smooth_array_data):
     """See https://github.com/nilearn/nilearn/issues/1537."""
     affine = AFFINE_TO_TEST[2]
     with pytest.warns(UserWarning):
-        image.smooth_array(smooth_array_data, affine, fwhm=0.0)
+        smooth_array(smooth_array_data, affine, fwhm=0.0)
 
 
 def test_smooth_img(affine_eye, tmp_path):
@@ -359,7 +388,7 @@ def test_crop_img_to():
     img = Nifti1Image(data, affine=affine)
 
     slices = [slice(2, 4), slice(1, 5), slice(3, 6)]
-    cropped_img = image._crop_img_to(img, slices, copy=False)
+    cropped_img = _crop_img_to(img, slices, copy=False)
 
     new_origin = np.array((4, 3, 2)) * np.array((2, 1, 3))
 
@@ -376,7 +405,7 @@ def test_crop_img_to():
     assert (get_data(cropped_img) == 2).all()
 
     # check that copying works
-    copied_cropped_img = image._crop_img_to(img, slices)
+    copied_cropped_img = _crop_img_to(img, slices)
 
     data[2:4, 1:5, 3:6] = 1
     assert (get_data(copied_cropped_img) == 2).all()
@@ -454,25 +483,25 @@ def test_mean_img(images_to_mean, tmp_path):
 
     truth = _mean_ground_truth(images_to_mean)
 
-    mean_img = image.mean_img(images_to_mean, copy_header=True)
+    img = mean_img(images_to_mean, copy_header=True)
 
-    assert_array_equal(mean_img.affine, affine)
-    assert_array_equal(get_data(mean_img), truth)
+    assert_array_equal(img.affine, affine)
+    assert_array_equal(get_data(img), truth)
 
     # Test with files
     imgs = testing.write_imgs_to_path(*images_to_mean, file_path=tmp_path)
-    mean_img = image.mean_img(imgs, copy_header=True)
+    img = mean_img(imgs, copy_header=True)
 
-    assert_array_equal(mean_img.affine, affine)
+    assert_array_equal(img.affine, affine)
     if X64:
-        assert_array_equal(get_data(mean_img), truth)
+        assert_array_equal(get_data(img), truth)
     else:
         # We don't really understand but arrays are not
         # exactly equal on 32bit. Given that you can not do
         # much real world data analysis with nilearn on a
         # 32bit machine it is not worth investigating more
         assert_allclose(
-            get_data(mean_img),
+            get_data(img),
             truth,
             rtol=np.finfo(truth.dtype).resolution,
             atol=0,
@@ -484,16 +513,16 @@ def test_mean_img_resample(rng):
     data = rng.uniform(size=(5, 6, 7, 40))
     affine = np.diag((4, 3, 2, 1))
     img = Nifti1Image(data, affine=affine)
-    mean_img = Nifti1Image(data.mean(axis=-1), affine=affine)
+    mean_img_to_resample = Nifti1Image(data.mean(axis=-1), affine=affine)
 
     target_affine = affine[:, [1, 0, 2, 3]]  # permutation of axes
 
-    mean_img_with_resampling = image.mean_img(
+    mean_img_with_resampling = mean_img(
         img, target_affine=target_affine, copy_header=True
     )
 
-    resampled_mean_image = resampling.resample_img(
-        mean_img,
+    resampled_mean_image = resample_img(
+        mean_img_to_resample,
         target_affine=target_affine,
         copy_header=True,
         force_resample=True,
@@ -510,11 +539,46 @@ def test_mean_img_resample(rng):
 
 def test_mean_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
-    result = image.mean_img(img_4d_mni_tr2, copy_header=True)
+    result = mean_img(img_4d_mni_tr2, copy_header=True)
     match_headers_keys(
         result,
         img_4d_mni_tr2,
         except_keys=["dim", "pixdim", "cal_max", "cal_min"],
+    )
+
+
+def test_mean_img_surface(surf_img_1d, surf_img_2d):
+    """Check that mean is properly computed over 'time points'."""
+    # one 'time point' image returns same
+    img = mean_img(surf_img_1d)
+
+    assert_surface_image_equal(img, surf_img_1d)
+
+    # image with left hemisphere
+    # where timepoint 1 has all values == 0
+    # and timepoint 2 == 1
+    two_time_points_img = surf_img_2d(2)
+    two_time_points_img.data.parts["left"][:, 0] = np.zeros(shape=4)
+    two_time_points_img.data.parts["left"][:, 1] = np.ones(shape=4)
+
+    img = mean_img(two_time_points_img)
+
+    assert_array_equal(img.data.parts["left"], np.ones(shape=(4,)) * 0.5)
+    assert img.shape == (img.mesh.n_vertices,)
+
+
+def test_mean_img_surface_list(surf_img_2d):
+    """Check that mean_img computes mean of mean."""
+    surf_img_1 = surf_img_2d(2)
+    surf_img_2 = surf_img_2d(3)
+
+    mean_surf_img_1 = mean_img(surf_img_1)
+    mean_surf_img_2 = mean_img(surf_img_2)
+
+    direct_mean = mean_img([surf_img_1, surf_img_2])
+
+    assert_surface_image_equal(
+        direct_mean, mean_img([mean_surf_img_1, mean_surf_img_2])
     )
 
 
@@ -642,6 +706,38 @@ def test_iter_img(tmp_path):
 
     # enables to delete "img_3d_filename" on windows
     del img
+
+
+def test_iter_surface_img(surf_img_2d):
+    """Check iter_img returns list of SurfaceImage.
+
+    Each SurfaceImage must have same mesh as input
+    and data from one of the sample of the input SurfaceImage.
+    """
+    input = surf_img_2d(5)
+    output = list(iter_img(input))
+
+    assert isinstance(output, list)
+    assert len(output) == input.shape[1]
+    assert all(isinstance(x, SurfaceImage) for x in output)
+    for i in range(input.shape[1]):
+        assert_polymesh_equal(output[i].mesh, input.mesh)
+        assert_array_equal(
+            np.squeeze(output[i].data.parts["left"]),
+            input.data.parts["left"][..., i],
+        )
+
+
+def test_iter_img_surface_2d(surf_img_1d, surf_img_2d):
+    """Return as is if surface image is 2D."""
+    input = surf_img_2d(1)
+    output = list(iter_img(input))
+
+    assert_surface_image_equal(output[0], input)
+
+    output = list(iter_img(surf_img_1d))
+
+    assert_surface_image_equal(output[0], surf_img_1d)
 
 
 def test_new_img_like_mgz():
@@ -828,19 +924,20 @@ def test_input_in_threshold_img_errors(
 
     # invalid input: img is an int
     with pytest.raises(
-        TypeError, match="3D/4D Niimg-like object or a SurfaceImage"
+        TypeError,
+        match="'img' should be a 3D/4D Niimg-like object or a SurfaceImage.",
     ):
         threshold_img(img=1, threshold=1)
 
     # incompatible inputs raise errors
     with pytest.raises(
         TypeError,
-        match="should both be 3D/4D Niimg-like object or a SurfaceImage",
+        match="Mask and images to fit must be of compatible types.",
     ):
         threshold_img(vol_img, threshold=1, mask_img=surf_mask_1d)
     with pytest.raises(
         TypeError,
-        match="should both be 3D/4D Niimg-like object or a SurfaceImage",
+        match="Mask and images to fit must be of compatible types.",
     ):
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
@@ -1121,15 +1218,27 @@ def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     assert np.sum(thr_img.get_fdata() == 4) == 8
 
 
-def test_threshold_img_copy_surface(surf_img_1d):
-    """Test that copy can be used with surface."""
-    threshold = 0.2
+def test_threshold_img_no_copy_surface(surf_img_1d):
+    """Test copy=False on surface data.
 
-    input_img = deepcopy(surf_img_1d)
-
-    # Check that not copying does mutate.
+    Check that not copying does mutate the original image.
+    """
+    threshold = 15
+    input_img = surf_img_1d
     result = threshold_img(input_img, threshold=threshold, copy=False)
     assert_surface_image_equal(result, surf_img_1d)
+
+
+def test_threshold_img_copy_surface(surf_img_1d):
+    """Test copy=True on surface data.
+
+    Check that copying does not mutate the original image.
+    """
+    threshold = 15
+    input_img = surf_img_1d
+    result = threshold_img(input_img, threshold=threshold, copy=True)
+    with pytest.raises(ValueError):
+        assert_surface_image_equal(result, surf_img_1d)
 
 
 def test_threshold_img_copy_volume(img_4d_ones_eye):
@@ -1512,7 +1621,7 @@ def test_clean_img_sample_mask(img_4d_rand_eye, shape_4d_default):
     # exclude last time point
     sample_mask = np.arange(length - 1)
 
-    img = image.clean_img(
+    img = clean_img(
         img_4d_rand_eye,
         confounds=confounds,
         clean__sample_mask=sample_mask,
@@ -1532,7 +1641,7 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
     sample_mask = np.arange(length - 1)
 
     # test with sample mask
-    img = image.clean_img(
+    img = clean_img(
         img_4d,
         confounds=confounds,
         mask_img=mask_img,
@@ -1612,6 +1721,18 @@ def test_concat_niimg_dtype(affine_eye):
     assert get_data(nimg).dtype == np.int16
 
 
+def test_concat_imgs_surface(surf_img_2d):
+    """Check concat_imgs returns a single SurfaceImage.
+
+    Output must have as many samples as the sum of samples in the input.
+    """
+    img = concat_imgs([surf_img_2d(3), surf_img_2d(5)], dtype=np.float16)
+    assert img.shape == (9, 8)
+    for value in img.data.parts.values():
+        assert value.ndim == 2
+        assert value.dtype == np.float16
+
+
 def nifti_generator(buffer):
     for _ in range(10):
         buffer.append(_img_3d_rand())
@@ -1626,7 +1747,7 @@ def test_iterator_generator(img_3d_rand_eye):
     assert_array_almost_equal(get_data(cc)[..., 0], get_data(list_images[0]))
 
     # Same with iteration
-    i = image.iter_img(list_images)
+    i = iter_img(list_images)
     cc = concat_imgs(i)
     assert cc.shape[-1] == 10
     assert_array_almost_equal(get_data(cc)[..., 0], get_data(list_images[0]))

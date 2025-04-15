@@ -7,6 +7,7 @@ from pathlib import Path
 from joblib import Memory
 
 import nilearn
+from nilearn._utils.logger import find_stack_level
 
 from .helpers import stringify_path
 
@@ -169,7 +170,7 @@ def cache(
                 "but no Memory object or path has been provided"
                 " (parameter memory). Caching deactivated for "
                 f"function {func.__name__}.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
     else:
         memory = Memory(location=None, verbose=verbose)
@@ -242,7 +243,7 @@ class CacheMixin:
                 "memory_level is currently set to 0 but "
                 "a Memory object has been provided. "
                 "Setting memory_level to 1.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
             self.memory_level = 1
 

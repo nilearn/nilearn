@@ -49,17 +49,9 @@ def multi_pca_data():
     return _make_multi_pca_test_data()[0]
 
 
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_no_attributes_set_in_init",
-]
-
-
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[_MultiPCA()], extra_valid_checks=extra_valid_checks
-    ),
+    check_estimator(estimator=[_MultiPCA()]),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -72,7 +64,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[_MultiPCA()],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
@@ -88,7 +79,8 @@ def test_multi_pca_check_masker_attributes(multi_pca_data, mask_img):
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
 
-def test_multi_pca(multi_pca_data, mask_img):
+@pytest.mark.parametrize("length", [1, 2])
+def test_multi_pca(multi_pca_data, mask_img, length):
     """Components are the same if we put twice the same data, \
        and that fit output is deterministic.
     """
@@ -96,11 +88,12 @@ def test_multi_pca(multi_pca_data, mask_img):
     multi_pca.fit(multi_pca_data)
 
     components1 = multi_pca.components_
-    components2 = multi_pca.fit(multi_pca_data).components_
-    components3 = multi_pca.fit(2 * multi_pca_data).components_
+    components2 = multi_pca.fit(length * multi_pca_data).components_
 
-    np.testing.assert_array_equal(components1, components2)
-    np.testing.assert_array_almost_equal(components1, components3)
+    if length == 1:
+        np.testing.assert_array_equal(components1, components2)
+    else:
+        np.testing.assert_array_almost_equal(components1, components2)
 
 
 def test_multi_pca_with_confounds_smoke(multi_pca_data, mask_img):

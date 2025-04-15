@@ -8,6 +8,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import (
@@ -251,16 +252,10 @@ class NiftiMapsMasker(BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
-
         from nilearn.reporting.html_report import generate_report
+
+        if not is_matplotlib_installed():
+            return generate_report(self)
 
         incorrect_type = not isinstance(
             displayed_maps, (list, np.ndarray, int, str)
@@ -314,7 +309,11 @@ class NiftiMapsMasker(BaseMasker):
                     f"But masker only has {n_maps} maps. "
                     f"Setting number of displayed maps to {n_maps}."
                 )
-                warnings.warn(category=UserWarning, message=msg)
+                warnings.warn(
+                    category=UserWarning,
+                    message=msg,
+                    stacklevel=find_stack_level(),
+                )
                 self.displayed_maps = n_maps
             maps_to_be_displayed = range(self.displayed_maps)
 
@@ -338,7 +337,7 @@ class NiftiMapsMasker(BaseMasker):
                 "No image provided to fit in NiftiMapsMasker. "
                 "Plotting only spatial maps for reporting."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
             for component in maps_to_be_displayed:
                 display = plotting.plot_stat_map(
@@ -353,7 +352,7 @@ class NiftiMapsMasker(BaseMasker):
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
 
         for component in maps_to_be_displayed:
@@ -521,16 +520,11 @@ class NiftiMapsMasker(BaseMasker):
             the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
+            This parameter is passed to :func:`nilearn.signal.clean`.
+            Please see the related documentation for details.
             shape: (number of scans, number of confounds)
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 

@@ -8,7 +8,7 @@ from joblib import Memory
 
 from nilearn import _utils
 from nilearn._utils import logger
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
 from nilearn.maskers._utils import (
@@ -57,7 +57,8 @@ def _get_mask_strategy(strategy):
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated."
-            "Please use 'whole-brain-template' instead."
+            "Please use 'whole-brain-template' instead.",
+            stacklevel=find_stack_level(),
         )
         return partial(compute_brain_mask, mask_type="whole-brain")
     else:
@@ -113,6 +114,7 @@ def filter_and_mask(
             "Until then, 3D images will be coerced to 2D arrays, with a "
             "singleton first dimension representing time.",
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
@@ -128,6 +130,7 @@ def filter_and_mask(
             "or resample the mask beforehand "
             "to save memory and computation time.",
             UserWarning,
+            stacklevel=find_stack_level(),
         )
         parameters = copy_object(parameters)
         # now we can crop
@@ -323,15 +326,6 @@ class NiftiMasker(BaseMasker):
 
     def generate_report(self):
         """Generate a report of the masker."""
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
-
         from nilearn.reporting.html_report import generate_report
 
         return generate_report(self)
@@ -362,7 +356,7 @@ class NiftiMasker(BaseMasker):
                 "No image provided to fit in NiftiMasker. "
                 "Setting image to mask for reporting."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
             img = mask
         if self._reporting_data["dim"] == 5:
@@ -370,7 +364,7 @@ class NiftiMasker(BaseMasker):
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
         # create display of retained input mask, image
         # for visual comparison
@@ -565,18 +559,9 @@ class NiftiMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
-            default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details: :func:`nilearn.signal.clean`.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(sample_mask)s
 
         copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.

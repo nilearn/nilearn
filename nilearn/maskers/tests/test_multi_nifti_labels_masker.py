@@ -12,7 +12,8 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
-from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
+from nilearn.maskers import MultiNiftiLabelsMasker
+from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
 
 @pytest.mark.parametrize(
@@ -20,8 +21,8 @@ from nilearn.maskers import MultiNiftiLabelsMasker, NiftiLabelsMasker
     check_estimator(
         estimator=[
             MultiNiftiLabelsMasker(labels_img=_img_labels()),
-            NiftiLabelsMasker(labels_img=_img_labels()),
         ],
+        expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -35,7 +36,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[
             MultiNiftiLabelsMasker(_img_labels()),
-            NiftiLabelsMasker(_img_labels()),
         ],
         valid=False,
     ),
@@ -356,27 +356,3 @@ def test_multi_nifti_labels_masker_resampling_target():
         compressed_img2 = masker.inverse_transform(transformed2)
 
         assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
-
-
-def test_multi_nifti_labels_masker_list_of_sample_mask(
-    img_labels, n_regions, length, img_fmri
-):
-    """Tests MultiNiftiLabelsMasker.fit_transform with a list of "sample_mask".
-
-    "sample_mask" was directly sent as input to the parallel calls of
-    "transform_single_imgs" instead of sending iterations.
-    See https://github.com/nilearn/nilearn/issues/3967 for more details.
-    """
-    n_scrub1 = 3
-    n_scrub2 = 2
-
-    sample_mask1 = np.arange(length - n_scrub1)
-    sample_mask2 = np.arange(length - n_scrub2)
-
-    masker = MultiNiftiLabelsMasker(img_labels)
-    ts_list = masker.fit_transform(
-        [img_fmri, img_fmri], sample_mask=[sample_mask1, sample_mask2]
-    )
-
-    for ts, n_scrub in zip(ts_list, [n_scrub1, n_scrub2]):
-        assert ts.shape == (length - n_scrub, n_regions)

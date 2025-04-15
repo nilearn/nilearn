@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import csv
 import time
+from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
 
@@ -16,22 +17,23 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
-from sklearn.base import clone
+from scipy.linalg import toeplitz
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
+    check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_params,
     check_run_sample_masks,
 )
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.datasets import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
@@ -57,6 +59,7 @@ from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
+from nilearn.typing import NiimgLike
 
 
 def mean_scaling(Y, axis=0):
@@ -87,7 +90,7 @@ def mean_scaling(Y, axis=0):
             "The data have probably been centered."
             "Scaling might not work as expected",
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
@@ -104,8 +107,6 @@ def _yule_walker(x, order):
 
     Operates along the last axis of x.
     """
-    from scipy.linalg import toeplitz
-
     if order < 1:
         raise ValueError("AR order must be positive")
     if type(order) is not int:
@@ -283,7 +284,8 @@ def _check_trial_type(events):
             "as if they are instances of same experimental condition.\n"
             "If there is a column in the dataframe "
             "corresponding to trial information, "
-            "consider renaming it to 'trial_type'."
+            "consider renaming it to 'trial_type'.",
+            stacklevel=find_stack_level(),
         )
 
 
@@ -305,8 +307,10 @@ class FirstLevelModel(BaseGLM):
         slice timing preprocessing step of the experimental runs.
         It is expressed as a fraction of the ``t_r`` (repetition time),
         so it can have values between 0. and 1.
+
     %(hrf_model)s
         Default='glover'.
+
     drift_model : :obj:`str`, default='cosine'
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
@@ -413,6 +417,9 @@ class FirstLevelModel(BaseGLM):
 
     """
 
+    def __str__(self):
+        return "First Level Model"
+
     def __init__(
         self,
         t_r=None,
@@ -482,7 +489,8 @@ class FirstLevelModel(BaseGLM):
         ):
             warn(
                 "If design matrices are supplied, "
-                "confounds and events will be ignored."
+                "confounds and events will be ignored.",
+                stacklevel=find_stack_level(),
             )
 
         if events is not None:
@@ -490,8 +498,6 @@ class FirstLevelModel(BaseGLM):
 
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
-
-        check_compatibility_mask_and_images(self.mask_img, run_imgs)
 
         if design_matrices is None:
             if events is None:
@@ -545,7 +551,10 @@ class FirstLevelModel(BaseGLM):
                 f"in {int(time_in_second)} seconds."
             )
 
-        logger.log(msg, verbose=self.verbose, stack_level=2)
+        logger.log(
+            msg,
+            verbose=self.verbose,
+        )
 
     def _report_progress(self, run_idx, n_runs, t0):
         remaining = "go take a coffee, a big one"
@@ -669,6 +678,12 @@ class FirstLevelModel(BaseGLM):
                     f"at index {run_idx}."
                 )
 
+        tmp = check_and_load_tables(events[run_idx], "events")[0]
+        if "trial_type" in tmp.columns:
+            self._reporting_data["trial_types"].extend(
+                x for x in tmp["trial_type"] if x
+            )
+
         start_time = self.slice_time_ref * self.t_r
         end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
         frame_times = np.linspace(start_time, end_time, n_scans)
@@ -694,33 +709,6 @@ class FirstLevelModel(BaseGLM):
             and self.labels_ is not None
             and self.results_ is not None
         )
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(niimg_like=True, surf_img=True)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(niimg_like=True, surf_img=True)
-        return tags
 
     def fit(
         self,
@@ -838,8 +826,7 @@ class FirstLevelModel(BaseGLM):
         ) or (
             isinstance(run_imgs, (list, tuple))
             and not all(
-                isinstance(x, (str, Path, Nifti1Image, SurfaceImage))
-                for x in run_imgs
+                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
             )
         ):
             input_type = type(run_imgs)
@@ -873,16 +860,49 @@ class FirstLevelModel(BaseGLM):
 
         self._prepare_mask(run_imgs[0])
 
+        # collect info that may be useful for report generation
+        drift_model_str = None
+        if self.drift_model:
+            if self.drift_model == "cosine":
+                param_str = f"high pass filter={self.high_pass} Hz"
+            else:
+                param_str = f"order={self.drift_order}"
+            drift_model_str = (
+                f"and a {self.drift_model} drift model ({param_str})"
+            )
+        self._reporting_data = {
+            "trial_types": [],
+            "noise_model": self.noise_model,
+            "hrf_model": "finite impulse response"
+            if self.hrf_model == "fir"
+            else self.hrf_model,
+            "drift_model": drift_model_str,
+        }
+
         self.design_matrices_ = self._create_all_designs(
             run_imgs, events, confounds, design_matrices
         )
 
+        self._reporting_data["trial_types"] = set(
+            self._reporting_data["trial_types"]
+        )
+
         # For each run fit the model and keep only the regression results.
         self.labels_, self.results_ = [], []
+        self._reporting_data["run_imgs"] = {}
         n_runs = len(run_imgs)
         t0 = time.time()
         for run_idx, run_img in enumerate(run_imgs):
             self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
+
+            # collect name of input files
+            # for eventual saving to disk later
+            self._reporting_data["run_imgs"][run_idx] = {}
+            if isinstance(run_img, (str, Path)):
+                self._reporting_data["run_imgs"][run_idx] = (
+                    parse_bids_filename(run_img)
+                )
+
             self._fit_single_run(sample_masks, bins, run_img, run_idx)
 
         self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
@@ -952,7 +972,7 @@ class FirstLevelModel(BaseGLM):
             warn(
                 f"One contrast given, assuming it for all {n_runs} runs",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
@@ -1002,11 +1022,13 @@ class FirstLevelModel(BaseGLM):
 
         return outputs if output_type == "all" else output
 
-    def _get_voxelwise_model_attribute(self, attribute, result_as_time_series):
+    def _get_element_wise_model_attribute(
+        self, attribute, result_as_time_series
+    ):
         """Transform RegressionResults instances within a dictionary \
         (whose keys represent the autoregressive coefficient under the 'ar1' \
         noise model or only 0.0 under 'ols' noise_model and values are the \
-        RegressionResults instances) into input nifti space.
+        RegressionResults instances) into an image.
 
         Parameters
         ----------
@@ -1022,7 +1044,7 @@ class FirstLevelModel(BaseGLM):
         Returns
         -------
         output : :obj:`list`
-            A list of Nifti1Image(s).
+            A list of Nifti1Image(s) or SurfaceImage(s).
 
         """
         # check if valid attribute is being accessed.
@@ -1079,10 +1101,17 @@ class FirstLevelModel(BaseGLM):
         # Local import to prevent circular imports
         from nilearn.maskers import NiftiMasker
 
+        masker_type = "nii"
+        # all elements of X should be of the similar type by now
+        # so we can only check the first one
+        to_check = run_img[0] if isinstance(run_img, Iterable) else run_img
+        if not self._is_volume_glm() or isinstance(to_check, SurfaceImage):
+            masker_type = "surface"
+
         # Learn the mask
         if self.mask_img is False:
             # We create a dummy mask to preserve functionality of api
-            if isinstance(run_img, SurfaceImage):
+            if masker_type == "surface":
                 surf_data = {
                     part: np.ones(
                         run_img.data.parts[part].shape[0], dtype=bool
@@ -1096,71 +1125,41 @@ class FirstLevelModel(BaseGLM):
                     np.ones(ref_img.shape[:3]), ref_img.affine
                 )
 
-        if isinstance(run_img, SurfaceImage) and not isinstance(
-            self.mask_img, SurfaceMasker
-        ):
-            if self.smoothing_fwhm is not None:
-                warn(
-                    "Parameter smoothing_fwhm is not "
-                    "yet supported for surface data",
-                    UserWarning,
-                    stacklevel=3,
-                )
-            self.masker_ = SurfaceMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                standardize=self.standardize,
-                t_r=self.t_r,
-                memory=self.memory,
-                memory_level=self.memory_level,
+        if masker_type == "surface" and self.smoothing_fwhm is not None:
+            warn(
+                "Parameter smoothing_fwhm is not "
+                "yet supported for surface data",
+                UserWarning,
+                stacklevel=find_stack_level(),
             )
-            self.masker_.fit(run_img)
+            self.smoothing_fwhm = 0
 
-        elif not isinstance(
-            self.mask_img, (NiftiMasker, SurfaceMasker, SurfaceImage)
-        ):
-            self.masker_ = NiftiMasker(
-                mask_img=self.mask_img,
-                smoothing_fwhm=self.smoothing_fwhm,
-                target_affine=self.target_affine,
-                standardize=self.standardize,
-                mask_strategy="epi",
-                t_r=self.t_r,
-                memory=self.memory,
-                verbose=max(0, self.verbose - 2),
-                target_shape=self.target_shape,
-                memory_level=self.memory_level,
+        check_compatibility_mask_and_images(self.mask_img, run_img)
+        if (  # deal with self.mask_img as image, str, path, none
+            (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
+            or
+            # edge case:
+            # If fitted NiftiMasker with a None mask_img_ attribute
+            # the masker parameters are overridden
+            # by the FirstLevelModel parameters
+            (
+                getattr(self.mask_img, "mask_img_", "not_none") is None
+                and self.masker_ is None
             )
+        ):
+            self.masker_ = check_embedded_masker(
+                self, masker_type, ignore=["high_pass"]
+            )
+
+            if isinstance(self.masker_, NiftiMasker):
+                self.masker_.mask_strategy = "epi"
+
             self.masker_.fit(run_img)
 
         else:
-            # Make sure masker has been fitted otherwise no attribute mask_img_
             check_is_fitted(self.mask_img)
-            if self.mask_img.mask_img_ is None and self.masker_ is None:
-                self.masker_ = clone(self.mask_img)
-                for param_name in [
-                    "target_affine",
-                    "target_shape",
-                    "smoothing_fwhm",
-                    "t_r",
-                    "memory",
-                    "memory_level",
-                ]:
-                    our_param = getattr(self, param_name)
-                    if our_param is None:
-                        continue
-                    if getattr(self.masker_, param_name) is not None:
-                        warn(
-                            f"Parameter {param_name} of the masker overridden"
-                        )
-                    if (
-                        isinstance(self.masker_, SurfaceMasker)
-                        and param_name not in ["target_affine", "target_shape"]
-                    ) or not isinstance(self.masker_, SurfaceMasker):
-                        setattr(self.masker_, param_name, our_param)
-                self.masker_.fit(run_img)
-            else:
-                self.masker_ = self.mask_img
+
+            self.masker_ = self.mask_img
 
 
 def _check_events_file_uses_tab_separators(events_files):
@@ -1468,6 +1467,7 @@ def first_level_from_bids(
         warn(
             "Starting in version 0.12, slice_time_ref will default to None.",
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
     if space_label is None:
         space_label = "MNI152NLin2009cAsym"
@@ -1512,6 +1512,7 @@ def first_level_from_bids(
  Remember to visualize your design matrix before fitting your model
  to check that your model is not overspecified.""",
             UserWarning,
+            stacklevel=find_stack_level(),
         )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
@@ -1558,7 +1559,7 @@ def first_level_from_bids(
             f"\n't_r' provided ({t_r}) is different "
             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
             "Note this may lead to the wrong model specification.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if t_r is not None:
         _check_repetition_time(t_r)
@@ -1567,7 +1568,7 @@ def first_level_from_bids(
             "\n't_r' not provided and cannot be inferred from BIDS metadata.\n"
             "It will need to be set manually in the list of models, "
             "otherwise their fit will throw an exception.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     # Slice time correction reference time
@@ -1599,7 +1600,8 @@ def first_level_from_bids(
                 "It will be assumed that the slice timing reference "
                 "is 0.0 percent of the repetition time.\n"
                 "If it is not the case it will need to "
-                "be set manually in the generated list of models."
+                "be set manually in the generated list of models.",
+                stacklevel=find_stack_level(),
             )
         inferred_slice_time_ref = 0.0
 
@@ -1613,7 +1615,8 @@ def first_level_from_bids(
             f"'slice_time_ref' provided ({slice_time_ref}) is different "
             f"from the value found in the BIDS dataset "
             f"({inferred_slice_time_ref}).\n"
-            "Note this may lead to the wrong model specification."
+            "Note this may lead to the wrong model specification.",
+            stacklevel=find_stack_level(),
         )
     if slice_time_ref is not None:
         _check_slice_time_ref(slice_time_ref)
@@ -1729,7 +1732,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
                 f"\nSubject label '{sub_label_}' is not present "
                 "in the following dataset and cannot be processed:\n"
                 f" {derivatives_path}",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
     return sorted(set(sub_labels_exist))
@@ -1761,7 +1764,6 @@ def _report_found_files(files, text, sub_label, filters, verbose):
         f"- for filter: {filters}:\n\t"
         f"- {unordered_list_string}\n",
         verbose=verbose,
-        stack_level=3,
     )
 
 
@@ -2242,7 +2244,7 @@ def _make_bids_files_filter(
                         f"The filter {filter_} will be skipped. "
                         f"'{filter_[0]}' is not among the supported filters. "
                         f"Allowed filters include: {supported_filters}",
-                        stacklevel=3,
+                        stacklevel=find_stack_level(),
                     )
                 continue
 
@@ -2296,9 +2298,9 @@ def _check_bids_image_list(imgs, sub_label, filters):
     run_check_list = []
 
     for img_ in imgs:
-        parsed_filename = parse_bids_filename(img_)
-        session = parsed_filename.get("ses")
-        run = parsed_filename.get("run")
+        parsed_filename = parse_bids_filename(img_, legacy=False)
+        session = parsed_filename["entities"].get("ses")
+        run = parsed_filename["entities"].get("run")
 
         if session and run:
             if (session, run) in set(run_check_list):
@@ -2382,11 +2384,11 @@ def _check_bids_events_list(
         *bids_entities()["raw"],
     ]
     for this_img in imgs:
-        parsed_filename = parse_bids_filename(this_img)
+        parsed_filename = parse_bids_filename(this_img, legacy=False)
         extra_filter = [
-            (key, parsed_filename[key])
-            for key in parsed_filename
-            if key in supported_filters
+            (entity, parsed_filename["entities"][entity])
+            for entity in parsed_filename["entities"]
+            if entity in supported_filters
         ]
         filters = _make_bids_files_filter(
             task_label=task_label,

@@ -29,6 +29,7 @@ if SKLEARN_LT_1_6:
         surf_img=False,
         masker=False,
         multi_masker=False,
+        glm=False,
         **kwargs,
     ):
         """Add nilearn tags to estimator.
@@ -47,6 +48,8 @@ if SKLEARN_LT_1_6:
             X_types.append("masker")
         if multi_masker:
             X_types.append("multi_masker")
+        if glm:
+            X_types.append("glm")
         X_types = list(set(X_types))
 
         return dict(X_types=X_types, **kwargs)
@@ -87,3 +90,6 @@ else:
         # TODO: implement a masker_tags attribute
         masker: bool = False
         multi_masker: bool = False
+
+        # glm
+        glm: bool = False

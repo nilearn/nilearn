@@ -10,8 +10,10 @@ from scipy.ndimage import label
 from scipy.stats import norm
 
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data, math_img, threshold_img
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 
 def _compute_hommel_value(z_vals, alpha, verbose=0):
@@ -35,7 +37,8 @@ def _compute_hommel_value(z_vals, alpha, verbose=0):
         if not is_matplotlib_installed():
             warnings.warn(
                 '"verbose" option requires the package Matplotlib.'
-                "Please install it using `pip install matplotlib`."
+                "Please install it using `pip install matplotlib`.",
+                stacklevel=find_stack_level(),
             )
         else:
             from matplotlib import pyplot as plt
@@ -197,7 +200,8 @@ def threshold_stats_img(
 
     Parameters
     ----------
-    stat_img : Niimg-like object or None, default=None
+    stat_img : Niimg-like object, or a :obj:`~nilearn.surface.SurfaceImage` \
+               or None, default=None
        Statistical image (presumably in z scale) whenever height_control
        is 'fpr' or None, stat_img=None is acceptable.
        If it is 'fdr' or 'bonferroni', an error is raised if stat_img is None.
@@ -252,12 +256,12 @@ def threshold_stats_img(
         "fpr",
         "fdr",
         "bonferroni",
-        "all-resolution-inference",
         None,
     ]
     if height_control not in height_control_methods:
         raise ValueError(
-            f"height control should be one of {height_control_methods}"
+            f"'height_control' should be one of {height_control_methods}. \n"
+            f"Got: '{height_control_methods}'"
         )
 
     # if two-sided, correct alpha by a factor of 2
@@ -274,17 +278,24 @@ def threshold_stats_img(
             return None, threshold
         else:
             raise ValueError(
-                "Map_threshold requires stat_img not to be None "
-                "when the height_control procedure "
-                'is "bonferroni" or "fdr"'
+                f"'stat_img' cannot be None for {height_control=}"
             )
 
     if mask_img is None:
-        masker = NiftiMasker(mask_strategy="background").fit(stat_img)
+        if isinstance(stat_img, SurfaceImage):
+            masker = SurfaceMasker()
+        else:
+            masker = NiftiMasker(mask_strategy="background")
+        masker.fit(stat_img)
     else:
-        masker = NiftiMasker(mask_img=mask_img).fit()
+        if isinstance(stat_img, SurfaceImage):
+            masker = SurfaceMasker(mask_img=mask_img)
+        else:
+            masker = NiftiMasker(mask_img=mask_img)
+        masker.fit()
+
     stats = np.ravel(masker.transform(stat_img))
-    n_voxels = np.size(stats)
+    n_elements = np.size(stats)
 
     # Thresholding
     if two_sided:
@@ -294,7 +305,7 @@ def threshold_stats_img(
     if height_control == "fdr":
         threshold = fdr_threshold(stats, alpha_)
     elif height_control == "bonferroni":
-        threshold = norm.isf(alpha_ / n_voxels)
+        threshold = norm.isf(alpha_ / n_elements)
 
     # Apply cluster-extent thresholding with new cluster-defining threshold
     stat_img = threshold_img(

@@ -1,6 +1,3 @@
-from os.path import join
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -23,22 +20,10 @@ def _sklearn_surf_label_img():
     return SurfaceImage(_make_mesh(), labels)
 
 
-extra_valid_checks = [
-    "check_no_attributes_set_in_init",
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_dont_overwrite_parameters",
-    "check_estimators_fit_returns_self",
-    "check_estimators_overwrite_params",
-    "check_positive_only_tag_during_fit",
-    "check_readonly_memmap_input",
-]
-
-
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
         estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -52,7 +37,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     check_estimator(
         estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
@@ -515,42 +499,6 @@ def test_surface_label_masker_inverse_transform_list_surf_images(
     signals = masker.transform([surf_img_2d(3), surf_img_2d(4)])
     img = masker.inverse_transform(signals)
     assert img.shape == (surf_label_img.mesh.n_vertices, 7)
-
-
-@pytest.mark.parametrize("confounds", [None, np.ones((20, 3)), "str", "Path"])
-def test_surface_labels_masker_confounds_to_fit_transform(
-    surf_label_img, surf_img_2d, confounds
-):
-    """Test fit_transform with confounds."""
-    masker = SurfaceLabelsMasker(surf_label_img)
-    if isinstance(confounds, str):
-        if confounds == "Path":
-            nilearn_dir = Path(__file__).parent.parent.parent
-            confounds = nilearn_dir / "tests" / "data" / "spm_confounds.txt"
-        elif confounds == "str":
-            # we need confound to be a string so using os.path.join
-            confounds = join(  # noqa: PTH118
-                Path(__file__).parent.parent.parent,
-                "tests",
-                "data",
-                "spm_confounds.txt",
-            )
-    signals = masker.fit_transform(surf_img_2d(20), confounds=confounds)
-    assert signals.shape == (20, masker.n_elements_)
-
-
-def test_surface_labels_masker_sample_mask_to_fit_transform(
-    surf_label_img, surf_img_2d
-):
-    """Test transform with sample_mask."""
-    masker = SurfaceLabelsMasker(surf_label_img)
-    masker = masker.fit()
-    signals = masker.transform(
-        surf_img_2d(5),
-        sample_mask=np.asarray([True, False, True, False, True]),
-    )
-    # we remove two samples via sample_mask so we should have 3 samples
-    assert signals.shape == (3, masker.n_elements_)
 
 
 def test_surface_label_masker_labels_img_none():

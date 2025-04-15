@@ -437,6 +437,12 @@ authors:
     affiliation: University of Macau, Macau, China
     email: yc17307@um.edu.mo
     orcid: https://orcid.org/0000-0002-9138-3195
+  - given-names: Lee
+    family-names: Newberg
+    website: https://github.com/Leengit
+    affiliation: Kitware, Inc., USA
+    email: leengit@quantconsulting.com
+    orcid: https://orcid.org/0000-0003-4644-8874
   - given-names: Leonard
     family-names: Sasse
     website: https://github.com/LeSasse
@@ -661,7 +667,7 @@ authors:
     website: https://github.com/sachin-bsai
   - given-names: Sage
     family-names: Hahn
-    website: https://sagehahn.com/
+    website: https://github.com/sahahn
     orcid: https://orcid.org/0000-0003-3560-2952
     affiliation: deephealth
   - given-names: Salma

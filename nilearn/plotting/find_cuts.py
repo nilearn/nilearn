@@ -6,16 +6,15 @@ import warnings
 import numpy as np
 from scipy.ndimage import center_of_mass, find_objects, label
 
-from nilearn._utils import check_niimg_3d, check_niimg_4d
+from nilearn._utils import as_ndarray, check_niimg_3d, check_niimg_4d
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.ndimage import largest_connected_component
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.numpy_conversions import as_ndarray
 
 # Local imports
-from nilearn.image import get_data, iter_img, new_img_like, reorder_img
+from nilearn.image import get_data, iter_img, reorder_img
 from nilearn.image.image import smooth_array
-from nilearn.image.resampling import coord_transform, get_mask_bounds
+from nilearn.image.resampling import coord_transform
 from nilearn.plotting._utils import check_threshold_not_negative
 
 ###############################################################################
@@ -180,34 +179,6 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     ).tolist()
 
 
-def _get_auto_mask_bounds(img):
-    """Compute the bounds of the data with an automatically computed mask."""
-    data = safe_get_data(img)
-    affine = img.affine
-    if hasattr(data, "mask"):
-        # Masked array
-        mask = np.logical_not(data.mask)
-    else:
-        # The mask will be anything that is fairly different
-        # from the values in the corners
-        edge_value = float(
-            data[0, 0, 0]
-            + data[0, -1, 0]
-            + data[-1, 0, 0]
-            + data[0, 0, -1]
-            + data[-1, -1, 0]
-            + data[-1, 0, -1]
-            + data[0, -1, -1]
-            + data[-1, -1, -1]
-        )
-        edge_value /= 6
-        mask = np.abs(data - edge_value) > 0.005 * np.ptp(data)
-    xmin, xmax, ymin, ymax, zmin, zmax = get_mask_bounds(
-        new_img_like(img, mask, affine)
-    )
-    return (xmin, xmax), (ymin, ymax), (zmin, zmax)
-
-
 def _transform_cut_coords(cut_coords, direction, affine):
     """Transform cut_coords back in image space.
 
@@ -339,7 +310,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
         )
         raise ValueError(message)
     else:
-        n_cuts = int(round(n_cuts))
+        n_cuts = round(n_cuts)
 
     if spacing == "auto":
         spacing = max(int(0.5 / n_cuts * data.shape[axis]), 1)

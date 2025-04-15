@@ -188,9 +188,32 @@ for contrast_id, contrast_val in contrasts.items():
             stat_map=z_score,
             hemi=hemi,
             title=contrast_id,
-            colorbar=True,
             threshold=3.0,
             bg_map=fsaverage_data,
         )
 
 show()
+
+
+report = glm.generate_report(
+    contrasts,
+    threshold=3.0,
+    bg_img=fsaverage_data,
+    height_control=None,
+)
+
+# %%
+# This report can be viewed in a notebook.
+report
+
+# %%
+# Or in a separate browser window
+# report.open_in_browser()
+
+# %%
+# Or we can save as an html file.
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
+output_dir.mkdir(exist_ok=True, parents=True)
+report.save_as_html(output_dir / "report.html")

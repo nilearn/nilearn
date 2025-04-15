@@ -36,14 +36,6 @@ def dummy_map(shape_3d_default, n_regions):
 
 
 @pytest.fixture
-def labels_img(shape_3d_default, affine_eye, n_regions):
-    # DO NOT CHANGE n_regions (some tests expect this value)
-    return generate_labeled_regions(
-        shape=shape_3d_default, affine=affine_eye, n_regions=n_regions
-    )
-
-
-@pytest.fixture
 def map_img_3d(rng, affine_eye, shape_3d_default):
     map_img = np.zeros(shape_3d_default) + 0.1 * rng.standard_normal(
         size=shape_3d_default
@@ -72,12 +64,8 @@ def maps_and_mask(n_regions):
     return generate_maps(shape=MAP_SHAPE, n_regions=n_regions, random_state=42)
 
 
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_estimators_fit_returns_self",
-    "check_positive_only_tag_during_fit",
-    "check_readonly_memmap_input",
-]
+# Note: some report genetation tests take too long
+# Incresaing the timeout for this one
 
 
 @pytest.mark.parametrize(
@@ -86,11 +74,16 @@ extra_valid_checks = [
         estimator=[
             RegionExtractor(
                 maps_img=generate_maps(
-                    shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+                    shape=MAP_SHAPE, n_regions=2, random_state=42
                 )[0]
             )
         ],
-        extra_valid_checks=extra_valid_checks,
+        expected_failed_checks={
+            # TODO remove when buming to nilearn 0.13.2
+            "check_no_attributes_set_in_init": (
+                "Deprecation cycle started to fix."
+            ),
+        },
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -105,12 +98,11 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
         estimator=[
             RegionExtractor(
                 maps_img=generate_maps(
-                    shape=MAP_SHAPE, n_regions=N_REGIONS, random_state=42
+                    shape=MAP_SHAPE, n_regions=2, random_state=42
                 )[0]
             )
         ],
         valid=False,
-        extra_valid_checks=extra_valid_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
@@ -380,15 +372,15 @@ def test_region_extractor_zeros_affine_diagonal(affine_eye, n_regions):
     assert extract_ratio.regions_img_.shape[-1] >= n_regions
 
 
-def test_error_messages_connected_label_regions(labels_img):
+def test_error_messages_connected_label_regions(img_labels):
     with pytest.raises(
         ValueError, match="Expected 'min_size' to be specified as integer."
     ):
-        connected_label_regions(labels_img=labels_img, min_size="a")
+        connected_label_regions(labels_img=img_labels, min_size="a")
     with pytest.raises(
         ValueError, match="'connect_diag' must be specified as True or False."
     ):
-        connected_label_regions(labels_img=labels_img, connect_diag=None)
+        connected_label_regions(labels_img=img_labels, connect_diag=None)
 
 
 def test_remove_small_regions(affine_eye):
@@ -412,12 +404,12 @@ def test_remove_small_regions(affine_eye):
     assert sum_removed_data < sum_label_data
 
 
-def test_connected_label_regions(labels_img):
-    labels_data = get_data(labels_img)
+def test_connected_label_regions(img_labels):
+    labels_data = get_data(img_labels)
     n_labels_without_region_extraction = len(np.unique(labels_data))
 
     # extract region without specifying min_size
-    extracted_regions_on_labels_img = connected_label_regions(labels_img)
+    extracted_regions_on_labels_img = connected_label_regions(img_labels)
     extracted_regions_labels_data = get_data(extracted_regions_on_labels_img)
     n_labels_without_min = len(np.unique(extracted_regions_labels_data))
 
@@ -425,7 +417,7 @@ def test_connected_label_regions(labels_img):
 
     # with specifying min_size
     extracted_regions_with_min = connected_label_regions(
-        labels_img, min_size=100
+        img_labels, min_size=100
     )
     extracted_regions_with_min_data = get_data(extracted_regions_with_min)
     n_labels_with_min = len(np.unique(extracted_regions_with_min_data))
@@ -433,12 +425,12 @@ def test_connected_label_regions(labels_img):
     assert n_labels_without_min > n_labels_with_min
 
 
-def test_connected_label_regions_connect_diag_false(labels_img):
-    labels_data = get_data(labels_img)
+def test_connected_label_regions_connect_diag_false(img_labels):
+    labels_data = get_data(img_labels)
     n_labels_without_region_extraction = len(np.unique(labels_data))
 
     ext_reg_without_connect_diag = connected_label_regions(
-        labels_img, connect_diag=False
+        img_labels, connect_diag=False
     )
 
     data_wo_connect_diag = get_data(ext_reg_without_connect_diag)
@@ -446,18 +438,18 @@ def test_connected_label_regions_connect_diag_false(labels_img):
     assert n_labels_wo_connect_diag > n_labels_without_region_extraction
 
 
-def test_connected_label_regions_return_empty_for_large_min_size(labels_img):
+def test_connected_label_regions_return_empty_for_large_min_size(img_labels):
     """If min_size is large and if all the regions are removed \
     then empty image will be returned.
     """
     extract_reg_min_size_large = connected_label_regions(
-        labels_img, min_size=500
+        img_labels, min_size=500
     )
 
     assert np.unique(get_data(extract_reg_min_size_large)) == 0
 
 
-def test_connected_label_regions_check_labels(labels_img):
+def test_connected_label_regions_check_labels(img_labels):
     """Test the names of the brain regions given in labels."""
     # Test labels for 9 regions in n_regions
     labels = [f"region_{x}" for x in "abcdefghi"]
@@ -466,7 +458,7 @@ def test_connected_label_regions_check_labels(labels_img):
     # and second return will contain list of new names generated based on same
     # name with assigned on both hemispheres for example.
     _, new_labels = connected_label_regions(
-        labels_img, min_size=100, labels=labels
+        img_labels, min_size=100, labels=labels
     )
     # The length of new_labels returned can differ depending upon min_size. If
     # min_size given is more small regions can be removed therefore newly
@@ -478,23 +470,23 @@ def test_connected_label_regions_check_labels(labels_img):
     assert len(new_labels) <= len(labels)
 
 
-def test_connected_label_regions_check_labels_as_numpy_array(labels_img):
+def test_connected_label_regions_check_labels_as_numpy_array(img_labels):
     """Test the names of the brain regions given in labels."""
     # labels given in numpy array
     # Test labels for 9 regions in n_regions
     labels = [f"region_{x}" for x in "abcdefghi"]
     labels = np.asarray(labels)
-    _, new_labels2 = connected_label_regions(labels_img, labels=labels)
+    _, new_labels2 = connected_label_regions(img_labels, labels=labels)
 
     assert new_labels2 != ""
     # By default min_size is less, so newly generated labels can be more.
     assert len(new_labels2) >= len(labels)
 
     # If number of labels provided are wrong (which means less than number of
-    # unique labels in labels_img), then we raise an error
+    # unique labels in img_labels), then we raise an error
 
     # Test whether error raises
-    unique_labels = set(np.unique(np.asarray(get_data(labels_img))))
+    unique_labels = set(np.unique(np.asarray(get_data(img_labels))))
     unique_labels.remove(0)
 
     # labels given are less than n_regions=9
@@ -503,20 +495,20 @@ def test_connected_label_regions_check_labels_as_numpy_array(labels_img):
     assert len(provided_labels) < len(unique_labels)
 
     with pytest.raises(ValueError):
-        connected_label_regions(labels_img, labels=provided_labels)
+        connected_label_regions(img_labels, labels=provided_labels)
 
 
 def test_connected_label_regions_unknonw_labels(
-    labels_img, affine_eye, shape_3d_default
+    img_labels, affine_eye, shape_3d_default
 ):
-    """If unknown/negative integers are provided as labels in labels_img, \
+    """If unknown/negative integers are provided as labels in img_labels, \
     we raise an error and test the same whether error is raised.
 
     Introduce data type of float
 
     See issue: https://github.com/nilearn/nilearn/issues/2580
     """
-    labels_data = get_data(labels_img)
+    labels_data = get_data(img_labels)
 
     labels_data = np.zeros(shape_3d_default, dtype=np.float32)
     h0, h1, h2 = (x // 2 for x in shape_3d_default)
@@ -548,7 +540,7 @@ def test_connected_label_regions_unknonw_labels(
 
 
 def test_connected_label_regions_check_labels_string_without_list(
-    labels_img, affine_eye, shape_3d_default
+    img_labels, affine_eye, shape_3d_default
 ):
     """If labels (or names to regions) given is a string without a list \
     we expect it to be split to regions extracted and returned as list.
@@ -577,6 +569,6 @@ def test_connected_label_regions_check_labels_string_without_list(
         "4",
         "region_e",
     ]
-    _, new_labels = connected_label_regions(labels_img, labels=combined_labels)
+    _, new_labels = connected_label_regions(img_labels, labels=combined_labels)
 
     assert len(new_labels) >= len(combined_labels)

@@ -32,11 +32,16 @@ Note that more power would be obtained from using a larger sample of subjects.
 # %%
 # Load Oasis dataset
 # ------------------
-from nilearn import datasets, plotting
+from nilearn import plotting
+from nilearn.datasets import (
+    fetch_icbm152_2009,
+    fetch_icbm152_brain_gm_mask,
+    fetch_oasis_vbm,
+)
 
 n_subjects = 100  # more subjects requires more memory
 
-oasis_dataset = datasets.fetch_oasis_vbm(
+oasis_dataset = fetch_oasis_vbm(
     n_subjects=n_subjects,
 )
 gray_matter_map_filenames = oasis_dataset.gray_matter_maps
@@ -59,7 +64,7 @@ print(
 
 # %%
 # Get a mask image: A mask of the cortex of the ICBM template.
-gm_mask = datasets.fetch_icbm152_brain_gm_mask()
+gm_mask = fetch_icbm152_brain_gm_mask()
 
 # %%
 # Resample the mask, since this mask has a different resolution.
@@ -102,7 +107,11 @@ fig.suptitle("Second level design matrix")
 from nilearn.glm.second_level import SecondLevelModel
 
 second_level_model = SecondLevelModel(
-    smoothing_fwhm=2.0, mask_img=mask_img, n_jobs=2, minimize_memory=False
+    smoothing_fwhm=2.0,
+    mask_img=mask_img,
+    n_jobs=2,
+    minimize_memory=False,
+    verbose=1,
 )
 second_level_model.fit(
     gray_matter_map_filenames,
@@ -129,7 +138,6 @@ fig = plt.figure(figsize=(5, 3))
 display = plotting.plot_stat_map(
     z_map,
     threshold=threshold,
-    colorbar=True,
     display_mode="z",
     cut_coords=[-4, 26],
     figure=fig,
@@ -148,7 +156,6 @@ _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 plotting.plot_stat_map(
     z_map,
     threshold=threshold,
-    colorbar=True,
     title="sex effect on gray matter density (FDR = .05)",
 )
 
@@ -157,51 +164,46 @@ plotting.plot_stat_map(
 # gray matter density on that dataset.
 
 # %%
-# Generating a report
-# -------------------
+# Saving model outputs to disk
+# ----------------------------
 # It can be useful to quickly generate a portable, ready-to-view report with
 # most of the pertinent information.
+# We can do this by saving the output of the GLM to disk
+# including an HTML report.
 # This is easy to do if you have a fitted model and the list of contrasts,
 # which we do here.
-from nilearn.reporting import make_glm_report
-
-icbm152_2009 = datasets.fetch_icbm152_2009()
-report = make_glm_report(
-    model=second_level_model,
-    contrasts=["age", "sex"],
-    bg_img=icbm152_2009["t1"],
-)
-
-
-# %%
-# We have several ways to access the report:
-# report  # This report can be viewed in a notebook
-# report.open_in_browser()
-
-# or we can save as an html file
 from pathlib import Path
+
+from nilearn.interfaces.bids import save_glm_to_bids
 
 output_dir = Path.cwd() / "results" / "plot_oasis"
 output_dir.mkdir(exist_ok=True, parents=True)
-report.save_as_html(output_dir / "report.html")
 
+icbm152_2009 = fetch_icbm152_2009()
 
-# %%
-# Saving model outputs to disk
-# ----------------------------
-
-# We can also save the model outputs to disk
-from nilearn.interfaces.bids import save_glm_to_bids
-
-save_glm_to_bids(
+second_level_model = save_glm_to_bids(
     second_level_model,
     contrasts=["age", "sex"],
     out_dir=output_dir / "derivatives" / "nilearn_glm",
     prefix="ageEffectOnGM",
     bg_img=icbm152_2009["t1"],
+    alpha=0.05,
+    height_control="fdr",
 )
 
 # %%
 # View the generated files
 files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
 print("\n".join([str(x.relative_to(output_dir)) for x in files]))
+
+#  %%
+# Generate a report and view it.
+# If no new contrast is passed to ``generate_report``,
+# the results saved to disk will be reused to generate the report.
+report = second_level_model.generate_report(
+    bg_img=icbm152_2009["t1"],
+    plot_type="glass",
+    alpha=0.05,
+    height_control=None,
+)
+report
