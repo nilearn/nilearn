@@ -7,6 +7,7 @@ See also nilearn.signal.
 import collections.abc
 import copy
 import itertools
+import math
 import warnings
 from copy import deepcopy
 
@@ -44,6 +45,7 @@ from nilearn._utils.niimg_conversions import (
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.surface.surface import (
+    FileMesh,
     SurfaceImage,
     at_least_2d,
     compute_adjacency_matrix,
@@ -285,6 +287,7 @@ def smooth_img(imgs, fwhm):
     imgs : Niimg-like object or iterable of Niimg-like objects
         Image(s) to smooth (see :ref:`extracting_data`
         for a detailed description of the valid input types).
+
     %(fwhm)s
 
     Returns
@@ -296,6 +299,16 @@ def smooth_img(imgs, fwhm):
     """
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
+    if isinstance(imgs, SurfaceImage):
+        iterations = _mris_fwhm_to_niters(fwhm, imgs)
+        return smooth_surface_img(
+            imgs,
+            iterations,
+            distance_weights=False,
+            vertex_weights=None,
+            center_surround_knob=0,
+        )
+
     imgs = stringify_path(imgs)
     if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
         single_img = False
@@ -317,8 +330,8 @@ def smooth_img(imgs, fwhm):
 
 def smooth_surface_img(
     imgs,
-    iterations=1,
-    distance_weights=False,
+    iterations: list[int],
+    distance_weights: bool = False,
     vertex_weights=None,
     center_surround_knob=0,
 ):
@@ -330,10 +343,10 @@ def smooth_surface_img(
         The surface whose is to be smoothed.
         In the case of 2D data, each sample is smoothed independently.
 
-    iterations : :obj:`int`, default = 1
+    iterations : :obj:`tuple` of :obj:`int` >=0
         The number of times to repeat the smoothing operation
         (it must be a positive value).
-        Defaults to 1
+        One value per mesh in the image.
 
     distance_weights : :obj:`bool`, default = False
         Whether to add distance-based weighting to the smoothing.
@@ -390,9 +403,12 @@ def smooth_surface_img(
     _ = _sanitize_surface_weights(imgs, vertex_weights=vertex_weights)
 
     new_data = {}
-    for hemi in imgs.mesh.parts:
+    for hemi, n_iter in zip(imgs.mesh.parts, iterations):
         mesh = imgs.mesh.parts[hemi]
         data = imgs.data.parts[hemi]
+
+        if n_iter == 0:
+            new_data[hemi] = data
 
         matrix = compute_adjacency_matrix(mesh, values=values)
 
@@ -407,7 +423,7 @@ def smooth_surface_img(
 
         # Run the iterations of smoothing.
         tmp = data
-        for _ in range(iterations):
+        for _ in range(n_iter):
             tmp = matrix.dot(tmp)
 
         # Convert back into numpy array.
@@ -416,6 +432,43 @@ def smooth_surface_img(
     smoothed_imgs = new_img_like(imgs, new_data)
 
     return smoothed_imgs
+
+
+def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
+    """Convert a desired FWHM to number of smoothing iterations for surface.
+
+    Adapted from freesurfer
+    https://github.com/freesurfer/freesurfer/tree/main/utils/mrisutils.cpp#L1100
+
+    Parameters
+    ----------
+    fwhm : :obj:`float`
+        Full width at half maximum (in mm)
+
+    img : surface image
+
+    Returns
+    -------
+    niters: list of number of smoothing iterations (one per mesh in the image)
+    """
+    # Convert FWHM to standard deviation of Gaussian kernel
+    G_STD = fwhm / math.sqrt(math.log(256.0))
+
+    niters = []
+    for mesh in img.mesh.parts.values():
+        if isinstance(mesh, FileMesh):
+            mesh = mesh.loaded()
+        # Compute average vertex area
+        avg_vertex_area = mesh._area / mesh.n_vertices
+
+        # Compute number of iterations using empirical formula
+        niters.append(
+            math.floor(
+                1.14 * (4 * math.pi * G_STD**2) / (7 * avg_vertex_area) + 0.5
+            )
+        )
+
+    return niters
 
 
 def _sanitize_surface_weights(
