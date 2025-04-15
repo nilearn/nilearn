@@ -238,7 +238,7 @@ def stringify_path(path: Union[T, str, os.PathLike[str]]):
 
     Parameters
     ----------
-    path : can be anything but usually, str, Path or a NiftiImage
+    path : can be anything, yet usually, str, Path or a NiftiImage
 
     Returns
     -------
