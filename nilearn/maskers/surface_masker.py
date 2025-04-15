@@ -220,6 +220,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         return self
 
+    @fill_doc
     def transform_single_imgs(
         self,
         imgs,
