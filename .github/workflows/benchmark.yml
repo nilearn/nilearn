@@ -39,6 +39,9 @@ on:
     push:
         branches:
         -   main
+    pull_request:
+        branches:
+        -   '*'
     schedule:
     # everday at 10pm UTC
     -   cron: 0 22 * * 0
@@ -52,7 +55,7 @@ jobs:
             github.event_name == 'schedule') &&
             github.repository == 'nilearn/nilearn'
         # TODO bump to 24.04 when bumping minimum python to 3.10
-        runs-on: ubuntu-22.04
+        runs-on: self-hosted
         defaults:
             run:
                 working-directory: ./asv_benchmarks
