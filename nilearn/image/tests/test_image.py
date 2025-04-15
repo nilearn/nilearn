@@ -364,7 +364,10 @@ def test_smooth_img(affine_eye, tmp_path):
 
     # Check corner case situations when fwhm=0, See issue #1537
     # Test whether function smooth_img raises a warning when fwhm=0.
-    with pytest.warns(UserWarning):
+    with pytest.warns(
+        UserWarning,
+        match="The parameter 'fwhm' for smoothing is specified as 0.0.",
+    ):
         smooth_img(img1, fwhm=0.0)
 
     # Test output equal when fwhm=None and fwhm=0
@@ -382,9 +385,36 @@ def test_smooth_img(affine_eye, tmp_path):
     out = smooth_img([img1_nifti2, img2_nifti2], fwhm=1.0)
 
 
-def test_smooth_surf_img(surf_img_1d):
+def test_smooth_img_surface(surf_img_1d):
+    """Test smoothing surface images.
+
+    Test output equal when fwhm=None and fwhm=0.
+    Test smoothing changes input.
+    Test that min and max are less extreme after smoothing.
+    """
+    out_fwhm_none = smooth_img(surf_img_1d, fwhm=None)
+    out_fwhm_zero = smooth_img(surf_img_1d, fwhm=0)
+
+    assert_surface_image_equal(surf_img_1d, out_fwhm_zero)
+    assert_surface_image_equal(out_fwhm_none, out_fwhm_zero)
+
+    smoothed_img = smooth_img(surf_img_1d, fwhm=5)
+
+    with pytest.raises(
+        ValueError, match="Part 'left' of PolyData instances are not equal"
+    ):
+        assert_surface_image_equal(smoothed_img, surf_img_1d)
+
+    data = get_surface_data(surf_img_1d)
+    smoothed_data = get_surface_data(smoothed_img)
+
+    assert data.max() > smoothed_data.max()
+    assert data.min() < smoothed_data.min()
+
+
+def test_smooth_surface_img(surf_img_1d):
     """Check smoothing change data."""
-    smoothed_imgs = smooth_surface_img(surf_img_1d, iterations=1)
+    smoothed_imgs = smooth_surface_img(surf_img_1d, iterations=[1, 1])
 
     assert isinstance(smoothed_imgs, SurfaceImage)
     for part in surf_img_1d.data.parts:
@@ -392,23 +422,23 @@ def test_smooth_surf_img(surf_img_1d):
             surf_img_1d.data.parts[part], smoothed_imgs.data.parts[part]
         )
 
-    more_smoothed_imgs = smooth_surface_img(surf_img_1d, iterations=2)
+    more_smoothed_imgs = smooth_surface_img(surf_img_1d, iterations=[2, 2])
     for part in surf_img_1d.data.parts:
         assert not np.array_equal(
             more_smoothed_imgs.data.parts[part], smoothed_imgs.data.parts[part]
         )
 
 
-def test_smooth_surf_img_center_surround_knob_minus_inf(surf_img_1d):
+def test_smooth_surface_img_center_surround_knob_minus_inf(surf_img_1d):
     """Set center_surround_knob to -inf leads to no smoothing."""
     smoothed_imgs = smooth_surface_img(
-        surf_img_1d, center_surround_knob=-np.inf
+        surf_img_1d, center_surround_knob=-np.inf, iterations=[1, 1]
     )
 
     assert_surface_image_equal(smoothed_imgs, surf_img_1d)
 
 
-def test_smooth_surf_img_errors(surf_img_1d):
+def test_smooth_surface_img_errors(surf_img_1d):
     with pytest.raises(TypeError, match=""):
         smooth_surface_img(
             surf_img_1d,

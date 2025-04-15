@@ -409,6 +409,7 @@ def smooth_surface_img(
 
         if n_iter == 0:
             new_data[hemi] = data
+            continue
 
         matrix = compute_adjacency_matrix(mesh, values=values)
 
@@ -451,13 +452,20 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
     -------
     niters: list of number of smoothing iterations (one per mesh in the image)
     """
+    if fwhm is None:
+        fwhm = 0
     # Convert FWHM to standard deviation of Gaussian kernel
     G_STD = fwhm / math.sqrt(math.log(256.0))
 
     niters = []
     for mesh in img.mesh.parts.values():
+        if fwhm == 0:
+            niters.append(0)
+            continue
+
         if isinstance(mesh, FileMesh):
             mesh = mesh.loaded()
+
         # Compute average vertex area
         avg_vertex_area = mesh._area / mesh.n_vertices
 
