@@ -77,6 +77,12 @@ def test_flm_reporting_no_contrasts(flm):
     assert "No statistical map was provided." in report.__str__()
 
 
+def test_mask_coverage_in_report(flm):
+    """Check that how much image is included in mask is in the report."""
+    report = flm.generate_report()
+    assert "The mask includes" in str(report)
+
+
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
 def test_flm_reporting_height_control(flm, height_control, contrasts):
     """Test for first level model reporting."""

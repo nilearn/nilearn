@@ -220,6 +220,12 @@ def _get_bounds(data, vmin=None, vmax=None):
     """Help returning the data bounds."""
     vmin = np.nanmin(data) if vmin is None else vmin
     vmax = np.nanmax(data) if vmax is None else vmax
+
+    if vmin == vmax == 0:
+        # try to avoid divide by 0 warnings / errors downstream
+        vmax = 1
+        vmin = -1
+
     return vmin, vmax
 
 

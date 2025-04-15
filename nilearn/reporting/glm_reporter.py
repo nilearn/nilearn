@@ -236,6 +236,7 @@ def make_glm_report(
 
     design_matrices = None
     mask_plot = None
+    mask_info = {"n_elements": 0, "coverage": 0}
     results = None
     warning_messages = ["The model has not been fit yet."]
     if model.__sklearn_is_fitted__():
@@ -258,6 +259,14 @@ def make_glm_report(
             )
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
+
+        mask_info = {
+            k: v
+            for k, v in model.masker_._report_content.items()
+            if k in ["n_elements", "coverage"]
+        }
+        if "coverage" in mask_info:
+            mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
 
         clusters_tsvs = None
         statistical_maps = {}
@@ -368,6 +377,7 @@ def make_glm_report(
         date=date,
         show_navbar="style='display: none;'" if is_notebook() else "",
         method_section=method_section,
+        **mask_info,
     )
 
     # revert HTML safe substitutions in CSS sections
