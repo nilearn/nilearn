@@ -57,8 +57,6 @@ jobs:
             run: |
                 pip install --upgrade pip
                 pip install asv
-                cd asv_benchmarks
-                pwd
         -   name: Add SSH key for benchmarks repo
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
@@ -73,6 +71,8 @@ jobs:
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
+                cd asv_benchmarks
+                pwd
                 git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
                 cp -r benchmarks_repo/results .
         -   name: Get all the machine info
