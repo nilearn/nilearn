@@ -112,6 +112,7 @@ jobs:
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent.sock
             run: |
+                cd benchmarks_repo
                 git checkout gh-pages
                 cp -r ../html/* .
                 git add .
