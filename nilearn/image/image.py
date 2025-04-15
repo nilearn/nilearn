@@ -301,7 +301,7 @@ def smooth_img(imgs, fwhm):
     # See http://bugs.python.org/issue7624
     if isinstance(imgs, SurfaceImage):
         iterations = _mris_fwhm_to_niters(fwhm, imgs)
-        return smooth_surface_img(
+        return _smooth_surface_img(
             imgs,
             iterations,
             distance_weights=False,
@@ -328,7 +328,7 @@ def smooth_img(imgs, fwhm):
     return ret[0] if single_img else ret
 
 
-def smooth_surface_img(
+def _smooth_surface_img(
     imgs,
     iterations: list[int],
     distance_weights: bool = False,
