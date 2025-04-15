@@ -49,8 +49,7 @@ jobs:
     benchmark:
         if: >-
             (github.event_name == 'workflow_dispatch' ||
-            github.event_name == 'schedule') &&
-            github.repository == 'nilearn/nilearn'
+            github.event_name == 'schedule')
         # TODO bump to 24.04 when bumping minimum python to 3.10
         runs-on: ubuntu-22.04
         steps:
