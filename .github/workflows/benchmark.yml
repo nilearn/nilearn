@@ -50,6 +50,10 @@ jobs:
             github.event_name == 'schedule')
         # TODO bump to 24.04 when bumping minimum python to 3.10
         runs-on: ubuntu-22.04
+        defaults:
+            run:
+                working-directory: ./asv_benchmarks
+
         steps:
         -   uses: actions/checkout@v4
         -   uses: actions/setup-python@v5
@@ -71,7 +75,6 @@ jobs:
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
-                cd asv_benchmarks
                 pwd
                 git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
                 cp -r benchmarks_repo/results .
