@@ -51,7 +51,8 @@ on:
 jobs:
     benchmark:
         if: >-
-            (github.event_name == 'workflow_dispatch' ||
+            (contains(github.event.head_commit.message, '[bm]') ||
+            github.event_name == 'workflow_dispatch' ||
             github.event_name == 'schedule') &&
             github.repository == 'nilearn/nilearn'
         # TODO bump to 24.04 when bumping minimum python to 3.10
