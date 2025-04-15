@@ -30,5 +30,5 @@ del loaded_json[next(iter(loaded_json.keys()))]
 print(f"Updated machine info: {loaded_json}")
 
 # write the modified json back to the file
-with Path.open(json_file_path) as json_file:
+with Path.open(json_file_path, "w") as json_file:
     json.dump(loaded_json, json_file, indent=4)
