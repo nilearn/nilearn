@@ -244,6 +244,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
 
+    @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 

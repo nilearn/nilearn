@@ -372,6 +372,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             and hasattr(self, "mask_img_")
         )
 
+    @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 

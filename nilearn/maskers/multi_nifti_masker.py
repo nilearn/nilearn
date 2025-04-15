@@ -380,6 +380,7 @@ class MultiNiftiMasker(NiftiMasker):
 
         return self
 
+    @fill_doc
     def transform_imgs(
         self, imgs_list, confounds=None, sample_mask=None, copy=True, n_jobs=1
     ):

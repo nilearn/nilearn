@@ -175,6 +175,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.2"
     )
+    @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 

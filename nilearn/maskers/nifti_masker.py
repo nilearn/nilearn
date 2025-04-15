@@ -8,6 +8,7 @@ from joblib import Memory
 
 from nilearn import _utils
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
@@ -158,7 +159,7 @@ def filter_and_mask(
     return data
 
 
-@_utils.fill_doc
+@fill_doc
 class NiftiMasker(BaseMasker):
     """Applying a mask to extract time-series from Niimg-like objects.
 
@@ -542,6 +543,7 @@ class NiftiMasker(BaseMasker):
 
         return self
 
+    @fill_doc
     def transform_single_imgs(
         self,
         imgs,

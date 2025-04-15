@@ -172,10 +172,12 @@ def filter_and_extract(
     return region_signals, aux
 
 
+@fill_doc
 class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Base class for NiftiMaskers."""
 
     @abc.abstractmethod
+    @fill_doc
     def transform_single_imgs(
         self, imgs, confounds=None, sample_mask=None, copy=True
     ):
