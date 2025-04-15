@@ -324,6 +324,7 @@ def nilearn_check_estimator(estimator):
             clone(estimator),
             check_masker_fit_with_non_finite_in_mask,
         )
+        yield (clone(estimator), check_masker_smooth)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -349,7 +350,6 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_clean_error)
             yield (clone(estimator), check_nifti_masker_clean_warning)
             yield (clone(estimator), check_nifti_masker_dtype)
-            yield (clone(estimator), check_nifti_masker_smooth)
             yield (clone(estimator), check_nifti_masker_fit_transform_5d)
 
             if is_multimasker(estimator):
@@ -364,7 +364,6 @@ def nilearn_check_estimator(estimator):
                 )
 
         if surf_img_input:
-            yield (clone(estimator), check_surface_masker_smooth)
             yield (clone(estimator), check_surface_masker_fit_with_mask)
 
     if is_glm:
@@ -854,6 +853,51 @@ def check_masker_fit_with_non_finite_in_mask(estimator):
     assert np.all(np.isfinite(signal))
 
 
+def check_masker_smooth(estimator):
+    """Check that masker can smooth data when extracting.
+
+    Check that masker instance has smoothing_fwhm attribute.
+    Check that output is different with and without smoothing.
+
+    For Surface maskers:
+    - Check smoothing on surface maskers raises NotImplemented warning.
+    - Check that output is the same with and without smoothing.
+    TODO: update once smoothing is implemented.
+    """
+    assert hasattr(estimator, "smoothing_fwhm")
+
+    if accept_niimg_input(estimator):
+        n_sample = 1
+        imgs = _img_3d_rand()
+    else:
+        n_sample = 10
+        imgs = _make_surface_img(n_sample)
+
+    signal = estimator.fit_transform(imgs)
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape[0] == n_sample
+
+    estimator.smoothing_fwhm = 3
+    estimator.fit(imgs)
+
+    if accept_niimg_input(estimator):
+        smoothed_signal = estimator.transform(imgs)
+
+        assert_raises(
+            AssertionError, assert_array_equal, smoothed_signal, signal
+        )
+
+    else:
+        with pytest.warns(UserWarning, match="not yet supported"):
+            smoothed_signal = estimator.transform(imgs)
+
+        assert_array_equal(smoothed_signal, signal)
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape[0] == n_sample
+
+
 # ------------------ SURFACE MASKER CHECKS ------------------
 
 
@@ -911,39 +955,6 @@ def check_surface_masker_fit_with_mask(estimator):
         MeshDimensionError, match="PolyMeshes do not have the same keys."
     ):
         estimator.transform(_drop_surf_img_part(imgs))
-
-
-def check_surface_masker_smooth(estimator):
-    """Check smoothing on surface maskers raises warning.
-
-    Check that output is the same with and without smoothing.
-    TODO: update once smoothing is implemented.
-    """
-    assert hasattr(estimator, "smoothing_fwhm")
-
-    n_sample = 10
-
-    input_img = _make_surface_img(n_sample)
-
-    estimator.fit(input_img)
-
-    signal = estimator.transform(input_img)
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape[0] == n_sample
-
-    estimator.smoothing_fwhm = 3
-    estimator.fit(input_img)
-
-    with pytest.warns(UserWarning, match="not yet supported"):
-        smoothed_signal = estimator.transform(input_img)
-
-    assert estimator.smoothing_fwhm is None
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape[0] == n_sample
-
-    assert_array_equal(smoothed_signal, signal)
 
 
 # ------------------ NIFTI MASKER CHECKS ------------------
@@ -1086,30 +1097,6 @@ def check_nifti_masker_fit_transform_files(estimator):
         estimator.fit(filename)
         estimator.transform(filename)
         estimator.fit_transform(filename)
-
-
-def check_nifti_masker_smooth(estimator):
-    """Check that masker can smooth data when extracting.
-
-    Check that masker instance has smoothing_fwhm attribute.
-    Check that output is different with and without smoothing.
-    """
-    assert hasattr(estimator, "smoothing_fwhm")
-
-    signal = estimator.fit(_img_3d_rand())
-    signal = estimator.transform(_img_3d_rand())
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape[0] == 1
-
-    estimator.smoothing_fwhm = 3
-    estimator.fit(_img_3d_rand())
-    smoothed_signal = estimator.transform(_img_3d_rand())
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape[0] == 1
-
-    assert_raises(AssertionError, assert_array_equal, smoothed_signal, signal)
 
 
 def check_nifti_masker_dtype(estimator):
