@@ -60,6 +60,7 @@ jobs:
                 pip install --upgrade pip
                 pip install asv
                 cd asv_benchmarks
+                pwd
         -   name: Add SSH key for benchmarks repo
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
