@@ -37,8 +37,6 @@ name: Run and deploy Nilearn benchmarks
 
 on:
     push:
-        branches:
-        -   main
     schedule:
     # everday at 10pm UTC
     -   cron: 0 22 * * 0
