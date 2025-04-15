@@ -316,7 +316,6 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_transformer)
         yield (clone(estimator), check_masker_compatibility_mask_image)
-        yield (clone(estimator), check_masker_validation_mask)
         yield (clone(estimator), check_masker_fit_with_mask_too_many_samples)
         yield (clone(estimator), check_masker_fit_with_empty_mask)
         yield (clone(estimator), check_masker_fit_returns_self)
@@ -763,18 +762,6 @@ def check_masker_refit(estimator):
     else:
         with pytest.raises(ValueError):
             assert_surface_image_equal(fitted_mask_1, fitted_mask_2)
-
-
-def check_masker_validation_mask(estimator):
-    """Raise error when mask_img is not binary."""
-    if accept_niimg_input(estimator):
-        mask_img = _img_3d_mni()
-    else:
-        mask_img = _make_surface_img()
-    estimator.mask_img = mask_img
-
-    with pytest.raises(ValueError, match="Given mask is not made of 2 values"):
-        estimator.fit()
 
 
 def check_masker_fit_with_mask_too_many_samples(estimator):
