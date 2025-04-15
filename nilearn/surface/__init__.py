@@ -21,6 +21,5 @@ __all__ = [
     "SurfaceMesh",
     "load_surf_data",
     "load_surf_mesh",
-    "smooth_img",
     "vol_to_surf",
 ]
