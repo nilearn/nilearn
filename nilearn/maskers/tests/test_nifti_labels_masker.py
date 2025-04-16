@@ -666,7 +666,8 @@ def test_warning_n_labels_not_equal_n_regions(
     )
     region_names = generate_labels(n_regions + 2, background=background)
     with pytest.warns(
-        UserWarning, match="Mismatch between the number of provided labels"
+        UserWarning,
+        match="Too many names for the indices. Dropping excess names values.",
     ):
         masker = NiftiLabelsMasker(
             labels_img,
