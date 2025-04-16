@@ -304,7 +304,6 @@ def smooth_img(imgs, fwhm):
             imgs,
             iterations,
             distance_weights=False,
-            vertex_weights=None,
             center_surround_knob=0,
         )
 
