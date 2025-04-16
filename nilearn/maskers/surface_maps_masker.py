@@ -9,10 +9,15 @@ from scipy import linalg
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils import constrained_layout_kwargs, fill_doc, logger
+from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.helpers import (
+    constrained_layout_kwargs,
+    is_matplotlib_installed,
+    is_plotly_installed,
+    rename_parameters,
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -140,12 +145,16 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-    def fit(self, img=None, y=None):
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters
         ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object or None, default=None
+        imgs : :obj:`~nilearn.surface.SurfaceImage` object or None, \
+               default=None
 
         y : None
             This parameter is unused.
@@ -175,8 +184,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.n_elements_ = self.maps_img.shape[1]
 
         if self.mask_img is not None:
-            if img is not None:
-                check_compatibility_mask_and_images(self.mask_img, img)
+            if imgs is not None:
+                check_compatibility_mask_and_images(self.mask_img, imgs)
             logger.log(
                 msg=f"loading regions from {self.mask_img.__repr__()}",
                 verbose=self.verbose,
@@ -235,6 +244,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
 
+    @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from surface object.
 
@@ -332,35 +342,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         )
 
         return region_signals
-
-    def fit_transform(self, img, y=None, confounds=None, sample_mask=None):
-        """Prepare and perform signal extraction from regions.
-
-        Parameters
-        ----------
-        img : :obj:`~nilearn.surface.SurfaceImage` object or \
-              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
-              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
-            Mesh and data for both hemispheres. The data for each hemisphere \
-            is of shape (n_vertices_per_hemisphere, n_timepoints).
-
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
-
-        %(confounds)s
-
-        %(sample_mask)s
-
-
-        Returns
-        -------
-        region_signals: :obj:`numpy.ndarray`
-            Signal for each region as provided in the maps (via `maps_img`).
-            shape: (n_timepoints, n_regions)
-        """
-        del y
-        return self.fit().transform(img, confounds, sample_mask)
 
     def inverse_transform(self, region_signals):
         """Compute :term:`vertex` signals from region signals.
