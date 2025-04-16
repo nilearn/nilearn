@@ -10,6 +10,7 @@ from scipy.ndimage import label
 from scipy.stats import norm
 
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data, math_img, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -37,7 +38,7 @@ def _compute_hommel_value(z_vals, alpha, verbose=0):
             warnings.warn(
                 '"verbose" option requires the package Matplotlib.'
                 "Please install it using `pip install matplotlib`.",
-                stacklevel=4,
+                stacklevel=find_stack_level(),
             )
         else:
             from matplotlib import pyplot as plt
@@ -259,7 +260,8 @@ def threshold_stats_img(
     ]
     if height_control not in height_control_methods:
         raise ValueError(
-            f"'height_control' should be one of {height_control_methods}"
+            f"'height_control' should be one of {height_control_methods}. \n"
+            f"Got: '{height_control_methods}'"
         )
 
     # if two-sided, correct alpha by a factor of 2

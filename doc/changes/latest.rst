@@ -34,6 +34,10 @@ Fixes
 Enhancements
 ------------
 
+
+
+- :bdg-dark:`Code` Add surface support for :func:`~nilearn.image.new_img_like`, :func:`~nilearn.image.index_img`, :func:`~nilearn.image.mean_img`, :func:`~nilearn.image.concat_imgs`, :func:`~nilearn.image.iter_img` (:gh:`5224`, :gh:`5301` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` :func:`~nilearn.interfaces.bids.save_glm_to_bids` can infer the naming scheme for output files from the input files passed at fit time to :class:`~nilearn.glm.first_level.FirstLevelModel`. It will also now save the GLM mask to disk (:gh:`5256`, :gh:`5279` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add a ``timeout`` parameter to the neurovault fetching functions (:gh:`5268` by `Rémi Gau`_).
@@ -41,6 +45,10 @@ Enhancements
 - :bdg-dark:`Code` Add surface support to :func:`~nilearn.glm.threshold_stats_img` (:gh:`5222` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` ``transparency`` and ``transparency_range`` parameters have been added to the :meth:`nilearn.plotting.displays.BaseSlicer.add_overlay` (and therefore to the all classes inheriting :class:`~nilearn.plotting.displays.BaseSlicer`). These parameters were also explicitly added to the plotting functions :func:`~nilearn.plotting.plot_img`, :func:`~nilearn.plotting.plot_stat_map`, :func:`~nilearn.plotting.plot_glass_brain`. (:gh:`5151` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Extend :func:`~nilearn.image.high_variance_confounds` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`5277` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Extend :func:`~nilearn.masking.apply_mask` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`5277` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Extend :func:`~nilearn.image.threshold_img` to work with :class:`~nilearn.surface.SurfaceImage` (:gh:`4999` by `Rémi Gau`_).
 
@@ -71,6 +79,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-dark:`Deprecation` In version >0.13.2, the parameter ``img`` or  ``X`` will be renamed to ``imgs`` for the ``fit``, ``transform`` and ``fit_transform`` method of all the surface maskers, the fit method of the :class:`~nilearn.maskers.NiftiSpheresMasker` and the :class:`~nilearn.regions.RegionExtractor`, and the ``fit_transform`` method of the  :class:`~nilearn.maskers.NiftiMasker` (:gh:`5262` by `Rémi Gau`_).
+
 - :bdg-info:`Plotting` Improve layout of GLM reports (:gh:`5202` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Allow a :func:`~nilearn.plotting.img_comparison.plot_img_comparison` to accept 3D Niimg-like image and to be run without a masker (:gh:`5132` by `Rémi Gau`_).
@@ -94,3 +104,5 @@ Changes
 - :bdg-dark:`Code` Move ``nilearn.plotting.surf_plotting`` and ``nilearn.plotting.html_surface`` under ``nilearn.plotting.surface`` (:gh:`5234` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Move ``nilearn.plotting.matrix_plotting`` under ``nilearn.plotting.matrix`` (:gh:`5240` by `Hande Gözükan`_).
+
+- :bdg-danger:`Deprecation` For version >=0.13.2 :func:`~nilearn.interfaces.bids.parse_bids_filename` will return a dictionary whose keys correspond to valid BIDS terms. (:gh:`5320` by `Rémi Gau`_).

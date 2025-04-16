@@ -20,6 +20,7 @@ from nilearn._utils import (
 from nilearn._utils.class_inspect import (
     get_params,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -52,7 +53,8 @@ def _get_mask_strategy(strategy):
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated. "
-            "Please use 'whole-brain-template' instead."
+            "Please use 'whole-brain-template' instead.",
+            stacklevel=find_stack_level(),
         )
         return partial(compute_multi_brain_mask, mask_type="whole-brain")
     else:
@@ -311,7 +313,7 @@ class MultiNiftiMasker(NiftiMasker):
                     "Generation of a mask has been requested (imgs != None) "
                     "while a mask has been provided at masker creation. "
                     "Given mask will be used.",
-                    stacklevel=2,
+                    stacklevel=find_stack_level(),
                 )
 
             self.mask_img_ = check_niimg_3d(self.mask_img)
@@ -378,6 +380,7 @@ class MultiNiftiMasker(NiftiMasker):
 
         return self
 
+    @fill_doc
     def transform_imgs(
         self, imgs_list, confounds=None, sample_mask=None, copy=True, n_jobs=1
     ):
@@ -389,13 +392,9 @@ class MultiNiftiMasker(NiftiMasker):
             See :ref:`extracting_data`.
             List of imgs file to prepare. One item per subject.
 
-        confounds : :obj:`list` of confounds, default=None
-            List of confounds (2D arrays or filenames pointing to CSV
-            files or pandas DataFrames). Must be of same length than imgs_list.
+        %(confounds_multi)s
 
-        sample_mask : :obj:`list` of sample_mask, default=None
-            List of sample_mask (1D arrays) if scrubbing motion outliers.
-            Must be of same length than imgs_list.
+        %(sample_mask_multi)s
 
                 .. versionadded:: 0.8.0
 
@@ -439,9 +438,19 @@ class MultiNiftiMasker(NiftiMasker):
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
+        elif len(confounds) != len(imgs_list):
+            raise ValueError(
+                f"number of confounds ({len(confounds)}) unequal to "
+                f"number of images ({len(imgs_list)})."
+            )
 
         if sample_mask is None:
             sample_mask = itertools.repeat(None, len(imgs_list))
+        elif len(sample_mask) != len(imgs_list):
+            raise ValueError(
+                f"number of sample_mask ({len(sample_mask)}) unequal to "
+                f"number of images ({len(imgs_list)})."
+            )
 
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason
@@ -488,6 +497,7 @@ class MultiNiftiMasker(NiftiMasker):
         )
         return data
 
+    @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
 
@@ -497,14 +507,9 @@ class MultiNiftiMasker(NiftiMasker):
             See :ref:`extracting_data`.
             Data to be preprocessed
 
-        confounds : CSV file or 2D :obj:`numpy.ndarray` or \
-                :obj:`pandas.DataFrame`, default=None
-            This parameter is passed to signal.clean. Please see the
-            corresponding documentation for details.
+        %(confounds_multi)s
 
-        sample_mask : :obj:`list` of 1D :obj:`numpy.ndarray`, default=None
-            List of sample_mask (1D arrays) if scrubbing motion outliers.
-            Must be of same length than imgs_list.
+        %(sample_mask_multi)s
 
                 .. versionadded:: 0.8.0
 

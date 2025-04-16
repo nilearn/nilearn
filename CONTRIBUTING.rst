@@ -946,6 +946,65 @@ returned by the ``request_mocker`` pytest fixture, defined in
 ``Sender`` class it contains provide information on how to write a test using
 this fixture. Existing tests can also serve as examples.
 
+Performance monitoring
+----------------------
+
+Nilearn includes performance monitoring in the
+library using `asv <https://asv.readthedocs.io/en/latest/index.html>`_
+benchmarks. The goal is two-fold:
+
+- To track the performance over time and flag regressions due to changes in the
+  codebase.
+- To compare the performance of different implementations of an algorithm
+  (for example, loading an image using :func:`nilearn.image.load_img` vs.
+  :func:`nibabel.loadsave.load`).
+
+A collection of these benchmarks are located in the ``nilearn/asv_benchmarks``
+directory. Currently, we run them on GitHub CI regularly on the latest commit
+of the main branch. The results are available on
+`nilearn.github.io/benchmarks/ <https://nilearn.github.io/benchmarks/>`_.
+
+To run these benchmarks locally, you will need to install
+the asv package:
+
+.. code-block:: bash
+
+      pip install asv
+
+Then, change to the ``asv_benchmarks`` directory:
+
+.. code-block:: bash
+
+      cd asv_benchmarks
+
+To run a specific benchmark on the current HEAD of your clone of the
+repository, use the following command:
+
+.. code-block:: bash
+
+      asv run -b load_img
+
+This will measure both time taken and peak memory usage of the
+:func:`nilearn.image.load_img` function.
+
+You can also track the performance of a specific benchmark over, say,
+5 commits, until release 0.10.0, like this:
+
+.. code-block:: bash
+
+      asv run 0.10.0..main -b load_img --steps 5
+
+You can also compare the performance of loading an image using
+:func:`nilearn.image.load_img` vs. :func:`nibabel.loadsave.load`:
+
+.. code-block:: bash
+
+      asv run -b compare_load
+
+For more information on how to use asv, please refer to the
+`asv documentation <https://asv.readthedocs.io/en/stable/>`_.
+
+
 Maintenance
 ===========
 

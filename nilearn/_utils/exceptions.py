@@ -84,3 +84,13 @@ class AllVolumesRemovedError(Exception):
 
     def __str__(self):
         return f"[AllVolumesRemoved Error] {self.args[0]}"
+
+
+class MeshDimensionError(ValueError):
+    """Exception raised when meshes have incompatible dimensions."""
+
+    def __init__(self, msg="Meshes have incompatible dimensions."):
+        super().__init__(msg)
+
+    def __str__(self):
+        return f"[MeshDimensionError] {self.args[0]}"

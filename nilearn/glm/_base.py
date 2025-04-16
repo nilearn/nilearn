@@ -9,7 +9,9 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.externals import tempita
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
@@ -155,6 +157,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             "r_square", result_as_time_series=False
         )
 
+    @fill_doc
     def generate_report(
         self,
         contrasts=None,
@@ -522,16 +525,6 @@ def _generate_statistical_maps(
     if not isinstance(contrast_types, dict):
         contrast_types = {}
 
-    fields = {
-        "prefix": prefix,
-        "suffix": "statmap",
-        "extension": "nii.gz",
-        "entities": deepcopy(entities),
-    }
-
-    if generate_bids_name:
-        fields["prefix"] = None
-
     statistical_maps: dict[str, dict[str, str]] = {}
 
     for contrast_name in contrasts:
@@ -544,6 +537,16 @@ def _generate_statistical_maps(
             stat_type = "F"
         # Override automatic detection with explicit type if provided
         stat_type = contrast_types.get(contrast_name, stat_type)
+
+        fields = {
+            "prefix": prefix,
+            "suffix": "statmap",
+            "extension": "nii.gz",
+            "entities": deepcopy(entities),
+        }
+
+        if generate_bids_name:
+            fields["prefix"] = None
 
         fields["entities"]["contrast"] = _clean_contrast_name(contrast_name)
 
@@ -560,6 +563,14 @@ def _generate_statistical_maps(
         ):
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
+
+        fields["entities"]["stat"] = None
+        fields["suffix"] = "clusters"
+        fields["extension"] = "tsv"
+        tmp["clusters_tsv"] = create_bids_filename(fields, entities_to_include)
+
+        fields["extension"] = "json"
+        tmp["metadata"] = create_bids_filename(fields, entities_to_include)
 
         statistical_maps[contrast_name] = tempita.bunch(**tmp)
 
@@ -764,6 +775,6 @@ def _clean_contrast_name(contrast_name):
     if new_name != contrast_name:
         warnings.warn(
             f'Contrast name "{contrast_name}" changed to "{new_name}"',
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
     return new_name

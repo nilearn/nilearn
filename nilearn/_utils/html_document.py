@@ -12,6 +12,7 @@ from socketserver import TCPServer
 from threading import Thread
 
 from nilearn._utils import remove_parameters
+from nilearn._utils.logger import find_stack_level
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
 BROWSER_TIMEOUT_SECONDS = 3.0
@@ -103,11 +104,9 @@ class HTMLDocument:
             value = int(value)
         except ValueError:
             warnings.warn(
-                (
-                    f"Invalid width {value=}. "
-                    f"Using default instead {WIDTH_DEFAULT}"
-                ),
-                stacklevel=3,
+                f"Invalid width {value=}. "
+                f"Using default instead {WIDTH_DEFAULT}",
+                stacklevel=find_stack_level(),
             )
             value = WIDTH_DEFAULT
 
@@ -123,11 +122,9 @@ class HTMLDocument:
             value = int(value)
         except ValueError:
             warnings.warn(
-                (
-                    f"Invalid height {value=}. "
-                    f"Using default instead {HEIGHT_DEFAULT}"
-                ),
-                stacklevel=3,
+                f"Invalid height {value=}. "
+                f"Using default instead {HEIGHT_DEFAULT}",
+                stacklevel=find_stack_level(),
             )
             value = WIDTH_DEFAULT
         self._height = value
@@ -148,7 +145,7 @@ class HTMLDocument:
                 "nilearn views. As each view uses dozens "
                 "of megabytes of RAM, you might want to "
                 "delete some of them.",
-                stacklevel=5,
+                stacklevel=find_stack_level(),
             )
 
     def resize(self, width, height):

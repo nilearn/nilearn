@@ -27,19 +27,20 @@ decomposition           --- Includes a subject level variant of the ICA
 glm                     --- Analyzing fMRI data using GLMs
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
-maskers                 --- Includes scikit-learn transformers.
-masking                 --- Utilities to compute and operate on brain masks
 interfaces              --- Includes tools to preprocess neuro-imaging data
                             from various common interfaces like fMRIPrep.
+maskers                 --- Includes scikit-learn transformers.
+masking                 --- Utilities to compute and operate on brain masks
 mass_univariate         --- Defines a Massively Univariate Linear Model
                             estimated with OLS and permutation test
 plotting                --- Plotting code for nilearn
-region                  --- Set of functions for extracting region-defined
+regions                 --- Set of functions for extracting region-defined
                             signals, clustering methods,
                             connected regions extraction
 reporting               --- Implements functions useful
                             to report analysis results
 signal                  --- Set of preprocessing functions for time series
+surface                 --- Functions and classes to work with surfaces
 """
 
 try:
@@ -64,6 +65,7 @@ __all__ = [
     "datasets",
     "decoding",
     "decomposition",
+    "glm",
     "image",
     "interfaces",
     "maskers",
@@ -71,6 +73,7 @@ __all__ = [
     "mass_univariate",
     "plotting",
     "regions",
+    "reporting",
     "signal",
     "surface",
 ]

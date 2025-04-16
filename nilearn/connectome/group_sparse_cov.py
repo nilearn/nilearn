@@ -18,6 +18,7 @@ from sklearn.utils.extmath import fast_logdet
 
 from nilearn._utils import CacheMixin, fill_doc, logger
 from nilearn._utils.extmath import is_spd
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 
 
@@ -308,7 +309,6 @@ def _group_sparse_covariance(
         logger.log(
             f"* iteration {n:d} ({100.0 * n / max_iter:.0f} %){suffix} ...",
             verbose=verbose,
-            stack_level=2,
         )
 
         omega_old[...] = omega
@@ -386,7 +386,11 @@ def _group_sparse_covariance(
 
                         if fder == 0:
                             msg = "derivative was zero."
-                            warnings.warn(msg, RuntimeWarning, stacklevel=4)
+                            warnings.warn(
+                                msg,
+                                RuntimeWarning,
+                                stacklevel=find_stack_level(),
+                            )
                             break
                         fval = -(alpha2 - (cc / aq2).sum()) / fder
                         gamma = fval + gamma
@@ -397,7 +401,7 @@ def _group_sparse_covariance(
                         warnings.warn(
                             "Newton-Raphson step did not converge.\n"
                             "This may indicate a badly conditioned system.",
-                            stacklevel=4,
+                            stacklevel=find_stack_level(),
                         )
 
                     if debug:
@@ -431,10 +435,7 @@ def _group_sparse_covariance(
         ):
             probe_interrupted = True
             logger.log(
-                "probe_function interrupted loop",
-                verbose=verbose,
-                msg_level=2,
-                stack_level=2,
+                "probe_function interrupted loop", verbose=verbose, msg_level=2
             )
             break
 
@@ -453,7 +454,7 @@ def _group_sparse_covariance(
         warnings.warn(
             "Maximum number of iterations reached without getting "
             "to the requested tolerance level.",
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
 
     return omega
@@ -492,7 +493,7 @@ def _check_diagonal_normalization(emp_covs, n_subjects):
             warnings.warn(
                 "Input signals do not all have unit variance. "
                 "This can lead to numerical instability.",
-                stacklevel=4,
+                stacklevel=find_stack_level(),
             )
             break
 
@@ -537,7 +538,6 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
         logger.log(
             f"tolerance reached at iteration number {n + 1:d}: {max_norm:.3e}",
             verbose=verbose,
-            stack_level=2,
         )
     return tolerance_reached
 

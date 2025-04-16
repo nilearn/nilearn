@@ -17,6 +17,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
 from nilearn._utils import stringify_path
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
 
@@ -45,7 +46,7 @@ def _load_uniform_ball_cloud(n_points=20):
         "have a big impact on the result, we strongly recommend using one "
         'of these values when using kind="ball" for much better performance.',
         EfficiencyWarning,
-        stacklevel=3,
+        stacklevel=find_stack_level(),
     )
     return _uniform_ball_cloud(n_points=n_points)
 
@@ -828,7 +829,7 @@ def vol_to_surf(
             "'nearest_most_frequent' is recommended. Otherwise, use 'linear'. "
             "See the documentation for more information.",
             FutureWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     img = load_img(img)
@@ -1747,31 +1748,6 @@ def _check_data_and_mesh_compat(mesh, data):
             )
 
 
-def check_same_n_vertices(mesh_1, mesh_2):
-    """Check that 2 PolyMesh have the same keys and that n vertices match.
-
-    Parameters
-    ----------
-    mesh_1: PolyMesh
-
-    mesh_2: PolyMesh
-    """
-    keys_1, keys_2 = set(mesh_1.parts.keys()), set(mesh_2.parts.keys())
-    if keys_1 != keys_2:
-        diff = keys_1.symmetric_difference(keys_2)
-        raise ValueError(
-            f"Meshes do not have the same keys. Offending keys: {diff}"
-        )
-    for key in keys_1:
-        if mesh_1.parts[key].n_vertices != mesh_2.parts[key].n_vertices:
-            raise ValueError(
-                f"Number of vertices do not match for '{key}'."
-                "number of vertices in mesh_1: "
-                f"{mesh_1.parts[key].n_vertices}; "
-                f"in mesh_2: {mesh_2.parts[key].n_vertices}"
-            )
-
-
 def _mesh_to_gifti(coordinates, faces, gifti_file):
     """Write surface mesh to gifti file on disk.
 
@@ -2015,7 +1991,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
         SurfaceImage whose data to concatenate and extract.
 
-    ensure_finite : bool
+    ensure_finite : bool, Default=False
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
@@ -2037,7 +2013,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
             warnings.warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
             data[non_finite_mask] = 0
 
