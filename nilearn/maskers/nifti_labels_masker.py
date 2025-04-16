@@ -651,6 +651,9 @@ class NiftiLabelsMasker(BaseMasker):
             # obviates need to run .transform() before .inverse_transform()
             self._resampled_labels_img_ = self.labels_img_
 
+        if not hasattr(self, "_resampled_mask_img"):
+            self._resampled_mask_img = self.mask_img_
+
         if self.reports:
             self._reporting_data = {
                 "labels_image": self._resampled_labels_img_,
@@ -671,12 +674,6 @@ class NiftiLabelsMasker(BaseMasker):
         self.n_elements_ = (
             np.unique(get_data(self._resampled_labels_img_)).size - 1
         )
-
-        if not hasattr(self, "_resampled_labels_img_"):
-            self._resampled_labels_img_ = self.labels_img_
-
-        if not hasattr(self, "_resampled_mask_img"):
-            self._resampled_mask_img = self.mask_img_
 
         self.region_names_ = None
         self.region_ids_ = None
@@ -758,7 +755,7 @@ class NiftiLabelsMasker(BaseMasker):
                 imgs_,
                 self._resampled_labels_img_,
             ):
-                self._resample_labels(imgs_)
+                self = self._resample_labels(imgs_)
 
             if (self.mask_img is not None) and (
                 not _utils.niimg_conversions.check_same_fov(
