@@ -1,13 +1,19 @@
 """Transformer for computing ROI signals."""
 
 import warnings
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
 from nilearn._utils import logger
+from nilearn._utils.bids import (
+    generate_atlas_look_up_table,
+    sanitize_look_up_table,
+)
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
@@ -202,6 +208,7 @@ class NiftiLabelsMasker(BaseMasker):
         self,
         labels_img=None,
         labels=None,
+        lut=None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
@@ -228,6 +235,7 @@ class NiftiLabelsMasker(BaseMasker):
         self.background_label = background_label
 
         self.labels = labels
+        self.lut = lut
 
         self.mask_img = mask_img
         self.keep_masked_labels = keep_masked_labels
@@ -543,12 +551,41 @@ class NiftiLabelsMasker(BaseMasker):
             "warning_message": None,
         }
 
+        if self.labels and self.lut is not None:
+            raise ValueError(
+                "Pass either labels or a lookup table (lut) to the masker, "
+                "but not both."
+            )
+
         self._check_labels()
 
         repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
+
+        # generate a look up table if one was not provided
+        if self.lut is not None:
+            if isinstance(self.lut, (str, Path)):
+                lut = pd.read_table(self.lut, sep=None)
+            else:
+                lut = self.lut
+
+        elif self.labels:
+            lut = generate_atlas_look_up_table(
+                function=None,
+                name=self.labels,
+                index=self.labels_img_,
+            )
+
+        else:
+            lut = generate_atlas_look_up_table(
+                function=None, index=self.labels_img_
+            )
+
+        self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
+
+        self.label_names_ = self.lut_.name.to_list()
 
         self._original_region_ids = self._get_labels_values(self.labels_img_)
 

@@ -735,17 +735,19 @@ def test_region_names(
         dtype=dtype,
     )
 
-    region_names = generate_labels(n_regions, background=background)
-
     masker = NiftiLabelsMasker(
         labels_img,
-        labels=region_names,
+        labels=generate_labels(n_regions, background=background),
         resampling_target="data",
     )
     signals = masker.fit().transform(fmri_img)
 
     check_region_names_after_fit(
-        masker, signals, region_names, background, resampling
+        masker,
+        signals,
+        generate_labels(n_regions, background=background),
+        background,
+        resampling,
     )
 
 
