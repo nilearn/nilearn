@@ -302,12 +302,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         self.label_names_ = self.lut_.name.to_list()
 
-        if self.mask_img is not None:
-            if imgs is not None:
-                check_compatibility_mask_and_images(self.mask_img, imgs)
+        self.mask_img_ = self._load_mask(imgs)
+        if self.mask_img_ is not None:
             check_polymesh_equal(self.labels_img.mesh, self.mask_img.mesh)
-
-        self.mask_img_ = self.mask_img
 
         self._shelving = False
 
