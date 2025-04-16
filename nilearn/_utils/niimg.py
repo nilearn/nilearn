@@ -270,3 +270,11 @@ def img_data_dtype(niimg):
     return (
         dataobj.dtype if hasattr(dataobj, "dtype") else niimg.get_data_dtype()
     )
+
+
+def check_imgs_equal(img, img2) -> bool:
+    """Check if 2 NiftiImages have same affine and data."""
+    if (img.affine != img2.affine).any():
+        return False
+
+    return not (safe_get_data(img) != safe_get_data(img2)).ravel().any()

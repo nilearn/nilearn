@@ -3,6 +3,7 @@
 import warnings
 
 import numpy as np
+from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -543,6 +544,9 @@ class NiftiLabelsMasker(BaseMasker):
             "warning_message": None,
         }
 
+        if self.memory is None:
+            self.memory = Memory(location=None)
+
         self._check_labels()
 
         repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
@@ -677,6 +681,17 @@ class NiftiLabelsMasker(BaseMasker):
             np.unique(get_data(self._resampled_labels_img_)).size - 1
         )
 
+        if not hasattr(self, "_resampled_labels_img_"):
+            self._resampled_labels_img_ = self.labels_img_
+
+        if not hasattr(self, "_resampled_mask_img"):
+            self._resampled_mask_img = self.mask_img_
+
+        self.region_names_ = None
+        self.region_ids_ = None
+        self.region_atlas_ = None
+        self.labels_ = None
+
         return self
 
     @fill_doc
@@ -746,13 +761,6 @@ class NiftiLabelsMasker(BaseMasker):
         """
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
-
-        if not hasattr(self, "_resampled_labels_img_"):
-            self._resampled_labels_img_ = self.labels_img_
-
-        if not hasattr(self, "_resampled_mask_img"):
-            self._resampled_mask_img = self.mask_img_
-
         if self.resampling_target == "data":
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
             if not _utils.niimg_conversions.check_same_fov(
@@ -832,8 +840,6 @@ class NiftiLabelsMasker(BaseMasker):
         for i in range(region_signals.shape[1]):
             # ids does not include background label
             region_ids[i] = ids[i]
-
-        self.region_names_ = None
 
         self._check_mismatch_labels_regions(
             self.labels_, tolerant=True, resampling_done=True
