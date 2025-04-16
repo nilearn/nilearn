@@ -13,7 +13,10 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import stringify_path
+from nilearn._utils.helpers import (
+    rename_parameters,
+    stringify_path,
+)
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -172,10 +175,12 @@ def filter_and_extract(
     return region_signals, aux
 
 
+@fill_doc
 class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Base class for NiftiMaskers."""
 
     @abc.abstractmethod
+    @fill_doc
     def transform_single_imgs(
         self, imgs, confounds=None, sample_mask=None, copy=True
     ):
@@ -325,15 +330,16 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     @fill_doc
     def fit_transform(
-        self, X, y=None, confounds=None, sample_mask=None, **fit_params
+        self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
     ):
         """Fit to data, then transform it.
 
         Parameters
         ----------
-        X : Niimg-like object
+        imgs : Niimg-like object
             See :ref:`extracting_data`.
 
         y : numpy array of shape [n_samples], default=None
@@ -356,18 +362,18 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if y is None:
             # fit method of arity 1 (unsupervised transformation)
             if self.mask_img is None:
-                return self.fit(X, **fit_params).transform(
-                    X, confounds=confounds, sample_mask=sample_mask
+                return self.fit(imgs, **fit_params).transform(
+                    imgs, confounds=confounds, sample_mask=sample_mask
                 )
 
             return self.fit(**fit_params).transform(
-                X, confounds=confounds, sample_mask=sample_mask
+                imgs, confounds=confounds, sample_mask=sample_mask
             )
 
         # fit method of arity 2 (supervised transformation)
         if self.mask_img is None:
-            return self.fit(X, y, **fit_params).transform(
-                X, confounds=confounds, sample_mask=sample_mask
+            return self.fit(imgs, y, **fit_params).transform(
+                imgs, confounds=confounds, sample_mask=sample_mask
             )
 
         warnings.warn(
@@ -379,7 +385,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             stacklevel=find_stack_level(),
         )
         return self.fit(**fit_params).transform(
-            X, confounds=confounds, sample_mask=sample_mask
+            imgs, confounds=confounds, sample_mask=sample_mask
         )
 
     def inverse_transform(self, X):
@@ -485,6 +491,9 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return mask_img_
 
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
@@ -553,3 +562,40 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """Extract signals from a single surface image."""
         # implemented in children classes
         raise NotImplementedError()
+
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
+    @fill_doc
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+        """Prepare and perform signal extraction from regions.
+
+        Parameters
+        ----------
+        imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
+              :obj:`list` of :obj:`~nilearn.surface.SurfaceImage` or \
+              :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+            Mesh and data for both hemispheres. The data for each hemisphere \
+            is of shape (n_vertices_per_hemisphere, n_timepoints).
+
+        y : None
+            This parameter is unused.
+            It is solely included for scikit-learn compatibility.
+
+        %(confounds)s
+
+        %(sample_mask)s
+
+
+        Returns
+        -------
+        signals: :obj:`numpy.ndarray`
+            Signal for each region as provided
+            in the mask, label or maps image.
+            The shape will vary depending on the masker type:
+            - SurfaceMasker: (n_timepoints, n_vertices_in_mask)
+            - SurfaceLabelsMasker: (n_timepoints, n_regions)
+            - SurfaceMapssMasker: (n_timepoints, n_maps)
+        """
+        del y
+        return self.fit(imgs).transform(imgs, confounds, sample_mask)

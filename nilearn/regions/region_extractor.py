@@ -14,6 +14,9 @@ from nilearn._utils import (
     check_niimg_4d,
     fill_doc,
 )
+from nilearn._utils.helpers import (
+    rename_parameters,
+)
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_same_fov
@@ -440,17 +443,17 @@ class RegionExtractor(NiftiMapsMasker):
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit(
         self,
-        X=None,
+        imgs=None,
         y=None,  # noqa: ARG002
     ):
         """Prepare the data and setup for the region extraction."""
         check_params(self.__dict__)
         maps_img = check_niimg_4d(self.maps_img)
 
-        # Check mask
-        self._load_mask(X)
+        self._load_mask(imgs)
 
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
         if self.thresholding_strategy not in list_of_strategies:
