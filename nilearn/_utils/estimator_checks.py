@@ -470,7 +470,10 @@ def check_masker_dict_unchanged(estimator):
             if (
                 (
                     isinstance(dict_before[x], np.ndarray)
-                    and (dict_before[x] != dict_after[x]).any()
+                    and (
+                        (dict_before[x].shape != dict_after[x].shape)
+                        or (dict_before[x] != dict_after[x]).any()
+                    )
                 )
                 or (
                     isinstance(dict_before[x], Nifti1Image)
