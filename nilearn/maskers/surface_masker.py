@@ -218,6 +218,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 "images": imgs,
             }
 
+        if self.clean_args is None:
+            self.clean_args = {}
+
         return self
 
     @fill_doc
@@ -255,8 +258,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 "mask_img",
             ],
         )
-        if self.clean_args is None:
-            self.clean_args = {}
+
         parameters["clean_args"] = self.clean_args
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)

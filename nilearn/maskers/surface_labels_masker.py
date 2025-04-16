@@ -273,8 +273,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "but not both."
             )
 
-        self._shelving = False
-
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)
         self._labels_ = list(all_labels)
@@ -310,6 +308,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.mask_img_ = self.mask_img
 
         self._shelving = False
+
+        if self.clean_args is None:
+            self.clean_args = {}
 
         if not self.reports:
             self._reporting_data = None
@@ -439,8 +440,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "mask_img",
             ],
         )
-        if self.clean_args is None:
-            self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
         # signal cleaning here

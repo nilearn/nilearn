@@ -3,6 +3,7 @@
 import warnings
 
 import numpy as np
+from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
@@ -408,6 +409,9 @@ class NiftiMapsMasker(BaseMasker):
 
         self = sanitize_cleaning_parameters(self)
 
+        if self.memory is None:
+            self.memory = Memory(location=None)
+
         self._report_content = {
             "description": (
                 "This reports shows the spatial maps provided to the mask."
@@ -498,6 +502,11 @@ class NiftiMapsMasker(BaseMasker):
         # The number of elements is equal to the number of volumes
         self.n_elements_ = self.maps_img_.shape[3]
 
+        if not hasattr(self, "_resampled_maps_img_"):
+            self._resampled_maps_img_ = self.maps_img_
+        if not hasattr(self, "_resampled_mask_img_"):
+            self._resampled_mask_img_ = self.mask_img_
+
         return self
 
     def __sklearn_is_fitted__(self):
@@ -548,11 +557,6 @@ class NiftiMapsMasker(BaseMasker):
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
         # of the signal.
-
-        if not hasattr(self, "_resampled_maps_img_"):
-            self._resampled_maps_img_ = self.maps_img_
-        if not hasattr(self, "_resampled_mask_img_"):
-            self._resampled_mask_img_ = self.mask_img_
 
         if self.resampling_target is None:
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
@@ -666,7 +670,6 @@ class NiftiMapsMasker(BaseMasker):
             # kwargs
             verbose=self.verbose,
         )
-        self.labels_ = labels_
         return region_signals
 
     def inverse_transform(self, region_signals):

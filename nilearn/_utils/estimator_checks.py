@@ -443,9 +443,34 @@ def check_masker_dict_unchanged(estimator):
     else:
         estimator.transform(_make_surface_img(10))
 
-    assert estimator.__dict__ == dict_before, (
-        "Estimator changes '__dict__' during transform."
-    )
+    dict_after = estimator.__dict__
+
+    print(type(dict_after))
+
+    try:
+        assert dict_after == dict_before
+    except AssertionError as e:
+        extra_keys = set(dict_after.keys()) - set(dict_before.keys())
+        if len(extra_keys) > 0:
+            raise ValueError(
+                "Estimator changes '__dict__' keys during transform.\n"
+                f"{extra_keys} \n"
+            )
+        difference = {
+            x: {"before": dict_before[x], "after": dict_after[x]}
+            for x in dict_before
+            if dict_before[x] != dict_after[x]
+        }
+        if difference:
+            raise ValueError(
+                "Estimator changes the following '__dict__' keys \n"
+                "during transform.\n"
+                f"{difference}"
+            )
+        else:
+            raise e
+    except Exception as e:
+        raise e
 
 
 def check_masker_fitted(estimator):
