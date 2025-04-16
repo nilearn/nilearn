@@ -53,7 +53,6 @@ from nilearn.surface.surface import (
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
-    assert_same_number_vertices,
     check_polymesh_equal,
 )
 from nilearn.typing import NiimgLike
@@ -284,7 +283,8 @@ def smooth_img(imgs, fwhm):
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects
+    imgs : Niimg-like object or iterable of Niimg-like objects or
+           :obj:`~nilearn.surface.SurfaceImage`.
         Image(s) to smooth (see :ref:`extracting_data`
         for a detailed description of the valid input types).
 
@@ -292,13 +292,12 @@ def smooth_img(imgs, fwhm):
 
     Returns
     -------
-    :class:`nibabel.nifti1.Nifti1Image` or list of
-        Filtered input image. If `imgs` is an iterable,
-        then `filtered_img` is a list.
+    :obj:`nibabel.nifti1.Nifti1Image` or list of smoothed input image, \
+        or :obj:`~nilearn.surface.SurfaceImage`.
+        If `imgs` is an iterable of :class:`nibabel.nifti1.Nifti1Image`,
+        then the output is a list.
 
     """
-    # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
-    # See http://bugs.python.org/issue7624
     if isinstance(imgs, SurfaceImage):
         iterations = _mris_fwhm_to_niters(fwhm, imgs)
         return _smooth_surface_img(
@@ -309,6 +308,8 @@ def smooth_img(imgs, fwhm):
             center_surround_knob=0,
         )
 
+    # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
+    # See http://bugs.python.org/issue7624
     imgs = stringify_path(imgs)
     if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
         single_img = False
@@ -332,7 +333,6 @@ def _smooth_surface_img(
     imgs,
     iterations: list[int],
     distance_weights: bool = False,
-    vertex_weights=None,
     center_surround_knob=0,
 ):
     """Smooth values along the surface.
@@ -354,12 +354,6 @@ def _smooth_surface_img(
         at each iteration is the weighted sum of neighboring vertices
         where the weight on each neighbor is the inverse
         of the distances to it.
-
-    vertex_weights : SurfaceImage or None, default = None
-        A SurfaceImage whose data are vector of weights, one per vertex.
-        These weights are normalized and
-        applied to the smoothing
-        after the application of center-surround weights.
 
     center_surround_knob : :obj:`float`, default = 0
         The relative weighting of the center and the surround
@@ -394,13 +388,12 @@ def _smooth_surface_img(
     surround_weight = 1 - center_weight
     if surround_weight == 0:
         # There's nothing to do in this case.
+        new_img_like(imgs, imgs.data)
         return imgs
 
     # Calculate the adjacency matrix either weighting
     # by inverse distance or not weighting (ones)
     values = "invlen" if distance_weights else "ones"
-
-    _ = _sanitize_surface_weights(imgs, vertex_weights=vertex_weights)
 
     new_data = {}
     for hemi, n_iter in zip(imgs.mesh.parts, iterations):
@@ -430,9 +423,7 @@ def _smooth_surface_img(
         # Convert back into numpy array.
         new_data[hemi] = np.reshape(np.asarray(tmp), np.shape(data))
 
-    smoothed_imgs = new_img_like(imgs, new_data)
-
-    return smoothed_imgs
+    return new_img_like(imgs, new_data)
 
 
 def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
@@ -477,39 +468,6 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
         )
 
     return niters
-
-
-def _sanitize_surface_weights(
-    imgs,
-    vertex_weights=None,
-):
-    """Check passed weights or set them all to 1 if None is passed.
-
-    Parameters
-    ----------
-    imgs : SurfaceImage
-        The surface whose is to be smoothed.
-        In the case of 2D data, each sample is smoothed independently.
-
-    vertex_weights : SurfaceImage or None, default = None
-        A SurfaceImage whose data are vector of weights, one per vertex.
-    """
-    weights = {}
-
-    if vertex_weights is not None:
-        if not isinstance(vertex_weights, SurfaceImage):
-            raise TypeError("'vertex_weights' must be None or a SurfaceImage.")
-        assert_same_number_vertices(imgs.mesh, vertex_weights.mesh)
-
-    for hemi in imgs.mesh.parts:
-        w = np.ones(imgs.mesh.parts[hemi].n_vertices)
-        if vertex_weights:
-            w = vertex_weights.data.parts[hemi]
-
-        w /= np.sum(w)
-        weights[hemi] = w
-
-    return new_img_like(imgs, weights)
 
 
 def _crop_img_to(img, slices, copy=True, copy_header=False):

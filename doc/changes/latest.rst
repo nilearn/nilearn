@@ -64,7 +64,7 @@ Enhancements
 
 - :bdg-dark:`Code` Allow plotting both hemispheres together (:gh:`4991` by `Himanshu Aggarwal`_).
 
-- :bdg-dark:`Code` Add surface smoothing (:gh:`3267` by `Jason D. Yeatman`_ and `Noah C. Benson`_ ).
+- :bdg-dark:`Code` Add surface support to :func:`~nilearn.image.smooth_img` (:gh:`3267` by `Jason D. Yeatman`_ and `Noah C. Benson`_ ).
 
 - :bdg-dark:`Code` Add a look up table to each of the deterministic atlas (:gh:`4820` by `Rémi Gau`_).
 
