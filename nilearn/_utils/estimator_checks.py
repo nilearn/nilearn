@@ -21,7 +21,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import compare_version
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.niimg import check_imgs_equal
+from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
