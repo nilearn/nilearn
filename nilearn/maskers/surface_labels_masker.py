@@ -119,7 +119,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             excess labels will be dropped,
             and missing labels will be labeled ``'unknown'``.
 
-    'lut' : :obj:`pandas.DataFrame` or :obj:`str` \
+    lut : :obj:`pandas.DataFrame` or :obj:`str` \
             or :obj:`pathlib.Path` to a TSV file or None, default=None
         Mutually exclusive with ``labels``.
         Act as a look up table (lut)

@@ -8,6 +8,7 @@ test_masking.py and test_signal.py for details.
 import warnings
 
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -742,17 +743,36 @@ def test_region_names(
     )
     signals = masker.fit().transform(fmri_img)
 
+    region_names = generate_labels(n_regions, background=background)
+
+    expected_lut = generate_expected_lut(region_names)
+    if background is None:
+        expected_lut = generate_expected_lut([*region_names, "unknown"])
+
     check_region_names_after_fit(
         masker,
         signals,
-        generate_labels(n_regions, background=background),
+        region_names,
         background,
+        expected_lut,
         resampling,
     )
 
 
+def generate_expected_lut(region_names):
+    """Generate a look up table based on a list of regions names."""
+    return pd.DataFrame(
+        {"name": region_names, "index": list(range(len(region_names)))}
+    )
+
+
 def check_region_names_after_fit(
-    masker, signals, region_names, background, resampling=False
+    masker,
+    signals,
+    region_names,
+    background,
+    expected_lut,
+    resampling=False,
 ):
     """Perform several checks on the expected attributes of the masker.
 
@@ -776,6 +796,9 @@ def check_region_names_after_fit(
         if background:
             region_names.pop(region_names.index(background))
         assert region_names_after_fit == region_names
+
+    assert masker.lut_["name"].to_list() == expected_lut["name"].to_list()
+    assert masker.lut_["index"].to_list() == expected_lut["index"].to_list()
 
 
 @pytest.mark.parametrize(
@@ -901,16 +924,33 @@ def test_region_names_with_non_sequential_labels(
         labels=labels,
     )
 
-    region_names = generate_labels(len(labels), background=background)
-
     masker = NiftiLabelsMasker(
         labels_img,
-        labels=region_names,
+        labels=generate_labels(len(labels), background=background),
         resampling_target=None,
     )
     signals = masker.fit().transform(fmri_img)
 
-    check_region_names_after_fit(masker, signals, region_names, background)
+    region_names = generate_labels(len(labels), background=background)
+    if background:
+        expected_lut = pd.DataFrame(
+            {
+                "index": labels,
+                "name": [background]
+                + [f"region_{i}" for i in range(1, len(labels))],
+            }
+        )
+    else:
+        expected_lut = pd.DataFrame(
+            {
+                "index": labels,
+                "name": [f"region_{i}" for i in range(1, len(labels) + 1)],
+            }
+        )
+
+    check_region_names_after_fit(
+        masker, signals, region_names, background, expected_lut
+    )
 
 
 @pytest.mark.parametrize("background", [None, "background", "Background"])

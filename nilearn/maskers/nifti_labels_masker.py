@@ -85,10 +85,19 @@ class NiftiLabelsMasker(BaseMasker):
     labels : :obj:`list` of :obj:`str`, optional
         Full labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
+        Mutually exclusive with ``lut``.
 
         .. warning::
             The labels must be consistent with the label values
             provided through ``labels_img``.
+
+    lut : :obj:`pandas.DataFrame` or :obj:`str` \
+            or :obj:`pathlib.Path` to a TSV file or None, default=None
+        Mutually exclusive with ``labels``.
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
@@ -159,6 +168,10 @@ class NiftiLabelsMasker(BaseMasker):
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
+
+    lut_ : :obj:`pandas.DataFrame`
+        Look-up table derived from the ``labels`` or ``lut``
+        or from the values of the label image.
 
     n_elements_ : :obj:`int`
         The number of discrete values in the mask.
