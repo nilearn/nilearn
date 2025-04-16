@@ -137,13 +137,13 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_transformer_preserve_dtypes": (
         "replaced by check_masker_transformer"
     ),
+    "check_dict_unchanged": "check_masker_dict_unchanged",
     # Those are skipped for now they fail
     # for unknown reasons
     #  most often because sklearn inputs expect a numpy array
     #  that errors with maskers,
     # or because a suitable nilearn replacement has not yet been created.
     "check_dtype_object": "TODO",
-    "check_dict_unchanged": "TODO",
     "check_dont_overwrite_parameters": "TODO",
     "check_estimators_empty_data_messages": "TODO",
     "check_estimators_dtypes": "TODO",
@@ -303,6 +303,7 @@ def nilearn_check_estimator(estimator):
         surf_img_input = getattr(tags.input_tags, "surf_img", False)
 
     yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
+    yield (clone(estimator), check_masker_dict_unchanged)
 
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
@@ -312,7 +313,6 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_transformer)
         yield (clone(estimator), check_masker_compatibility_mask_image)
-        yield (clone(estimator), check_masker_dict_unchanged)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -422,7 +422,13 @@ def check_estimator_has_sklearn_is_fitted(estimator):
 
 
 def check_masker_dict_unchanged(estimator):
-    """Replace check_dict_unchanged from sklearn."""
+    """Replace check_dict_unchanged from sklearn.
+
+    transform() should not changed the dict of the object.
+    """
+    if not hasattr(estimator, "transform"):
+        return
+
     if accept_niimg_input(estimator):
         imgs = _img_3d_rand()
     else:
