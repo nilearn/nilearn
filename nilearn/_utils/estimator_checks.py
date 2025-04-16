@@ -312,6 +312,7 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_transformer)
         yield (clone(estimator), check_masker_compatibility_mask_image)
+        yield (clone(estimator), check_masker_dict_unchanged)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_detrending)
@@ -418,6 +419,27 @@ def check_estimator_has_sklearn_is_fitted(estimator):
 
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         check_is_fitted(estimator)
+
+
+def check_masker_dict_unchanged(estimator):
+    """Replace check_dict_unchanged from sklearn."""
+    if accept_niimg_input(estimator):
+        imgs = _img_3d_rand()
+    else:
+        imgs = _make_surface_img(10)
+
+    estimator = estimator.fit(imgs)
+
+    dict_before = estimator.__dict__.copy()
+
+    if accept_niimg_input(estimator):
+        estimator.transform(_img_3d_rand())
+    else:
+        estimator.transform(_make_surface_img(10))
+
+    assert estimator.__dict__ == dict_before, (
+        "Estimator changes '__dict__' during transform."
+    )
 
 
 def check_masker_fitted(estimator):
