@@ -75,7 +75,7 @@ def check_same_fov(*args, **kwargs):
 
 
 def check_imgs_equal(img1, img2) -> bool:
-    """Check if 2 NiftiImages have same affine and data."""
+    """Check if 2 NiftiImages have same fov and data."""
     if not check_same_fov(img1, img2, raise_error=False):
         return False
 
