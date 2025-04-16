@@ -561,13 +561,7 @@ class NiftiSpheresMasker(BaseMasker):
             "native space.\n"
         )
 
-        if self.mask_img is not None:
-            self.mask_img_ = check_niimg_3d(self.mask_img)
-            # Just check that the mask is valid
-            load_mask_img(self.mask_img_)
-
-        else:
-            self.mask_img_ = None
+        self.mask_img_ = self._load_mask(imgs)
 
         if self.memory is None:
             self.memory = Memory(location=None)

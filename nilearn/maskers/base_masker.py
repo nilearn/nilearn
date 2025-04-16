@@ -3,13 +3,14 @@
 import abc
 import contextlib
 import warnings
+from collections.abc import Iterable
 
 import numpy as np
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import repr_niimgs
+from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -20,7 +21,8 @@ from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.niimg import repr_niimgs
+from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
@@ -28,8 +30,9 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
-from nilearn.masking import unmask
+from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
+from nilearn.surface.utils import check_polymesh_equal
 
 
 def filter_and_extract(
@@ -248,6 +251,30 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """Present only to comply with sklearn estimators checks."""
         ...
 
+    def _load_mask(self, imgs):
+        """Load and validate mask if one passed at init.
+
+        Returns
+        -------
+        mask_img_ : None or 3D nifti
+        """
+        if self.mask_img is None:
+            return None
+
+        repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
+        msg = f"loading mask from {repr}"
+        log(msg=msg, verbose=self.verbose)
+
+        mask_img_ = check_niimg_3d(self.mask_img)
+
+        # Just check that the mask is valid
+        load_mask_img(mask_img_)
+
+        if imgs is not None:
+            check_compatibility_mask_and_images(self.mask_img, imgs)
+
+        return mask_img_
+
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
@@ -424,6 +451,45 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             surf_img=True, niimg_like=False, masker=True
         )
         return tags
+
+    def _load_mask(self, imgs):
+        """Load and validate mask if one passed at init.
+
+        Returns
+        -------
+        mask_img_ : None or SurfaceImage
+        """
+        if self.mask_img is None:
+            return None
+
+        mask_img_ = self.mask_img
+
+        logger.log(
+            msg=f"loading mask from {mask_img_.__repr__()}",
+            verbose=self.verbose,
+        )
+
+        # squeeze the mask data if it is 2D and has a single column
+        for part in mask_img_.data.parts:
+            if (
+                mask_img_.data.parts[part].ndim == 2
+                and mask_img_.data.parts[part].shape[1] == 1
+            ):
+                mask_img_.data.parts[part] = np.squeeze(
+                    mask_img_.data.parts[part], axis=1
+                )
+
+        # Just check that the mask is valid
+        load_mask_img(mask_img_)
+
+        if imgs is not None:
+            check_compatibility_mask_and_images(mask_img_, imgs)
+            if not isinstance(imgs, Iterable):
+                imgs = [imgs]
+            for x in imgs:
+                check_polymesh_equal(mask_img_.mesh, x.mesh)
+
+        return mask_img_
 
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.2"
