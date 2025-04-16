@@ -65,6 +65,18 @@ def test_empty_surface_reports(tmp_path, model, bg_img):
     assert (tmp_path / "tmp.html").exists()
 
 
+def test_flm_reporting_no_contrasts(flm):
+    """Test for model report can be generated with no contrasts."""
+    report = flm.generate_report(
+        plot_type="glass",
+        contrasts=None,
+        min_distance=15,
+        alpha=0.01,
+        threshold=2,
+    )
+    assert "No statistical map was provided." in report.__str__()
+
+
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
 def test_flm_reporting_height_control(flm, height_control, contrasts):
     """Test for first level model reporting."""

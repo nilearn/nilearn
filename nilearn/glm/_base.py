@@ -9,6 +9,7 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -156,6 +157,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             "r_square", result_as_time_series=False
         )
 
+    @fill_doc
     def generate_report(
         self,
         contrasts=None,

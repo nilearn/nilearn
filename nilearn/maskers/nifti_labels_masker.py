@@ -8,6 +8,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
     check_params,
@@ -54,7 +55,7 @@ class _ExtractionFunctor:
         return signals, (labels, masked_labels_img)
 
 
-@_utils.fill_doc
+@fill_doc
 class NiftiLabelsMasker(BaseMasker):
     """Class for extracting data from Niimg-like objects \
        using labels of non-overlapping brain regions.
@@ -589,16 +590,7 @@ class NiftiLabelsMasker(BaseMasker):
                     for i, region_id in enumerate(initial_region_ids)
                 }
 
-        if self.mask_img is not None:
-            repr = _utils.repr_niimgs(
-                self.mask_img, shorten=(not self.verbose)
-            )
-            msg = f"loading data from {repr}"
-            logger.log(msg=msg, verbose=self.verbose)
-            self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
-
-        else:
-            self.mask_img_ = None
+        self.mask_img_ = self._load_mask(imgs)
 
         # Check shapes and affines or resample.
         if self.mask_img_ is not None:
@@ -642,14 +634,14 @@ class NiftiLabelsMasker(BaseMasker):
                     force_resample=False,
                 )
 
+                # Just check that the mask is valid
+                load_mask_img(self.mask_img_)
+
             else:
                 raise ValueError(
                     "Invalid value for "
                     f"resampling_target: {self.resampling_target}"
                 )
-
-            # Just check that the mask is valid
-            load_mask_img(self.mask_img_)
 
         if not hasattr(self, "_resampled_labels_img_"):
             # obviates need to run .transform() before .inverse_transform()
@@ -678,6 +670,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         return self
 
+    @fill_doc
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
@@ -709,6 +702,7 @@ class NiftiLabelsMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "labels_img_") and hasattr(self, "n_elements_")
 
+    @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.
 

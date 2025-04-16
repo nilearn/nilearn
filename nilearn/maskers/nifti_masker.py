@@ -8,6 +8,7 @@ from joblib import Memory
 
 from nilearn import _utils
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
@@ -158,7 +159,7 @@ def filter_and_mask(
     return data
 
 
-@_utils.fill_doc
+@fill_doc
 class NiftiMasker(BaseMasker):
     """Applying a mask to extract time-series from Niimg-like objects.
 
@@ -457,8 +458,10 @@ class NiftiMasker(BaseMasker):
             verbose=self.verbose,
         )
 
+        self.mask_img_ = self._load_mask(imgs)
+
         # Compute the mask if not given by the user
-        if self.mask_img is None:
+        if self.mask_img_ is None:
             if imgs is None:
                 raise ValueError(
                     "Parameter 'imgs' must be provided to "
@@ -472,11 +475,6 @@ class NiftiMasker(BaseMasker):
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
             )
-        else:
-            self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
-
-            # Just check that the mask is valid
-            load_mask_img(self.mask_img_)
 
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
@@ -542,6 +540,7 @@ class NiftiMasker(BaseMasker):
 
         return self
 
+    @fill_doc
     def transform_single_imgs(
         self,
         imgs,

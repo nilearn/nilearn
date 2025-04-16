@@ -112,7 +112,7 @@ def make_glm_report(
         or :obj:`str` \
         or :obj:`list` of :obj:`str` \
         or ndarray or \
-        :obj:`list` of ndarray
+        :obj:`list` of ndarray, Default=None
 
         Contrasts information for a first or second level model.
 
@@ -265,6 +265,8 @@ def make_glm_report(
 
         # We try to rely on the content of glm object only
         # by reading images from disk rarther than recomputing them
+        clusters_tsvs = None
+        statistical_maps = {}
         if output is not None:
             try:
                 statistical_maps = {
@@ -278,15 +280,14 @@ def make_glm_report(
                     for contrast_name in output["statistical_maps"]
                 }
             except KeyError:  # pragma: no cover
-                statistical_maps = make_stat_maps(
-                    model, contrasts, output_type="z_score"
-                )
-                clusters_tsvs = None
-        else:
+                if contrasts is not None:
+                    statistical_maps = make_stat_maps(
+                        model, contrasts, output_type="z_score"
+                    )
+        elif contrasts is not None:
             statistical_maps = make_stat_maps(
                 model, contrasts, output_type="z_score"
             )
-            clusters_tsvs = None
 
         logger.log(
             "Generating contrast-level figures...", verbose=model.verbose
