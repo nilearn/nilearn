@@ -61,7 +61,7 @@ jobs:
         -   uses: actions/setup-python@v5
             with:
                 # TODO bump to 3.10 when minimum python is 3.10
-                python-version: 3.9
+                python-version: 3.9.0
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
