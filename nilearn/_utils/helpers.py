@@ -219,6 +219,11 @@ def remove_parameters(removed_params, reason, end_version="future"):
     return _remove_params
 
 
+"""
+Return a str if input is pathlike,
+otherwise return input as-is.
+"""
+
 T = TypeVar("T")  # Generic type variable for non-path-like inputs
 
 

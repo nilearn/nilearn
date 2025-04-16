@@ -223,6 +223,12 @@ def iter_check_niimg(
         raise ValueError("Input niimgs list is empty.")
 
 
+"""
+Return a SpatialImage if return_iterator is False,
+and an Iterable of SpatialImage if return_iterator is True.
+"""
+
+
 @overload
 def check_niimg(
     niimg: Union[
@@ -421,6 +427,12 @@ def check_niimg_3d(
 
     """
     return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
+
+
+"""
+Return a SpatialImage if return_iterator is False,
+and an Iterable of SpatialImage if return_iterator is True.
+"""
 
 
 def check_niimg_4d(
