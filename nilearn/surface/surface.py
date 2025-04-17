@@ -13,6 +13,7 @@ import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
+from scipy.sparse import csr_matrix
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
@@ -1592,6 +1593,34 @@ class InMemoryMesh(SurfaceMesh):
                 "Index out of range. Use 0 for coordinates and 1 for faces."
             )
 
+    @property
+    def _area(self):
+        """Compute area of mesh.
+
+        Get the vertex coordinates for each face
+         Compute vectors for two edges of the triangle
+         Compute the cross product of the two edge vectors
+         Area of triangle = 0.5 * norm of cross product
+        """
+        total_area = 0.0
+        for face in self.faces:
+            v0, v1, v2 = (
+                self.coordinates[face[0]],
+                self.coordinates[face[1]],
+                self.coordinates[face[2]],
+            )
+
+            edge1 = v1 - v0
+            edge2 = v2 - v0
+
+            cross_prod = np.cross(edge1, edge2)
+
+            area = 0.5 * np.linalg.norm(cross_prod)
+
+            total_area += area
+
+        return total_area
+
     def __iter__(self):
         return iter([self.coordinates, self.faces])
 
@@ -2048,3 +2077,76 @@ def extract_data(img, index):
         .reshape(mesh.parts[hemi].n_vertices, last_dim)
         for hemi in data.parts
     }
+
+
+def compute_adjacency_matrix(mesh, values="ones", dtype=None):
+    """Compute the adjacency matrix for a surface.
+
+    The adjacency matrix is a matrix
+    with one row and one column for each vertex
+    such that the value of a cell `(u,v)` in the matrix is 1
+    if nodes `u` and `v` are adjacent and 0 otherwise.
+
+    Parameters
+    ----------
+    mesh : InMemoryMesh
+
+    values : {'invlen', 'ones'}, default="ones"
+        If `values` is `'ones'` (the default), then the returned matrix
+        contains uniform values in the cells representing edges.
+        If the value is `'invlen'`, then the the inverse of the distances
+        are returned.
+
+    dtype : numpy dtype-like or None, default=None
+        The dtype that should be used for the returned sparse matrix.
+
+    Returns
+    -------
+    matrix : scipy.sparse.csr_matrix
+        A sparse matrix representing the edge relationships in `surface`.
+
+    """
+    n = mesh.coordinates.shape[0]
+
+    edges = np.vstack(
+        [
+            mesh.faces[:, [0, 1]],
+            mesh.faces[:, [0, 2]],
+            mesh.faces[:, [1, 2]],
+        ]
+    )
+    edges = edges.astype(np.int64)
+    bigcol = edges[:, 0] > edges[:, 1]
+    lilcol = ~bigcol
+    edges = np.concatenate(
+        [
+            edges[bigcol, 0] + edges[bigcol, 1] * n,
+            edges[lilcol, 1] + edges[lilcol, 0] * n,
+        ]
+    )
+    edges = np.unique(edges)
+
+    (u, v) = (edges // n, edges % n)
+
+    # Calculate distances between pairs.
+    # We use this as a weighting to make sure that
+    # smoothing takes into account the distance between each vertex neighbor
+    if values == "invlen":
+        coords = mesh.coordinates
+        edge_lens = np.sqrt(np.sum((coords[u, :] - coords[v, :]) ** 2, axis=1))
+        if dtype is None:
+            dtype = edge_lens.dtype
+        else:
+            edge_lens = edge_lens.astype(dtype)
+        edge_lens = 1 / edge_lens
+    elif dtype is None:
+        edge_lens = np.ones_like(edges)
+    else:
+        edge_lens = np.ones(edges.shape, dtype=dtype)
+
+    # We can now make a sparse matrix.
+    ee = np.concatenate([edge_lens, edge_lens])
+    uv = np.concatenate([u, v])
+    vu = np.concatenate([v, u])
+
+    return csr_matrix((ee, (uv, vu)), shape=(n, n))
