@@ -880,7 +880,16 @@ def test_region_names_ids_match_after_fit(
         keep_masked_labels=keep_masked_labels,
     )
 
-    _ = masker.fit().transform(fmri_img)
+    masker.fit()
+
+    tmp = generate_labels(n_regions, background=background)
+    if background is None:
+        expected_lut = generate_expected_lut(["Background", *tmp])
+    else:
+        expected_lut = generate_expected_lut(tmp)
+    check_lut(masker, expected_lut)
+
+    _ = masker.transform(fmri_img)
 
     check_region_names_ids_match_after_fit(
         masker, region_names, region_ids, background

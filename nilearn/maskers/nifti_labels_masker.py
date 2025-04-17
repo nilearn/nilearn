@@ -194,7 +194,7 @@ class NiftiLabelsMasker(BaseMasker):
     region_names_ : dict[int, str]
         A dictionary containing the region names corresponding
         to each column in the ``region_signal``
-        returned by `fit_transform`.
+        returned by `transform`.
         The region names correspond to the labels provided
         in labels in input.
         The region name corresponding to ``region_signal[:,i]``
@@ -282,6 +282,45 @@ class NiftiLabelsMasker(BaseMasker):
         self.cmap = cmap
 
         self.strategy = strategy
+
+    @property
+    def _region_id_name(self):
+        # create _region_id_name dictionary
+        # this dictionary will be used to store region names and
+        # the corresponding region ids as keys
+        check_is_fitted(self)
+        return {
+            row[1]["index"]: row[1]["name"]
+            for row in self.lut_.iterrows()
+            if row[1]["name"] != "Background"
+        }
+
+    # @property
+    # def region_names_(self):
+    #     check_is_fitted(self)
+
+    #     self.region_names_ = {
+    #         key: self._region_id_name[region_id]
+    #         for key, region_id in region_ids.items()
+    #         if region_id != self.background_label
+    #     }
+
+    @property
+    def region_ids_(self):
+        """Return dictionary containing the region ids corresponding \n
+           to each column in the ``region_signal`` \n
+           returned by `transform`.
+
+        The region id corresponding to ``region_signal[:,i]``
+        is ``region_ids_[i]``.
+        ``region_ids_['background']`` is the background label.
+        """
+        check_is_fitted(self)
+        if not hasattr(self, "_lut_"):
+            return None
+        return {
+            row[1]["ids"]: row[1]["index"] for row in self._lut_.iterrows()
+        }
 
     def _get_labels_values(self, labels_image):
         labels_image = load_img(labels_image, dtype="int32")
@@ -566,20 +605,10 @@ class NiftiLabelsMasker(BaseMasker):
 
         self.lut_ = self._generate_lut()
 
-        self.label_names_ = self.lut_["name"].to_list()
         self._original_region_ids = self.lut_["index"].to_list()
 
-        assert "Background" in self.label_names_
+        assert "Background" in self.lut_["name"].to_list()
         assert self.background_label in self._original_region_ids
-
-        # create _region_id_name dictionary
-        # this dictionary will be used to store region names and
-        # the corresponding region ids as keys
-        self._region_id_name = {
-            row[1]["index"]: row[1]["name"]
-            for row in self.lut_.iterrows()
-            if row[1]["name"] != "Background"
-        }
 
         self.mask_img_ = self._load_mask(imgs)
 
@@ -880,28 +909,32 @@ class NiftiLabelsMasker(BaseMasker):
             verbose=self.verbose,
         )
 
-        self.labels_ = ids
+        lut_index = [self.background_label] + [
+            ids[i] for i in range(region_signals.shape[1])
+        ]
+        lut_ids = ["Background", *list(range(region_signals.shape[1]))]
+        lut_name = ["Background"] + [
+            row[1]["name"]
+            for row in self.lut_.iterrows()
+            if row[1]["index"] in ids
+        ]
 
-        # defining a dictionary containing regions ids
-        region_ids = {"background": self.background_label}
-        for i in range(region_signals.shape[1]):
-            # ids does not include background label
-            region_ids[i] = ids[i]
+        self._lut_ = pd.DataFrame(
+            {"index": lut_index, "name": lut_name, "ids": lut_ids}
+        )
 
         self.region_names_ = None
 
         self._check_mismatch_labels_regions(
-            self.labels_, tolerant=True, resampling_done=True
+            ids, tolerant=True, resampling_done=True
         )
 
-        if self._region_id_name is not None:
-            self.region_names_ = {
-                key: self._region_id_name[region_id]
-                for key, region_id in region_ids.items()
-                if region_id != self.background_label
-            }
+        self.region_names_ = {
+            key: self._region_id_name[region_id]
+            for key, region_id in self.region_ids_.items()
+            if region_id != self.background_label
+        }
 
-        self.region_ids_ = region_ids
         self.region_atlas_ = masked_atlas
 
         return region_signals
