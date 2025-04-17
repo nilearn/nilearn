@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 from joblib import Memory
+from numpy.testing import assert_array_equal
 
 import nilearn as ni
 from nilearn._utils.logger import find_stack_level
@@ -71,6 +72,23 @@ def check_same_fov(*args, **kwargs):
             )
         )
     return not errors
+
+
+def check_imgs_equal(img1, img2) -> bool:
+    """Check if 2 NiftiImages have same fov and data."""
+    if not check_same_fov(img1, img2, raise_error=False):
+        return False
+
+    data_img1 = safe_get_data(img1)
+    data_img2 = safe_get_data(img2)
+
+    try:
+        assert_array_equal(data_img1, data_img2)
+        return True
+    except AssertionError:
+        return False
+    except Exception as e:
+        raise e
 
 
 def _index_img(img, index):
