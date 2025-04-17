@@ -307,7 +307,7 @@ def test_nifti_labels_masker_report(
     masker = NiftiLabelsMasker(
         img_labels, labels=labels, mask_img=img_mask_eye
     )
-    masker.fit(img_3d_rand_eye)
+    masker.fit_transform(img_3d_rand_eye)
     report = masker.generate_report()
 
     assert masker._reporting_data is not None

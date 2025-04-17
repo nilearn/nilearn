@@ -791,6 +791,10 @@ def check_region_names_after_fit(
     assert len(masker.region_names_) == signals.shape[1]
     assert len(list(masker.region_ids_.items())) == signals.shape[1] + 1
 
+    # for coverage
+    masker.labels_  # noqa: B018
+    masker._region_id_name  # noqa: B018
+
     # resampling may drop some labels so we do not check the region names
     # in this case
     if not resampling:
@@ -1012,3 +1016,58 @@ def test_3d_images(affine_eye, shape_3d_default, n_regions, img_labels):
     epis = masker.fit_transform([epi_img1, epi_img2])
 
     assert epis.shape == (2, n_regions)
+
+
+@pytest.mark.parametrize("background", [None, "Background"])
+def test_pass_lut(
+    shape_3d_default, affine_eye, n_regions, img_labels, tmp_path, background
+):
+    """Smoke test to pass LUT directly or as file."""
+    region_names = generate_labels(n_regions, background=background)
+    if background:
+        lut = pd.DataFrame(
+            {"name": region_names, "index": list(range(n_regions + 1))}
+        )
+    else:
+        lut = pd.DataFrame(
+            {
+                "name": ["Background", *region_names],
+                "index": list(range(n_regions + 1)),
+            }
+        )
+
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
+
+    masker = NiftiLabelsMasker(
+        img_labels,
+        lut=lut,
+    )
+
+    masker.fit_transform(fmri_img)
+
+    lut_file = tmp_path / "lut.csv"
+    lut.to_csv(lut_file, index=False)
+    masker = NiftiLabelsMasker(
+        img_labels,
+        lut=lut_file,
+    )
+
+    masker.fit_transform(fmri_img)
+
+
+def test_pass_lut_error(shape_3d_default, affine_eye, n_regions, img_labels):
+    """Cannot pass both LUT and labels."""
+    region_names = generate_labels(n_regions, background=None)
+    lut = pd.DataFrame(
+        {
+            "name": ["Background", *region_names],
+            "index": list(range(n_regions + 1)),
+        }
+    )
+
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
+
+    with pytest.raises(
+        ValueError, match="Pass either labels or a lookup table"
+    ):
+        NiftiLabelsMasker(img_labels, lut=lut, labels=region_names).fit()
