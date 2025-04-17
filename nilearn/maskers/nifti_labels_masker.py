@@ -312,64 +312,6 @@ class NiftiLabelsMasker(BaseMasker):
             lut = self._lut_
         return lut["index"].to_dict()
 
-    def _get_labels_values(self, labels_image):
-        labels_image = load_img(labels_image, dtype="int32")
-        labels_image_data = get_data(labels_image)
-        return np.unique(labels_image_data)
-
-    def _check_mismatch_labels_regions(
-        self, region_ids, tolerant=True, resampling_done=False
-    ):
-        """Check we have as many labels as regions (plus background).
-
-        Parameters
-        ----------
-        region_ids : :obj:`list` or numpy.array
-
-        tolerant : :obj:`bool`, default=True
-                  If set to `True` this function will throw a warning,
-                  and will throw an error otherwise.
-
-        resampling_done : :obj:`bool`, default=False
-                         Used to mention if this check is done
-                         before or after the resampling has been done,
-                         to adapt the message accordingly.
-        """
-        if (
-            self.labels is not None
-            and len(self.labels) != self._number_of_regions(region_ids) + 1
-        ):
-            msg = (
-                "Mismatch between the number of provided labels "
-                f"({len(self.labels)}) and the number of regions in "
-                "provided label image "
-                f"({self._number_of_regions(region_ids) + 1})."
-            )
-            if (
-                getattr(self, "resampling_target", None) == "data"
-                and resampling_done
-            ):
-                msg += (
-                    "\nNote that this may be due to some regions "
-                    "being dropped from the label image "
-                    "after resampling."
-                )
-            if tolerant:
-                warnings.warn(msg, UserWarning, stacklevel=find_stack_level())
-            else:
-                raise ValueError(msg)
-
-    def _number_of_regions(self, region_ids):
-        """Compute number of regions excluding the background.
-
-        Parameters
-        ----------
-        region_ids : :obj:`list` or numpy.array
-        """
-        if isinstance(region_ids, list):
-            region_ids = np.array(region_ids)
-        return np.sum(region_ids != self.background_label)
-
     def _post_masking_atlas(self, visualize=False):
         """
         Find the masked atlas before transform and return it.
@@ -429,114 +371,110 @@ class NiftiLabelsMasker(BaseMasker):
 
         from nilearn import plotting
 
+        labels_image = None
         if self._reporting_data is not None:
             labels_image = self._reporting_data["labels_image"]
-        else:
-            labels_image = None
 
-        if labels_image is not None:
-            # Remove warning message in case where the masker was
-            # previously fitted with no func image and is re-fitted
-            if "warning_message" in self._report_content:
-                self._report_content["warning_message"] = None
+        if (
+            labels_image is None
+            or not self.__sklearn_is_fitted__
+            or not self.reports
+        ):
+            self._report_content["summary"] = None
+            return [None]
 
-            label_values = self._get_labels_values(labels_image)
+        # Remove warning message in case where the masker was
+        # previously fitted with no func image and is re-fitted
+        if "warning_message" in self._report_content:
+            self._report_content["warning_message"] = None
 
-            self._check_mismatch_labels_regions(label_values, tolerant=False)
+        table = self.lut_.copy()
+        if hasattr(self, "_lut_"):
+            table = self._lut_.copy()
 
-            self._report_content["number_of_regions"] = (
-                self._number_of_regions(label_values)
+        table = table[["name", "index"]]
+
+        table = table[table["index"] != self.background_label]
+
+        table = table.rename(
+            columns={"name": "region name", "index": "label value"}
+        )
+
+        labels_image = load_img(labels_image, dtype="int32")
+        labels_image_data = get_data(labels_image)
+        labels_image_affine = labels_image.affine
+
+        voxel_volume = np.abs(np.linalg.det(labels_image_affine[:3, :3]))
+
+        new_columns = {"size (in mm^3)": [], "relative size (in %)": []}
+        for label in table["label value"].to_list():
+            size = len(labels_image_data[labels_image_data == label])
+            new_columns["size (in mm^3)"].append(round(size * voxel_volume))
+
+            new_columns["relative size (in %)"].append(
+                round(
+                    size
+                    / len(
+                        labels_image_data[
+                            labels_image_data != self.background_label
+                        ]
+                    )
+                    * 100,
+                    2,
+                )
             )
 
-            label_values = label_values[label_values != self.background_label]
-            columns = [
-                "label value",
-                "region name",
-                "size (in mm^3)",
-                "relative size (in %)",
-            ]
+        table = pd.concat([table, pd.DataFrame(new_columns)], axis=1)
+        self._report_content["summary"] = table
+        self._report_content["number_of_regions"] = len(table)
 
-            if self.labels is None:
-                columns.remove("region name")
+        img = self._reporting_data["img"]
 
-            labels_image = load_img(labels_image, dtype="int32")
-            labels_image_data = get_data(labels_image)
-            labels_image_affine = labels_image.affine
+        # compute the cut coordinates on the label image in case
+        # we have a functional image
+        cut_coords = plotting.find_xyz_cut_coords(
+            labels_image, activation_threshold=0.5
+        )
 
-            regions_summary = {c: [] for c in columns}
-            for label in label_values:
-                regions_summary["label value"].append(label)
-                if self.labels is not None:
-                    regions_summary["region name"].append(self.labels[label])
-
-                size = len(labels_image_data[labels_image_data == label])
-                voxel_volume = np.abs(
-                    np.linalg.det(labels_image_affine[:3, :3])
-                )
-                regions_summary["size (in mm^3)"].append(
-                    round(size * voxel_volume)
-                )
-                regions_summary["relative size (in %)"].append(
-                    round(
-                        size
-                        / len(labels_image_data[labels_image_data != 0])
-                        * 100,
-                        2,
-                    )
-                )
-
-            self._report_content["summary"] = regions_summary
-
-            img = self._reporting_data["img"]
-
-            # compute the cut coordinates on the label image in case
-            # we have a functional image
-            cut_coords = plotting.find_xyz_cut_coords(
-                labels_image, activation_threshold=0.5
-            )
-
-            # If we have a func image to show in the report, use it
-            if img is not None:
-                if self._reporting_data["dim"] == 5:
-                    msg = (
-                        "A list of 4D subject images were provided to fit. "
-                        "Only first subject is shown in the report."
-                    )
-                    warnings.warn(msg, stacklevel=find_stack_level())
-                    self._report_content["warning_message"] = msg
-                display = plotting.plot_img(
-                    img,
-                    cut_coords=cut_coords,
-                    black_bg=False,
-                    cmap=self.cmap,
-                )
-                plt.close()
-                display.add_contours(labels_image, filled=False, linewidths=3)
-
-            # Otherwise, simply plot the ROI of the label image
-            # and give a warning to the user
-            else:
+        # If we have a func image to show in the report, use it
+        if img is not None:
+            if self._reporting_data["dim"] == 5:
                 msg = (
-                    "No image provided to fit in NiftiLabelsMasker. "
-                    "Plotting ROIs of label image on the "
-                    "MNI152Template for reporting."
+                    "A list of 4D subject images were provided to fit. "
+                    "Only first subject is shown in the report."
                 )
                 warnings.warn(msg, stacklevel=find_stack_level())
                 self._report_content["warning_message"] = msg
-                display = plotting.plot_roi(labels_image)
-                plt.close()
+            display = plotting.plot_img(
+                img,
+                cut_coords=cut_coords,
+                black_bg=False,
+                cmap=self.cmap,
+            )
+            plt.close()
+            display.add_contours(labels_image, filled=False, linewidths=3)
 
-            # If we have a mask, show its contours
-            if self._reporting_data["mask"] is not None:
-                display.add_contours(
-                    self._reporting_data["mask"],
-                    filled=False,
-                    colors="g",
-                    linewidths=3,
-                )
+        # Otherwise, simply plot the ROI of the label image
+        # and give a warning to the user
         else:
-            self._report_content["summary"] = None
-            display = None
+            msg = (
+                "No image provided to fit in NiftiLabelsMasker. "
+                "Plotting ROIs of label image on the "
+                "MNI152Template for reporting."
+            )
+            warnings.warn(msg, stacklevel=find_stack_level())
+            self._report_content["warning_message"] = msg
+            display = plotting.plot_roi(labels_image)
+            plt.close()
+
+        # If we have a mask, show its contours
+        if self._reporting_data["mask"] is not None:
+            display.add_contours(
+                self._reporting_data["mask"],
+                filled=False,
+                colors="g",
+                linewidths=3,
+            )
 
         return [display]
 
@@ -739,10 +677,15 @@ class NiftiLabelsMasker(BaseMasker):
 
         else:
             lut = pd.concat(
-                pd.DataFrame(
-                    {"name": "Background", "index": self.background_label}
-                ),
-                lut,
+                [
+                    pd.DataFrame(
+                        {
+                            "name": ["Background"],
+                            "index": [self.background_label],
+                        }
+                    ),
+                    lut,
+                ],
                 axis=0,
                 ignore_index=True,
             )
