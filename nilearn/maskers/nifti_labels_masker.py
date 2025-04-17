@@ -3,6 +3,7 @@
 import copy
 import warnings
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -297,7 +298,7 @@ class NiftiLabelsMasker(BaseMasker):
         }
 
     @property
-    def region_ids_(self) -> dict[str | int, int]:
+    def region_ids_(self) -> dict[Union[str, int], int]:
         """Return dictionary containing the region ids corresponding \n
            to each column in the array \n
            returned by `transform`.
