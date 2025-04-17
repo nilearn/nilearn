@@ -181,27 +181,6 @@ class NiftiLabelsMasker(BaseMasker):
 
         .. versionadded:: 0.9.2
 
-    region_ids_ : dict[str | int, int]
-        A dictionary containing the region ids corresponding
-        to each column in the ``region_signal``
-        returned by `fit_transform`.
-        The region id corresponding to ``region_signal[:,i]``
-        is ``region_ids_[i]``.
-        ``region_ids_['background']`` is the background label.
-
-        .. versionadded:: 0.10.3
-
-    region_names_ : dict[int, str]
-        A dictionary containing the region names corresponding
-        to each column in the ``region_signal``
-        returned by `transform`.
-        The region names correspond to the labels provided
-        in labels in input.
-        The region name corresponding to ``region_signal[:,i]``
-        is ``region_names_[i]``.
-
-        .. versionadded:: 0.10.3
-
     region_atlas_ : Niimg-like object
         Regions definition as labels.
         The labels correspond to the indices in ``region_ids_``.
@@ -295,29 +274,42 @@ class NiftiLabelsMasker(BaseMasker):
             if row[1]["name"] != "Background"
         }
 
-    # @property
-    # def region_names_(self):
-    #     check_is_fitted(self)
+    @property
+    def region_names_(self) -> dict[int, str]:
+        """Return a dictionary containing the region names corresponding \n
+            to each column in the array returned by `transform`.
 
-    #     self.region_names_ = {
-    #         key: self._region_id_name[region_id]
-    #         for key, region_id in region_ids.items()
-    #         if region_id != self.background_label
-    #     }
+        The region names correspond to the labels provided
+        in labels in input.
+        The region name corresponding to ``region_signal[:,i]``
+        is ``region_names_[i]``.
+
+        .. versionadded:: 0.10.3
+        """
+        check_is_fitted(self)
+        if not hasattr(self, "_lut_"):
+            return {}
+        return {
+            row[1]["ids"]: row[1]["name"]
+            for row in self._lut_.iterrows()
+            if row[1]["index"] != self.background_label
+        }
 
     @property
-    def region_ids_(self):
+    def region_ids_(self) -> dict[str | int, int]:
         """Return dictionary containing the region ids corresponding \n
-           to each column in the ``region_signal`` \n
+           to each column in the array \n
            returned by `transform`.
 
         The region id corresponding to ``region_signal[:,i]``
         is ``region_ids_[i]``.
         ``region_ids_['background']`` is the background label.
+
+        .. versionadded:: 0.10.3
         """
         check_is_fitted(self)
         if not hasattr(self, "_lut_"):
-            return None
+            return {}
         return {
             row[1]["ids"]: row[1]["index"] for row in self._lut_.iterrows()
         }
@@ -922,18 +914,13 @@ class NiftiLabelsMasker(BaseMasker):
         self._lut_ = pd.DataFrame(
             {"index": lut_index, "name": lut_name, "ids": lut_ids}
         )
-
-        self.region_names_ = None
+        self._lut_ = sanitize_look_up_table(
+            self._lut_, atlas=np.array([self.background_label, *ids])
+        )
 
         self._check_mismatch_labels_regions(
             ids, tolerant=True, resampling_done=True
         )
-
-        self.region_names_ = {
-            key: self._region_id_name[region_id]
-            for key, region_id in self.region_ids_.items()
-            if region_id != self.background_label
-        }
 
         self.region_atlas_ = masked_atlas
 
