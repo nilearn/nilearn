@@ -796,7 +796,9 @@ def plotly():
     plotly : module
         The ``plotly`` module.
     """
-    yield pytest.importorskip("plotly")
+    yield pytest.importorskip(
+        "plotly", reason="Plotly is not installed; required to run the tests!"
+    )
 
 
 @pytest.fixture

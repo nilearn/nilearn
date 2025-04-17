@@ -1,4 +1,4 @@
-# Tests for functions in surf_plotting.py
+"""Test nilearn.plotting.surface.surf_plotting functions."""
 
 # ruff: noqa: ARG001
 
@@ -18,7 +18,14 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting.displays import PlotlySurfaceFigure, SurfaceFigure
+
+
+@pytest.fixture
+def surf_roi_data(rng, in_memory_mesh):
+    roi_map = np.zeros((in_memory_mesh.n_vertices, 1))
+    roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
+    roi_map[roi_idx] = 1
+    return roi_map
 
 
 @pytest.mark.parametrize(
@@ -37,7 +44,7 @@ def test_check_surface_plotting_inputs_error_mesh_and_data_none(fn):
 
 
 def test_check_surface_plotting_inputs_errors():
-    """Fail if mesh is none and data is not a SurfaceImage."""
+    """Fail if mesh is None and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         plot_surf(surf_map=1, surf_mesh=None)
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
@@ -56,50 +63,8 @@ def test_plot_surf_contours_warning_hemi(in_memory_mesh):
         plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
 
 
-def test_surface_figure():
-    s = SurfaceFigure()
-    assert s.output_file is None
-    assert s.figure is None
-    with pytest.raises(NotImplementedError):
-        s.show()
-    with pytest.raises(ValueError, match="You must provide an output file"):
-        s._check_output_file()
-    s._check_output_file("foo.png")
-    assert s.output_file == "foo.png"
-    s = SurfaceFigure(output_file="bar.png")
-    assert s.output_file == "bar.png"
-
-
-def test_surface_figure_add_contours_raises_not_implemented():
-    """Test that calling add_contours method of SurfaceFigure raises a \
-    NotImplementedError.
-    """
-    figure = SurfaceFigure()
-    with pytest.raises(NotImplementedError):
-        figure.add_contours()
-
-
-@pytest.mark.skipif(
-    is_plotly_installed(),
-    reason=("This test only runs if Plotly is not installed."),
-)
-def test_plotly_surface_figure_import_error():
-    """Test that an ImportError is raised when instantiating \
-       a PlotlySurfaceFigure without having Plotly installed.
-    """
-    with pytest.raises(ImportError, match="Plotly is required"):
-        PlotlySurfaceFigure()
-
-
-@pytest.fixture
-def surf_roi_data(rng, in_memory_mesh):
-    roi_map = np.zeros((in_memory_mesh.n_vertices, 1))
-    roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
-    roi_map[roi_idx] = 1
-    return roi_map
-
-
 def test_plot_surf_engine_error(in_memory_mesh):
+    """Test error if unknown engine is specified."""
     with pytest.raises(ValueError, match="Unknown plotting engine"):
         plot_surf(in_memory_mesh, engine="foo")
 
@@ -109,17 +74,15 @@ def test_plot_surf_engine_error(in_memory_mesh):
     reason="This test is run only if plotly is not installed.",
 )
 def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
+    """Test error if plotly is not installed but specified as engine."""
     with pytest.raises(ImportError, match="Using engine"):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf(
-    matplotlib_pyplot, engine, tmp_path, in_memory_mesh, bg_map
-):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
+def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
+    available engine backends.
+    """
     # to avoid extra warnings
     alpha = None
     cbar_vmin = None
@@ -158,19 +121,15 @@ def test_plot_surf(
 
 @pytest.mark.parametrize("view", ["anterior", "posterior"])
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
-def test_plot_surf_hemi_views_plotly(
-    matplotlib_pyplot, plotly, in_memory_mesh, hemi, view, bg_map
-):
+def test_plot_surf_hemi_views(plt, engine, in_memory_mesh, hemi, view, bg_map):
     """Check plotting view and hemispheres."""
     plot_surf(
-        in_memory_mesh, bg_map=bg_map, hemi=hemi, view=view, engine="plotly"
+        in_memory_mesh, bg_map=bg_map, hemi=hemi, view=view, engine=engine
     )
 
 
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
-def test_plot_surf_swap_hemi(
-    matplotlib_pyplot, surf_img_1d, hemi, flip_surf_img
-):
+def test_plot_surf_swap_hemi(plt, engine, surf_img_1d, hemi, flip_surf_img):
     """Check error is raised if background image is incompatible."""
     with pytest.raises(
         MeshDimensionError,
@@ -181,13 +140,14 @@ def test_plot_surf_swap_hemi(
             bg_map=flip_surf_img(surf_img_1d),
             hemi=hemi,
             surf_mesh=None,
+            engine=engine,
         )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_error(engine, rng, in_memory_mesh):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
+def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
+    """Check error if invalid parameters values are specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf.
+    """
     # Wrong inputs for view or hemi
     with pytest.raises(ValueError, match="Invalid view definition"):
         plot_surf(in_memory_mesh, view="middle", engine=engine)
@@ -224,12 +184,7 @@ def test_plot_surf_error(engine, rng, in_memory_mesh):
         )
 
 
-# @pytest.mark.parametrize()
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_stat_map(matplotlib_pyplot, engine, in_memory_mesh, bg_map):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
+def test_plot_surf_stat_map(plt, engine, in_memory_mesh, bg_map):
     alpha = 1 if engine == "matplotlib" else None
     # Plot mesh with stat map
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, engine=engine)
@@ -238,14 +193,10 @@ def test_plot_surf_stat_map(matplotlib_pyplot, engine, in_memory_mesh, bg_map):
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_stat_map_with_background(
-    matplotlib_pyplot, engine, in_memory_mesh, bg_map
+    plt, engine, in_memory_mesh, bg_map
 ):
     """Plot mesh with background and stat map."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf_stat_map(
         in_memory_mesh, stat_map=bg_map, bg_map=bg_map, engine=engine
     )
@@ -259,28 +210,18 @@ def test_plot_surf_stat_map_with_background(
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_stat_map_with_title(
-    matplotlib_pyplot, engine, in_memory_mesh, bg_map
-):
+def test_plot_surf_stat_map_with_title(plt, engine, in_memory_mesh, bg_map):
     """Check title is added."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     display = plot_surf_stat_map(
         in_memory_mesh, stat_map=bg_map, title="Stat map title"
     )
     assert display.axes[0].title._text == "Stat map title"
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_stat_map_with_threshold(
-    matplotlib_pyplot, engine, in_memory_mesh, bg_map
+    plt, engine, in_memory_mesh, bg_map
 ):
     """Check title is added."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf_stat_map(
         in_memory_mesh,
         stat_map=bg_map,
@@ -289,25 +230,13 @@ def test_plot_surf_stat_map_with_threshold(
     )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_stat_map_vmax(
-    matplotlib_pyplot, engine, in_memory_mesh, bg_map
-):
+def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
     """Change vmax."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, vmax=5, engine=engine)
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
-def test_plot_surf_stat_map_colormap(
-    matplotlib_pyplot, engine, in_memory_mesh, bg_map
-):
+def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):
     """Change colormap."""
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
-
     plot_surf_stat_map(
         in_memory_mesh, stat_map=bg_map, cmap="cubehelix", engine=engine
     )
@@ -330,11 +259,8 @@ def test_plot_surf_stat_map_error(in_memory_mesh, bg_map):
         )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 @pytest.mark.parametrize("colorbar", [True, False])
-def test_plot_surf_roi(matplotlib_pyplot, engine, surface_image_roi, colorbar):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
+def test_plot_surf_roi(plt, engine, surface_image_roi, colorbar):
     plot_surf_roi(
         surface_image_roi.mesh,
         roi_map=surface_image_roi,
@@ -359,10 +285,7 @@ def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
         )
 
 
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
-    if not is_plotly_installed() and engine == "plotly":
-        pytest.skip("Plotly is not installed; required for this test.")
     # too many axes
     with pytest.raises(
         ValueError, match="roi_map can only have one dimension but has"
@@ -661,9 +584,8 @@ def test_plot_surf_contours_axis_title(
 
 @pytest.mark.parametrize("avg_method", ["mean", "median"])
 @pytest.mark.parametrize("symmetric_cmap", [True, False, None])
-@pytest.mark.parametrize("engine", ["matplotlib", "plotly"])
 def test_plot_surf_roi_default_arguments(
-    plotly, engine, symmetric_cmap, avg_method, surface_image_roi
+    plt, engine, symmetric_cmap, avg_method, surface_image_roi
 ):
     """Regression test for https://github.com/nilearn/nilearn/issues/3941."""
     # To avoid extra warnings
@@ -678,6 +600,34 @@ def test_plot_surf_roi_default_arguments(
         darkness=None,  # to avoid deprecation warning
         cmap="RdYlBu_r",
         avg_method=avg_method,
+    )
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
+)
+def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
+    matplotlib_pyplot, plotly, kwargs, in_memory_mesh
+):
+    """See issue https://github.com/nilearn/nilearn/issues/3944."""
+    roi_map = np.arange(0, len(in_memory_mesh.coordinates))
+
+    mpl_plot = plot_surf_roi(
+        in_memory_mesh,
+        roi_map=roi_map,
+        colorbar=True,
+        engine="matplotlib",
+        **kwargs,
+    )
+    plotly_plot = plot_surf_roi(
+        in_memory_mesh,
+        roi_map=roi_map,
+        colorbar=True,
+        engine="plotly",
+        **kwargs,
+    )
+    assert (
+        mpl_plot.axes[-1].get_ylim()[0] == plotly_plot.figure.data[1]["cmin"]
     )
 
 
