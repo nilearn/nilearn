@@ -383,7 +383,7 @@ def _smooth_surface_img(
     """
     # First, calculate the center and surround weights for the
     # center-surround knob.
-    center_weight = 1 / (1 + np.exp2(-center_surround_knob))
+    center_weight = 1 / (1 + np.exp2(center_surround_knob))
     surround_weight = 1 - center_weight
     if surround_weight == 0:
         # There's nothing to do in this case.
