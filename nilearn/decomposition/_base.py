@@ -205,7 +205,7 @@ def _mask_and_reduce(
     n_samples = np.sum(subject_n_samples)
     # n_features is the number of True vertices in the mask if it is a surface
     if isinstance(masker, SurfaceMasker):
-        n_features = masker.output_dimension_
+        n_features = masker.n_elements_
     # n_features is the number of True voxels in the mask if it is a volume
     else:
         n_features = int(np.sum(safe_get_data(masker.mask_img_)))
