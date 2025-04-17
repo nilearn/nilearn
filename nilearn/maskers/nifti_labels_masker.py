@@ -901,25 +901,19 @@ class NiftiLabelsMasker(BaseMasker):
             verbose=self.verbose,
         )
 
-        lut_index = [self.background_label] + [
-            ids[i] for i in range(region_signals.shape[1])
-        ]
-        lut_ids = ["Background", *list(range(region_signals.shape[1]))]
-        lut_name = ["Background"] + [
-            row[1]["name"]
-            for row in self.lut_.iterrows()
-            if row[1]["index"] in ids
-        ]
-
+        lut_index = [self.background_label]
+        lut_ids = ["Background"]
+        lut_name = ["Background"]
+        for i in range(region_signals.shape[1]):
+            lut_ids.append(i)
+            lut_index.append(ids[i])
+            mask = self.lut_["index"] == ids[i]
+            lut_name.append(self.lut_["name"][mask].to_list()[0])
         self._lut_ = pd.DataFrame(
             {"index": lut_index, "name": lut_name, "ids": lut_ids}
         )
         self._lut_ = sanitize_look_up_table(
             self._lut_, atlas=np.array([self.background_label, *ids])
-        )
-
-        self._check_mismatch_labels_regions(
-            ids, tolerant=True, resampling_done=True
         )
 
         self.region_atlas_ = masked_atlas

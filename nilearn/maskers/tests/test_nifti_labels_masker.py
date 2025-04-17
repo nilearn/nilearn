@@ -971,7 +971,7 @@ def test_region_names_with_non_sequential_labels(
 def test_more_labels_than_actual_region_in_atlas(
     shape_3d_default, affine_eye, background, n_regions, img_labels
 ):
-    """Test region_names_ attribute in NiftiLabelsMasker.
+    """Test region_names_ property in NiftiLabelsMasker.
 
     See fetch_atlas_destrieux_2009 for example.
     Some labels have no associated voxels.
@@ -988,7 +988,8 @@ def test_more_labels_than_actual_region_in_atlas(
 
     fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
     with pytest.warns(
-        UserWarning, match="Mismatch between the number of provided labels"
+        UserWarning,
+        match="Too many names for the indices. Dropping excess names values.",
     ):
         masker.fit().transform(fmri_img)
 
