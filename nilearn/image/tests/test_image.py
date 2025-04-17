@@ -429,7 +429,6 @@ def test_smooth_surface_img(surf_img_1d):
         )
 
 
-@pytest.mark.xfail(reason="TODO - does not comply with doc string.")
 def test_smooth_surface_img_center_surround_knob_minus_inf(surf_img_1d):
     """Set center_surround_knob to -inf leads to no smoothing."""
     smoothed_imgs = _smooth_surface_img(
