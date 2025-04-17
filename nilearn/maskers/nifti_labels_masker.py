@@ -1,5 +1,6 @@
 """Transformer for computing ROI signals."""
 
+import copy
 import warnings
 from pathlib import Path
 
@@ -293,17 +294,16 @@ class NiftiLabelsMasker(BaseMasker):
         - checks that labels is a list of strings.
         """
         labels = self.labels
-        if labels is not None:
-            if not isinstance(labels, list):
-                raise TypeError(
-                    f"'labels' must be a list. Got: {type(labels)}",
-                )
-            if not all(isinstance(x, str) for x in labels):
-                types_labels = {type(x) for x in labels}
-                raise TypeError(
-                    "All elements of 'labels' must be a string.\n"
-                    f"Got a list of {types_labels}",
-                )
+        if not isinstance(labels, list):
+            raise TypeError(
+                f"'labels' must be a list. Got: {type(labels)}",
+            )
+        if not all(isinstance(x, str) for x in labels):
+            types_labels = {type(x) for x in labels}
+            raise TypeError(
+                "All elements of 'labels' must be a string.\n"
+                f"Got a list of {types_labels}",
+            )
 
     def _check_mismatch_labels_regions(
         self, region_ids, tolerant=True, resampling_done=False
@@ -564,18 +564,16 @@ class NiftiLabelsMasker(BaseMasker):
             "warning_message": None,
         }
 
+        repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
+        msg = f"loading data from {repr}"
+        logger.log(msg=msg, verbose=self.verbose)
+        self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
+
         if self.labels and self.lut is not None:
             raise ValueError(
                 "Pass either labels or a lookup table (lut) to the masker, "
                 "but not both."
             )
-
-        self._check_labels()
-
-        repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
-        msg = f"loading data from {repr}"
-        logger.log(msg=msg, verbose=self.verbose)
-        self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
 
         # generate a look up table if one was not provided
         if self.lut is not None:
@@ -585,9 +583,13 @@ class NiftiLabelsMasker(BaseMasker):
                 lut = self.lut
 
         elif self.labels:
+            self._check_labels()
+            if "background" in self.labels:
+                idx = self.labels.index("background")
+                self.labels[idx] = "Background"
             lut = generate_atlas_look_up_table(
                 function=None,
-                name=self.labels,
+                name=copy.deepcopy(self.labels),
                 index=self.labels_img_,
             )
 
@@ -596,45 +598,53 @@ class NiftiLabelsMasker(BaseMasker):
                 function=None, index=self.labels_img_
             )
 
-        self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
+        # passed labels or lut may not include background label
+        # because of poor data standardization
+        # so we need to update the lut accordingly
+        known_backgrounds = {"Background"}
+        if (lut["index"] == self.background_label).any():
+            # Ensure background is the first row with name "Background"
+            # Shift the 'name' column down by one
+            # if background row was not named properly
+            mask = lut["index"] == self.background_label
+            first_rows = lut[mask]
+            other_rows = lut[~mask]
+            lut = pd.concat([first_rows, other_rows], ignore_index=True)
+            if not (lut["name"].isin(known_backgrounds)).any():
+                lut["name"] = lut["name"].shift(1)
+            lut.loc[0, "name"] = "Background"
+        elif (lut["name"].isin(known_backgrounds)).any():
+            mask = lut["name"].isin(known_backgrounds)
+            lut.loc[mask, "name"] = "Background"
+        else:
+            lut = pd.concat(
+                pd.DataFrame(
+                    {"name": "Background", "index": self.background_label}
+                ),
+                lut,
+                axis=0,
+                ignore_index=True,
+            )
+
+        self.lut_: pd.DataFrame = sanitize_look_up_table(
+            lut, atlas=self.labels_img_
+        )
+
+        assert self.background_label in self.lut_["index"].to_list()
+        assert "Background" in self.lut_["name"].to_list()
 
         self.label_names_ = self.lut_.name.to_list()
 
-        self._original_region_ids = self._get_labels_values(self.labels_img_)
+        self._original_region_ids = self.lut_.index.to_list()
 
         # create _region_id_name dictionary
         # this dictionary will be used to store region names and
         # the corresponding region ids as keys
-        self._region_id_name = None
-        if self.labels is not None:
-            known_backgrounds = {"background", "Background"}
-            initial_region_ids = [
-                region_id
-                for region_id in np.unique(
-                    _utils.niimg.safe_get_data(self.labels_img_)
-                )
-                if region_id != self.background_label
-            ]
-            initial_region_names = [
-                region_name
-                for region_name in self.labels
-                if region_name not in known_backgrounds
-            ]
-
-            if len(initial_region_ids) != len(initial_region_names):
-                warnings.warn(
-                    "Number of regions in the labels image "
-                    "does not match the number of labels provided.",
-                    stacklevel=find_stack_level(),
-                )
-            # if number of regions in the labels image is more
-            # than the number of labels provided, then we cannot
-            # create _region_id_name dictionary
-            if len(initial_region_ids) <= len(initial_region_names):
-                self._region_id_name = {
-                    region_id: initial_region_names[i]
-                    for i, region_id in enumerate(initial_region_ids)
-                }
+        self._region_id_name = {
+            row[1]["index"]: row[1]["name"]
+            for row in self.lut_.iterrows()
+            if row[1]["name"] not in known_backgrounds
+        }
 
         self.mask_img_ = self._load_mask(imgs)
 
