@@ -264,9 +264,9 @@ class NiftiLabelsMasker(BaseMasker):
 
     @property
     def _region_id_name(self):
-        # create _region_id_name dictionary
-        # this dictionary will be used to store region names and
-        # the corresponding region ids as keys
+        """Return dictionary used to store region names and
+        the corresponding region ids as keys.
+        """
         check_is_fitted(self)
         return {
             row[1]["index"]: row[1]["name"]
@@ -287,11 +287,12 @@ class NiftiLabelsMasker(BaseMasker):
         .. versionadded:: 0.10.3
         """
         check_is_fitted(self)
-        if not hasattr(self, "_lut_"):
-            return {}
+        lut = self.lut_
+        if hasattr(self, "_lut_"):
+            lut = self._lut_
         return {
             row[1]["ids"]: row[1]["name"]
-            for row in self._lut_.iterrows()
+            for row in lut.iterrows()
             if row[1]["index"] != self.background_label
         }
 
@@ -308,11 +309,10 @@ class NiftiLabelsMasker(BaseMasker):
         .. versionadded:: 0.10.3
         """
         check_is_fitted(self)
-        if not hasattr(self, "_lut_"):
-            return {}
-        return {
-            row[1]["ids"]: row[1]["index"] for row in self._lut_.iterrows()
-        }
+        lut = self.lut_
+        if hasattr(self, "_lut_"):
+            lut = self._lut_
+        return {row[1]["ids"]: row[1]["index"] for row in lut.iterrows()}
 
     def _get_labels_values(self, labels_image):
         labels_image = load_img(labels_image, dtype="int32")
