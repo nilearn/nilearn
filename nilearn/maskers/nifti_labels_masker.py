@@ -288,23 +288,6 @@ class NiftiLabelsMasker(BaseMasker):
         labels_image_data = get_data(labels_image)
         return np.unique(labels_image_data)
 
-    def _check_labels(self):
-        """Check labels.
-
-        - checks that labels is a list of strings.
-        """
-        labels = self.labels
-        if not isinstance(labels, list):
-            raise TypeError(
-                f"'labels' must be a list. Got: {type(labels)}",
-            )
-        if not all(isinstance(x, str) for x in labels):
-            types_labels = {type(x) for x in labels}
-            raise TypeError(
-                "All elements of 'labels' must be a string.\n"
-                f"Got a list of {types_labels}",
-            )
-
     def _check_mismatch_labels_regions(
         self, region_ids, tolerant=True, resampling_done=False
     ):
@@ -569,73 +552,25 @@ class NiftiLabelsMasker(BaseMasker):
         logger.log(msg=msg, verbose=self.verbose)
         self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
 
-        if self.labels and self.lut is not None:
-            raise ValueError(
-                "Pass either labels or a lookup table (lut) to the masker, "
-                "but not both."
-            )
-
-        # generate a look up table if one was not provided
-        if self.lut is not None:
-            if isinstance(self.lut, (str, Path)):
-                lut = pd.read_table(self.lut, sep=None)
-            else:
-                lut = self.lut
-
-        elif self.labels:
+        if self.labels:
+            if self.lut is not None:
+                raise ValueError(
+                    "Pass either labels "
+                    "or a lookup table (lut) to the masker, "
+                    "but not both."
+                )
             self._check_labels()
             if "background" in self.labels:
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
-            lut = generate_atlas_look_up_table(
-                function=None,
-                name=copy.deepcopy(self.labels),
-                index=self.labels_img_,
-            )
 
-        else:
-            lut = generate_atlas_look_up_table(
-                function=None, index=self.labels_img_
-            )
+        self.lut_ = self._generate_lut()
 
-        # passed labels or lut may not include background label
-        # because of poor data standardization
-        # so we need to update the lut accordingly
-        known_backgrounds = {"Background"}
-        if (lut["index"] == self.background_label).any():
-            # Ensure background is the first row with name "Background"
-            # Shift the 'name' column down by one
-            # if background row was not named properly
-            mask = lut["index"] == self.background_label
-            first_rows = lut[mask]
-            other_rows = lut[~mask]
-            lut = pd.concat([first_rows, other_rows], ignore_index=True)
-            if not (lut["name"].isin(known_backgrounds)).any():
-                lut["name"] = lut["name"].shift(1)
-            lut.loc[0, "name"] = "Background"
-        elif (lut["name"].isin(known_backgrounds)).any():
-            mask = lut["name"].isin(known_backgrounds)
-            lut.loc[mask, "name"] = "Background"
-        else:
-            lut = pd.concat(
-                pd.DataFrame(
-                    {"name": "Background", "index": self.background_label}
-                ),
-                lut,
-                axis=0,
-                ignore_index=True,
-            )
+        self.label_names_ = self.lut_["name"].to_list()
+        self._original_region_ids = self.lut_["index"].to_list()
 
-        self.lut_: pd.DataFrame = sanitize_look_up_table(
-            lut, atlas=self.labels_img_
-        )
-
-        assert self.background_label in self.lut_["index"].to_list()
-        assert "Background" in self.lut_["name"].to_list()
-
-        self.label_names_ = self.lut_.name.to_list()
-
-        self._original_region_ids = self.lut_.index.to_list()
+        assert "Background" in self.label_names_
+        assert self.background_label in self._original_region_ids
 
         # create _region_id_name dictionary
         # this dictionary will be used to store region names and
@@ -643,7 +578,7 @@ class NiftiLabelsMasker(BaseMasker):
         self._region_id_name = {
             row[1]["index"]: row[1]["name"]
             for row in self.lut_.iterrows()
-            if row[1]["name"] not in known_backgrounds
+            if row[1]["name"] != "Background"
         }
 
         self.mask_img_ = self._load_mask(imgs)
@@ -720,11 +655,80 @@ class NiftiLabelsMasker(BaseMasker):
         # Infer the number of elements in the mask
         # This is equal to the number of unique values in the label image,
         # minus the background value.
-        self.n_elements_ = (
-            np.unique(get_data(self._resampled_labels_img_)).size - 1
-        )
+        self.n_elements_ = len(self.lut_) - 1
 
         return self
+
+    def _check_labels(self):
+        """Check labels.
+
+        - checks that labels is a list of strings.
+        """
+        labels = self.labels
+        if not isinstance(labels, list):
+            raise TypeError(
+                f"'labels' must be a list. Got: {type(labels)}",
+            )
+        if not all(isinstance(x, str) for x in labels):
+            types_labels = {type(x) for x in labels}
+            raise TypeError(
+                "All elements of 'labels' must be a string.\n"
+                f"Got a list of {types_labels}",
+            )
+
+    def _generate_lut(self):
+        """Generate a look up table if one was not provided.
+
+        Also sanitize its content if necessary.
+        """
+        if self.lut is not None:
+            if isinstance(self.lut, (str, Path)):
+                lut = pd.read_table(self.lut, sep=None)
+            else:
+                lut = self.lut
+
+        elif self.labels:
+            lut = generate_atlas_look_up_table(
+                function=None,
+                name=copy.deepcopy(self.labels),
+                index=self.labels_img_,
+            )
+
+        else:
+            lut = generate_atlas_look_up_table(
+                function=None, index=self.labels_img_
+            )
+
+        # passed labels or lut may not include background label
+        # because of poor data standardization
+        # so we need to update the lut accordingly
+        mask_background_name = lut["name"] == "Background"
+        mask_background_index = lut["index"] == self.background_label
+        if (mask_background_index).any():
+            # Ensure background is the first row with name "Background"
+            # Shift the 'name' column down by one
+            # if background row was not named properly
+            first_rows = lut[mask_background_index]
+            other_rows = lut[~mask_background_index]
+            lut = pd.concat([first_rows, other_rows], ignore_index=True)
+            if not (mask_background_name).any():
+                lut["name"] = lut["name"].shift(1)
+            lut.loc[0, "name"] = "Background"
+
+        elif (mask_background_name).any():
+            lut.loc[mask_background_name, "name"] = "Background"
+
+        else:
+            lut = pd.concat(
+                pd.DataFrame(
+                    {"name": "Background", "index": self.background_label}
+                ),
+                lut,
+                axis=0,
+                ignore_index=True,
+            )
+
+        return sanitize_look_up_table(lut, atlas=self.labels_img_)
 
     @fill_doc
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
