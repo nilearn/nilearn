@@ -291,7 +291,7 @@ class NiftiLabelsMasker(BaseMasker):
         if hasattr(self, "_lut_"):
             lut = self._lut_
         return {
-            row[1]["ids"]: row[1]["name"]
+            row[0]: row[1]["name"]
             for row in lut.iterrows()
             if row[1]["index"] != self.background_label
         }
@@ -312,7 +312,7 @@ class NiftiLabelsMasker(BaseMasker):
         lut = self.lut_
         if hasattr(self, "_lut_"):
             lut = self._lut_
-        return {row[1]["ids"]: row[1]["index"] for row in lut.iterrows()}
+        return {row[0]: row[1]["index"] for row in lut.iterrows()}
 
     def _get_labels_values(self, labels_image):
         labels_image = load_img(labels_image, dtype="int32")
@@ -901,17 +901,9 @@ class NiftiLabelsMasker(BaseMasker):
             verbose=self.verbose,
         )
 
-        lut_index = [self.background_label]
-        lut_ids = ["Background"]
-        lut_name = ["Background"]
-        for i in range(region_signals.shape[1]):
-            lut_ids.append(i)
-            lut_index.append(ids[i])
-            mask = self.lut_["index"] == ids[i]
-            lut_name.append(self.lut_["name"][mask].to_list()[0])
-        self._lut_ = pd.DataFrame(
-            {"index": lut_index, "name": lut_name, "ids": lut_ids}
-        )
+        self._lut_ = self.lut_.copy()
+        mask = mask = self.lut_["index"].isin([self.background_label, *ids])
+        self._lut_ = self._lut_[mask]
         self._lut_ = sanitize_look_up_table(
             self._lut_, atlas=np.array([self.background_label, *ids])
         )
