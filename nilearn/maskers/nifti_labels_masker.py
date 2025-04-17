@@ -392,9 +392,9 @@ class NiftiLabelsMasker(BaseMasker):
         if hasattr(self, "_lut_"):
             table = self._lut_.copy()
 
-        table = table[["name", "index"]]
+        table = table[["index", "name"]]
 
-        table = table[table["index"] != self.background_label]
+        table["index"] = table["index"].astype(int)
 
         table = table.rename(
             columns={"name": "region name", "index": "label value"}
@@ -425,6 +425,9 @@ class NiftiLabelsMasker(BaseMasker):
             )
 
         table = pd.concat([table, pd.DataFrame(new_columns)], axis=1)
+
+        table = table[table["label value"] != self.background_label]
+
         self._report_content["summary"] = table
         self._report_content["number_of_regions"] = len(table)
 
