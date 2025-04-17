@@ -9,6 +9,7 @@ import os
 import re
 from pathlib import Path
 from tempfile import mkstemp
+from types import GeneratorType
 
 import numpy as np
 import pytest
@@ -100,7 +101,49 @@ def test_check_same_fov(affine_eye):
         )
 
 
-def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):
+def test_check_niimg_return_type(img_3d_zeros_eye, tmp_path, img_4d_mni):
+    """Check type returned by check_niimg."""
+    assert isinstance(check_niimg(img_3d_zeros_eye), Nifti1Image)
+
+    img_3d_zeros_eye.to_filename(tmp_path / "tmp.nii.gz")
+
+    assert isinstance(check_niimg(tmp_path / "tmp.nii.gz"), Nifti1Image)
+    assert isinstance(check_niimg(str(tmp_path / "tmp.nii.gz")), Nifti1Image)
+
+    assert isinstance(
+        check_niimg(
+            [
+                str(tmp_path / "tmp.nii.gz"),
+                tmp_path / "tmp.nii.gz",
+                img_3d_zeros_eye,
+            ]
+        ),
+        Nifti1Image,
+    )
+    assert isinstance(
+        check_niimg(
+            (
+                str(tmp_path / "tmp.nii.gz"),
+                tmp_path / "tmp.nii.gz",
+                img_3d_zeros_eye,
+            )
+        ),
+        Nifti1Image,
+    )
+
+    assert isinstance(check_niimg(str(tmp_path / "*.nii.gz")), Nifti1Image)
+
+    assert isinstance(
+        check_niimg(str(tmp_path / "*.nii.gz"), return_iterator=True),
+        GeneratorType,
+    )
+    assert isinstance(
+        check_niimg(img_4d_mni, return_iterator=True), GeneratorType
+    )
+
+
+def test_check_niimg_3d_errors(img_3d_zeros_eye):
+    """Check errors thrown by check_niimg_3d."""
     # check error for non-forced but necessary resampling
     with pytest.raises(TypeError, match="nibabel format"):
         check_niimg(0)
@@ -118,21 +161,22 @@ def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):
     ):
         check_niimg_3d([img_3d_zeros_eye, img_3d_zeros_eye])
 
-    # Check that a filename does not raise an error
-    data = np.zeros((40, 40, 40, 1))
-    data[20, 20, 20] = 1
-    data_img = Nifti1Image(data, affine_eye)
 
-    filename = write_imgs_to_path(
-        data_img, file_path=tmp_path, create_files=True
-    )
-    check_niimg_3d(filename)
-
-    # check data dtype equal with dtype='auto'
+def test_check_niimg_3d(img_3d_zeros_eye):
+    """Check check_niimg_3d data dtype equal with dtype='auto'."""
     img_check = check_niimg_3d(img_3d_zeros_eye, dtype="auto")
     assert (
         get_data(img_3d_zeros_eye).dtype.kind == get_data(img_check).dtype.kind
     )
+
+
+def test_check_niimg_3d_pathlike(img_3d_zeros_eye, tmp_path):
+    """Test check_niimg_3d on files."""
+    filename = write_imgs_to_path(
+        img_3d_zeros_eye, file_path=tmp_path, create_files=True
+    )
+    assert isinstance(check_niimg_3d(filename), Nifti1Image)
+    assert isinstance(check_niimg_3d(Path(filename)), Nifti1Image)
 
 
 def test_check_niimg_4d_errors(affine_eye, img_3d_zeros_eye, shape_3d_default):
@@ -239,14 +283,6 @@ def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
         get_data(img_4d_zeros_eye).dtype.kind
         == get_data(img_4d_check).dtype.kind
     )
-
-
-def test_check_niimg_pathlike(img_3d_zeros_eye, tmp_path):
-    filename = write_imgs_to_path(
-        img_3d_zeros_eye, file_path=tmp_path, create_files=True
-    )
-    filename = Path(filename)
-    check_niimg_3d(filename)
 
 
 def test_check_niimg_wildcards_errors():
