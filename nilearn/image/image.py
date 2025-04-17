@@ -387,8 +387,7 @@ def _smooth_surface_img(
     surround_weight = 1 - center_weight
     if surround_weight == 0:
         # There's nothing to do in this case.
-        new_img_like(imgs, imgs.data)
-        return imgs
+        return new_img_like(imgs, imgs.data)
 
     # Calculate the adjacency matrix either weighting
     # by inverse distance or not weighting (ones)
