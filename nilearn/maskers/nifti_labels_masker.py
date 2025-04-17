@@ -271,6 +271,15 @@ class NiftiLabelsMasker(BaseMasker):
         )
 
     @property
+    def labels_(self) -> list[str]:
+        """Return list of labels of the regions."""
+        check_is_fitted(self)
+        lut = self.lut_
+        if hasattr(self, "_lut_"):
+            lut = self._lut_
+        return lut["name"].to_list()
+
+    @property
     def region_names_(self) -> dict[int, str]:
         """Return a dictionary containing the region names corresponding \n
             to each column in the array returned by `transform`.
