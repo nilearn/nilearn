@@ -59,6 +59,9 @@ jobs:
 
         steps:
         -   uses: actions/checkout@v4
+            with:
+                # fetch all branches and tags
+                fetch-depth: 0
         -   uses: actions/setup-python@v5
             with:
                 # TODO bump to 3.10 when minimum python is 3.10
