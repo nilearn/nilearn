@@ -2,15 +2,22 @@
 
 import abc
 import contextlib
+import copy
 import warnings
 from collections.abc import Iterable
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import logger
+from nilearn._utils.bids import (
+    generate_atlas_look_up_table,
+    sanitize_look_up_table,
+)
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -173,6 +180,50 @@ def filter_and_extract(
     )
 
     return region_signals, aux
+
+
+def generate_lut(masker):
+    """Generate a look up table if one was not provided.
+
+    Also sanitize its content if necessary.
+    """
+    if masker.lut is not None:
+        if isinstance(masker.lut, (str, Path)):
+            lut = pd.read_table(masker.lut, sep=None)
+        else:
+            lut = masker.lut
+
+    elif masker.labels:
+        lut = generate_atlas_look_up_table(
+            function=None,
+            name=copy.deepcopy(masker.labels),
+            index=masker.labels_img_,
+        )
+
+    else:
+        lut = generate_atlas_look_up_table(
+            function=None, index=masker.labels_img_
+        )
+
+    # passed labels or lut may not include background label
+    # because of poor data standardization
+    # so we need to update the lut accordingly
+    mask_background_index = lut["index"] == masker.background_label
+    if (mask_background_index).any():
+        # Ensure background is the first row with name "Background"
+        # Shift the 'name' column down by one
+        # if background row was not named properly
+        first_rows = lut[mask_background_index]
+        other_rows = lut[~mask_background_index]
+        lut = pd.concat([first_rows, other_rows], ignore_index=True)
+
+        # mask_background_name = lut["name"].isin(["Background", "background"])
+        # if not (mask_background_name).any():
+        #     lut["name"] = lut["name"].shift(1)
+
+        lut.loc[0, "name"] = "background"
+
+    return sanitize_look_up_table(lut, atlas=masker.labels_img_)
 
 
 @fill_doc

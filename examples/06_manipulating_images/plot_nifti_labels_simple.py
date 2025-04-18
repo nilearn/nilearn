@@ -47,7 +47,7 @@ from nilearn.maskers import NiftiLabelsMasker
 # Instantiate the masker with label image and label values
 masker = NiftiLabelsMasker(
     atlas.maps,
-    labels=atlas.labels,
+    lut=atlas.lut,
     standardize="zscore_sample",
 )
 

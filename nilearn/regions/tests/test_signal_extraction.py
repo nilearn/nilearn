@@ -773,12 +773,16 @@ def test_img_to_signals_labels_non_float_type(target_dtype, rng):
     fake_fmri_img_target_dtype = new_img_like(
         fake_fmri_img_orig, fake_fmri_data.astype(target_dtype)
     )
-    fake_mask_data = np.ones((10, 10, 10), dtype=np.uint8)
+
+    fake_mask_data = np.zeros((10, 10, 10), dtype=np.uint8)
+    fake_mask_data[1:8, 1:8, 1:8] = 1
     fake_mask = Nifti1Image(fake_mask_data, fake_affine)
 
     masker = NiftiLabelsMasker(fake_mask)
     masker.fit()
+
     timeseries_int = masker.transform(fake_fmri_img_target_dtype)
     timeseries_float = masker.transform(fake_fmri_img_orig)
+
     assert np.sum(timeseries_int) != 0
     assert np.allclose(timeseries_int, timeseries_float)

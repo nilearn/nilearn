@@ -1,18 +1,12 @@
 """Extract data from a SurfaceImage, averaging over atlas regions."""
 
 import warnings
-from pathlib import Path
 
 import numpy as np
-import pandas as pd
 from scipy import ndimage
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.bids import (
-    generate_atlas_look_up_table,
-    sanitize_look_up_table,
-)
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
@@ -29,7 +23,7 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, generate_lut
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -119,13 +113,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             excess labels will be dropped,
             and missing labels will be labeled ``'unknown'``.
 
-    'lut' : :obj:`pandas.DataFrame` or :obj:`str` \
-            or :obj:`pathlib.Path` to a TSV file or None, default=None
-        Mutually exclusive with ``labels``.
-        Act as a look up table (lut)
-        with at least columns 'index' and 'name'.
-        Formatted according to 'dseg.tsv' format from
-        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
+    %(masker_lut)s
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
@@ -275,30 +263,15 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         self._shelving = False
 
+        self.labels_img_ = self.labels_img
+
         all_labels = set(self._labels_data.ravel())
         all_labels.discard(self.background_label)
         self._labels_ = list(all_labels)
 
         self.n_elements_ = len(self._labels_)
 
-        # generate a look up table if one was not provided
-        if self.lut is not None:
-            if isinstance(self.lut, (str, Path)):
-                lut = pd.read_table(self.lut, sep=None)
-            else:
-                lut = self.lut
-        elif self.labels:
-            lut = generate_atlas_look_up_table(
-                function=None,
-                name=self.labels,
-                index=self.labels_img,
-            )
-        else:
-            lut = generate_atlas_look_up_table(
-                function=None, index=self.labels_img
-            )
-
-        self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img)
+        self.lut_ = generate_lut(self)
 
         self.label_names_ = self.lut_.name.to_list()
 
