@@ -1045,6 +1045,9 @@ def test_pass_lut(
 
     masker.fit_transform(fmri_img)
 
+    assert masker.lut_["index"].to_list() == lut["index"].to_list()
+    assert masker.lut_["name"].to_list() == lut["name"].to_list()
+
     lut_file = tmp_path / "lut.csv"
     lut.to_csv(lut_file, index=False)
     masker = NiftiLabelsMasker(

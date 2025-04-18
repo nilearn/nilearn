@@ -277,7 +277,7 @@ class NiftiLabelsMasker(BaseMasker):
         lut = self.lut_
         if hasattr(self, "_lut_"):
             lut = self._lut_
-        return lut["name"].to_list()
+        return lut["index"].to_list()
 
     @property
     def region_names_(self) -> dict[int, str]:
@@ -674,27 +674,11 @@ class NiftiLabelsMasker(BaseMasker):
             first_rows = lut[mask_background_index]
             other_rows = lut[~mask_background_index]
             lut = pd.concat([first_rows, other_rows], ignore_index=True)
+
             if not (mask_background_name).any():
                 lut["name"] = lut["name"].shift(1)
+
             lut.loc[0, "name"] = "Background"
-
-        elif (mask_background_name).any():
-            lut.loc[mask_background_name, "name"] = "Background"
-
-        else:
-            lut = pd.concat(
-                [
-                    pd.DataFrame(
-                        {
-                            "name": ["Background"],
-                            "index": [self.background_label],
-                        }
-                    ),
-                    lut,
-                ],
-                axis=0,
-                ignore_index=True,
-            )
 
         return sanitize_look_up_table(lut, atlas=self.labels_img_)
 
