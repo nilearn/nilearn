@@ -221,7 +221,7 @@ def generate_lut(masker):
         # if not (mask_background_name).any():
         #     lut["name"] = lut["name"].shift(1)
 
-        lut.loc[0, "name"] = "Background"
+        lut.loc[0, "name"] = "background"
 
     return sanitize_look_up_table(lut, atlas=masker.labels_img_)
 

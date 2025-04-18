@@ -57,8 +57,8 @@ def test_surface_label_masker_fit(surf_label_img):
     assert masker._labels_ == [1]
     assert masker._reporting_data is not None
     assert masker.lut_["index"].to_list() == [0, 1]
-    assert masker.lut_["name"].to_list() == ["Background", "1"]
-    assert masker.label_names_ == ["Background", "1"]
+    assert masker.lut_["name"].to_list() == ["background", "1"]
+    assert masker.label_names_ == ["background", "1"]
 
 
 def test_surface_label_masker_fit_with_names(surf_label_img):
@@ -72,8 +72,8 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
 
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
-    assert masker.label_names_ == ["Background", "bar"]
-    assert masker.lut_["name"].to_list() == ["Background", "bar"]
+    assert masker.label_names_ == ["background", "bar"]
+    assert masker.lut_["name"].to_list() == ["background", "bar"]
     assert masker.lut_["index"].to_list() == [0, 1]
 
     masker = SurfaceLabelsMasker(
@@ -85,8 +85,8 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
 
     assert masker.n_elements_ == 1
     assert masker._labels_ == [1]
-    assert masker.label_names_ == ["Background", "unknown"]
-    assert masker.lut_["name"].to_list() == ["Background", "unknown"]
+    assert masker.label_names_ == ["background", "unknown"]
+    assert masker.lut_["name"].to_list() == ["background", "unknown"]
     assert masker.lut_["index"].to_list() == [0, 1]
 
 
@@ -111,7 +111,7 @@ def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
 
         assert masker.n_elements_ == 1
         assert masker._labels_ == [1]
-        assert masker.label_names_ == ["Background", "bar"]
+        assert masker.label_names_ == ["background", "bar"]
 
 
 def test_surface_label_masker_error_names_and_lut(surf_label_img):
