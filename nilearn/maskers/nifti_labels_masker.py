@@ -1,8 +1,6 @@
 """Transformer for computing ROI signals."""
 
-import copy
 import warnings
-from pathlib import Path
 from typing import Union
 
 import numpy as np
@@ -13,7 +11,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.bids import (
-    generate_atlas_look_up_table,
     sanitize_look_up_table,
 )
 from nilearn._utils.docs import fill_doc
@@ -27,7 +24,11 @@ from nilearn.maskers._utils import (
     compute_middle_image,
     sanitize_cleaning_parameters,
 )
-from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.maskers.base_masker import (
+    BaseMasker,
+    filter_and_extract,
+    generate_lut,
+)
 from nilearn.masking import load_mask_img
 
 
@@ -470,7 +471,7 @@ class NiftiLabelsMasker(BaseMasker):
             )
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
-            display = plotting.plot_roi(labels_image)
+            display = plotting.plot_roi(labels_image, cmap=self.cmap)
             plt.close()
 
         # If we have a mask, show its contours
@@ -537,7 +538,10 @@ class NiftiLabelsMasker(BaseMasker):
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
 
-        self.lut_ = self._generate_lut()
+        self.lut_ = generate_lut(self)
+        # reuse lut as colormap where possible
+        if "color" in self.lut_.columns:
+            self.cmap = self.lut_
 
         self._original_region_ids = self.lut_["index"].to_list()
 
@@ -638,49 +642,6 @@ class NiftiLabelsMasker(BaseMasker):
                 "All elements of 'labels' must be a string.\n"
                 f"Got a list of {types_labels}",
             )
-
-    def _generate_lut(self):
-        """Generate a look up table if one was not provided.
-
-        Also sanitize its content if necessary.
-        """
-        if self.lut is not None:
-            if isinstance(self.lut, (str, Path)):
-                lut = pd.read_table(self.lut, sep=None)
-            else:
-                lut = self.lut
-
-        elif self.labels:
-            lut = generate_atlas_look_up_table(
-                function=None,
-                name=copy.deepcopy(self.labels),
-                index=self.labels_img_,
-            )
-
-        else:
-            lut = generate_atlas_look_up_table(
-                function=None, index=self.labels_img_
-            )
-
-        # passed labels or lut may not include background label
-        # because of poor data standardization
-        # so we need to update the lut accordingly
-        mask_background_name = lut["name"] == "Background"
-        mask_background_index = lut["index"] == self.background_label
-        if (mask_background_index).any():
-            # Ensure background is the first row with name "Background"
-            # Shift the 'name' column down by one
-            # if background row was not named properly
-            first_rows = lut[mask_background_index]
-            other_rows = lut[~mask_background_index]
-            lut = pd.concat([first_rows, other_rows], ignore_index=True)
-
-            if not (mask_background_name).any():
-                lut["name"] = lut["name"].shift(1)
-
-            lut.loc[0, "name"] = "Background"
-
-        return sanitize_look_up_table(lut, atlas=self.labels_img_)
 
     @fill_doc
     def fit_transform(self, imgs, confounds=None, sample_mask=None):
@@ -833,7 +794,7 @@ class NiftiLabelsMasker(BaseMasker):
         )
 
         self._lut_ = self.lut_.copy()
-        mask = mask = self.lut_["index"].isin([self.background_label, *ids])
+        mask = self.lut_["index"].isin([self.background_label, *ids])
         self._lut_ = self._lut_[mask]
         self._lut_ = sanitize_look_up_table(
             self._lut_, atlas=np.array([self.background_label, *ids])
