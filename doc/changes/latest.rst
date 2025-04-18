@@ -65,9 +65,11 @@ Enhancements
 - :bdg-dark:`Code` Allow plotting both hemispheres together (:gh:`4991` by `Himanshu Aggarwal`_).
 
 - :bdg-dark:`Plotting` Colormaps can be passed as BIDS compliant look-up table via a :class:`pandas.DataFrame` to :func:`~nilearn.plotting.plot_roi` and :func:`~nilearn.plotting.plot_surf_roi` (:gh:`5160` by `Rémi Gau`_).
--
+
 - :bdg-dark:`Code` Add a BIDS compliant look-up table to each of the deterministic atlas (:gh:`4820` by `Rémi Gau`_).
--
+
+- :bdg-dark:`Code` Add a look-up-table (``lut``) parameter (mutually exclusive with ``labels``) to  allow to pass a region ``name`` to ``index`` mapping to :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.SurfaceLabelsMasker` (:gh:`5086` and :gh:`5342` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Add a ``"template"`` to each atlas to describe the space they are provided in (:gh:`5041` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add an ``"atlas_type"`` metadata to each atlas (:gh:`4820` by `Rémi Gau`_).
