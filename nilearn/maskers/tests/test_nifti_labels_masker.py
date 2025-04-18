@@ -746,7 +746,7 @@ def test_region_names(
 
     tmp = generate_labels(n_regions, background=background)
     if background is None:
-        expected_lut = generate_expected_lut(["Background", *tmp])
+        expected_lut = generate_expected_lut(["background", *tmp])
     else:
         expected_lut = generate_expected_lut(tmp)
     check_lut(masker, expected_lut)
@@ -765,9 +765,9 @@ def test_region_names(
 
 def generate_expected_lut(region_names):
     """Generate a look up table based on a list of regions names."""
-    if "background" in region_names:
-        idx = region_names.index("background")
-        region_names[idx] = "Background"
+    if "Background" in region_names:
+        idx = region_names.index("Background")
+        region_names[idx] = "background"
     return pd.DataFrame(
         {"name": region_names, "index": list(range(len(region_names)))}
     )
@@ -811,7 +811,7 @@ def check_region_names_after_fit(
 def check_lut(masker, expected_lut):
     """Check content of the look up table."""
     assert masker.background_label in masker.lut_["index"].to_list()
-    assert "Background" in masker.lut_["name"].to_list()
+    assert "background" in masker.lut_["name"].to_list()
     assert masker.lut_["name"].to_list() == expected_lut["name"].to_list()
     assert masker.lut_["index"].to_list() == expected_lut["index"].to_list()
 
@@ -888,7 +888,7 @@ def test_region_names_ids_match_after_fit(
 
     tmp = generate_labels(n_regions, background=background)
     if background is None:
-        expected_lut = generate_expected_lut(["Background", *tmp])
+        expected_lut = generate_expected_lut(["background", *tmp])
     else:
         expected_lut = generate_expected_lut(tmp)
     check_lut(masker, expected_lut)
@@ -958,7 +958,7 @@ def test_region_names_with_non_sequential_labels(
     expected_lut = pd.DataFrame(
         {
             "index": [0, *labels],
-            "name": ["Background"]
+            "name": ["background"]
             + [f"region_{i}" for i in range(1, len(labels) + 1)],
         }
     )
@@ -1031,7 +1031,7 @@ def test_pass_lut(
     else:
         lut = pd.DataFrame(
             {
-                "name": ["Background", *region_names],
+                "name": ["background", *region_names],
                 "index": list(range(n_regions + 1)),
             }
         )
@@ -1063,7 +1063,7 @@ def test_pass_lut_error(shape_3d_default, affine_eye, n_regions, img_labels):
     region_names = generate_labels(n_regions, background=None)
     lut = pd.DataFrame(
         {
-            "name": ["Background", *region_names],
+            "name": ["background", *region_names],
             "index": list(range(n_regions + 1)),
         }
     )
